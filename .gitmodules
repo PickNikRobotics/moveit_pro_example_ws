@@ -1,0 +1,21 @@
+[submodule "src/picknik_accessories"]
+	path = src/picknik_accessories
+	url = https://github.com/PickNikRobotics/picknik_accessories.git
+[submodule "src/moveit_pro_ur_configs"]
+	path = src/moveit_pro_ur_configs
+	url = https://github.com/PickNikRobotics/moveit_pro_ur_configs.git
+[submodule "src/fanuc_sim"]
+	path = src/fanuc_sim
+	url = https://github.com/PickNikRobotics/fanuc_sim.git
+[submodule "src/moveit_pro_mobile_manipulation"]
+	path = src/moveit_pro_mobile_manipulation
+	url = https://github.com/PickNikRobotics/moveit_pro_mobile_manipulation.git
+[submodule "src/moveit_pro_kinova_configs"]
+	path = src/moveit_pro_kinova_configs
+	url = https://github.com/PickNikRobotics/moveit_pro_kinova_configs.git
+[submodule "src/--force"]
+	path = src/--force
+	url = https://github.com/PickNikRobotics/lab_sim.git
+[submodule "src/lab_sim"]
+	path = src/lab_sim
+	url = https://github.com/PickNikRobotics/lab_sim.git
