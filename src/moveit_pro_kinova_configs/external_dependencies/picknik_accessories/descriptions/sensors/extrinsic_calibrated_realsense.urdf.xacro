@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+
+<robot name="extrinsic_calibrated_realsense" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:macro name="load_extrinsic_calibrated_realsense" params="
+    name
+    model:=d415
+    parent
+    extrinsic_calibration_parameter_file">
+
+    <!-- Load extrinsic calibration data from the provided .yaml file -->
+    <xacro:property name="extrinsic_parameters" value="${xacro.load_yaml(extrinsic_calibration_parameter_file)}"/>
+    <xacro:property name="camera_pose" value="${extrinsic_parameters['camera_pose']}" />
+    <xacro:property name="camera_x" value="${camera_pose['x']}" scope="parent"/>
+    <xacro:property name="camera_y" value="${camera_pose['y']}" scope="parent"/>
+    <xacro:property name="camera_z" value="${camera_pose['z']}" scope="parent"/>
+    <xacro:property name="camera_roll" value="${camera_pose['roll']}" scope="parent"/>
+    <xacro:property name="camera_pitch" value="${camera_pose['pitch']}" scope="parent"/>
+    <xacro:property name="camera_yaw" value="${camera_pose['yaw']}" scope="parent"/>
+
+    <link name="${name}_mount_link"/>
+
+    <joint name="${name}_mount_joint" type="fixed">
+      <parent link="${parent}"/>
+      <child link = "${name}_mount_link"/>
+      <origin xyz="${camera_x} ${camera_y} ${camera_z}" rpy="${camera_roll} ${camera_pitch} ${camera_yaw}"/>
+    </joint>
+
+    <xacro:if value="${model == 'd415'}">
+      <xacro:include filename="$(find picknik_accessories)/descriptions/sensors/realsense_d415.urdf.xacro"/>
+      <xacro:realsense_d415 parent="${name}_mount_link" name="${name}">
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+      </xacro:realsense_d415>
+    </xacro:if>
+    <xacro:if value="${model == 'd435'}">
+      <xacro:include filename="$(find picknik_accessories)/descriptions/sensors/realsense_d435.urdf.xacro"/>
+      <xacro:realsense_d435 parent="${name}_mount_link" name="${name}">
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+      </xacro:realsense_d435>
+    </xacro:if>
+  </xacro:macro>
+</robot>

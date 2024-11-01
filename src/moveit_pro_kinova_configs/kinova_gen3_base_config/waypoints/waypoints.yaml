@@ -1,0 +1,70 @@
+- name: Home
+  favorite: true
+  joint_group_names:
+    - manipulator
+  joint_state:
+    header:
+      frame_id: world
+      stamp:
+        sec: 0
+        nanosec: 0
+    name: [joint_1, joint_2, joint_3, joint_4, joint_5, joint_6, joint_7]
+    position: [7.2854474427322627e-05, 0.0060998872530424308, -3.1250605484909082, -2.5051932931762071, -2.7164243118882329e-05, 0.95966324117024648, 1.5699864595074029]
+    velocity: []
+    effort: []
+- name: Place
+  favorite: true
+  joint_group_names:
+    - manipulator
+  joint_state:
+    header:
+      frame_id: world
+      stamp:
+        sec: 0
+        nanosec: 0
+    name: [joint_1, joint_2, joint_3, joint_4, joint_5, joint_6, joint_7]
+    position: [0.52290948292915906, 0.78910115573514905, -3.0436924550734994, -1.7162278254985983, -0.21909293655863848, -0.56602186649882569, 2.2964808259144789]
+    velocity: []
+    effort: []
+- name: Table
+  favorite: true
+  joint_group_names:
+    - manipulator
+  joint_state:
+    header:
+      frame_id: world
+      stamp:
+        sec: 0
+        nanosec: 0
+    name: [joint_1, joint_2, joint_3, joint_4, joint_5, joint_6, joint_7]
+    position: [-2.4501082028116627e-05, 0.26205644942336931, -3.1415215471886881, -2.269061185647133, -4.1545313004931472e-05, 0.95981743819736209, 1.5707570451688178]
+    velocity: []
+    effort: []
+- name: Retract
+  favorite: true
+  joint_group_names:
+    - manipulator
+  joint_state:
+    header:
+      frame_id: world
+      stamp:
+        sec: 0
+        nanosec: 0
+    name: [joint_1, joint_2, joint_3, joint_4, joint_5, joint_6, joint_7]
+    position: [8.15790740323921e-05, -0.38856425779026699, -3.1299567701550188, -2.5801602125975021, -3.0892668645421402e-05, -0.73089870221784903, 1.5699875247718389]
+    velocity: []
+    effort: []
+- name: Pick
+  favorite: true
+  joint_group_names:
+    - manipulator
+  joint_state:
+    header:
+      frame_id: world
+      stamp:
+        sec: 0
+        nanosec: 0
+    name: [joint_1, joint_2, joint_3, joint_4, joint_5, joint_6, joint_7]
+    position: [-0.94002981840293653, 0.62283315124169514, -2.9856155696015962, -2.4398531684633311, -0.61596519168551644, -0.029422603723195273, 1.3260459636622164]
+    velocity: []
+    effort: []

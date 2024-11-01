@@ -1,0 +1,32 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root BTCPP_format="4" main_tree_to_execute="Visual Servo To Reference">
+  <!--//////////-->
+  <BehaviorTree ID="Visual Servo To Reference" _description="Move in closed loop to a pose relative to an AprilTag" _favorite="true" _hardcoded="false">
+    <Control ID="Sequence">
+      <Action ID="LoadObjectiveParameters" config_file_name="visual_servo_reference.yaml" parameters="{servo_reference_parameters}"/>
+      <Action ID="ActivateControllers" controller_names="servo_controller"/>
+      <Control ID="Sequence">
+        <Decorator ID="RetryUntilSuccessful" num_attempts="10">
+          <SubTree ID="Sample April Tag" _collapsed="false" num_samples="1" tag_id="5" apriltag_config="51mm_apriltag_detection_config.yaml" max_distance="0.02" max_rotation="0.2" avg_pose="{tag_pose}"/>
+        </Decorator>
+        <Action ID="TransformPoseFrame" input_pose="{tag_pose}" target_frame_id="base_link" output_pose="{tag_pose_base}"/>
+        <Action ID="TransformPoseFromYaml" input_pose="{tag_pose_base}" parameter_namespace="ServoReference" pose_parameters="{servo_reference_parameters}" output_pose="{reference_pose}"/>
+      </Control>
+      <Control ID="Parallel" failure_count="1" success_count="2">
+        <Decorator ID="KeepRunningUntilFailure">
+          <Control ID="Sequence">
+            <SubTree ID="Sample April Tag" _collapsed="true" num_samples="1" tag_id="5" apriltag_config="51mm_apriltag_detection_config.yaml" avg_pose="{tag_pose}" max_distance="1.0" max_rotation="0.5"/>
+            <Action ID="TransformPoseFrame" input_pose="{tag_pose}" target_frame_id="base_link" output_pose="{tag_pose_base}"/>
+          </Control>
+        </Decorator>
+        <Action ID="AveragePoseStamped" run_continuously="true" num_samples="5" max_distance="1.0" pose_sample="{tag_pose_base}" avg_pose="{tag_pose_avg}" max_rotation="1.0"/>
+        <Decorator ID="KeepRunningUntilFailure">
+          <Control ID="Sequence">
+            <Action ID="TransformPoseFromYaml" input_pose="{tag_pose_avg}" parameter_namespace="ServoReference" pose_parameters="{servo_reference_parameters}" output_pose="{reference_pose}"/>
+          </Control>
+        </Decorator>
+        <Action ID="ServoTowardsPose" planning_group_name="manipulator" target_pose="{reference_pose}" rotational_gain="0.1" max_translational_vel="0.75" max_rotational_vel="0.3" publish_rate="20" exit_threshold_translation="0.000000005" exit_threshold_rotation="0.00000000005" exit_threshold_time="3000" translational_gain="1.0"/>
+      </Control>
+    </Control>
+  </BehaviorTree>
+</root>
