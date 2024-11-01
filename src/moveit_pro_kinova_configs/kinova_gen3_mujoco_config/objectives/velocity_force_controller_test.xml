@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root BTCPP_format="4" main_tree_to_execute="Velocity Force Controller Test">
+  <!--//////////-->
+  <BehaviorTree ID="Velocity Force Controller Test" _description="" _favorite="true">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="CreateStampedTwist" stamped_twist="{desired_twist}" angular_velocity_xyz="0.0;0.0;0.0" linear_velocity_xyz="0.0;0.0;0.0"/>
+      <Action ID="ActivateControllers" controller_names="/velocity_force_controller"/>
+      <Action ID="CreateStampedWrench" torque_xyz="0.0;0.0;0.0" force_xyz="0.0;0.0;-2.0" stamped_wrench="{desired_wrench}"/>
+      <SubTree ID="Re-Zero Force-Torque Sensors" _collapsed="false"/>
+      <Decorator ID="KeepRunningUntilFailure">
+        <Action ID="PublishVelocityForceCommand" wrench_gain="0.1" velocity_controlled_axes="0;0;0;0;0;0" force_controlled_axes="0;0;1;0;0;0"/>
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+</root>
