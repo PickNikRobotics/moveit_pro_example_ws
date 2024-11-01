@@ -1,0 +1,138 @@
+###############################################################
+#
+#  This configures the robot to work with moveit pro
+#
+###############################################################
+
+hardware:
+  # Set simulated to false if you are using this as a configuration for real hardware.
+  # This allows users to switch between mock and real hardware using the same configuration.
+  # [Required]
+  simulated: True
+
+  # If the MoveIt Pro Agent should launch the ros2 controller node.
+  # [Optional, default=True]
+  launch_control_node: True
+
+  # If the MoveIt Pro Agent should launch the robot state publisher.
+  # This should be false if you are launching the robot state publisher as part of drivers.
+  # [Optional, default=True]
+  launch_robot_state_publisher: True
+
+  # Specify additional launch files for running the robot with real hardware.
+  # [Optional, defaults to a blank launch file if not specified]
+  robot_driver_persist_launch_file:
+    package: "kinova_gen3_base_config"
+    path: "launch/robot_drivers_to_persist.launch.py"
+
+  # Specify any additional launch files for running the robot in simulation mode.
+  # Used when hardware.simulated is True.
+  # [Optional, defaults to a blank launch file if not specified]
+  simulated_robot_driver_persist_launch_file:
+    package: "kinova_gen3_base_config"
+    path: "launch/sim/robot_drivers_to_persist_sim.launch.py"
+  simulated_hardware_launch_file:
+    package: "moveit_studio_agent"
+    path: "launch/blank.launch.py"
+
+  # These Params are pasted to the XACRO to create the URDF
+  robot_description:
+    urdf:
+      package: "kinova_gen3_base_config"
+      path: "description/picknik_kinova_gen3.xacro"
+    srdf:
+      package: "kinova_gen3_base_config"
+      path: "config/moveit/picknik_kinova_gen3_base.srdf"
+    urdf_params:
+      - arm: "gen3"
+      - dof: "7"
+      - vision: "false"
+      - robot_ip: ""
+      - gripper: "robotiq_2f_85"
+      - username: "admin"
+      - password: "admin"
+      - port: "10000"
+      - port_realtime: "10001"
+      - session_inactivity_timeout_ms: "60000"
+      - connection_inactivity_timeout_ms: "2000"
+      - use_fake_hardware: "true"
+      - fake_sensor_commands: "false"
+      - external_camera: "true"
+      - wrist_realsense: "true"
+      - use_internal_bus_gripper_comm: "false"
+
+# This Configures moveit params that are in moveit_config.py
+moveit_params:
+  joint_group_name: "manipulator"
+
+  ompl_planning:
+    package: "kinova_gen3_base_config"
+    path: "config/moveit/ompl_planning.yaml"
+  pilz_planning:
+    package: "kinova_gen3_base_config"
+    path: "config/moveit/pilz_industrial_motion_planner_planning.yaml"
+  stomp_planning:
+    package: "kinova_gen3_base_config"
+    path: "config/moveit/stomp_planning.yaml"
+  kinematics:
+    package: "kinova_gen3_base_config"
+    path: "config/moveit/trak_ik_kinematics_distance.yaml"
+  servo:
+    package: "kinova_gen3_base_config"
+    path: "config/moveit/kinova_gen3_servo.yaml"
+  sensors_3d:
+    package: "kinova_gen3_base_config"
+    path: "config/moveit/sensors_3d.yaml"
+  joint_limits:
+    package: "kinova_gen3_base_config"
+    path: "config/moveit/joint_limits.yaml"
+  servo_joint_limits:
+    package: "kinova_gen3_base_config"
+    path: "config/moveit/servo_joint_limits.yaml"
+  pilz_cartesian_limits:
+    package: "kinova_gen3_base_config"
+    path: "config/moveit/pilz_cartesian_limits.yaml"
+
+  publish:
+    planning_scene: True
+    geometry_updates: True
+    state_updates: True
+    transforms_updates: True
+
+  trajectory_execution:
+    manage_controllers: True
+    allowed_execution_duration_scaling: 2.0
+    allowed_goal_duration_margin: 5.0
+    allowed_start_tolerance: 0.01
+
+# This configures what controllers gets run at startup
+ros2_control:
+  config:
+    package: "kinova_gen3_base_config"
+    path: "config/control/picknik_kinova_gen3.ros2_control.yaml"
+  # Load and start these controllers so they can be used immediately.
+  controllers_active_at_startup:
+    - "robotiq_gripper_controller"
+    - "joint_state_broadcaster"
+    - "servo_controller"
+    - "fault_controller"
+  controllers_inactive_at_startup:
+    - "joint_trajectory_controller"
+
+objectives:
+  behavior_loader_plugins:
+    # This plugin will load the core MoveIt Pro behaviors.
+    # Add additional plugin loaders as needed.
+    core:
+      - "moveit_studio::behaviors::CoreBehaviorsLoader"
+      - "moveit_studio::behaviors::MTCCoreBehaviorsLoader"
+      - "moveit_studio::behaviors::ServoBehaviorsLoader"
+      - "moveit_studio::behaviors::VisionBehaviorsLoader"
+      - "moveit_studio::behaviors::ConverterBehaviorsLoader"
+  objective_library_paths:
+    core:
+      package_name: "kinova_gen3_base_config"
+      relative_path: "objectives"
+  waypoints_file:
+    package_name: "kinova_gen3_base_config"
+    relative_path: "waypoints/waypoints.yaml"

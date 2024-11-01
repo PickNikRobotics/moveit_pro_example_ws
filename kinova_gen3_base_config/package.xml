@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>kinova_gen3_base_config</name>
+  <version>5.1.0</version>
+
+  <description>Base config package for a Kinova Gen3 system</description>
+
+  <maintainer email="david.yackzan@picknik.ai">David Yackzan</maintainer>
+  <maintainer email="paul.gesel@picknik.ai">Paul Gesel</maintainer>
+
+  <license>BSD-3</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>moveit_studio_kinova_pstop_manager</depend>
+
+  <exec_depend>kortex_description</exec_depend>
+  <exec_depend>moveit_ros_perception</exec_depend>
+  <exec_depend>moveit_studio_agent</exec_depend>
+  <exec_depend>moveit_studio_behavior</exec_depend>
+  <exec_depend>pick_ik</exec_depend>
+  <exec_depend>picknik_accessories</exec_depend>
+  <exec_depend>realsense2_description</exec_depend>
+  <exec_depend>tf2_ros</exec_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+
+  <test_depend>ament_clang_format</test_depend>
+  <test_depend>ament_clang_tidy</test_depend>
+  <test_depend>ament_cmake_copyright</test_depend>
+  <test_depend>ament_cmake_lint_cmake</test_depend>
+  <test_depend>picknik_ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ros2bag</test_depend>
+  <test_depend>rosbag2_storage_default_plugins</test_depend>
+  <test_depend>ament_cmake_pytest</test_depend>
+  <test_depend>moveit_studio_utils_py</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

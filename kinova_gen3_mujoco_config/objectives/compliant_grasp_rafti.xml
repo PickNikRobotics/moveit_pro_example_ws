@@ -1,0 +1,80 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root BTCPP_format="4" main_tree_to_execute="Compliant Grasp RAFTI">
+  <!--//////////-->
+  <BehaviorTree ID="Compliant Grasp RAFTI" _description="Grasp RAFTI with admittance." _favorite="true" _hardcoded="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="ClearSnapshot"/>
+      <SubTree ID="Open Gripper" _collapsed="true"/>
+      <SubTree ID="Move to Waypoint" waypoint_name="View Satellite" joint_group_name="manipulator" controller_names="/joint_trajectory_controller /robotiq_gripper_controller" />
+      <SubTree ID="Take Snapshot" _collapsed="false"/>
+      <SubTree ID="Sample April Tag" _collapsed="false" num_samples="1" tag_id="5" apriltag_config="51mm_apriltag_detection_config.yaml" max_distance="0.02" max_rotation="0.2" avg_pose="{tag_pose}"/>
+      <Action ID="TransformPoseFrame" input_pose="{tag_pose}" target_frame_id="world" output_pose="{tag_pose_world}"/>
+      <Control ID="Fallback">
+        <Decorator ID="Timeout" msec="1000">
+          <Action ID="PublishStaticFrame" pose="{tag_pose_world}" child_frame_id="tag_frame" publish_rate="5"/>
+        </Decorator>
+        <Decorator ID="Timeout" msec="1000">
+          <Control ID="Sequence">
+            <Action ID="TransformPose" input_pose="{tag_pose_world}" translation_xyz="0.104533 ;-0.104463;-0.132927" quaternion_xyzw="0.0;0.0;1.0;0.0" output_pose="{object_stamped_pose_estimate}"/>
+            <Action ID="PublishStaticFrame" pose="{object_stamped_pose_estimate}" child_frame_id="object_frame" publish_rate="5"/>
+          </Control>
+        </Decorator>
+        <Control ID="Sequence">
+          <Action ID="LoadPointCloudFromFile" file_path="~/user_ws/install/picknik_accessories/share/picknik_accessories/descriptions/miscellaneous/mock_satellite.stl" frame_id="object_frame" num_sampled_points="3000" random_seed="1234" point_cloud="{model_point_cloud}" scale="1.0" color="255;150;0"/>
+          <Control ID="Fallback">
+            <Decorator ID="Timeout" msec="1000">
+              <Action ID="PublishStaticFrame" pose="{object_stamped_pose_estimate}" child_frame_id="object_frame" publish_rate="5"/>
+            </Decorator>
+            <Action ID="AlwaysSuccess"/>
+          </Control>
+          <Action ID="TransformPointCloudFrame" input_cloud="{model_point_cloud}" target_frame="world" output_cloud="{model_point_cloud}"/>
+          <Action ID="GetSyncedImageAndPointCloud" point_cloud="{point_cloud}" rgb_image="{rgb_image}" point_cloud_topic_name="/wrist_camera/points" rgb_camera_info_topic_name="/wrist_camera/camera_info" rgb_image_topic_name="/wrist_camera/color" rgb_camera_info="{rgb_camera_info}"/>
+          <Action ID="TransformPointCloudFrame" input_cloud="{point_cloud}" target_frame="world" output_cloud="{point_cloud}"/>
+          <Action ID="RegisterPointClouds" base_point_cloud="{model_point_cloud}" target_point_cloud="{point_cloud}" max_iterations="30" max_correspondence_distance="0.02" target_pose_in_base_frame="{model_to_real_pose}"/>
+          <Action ID="TransformPointCloud" input_cloud="{model_point_cloud}" transform_pose="{model_to_real_pose}" output_cloud="{aligned_model_cloud}"/>
+          <Control ID="Fallback">
+            <Decorator ID="Timeout" msec="100">
+              <Action ID="PublishStaticFrame" pose="{object_stamped_pose_estimate}" child_frame_id="object_frame" publish_rate="5"/>
+            </Decorator>
+            <Action ID="AlwaysSuccess"/>
+          </Control>
+          <Action ID="SendPointCloudToUI" point_cloud="{aligned_model_cloud}" pcd_topic="/pcd_pointcloud_captures"/>
+          <Action ID="TransformPoseWithPose" input_pose="{object_stamped_pose_estimate}" transform_pose="{model_to_real_pose}" output_pose="{model_world}"/>
+          <Control ID="Fallback">
+            <Decorator ID="Timeout" msec="1000">
+              <Action ID="PublishStaticFrame" pose="{model_world}" child_frame_id="object_frame_new" publish_rate="5"/>
+            </Decorator>
+            <Action ID="AlwaysSuccess"/>
+          </Control>
+          <Action ID="TransformPoseFrame" input_pose="{model_world}" target_frame_id="object_frame_new" output_pose="{model_object}"/>
+          <Action ID="TransformPose" input_pose="{model_object}" translation_xyz="0.0;0.025;0.3" quaternion_xyzw="-0.707107;0.707107;0.0;0.0" output_pose="{hole_object}"/>
+          <Action ID="TransformPoseFrame" input_pose="{hole_object}" target_frame_id="world" output_pose="{hole_object}"/>
+          <Control ID="Fallback">
+            <Decorator ID="Timeout" msec="1000">
+              <Action ID="PublishStaticFrame" pose="{hole_object}" child_frame_id="object_hole" publish_rate="5"/>
+            </Decorator>
+            <Action ID="AlwaysSuccess"/>
+          </Control>
+        </Control>
+      </Control>
+      <Action ID="InitializeMTCTask" task_id="" controller_names="/joint_trajectory_controller /robotiq_gripper_controller" task="{mtc_task}"/>
+      <Action ID="SetupMTCCurrentState" task="{mtc_task}"/>
+      <Action ID="SetupMTCMoveToPose" target_pose="{hole_object}"/>
+      <Action ID="PlanMTCTask" task="{mtc_task}" solution="{mtc_solution}"/>
+      <Action ID="ExecuteMTCTask" solution="{mtc_solution}"/>
+      <Action ID="TransformPose" input_pose="{hole_object}" translation_xyz="0.0;0.0;-0.1" quaternion_xyzw="0.0;1.0;0.0;0.0" output_pose="{goal_pose}"/>
+      <Action ID="InitializeMTCTask" task_id="" controller_names="/joint_trajectory_controller_chained_open_door /robotiq_gripper_controller" task="{mtc_task}"/>
+      <Action ID="SetupMTCCurrentState" task="{mtc_task}"/>
+      <Action ID="SetupMTCUpdateGroupCollisionRule" group_name="gripper" object_name="&lt;octomap&gt;" allow_collision="true" task="{mtc_task}"/>
+      <Action ID="SetupMTCMoveAlongFrameAxis" task="{mtc_task}" hand_frame="grasp_link" axis_frame="grasp_link" axis_x="0.0" axis_y="0.0" axis_z="1.0" max_distance="0.1" min_distance="0" planning_group_name="manipulator" velocity_scale=".2" acceleration_scale="1.0"/>
+      <Action ID="PlanMTCTask" task="{mtc_task}" solution="{mtc_solution}"/>
+      <SubTree ID="Re-Zero Force-Torque Sensors" _collapsed="true"/>
+      <Action ID="ActivateControllers" controller_names="admittance_controller_open_door"/>
+      <Action ID="ExecuteMTCTask" solution="{mtc_solution}"/>
+      <SubTree ID="Close Gripper" _collapsed="true"/>
+      <Decorator ID="Delay" delay_msec="1000">
+        <Action ID="ActivateControllers" controller_names="joint_trajectory_controller"/>
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+</root>
