@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root BTCPP_format="4" main_tree_to_execute="Write PickNik">
+  <!--//////////-->
+  <BehaviorTree ID="Write PickNik" _description="" _favorite="true" _hardcoded="false">
+    <Control ID="Sequence">
+      <Action ID="CreateStampedPose" reference_frame="base_link" position_xyz="0.4;0.3;0.09" orientation_xyzw="0.7073883;-0.7068252;0.0000327;0.0000328" stamped_pose="{stamped_pose}"/>
+      <Control ID="Parallel" success_count="1" failure_count="1">
+        <Action ID="PublishStaticFrame" pose="{stamped_pose}" child_frame_id="local" publish_rate="50"/>
+        <Control ID="Sequence" name="TopLevelSequence">
+          <Action ID="ActivateControllers" controller_names="joint_trajectory_controller"/>
+          <Action ID="LoadPoseStampedVectorFromYaml" file_path="write_picknik_waypoints.yaml" output="{pose_stamped_msgs}"/>
+          <Control ID="Fallback">
+            <Action ID="PlanCartesianPath" path="{pose_stamped_msgs}" planning_group_name="manipulator" tip_link="grasp_link" tip_offset="0.0;0.0;0.0" position_only="false" blending_radius="0.001" velocity_scale_factor="0.5" acceleration_scale_factor="0.5" trajectory_sampling_rate="100" joint_trajectory_msg="{joint_trajectory_msg}" debug_solution="{debug_solution}"/>
+            <Action ID="WaitForUserTrajectoryApproval" solution="{debug_solution}"/>
+          </Control>
+          <Action ID="ExecuteFollowJointTrajectory" execute_follow_joint_trajectory_action_name="/joint_trajectory_controller/follow_joint_trajectory" joint_trajectory_msg="{joint_trajectory_msg}" goal_position_tolerance="0.000000" goal_time_tolerance="0.000000"/>
+        </Control>
+      </Control>
+    </Control>
+  </BehaviorTree>
+</root>
