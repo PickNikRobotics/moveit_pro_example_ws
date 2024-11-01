@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root BTCPP_format="4" main_tree_to_execute="Move Along Path Admittance">
+  <!--//////////-->
+  <BehaviorTree ID="Move Along Path Admittance" _description="Moves the robot tip on a rectangular path." _favorite="true" _hardcoded="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Control ID="Sequence">
+        <Action ID="ActivateControllers" controller_names="/joint_trajectory_admittance_controller"/>
+        <Action ID="CreateStampedPose" reference_frame="base_link" position_xyz="0.3;0.1;0.5" orientation_xyzw="0.707;0.707;0.0;.0.0" stamped_pose="{stamped_pose}"/>
+        <Action ID="AddPoseStampedToVector" input="{stamped_pose}" vector="{pose_stamped_vector}"/>
+        <Action ID="CreateStampedPose" reference_frame="base_link" position_xyz="0.5;0.1;0.5" orientation_xyzw="0.707;0.707;0.0;.0.0" stamped_pose="{stamped_pose}"/>
+        <Action ID="AddPoseStampedToVector" input="{stamped_pose}" vector="{pose_stamped_vector}"/>
+        <Action ID="CreateStampedPose" reference_frame="base_link" position_xyz="0.5;-0.1;0.5" orientation_xyzw="0.707;0.707;0.0;.0.0" stamped_pose="{stamped_pose}"/>
+        <Action ID="AddPoseStampedToVector" input="{stamped_pose}" vector="{pose_stamped_vector}"/>
+        <Action ID="CreateStampedPose" reference_frame="base_link" position_xyz="0.3;-0.1;0.5" orientation_xyzw="0.707;0.707;0.0;.0.0" stamped_pose="{stamped_pose}"/>
+        <Action ID="AddPoseStampedToVector" input="{stamped_pose}" vector="{pose_stamped_vector}"/>
+      </Control>
+      <Decorator ID="KeepRunningUntilFailure">
+        <Control ID="Sequence">
+          <SubTree ID="Re-Zero Force-Torque Sensors" _collapsed="true"/>
+          <Action ID="PlanCartesianPath" path="{pose_stamped_vector}" planning_group_name="manipulator" tip_link="end_effector_link" tip_offset="0.0;0.0;0.0" position_only="false" blending_radius="0.001" velocity_scale_factor="0.2" acceleration_scale_factor="0.5" trajectory_sampling_rate="100" joint_trajectory_msg="{joint_trajectory_msg}" debug_solution="{debug_solution}"/>
+          <Action ID="GetCurrentPlanningScene" planning_scene_msg="{planning_scene_msg}"/>
+          <Action ID="ValidateTrajectory" planning_scene_msg="{planning_scene_msg}" planning_group_name="manipulator" joint_trajectory_msg="{joint_trajectory_msg}" joint_space_step="0.05" cartesian_space_step="0.02" debug_solution="{debug_solution}"/>
+          <Action ID="WaitForUserTrajectoryApproval" solution="{debug_solution}"/>
+          <Action ID="SetAdmittanceParameters" config_file_name="jtac_parameters.yaml"/>
+          <Action ID="ExecuteTrajectoryWithAdmittance" path_position_tolerance="2.0" goal_position_tolerance="0.1000" controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory"/>
+        </Control>
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+</root>
