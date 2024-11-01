@@ -1,0 +1,75 @@
+<mujoco model="kinova scene">
+    <include file="gen3_7dof.xml"/>
+    <option gravity="0 0 0"/>
+    <option>
+        <flag multiccd="enable"/>
+    </option>
+    <option integrator="implicit"/>
+    <statistic center="0.3 0 0.4" extent="1"/>
+    <default>
+        <geom solref=".004 1"/>
+    </default>
+
+    <visual>
+        <headlight diffuse="0.6 0.6 0.6" ambient="0.3 0.3 0.3" specular="0 0 0"/>
+        <rgba haze="0.15 0.25 0.35 1"/>
+        <global azimuth="120" elevation="-20"/>
+    </visual>
+
+    <asset>
+        <texture type="2d" name="april_tag" file="assets/black_white.png" width="32" height="32"/>
+        <material name="april_tag" texture="april_tag"/>
+        <texture type="skybox" file="assets/space.png" gridsize="3 4" gridlayout=".U..LFRB.D.."/>
+        <material name="landsat_gold" rgba="1.0 0.85 0.6  1" reflectance="0.2"/>
+        <material name="metal_rafti" rgba="0.8 0.8 0.8 1" reflectance="0.5"/>
+    </asset>
+
+    <asset>
+        <mesh name="landsat" file="landsat.obj"/>
+        <mesh name="landsat_white" file="landsat_white.obj"/>
+        <mesh name="landsat_glass" file="landsat_glass.obj"/>
+        <mesh name="landsat_collision_1" file="landsat_collision_1.obj"/>
+        <mesh name="landsat_collision_2" file="landsat_collision_2.obj"/>
+        <mesh name="landsat_collision_3" file="landsat_collision_3.obj"/>
+        <mesh name="landsat_collision_4" file="landsat_collision_4.obj"/>
+        <mesh name="april_tag" file="april_tag.obj"/>
+        <mesh name="rafti" file="rafti.obj"/>
+        <mesh name="rafti_collision_1" file="rafti_collision_1.obj"/>
+        <mesh name="rafti_collision_2" file="rafti_collision_2.obj"/>
+        <mesh name="rafti_collision_3" file="rafti_collision_3.obj"/>
+        <mesh name="rafti_collision_4" file="rafti_collision_4.obj"/>
+        <mesh name="rafti_collision_5" file="rafti_collision_5.obj"/>
+
+    </asset>
+
+    <worldbody>
+        <camera name="scene_camera" pos="-0.5 0.75 1.5" fovy="75" mode="fixed" resolution="640 480" quat="0.365715 0.232986 -0.484157 -0.759975"/>
+        <site name="scene_camera_optical_frame" pos="0.0 0.3 0.55" quat="0.365715 0.232986 -0.484157 -0.759975" size="0.03"/>
+    </worldbody>
+
+    <worldbody>
+        <body name="landsat" pos="1.5 1.75 1" quat="0 0 -0.707106781 -0.707106781">
+            <freejoint/>
+            <geom class="visual" type="mesh" material="landsat_gold" mesh="landsat" density="200"/>
+            <geom class="visual" type="mesh" rgba="1.0 1.0 1.0 1" mesh="landsat_white" density="200"/>
+            <geom class="visual" type="mesh" rgba="0.6 0.6 1.0 1" mesh="landsat_glass" density="200"/>
+            <geom class="collision" type="mesh" mesh="landsat_collision_1" density="1"/>
+            <geom class="collision" type="mesh" mesh="landsat_collision_2" density="1"/>
+            <geom class="collision" type="mesh" mesh="landsat_collision_3" density="1"/>
+            <geom class="collision" type="mesh" mesh="landsat_collision_4" density="1"/>
+            <body name="rafti" pos="0.565306 -0.3 -1.6" quat="0.5 0.5 0.5 0.5">
+                <geom class="visual" mesh="rafti" material="metal_rafti"/>
+                <geom class="collision" mesh="rafti_collision_1" condim="6"/>
+                <geom class="collision" mesh="rafti_collision_1" condim="6"/>
+                <geom class="collision" mesh="rafti_collision_2" condim="6"/>
+                <geom class="collision" mesh="rafti_collision_3" condim="6"/>
+                <geom class="collision" mesh="rafti_collision_4" condim="6"/>
+                <geom class="collision" mesh="rafti_collision_5" condim="6"/>
+                <body name="april_tag" pos="0 -.1 .132" quat="1 0 0 0">
+                    <geom class="visual" mesh="april_tag" material="april_tag"/>
+                </body>
+            </body>
+        </body>
+
+    </worldbody>
+</mujoco>
