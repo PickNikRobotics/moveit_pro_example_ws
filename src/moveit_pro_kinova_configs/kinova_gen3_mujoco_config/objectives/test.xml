@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root BTCPP_format="4" main_tree_to_execute="test">
+  <!--//////////-->
+  <BehaviorTree ID="test" _description="" _favorite="false" _hardcoded="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="AlwaysSuccess"/>
+      <Action ID="LoadObjectiveParameters" config_file_name="51mm_apriltag_detection_config.yaml"/>
+      <Action ID="GetCameraInfo" topic_name="/wrist_camera/camera_info"/>
+      <Action ID="GetImage" topic_name="/wrist_camera/color"/>
+      <Action ID="DetectAprilTags" parameters="{parameters}"/>
+    </Control>
+  </BehaviorTree>
+</root>
