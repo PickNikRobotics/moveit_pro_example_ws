@@ -1,0 +1,7 @@
+<root BTCPP_format="4" main_tree_to_execute="Close Gripper">
+  <BehaviorTree ID="Close Gripper" _description="Close the gripper">
+    <Control ID="Sequence" name="root">
+      <Action ID="AlwaysSuccess" />
+    </Control>
+  </BehaviorTree>
+</root>
