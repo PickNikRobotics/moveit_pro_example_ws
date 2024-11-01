@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+    <xacro:macro name="cube_collision" params="length width height *origin">
+        <collision>
+            <xacro:insert_block name="origin" />
+            <geometry>
+                <box size="${length} ${width} ${height}" />
+            </geometry>
+        </collision>
+    </xacro:macro>
+</robot>

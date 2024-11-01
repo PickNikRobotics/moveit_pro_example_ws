@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://wiki.ros.org/xacro">
+
+  <!-- Workcell Macro
+       Facilitates building a workcell with objects, robot mount, and cameras (wip).
+  -->
+  <xacro:macro
+    name="workcell"
+    params="robot_mount_xacro
+            parent_link:=world
+            robot_base_link:=robot_base
+            robot_base_xyz:='0 0 0'
+            robot_base_rpy:='0 0 0'">
+
+    <!-- Robot Mount -->
+    <xacro:include filename="${robot_mount_xacro}"/>
+    <xacro:robot_mount parent_link="${parent_link}"/>
+
+    <!-- Connect robot base to workcell mount -->
+    <joint name="robot_mount_to_robot_base" type="fixed">
+      <parent link="robot_mount"/>
+      <child link="${robot_base_link}"/>
+      <origin rpy="${robot_base_rpy}" xyz="${robot_base_xyz}"/>
+    </joint>
+
+  </xacro:macro>
+
+</robot>
