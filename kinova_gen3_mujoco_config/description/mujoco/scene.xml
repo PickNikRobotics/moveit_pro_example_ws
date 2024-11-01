@@ -1,0 +1,121 @@
+<mujoco model="kinova scene">
+  <include file="gen3_7dof.xml"/>
+  <statistic center="0.3 0 0.4" extent="1"/>
+  <default>
+    <geom solref=".004 1"/>
+  </default>
+
+  <visual>
+    <headlight diffuse="0.6 0.6 0.6" ambient="0.3 0.3 0.3" specular="0 0 0"/>
+    <rgba haze="0.15 0.25 0.35 1"/>
+    <global azimuth="120" elevation="-20"/>
+  </visual>
+
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="3072"/>
+    <texture type="2d" name="groundplane" builtin="checker" mark="edge" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3"
+      markrgb="0.8 0.8 0.8" width="300" height="300"/>
+    <material name="groundplane" texture="groundplane" texuniform="true" texrepeat="5 5" reflectance="0.2"/>
+    <texture type="2d" name="april_tag" file="assets/black_white.png" width="32" height="32"/>
+    <material name="april_tag" texture="april_tag"/>
+    <texture type="2d" name="satellite" file="assets/satellite.png" width="32" height="32"/>
+    <material name="satellite" texture="satellite"/>
+  </asset>
+
+  <worldbody>
+    <light pos="0 0 1.5" dir="0 0 -1" directional="true"/>
+    <geom name="floor" size="0 0 0.05" type="plane" material="groundplane"/>
+    <camera name="scene_camera" pos="0.0 0.3 0.55" fovy="58" mode="fixed" resolution="640 480" quat="0.365715 0.232986 -0.484157 -0.759975"/>
+    <site name="scene_camera_optical_frame" pos="0.0 0.3 0.55" quat="0.365715 0.232986 -0.484157 -0.759975" size="0.03"/>
+  </worldbody>
+
+  <asset>
+    <mesh name="april_tag" file="april_tag.obj"/>
+    <mesh name="satellite" file="satellite.obj"/>
+    <mesh name="satellite_box" file="satellite_box.obj"/>
+    <mesh name="rafti_collision_1" file="rafti_collision_1.obj"/>
+    <mesh name="rafti_collision_2" file="rafti_collision_2.obj"/>
+    <mesh name="rafti_collision_3" file="rafti_collision_3.obj"/>
+    <mesh name="rafti_collision_4" file="rafti_collision_4.obj"/>
+    <mesh name="rafti_collision_5" file="rafti_collision_5.obj"/>
+    <mesh name="ring_collision_1" file="ring_collision_1.obj"/>
+    <mesh name="ring_collision_2" file="ring_collision_2.obj"/>
+    <mesh name="ring_collision_3" file="ring_collision_3.obj"/>
+    <mesh name="ring_collision_4" file="ring_collision_4.obj"/>
+    <mesh name="ring_collision_5" file="ring_collision_5.obj"/>
+    <mesh name="ring_collision_6" file="ring_collision_6.obj"/>
+    <mesh name="ring_collision_7" file="ring_collision_7.obj"/>
+    <mesh name="ring_collision_8" file="ring_collision_8.obj"/>
+    <mesh name="ring_collision_9" file="ring_collision_9.obj"/>
+    <mesh name="ring_collision_10" file="ring_collision_10.obj"/>
+    <mesh name="ring_collision_11" file="ring_collision_11.obj"/>
+    <mesh name="ring_collision_12" file="ring_collision_12.obj"/>
+    <mesh name="ring_collision_13" file="ring_collision_13.obj"/>
+    <mesh name="ring_collision_14" file="ring_collision_14.obj"/>
+    <mesh name="ring_collision_15" file="ring_collision_15.obj"/>
+    <mesh name="ring_collision_16" file="ring_collision_16.obj"/>
+    <mesh name="ring_collision_17" file="ring_collision_17.obj"/>
+    <mesh name="ring_collision_18" file="ring_collision_18.obj"/>
+    <mesh name="ring_collision_19" file="ring_collision_19.obj"/>
+    <mesh name="ring_collision_20" file="ring_collision_20.obj"/>
+    <mesh name="ring_collision_21" file="ring_collision_21.obj"/>
+    <mesh name="ring_collision_22" file="ring_collision_22.obj"/>
+    <mesh name="ring_collision_23" file="ring_collision_23.obj"/>
+    <mesh name="ring_collision_24" file="ring_collision_24.obj"/>
+    <mesh name="ring_collision_25" file="ring_collision_25.obj"/>
+    <mesh name="ring_collision_26" file="ring_collision_26.obj"/>
+    <mesh name="ring_collision_27" file="ring_collision_27.obj"/>
+    <mesh name="ring_collision_28" file="ring_collision_28.obj"/>
+    <mesh name="ring_collision_29" file="ring_collision_29.obj"/>
+    <mesh name="ring_collision_30" file="ring_collision_30.obj"/>
+    <mesh name="ring_collision_31" file="ring_collision_31.obj"/>
+    <mesh name="ring_collision_32" file="ring_collision_32.obj"/>
+  </asset>
+
+  <worldbody>
+    <body name="satellite" pos=".43 -0.2 .133" quat="0.584012 0.0 0.0 0.811745">
+      <freejoint/>
+      <inertial pos="0.0 0.0 0.0" quat="1 0 0 0" mass="1.5" diaginertia="0.00001 0.00001 0.00001"/>
+      <geom class="visual" mesh="satellite" material="satellite"/>
+      <geom class="collision" mesh="satellite_box" condim="6"/>
+      <geom class="collision" mesh="rafti_collision_1" condim="6"/>
+      <geom class="collision" mesh="rafti_collision_2" condim="6"/>
+      <geom class="collision" mesh="rafti_collision_3" condim="6"/>
+      <geom class="collision" mesh="rafti_collision_4" condim="6"/>
+      <geom class="collision" mesh="rafti_collision_5" condim="6"/>
+      <geom class="collision" mesh="ring_collision_1" />
+      <geom class="collision" mesh="ring_collision_2" />
+      <geom class="collision" mesh="ring_collision_3" />
+      <geom class="collision" mesh="ring_collision_4" />
+      <geom class="collision" mesh="ring_collision_5" />
+      <geom class="collision" mesh="ring_collision_6" />
+      <geom class="collision" mesh="ring_collision_7" />
+      <geom class="collision" mesh="ring_collision_8" />
+      <geom class="collision" mesh="ring_collision_9" />
+      <geom class="collision" mesh="ring_collision_10" />
+      <geom class="collision" mesh="ring_collision_11" />
+      <geom class="collision" mesh="ring_collision_12" />
+      <geom class="collision" mesh="ring_collision_13" />
+      <geom class="collision" mesh="ring_collision_14" />
+      <geom class="collision" mesh="ring_collision_15" />
+      <geom class="collision" mesh="ring_collision_16" />
+      <geom class="collision" mesh="ring_collision_17" />
+      <geom class="collision" mesh="ring_collision_18" />
+      <geom class="collision" mesh="ring_collision_19" />
+      <geom class="collision" mesh="ring_collision_20" />
+      <geom class="collision" mesh="ring_collision_21" />
+      <geom class="collision" mesh="ring_collision_22" />
+      <geom class="collision" mesh="ring_collision_23" />
+      <geom class="collision" mesh="ring_collision_24" />
+      <geom class="collision" mesh="ring_collision_25" />
+      <geom class="collision" mesh="ring_collision_26" />
+      <geom class="collision" mesh="ring_collision_27" />
+      <geom class="collision" mesh="ring_collision_28" />
+      <geom class="collision" mesh="ring_collision_29" />
+      <geom class="collision" mesh="ring_collision_30" />
+      <geom class="collision" mesh="ring_collision_31" />
+      <geom class="collision" mesh="ring_collision_32" />
+    </body>
+  </worldbody>
+
+</mujoco>

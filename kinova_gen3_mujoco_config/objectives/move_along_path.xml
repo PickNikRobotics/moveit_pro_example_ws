@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root BTCPP_format="4" main_tree_to_execute="Move Along Path">
+  <!--//////////-->
+  <BehaviorTree ID="Move Along Path" _description="Moves the robot tip on a rectangular path." _favorite="true" _hardcoded="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Control ID="Sequence">
+        <Action ID="ActivateControllers" controller_names="/joint_trajectory_controller"/>
+        <Action ID="CreateStampedPose" reference_frame="base_link" position_xyz="0.3;0.1;0.5" orientation_xyzw="0.707;0.707;0.0;.0.0" stamped_pose="{stamped_pose}"/>
+        <Action ID="AddPoseStampedToVector" input="{stamped_pose}" vector="{pose_stamped_vector}"/>
+        <Action ID="CreateStampedPose" reference_frame="base_link" position_xyz="0.5;0.1;0.5" orientation_xyzw="0.707;0.707;0.0;.0.0" stamped_pose="{stamped_pose}"/>
+        <Action ID="AddPoseStampedToVector" input="{stamped_pose}" vector="{pose_stamped_vector}"/>
+        <Action ID="CreateStampedPose" reference_frame="base_link" position_xyz="0.5;-0.1;0.5" orientation_xyzw="0.707;0.707;0.0;.0.0" stamped_pose="{stamped_pose}"/>
+        <Action ID="AddPoseStampedToVector" input="{stamped_pose}" vector="{pose_stamped_vector}"/>
+        <Action ID="CreateStampedPose" reference_frame="base_link" position_xyz="0.3;-0.1;0.5" orientation_xyzw="0.707;0.707;0.0;.0.0" stamped_pose="{stamped_pose}"/>
+        <Action ID="AddPoseStampedToVector" input="{stamped_pose}" vector="{pose_stamped_vector}"/>
+      </Control>
+      <Decorator ID="KeepRunningUntilFailure">
+        <Control ID="Sequence">
+          <Action ID="PlanCartesianPath" path="{pose_stamped_vector}" planning_group_name="manipulator" tip_link="end_effector_link" tip_offset="0.0;0.0;0.0" position_only="false" blending_radius="0.02" velocity_scale_factor="0.5" acceleration_scale_factor="0.5" trajectory_sampling_rate="100" joint_trajectory_msg="{joint_trajectory_msg}" debug_solution="{debug_solution}"/>
+          <Action ID="GetCurrentPlanningScene" planning_scene_msg="{planning_scene_msg}"/>
+          <Action ID="ValidateTrajectory" planning_scene_msg="{planning_scene_msg}" planning_group_name="manipulator" joint_trajectory_msg="{joint_trajectory_msg}" joint_space_step="0.05" cartesian_space_step="0.02" debug_solution="{debug_solution}"/>
+          <Action ID="ExecuteFollowJointTrajectory" execute_follow_joint_trajectory_action_name="/joint_trajectory_controller/follow_joint_trajectory" joint_trajectory_msg="{joint_trajectory_msg}" goal_position_tolerance="0.000000" goal_time_tolerance="0.000000"/>
+        </Control>
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+</root>
