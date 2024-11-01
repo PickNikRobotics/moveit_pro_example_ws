@@ -1,0 +1,3 @@
+[submodule "src/picknik_accessories"]
+	path = src/picknik_accessories
+	url = https://github.com/PickNikRobotics/picknik_accessories.git
