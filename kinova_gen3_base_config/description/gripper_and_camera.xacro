@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+
+<robot name="gen3_gripper_and_camera" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <!-- Arguments -->
+  <xacro:property name="gripper" default="robotiq_2f_85" />
+  <xacro:property name="prefix" default="" />
+
+  <!-- Import macros -->
+  <xacro:include filename="$(find kortex_description)/grippers/${gripper}/urdf/${gripper}_macro.xacro" />
+  <xacro:include filename="$(find picknik_accessories)/descriptions/sensors/realsense_d415.urdf.xacro"/>
+
+  <!-- Create parent link -->
+  <!-- We use a link name called grasp_link to perform built-in Objectives such as inspect surface without modification. -->
+  <link name="grasp_link" />
+
+  <!-- Create bracelet link -->
+  <link name="bracelet_link" />
+
+  <joint name="bracelet_joint" type="fixed">
+    <origin xyz="0 -0.031521 -0.1787672" rpy="0 0 0" />
+    <parent link="grasp_link" />
+    <child link="bracelet_link" />
+  </joint>
+
+  <!-- Create the end effector link -->
+  <link name="end_effector_link" />
+  <joint name="end_effector_joint" type="fixed">
+    <origin xyz="0 0 -0.061525" rpy="${pi} 0 0" />
+    <parent link="bracelet_link" />
+    <child link="end_effector_link" />
+  </joint>
+
+  <!-- Load the gripper -->
+  <xacro:load_gripper parent="end_effector_link" prefix="${prefix}" />
+
+  <!-- Create the camera -->
+  <link name="wrist_camera_link"/>
+
+  <joint name="wrist_camera_joint" type="fixed">
+    <parent link="bracelet_link"/>
+    <child link = "wrist_camera_link"/>
+    <origin xyz="0 -0.06841 -0.05044" rpy="0 ${pi / 180.0 * 100} ${-pi/2}"/>
+  </joint>
+
+  <xacro:realsense_d415 parent="wrist_camera_link" name="wrist_mounted_camera">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </xacro:realsense_d415>
+
+  <!-- Bracket -->
+  <link name="wrist_camera_link_visual">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://picknik_accessories/descriptions/brackets/kinova_realsense_camera_adapter/realsense_bracket_for_kinova.dae" />
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <mesh filename="package://picknik_accessories/descriptions/brackets/kinova_realsense_camera_adapter/realsense_bracket_for_kinova.dae" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="wrist_camera_link_visual_joint" type="fixed">
+    <origin xyz="0 0 0.0" rpy="0 0 0" />
+    <parent link="bracelet_link" />
+    <child link="wrist_camera_link_visual" />
+  </joint>
+
+</robot>
