@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root BTCPP_format="4" main_tree_to_execute="Visualize Pose">
+  <!--//////////-->
+  <BehaviorTree ID="Visualize Pose" _description="" _favorite="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="CreateStampedPose" orientation_xyzw="0;0;-1;0" position_xyz="1;0.5;1"/>
+      <Action ID="VisualizePose"/>
+    </Control>
+  </BehaviorTree>
+</root>
