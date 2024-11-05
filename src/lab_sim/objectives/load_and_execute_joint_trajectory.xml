@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root BTCPP_format="4" main_tree_to_execute="Load and Execute Joint Trajectory">
+  <!--//////////-->
+  <BehaviorTree ID="Load and Execute Joint Trajectory" _description="" _favorite="true">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree ID="Move to Waypoint" _collapsed="true" waypoint_name="Workspace Right" joint_group_name="manipulator" planner_interface="moveit_default" controller_names="/joint_trajectory_controller"/>
+      <Action ID="LoadJointTrajectoryFromYaml" file_path="/home/michael/user_ws/src/lab_sim/objectives/joint_trajectory.yaml"/>
+      <Action ID="ExecuteFollowJointTrajectory"/>
+    </Control>
+  </BehaviorTree>
+</root>

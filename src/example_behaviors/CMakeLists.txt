@@ -5,7 +5,7 @@ find_package(moveit_studio_common REQUIRED)
 find_package(example_interfaces REQUIRED)
 moveit_studio_package()
 
-set(THIS_PACKAGE_INCLUDE_DEPENDS moveit_studio_behavior_interface pluginlib example_interfaces)
+set(THIS_PACKAGE_INCLUDE_DEPENDS moveit_studio_behavior moveit_studio_behavior_interface pluginlib example_interfaces)
 foreach(package IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${package} REQUIRED)
 endforeach()
@@ -14,6 +14,7 @@ add_library(
   example_behaviors
   SHARED 
   src/add_two_ints_service_client.cpp
+  src/convert_mtc_solution_to_joint_trajectory.cpp
   src/delayed_message.cpp
   src/get_string_from_topic.cpp
   src/fibonacci_action_client.cpp
