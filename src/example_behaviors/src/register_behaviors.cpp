@@ -3,6 +3,7 @@
 #include <moveit_studio_behavior_interface/shared_resources_node_loader.hpp>
 
 #include <example_behaviors/hello_world.hpp>
+#include <example_behaviors/convert_mtc_solution_to_joint_trajectory.hpp>
 #include <example_behaviors/delayed_message.hpp>
 #include <example_behaviors/setup_mtc_wave_hand.hpp>
 #include <example_behaviors/add_two_ints_service_client.hpp>
@@ -23,6 +24,7 @@ public:
                          const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources) override
   {
     moveit_studio::behaviors::registerBehavior<HelloWorld>(factory, "HelloWorld", shared_resources);
+    moveit_studio::behaviors::registerBehavior<ConvertMtcSolutionToJointTrajectory>(factory, "ConvertMtcSolutionToJointTrajectory", shared_resources);
     moveit_studio::behaviors::registerBehavior<DelayedMessage>(factory, "DelayedMessage", shared_resources);
     moveit_studio::behaviors::registerBehavior<SetupMTCWaveHand>(factory, "SetupMTCWaveHand", shared_resources);
     moveit_studio::behaviors::registerBehavior<GetStringFromTopic>(factory, "GetStringFromTopic", shared_resources);
