@@ -43,6 +43,7 @@ objectives:
       - "moveit_studio::behaviors::ServoBehaviorsLoader"
       - "moveit_studio::behaviors::VisionBehaviorsLoader"
       - "picknik_registration::PicknikRegistrationBehaviorsLoader"
+      - "example_behaviors::ExampleBehaviorsLoader"
   # Specify source folder for objectives
   # [Required]
   objective_library_paths:
