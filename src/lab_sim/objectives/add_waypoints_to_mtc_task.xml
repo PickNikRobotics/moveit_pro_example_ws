@@ -3,12 +3,10 @@
   <!--//////////-->
   <BehaviorTree ID="Add Waypoints to MTC Task">
     <Control ID="Sequence">
-      <Decorator ID="ForEachString" vector_in="{waypoint_names}" out="{waypoint_name}">
-        <Control ID="Sequence">
-          <Action ID="RetrieveWaypoint" waypoint_joint_state="{target_joint_state}" waypoint_name="{waypoint_name}" joint_group_name="{joint_group_name}"/>
-          <Action ID="SetupMTCMoveToJointState" joint_state="{target_joint_state}" name="SetupMTCMoveToJointState" planning_group_name="{joint_group_name}" planner_interface="{planner_interface}" task="{mtc_task}"/>
-        </Control>
-      </Decorator>
+      <Action ID="RetrieveWaypoint" waypoint_joint_state="{target_joint_state}" waypoint_name="Above Pick Cube" joint_group_name="{joint_group_name}"/>
+      <Action ID="SetupMTCMoveToJointState" joint_state="{target_joint_state}" name="SetupMTCMoveToJointState" planning_group_name="{joint_group_name}" planner_interface="{planner_interface}" task="{mtc_task}"/>
+      <Action ID="RetrieveWaypoint" waypoint_joint_state="{target_joint_state}" waypoint_name="Above Place Cube" joint_group_name="{joint_group_name}"/>
+      <Action ID="SetupMTCMoveToJointState" joint_state="{target_joint_state}" name="SetupMTCMoveToJointState" planning_group_name="{joint_group_name}" planner_interface="{planner_interface}" task="{mtc_task}"/>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
