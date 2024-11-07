@@ -1,5 +1,5 @@
 #include <example_behaviors/convert_mtc_solution_to_joint_trajectory.hpp>
-
+#include <moveit_studio_behavior_interface/get_required_ports.hpp> 
 namespace
 {
 const auto kLogger = rclcpp::get_logger("ConvertMtcSolutionToJointTrajectory");
@@ -51,18 +51,20 @@ BT::NodeStatus ConvertMtcSolutionToJointTrajectory::tick()
   using namespace moveit_studio::behaviors;
 
   // Load data from the behavior input ports.
-  const auto solution = getInput<moveit_task_constructor_msgs::msg::Solution>(kPortIDSolution);
-  const auto joint_group_name = getInput<std::string>(kPortIDJointGroup);
-  const auto velocity_scaling_factor = getInput<double>(kPortIDVelocityScalingFactor);
-  const auto acceleration_scaling_factor = getInput<double>(kPortIDAccelerationScalingFactor);
-  const auto sampling_rate = getInput<int>(kPortIDSamplingRate);
+  const auto ports = getRequiredInputs(getInput<moveit_task_constructor_msgs::msg::Solution>(kPortIDSolution),
+                      getInput<std::string>(kPortIDJointGroup),
+                      getInput<double>(kPortIDVelocityScalingFactor),
+                      getInput<double>(kPortIDAccelerationScalingFactor),
+                      getInput<int>(kPortIDSamplingRate));
 
-  // Check that the required input data port was set
-  if (const auto error = maybe_error(solution, joint_group_name, velocity_scaling_factor, acceleration_scaling_factor, sampling_rate); error)
+  if (!ports.has_value())
   {
-    spdlog::error("Failed to get required value from input data port: {}", error.value());
+    spdlog::error("Failed to get required value from input data port: " + ports.error());
     return BT::NodeStatus::FAILURE;
   }
+
+  const auto& [solution, joint_group_name, velocity_scaling_factor, acceleration_scaling_factor, sampling_rate] = ports.value();
+
   // Initialize the robot model loader if this is the first time this Behavior has been run.
   if (robot_model_loader_ == nullptr)
   {
@@ -79,19 +81,19 @@ BT::NodeStatus ConvertMtcSolutionToJointTrajectory::tick()
   }
 
   // Get the JointModelGroup using the joint group name from the input port
-  auto joint_model_group = robot_model->getJointModelGroup(joint_group_name.value());
+  auto joint_model_group = robot_model->getJointModelGroup(joint_group_name);
   if (!joint_model_group)
   {
-    spdlog::error("Failed to get JointModelGroup '{}'.", joint_group_name.value());
+    spdlog::error("Failed to get JointModelGroup '{}'.", joint_group_name);
     return BT::NodeStatus::FAILURE;
   }
 
   // Extract joint positions from the MTC solution
-  const auto& waypoints = extractJointPositions(solution.value());
+  const auto& waypoints = extractJointPositions(solution);
 
   // Use trajectory_utils.hpp to create a trajectory
   auto trajectory_result = createTrajectoryFromWaypoints(
-      *joint_model_group, waypoints, velocity_scaling_factor.value(), acceleration_scaling_factor.value(), sampling_rate.value());
+      *joint_model_group, waypoints, velocity_scaling_factor, acceleration_scaling_factor, sampling_rate);
 
   if (!trajectory_result)
   {
@@ -100,7 +102,7 @@ BT::NodeStatus ConvertMtcSolutionToJointTrajectory::tick()
   }
 
   // Set the output port with the resulting joint trajectory
-  setOutput(kPortIDJointTrajectory, trajectory_result.value());
+  setOutput(kPortIDJointTrajectory, trajectory_result);
 
   spdlog::info("Successfully converted MTC Solution to JointTrajectory with {} points.",
                trajectory_result.value().points.size());

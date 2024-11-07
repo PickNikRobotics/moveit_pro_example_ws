@@ -3,9 +3,18 @@ project(example_behaviors CXX)
 
 find_package(moveit_studio_common REQUIRED)
 find_package(example_interfaces REQUIRED)
+find_package(std_srvs REQUIRED)
+find_package(geometry_msgs REQUIRED)
 moveit_studio_package()
 
-set(THIS_PACKAGE_INCLUDE_DEPENDS moveit_studio_behavior moveit_studio_behavior_interface pluginlib example_interfaces)
+set(THIS_PACKAGE_INCLUDE_DEPENDS
+    moveit_studio_behavior
+    moveit_studio_behavior_interface
+    pluginlib
+    example_interfaces
+    std_srvs
+    geometry_msgs
+)
 foreach(package IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${package} REQUIRED)
 endforeach()
@@ -23,7 +32,9 @@ add_library(
   src/setup_mtc_pick_from_pose.cpp
   src/setup_mtc_place_from_pose.cpp
   src/setup_mtc_wave_hand.cpp
-  src/register_behaviors.cpp)
+  src/service_server_examples.cpp
+  src/register_behaviors.cpp
+)
 target_include_directories(
   example_behaviors
   PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -38,8 +49,8 @@ install(
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
-  INCLUDES
-  DESTINATION include)
+  INCLUDES DESTINATION include
+)
 
 install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
 
