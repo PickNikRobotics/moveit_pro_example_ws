@@ -3,6 +3,7 @@
 
 #include "service_server_base.hpp"
 #include <moveit_studio_behavior_interface/get_required_ports.hpp>
+#include <spdlog/spdlog.h>
 
 namespace example_behaviors
 {
@@ -37,11 +38,10 @@ BT::KeyValueVector ServiceServerBase<ServiceType>::metadata()
 }
 
 template<typename ServiceType>
-BT::PortsList ServiceServerBase<ServiceType>::provideAdditionalPorts()
+BT::PortsList ServiceServerBase<ServiceType>::providedPorts()
 {
-    return {};
+  return {};
 }
-
 // This task runs asynchronously once the behavior is ticked
 // The behavior will return RUNNING until this thread completes
 template<typename ServiceType>
@@ -51,12 +51,12 @@ tl::expected<bool, std::string> ServiceServerBase<ServiceType>::doWork()
 
   if (!service_name.has_value())
   {
-    return tl::make_unexpected("Failed to get required value from input data port: " + service_name.error());
+    spdlog::warn("Port {} not defined. Creating service with topic {}", kInputServiceName, kDefaultTopicName);
   }
-
+  const auto topic_name = service_name.has_value() ? service_name.value() : kDefaultTopicName;
   // Create a service server for the given ServiceType using the shared node
   service_ = shared_resources_->node->create_service<ServiceType>(
-      service_name.value(),
+      topic_name,
       std::bind(&ServiceServerBase<ServiceType>::serviceCallback, this, std::placeholders::_1, std::placeholders::_2));
   // Mutex to keep the service callback from accessing shared memory
   std::unique_lock<std::mutex> lock(mutex_);
