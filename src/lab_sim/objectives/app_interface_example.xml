@@ -4,8 +4,8 @@
   <BehaviorTree ID="Service Server Behavior Example" _description="" _favorite="true" _subtreeOnly="false">
     <Decorator ID="KeepRunningUntilFailure">
       <Control ID="Sequence" name="TopLevelSequence">
-        <Action ID="TriggerServer"/>
         <Action ID="SetBoolServer"/>
+        <Action ID="TriggerServer"/>
       </Control>
     </Decorator>
   </BehaviorTree>

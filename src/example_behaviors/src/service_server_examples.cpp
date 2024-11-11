@@ -1,15 +1,12 @@
 #include <example_behaviors/service_server_examples.hpp>
 #include <moveit_studio_behavior_interface/check_for_error.hpp>
 
-constexpr auto kInputTriggerTopicName = "my_trigger_service";
-constexpr auto kInputSetBoolTopicName = "my_set_bool_service";
-
 namespace example_behaviors
 {
 
 TriggerServer::TriggerServer(const std::string& name, const BT::NodeConfiguration& config,
                                      const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources)
-  : ServiceServerBase(name, config, shared_resources, kInputTriggerTopicName)
+  : ServiceServerBase(name, config, shared_resources)
 {
 }
 
@@ -26,12 +23,14 @@ void TriggerServer::processRequest([[maybe_unused]] const std_srvs::srv::Trigger
 
 SetBoolServer::SetBoolServer(const std::string& name, const BT::NodeConfiguration& config,
                                      const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources)
-  : ServiceServerBase(name, config, shared_resources, kInputSetBoolTopicName)
+  : ServiceServerBase(name, config, shared_resources)
 {
 }
-
-BT::PortsList SetBoolServer::providedPorts()
+// Override to provide additional ports
+BT::PortsList SetBoolServer::provideAdditionalPorts() 
 {
+      std::cout << "Providing additional ports for SetBoolServer" << std::endl;
+
   return {
     BT::OutputPort<bool>("result", "{result}", "A result for the behavior to put on the blackboard"),
   };

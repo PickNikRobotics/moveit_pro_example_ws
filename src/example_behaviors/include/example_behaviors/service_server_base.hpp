@@ -3,12 +3,14 @@
 #define SERVICE_SERVER_BASE__SERVICE_SERVER_BASE_HPP_
 
 #include <behaviortree_cpp/action_node.h>
-#include <moveit_studio_behavior_interface/shared_resources_node.hpp>
 #include <moveit_studio_behavior_interface/async_behavior_base.hpp>
+#include <moveit_studio_behavior_interface/get_required_ports.hpp>
+#include <moveit_studio_behavior_interface/shared_resources_node.hpp>
 #include <tl_expected/expected.hpp>
 #include <mutex>
 #include <condition_variable>
 
+constexpr auto kInputServiceName = "service_name";
 namespace example_behaviors
 {
 /**
@@ -27,13 +29,20 @@ public:
    * @details An important limitation is that the members of the base Behavior class are not instantiated until after the initialize() function is called, so these classes should not be used within the constructor.
    */
   ServiceServerBase(const std::string& name, const BT::NodeConfiguration& config,
-                    const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources, const std::string& topic_name);
+                    const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources);
 
   /**
-   * @brief Implementation of the required providedPorts() function for the behavior.
+   * @brief Implementation of the required providedPorts() function for the behavior. Marked as final so trhat it is not overridden, and derived classes include the base class's ports
    * @return BT::PortsList containing the behavior's ports.
    */
-  static BT::PortsList providedPorts();
+  BT::PortsList providedPorts() const
+  {
+      std::cout << "Providing providedPorts ports" << std::endl;
+      BT::PortsList ports = getBasePorts();
+      BT::PortsList derived_ports = provideAdditionalPorts();
+      ports.insert(derived_ports.begin(), derived_ports.end());
+      return ports;
+  }
 
   /**
    * @brief Implementation of the metadata() function for displaying metadata, such as Behavior description and subcategory, in the MoveIt Studio Developer Tool.
@@ -60,6 +69,11 @@ protected:
   virtual void processRequest(const typename ServiceType::Request::SharedPtr& request,
                               const typename ServiceType::Response::SharedPtr& response) = 0;
 
+  /**
+   * @brief Derived classes can add additional ports using this method
+   */
+  virtual BT::PortsList provideAdditionalPorts();
+
 private:
   /**
    * @brief Atomic bool for cancelling the thread when halted.
@@ -83,7 +97,7 @@ private:
 
   /** @brief Classes derived from AsyncBehaviorBase must have this shared_future as a class member. */
   std::shared_future<tl::expected<bool, std::string>> future_;
-
+  /** @brief Thread syenchronization */
   std::mutex mutex_;
   std::condition_variable cv_;
 
@@ -96,6 +110,17 @@ private:
    */
   void serviceCallback(const typename ServiceType::Request::SharedPtr& request,
                        const typename ServiceType::Response::SharedPtr& response);
+
+  /**
+   * @brief Provide the base ports to be used in all classes
+   */
+  BT::PortsList getBasePorts() const
+  {
+      std::cout << "Providing getBasePorts ports" << std::endl;
+    return {
+      BT::InputPort<std::string>(kInputServiceName, "/service_server", "Name of the service to advertise.")
+    };
+  }
 };
 
 }  // namespace example_behaviors

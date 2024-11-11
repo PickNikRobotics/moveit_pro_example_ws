@@ -2,6 +2,7 @@
 #define SERVICE_SERVER_BASE__SERVICE_SERVER_BASE_IMPL_HPP_
 
 #include "service_server_base.hpp"
+#include <moveit_studio_behavior_interface/get_required_ports.hpp>
 
 namespace example_behaviors
 {
@@ -11,15 +12,10 @@ template<typename ServiceType>
 ServiceServerBase<ServiceType>::ServiceServerBase(
     const std::string& name, // The name of the behavior node
     const BT::NodeConfiguration& config, // Configuration for the behavior tree node
-    const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources, // Shared resources across behaviors
-    const std::string& topic_name) // The name of the service topic to create
+    const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources) // Shared resources across behaviors
   : AsyncBehaviorBase(name, config, shared_resources),
     cancel_behavior_(false), data_available_(false)
 {
-  // Create a service server for the given ServiceType using the shared node
-  service_ = shared_resources->node->create_service<ServiceType>(
-      topic_name,
-      std::bind(&ServiceServerBase<ServiceType>::serviceCallback, this, std::placeholders::_1, std::placeholders::_2));
 }
 
 // If the behavior is halted, we need to stop our service server
@@ -35,15 +31,15 @@ void ServiceServerBase<ServiceType>::onHalted()
 }
 
 template<typename ServiceType>
-BT::PortsList ServiceServerBase<ServiceType>::providedPorts()
+BT::KeyValueVector ServiceServerBase<ServiceType>::metadata()
 {
   return {};
 }
 
 template<typename ServiceType>
-BT::KeyValueVector ServiceServerBase<ServiceType>::metadata()
+BT::PortsList ServiceServerBase<ServiceType>::provideAdditionalPorts()
 {
-  return {};
+    return {};
 }
 
 // This task runs asynchronously once the behavior is ticked
@@ -51,6 +47,17 @@ BT::KeyValueVector ServiceServerBase<ServiceType>::metadata()
 template<typename ServiceType>
 tl::expected<bool, std::string> ServiceServerBase<ServiceType>::doWork()
 {
+  const auto service_name = this->getInput<std::string>(kInputServiceName);
+
+  if (!service_name.has_value())
+  {
+    return tl::make_unexpected("Failed to get required value from input data port: " + service_name.error());
+  }
+
+  // Create a service server for the given ServiceType using the shared node
+  service_ = shared_resources_->node->create_service<ServiceType>(
+      service_name.value(),
+      std::bind(&ServiceServerBase<ServiceType>::serviceCallback, this, std::placeholders::_1, std::placeholders::_2));
   // Mutex to keep the service callback from accessing shared memory
   std::unique_lock<std::mutex> lock(mutex_);
 

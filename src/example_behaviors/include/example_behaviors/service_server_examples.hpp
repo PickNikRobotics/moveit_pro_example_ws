@@ -34,7 +34,7 @@ public:
   SetBoolServer(const std::string& name, const BT::NodeConfiguration& config,
                     const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources);
 
-  static BT::PortsList providedPorts();
+  BT::PortsList provideAdditionalPorts() override;
 
   static BT::KeyValueVector metadata();
 
