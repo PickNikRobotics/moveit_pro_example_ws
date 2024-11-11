@@ -49,6 +49,9 @@ objectives:
     sim_objectives:
       package_name: "lab_sim"
       relative_path: "objectives"
+    example_objectives:
+      package_name: "example_behaviors"
+      relative_path: "objectives"
   # Specify the location of the saved waypoints file.
   # [Required]
   waypoints_file:

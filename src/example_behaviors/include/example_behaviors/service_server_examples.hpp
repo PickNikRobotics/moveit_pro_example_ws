@@ -34,7 +34,26 @@ public:
   SetBoolServer(const std::string& name, const BT::NodeConfiguration& config,
                     const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources);
 
-  BT::PortsList provideAdditionalPorts() override;
+  static BT::PortsList providedPorts();
+
+  static BT::KeyValueVector metadata();
+
+protected:
+  void processRequest([[maybe_unused]] const std_srvs::srv::SetBool::Request::SharedPtr& request,
+                      const std_srvs::srv::SetBool::Response::SharedPtr& response) override;
+
+};
+
+/**
+ * @brief Specific implementation of ServiceServerBase for std_srvs::srv::SetBool service.
+ */
+class BoolServerWithTopic : public ServiceServerBase<std_srvs::srv::SetBool>
+{
+public:
+  BoolServerWithTopic(const std::string& name, const BT::NodeConfiguration& config,
+                    const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources);
+
+  static BT::PortsList providedPorts();
 
   static BT::KeyValueVector metadata();
 

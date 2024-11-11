@@ -11,6 +11,7 @@
 #include <condition_variable>
 
 constexpr auto kInputServiceName = "service_name";
+constexpr auto kDefaultTopicName = "my_service";
 namespace example_behaviors
 {
 /**
@@ -32,23 +33,12 @@ public:
                     const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources);
 
   /**
-   * @brief Implementation of the required providedPorts() function for the behavior. Marked as final so trhat it is not overridden, and derived classes include the base class's ports
-   * @return BT::PortsList containing the behavior's ports.
-   */
-  BT::PortsList providedPorts() const
-  {
-      std::cout << "Providing providedPorts ports" << std::endl;
-      BT::PortsList ports = getBasePorts();
-      BT::PortsList derived_ports = provideAdditionalPorts();
-      ports.insert(derived_ports.begin(), derived_ports.end());
-      return ports;
-  }
-
-  /**
    * @brief Implementation of the metadata() function for displaying metadata, such as Behavior description and subcategory, in the MoveIt Studio Developer Tool.
    * @return A BT::KeyValueVector containing the Behavior metadata.
    */
   static BT::KeyValueVector metadata();
+
+  static BT::PortsList providedPorts();
 
   /**
    * @brief Override onRunning so the node resets itself upon success.
@@ -68,11 +58,6 @@ protected:
    */
   virtual void processRequest(const typename ServiceType::Request::SharedPtr& request,
                               const typename ServiceType::Response::SharedPtr& response) = 0;
-
-  /**
-   * @brief Derived classes can add additional ports using this method
-   */
-  virtual BT::PortsList provideAdditionalPorts();
 
 private:
   /**
@@ -110,17 +95,6 @@ private:
    */
   void serviceCallback(const typename ServiceType::Request::SharedPtr& request,
                        const typename ServiceType::Response::SharedPtr& response);
-
-  /**
-   * @brief Provide the base ports to be used in all classes
-   */
-  BT::PortsList getBasePorts() const
-  {
-      std::cout << "Providing getBasePorts ports" << std::endl;
-    return {
-      BT::InputPort<std::string>(kInputServiceName, "/service_server", "Name of the service to advertise.")
-    };
-  }
 };
 
 }  // namespace example_behaviors

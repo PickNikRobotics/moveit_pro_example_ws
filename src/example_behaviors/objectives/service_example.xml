@@ -6,6 +6,7 @@
       <Control ID="Sequence" name="TopLevelSequence">
         <Action ID="SetBoolServer"/>
         <Action ID="TriggerServer"/>
+        <Action ID="BoolServerWithTopic"/>
       </Control>
     </Decorator>
   </BehaviorTree>

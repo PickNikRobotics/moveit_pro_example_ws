@@ -39,6 +39,7 @@ public:
                                                                       shared_resources);
     moveit_studio::behaviors::registerBehavior<TriggerServer>(factory, "TriggerServer", shared_resources);
     moveit_studio::behaviors::registerBehavior<SetBoolServer>(factory, "SetBoolServer", shared_resources);
+    moveit_studio::behaviors::registerBehavior<BoolServerWithTopic>(factory, "BoolServerWithTopic", shared_resources);
 
 
                                                                       

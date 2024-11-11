@@ -27,10 +27,8 @@ SetBoolServer::SetBoolServer(const std::string& name, const BT::NodeConfiguratio
 {
 }
 // Override to provide additional ports
-BT::PortsList SetBoolServer::provideAdditionalPorts() 
+BT::PortsList SetBoolServer::providedPorts()
 {
-      std::cout << "Providing additional ports for SetBoolServer" << std::endl;
-
   return {
     BT::OutputPort<bool>("result", "{result}", "A result for the behavior to put on the blackboard"),
   };
@@ -42,6 +40,33 @@ BT::KeyValueVector SetBoolServer::metadata()
 }
 
 void SetBoolServer::processRequest([[maybe_unused]] const std_srvs::srv::SetBool::Request::SharedPtr& request,
+                                       const std_srvs::srv::SetBool::Response::SharedPtr& response)
+{
+  setOutput("result", request->data);
+
+  response->success = true;
+}
+
+BoolServerWithTopic::BoolServerWithTopic(const std::string& name, const BT::NodeConfiguration& config,
+                                     const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources)
+  : ServiceServerBase(name, config, shared_resources)
+{
+}
+// Override to provide additional ports
+BT::PortsList BoolServerWithTopic::providedPorts()
+{
+  return {
+    BT::OutputPort<bool>("result", "{result}", "A result for the behavior to put on the blackboard"),
+    BT::InputPort<std::string>(kInputServiceName, "/service_server", "Name of the service to advertise.")
+  };
+}
+
+BT::KeyValueVector BoolServerWithTopic::metadata()
+{
+  return { { "subcategory", "Examples" }, { "description", "SetBool service server example" } };
+}
+
+void BoolServerWithTopic::processRequest([[maybe_unused]] const std_srvs::srv::SetBool::Request::SharedPtr& request,
                                        const std_srvs::srv::SetBool::Response::SharedPtr& response)
 {
   setOutput("result", request->data);
