@@ -11,6 +11,7 @@
 #     pre-commit autoupdate
 #
 # See https://github.com/pre-commit/pre-commit
+exclude: ^src/external_dependencies/
 repos:
   # Standard hooks
   - repo: https://github.com/pre-commit/pre-commit-hooks
