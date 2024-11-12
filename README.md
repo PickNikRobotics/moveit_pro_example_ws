@@ -16,7 +16,7 @@ git submodule update --recursive --init
 ## Working with Git Subtrees
 
 This repository was created through the combination of multiple repositories using git subtree.
-If you have no intrest in manually pulling or pushing upstream changes, you can ignore the following section and treat this repository as a single repository.
+If you have no interest in manually pulling or pushing upstream changes, you can ignore the following section and treat this repository as a single repository.
 
 ### Repository Structure
 
