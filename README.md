@@ -60,4 +60,3 @@ From the top level, you can execute:
 ```bash
 ./sync_subtrees.sh
 ```
-
