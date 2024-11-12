@@ -1,4 +1,4 @@
-#include <picknik_registration/ransac_registration.hpp>
+#include <example_behaviors/ransac_registration.hpp>
 #include <pcl/registration/ndt.h>
 #include <tl_expected/expected.hpp>
 #include <moveit_studio_behavior_interface/async_behavior_base.hpp>
@@ -22,7 +22,7 @@
 #include <pcl/registration/sample_consensus_prerejective.h>
 #include <pcl/search/kdtree.h>
 
-namespace picknik_registration
+namespace example_behaviors
 {
 namespace
 {
@@ -232,4 +232,4 @@ tl::expected<bool, std::string> RANSACRegistration::doWork()
 }
 
 
-}  // namespace picknik_registration
+}  // namespace example_behaviors
