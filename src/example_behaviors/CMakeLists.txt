@@ -5,7 +5,13 @@ find_package(moveit_studio_common REQUIRED)
 find_package(example_interfaces REQUIRED)
 moveit_studio_package()
 
-set(THIS_PACKAGE_INCLUDE_DEPENDS moveit_studio_behavior moveit_studio_behavior_interface pluginlib example_interfaces)
+set(THIS_PACKAGE_INCLUDE_DEPENDS moveit_studio_behavior moveit_studio_behavior_interface pluginlib 
+moveit_studio_vision
+moveit_studio_vision_msgs
+PCL
+pcl_conversions
+pcl_ros
+example_interfaces)
 foreach(package IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${package} REQUIRED)
 endforeach()
@@ -23,11 +29,14 @@ add_library(
   src/setup_mtc_pick_from_pose.cpp
   src/setup_mtc_place_from_pose.cpp
   src/setup_mtc_wave_hand.cpp
+  src/ndt_registration.cpp
+  src/ransac_registration.cpp
   src/register_behaviors.cpp)
 target_include_directories(
   example_behaviors
   PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-         $<INSTALL_INTERFACE:include>)
+  $<INSTALL_INTERFACE:include>
+  PRIVATE ${PCL_INCLUDE_DIRS})
 ament_target_dependencies(example_behaviors
                           ${THIS_PACKAGE_INCLUDE_DEPENDS})
 
