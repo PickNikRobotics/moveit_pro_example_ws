@@ -1,9 +1,8 @@
-#include <picknik_registration/ndt_registration.hpp>
+#include <example_behaviors/ndt_registration.hpp>
 #include <pcl/registration/ndt.h>
 #include <tl_expected/expected.hpp>
 #include <moveit_studio_behavior_interface/async_behavior_base.hpp>
 #include <moveit_studio_behavior_interface/check_for_error.hpp>
-// #include <moveit_studio_vision/geometry_types.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <std_msgs/msg/header.hpp>
@@ -23,7 +22,7 @@
 #include <pcl/registration/sample_consensus_prerejective.h>
 #include <pcl/search/kdtree.h>
 
-namespace picknik_registration
+namespace example_behaviors
 {
 namespace
 {
@@ -145,4 +144,4 @@ tl::expected<bool, std::string> NDTRegistration::doWork()
 }
 
 
-}  // namespace picknik_registration
+}  // namespace example_behaviors

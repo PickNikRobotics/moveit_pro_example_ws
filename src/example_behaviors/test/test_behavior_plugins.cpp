@@ -36,7 +36,11 @@ TEST(BehaviorTests, test_load_behavior_plugins)
       (void)factory.instantiateTreeNode("test_behavior_name", "SetupMtcPickFromPose", BT::NodeConfiguration()));
   EXPECT_NO_THROW(
       (void)factory.instantiateTreeNode("test_behavior_name", "SetupMtcPlaceFromPose", BT::NodeConfiguration()));
-  EXPECT_NO_THROW((void)factory.instantiateTreeNode("test_behavior_name", "SetupMTCWaveHand", BT::NodeConfiguration()));
+  EXPECT_NO_THROW((void)factory.instantiateTreeNode("test_behavior_name", "SetupMTCWaveHand", BT::NodeConfiguration()));  
+  EXPECT_NO_THROW(
+    (void)factory.instantiateTreeNode("test_behavior_name", "NDTRegistration", BT::NodeConfiguration()));
+  EXPECT_NO_THROW(
+    (void)factory.instantiateTreeNode("test_behavior_name", "RANSACRegistration", BT::NodeConfiguration()));
 }
 
 int main(int argc, char** argv)
