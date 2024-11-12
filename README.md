@@ -23,30 +23,32 @@ If you have no intrest in manually pulling or pushing upstream changes, you can 
 
 The structure of this repository is as follows:
 
+<pre>
 .
-├── README.md
+├── <a href="README.md">README.md</a>
 └── src
-    ├── [example_behaviors](https://github.com/PickNikRobotics/example_behaviors)
-    ├── [lab_sim](https://github.com/PickNikRobotics/lab_sim)
-    ├── [moveit_pro_ur_configs](https://github.com/PickNikRobotics/moveit_pro_ur_configs)
+    ├── <a href="https://github.com/PickNikRobotics/example_behaviors">example_behaviors</a>
+    ├── <a href="https://github.com/PickNikRobotics/lab_sim">lab_sim</a>
+    ├── <a href="https://github.com/PickNikRobotics/moveit_pro_ur_configs">moveit_pro_ur_configs</a>
     │   ├── picknik_ur_base_config
     │   ├── picknik_ur_mock_hw_config
     │   ├── picknik_ur_multi_arm_config
     │   ├── picknik_ur_sim_config
     │   └── picknik_ur_site_config
-    ├── [moveit_pro_kinova_configs](https://github.com/PickNikRobotics/moveit_pro_kinova_configs)
+    ├── <a href="https://github.com/PickNikRobotics/moveit_pro_kinova_configs">moveit_pro_kinova_configs</a>
     │   ├── kinova_gen3_base_config
     │   ├── kinova_gen3_mujoco_config
     │   └── moveit_studio_kinova_pstop_manager
-    ├── [moveit_pro_mobile_manipulation](https://github.com/PickNikRobotics/moveit_pro_mobile_manipulation)
+    ├── <a href="https://github.com/PickNikRobotics/moveit_pro_mobile_manipulation">moveit_pro_mobile_manipulation</a>
     │   ├── mobile_manipulation_config
     │   └── picknik_ur_mobile_config
-    ├── [fanuc_sim](https://github.com/PickNikRobotics/fanuc_sim)
-    ├── [picknik_accessories](https://github.com/PickNikRobotics/picknik_accessories) (submodule)
+    ├── <a href="https://github.com/PickNikRobotics/fanuc_sim">fanuc_sim</a>
+    ├── <a href="https://github.com/PickNikRobotics/picknik_accessories">picknik_accessories</a> (submodule)
     └── external_dependencies
-        ├── [ridgeback](https://github.com/sjahr/ridgeback/tree/ros2)
-        ├── [ros2_robotiq_gripper](https://github.com/PickNikRobotics/ros2_robotiq_gripper)
-        └── [serial](https://github.com/tylerjw/serial/tree/ros2)
+        ├── <a href="https://github.com/sjahr/ridgeback/tree/ros2">ridgeback</a>
+        ├── <a href="https://github.com/PickNikRobotics/ros2_robotiq_gripper">ros2_robotiq_gripper</a>
+        └── <a href="https://github.com/tylerjw/serial/tree/ros2">serial</a>
+</pre>
 
 This repository contains a **copy** of the git repositories that were added as subtrees.
 File changes and commits are treated as if they happen only in this repository.
