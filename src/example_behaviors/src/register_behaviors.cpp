@@ -12,6 +12,8 @@
 #include <example_behaviors/publish_color_rgba.hpp>
 #include <example_behaviors/setup_mtc_pick_from_pose.hpp>
 #include <example_behaviors/setup_mtc_place_from_pose.hpp>
+#include <example_behaviors/ndt_registration.hpp>
+#include <example_behaviors/ransac_registration.hpp>
 
 #include <pluginlib/class_list_macros.hpp>
 
@@ -36,6 +38,8 @@ public:
     moveit_studio::behaviors::registerBehavior<SetupMtcPickFromPose>(factory, "SetupMtcPickFromPose", shared_resources);
     moveit_studio::behaviors::registerBehavior<SetupMtcPlaceFromPose>(factory, "SetupMtcPlaceFromPose",
                                                                       shared_resources);
+    moveit_studio::behaviors::registerBehavior<NDTRegistration>(factory, "NDTRegistration", shared_resources);
+    moveit_studio::behaviors::registerBehavior<RANSACRegistration>(factory, "RANSACRegistration", shared_resources);
   }
 };
 }  // namespace example_behaviors
