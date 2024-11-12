@@ -75,7 +75,7 @@ BT::PortsList NDTRegistration::providedPorts()
 }
 BT::KeyValueVector NDTRegistration::metadata()
 {
-  return { {"description", "Finds the pose of a target point cloud relative to the base frame of a base point cloud using the Normal Distributions Transform (NDT) algorithm"} };
+return { {"subcategory", "Perception - 3D Point Cloud"}, {"description", "Finds the pose of a target point cloud relative to the base frame of a base point cloud using the Normal Distributions Transform (NDT) algorithm"} };
 }
 
 
