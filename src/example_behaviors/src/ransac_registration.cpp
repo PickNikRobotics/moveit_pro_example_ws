@@ -82,7 +82,7 @@ BT::PortsList RANSACRegistration::providedPorts()
 
 BT::KeyValueVector RANSACRegistration::metadata()
 {
-  return { {"description", "Finds the pose of a target point cloud relative to the base frame of a base point cloud using the Normal Distributions Transform (NDT) algoritm"} };
+  return { {"description", "Finds the pose of a target point cloud relative to the base frame of a base point cloud using the Normal Distributions Transform (NDT) algorithm"} };
 }
 
 
