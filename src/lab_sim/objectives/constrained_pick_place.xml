@@ -51,8 +51,10 @@
               constraints="{constraints}"
             />
           </Decorator>
-          <!--Pick-->
-          <SubTree ID="Close Gripper" />
+          <!--We force success as the gripper closes, since we are commanding a position it will never reach (fingers fully closed)-->
+          <Decorator ID="ForceSuccess">
+            <SubTree ID="Close Gripper" />
+          </Decorator>
           <!--Move to place (drop) location-->
           <Decorator ID="RetryUntilSuccessful" num_attempts="3">
             <SubTree
@@ -110,7 +112,9 @@
               waypoint_name="Place Cube"
             />
           </Decorator>
-          <SubTree ID="Close Gripper" />
+          <Decorator ID="ForceSuccess">
+            <SubTree ID="Close Gripper" />
+          </Decorator>
           <Decorator ID="RetryUntilSuccessful" num_attempts="3">
             <SubTree
               ID="Move to Waypoint"
