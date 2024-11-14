@@ -1,7 +1,6 @@
-<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Create Pose Vector">
   <!--//////////-->
-  <BehaviorTree ID="Create Pose Vector">
+  <BehaviorTree ID="Create Pose Vector" _favorite="false">
     <Control ID="Sequence">
       <Action
         ID="CreateStampedPose"
