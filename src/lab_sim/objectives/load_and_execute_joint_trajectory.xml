@@ -17,7 +17,7 @@
       />
       <Action
         ID="LoadJointTrajectoryFromYaml"
-        file_path="/home/michael/user_ws/src/lab_sim/objectives/joint_trajectory.yaml"
+        file_path="joint_trajectory.yaml"
       />
       <Action ID="ExecuteFollowJointTrajectory" />
     </Control>
