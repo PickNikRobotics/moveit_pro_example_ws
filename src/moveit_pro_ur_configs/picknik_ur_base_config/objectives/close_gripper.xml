@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Close Gripper">
   <BehaviorTree ID="Close Gripper" _description="Close the gripper">
     <Control ID="Sequence" name="root">
@@ -10,4 +10,7 @@
       />
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Close Gripper" />
+  </TreeNodesModel>
 </root>
