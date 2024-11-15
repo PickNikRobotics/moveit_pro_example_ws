@@ -164,7 +164,6 @@
     <joint type="free" damping="1"/>
   </body> -->
 
-
   <body name="bottle_1" pos="0 0.9 0.473807" euler="0 0 -20">
     <geom
       material="bottle"

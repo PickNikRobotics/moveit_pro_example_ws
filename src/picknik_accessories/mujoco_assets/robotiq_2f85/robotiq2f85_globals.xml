@@ -107,8 +107,6 @@
     />
   </equality>
 
-
-
   <!-- robotiq 2f85 defaults -->
   <default>
     <default class="2f85">
@@ -200,5 +198,4 @@
       <site size="0.001" rgba="0.5 0.5 0.5 0.3" group="4" />
     </default>
   </default>
-
 </robotiq2f85_globals>

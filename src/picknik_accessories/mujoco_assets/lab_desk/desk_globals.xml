@@ -1,4 +1,4 @@
-<lab_desk_globals>  
+<lab_desk_globals>
   <option integrator="implicitfast">
     <flag multiccd="enable" />
   </option>
@@ -106,5 +106,4 @@
     <mesh file="assets/flask.obj" />
     <mesh file="assets/bottle.obj" />
   </asset>
-
 </lab_desk_globals>

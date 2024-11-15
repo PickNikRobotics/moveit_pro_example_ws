@@ -1,6 +1,4 @@
 <ur5e_globals>
-
-  
   <asset>
     <material name="metal" rgba="0.58 0.58 0.58 1" />
     <material name="silicone" rgba="0.1882 0.1882 0.1882 1" />
@@ -62,7 +60,6 @@
     <torque site="robotiq_ft_sensor" />
   </sensor>
 
-  
   <default>
     <default class="ur5e">
       <material specular="0.5" shininess="0.25" />
@@ -82,7 +79,11 @@
         </default>
       </default>
       <default class="size1">
-        <general gainprm="20000" biasprm="0 -20000 -1000" forcerange="-150 150" />
+        <general
+          gainprm="20000"
+          biasprm="0 -20000 -1000"
+          forcerange="-150 150"
+        />
       </default>
       <default class="visual">
         <geom type="mesh" contype="0" conaffinity="0" group="2" />
@@ -94,6 +95,6 @@
         </default>
       </default>
       <site size="0.001" rgba="0.5 0.5 0.5 0.3" group="4" />
-   </default>
+    </default>
   </default>
 </ur5e_globals>

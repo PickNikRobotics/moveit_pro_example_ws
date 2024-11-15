@@ -13,11 +13,7 @@
         quat="1 -0.00152849 0 0"
         diaginertia="0.000260285 0.000225381 0.000152708"
       />
-      <geom
-        class="visual"
-        mesh="robotiq_85_base"
-        material="black"
-      />
+      <geom class="visual" mesh="robotiq_85_base" material="black" />
       <geom class="collision" mesh="robotiq_85_base" />
       <site
         name="pinch"
@@ -39,19 +35,9 @@
           quat="0.681301 0.732003 0 0"
           diaginertia="1.72352e-06 1.60906e-06 3.22006e-07"
         />
-        <joint
-          name="robotiq_85_right_knuckle_joint"
-          class="knuckle_link"
-        />
-        <geom
-          class="visual"
-          mesh="robotiq_85_knuckle_link"
-          material="gray"
-        />
-        <geom
-          class="collision"
-          mesh="robotiq_85_knuckle_link"
-        />
+        <joint name="robotiq_85_right_knuckle_joint" class="knuckle_link" />
+        <geom class="visual" mesh="robotiq_85_knuckle_link" material="gray" />
+        <geom class="collision" mesh="robotiq_85_knuckle_link" />
         <body
           name="robotiq_85_right_finger_link"
           gravcomp="1"
@@ -63,19 +49,9 @@
             quat="0.705636 -0.0455904 0.0455904 0.705636"
             diaginertia="4.16206e-06 3.52216e-06 8.88131e-07"
           />
-          <joint
-            name="robotiq_85_right_finger_joint"
-            class="finger_link"
-          />
-          <geom
-            class="visual"
-            mesh="robotiq_85_finger_link"
-            material="black"
-          />
-          <geom
-            class="collision"
-            mesh="robotiq_85_finger_link"
-          />
+          <joint name="robotiq_85_right_finger_joint" class="finger_link" />
+          <geom class="visual" mesh="robotiq_85_finger_link" material="black" />
+          <geom class="collision" mesh="robotiq_85_finger_link" />
         </body>
       </body>
       <body
@@ -98,10 +74,7 @@
           mesh="robotiq_85_inner_knuckle_link"
           material="black"
         />
-        <geom
-          class="collision"
-          mesh="robotiq_85_inner_knuckle_link"
-        />
+        <geom class="collision" mesh="robotiq_85_inner_knuckle_link" />
         <body
           name="robotiq_85_right_finger_tip_link"
           gravcomp="1"
@@ -122,10 +95,7 @@
             mesh="robotiq_85_finger_tip_link"
             material="black"
           />
-          <geom
-            class="collision"
-            mesh="robotiq_85_finger_tip_link"
-          />
+          <geom class="collision" mesh="robotiq_85_finger_tip_link" />
           <body name="right_pad" pos="0 -0.0189 0.01352">
             <geom class="pad_box1" name="right_pad1" />
             <geom class="pad_box2" name="right_pad2" />
@@ -159,19 +129,9 @@
           quat="0.681301 0.732003 0 0"
           diaginertia="1.72352e-06 1.60906e-06 3.22006e-07"
         />
-        <joint
-          name="robotiq_85_left_knuckle_joint"
-          class="knuckle_link"
-        />
-        <geom
-          class="visual"
-          mesh="robotiq_85_knuckle_link"
-          material="gray"
-        />
-        <geom
-          class="collision"
-          mesh="robotiq_85_knuckle_link"
-        />
+        <joint name="robotiq_85_left_knuckle_joint" class="knuckle_link" />
+        <geom class="visual" mesh="robotiq_85_knuckle_link" material="gray" />
+        <geom class="collision" mesh="robotiq_85_knuckle_link" />
         <body
           name="robotiq_85_left_finger_link"
           gravcomp="1"
@@ -183,19 +143,9 @@
             quat="0.705636 -0.0455904 0.0455904 0.705636"
             diaginertia="4.16206e-06 3.52216e-06 8.88131e-07"
           />
-          <joint
-            name="robotiq_85_left_finger_joint"
-            class="finger_link"
-          />
-          <geom
-            class="visual"
-            mesh="robotiq_85_finger_link"
-            material="black"
-          />
-          <geom
-            class="collision"
-            mesh="robotiq_85_finger_link"
-          />
+          <joint name="robotiq_85_left_finger_joint" class="finger_link" />
+          <geom class="visual" mesh="robotiq_85_finger_link" material="black" />
+          <geom class="collision" mesh="robotiq_85_finger_link" />
         </body>
       </body>
       <body
@@ -219,10 +169,7 @@
           mesh="robotiq_85_inner_knuckle_link"
           material="black"
         />
-        <geom
-          class="collision"
-          mesh="robotiq_85_inner_knuckle_link"
-        />
+        <geom class="collision" mesh="robotiq_85_inner_knuckle_link" />
         <body
           name="robotiq_85_left_finger_tip_link"
           gravcomp="1"
@@ -243,10 +190,7 @@
             mesh="robotiq_85_finger_tip_link"
             material="black"
           />
-          <geom
-            class="collision"
-            mesh="robotiq_85_finger_tip_link"
-          />
+          <geom class="collision" mesh="robotiq_85_finger_tip_link" />
           <body name="left_pad" pos="0 -0.0189 0.01352">
             <geom class="pad_box1" name="left_pad1" />
             <geom class="pad_box2" name="left_pad2" />

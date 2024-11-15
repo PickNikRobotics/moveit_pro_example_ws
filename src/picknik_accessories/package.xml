@@ -1,8 +1,10 @@
-<?xml version="1.0"?>
+<?xml version="1.0" ?>
 <package format="3">
   <name>picknik_accessories</name>
   <version>6.0.0</version>
-  <description>URDFs and geometry for common objects and attachments.</description>
+  <description>
+    URDFs and geometry for common objects and attachments.
+  </description>
   <maintainer email="joseph.schornak@picknik.ai">Joseph Schornak</maintainer>
   <license>BSD 3-Clause</license>
 
