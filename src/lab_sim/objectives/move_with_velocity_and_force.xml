@@ -3,7 +3,7 @@
   <BehaviorTree
     ID="Move until Force Contact"
     _description="An example for how to use the VFC to move with a velocity / force reference until it collides"
-    _favorite="false"
+    _favorite="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree
