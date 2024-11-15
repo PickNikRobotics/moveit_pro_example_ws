@@ -3,7 +3,7 @@
   <BehaviorTree
     ID="Pick April Tag Labeled Object"
     _description="Picks up an object that has an AprilTag marker."
-    _favorite="false"
+    _favorite="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree ID="Look at table" _collapsed="true" />
