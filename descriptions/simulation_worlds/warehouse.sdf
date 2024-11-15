@@ -1,0 +1,447 @@
+<sdf version="1.6">
+  <world name="warehouse_simple">
+    <!-- Sim must be faster than the controller rate or there will be an error -->
+    <physics name="sim_time" type="ignored">
+      <max_step_size>0.005</max_step_size>
+      <real_time_update_rate>0.005</real_time_update_rate>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+    <plugin
+            filename="ignition-gazebo-physics-system"
+            name="ignition::gazebo::systems::Physics">
+    </plugin>
+    <plugin
+            filename="ignition-gazebo-user-commands-system"
+            name="ignition::gazebo::systems::UserCommands">
+    </plugin>
+    <plugin
+            filename="ignition-gazebo-scene-broadcaster-system"
+            name="ignition::gazebo::systems::SceneBroadcaster">
+    </plugin>
+    <plugin
+            filename="ignition-gazebo-contact-system"
+            name="ignition::gazebo::systems::Contact">
+    </plugin>
+    <!-- FT Plugin -->
+    <plugin
+            filename="ignition-gazebo-forcetorque-system"
+            name="ignition::gazebo::systems::ForceTorque">
+    </plugin>
+
+    <scene>
+      <ambient>0.0 0.0 0.0 1.0</ambient>
+      <shadows>0</shadows>
+    </scene>
+
+    <light type="directional" name="sun">
+      <cast_shadows>false</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation>
+        <range>1000</range>
+        <constant>0.9</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <direction>-0.5 0.1 -0.9</direction>
+    </light>
+
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>100 100</size>
+            </plane>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>100 100</size>
+            </plane>
+          </geometry>
+          <material>
+            <ambient>0.8 0.8 0.8 1</ambient>
+            <diffuse>0.8 0.8 0.8 1</diffuse>
+            <specular>0.8 0.8 0.8 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="aws_robomaker_warehouse_ShelfF_01_001">
+      <include>
+        <uri>https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/aws_robomaker_warehouse_ShelfF_01</uri>
+      </include>
+      <pose>-5.795143 -0.956635 0 0 0 0</pose>
+    </model>
+
+    <model name="aws_robomaker_warehouse_WallB_01_001">
+      <include>
+        <uri>https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/aws_robomaker_warehouse_WallB_01</uri>
+      </include>
+    </model>
+
+    <model name="aws_robomaker_warehouse_ShelfE_01_001">
+      <include>
+        <uri>https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/aws_robomaker_warehouse_ShelfE_01</uri>
+      </include>
+      <pose>4.73156 0.57943 0 0 0 0</pose>
+    </model>
+
+    <model name="aws_robomaker_warehouse_ShelfE_01_002">
+      <include>
+        <uri>https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/aws_robomaker_warehouse_ShelfE_01</uri>
+      </include>
+      <pose>4.73156 -4.827049 0 0 0 0</pose>
+    </model>
+
+    <model name="aws_robomaker_warehouse_ShelfE_01_003">
+      <include>
+        <uri>https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/aws_robomaker_warehouse_ShelfE_01</uri>
+      </include>
+      <pose>4.73156 -8.6651 0 0 0 0</pose>
+    </model>
+
+    <model name="aws_robomaker_warehouse_ShelfD_01_001">
+      <include>
+        <uri>https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/aws_robomaker_warehouse_ShelfD_01</uri>
+      </include>
+      <pose>4.73156 -1.242668 0 0 0 0</pose>
+    </model>
+
+    <model name="aws_robomaker_warehouse_ShelfD_01_002">
+      <include>
+        <uri>https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/aws_robomaker_warehouse_ShelfD_01</uri>
+      </include>
+      <pose>4.73156 -3.038551 0 0 0 0</pose>
+    </model>
+
+    <model name="aws_robomaker_warehouse_ShelfD_01_003">
+      <include>
+        <uri>https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/aws_robomaker_warehouse_ShelfD_01</uri>
+      </include>
+      <pose>4.73156 -6.750542 0 0 0 0</pose>
+    </model>
+
+    <model name="aws_robomaker_warehouse_GroundB_01_001">
+      <include>
+        <uri>https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/aws_robomaker_warehouse_GroundB_01</uri>
+      </include>
+      <pose>0.0 0.0 0.01 0 0 0</pose>
+    </model>
+
+    <model name="aws_robomaker_warehouse_Lamp_01_005">
+      <include>
+        <uri>https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/aws_robomaker_warehouse_Lamp_01</uri>
+      </include>
+      <pose>0 0 -4 0 0 0</pose>
+    </model>
+
+    <model name="aws_robomaker_warehouse_Bucket_01_020">
+      <include>
+        <uri>https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/aws_robomaker_warehouse_Bucket_01</uri>
+      </include>
+      <pose>0.433449 9.631706 0 0 0 -1.563161</pose>
+    </model>
+
+    <model name="aws_robomaker_warehouse_Bucket_01_021">
+      <include>
+        <uri>https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/aws_robomaker_warehouse_Bucket_01</uri>
+      </include>
+      <pose>-1.8321 -6.3752 0 0 0 -1.563161</pose>
+    </model>
+
+    <model name="aws_robomaker_warehouse_Bucket_01_022">
+      <include>
+        <uri>https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/aws_robomaker_warehouse_Bucket_01</uri>
+      </include>
+      <pose>0.433449 8.59 0 0 0 -1.563161</pose>
+    </model>
+
+    <model name='aws_robomaker_warehouse_ClutteringA_01_016'>
+      <include>
+        <uri>https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/aws_robomaker_warehouse_ClutteringA_01</uri>
+      </include>
+      <pose>5.708138 8.616844 -0.017477 0 0 0</pose>
+    </model>
+
+    <model name='aws_robomaker_warehouse_ClutteringA_01_017'>
+      <include>
+        <uri>https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/aws_robomaker_warehouse_ClutteringA_01</uri>
+      </include>
+      <pose>3.408638 8.616844 -0.017477 0 0 0</pose>
+    </model>
+
+    <model name='aws_robomaker_warehouse_ClutteringA_01_018'>
+      <include>
+        <uri>https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/aws_robomaker_warehouse_ClutteringA_01</uri>
+      </include>
+      <pose>-1.491287 5.222435 -0.017477 0 0 -1.583185</pose>
+    </model>
+
+    <model name="aws_robomaker_warehouse_ClutteringC_01_027">
+      <include>
+        <uri>https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/aws_robomaker_warehouse_ClutteringC_01</uri>
+      </include>
+      <pose>3.324959 3.822449 -0.012064 0 0 1.563871</pose>
+    </model>
+
+    <model name="aws_robomaker_warehouse_ClutteringC_01_028">
+      <include>
+        <uri>https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/aws_robomaker_warehouse_ClutteringC_01</uri>
+      </include>
+      <pose>5.54171 3.816475 -0.015663 0 0 -1.583191</pose>
+    </model>
+
+    <model name="aws_robomaker_warehouse_ClutteringC_01_029">
+      <include>
+        <uri>https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/aws_robomaker_warehouse_ClutteringC_01</uri>
+      </include>
+      <pose>5.384239 6.137154 0 0 0 3.150000</pose>
+    </model>
+
+    <model name="aws_robomaker_warehouse_ClutteringC_01_030">
+      <include>
+        <uri>https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/aws_robomaker_warehouse_ClutteringC_01</uri>
+      </include>
+      <pose>3.236 6.137154 0 0 0 3.150000</pose>
+    </model>
+
+    <model name="aws_robomaker_warehouse_ClutteringC_01_031">
+      <include>
+        <uri>https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/aws_robomaker_warehouse_ClutteringC_01</uri>
+      </include>
+      <pose>-1.573677 2.301994 -0.015663 0 0 -3.133191</pose>
+    </model>
+
+    <model name="aws_robomaker_warehouse_ClutteringC_01_032">
+      <include>
+        <uri>https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/aws_robomaker_warehouse_ClutteringC_01</uri>
+      </include>
+      <pose>-1.2196 9.407 -0.015663 0 0 1.563871</pose>
+    </model>
+
+    <model name='aws_robomaker_warehouse_ClutteringD_01_005'>
+      <include>
+        <uri>https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/aws_robomaker_warehouse_ClutteringD_01</uri>
+      </include>
+      <pose>-1.634682 -7.811813 -0.319559 0 0 0</pose>
+    </model>
+
+    <model name='aws_robomaker_warehouse_TrashCanC_01_002'>
+      <include>
+        <uri>https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/aws_robomaker_warehouse_TrashCanC_01</uri>
+      </include>
+      <pose>-1.592441 7.715420 0 0 0 0</pose>
+    </model>
+
+    <model name='aws_robomaker_warehouse_PalletJackB_01_001'>
+      <include>
+        <uri>https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/aws_robomaker_warehouse_PalletJackB_01</uri>
+      </include>
+      <pose>-0.276098 -9.481944 0.023266 0 0 0</pose>
+      <static>true</static>
+    </model>
+
+    <light name="Warehouse_CeilingLight_003" type="point">
+      <pose>0 0 8.5 0 0 0</pose>
+      <diffuse>0.5 0.5 0.5 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation>
+        <range>80</range>
+        <constant>0.3</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <cast_shadows>0</cast_shadows>
+      <direction>0.1 0.1 -1</direction>
+    </light>
+
+    <include>
+      <static>true</static>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Table
+      </uri>
+      <name>table1</name>
+      <pose>0 0.4 0 0 0 0</pose>
+    </include>
+
+    <include>
+      <static>true</static>
+      <uri>
+        https://fuel.ignitionrobotics.org/1.0/OpenRobotics/models/Table
+      </uri>
+      <name>table2</name>
+      <pose>0 -0.4 0 0 0 0</pose>
+    </include>
+
+    <model name="box_red">
+      <pose>0.5 -0.3 1.1 0 0 0</pose>
+      <link name="box_link">
+        <inertial>
+          <inertia>
+            <ixx>0.0001875</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.0001875</iyy>
+            <iyz>0</iyz>
+            <izz>0.0001875</izz>
+          </inertia>
+          <mass>0.2</mass>
+        </inertial>
+        <collision name="box_collision">
+          <geometry>
+            <box>
+              <size>0.05 0.05 0.05</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu1>100000.0</mu1>
+                <mu2>100000.0</mu2>
+              </ode>
+            </friction>
+            <contact>
+              <ode>
+                <kp>1e+5</kp>
+                <kd>1</kd>
+                <soft_cfm>0</soft_cfm>
+                <soft_erp>0.2</soft_erp>
+                <minDepth>0.001</minDepth>
+              </ode>
+            </contact>
+          </surface>
+        </collision>
+
+        <visual name="box_visual">
+          <geometry>
+            <box>
+              <size>0.05 0.05 0.05</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>1 0 0 1</ambient>
+            <diffuse>1 0 0 1</diffuse>
+            <specular>1 0 0 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="box_green">
+      <pose>0.5 0.0 1.1 0 0 0</pose>
+      <link name="box_link">
+        <inertial>
+          <inertia>
+            <ixx>0.0001875</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.0001875</iyy>
+            <iyz>0</iyz>
+            <izz>0.0001875</izz>
+          </inertia>
+          <mass>0.2</mass>
+        </inertial>
+        <collision name="box_collision">
+          <geometry>
+            <box>
+              <size>0.05 0.05 0.05</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu1>100000.0</mu1>
+                <mu2>100000.0</mu2>
+              </ode>
+            </friction>
+            <contact>
+              <ode>
+                <kp>1e+5</kp>
+                <kd>1</kd>
+                <soft_cfm>0</soft_cfm>
+                <soft_erp>0.2</soft_erp>
+                <minDepth>0.001</minDepth>
+              </ode>
+            </contact>
+          </surface>
+        </collision>
+
+        <visual name="box_visual">
+          <geometry>
+            <box>
+              <size>0.05 0.05 0.05</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0 1 0 1</ambient>
+            <diffuse>0 1 0 1</diffuse>
+            <specular>0 1 0 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="box_blue">
+      <pose>0.5 0.3 1.1 0 0 0</pose>
+      <link name="box_link">
+        <inertial>
+          <inertia>
+            <ixx>0.0001875</ixx>
+            <ixy>0</ixy>
+            <ixz>0</ixz>
+            <iyy>0.0001875</iyy>
+            <iyz>0</iyz>
+            <izz>0.0001875</izz>
+          </inertia>
+          <mass>0.2</mass>
+        </inertial>
+        <collision name="box_collision">
+          <geometry>
+            <box>
+              <size>0.05 0.05 0.05</size>
+            </box>
+          </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu1>100000.0</mu1>
+                <mu2>100000.0</mu2>
+              </ode>
+            </friction>
+            <contact>
+              <ode>
+                <kp>1e+5</kp>
+                <kd>1</kd>
+                <soft_cfm>0</soft_cfm>
+                <soft_erp>0.2</soft_erp>
+                <minDepth>0.001</minDepth>
+              </ode>
+            </contact>
+          </surface>
+        </collision>
+
+        <visual name="box_visual">
+          <geometry>
+            <box>
+              <size>0.05 0.05 0.05</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0 0 1 1</ambient>
+            <diffuse>0 0 1 1</diffuse>
+            <specular>0 0 1 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+  </world>
+</sdf>
