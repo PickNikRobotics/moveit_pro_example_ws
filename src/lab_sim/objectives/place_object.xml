@@ -1,6 +1,11 @@
-<root BTCPP_format="4" main_tree_to_execute="Place object">
+<root BTCPP_format="4" main_tree_to_execute="Place Object">
   <!--//////////-->
-  <BehaviorTree ID="Place object" _description="" _favorite="false">
+  <BehaviorTree
+    ID="Place Object"
+    _description=""
+    _favorite="false"
+    _subtreeOnly="false"
+  >
     <Control ID="Sequence" name="root">
       <Control ID="Sequence">
         <Action ID="SwitchUIPrimaryView" primary_view_name="Visualization" />
