@@ -7,11 +7,6 @@ This workspace contains reference materials for using MoveIt Pro, including:
 - [Mobile manipulation configuration](src/moveit_pro_mobile_manipulation/picknik_ur_mobile_config)
 - [Example behaviors](src/example_behaviors)
 
-Since the [picknik_accessories](https://github.com/PickNikRobotics/picknik_accessories) package uses git LFS, [it cannot be added as a subtree](https://github.com/git-lfs/git-lfs/issues/854).
-Please ensure you have the submodule up to date using:
-```bash
-git submodule update --recursive --init
-```
 
 ## Working with Git Subtrees
 
@@ -43,7 +38,7 @@ The structure of this repository is as follows:
     │   ├── mobile_manipulation_config
     │   └── picknik_ur_mobile_config
     ├── <a href="https://github.com/PickNikRobotics/fanuc_sim">fanuc_sim</a>
-    ├── <a href="https://github.com/PickNikRobotics/picknik_accessories">picknik_accessories</a> (submodule)
+    ├── <a href="https://github.com/PickNikRobotics/picknik_accessories_non_lfs">picknik_accessories</a>
     └── external_dependencies
         ├── <a href="https://github.com/sjahr/ridgeback/tree/ros2">ridgeback</a>
         ├── <a href="https://github.com/PickNikRobotics/ros2_robotiq_gripper">ros2_robotiq_gripper</a>
