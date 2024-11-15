@@ -1,0 +1,110 @@
+<lab_desk_globals>  
+  <option integrator="implicitfast">
+    <flag multiccd="enable" />
+  </option>
+  <option cone="elliptic" impratio="10" />
+
+  <asset>
+    <!-- Define textures and materials -->
+    <texture name="wood" type="cube" file="assets/wood.png" />
+    <material name="wood" texture="wood" texrepeat="1 1" />
+
+    <!-- Define AprilTag textures -->
+    <texture name="apriltag1" type="2d" file="assets/tag36_11_00000.png" />
+    <texture name="apriltag2" type="2d" file="assets/tag36_11_00001.png" />
+
+    <!-- Define block materials with AprilTags -->
+    <material
+      name="apriltag_material1"
+      texture="apriltag1"
+      texuniform="false"
+    />
+    <material
+      name="apriltag_material2"
+      texture="apriltag2"
+      texuniform="false"
+    />
+
+    <texture
+      type="2d"
+      name="groundplane"
+      builtin="checker"
+      mark="edge"
+      rgb1="0.2 0.3 0.4"
+      rgb2="0.1 0.2 0.3"
+      markrgb="0.8 0.8 0.8"
+      width="300"
+      height="300"
+    />
+    <material
+      name="groundplane"
+      texture="groundplane"
+      texuniform="true"
+      texrepeat="5 5"
+      reflectance="0.2"
+    />
+  </asset>
+
+  <asset>
+    <texture type="2d" name="desk_texture" file="assets/desk.png" />
+    <texture type="2d" name="shelf_texture" file="assets/shelf.png" />
+    <texture type="2d" name="microscope_texture" file="assets/microscope.png" />
+    <texture type="2d" name="stirrer_texture" file="assets/stirrer.png" />
+    <texture
+      type="2d"
+      name="test_tubes_stand_texture"
+      file="assets/test_tubes_stand.png"
+    />
+    <texture type="2d" name="bottle_texture" file="assets/bottle.png" />
+
+    <material
+      name="desk"
+      texture="desk_texture"
+      specular="0.5"
+      shininess="0.5"
+    />
+    <material
+      name="shelf"
+      texture="shelf_texture"
+      specular="0.5"
+      shininess="0.5"
+    />
+    <material
+      name="microscope"
+      texture="microscope_texture"
+      specular="0.5"
+      shininess="0.5"
+    />
+    <material name="glass" rgba="0.659 0.800 0.843 0.3" />
+    <material
+      name="stirrer"
+      texture="stirrer_texture"
+      specular="0.5"
+      shininess="0.5"
+    />
+    <material
+      name="test_tubes_stand"
+      texture="test_tubes_stand_texture"
+      specular="0.5"
+      shininess="0.5"
+    />
+    <material
+      name="bottle"
+      texture="bottle_texture"
+      specular="0.5"
+      shininess="0.5"
+    />
+
+    <mesh file="assets/desk.obj" />
+    <mesh file="assets/shelf.obj" />
+    <mesh file="assets/shelf_glass.obj" />
+    <mesh file="assets/microscope.obj" />
+    <mesh file="assets/beaker.obj" />
+    <mesh file="assets/stirrer.obj" />
+    <mesh file="assets/test_tubes.obj" />
+    <mesh file="assets/test_tubes_stand.obj" />
+    <mesh file="assets/flask.obj" />
+    <mesh file="assets/bottle.obj" />
+  </asset>
+
+</lab_desk_globals>

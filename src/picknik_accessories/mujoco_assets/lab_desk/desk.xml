@@ -1,0 +1,225 @@
+<lab_desk>
+  <body name="desk" pos="0 1.1 -0.512" euler="0 0 0">
+    <geom
+      material="desk"
+      mesh="desk"
+      class="visual"
+      contype="0"
+      conaffinity="0"
+      group="2"
+    />
+    <geom
+      class="collision"
+      type="box"
+      pos="0 0 0"
+      size="2 0.6 0.986592"
+      group="4"
+    />
+  </body>
+  <body name="shelf" pos="-2.78335 1.37681 -0.512" euler="0 0 0">
+    <geom
+      material="shelf"
+      mesh="shelf"
+      class="visual"
+      contype="0"
+      conaffinity="0"
+      group="2"
+    />
+    <geom type="mesh" class="collision" mesh="shelf" group="4" />
+  </body>
+  <body name="shelf_glass" pos="-2.78335 1.37681 -0.512" euler="0 0 0">
+    <geom
+      material="glass"
+      mesh="shelf_glass"
+      class="visual"
+      contype="0"
+      conaffinity="0"
+      group="2"
+    />
+    <geom type="mesh" class="collision" mesh="shelf_glass" group="4" />
+  </body>
+  <body name="microscope" pos="-1.168 0.7767 0.488" euler="0 0 0">
+    <geom
+      material="microscope"
+      mesh="microscope"
+      class="visual"
+      contype="0"
+      conaffinity="0"
+      group="2"
+    />
+    <geom type="mesh" class="collision" mesh="microscope" group="4" />
+  </body>
+  <body name="beaker-1" pos="-1.34591 1.077765 0.89777" euler="0 0 0">
+    <geom
+      material="glass"
+      mesh="beaker"
+      class="visual"
+      contype="0"
+      conaffinity="0"
+      group="2"
+    />
+    <geom type="mesh" class="collision" mesh="beaker" group="4" />
+  </body>
+  <body name="beaker-2" pos="-1.1503 1.077765 0.89777" euler="0 0 45">
+    <geom
+      material="glass"
+      mesh="beaker"
+      class="visual"
+      contype="0"
+      conaffinity="0"
+      group="2"
+    />
+    <geom type="mesh" class="collision" mesh="beaker" group="4" />
+  </body>
+  <body name="beaker-3" pos="-0.871046 0.729603 0.474592" euler="0 0 20">
+    <geom
+      material="glass"
+      mesh="beaker"
+      class="visual"
+      contype="0"
+      conaffinity="0"
+      group="2"
+    />
+    <geom type="mesh" class="collision" mesh="beaker" group="4" />
+    <joint type="free" damping="1" />
+  </body>
+  <body name="stirrer" pos="0.605 0.761 0.473827" euler="0 0 0">
+    <geom
+      material="stirrer"
+      mesh="stirrer"
+      class="visual"
+      contype="0"
+      conaffinity="0"
+      group="2"
+    />
+    <geom
+      class="collision"
+      type="box"
+      pos="0 0 0"
+      size="0.1 0.2 0.037"
+      group="4"
+    />
+  </body>
+  <body name="test_tubes_stand" pos="-0.7 0.85 0.472476" euler="0 0 -30">
+    <geom
+      material="test_tubes_stand"
+      mesh="test_tubes_stand"
+      class="visual"
+      contype="0"
+      conaffinity="0"
+      group="2"
+    />
+    <geom type="mesh" class="collision" mesh="test_tubes_stand" group="4" />
+  </body>
+  <body name="test_tubes" pos="-0.7 0.85 0.472476" euler="0 0 -30">
+    <geom
+      material="glass"
+      mesh="test_tubes"
+      class="visual"
+      contype="0"
+      conaffinity="0"
+      group="2"
+    />
+    <geom type="mesh" class="collision" mesh="test_tubes" group="4" />
+  </body>
+  <body name="flask_1" pos="-0.5 0.69 0.472476" euler="0 0 -30">
+    <geom
+      material="glass"
+      mesh="flask"
+      class="visual"
+      contype="0"
+      conaffinity="0"
+      group="2"
+    />
+    <geom type="mesh" class="collision" mesh="flask" group="4" />
+    <joint type="free" damping="1" />
+  </body>
+  <body name="flask_2" pos="-0.36 0.61 0.472476" euler="0 0 -30">
+    <geom
+      material="glass"
+      mesh="flask"
+      class="visual"
+      contype="0"
+      conaffinity="0"
+      group="2"
+    />
+    <geom type="mesh" class="collision" mesh="flask" group="4" />
+    <joint type="free" damping="1" />
+  </body>
+  <body name="flask_3" pos="-0.3 0.7 0.472476" euler="0 0 -30">
+    <geom
+      material="glass"
+      mesh="flask"
+      class="visual"
+      contype="0"
+      conaffinity="0"
+      group="2"
+    />
+    <geom type="mesh" class="collision" mesh="flask" group="4" />
+    <joint type="free" damping="1" />
+  </body>
+  <!-- <body name="flask_4" pos="0.251 -0.428 1.0242" euler="0 0 -30">
+    <geom material="glass" mesh="flask" class="visual" contype="0" conaffinity="0" group="2"/>
+    <geom type="mesh" class="collision" mesh="flask" group="4"/>
+    <joint type="free" damping="1"/>
+  </body> -->
+
+
+  <body name="bottle_1" pos="0 0.9 0.473807" euler="0 0 -20">
+    <geom
+      material="bottle"
+      mesh="bottle"
+      class="visual"
+      contype="0"
+      conaffinity="0"
+      group="2"
+    />
+    <geom
+      type="mesh"
+      class="collision"
+      mesh="bottle"
+      group="4"
+      solref="0.01 1.1"
+      friction="0.5"
+    />
+    <joint type="free" damping="1" />
+  </body>
+  <body name="bottle_2" pos="-0.1 0.85 0.473807" euler="0 0 10">
+    <geom
+      material="bottle"
+      mesh="bottle"
+      class="visual"
+      contype="0"
+      conaffinity="0"
+      group="2"
+    />
+    <geom
+      type="mesh"
+      class="collision"
+      mesh="bottle"
+      group="4"
+      solref="0.01 1.1"
+      friction="0.5"
+    />
+    <joint type="free" damping="1" />
+  </body>
+  <body name="bottle_3" pos="0.05 0.85 0.473807" euler="0 0 -30">
+    <geom
+      material="bottle"
+      mesh="bottle"
+      class="visual"
+      contype="0"
+      conaffinity="0"
+      group="2"
+    />
+    <geom
+      type="mesh"
+      class="collision"
+      mesh="bottle"
+      group="4"
+      solref="0.01 1.1"
+      friction="0.5"
+    />
+    <joint type="free" damping="1" />
+  </body>
+</lab_desk>

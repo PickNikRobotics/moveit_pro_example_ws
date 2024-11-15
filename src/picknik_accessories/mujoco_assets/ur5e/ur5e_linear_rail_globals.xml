@@ -1,0 +1,12 @@
+<ur5e_linear_rail_globals>
+  <include file="ur5e/ur5e_globals.xml" />
+  <actuator>
+    <position
+      class="robot"
+      name="linear_rail_joint"
+      joint="linear_rail_joint"
+      kp="75000"
+      dampratio="1.0"
+    />
+  </actuator>
+</ur5e_linear_rail_globals>
