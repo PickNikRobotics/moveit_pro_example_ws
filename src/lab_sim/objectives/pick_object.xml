@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Pick object">
   <!--//////////-->
   <BehaviorTree
@@ -15,6 +14,7 @@
           ID="CreateStampedPose"
           orientation_xyzw="0;1;0;0"
           position_xyz="0.01;.75;0.515"
+          stamped_pose="{stamped_pose}"
         />
         <Action
           ID="AddPoseStampedToVector"
