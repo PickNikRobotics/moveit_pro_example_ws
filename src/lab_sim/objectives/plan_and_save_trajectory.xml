@@ -32,7 +32,7 @@
       />
       <SubTree
         ID="Add Waypoints to MTC Task"
-        _collapsed="true"
+        _collapsed="false"
         mtc_task="{mtc_task}"
         waypoint_names="Pick Cube;Place Cube"
         joint_group_name="manipulator"
@@ -50,4 +50,7 @@
       />
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Plan and Save Trajectory" />
+  </TreeNodesModel>
 </root>
