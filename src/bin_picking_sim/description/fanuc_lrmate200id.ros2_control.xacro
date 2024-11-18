@@ -2,10 +2,11 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
   <xacro:macro
     name="fanuc_lrmate200id_ros2_control"
-    params="name initial_positions_file hardware_interface mujoco_model"
+    params="name initial_positions_file hardware_interface mujoco_model mujoco_viewer"
   >
     <xacro:arg name="mujoco_model" default="description/scene.xml" />
     <xacro:arg name="hardware_interface" default="mock" />
+    <xacro:arg name="mujoco_viewer" default="false" />
     <xacro:property
       name="initial_positions"
       value="${load_yaml(initial_positions_file)['initial_positions']}"
@@ -29,8 +30,10 @@
           <param name="render_publish_rate">10</param>
           <param name="tf_publish_rate">60</param>
           <param name="lidar_publish_rate">10</param>
+          <param name="mujoco_viewer">$(arg mujoco_viewer)</param>
         </hardware>
       </xacro:if>
+
       <joint name="joint_1">
         <command_interface name="position">
           <param name="min">${radians(-170)}</param>

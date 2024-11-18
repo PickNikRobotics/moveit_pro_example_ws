@@ -25,5 +25,6 @@
     initial_positions_file="$(arg initial_positions_file)"
     hardware_interface="$(arg hardware_interface)"
     mujoco_model="$(arg mujoco_model)"
+    mujoco_viewer="$(arg mujoco_viewer)"
   />
 </robot>

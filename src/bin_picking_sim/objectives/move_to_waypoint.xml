@@ -33,7 +33,7 @@
         task="{move_to_waypoint_task}"
       />
       <Action
-        ID="BlockingExecuteMTCTask"
+        ID="ExecuteMTCTask"
         solution="{move_to_waypoint_solution}"
       />
     </Control>

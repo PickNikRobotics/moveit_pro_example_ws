@@ -1,0 +1,80 @@
+<mujoco model="hockey_pucks_box">
+    <!-- Compiler settings -->
+    <compiler angle="degree" />
+    
+    <!-- Simulation options -->
+    <option gravity="0 0 -9.81" timestep="0.002" />
+    
+    <!-- Asset definitions: Materials -->
+    <asset>
+        <!-- Red material for hockey pucks -->
+        <material name="puck_mat" rgba="1 0 0 1"/> <!-- Red pucks -->
+        <!-- Gray material for container walls -->
+        <material name="wall_mat" rgba="0.8 0.8 0.8 1"/> <!-- Gray walls -->
+    </asset>
+    
+    <!-- World body: Container and Hockey Pucks -->
+    <worldbody>
+        <!-- Container: A fixed body with six walls -->
+        <body name="container" pos="0 0 0" type="fixed">
+            
+            <!-- Floor -->
+            <geom name="floor" type="plane" size="10 10 0.1" material="wall_mat" 
+                  friction="0.8 0.3 0.1" solref="0.02 1" solimp="0.9 0.95 0.001" mass="100"/>
+
+        </body>
+    
+        <!-- Hockey Pucks: 10 dynamic cylinder bodies -->
+        <!-- Each puck is a separate body with a cylindrical geom -->
+        <!-- Positions are arranged to avoid initial overlaps -->
+        <body name="puck1" pos="-1.5 0 0.05">
+            <geom type="cylinder" size="0.05 0.02" rgba="1 0 0 1" material="puck_mat" 
+                  mass="0.17" friction="0.5 0.3 0.1" solref="0.02 1" solimp="0.8 0.9 0.001" />
+        </body>
+    
+        <body name="puck2" pos="1.5 0 0.05">
+            <geom type="cylinder" size="0.05 0.02" rgba="1 0 0 1" material="puck_mat" 
+                  mass="0.17" friction="0.5 0.3 0.1" solref="0.02 1" solimp="0.8 0.9 0.001" />
+        </body>
+    
+        <body name="puck3" pos="0 1.5 0.05">
+            <geom type="cylinder" size="0.05 0.02" rgba="1 0 0 1" material="puck_mat" 
+                  mass="0.17" friction="0.5 0.3 0.1" solref="0.02 1" solimp="0.8 0.9 0.001" />
+        </body>
+    
+        <body name="puck4" pos="0 -1.5 0.05">
+            <geom type="cylinder" size="0.05 0.02" rgba="1 0 0 1" material="puck_mat" 
+                  mass="0.17" friction="0.5 0.3 0.1" solref="0.02 1" solimp="0.8 0.9 0.001" />
+        </body>
+    
+        <body name="puck5" pos="1.5 1.5 0.05">
+            <geom type="cylinder" size="0.05 0.02" rgba="1 0 0 1" material="puck_mat" 
+                  mass="0.17" friction="0.5 0.3 0.1" solref="0.02 1" solimp="0.8 0.9 0.001" />
+        </body>
+    
+        <body name="puck6" pos="-1.5 1.5 0.05">
+            <geom type="cylinder" size="0.05 0.02" rgba="1 0 0 1" material="puck_mat" 
+                  mass="0.17" friction="0.5 0.3 0.1" solref="0.02 1" solimp="0.8 0.9 0.001" />
+        </body>
+    
+        <body name="puck7" pos="1.5 -1.5 0.05">
+            <geom type="cylinder" size="0.05 0.02" rgba="1 0 0 1" material="puck_mat" 
+                  mass="0.17" friction="0.5 0.3 0.1" solref="0.02 1" solimp="0.8 0.9 0.001" />
+        </body>
+    
+        <body name="puck8" pos="-1.5 -1.5 0.05">
+            <geom type="cylinder" size="0.05 0.02" rgba="1 0 0 1" material="puck_mat" 
+                  mass="0.17" friction="0.5 0.3 0.1" solref="0.02 1" solimp="0.8 0.9 0.001" />
+        </body>
+    
+        <body name="puck9" pos="0.75 0.75 0.05">
+            <geom type="cylinder" size="0.05 0.02" rgba="1 0 0 1" material="puck_mat" 
+                  mass="0.17" friction="0.5 0.3 0.1" solref="0.02 1" solimp="0.8 0.9 0.001" />
+        </body>
+    
+        <body name="puck10" pos="-0.75 -0.75 0.05">
+            <geom type="cylinder" size="0.05 0.02" rgba="1 0 0 1" material="puck_mat" 
+                  mass="0.17" friction="0.5 0.3 0.1" solref="0.02 1" solimp="0.8 0.9 0.001" />
+        </body>
+    </worldbody>
+</mujoco>

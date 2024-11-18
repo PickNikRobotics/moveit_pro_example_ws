@@ -1,0 +1,31 @@
+<bin_picking_globals>
+
+    <compiler angle="radian" coordinate="local"/>
+    <asset>
+        <material name="bin_material" rgba="0.984 0.353 0.290 1.0"/>
+        <material name="framing_material" rgba="0.7 0.7 0.7 1"/>
+        <texture name="floor_texture" type="2d" file="diamond_plate.png" />
+        <texture name="vancouver-canucks-texture" type="2d" file="vancouver-canucks-logo.png" />
+        <texture name="ottawa-senators-texture" type="2d" file="ottawa-senators-logo.png" />
+        <texture name="toronto-maple-leafs-texture" type="2d" file="toronto-maple-leafs-logo.png" />
+        <texture name="colorado-avalanche-texture" type="2d" file="colorado-avalanche-logo.png" />
+        <texture name="calgary-flames-texture" type="2d" file="calgary-flames-logo.png" />
+        <texture name="montreal-canadiens-texture" type="2d" file="montreal-canadiens-logo.png" />
+        <texture name="edmonton-oilers-texture" type="2d" file="edmonton-oilers-logo.png" />
+        <texture name="winnipeg-jets-texture" type="2d" file="winnipeg-jets-logo.png" />
+        
+        <!-- Define material using the checker texture -->
+        <material name="floor_material" texture="floor_texture" texrepeat="10 10" rgba="0.6 0.6 0.6 1" shininess="0.3" specular="0.3"/>
+        <material name="vancouver-canucks-material" texture="vancouver-canucks-texture" rgba="0.6 0.6 0.6 1" shininess="0.3" specular="0.3"/>
+        <material name="ottawa-senators-material" texture="ottawa-senators-texture" rgba="0.6 0.6 0.6 1" shininess="0.3" specular="0.3"/>
+        <material name="toronto-maple-leafs-material" texture="toronto-maple-leafs-texture" rgba="0.6 0.6 0.6 1" shininess="0.3" specular="0.3"/>
+        <material name="colorado-avalanche-material" texture="colorado-avalanche-texture" rgba="0.6 0.6 0.6 1" shininess="0.3" specular="0.3"/>
+        <material name="calgary-flames-material" texture="calgary-flames-texture" rgba="0.6 0.6 0.6 1" shininess="0.3" specular="0.3"/>
+        <material name="montreal-canadiens-material" texture="montreal-canadiens-texture" rgba="0.6 0.6 0.6 1" shininess="0.3" specular="0.3"/>
+        <material name="edmonton-oilers-material" texture="edmonton-oilers-texture" rgba="0.6 0.6 0.6 1" shininess="0.3" specular="0.3"/>
+        <material name="winnipeg-jets-material" texture="winnipeg-jets-texture" rgba="0.6 0.6 0.6 1" shininess="0.3" specular="0.3"/>
+
+        <material name="shelf_material" rgba="0.6 0.4 0.2 1"/>
+        <material name="cardboard_material" rgba="0.8 0.6 0.4 1"/>
+    </asset>
+</bin_picking_globals>
