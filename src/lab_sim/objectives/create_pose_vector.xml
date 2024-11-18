@@ -10,6 +10,7 @@
       <Action
         ID="AddPoseStampedToVector"
         vector="{target_poses}"
+        input="{pose_stamped}"
       />
       <Action
         ID="CreateStampedPose"
@@ -19,6 +20,7 @@
       <Action
         ID="AddPoseStampedToVector"
         vector="{target_poses}"
+        input="{pose_stamped}"
       />
       <Action
         ID="CreateStampedPose"
@@ -28,6 +30,7 @@
       <Action
         ID="AddPoseStampedToVector"
         vector="{target_poses}"
+        input="{pose_stamped}"
       />
       <Action
         ID="CreateStampedPose"
@@ -37,6 +40,7 @@
       <Action
         ID="AddPoseStampedToVector"
         vector="{target_poses}"
+        input="{pose_stamped}"
       />
       <Action
         ID="CreateStampedPose"
@@ -46,6 +50,7 @@
       <Action
         ID="AddPoseStampedToVector"
         vector="{target_poses}"
+        input="{pose_stamped}"
       />
       <Action
         ID="CreateStampedPose"
@@ -55,6 +60,7 @@
       <Action
         ID="AddPoseStampedToVector"
         vector="{target_poses}"
+        input="{pose_stamped}"
       />
       <Action
         ID="CreateStampedPose"
@@ -64,6 +70,7 @@
       <Action
         ID="AddPoseStampedToVector"
         vector="{target_poses}"
+        input="{pose_stamped}"
       />
       <Action
         ID="CreateStampedPose"
@@ -73,6 +80,7 @@
       <Action
         ID="AddPoseStampedToVector"
         vector="{target_poses}"
+        input="{pose_stamped}"
       />
       <Action
         ID="CreateStampedPose"
@@ -82,6 +90,7 @@
       <Action
         ID="AddPoseStampedToVector"
         vector="{target_poses}"
+        input="{pose_stamped}"
       />
     </Control>
   </BehaviorTree>
