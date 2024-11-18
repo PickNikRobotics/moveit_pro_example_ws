@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root BTCPP_format="4" main_tree_to_execute="Visualize Pose">
+  <!--//////////-->
+  <BehaviorTree ID="Visualize Pose" _description="" _favorite="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="CreateStampedPose"/>
+      <Action ID="AddPoseStampedToVector"/>
+      <Action ID="AdjustPoseWithIMarker" initial_poses="{pose_stamped_vector}"/>
+      <Decorator ID="ForEach" vector_in="{adjusted_poses}">
+        <Action ID="TransformPoseFrame" target_frame_id="tool0" input_pose="{out}"/>
+      </Decorator>
+      <Action ID="SavePoseStampedToYaml" message="{output_pose}" yaml_filename="~/user_ws/pose_stamped"/>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Visualize Pose"/>
+  </TreeNodesModel>
+</root>

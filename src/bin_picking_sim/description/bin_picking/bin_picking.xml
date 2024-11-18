@@ -1,0 +1,45 @@
+<bin_picking>
+
+<!-- Left bin: circular bin -->
+<body name="bin_left" pos="0 0.5 0">
+    <!-- Bin bottom -->
+    <geom name="bin_left_bottom" type="cylinder" size="0.125 0.001" pos="0 0 0.049" material="bin_material" contype="6" conaffinity="6" group="1"/>
+    <geom name="bin_left_bottom_collision" type="cylinder" size="0.125 0.05" pos="0 0 0" rgba="0 0 0 1" contype="1" conaffinity="1" group="5"/>
+    <!-- <geom name="bin_left_bottom_collision" type="plane" size="0.125 0.01 0.05" pos="0 0 0" rgba="0 0 0 0" contype="1" conaffinity="1" group="4"/> -->
+    <!-- Bin walls: approximated with 12 segments -->
+    <replicate count="360" offset="0 0 0" euler="0 0 0.0174533">
+        <geom name="bin_wall" type="cylinder" size="0.002 0.05" pos="0.125 0 0.099" euler="0 0 0" material="bin_material" contype="1" conaffinity="1" />
+    </replicate>
+</body>
+
+<!-- Second bin: in front of center -->
+<body name="bin_front" pos="0.5 0 0">
+    <!-- Bin bottom -->
+    <geom name="bin_front_bottom" type="box" size="0.125 1.25 0.01" pos="0 0 0.035" material="bin_material" contype="6" conaffinity="6" />
+    <geom name="bin_front_bottom_collision" type="box" size="0.125 0.25 0.05" pos="0 0 0.0" rgba="0 0 0 0" contype="1" conaffinity="1" />
+    <!-- Bin walls -->
+    <geom name="bin_front_wall1" type="box" size="0.005 1.25 0.01" pos="-0.12 0 0.045" material="bin_material" contype="1" conaffinity="1" />
+    <geom name="bin_front_wall2" type="box" size="0.005 1.25 0.01" pos="0.12 0 0.045" material="bin_material" contype="1" conaffinity="1" />
+    <!-- <geom name="bin_front_wall3" type="box" size="0.125 0.005 0.05" pos="0 -0.245 0.085" material="bin_material" contype="1" conaffinity="1" />
+    <geom name="bin_front_wall4" type="box" size="0.125 0.005 0.05" pos="0 0.245 0.085" material="bin_material" contype="1" conaffinity="1" /> -->
+</body>
+
+<!-- Framing: Four vertical posts at the corners, from bins to the floor -->
+<geom name="frame_post1" type="box" size="0.025 0.025 0.25" pos="-0.5 -0.5 -0.25" material="framing_material" contype="1" conaffinity="1" />
+<geom name="frame_post2" type="box" size="0.025 0.025 0.25" pos="0.5 -0.5 -0.25" material="framing_material" contype="1" conaffinity="1" />
+<geom name="frame_post3" type="box" size="0.025 0.025 0.25" pos="-0.5 0.5 -0.25" material="framing_material" contype="1" conaffinity="1" />
+<geom name="frame_post4" type="box" size="0.025 0.025 0.25" pos="0.5 0.5 -0.25" material="framing_material" contype="1" conaffinity="1" />
+
+<!-- Framing: Bottom horizontal beams (optional) -->
+<geom name="frame_bottom_beam1" type="box" size="0.525 0.025 0.025" pos="0 -0.5 0" material="framing_material" contype="1" conaffinity="1" />
+<geom name="frame_bottom_beam2" type="box" size="0.525 0.025 0.025" pos="0 0.5 0" material="framing_material" contype="1" conaffinity="1" />
+<geom name="frame_bottom_beam3" type="box" size="0.025 0.525 0.025" pos="-0.5 0 0" material="framing_material" contype="1" conaffinity="1" />
+<geom name="frame_bottom_beam4" type="box" size="0.025 0.525 0.025" pos="0.5 0 0" material="framing_material" contype="1" conaffinity="1" />
+
+<!-- Shelf to the right of the center, outside the workcell -->
+<body name="shelf_right" pos="-0.75 0 0">
+    <!-- Shelf surface -->
+    <geom name="shelf_surface" type="box" size="0.25 0.75 0.01" pos="0 0 0.01" material="shelf_material" contype="1" conaffinity="1" />
+</body>
+
+</bin_picking>
