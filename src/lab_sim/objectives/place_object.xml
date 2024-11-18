@@ -13,6 +13,7 @@
           ID="CreateStampedPose"
           orientation_xyzw="0;1;0;0"
           position_xyz="0.01;.75;0.5.15"
+          stamped_pose="{stamped_pose}"
         />
         <Action
           ID="AddPoseStampedToVector"
