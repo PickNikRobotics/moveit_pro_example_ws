@@ -1,10 +1,9 @@
-<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Plan and Save Trajectory">
   <!--//////////-->
   <BehaviorTree
     ID="Plan and Save Trajectory"
     _description=""
-    _favorite="true"
+    _favorite="false"
     _subtreeOnly="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
