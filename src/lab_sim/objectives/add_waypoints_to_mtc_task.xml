@@ -1,7 +1,10 @@
-<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Add Waypoints to MTC Task">
   <!--//////////-->
-  <BehaviorTree ID="Add Waypoints to MTC Task">
+  <BehaviorTree
+    ID="Add Waypoints to MTC Task"
+    _subtreeOnly="true"
+    _description=""
+  >
     <Control ID="Sequence">
       <Action
         ID="RetrieveWaypoint"

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Save and Execute a Trajectory from Disk"
+>
+  <!--//////////-->
+  <BehaviorTree
+    ID="Save and Execute a Trajectory from Disk"
+    _description=""
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree ID="Plan and Save Trajectory" _collapsed="true" />
+      <SubTree ID="Load and Execute Joint Trajectory" _collapsed="true" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Save and Execute a Trajectory from Disk" />
+  </TreeNodesModel>
+</root>
