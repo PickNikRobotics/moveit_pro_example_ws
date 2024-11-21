@@ -1,7 +1,11 @@
-<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Pick up Cube">
   <!--//////////-->
-  <BehaviorTree ID="Pick up Cube" _description="" _favorite="false">
+  <BehaviorTree
+    ID="Pick up Cube"
+    _description="Pick up the cube using a manually defined PoseStamped"
+    _favorite="false"
+    _subtreeOnly="false"
+  >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree ID="Clear Snapshot" _collapsed="true" />
       <SubTree ID="Look at table" _collapsed="true" />

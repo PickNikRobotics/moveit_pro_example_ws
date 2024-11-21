@@ -1,11 +1,11 @@
-<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Reset Planning Scene">
   <!-- ////////// -->
   <BehaviorTree
     ID="Reset Planning Scene"
-    _description=""
+    _description="Remove all runtime additions to the planning scene"
     _favorite="false"
     _hardcoded="false"
+    _subtreeOnly="false"
   >
     <Action
       ID="ResetPlanningSceneObjects"

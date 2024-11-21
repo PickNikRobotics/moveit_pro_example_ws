@@ -2,7 +2,7 @@
   <!--//////////-->
   <BehaviorTree
     ID="Place Object"
-    _description=""
+    _description="Place an object in the gripper at a manually specified location"
     _favorite="false"
     _subtreeOnly="false"
   >

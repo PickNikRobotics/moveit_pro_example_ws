@@ -2,7 +2,7 @@
   <!--//////////-->
   <BehaviorTree
     ID="Plan and Save Trajectory"
-    _description=""
+    _description="Use a series of waypoints to plan and MTC task, convert the solution to a Joint Trajectory message, and save it to disk in YAML format"
     _favorite="false"
     _subtreeOnly="false"
   >

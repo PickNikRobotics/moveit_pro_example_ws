@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8" ?>
 <root
   BTCPP_format="4"
   main_tree_to_execute="Save and Execute a Trajectory from Disk"
@@ -6,8 +5,9 @@
   <!--//////////-->
   <BehaviorTree
     ID="Save and Execute a Trajectory from Disk"
-    _description=""
+    _description="Build a trajectory from a series of waypoints and MTC tasks, then save the trajectory to disk. Load the trajectory from disk and execute it as well."
     _favorite="true"
+    _subtreeOnly="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree ID="Plan and Save Trajectory" _collapsed="true" />
