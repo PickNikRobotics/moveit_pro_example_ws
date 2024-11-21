@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<root BTCPP_format="4" main_tree_to_execute=" Take wrist camera snapshot">
+<root BTCPP_format="4" main_tree_to_execute="Take wrist camera snapshot">
   <!--//////////-->
   <BehaviorTree
     ID="Take wrist camera snapshot"
-    _description=""
+    _description="Capture and visualise a pointcloud with the wrist camera"
     _favorite="true"
+    _subtreeOnly="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <!-- Do not clear snapshots first, so we can take multiple snapshots from different angles -->
