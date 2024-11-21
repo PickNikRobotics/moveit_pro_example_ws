@@ -1,7 +1,11 @@
-<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Visualize Pose">
   <!--//////////-->
-  <BehaviorTree ID="Visualize Pose" _description="" _favorite="false">
+  <BehaviorTree
+    ID="Visualize Pose"
+    _description="Add an axis marker to the visualisation pane at a given pose"
+    _favorite="false"
+    _subtreeOnly="false"
+  >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
         ID="CreateStampedPose"

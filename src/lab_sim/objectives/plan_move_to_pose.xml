@@ -1,6 +1,10 @@
 <root BTCPP_format="4" main_tree_to_execute="Plan Move To Pose">
   <!-- ////////// -->
-  <BehaviorTree ID="Plan Move To Pose">
+  <BehaviorTree
+    ID="Plan Move To Pose"
+    _subtreeOnly="true"
+    _description="Plan an MTC task, but do not execute it"
+  >
     <Control ID="Sequence">
       <Action
         ID="InitializeMTCTask"
