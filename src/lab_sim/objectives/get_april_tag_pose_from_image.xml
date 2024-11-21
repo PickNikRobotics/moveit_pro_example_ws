@@ -1,6 +1,10 @@
 <root BTCPP_format="4" main_tree_to_execute="Get AprilTag Pose from Image">
   <!-- ////////// -->
-  <BehaviorTree ID="Get AprilTag Pose from Image">
+  <BehaviorTree
+    ID="Get AprilTag Pose from Image"
+    _subtreeOnly="true"
+    _description=""
+  >
     <Control ID="Sequence">
       <!--Get tag pose estimate in world frame-->
       <Action
