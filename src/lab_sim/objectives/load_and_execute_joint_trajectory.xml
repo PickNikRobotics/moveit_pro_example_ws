@@ -2,8 +2,9 @@
   <!--//////////-->
   <BehaviorTree
     ID="Load and Execute Joint Trajectory"
-    _description=""
+    _description="Load a trajectory that was saved as a YAML file"
     _favorite="false"
+    _subtreeOnly="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree
