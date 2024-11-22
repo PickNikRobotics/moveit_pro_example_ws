@@ -2,9 +2,9 @@
   <include file="bin_picking/bin_picking_globals.xml" />
   <include file="lrmate200id/lrmate200id_globals.xml" />
 
-<option timestep="0.001" integrator="implicitfast" gravity="0 0 -9.8">
-  	<flag contact="enable" energy="enable"  multiccd="enable"/>
-</option>
+  <option timestep="0.001" integrator="implicitfast" gravity="0 0 -9.8">
+    <flag contact="enable" energy="enable" multiccd="enable" />
+  </option>
   <worldbody>
     <light pos="0 0 1.5" dir="0 0 -1" directional="true" />
     <geom
@@ -13,7 +13,8 @@
       size="0 0 0.05"
       type="plane"
       material="floor_material"
-       contype="1" conaffinity="1" 
+      contype="1"
+      conaffinity="1"
     />
     <!-- Scene Camera -->
     <site
@@ -29,94 +30,264 @@
       resolution="640 480"
       euler="0.849 0.000 0.0"
     />
-    <include file="bin_picking/bin_picking.xml" />     
-    
-    <include file="lrmate200id/lrmate200id.xml" />     
-      <body name="open_box" pos="0.5 0 0.05">
-              <geom name="box_bottom" type="box" size="0.04 0.04 0.000625" pos="0 0 0.000625" material="cardboard_material" contype="6" conaffinity="6" margin="0.0001"/>
-              <geom name="box_wall1" type="box" size="0.04 0.000625 0.025" pos="0 0.040625 0.025625" material="cardboard_material" contype="1" conaffinity="1" margin="0.0001"/>
-              <geom name="box_wall2" type="box" size="0.04 0.000625 0.025" pos="0 -0.040625 0.025625" material="cardboard_material" contype="1" conaffinity="1" margin="0.0001"/>
-              <geom name="box_wall3" type="box" size="0.000625 0.04 0.025" pos="0.040625 0 0.025625" material="cardboard_material" contype="1" conaffinity="1" margin="0.0001"/>
-              <geom name="box_wall4" type="box" size="0.000625 0.04 0.025" pos="-0.040625 0 0.025625" material="cardboard_material" contype="1" conaffinity="1" margin="0.0001"/>
-        </body>
+
+    <include file="bin_picking/bin_picking.xml" />
+
+    <body name="arm_mount">
+      <include file="lrmate200id/lrmate200id.xml" />
+    </body>
+
+    <body name="open_box" pos="0.5 0 0.05">
+      <geom
+        name="box_bottom"
+        type="box"
+        size="0.04 0.04 0.000625"
+        pos="0 0 0.000625"
+        material="cardboard_material"
+        contype="6"
+        conaffinity="6"
+        margin="0.0001"
+      />
+      <geom
+        name="box_wall1"
+        type="box"
+        size="0.04 0.000625 0.025"
+        pos="0 0.040625 0.025625"
+        material="cardboard_material"
+        contype="1"
+        conaffinity="1"
+        margin="0.0001"
+      />
+      <geom
+        name="box_wall2"
+        type="box"
+        size="0.04 0.000625 0.025"
+        pos="0 -0.040625 0.025625"
+        material="cardboard_material"
+        contype="1"
+        conaffinity="1"
+        margin="0.0001"
+      />
+      <geom
+        name="box_wall3"
+        type="box"
+        size="0.000625 0.04 0.025"
+        pos="0.040625 0 0.025625"
+        material="cardboard_material"
+        contype="1"
+        conaffinity="1"
+        margin="0.0001"
+      />
+      <geom
+        name="box_wall4"
+        type="box"
+        size="0.000625 0.04 0.025"
+        pos="-0.040625 0 0.025625"
+        material="cardboard_material"
+        contype="1"
+        conaffinity="1"
+        margin="0.0001"
+      />
+    </body>
 
     <!-- Freejoints have to be top level -->
-    <replicate count="3" offset="0.001 0 0.06" >
-      <replicate count="3" offset="-0.1 0 0" >
-        <replicate count="12" offset="0 0.1 0" >
+    <replicate count="3" offset="0.001 0 0.06">
+      <replicate count="3" offset="-0.1 0 0">
+        <replicate count="12" offset="0 0.1 0">
           <body name="cardboard_box" pos="-0.65 -0.6 0.02">
-          <geom name="box_cardboard" type="box" size="0.04 0.04 0.025" pos="0 0 0.000625" material="cardboard_material" contype="1" conaffinity="1" margin="0.0001"/>
-              <freejoint />
+            <geom
+              name="box_cardboard"
+              type="box"
+              size="0.04 0.04 0.025"
+              pos="0 0 0.000625"
+              material="cardboard_material"
+              contype="1"
+              conaffinity="1"
+              margin="0.0001"
+            />
+            <freejoint />
           </body>
         </replicate>
       </replicate>
     </replicate>
-    <replicate count="3" offset="0.001 0.001 0.015" >
-      <body pos="0 0.5 0.05"  >
-        <geom type="cylinder" size="0.02 0.005" material="vancouver-canucks-material" contype="1" conaffinity="1" margin="0.0001"/>
+    <replicate count="3" offset="0.001 0.001 0.015">
+      <body pos="0 0.5 0.05">
+        <geom
+          type="cylinder"
+          size="0.02 0.005"
+          material="vancouver-canucks-material"
+          contype="1"
+          conaffinity="1"
+          margin="0.0001"
+        />
         <freejoint />
       </body>
-      <body pos="0 0.56 0.05"  >
-        <geom type="cylinder" size="0.02 0.005" material="ottawa-senators-material" contype="1" conaffinity="1" margin="0.0001"/>
+      <body pos="0 0.56 0.05">
+        <geom
+          type="cylinder"
+          size="0.02 0.005"
+          material="ottawa-senators-material"
+          contype="1"
+          conaffinity="1"
+          margin="0.0001"
+        />
         <freejoint />
       </body>
-      <body pos="0.06 0.5 0.05" >
-        <geom type="cylinder" size="0.02 0.005"  material="toronto-maple-leafs-material" contype="1" conaffinity="1" margin="0.0001"/>
+      <body pos="0.06 0.5 0.05">
+        <geom
+          type="cylinder"
+          size="0.02 0.005"
+          material="toronto-maple-leafs-material"
+          contype="1"
+          conaffinity="1"
+          margin="0.0001"
+        />
         <freejoint />
       </body>
-      <body pos="0.06 0.56 0.05" >
-        <geom type="cylinder" size="0.02 0.005"  material="colorado-avalanche-material" contype="1" conaffinity="1" margin="0.0001"/>
+      <body pos="0.06 0.56 0.05">
+        <geom
+          type="cylinder"
+          size="0.02 0.005"
+          material="colorado-avalanche-material"
+          contype="1"
+          conaffinity="1"
+          margin="0.0001"
+        />
         <freejoint />
       </body>
-      <body pos="0 0.44 0.05"  >
-        <geom type="cylinder" size="0.02 0.005" material="calgary-flames-material" contype="1" conaffinity="1" margin="0.0001"/>
+      <body pos="0 0.44 0.05">
+        <geom
+          type="cylinder"
+          size="0.02 0.005"
+          material="calgary-flames-material"
+          contype="1"
+          conaffinity="1"
+          margin="0.0001"
+        />
         <freejoint />
       </body>
-      <body pos="-0.06 0.5 0.05" >
-        <geom type="cylinder" size="0.02 0.005"  material="montreal-canadiens-material" contype="1" conaffinity="1" margin="0.0001"/>
+      <body pos="-0.06 0.5 0.05">
+        <geom
+          type="cylinder"
+          size="0.02 0.005"
+          material="montreal-canadiens-material"
+          contype="1"
+          conaffinity="1"
+          margin="0.0001"
+        />
         <freejoint />
       </body>
-      <body pos="-0.06 0.44 0.05" >
-        <geom type="cylinder" size="0.02 0.005"  material="edmonton-oilers-material" contype="1" conaffinity="1" margin="0.0001"/>
+      <body pos="-0.06 0.44 0.05">
+        <geom
+          type="cylinder"
+          size="0.02 0.005"
+          material="edmonton-oilers-material"
+          contype="1"
+          conaffinity="1"
+          margin="0.0001"
+        />
         <freejoint />
       </body>
-      <body pos="-0.06 0.56 0.05" >
-        <geom type="cylinder" size="0.02 0.005"  material="winnipeg-jets-material" contype="1" conaffinity="1" margin="0.0001"/>
+      <body pos="-0.06 0.56 0.05">
+        <geom
+          type="cylinder"
+          size="0.02 0.005"
+          material="winnipeg-jets-material"
+          contype="1"
+          conaffinity="1"
+          margin="0.0001"
+        />
         <freejoint />
       </body>
     </replicate>
 
-    <replicate count="3" offset="-0.001 -0.001 0.015" >
-      <body pos="0 0.5 0.1"  >
-        <geom type="cylinder" size="0.02 0.005" material="vancouver-canucks-material" contype="1" conaffinity="1" margin="0.0001"/>
+    <replicate count="3" offset="-0.001 -0.001 0.015">
+      <body pos="0 0.5 0.1">
+        <geom
+          type="cylinder"
+          size="0.02 0.005"
+          material="vancouver-canucks-material"
+          contype="1"
+          conaffinity="1"
+          margin="0.0001"
+        />
         <freejoint />
       </body>
-      <body pos="0 0.56 0.1"  >
-        <geom type="cylinder" size="0.02 0.005" material="ottawa-senators-material" contype="1" conaffinity="1" margin="0.0001"/>
+      <body pos="0 0.56 0.1">
+        <geom
+          type="cylinder"
+          size="0.02 0.005"
+          material="ottawa-senators-material"
+          contype="1"
+          conaffinity="1"
+          margin="0.0001"
+        />
         <freejoint />
       </body>
-      <body pos="0.06 0.5 0.1" >
-        <geom type="cylinder" size="0.02 0.005"  material="toronto-maple-leafs-material" contype="1" conaffinity="1" margin="0.0001"/>
+      <body pos="0.06 0.5 0.1">
+        <geom
+          type="cylinder"
+          size="0.02 0.005"
+          material="toronto-maple-leafs-material"
+          contype="1"
+          conaffinity="1"
+          margin="0.0001"
+        />
         <freejoint />
       </body>
-      <body pos="0.06 0.56 0.1" >
-        <geom type="cylinder" size="0.02 0.005"  material="colorado-avalanche-material" contype="1" conaffinity="1" margin="0.0001"/>
+      <body pos="0.06 0.56 0.1">
+        <geom
+          type="cylinder"
+          size="0.02 0.005"
+          material="colorado-avalanche-material"
+          contype="1"
+          conaffinity="1"
+          margin="0.0001"
+        />
         <freejoint />
       </body>
-      <body pos="0 0.44 0.1"  >
-        <geom type="cylinder" size="0.02 0.005" material="calgary-flames-material" contype="1" conaffinity="1" margin="0.0001"/>
+      <body pos="0 0.44 0.1">
+        <geom
+          type="cylinder"
+          size="0.02 0.005"
+          material="calgary-flames-material"
+          contype="1"
+          conaffinity="1"
+          margin="0.0001"
+        />
         <freejoint />
       </body>
-      <body pos="-0.06 0.5 0.1" >
-        <geom type="cylinder" size="0.02 0.005"  material="montreal-canadiens-material" contype="1" conaffinity="1" margin="0.0001"/>
+      <body pos="-0.06 0.5 0.1">
+        <geom
+          type="cylinder"
+          size="0.02 0.005"
+          material="montreal-canadiens-material"
+          contype="1"
+          conaffinity="1"
+          margin="0.0001"
+        />
         <freejoint />
       </body>
-      <body pos="-0.06 0.44 0.1" >
-        <geom type="cylinder" size="0.02 0.005"  material="edmonton-oilers-material" contype="1" conaffinity="1" margin="0.0001"/>
+      <body pos="-0.06 0.44 0.1">
+        <geom
+          type="cylinder"
+          size="0.02 0.005"
+          material="edmonton-oilers-material"
+          contype="1"
+          conaffinity="1"
+          margin="0.0001"
+        />
         <freejoint />
       </body>
-      <body pos="-0.06 0.56 0.1" >
-        <geom type="cylinder" size="0.02 0.005"  material="winnipeg-jets-material" contype="1" conaffinity="1" margin="0.0001"/>
+      <body pos="-0.06 0.56 0.1">
+        <geom
+          type="cylinder"
+          size="0.02 0.005"
+          material="winnipeg-jets-material"
+          contype="1"
+          conaffinity="1"
+          margin="0.0001"
+        />
         <freejoint />
       </body>
     </replicate>
