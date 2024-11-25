@@ -1,10 +1,9 @@
-<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="08 Solution - Execute path plan">
   <!--//////////-->
   <BehaviorTree
     ID="08 Solution - Execute path plan"
     _description="Plans joint-space motion to track a path, and executes it"
-    _favorite="true"
+    _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action

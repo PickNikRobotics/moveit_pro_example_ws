@@ -1,10 +1,9 @@
-<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="21 Solution - Find the airfoil">
   <!--//////////-->
   <BehaviorTree
     ID="21 Solution - Find the airfoil"
     _description="Estimate the pose of an airfoil using ICP"
-    _favorite="true"
+    _favorite="false"
     _hardcoded="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
