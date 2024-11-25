@@ -9,4 +9,4 @@ git subtree pull --prefix src/fanuc_sim https://github.com/PickNikRobotics/fanuc
 git subtree pull --prefix src/external_dependencies/ridgeback https://github.com/sjahr/ridgeback ros2 --squash
 git subtree pull --prefix src/external_dependencies/ros2_robotiq_gripper https://github.com/PickNikRobotics/ros2_robotiq_gripper main --squash
 git subtree pull --prefix src/external_dependencies/serial https://github.com/tylerjw/serial.git ros2 --squash
-gis submodule update --recursive --init
+git submodule update --recursive --init

@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
+<<<<<<<< HEAD:src/moveit_pro_ur_configs/arm_on_rail_sim/objectives/wrist_snap.xml
 <root BTCPP_format="4" main_tree_to_execute=" Take wrist camera snapshot">
+========
+<root BTCPP_format="4" main_tree_to_execute="Take wrist camera snapshot">
+>>>>>>>> 78b59596c72abdcb5671e8351ac5b78b29f6fbb7:src/moveit_pro_ur_configs/picknik_ur_sim_config/objectives/wrist_snap.xml
   <!--//////////-->
   <BehaviorTree
     ID="Take wrist camera snapshot"
@@ -13,10 +17,14 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
+<<<<<<<< HEAD:src/moveit_pro_ur_configs/arm_on_rail_sim/objectives/wrist_snap.xml
     <SubTree ID="Take wrist camera snapshot">
       <MetadataFields>
         <Metadata subcategory="Application - Basic Examples" />
       </MetadataFields>
     </SubTree>
+========
+    <SubTree ID="Take wrist camera snapshot" />
+>>>>>>>> 78b59596c72abdcb5671e8351ac5b78b29f6fbb7:src/moveit_pro_ur_configs/picknik_ur_sim_config/objectives/wrist_snap.xml
   </TreeNodesModel>
 </root>
