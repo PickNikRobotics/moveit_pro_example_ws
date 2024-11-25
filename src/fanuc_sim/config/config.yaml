@@ -69,13 +69,13 @@ moveit_params:
     path: "config/moveit/pilz_industrial_motion_planner_planning.yaml"
   kinematics:
     package: "fanuc_sim"
-    path: "config/moveit/pose_ik_distance.yaml"
+    path: "config/moveit/slik_kinematics_distance.yaml"
   servo:
     package: "fanuc_sim"
     path: "config/moveit/servo.yaml"
   servo_kinematics:
     package: "fanuc_sim"
-    path: "config/moveit/pose_ik_speed.yaml"
+    path: "config/moveit/slik_kinematics_speed.yaml"
   joint_limits:
     package: "fanuc_sim"
     path: "config/moveit/joint_limits.yaml"
