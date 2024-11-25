@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Move to Waypoint">
   <BehaviorTree
     ID="Move to Waypoint"
@@ -37,13 +38,16 @@
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Move to Waypoint">
-      <input_port name="waypoint_name" default="Above Place Cube" />
+      <input_port name="waypoint_name" default="" />
       <input_port name="joint_group_name" default="manipulator" />
       <input_port name="planner_interface" default="moveit_default" />
       <input_port
         name="controller_names"
         default="/joint_trajectory_controller"
       />
+      <MetadataFields>
+        <Metadata subcategory="Motion - Execute" />
+      </MetadataFields>
     </SubTree>
   </TreeNodesModel>
 </root>
