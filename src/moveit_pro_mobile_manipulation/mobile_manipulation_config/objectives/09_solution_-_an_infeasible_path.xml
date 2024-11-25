@@ -1,10 +1,9 @@
-<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="09 Solution - An infeasible path">
   <!--//////////-->
   <BehaviorTree
     ID="09 Solution - An infeasible path"
     _description="An example of a path that is not feasible"
-    _favorite="true"
+    _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
