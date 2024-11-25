@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8" ?>
 <root
   BTCPP_format="4"
   main_tree_to_execute="25 Solution - Execute Airfoil Coverage"
@@ -7,7 +6,7 @@
   <BehaviorTree
     ID="25 Solution - Execute Airfoil Coverage"
     _description="Estimate the pose of an airfoil, define a coverage path and execute it"
-    _favorite="true"
+    _favorite="false"
     _hardcoded="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
