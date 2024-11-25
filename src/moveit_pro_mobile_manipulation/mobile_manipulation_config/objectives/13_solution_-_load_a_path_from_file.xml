@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8" ?>
 <root
   BTCPP_format="4"
   main_tree_to_execute="13 Solution - Load a path from file"
@@ -7,7 +6,7 @@
   <BehaviorTree
     ID="13 Solution - Load a path from file"
     _description="Loads a complex path from a file, and visualizes it"
-    _favorite="true"
+    _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action ID="LoadPoseStampedVectorFromYaml" file_path="path.yaml" />
