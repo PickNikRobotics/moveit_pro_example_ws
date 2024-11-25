@@ -1,13 +1,7 @@
 <?xml version="1.0" ?>
 <package format="3">
-<<<<<<<< HEAD:src/moveit_pro_ur_configs/arm_on_rail_sim/package.xml
   <name>arm_on_rail_sim</name>
-  <version>6.0.0</version>
-========
-  <name>picknik_ur_sim_config</name>
   <version>6.5.0</version>
->>>>>>>> 78b59596c72abdcb5671e8351ac5b78b29f6fbb7:src/moveit_pro_ur_configs/picknik_ur_sim_config/package.xml
-
   <description>
     MuJoCo simulation configuration package for Picknik's UR robot on a linear
     rail
