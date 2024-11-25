@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8" ?>
 <root
   BTCPP_format="4"
   main_tree_to_execute="16 Solution - Checking for collisions"
@@ -7,7 +6,7 @@
   <BehaviorTree
     ID="16 Solution - Checking for collisions"
     _description="How to check if a plan will collide"
-    _favorite="true"
+    _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
