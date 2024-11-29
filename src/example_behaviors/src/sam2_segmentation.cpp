@@ -89,19 +89,19 @@ namespace example_behaviors
     }
     const auto& [image_msg, points_2d] = ports.value();
 
-    if (image_msg.encoding != "rgb8"|| image_msg.encoding != "rgba8")
+    if (image_msg.encoding != "rgb8" && image_msg.encoding != "rgba8")
     {
       auto error_message = fmt::format("Invalid image message format. Expected `(rgb8, rgba8)` got :\n{}", image_msg.encoding);
       return tl::make_unexpected(error_message);
     }
 
-    // create ONNX formatted image tensor from ROS image
+    // Create ONNX formatted image tensor from ROS image
     set_onnx_image_from_ros_image(image_msg, onnx_image_);
 
     std::vector<moveit_pro_ml::PointPrompt> point_prompts;
     for (auto const& point : points_2d)
     {
-      // assume all point are the same label
+      // Assume all point are the same label
       point_prompts.push_back({{kImageInferenceWidth*static_cast<float>(point.point.x), kImageInferenceHeight*static_cast<float>(point.point.y)}, {1.0f}});
     }
 
@@ -130,7 +130,7 @@ namespace example_behaviors
     return {
       {
         "description",
-        "Segments a ROS image message using the click points provided as a vector of <code>geometry_msgs/PointStamped</code> messages."
+        "Segments a ROS image message using the provided points represented as a vector of <code>geometry_msgs/PointStamped</code> messages."
       }
     };
   }

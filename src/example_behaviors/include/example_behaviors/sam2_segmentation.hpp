@@ -44,7 +44,18 @@ protected:
 
 
 private:
+  /**
+  * @brief Convert a ROS image message to the ONNX image format used by the SAM 2 model.
+   * @param image_msg The ROS message to be converted
+   * @param onnx_image The ONNX image
+   */
  void set_onnx_image_from_ros_image(const sensor_msgs::msg::Image& image_msg, moveit_pro_ml::ONNXImage& onnx_image);
+
+  /**
+  * @brief Convert an ONNX image to a ROS image message.
+   * @param onnx_image The ONNX image to be converted
+   * @param image_msg The ROS message
+   */
  void set_ros_image_from_onnx_image(const moveit_pro_ml::ONNXImage& onnx_image,  sensor_msgs::msg::Image& image_msg);
 
  std::shared_ptr<moveit_pro_ml::SAM2> sam2_;
