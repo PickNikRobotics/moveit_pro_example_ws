@@ -38,6 +38,9 @@
   <TreeNodesModel>
     <SubTree ID="Move to Waypoint">
       <input_port name="planner_interface" default="moveit_default" />
+      <MetadataFields>
+        <Metadata subcategory="Motion - Execute" />
+      </MetadataFields>
     </SubTree>
   </TreeNodesModel>
 </root>

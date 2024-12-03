@@ -3,10 +3,9 @@
   <!-- ////////// -->
   <BehaviorTree
     ID="Reset Planning Scene"
-    _description="Remove all runtime additions to the planning scene"
+    _description=""
     _favorite="false"
     _hardcoded="false"
-    _subtreeOnly="false"
   >
     <Action
       ID="ResetPlanningSceneObjects"
