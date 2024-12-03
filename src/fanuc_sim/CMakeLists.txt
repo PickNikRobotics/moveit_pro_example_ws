@@ -14,7 +14,6 @@ set(DEST_DIR "${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/description/")
 install(DIRECTORY "${PICKNIK_ACCESSORIES_SHARE_DIR}"
         DESTINATION "${DEST_DIR}"
         FILES_MATCHING PATTERN "*")
-        
 install(
   DIRECTORY
     config
