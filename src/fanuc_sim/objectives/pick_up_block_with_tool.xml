@@ -1,0 +1,48 @@
+<root BTCPP_format="4" main_tree_to_execute="Pick Up Block With Tool">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Pick Up Block With Tool"
+    _description="Pick up the block using the suction tool"
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="CreateStampedPose"
+        reference_frame="block2"
+        position_xyz="0;0;0.18"
+        stamped_pose="{approach_pose}"
+        orientation_xyzw="1;0;0;0"
+      />
+      <Action
+        ID="InitializeMTCTask"
+        task_id="pick_up_tool"
+        controller_names="/joint_trajectory_controller"
+      />
+      <Action ID="SetupMTCCurrentState" />
+      <Action
+        ID="SetupMTCMoveToPose"
+        target_pose="{approach_pose}"
+        ik_frame="tool0"
+      />
+      <Action
+        ID="SetupMTCMoveAlongFrameAxis"
+        hand_frame="tool0"
+        max_distance="0.05"
+        min_distance="0.05"
+        axis_frame="tool0"
+      />
+      <Action ID="PlanMTCTask" />
+      <Action ID="ExecuteMTCTask" />
+      <Action
+        ID="MoveGripperAction"
+        timeout="10"
+        position="1"
+        gripper_command_action_name="/suction_cup_controller/gripper_cmd"
+      />
+      <SubTree ID="Retract" _collapsed="true" distance="0.1" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Pick Up Block With Tool" />
+  </TreeNodesModel>
+</root>
