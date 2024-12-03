@@ -15,9 +15,10 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Save and Execute a Trajectory from Disk" >
+    <SubTree ID="Save and Execute a Trajectory from Disk">
       <MetadataFields>
         <Metadata subcategory="Motion - Execute" />
       </MetadataFields>
+    </SubTree>
   </TreeNodesModel>
 </root>
