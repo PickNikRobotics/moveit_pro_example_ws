@@ -1,0 +1,50 @@
+<root BTCPP_format="4" main_tree_to_execute="Place Tool in Tool Holder">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Place Tool in Tool Holder"
+    _description="Puts the tool back in the tool holder"
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="CreateStampedPose"
+        reference_frame="tool_holder_site"
+        position_xyz="0;0;-0.15"
+        stamped_pose="{approach_pose}"
+      />
+      <Action
+        ID="InitializeMTCTask"
+        task_id="pick_up_tool"
+        controller_names="/joint_trajectory_controller"
+      />
+      <Action ID="SetupMTCCurrentState" />
+      <Action
+        ID="SetupMTCMoveToPose"
+        target_pose="{approach_pose}"
+        ik_frame="tool0"
+        planner_interface="pro_rrt"
+      />
+      <Action
+        ID="SetupMTCMoveAlongFrameAxis"
+        hand_frame="tool0"
+        max_distance="0.14"
+        axis_frame="tool0"
+        min_distance="0.14"
+      />
+      <Action ID="PlanMTCTask" />
+      <Action ID="ExecuteMTCTask" />
+      <Action ID="WaitForDuration" delay_duration="1" />
+      <Action
+        ID="MoveGripperAction"
+        position="0"
+        gripper_command_action_name="/tool_attach_controller/gripper_cmd"
+        timeout="10"
+      />
+      <Action ID="DetachTool" tool_name="suction_gripper" />
+      <SubTree ID="Retract" _collapsed="true" distance="0.35" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Place Tool in Tool Holder" />
+  </TreeNodesModel>
+</root>
