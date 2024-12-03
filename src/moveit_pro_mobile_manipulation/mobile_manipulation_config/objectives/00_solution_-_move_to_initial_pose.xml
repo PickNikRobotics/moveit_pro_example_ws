@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8" ?>
 <root
   BTCPP_format="4"
   main_tree_to_execute="00 Solution - Move to Initial Pose"
@@ -7,7 +6,7 @@
   <BehaviorTree
     ID="00 Solution - Move to Initial Pose"
     _description="Move to a pre-defined waypoint"
-    _favorite="true"
+    _favorite="false"
     _hardcoded="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
