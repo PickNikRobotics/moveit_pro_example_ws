@@ -1,10 +1,9 @@
-<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="06 Solution - Visualize a path">
   <!--//////////-->
   <BehaviorTree
     ID="06 Solution - Visualize a path"
     _description="How to visualize a path"
-    _favorite="true"
+    _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
