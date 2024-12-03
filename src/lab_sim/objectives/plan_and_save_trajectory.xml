@@ -39,6 +39,7 @@
       />
       <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
       <Action ID="WaitForUserTrajectoryApproval" />
+      <!-- The following behavior can be found in the example_behaviors package. Remove the COLCON_IGNORE file and `moveit_pro build user_workspace` to use. -->
       <Action
         ID="ConvertMtcSolutionToJointTrajectory"
         joint_trajectory="{joint_trajectory_msg}"
