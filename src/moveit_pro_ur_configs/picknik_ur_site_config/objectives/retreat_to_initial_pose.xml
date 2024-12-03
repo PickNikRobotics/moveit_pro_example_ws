@@ -59,6 +59,9 @@
         default="{pre_approach_robot_state}"
       />
       <input_port name="initial_robot_state" default="{initial_robot_state}" />
+      <MetadataFields>
+        <Metadata subcategory="Motion - Execute" />
+      </MetadataFields>
     </SubTree>
   </TreeNodesModel>
 </root>
