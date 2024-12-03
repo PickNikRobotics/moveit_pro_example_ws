@@ -1,10 +1,9 @@
-<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="02 Solution - Visualize a Pose">
   <!--//////////-->
   <BehaviorTree
     ID="02 Solution - Visualize a Pose"
     _description="Creates a pose and visualizes it"
-    _favorite="true"
+    _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
