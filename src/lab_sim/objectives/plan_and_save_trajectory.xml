@@ -51,7 +51,7 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Plan and Save Trajectory" >
+    <SubTree ID="Plan and Save Trajectory">
       <MetadataFields>
         <Metadata subcategory="Application - Advanced Examples" />
       </MetadataFields>

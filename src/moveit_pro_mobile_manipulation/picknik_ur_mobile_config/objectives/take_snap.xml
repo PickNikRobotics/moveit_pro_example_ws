@@ -14,7 +14,7 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Take scene camera snapshot" >
+    <SubTree ID="Take scene camera snapshot">
       <MetadataFields>
         <Metadata subcategory="Application - Basic Examples" />
       </MetadataFields>
