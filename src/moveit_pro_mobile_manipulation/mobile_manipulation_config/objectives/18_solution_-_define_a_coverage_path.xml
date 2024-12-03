@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8" ?>
 <root
   BTCPP_format="4"
   main_tree_to_execute="18 Solution - Define a coverage path"
@@ -7,7 +6,7 @@
   <BehaviorTree
     ID="18 Solution - Define a coverage path"
     _description="Automatically creates a path to cover a rectangular area"
-    _favorite="true"
+    _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
