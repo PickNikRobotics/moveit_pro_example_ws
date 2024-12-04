@@ -16,7 +16,7 @@ BT::PortsList ExampleHelloWorld::providedPorts()
 
 BT::KeyValueVector ExampleHelloWorld::metadata()
 {
-  return { { "subcategory", "Example" }, { "description", "Log a message that says \"Hello, world!\"." } };
+  return { { "subcategory", "Example Behaviors" }, { "description", "Log a message that says \"Hello, world!\"." } };
 }
 
 BT::NodeStatus ExampleHelloWorld::tick()
