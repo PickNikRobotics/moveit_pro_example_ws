@@ -8,10 +8,10 @@ using moveit_studio::behaviors::GetMessageFromTopicBehaviorBase;
 
 namespace example_behaviors
 {
-class GetStringFromTopic final : public GetMessageFromTopicBehaviorBase<std_msgs::msg::String>
+class ExampleGetStringFromTopic final : public GetMessageFromTopicBehaviorBase<std_msgs::msg::String>
 {
 public:
-  GetStringFromTopic(const std::string& name, const BT::NodeConfiguration& config,
+  ExampleGetStringFromTopic(const std::string& name, const BT::NodeConfiguration& config,
                      const std::shared_ptr<BehaviorContext>& shared_resources);
 
   /** @brief Implementation of the required providedPorts() function for the hello_world Behavior. */
