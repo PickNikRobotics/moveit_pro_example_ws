@@ -57,6 +57,9 @@
         default="/joint_trajectory_controller"
       />
       <input_port name="target_pose" default="{stamped_pose}" />
+      <MetadataFields>
+        <Metadata subcategory="Motion - Execute" />
+      </MetadataFields>
     </SubTree>
   </TreeNodesModel>
 </root>

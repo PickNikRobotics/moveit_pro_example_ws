@@ -90,6 +90,10 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Pick April Tag Labeled Object" />
+    <SubTree ID="Pick April Tag Labeled Object">
+      <MetadataFields>
+        <Metadata subcategory="Application - Advanced Examples" />
+      </MetadataFields>
+    </SubTree>
   </TreeNodesModel>
 </root>

@@ -35,6 +35,9 @@
         name="move_to_pose_solution"
         default="{move_to_pose_solution}"
       />
+      <MetadataFields>
+        <Metadata subcategory="Motion - Plan" />
+      </MetadataFields>
     </SubTree>
   </TreeNodesModel>
 </root>

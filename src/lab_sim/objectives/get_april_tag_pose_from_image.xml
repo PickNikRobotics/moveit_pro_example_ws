@@ -40,6 +40,9 @@
       <input_port name="camera_info" default="{camera_info}" />
       <input_port name="parameters" default="{parameters}" />
       <output_port name="detection_pose" default="{detection_pose}" />
+      <MetadataFields>
+        <Metadata subcategory="Perception - Image Processing" />
+      </MetadataFields>
     </SubTree>
   </TreeNodesModel>
 </root>
