@@ -2,18 +2,19 @@
 #include <moveit_studio_behavior_interface/behavior_context.hpp>
 #include <moveit_studio_behavior_interface/shared_resources_node_loader.hpp>
 
-#include <example_behaviors/hello_world.hpp>
+#include <example_behaviors/add_two_ints_service_client.hpp>
 #include <example_behaviors/convert_mtc_solution_to_joint_trajectory.hpp>
 #include <example_behaviors/delayed_message.hpp>
-#include <example_behaviors/setup_mtc_wave_hand.hpp>
-#include <example_behaviors/add_two_ints_service_client.hpp>
 #include <example_behaviors/fibonacci_action_client.hpp>
 #include <example_behaviors/get_string_from_topic.hpp>
+#include <example_behaviors/hello_world.hpp>
+#include <example_behaviors/ndt_registration.hpp>
 #include <example_behaviors/publish_color_rgba.hpp>
+#include <example_behaviors/ransac_registration.hpp>
+#include <example_behaviors/sam2_segmentation.hpp>
 #include <example_behaviors/setup_mtc_pick_from_pose.hpp>
 #include <example_behaviors/setup_mtc_place_from_pose.hpp>
-#include <example_behaviors/ndt_registration.hpp>
-#include <example_behaviors/ransac_registration.hpp>
+#include <example_behaviors/setup_mtc_wave_hand.hpp>
 
 #include <pluginlib/class_list_macros.hpp>
 
@@ -35,6 +36,7 @@ public:
     moveit_studio::behaviors::registerBehavior<FibonacciActionClient>(factory, "FibonacciActionClient",
                                                                       shared_resources);
     moveit_studio::behaviors::registerBehavior<PublishColorRGBA>(factory, "PublishColorRGBA", shared_resources);
+    moveit_studio::behaviors::registerBehavior<SAM2Segmentation>(factory, "SAM2Segmentation", shared_resources);
     moveit_studio::behaviors::registerBehavior<SetupMtcPickFromPose>(factory, "SetupMtcPickFromPose", shared_resources);
     moveit_studio::behaviors::registerBehavior<SetupMtcPlaceFromPose>(factory, "SetupMtcPlaceFromPose",
                                                                       shared_resources);
