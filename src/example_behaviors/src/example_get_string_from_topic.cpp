@@ -1,17 +1,17 @@
-#include <example_behaviors/get_string_from_topic.hpp>
+#include <example_behaviors/example_get_string_from_topic.hpp>
 
 // Include the template implementation for GetMessageFromTopicBehaviorBase<T>.
 #include <moveit_studio_behavior_interface/impl/get_message_from_topic_impl.hpp>
 
 namespace example_behaviors
 {
-GetStringFromTopic::GetStringFromTopic(const std::string& name, const BT::NodeConfiguration& config,
+ExampleGetStringFromTopic::ExampleGetStringFromTopic(const std::string& name, const BT::NodeConfiguration& config,
                                        const std::shared_ptr<BehaviorContext>& shared_resources)
   : GetMessageFromTopicBehaviorBase<std_msgs::msg::String>(name, config, shared_resources)
 {
 }
 
-BT::PortsList GetStringFromTopic::providedPorts()
+BT::PortsList ExampleGetStringFromTopic::providedPorts()
 {
   // This node has one input port and one output port
   return BT::PortsList({
@@ -20,7 +20,7 @@ BT::PortsList GetStringFromTopic::providedPorts()
   });
 }
 
-BT::KeyValueVector GetStringFromTopic::metadata()
+BT::KeyValueVector ExampleGetStringFromTopic::metadata()
 {
   return { { "subcategory", "Example" },
            { "description", "Captures a string message and makes it available on an output port." } };

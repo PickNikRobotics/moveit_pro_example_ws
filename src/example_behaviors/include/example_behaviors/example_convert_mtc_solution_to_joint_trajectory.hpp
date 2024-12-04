@@ -29,10 +29,10 @@ namespace example_behaviors
  * | sampling_rate     | Input         | int                                                     |
  * | joint_trajectory  | Output        | trajectory_msgs::msg::JointTrajectory                   |
  */
-class ConvertMtcSolutionToJointTrajectory final : public moveit_studio::behaviors::SharedResourcesNode<BT::SyncActionNode>
+class ExampleConvertMtcSolutionToJointTrajectory final : public moveit_studio::behaviors::SharedResourcesNode<BT::SyncActionNode>
 {
 public:
-  ConvertMtcSolutionToJointTrajectory(const std::string& name, const BT::NodeConfiguration& config,
+  ExampleConvertMtcSolutionToJointTrajectory(const std::string& name, const BT::NodeConfiguration& config,
                                       const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources);
 
   static BT::PortsList providedPorts();

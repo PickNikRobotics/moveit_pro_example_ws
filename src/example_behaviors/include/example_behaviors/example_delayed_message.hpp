@@ -12,9 +12,9 @@
 namespace example_behaviors
 {
 /**
- * @brief DelayedMessage will use FailureLoggerROS to log a "Hello World" message after the duration specified on the input port
+ * @brief ExampleDelayedMessage will use FailureLoggerROS to log a "Hello World" message after the duration specified on the input port
  */
-class DelayedMessage : public moveit_studio::behaviors::SharedResourcesNode<BT::StatefulActionNode>
+class ExampleDelayedMessage : public moveit_studio::behaviors::SharedResourcesNode<BT::StatefulActionNode>
 {
 private:
   std::chrono::time_point<std::chrono::steady_clock> start_time_;
@@ -33,7 +33,7 @@ public:
    * @details An important limitation is that the members of the base Behavior class are not instantiated until after
    * the initialize() function is called, so these classes should not be used within the constructor.
    */
-  DelayedMessage(const std::string& name, const BT::NodeConfiguration& config,
+  ExampleDelayedMessage(const std::string& name, const BT::NodeConfiguration& config,
                  const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources);
 
   /**
