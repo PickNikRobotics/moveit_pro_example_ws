@@ -24,7 +24,7 @@
           task="{mtc_pick_task}"
         />
         <Action ID="SetupMTCCurrentState" task="{mtc_pick_task}" />
-        <!-- The following behavior can be found in the example_behaviors package. Remove the COLCON_IGNORE file and `moveit_pro build user_workspace` to use. -->
+        <!-- The following behavior can be found in the example_behaviors package. -->
         <Action
           ID="SetupMtcPickFromPose"
           grasp_pose="{pick_pose}"
@@ -52,7 +52,7 @@
           orientation_xyzw="0;1;0;0"
           stamped_pose="{place_pose}"
         />
-        <!-- The following behavior can be found in the example_behaviors package. Remove the COLCON_IGNORE file and `moveit_pro build user_workspace` to use. -->
+        <!-- The following behavior can be found in the example_behaviors package. -->
         <Action
           ID="SetupMtcPlaceFromPose"
           place_pose="{place_pose}"
