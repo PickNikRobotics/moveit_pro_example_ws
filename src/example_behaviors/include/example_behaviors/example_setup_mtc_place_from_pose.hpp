@@ -17,11 +17,11 @@ namespace example_behaviors
  * | task           | Bidirectional | std::shared_ptr<moveit::task_constructor::Task> |
  * | grasp_pose     | Input         | geometry_msgs::msg::PoseStamped                 |
  */
-class SetupMtcPickFromPose final : public moveit_studio::behaviors::SharedResourcesNode<BT::SyncActionNode>
+class ExampleSetupMtcPlaceFromPose final : public moveit_studio::behaviors::SharedResourcesNode<BT::SyncActionNode>
 {
 public:
-  SetupMtcPickFromPose(const std::string& name, const BT::NodeConfiguration& config,
-                       const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources);
+  ExampleSetupMtcPlaceFromPose(const std::string& name, const BT::NodeConfiguration& config,
+                        const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources);
 
   static BT::PortsList providedPorts();
 

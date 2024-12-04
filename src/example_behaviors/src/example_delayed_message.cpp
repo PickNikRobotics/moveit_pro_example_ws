@@ -1,27 +1,27 @@
-#include <example_behaviors/delayed_message.hpp>
+#include <example_behaviors/example_delayed_message.hpp>
 
 namespace example_behaviors
 {
-DelayedMessage::DelayedMessage(const std::string& name, const BT::NodeConfiguration& config,
+ExampleDelayedMessage::ExampleDelayedMessage(const std::string& name, const BT::NodeConfiguration& config,
                                const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources)
   : moveit_studio::behaviors::SharedResourcesNode<BT::StatefulActionNode>(name, config, shared_resources)
 {
 }
 
-BT::PortsList DelayedMessage::providedPorts()
+BT::PortsList ExampleDelayedMessage::providedPorts()
 {
   // delay_duration: Number of seconds to wait before logging a message
   return BT::PortsList(
       { BT::InputPort<double>("delay_duration", "5", "The duration, in seconds, to wait before logging a message.") });
 }
 
-BT::KeyValueVector DelayedMessage::metadata()
+BT::KeyValueVector ExampleDelayedMessage::metadata()
 {
   return { { "subcategory", "Example" },
            { "description", "After some time, log a message that says \"Hello, world!\"." } };
 }
 
-BT::NodeStatus DelayedMessage::onStart()
+BT::NodeStatus ExampleDelayedMessage::onStart()
 {
   // Store the time at which this node was first ticked
   start_time_ = std::chrono::steady_clock::now();
@@ -53,7 +53,7 @@ BT::NodeStatus DelayedMessage::onStart()
   return BT::NodeStatus::RUNNING;
 }
 
-BT::NodeStatus DelayedMessage::onRunning()
+BT::NodeStatus ExampleDelayedMessage::onRunning()
 {
   // If the delay duration has not elapsed since this node was started, return RUNNING
   if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::steady_clock::now() - start_time_).count() <
@@ -70,7 +70,7 @@ BT::NodeStatus DelayedMessage::onRunning()
   }
 }
 
-void DelayedMessage::onHalted()
+void ExampleDelayedMessage::onHalted()
 {
 }
 

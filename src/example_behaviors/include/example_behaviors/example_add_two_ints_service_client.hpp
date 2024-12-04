@@ -9,10 +9,10 @@ using AddTwoInts = example_interfaces::srv::AddTwoInts;
 
 namespace example_behaviors
 {
-class AddTwoIntsServiceClient final : public ServiceClientBehaviorBase<AddTwoInts>
+class ExampleAddTwoIntsServiceClient final : public ServiceClientBehaviorBase<AddTwoInts>
 {
 public:
-  AddTwoIntsServiceClient(const std::string& name, const BT::NodeConfiguration& config,
+  ExampleAddTwoIntsServiceClient(const std::string& name, const BT::NodeConfiguration& config,
                           const std::shared_ptr<BehaviorContext>& shared_resources);
 
   /** @brief Implementation of the required providedPorts() function for the hello_world Behavior. */
