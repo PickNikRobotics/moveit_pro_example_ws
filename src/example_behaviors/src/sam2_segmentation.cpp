@@ -1,7 +1,7 @@
 #include <spdlog/spdlog.h>
 
 #include <example_behaviors/sam2_segmentation.hpp>
-
+#include <sensor_msgs/msg/image.hpp>
 #include <geometry_msgs/msg/point_stamped.hpp>
 #include <moveit_studio_behavior_interface/get_required_ports.hpp>
 #include <ament_index_cpp/get_package_share_directory.hpp>
