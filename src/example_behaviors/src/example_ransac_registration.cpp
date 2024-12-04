@@ -1,4 +1,4 @@
-#include <example_behaviors/ransac_registration.hpp>
+#include <example_behaviors/example_ransac_registration.hpp>
 #include <pcl/registration/ndt.h>
 #include <tl_expected/expected.hpp>
 #include <moveit_studio_behavior_interface/async_behavior_base.hpp>
@@ -43,7 +43,7 @@ getFilteredPointCloudFromMessage(const sensor_msgs::msg::PointCloud2& cloud_msg)
 
 }  // namespace
 
-RANSACRegistration::RANSACRegistration(
+ExampleRANSACRegistration::ExampleRANSACRegistration(
     const std::string& name, const BT::NodeConfiguration& config,
     const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources)
   : moveit_studio::behaviors::AsyncBehaviorBase(name, config, shared_resources)
@@ -51,7 +51,7 @@ RANSACRegistration::RANSACRegistration(
 }
 
 
-BT::PortsList RANSACRegistration::providedPorts()
+BT::PortsList ExampleRANSACRegistration::providedPorts()
 {
   return { BT::InputPort<sensor_msgs::msg::PointCloud2>("base_point_cloud", "{point_cloud}",
                                                         "Point cloud to align with the target point cloud."),
@@ -80,13 +80,13 @@ BT::PortsList RANSACRegistration::providedPorts()
                                                            "of the base point cloud.") };
 }
 
-BT::KeyValueVector RANSACRegistration::metadata()
+BT::KeyValueVector ExampleRANSACRegistration::metadata()
 {
   return { {"subcategory", "Perception - 3D Point Cloud"}, {"description", "Finds the pose of a target point cloud relative to the base frame of a base point cloud using the Normal Distributions Transform (NDT) algorithm"} };
 }
 
 
-tl::expected<bool, std::string> RANSACRegistration::doWork()
+tl::expected<bool, std::string> ExampleRANSACRegistration::doWork()
 {
 
   const auto base_point_cloud_msg = getInput<sensor_msgs::msg::PointCloud2>("base_point_cloud");
