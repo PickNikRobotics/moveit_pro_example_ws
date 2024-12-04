@@ -1,18 +1,18 @@
-#include <example_behaviors/fibonacci_action_client.hpp>
+#include <example_behaviors/example_fibonacci_action_client.hpp>
 
 // Include the template implementation for ActionClientBehaviorBase<T>.
 #include <moveit_studio_behavior_interface/impl/action_client_behavior_base_impl.hpp>
 
 namespace example_behaviors
 {
-FibonacciActionClient::FibonacciActionClient(
+ExampleFibonacciActionClient::ExampleFibonacciActionClient(
     const std::string& name, const BT::NodeConfiguration& config,
     const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources)
   : ActionClientBehaviorBase<Fibonacci>(name, config, shared_resources)
 {
 }
 
-BT::PortsList FibonacciActionClient::providedPorts()
+BT::PortsList ExampleFibonacciActionClient::providedPorts()
 {
   // This node has two input ports and two output ports
   return BT::PortsList({
@@ -26,14 +26,14 @@ BT::PortsList FibonacciActionClient::providedPorts()
   });
 }
 
-BT::KeyValueVector FibonacciActionClient::metadata()
+BT::KeyValueVector ExampleFibonacciActionClient::metadata()
 {
   return { { "subcategory", "Example" },
            { "description",
              "Calls an action to get a Fibonacci sequence and makes the result available on an output port." } };
 }
 
-tl::expected<std::string, std::string> FibonacciActionClient::getActionName()
+tl::expected<std::string, std::string> ExampleFibonacciActionClient::getActionName()
 {
   const auto action_name = getInput<std::string>("action_name");
   if (const auto error = moveit_studio::behaviors::maybe_error(action_name))
@@ -43,7 +43,7 @@ tl::expected<std::string, std::string> FibonacciActionClient::getActionName()
   return action_name.value();
 }
 
-tl::expected<Fibonacci::Goal, std::string> FibonacciActionClient::createGoal()
+tl::expected<Fibonacci::Goal, std::string> ExampleFibonacciActionClient::createGoal()
 {
   const auto order = getInput<std::size_t>("order");
 
@@ -55,7 +55,7 @@ tl::expected<Fibonacci::Goal, std::string> FibonacciActionClient::createGoal()
   return example_interfaces::build<Fibonacci::Goal>().order(order.value());
 }
 
-tl::expected<bool, std::string> FibonacciActionClient::processResult(const std::shared_ptr<Fibonacci::Result> result)
+tl::expected<bool, std::string> ExampleFibonacciActionClient::processResult(const std::shared_ptr<Fibonacci::Result> result)
 {
   std::stringstream stream;
   for (const auto& value : result->sequence)
@@ -72,7 +72,7 @@ tl::expected<bool, std::string> FibonacciActionClient::processResult(const std::
   return { true };
 }
 
-void FibonacciActionClient::processFeedback(const std::shared_ptr<const Fibonacci::Feedback> feedback)
+void ExampleFibonacciActionClient::processFeedback(const std::shared_ptr<const Fibonacci::Feedback> feedback)
 {
   std::stringstream stream;
   for (const auto& value : feedback->sequence)

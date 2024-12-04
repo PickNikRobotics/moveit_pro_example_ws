@@ -1,8 +1,8 @@
-#include <example_behaviors/convert_mtc_solution_to_joint_trajectory.hpp>
+#include <example_behaviors/example_convert_mtc_solution_to_joint_trajectory.hpp>
 
 namespace
 {
-const auto kLogger = rclcpp::get_logger("ConvertMtcSolutionToJointTrajectory");
+const auto kLogger = rclcpp::get_logger("ExampleConvertMtcSolutionToJointTrajectory");
 
 // Port names for input and output ports.
 constexpr auto kPortIDSolution = "solution";
@@ -15,14 +15,14 @@ constexpr auto kPortIDSamplingRate = "sampling_rate";
 
 namespace example_behaviors
 {
-ConvertMtcSolutionToJointTrajectory::ConvertMtcSolutionToJointTrajectory(
+ExampleConvertMtcSolutionToJointTrajectory::ExampleConvertMtcSolutionToJointTrajectory(
     const std::string& name, const BT::NodeConfiguration& config,
     const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources)
   : moveit_studio::behaviors::SharedResourcesNode<BT::SyncActionNode>(name, config, shared_resources)
 {
 }
 
-BT::PortsList ConvertMtcSolutionToJointTrajectory::providedPorts()
+BT::PortsList ExampleConvertMtcSolutionToJointTrajectory::providedPorts()
 {
   return {
     BT::InputPort<moveit_task_constructor_msgs::msg::Solution>(kPortIDSolution, "{mtc_solution}",
@@ -40,13 +40,13 @@ BT::PortsList ConvertMtcSolutionToJointTrajectory::providedPorts()
   };
 }
 
-BT::KeyValueVector ConvertMtcSolutionToJointTrajectory::metadata()
+BT::KeyValueVector ExampleConvertMtcSolutionToJointTrajectory::metadata()
 {
   return { { "subcategory", "Motion Planning" },
            { "description", "Extracts joint space trajectories from an MTC solution and adds time parameterization using TOTG." } };
 }
 
-BT::NodeStatus ConvertMtcSolutionToJointTrajectory::tick()
+BT::NodeStatus ExampleConvertMtcSolutionToJointTrajectory::tick()
 {
   using namespace moveit_studio::behaviors;
 
@@ -108,7 +108,7 @@ BT::NodeStatus ConvertMtcSolutionToJointTrajectory::tick()
   return BT::NodeStatus::SUCCESS;
 }
 
-const std::vector<Eigen::VectorXd>& ConvertMtcSolutionToJointTrajectory::extractJointPositions(const moveit_task_constructor_msgs::msg::Solution& solution)
+const std::vector<Eigen::VectorXd>& ExampleConvertMtcSolutionToJointTrajectory::extractJointPositions(const moveit_task_constructor_msgs::msg::Solution& solution)
 {
   static std::vector<Eigen::VectorXd> waypoints;
   waypoints.clear();
