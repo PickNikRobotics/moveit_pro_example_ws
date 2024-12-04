@@ -26,7 +26,7 @@ namespace example_behaviors
     : moveit_studio::behaviors::AsyncBehaviorBase(name, config, shared_resources)
   {
 
-    std::filesystem::path package_path = ament_index_cpp::get_package_share_directory("example_behaviors");
+    const std::filesystem::path package_path = ament_index_cpp::get_package_share_directory("example_behaviors");
     const std::filesystem::path encoder_onnx_file = package_path / "models" / "sam2_hiera_large_encoder.onnx";
     const std::filesystem::path decoder_onnx_file = package_path / "models" / "decoder.onnx";
     sam2_ = std::make_shared<moveit_pro_ml::SAM2>(encoder_onnx_file, decoder_onnx_file);
