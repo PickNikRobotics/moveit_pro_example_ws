@@ -41,6 +41,9 @@
       <input_port name="joint_group_name" default="manipulator" />
       <inout_port name="mtc_task" default="{mtc_task}" />
       <input_port name="planner_interface" default="moveit_default" />
+      <MetadataFields>
+        <Metadata subcategory="Application - Basic Examples" />
+      </MetadataFields>
     </SubTree>
   </TreeNodesModel>
 </root>

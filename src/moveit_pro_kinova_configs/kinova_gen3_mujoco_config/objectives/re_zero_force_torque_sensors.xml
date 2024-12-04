@@ -18,6 +18,10 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Re-Zero Force-Torque Sensors" />
+    <SubTree ID="Re-Zero Force-Torque Sensors">
+      <MetadataFields>
+        <Metadata subcategory="Motion - Execute" />
+      </MetadataFields>
+    </SubTree>
   </TreeNodesModel>
 </root>
