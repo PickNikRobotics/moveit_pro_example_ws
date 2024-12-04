@@ -52,7 +52,7 @@ namespace example_behaviors
   {
     onnx_image.shape = {1, image_msg.height, image_msg.width, 3};
     onnx_image.data.resize(image_msg.height * image_msg.width * 3);
-     int stride = image_msg.encoding != "rgb8" ? 3: 4;
+    int stride = image_msg.encoding != "rgb8" ? 3: 4;
     for (size_t i = 0; i < onnx_image.data.size(); i+=stride)
     {
       onnx_image.data[i] = static_cast<float>(image_msg.data[i]) / 255.0f;
