@@ -1,10 +1,16 @@
-#include <spdlog/spdlog.h>
+#include <future>
+#include <memory>
+#include <string>
 
-#include <example_behaviors/sam2_segmentation.hpp>
-#include <sensor_msgs/msg/image.hpp>
-#include <geometry_msgs/msg/point_stamped.hpp>
-#include <moveit_studio_behavior_interface/get_required_ports.hpp>
 #include <ament_index_cpp/get_package_share_directory.hpp>
+#include <example_behaviors/sam2_segmentation.hpp>
+#include <geometry_msgs/msg/point_stamped.hpp>
+#include <moveit_pro_ml/onnx_sam2.hpp>
+#include <moveit_studio_behavior_interface/async_behavior_base.hpp>
+#include <moveit_studio_behavior_interface/get_required_ports.hpp>
+#include <moveit_studio_vision_msgs/msg/mask2_d.hpp>
+#include <sensor_msgs/msg/image.hpp>
+#include <tl_expected/expected.hpp>
 
 namespace
 {
@@ -21,6 +27,38 @@ namespace
 
 namespace example_behaviors
 {
+  // Convert a ROS image message to the ONNX image format used by the SAM 2 model
+  void set_onnx_image_from_ros_image(const sensor_msgs::msg::Image& image_msg,
+                                                       moveit_pro_ml::ONNXImage& onnx_image)
+  {
+    onnx_image.shape = {1, image_msg.height, image_msg.width, 3};
+    onnx_image.data.resize(image_msg.height * image_msg.width * 3);
+    const int stride = image_msg.encoding != "rgb8" ? 3: 4;
+    for (size_t i = 0; i < onnx_image.data.size(); i+=stride)
+    {
+      onnx_image.data[i] = static_cast<float>(image_msg.data[i]) / 255.0f;
+      onnx_image.data[i+1] = static_cast<float>(image_msg.data[i+1]) / 255.0f;
+      onnx_image.data[i+2] = static_cast<float>(image_msg.data[i+2]) / 255.0f;
+    }
+  }
+
+  // Converts a single channel ONNX image mask to a ROS mask message.
+  void set_ros_mask_from_onnx_mask(const moveit_pro_ml::ONNXImage& onnx_image, sensor_msgs::msg::Image& mask_image_msg, moveit_studio_vision_msgs::msg::Mask2D& mask_msg)
+  {
+    mask_image_msg.height = static_cast<uint32_t>(onnx_image.shape[0]);
+    mask_image_msg.width = static_cast<uint32_t>(onnx_image.shape[1]);
+    mask_image_msg.encoding = "mono8";
+    mask_image_msg.data.resize(mask_image_msg.height * mask_image_msg.width);
+    mask_image_msg.step = mask_image_msg.width;
+    for (size_t i = 0; i < onnx_image.data.size(); ++i)
+    {
+      mask_image_msg.data[i] = onnx_image.data[i] > 0.5 ? 255: 0;
+    }
+    mask_msg.pixels = mask_image_msg;
+    mask_msg.x = 0;
+    mask_msg.y = 0;
+  }
+
   SAM2Segmentation::SAM2Segmentation(const std::string& name, const BT::NodeConfiguration& config,
                                      const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources)
     : moveit_studio::behaviors::AsyncBehaviorBase(name, config, shared_resources)
@@ -29,7 +67,7 @@ namespace example_behaviors
     const std::filesystem::path package_path = ament_index_cpp::get_package_share_directory("example_behaviors");
     const std::filesystem::path encoder_onnx_file = package_path / "models" / "sam2_hiera_large_encoder.onnx";
     const std::filesystem::path decoder_onnx_file = package_path / "models" / "decoder.onnx";
-    sam2_ = std::make_shared<moveit_pro_ml::SAM2>(encoder_onnx_file, decoder_onnx_file);
+    sam2_ = std::make_unique<moveit_pro_ml::SAM2>(encoder_onnx_file, decoder_onnx_file);
   }
 
   BT::PortsList SAM2Segmentation::providedPorts()
@@ -42,38 +80,8 @@ namespace example_behaviors
 
   BT::OutputPort<std::vector<moveit_studio_vision_msgs::msg::Mask2D>>(kPortMasks, kPortMasksDefault,
                                                                    "The masks contained in a vector of <code>moveit_studio_vision_msgs::msg::Mask2D</code> messages.")
-
-
     };
   }
-
-  void SAM2Segmentation::set_onnx_image_from_ros_image(const sensor_msgs::msg::Image& image_msg,
-                                                       moveit_pro_ml::ONNXImage& onnx_image)
-  {
-    onnx_image.shape = {1, image_msg.height, image_msg.width, 3};
-    onnx_image.data.resize(image_msg.height * image_msg.width * 3);
-    int stride = image_msg.encoding != "rgb8" ? 3: 4;
-    for (size_t i = 0; i < onnx_image.data.size(); i+=stride)
-    {
-      onnx_image.data[i] = static_cast<float>(image_msg.data[i]) / 255.0f;
-      onnx_image.data[i+1] = static_cast<float>(image_msg.data[i+1]) / 255.0f;
-      onnx_image.data[i+2] = static_cast<float>(image_msg.data[i+2]) / 255.0f;
-    }
-  }
-
-
-  void SAM2Segmentation::set_ros_image_from_onnx_image(const moveit_pro_ml::ONNXImage& onnx_image, sensor_msgs::msg::Image& image_msg)
-  {
-    image_msg.height = static_cast<uint32_t>(onnx_image.shape[0]);
-    image_msg.width = static_cast<uint32_t>(onnx_image.shape[1]);
-    image_msg.encoding = "mono8";
-    image_msg.data.resize(image_msg.height * image_msg.width);
-    image_msg.step = image_msg.width;
-    for (size_t i = 0; i < onnx_image.data.size(); ++i)
-    {
-      image_msg.data[i] = onnx_image.data[i] > 0.5 ? 255: 0;
-    }
-   }
 
   tl::expected<bool, std::string> SAM2Segmentation::doWork()
   {
@@ -110,15 +118,13 @@ namespace example_behaviors
       const auto masks = sam2_->predict(onnx_image_, point_prompts);
 
       mask_image_msg_.header = image_msg.header;
-      set_ros_image_from_onnx_image(masks, mask_image_msg_);
-      mask_.pixels = mask_image_msg_;
-      mask_.x = 0;
-      mask_.y = 0;
-      setOutput<std::vector<moveit_studio_vision_msgs::msg::Mask2D>>(kPortMasks, {mask_});
+      set_ros_mask_from_onnx_mask(masks, mask_image_msg_, mask_msg_);
+
+      setOutput<std::vector<moveit_studio_vision_msgs::msg::Mask2D>>(kPortMasks, {mask_msg_});
     }
     catch (const std::invalid_argument& e)
     {
-      return tl::make_unexpected(fmt::format("Invalid argument: {}", e.what());
+      return tl::make_unexpected(fmt::format("Invalid argument: {}", e.what()));
     }
 
     return true;

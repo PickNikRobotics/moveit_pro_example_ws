@@ -1,14 +1,12 @@
 #pragma once
 
-#include <future>
-#include <memory>
-#include <string>
-#include <does tl expected have it's own header>?
-#include <moveit_studio_behavior_interface/async_behavior_base.hpp>
 #include <moveit_pro_ml/onnx_sam2.hpp>
-#include <sensor_msgs/msg/image.hpp>
+#include <moveit_pro_ml/onnx_sam2_types.hpp>
+#include <moveit_studio_behavior_interface/async_behavior_base.hpp>
 #include <moveit_studio_vision_msgs/msg/mask2_d.hpp>
-#include <fmt/format.h>
+#include <sensor_msgs/msg/image.hpp>
+#include <tl_expected/expected.hpp>
+
 
 namespace example_behaviors
 {
@@ -47,24 +45,10 @@ protected:
 
 
 private:
-  /**
-  * @brief Convert a ROS image message to the ONNX image format used by the SAM 2 model.
-   * @param image_msg The ROS message to be converted
-   * @param onnx_image The ONNX image
-   */
- void set_onnx_image_from_ros_image(const sensor_msgs::msg::Image& image_msg, moveit_pro_ml::ONNXImage& onnx_image);
-
-  /**
-  * @brief Convert an ONNX image to a ROS image message.
-   * @param onnx_image The ONNX image to be converted
-   * @param image_msg The ROS message
-   */
- void set_ros_image_from_onnx_image(const moveit_pro_ml::ONNXImage& onnx_image,  sensor_msgs::msg::Image& image_msg);
-
  std::unique_ptr<moveit_pro_ml::SAM2> sam2_;
  moveit_pro_ml::ONNXImage onnx_image_;
  sensor_msgs::msg::Image mask_image_msg_;
- moveit_studio_vision_msgs::msg::Mask2D mask_;
+ moveit_studio_vision_msgs::msg::Mask2D mask_msg_;
 
   /** @brief Classes derived from AsyncBehaviorBase must implement getFuture() so that it returns a shared_future class member */
   std::shared_future<tl::expected<bool, std::string>>& getFuture() override
