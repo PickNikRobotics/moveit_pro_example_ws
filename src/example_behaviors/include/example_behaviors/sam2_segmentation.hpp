@@ -61,7 +61,7 @@ private:
    */
  void set_ros_image_from_onnx_image(const moveit_pro_ml::ONNXImage& onnx_image,  sensor_msgs::msg::Image& image_msg);
 
- std::shared_ptr<moveit_pro_ml::SAM2> sam2_;
+ std::unique_ptr<moveit_pro_ml::SAM2> sam2_;
  moveit_pro_ml::ONNXImage onnx_image_;
  sensor_msgs::msg::Image mask_image_msg_;
  moveit_studio_vision_msgs::msg::Mask2D mask_;
