@@ -101,7 +101,7 @@ namespace example_behaviors
     std::vector<moveit_pro_ml::PointPrompt> point_prompts;
     for (auto const& point : points_2d)
     {
-      // Assume all point are the same label
+      // Assume all points are the same label
       point_prompts.push_back({{kImageInferenceWidth*static_cast<float>(point.point.x), kImageInferenceHeight*static_cast<float>(point.point.y)}, {1.0f}});
     }
 
