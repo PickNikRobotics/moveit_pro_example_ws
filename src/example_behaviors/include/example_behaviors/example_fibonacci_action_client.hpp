@@ -9,10 +9,10 @@ using Fibonacci = example_interfaces::action::Fibonacci;
 
 namespace example_behaviors
 {
-class FibonacciActionClient final : public ActionClientBehaviorBase<Fibonacci>
+class ExampleFibonacciActionClient final : public ActionClientBehaviorBase<Fibonacci>
 {
 public:
-  FibonacciActionClient(const std::string& name, const BT::NodeConfiguration& config,
+  ExampleFibonacciActionClient(const std::string& name, const BT::NodeConfiguration& config,
                         const std::shared_ptr<BehaviorContext>& shared_resources);
 
   /** @brief Implementation of the required providedPorts() function for the hello_world Behavior. */
