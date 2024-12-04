@@ -1,5 +1,9 @@
 #pragma once
 
+#include <future>
+#include <memory>
+#include <string>
+
 #include <moveit_pro_ml/onnx_sam2.hpp>
 #include <moveit_pro_ml/onnx_sam2_types.hpp>
 #include <moveit_studio_behavior_interface/async_behavior_base.hpp>
@@ -17,7 +21,7 @@ class SAM2Segmentation : public moveit_studio::behaviors::AsyncBehaviorBase
 {
 public:
 /**
-   * @brief Constructor for the sam2_segmentation behavior.
+   * @brief Constructor for the SAM2Segmentation behavior.
    * @param name The name of a particular instance of this Behavior. This will be set by the behavior tree factory when this Behavior is created within a new behavior tree.
    * @param config This contains runtime configuration info for this Behavior, such as the mapping between the Behavior's data ports on the behavior tree's blackboard. This will be set by the behavior tree factory when this Behavior is created within a new behavior tree.
    * @details An important limitation is that the members of the base Behavior class are not instantiated until after the initialize() function is called, so these classes should not be used within the constructor.
@@ -26,10 +30,10 @@ public:
                                      const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources);
 
  /**
-  * @brief Implementation of the required providedPorts() function for the sam2_segmentation Behavior.
+  * @brief Implementation of the required providedPorts() function for the Behavior.
   * @details The BehaviorTree.CPP library requires that Behaviors must implement a static function named providedPorts() which defines their input and output ports. If the Behavior does not use any ports, this function must return an empty BT::PortsList.
   * This function returns a list of ports with their names and port info, which is used internally by the behavior tree.
-  * @return sam2_segmentation does not use expose any ports, so this function returns an empty list.
+  * @return List of ports for the behavior.
   */
  static BT::PortsList providedPorts();
 
