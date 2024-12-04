@@ -107,7 +107,7 @@ namespace example_behaviors
 
     try
     {
-      auto masks = sam2_->predict(onnx_image_, point_prompts);
+      const auto masks = sam2_->predict(onnx_image_, point_prompts);
 
       mask_image_msg_.header = image_msg.header;
       set_ros_image_from_onnx_image(masks, mask_image_msg_);
