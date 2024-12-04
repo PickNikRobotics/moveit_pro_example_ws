@@ -116,7 +116,7 @@ namespace example_behaviors
       mask_.y = 0;
       setOutput<std::vector<moveit_studio_vision_msgs::msg::Mask2D>>(kPortMasks, {mask_});
     }
-    catch (std::invalid_argument& e)
+    catch (const std::invalid_argument& e)
     {
       auto error_message = fmt::format("Invalid argument: {}", e.what());
       return tl::make_unexpected(error_message);
