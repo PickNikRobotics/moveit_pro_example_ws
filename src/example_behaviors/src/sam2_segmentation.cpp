@@ -118,8 +118,7 @@ namespace example_behaviors
     }
     catch (const std::invalid_argument& e)
     {
-      auto error_message = fmt::format("Invalid argument: {}", e.what());
-      return tl::make_unexpected(error_message);
+      return tl::make_unexpected(fmt::format("Invalid argument: {}", e.what());
     }
 
     return true;
