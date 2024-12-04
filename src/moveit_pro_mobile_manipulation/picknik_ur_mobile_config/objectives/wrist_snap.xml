@@ -13,6 +13,10 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Take wrist camera snapshot" />
+    <SubTree ID="Take wrist camera snapshot">
+      <MetadataFields>
+        <Metadata subcategory="Application - Basic Examples" />
+      </MetadataFields>
+    </SubTree>
   </TreeNodesModel>
 </root>
