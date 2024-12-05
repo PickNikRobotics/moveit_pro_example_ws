@@ -1,4 +1,0 @@
-manipulator:
-  kinematics_solver: slik_kinematics_plugin/SlikKinematicsPlugin
-  target_tolerance: 0.001
-  solve_mode: "first_found"
