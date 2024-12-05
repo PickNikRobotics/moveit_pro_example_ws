@@ -1,17 +1,17 @@
-#include <example_behaviors/add_two_ints_service_client.hpp>
+#include <example_behaviors/example_add_two_ints_service_client.hpp>
 
 // Include the template implementation for GetMessageFromTopicBehaviorBase<T>.
 #include <moveit_studio_behavior_interface/impl/service_client_behavior_base_impl.hpp>
 namespace example_behaviors
 {
-AddTwoIntsServiceClient::AddTwoIntsServiceClient(
+ExampleAddTwoIntsServiceClient::ExampleAddTwoIntsServiceClient(
     const std::string& name, const BT::NodeConfiguration& config,
     const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources)
   : ServiceClientBehaviorBase<example_interfaces::srv::AddTwoInts>(name, config, shared_resources)
 {
 }
 
-BT::PortsList AddTwoIntsServiceClient::providedPorts()
+BT::PortsList ExampleAddTwoIntsServiceClient::providedPorts()
 {
   // This node has three input ports and one output port
   return BT::PortsList({
@@ -22,13 +22,13 @@ BT::PortsList AddTwoIntsServiceClient::providedPorts()
   });
 }
 
-BT::KeyValueVector AddTwoIntsServiceClient::metadata()
+BT::KeyValueVector ExampleAddTwoIntsServiceClient::metadata()
 {
-  return { { "subcategory", "Example" },
+  return { { "subcategory", "Example Behaviors" },
            { "description", "Calls a service to add two integers and makes the result available on an output port." } };
 }
 
-tl::expected<std::string, std::string> AddTwoIntsServiceClient::getServiceName()
+tl::expected<std::string, std::string> ExampleAddTwoIntsServiceClient::getServiceName()
 {
   const auto service_name = getInput<std::string>("service_name");
   if (const auto error = moveit_studio::behaviors::maybe_error(service_name))
@@ -38,7 +38,7 @@ tl::expected<std::string, std::string> AddTwoIntsServiceClient::getServiceName()
   return service_name.value();
 }
 
-tl::expected<AddTwoInts::Request, std::string> AddTwoIntsServiceClient::createRequest()
+tl::expected<AddTwoInts::Request, std::string> ExampleAddTwoIntsServiceClient::createRequest()
 {
   const auto a = getInput<int>("addend1");
   const auto b = getInput<int>("addend2");
@@ -49,7 +49,7 @@ tl::expected<AddTwoInts::Request, std::string> AddTwoIntsServiceClient::createRe
   return example_interfaces::build<AddTwoInts::Request>().a(a.value()).b(b.value());
 }
 
-tl::expected<bool, std::string> AddTwoIntsServiceClient::processResponse(const AddTwoInts::Response& response)
+tl::expected<bool, std::string> ExampleAddTwoIntsServiceClient::processResponse(const AddTwoInts::Response& response)
 {
   setOutput<int>("result", response.sum);
   return { true };
