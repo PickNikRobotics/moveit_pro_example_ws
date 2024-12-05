@@ -15,4 +15,11 @@
       <Action ID="VisualizePose" />
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Visualize Pose">
+      <MetadataFields>
+        <Metadata subcategory="Visualization" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>

@@ -1,4 +1,4 @@
-#include <example_behaviors/setup_mtc_wave_hand.hpp>
+#include <example_behaviors/example_setup_mtc_wave_hand.hpp>
 
 #include <moveit/task_constructor/solvers.h>
 #include <moveit/task_constructor/stages.h>
@@ -9,7 +9,7 @@ namespace
 // Define a constant for the ID of the Behavior's data port.
 constexpr auto kPortIDTask = "task";
 
-// Define constants for the names of the behavior parameters used by the SetupMTCWaveHand behavior.
+// Define constants for the names of the behavior parameters used by the ExampleSetupMTCWaveHand behavior.
 // These defaults are set to match the UR5e robot defined in the moveit_studio_custom_site_config_example package.
 constexpr auto kPrimaryGroupName = "manipulator";
 constexpr auto kHandFrameName = "grasp_link";
@@ -20,13 +20,13 @@ const rclcpp::Logger kLogger = rclcpp::get_logger("WaveHello");
 
 namespace example_behaviors
 {
-SetupMTCWaveHand::SetupMTCWaveHand(const std::string& name, const BT::NodeConfiguration& config,
+ExampleSetupMTCWaveHand::ExampleSetupMTCWaveHand(const std::string& name, const BT::NodeConfiguration& config,
                                    const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources)
   : moveit_studio::behaviors::AsyncBehaviorBase(name, config, shared_resources)
 {
 }
 
-BT::PortsList SetupMTCWaveHand::providedPorts()
+BT::PortsList ExampleSetupMTCWaveHand::providedPorts()
 {
   return {
     BT::BidirectionalPort<std::shared_ptr<moveit::task_constructor::Task>>(kPortIDTask, "{mtc_task}",
@@ -34,12 +34,12 @@ BT::PortsList SetupMTCWaveHand::providedPorts()
   };
 }
 
-BT::KeyValueVector SetupMTCWaveHand::metadata()
+BT::KeyValueVector ExampleSetupMTCWaveHand::metadata()
 {
-  return { { "subcategory", "Example" }, { "description", "Wave hello with the end effector." } };
+  return { { "subcategory", "Example Behaviors" }, { "description", "Wave hello with the end effector." } };
 }
 
-tl::expected<bool, std::string> SetupMTCWaveHand::doWork()
+tl::expected<bool, std::string> ExampleSetupMTCWaveHand::doWork()
 {
   // Retrieve the "task" data port
   const auto task = getInput<moveit::task_constructor::TaskPtr>(kPortIDTask);

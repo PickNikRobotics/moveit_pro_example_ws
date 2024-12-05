@@ -8,9 +8,9 @@
 namespace example_behaviors
 {
 /**
- * @brief The HelloWorld Behavior uses FailureLoggerROS to log a "Hello World" message and will always return SUCCESS
+ * @brief The ExampleHelloWorld Behavior uses FailureLoggerROS to log a "Hello World" message and will always return SUCCESS
  */
-class HelloWorld : public moveit_studio::behaviors::SharedResourcesNode<BT::SyncActionNode>
+class ExampleHelloWorld : public moveit_studio::behaviors::SharedResourcesNode<BT::SyncActionNode>
 {
 public:
   /**
@@ -25,7 +25,7 @@ public:
    * @details An important limitation is that the members of the base Behavior class are not instantiated until after
    * the initialize() function is called, so these classes should not be used within the constructor.
    */
-  HelloWorld(const std::string& name, const BT::NodeConfiguration& config,
+  ExampleHelloWorld(const std::string& name, const BT::NodeConfiguration& config,
              const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources);
 
   /**
@@ -46,9 +46,9 @@ public:
   static BT::KeyValueVector metadata();
 
   /**
-   * @brief Implementation of BT::SyncActionNode::tick() for HelloWorld.
+   * @brief Implementation of BT::SyncActionNode::tick() for ExampleHelloWorld.
    * @details This function is where the Behavior performs its work when the behavior tree is being run.
-   * Since HelloWorld is derived from BT::SyncActionNode, it is very important that its tick() function always finishes
+   * Since ExampleHelloWorld is derived from BT::SyncActionNode, it is very important that its tick() function always finishes
    * very quickly. If tick() blocks before returning, it will block execution of the entire behavior tree, which may
    * have undesirable consequences for other Behaviors that require a fast update rate to work correctly.
    * @return BT::NodeStatus::RUNNING, BT::NodeStatus::SUCCESS, or BT::NodeStatus::FAILURE depending on the result of the

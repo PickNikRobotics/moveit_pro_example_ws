@@ -1,5 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Plan Move To Pose">
-  <!-- ////////// -->
+  <!--//////////-->
   <BehaviorTree
     ID="Plan Move To Pose"
     _subtreeOnly="true"
@@ -35,6 +36,9 @@
         name="move_to_pose_solution"
         default="{move_to_pose_solution}"
       />
+      <MetadataFields>
+        <Metadata subcategory="Motion - Planning" />
+      </MetadataFields>
     </SubTree>
   </TreeNodesModel>
 </root>

@@ -63,6 +63,9 @@
       <input_port name="planning_group_name" default="manipulator" />
       <input_port name="ik_frame" default="grasp_link" />
       <input_port name="target_pose" default="{hole_object}" />
+      <MetadataFields>
+        <Metadata subcategory="Motion - Execute" />
+      </MetadataFields>
     </SubTree>
   </TreeNodesModel>
 </root>

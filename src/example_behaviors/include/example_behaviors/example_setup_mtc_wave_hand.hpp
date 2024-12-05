@@ -11,7 +11,7 @@
 namespace example_behaviors
 {
 /**
- * @brief The SetupMTCWaveHand behavior makes any robot move the end of its arm back and forth.
+ * @brief The ExampleSetupMTCWaveHand behavior makes any robot move the end of its arm back and forth.
  * @details This is an example of a behavior that uses MoveIt Task Constructor to configure an MTC task,
  * which can be planned and executed by MoveIt Pro's core PlanMTCTask and ExecuteMTCTask Behaviors.
  * It is derived from AsyncBehaviorBase, an extension of the templated SharedResourcesNode type,
@@ -24,11 +24,11 @@ namespace example_behaviors
  * if the process completed successfully or was canceled,
  * or an error message if the process failed unexpectedly.
  */
-class SetupMTCWaveHand final : public moveit_studio::behaviors::AsyncBehaviorBase
+class ExampleSetupMTCWaveHand final : public moveit_studio::behaviors::AsyncBehaviorBase
 {
 public:
   /**
-   * @brief Constructor for the SetupMTCWaveHand behavior.
+   * @brief Constructor for the ExampleSetupMTCWaveHand behavior.
    * @param name The name of a particular instance of this Behavior. This will be set by the behavior
    * tree factory when this Behavior is created within a new behavior tree.
    * @param shared_resources A shared_ptr to a BehaviorContext that is shared among all
@@ -38,17 +38,17 @@ public:
    * between the Behavior's data ports on the behavior tree's blackboard. This will be set by the
    * behavior tree factory when this Behavior is created within a new behavior tree.
    */
-  SetupMTCWaveHand(const std::string& name, const BT::NodeConfiguration& config,
+  ExampleSetupMTCWaveHand(const std::string& name, const BT::NodeConfiguration& config,
                    const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources);
 
   /**
-   * @brief Implementation of the required providedPorts() function for the SetupMTCWaveHand Behavior.
+   * @brief Implementation of the required providedPorts() function for the ExampleSetupMTCWaveHand Behavior.
    * @details The BehaviorTree.CPP library requires that Behaviors must implement a static function
    * named providedPorts() which defines their input and output ports. If the Behavior does not use
    * any ports, this function must return an empty BT::PortsList.
    * This function returns a list of ports with their names and port info, which is used internally
    * by the behavior tree.
-   * @return SetupMTCWaveHand has one data port: a bidirectional port named "task", which is a shared_ptr
+   * @return ExampleSetupMTCWaveHand has one data port: a bidirectional port named "task", which is a shared_ptr
    * to an MTC task object. This function returns a BT::PortsList that declares this single port.
    */
   static BT::PortsList providedPorts();
@@ -62,7 +62,7 @@ public:
 
 private:
   /**
-   * @brief Async thread for SetupMTCWaveHand. Adds MTC stages to an MTC task provided on a data port.
+   * @brief Async thread for ExampleSetupMTCWaveHand. Adds MTC stages to an MTC task provided on a data port.
    * @details This function is where the Behavior performs its work asynchronously while the behavior tree ticks.
    * It is very important that behaviors return from being ticked very quickly because if it blocks before returning
    * it will block execution of the entire behavior tree, which may have undesirable consequences for other Behaviors

@@ -12,10 +12,10 @@
 
 namespace example_behaviors
 {
-class PublishColorRGBA final : public moveit_studio::behaviors::SharedResourcesNode<BT::SyncActionNode>
+class ExamplePublishColorRGBA final : public moveit_studio::behaviors::SharedResourcesNode<BT::SyncActionNode>
 {
 public:
-  PublishColorRGBA(const std::string& name, const BT::NodeConfiguration& config,
+  ExamplePublishColorRGBA(const std::string& name, const BT::NodeConfiguration& config,
                    const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources);
 
   static BT::PortsList providedPorts();
