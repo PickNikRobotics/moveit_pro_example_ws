@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Add Waypoints to MTC Task">
   <!--//////////-->
   <BehaviorTree
@@ -9,7 +10,7 @@
       <Action
         ID="RetrieveWaypoint"
         waypoint_joint_state="{target_joint_state}"
-        waypoint_name="Pick Cube"
+        waypoint_name="Above Pick Cube"
         joint_group_name="{joint_group_name}"
       />
       <Action
@@ -23,7 +24,7 @@
       <Action
         ID="RetrieveWaypoint"
         waypoint_joint_state="{target_joint_state}"
-        waypoint_name="Place Cube"
+        waypoint_name="Above Place Cube"
         joint_group_name="{joint_group_name}"
       />
       <Action
