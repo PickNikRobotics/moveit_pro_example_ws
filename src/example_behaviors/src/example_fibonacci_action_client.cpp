@@ -28,7 +28,7 @@ BT::PortsList ExampleFibonacciActionClient::providedPorts()
 
 BT::KeyValueVector ExampleFibonacciActionClient::metadata()
 {
-  return { { "subcategory", "Example" },
+  return { { "subcategory", "Example Behaviors" },
            { "description",
              "Calls an action to get a Fibonacci sequence and makes the result available on an output port." } };
 }
