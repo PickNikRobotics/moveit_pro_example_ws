@@ -14,6 +14,7 @@
 #include <example_behaviors/example_setup_mtc_place_from_pose.hpp>
 #include <example_behaviors/example_ndt_registration.hpp>
 #include <example_behaviors/example_ransac_registration.hpp>
+#include <example_behaviors/example_sam2_segmentation.hpp>
 
 #include <pluginlib/class_list_macros.hpp>
 
@@ -40,6 +41,7 @@ public:
                                                                       shared_resources);
     moveit_studio::behaviors::registerBehavior<ExampleNDTRegistration>(factory, "ExampleNDTRegistration", shared_resources);
     moveit_studio::behaviors::registerBehavior<ExampleRANSACRegistration>(factory, "ExampleRANSACRegistration", shared_resources);
+    moveit_studio::behaviors::registerBehavior<ExampleSAM2Segmentation>(factory, "ExampleSAM2Segmentation", shared_resources);
   }
 };
 }  // namespace example_behaviors
