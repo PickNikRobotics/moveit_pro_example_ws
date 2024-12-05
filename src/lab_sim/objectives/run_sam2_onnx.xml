@@ -18,7 +18,7 @@
         point_names="Point1;"
         view_name="/wrist_camera/color"
       />
-      <Action ID="SAM2Segmentation" />
+      <Action ID="ExampleSAM2Segmentation" />
       <Action ID="GetPointCloud" topic_name="/wrist_camera/points" />
       <Action
         ID="GetCameraInfo"
