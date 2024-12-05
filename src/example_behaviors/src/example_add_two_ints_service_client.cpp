@@ -24,7 +24,7 @@ BT::PortsList ExampleAddTwoIntsServiceClient::providedPorts()
 
 BT::KeyValueVector ExampleAddTwoIntsServiceClient::metadata()
 {
-  return { { "subcategory", "Example" },
+  return { { "subcategory", "Example Behaviors" },
            { "description", "Calls a service to add two integers and makes the result available on an output port." } };
 }
 
