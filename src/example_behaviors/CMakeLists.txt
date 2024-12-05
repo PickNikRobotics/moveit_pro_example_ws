@@ -20,19 +20,18 @@ find_package(moveit_pro_ml REQUIRED)
 add_library(
   example_behaviors
   SHARED 
-  src/add_two_ints_service_client.cpp
-  src/convert_mtc_solution_to_joint_trajectory.cpp
-  src/delayed_message.cpp
-  src/fibonacci_action_client.cpp
-  src/get_string_from_topic.cpp
-  src/hello_world.cpp
-  src/ndt_registration.cpp
-  src/publish_color_rgba.cpp
-  src/ransac_registration.cpp
-  src/sam2_segmentation.cpp
-  src/setup_mtc_pick_from_pose.cpp
-  src/setup_mtc_place_from_pose.cpp
-  src/setup_mtc_wave_hand.cpp
+  src/example_add_two_ints_service_client.cpp
+  src/example_convert_mtc_solution_to_joint_trajectory.cpp
+  src/example_delayed_message.cpp
+  src/example_get_string_from_topic.cpp
+  src/example_fibonacci_action_client.cpp
+  src/example_hello_world.cpp
+  src/example_publish_color_rgba.cpp
+  src/example_setup_mtc_pick_from_pose.cpp
+  src/example_setup_mtc_place_from_pose.cpp
+  src/example_setup_mtc_wave_hand.cpp
+  src/example_ndt_registration.cpp
+  src/example_ransac_registration.cpp
   src/register_behaviors.cpp)
 target_include_directories(
   example_behaviors
