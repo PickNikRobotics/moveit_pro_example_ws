@@ -16,7 +16,7 @@ BT::PortsList ExamplePublishColorRGBA::providedPorts()
 
 BT::KeyValueVector ExamplePublishColorRGBA::metadata()
 {
-  return { { "subcategory", "Example" },
+  return { { "subcategory", "Example Behaviors" },
            { "description", "Publishes a fixed std_msgs::msg::ColorRGBA message to a topic named \"/my_topic\"" } };
 }
 

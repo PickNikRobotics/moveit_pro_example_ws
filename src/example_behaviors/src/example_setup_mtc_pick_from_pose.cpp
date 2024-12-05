@@ -55,7 +55,7 @@ BT::PortsList ExampleSetupMtcPickFromPose::providedPorts()
 
 BT::KeyValueVector ExampleSetupMtcPickFromPose::metadata()
 {
-  return { { "subcategory", "Example" },
+  return { { "subcategory", "Example Behaviors" },
            { "description", "Adds the stages to describe a pick motion to the MTC task." } };
 }
 

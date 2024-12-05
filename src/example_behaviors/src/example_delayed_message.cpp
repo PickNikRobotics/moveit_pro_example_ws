@@ -17,7 +17,7 @@ BT::PortsList ExampleDelayedMessage::providedPorts()
 
 BT::KeyValueVector ExampleDelayedMessage::metadata()
 {
-  return { { "subcategory", "Example" },
+  return { { "subcategory", "Example Behaviors" },
            { "description", "After some time, log a message that says \"Hello, world!\"." } };
 }
 

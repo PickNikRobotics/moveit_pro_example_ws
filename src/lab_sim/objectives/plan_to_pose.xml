@@ -50,7 +50,7 @@
       <input_port name="ik_frame" default="grasp_link" />
       <inout_port name="mtc_task" default="{mtc_task}" />
       <MetadataFields>
-        <Metadata subcategory="Motion - Plan" />
+        <Metadata subcategory="Motion - Task Planning" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>

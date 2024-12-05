@@ -30,7 +30,7 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Place object">
+    <SubTree ID="Place Object">
       <MetadataFields>
         <Metadata subcategory="Application - Basic Examples" />
       </MetadataFields>

@@ -36,7 +36,7 @@ BT::PortsList ExampleSetupMTCWaveHand::providedPorts()
 
 BT::KeyValueVector ExampleSetupMTCWaveHand::metadata()
 {
-  return { { "subcategory", "Example" }, { "description", "Wave hello with the end effector." } };
+  return { { "subcategory", "Example Behaviors" }, { "description", "Wave hello with the end effector." } };
 }
 
 tl::expected<bool, std::string> ExampleSetupMTCWaveHand::doWork()

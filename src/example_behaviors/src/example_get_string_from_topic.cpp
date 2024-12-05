@@ -22,7 +22,7 @@ BT::PortsList ExampleGetStringFromTopic::providedPorts()
 
 BT::KeyValueVector ExampleGetStringFromTopic::metadata()
 {
-  return { { "subcategory", "Example" },
+  return { { "subcategory", "Example Behaviors" },
            { "description", "Captures a string message and makes it available on an output port." } };
 }
 

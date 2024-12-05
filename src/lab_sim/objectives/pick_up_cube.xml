@@ -14,4 +14,11 @@
       <SubTree ID="Pick object" _collapsed="false" />
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Pick up Cube">
+      <MetadataFields>
+        <Metadata subcategory="Application - Basic Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>
