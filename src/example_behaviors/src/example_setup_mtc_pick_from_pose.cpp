@@ -1,4 +1,4 @@
-#include <example_behaviors/setup_mtc_pick_from_pose.hpp>
+#include <example_behaviors/example_setup_mtc_pick_from_pose.hpp>
 
 #include <behaviortree_cpp/bt_factory.h>
 #include <moveit/task_constructor/stages.h>
@@ -14,7 +14,7 @@
 
 namespace
 {
-const auto kLogger = rclcpp::get_logger("SetupMTCPickFromPose");
+const auto kLogger = rclcpp::get_logger("ExampleSetupMtcPickFromPose");
 using MoveItErrorCodes = moveit_msgs::msg::MoveItErrorCodes;
 
 // Port names for input and output ports.
@@ -37,14 +37,14 @@ constexpr auto kSceneObjectNameOctomap = "<octomap>";
 
 namespace example_behaviors
 {
-SetupMtcPickFromPose::SetupMtcPickFromPose(
+ExampleSetupMtcPickFromPose::ExampleSetupMtcPickFromPose(
     const std::string& name, const BT::NodeConfiguration& config,
     const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources)
   : moveit_studio::behaviors::SharedResourcesNode<BT::SyncActionNode>(name, config, shared_resources)
 {
 }
 
-BT::PortsList SetupMtcPickFromPose::providedPorts()
+BT::PortsList ExampleSetupMtcPickFromPose::providedPorts()
 {
   return {
     BT::BidirectionalPort<moveit::task_constructor::TaskPtr>(kPortIDTask, "{mtc_task}", "MoveIt Task Constructor task."),
@@ -53,13 +53,13 @@ BT::PortsList SetupMtcPickFromPose::providedPorts()
   };
 }
 
-BT::KeyValueVector SetupMtcPickFromPose::metadata()
+BT::KeyValueVector ExampleSetupMtcPickFromPose::metadata()
 {
-  return { { "subcategory", "Example" },
+  return { { "subcategory", "Example Behaviors" },
            { "description", "Adds the stages to describe a pick motion to the MTC task." } };
 }
 
-BT::NodeStatus SetupMtcPickFromPose::tick()
+BT::NodeStatus ExampleSetupMtcPickFromPose::tick()
 {
   using namespace moveit_studio::behaviors;
 

@@ -24,23 +24,23 @@ TEST(BehaviorTests, test_load_behavior_plugins)
   }
   // Test that ClassLoader is able to find and instantiate each Behavior using the package's plugin description info.
   EXPECT_NO_THROW(
-      (void)factory.instantiateTreeNode("test_behavior_name", "AddTwoIntsServiceClient", BT::NodeConfiguration()));
-  EXPECT_NO_THROW((void)factory.instantiateTreeNode("test_behavior_name", "DelayedMessage", BT::NodeConfiguration()));
+      (void)factory.instantiateTreeNode("test_behavior_name", "ExampleAddTwoIntsServiceClient", BT::NodeConfiguration()));
+  EXPECT_NO_THROW((void)factory.instantiateTreeNode("test_behavior_name", "ExampleDelayedMessage", BT::NodeConfiguration()));
   EXPECT_NO_THROW(
-      (void)factory.instantiateTreeNode("test_behavior_name", "FibonacciActionClient", BT::NodeConfiguration()));
+      (void)factory.instantiateTreeNode("test_behavior_name", "ExampleFibonacciActionClient", BT::NodeConfiguration()));
   EXPECT_NO_THROW(
-      (void)factory.instantiateTreeNode("test_behavior_name", "GetStringFromTopic", BT::NodeConfiguration()));
-  EXPECT_NO_THROW((void)factory.instantiateTreeNode("test_behavior_name", "HelloWorld", BT::NodeConfiguration()));
-  EXPECT_NO_THROW((void)factory.instantiateTreeNode("test_behavior_name", "PublishColorRGBA", BT::NodeConfiguration()));
+      (void)factory.instantiateTreeNode("test_behavior_name", "ExampleGetStringFromTopic", BT::NodeConfiguration()));
+  EXPECT_NO_THROW((void)factory.instantiateTreeNode("test_behavior_name", "ExampleHelloWorld", BT::NodeConfiguration()));
+  EXPECT_NO_THROW((void)factory.instantiateTreeNode("test_behavior_name", "ExamplePublishColorRGBA", BT::NodeConfiguration()));
   EXPECT_NO_THROW(
-      (void)factory.instantiateTreeNode("test_behavior_name", "SetupMtcPickFromPose", BT::NodeConfiguration()));
+      (void)factory.instantiateTreeNode("test_behavior_name", "ExampleSetupMtcPickFromPose", BT::NodeConfiguration()));
   EXPECT_NO_THROW(
-      (void)factory.instantiateTreeNode("test_behavior_name", "SetupMtcPlaceFromPose", BT::NodeConfiguration()));
-  EXPECT_NO_THROW((void)factory.instantiateTreeNode("test_behavior_name", "SetupMTCWaveHand", BT::NodeConfiguration()));  
+      (void)factory.instantiateTreeNode("test_behavior_name", "ExampleSetupMtcPlaceFromPose", BT::NodeConfiguration()));
+  EXPECT_NO_THROW((void)factory.instantiateTreeNode("test_behavior_name", "ExampleSetupMTCWaveHand", BT::NodeConfiguration()));
   EXPECT_NO_THROW(
-    (void)factory.instantiateTreeNode("test_behavior_name", "NDTRegistration", BT::NodeConfiguration()));
+    (void)factory.instantiateTreeNode("test_behavior_name", "ExampleNDTRegistration", BT::NodeConfiguration()));
   EXPECT_NO_THROW(
-    (void)factory.instantiateTreeNode("test_behavior_name", "RANSACRegistration", BT::NodeConfiguration()));
+    (void)factory.instantiateTreeNode("test_behavior_name", "ExampleRANSACRegistration", BT::NodeConfiguration()));
 }
 
 int main(int argc, char** argv)

@@ -1,10 +1,9 @@
-<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Pick And Place Example">
   <!-- ////////// -->
   <BehaviorTree
     ID="Pick And Place Example"
     _description="Pick and place example objective"
-    _favorite="true"
+    _favorite="false"
     _hardcoded="false"
   >
     <Control ID="Sequence" name="Pick and Place">
@@ -24,7 +23,7 @@
           task="{mtc_pick_task}"
         />
         <Action ID="SetupMTCCurrentState" task="{mtc_pick_task}" />
-        <!-- The following behavior can be found in the example_behaviors package. Remove the COLCON_IGNORE file and `moveit_pro build user_workspace` to use. -->
+        <!-- The following behavior can be found in the example_behaviors package. -->
         <Action
           ID="SetupMtcPickFromPose"
           grasp_pose="{pick_pose}"
@@ -52,7 +51,7 @@
           orientation_xyzw="0;1;0;0"
           stamped_pose="{place_pose}"
         />
-        <!-- The following behavior can be found in the example_behaviors package. Remove the COLCON_IGNORE file and `moveit_pro build user_workspace` to use. -->
+        <!-- The following behavior can be found in the example_behaviors package. -->
         <Action
           ID="SetupMtcPlaceFromPose"
           place_pose="{place_pose}"
@@ -67,4 +66,11 @@
       </Control>
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Pick And Place Example">
+      <MetadataFields>
+        <Metadata subcategory="Application - Basic Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>
