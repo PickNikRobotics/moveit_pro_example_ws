@@ -3,7 +3,7 @@
 #include <string>
 
 #include <ament_index_cpp/get_package_share_directory.hpp>
-#include <example_behaviors/sam2_segmentation.hpp>
+#include <example_behaviors/example_sam2_segmentation.hpp>
 #include <geometry_msgs/msg/point_stamped.hpp>
 #include <moveit_pro_ml/onnx_sam2.hpp>
 #include <moveit_studio_behavior_interface/async_behavior_base.hpp>
@@ -59,7 +59,7 @@ namespace example_behaviors
     mask_msg.y = 0;
   }
 
-  SAM2Segmentation::SAM2Segmentation(const std::string& name, const BT::NodeConfiguration& config,
+  ExampleSAM2Segmentation::ExampleSAM2Segmentation(const std::string& name, const BT::NodeConfiguration& config,
                                      const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources)
     : moveit_studio::behaviors::AsyncBehaviorBase(name, config, shared_resources)
   {
@@ -70,7 +70,7 @@ namespace example_behaviors
     sam2_ = std::make_unique<moveit_pro_ml::SAM2>(encoder_onnx_file, decoder_onnx_file);
   }
 
-  BT::PortsList SAM2Segmentation::providedPorts()
+  BT::PortsList ExampleSAM2Segmentation::providedPorts()
   {
     return {
       BT::InputPort<sensor_msgs::msg::Image>(kPortImage, kPortImageDefault,
@@ -83,7 +83,7 @@ namespace example_behaviors
     };
   }
 
-  tl::expected<bool, std::string> SAM2Segmentation::doWork()
+  tl::expected<bool, std::string> ExampleSAM2Segmentation::doWork()
   {
     const auto ports = moveit_studio::behaviors::getRequiredInputs(getInput<sensor_msgs::msg::Image>(kPortImage),
                                                                    getInput<std::vector<
@@ -130,7 +130,7 @@ namespace example_behaviors
     return true;
   }
 
-  BT::KeyValueVector SAM2Segmentation::metadata()
+  BT::KeyValueVector ExampleSAM2Segmentation::metadata()
   {
     return {
       {

@@ -17,16 +17,16 @@ namespace example_behaviors
 /**
  * @brief Segment an image using the SAM 2 model
  */
-class SAM2Segmentation : public moveit_studio::behaviors::AsyncBehaviorBase
+class ExampleSAM2Segmentation : public moveit_studio::behaviors::AsyncBehaviorBase
 {
 public:
 /**
-   * @brief Constructor for the SAM2Segmentation behavior.
+   * @brief Constructor for the ExampleSAM2Segmentation behavior.
    * @param name The name of a particular instance of this Behavior. This will be set by the behavior tree factory when this Behavior is created within a new behavior tree.
    * @param config This contains runtime configuration info for this Behavior, such as the mapping between the Behavior's data ports on the behavior tree's blackboard. This will be set by the behavior tree factory when this Behavior is created within a new behavior tree.
    * @details An important limitation is that the members of the base Behavior class are not instantiated until after the initialize() function is called, so these classes should not be used within the constructor.
    */
- SAM2Segmentation(const std::string& name, const BT::NodeConfiguration& config,
+ ExampleSAM2Segmentation(const std::string& name, const BT::NodeConfiguration& config,
                                      const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources);
 
  /**
