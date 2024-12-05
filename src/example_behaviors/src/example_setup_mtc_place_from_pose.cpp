@@ -56,7 +56,7 @@ BT::PortsList ExampleSetupMtcPlaceFromPose::providedPorts()
 
 BT::KeyValueVector ExampleSetupMtcPlaceFromPose::metadata()
 {
-  return { { "subcategory", "Example" },
+  return { { "subcategory", "Example Behaviors" },
            { "description", "Adds the stages to describe a place motion to the MTC task." } };
 }
 
