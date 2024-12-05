@@ -6,7 +6,7 @@
   <BehaviorTree
     ID="Save and Execute a Trajectory from Disk"
     _description="Build a trajectory from a series of waypoints and MTC tasks, then save the trajectory to disk. Load the trajectory from disk and execute it as well."
-    _favorite="true"
+    _favorite="false"
     _subtreeOnly="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">

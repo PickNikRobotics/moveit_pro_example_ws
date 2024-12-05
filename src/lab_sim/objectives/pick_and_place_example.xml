@@ -1,10 +1,9 @@
-<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Pick And Place Example">
   <!-- ////////// -->
   <BehaviorTree
     ID="Pick And Place Example"
     _description="Pick and place example objective"
-    _favorite="true"
+    _favorite="false"
     _hardcoded="false"
   >
     <Control ID="Sequence" name="Pick and Place">

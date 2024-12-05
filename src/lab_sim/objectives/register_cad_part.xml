@@ -3,7 +3,7 @@
   <BehaviorTree
     ID="Register CAD Part"
     _description="Load an STL from disk and use registration to align the pointcloud with a matching shape in the environment"
-    _favorite="true"
+    _favorite="false"
     _subtreeOnly="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">

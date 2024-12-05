@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Plan and Save Trajectory">
   <!--//////////-->
   <BehaviorTree
@@ -39,7 +40,7 @@
       />
       <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
       <Action ID="WaitForUserTrajectoryApproval" />
-      <!-- The following behavior can be found in the example_behaviors package. -->
+      <!--The following behavior can be found in the example_behaviors package.-->
       <Action
         ID="ConvertMtcSolutionToJointTrajectory"
         joint_trajectory="{joint_trajectory_msg}"
