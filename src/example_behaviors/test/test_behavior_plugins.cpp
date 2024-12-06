@@ -41,6 +41,8 @@ TEST(BehaviorTests, test_load_behavior_plugins)
     (void)factory.instantiateTreeNode("test_behavior_name", "ExampleNDTRegistration", BT::NodeConfiguration()));
   EXPECT_NO_THROW(
     (void)factory.instantiateTreeNode("test_behavior_name", "ExampleRANSACRegistration", BT::NodeConfiguration()));
+  EXPECT_NO_THROW(
+    (void)factory.instantiateTreeNode("test_behavior_name", "ExampleSAM2Segmentation", BT::NodeConfiguration()));
 }
 
 int main(int argc, char** argv)
