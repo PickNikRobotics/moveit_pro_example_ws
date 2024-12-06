@@ -64,4 +64,4 @@ private:
   std::shared_future<tl::expected<bool, std::string>> future_;
 
 };
-}  // namespace sam2_segmentation
+}  // namespace example_behaviors

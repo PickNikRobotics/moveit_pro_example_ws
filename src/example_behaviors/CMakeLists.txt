@@ -32,6 +32,7 @@ add_library(
   src/example_setup_mtc_wave_hand.cpp
   src/example_ndt_registration.cpp
   src/example_ransac_registration.cpp
+  src/example_sam2_segmentation.cpp
   src/register_behaviors.cpp)
 target_include_directories(
   example_behaviors
