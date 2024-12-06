@@ -1,7 +1,11 @@
-<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Register CAD Part">
   <!--//////////-->
-  <BehaviorTree ID="Register CAD Part" _description="" _favorite="true">
+  <BehaviorTree
+    ID="Register CAD Part"
+    _description="Load an STL from disk and use registration to align the pointcloud with a matching shape in the environment"
+    _favorite="false"
+    _subtreeOnly="false"
+  >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action ID="ClearSnapshot" />
       <SubTree ID="Look at table" _collapsed="true" />
@@ -9,6 +13,7 @@
         ID="CreateStampedPose"
         position_xyz="0.02;.75;0.58"
         orientation_xyzw="0;0;0;1"
+        stamped_pose="{stamped_pose}"
         name="Initial Guess"
       />
       <SubTree
@@ -53,4 +58,11 @@
       <Action ID="SendPointCloudToUI" point_cloud="{output_cloud_aligned}" />
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Register CAD Part">
+      <MetadataFields>
+        <Metadata subcategory="Perception - Planning Scene" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>

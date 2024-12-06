@@ -1,0 +1,32 @@
+<root BTCPP_format="4" main_tree_to_execute="Load and Execute Joint Trajectory">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Load and Execute Joint Trajectory"
+    _description="Load a trajectory that was saved as a YAML file"
+    _favorite="false"
+    _subtreeOnly="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        waypoint_name="Workspace Right"
+        joint_group_name="manipulator"
+        planner_interface="moveit_default"
+        controller_names="/joint_trajectory_controller"
+      />
+      <Action
+        ID="LoadJointTrajectoryFromYaml"
+        file_path="joint_trajectory.yaml"
+      />
+      <Action ID="ExecuteFollowJointTrajectory" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Load and Execute Joint Trajectory">
+      <MetadataFields>
+        <Metadata subcategory="Application - Basic Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

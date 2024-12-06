@@ -3,7 +3,7 @@
   <BehaviorTree
     ID="Joint Diagnostic"
     _description="Example of cycling through the min and max limits of a single joint, for hardware testing"
-    _favorite="true"
+    _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <!--Setup by moving home-->
@@ -35,4 +35,11 @@
       </Decorator>
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Joint Diagnostic">
+      <MetadataFields>
+        <Metadata subcategory="Application - Basic Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>

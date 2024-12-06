@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Pick April Tag Labeled Object">
   <!--//////////-->
   <BehaviorTree
@@ -9,7 +8,7 @@
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree ID="Look at table" _collapsed="true" />
       <Action ID="ClearSnapshot" />
-      <SubTree ID="Wrist camera snapshot" _collapsed="true" />
+      <SubTree ID="Take wrist camera snapshot" _collapsed="true" />
       <Control ID="Sequence" name="Setup">
         <SubTree ID="Open Gripper" />
       </Control>
@@ -28,19 +27,39 @@
         topic_name="/wrist_camera/color"
         message_out="{image}"
       />
-      <Action
-        ID="DetectAprilTags"
+      <SubTree
+        ID="Get AprilTag Pose from Image"
         image="{image}"
         camera_info="{camera_info}"
         parameters="{parameters}"
-        detections="{detections}"
+        _collapsed="true"
+        detection_pose="{detection_pose}"
       />
-      <Action ID="GetDetectionPose" />
-      <Action ID="TransformPoseFrame" input_pose="{detection_pose}" />
+      <Action
+        ID="TransformPose"
+        output_pose="{view_pose}"
+        input_pose="{detection_pose}"
+        quaternion_xyzw="0;0;0;1"
+        translation_xyz="0;-0.1;-0.15"
+      />
+      <SubTree
+        ID="Plan Move To Pose"
+        target_pose="{view_pose}"
+        move_to_pose_solution="{move_to_pose_solution}"
+      />
+      <Action ID="ExecuteMTCTask" solution="{move_to_pose_solution}" />
+      <SubTree
+        ID="Get AprilTag Pose from Image"
+        image="{image}"
+        camera_info="{camera_info}"
+        parameters="{parameters}"
+        _collapsed="true"
+        detection_pose="{detection_pose}"
+      />
       <Action
         ID="TransformPose"
         output_pose="{offset_pose}"
-        input_pose="{output_pose}"
+        input_pose="{detection_pose}"
         quaternion_xyzw="0;0;0;1"
         translation_xyz="0;0;-0.01"
       />
@@ -69,4 +88,11 @@
       <Action ID="ExecuteMTCTask" solution="{pick_object_solution}" />
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Pick April Tag Labeled Object">
+      <MetadataFields>
+        <Metadata subcategory="Application - Advanced Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>

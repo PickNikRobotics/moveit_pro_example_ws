@@ -42,7 +42,6 @@ objectives:
       - "moveit_studio::behaviors::MTCCoreBehaviorsLoader"
       - "moveit_studio::behaviors::ServoBehaviorsLoader"
       - "moveit_studio::behaviors::VisionBehaviorsLoader"
-      - "picknik_registration::PicknikRegistrationBehaviorsLoader"
   # Specify source folder for objectives
   # [Required]
   objective_library_paths:
@@ -71,9 +70,9 @@ ros2_control:
     - "robotiq_gripper_controller"
     - "joint_state_broadcaster"
     - "servo_controller"
+    - "joint_trajectory_controller"
   # Load but do not start these controllers so they can be activated later if needed.
   controllers_inactive_at_startup:
-    - "joint_trajectory_controller"
     - "joint_trajectory_admittance_controller"
     - "velocity_force_controller"
   # Any controllers here will not be spawned by MoveIt Pro.

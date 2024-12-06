@@ -2,7 +2,7 @@
   <BehaviorTree
     ID="Cycle Between Waypoints"
     _description="Example of repeatedly moving between two saved poses."
-    _favorite="true"
+    _favorite="false"
   >
     <Decorator ID="KeepRunningUntilFailure">
       <Control ID="Sequence">
@@ -25,4 +25,11 @@
       </Control>
     </Decorator>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Cycle Between Waypoints">
+      <MetadataFields>
+        <Metadata subcategory="Application - Basic Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>
