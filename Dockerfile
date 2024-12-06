@@ -10,13 +10,14 @@ ARG MOVEIT_STUDIO_BASE_IMAGE
 ARG USERNAME=studio-user
 ARG USER_UID=1000
 ARG USER_GID=1000
+ARG BASE=base
 
 ##################################################
 # Starting from the specified MoveIt Pro release #
 ##################################################
 # The image tag is specified in the argument itself.
 # hadolint ignore=DL3006
-FROM ${MOVEIT_STUDIO_BASE_IMAGE} AS base
+FROM ${MOVEIT_STUDIO_BASE_IMAGE} AS base-base
 
 # Create a non-root user
 ARG USERNAME
@@ -49,18 +50,20 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
       /home/${USERNAME}/.ros && \
     chown -R $USER_UID:$USER_GID /home/${USERNAME} /opt/overlay_ws/
 
-# IMPORTANT: Optionally install Nvidia drivers for improved simulator performance with Nvidia GPUs.
-# To do this you must
-# 1. Uncomment the ENV and RUN entries below
-# 2. Replace the 'nvidia-driver-555' apt package with the Nvidia driver version on your host, e.g. nvidia-driver-535, nvidia-driver-555. Use nvidia-smi on your host to determine the driver version.
-# After rebuilding via `moveit_pro build` verify the drivers are active in your container by running `nvidia_smi` inside of `moveit_pro shell`.
-# ENV DEBIAN_FRONTEND=noninteractive
-# RUN apt update && apt install -y software-properties-common
-# RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
-#     --mount=type=cache,target=/var/lib/apt,sharing=locked \ 
-#    add-apt-repository ppa:graphics-drivers/ppa && \
-#    apt update && apt upgrade -y && apt install -y nvidia-driver-555
+FROM base-base AS base-nvidia
+ARG NVIDIA_DRIVER_PACKAGE
+ENV DEBIAN_FRONTEND=noninteractive
+# hadolint ignore=DL3008
+RUN apt-get update && apt-get install -y --no-install-recommends software-properties-common
+# hadolint ignore=DL3008
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \ 
+   add-apt-repository ppa:graphics-drivers/ppa && \
+   apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends "${NVIDIA_DRIVER_PACKAGE}"
 
+ARG BASE
+# hadolint ignore=DL3006
+FROM base-${BASE} AS base
 # Install additional dependencies
 # You can also add any necessary apt-get install, pip install, etc. commands at this point.
 # NOTE: The /opt/overlay_ws folder contains MoveIt Pro binary packages and the source file.
