@@ -1,7 +1,7 @@
-<?xml version="1.0"?>
+<?xml version="1.0" ?>
 <package format="3">
   <name>kinova_gen3_base_config</name>
-  <version>5.1.0</version>
+  <version>6.5.0</version>
 
   <description>Base config package for a Kinova Gen3 system</description>
 
@@ -13,8 +13,8 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>moveit_studio_kinova_pstop_manager</depend>
+  <depend>kortex_description</depend>
 
-  <exec_depend>kortex_description</exec_depend>
   <exec_depend>moveit_ros_perception</exec_depend>
   <exec_depend>moveit_studio_agent</exec_depend>
   <exec_depend>moveit_studio_behavior</exec_depend>
