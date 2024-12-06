@@ -6,12 +6,12 @@
 
   <asset>
     <!-- Define textures and materials -->
-    <texture name="wood" type="cube" file="meshes/wood.png" />
+    <texture name="wood" type="cube" file="assets/wood.png" />
     <material name="wood" texture="wood" texrepeat="1 1" />
 
     <!-- Define AprilTag textures -->
-    <texture name="apriltag1" type="2d" file="meshes/tag36_11_00000.png" />
-    <texture name="apriltag2" type="2d" file="meshes/tag36_11_00001.png" />
+    <texture name="apriltag1" type="2d" file="assets/tag36_11_00000.png" />
+    <texture name="apriltag2" type="2d" file="assets/tag36_11_00001.png" />
 
     <!-- Define block materials with AprilTags -->
     <material
@@ -63,7 +63,7 @@
     />
   </asset>
   <asset>
-    <mesh name="cube" file="meshes/Cube.stl" />
+    <mesh name="cube" file="assets/Cube.stl" />
   </asset>
 
   <worldbody>
@@ -117,6 +117,8 @@
       resolution="640 480"
       euler="-0.9 0 3.1415"
     />
-    <include file="lrmate200id/lrmate200id.xml" />
+    <body name="arm_mount">
+      <include file="lrmate200id/lrmate200id.xml" />
+    </body>
   </worldbody>
 </mujoco>
