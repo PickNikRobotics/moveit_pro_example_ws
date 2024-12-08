@@ -61,7 +61,7 @@
     <geom name="floor" size="0 0 0.05" type="plane" material="groundplane" />
     <camera
       name="scene_camera"
-      pos="0.0 0.3 0.55"
+      pos="-2.0 1.2 1.55"
       fovy="58"
       mode="fixed"
       resolution="640 480"
@@ -69,7 +69,7 @@
     />
     <site
       name="scene_camera_optical_frame"
-      pos="0.0 0.3 0.55"
+      pos="-2.0 1.2 1.55"
       quat="0.365715 0.232986 -0.484157 -0.759975"
       size="0.03"
     />
