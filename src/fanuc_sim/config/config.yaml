@@ -43,6 +43,7 @@ hardware:
     urdf_params:
         # Use "mock", "mujoco", or "real"
       - hardware_interface: "mujoco"
+      - mujoco_viewer: "false"
 
 # Sets ROS global params for launch.
 # [Optional]
@@ -112,6 +113,8 @@ ros2_control:
     - "joint_trajectory_controller"
     - "servo_controller"
     - "joint_state_broadcaster"
+    - "tool_attach_controller"
+    - "suction_cup_controller"
     # - "servo_controller"
   # Load but do not start these controllers so they can be activated later if needed.
   # [Optional, default=[]]

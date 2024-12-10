@@ -1,0 +1,44 @@
+<mujoco model="fanuc_tool">
+  <compiler angle="radian" autolimits="true" />
+  <option integrator="RK4" timestep="0.005" />
+
+  <worldbody>
+    <body
+      name="gripper_base"
+      gravcomp="1"
+      pos="0.25 0.3 0.3"
+      euler="3.1415 0 0"
+    >
+      <joint
+        type="free"
+        stiffness="0"
+        damping="0"
+        frictionloss=".001"
+        armature="0"
+      />
+      <site name="tool_attach_site" pos="0 0 0" euler="0 0 0" />
+
+      <geom type="cylinder" size="0.03 0.02" pos="0 0 0.02" rgba=".1 .1 .1 1" />
+      <body name="suction_cylinder" gravcomp="1" pos="0 0 0.04">
+        <geom
+          type="cylinder"
+          size="0.01 0.03"
+          pos="0 0 0.03"
+          margin="0.01"
+          gap="0.01"
+          rgba=".1 .1 .1 1"
+        />
+        <body name="tool_tip" gravcomp="1" pos="0 0 0.055">
+          <geom
+            class="collision"
+            type="cylinder"
+            size="0.01 0.005"
+            margin="0.01"
+            gap="0.01"
+          />
+          <site name="suction_cup_tool_tip" />
+        </body>
+      </body>
+    </body>
+  </worldbody>
+</mujoco>
