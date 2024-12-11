@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
-  <xacro:macro name="picknik_ur_mujoco_ros2_control" params="mujoco_model run_apriltag_hardware_interface">
+  <xacro:macro name="picknik_ur_mujoco_ros2_control" params="mujoco_model">
 
     <ros2_control name="ur_mujoco_control" type="system">
       <joint name="shoulder_pan_joint">
@@ -94,12 +94,5 @@
           <param name="odom_zero_z">true</param>
       </hardware>
     </ros2_control>
-    <xacro:if value="$(arg run_apriltag_hardware_interface)">
-      <ros2_control name="apriltag_hardware_interface" type="system">
-          <hardware>
-              <plugin>apriltag_hardware_interface/AprilTagHardwareInterface</plugin>
-          </hardware>
-      </ros2_control>
-    </xacro:if>
   </xacro:macro>
 </robot>

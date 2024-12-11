@@ -19,7 +19,6 @@
   <xacro:arg name="initial_positions_file" default="$(find picknik_ur_base_config)/config/initial_positions.yaml"/>
   <xacro:arg name="spawn_airfoil" default="true"/>
   <xacro:arg name="mujoco_model" default="description/scene.xml"/>
-  <xacro:arg name="run_apriltag_hardware_interface" default="true"/>
 
   <!-- Import UR and environment macros -->
   <xacro:include filename="$(find picknik_ur_base_config)/description/picknik_ur_macro.xacro"/>
@@ -141,5 +140,5 @@
   </xacro:picknik_ur>
 
   <!-- MuJoCo Hardware interface -->
-  <xacro:picknik_ur_mujoco_ros2_control mujoco_model="$(arg mujoco_model)" run_apriltag_hardware_interface="$(arg mujoco_model)"/>
+  <xacro:picknik_ur_mujoco_ros2_control mujoco_model="$(arg mujoco_model)"/>
 </robot>
