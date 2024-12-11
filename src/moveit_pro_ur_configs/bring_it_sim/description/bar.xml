@@ -1,0 +1,9 @@
+<mujoco model="bar">
+    <worldbody>
+        <geom name="bar" type="box" size="2.5 0.75 0.45" pos="0 2 0.45" rgba="0.75 0.75 0.75 1"/>
+        <geom name="table_1" type="box" size="0.75 0.75 0.45" pos="1.75 5.5 0.45" rgba="0.75 0.75 0.75 1"/>
+        <geom name="table_2" type="box" size="0.75 0.75 0.45" pos="-1.75 5.5 0.45" rgba="0.75 0.75 0.75 1"/>
+        <geom name="table_3" type="box" size="0.75 0.75 0.45" pos="1.75 9 0.45" rgba="0.75 0.75 0.75 1"/>
+        <geom name="table_4" type="box" size="0.75 0.75 0.45" pos="-1.75 9 0.45" rgba="0.75 0.75 0.75 1"/>
+    </worldbody>
+</mujoco>
