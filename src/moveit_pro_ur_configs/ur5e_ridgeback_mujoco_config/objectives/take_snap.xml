@@ -1,0 +1,18 @@
+<root BTCPP_format="4" main_tree_to_execute="Left camera snapshot">
+    <!--//////////-->
+    <BehaviorTree ID="Left camera snapshot" _description="" _favorite="false">
+        <Control ID="Sequence" name="TopLevelSequence">
+            <!--Clear out old snapshot data-->
+            <Action ID="ClearSnapshot"/>
+            <Action ID="GetPointCloud" topic_name="/left_camera/points"/>
+            <Action ID="SendPointCloudToUI"/>
+        </Control>
+    </BehaviorTree>
+    <TreeNodesModel>
+        <SubTree ID="Left camera snapshot">
+            <MetadataFields>
+                <Metadata subcategory="Grasping"/>
+            </MetadataFields>                    
+        </SubTree>
+    </TreeNodesModel>
+</root>
