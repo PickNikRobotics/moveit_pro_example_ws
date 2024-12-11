@@ -2,7 +2,7 @@
 <root BTCPP_format="4" main_tree_to_execute="Move to Joint State">
   <BehaviorTree
     ID="Move to Joint State"
-    _description="Move to a specified joint state"
+    _description="Plan and execute motion to a set of joint angles specified in a ROS message type."
     _subtreeOnly="true"
   >
     <Control ID="Sequence">
