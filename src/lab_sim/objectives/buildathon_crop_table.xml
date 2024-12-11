@@ -1,0 +1,16 @@
+<root BTCPP_format="4" main_tree_to_execute="Buildathon crop table">
+    <!--//////////-->
+    <BehaviorTree ID="Buildathon crop table" _description="" _favorite="true">
+        <Control ID="Sequence" name="TopLevelSequence">
+            <Action ID="ClearSnapshot"/>
+            <Action ID="GetPointCloud" topic_name="/wrist_camera/points"/>
+            <Action ID="CreateStampedPose" stamped_pose="{above_table_centroid_pose}" position_xyz="0;0;1.49" name="Above_table_centroid"/>
+            <Action ID="WaitForDuration" delay_duration="0.50000"/>
+            <Action ID="CropPointsInBox" name="CropOutTable" point_cloud_cropped="{point_cloud_noTable}" crop_box_centroid_pose="{above_table_centroid_pose}" crop_box_size="2;2;2"/>
+            <Action ID="SendPointCloudToUI" point_cloud="{point_cloud_noTable}"/>
+        </Control>
+    </BehaviorTree>
+    <TreeNodesModel>
+        <SubTree ID="Buildathon"/>
+    </TreeNodesModel>
+</root>
