@@ -1,31 +1,16 @@
-<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Buildathon">
-  <!--//////////-->
-  <BehaviorTree ID="Buildathon" _description="" _favorite="true">
-    <Control ID="Sequence" name="TopLevelSequence">
-      <Action ID="GetPointCloud" topic_name="/wrist_camera/points" />
-      <Action ID="CreateStampedPose" stamped_pose="{eef_pose}" />
-      <Action
-        ID="TransformPoseFrame"
-        target_frame_id="wrist_camera_optical_frame"
-        input_pose="{eef_pose}"
-        output_pose="{eef_pose}"
-      />
-      <Action
-        ID="TransformPose"
-        input_pose="{eef_pose}"
-        translation_xyz="1;0;0"
-        output_pose="{crop_pose}"
-      />
-      <Action
-        ID="CropPointsInSphere"
-        crop_sphere_centroid_pose="{crop_pose}"
-        crop_sphere_radius="0.05"
-      />
-      <Action ID="SendPointCloudToUI" point_cloud="{point_cloud_cropped}" />
-    </Control>
-  </BehaviorTree>
-  <TreeNodesModel>
-    <SubTree ID="Buildathon" />
-  </TreeNodesModel>
+    <!--//////////-->
+    <BehaviorTree ID="Buildathon" _description="" _favorite="true">
+        <Control ID="Sequence" name="TopLevelSequence">
+            <Action ID="GetPointCloud" topic_name="/wrist_camera/points"/>
+            <Action ID="CreateStampedPose" stamped_pose="{eef_pose}"/>
+            <Action ID="TransformPoseFrame" target_frame_id="wrist_camera_optical_frame" input_pose="{eef_pose}" output_pose="{eef_pose}"/>
+            <Action ID="TransformPose" input_pose="{eef_pose}" translation_xyz="1;0;0" output_pose="{crop_pose}"/>
+            <Action ID="CropPointsInSphere" crop_sphere_centroid_pose="{crop_pose}" crop_sphere_radius="0.01"/>
+            <Action ID="SendPointCloudToUI" point_cloud="{point_cloud_cropped}"/>
+        </Control>
+    </BehaviorTree>
+    <TreeNodesModel>
+        <SubTree ID="Buildathon"/>
+    </TreeNodesModel>
 </root>
