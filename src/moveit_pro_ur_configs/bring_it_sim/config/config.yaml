@@ -4,6 +4,22 @@
 
 # Name of the package to specialize
 based_on_package: "ur5e_ridgeback_mujoco_config"
+hardware:
+  # Parameters used to configure the robot description through XACRO.
+  # A URDF and SRDF are both required.
+  # [Required]
+  robot_description:
+    urdf:
+      package: "bring_it_sim"
+      path: "description/ur5e_ridgeback.xacro"
+    srdf:
+      package: "bring_it_sim"
+      path: "config/moveit/picknik_ur.srdf"
+    urdf_params:
+      - joint_limits_parameters_file:
+          package: "ur5e_ridgeback_mujoco_config"
+          path: "config/moveit/joint_limits.yaml"
+      - mujoco_model: "description/scene.xml"
 
 # Configuration for loading behaviors and objectives.
 # [Required]
