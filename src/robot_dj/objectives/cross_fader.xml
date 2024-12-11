@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Cross Fader">
+  <!--//////////-->
+  <BehaviorTree ID="Cross Fader" _description="" _favorite="true">
+    <Decorator ID="KeepRunningUntilFailure">
+      <Control ID="Sequence" name="TopLevelSequence">
+        <SubTree
+          ID="Move to Waypoint"
+          _collapsed="true"
+          joint_group_name="manipulator"
+          planner_interface="moveit_default"
+          controller_names="/joint_trajectory_controller"
+          waypoint_name="Crossfader Mid"
+        />
+        <SubTree ID="Close Gripper" _collapsed="true" />
+        <SubTree
+          ID="Move to Waypoint"
+          _collapsed="true"
+          joint_group_name="manipulator"
+          planner_interface="moveit_default"
+          controller_names="/joint_trajectory_controller"
+          waypoint_name="Crossfader A"
+        />
+        <SubTree ID="Open Gripper" _collapsed="true" />
+        <Decorator ID="Repeat" num_cycles="3">
+          <Control ID="Sequence">
+            <SubTree
+              ID="Move to Waypoint"
+              _collapsed="true"
+              joint_group_name="manipulator"
+              planner_interface="moveit_default"
+              controller_names="/joint_trajectory_controller"
+              waypoint_name="Look at Adoring Fans"
+            />
+            <SubTree
+              ID="Move to Waypoint"
+              _collapsed="true"
+              joint_group_name="manipulator"
+              planner_interface="moveit_default"
+              controller_names="/joint_trajectory_controller"
+              waypoint_name="Head bump up"
+            />
+          </Control>
+        </Decorator>
+        <Decorator ID="Repeat" num_cycles="2">
+          <Control ID="Sequence">
+            <SubTree
+              ID="Move to Waypoint"
+              _collapsed="true"
+              joint_group_name="manipulator"
+              planner_interface="moveit_default"
+              controller_names="/joint_trajectory_controller"
+              waypoint_name="Turntable A Start"
+            />
+            <SubTree
+              ID="Move to Waypoint"
+              _collapsed="true"
+              joint_group_name="manipulator"
+              planner_interface="moveit_default"
+              controller_names="/joint_trajectory_controller"
+              waypoint_name="Turntable A end"
+            />
+          </Control>
+        </Decorator>
+        <SubTree
+          ID="Move to Waypoint"
+          _collapsed="true"
+          joint_group_name="manipulator"
+          planner_interface="moveit_default"
+          controller_names="/joint_trajectory_controller"
+          waypoint_name="Look at Adoring Fans"
+        />
+        <SubTree
+          ID="Move to Waypoint"
+          _collapsed="true"
+          joint_group_name="manipulator"
+          planner_interface="moveit_default"
+          controller_names="/joint_trajectory_controller"
+          waypoint_name="Crossfader A"
+        />
+        <SubTree ID="Close Gripper" _collapsed="true" />
+        <SubTree
+          ID="Move to Waypoint"
+          _collapsed="true"
+          joint_group_name="manipulator"
+          planner_interface="moveit_default"
+          controller_names="/joint_trajectory_controller"
+          waypoint_name="Crossfader B"
+        />
+        <SubTree ID="Open Gripper" _collapsed="true" />
+        <Decorator ID="Repeat" num_cycles="3">
+          <Control ID="Sequence">
+            <SubTree
+              ID="Move to Waypoint"
+              _collapsed="true"
+              joint_group_name="manipulator"
+              planner_interface="moveit_default"
+              controller_names="/joint_trajectory_controller"
+              waypoint_name="Look at Adoring Fans"
+            />
+            <SubTree
+              ID="Move to Waypoint"
+              _collapsed="true"
+              joint_group_name="manipulator"
+              planner_interface="moveit_default"
+              controller_names="/joint_trajectory_controller"
+              waypoint_name="Head bump up"
+            />
+          </Control>
+        </Decorator>
+        <Decorator ID="Repeat" num_cycles="2">
+          <Control ID="Sequence">
+            <SubTree
+              ID="Move to Waypoint"
+              _collapsed="true"
+              joint_group_name="manipulator"
+              planner_interface="moveit_default"
+              controller_names="/joint_trajectory_controller"
+              waypoint_name="Turntable B Start"
+            />
+            <SubTree
+              ID="Move to Waypoint"
+              _collapsed="true"
+              joint_group_name="manipulator"
+              planner_interface="moveit_default"
+              controller_names="/joint_trajectory_controller"
+              waypoint_name="Turntable B end"
+            />
+          </Control>
+        </Decorator>
+      </Control>
+    </Decorator>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Cross Fader" />
+  </TreeNodesModel>
+</root>
