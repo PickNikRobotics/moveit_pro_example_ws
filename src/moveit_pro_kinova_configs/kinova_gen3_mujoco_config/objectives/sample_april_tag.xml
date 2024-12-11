@@ -56,6 +56,9 @@
   <TreeNodesModel>
     <SubTree ID="Sample April Tag">
       <input_port name="tag_id" default="-1" />
+      <MetadataFields>
+        <Metadata subcategory="Perception - Image Processing" />
+      </MetadataFields>
     </SubTree>
   </TreeNodesModel>
 </root>

@@ -30,6 +30,10 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Pick object" />
+    <SubTree ID="Pick object">
+      <MetadataFields>
+        <Metadata subcategory="Application - Basic Examples" />
+      </MetadataFields>
+    </SubTree>
   </TreeNodesModel>
 </root>

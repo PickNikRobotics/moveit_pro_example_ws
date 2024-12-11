@@ -111,6 +111,9 @@
   <TreeNodesModel>
     <SubTree ID="Create Pose Vector">
       <output_port name="target_poses" default="{target_poses}" />
+      <MetadataFields>
+        <Metadata subcategory="Application - Basic Examples" />
+      </MetadataFields>
     </SubTree>
   </TreeNodesModel>
 </root>

@@ -71,6 +71,10 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Estimate Object Pose" />
+    <SubTree ID="Estimate Object Pose">
+      <MetadataFields>
+        <Metadata subcategory="Perception - 3D Point Cloud" />
+      </MetadataFields>
+    </SubTree>
   </TreeNodesModel>
 </root>

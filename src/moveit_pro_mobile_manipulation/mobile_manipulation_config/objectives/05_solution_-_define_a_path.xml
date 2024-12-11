@@ -1,10 +1,9 @@
-<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="05 Solution - Define a path">
   <!--//////////-->
   <BehaviorTree
     ID="05 Solution - Define a path"
     _description="Creates a simple path with two waypoints"
-    _favorite="true"
+    _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
