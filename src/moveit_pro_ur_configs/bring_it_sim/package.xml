@@ -29,6 +29,7 @@
   <exec_depend>ur_robot_driver</exec_depend>
   <exec_depend>picknik_mujoco_ros</exec_depend>
   <exec_depend>velocity_force_controller</exec_depend>
+  <exec_depend>ur5e_ridgeback_mujoco_config</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
 

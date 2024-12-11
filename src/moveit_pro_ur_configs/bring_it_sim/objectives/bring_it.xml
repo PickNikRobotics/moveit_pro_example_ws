@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Bring It">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Bring It"
+    _description="Bring beer to table"
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="AlwaysSuccess" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Bring It" />
+  </TreeNodesModel>
+</root>

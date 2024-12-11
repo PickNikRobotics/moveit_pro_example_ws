@@ -1,6 +1,6 @@
 <!-- UR5e inspired from https://github.com/google-deepmind/mujoco_menagerie/tree/main/universal_robots_ur5e -->
 <mujoco model="ur5e scene">
-  <include file="ur5e.xml" />
+  <include file="ur5e_ridgeback.xml" />
 
   <asset>
     <!-- Define textures and materials -->
