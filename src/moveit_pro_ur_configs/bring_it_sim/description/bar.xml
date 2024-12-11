@@ -1,7 +1,7 @@
 <mujoco model="bar">
     <asset>
         <mesh name="beer_bottle" file="./assets/beer_bottle.stl"/>
-        <material name="glass" rgba="0.5 0.5 0.5 0.9"/>
+        <material name="glass" rgba="0.0 0.7 0.1 0.9"/>
     </asset>
     <worldbody>
         <geom name="bar" type="box" size="2.5 0.75 0.45" pos="0 2 0.45" rgba="0.75 0.75 0.75 1"/>
