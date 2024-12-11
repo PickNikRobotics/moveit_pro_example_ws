@@ -1,14 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Register CAD Part">
   <!--//////////-->
   <BehaviorTree
     ID="Register CAD Part"
     _description="Load an STL from disk and use registration to align the pointcloud with a matching shape in the environment"
-    _favorite="false"
+    _favorite="true"
     _subtreeOnly="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
-      <Action ID="ClearSnapshot" />
-      <SubTree ID="Look at table" _collapsed="true" />
+      <SubTree ID="Clear Snapshot" _collapsed="true" />
       <Action
         ID="CreateStampedPose"
         position_xyz="0.02;.75;0.58"
@@ -17,11 +17,13 @@
         name="Initial Guess"
       />
       <SubTree
-        ID="Load Mesh as Red Pointcloud"
+        ID="Load Mesh as pointcloud"
         _collapsed="false"
         output_cloud="{red_cloud}"
         initial_pose="{stamped_pose}"
         point_cloud="{red_cloud}"
+        color="255;0;0"
+        filename="{filename}"
       />
       <Action ID="SendPointCloudToUI" point_cloud="{red_cloud}" />
       <Action
@@ -43,11 +45,13 @@
         max_iterations="100"
       />
       <SubTree
-        ID="Load Mesh as Green Pointcloud"
-        _collapsed="false"
+        ID="Load Mesh as pointcloud"
+        _collapsed="true"
         output_cloud="{green_cloud}"
         initial_pose="{stamped_pose}"
         point_cloud="{green_cloud}"
+        color="0;255;0"
+        filename="{filename}"
       />
       <Action
         ID="TransformPointCloud"
@@ -60,9 +64,11 @@
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Register CAD Part">
-      <MetadataFields>
-        <Metadata subcategory="Perception - Planning Scene" />
-      </MetadataFields>
+      <input_port name="point_cloud" default="wrist_point_cloud" />
+      <input_port
+        name="filename"
+        default="~/user_ws/src/picknik_accessories/mujoco_assets/assets/bottle.stl"
+      />
     </SubTree>
   </TreeNodesModel>
 </root>
