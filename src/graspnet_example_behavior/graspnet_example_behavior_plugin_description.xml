@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<library path="graspnet_example_behavior">
+  <class
+    type="graspnet_example_behavior::GraspnetExampleBehaviorBehaviorsLoader"
+    base_class_type="moveit_studio::behaviors::SharedResourcesNodeLoaderBase"
+  />
+</library>
