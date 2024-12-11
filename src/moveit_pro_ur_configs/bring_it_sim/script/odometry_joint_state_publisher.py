@@ -5,6 +5,9 @@ from rclpy.node import Node
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import JointState
 
+from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSDurabilityPolicy, QoSHistoryPolicy
+from math import atan2
+
 class OdometryJointStateRepublisher(Node):
     """! The Odometry to JointState republisher node.
 
@@ -22,8 +25,25 @@ class OdometryJointStateRepublisher(Node):
         """
 
         super().__init__('odometry_joint_state_republisher')
-        self.odom_sub_ = self.create_subscription(Odometry, odom_topic, self.odom_callback, 1)
-        self.joint_states_pub_ = self.create_publisher(JointState, joint_states_topic, 1)
+
+        # Define a QoS profile
+        qos_profile_sub = QoSProfile(
+            reliability=QoSReliabilityPolicy.BEST_EFFORT,  # Ensure reliability
+            durability=QoSDurabilityPolicy.VOLATILE,  # Non-persistent messages
+            history=QoSHistoryPolicy.KEEP_LAST,         # Keep only the last few messages
+            depth=1                                     # Queue size
+        )
+
+        # Define a QoS profile
+        qos_profile_pub = QoSProfile(
+            reliability=QoSReliabilityPolicy.RELIABLE,  # Ensure reliability
+            durability=QoSDurabilityPolicy.TRANSIENT_LOCAL,  # Non-persistent messages
+            history=QoSHistoryPolicy.KEEP_LAST,         # Keep only the last few messages
+            depth=1                                     # Queue size
+        )
+
+        self.odom_sub_ = self.create_subscription(Odometry, odom_topic, self.odom_callback, qos_profile_sub)
+        self.joint_states_pub_ = self.create_publisher(JointState, joint_states_topic, qos_profile_pub)
 
     def odom_callback(self, odom_msg):
         """! Subscription callback to run for incoming Odometry messages
