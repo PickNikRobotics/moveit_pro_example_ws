@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<root BTCPP_format="4" main_tree_to_execute="Register CAD Part">
+<root BTCPP_format="4" main_tree_to_execute="Find Mesh in Pointcloud">
   <!--//////////-->
   <BehaviorTree
-    ID="Register CAD Part"
+    ID="Find Mesh in Pointcloud"
     _description="Load an STL from disk and use registration to align the pointcloud with a matching shape in the environment"
     _favorite="true"
     _subtreeOnly="false"
@@ -17,8 +17,8 @@
         name="Initial Guess"
       />
       <SubTree
-        ID="Load Mesh as pointcloud"
-        _collapsed="false"
+        ID="Load Mesh as Pointcloud"
+        _collapsed="true"
         output_cloud="{red_cloud}"
         initial_pose="{stamped_pose}"
         point_cloud="{red_cloud}"
@@ -27,25 +27,19 @@
       />
       <Action ID="SendPointCloudToUI" point_cloud="{red_cloud}" />
       <Action
-        ID="GetPointCloud"
-        topic_name="/wrist_camera/points"
-        message_out="{wrist_point_cloud}"
-      />
-      <Action
         ID="TransformPointCloudFrame"
-        input_cloud="{wrist_point_cloud}"
-        output_cloud="{wrist_point_cloud}"
+        input_cloud="{point_cloud}"
+        output_cloud="{point_cloud}"
       />
-      <Action ID="SendPointCloudToUI" point_cloud="{wrist_point_cloud}" />
       <Action
         ID="RegisterPointClouds"
-        target_point_cloud="{wrist_point_cloud}"
+        target_point_cloud="{point_cloud}"
         base_point_cloud="{red_cloud}"
         max_correspondence_distance="0.5"
         max_iterations="100"
       />
       <SubTree
-        ID="Load Mesh as pointcloud"
+        ID="Load Mesh as Pointcloud"
         _collapsed="true"
         output_cloud="{green_cloud}"
         initial_pose="{stamped_pose}"
@@ -63,7 +57,7 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Register CAD Part">
+    <SubTree ID="Find Mesh in Pointcloud">
       <input_port name="point_cloud" default="wrist_point_cloud" />
       <input_port
         name="filename"

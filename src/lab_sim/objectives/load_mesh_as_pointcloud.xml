@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<root BTCPP_format="4" main_tree_to_execute="Load Mesh as pointcloud">
+<root BTCPP_format="4" main_tree_to_execute="Load Mesh as Pointcloud">
   <!--//////////-->
   <BehaviorTree
-    ID="Load Mesh as pointcloud"
+    ID="Load Mesh as Pointcloud"
     _description=""
     _favorite="false"
     _subtreeOnly="true"
@@ -27,7 +27,7 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Load Mesh as pointcloud">
+    <SubTree ID="Load Mesh as Pointcloud">
       <input_port
         name="filename"
         default="~/user_ws/install/lab_sim/share/lab_sim/description/assets/Cube.stl"
