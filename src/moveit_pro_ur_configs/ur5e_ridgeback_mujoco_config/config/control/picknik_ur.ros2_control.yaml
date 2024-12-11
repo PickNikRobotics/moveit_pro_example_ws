@@ -103,9 +103,6 @@ joint_state_broadcaster:
       - wrist_2_joint
       - wrist_3_joint
       - robotiq_85_left_knuckle_joint
-      - linear_x_joint
-      - linear_y_joint
-      - rotational_yaw_joint
       - front_rocker
       - front_left_wheel
       - front_right_wheel
@@ -124,9 +121,7 @@ joint_trajectory_controller:
       - wrist_1_joint
       - wrist_2_joint
       - wrist_3_joint
-      - linear_x_joint
-      - linear_y_joint
-      - rotational_yaw_joint
+
     command_interfaces:
       - position
     state_interfaces:
@@ -139,9 +134,7 @@ joint_trajectory_controller:
       - wrist_1_joint
       - wrist_2_joint
       - wrist_3_joint
-      - linear_x_joint
-      - linear_y_joint
-      - rotational_yaw_joint
+
     state_publish_rate: 100.0
     action_monitor_rate: 20.0
     allow_partial_joints_goal: false
