@@ -43,7 +43,7 @@ hardware:
     urdf_params:
         # Use "mock", "mujoco", or "real"
       - hardware_interface: "mujoco"
-      - mujoco_viewer: "false"
+      - mujoco_viewer: "true"
 
 # Sets ROS global params for launch.
 # [Optional]

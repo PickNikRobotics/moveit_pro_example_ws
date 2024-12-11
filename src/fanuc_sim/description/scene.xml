@@ -77,36 +77,79 @@
       material="groundplane"
     />
     <!-- Define the table -->
-    <body name="table" pos="0 1 0.45">
+    <body name="table" pos="0 1 0.2">
       <geom type="box" size="0.5 0.5 0.025" material="wood" />
+
+      <!-- https://github.com/PickNikRobotics/moveit_studio_ur_ws/blob/pr-add-bin-picking-reference-app-2/src/picknik_ur_epick_config/description/environment.xacro -->
+      <!-- <xacro:property name="bin_x" value="${24 * 0.0254}" />
+      <xacro:property name="bin_y" value="${15 * 0.0254}" />
+      <xacro:property name="bin_z" value="${7.5 * 0.0254}" />
+      <xacro:property name="bin_wall" value="0.025" />
+      <xacro:property name="bin_bottom" value="0.005" /> -->
+
+      <body name="left_bin" pos="-0.25 0 0.025" quat="0.707 0 0 0.707">
+        <!-- <geom type="box" size="1 1 .01" pos="0.5 0.5 0" rgba=".5 .5 .5 1"/>
+        <geom type="box" size="1 1 .01" pos="0 0 0" rgba=".5 0 0 1"/> -->
+        <!-- Bottom -->
+        <!-- <box size="${x_length} ${y_length} ${bottom_thickness}"/> -->
+        <!-- <origin xyz="${x_length/2} ${y_length/2} ${bottom_thickness/2}"/> -->
+        <geom type="box" size="0.3048 0.1905 0.0025" pos="0 0 0.0025" rgba=".5 .5 .5 1"/>
+        <!-- Back -->
+        <!-- <box size="${side_wall_thickness} ${y_length} ${z_length}"/> -->
+        <!-- <origin xyz="${side_wall_thickness/2} ${y_length/2} ${z_length/2}"/> -->
+        <!-- <geom type="box" size="0.0125 0.190 0.09525" pos="0.3048-0.0125 0 0.0025+0.09525" rgba="1 .5 .5 1"/> -->
+        <geom type="box" size="0.0125 0.190 0.09525" pos="0.2923 0 0.09775" rgba=".5 .5 .5 1"/>
+        <!-- Front -->
+        <!-- <box size="${side_wall_thickness} ${y_length} ${z_length}"/> -->
+        <!-- <origin xyz="${x_length - side_wall_thickness/2} ${y_length/2} ${z_length/2}"/> -->
+        <!-- <geom type="box" size="0.0125 0.190 0.09525" pos="-0.3048+0.0125 0 0.0025+0.09525" rgba="1 .5 .5 1"/> -->
+        <geom type="box" size="0.0125 0.190 0.09525" pos="-0.2923 0 0.09775" rgba=".5 .5 .5 1"/>
+        <!-- Right -->
+        <!-- <box size="${x_length} ${side_wall_thickness} ${z_length}"/> -->
+        <!-- <origin xyz="${x_length/2} ${side_wall_thickness/2} ${z_length/2}"/> -->
+        <!-- <geom type="box" size="0.3048 0.0125 0.09525" pos="0 0.1905-0.0125 0.09775" rgba=".5 .5 .5 1"/> -->
+        <geom type="box" size="0.3048 0.0125 0.09525" pos="0 0.178 0.09775" rgba=".5 .5 .5 1"/>
+        <!-- Left -->
+        <!-- <box size="${x_length} ${side_wall_thickness} ${z_length}"/> -->
+        <!-- <origin xyz="${x_length/2} ${y_length - side_wall_thickness/2} ${z_length/2}"/> -->
+        <geom type="box" size="0.3048 0.0125 0.09525" pos="0 -0.178 0.09775" rgba=".5 .5 .5 1"/>
+      </body>
+
+      <body name="right_bin" pos="0.25 0 0.025" quat="0.707 0 0 0.707">
+        <geom type="box" size="0.3048 0.1905 0.0025" pos="0 0 0.0025" rgba=".5 .5 .5 1"/>
+        <geom type="box" size="0.0125 0.190 0.09525" pos="0.2923 0 0.09775" rgba=".5 .5 .5 1"/>
+        <geom type="box" size="0.0125 0.190 0.09525" pos="-0.2923 0 0.09775" rgba=".5 .5 .5 1"/>
+        <geom type="box" size="0.3048 0.0125 0.09525" pos="0 0.178 0.09775" rgba=".5 .5 .5 1"/>
+        <geom type="box" size="0.3048 0.0125 0.09525" pos="0 -0.178 0.09775" rgba=".5 .5 .5 1"/>
+      </body>
     </body>
-    <!-- Define the block with AprilTags on each face -->
-    <body name="block1" pos="0.2 0.75 0.575">
-      <freejoint name="block1" />
-      <site name="block1" pos="0 0 0" />
-      <geom
-        type="box"
-        size="0.025 0.025 0.025"
-        rgba="1 1 1 1"
-        material="apriltag_material1"
-      />
-    </body>
-    <body name="block2" pos="0.0 0.75 0.575">
-      <freejoint name="block2" />
-      <site name="block2" pos="0 0 0" />
-      <geom class="visual" mesh="cube" pos="0 0 -0.03" />
-      <geom class="collision" type="box" size="0.025 0.025 0.025" pos="0 0 0" />
-    </body>
-    <body name="block3" pos="-0.2 0.75 0.575">
-      <freejoint name="block3" />
-      <site name="block3" pos="0 0 0" />
-      <geom
-        type="box"
-        size="0.025 0.025 0.025"
-        rgba="1 1 1 1"
-        material="apriltag_material2"
-      />
-    </body>
+    
+    <replicate count="4" offset=".07 0 0">
+      <replicate count="7" offset="0 .07 0">
+        <replicate count="2" offset="0 0 .14">
+          <body pos="-0.35 0.8 0.5">
+            <joint type="slide" axis="1 0 0" group="3"/>
+            <joint type="slide" axis="0 1 0" group="3"/>
+            <joint type="slide" axis="0 0 1" group="3"/>
+            <geom size="0.025" condim="1" priority="1" rgba="0.8 0.2 0.1 1"/>
+          </body>
+        </replicate>
+      </replicate>
+    </replicate>
+
+    <replicate count="3" offset=".07 0 0">
+      <replicate count="6" offset="0 .07 0">
+        <replicate count="2" offset="0 0 .14">
+          <body pos="-0.3 0.85 0.5">
+            <joint type="slide" axis="1 0 0" group="3"/>
+            <joint type="slide" axis="0 1 0" group="3"/>
+            <joint type="slide" axis="0 0 1" group="3"/>
+            <geom size="0.025" condim="1" priority="1" rgba="0.8 0.2 0.1 1"/>
+          </body>
+        </replicate>
+      </replicate>
+    </replicate>
+
     <!-- Add a scene camera -->
     <site
       name="scene_camera_optical_frame"
@@ -135,33 +178,6 @@
   <!-- Define weld constraints between the robot flange (tool0) and the gripper, and between the suction cup (tool_tip)
        and the blocks in the scene -->
   <equality>
-    <weld
-      name="tool_attachment"
-      body1="tool0"
-      body2="gripper_base"
-      active="false"
-      torquescale="1"
-    />
-    <weld
-      name="suction_cup_block1"
-      body1="tool_tip"
-      body2="block1"
-      active="false"
-      torquescale="1"
-    />
-    <weld
-      name="suction_cup_block2"
-      body1="tool_tip"
-      body2="block2"
-      active="false"
-      torquescale="1"
-    />
-    <weld
-      name="suction_cup_block3"
-      body1="tool_tip"
-      body2="block3"
-      active="false"
-      torquescale="1"
-    />
+  <!-- TODO -->
   </equality>
 </mujoco>
