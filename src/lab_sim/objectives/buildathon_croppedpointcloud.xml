@@ -1,34 +1,17 @@
-<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Buildathon croppedPointCloud">
   <!--//////////-->
-  <BehaviorTree
-    ID="Buildathon croppedPointCloud"
-    _description=""
-    _favorite="true"
-    _subtreeOnly="false"
-  >
+  <BehaviorTree ID="Buildathon croppedPointCloud" _description="" _favorite="false" _subtreeOnly="false">
     <Control ID="Sequence" name="TopLevelSequence">
-      <Action
-        ID="CreateStampedPose"
-        stamped_pose="{crop_pose}"
-        reference_frame="wrist_camera_optical_frame"
-        position_xyz="0;0;.5"
-      />
-      <Action ID="VisualizePose" pose="{crop_pose}" marker_name="crop_pose" />
-      <Action
-        ID="CropPointsInBox"
-        crop_box_centroid_pose="{crop_pose}"
-        point_cloud_cropped="{point_cloud_out}"
-        point_cloud="{point_cloud_in}"
-        crop_box_size="{box_dimensions}"
-      />
+      <Action ID="CreateStampedPose" stamped_pose="{crop_pose}" reference_frame="wrist_camera_optical_frame" position_xyz="0;0;.5"/>
+      <Action ID="VisualizePose" pose="{crop_pose}" marker_name="crop_pose"/>
+      <Action ID="CropPointsInBox" crop_box_centroid_pose="{crop_pose}" point_cloud_cropped="{point_cloud_out}" point_cloud="{point_cloud_in}" crop_box_size="{box_dimensions}"/>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Buildathon croppedPointCloud">
-      <input_port name="box_dimensions" default="0.1;0.1;3" />
-      <output_port name="point_cloud_out" default="{point_cloud}" />
-      <input_port name="point_cloud_in" default="{point_cloud}" />
+      <input_port name="box_dimensions" default="0.1;0.1;3"/>
+      <output_port name="point_cloud_out" default="{point_cloud}"/>
+      <input_port name="point_cloud_in" default="{point_cloud}"/>
     </SubTree>
   </TreeNodesModel>
 </root>

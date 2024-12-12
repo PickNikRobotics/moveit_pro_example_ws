@@ -31,7 +31,7 @@
         output_cloud="{point_cloud}"
       />
       <Action
-        ID="RegisterPointClouds"
+        ID="ExampleRANSACRegistration"
         target_point_cloud="{point_cloud}"
         base_point_cloud="{red_cloud}"
         max_correspondence_distance="0.5"

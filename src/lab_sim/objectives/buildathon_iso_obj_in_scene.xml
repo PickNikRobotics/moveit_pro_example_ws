@@ -1,71 +1,27 @@
-<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Buildathon iso obj in scene">
   <!--//////////-->
-  <BehaviorTree
-    ID="Buildathon iso obj in scene"
-    _description=""
-    _favorite="true"
-    _subtreeOnly="false"
-  >
+  <BehaviorTree ID="Buildathon iso obj in scene" _description="" _favorite="false" _subtreeOnly="false">
     <Control ID="Sequence" name="TopLevelSequence">
-      <SubTree ID="Clear Snapshot" _collapsed="true" />
-      <Action ID="WaitForDuration" delay_duration=".2" />
-      <Action ID="ClearSnapshot" />
-      <Action ID="GetPointCloud" topic_name="/wrist_camera/points" />
-      <Action
-        ID="CreateStampedPose"
-        stamped_pose="{above_table_centriod_pose}"
-        position_xyz="0;0;1.48"
-      />
-      <Action ID="WaitForDuration" delay_duration=".3" />
-      <Action
-        ID="CropPointsInBox"
-        crop_box_centroid_pose="{above_table_centriod_pose}"
-        crop_box_size="2;2;2"
-        point_cloud_cropped="{point_cloud_noTable}"
-      />
-      <Action
-        ID="CreateStampedPose"
-        stamped_pose="{eef_pose}"
-        reference_frame="wrist_camera_optical_frame"
-      />
-      <Action ID="VisualizePose" pose="{eef_pose}" marker_name="eef_pose" />
-      <Action
-        ID="TransformPose"
-        input_pose="{eef_pose}"
-        translation_xyz="0;0;.5"
-        output_pose="{crop_pose}"
-      />
-      <Action ID="VisualizePose" pose="{crop_pose}" marker_name="crop_pose" />
-      <Action
-        ID="CropPointsInBox"
-        crop_box_centroid_pose="{crop_pose}"
-        crop_box_size="0.1;1;2"
-        point_cloud="{point_cloud_noTable}"
-      />
-      <Action ID="SendPointCloudToUI" point_cloud="{point_cloud_cropped}" />
-      <Action
-        ID="LoadPointCloudFromFile"
-        name="getTargetObject"
-        point_cloud="{goal_point_cloud}"
-        file_path="~/user_ws/src/picknik_accessories/mujoco_assets/assets/bottle.stl"
-        scale="1"
-      />
-      <Action ID="SendPointCloudToUI" point_cloud="{goal_point_cloud}" />
-      <Action
-        ID="ExampleRANSACRegistration"
-        base_point_cloud="{goal_point_cloud}"
-        target_point_cloud="{point_cloud_cropped}"
-        target_pose_in_base_frame="{relative_pose}"
-      />
-      <Action
-        ID="VisualizePose"
-        pose="{relative_pose}"
-        marker_name="pc_relative_transform"
-      />
+      <SubTree ID="Clear Snapshot" _collapsed="true"/>
+      <Action ID="WaitForDuration" delay_duration=".2"/>
+      <Action ID="ClearSnapshot"/>
+      <Action ID="GetPointCloud" topic_name="/wrist_camera/points"/>
+      <Action ID="CreateStampedPose" stamped_pose="{above_table_centriod_pose}" position_xyz="0;0;1.48"/>
+      <Action ID="WaitForDuration" delay_duration=".3"/>
+      <Action ID="CropPointsInBox" crop_box_centroid_pose="{above_table_centriod_pose}" crop_box_size="2;2;2" point_cloud_cropped="{point_cloud_noTable}"/>
+      <Action ID="CreateStampedPose" stamped_pose="{eef_pose}" reference_frame="wrist_camera_optical_frame"/>
+      <Action ID="VisualizePose" pose="{eef_pose}" marker_name="eef_pose"/>
+      <Action ID="TransformPose" input_pose="{eef_pose}" translation_xyz="0;0;.5" output_pose="{crop_pose}"/>
+      <Action ID="VisualizePose" pose="{crop_pose}" marker_name="crop_pose"/>
+      <Action ID="CropPointsInBox" crop_box_centroid_pose="{crop_pose}" crop_box_size="0.1;1;2" point_cloud="{point_cloud_noTable}"/>
+      <Action ID="SendPointCloudToUI" point_cloud="{point_cloud_cropped}"/>
+      <Action ID="LoadPointCloudFromFile" name="getTargetObject" point_cloud="{goal_point_cloud}" file_path="~/user_ws/src/picknik_accessories/mujoco_assets/assets/bottle.stl" scale="1"/>
+      <Action ID="SendPointCloudToUI" point_cloud="{goal_point_cloud}"/>
+      <Action ID="ExampleRANSACRegistration" base_point_cloud="{goal_point_cloud}" target_point_cloud="{point_cloud_cropped}" target_pose_in_base_frame="{relative_pose}"/>
+      <Action ID="VisualizePose" pose="{relative_pose}" marker_name="pc_relative_transform"/>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Buildathon iso obj in scene" />
+    <SubTree ID="Buildathon iso obj in scene"/>
   </TreeNodesModel>
 </root>
