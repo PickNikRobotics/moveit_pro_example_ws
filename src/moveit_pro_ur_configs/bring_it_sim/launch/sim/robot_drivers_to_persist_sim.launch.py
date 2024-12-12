@@ -273,10 +273,10 @@ def generate_launch_description():
 
     # Publish odometry as joint state messages
     odom_to_joint_state_repub = Node(
-        package='bring_it_sim',
-        executable='odometry_joint_state_publisher.py',
-        name='odometry_joint_state_publisher',
-        output='log'
+        package="bring_it_sim",
+        executable="odometry_joint_state_publisher.py",
+        name="odometry_joint_state_publisher",
+        output="log",
     )
 
     # Create the launch description and populate
