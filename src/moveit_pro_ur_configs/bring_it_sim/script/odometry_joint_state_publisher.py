@@ -56,7 +56,7 @@ class OdometryJointStateRepublisher(Node):
         # Get yaw angle from quaternion orientation,
         # see https://stackoverflow.com/questions/5782658/extracting-yaw-from-a-quaternion
         q = odom_msg.pose.pose.orientation
-        rotation_yaw = atan2(2.0*(q.y*q.z + q.w*q.x), q.w*q.w - q.x*q.x - q.y*q.y + q.z*q.z);
+        rotation_yaw = atan2(2.0 * (q.z * q.w + q.x * q.y), -1.0 + 2.0 * (q.w * q.w + q.x * q.x));
 
         # Populate joint state message with x,y,yaw joint dimensions
         joint_state_msg = JointState()
