@@ -1,80 +1,29 @@
-<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Buildathon">
-  <!--//////////-->
-  <BehaviorTree ID="Buildathon" _description="" _favorite="true">
-    <Control ID="Sequence" name="TopLevelSequence">
-      <SubTree
-        ID="Move to Waypoint"
-        _collapsed="true"
-        joint_group_name="manipulator"
-        planner_interface="moveit_default"
-        controller_names="/joint_trajectory_controller"
-        waypoint_name="Workspace Right"
-      />
-      <Action
-        ID="CreateStampedPose"
-        stamped_pose="{coverage_start}"
-        reference_frame="grasp_link"
-        position_xyz="0;.3;.2"
-        orientation_xyzw="0;0;-0.707;0.707"
-      />
-      <Action
-        ID="TransformPoseFrame"
-        input_pose="{coverage_start}"
-        output_pose="{coverage_start}"
-      />
-      <Action
-        ID="VisualizePose"
-        marker_name="coverage_start"
-        pose="{coverage_start}"
-      />
-      <Action
-        ID="GenerateCoveragePath"
-        stride_distance="0.1"
-        bottom_right_corner="{coverage_start}"
-        vector_of_poses="{path_poses}"
-        height="2"
-        width="0.2"
-      />
-      <Action ID="VisualizePath" path="{path_poses}" />
-      <Decorator ID="Inverter">
-        <Decorator
-          ID="ForEachPoseStamped"
-          vector_in="{path_poses}"
-          out="{next_pose}"
-        >
-          <Decorator ID="Inverter">
-            <Control ID="Sequence">
-              <Action
-                ID="TransformPoseFrame"
-                input_pose="{next_pose}"
-                output_pose="{next_pose}"
-                target_frame_id="grasp_link"
-              />
-              <Action
-                ID="TransformPose"
-                output_pose="{next_pose}"
-                input_pose="{next_pose}"
-                quaternion_xyzw="0;0;0.707;0.707"
-              />
-              <Action
-                ID="VisualizePose"
-                marker_name="Next pose"
-                pose="{next_pose}"
-              />
-              <SubTree
-                ID="Move to Pose No Approval"
-                _collapsed="true"
-                target_pose="{next_pose}"
-              />
-              <SubTree ID="Crop and Register point cloud" _collapsed="true" />
-            </Control>
-          </Decorator>
-        </Decorator>
-      </Decorator>
-    </Control>
-  </BehaviorTree>
-  <TreeNodesModel>
-    <SubTree ID="Buildathon" />
-  </TreeNodesModel>
+    <!--//////////-->
+    <BehaviorTree ID="Buildathon" _description="" _favorite="true">
+        <Control ID="Sequence" name="TopLevelSequence">
+            <SubTree ID="Move to Waypoint" _collapsed="true" joint_group_name="manipulator" planner_interface="moveit_default" controller_names="/joint_trajectory_controller" waypoint_name="Workspace Right"/>
+            <Action ID="CreateStampedPose" stamped_pose="{coverage_start}" reference_frame="grasp_link" position_xyz="0;.3;.2" orientation_xyzw="0;0;-0.707;0.707"/>
+            <Action ID="TransformPoseFrame" input_pose="{coverage_start}" output_pose="{coverage_start}"/>
+            <Action ID="VisualizePose" marker_name="coverage_start" pose="{coverage_start}"/>
+            <Action ID="GenerateCoveragePath" stride_distance="0.1" bottom_right_corner="{coverage_start}" vector_of_poses="{path_poses}" height="2" width="0.2"/>
+            <Action ID="VisualizePath" path="{path_poses}"/>
+            <Decorator ID="Inverter">
+                <Decorator ID="ForEachPoseStamped" vector_in="{path_poses}" out="{next_pose}">
+                    <Decorator ID="Inverter">
+                        <Control ID="Sequence">
+                            <Action ID="TransformPoseFrame" input_pose="{next_pose}" output_pose="{next_pose}" target_frame_id="grasp_link"/>
+                            <Action ID="TransformPose" output_pose="{next_pose}" input_pose="{next_pose}" quaternion_xyzw="0;0;0.707;0.707"/>
+                            <Action ID="VisualizePose" marker_name="Next pose" pose="{next_pose}"/>
+                            <SubTree ID="Move to Pose No Approval" _collapsed="true" target_pose="{next_pose}"/>
+                            <SubTree ID="Crop and Register point cloud" _collapsed="true"/>
+                        </Control>
+                    </Decorator>
+                </Decorator>
+            </Decorator>
+        </Control>
+    </BehaviorTree>
+    <TreeNodesModel>
+        <SubTree ID="Buildathon"/>
+    </TreeNodesModel>
 </root>
