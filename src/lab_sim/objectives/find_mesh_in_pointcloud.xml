@@ -8,7 +8,6 @@
     _subtreeOnly="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
-      <SubTree ID="Clear Snapshot" _collapsed="true" />
       <Action
         ID="CreateStampedPose"
         position_xyz="0.02;.75;0.58"

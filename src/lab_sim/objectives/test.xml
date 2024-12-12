@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Test">
+  <!--//////////-->
+  <BehaviorTree ID="Test" _description="" _favorite="true">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="GetPointCloud" topic_name="/wrist_camera/points" />
+      <Action ID="SendPointCloudToUI" />
+      <SubTree
+        ID="Find Mesh in Pointcloud"
+        _collapsed="true"
+        filename="~/user_ws/src/picknik_accessories/mujoco_assets/assets/bottle.stl"
+        point_cloud="{point_cloud}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Test" />
+  </TreeNodesModel>
+</root>
