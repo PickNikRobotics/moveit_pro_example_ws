@@ -1,34 +1,82 @@
 <!-- UR5e inspired from https://github.com/google-deepmind/mujoco_menagerie/tree/main/universal_robots_ur5e -->
-
 <mujoco model="ur5e scene">
-  <include file="ur5e.xml"/>
-  <statistic center="0.3 0 0.4" extent="0.8"/>
+  <include file="ur5e.xml" />
+  <statistic center="0.3 0 0.4" extent="0.8" />
 
   <visual>
-    <headlight diffuse="0.6 0.6 0.6" ambient="0.1 0.1 0.1" specular="0 0 0"/>
-    <rgba haze="0.15 0.25 0.35 1"/>
-    <global azimuth="120" elevation="-20" offwidth="1920" offheight="1080"/>
+    <headlight diffuse="0.6 0.6 0.6" ambient="0.1 0.1 0.1" specular="0 0 0" />
+    <rgba haze="0.15 0.25 0.35 1" />
+    <global azimuth="120" elevation="-20" offwidth="1920" offheight="1080" />
   </visual>
 
   <asset>
     <!-- Useful for debugging -->
-    <texture type="2d" name="groundplane" builtin="checker" mark="edge" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3"
-      markrgb="0.8 0.8 0.8" width="300" height="300"/>
-    <material name="groundplane" texture="groundplane" texuniform="true" texrepeat="5 5" reflectance="0.2"/>
+    <texture
+      type="2d"
+      name="groundplane"
+      builtin="checker"
+      mark="edge"
+      rgb1="0.2 0.3 0.4"
+      rgb2="0.1 0.2 0.3"
+      markrgb="0.8 0.8 0.8"
+      width="300"
+      height="300"
+    />
+    <material
+      name="groundplane"
+      texture="groundplane"
+      texuniform="true"
+      texrepeat="5 5"
+      reflectance="0.2"
+    />
 
-    <texture type="2d" name="moon_surface" builtin="flat" mark="random" rgb1="0.6 0.6 0.6" rgb2="0.6 0.6 0.6"
-      markrgb="0.4 0.4 0.4" width="4096" height="4096" random="0.01"/>
-    <material name="moon_surface" texture="moon_surface" reflectance="0.2"/>
-    <texture type="skybox" file="assets/space.png" gridsize="3 4" gridlayout=".U..LFRB.D.."/>
+    <texture
+      type="2d"
+      name="moon_surface"
+      builtin="flat"
+      mark="random"
+      rgb1="0.6 0.6 0.6"
+      rgb2="0.6 0.6 0.6"
+      markrgb="0.4 0.4 0.4"
+      width="4096"
+      height="4096"
+      random="0.01"
+    />
+    <material name="moon_surface" texture="moon_surface" reflectance="0.2" />
+    <texture
+      type="skybox"
+      file="assets/space.png"
+      gridsize="3 4"
+      gridlayout=".U..LFRB.D.."
+    />
     <hfield name="moon" file="Apollo_11_sliver.png" size="50.0 50.0 3.0 0.1" />
   </asset>
 
   <worldbody>
-    <light pos="0 0 1.5" dir="0 0 -1" directional="true"/>
-    <camera name="scene_camera" pos="-3.0 3.0 2.5" fovy="58" mode="fixed" resolution="1920 1080" quat="0.365715 0.232986 -0.484157 -0.759975"/>
-    <site name="scene_camera_optical_frame" pos="0.0 0.3 0.55" quat="0.365715 0.232986 -0.484157 -0.759975" size="0.03"/>
+    <light pos="0 0 1.5" dir="0 0 -1" directional="true" />
+    <camera
+      name="scene_camera"
+      pos="-3.0 3.0 2.5"
+      fovy="58"
+      mode="fixed"
+      resolution="1920 1080"
+      quat="0.365715 0.232986 -0.484157 -0.759975"
+    />
+    <site
+      name="scene_camera_optical_frame"
+      pos="0.0 0.3 0.55"
+      quat="0.365715 0.232986 -0.484157 -0.759975"
+      size="0.03"
+    />
     <body name="moon" pos="0 0 0.0">
-      <geom name="moon" pos="0 0 -1.55" type="hfield" hfield="moon" condim="6" material="moon_surface"/>
+      <geom
+        name="moon"
+        pos="0 0 -1.55"
+        type="hfield"
+        hfield="moon"
+        condim="6"
+        material="moon_surface"
+      />
     </body>
     <!-- Useful for debugging -->
     <!-- <geom name="floor" pos="0 0 -0.04" size="0 0 0.05" type="plane" material="groundplane"/> -->
