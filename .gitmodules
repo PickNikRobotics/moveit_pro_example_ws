@@ -3,4 +3,4 @@
 	url = https://github.com/PickNikRobotics/picknik_accessories.git
 [submodule "src/external_dependencies/ridgeback/clearpath_mecanum_drive_controller"]
 	path = src/external_dependencies/ridgeback/clearpath_mecanum_drive_controller
-	url = git@github.com:clearpathrobotics/clearpath_mecanum_drive_controller.git
+	url = https://github.com/clearpathrobotics/clearpath_mecanum_drive_controller.git
