@@ -2,7 +2,7 @@
   <BehaviorTree
     ID="Close Gripper"
     _description="Close the gripper"
-    _favorite="true"
+    _favorite="false"
     _subtreeOnly="false"
   >
     <Control ID="Sequence" name="root">
