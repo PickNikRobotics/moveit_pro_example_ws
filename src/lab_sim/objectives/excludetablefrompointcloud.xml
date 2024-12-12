@@ -1,18 +1,16 @@
 <root BTCPP_format="4" main_tree_to_execute="excludeTableFromPointCloud">
-  <!--//////////-->
-  <BehaviorTree ID="excludeTableFromPointCloud" _favorite="false">
-    <Control ID="Sequence" name="TopLevelSequence">
-      <Action ID="CreateStampedPose" stamped_pose="{above_table_centriod_pose}" position_xyz="0;0;1.48"/>
-      <Action ID="WaitForDuration" delay_duration=".3"/>
-      <Action ID="CropPointsInBox" crop_box_centroid_pose="{above_table_centriod_pose}" crop_box_size="5;3;2" point_cloud_cropped="{point_cloud_out}" point_cloud="{point_cloud_in}"/>
-      <Action ID="CreateStampedPose" stamped_pose="{eef_pose}" reference_frame="wrist_camera_optical_frame" position_xyz="0;0;.5"/>
-      <Action ID="VisualizePose" pose="{eef_pose}" marker_name="eef_pose"/>
-    </Control>
-  </BehaviorTree>
-  <TreeNodesModel>
-    <SubTree ID="excludeTableFromPointCloud">
-      <input_port name="point_cloud_in" default="{point_cloud}"/>
-      <output_port name="point_cloud_out" default="{point_cloud}"/>
-    </SubTree>
-  </TreeNodesModel>
+    <!--//////////-->
+    <BehaviorTree ID="excludeTableFromPointCloud" _favorite="false">
+        <Control ID="Sequence" name="TopLevelSequence">
+            <Action ID="CreateStampedPose" stamped_pose="{above_table_centriod_pose}" position_xyz="0;0;1.48"/>
+            <Action ID="WaitForDuration" delay_duration=".3"/>
+            <Action ID="CropPointsInBox" crop_box_centroid_pose="{above_table_centriod_pose}" crop_box_size="5;3;2" point_cloud_cropped="{point_cloud_out}" point_cloud="{point_cloud_in}"/>
+        </Control>
+    </BehaviorTree>
+    <TreeNodesModel>
+        <SubTree ID="excludeTableFromPointCloud">
+            <input_port name="point_cloud_in" default="{point_cloud}"/>
+            <output_port name="point_cloud_out" default="{point_cloud}"/>
+        </SubTree>
+    </TreeNodesModel>
 </root>
