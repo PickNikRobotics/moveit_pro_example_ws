@@ -1,13 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="3 Waypoints Pick and Place">
   <!--//////////-->
   <BehaviorTree
     ID="3 Waypoints Pick and Place"
     _description="Basic example of repeatedly grabbing a small (invisible) object, placing it at desired destination, and then moving back to a home position"
-    _favorite="false"
+    _favorite="true"
   >
     <Control ID="Sequence">
-      <!--Reset the planning scene to ensure no old collision objects are hanging around-->
-      <Action ID="ClearSnapshot" />
       <!--Setup the environment to its "home" configuration - move to center and open gripper-->
       <SubTree
         ID="Move to Waypoint"
@@ -120,10 +119,6 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="3 Waypoints Pick and Place">
-      <MetadataFields>
-        <Metadata subcategory="Application - Basic Examples" />
-      </MetadataFields>
-    </SubTree>
+    <SubTree ID="3 Waypoints Pick and Place" />
   </TreeNodesModel>
 </root>
