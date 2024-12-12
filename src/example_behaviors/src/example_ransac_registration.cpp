@@ -123,94 +123,11 @@ tl::expected<bool, std::string> ExampleRANSACRegistration::doWork()
     return tl::make_unexpected("Target point cloud has no valid points");
   }
 
-  // Estimating surface normals
-  pcl::PointCloud<pcl::Normal>::Ptr base_normals(new pcl::PointCloud<pcl::Normal>);
-  pcl::PointCloud<pcl::Normal>::Ptr target_normals(new pcl::PointCloud<pcl::Normal>);
-
-  pcl::NormalEstimation<pcl::PointXYZRGB, pcl::Normal> normal_est;
-  pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZRGB>);
-  normal_est.setSearchMethod(tree);
-
-  normal_est.setInputCloud(base_cloud);
-  normal_est.setKSearch(k_search.value());
-  normal_est.compute(*base_normals);
-
-  normal_est.setInputCloud(target_cloud);
-  normal_est.setKSearch(k_search.value());
-  normal_est.compute(*target_normals);
-
-  // Logging normals
-  RCLCPP_ERROR(rclcpp::get_logger("Logger"), "Computed %ld base normals and %ld target normals", base_normals->size(), target_normals->size());
-
-  // Keypoint selection
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr base_keypoints(new pcl::PointCloud<pcl::PointXYZRGB>);
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr target_keypoints(new pcl::PointCloud<pcl::PointXYZRGB>);
-
-  pcl::UniformSampling<pcl::PointXYZRGB> uniform_sampling;
-  uniform_sampling.setInputCloud(base_cloud);
-  uniform_sampling.setRadiusSearch(uniform_sampling_radius.value());
-  uniform_sampling.filter(*base_keypoints);
-
-  uniform_sampling.setInputCloud(target_cloud);
-  uniform_sampling.setRadiusSearch(uniform_sampling_radius.value());
-  uniform_sampling.filter(*target_keypoints);
-
-  // Logging keypoints
-  RCLCPP_ERROR(rclcpp::get_logger("Logger"), "Selected %ld base keypoints and %ld target keypoints", base_keypoints->size(), target_keypoints->size());
-
-  // Estimating normals for keypoints
-  pcl::PointCloud<pcl::Normal>::Ptr base_keypoint_normals(new pcl::PointCloud<pcl::Normal>);
-  pcl::PointCloud<pcl::Normal>::Ptr target_keypoint_normals(new pcl::PointCloud<pcl::Normal>);
-
-  pcl::PointIndices::Ptr base_keypoint_indices(new pcl::PointIndices);
-  pcl::PointIndices::Ptr target_keypoint_indices(new pcl::PointIndices);
-
-  pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree;
-  kdtree.setInputCloud(base_cloud);
-  for (size_t i = 0; i < base_keypoints->points.size(); ++i)
-  {
-    std::vector<int> indices(1);
-    std::vector<float> distances(1);
-    kdtree.nearestKSearch(base_keypoints->points[i], 1, indices, distances);
-    base_keypoint_indices->indices.push_back(indices[0]);
-  }
-  pcl::copyPointCloud(*base_normals, *base_keypoint_indices, *base_keypoint_normals);
-
-  kdtree.setInputCloud(target_cloud);
-  for (size_t i = 0; i < target_keypoints->points.size(); ++i)
-  {
-    std::vector<int> indices(1);
-    std::vector<float> distances(1);
-    kdtree.nearestKSearch(target_keypoints->points[i], 1, indices, distances);
-    target_keypoint_indices->indices.push_back(indices[0]);
-  }
-  pcl::copyPointCloud(*target_normals, *target_keypoint_indices, *target_keypoint_normals);
-
-  // Feature estimation
-  pcl::FPFHEstimation<pcl::PointXYZRGB, pcl::Normal, pcl::FPFHSignature33> fpfh_est;
-  pcl::PointCloud<pcl::FPFHSignature33>::Ptr base_features(new pcl::PointCloud<pcl::FPFHSignature33>);
-  pcl::PointCloud<pcl::FPFHSignature33>::Ptr target_features(new pcl::PointCloud<pcl::FPFHSignature33>);
-
-  fpfh_est.setSearchMethod(tree);
-
-  fpfh_est.setInputCloud(base_keypoints);
-  fpfh_est.setInputNormals(base_keypoint_normals);
-  fpfh_est.setRadiusSearch(feature_radius.value());
-  fpfh_est.compute(*base_features);
-
-  fpfh_est.setInputCloud(target_keypoints);
-  fpfh_est.setInputNormals(target_keypoint_normals);
-  fpfh_est.setRadiusSearch(feature_radius.value());
-  fpfh_est.compute(*target_features);
-
-  // Logging features
-  RCLCPP_ERROR(rclcpp::get_logger("Logger"), "Computed %ld base features and %ld target features", base_features->size(), target_features->size());
-
-  // RANSAC alignment
+  // PCL alignment
   pcl::IterativeClosestPoint<pcl::PointXYZRGB, pcl::PointXYZRGB> align;
   align.setMaximumIterations(max_iterations.value());
-  align.setInputSource(base_keypoints);
-  align.setInputTarget(target_keypoints);
+  align.setInputSource(base_cloud);
+  align.setInputTarget(target_cloud);
   align.setMaxCorrespondenceDistance(max_correspondence_distance.value());
 
   pcl::PointCloud<pcl::PointXYZRGB> output_cloud;
