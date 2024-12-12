@@ -223,7 +223,7 @@ tl::expected<bool, std::string> ExampleRANSACRegistration::doWork()
   }
 
   if (max_allowable_fitness.value() > 0 && align.getFitnessScore() > max_allowable_fitness.value()) {
-    RCLCPP_ERROR(rclcpp::get_logger("Logger"), "RANSAC converged to a solution with fitness %f, above the maximum allowable %f", align.getFitnessScore(), max_allowable_fitness.value());
+    RCLCPP_INFO(rclcpp::get_logger("Logger"), "RANSAC converged to a solution with fitness %f, above the maximum allowable %f", align.getFitnessScore(), max_allowable_fitness.value());
     return tl::make_unexpected("RANSAC converged to a solution with fitness " + std::to_string(align.getFitnessScore()) + ", above the maximum allowable " + std::to_string(max_allowable_fitness.value()));
   }
 
