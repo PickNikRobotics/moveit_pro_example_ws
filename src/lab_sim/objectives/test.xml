@@ -3,7 +3,35 @@
   <!--//////////-->
   <BehaviorTree ID="Test" _description="" _favorite="true">
     <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree ID="Clear Snapshot" _collapsed="true" />
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        joint_group_name="manipulator"
+        planner_interface="moveit_default"
+        controller_names="/joint_trajectory_controller"
+        waypoint_name="view_bottle_final"
+      />
       <Action ID="GetPointCloud" topic_name="/wrist_camera/points" />
+      <Action ID="SendPointCloudToUI" />
+      <Action ID="WaitForDuration" />
+      <SubTree ID="Clear Snapshot" _collapsed="true" />
+      <SubTree
+        ID="excludeTableFromPointCloud"
+        _collapsed="true"
+        point_cloud_in="{point_cloud}"
+        point_cloud_out="{point_cloud}"
+      />
+      <Action ID="SendPointCloudToUI" />
+      <Action ID="WaitForDuration" />
+      <SubTree ID="Clear Snapshot" _collapsed="true" />
+      <SubTree
+        ID="Buildathon croppedPointCloud"
+        _collapsed="true"
+        point_cloud_out="{point_cloud}"
+        point_cloud_in="{point_cloud}"
+        box_dimensions="0.1;0.2;3"
+      />
       <Action ID="SendPointCloudToUI" />
       <SubTree
         ID="Find Mesh in Pointcloud"
