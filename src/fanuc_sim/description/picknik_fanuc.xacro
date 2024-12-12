@@ -45,29 +45,6 @@
     <origin rpy="0 0 0" xyz="0 0 0.15" />
   </joint>
 
-  <link name="table">
-    <visual>
-      <origin rpy="0 0 0" xyz="0 0 0" />
-      <geometry>
-        <box size="1 1 0.05" />
-      </geometry>
-      <material name="brown">
-        <color rgba="0.3 0.15 0.05 1" />
-      </material>
-    </visual>
-    <collision>
-      <origin rpy="0 0 0" xyz="0 0 0" />
-      <geometry>
-        <box size="1 1 0.05" />
-      </geometry>
-    </collision>
-  </link>
-  <joint name="table_joint" type="fixed">
-    <parent link="world" />
-    <child link="table" />
-    <origin rpy="0 0 0" xyz="0 1 0.45" />
-  </joint>
-
   <xacro:fanuc_lrmate200id prefix="" />
   <xacro:fanuc_lrmate200id_ros2_control
     name="fanuc_robot"
