@@ -1,0 +1,514 @@
+<mujoco model="fanuc scene">
+  <equality>
+<weld
+  name="suction_cup_sphere-0-0-0-0"
+  body1="sphere-0-0-0-0"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-0-0-0-1"
+  body1="sphere-0-0-0-1"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-0-0-0-2"
+  body1="sphere-0-0-0-2"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-0-0-1-0"
+  body1="sphere-0-0-1-0"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-0-0-1-1"
+  body1="sphere-0-0-1-1"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-0-0-1-2"
+  body1="sphere-0-0-1-2"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-0-0-2-0"
+  body1="sphere-0-0-2-0"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-0-0-2-1"
+  body1="sphere-0-0-2-1"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-0-0-2-2"
+  body1="sphere-0-0-2-2"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-0-0-3-0"
+  body1="sphere-0-0-3-0"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-0-0-3-1"
+  body1="sphere-0-0-3-1"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-0-0-3-2"
+  body1="sphere-0-0-3-2"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-0-0-4-0"
+  body1="sphere-0-0-4-0"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-0-0-4-1"
+  body1="sphere-0-0-4-1"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-0-0-4-2"
+  body1="sphere-0-0-4-2"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-0-0-5-0"
+  body1="sphere-0-0-5-0"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-0-0-5-1"
+  body1="sphere-0-0-5-1"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-0-0-5-2"
+  body1="sphere-0-0-5-2"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-0-1-0-0"
+  body1="sphere-0-1-0-0"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-0-1-0-1"
+  body1="sphere-0-1-0-1"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-0-1-0-2"
+  body1="sphere-0-1-0-2"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-0-1-1-0"
+  body1="sphere-0-1-1-0"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-0-1-1-1"
+  body1="sphere-0-1-1-1"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-0-1-1-2"
+  body1="sphere-0-1-1-2"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-0-1-2-0"
+  body1="sphere-0-1-2-0"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-0-1-2-1"
+  body1="sphere-0-1-2-1"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-0-1-2-2"
+  body1="sphere-0-1-2-2"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-0-1-3-0"
+  body1="sphere-0-1-3-0"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-0-1-3-1"
+  body1="sphere-0-1-3-1"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-0-1-3-2"
+  body1="sphere-0-1-3-2"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-0-1-4-0"
+  body1="sphere-0-1-4-0"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-0-1-4-1"
+  body1="sphere-0-1-4-1"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-0-1-4-2"
+  body1="sphere-0-1-4-2"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-0-1-5-0"
+  body1="sphere-0-1-5-0"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-0-1-5-1"
+  body1="sphere-0-1-5-1"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-0-1-5-2"
+  body1="sphere-0-1-5-2"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-1-0-0-0"
+  body1="sphere-1-0-0-0"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-1-0-0-1"
+  body1="sphere-1-0-0-1"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-1-0-0-2"
+  body1="sphere-1-0-0-2"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-1-0-1-0"
+  body1="sphere-1-0-1-0"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-1-0-1-1"
+  body1="sphere-1-0-1-1"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-1-0-1-2"
+  body1="sphere-1-0-1-2"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-1-0-2-0"
+  body1="sphere-1-0-2-0"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-1-0-2-1"
+  body1="sphere-1-0-2-1"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-1-0-2-2"
+  body1="sphere-1-0-2-2"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-1-0-3-0"
+  body1="sphere-1-0-3-0"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-1-0-3-1"
+  body1="sphere-1-0-3-1"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-1-0-3-2"
+  body1="sphere-1-0-3-2"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-1-0-4-0"
+  body1="sphere-1-0-4-0"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-1-0-4-1"
+  body1="sphere-1-0-4-1"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-1-0-4-2"
+  body1="sphere-1-0-4-2"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-1-0-5-0"
+  body1="sphere-1-0-5-0"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-1-0-5-1"
+  body1="sphere-1-0-5-1"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-1-0-5-2"
+  body1="sphere-1-0-5-2"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-1-1-0-0"
+  body1="sphere-1-1-0-0"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-1-1-0-1"
+  body1="sphere-1-1-0-1"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-1-1-0-2"
+  body1="sphere-1-1-0-2"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-1-1-1-0"
+  body1="sphere-1-1-1-0"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-1-1-1-1"
+  body1="sphere-1-1-1-1"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-1-1-1-2"
+  body1="sphere-1-1-1-2"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-1-1-2-0"
+  body1="sphere-1-1-2-0"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-1-1-2-1"
+  body1="sphere-1-1-2-1"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-1-1-2-2"
+  body1="sphere-1-1-2-2"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-1-1-3-0"
+  body1="sphere-1-1-3-0"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-1-1-3-1"
+  body1="sphere-1-1-3-1"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-1-1-3-2"
+  body1="sphere-1-1-3-2"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-1-1-4-0"
+  body1="sphere-1-1-4-0"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-1-1-4-1"
+  body1="sphere-1-1-4-1"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-1-1-4-2"
+  body1="sphere-1-1-4-2"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-1-1-5-0"
+  body1="sphere-1-1-5-0"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-1-1-5-1"
+  body1="sphere-1-1-5-1"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+<weld
+  name="suction_cup_sphere-1-1-5-2"
+  body1="sphere-1-1-5-2"
+  body2="tool_tip"
+  active="false"
+  torquescale="1"
+/>
+
+  </equality>
+</mujoco>
+
+
+
+<!-- drivers-1       | [ros2_control_node-1] [ERROR] [1733979471.316379779] [MujocoSystem]: Error: unknown element 'sphere-0-2-0-0' in equality constraint 24
+drivers-1       | [ros2_control_node-1] Element name 'suction_cup_sphere-0-2-0-0', id 24, line 0 -->

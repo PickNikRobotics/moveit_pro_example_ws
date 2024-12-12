@@ -1,9 +1,10 @@
+<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Pick Up Tool">
   <!--//////////-->
   <BehaviorTree
     ID="Pick Up Tool"
     _description="Pick up the tool from the tool holder"
-    _favorite="false"
+    _favorite="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
@@ -30,6 +31,7 @@
         max_distance="0.095"
         min_distance="0.095"
         axis_frame="tool0"
+        acceleration_scale="0.5"
       />
       <Action ID="PlanMTCTask" />
       <Action ID="ExecuteMTCTask" />
@@ -39,26 +41,20 @@
         gripper_command_action_name="/tool_attach_controller/gripper_cmd"
         timeout="10"
       />
-      <Control ID="Fallback">
-        <Action
-          ID="AttachTool"
-          parent_link_name="tool0"
-          tool_name="suction_gripper"
-        />
-        <Control ID="Sequence">
-          <Action
-            ID="LogMessage"
-            log_level="info"
-            message="Adding tool to the planning scene to proceed"
-          />
-          <SubTree ID="Setup Planning Scene" _collapsed="true" />
-          <Action
-            ID="AttachTool"
-            parent_link_name="tool0"
-            tool_name="suction_gripper"
-          />
-        </Control>
-      </Control>
+      <Action
+        ID="CreateStampedPose"
+        reference_frame="link_6"
+        position_xyz="0.0;0.0;0.0"
+        orientation_xyzw="0;0.7071068;0;0.7071068"
+      />
+      <Action
+        ID="AttachTool"
+        parent_link_name="link_6"
+        tool_name="suction_gripper"
+        tool_urdf_file="~/user_ws/install/fanuc_sim/share/fanuc_sim/description/tool.urdf"
+        relative_pose="{stamped_pose}"
+        allowed_collision_links="link_6"
+      />
       <SubTree ID="Retract" _collapsed="true" distance="0.35" />
     </Control>
   </BehaviorTree>
