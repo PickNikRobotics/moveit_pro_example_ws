@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<root
-  BTCPP_format="4"
-  main_tree_to_execute="Segment Point Cloud from Clicked Point"
->
+<root BTCPP_format="4" main_tree_to_execute="L2G">
   <!--//////////-->
   <BehaviorTree
-    ID="Segment Point Cloud from Clicked Point"
-    _description="Captures a point cloud and requests the user to click an object in the image to be segmented. The point cloud is then filtered to only include the selected object."
+    ID="L2G"
+    _description="Take a pointcloud snapshot of the scene with a depth camera"
     _favorite="true"
+    _subtreeOnly="false"
   >
-    <Control ID="Sequence">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <!--Clear out old snapshot data-->
       <Action ID="ClearSnapshot" />
       <Action ID="GetImage" topic_name="/wrist_camera/color" />
-      <Action ID="GetPointsFromUser"
-        point_prompts="Select the object to be segmented;"
-        point_names="Point1;"
+      <Action
+        ID="GetPointsFromUser"
+        point_prompts="Select the object to be segmented;again;again"
+        point_names="Point1;Point2;Point3"
         view_name="/wrist_camera/color"
       />
-      <Action ID="ExampleSAM2Segmentation" />
+      <Action ID="SAM2Segmentation" />
       <Action ID="GetPointCloud" topic_name="/wrist_camera/points" />
       <Action
         ID="GetCameraInfo"
@@ -31,10 +31,20 @@
       </Decorator>
       <Action ID="SendPointCloudToUI" point_cloud="{point_cloud_fragment}" />
       <Action ID="PublishPointCloud" point_cloud="{point_cloud_fragment}" />
-      <Action ID="SwitchUIPrimaryView" />
+      <Action ID="L2GBehavior" point_cloud="{point_cloud_fragment}" />
+      <Decorator
+        ID="ForEachPoseStamped"
+        vector_in="{grasps}"
+        out="{stamped_pose}"
+      >
+        <Control ID="Sequence">
+          <Action ID="VisualizePose" />
+          <Action ID="BreakpointSubscriber" />
+        </Control>
+      </Decorator>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Segment Point Cloud from Clicked Point" />
+    <SubTree ID="L2G" />
   </TreeNodesModel>
 </root>

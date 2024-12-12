@@ -15,6 +15,8 @@
 #include <example_behaviors/example_ndt_registration.hpp>
 #include <example_behaviors/example_ransac_registration.hpp>
 #include <example_behaviors/example_sam2_segmentation.hpp>
+#include <example_behaviors/l2g.hpp>
+#include <example_behaviors/sam2_segmentation.hpp>
 
 #include <pluginlib/class_list_macros.hpp>
 
@@ -42,6 +44,8 @@ public:
     moveit_studio::behaviors::registerBehavior<ExampleNDTRegistration>(factory, "ExampleNDTRegistration", shared_resources);
     moveit_studio::behaviors::registerBehavior<ExampleRANSACRegistration>(factory, "ExampleRANSACRegistration", shared_resources);
     moveit_studio::behaviors::registerBehavior<ExampleSAM2Segmentation>(factory, "ExampleSAM2Segmentation", shared_resources);
+    moveit_studio::behaviors::registerBehavior<L2GBehavior>(factory, "L2GBehavior", shared_resources);
+    moveit_studio::behaviors::registerBehavior<SAM2Segmentation>(factory, "SAM2Segmentation", shared_resources);
   }
 };
 }  // namespace example_behaviors
