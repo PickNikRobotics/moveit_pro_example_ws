@@ -21,14 +21,14 @@
     - wrist_2_joint
     - wrist_3_joint
     position:
-    - 0.005443531228038125
-    - 0.16745667593896538
-    - 0.38469500546329094
-    - -0.9495951784993102
-    - 1.4530580038656942
-    - -2.3563673683102415
-    - -1.6678073710000332
-    - 0.3743635710277495
+    - 0.0046894286514114905
+    - 0.11915212690482295
+    - 0.5464277879246356
+    - -0.972651289391312
+    - 1.7722867699172182
+    - -2.3474280858161203
+    - -2.1189675249981383
+    - 0.6261953414682204
     velocity: []
   multi_dof_joint_state:
     header:
@@ -279,6 +279,49 @@
     - wrist_2_joint
     - wrist_3_joint
     position:
+    - 0.004692654238118904
+    - -0.10730185663677162
+    - 0.5694104049327926
+    - -0.8274117204859058
+    - 1.6886416613673396
+    - -2.7156192222400812
+    - -1.658675700213927
+    - 0.6429500188652083
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: pills close
+- description: ''
+  favorite: false
+  joint_group_names:
+  - gripper
+  - linear_actuator
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - linear_rail_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
     - 0.06656710453529632
     - -0.026311129005491703
     - 0.391188076851874
@@ -428,3 +471,46 @@
     twist: []
     wrench: []
   name: Workspace Right
+- description: ''
+  favorite: false
+  joint_group_names:
+  - gripper
+  - linear_actuator
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - linear_rail_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
+    - 0.00468845173290927
+    - -0.2644976294122572
+    - 0.3748018822110223
+    - -0.672537121582914
+    - 1.182712430428366
+    - -2.130689101859695
+    - -1.0011130816973868
+    - 0.19030279540117478
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: look cube back
