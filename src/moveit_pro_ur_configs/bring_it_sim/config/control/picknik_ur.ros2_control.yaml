@@ -11,17 +11,76 @@ controller_manager:
       type: joint_trajectory_controller/JointTrajectoryController
     force_torque_sensor_broadcaster:
       type: force_torque_sensor_broadcaster/ForceTorqueSensorBroadcaster
-    joint_trajectory_admittance_controller:
-      type: joint_trajectory_admittance_controller/JointTrajectoryAdmittanceController
-    velocity_force_controller:
-      type: velocity_force_controller/VelocityForceController
+    platform_velocity_controller:
+      type: clearpath_mecanum_drive_controller/MecanumDriveController
 
+platform_velocity_controller:
+  ros__parameters:
+    use_sim_time: False
+    interface_name: velocity
+
+    command_joint_names: ["front_left_wheel", "rear_left_wheel", "rear_right_wheel", "front_right_wheel"]
+
+    front_left_wheel_command_joint_name: "front_left_wheel"
+    front_right_wheel_command_joint_name: "front_right_wheel"
+    rear_right_wheel_command_joint_name: "rear_right_wheel"
+    rear_left_wheel_command_joint_name: "rear_left_wheel"
+
+    kinematics.base_frame_offset: { x: 0.0, y: 0.0, theta: 0.0 }
+    kinematics.wheels_radius: 0.05
+    kinematics.sum_of_robot_center_projection_on_X_Y_axis: 0.4704
+    wheel_separation_multiplier: 1.0
+    wheel_radius_multiplier: 1.0
+
+    publish_rate: 50.0
+    reference_timeout: 0.1
+    use_stamped_vel: False
+
+    pose_covariance_diagonal: [0.001, 0.001, 1000000.0, 1000000.0, 1000000.0, 0.03]
+    twist_covariance_diagonal: [0.001, 0.001, 0.001, 1000000.0, 1000000.0, 0.03]
+
+    cmd_vel_timeout: 0.5
+
+    base_frame_id: "ridgeback_base_link"
+    odom_frame_id: "odom"
+    enable_odom_tf: true
+
+    # Velocity and acceleration limits
+    # Whenever a min_* is unspecified, default to -max_*
+    linear.x.has_velocity_limits: true
+    linear.x.has_acceleration_limits: true
+    linear.x.has_jerk_limits: false
+    linear.x.max_velocity: 1.3
+    linear.x.min_velocity: -1.3
+    linear.x.max_acceleration: 1.0
+    linear.x.min_acceleration: -1.0
+    linear.x.max_jerk: 0.0
+    linear.x.min_jerk: 0.0
+
+    linear.y.has_velocity_limits: true
+    linear.y.has_acceleration_limits: true
+    linear.y.has_jerk_limits: false
+    linear.y.max_velocity: 1.3
+    linear.y.min_velocity: -1.3
+    linear.y.max_acceleration: 1.0
+    linear.y.min_acceleration: -1.0
+    linear.y.max_jerk: 0.0
+    linear.y.min_jerk: 0.0
+
+    angular.z.has_velocity_limits: true
+    angular.z.has_acceleration_limits: true
+    angular.z.has_jerk_limits: false
+    angular.z.max_velocity: 4.0
+    angular.z.min_velocity: -4.0
+    angular.z.max_acceleration: 2.0
+    angular.z.min_acceleration: -2.0
+    angular.z.max_jerk: 0.0
+    angular.z.min_jerk: 0.0
 
 joint_state_broadcaster:
   ros__parameters:
     use_local_topics: false
     joints:
-      - linear_rail_joint
       - shoulder_pan_joint
       - shoulder_lift_joint
       - elbow_joint
@@ -32,12 +91,10 @@ joint_state_broadcaster:
     interfaces:
       - position
       - velocity
-      - effort
 
 joint_trajectory_controller:
   ros__parameters:
     joints:
-      - linear_rail_joint
       - shoulder_pan_joint
       - shoulder_lift_joint
       - elbow_joint
@@ -50,7 +107,6 @@ joint_trajectory_controller:
       - position
       - velocity
     command_joints:
-      - linear_rail_joint
       - shoulder_pan_joint
       - shoulder_lift_joint
       - elbow_joint
@@ -63,8 +119,6 @@ joint_trajectory_controller:
     constraints:
       stopped_velocity_tolerance: 0.0
       goal_time: 0.0
-      linear_rail_joint:
-        goal: 0.05
       shoulder_pan_joint:
         goal: 0.05
       shoulder_lift_joint:
@@ -78,7 +132,6 @@ joint_trajectory_controller:
       wrist_3_joint:
         goal: 0.05
     acceleration_limits:
-      linear_rail_joint: 10.0
       shoulder_pan_joint: 10.0
       shoulder_lift_joint: 10.0
       elbow_joint: 10.0
@@ -94,7 +147,6 @@ robotiq_gripper_controller:
 servo_controller:
   ros__parameters:
     joints:
-      - linear_rail_joint
       - shoulder_pan_joint
       - shoulder_lift_joint
       - elbow_joint
@@ -108,7 +160,6 @@ servo_controller:
       - position
       - velocity
     command_joints:
-      - linear_rail_joint
       - shoulder_pan_joint
       - shoulder_lift_joint
       - elbow_joint
@@ -121,8 +172,6 @@ servo_controller:
     constraints:
       stopped_velocity_tolerance: 0.0
       goal_time: 0.0
-      linear_rail_joint:
-        goal: 0.05
       shoulder_pan_joint:
         goal: 0.05
       shoulder_lift_joint:
@@ -136,7 +185,6 @@ servo_controller:
       wrist_3_joint:
         goal: 0.05
     acceleration_limits:
-      linear_rail_joint: 10.0
       shoulder_pan_joint: 10.0
       shoulder_lift_joint: 10.0
       elbow_joint: 10.0
@@ -155,75 +203,3 @@ force_torque_sensor_broadcaster:
       - torque.y
       - torque.z
     frame_id: robotiq_ft_sensor
-
-
-joint_trajectory_admittance_controller:
-  ros__parameters:
-    joints:
-      - linear_rail_joint
-      - shoulder_pan_joint
-      - shoulder_lift_joint
-      - elbow_joint
-      - wrist_1_joint
-      - wrist_2_joint
-      - wrist_3_joint
-    base_frame: base_link
-    sensor_frame: tool0
-    ee_frame: grasp_link
-    ft_sensor_name: robotiq_ft_sensor
-    # Joint accelerations chosen to match MoveIt configs.
-    stop_accelerations:
-      - 30.0
-      - 30.0
-      - 30.0
-      - 30.0
-      - 30.0
-      - 30.0
-      - 30.0
-
-velocity_force_controller:
-  ros__parameters:
-    joints:
-      - linear_rail_joint
-      - shoulder_pan_joint
-      - shoulder_lift_joint
-      - elbow_joint
-      - wrist_1_joint
-      - wrist_2_joint
-      - wrist_3_joint
-    base_frame: base_link
-    sensor_frame: tool0
-    ee_frame: grasp_link
-    ft_sensor_name: robotiq_ft_sensor
-    ft_force_deadband: 2.0
-    ft_torque_deadband: 1.0
-    max_joint_velocity:
-      - 0.524
-      - 0.524
-      - 0.524
-      - 0.524
-      - 1.047
-      - 1.047
-      - 1.047
-    max_joint_acceleration:
-      - 0.524
-      - 0.524
-      - 0.524
-      - 0.524
-      - 0.524
-      - 0.524
-      - 0.524
-    max_cartesian_velocity:
-      - 0.25
-      - 0.25
-      - 0.25
-      - 1.5707
-      - 1.5707
-      - 1.5707
-    max_cartesian_acceleration:
-      - 2.0
-      - 2.0
-      - 2.0
-      - 4.0
-      - 4.0
-      - 4.0

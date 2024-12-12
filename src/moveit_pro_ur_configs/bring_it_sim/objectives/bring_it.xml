@@ -1,13 +1,24 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Bring It">
   <!--//////////-->
   <BehaviorTree
     ID="Bring It"
     _description="Bring beer to table"
-    _favorite="false"
+    _favorite="true"
   >
-    <Control ID="Sequence" name="TopLevelSequence">
-      <Action ID="AlwaysSuccess" />
+    <Control ID="Sequence">
+      <Action
+        ID="CreateStampedPose"
+        orientation_xyzw="0; 0; 0; 1"
+        position_xyz="-1; -1; 0"
+        stamped_pose="{navigation_goal}"
+      />
+      <Action
+        ID="NavigateToPoseAction"
+        pose_stamped="{navigation_goal}"
+        behavior_tree_path="/opt/ros/humble/share/nav2_bt_navigator/behavior_trees/navigate_to_pose_w_replanning_and_recovery.xml"
+        action_name="/navigate_to_pose"
+      />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>

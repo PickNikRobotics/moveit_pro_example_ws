@@ -9,7 +9,9 @@ install(
     config
     description
     launch
+    maps
     objectives
+    params
     waypoints
   DESTINATION
     share/${PROJECT_NAME}
