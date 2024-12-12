@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Move Beakers to Burners">
   <!--//////////-->
   <BehaviorTree
@@ -12,7 +12,7 @@
         ID="Move to Waypoint"
         _collapsed="true"
         constraints="{constraints}"
-        waypoint_name="Look at Table"
+        waypoint_name="Beaker 1a - Pre Pick"
         joint_group_name="manipulator"
         planner_interface="moveit_default"
         controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
