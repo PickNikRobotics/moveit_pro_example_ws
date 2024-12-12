@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Find Mesh in Pointcloud">
   <!--//////////-->
   <BehaviorTree
@@ -41,6 +41,7 @@
         base_point_cloud="{red_cloud}"
         max_correspondence_distance="0.5"
         max_iterations="100"
+        max_allowable_fitness="{max_allowable_fitness}"
       />
       <SubTree
         ID="Load Mesh as Pointcloud"
@@ -62,6 +63,7 @@
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Find Mesh in Pointcloud">
+      <input_port name="max_allowable_fitness" default="0.0003" />
       <input_port name="point_cloud" default="wrist_point_cloud" />
       <input_port
         name="filename"
