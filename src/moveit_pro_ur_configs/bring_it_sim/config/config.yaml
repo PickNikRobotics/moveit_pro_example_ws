@@ -19,7 +19,8 @@ hardware:
       - joint_limits_parameters_file:
           package: "ur5e_ridgeback_mujoco_config"
           path: "config/moveit/joint_limits.yaml"
-      - mujoco_model: "description/scene.xml"
+      - mujoco_model: "description/bar_scene.xml"
+
 
 # Configuration for loading behaviors and objectives.
 # [Required]

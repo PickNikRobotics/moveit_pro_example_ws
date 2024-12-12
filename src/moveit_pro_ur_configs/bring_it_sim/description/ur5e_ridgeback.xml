@@ -368,8 +368,4 @@
     <torque name="ee_torque_sensor" site="robotiq_ft_sensor" />
   </sensor>
 
- <keyframe>
-    <key qpos='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0     0 -1.57 0 -1.57 -1.57 0     0.0203 0.00 0.0216 -0.0203 0.0203 0.0 0.0216 -0.0224'/>
-  </keyframe>
-
 </mujoco>
