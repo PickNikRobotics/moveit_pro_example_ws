@@ -67,7 +67,7 @@
                 _collapsed="true"
                 target_pose="{next_pose}"
               />
-              <Action ID="AlwaysFailure" />
+              <SubTree ID="Crop and Register point cloud" _collapsed="true" />
             </Control>
           </Decorator>
         </Decorator>

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Buildathon croppedPointCloud">
   <!--//////////-->
   <BehaviorTree
@@ -14,7 +14,6 @@
         reference_frame="wrist_camera_optical_frame"
         position_xyz="0;0;.5"
       />
-      <Action ID="VisualizePose" pose="{crop_pose}" marker_name="crop_pose" />
       <Action
         ID="CropPointsInBox"
         crop_box_centroid_pose="{crop_pose}"
