@@ -1,0 +1,44 @@
+<root BTCPP_format="4" main_tree_to_execute="Visualize Pose Vector">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Visualize Pose Vector"
+    _description="takes in a pose and visualizes it"
+    _favorite="true"
+    _subtreeOnly="true"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Decorator
+        ID="ForEachPoseStamped"
+        vector_in="{pose_vector}"
+        out="{output_pose}"
+      >
+        <Control ID="Sequence">
+          <Action
+            ID="VisualizePose"
+            pose="{output_pose}"
+            marker_name="generated_pose"
+          />
+          <Action ID="AddPoseStampedToVector" input="{output_pose}" />
+          <Control ID="IfThenElse">
+            <Action ID="PlanCartesianPath" />
+            <Control ID="Sequence">
+              <Decorator ID="Inverter">
+                <Action
+                  ID="WaitForUserTrajectoryApproval"
+                  solution="{debug_solution}"
+                />
+              </Decorator>
+              <Action ID="ResetPoseStampedVector" />
+            </Control>
+            <Action ID="AlwaysSuccess" />
+          </Control>
+        </Control>
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Visualize Pose Vector">
+      <input_port name="pose_vector" default="{output_pose}" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

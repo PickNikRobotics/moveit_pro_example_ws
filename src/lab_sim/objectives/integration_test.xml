@@ -1,0 +1,31 @@
+<root BTCPP_format="4" main_tree_to_execute="Integration Test Mock">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Integration Test Mock"
+    _description="Mock Graspnet behavior to test taking snapshots and  visualizing pose vector"
+    _favorite="true"
+    _subtreeOnly="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree
+        ID="Take Snapshots Of Object"
+        _collapsed="true"
+        merged_cloud="{merged_cloud}"
+      />
+      <Action
+        ID="GraspnetExampleBehavior"
+        point_cloud="{merged_cloud}"
+        num_samples="10"
+        stamped_pose="{output_pose}"
+      />
+      <SubTree
+        ID="Visualize Pose Vector"
+        _collapsed="true"
+        pose_vector="{output_pose}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Integration Test" />
+  </TreeNodesModel>
+</root>
