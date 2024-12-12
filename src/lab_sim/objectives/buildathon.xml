@@ -21,6 +21,7 @@
                     </Decorator>
                 </Decorator>
             </Decorator>
+            <SubTree ID="Take wrist camera snapshot" _collapsed="true"/>
         </Control>
     </BehaviorTree>
     <TreeNodesModel>
