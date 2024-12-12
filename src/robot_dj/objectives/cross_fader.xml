@@ -22,26 +22,32 @@
           waypoint_name="Crossfader A"
         />
         <SubTree ID="Open Gripper" _collapsed="true" />
-        <Decorator ID="Repeat" num_cycles="3">
+        <Control ID="Fallback">
           <Control ID="Sequence">
-            <SubTree
-              ID="Move to Waypoint"
-              _collapsed="true"
-              joint_group_name="manipulator"
-              planner_interface="moveit_default"
-              controller_names="/joint_trajectory_controller"
-              waypoint_name="Look at Adoring Fans"
-            />
-            <SubTree
-              ID="Move to Waypoint"
-              _collapsed="true"
-              joint_group_name="manipulator"
-              planner_interface="moveit_default"
-              controller_names="/joint_trajectory_controller"
-              waypoint_name="Head bump up"
-            />
+            <Action ID="BiasedCoinFlip" />
+            <Decorator ID="Repeat" num_cycles="3">
+              <Control ID="Sequence">
+                <SubTree
+                  ID="Move to Waypoint"
+                  _collapsed="true"
+                  joint_group_name="manipulator"
+                  planner_interface="moveit_default"
+                  controller_names="/joint_trajectory_controller"
+                  waypoint_name="Look at Adoring Fans"
+                />
+                <SubTree
+                  ID="Move to Waypoint"
+                  _collapsed="true"
+                  joint_group_name="manipulator"
+                  planner_interface="moveit_default"
+                  controller_names="/joint_trajectory_controller"
+                  waypoint_name="Head bump up"
+                />
+              </Control>
+            </Decorator>
           </Control>
-        </Decorator>
+          <Action ID="AlwaysSuccess" />
+        </Control>
         <Decorator ID="Repeat" num_cycles="2">
           <Control ID="Sequence">
             <SubTree

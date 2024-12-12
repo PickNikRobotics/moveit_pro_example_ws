@@ -64,8 +64,19 @@
     <mesh name="cube" file="assets/Cube.stl" />
   </asset>
 
-  <asset>
-    <mesh name="ddjflx10" file="assets/DDJ-FLX10_4_controller.obj" />
+   <asset>    
+    <texture type="2d" name="turntable_mid" file="assets/mid_texture.png" />
+    <texture type="2d" name="turntable_base" file="assets/base_texture.png" />
+    <material
+      name="turntable_mid"
+      texture="turntable_mid"
+    />
+    <material
+      name="turntable_base"
+      texture="turntable_base"
+    />
+    <mesh name="turntable_base" file="assets/base.obj" />
+    <mesh name="turntable_top" file="assets/top.obj" />
   </asset>
 
   <worldbody>
@@ -82,12 +93,9 @@
       <geom type="box" size="0.5 0.5 0.025" material="wood" />
     </body>
 
-    <body name="ddjflx10" pos="0 .9 0.475" euler="1.57 0 0">
-      <geom
-        type="mesh"
-        mesh="ddjflx10"
-        rgba="1 1 1 1"
-      />
+     <body name="turntable" pos="0 .9 0.475" euler="1.57 0 0">
+      <geom class="visual" rgba="1 1 1 1" mesh="turntable_base" material="turntable_mid"/>
+      <geom class="visual" rgba="1 1 1 1" mesh="turntable_top" material="turntable_base"/>
     </body>
   </worldbody>
 
@@ -95,7 +103,6 @@
     <!-- qpos order:
       1. Robot joints (7): linear_rail, shoulder_pan, shoulder_lift, elbow, wrist_1, wrist_2, wrist_3
       2. Gripper joints (8): right_knuckle, right_finger, right_inner_knuckle, right_finger_tip, left_knuckle, left_finger, left_inner_knuckle, left_finger_tip
-      3. ddjflx10 pose (7): [x, y, z, qw, qx, qy, qz]
     -->
     <key
       qpos="
