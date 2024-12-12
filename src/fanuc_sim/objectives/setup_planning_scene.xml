@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Setup Planning Scene">
   <!--//////////-->
   <BehaviorTree
@@ -11,13 +12,6 @@
         ID="CreateStampedPose"
         stamped_pose="{tool_pose}"
         reference_frame="tool_attach_site"
-      />
-      <Action
-        ID="AddToolToScene"
-        relative_pose="{tool_pose}"
-        package_name="fanuc_sim"
-        tool_urdf_file_path="description/tool.urdf"
-        tool_name="suction_gripper"
       />
     </Control>
   </BehaviorTree>

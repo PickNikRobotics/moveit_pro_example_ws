@@ -1,20 +1,11 @@
-<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Deactivate Vacuum">
   <!--//////////-->
-  <BehaviorTree
-    ID="Deactivate Vacuum"
-    _description="Deactivate the vacuum gripper"
-    _subtreeOnly="false"
-  >
+  <BehaviorTree ID="Deactivate Vacuum" _description="Deactivate the vacuum gripper" _subtreeOnly="false" _favorite="true">
     <Control ID="Sequence" name="root">
-      <Action
-        ID="MoveGripperAction"
-        position="0"
-        gripper_command_action_name="/suction_cup_controller/gripper_cmd"
-      />
+      <Action ID="MoveGripperAction" position="0" gripper_command_action_name="/suction_cup_controller/gripper_cmd"/>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Deactivate Vacuum" />
+    <SubTree ID="Deactivate Vacuum"/>
   </TreeNodesModel>
 </root>
