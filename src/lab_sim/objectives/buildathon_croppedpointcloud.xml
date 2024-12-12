@@ -4,6 +4,7 @@
         <Control ID="Sequence" name="TopLevelSequence">
             <Action ID="CreateStampedPose" stamped_pose="{crop_pose}" reference_frame="wrist_camera_optical_frame" position_xyz="0;0;.5"/>
             <Action ID="CropPointsInBox" crop_box_centroid_pose="{crop_pose}" point_cloud_cropped="{point_cloud_out}" point_cloud="{point_cloud_in}" crop_box_size="{box_dimensions}"/>
+            <Action ID="WaitForDuration" delay_duration=".5"/>
             <Action ID="ClearSnapshot"/>
             <Action ID="SendPointCloudToUI" point_cloud="{point_cloud_out}"/>
         </Control>
