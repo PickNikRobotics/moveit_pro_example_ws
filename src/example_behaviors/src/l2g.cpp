@@ -3,23 +3,20 @@
 #include <string>
 
 #include <ament_index_cpp/get_package_share_directory.hpp>
-#include <example_behaviors/l2g.hpp>
 #include <geometry_msgs/msg/point_stamped.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
+#include <moveit_pro_ml/onnx_model.hpp>
 #include <moveit_studio_behavior_interface/async_behavior_base.hpp>
 #include <moveit_studio_behavior_interface/get_required_ports.hpp>
 #include <moveit_studio_vision/pointcloud/point_cloud_tools.hpp>
-#include <moveit_studio_vision_msgs/msg/mask2_d.hpp>
-#include <sensor_msgs/msg/image.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <tl_expected/expected.hpp>
 
-#include <pcl_conversions/pcl_conversions.h>
-#include <pcl/point_cloud.h>
 #include <pcl/filters/filter.h>
+#include <pcl/point_cloud.h>
+#include <pcl_conversions/pcl_conversions.h>
 
-
-#include "moveit_pro_ml/onnx_model.hpp"
+#include <example_behaviors/l2g.hpp>
 
 namespace moveit_pro_ml
 {
@@ -34,18 +31,18 @@ namespace moveit_pro_ml
     [[nodiscard]] std::vector<float> predict(const std::vector<std::array<float, 3>>& points) const
     {
       // move image into tensor
-      int num_points = points.size();
+      const int num_points = points.size();
       const auto point_data = model->create_dynamic_tensor<float>(model->dynamic_inputs.at("point_cloud"),
                                                                   {1, num_points, 3});
       std::copy_n(points.data()->data(), num_points * 3, point_data);
 
       auto pred = model->predict_base(model->inputs, model->dynamic_inputs);
 
-      // copy mask out and return reference
-      auto shape = pred.at("predicted_grasps").onnx_shape;
+      // copy out predicted_grasps data
+      const auto shape = pred.at("predicted_grasps").onnx_shape;
       const auto predicted_grasps_data = model->get_tensor_data<float>(pred.at("predicted_grasps"));
-      // const auto grasp_scores_data = model->get_tensor_data<float>(pred.at("grasp_scores"));
 
+      // output format [center_x, center_y, center_z, qw, qx, qy, qz, grasp_width] x N
       return {predicted_grasps_data, predicted_grasps_data + get_size(shape)};
     }
 
@@ -60,6 +57,8 @@ namespace
   constexpr auto kPortPointCloudDefault = "{point_cloud}";
   constexpr auto kPortGrasps = "grasps";
   constexpr auto kPortGraspsDefault = "{grasps}";
+  constexpr auto kNumberOfPoints = 5000;
+  constexpr auto kMaxGrasps = 10;
 } // namespace
 
 namespace example_behaviors
@@ -77,9 +76,9 @@ namespace example_behaviors
   {
     return {
       BT::InputPort<sensor_msgs::msg::PointCloud2>(kPortPointCloud, kPortPointCloudDefault,
-                                             "The Image to run segmentation on."),
+                                                   "The point cloud to grasp. The point cloud should be approximately fit in a 0.22 meter cube."),
       BT::OutputPort<std::vector<moveit_studio_vision_msgs::msg::Mask2D>>(kPortGrasps, kPortGraspsDefault,
-                                                                          "The masks contained in a vector of <code>moveit_studio_vision_msgs::msg::Mask2D</code> messages.")
+                                                                          "The grasp poses in a vector of <code>geometry_msgs::msg::PoseStamped</code> messages.")
     };
   }
 
@@ -101,45 +100,74 @@ namespace example_behaviors
     auto filtered_cloud = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
     pcl::Indices index;
     pcl::removeNaNFromPointCloud(*cloud, *filtered_cloud, index);
-    shared_resources_->logger->publishWarnMessage("Pointcloud size: " + filtered_cloud->size());
-    double fraction = std::min(10000.0 / filtered_cloud->points.size(), 1.0);
+    if (filtered_cloud->size() < kNumberOfPoints)
+    {
+      auto error_message = fmt::format("Point cloud must have at least {} points in it.", 5000);
+      return tl::make_unexpected(error_message);
+    }
+    double fraction = std::min(static_cast<double>(kNumberOfPoints) / filtered_cloud->points.size(), 1.0);
     auto downsampled_cloud = moveit_studio::point_cloud_tools::downsampleRandom(filtered_cloud, fraction);
-    shared_resources_->logger->publishWarnMessage("Downsampled pointcloud size: " + downsampled_cloud->size());
 
+    // Subtract centroid from the point cloud
+    pcl::PointXYZ centroid;
+    computeCentroid(*downsampled_cloud, centroid);
+
+    std::vector<std::array<float, 3>> points_centered;
+    points_centered.reserve(downsampled_cloud->points.size());
+    for (auto& point : downsampled_cloud->points)
+    {
+      points_centered.push_back({point.x - centroid.x, point.y - centroid.y, point.z - centroid.z});
+    }
+
+    // Filter out points outside the bounds defines by L2G.
+    std::vector<std::array<float, 3>> points;
+    points.reserve(downsampled_cloud->points.size());
+    for (auto& point : points_centered)
+    {
+      if (abs(point[0]) > .22 / 2.0 || abs(point[1]) > .22 / 2.0 || abs(point[2]) > .22)
+      {
+        continue;
+      }
+      points.push_back({2.0f * point[0] / .22f, 2.0f * point[1] / .22f, point[2] / .22f});
+    }
+
+    // Run the network
+    std::vector<float> grasps;
     try
     {
-      std::vector<std::array<float, 3>> points;
-      points.reserve(downsampled_cloud->points.size());
-      for (auto& point : downsampled_cloud->points)
-      {
-        points.push_back({point.x, point.y, point.z});
-      }
-
-      const auto grasps = l2g_->predict(points);
-      std::vector<geometry_msgs::msg::PoseStamped> grasps_pose;
-      for (size_t i = 0; i < grasps.size(); i += 7)
-      {
-        geometry_msgs::msg::PoseStamped pose;
-        pose.header = point_cloud_msg.header;
-        pose.header.stamp = shared_resources_->node->now();
-
-        pose.pose.position.x = (grasps[i + 0] + grasps[i + 3]) / 2.0;
-        pose.pose.position.y = (grasps[i + 1] + grasps[i + 4]) / 2.0;
-        pose.pose.position.z = (grasps[i + 2] + grasps[i + 5]) / 2.0;
-        grasps_pose.push_back(pose);
-
-        if (i >= 70)
-        {
-          break;
-        }
-      }
-
-      setOutput<std::vector<geometry_msgs::msg::PoseStamped>>(kPortGrasps, grasps_pose);
+      grasps = l2g_->predict(points);
     }
     catch (const std::invalid_argument& e)
     {
       return tl::make_unexpected(fmt::format("Invalid argument: {}", e.what()));
     }
+
+    // Copy of grasps into the output vector
+    std::vector<geometry_msgs::msg::PoseStamped> grasps_pose;
+    for (size_t i = 0; i < grasps.size(); i += 8)
+    {
+      geometry_msgs::msg::PoseStamped pose;
+      pose.header = point_cloud_msg.header;
+      pose.header.stamp = shared_resources_->node->now();
+
+      pose.pose.position.x = grasps[i + 0] + centroid.x;
+      pose.pose.position.y = grasps[i + 1] + centroid.y;
+      pose.pose.position.z = grasps[i + 2] + centroid.z;
+
+      pose.pose.orientation.w = grasps[i + 3];
+      pose.pose.orientation.x = grasps[i + 4];
+      pose.pose.orientation.y = grasps[i + 5];
+      pose.pose.orientation.z = grasps[i + 6];
+      grasps_pose.push_back(pose);
+
+      // break after kMaxGrasps grasps have been added
+      if (i >= 8*kMaxGrasps)
+      {
+        break;
+      }
+    }
+
+    setOutput<std::vector<geometry_msgs::msg::PoseStamped>>(kPortGrasps, grasps_pose);
 
     return true;
   }
@@ -149,8 +177,8 @@ namespace example_behaviors
     return {
       {
         "description",
-        "Generate a grasp from a point cloud and output as a <code>geometry_msgs/PoseStamped</code> message."
+        "Generate a vector grasps from a point cloud using the L2G network."
       }
     };
   }
-} // namespace sam2_segmentation
+} // namespace example_behaviors

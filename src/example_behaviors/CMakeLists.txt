@@ -34,7 +34,6 @@ add_library(
   src/example_ransac_registration.cpp
   src/example_sam2_segmentation.cpp
   src/l2g.cpp
-  src/sam2_segmentation.cpp
   src/register_behaviors.cpp)
 target_include_directories(
   example_behaviors

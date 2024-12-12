@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="L2G">
   <!--//////////-->
   <BehaviorTree
@@ -9,37 +9,114 @@
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <!--Clear out old snapshot data-->
+      <!--point_cloud_fragment="{point_cloud_fragment_1}"-->
       <Action ID="ClearSnapshot" />
-      <Action ID="GetImage" topic_name="/wrist_camera/color" />
-      <Action
-        ID="GetPointsFromUser"
-        point_prompts="Select the object to be segmented;again;again"
-        point_names="Point1;Point2;Point3"
-        view_name="/wrist_camera/color"
+      <!--<SubTree-->
+      <!--ID="Segment Waypoint Cloud"-->
+      <!--waypoint_name="pills close"-->
+      <!--/>-->
+      <!--<Action-->
+      <!--ID="AddPointCloudToVector"-->
+      <!--point_cloud="{point_cloud_fragment_1}"-->
+      <!--/>-->
+      <!--<SubTree-->
+      <!--ID="Segment Waypoint Cloud"-->
+      <!--waypoint_name="look cube close"-->
+      <!--point_cloud_fragment="{point_cloud_fragment_2}"-->
+      <!--/>-->
+      <!--<Action-->
+      <!--ID="AddPointCloudToVector"-->
+      <!--point_cloud="{point_cloud_fragment_2}"-->
+      <!--/>-->
+      <SubTree
+        ID="Segment Waypoint Cloud"
+        waypoint_name="pills close"
+        point_cloud_fragment="{point_cloud_fragment_3}"
       />
-      <Action ID="SAM2Segmentation" />
-      <Action ID="GetPointCloud" topic_name="/wrist_camera/points" />
       <Action
-        ID="GetCameraInfo"
-        topic_name="/wrist_camera/camera_info"
-        message_out="{camera_info}"
-        timeout_sec="5.000000"
+        ID="AddPointCloudToVector"
+        point_cloud="{point_cloud_fragment_3}"
       />
-      <Action ID="GetMasks3DFromMasks2D" />
-      <Decorator ID="ForEachMask3D" vector_in="{masks3d}" out="{mask3d}">
-        <Action ID="GetPointCloudFromMask3D" point_cloud="{point_cloud}" />
-      </Decorator>
-      <Action ID="SendPointCloudToUI" point_cloud="{point_cloud_fragment}" />
-      <Action ID="PublishPointCloud" point_cloud="{point_cloud_fragment}" />
-      <Action ID="L2GBehavior" point_cloud="{point_cloud_fragment}" />
+      <Action
+        ID="MergePointClouds"
+        point_clouds="{point_cloud_vector}"
+        grid_resolution_meters="0.0000010000"
+      />
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        joint_group_name="manipulator"
+        planner_interface="moveit_default"
+        controller_names="/joint_trajectory_controller"
+        waypoint_name="pills close"
+      />
+      <Action ID="SendPointCloudToUI" point_cloud="{merged_cloud}" />
+      <Action
+        ID="TransformPointCloudFrame"
+        output_cloud="{merged_cloud}"
+        input_cloud="{merged_cloud}"
+        target_frame="wrist_camera_optical_frame"
+      />
+      <Action ID="L2GBehavior" point_cloud="{merged_cloud}" />
       <Decorator
         ID="ForEachPoseStamped"
         vector_in="{grasps}"
-        out="{stamped_pose}"
+        out="{grasp_pose}"
       >
         <Control ID="Sequence">
-          <Action ID="VisualizePose" />
-          <Action ID="BreakpointSubscriber" />
+          <Action
+            ID="VisualizePose"
+            marker_name="grasp_pose"
+            pose="{grasp_pose}"
+          />
+          <Control ID="Fallback">
+            <Control ID="Sequence">
+              <Control ID="Fallback">
+                <Decorator ID="Timeout" msec="2000">
+                  <Action
+                    ID="PublishStaticFrame"
+                    pose="{grasp_pose}"
+                    child_frame_id="grasp_pose"
+                  />
+                </Decorator>
+                <Action ID="AlwaysSuccess" />
+              </Control>
+              <Action
+                ID="CreateStampedPose"
+                orientation_xyzw="-0.5;0.5;-0.5;0.5"
+                reference_frame="grasp_pose"
+                position_xyz="-0.2;0.0;0.0"
+              />
+              <SubTree
+                ID="Move to Pose"
+                _collapsed="true"
+                target_pose="{stamped_pose}"
+              />
+              <Action ID="ResetPoseStampedVector" />
+              <Action
+                ID="CreateStampedPose"
+                reference_frame="grasp_link"
+                position_xyz="0.0;0.0;0.2"
+              />
+              <Action ID="AddPoseStampedToVector" input="{stamped_pose}" />
+              <Action ID="PlanCartesianPath" position_only="false" />
+              <Action ID="ExecuteFollowJointTrajectory" />
+              <SubTree ID="Clear Snapshot" _collapsed="true" />
+              <Control ID="Fallback">
+                <SubTree ID="Close Gripper" _collapsed="true" />
+                <Action ID="AlwaysSuccess" />
+              </Control>
+              <SubTree
+                ID="Move to Waypoint"
+                _collapsed="true"
+                joint_group_name="manipulator"
+                planner_interface="moveit_default"
+                controller_names="/joint_trajectory_controller"
+                waypoint_name="Look at Table"
+              />
+            </Control>
+            <Action ID="AlwaysSuccess" />
+          </Control>
         </Control>
       </Decorator>
     </Control>

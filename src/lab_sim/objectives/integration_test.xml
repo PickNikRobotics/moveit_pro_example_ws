@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Integration Test Mock">
   <!--//////////-->
   <BehaviorTree
@@ -9,7 +10,7 @@
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree
         ID="Take Snapshots Of Object"
-        _collapsed="true"
+        _collapsed="false"
         merged_cloud="{merged_cloud}"
       />
       <Action
@@ -26,6 +27,6 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Integration Test" />
+    <SubTree ID="Integration Test Mock" />
   </TreeNodesModel>
 </root>
