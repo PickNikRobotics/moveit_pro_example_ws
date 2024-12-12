@@ -1,74 +1,23 @@
-<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Find Mesh in Pointcloud">
-  <!--//////////-->
-  <BehaviorTree
-    ID="Find Mesh in Pointcloud"
-    _description="Load an STL from disk and use registration to align the pointcloud with a matching shape in the environment"
-    _favorite="true"
-    _subtreeOnly="false"
-  >
-    <Control ID="Sequence" name="TopLevelSequence">
-      <Action
-        ID="CreateStampedPose"
-        reference_frame="grasp_link"
-        position_xyz="0;0;0.5"
-        orientation_xyzw="0;1;0;0"
-      />
-      <Action
-        ID="TransformPoseFrame"
-        input_pose="{stamped_pose}"
-        output_pose="{stamped_pose}"
-      />
-      <Action ID="VisualizePose" marker_name="Stamped pose" />
-      <SubTree
-        ID="Load Mesh as Pointcloud"
-        _collapsed="false"
-        output_cloud="{red_cloud}"
-        initial_pose="{stamped_pose}"
-        point_cloud="{red_cloud}"
-        color="255;0;0"
-        filename="{filename}"
-      />
-      <Action ID="SendPointCloudToUI" point_cloud="{red_cloud}" />
-      <Action
-        ID="TransformPointCloudFrame"
-        input_cloud="{point_cloud}"
-        output_cloud="{point_cloud}"
-      />
-      <Action
-        ID="ExampleRANSACRegistration"
-        target_point_cloud="{point_cloud}"
-        base_point_cloud="{red_cloud}"
-        max_correspondence_distance="0.5"
-        max_iterations="100"
-        max_allowable_fitness="{max_allowable_fitness}"
-      />
-      <SubTree
-        ID="Load Mesh as Pointcloud"
-        _collapsed="true"
-        output_cloud="{green_cloud}"
-        initial_pose="{stamped_pose}"
-        point_cloud="{green_cloud}"
-        color="0;255;0"
-        filename="{filename}"
-      />
-      <Action
-        ID="TransformPointCloud"
-        input_cloud="{green_cloud}"
-        transform_pose="{target_pose}"
-        output_cloud="{output_cloud_aligned}"
-      />
-      <Action ID="SendPointCloudToUI" point_cloud="{output_cloud_aligned}" />
-    </Control>
-  </BehaviorTree>
-  <TreeNodesModel>
-    <SubTree ID="Find Mesh in Pointcloud">
-      <input_port name="max_allowable_fitness" default="0.0003" />
-      <input_port name="point_cloud" default="wrist_point_cloud" />
-      <input_port
-        name="filename"
-        default="~/user_ws/src/picknik_accessories/mujoco_assets/assets/bottle.stl"
-      />
-    </SubTree>
-  </TreeNodesModel>
+    <!--//////////-->
+    <BehaviorTree ID="Find Mesh in Pointcloud" _description="Load an STL from disk and use registration to align the pointcloud with a matching shape in the environment" _favorite="true" _subtreeOnly="false">
+        <Control ID="Sequence" name="TopLevelSequence">
+            <Action ID="CreateStampedPose" reference_frame="grasp_link" position_xyz="0;0;0.3" orientation_xyzw="0;1;0;0"/>
+            <Action ID="TransformPoseFrame" input_pose="{stamped_pose}" output_pose="{stamped_pose}"/>
+            <SubTree ID="Load Mesh as Pointcloud" _collapsed="false" output_cloud="{red_cloud}" initial_pose="{stamped_pose}" point_cloud="{red_cloud}" color="255;0;0" filename="{filename}"/>
+            <Action ID="SendPointCloudToUI" point_cloud="{red_cloud}"/>
+            <Action ID="TransformPointCloudFrame" input_cloud="{point_cloud}" output_cloud="{point_cloud}"/>
+            <Action ID="ExampleRANSACRegistration" target_point_cloud="{point_cloud}" base_point_cloud="{red_cloud}" max_correspondence_distance="0.5" max_iterations="100" max_allowable_fitness="{max_allowable_fitness}"/>
+            <SubTree ID="Load Mesh as Pointcloud" _collapsed="true" output_cloud="{green_cloud}" initial_pose="{stamped_pose}" point_cloud="{green_cloud}" color="0;255;0" filename="{filename}"/>
+            <Action ID="TransformPointCloud" input_cloud="{green_cloud}" transform_pose="{target_pose}" output_cloud="{output_cloud_aligned}"/>
+            <Action ID="SendPointCloudToUI" point_cloud="{output_cloud_aligned}"/>
+        </Control>
+    </BehaviorTree>
+    <TreeNodesModel>
+        <SubTree ID="Find Mesh in Pointcloud">
+            <input_port name="max_allowable_fitness" default="0.0003"/>
+            <input_port name="point_cloud" default="wrist_point_cloud"/>
+            <input_port name="filename" default="~/user_ws/src/picknik_accessories/mujoco_assets/assets/bottle.stl"/>
+        </SubTree>
+    </TreeNodesModel>
 </root>
