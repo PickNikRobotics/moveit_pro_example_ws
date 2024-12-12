@@ -22,6 +22,13 @@ hardware:
       - mujoco_model: "description/bar_scene.xml"
 
 
+hardware:
+  # Specify any additional launch files for running the robot in simulation mode.
+  # Used when hardware.simulated is True.
+  # [Optional, defaults to a blank launch file if not specified]
+  simulated_robot_driver_persist_launch_file:
+    package: "bring_it_sim"
+    path: "launch/sim/robot_drivers_to_persist_sim.launch.py"
 # Configuration for loading behaviors and objectives.
 # [Required]
 objectives:
@@ -33,6 +40,7 @@ objectives:
     core:
       - "moveit_studio::behaviors::CoreBehaviorsLoader"
       - "moveit_studio::behaviors::MTCCoreBehaviorsLoader"
+      - "moveit_studio::behaviors::NavBehaviorsLoader"
       - "moveit_studio::behaviors::ServoBehaviorsLoader"
       - "moveit_studio::behaviors::VisionBehaviorsLoader"
   # Specify source folder for objectives
@@ -48,3 +56,23 @@ objectives:
     package_name: "bring_it_sim"
     relative_path: "waypoints/ur_waypoints.yaml"
 
+# Configuration for launching ros2_control processes.
+# [Required, if using ros2_control]
+ros2_control:
+  config:
+    package: "bring_it_sim"
+    path: "config/control/picknik_ur.ros2_control.yaml"
+
+  # MoveIt Pro will load and activate these controllers at start up to ensure they are available.
+  # If not specified, it is up to the user to ensure the appropriate controllers are active and available
+  # for running the application.
+  # [Optional, default=[]]
+  controllers_active_at_startup:
+    - "force_torque_sensor_broadcaster"
+    - "robotiq_gripper_controller"
+    - "joint_state_broadcaster"
+    - "servo_controller"
+    - "platform_velocity_controller"
+  # Load but do not start these controllers so they can be activated later if needed.
+  controllers_inactive_at_startup:
+    - "joint_trajectory_controller"
