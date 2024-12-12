@@ -70,7 +70,7 @@
     <parent link="world" />
     <child link="virual_rail_link_1" />
     <origin xyz="0 0 0" rpy="0 0 0" />
-    <limit effort="1000.0" lower="-5.0" upper="5.0" velocity="0.175" acceleration="10.0"/>
+    <limit effort="1000.0" lower="-20.0" upper="20.0" velocity="0.175" acceleration="10.0"/>
     <dynamics damping="20.0" friction="500.0" />
   </joint>
 
@@ -81,7 +81,7 @@
     <parent link="virual_rail_link_1" />
     <child link="virual_rail_link_2" />
     <origin xyz="0 0 0" rpy="0 0 0" />
-    <limit effort="1000.0" lower="-5.0" upper="5.0" velocity="0.175" acceleration="10.0"/>
+    <limit effort="1000.0" lower="-20.0" upper="20.0" velocity="0.175" acceleration="10.0"/>
     <dynamics damping="20.0" friction="500.0" />
   </joint>
 
