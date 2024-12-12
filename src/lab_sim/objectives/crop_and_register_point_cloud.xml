@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Crop and Register point cloud">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Crop and Register point cloud"
+    _description=""
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree ID="Clear Snapshot" _collapsed="true" />
+      <Action
+        ID="GetPointCloud"
+        topic_name="/wrist_camera/points"
+        message_out="{point_cloud}"
+      />
+      <Action ID="SendPointCloudToUI" />
+      <SubTree
+        ID="excludeTableFromPointCloud"
+        _collapsed="true"
+        point_cloud_in="{point_cloud}"
+        point_cloud_out="{point_cloud}"
+      />
+      <SubTree
+        ID="Buildathon croppedPointCloud"
+        _collapsed="false"
+        point_cloud_out="{point_cloud}"
+        point_cloud_in="{point_cloud}"
+        box_dimensions="0.1;0.2;3"
+      />
+      <SubTree
+        ID="Find Mesh in Pointcloud"
+        _collapsed="false"
+        filename="~/user_ws/src/picknik_accessories/mujoco_assets/assets/bottle.stl"
+        point_cloud="{point_cloud}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Crop and Register point cloud" />
+  </TreeNodesModel>
+</root>
