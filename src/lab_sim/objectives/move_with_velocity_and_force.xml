@@ -1,11 +1,14 @@
-<root BTCPP_format="4" main_tree_to_execute="Move until Force Contact">
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Push Button">
   <!--//////////-->
   <BehaviorTree
-    ID="Move until Force Contact"
+    ID="Push Button"
     _description="An example for how to use the VFC to move with a velocity / force reference until it collides"
-    _favorite="false"
+    _favorite="true"
+    _subtreeOnly="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree ID="Close Gripper" _collapsed="true" />
       <SubTree
         ID="Move to Waypoint"
         _collapsed="true"
@@ -70,13 +73,17 @@
         relaxation_time_ms="500"
         tip_link="grasp_link"
       />
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        joint_group_name="manipulator"
+        planner_interface="moveit_default"
+        controller_names="/joint_trajectory_controller"
+        waypoint_name="Look at Table"
+      />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Move until Force Contact">
-      <MetadataFields>
-        <Metadata subcategory="Application - Advanced Examples" />
-      </MetadataFields>
-    </SubTree>
+    <SubTree ID="Push Button" />
   </TreeNodesModel>
 </root>
