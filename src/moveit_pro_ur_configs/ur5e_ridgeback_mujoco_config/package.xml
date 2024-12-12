@@ -1,9 +1,12 @@
-<?xml version="1.0"?>
+<?xml version="1.0" ?>
 <package format="3">
   <name>ur5e_ridgeback_mujoco_config</name>
   <version>0.0.1</version>
 
-  <description>MoveIt Pro configuration MuJoCo simulation of Clearpath's Ridgeback with a UR5e arm</description>
+  <description>
+    MoveIt Pro configuration MuJoCo simulation of Clearpath's Ridgeback with a
+    UR5e arm
+  </description>
 
   <maintainer email="paul.gesel@picknik.ai">Paul Gesel</maintainer>
 

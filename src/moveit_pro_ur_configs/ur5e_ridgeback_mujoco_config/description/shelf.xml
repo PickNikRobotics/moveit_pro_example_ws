@@ -1,130 +1,475 @@
 <mujoco model="blender_robot">
-    <compiler angle="radian"/>
-    <asset>
-        <mesh name="8020_collision_001" file="assets/shelf/8020_collision_001.stl"/>
-        <mesh name="8020_collision_003" file="assets/shelf/8020_collision_003.stl"/>
-        <mesh name="8020_collision_004" file="assets/shelf/8020_collision_004.stl"/>
-        <mesh name="8020_collision_006" file="assets/shelf/8020_collision_006.stl"/>
-        <mesh name="8020_collision_005" file="assets/shelf/8020_collision_005.stl"/>
-        <mesh name="8020_collision_008" file="assets/shelf/8020_collision_008.stl"/>
-        <mesh name="8020_collision_009" file="assets/shelf/8020_collision_009.stl"/>
-        <mesh name="8020_collision_016" file="assets/shelf/8020_collision_016.stl"/>
-        <mesh name="2020_x_20mm_015" file="assets/shelf/2020_x_20mm_015.stl"/>
-        <mesh name="8020_collision_012" file="assets/shelf/8020_collision_012.stl"/>
-        <mesh name="8020_collision_011" file="assets/shelf/8020_collision_011.stl"/>
-        <mesh name="8020_collision_013" file="assets/shelf/8020_collision_013.stl"/>
-        <mesh name="8020_collision_014" file="assets/shelf/8020_collision_014.stl"/>
-        <mesh name="2020_x_20mm_011" file="assets/shelf/2020_x_20mm_011.stl"/>
-        <mesh name="8020_collision_015" file="assets/shelf/8020_collision_015.stl"/>
-        <mesh name="8020_collision_010" file="assets/shelf/8020_collision_010.stl"/>
-        <mesh name="8020_collision_007" file="assets/shelf/8020_collision_007.stl"/>
-        <mesh name="cabinet_1" file="assets/shelf/cabinet_1.stl"/>
-        <mesh name="Cube_015" file="assets/shelf/Cube_015.stl"/>
-        <mesh name="Cube_016" file="assets/shelf/Cube_016.stl"/>
-        <mesh name="cabinet_2" file="assets/shelf/cabinet_2.stl"/>
-        <mesh name="Cube_004" file="assets/shelf/Cube_004.stl"/>
-        <mesh name="Cube_006" file="assets/shelf/Cube_006.stl"/>
-        <mesh name="cabinet_3" file="assets/shelf/cabinet_3.stl"/>
-        <mesh name="Cube_007" file="assets/shelf/Cube_007.stl"/>
-        <mesh name="Cube_017" file="assets/shelf/Cube_017.stl"/>
-        <mesh name="hinge" file="assets/shelf/hinge.stl"/>
-        <mesh name="hinge_001" file="assets/shelf/hinge_001.stl"/>
-        <mesh name="hinge_002" file="assets/shelf/hinge_002.stl"/>
-        <mesh name="hinge_003" file="assets/shelf/hinge_003.stl"/>
-        <mesh name="hinge_004" file="assets/shelf/hinge_004.stl"/>
-        <mesh name="lid" file="assets/shelf/lid.stl"/>
-        <mesh name="handle_collision" file="assets/shelf/handle_collision.stl"/>
-        <mesh name="handle_collision_2" file="assets/shelf/handle_collision_2.stl"/>
-        <mesh name="shelf_2_collision_1" file="assets/shelf/shelf_2_collision_1.stl"/>
-        <mesh name="shelf_2_collision_2" file="assets/shelf/shelf_2_collision_2.stl"/>
-        <mesh name="shelf_2_collision_3" file="assets/shelf/shelf_2_collision_3.stl"/>
-        <mesh name="shelf_2_collision_4" file="assets/shelf/shelf_2_collision_4.stl"/>
-        <mesh name="shelf_2_collision_5" file="assets/shelf/shelf_2_collision_5.stl"/>
-        <mesh name="shelf_1_collision_1_002" file="assets/shelf/shelf_1_collision_1_002.stl"/>
-        <mesh name="shelf_1_collision_2_002" file="assets/shelf/shelf_1_collision_2_002.stl"/>
-        <mesh name="shelf_1_collision_3_002" file="assets/shelf/shelf_1_collision_3_002.stl"/>
-        <mesh name="shelf_1_collision_4_002" file="assets/shelf/shelf_1_collision_4_002.stl"/>
-        <mesh name="shelf_1_collision_5_002" file="assets/shelf/shelf_1_collision_5_002.stl"/>
-        <mesh name="shelf_1_collision_1" file="assets/shelf/shelf_1_collision_1.stl"/>
-        <mesh name="shelf_1_collision_2" file="assets/shelf/shelf_1_collision_2.stl"/>
-        <mesh name="shelf_1_collision_3" file="assets/shelf/shelf_1_collision_3.stl"/>
-        <mesh name="shelf_1_collision_4" file="assets/shelf/shelf_1_collision_4.stl"/>
-        <mesh name="shelf_1_collision_5" file="assets/shelf/shelf_1_collision_5.stl"/>
-        <mesh name="side" file="assets/shelf/side.stl"/>
-        <mesh name="side_001" file="assets/shelf/side_001.stl"/>
-    </asset>
-    <worldbody>
-        <body name="trainer" pos="2 1 0" quat="1 0 0 -1">
-            <geom pos="-0.0662885 0.0219827 3.69942e-05" quat="1 0 0 0" type="mesh" mesh="8020_collision_001"/>
-            <geom pos="-0.0219599 0.0219823 3.68804e-05" quat="1 0 0 0" type="mesh" mesh="8020_collision_003"/>
-            <geom pos="-0.0219601 0.0664104 3.69942e-05" quat="1 0 0 0" type="mesh" mesh="8020_collision_004"/>
-            <geom pos="-1.00447 0.0219823 3.69942e-05" quat="1 0 0 0" type="mesh" mesh="8020_collision_006"/>
-            <geom pos="-0.960141 0.0219827 3.69942e-05" quat="1 0 0 0" type="mesh" mesh="8020_collision_005"/>
-            <geom pos="-0.938806 0.0219823 1.76812" quat="0.707107 0 0.707107 0" type="mesh" mesh="8020_collision_008"/>
-            <geom pos="-0.938807 0.0219823 1.72355" quat="0.707107 0 0.707107 0" type="mesh" mesh="8020_collision_009"/>
-            <geom pos="-0.0226156 0.0885945 1.76812" quat="0.5 -0.5 -0.5 -0.5" type="mesh" mesh="8020_collision_016"/>
-            <geom pos="-0.0226156 0.0885945 1.76812" quat="0.707107 0 0.707107 0" type="mesh" mesh="2020_x_20mm_015"/>
-            <geom pos="-0.0226156 0.0885945 1.72355" quat="0.5 -0.5 -0.5 -0.5" type="mesh" mesh="8020_collision_012"/>
-            <geom pos="-0.0226157 0.0885948 0.0241719" quat="0.5 -0.5 -0.5 -0.5" type="mesh" mesh="8020_collision_011"/>
-            <geom pos="-0.0270664 2.32229e-05 0.588844" quat="0.5 0.5 -0.5 0.5" type="mesh" mesh="8020_collision_013"/>
-            <geom pos="-0.961162 2.32229e-05 0.588844" quat="0.5 0.5 -0.5 0.5" type="mesh" mesh="8020_collision_014"/>
-            <geom pos="-0.961163 2.32229e-05 0.588844" quat="5.33851e-08 0.707107 -5.33851e-08 0.707107" type="mesh" mesh="2020_x_20mm_011"/>
-            <geom pos="-0.0067111 -0.986572 0.590023" quat="0.707107 0 -0.707106 0" type="mesh" mesh="8020_collision_015"/>
-            <geom pos="-0.0884962 0.0225628 0.0222116" quat="0.707107 -1.12383e-08 -0.707106 -1.12382e-08" type="mesh" mesh="8020_collision_010"/>
-            <geom pos="-0.506573 0.0219823 0.043652" quat="1 0 0 0" type="mesh" mesh="8020_collision_007"/>
-            <geom pos="-0.0899561 -0.00269266 1.63358" type="mesh" mesh="hinge"/>
-            <geom pos="-0.0899558 -0.00269266 1.34228" type="mesh" mesh="hinge_001"/>
-            <geom pos="-0.479358 -0.00269266 1.2422" type="mesh" mesh="hinge_002"/>
-            <geom pos="-0.479358 -0.00269266 0.950891" type="mesh" mesh="hinge_003"/>
-            <geom pos="-0.0899558 -0.00269266 0.841462" type="mesh" mesh="hinge_004"/>
-            <geom pos="-0.734793 0.210335 0.919871" quat="3.13916e-07 -6.71794e-08 -1 -1.34359e-07" type="mesh" mesh="shelf_2_collision_1"/>
-            <geom pos="-0.535658 0.212565 1.09789" quat="0.707107 -4.7503e-08 0.707107 4.7503e-08" type="mesh" mesh="shelf_2_collision_2"/>
-            <geom pos="-0.933928 0.212549 1.09789" quat="0.707107 -4.7503e-08 -0.707107 -4.7503e-08" type="mesh" mesh="shelf_2_collision_3"/>
-            <geom pos="-0.734793 0.40569 1.09741" quat="3.37175e-07 1.0677e-07 -0.707107 -0.707107" type="mesh" mesh="shelf_2_collision_4"/>
-            <geom pos="-0.734793 0.21252 1.27756" type="mesh" mesh="shelf_2_collision_5"/>
-            <geom pos="-0.734793 0.210335 0.445206" quat="3.13916e-07 -6.71794e-08 -1 -1.34359e-07" type="mesh" mesh="shelf_1_collision_1_002"/>
-            <geom pos="-0.535658 0.212565 0.66769" quat="0.707107 -4.7503e-08 0.707107 4.7503e-08" type="mesh" mesh="shelf_1_collision_2_002"/>
-            <geom pos="-0.933928 0.212549 0.66769" quat="0.707107 -4.7503e-08 -0.707107 -4.7503e-08" type="mesh" mesh="shelf_1_collision_3_002"/>
-            <geom pos="-0.734793 0.40569 0.667095" quat="3.37175e-07 1.0677e-07 -0.707107 -0.707107" type="mesh" mesh="shelf_1_collision_4_002"/>
-            <geom pos="-0.734793 0.21252 0.892249" type="mesh" mesh="shelf_1_collision_5_002"/>
-            <geom pos="-0.734793 0.210335 1.29611" quat="3.13916e-07 -6.71794e-08 -1 -1.34359e-07" type="mesh" mesh="shelf_1_collision_1"/>
-            <geom pos="-0.535658 0.212565 1.49524" quat="0.707107 -4.7503e-08 0.707107 4.7503e-08" type="mesh" mesh="shelf_1_collision_2"/>
-            <geom pos="-0.933928 0.212549 1.49524" quat="0.707107 -4.7503e-08 -0.707107 -4.7503e-08" type="mesh" mesh="shelf_1_collision_3"/>
-            <geom pos="-0.734793 0.40569 1.49471" quat="3.37175e-07 1.0677e-07 -0.707107 -0.707107" type="mesh" mesh="shelf_1_collision_4"/>
-            <geom pos="-0.734793 0.21252 1.69624" type="mesh" mesh="shelf_1_collision_5"/>
-            <geom pos="-0.0231665 0.511724 1.2896" quat="0.707107 0 0 0.707107" type="mesh" mesh="side"/>
-            <geom pos="-0.0231667 0.511724 0.461071" quat="0.707107 0 0 0.707107" type="mesh" mesh="side_001"/>
-            <body name="cabinet_1" pos="-0.0897125 -0.00465793 1.49524">
-                <joint name="cabinet_1_revolute_cabinet_1_joint" pos="0 0 0" axis="0 0 1" range="0 1.5708" actuatorfrcrange="-1 1"/>
-                <geom pos="-0.193577 0.0169404 -2.38419e-07" type="mesh" mesh="cabinet_1"/>
-                <geom pos="-0.00015533 0.00195277 -0.152965" quat="1 -6.71794e-08 5.96046e-08 6.71794e-08" type="mesh" mesh="Cube_015"/>
-                <geom pos="-0.00015533 0.00195277 0.13841" quat="1 -6.71794e-08 5.96046e-08 6.71794e-08" type="mesh" mesh="Cube_016"/>
-            </body>
-            <body name="cabinet_2" pos="-0.479382 -0.00465787 1.08914" quat="3.13916e-07 0 -1 -1.34359e-07">
-                <joint name="cabinet_1_revolute_001_cabinet_2_joint" pos="0 0 0" axis="0 0 1" range="0 1.5708" actuatorfrcrange="-1 1"/>
-                <geom pos="-0.193577 0.0169404 -0.0121027" quat="1 0 -1.19209e-07 0" type="mesh" mesh="cabinet_2"/>
-                <geom pos="-6.56911e-08 0.000994962 0.138426" quat="1 -6.71794e-08 -1.19209e-07 6.71793e-08" type="mesh" mesh="Cube_004"/>
-                <geom pos="6.34173e-08 0.000994965 -0.153094" quat="1 -6.71794e-08 -1.19209e-07 6.71793e-08" type="mesh" mesh="Cube_006"/>
-            </body>
-            <body name="cabinet_3" pos="-0.0897125 -0.00465793 0.702738">
-                <joint name="cabinet_1_revolute_002_cabinet_3_joint" pos="0 0 0" axis="0 0 1" range="0 1.5708" actuatorfrcrange="-1 1"/>
-                <geom pos="-0.193577 0.0169404 -1.19209e-07" type="mesh" mesh="cabinet_3"/>
-                <geom pos="-7.45058e-08 0.000994962 0.138425" quat="1 -6.71794e-08 5.96046e-08 6.71794e-08" type="mesh" mesh="Cube_007"/>
-                <geom pos="-7.45058e-08 0.000994962 -0.153095" quat="1 -6.71794e-08 5.96046e-08 6.71794e-08" type="mesh" mesh="Cube_017"/>
-            </body>
-            <body name="lid" pos="0 -0.0518215 0.654299" quat="0.707107 0 0.707107 0">
-                <joint name="lid_revolute_lid_joint" pos="0 0 0" axis="0 0 1" range="-1.5708 0" actuatorfrcrange="-1 1"/>
-                <geom pos="0.0212624 -0.474231 -0.494327" type="mesh" mesh="lid"/>
-                <geom pos="0.0215107 -0.961239 -0.498318" quat="0.707107 0 -0.707107 0" type="mesh" mesh="handle_collision"/>
-                <geom pos="0.0215107 -0.961239 -0.498318" quat="0.707107 0 -0.707107 0" type="mesh" mesh="handle_collision_2"/>
-            </body>
-        </body>
-    </worldbody>
+  <compiler angle="radian" />
+  <asset>
+    <mesh
+      name="8020_collision_001"
+      file="assets/shelf/8020_collision_001.stl"
+    />
+    <mesh
+      name="8020_collision_003"
+      file="assets/shelf/8020_collision_003.stl"
+    />
+    <mesh
+      name="8020_collision_004"
+      file="assets/shelf/8020_collision_004.stl"
+    />
+    <mesh
+      name="8020_collision_006"
+      file="assets/shelf/8020_collision_006.stl"
+    />
+    <mesh
+      name="8020_collision_005"
+      file="assets/shelf/8020_collision_005.stl"
+    />
+    <mesh
+      name="8020_collision_008"
+      file="assets/shelf/8020_collision_008.stl"
+    />
+    <mesh
+      name="8020_collision_009"
+      file="assets/shelf/8020_collision_009.stl"
+    />
+    <mesh
+      name="8020_collision_016"
+      file="assets/shelf/8020_collision_016.stl"
+    />
+    <mesh name="2020_x_20mm_015" file="assets/shelf/2020_x_20mm_015.stl" />
+    <mesh
+      name="8020_collision_012"
+      file="assets/shelf/8020_collision_012.stl"
+    />
+    <mesh
+      name="8020_collision_011"
+      file="assets/shelf/8020_collision_011.stl"
+    />
+    <mesh
+      name="8020_collision_013"
+      file="assets/shelf/8020_collision_013.stl"
+    />
+    <mesh
+      name="8020_collision_014"
+      file="assets/shelf/8020_collision_014.stl"
+    />
+    <mesh name="2020_x_20mm_011" file="assets/shelf/2020_x_20mm_011.stl" />
+    <mesh
+      name="8020_collision_015"
+      file="assets/shelf/8020_collision_015.stl"
+    />
+    <mesh
+      name="8020_collision_010"
+      file="assets/shelf/8020_collision_010.stl"
+    />
+    <mesh
+      name="8020_collision_007"
+      file="assets/shelf/8020_collision_007.stl"
+    />
+    <mesh name="cabinet_1" file="assets/shelf/cabinet_1.stl" />
+    <mesh name="Cube_015" file="assets/shelf/Cube_015.stl" />
+    <mesh name="Cube_016" file="assets/shelf/Cube_016.stl" />
+    <mesh name="cabinet_2" file="assets/shelf/cabinet_2.stl" />
+    <mesh name="Cube_004" file="assets/shelf/Cube_004.stl" />
+    <mesh name="Cube_006" file="assets/shelf/Cube_006.stl" />
+    <mesh name="cabinet_3" file="assets/shelf/cabinet_3.stl" />
+    <mesh name="Cube_007" file="assets/shelf/Cube_007.stl" />
+    <mesh name="Cube_017" file="assets/shelf/Cube_017.stl" />
+    <mesh name="hinge" file="assets/shelf/hinge.stl" />
+    <mesh name="hinge_001" file="assets/shelf/hinge_001.stl" />
+    <mesh name="hinge_002" file="assets/shelf/hinge_002.stl" />
+    <mesh name="hinge_003" file="assets/shelf/hinge_003.stl" />
+    <mesh name="hinge_004" file="assets/shelf/hinge_004.stl" />
+    <mesh name="lid" file="assets/shelf/lid.stl" />
+    <mesh name="handle_collision" file="assets/shelf/handle_collision.stl" />
+    <mesh
+      name="handle_collision_2"
+      file="assets/shelf/handle_collision_2.stl"
+    />
+    <mesh
+      name="shelf_2_collision_1"
+      file="assets/shelf/shelf_2_collision_1.stl"
+    />
+    <mesh
+      name="shelf_2_collision_2"
+      file="assets/shelf/shelf_2_collision_2.stl"
+    />
+    <mesh
+      name="shelf_2_collision_3"
+      file="assets/shelf/shelf_2_collision_3.stl"
+    />
+    <mesh
+      name="shelf_2_collision_4"
+      file="assets/shelf/shelf_2_collision_4.stl"
+    />
+    <mesh
+      name="shelf_2_collision_5"
+      file="assets/shelf/shelf_2_collision_5.stl"
+    />
+    <mesh
+      name="shelf_1_collision_1_002"
+      file="assets/shelf/shelf_1_collision_1_002.stl"
+    />
+    <mesh
+      name="shelf_1_collision_2_002"
+      file="assets/shelf/shelf_1_collision_2_002.stl"
+    />
+    <mesh
+      name="shelf_1_collision_3_002"
+      file="assets/shelf/shelf_1_collision_3_002.stl"
+    />
+    <mesh
+      name="shelf_1_collision_4_002"
+      file="assets/shelf/shelf_1_collision_4_002.stl"
+    />
+    <mesh
+      name="shelf_1_collision_5_002"
+      file="assets/shelf/shelf_1_collision_5_002.stl"
+    />
+    <mesh
+      name="shelf_1_collision_1"
+      file="assets/shelf/shelf_1_collision_1.stl"
+    />
+    <mesh
+      name="shelf_1_collision_2"
+      file="assets/shelf/shelf_1_collision_2.stl"
+    />
+    <mesh
+      name="shelf_1_collision_3"
+      file="assets/shelf/shelf_1_collision_3.stl"
+    />
+    <mesh
+      name="shelf_1_collision_4"
+      file="assets/shelf/shelf_1_collision_4.stl"
+    />
+    <mesh
+      name="shelf_1_collision_5"
+      file="assets/shelf/shelf_1_collision_5.stl"
+    />
+    <mesh name="side" file="assets/shelf/side.stl" />
+    <mesh name="side_001" file="assets/shelf/side_001.stl" />
+  </asset>
+  <worldbody>
+    <body name="trainer" pos="2 1 0" quat="1 0 0 -1">
+      <geom
+        pos="-0.0662885 0.0219827 3.69942e-05"
+        quat="1 0 0 0"
+        type="mesh"
+        mesh="8020_collision_001"
+      />
+      <geom
+        pos="-0.0219599 0.0219823 3.68804e-05"
+        quat="1 0 0 0"
+        type="mesh"
+        mesh="8020_collision_003"
+      />
+      <geom
+        pos="-0.0219601 0.0664104 3.69942e-05"
+        quat="1 0 0 0"
+        type="mesh"
+        mesh="8020_collision_004"
+      />
+      <geom
+        pos="-1.00447 0.0219823 3.69942e-05"
+        quat="1 0 0 0"
+        type="mesh"
+        mesh="8020_collision_006"
+      />
+      <geom
+        pos="-0.960141 0.0219827 3.69942e-05"
+        quat="1 0 0 0"
+        type="mesh"
+        mesh="8020_collision_005"
+      />
+      <geom
+        pos="-0.938806 0.0219823 1.76812"
+        quat="0.707107 0 0.707107 0"
+        type="mesh"
+        mesh="8020_collision_008"
+      />
+      <geom
+        pos="-0.938807 0.0219823 1.72355"
+        quat="0.707107 0 0.707107 0"
+        type="mesh"
+        mesh="8020_collision_009"
+      />
+      <geom
+        pos="-0.0226156 0.0885945 1.76812"
+        quat="0.5 -0.5 -0.5 -0.5"
+        type="mesh"
+        mesh="8020_collision_016"
+      />
+      <geom
+        pos="-0.0226156 0.0885945 1.76812"
+        quat="0.707107 0 0.707107 0"
+        type="mesh"
+        mesh="2020_x_20mm_015"
+      />
+      <geom
+        pos="-0.0226156 0.0885945 1.72355"
+        quat="0.5 -0.5 -0.5 -0.5"
+        type="mesh"
+        mesh="8020_collision_012"
+      />
+      <geom
+        pos="-0.0226157 0.0885948 0.0241719"
+        quat="0.5 -0.5 -0.5 -0.5"
+        type="mesh"
+        mesh="8020_collision_011"
+      />
+      <geom
+        pos="-0.0270664 2.32229e-05 0.588844"
+        quat="0.5 0.5 -0.5 0.5"
+        type="mesh"
+        mesh="8020_collision_013"
+      />
+      <geom
+        pos="-0.961162 2.32229e-05 0.588844"
+        quat="0.5 0.5 -0.5 0.5"
+        type="mesh"
+        mesh="8020_collision_014"
+      />
+      <geom
+        pos="-0.961163 2.32229e-05 0.588844"
+        quat="5.33851e-08 0.707107 -5.33851e-08 0.707107"
+        type="mesh"
+        mesh="2020_x_20mm_011"
+      />
+      <geom
+        pos="-0.0067111 -0.986572 0.590023"
+        quat="0.707107 0 -0.707106 0"
+        type="mesh"
+        mesh="8020_collision_015"
+      />
+      <geom
+        pos="-0.0884962 0.0225628 0.0222116"
+        quat="0.707107 -1.12383e-08 -0.707106 -1.12382e-08"
+        type="mesh"
+        mesh="8020_collision_010"
+      />
+      <geom
+        pos="-0.506573 0.0219823 0.043652"
+        quat="1 0 0 0"
+        type="mesh"
+        mesh="8020_collision_007"
+      />
+      <geom pos="-0.0899561 -0.00269266 1.63358" type="mesh" mesh="hinge" />
+      <geom pos="-0.0899558 -0.00269266 1.34228" type="mesh" mesh="hinge_001" />
+      <geom pos="-0.479358 -0.00269266 1.2422" type="mesh" mesh="hinge_002" />
+      <geom pos="-0.479358 -0.00269266 0.950891" type="mesh" mesh="hinge_003" />
+      <geom
+        pos="-0.0899558 -0.00269266 0.841462"
+        type="mesh"
+        mesh="hinge_004"
+      />
+      <geom
+        pos="-0.734793 0.210335 0.919871"
+        quat="3.13916e-07 -6.71794e-08 -1 -1.34359e-07"
+        type="mesh"
+        mesh="shelf_2_collision_1"
+      />
+      <geom
+        pos="-0.535658 0.212565 1.09789"
+        quat="0.707107 -4.7503e-08 0.707107 4.7503e-08"
+        type="mesh"
+        mesh="shelf_2_collision_2"
+      />
+      <geom
+        pos="-0.933928 0.212549 1.09789"
+        quat="0.707107 -4.7503e-08 -0.707107 -4.7503e-08"
+        type="mesh"
+        mesh="shelf_2_collision_3"
+      />
+      <geom
+        pos="-0.734793 0.40569 1.09741"
+        quat="3.37175e-07 1.0677e-07 -0.707107 -0.707107"
+        type="mesh"
+        mesh="shelf_2_collision_4"
+      />
+      <geom
+        pos="-0.734793 0.21252 1.27756"
+        type="mesh"
+        mesh="shelf_2_collision_5"
+      />
+      <geom
+        pos="-0.734793 0.210335 0.445206"
+        quat="3.13916e-07 -6.71794e-08 -1 -1.34359e-07"
+        type="mesh"
+        mesh="shelf_1_collision_1_002"
+      />
+      <geom
+        pos="-0.535658 0.212565 0.66769"
+        quat="0.707107 -4.7503e-08 0.707107 4.7503e-08"
+        type="mesh"
+        mesh="shelf_1_collision_2_002"
+      />
+      <geom
+        pos="-0.933928 0.212549 0.66769"
+        quat="0.707107 -4.7503e-08 -0.707107 -4.7503e-08"
+        type="mesh"
+        mesh="shelf_1_collision_3_002"
+      />
+      <geom
+        pos="-0.734793 0.40569 0.667095"
+        quat="3.37175e-07 1.0677e-07 -0.707107 -0.707107"
+        type="mesh"
+        mesh="shelf_1_collision_4_002"
+      />
+      <geom
+        pos="-0.734793 0.21252 0.892249"
+        type="mesh"
+        mesh="shelf_1_collision_5_002"
+      />
+      <geom
+        pos="-0.734793 0.210335 1.29611"
+        quat="3.13916e-07 -6.71794e-08 -1 -1.34359e-07"
+        type="mesh"
+        mesh="shelf_1_collision_1"
+      />
+      <geom
+        pos="-0.535658 0.212565 1.49524"
+        quat="0.707107 -4.7503e-08 0.707107 4.7503e-08"
+        type="mesh"
+        mesh="shelf_1_collision_2"
+      />
+      <geom
+        pos="-0.933928 0.212549 1.49524"
+        quat="0.707107 -4.7503e-08 -0.707107 -4.7503e-08"
+        type="mesh"
+        mesh="shelf_1_collision_3"
+      />
+      <geom
+        pos="-0.734793 0.40569 1.49471"
+        quat="3.37175e-07 1.0677e-07 -0.707107 -0.707107"
+        type="mesh"
+        mesh="shelf_1_collision_4"
+      />
+      <geom
+        pos="-0.734793 0.21252 1.69624"
+        type="mesh"
+        mesh="shelf_1_collision_5"
+      />
+      <geom
+        pos="-0.0231665 0.511724 1.2896"
+        quat="0.707107 0 0 0.707107"
+        type="mesh"
+        mesh="side"
+      />
+      <geom
+        pos="-0.0231667 0.511724 0.461071"
+        quat="0.707107 0 0 0.707107"
+        type="mesh"
+        mesh="side_001"
+      />
+      <body name="cabinet_1" pos="-0.0897125 -0.00465793 1.49524">
+        <joint
+          name="cabinet_1_revolute_cabinet_1_joint"
+          pos="0 0 0"
+          axis="0 0 1"
+          range="0 1.5708"
+          actuatorfrcrange="-1 1"
+        />
+        <geom
+          pos="-0.193577 0.0169404 -2.38419e-07"
+          type="mesh"
+          mesh="cabinet_1"
+        />
+        <geom
+          pos="-0.00015533 0.00195277 -0.152965"
+          quat="1 -6.71794e-08 5.96046e-08 6.71794e-08"
+          type="mesh"
+          mesh="Cube_015"
+        />
+        <geom
+          pos="-0.00015533 0.00195277 0.13841"
+          quat="1 -6.71794e-08 5.96046e-08 6.71794e-08"
+          type="mesh"
+          mesh="Cube_016"
+        />
+      </body>
+      <body
+        name="cabinet_2"
+        pos="-0.479382 -0.00465787 1.08914"
+        quat="3.13916e-07 0 -1 -1.34359e-07"
+      >
+        <joint
+          name="cabinet_1_revolute_001_cabinet_2_joint"
+          pos="0 0 0"
+          axis="0 0 1"
+          range="0 1.5708"
+          actuatorfrcrange="-1 1"
+        />
+        <geom
+          pos="-0.193577 0.0169404 -0.0121027"
+          quat="1 0 -1.19209e-07 0"
+          type="mesh"
+          mesh="cabinet_2"
+        />
+        <geom
+          pos="-6.56911e-08 0.000994962 0.138426"
+          quat="1 -6.71794e-08 -1.19209e-07 6.71793e-08"
+          type="mesh"
+          mesh="Cube_004"
+        />
+        <geom
+          pos="6.34173e-08 0.000994965 -0.153094"
+          quat="1 -6.71794e-08 -1.19209e-07 6.71793e-08"
+          type="mesh"
+          mesh="Cube_006"
+        />
+      </body>
+      <body name="cabinet_3" pos="-0.0897125 -0.00465793 0.702738">
+        <joint
+          name="cabinet_1_revolute_002_cabinet_3_joint"
+          pos="0 0 0"
+          axis="0 0 1"
+          range="0 1.5708"
+          actuatorfrcrange="-1 1"
+        />
+        <geom
+          pos="-0.193577 0.0169404 -1.19209e-07"
+          type="mesh"
+          mesh="cabinet_3"
+        />
+        <geom
+          pos="-7.45058e-08 0.000994962 0.138425"
+          quat="1 -6.71794e-08 5.96046e-08 6.71794e-08"
+          type="mesh"
+          mesh="Cube_007"
+        />
+        <geom
+          pos="-7.45058e-08 0.000994962 -0.153095"
+          quat="1 -6.71794e-08 5.96046e-08 6.71794e-08"
+          type="mesh"
+          mesh="Cube_017"
+        />
+      </body>
+      <body name="lid" pos="0 -0.0518215 0.654299" quat="0.707107 0 0.707107 0">
+        <joint
+          name="lid_revolute_lid_joint"
+          pos="0 0 0"
+          axis="0 0 1"
+          range="-1.5708 0"
+          actuatorfrcrange="-1 1"
+        />
+        <geom pos="0.0212624 -0.474231 -0.494327" type="mesh" mesh="lid" />
+        <geom
+          pos="0.0215107 -0.961239 -0.498318"
+          quat="0.707107 0 -0.707107 0"
+          type="mesh"
+          mesh="handle_collision"
+        />
+        <geom
+          pos="0.0215107 -0.961239 -0.498318"
+          quat="0.707107 0 -0.707107 0"
+          type="mesh"
+          mesh="handle_collision_2"
+        />
+      </body>
+    </body>
+  </worldbody>
 
-    <contact>
-        <exclude body1="lid" body2="trainer" />
-        <exclude body1="cabinet_1" body2="trainer" />
-        <exclude body1="cabinet_2" body2="trainer" />
-        <exclude body1="cabinet_3" body2="trainer" />
-    </contact>
+  <contact>
+    <exclude body1="lid" body2="trainer" />
+    <exclude body1="cabinet_1" body2="trainer" />
+    <exclude body1="cabinet_2" body2="trainer" />
+    <exclude body1="cabinet_3" body2="trainer" />
+  </contact>
 </mujoco>
