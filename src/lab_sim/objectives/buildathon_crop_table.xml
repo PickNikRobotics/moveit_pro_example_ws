@@ -1,6 +1,6 @@
 <root BTCPP_format="4" main_tree_to_execute="Buildathon crop table">
     <!--//////////-->
-    <BehaviorTree ID="Buildathon crop table" _description="" _favorite="true">
+    <BehaviorTree ID="Buildathon crop table" _description="" _favorite="false">
         <Control ID="Sequence" name="TopLevelSequence">
             <Action ID="ClearSnapshot"/>
             <Action ID="GetPointCloud" topic_name="/wrist_camera/points"/>

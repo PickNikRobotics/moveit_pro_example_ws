@@ -1,5 +1,6 @@
 #include <example_behaviors/example_ransac_registration.hpp>
 #include <pcl/registration/ndt.h>
+#include <string>
 #include <tl_expected/expected.hpp>
 #include <moveit_studio_behavior_interface/async_behavior_base.hpp>
 #include <moveit_studio_behavior_interface/check_for_error.hpp>
@@ -21,6 +22,8 @@
 #include <pcl/keypoints/uniform_sampling.h>
 #include <pcl/registration/sample_consensus_prerejective.h>
 #include <pcl/search/kdtree.h>
+#include <pcl/registration/icp.h>
+#include <pcl_conversions/pcl_conversions.h>
 
 namespace example_behaviors
 {
@@ -57,7 +60,7 @@ BT::PortsList ExampleRANSACRegistration::providedPorts()
                                                         "Point cloud to align with the target point cloud."),
            BT::InputPort<sensor_msgs::msg::PointCloud2>("target_point_cloud", "{target_point_cloud}",
                                                         "Point cloud to which align the base point cloud."),
-           BT::InputPort<int>("max_iterations", 30,
+           BT::InputPort<int>("max_iterations", 100,
                               "Maximum number of attempts to find the transform. Setting a higher number of iterations "
                               "will allow the solver to converge even if the initial estimate of the transform was far "
                               "from the actual transform, but it may take longer to complete."),
@@ -67,14 +70,16 @@ BT::PortsList ExampleRANSACRegistration::providedPorts()
                                  "Maximum step size for More-Thuente line search <double>"),
            BT::InputPort<double>("resolution", 1.0,
                                  "Resolution of NDT grid structure (VoxelGridCovariance) <double>"),
-           BT::InputPort<double>("inlier_threshold", 1.0,
-                                 "Inlier threshold for RANSAC <double>"),
+           BT::InputPort<double>("max_correspondence_distance", 1.0,
+                                 "Maximum correspondence distance for RANSAC <double>"),
            BT::InputPort<double>("uniform_sampling_radius", 0.02,
                                  "Radius for uniform sampling of keypoints <double>"),
            BT::InputPort<int>("k_search", 10,
                               "Number of nearest neighbors to use for normal estimation <int>"),
            BT::InputPort<double>("feature_radius", 0.05,
                                  "Radius for feature estimation <double>"),
+           BT::InputPort<double>("max_allowable_fitness", 0.0001,
+                                 "Maximum fitness score, above which this behavior will return failure. Set to 0 or negative to disable"),
            BT::OutputPort<geometry_msgs::msg::PoseStamped>("target_pose_in_base_frame", "{target_pose}",
                                                            "The pose of the target point cloud relative to the frame "
                                                            "of the base point cloud.") };
@@ -93,12 +98,13 @@ tl::expected<bool, std::string> ExampleRANSACRegistration::doWork()
   const auto target_point_cloud_msg = getInput<sensor_msgs::msg::PointCloud2>("target_point_cloud");
   const auto max_iterations = getInput<int>("max_iterations");
   const auto transformation_epsilon = getInput<double>("transformation_epsilon");
-  const auto inlier_threshold = getInput<double>("inlier_threshold");
+  const auto max_correspondence_distance = getInput<double>("max_correspondence_distance");
   const auto uniform_sampling_radius = getInput<double>("uniform_sampling_radius");
   const auto k_search = getInput<int>("k_search");
   const auto feature_radius = getInput<double>("feature_radius");
+  const auto max_allowable_fitness = getInput<double>("max_allowable_fitness");
 
-  if (const auto error = moveit_studio::behaviors::maybe_error(base_point_cloud_msg, target_point_cloud_msg, max_iterations, transformation_epsilon, inlier_threshold, uniform_sampling_radius, k_search, feature_radius); error)
+  if (const auto error = moveit_studio::behaviors::maybe_error(base_point_cloud_msg, target_point_cloud_msg, max_iterations, transformation_epsilon, max_correspondence_distance, uniform_sampling_radius, k_search, feature_radius); error)
   {
     RCLCPP_ERROR(rclcpp::get_logger("Logger"), "Failed to get required value from input data port: %s", error.value().c_str());
     return tl::make_unexpected("Failed to get required value from input data port: " + error.value());
@@ -201,17 +207,11 @@ tl::expected<bool, std::string> ExampleRANSACRegistration::doWork()
   RCLCPP_ERROR(rclcpp::get_logger("Logger"), "Computed %ld base features and %ld target features", base_features->size(), target_features->size());
 
   // RANSAC alignment
-  pcl::SampleConsensusPrerejective<pcl::PointXYZRGB, pcl::PointXYZRGB, pcl::FPFHSignature33> align;
-  align.setInputSource(base_keypoints);
-  align.setSourceFeatures(base_features);
-  align.setInputTarget(target_keypoints);
-  align.setTargetFeatures(target_features);
+  pcl::IterativeClosestPoint<pcl::PointXYZRGB, pcl::PointXYZRGB> align;
   align.setMaximumIterations(max_iterations.value());
-  align.setNumberOfSamples(3);
-  align.setCorrespondenceRandomness(5);
-  align.setSimilarityThreshold(0.9f);
-  align.setMaxCorrespondenceDistance(inlier_threshold.value());
-  align.setInlierFraction(0.25f);
+  align.setInputSource(base_keypoints);
+  align.setInputTarget(target_keypoints);
+  align.setMaxCorrespondenceDistance(max_correspondence_distance.value());
 
   pcl::PointCloud<pcl::PointXYZRGB> output_cloud;
   align.align(output_cloud);
@@ -220,6 +220,11 @@ tl::expected<bool, std::string> ExampleRANSACRegistration::doWork()
   {
     RCLCPP_ERROR(rclcpp::get_logger("Logger"), "RANSAC could not converge to a transform that aligns both point clouds");
     return tl::make_unexpected("RANSAC could not converge to a transform that aligns both point clouds");
+  }
+
+  if (max_allowable_fitness.value() > 0 && align.getFitnessScore() > max_allowable_fitness.value()) {
+    RCLCPP_ERROR(rclcpp::get_logger("Logger"), "RANSAC converged to a solution with fitness %f, above the maximum allowable %f", align.getFitnessScore(), max_allowable_fitness.value());
+    return tl::make_unexpected("RANSAC converged to a solution with fitness " + std::to_string(align.getFitnessScore()) + ", above the maximum allowable " + std::to_string(max_allowable_fitness.value()));
   }
 
   geometry_msgs::msg::PoseStamped out;
