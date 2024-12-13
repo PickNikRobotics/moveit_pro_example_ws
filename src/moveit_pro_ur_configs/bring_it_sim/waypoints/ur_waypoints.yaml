@@ -1,7 +1,7 @@
 - description: ''
   favorite: true
   joint_group_names:
-  - manipulator
+    - manipulator
   joint_state:
     effort: []
     header:
@@ -10,19 +10,19 @@
         nanosec: 0
         sec: 0
     name:
-    - shoulder_pan_joint
-    - elbow_joint
-    - wrist_2_joint
-    - wrist_3_joint
-    - wrist_1_joint
-    - shoulder_lift_joint
+      - shoulder_pan_joint
+      - elbow_joint
+      - wrist_2_joint
+      - wrist_3_joint
+      - wrist_1_joint
+      - shoulder_lift_joint
     position:
-    - -8.704708810562631e-06
-    - 1.4068654234675446
-    - 1.56799762591031
-    - 8.888612690481538e-10
-    - 0.782482319413393
-    - -1.2156111214535257
+      - -8.704708810562631e-06
+      - 1.4068654234675446
+      - 1.56799762591031
+      - 8.888612690481538e-10
+      - 0.782482319413393
+      - -1.2156111214535257
     velocity: []
   multi_dof_joint_state:
     header:
@@ -38,7 +38,7 @@
 - description: ''
   favorite: true
   joint_group_names:
-  - manipulator
+    - manipulator
   joint_state:
     effort: []
     header:
@@ -47,19 +47,19 @@
         nanosec: 0
         sec: 0
     name:
-    - shoulder_pan_joint
-    - shoulder_lift_joint
-    - elbow_joint
-    - wrist_1_joint
-    - wrist_2_joint
-    - wrist_3_joint
+      - shoulder_pan_joint
+      - shoulder_lift_joint
+      - elbow_joint
+      - wrist_1_joint
+      - wrist_2_joint
+      - wrist_3_joint
     position:
-    - 6.014304535634426e-07
-    - -2.4531147766584134
-    - 1.977827335693212
-    - 0.2632151707982655
-    - 1.5607932148556802
-    - 8.75170462506889e-10
+      - 6.014304535634426e-07
+      - -2.4531147766584134
+      - 1.977827335693212
+      - 0.2632151707982655
+      - 1.5607932148556802
+      - 8.75170462506889e-10
     velocity: []
   multi_dof_joint_state:
     header:
