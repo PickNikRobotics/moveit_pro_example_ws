@@ -88,7 +88,7 @@
           <param name="render_publish_rate">60</param>
           <param name="tf_publish_rate">60</param>
           <param name="lidar_publish_rate">10</param>
-          <param name="ignore_joint_validation">linear_x_joint linear_y_joint rotational_yaw_joint</param>
+          <param name="ignore_joint_validation">linear_x_joint linear_y_joint rotational_yaw_joint world_bar world_beer_bottle_1 world_beer_bottle_2 world_beer_bottle_3 world_beer_bottle_4 world_beer_bottle_5 world_table_1 world_table_2 world_table_3 world_table_4</param>
           <param name="publish_odom">true</param>
           <param name="odom_child_frame">ridgeback_base_link</param>
           <param name="odom_zero_z">true</param>
