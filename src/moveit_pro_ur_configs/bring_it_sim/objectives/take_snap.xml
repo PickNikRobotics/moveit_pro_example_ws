@@ -1,10 +1,9 @@
-<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Take scene camera snapshot">
   <!--//////////-->
   <BehaviorTree
     ID="Take scene camera snapshot"
     _description=""
-    _favorite="true"
+    _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <!--Clear out old snapshot data-->

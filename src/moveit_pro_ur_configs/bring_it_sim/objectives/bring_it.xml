@@ -6,20 +6,51 @@
     _description="Bring beer to table"
     _favorite="true"
   >
-    <Control ID="Sequence">
-      <Action
-        ID="CreateStampedPose"
-        orientation_xyzw="0; 0; 0; 1"
-        position_xyz="-1; -1; 0"
-        stamped_pose="{navigation_goal}"
-      />
-      <Action
-        ID="NavigateToPoseAction"
-        pose_stamped="{navigation_goal}"
-        behavior_tree_path="/opt/ros/humble/share/nav2_bt_navigator/behavior_trees/navigate_to_pose_w_replanning_and_recovery.xml"
-        action_name="/navigate_to_pose"
-      />
-    </Control>
+    <Decorator ID="KeepRunningUntilFailure">
+      <Control ID="Sequence">
+        <Action
+          ID="LoadPoseStampedVectorFromYaml"
+          output="{table_drops}"
+          file_path="table_drop_locations.yaml"
+        />
+        <Decorator
+          ID="ForEachPoseStamped"
+          vector_in="{table_drops}"
+          out="{navigation_goal}"
+        >
+          <Control ID="Sequence">
+            <Action
+              ID="VisualizeMesh"
+              mesh_path="package://bring_it_sim/description/assets/locationmarker.dae"
+              mesh_pose="{navigation_goal}"
+            />
+            <Action
+              ID="NavigateToPoseAction"
+              pose_stamped="{navigation_goal}"
+              behavior_tree_path="/opt/ros/humble/share/nav2_bt_navigator/behavior_trees/navigate_to_pose_w_replanning_and_recovery.xml"
+              action_name="/navigate_to_pose"
+            />
+          </Control>
+        </Decorator>
+        <Action
+          ID="CreateStampedPose"
+          orientation_xyzw="0;0;0;1"
+          position_xyz="0;0;0"
+          stamped_pose="{home_location}"
+        />
+        <Action
+          ID="VisualizeMesh"
+          mesh_path="package://bring_it_sim/description/assets/locationmarker.dae"
+          mesh_pose="{home_location}"
+        />
+        <Action
+          ID="NavigateToPoseAction"
+          pose_stamped="{home_location}"
+          behavior_tree_path="/opt/ros/humble/share/nav2_bt_navigator/behavior_trees/navigate_to_pose_w_replanning_and_recovery.xml"
+          action_name="/navigate_to_pose"
+        />
+      </Control>
+    </Decorator>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Bring It" />
