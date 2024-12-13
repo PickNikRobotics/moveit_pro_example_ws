@@ -2,14 +2,14 @@
   <!--//////////-->
   <BehaviorTree ID="Pick up Cube" _description="" _favorite="false">
     <Control ID="Sequence" name="TopLevelSequence">
-      <SubTree ID="Clear Snapshot" _collapsed="true"/>
-      <SubTree ID="Look at table" _collapsed="true"/>
+      <SubTree ID="Clear Snapshot" _collapsed="true" />
+      <SubTree ID="Look at table" _collapsed="true" />
       <!--Take a snapshot so we have a visualization of the cubes to use in grasp pose correction-->
-      <SubTree ID="Take wrist camera snapshot" _collapsed="true"/>
-      <SubTree ID="Pick object" _collapsed="false"/>
+      <SubTree ID="Take wrist camera snapshot" _collapsed="true" />
+      <SubTree ID="Pick object" _collapsed="false" />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Pick up Cube"/>
+    <SubTree ID="Pick up Cube" />
   </TreeNodesModel>
 </root>

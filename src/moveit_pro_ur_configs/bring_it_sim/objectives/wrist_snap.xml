@@ -1,16 +1,20 @@
 <root BTCPP_format="4" main_tree_to_execute="Take wrist camera snapshot">
   <!--//////////-->
-  <BehaviorTree ID="Take wrist camera snapshot" _description="" _favorite="false">
+  <BehaviorTree
+    ID="Take wrist camera snapshot"
+    _description=""
+    _favorite="false"
+  >
     <Control ID="Sequence" name="TopLevelSequence">
       <!-- Do not clear snapshots first, so we can take multiple snapshots from different angles -->
-      <Action ID="GetPointCloud" topic_name="/wrist_camera/points"/>
-      <Action ID="SendPointCloudToUI"/>
+      <Action ID="GetPointCloud" topic_name="/wrist_camera/points" />
+      <Action ID="SendPointCloudToUI" />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Take wrist camera snapshot">
       <MetadataFields>
-        <Metadata subcategory="Application - Basic Examples"/>
+        <Metadata subcategory="Application - Basic Examples" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
