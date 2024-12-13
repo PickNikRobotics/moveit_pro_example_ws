@@ -1,4 +1,0 @@
-objectives:
-  behavior_loader_plugins:
-    graspnet_example_behavior:
-      - "graspnet_example_behavior::GraspnetExampleBehaviorBehaviorsLoader"
