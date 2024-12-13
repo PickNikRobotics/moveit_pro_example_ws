@@ -1,10 +1,9 @@
-<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="3 Waypoints Pick and Place">
   <!--//////////-->
   <BehaviorTree
     ID="3 Waypoints Pick and Place"
     _description="Basic example of repeatedly grabbing a small (invisible) object, placing it at desired destination, and then moving back to a home position"
-    _favorite="true"
+    _favorite="false"
   >
     <Control ID="Sequence">
       <!--Reset the planning scene to ensure no old collision objects are hanging around-->
