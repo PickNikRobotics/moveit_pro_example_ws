@@ -1,53 +1,53 @@
-- description: ''
+- description: ""
   favorite: true
   joint_group_names:
-  - gripper
-  - linear_actuator
-  - manipulator
-  - wheel_actuator
+    - gripper
+    - linear_actuator
+    - manipulator
+    - wheel_actuator
   joint_state:
     effort: []
     header:
-      frame_id: ''
+      frame_id: ""
       stamp:
         nanosec: 0
         sec: 0
     name:
-    - robotiq_85_left_knuckle_joint
-    - linear_x_joint
-    - linear_y_joint
-    - rotational_yaw_joint
-    - shoulder_pan_joint
-    - shoulder_lift_joint
-    - elbow_joint
-    - wrist_1_joint
-    - wrist_2_joint
-    - wrist_3_joint
-    - front_rocker
-    - front_left_wheel
-    - front_right_wheel
-    - rear_left_wheel
-    - rear_right_wheel
+      - robotiq_85_left_knuckle_joint
+      - linear_x_joint
+      - linear_y_joint
+      - rotational_yaw_joint
+      - shoulder_pan_joint
+      - shoulder_lift_joint
+      - elbow_joint
+      - wrist_1_joint
+      - wrist_2_joint
+      - wrist_3_joint
+      - front_rocker
+      - front_left_wheel
+      - front_right_wheel
+      - rear_left_wheel
+      - rear_right_wheel
     position:
-    - 0.1025781249307494
-    - 0
-    - 0
-    - 0
-    - 0.8371631576820436
-    - -0.3352390746492166
-    - 0.19765088507041076
-    - -2.3182411494283217
-    - -1.4856134479671956
-    - -0.059141607883296456
-    - 6.680871677833013e-05
-    - -5.2400322737957
-    - 5.2356089836249575
-    - -5.238369713479739
-    - 5.233722234090497
+      - 0.1025781249307494
+      - 0
+      - 0
+      - 0
+      - 0.8371631576820436
+      - -0.3352390746492166
+      - 0.19765088507041076
+      - -2.3182411494283217
+      - -1.4856134479671956
+      - -0.059141607883296456
+      - 6.680871677833013e-05
+      - -5.2400322737957
+      - 5.2356089836249575
+      - -5.238369713479739
+      - 5.233722234090497
     velocity: []
   multi_dof_joint_state:
     header:
-      frame_id: ''
+      frame_id: ""
       stamp:
         nanosec: 0
         sec: 0
@@ -56,35 +56,35 @@
     twist: []
     wrench: []
   name: Near bottle 3
-- description: ''
+- description: ""
   favorite: true
   joint_group_names:
-  - manipulator
+    - manipulator
   joint_state:
     effort: []
     header:
-      frame_id: ''
+      frame_id: ""
       stamp:
         nanosec: 0
         sec: 0
     name:
-    - shoulder_pan_joint
-    - shoulder_lift_joint
-    - elbow_joint
-    - wrist_1_joint
-    - wrist_2_joint
-    - wrist_3_joint
+      - shoulder_pan_joint
+      - shoulder_lift_joint
+      - elbow_joint
+      - wrist_1_joint
+      - wrist_2_joint
+      - wrist_3_joint
     position:
-    - 6.014304535634426e-07
-    - -2.4531147766584134
-    - 1.977827335693212
-    - 0.2632151707982655
-    - 1.5607932148556802
-    - 8.75170462506889e-10
+      - 6.014304535634426e-07
+      - -2.4531147766584134
+      - 1.977827335693212
+      - 0.2632151707982655
+      - 1.5607932148556802
+      - 8.75170462506889e-10
     velocity: []
   multi_dof_joint_state:
     header:
-      frame_id: ''
+      frame_id: ""
       stamp:
         nanosec: 0
         sec: 0
@@ -93,45 +93,45 @@
     twist: []
     wrench: []
   name: Stowed
-- description: ''
+- description: ""
   favorite: true
   joint_group_names:
-  - gripper
-  - linear_actuator
-  - manipulator
+    - gripper
+    - linear_actuator
+    - manipulator
   joint_state:
     effort: []
     header:
-      frame_id: ''
+      frame_id: ""
       stamp:
         nanosec: 0
         sec: 0
     name:
-    - robotiq_85_left_knuckle_joint
-    - linear_x_joint
-    - linear_y_joint
-    - rotational_yaw_joint
-    - shoulder_pan_joint
-    - shoulder_lift_joint
-    - elbow_joint
-    - wrist_1_joint
-    - wrist_2_joint
-    - wrist_3_joint
+      - robotiq_85_left_knuckle_joint
+      - linear_x_joint
+      - linear_y_joint
+      - rotational_yaw_joint
+      - shoulder_pan_joint
+      - shoulder_lift_joint
+      - elbow_joint
+      - wrist_1_joint
+      - wrist_2_joint
+      - wrist_3_joint
     position:
-    - 0
-    - 0.4
-    - 0.4
-    - 1
-    - 0
-    - -1.5708
-    - 0.785398
-    - -1.2948195437205516
-    - -1.5708
-    - 0
+      - 0
+      - 0.4
+      - 0.4
+      - 1
+      - 0
+      - -1.5708
+      - 0.785398
+      - -1.2948195437205516
+      - -1.5708
+      - 0
     velocity: []
   multi_dof_joint_state:
     header:
-      frame_id: ''
+      frame_id: ""
       stamp:
         nanosec: 0
         sec: 0
