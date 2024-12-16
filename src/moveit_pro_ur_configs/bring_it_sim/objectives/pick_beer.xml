@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Pick beer">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Pick beer"
+    _description=""
+    _favorite="false"
+    _subtreeOnly="true"
+    name=""
+  >
+    <Control ID="Sequence" name="root">
+      <SubTree ID="Open Gripper" />
+      <Control ID="Sequence">
+        <Action
+          ID="CreateStampedPose"
+          orientation_xyzw="1;0;0;0"
+          position_xyz="0;0;0.22"
+          reference_frame="{beer_frame}"
+        />
+        <Action ID="VisualizePose" />
+        <Action
+          ID="AddPoseStampedToVector"
+          input="{stamped_pose}"
+          vector="{pose_vector}"
+        />
+      </Control>
+      <SubTree
+        ID="Pick first object in vector"
+        pose_vector="{pose_vector}"
+        _collapsed="false"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Pick beer">
+      <input_port name="beer_frame" default="{frame_id}" />
+    </SubTree>
+  </TreeNodesModel>
+</root>
