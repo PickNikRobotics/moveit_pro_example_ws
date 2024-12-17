@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Update VFC Command Test">
+  <!--//////////-->
+  <BehaviorTree ID="Update VFC Command Test" _description="" _favorite="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="ActivateControllers"
+        controller_names="/velocity_force_controller"
+      />
+      <Action
+        ID="CreateStampedTwist"
+        stamped_twist="{desired_twist}"
+        linear_velocity_xyz="-0.1;0.0;0.0"
+      />
+      <Action ID="CreateStampedWrench" stamped_wrench="{desired_wrench}" />
+      <Control ID="Parallel" success_count="2" failure_count="1">
+        <Decorator ID="Delay" delay_msec="2000">
+          <Action
+            ID="CreateStampedTwist"
+            stamped_twist="{desired_twist}"
+            linear_velocity_xyz="0.1;0.0;0.0"
+          />
+        </Decorator>
+        <Action
+          ID="PublishVelocityForceCommand"
+          velocity_controlled_axes="1;0;0;0;0;0"
+          wrench_gain="0.5"
+        />
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Update VFC Command Test" />
+  </TreeNodesModel>
+</root>
