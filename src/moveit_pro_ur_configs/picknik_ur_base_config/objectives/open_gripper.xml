@@ -3,7 +3,7 @@
   <BehaviorTree
     ID="Open Gripper"
     _description="Open the gripper"
-    _favorite="true"
+    _favorite="false"
   >
     <Control ID="Sequence" name="root">
       <Action
