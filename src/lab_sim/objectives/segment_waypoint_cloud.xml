@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Segment Waypoint Cloud">
+  <!--//////////-->
+  <BehaviorTree ID="Segment Waypoint Cloud">
+    <Control ID="Sequence">
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        joint_group_name="manipulator"
+        planner_interface="moveit_default"
+        controller_names="/joint_trajectory_controller"
+        waypoint_name="{waypoint_name}"
+      />
+      <Action ID="GetImage" topic_name="/wrist_camera/color" />
+      <Action
+        ID="GetPointsFromUser"
+        point_prompts="Select the object to be segmented;again;again"
+        point_names="Point1;Point2;Point3"
+        view_name="/wrist_camera/color"
+      />
+      <Action ID="ExampleSAM2Segmentation" />
+      <Action ID="GetPointCloud" topic_name="/wrist_camera/points" />
+      <Action
+        ID="GetCameraInfo"
+        topic_name="/wrist_camera/camera_info"
+        message_out="{camera_info}"
+        timeout_sec="5.000000"
+      />
+      <Action ID="GetMasks3DFromMasks2D" />
+      <Decorator ID="ForEachMask3D" vector_in="{masks3d}" out="{mask3d}">
+        <Action ID="GetPointCloudFromMask3D" point_cloud="{point_cloud}" />
+      </Decorator>
+      <Action
+        ID="TransformPointCloudFrame"
+        output_cloud="{point_cloud_fragment}"
+        input_cloud="{point_cloud_fragment}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Segment Waypoint Cloud">
+      <input_port name="waypoint_name" default="{waypoint_name}" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

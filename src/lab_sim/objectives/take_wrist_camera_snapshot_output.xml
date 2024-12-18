@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Wrist camera snapshot cropped output"
+>
+  <!--//////////-->
+  <BehaviorTree
+    ID="Wrist camera snapshot cropped output"
+    _description="Capture and visualise a pointcloud with the wrist camera and a cropped output"
+    _favorite="true"
+    _subtreeOnly="true"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <!--Do not clear snapshots first, so we can take multiple snapshots from different angles-->
+      <Action ID="GetPointCloud" topic_name="/wrist_camera/points" />
+      <Action
+        ID="CreateStampedPose"
+        stamped_pose="{output_pose}"
+        orientation_xyzw="0; 0; -0.258819; 0.9659258"
+        position_xyz="0.05; 0.55; 0.473807"
+      />
+      <Action ID="TransformPointCloudFrame" input_cloud="{point_cloud}" />
+      <Action ID="SendPointCloudToUI" point_cloud="{output_cloud}" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Wrist camera snapshot cropped output">
+      <output_port name="point_cloud" default="{output_cloud}" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

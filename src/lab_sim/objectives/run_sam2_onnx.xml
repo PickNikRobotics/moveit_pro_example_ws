@@ -12,8 +12,7 @@
     <Control ID="Sequence">
       <Action ID="ClearSnapshot" />
       <Action ID="GetImage" topic_name="/wrist_camera/color" />
-      <Action
-        ID="GetPointsFromUser"
+      <Action ID="GetPointsFromUser"
         point_prompts="Select the object to be segmented;"
         point_names="Point1;"
         view_name="/wrist_camera/color"
