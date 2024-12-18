@@ -2,7 +2,7 @@
 <root BTCPP_format="4" main_tree_to_execute="Move to Waypoint">
   <BehaviorTree
     ID="Move to Waypoint"
-    _description="This Objective is used when moving to one of the saved waypoints in your site configuration"
+    _description="Plan and execute motion to a MoveIt Pro-created named Waypoint, which is saved in joint space to the file system."
     _subtreeOnly="true"
   >
     <Control ID="Sequence" name="root">
