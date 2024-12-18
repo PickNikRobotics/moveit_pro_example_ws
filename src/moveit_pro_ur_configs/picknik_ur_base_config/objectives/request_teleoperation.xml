@@ -34,7 +34,7 @@
                   <Control ID="Sequence">
                     <Action
                       ID="RetrieveJointStateParameter"
-                      timeout_sec="-1"
+                      timeout_sec="2"
                       joint_state="{target_joint_state}"
                     />
                     <SubTree
