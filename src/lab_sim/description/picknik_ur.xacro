@@ -1194,9 +1194,39 @@
     <child link="table" />
     <origin rpy="0 0 0" xyz="0 1 0.45" />
   </joint>
+
+
+
+  <link name="workpiece">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://ur_description/meshes/ur5e/collision/forearm.stl"
+        />
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://ur_description/meshes/ur5e/collision/forearm.stl"
+        />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="workpiece_joint" type="fixed">
+    <parent link="world" />
+    <child link="workpiece" />
+    <origin rpy="0 0 0" xyz="0 0.5 0.75" />
+  </joint>
+
+
+
   <ros2_control name="ur_mujoco_control" type="system">
     <hardware>
       <plugin>picknik_mujoco_ros/MujocoSystem</plugin>
+      <param name="mujoco_viewer">false</param>
       <param name="mujoco_model">$(arg mujoco_model)</param>
       <param name="mujoco_model_package">lab_sim</param>
       <param name="render_publish_rate">10</param>
