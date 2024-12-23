@@ -55,7 +55,7 @@
         grasp_and_twist_subframes="{grasp_and_twist_subframes}"
       />
       <Decorator
-        ID="ForEachObjectSubframe"
+        ID="ForEach"
         vector_in="{grasp_and_twist_subframes}"
         out="{subframe}"
       >
