@@ -61,11 +61,7 @@
         output_poses="{hinge_poses}"
       />
       <!--Set up Subframes for MTC-->
-      <Decorator
-        ID="ForEachPoseStamped"
-        vector_in="{grasp_poses}"
-        out="{grasp_pose}"
-      >
+      <Decorator ID="ForEach" vector_in="{grasp_poses}" out="{grasp_pose}">
         <Action
           ID="GetMoveAlongArcSubframes"
           target_grasp_pose="{grasp_pose}"
@@ -87,7 +83,7 @@
       />
       <!--Add the subframes to the Object-->
       <Decorator
-        ID="ForEachObjectSubframe"
+        ID="ForEach"
         vector_in="{move_along_arc_subframes}"
         out="{subframe}"
       >
