@@ -92,7 +92,7 @@
       />
       <!-- Add the subframes to the Object-->
       <Decorator
-        ID="ForEachObjectSubframe"
+        ID="ForEach"
         vector_in="{move_along_arc_subframes}"
         out="{subframe}"
       >
