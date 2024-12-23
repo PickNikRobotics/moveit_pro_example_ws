@@ -76,7 +76,7 @@
         camera_info="{camera_info}"
         masks3d="{masks3d}"
       />
-      <Decorator ID="ForEachMask3D" vector_in="{masks3d}" out="{mask3d}">
+      <Decorator ID="ForEach" vector_in="{masks3d}" out="{mask3d}">
         <Control ID="Sequence">
           <Action
             ID="GetPointCloudFromMask3D"
@@ -102,11 +102,7 @@
         face_separation_threshold="0.025000"
         point_cloud="{point_cloud}"
       />
-      <Decorator
-        ID="ForEachGraspableObject"
-        vector_in="{objects}"
-        out="{object}"
-      >
+      <Decorator ID="ForEach" vector_in="{objects}" out="{object}">
         <Control ID="Sequence">
           <Action
             ID="InitializeMTCTask"
