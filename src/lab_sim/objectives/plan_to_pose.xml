@@ -15,7 +15,7 @@
       <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
       <Action ID="Script" code="pose_ctr := 0" />
       <Decorator
-        ID="ForEachPoseStamped"
+        ID="ForEach"
         vector_in="{target_poses}"
         out="{target_pose}"
         index="{index}"

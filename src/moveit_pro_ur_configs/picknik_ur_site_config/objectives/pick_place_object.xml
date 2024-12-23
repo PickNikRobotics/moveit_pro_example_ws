@@ -78,7 +78,7 @@
                 adjusted_poses="{adjusted_poses}"
               />
               <Decorator
-                ID="ForEachPoseStamped"
+                ID="ForEach"
                 vector_in="{adjusted_poses}"
                 out="{grasp_pose}"
               >
@@ -208,7 +208,7 @@
                             adjusted_poses="{adjusted_poses}"
                           />
                           <Decorator
-                            ID="ForEachPoseStamped"
+                            ID="ForEach"
                             vector_in="{adjusted_poses}"
                             out="{grasp_pose}"
                           >
