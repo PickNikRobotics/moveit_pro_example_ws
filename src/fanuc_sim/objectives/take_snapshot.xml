@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Take Snapshot">
   <!--//////////-->
   <BehaviorTree
@@ -9,7 +10,7 @@
       <Action ID="SwitchUIPrimaryView" primary_view_name="Visualization" />
       <Action
         ID="GetPointCloud"
-        topic_name="/scene_camera/points"
+        topic_name="/wrist_mounted_camera/points"
         message_out="{point_cloud}"
         timeout_sec="15.000000"
       />
@@ -20,4 +21,7 @@
       />
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Take Snapshot" />
+  </TreeNodesModel>
 </root>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Register convex">
+  <!--//////////-->
+  <BehaviorTree ID="Register convex" _description="" _favorite="true">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="ClearSnapshot" />
+      <Action
+        ID="GetPointCloud"
+        message_out="{point_cloud}"
+        timeout_sec="5.000000"
+        topic_name="/wrist_mounted_camera/points"
+      />
+      <Action
+        ID="LoadPointCloudFromFile"
+        scale="1.000000"
+        point_cloud="{point_cloud}"
+        frame_id="link_6"
+        num_sampled_points="10000"
+        file_path="~/user_ws/install/fanuc_sim/share/fanuc_sim/description/assets/concave_hemisphere.stl"
+        color="0;255;0"
+      />
+      <Action
+        ID="SendPointCloudToUI"
+        point_cloud="{point_cloud}"
+        pcd_topic="/pcd_pointcloud_captures"
+        name="Initial guess"
+      />
+      <Action
+        ID="RegisterPointClouds"
+        target_pose_in_base_frame="{target_pose}"
+        max_correspondence_distance="5.000000"
+        max_iterations="30"
+        target_point_cloud="{target_point_cloud}"
+        base_point_cloud="{point_cloud}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Register convex" />
+  </TreeNodesModel>
+</root>

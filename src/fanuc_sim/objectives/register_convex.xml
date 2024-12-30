@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Register convex">
+  <!--//////////-->
+  <BehaviorTree ID="Register convex" _description="" _favorite="true">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="ClearSnapshot" />
+      <Action
+        ID="CreateStampedPose"
+        stamped_pose="{initial_guess}"
+        reference_frame="link_6"
+        orientation_xyzw="0;0;0;1"
+        position_xyz="0;0;0"
+      />
+      <SubTree
+        ID="Load Mesh as Colored Pointcloud"
+        _collapsed="false"
+        point_cloud="{red_cloud}"
+        color="255;0;0"
+        file_path="~/user_ws/install/fanuc_sim/share/fanuc_sim/description/assets/concave_hemisphere.stl"
+        initial_pose="{initial_guess}"
+        target_frame="link_6"
+      />
+      <Action
+        ID="SendPointCloudToUI"
+        point_cloud="{red_cloud}"
+        pcd_topic="/pcd_pointcloud_captures"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Register convex" />
+  </TreeNodesModel>
+</root>
