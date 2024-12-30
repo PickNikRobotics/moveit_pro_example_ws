@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Precondition test">
+  <!--//////////-->
+  <BehaviorTree ID="Precondition test" _description="" _favorite="false">
+    <Control ID="Sequence" name="S1a: TopLevelSequence">
+      <Action
+        ID="Script"
+        code="first_run:=true"
+        name="S2a: Set first_run to true"
+      />
+      <Decorator
+        ID="Precondition"
+        else="SUCCESS"
+        if="first_run==true"
+        name="P2b: Check first_run"
+      >
+        <Control ID="Sequence" name="S3a: Precondition sequence">
+          <Action
+            ID="Script"
+            code="first_run:=false"
+            name="S4a: Set first_run to false"
+          />
+          <Action
+            ID="BreakpointSubscriber"
+            breakpoint_topic="/studio_breakpoint"
+            name="B4b: BreakpointSubscriber"
+          />
+        </Control>
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Precondition test" />
+  </TreeNodesModel>
+</root>

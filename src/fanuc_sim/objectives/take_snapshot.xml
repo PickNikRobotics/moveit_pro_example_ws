@@ -10,7 +10,7 @@
       <Action ID="SwitchUIPrimaryView" primary_view_name="Visualization" />
       <Action
         ID="GetPointCloud"
-        topic_name="/scene_camera/points"
+        topic_name="/wrist_mounted_camera/points"
         message_out="{point_cloud}"
         timeout_sec="15.000000"
       />
