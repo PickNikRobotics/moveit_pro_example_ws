@@ -1,5 +1,5 @@
 - description: ''
-  favorite: false
+  favorite: true
   joint_group_names:
   - gripper
   - manipulator
@@ -18,12 +18,12 @@
     - joint_5
     - joint_6
     position:
-    - 1.580174692118959
-    - -0.3174498466822826
-    - -0.5574400907076587
-    - 0.0030420865446560085
-    - -0.5759784636128362
-    - -0.0008934379999721851
+    - 0.07619213524736071
+    - -0.7105125089645793
+    - -0.39623479079949836
+    - 0.1310527185218626
+    - -0.42624024512758213
+    - -0.09171837818641333
     velocity: []
   multi_dof_joint_state:
     header:
@@ -35,7 +35,7 @@
     transforms: []
     twist: []
     wrench: []
-  name: Home
+  name: Registration
 - description: ''
   favorite: false
   joint_group_names:
@@ -74,3 +74,41 @@
     twist: []
     wrench: []
   name: Left bin
+- description: ''
+  favorite: false
+  joint_group_names:
+  - gripper
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - joint_1
+    - joint_2
+    - joint_3
+    - joint_4
+    - joint_5
+    - joint_6
+    position:
+    - 1.580174692118959
+    - -0.3174498466822826
+    - -0.5574400907076587
+    - 0.0030420865446560085
+    - -0.5759784636128362
+    - -0.0008934379999721851
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Home

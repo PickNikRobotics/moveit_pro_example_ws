@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Load Mesh as Colored Pointcloud">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Load Mesh as Colored Pointcloud"
+    _description=""
+    _favorite="false"
+    _subtreeOnly="true"
+    point_cloud="{red_cloud}"
+    _collapsed="false"
+    color="{color}"
+    file_path="{file_path}"
+    initial_pose="{initial_pose}"
+    target_frame="{target_frame}"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="LoadPointCloudFromFile"
+        color="{color}"
+        file_path="{file_path}"
+        point_cloud="{point_cloud}"
+        scale="1.000000"
+        frame_id="{target_frame}"
+        num_sampled_points="10000"
+      />
+      <Action
+        ID="TransformPointCloudFrame"
+        input_cloud="{point_cloud}"
+        output_cloud="{point_cloud}"
+        target_frame="{target_frame}"
+      />
+      <Action
+        ID="TransformPointCloud"
+        input_cloud="{point_cloud}"
+        transform_pose="{initial_pose}"
+        output_cloud="{output_cloud}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Load Mesh as Colored Pointcloud">
+      <input_port name="target_frame" default="{target_frame}" />
+      <output_port name="point_cloud" default="{red_cloud}" />
+      <input_port name="_collapsed" default="false" />
+      <input_port name="color" default="{color}" />
+      <input_port name="file_path" default="{file_path}" />
+      <input_port name="initial_pose" default="{initial_pose}" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

@@ -37,7 +37,7 @@
   <joint name="scene_joint" type="fixed">
     <parent link="world" />
     <child link="arm_pedestal" />
-    <origin rpy="0 0 0" xyz="0 0.3 0.15" />
+    <origin rpy="0 0 0" xyz="0 0 0.15" />
   </joint>
   <joint name="base_joint" type="fixed">
     <parent link="arm_pedestal" />
