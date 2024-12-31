@@ -42,7 +42,7 @@
         <Control ID="Fallback" name="TryGraspOuter">
           <Decorator ID="KeepRunningUntilFailure">
             <Decorator
-              ID="ForEachString"
+              ID="ForEach"
               name="IterateThroughPlaceWaypoints"
               vector_in="Place Right;Place Left"
               out="{place_waypoint}"
