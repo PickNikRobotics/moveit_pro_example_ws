@@ -14,7 +14,6 @@
         _collapsed="true"
         waypoint_name="VFC Start"
         joint_group_name="manipulator"
-        planner_interface="pro_rrt"
         controller_names="/joint_trajectory_controller"
       />
       <Action
@@ -84,6 +83,10 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Push Button" />
+    <SubTree ID="Push Button">
+      <MetadataFields>
+        <Metadata subcategory="Application - Advanced Examples" />
+      </MetadataFields>
+    </SubTree>
   </TreeNodesModel>
 </root>
