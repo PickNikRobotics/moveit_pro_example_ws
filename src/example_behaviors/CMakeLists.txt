@@ -15,6 +15,7 @@ example_interfaces)
 foreach(package IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${package} REQUIRED)
 endforeach()
+find_package(moveit_pro_ml REQUIRED)
 
 add_library(
   example_behaviors
@@ -31,6 +32,7 @@ add_library(
   src/example_setup_mtc_wave_hand.cpp
   src/example_ndt_registration.cpp
   src/example_ransac_registration.cpp
+  src/example_sam2_segmentation.cpp
   src/register_behaviors.cpp)
 target_include_directories(
   example_behaviors
@@ -39,6 +41,7 @@ target_include_directories(
   PRIVATE ${PCL_INCLUDE_DIRS})
 ament_target_dependencies(example_behaviors
                           ${THIS_PACKAGE_INCLUDE_DEPENDS})
+target_link_libraries(example_behaviors onnx_sam2)
 
 # Install Libraries
 install(
@@ -50,7 +53,7 @@ install(
   INCLUDES
   DESTINATION include)
 
-install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY config models DESTINATION share/${PROJECT_NAME})
 
 if(BUILD_TESTING)
   moveit_pro_behavior_test(example_behaviors)

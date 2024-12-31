@@ -18,7 +18,6 @@
   <exec_depend>moveit_ros_perception</exec_depend>
   <exec_depend>moveit_studio_agent</exec_depend>
   <exec_depend>moveit_studio_behavior</exec_depend>
-  <exec_depend>trac_ik_kinematics_plugin</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
 
