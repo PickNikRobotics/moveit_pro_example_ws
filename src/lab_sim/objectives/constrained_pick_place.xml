@@ -14,8 +14,12 @@
         constraints="{constraints}"
         waypoint_name="Beaker 1a - Pre Pick"
         joint_group_name="manipulator"
-        planner_interface="moveit_default"
-        controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
+        controller_names="/joint_trajectory_controller"
+        velocity_scale_factor="1.0"
+        acceleration_scale_factor="1.0"
+        link_padding="0.01"
+        keep_orientation_tolerance="0.05"
+        keep_orientation="false"
       />
       <SubTree ID="Open Gripper" />
       <SubTree
