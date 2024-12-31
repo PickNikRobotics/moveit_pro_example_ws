@@ -1,36 +1,45 @@
-<?xml version="1.0" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Move to Joint State">
   <BehaviorTree
     ID="Move to Joint State"
     _description="Move to a specified joint state"
+    _subtreeOnly="true"
   >
     <Control ID="Sequence">
+      <Action ID="ActivateControllers" controller_names="{controller_names}" />
       <Action
-        ID="InitializeMTCTask"
-        task_id="move_to_joint_state"
-        controller_names="/multi_arm_joint_trajectory_controller"
-        task="{move_to_waypoint_task}"
-      />
-      <Action ID="SetupMTCCurrentState" task="{move_to_waypoint_task}" />
-      <Action
-        ID="SetupMTCMoveToJointState"
-        joint_state="{target_joint_state}"
-        name="SetupMTCMoveToJointState_First"
-        planning_group_name="multi_arm_manipulator"
-        task="{move_to_waypoint_task}"
-        planner_interface="moveit_default"
+        ID="PlanToJointGoal"
+        joint_goal="{target_joint_state}"
+        keep_orientation_tolerance="{keep_orientation_tolerance}"
+        link_padding="{link_padding}"
+        keep_orientation="{keep_orientation}"
+        acceleration_scale_factor="{acceleration_scale_factor}"
+        velocity_scale_factor="{velocity_scale_factor}"
+        planning_group_name="{joint_group_name}"
       />
       <Action
-        ID="PlanMTCTask"
-        solution="{move_to_waypoint_solution}"
-        task="{move_to_waypoint_task}"
+        ID="ExecuteFollowJointTrajectory"
+        execute_follow_joint_trajectory_action_name="{controller_action_server}"
       />
-      <Action ID="ExecuteMTCTask" solution="{move_to_waypoint_solution}" />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Move to Joint State">
       <input_port name="target_joint_state" default="{target_joint_state}" />
+      <input_port name="joint_group_name" default="manipulator" />
+      <input_port name="link_padding" default="0.01" />
+      <input_port name="keep_orientation_tolerance" default="0.05" />
+      <input_port name="keep_orientation" default="false" />
+      <input_port name="velocity_scale_factor" default="1.0" />
+      <input_port name="acceleration_scale_factor" default="1.0" />
+      <input_port
+        name="controller_names"
+        default="joint_trajectory_controller"
+      />
+      <input_port
+        name="controller_action_server"
+        default="/joint_trajectory_controller/follow_joint_trajectory"
+      />
       <MetadataFields>
         <Metadata subcategory="Motion - Execute" />
       </MetadataFields>
