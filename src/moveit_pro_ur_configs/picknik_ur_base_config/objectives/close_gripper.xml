@@ -2,7 +2,7 @@
   <BehaviorTree
     ID="Close Gripper"
     _description="Close the gripper"
-    _favorite="false"
+    _favorite="true"
     _subtreeOnly="false"
   >
     <Control ID="Sequence" name="root">
@@ -16,5 +16,8 @@
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Close Gripper" />
+    <MetadataFields>
+      <Metadata subcategory="Grasping" />
+    </MetadataFields>
   </TreeNodesModel>
 </root>
