@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Plan and Save Trajectory">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Plan and Save Trajectory"
+    _description="Use a series of waypoints to plan and MTC task, convert the solution to a Joint Trajectory message, and save it to disk in YAML format"
+    _favorite="false"
+    _subtreeOnly="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        waypoint_name="Workspace Right"
+        joint_group_name="manipulator"
+        planner_interface="moveit_default"
+        controller_names="/joint_trajectory_controller"
+      />
+      <SubTree
+        ID="Create Pose Vector"
+        _collapsed="false"
+        target_poses="{target_poses}"
+      />
+      <SubTree
+        ID="Add Poses to MTC Task"
+        _collapsed="true"
+        target_poses="{target_poses}"
+        controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
+        planning_group_name="manipulator"
+        ik_frame="grasp_link"
+        mtc_task="{mtc_task}"
+      />
+      <SubTree
+        ID="Add Waypoints to MTC Task"
+        _collapsed="false"
+        mtc_task="{mtc_task}"
+        waypoint_names="Pick Cube;Place Cube"
+        joint_group_name="manipulator"
+        planner_interface="moveit_default"
+      />
+      <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
+      <Action ID="WaitForUserTrajectoryApproval" />
+      <!--The following behavior can be found in the example_behaviors package.-->
+      <Action
+        ID="ConvertMtcSolutionToJointTrajectory"
+        joint_trajectory="{joint_trajectory_msg}"
+      />
+      <Action
+        ID="SaveJointTrajectoryToYaml"
+        yaml_filename="~/user_ws/src/lab_sim/objectives/joint_trajectory"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Plan and Save Trajectory">
+      <MetadataFields>
+        <Metadata subcategory="Application - Advanced Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

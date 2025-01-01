@@ -1,0 +1,76 @@
+<root BTCPP_format="4" main_tree_to_execute="Pick And Place Example">
+  <!-- ////////// -->
+  <BehaviorTree
+    ID="Pick And Place Example"
+    _description="Pick and place example objective"
+    _favorite="false"
+    _hardcoded="false"
+  >
+    <Control ID="Sequence" name="Pick and Place">
+      <SubTree ID="Open Gripper" />
+      <Control ID="Sequence" name="Pick">
+        <Action
+          ID="CreateStampedPose"
+          reference_frame="world"
+          position_xyz="0.01;.75;0.515"
+          orientation_xyzw="0;1;0;0"
+          stamped_pose="{pick_pose}"
+        />
+        <Action
+          ID="InitializeMTCTask"
+          task_id="pick_task"
+          controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
+          task="{mtc_pick_task}"
+        />
+        <Action ID="SetupMTCCurrentState" task="{mtc_pick_task}" />
+        <!-- The following behavior can be found in the example_behaviors package. -->
+        <Action
+          ID="SetupMtcPickFromPose"
+          grasp_pose="{pick_pose}"
+          task="{mtc_pick_task}"
+        />
+        <Action
+          ID="PlanMTCTask"
+          task="{mtc_pick_task}"
+          solution="{mtc_pick_solution}"
+        />
+        <Action ID="ExecuteMTCTask" solution="{mtc_pick_solution}" />
+      </Control>
+      <Control ID="Sequence" name="Place">
+        <Action
+          ID="InitializeMTCTask"
+          task_id="place_task"
+          controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
+          task="{mtc_place_task}"
+        />
+        <Action ID="SetupMTCCurrentState" task="{mtc_place_task}" />
+        <Action
+          ID="CreateStampedPose"
+          reference_frame="world"
+          position_xyz="0.01;.75;0.5.15"
+          orientation_xyzw="0;1;0;0"
+          stamped_pose="{place_pose}"
+        />
+        <!-- The following behavior can be found in the example_behaviors package. -->
+        <Action
+          ID="SetupMtcPlaceFromPose"
+          place_pose="{place_pose}"
+          task="{mtc_place_task}"
+        />
+        <Action
+          ID="PlanMTCTask"
+          task="{mtc_place_task}"
+          solution="{mtc_place_solution}"
+        />
+        <Action ID="ExecuteMTCTask" solution="{mtc_place_solution}" />
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Pick And Place Example">
+      <MetadataFields>
+        <Metadata subcategory="Application - Basic Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

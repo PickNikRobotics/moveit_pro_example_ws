@@ -1,0 +1,57 @@
+<root BTCPP_format="4" main_tree_to_execute="Add Poses to MTC Task">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Add Poses to MTC Task"
+    _description=""
+    _favorite="false"
+    _subtreeOnly="true"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="InitializeMTCTask"
+        controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
+        task="{mtc_task}"
+      />
+      <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
+      <Action ID="Script" code="pose_ctr := 0" />
+      <Decorator
+        ID="ForEach"
+        vector_in="{target_poses}"
+        out="{target_pose}"
+        index="{index}"
+      >
+        <Control ID="Sequence">
+          <Action
+            ID="VisualizePose"
+            marker_name="{pose_ctr}"
+            pose="{target_pose}"
+          />
+          <Action ID="Script" code="pose_ctr += 1" />
+          <Action
+            ID="SetupMTCMoveToPose"
+            ik_frame="{ik_frame}"
+            planning_group_name="{planning_group_name}"
+            target_pose="{target_pose}"
+            task="{mtc_task}"
+            planner_interface="moveit_default"
+          />
+        </Control>
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Add Poses to MTC Task">
+      <input_port name="target_poses" default="{target_poses}" />
+      <input_port
+        name="controller_names"
+        default="/joint_trajectory_controller /robotiq_gripper_controller"
+      />
+      <input_port name="planning_group_name" default="manipulator" />
+      <input_port name="ik_frame" default="grasp_link" />
+      <inout_port name="mtc_task" default="{mtc_task}" />
+      <MetadataFields>
+        <Metadata subcategory="Motion - Task Planning" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

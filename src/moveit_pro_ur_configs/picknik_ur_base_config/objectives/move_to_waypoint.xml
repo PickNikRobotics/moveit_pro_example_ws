@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Move to Waypoint">
+  <BehaviorTree
+    ID="Move to Waypoint"
+    _description="Plan and execute motion to a MoveIt Pro-created named Waypoint, which is saved in joint space to the file system."
+    _subtreeOnly="true"
+  >
+    <Control ID="Sequence" name="root">
+      <Action
+        ID="RetrieveWaypoint"
+        waypoint_joint_state="{target_joint_state}"
+        waypoint_name="{waypoint_name}"
+        joint_group_name="{joint_group_name}"
+      />
+      <SubTree
+        ID="Move to Joint State"
+        _collapsed="true"
+        velocity_scale_factor="{velocity_scale_factor}"
+        acceleration_scale_factor="{acceleration_scale_factor}"
+        link_padding="{link_padding}"
+        keep_orientation_tolerance="{keep_orientation_tolerance}"
+        keep_orientation="{keep_orientation}"
+        target_joint_state="{target_joint_state}"
+        controller_names="{controller_names}"
+        joint_group_name="{joint_group_name}"
+        controller_action_server="{controller_action_server}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Move to Waypoint">
+      <input_port name="waypoint_name" default="" />
+      <input_port name="joint_group_name" default="manipulator" />
+      <input_port name="link_padding" default="0.01" />
+      <input_port name="keep_orientation_tolerance" default="0.05" />
+      <input_port name="keep_orientation" default="false" />
+      <input_port name="velocity_scale_factor" default="1.0" />
+      <input_port name="acceleration_scale_factor" default="1.0" />
+      <input_port
+        name="controller_names"
+        default="/joint_trajectory_controller"
+      />
+      <input_port
+        name="controller_action_server"
+        default="/joint_trajectory_controller/follow_joint_trajectory"
+      />
+      <MetadataFields>
+        <Metadata subcategory="Motion - Execute" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
