@@ -27,7 +27,7 @@
         timeout_sec="5.000000"
       />
       <Action ID="GetMasks3DFromMasks2D" />
-      <Decorator ID="ForEachMask3D" vector_in="{masks3d}" out="{mask3d}">
+      <Decorator ID="ForEach" vector_in="{masks3d}" out="{mask3d}">
         <Action ID="GetPointCloudFromMask3D" point_cloud="{point_cloud}" />
       </Decorator>
       <Action ID="SendPointCloudToUI" point_cloud="{point_cloud_fragment}" />

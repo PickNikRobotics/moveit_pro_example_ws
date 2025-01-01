@@ -48,7 +48,7 @@
         output_pose="{tag_pose_world}"
       />
       <Decorator
-        ID="ForEachPoseStamped"
+        ID="ForEach"
         vector_in="{adjusted_poses}"
         out="{user_grasp_pose}"
       >

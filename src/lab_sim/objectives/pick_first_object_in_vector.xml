@@ -6,11 +6,7 @@
     _subtreeOnly="true"
     _description=""
   >
-    <Decorator
-      ID="ForEachPoseStamped"
-      vector_in="{pose_vector}"
-      out="{grasp_pose}"
-    >
+    <Decorator ID="ForEach" vector_in="{pose_vector}" out="{grasp_pose}">
       <Control ID="Sequence">
         <Action
           ID="LoadObjectiveParameters"
