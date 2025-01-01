@@ -55,7 +55,7 @@
         camera_info="{camera_info}"
         masks3d="{masks3d}"
       />
-      <Decorator ID="ForEachMask3D" vector_in="{masks3d}" out="{mask3d}">
+      <Decorator ID="ForEach" vector_in="{masks3d}" out="{mask3d}">
         <Control ID="Sequence">
           <Action
             ID="GetPointCloudFromMask3D"
@@ -81,11 +81,7 @@
         graspable_objects="{graspable_objects}"
       />
       <Decorator ID="ForceSuccess">
-        <Decorator
-          ID="ForEachGraspableObject"
-          vector_in="{graspable_objects}"
-          out="{button}"
-        >
+        <Decorator ID="ForEach" vector_in="{graspable_objects}" out="{button}">
           <Action ID="AlwaysFailure" />
         </Decorator>
       </Decorator>
