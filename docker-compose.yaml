@@ -6,19 +6,17 @@
 services:
   # The base image that all MoveIt Pro services extend off of. Builds the user workspace.
   base:
-    build:
-      # List any arguments for building the user workspace here.
-      args:
-        # IMPORTANT: Optionally install Nvidia drivers for improved simulator performance with Nvidia GPUs.
-        # To do this you must
-        # 1. Uncomment the BASE and NVIDIA_DRIVER_PACKAGE build args below
-        # 2. Replace the 'nvidia-driver-555' apt package with the Nvidia driver version on your host, e.g. nvidia-driver-535, nvidia-driver-555. Use nvidia-smi on your host to determine the driver version.
-        # After rebuilding via `moveit_pro build` verify the drivers are active in your container by running `nvidia_smi` inside of `moveit_pro shell`.
-        # - BASE=nvidia
-        # - NVIDIA_DRIVER_PACKAGE=nvidia-driver-555
-
   # Starts the MoveIt Pro Agent and the Bridge between the Agent and the Web UI.
   agent_bridge:
+
+    # IMPORTANT: Enable Nvidia GPUs by uncommenting the lines below:
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
 
   # Starts the robot drivers.
   drivers:
