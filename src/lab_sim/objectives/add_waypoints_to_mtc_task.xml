@@ -5,12 +5,15 @@
     ID="Add Waypoints to MTC Task"
     _subtreeOnly="true"
     _description=""
+    joint_group_name="manipulator"
+    planner_interface="moveit_default"
+    mtc_task="{mtc_task}"
   >
     <Control ID="Sequence">
       <Action
         ID="RetrieveWaypoint"
         waypoint_joint_state="{target_joint_state}"
-        waypoint_name="Above Pick Cube"
+        waypoint_name="Look at Table"
         joint_group_name="{joint_group_name}"
       />
       <Action
@@ -24,7 +27,7 @@
       <Action
         ID="RetrieveWaypoint"
         waypoint_joint_state="{target_joint_state}"
-        waypoint_name="Above Place Cube"
+        waypoint_name="Workspace Right"
         joint_group_name="{joint_group_name}"
       />
       <Action
@@ -40,10 +43,11 @@
   <TreeNodesModel>
     <SubTree ID="Add Waypoints to MTC Task">
       <input_port name="joint_group_name" default="manipulator" />
-      <inout_port name="mtc_task" default="{mtc_task}" />
       <input_port name="planner_interface" default="moveit_default" />
+      <inout_port name="mtc_task" default="{mtc_task}" />
       <MetadataFields>
         <Metadata subcategory="Application - Basic Examples" />
+        <Metadata runnable="false" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>

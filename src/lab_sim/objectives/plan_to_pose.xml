@@ -12,7 +12,9 @@
         controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
         task="{mtc_task}"
       />
+      <!-- Start the MTC task from the robot's current pose -->
       <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
+      <!-- Use a script with a pose counter so we can give a unique name to each marker (allowing multiple poses to be visualized) -->
       <Action ID="Script" code="pose_ctr := 0" />
       <Decorator
         ID="ForEach"
@@ -21,6 +23,7 @@
         index="{index}"
       >
         <Control ID="Sequence">
+          <!-- Visualize and add each pose to the vector -->
           <Action
             ID="VisualizePose"
             marker_name="{pose_ctr}"
