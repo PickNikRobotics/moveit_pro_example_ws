@@ -40,11 +40,7 @@
           adjusted_poses="{adjusted_poses}"
         />
       </Control>
-      <Decorator
-        ID="ForEachPoseStamped"
-        vector_in="{adjusted_poses}"
-        out="{grasp_pose}"
-      >
+      <Decorator ID="ForEach" vector_in="{adjusted_poses}" out="{grasp_pose}">
         <Control ID="Sequence">
           <Action
             ID="InitializeMTCTask"
