@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Test MTC Pro RRT">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Test MTC Pro RRT"
+    _description="Use a series of waypoints to plan and MTC task, convert the solution to a Joint Trajectory message, and save it to disk in YAML format"
+    _favorite="false"
+    _subtreeOnly="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        waypoint_name="Workspace Right"
+        joint_group_name="manipulator"
+        planner_interface="moveit_default"
+        controller_names="/joint_trajectory_controller"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        velocity_scale_factor="1.0"
+      />
+      <Action
+        ID="CreateStampedPose"
+        orientation_xyzw="0;-1;0;0"
+        position_xyz="0.75;0.5;0.9"
+        stamped_pose="{target_pose}"
+        reference_frame="world"
+      />
+      <Action
+        ID="VisualizePose"
+        marker_lifetime="0.000000"
+        marker_name="target pose"
+        marker_size="0.100000"
+        pose="{target_pose}"
+      />
+      <Action
+        ID="InitializeMTCTask"
+        controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
+        task="{mtc_task}"
+      />
+      <Action
+        ID="SetupMTCCurrentState"
+        skip_collision_check="false"
+        task="{mtc_task}"
+      />
+      <Action
+        ID="SetupMTCMoveToPoseProRRT"
+        acceleration_scale_factor="1.000000"
+        ik_frame="grasp_link"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.100000"
+        link_padding="0.000000"
+        max_iterations="5000"
+        monitored_stage="current state"
+        planning_group_name="manipulator"
+        target_pose="{target_pose}"
+        trajectory_sampling_rate="100"
+        velocity_scale_factor="1.000000"
+        task="{mtc_task}"
+      />
+      <Action
+        ID="CreateJointState"
+        joint_state_msg="{joint_state}"
+        joint_names="linear_rail_joint;shoulder_pan_joint;shoulder_lift_joint;elbow_joint;wrist_1_joint;wrist_2_joint;wrist_3_joint;robotiq_85_left_knuckle_joint"
+        positions="0.25;0.00297;-0.545;1.0289;-2.021;-1.571;0.0027;0.06656"
+      />
+      <Action
+        ID="SetupMTCMoveToJointStateProRRT"
+        acceleration_scale_factor="1.000000"
+        joint_state="{joint_state}"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.100000"
+        link_padding="0.000000"
+        max_iterations="5000"
+        planning_group_name="manipulator"
+        trajectory_sampling_rate="100"
+        velocity_scale_factor="1.000000"
+        task="{mtc_task}"
+      />
+      <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
+      <Action ID="WaitForUserTrajectoryApproval" solution="{mtc_solution}" />
+      <Action
+        ID="ExecuteMTCTask"
+        goal_duration_tolerance="-1.000000"
+        solution="{mtc_solution}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Test MTC Pro RRT">
+      <MetadataFields>
+        <Metadata subcategory="Application - Advanced Examples" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
