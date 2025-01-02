@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Retract">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Retract"
+    _description="Move back a distance in the tool frame"
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="InitializeMTCTask"
+        controller_names="/joint_trajectory_controller"
+        task_id="retract"
+      />
+      <Action ID="SetupMTCCurrentState" skip_collision_check="true" />
+      <Action
+        ID="SetupMTCMoveAlongFrameAxis"
+        axis_frame="tool0"
+        axis_z="-1"
+        max_distance="{distance}"
+        min_distance="{distance}"
+        hand_frame="tool0"
+      />
+      <Action ID="PlanMTCTask" />
+      <Action ID="ExecuteMTCTask" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Retract">
+      <input_port name="distance" default="0.1" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

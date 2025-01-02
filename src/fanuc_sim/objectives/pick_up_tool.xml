@@ -1,0 +1,68 @@
+<root BTCPP_format="4" main_tree_to_execute="Pick Up Tool">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Pick Up Tool"
+    _description="Pick up the tool from the tool holder"
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="CreateStampedPose"
+        reference_frame="tool_attach_site"
+        position_xyz="0;0;-0.1"
+        stamped_pose="{approach_pose}"
+      />
+      <Action
+        ID="InitializeMTCTask"
+        task_id="pick_up_tool"
+        controller_names="/joint_trajectory_controller"
+      />
+      <Action ID="SetupMTCCurrentState" />
+      <Action
+        ID="SetupMTCMoveToPose"
+        target_pose="{approach_pose}"
+        ik_frame="tool0"
+        planner_interface="pro_rrt"
+      />
+      <Action
+        ID="SetupMTCMoveAlongFrameAxis"
+        hand_frame="tool0"
+        max_distance="0.095"
+        min_distance="0.095"
+        axis_frame="tool0"
+      />
+      <Action ID="PlanMTCTask" />
+      <Action ID="ExecuteMTCTask" />
+      <Action
+        ID="MoveGripperAction"
+        position="1"
+        gripper_command_action_name="/tool_attach_controller/gripper_cmd"
+        timeout="10"
+      />
+      <Control ID="Fallback">
+        <Action
+          ID="AttachTool"
+          parent_link_name="tool0"
+          tool_name="suction_gripper"
+        />
+        <Control ID="Sequence">
+          <Action
+            ID="LogMessage"
+            log_level="info"
+            message="Adding tool to the planning scene to proceed"
+          />
+          <SubTree ID="Setup Planning Scene" _collapsed="true" />
+          <Action
+            ID="AttachTool"
+            parent_link_name="tool0"
+            tool_name="suction_gripper"
+          />
+        </Control>
+      </Control>
+      <SubTree ID="Retract" _collapsed="true" distance="0.35" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Pick Up Tool" />
+  </TreeNodesModel>
+</root>
