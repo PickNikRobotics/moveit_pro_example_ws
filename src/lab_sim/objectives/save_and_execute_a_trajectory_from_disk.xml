@@ -1,23 +1,24 @@
-<root
-  BTCPP_format="4"
-  main_tree_to_execute="Save and Execute a Trajectory from Disk"
->
+<?xml version="1.0" encoding="utf-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Record and Replay Scanning Motion">
   <!--//////////-->
   <BehaviorTree
-    ID="Save and Execute a Trajectory from Disk"
-    _description="Build a trajectory from a series of waypoints and MTC tasks, then save the trajectory to disk. Load the trajectory from disk and execute it as well."
+    ID="Record and Replay Scanning Motion"
+    _description="Build a trajectory from a series of waypoints and MTC tasks to scan the environment, then save the trajectory to disk. If the trajectory is approved, it will be saved and then executed."
     _favorite="false"
     _subtreeOnly="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
-      <SubTree ID="Plan and Save Trajectory" _collapsed="true" />
-      <SubTree ID="Load and Execute Joint Trajectory" _collapsed="true" />
+      <!--First we build the trajectory using caresian and joint-state waypoint. If the trajecotry is approved, it will be saved.-->
+      <SubTree ID="Plan and Save Trajectory" _collapsed="false" />
+      <!--Next we load the saved trajectory from disk an execute it. This stage does not require motion planning-->
+      <SubTree ID="Load and Execute Joint Trajectory" _collapsed="false" />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Save and Execute a Trajectory from Disk">
+    <SubTree ID="Record and Replay Scanning Motion">
       <MetadataFields>
-        <Metadata subcategory="Motion - Execute" />
+        <Metadata subcategory="Application - Advanced Examples" />
+        <Metadata runnable="true" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
