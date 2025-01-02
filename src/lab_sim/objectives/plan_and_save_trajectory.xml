@@ -54,7 +54,7 @@
   <TreeNodesModel>
     <SubTree ID="Plan and Save Trajectory">
       <MetadataFields>
-        <Metadata subcategory="Application - Advanced Examples" />
+        <Metadata subcategory="Application - Basic Examples" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
