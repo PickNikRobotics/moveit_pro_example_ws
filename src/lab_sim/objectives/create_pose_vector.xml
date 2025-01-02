@@ -21,6 +21,17 @@
       <Action
         ID="CreateStampedPose"
         orientation_xyzw="0;-1;0;0"
+        position_xyz="0.75;0.5;0.9"
+        stamped_pose="{stamped_pose}"
+      />
+      <Action
+        ID="AddPoseStampedToVector"
+        vector="{target_poses}"
+        input="{stamped_pose}"
+      />
+      <Action
+        ID="CreateStampedPose"
+        orientation_xyzw="0;-1;0;0"
         position_xyz="0.5;0.5;0.8"
         stamped_pose="{stamped_pose}"
       />
@@ -32,7 +43,51 @@
       <Action
         ID="CreateStampedPose"
         orientation_xyzw="0;-1;0;0"
+        position_xyz="0.25;0.5;0.7"
+        stamped_pose="{stamped_pose}"
+      />
+      <Action
+        ID="AddPoseStampedToVector"
+        vector="{target_poses}"
+        input="{stamped_pose}"
+      />
+      <Action
+        ID="CreateStampedPose"
+        orientation_xyzw="0;-1;0;0"
+        position_xyz="0;0.5;0.6"
+        stamped_pose="{stamped_pose}"
+      />
+      <Action
+        ID="AddPoseStampedToVector"
+        vector="{target_poses}"
+        input="{stamped_pose}"
+      />
+      <Action
+        ID="CreateStampedPose"
+        orientation_xyzw="0;-1;0;0"
         position_xyz="-0.25;0.5;0.7"
+        stamped_pose="{stamped_pose}"
+      />
+      <Action
+        ID="AddPoseStampedToVector"
+        vector="{target_poses}"
+        input="{stamped_pose}"
+      />
+      <Action
+        ID="CreateStampedPose"
+        orientation_xyzw="0;-1;0;0"
+        position_xyz="-0.5;0.5;0.8"
+        stamped_pose="{stamped_pose}"
+      />
+      <Action
+        ID="AddPoseStampedToVector"
+        vector="{target_poses}"
+        input="{stamped_pose}"
+      />
+      <Action
+        ID="CreateStampedPose"
+        orientation_xyzw="0;-1;0;0"
+        position_xyz="-0.75;0.5;0.9"
         stamped_pose="{stamped_pose}"
       />
       <Action

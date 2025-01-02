@@ -102,7 +102,7 @@ moveit_params:
     path: "config/moveit/pilz_industrial_motion_planner_planning.yaml"
   kinematics:
     package: "picknik_ur_base_config"
-    path: "config/moveit/pose_ik_distance.yaml"
+    path: "config/moveit/trac_ik_kinematics_distance.yaml"
   servo:
     package: "picknik_ur_base_config"
     path: "config/moveit/ur_servo.yaml"
