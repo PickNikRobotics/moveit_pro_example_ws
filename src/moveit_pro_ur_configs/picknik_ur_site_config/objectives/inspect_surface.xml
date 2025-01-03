@@ -43,12 +43,11 @@
             input_pose="{pose}"
           />
           <Action
-            ID="SetupMTCMoveToPose"
+            ID="SetupMTCPlanToPose"
             ik_frame="grasp_link"
             planning_group_name="manipulator"
             target_pose="{target_pose}"
             task="{move_to_pose_task}"
-            planner_interface="moveit_default"
           />
         </Control>
       </Decorator>
