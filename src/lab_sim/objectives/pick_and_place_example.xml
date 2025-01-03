@@ -69,7 +69,7 @@
   <TreeNodesModel>
     <SubTree ID="Pick And Place Example">
       <MetadataFields>
-        <Metadata subcategory="Application - Basic Examples" />
+        <Metadata subcategory="Application - Advanced Examples" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
