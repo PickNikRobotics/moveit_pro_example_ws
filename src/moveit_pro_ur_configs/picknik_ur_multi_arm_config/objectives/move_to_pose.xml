@@ -13,12 +13,11 @@
       />
       <Action ID="SetupMTCCurrentState" task="{move_to_pose_task}" />
       <Action
-        ID="SetupMTCMoveToPose"
+        ID="SetupMTCPlanToPose"
         ik_frame="first_grasp_link"
         planning_group_name="first_manipulator"
         target_pose="{target_pose}"
         task="{move_to_pose_task}"
-        planner_interface="moveit_default"
       />
       <Action
         ID="PlanMTCTask"
