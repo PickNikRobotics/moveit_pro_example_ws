@@ -8,16 +8,6 @@
   >
     <Decorator ID="KeepRunningUntilFailure">
       <Control ID="Sequence">
-        <Action
-          ID="InitializeMotionConstraints"
-          constraints_name="gripper pointing down"
-          constraints="{constraints}"
-        />
-        <Action
-          ID="AppendOrientationConstraint"
-          config_file_name="my_constraints.yaml"
-          constraints="{constraints}"
-        />
         <Control ID="Sequence" name="TopLevelSequence">
           <SubTree ID="Open Gripper" />
           <Decorator ID="RetryUntilSuccessful" num_attempts="3">
@@ -35,8 +25,8 @@
               controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
               joint_group_name="manipulator"
               waypoint_name="Grasp Left"
-              planner_interface="moveit_all_planners"
-              constraints="{constraints}"
+              keep_orientation="true"
+              keep_orientation_tolerance="0.2"
             />
           </Decorator>
         </Control>

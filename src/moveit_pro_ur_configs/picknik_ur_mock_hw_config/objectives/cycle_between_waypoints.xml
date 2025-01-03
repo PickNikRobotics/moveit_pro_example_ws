@@ -12,14 +12,12 @@
           waypoint_name="Grasp Left"
           joint_group_name="manipulator"
           controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-          planner_interface="pro_rrt"
         />
         <SubTree
           ID="Move to Waypoint"
           waypoint_name="Grasp Right"
           joint_group_name="manipulator"
           controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-          planner_interface="pro_rrt"
         />
       </Control>
     </Decorator>

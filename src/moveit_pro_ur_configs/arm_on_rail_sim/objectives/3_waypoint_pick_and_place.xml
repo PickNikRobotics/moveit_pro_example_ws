@@ -15,7 +15,6 @@
         waypoint_name="Look at Table"
         joint_group_name="manipulator"
         controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-        planner_interface="moveit_default"
         constraints="{constraints}"
       />
       <Action
@@ -33,7 +32,6 @@
               waypoint_name="Pick Cube"
               joint_group_name="manipulator"
               controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-              planner_interface="moveit_default"
               constraints="{constraints}"
             />
             <Action
@@ -46,14 +44,12 @@
               waypoint_name="Look at Table"
               joint_group_name="manipulator"
               controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-              planner_interface="moveit_default"
               constraints="{constraints}"
             />
             <SubTree
               ID="Move to Waypoint"
               joint_group_name="manipulator"
               controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-              planner_interface="moveit_default"
               constraints="{constraints}"
               waypoint_name="Place Cube"
             />
@@ -67,7 +63,6 @@
               waypoint_name="Look at Table"
               joint_group_name="manipulator"
               controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-              planner_interface="moveit_default"
               constraints="{constraints}"
             />
           </Control>
@@ -78,7 +73,6 @@
               waypoint_name="Place Cube"
               joint_group_name="manipulator"
               controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-              planner_interface="moveit_default"
               constraints="{constraints}"
             />
             <Action
@@ -91,7 +85,6 @@
               waypoint_name="Look at Table"
               joint_group_name="manipulator"
               controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-              planner_interface="moveit_default"
               constraints="{constraints}"
             />
             <SubTree
@@ -99,7 +92,6 @@
               waypoint_name="Pick Cube"
               joint_group_name="manipulator"
               controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-              planner_interface="moveit_default"
               constraints="{constraints}"
             />
             <Action
@@ -112,7 +104,6 @@
               waypoint_name="Look at Table"
               joint_group_name="manipulator"
               controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-              planner_interface="moveit_default"
               constraints="{constraints}"
             />
           </Control>

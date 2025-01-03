@@ -36,7 +36,7 @@
         task="{retreat_task}"
       />
       <Action
-        ID="SetupMTCMoveToJointState"
+        ID="SetupMTCPlanToJointState"
         joint_state="{initial_robot_state}"
         planning_group_name="manipulator"
         task="{retreat_task}"

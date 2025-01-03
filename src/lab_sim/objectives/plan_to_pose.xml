@@ -31,12 +31,11 @@
           />
           <Action ID="Script" code="pose_ctr += 1" />
           <Action
-            ID="SetupMTCMoveToPose"
+            ID="SetupMTCPlanToPose"
             ik_frame="{ik_frame}"
             planning_group_name="{planning_group_name}"
             target_pose="{target_pose}"
             task="{mtc_task}"
-            planner_interface="moveit_default"
           />
         </Control>
       </Decorator>

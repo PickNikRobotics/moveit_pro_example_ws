@@ -12,7 +12,6 @@
         _collapsed="true"
         waypoint_name="VFC Start"
         joint_group_name="manipulator"
-        planner_interface="pro_rrt"
         controller_names="/joint_trajectory_controller"
       />
       <Action
