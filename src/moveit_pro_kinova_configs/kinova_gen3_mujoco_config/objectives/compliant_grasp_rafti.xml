@@ -62,7 +62,8 @@
         <Control ID="Sequence">
           <Action
             ID="LoadPointCloudFromFile"
-            file_path="~/user_ws/install/picknik_accessories/share/picknik_accessories/descriptions/miscellaneous/mock_satellite.stl"
+            file_path="descriptions/miscellaneous/mock_satellite.stl"
+            package_name="picknik_accessories"
             frame_id="object_frame"
             num_sampled_points="3000"
             random_seed="1234"
