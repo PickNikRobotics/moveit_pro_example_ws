@@ -23,7 +23,6 @@
         waypoint_name="Extended Right"
         joint_group_name="manipulator"
         controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-        planner_interface="moveit_default"
       />
       <SubTree ID="Clear Snapshot" _collapsed="true" />
       <SubTree ID="Reset Planning Scene" _collapsed="true" />
@@ -47,7 +46,6 @@
             waypoint_name="Extended Right 2"
             joint_group_name="manipulator"
             controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-            planner_interface="moveit_default"
           />
           <SubTree
             ID="Detect Fixed Handle Graspable Object"
@@ -61,7 +59,6 @@
             waypoint_name="Extended Right"
             joint_group_name="manipulator"
             controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-            planner_interface="moveit_default"
           />
           <SubTree
             ID="Detect Fixed Handle Graspable Object"
@@ -76,7 +73,6 @@
         waypoint_name="Hinge View"
         joint_group_name="manipulator"
         controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-        planner_interface="moveit_default"
       />
       <SubTree
         ID="Detect Hinge Line Segment"

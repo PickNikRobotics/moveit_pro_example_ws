@@ -14,7 +14,6 @@
           waypoint_name="Look at April Tag"
           joint_group_name="manipulator"
           controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-          planner_interface="moveit_default"
         />
       </Control>
       <SubTree

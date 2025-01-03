@@ -23,7 +23,6 @@
         waypoint_name="Extended Right 2"
         joint_group_name="manipulator"
         controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-        planner_interface="moveit_default"
       />
       <SubTree ID="Clear Snapshot" _collapsed="true" />
       <SubTree ID="Reset Planning Scene" _collapsed="true" />
