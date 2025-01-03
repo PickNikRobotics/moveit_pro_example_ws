@@ -35,7 +35,6 @@
               controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
               joint_group_name="manipulator"
               waypoint_name="Grasp Left"
-              planner_interface="moveit_all_planners"
               constraints="{constraints}"
             />
           </Decorator>
