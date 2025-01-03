@@ -16,7 +16,6 @@
         waypoint_name="Look at Airfoil"
         joint_group_name="manipulator"
         controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-        planner_interface="moveit_default"
       />
       <SubTree
         ID="Estimate Object Pose"
