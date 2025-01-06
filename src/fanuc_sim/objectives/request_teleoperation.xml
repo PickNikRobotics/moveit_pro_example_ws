@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Request Teleoperation">
   <!--The integer value used here for teleoperation mode comes from the moveit_studio_sdk_msgs/TeleoperationMode ROS message.-->
   <BehaviorTree
@@ -146,4 +147,7 @@
       </Control>
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Request Teleoperation" />
+  </TreeNodesModel>
 </root>

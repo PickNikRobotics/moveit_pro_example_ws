@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Register CAD Part">
   <!--//////////-->
   <BehaviorTree
@@ -15,6 +16,7 @@
         orientation_xyzw="0;0;0;1"
         stamped_pose="{stamped_pose}"
         name="Initial Guess"
+        reference_frame="world"
       />
       <SubTree
         ID="Load Mesh as Red Pointcloud"
@@ -23,24 +25,35 @@
         initial_pose="{stamped_pose}"
         point_cloud="{red_cloud}"
       />
-      <Action ID="SendPointCloudToUI" point_cloud="{red_cloud}" />
+      <Action
+        ID="SendPointCloudToUI"
+        point_cloud="{red_cloud}"
+        pcd_topic="/pcd_pointcloud_captures"
+      />
       <Action
         ID="GetPointCloud"
         topic_name="/wrist_camera/points"
         message_out="{wrist_point_cloud}"
+        timeout_sec="5.000000"
       />
       <Action
         ID="TransformPointCloudFrame"
         input_cloud="{wrist_point_cloud}"
         output_cloud="{wrist_point_cloud}"
+        target_frame="world"
       />
-      <Action ID="SendPointCloudToUI" point_cloud="{wrist_point_cloud}" />
+      <Action
+        ID="SendPointCloudToUI"
+        point_cloud="{wrist_point_cloud}"
+        pcd_topic="/pcd_pointcloud_captures"
+      />
       <Action
         ID="RegisterPointClouds"
         target_point_cloud="{wrist_point_cloud}"
         base_point_cloud="{red_cloud}"
         max_correspondence_distance="0.5"
         max_iterations="100"
+        target_pose_in_base_frame="{target_pose}"
       />
       <SubTree
         ID="Load Mesh as Green Pointcloud"
@@ -55,7 +68,14 @@
         transform_pose="{target_pose}"
         output_cloud="{output_cloud_aligned}"
       />
-      <Action ID="SendPointCloudToUI" point_cloud="{output_cloud_aligned}" />
+      <Action
+        ID="SendPointCloudToUI"
+        point_cloud="{output_cloud_aligned}"
+        pcd_topic="/pcd_pointcloud_captures"
+      />
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Register CAD Part" />
+  </TreeNodesModel>
 </root>

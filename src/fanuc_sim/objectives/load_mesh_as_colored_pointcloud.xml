@@ -24,16 +24,10 @@
         num_sampled_points="10000"
       />
       <Action
-        ID="TransformPointCloudFrame"
-        input_cloud="{point_cloud}"
-        output_cloud="{point_cloud}"
-        target_frame="{target_frame}"
-      />
-      <Action
         ID="TransformPointCloud"
         input_cloud="{point_cloud}"
         transform_pose="{initial_pose}"
-        output_cloud="{output_cloud}"
+        output_cloud="{point_cloud}"
       />
     </Control>
   </BehaviorTree>
