@@ -42,7 +42,7 @@
         <Control ID="Fallback" name="TryGraspOuter">
           <Decorator ID="KeepRunningUntilFailure">
             <Decorator
-              ID="ForEachString"
+              ID="ForEach"
               name="IterateThroughPlaceWaypoints"
               vector_in="Place Right;Place Left"
               out="{place_waypoint}"
@@ -76,11 +76,11 @@
                         detected_shapes="{cuboids}"
                       />
 
-                      <!-- Get the first detected cuboid. NOTE: this is a small hack to get ForEachGraspableObject to iterate just once, which returns the first object in the vector. -->
+                      <!-- Get the first detected cuboid. NOTE: this is a small hack to get ForEach to iterate just once, which returns the first object in the vector. -->
                       <Control ID="Sequence">
                         <Decorator ID="ForceSuccess">
                           <Decorator
-                            ID="ForEachGraspableObject"
+                            ID="ForEach"
                             vector_in="{cuboids}"
                             out="{cuboid_object}"
                           >
