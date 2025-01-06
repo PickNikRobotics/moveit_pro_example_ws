@@ -75,6 +75,82 @@
     wrench: []
   name: Left bin
 - description: ''
+  favorite: true
+  joint_group_names:
+  - gripper
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - joint_1
+    - joint_2
+    - joint_3
+    - joint_4
+    - joint_5
+    - joint_6
+    position:
+    - 4.101780649531268e-37
+    - -0.4688951300482917
+    - -0.4842548345795775
+    - 6.3512581794154385e-19
+    - -0.002355461329286324
+    - 6.351037779836293e-19
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: View Concave
+- description: ''
+  favorite: true
+  joint_group_names:
+  - gripper
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - joint_1
+    - joint_2
+    - joint_3
+    - joint_4
+    - joint_5
+    - joint_6
+    position:
+    - -4.531861149816098e-05
+    - -0.12266538508312397
+    - -0.701862360395226
+    - -3.0254405894626604e-05
+    - -0.00378749392859631
+    - -4.690750471590086e-05
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: View Convex
+- description: ''
   favorite: false
   joint_group_names:
   - gripper
