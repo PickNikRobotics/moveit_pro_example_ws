@@ -33,11 +33,7 @@
         neighbor_radius="0.1"
         output_poses="{output_poses}"
       />
-      <Decorator
-        ID="ForEachPoseStamped"
-        vector_in="{output_poses}"
-        out="{pose}"
-      >
+      <Decorator ID="ForEach" vector_in="{output_poses}" out="{pose}">
         <Control ID="Sequence">
           <Action
             ID="TransformPose"

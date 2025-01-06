@@ -7,6 +7,7 @@
     _subtreeOnly="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
+      <!-- Make sure to move the robot to the same starting position as the saved trajectory starts, otherwise the joint_trajectory_controller will use joint interpolation to align the robot with the path -->
       <SubTree
         ID="Move to Waypoint"
         _collapsed="true"
