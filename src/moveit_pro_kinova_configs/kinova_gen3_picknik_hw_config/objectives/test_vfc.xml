@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root BTCPP_format="4" main_tree_to_execute="Test VFC">
+  <!--//////////-->
+  <BehaviorTree ID="Test VFC" _description="" _favorite="true">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree ID="Move to Waypoint" _collapsed="false" joint_group_name="manipulator" controller_names="/joint_trajectory_controller /robotiq_gripper_controller" waypoint_name="Place" planner_interface="moveit_default"/>
+      <SubTree ID="Close Gripper" _collapsed="true"/>
+      <Action ID="ActivateControllers" controller_names="/velocity_force_controller"/>
+      <Action ID="CreateStampedTwist" stamped_twist="{desired_twist}" angular_velocity_xyz="0;0;0" linear_velocity_xyz="0.01;0.0;0.0"/>
+      <Action ID="CreateStampedWrench" stamped_wrench="{desired_wrench}" torque_xyz="0;0;0" force_xyz="0;0;-8"/>
+      <Action ID="CallTriggerService" service_name="/velocity_force_controller/zero_fts"/>
+      <Action ID="PublishVelocityForceCommand" wrench_gain="0.001" force_controlled_axes="0;0;1;0;0;0" velocity_controlled_axes="1;0;0;0;0;0"/>
+    </Control>
+  </BehaviorTree>
+</root>

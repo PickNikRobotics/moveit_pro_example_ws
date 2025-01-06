@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>kinova_gen3_base_hw_config</name>
+  <version>5.1.0</version>
+
+  <description>Robot config package for Kinova Gen3 hardware.</description>
+
+  <maintainer email="david.yackzan@picknik.ai">David Yackzan</maintainer>
+  <maintainer email="paul.gesel@picknik.ai">Paul Gesel</maintainer>
+
+  <license>Proprietary</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>kinova_gen3_base_config</depend>
+
+  <exec_depend>kinova_vision</exec_depend>
+  <exec_depend>kortex_description</exec_depend>
+  <exec_depend>picknik_accessories</exec_depend>
+  <exec_depend>picknik_reset_fault_controller</exec_depend>
+  <exec_depend>picknik_twist_controller</exec_depend>
+  <exec_depend>realsense2_camera</exec_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+
+  <test_depend>ament_clang_format</test_depend>
+  <test_depend>ament_clang_tidy</test_depend>
+  <test_depend>ament_cmake_copyright</test_depend>
+  <test_depend>ament_cmake_lint_cmake</test_depend>
+  <test_depend>picknik_ament_copyright</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

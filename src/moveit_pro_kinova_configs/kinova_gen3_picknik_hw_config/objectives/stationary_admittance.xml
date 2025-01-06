@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root BTCPP_format="4" main_tree_to_execute="Stationary Admittance">
+  <!--//////////-->
+  <BehaviorTree ID="Stationary Admittance" _description="" _favorite="false" _hardcoded="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="ActivateControllers" controller_names="joint_trajectory_admittance_controller"/>
+      <Action ID="CallTriggerService" service_name="/joint_trajectory_admittance_controller/zero_fts"/>
+      <Action ID="SetAdmittanceParameters" config_file_name="move_along_path_admittance.yaml"/>
+      <Action ID="GetCurrentPlanningScene"/>
+      <Action ID="GetRobotJointState"/>
+      <Action ID="CreateStationaryTrajectory"/>
+      <Action ID="ExecuteTrajectoryWithAdmittance"/>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Stationary Admittance"/>
+  </TreeNodesModel>
+</root>

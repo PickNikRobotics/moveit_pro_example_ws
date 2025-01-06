@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>kinova_vision</name>
+  <version>1.0.0</version>
+  <description>Package allowing access to the Kinova vision module color and depth stream.</description>
+  <maintainer email="support@kinova.ca">Kinova</maintainer>
+  <url type="repository">https://github.com/Kinovarobotics</url>
+  <license>BSD</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>libgstreamer1.0-dev</depend>
+  <depend>libgstreamer-plugins-base1.0-dev</depend>
+
+  <depend>camera_calibration_parsers</depend>
+  <depend>camera_info_manager</depend>
+  <depend>cv_bridge</depend>
+  <depend>image_transport</depend>
+  <depend>rclcpp</depend>
+  <depend>rclcpp_components</depend>
+  <depend>sensor_msgs</depend>
+  <depend>tf2</depend>
+  <depend>tf2_ros</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+
+</package>

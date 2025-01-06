@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root BTCPP_format="4" main_tree_to_execute="Compliant Grasp RAFTI">
+  <!--//////////-->
+  <BehaviorTree ID="Compliant Grasp RAFTI" _description="Grasp RAFTI with admittance." _favorite="true" _hardcoded="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="ClearSnapshot"/>
+      <SubTree ID="Open Gripper" _collapsed="true"/>
+      <SubTree ID="Move to Waypoint" waypoint_name="AprilTag" joint_group_name="manipulator" controller_names="/joint_trajectory_controller /robotiq_gripper_controller" planner_interface="moveit_default"/>
+      <Decorator ID="Delay" delay_msec="2000">
+        <SubTree ID="Take Snapshot" _collapsed="true"/>
+      </Decorator>
+      <Action ID="CreateStampedPose" stamped_pose="{goal_pose}" orientation_xyzw="1.0;0.0;0.0;0.0" position_xyz="0.29;-0.23;0.33" reference_frame="world"/>
+      <Action ID="TransformPose" input_pose="{goal_pose}" translation_xyz="0.0;0.0;-0.13" quaternion_xyzw="0.0;0.0;0.0;1.0" output_pose="{hole_pose}"/>
+      <Action ID="AddPoseStampedToVector" input="{hole_pose}"/>
+      <Action ID="AddPoseStampedToVector" input="{goal_pose}"/>
+      <Action ID="PlanCartesianPath" velocity_scale_factor="0.1" position_only="false"/>
+      <Action ID="ActivateControllers" controller_names="joint_trajectory_admittance_controller"/>
+      <Action ID="CallTriggerService" service_name="/joint_trajectory_admittance_controller/zero_fts"/>
+      <Action ID="SetAdmittanceParameters" config_file_name="admittance_controller_params_jtac.yaml"/>
+      <Action ID="ExecuteTrajectoryWithAdmittance" goal_position_tolerance="0.9" path_position_tolerance="10"/>
+      <SubTree ID="Close Gripper" _collapsed="true"/>
+    </Control>
+  </BehaviorTree>
+</root>
