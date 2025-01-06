@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:macro name="robotiq_fts_ros2_control" params="
+    name
+    use_fake_mode:=false
+    max_retries:=1
+    read_rate:=10
+    ftdi_id:=''
+    tf_prefix
+  ">
+    <ros2_control name="${name}robotiq_ft_sensor" type="sensor">
+      <hardware>
+          <plugin>robotiq_ft_sensor_hardware/RobotiqFTSensorHardware</plugin>
+          <param name="use_fake_mode">${use_fake_mode}</param>
+          <param name="max_retries">${max_retries}</param>
+          <param name="read_rate">${read_rate}</param>
+          <param name="ftdi_id">${ftdi_id}</param>
+      </hardware>
+      <sensor name="${tf_prefix}robotiq_ft_sensor">
+        <state_interface name="force.x"/>
+        <state_interface name="force.y"/>
+        <state_interface name="force.z"/>
+        <state_interface name="torque.x"/>
+        <state_interface name="torque.y"/>
+        <state_interface name="torque.z"/>
+      </sensor>
+
+    </ros2_control>
+
+  </xacro:macro>
+
+</robot>

@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://wiki.ros.org/xacro" name="$(arg name)">
+
+  <!-- custom args -->
+  <xacro:arg name="name" default="robotiq_ft_sensor"/>
+  <xacro:arg name="use_fake_mode" default="false"/>
+  <xacro:arg name="max_retries" default="100"/>
+  <xacro:arg name="read_rate" default="10"/>
+  <xacro:arg name="ftdi_id" default=""/>
+  <xacro:arg name="tf_prefix" default=""/>
+
+  <!-- import main macro -->
+  <xacro:include filename="$(find robotiq_ft_sensor_description)/urdf/robotiq_fts150.urdf.xacro" />
+  <xacro:include filename="$(find robotiq_ft_sensor_description)/urdf/robotiq_fts.ros2_control.xacro" />
+
+  <!-- create link fixed to the "world" -->
+  <link name="world" />
+
+  <!-- force sensor -->
+  <xacro:robotiq_fts150 parent="world" tf_prefix="$(arg tf_prefix)">
+    <origin xyz="0 0 0" rpy="0 0 0"/> 
+  </xacro:robotiq_fts150>
+
+  <!-- robotiq sensor hardware -->
+  <xacro:robotiq_fts_ros2_control
+      name="$(arg name)"
+      use_fake_mode="$(arg use_fake_mode)"
+      max_retries="$(arg max_retries)"
+      read_rate="$(arg read_rate)"
+      ftdi_id="$(arg ftdi_id)"
+      tf_prefix="$(arg tf_prefix)"
+  />
+
+</robot>

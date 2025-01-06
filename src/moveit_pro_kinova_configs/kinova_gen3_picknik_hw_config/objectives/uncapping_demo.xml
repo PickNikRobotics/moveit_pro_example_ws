@@ -1,0 +1,105 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root BTCPP_format="4" main_tree_to_execute="Uncapping Demo">
+  <!--//////////-->
+  <BehaviorTree ID="Uncapping Demo" _description="Estimate the pose of the mock satellite and uncap the mock port." _favorite="true" _hardcoded="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree ID="Move to Waypoint" waypoint_name="View Satellite Uncapping" joint_group_name="manipulator" controller_names="/joint_trajectory_controller /robotiq_gripper_controller" />
+      <Action ID="ClearSnapshot"/>
+      <SubTree ID="Take Snapshot" _collapsed="true"/>
+      <SubTree ID="Sample April Tag" _collapsed="true" num_samples="1" tag_id="-1" apriltag_config="51mm_apriltag_detection_config.yaml" max_distance="0.02" max_rotation="0.2" avg_pose="{tag_pose}"/>
+      <Action ID="TransformPoseFrame" input_pose="{tag_pose}" target_frame_id="world" output_pose="{tag_pose_world}"/>
+      <Control ID="Fallback">
+        <Decorator ID="Timeout" msec="1000">
+          <Action ID="PublishStaticFrame" pose="{tag_pose_world}" child_frame_id="tag_frame" publish_rate="5"/>
+        </Decorator>
+        <Decorator ID="Timeout" msec="1000">
+          <Control ID="Sequence">
+            <Action ID="TransformPose" input_pose="{tag_pose_world}" translation_xyz="0.1074;-0.10696;-0.13317" quaternion_xyzw="0.0;0.707;0.707;0.0" output_pose="{mock_satellite_pose_estimate}"/>
+            <Action ID="PublishStaticFrame" pose="{mock_satellite_pose_estimate}" child_frame_id="object_frame" publish_rate="5"/>
+          </Control>
+        </Decorator>
+        <Control ID="Sequence">
+          <Action ID="LoadPointCloudFromFile" file_path="~/user_ws/install/picknik_accessories/share/picknik_accessories/descriptions/miscellaneous/mock_satellite.stl" frame_id="object_frame" num_sampled_points="3000" random_seed="1234" point_cloud="{mock_satellite_point_cloud}" scale="1.0" color="255;150;0"/>
+          <Control ID="Fallback">
+            <Decorator ID="Timeout" msec="1000">
+              <Action ID="PublishStaticFrame" pose="{mock_satellite_pose_estimate}" child_frame_id="object_frame" publish_rate="5"/>
+            </Decorator>
+            <Action ID="AlwaysSuccess"/>
+          </Control>
+          <Action ID="TransformPointCloudFrame" input_cloud="{mock_satellite_point_cloud}" target_frame="world" output_cloud="{mock_satellite_point_cloud}"/>
+          <Action ID="GetSyncedImageAndPointCloud" point_cloud_topic_name="/wrist_camera/depth/color/points" rgb_image_topic_name="/wrist_camera/color/image_raw" rgb_camera_info_topic_name="/wrist_camera/color/camera_info" point_cloud="{point_cloud}" rgb_image="{rgb_image}" rgb_camera_info="{rgb_camera_info}"/>
+          <Action ID="TransformPointCloudFrame" input_cloud="{point_cloud}" target_frame="world" output_cloud="{point_cloud}"/>
+          <Action ID="RegisterPointClouds" base_point_cloud="{mock_satellite_point_cloud}" target_point_cloud="{point_cloud}" max_correspondence_distance="0.01" target_pose_in_base_frame="{model_to_real_pose}" max_iterations="5"/>
+          <Action ID="TransformPointCloud" input_cloud="{mock_satellite_point_cloud}" transform_pose="{model_to_real_pose}" output_cloud="{aligned_model_cloud}"/>
+          <Control ID="Fallback">
+            <Decorator ID="Timeout" msec="100">
+              <Action ID="PublishStaticFrame" pose="{mock_satellite_pose_estimate}" child_frame_id="object_frame" publish_rate="5"/>
+            </Decorator>
+            <Action ID="AlwaysSuccess"/>
+          </Control>
+          <Action ID="SendPointCloudToUI" point_cloud="{aligned_model_cloud}" pcd_topic="/pcd_pointcloud_captures"/>
+          <Action ID="CreateStampedPose" orientation_xyzw="0;0;0;1" position_xyz="0;0;0" stamped_pose="{identity_pose}"/>
+          <Action ID="TransformPoseWithPose" input_pose="{mock_satellite_pose_estimate}" transform_pose="{identity_pose}" output_pose="{model_world}"/>
+          <Control ID="Fallback">
+            <Decorator ID="Timeout" msec="1000">
+              <Action ID="PublishStaticFrame" pose="{model_world}" child_frame_id="object_frame_new" publish_rate="5"/>
+            </Decorator>
+            <Action ID="AlwaysSuccess"/>
+          </Control>
+          <Action ID="TransformPoseFrame" input_pose="{model_world}" target_frame_id="object_frame_new" output_pose="{model_object}"/>
+          <Action ID="TransformPose" input_pose="{model_object}" translation_xyz="0.0;0.22;0.0" quaternion_xyzw="0.5;-0.5;0.5;0.5" output_pose="{cap_pose}"/>
+          <Action ID="TransformPoseFrame" input_pose="{cap_pose}" target_frame_id="world" output_pose="{cap_pose}"/>
+          <Control ID="Fallback">
+            <Decorator ID="Timeout" msec="1000">
+              <Action ID="PublishStaticFrame" pose="{cap_pose}" child_frame_id="object_hole" publish_rate="5"/>
+            </Decorator>
+            <Action ID="AlwaysSuccess"/>
+          </Control>
+        </Control>
+      </Control>
+      <Action ID="TransformPose" input_pose="{cap_pose}" translation_xyz="0.0;0.0;-0.065" quaternion_xyzw="0.0;0.0;0.0;1.0" output_pose="{goal_pose}"/>
+      <Action ID="TransformPose" input_pose="{cap_pose}" translation_xyz="0.0;0.0;-0.0033" quaternion_xyzw="0.0;0.0;-0.999;0.0447" output_pose="{turn_pose}"/>
+      <Action ID="TransformPose" output_pose="{turn_back_pose}" input_pose="{cap_pose}" translation_xyz="0.0;0.0;-0.0033" quaternion_xyzw="0.0;0.0;0.0;1.0"/>
+      <Action ID="TransformPose" output_pose="{retreat_pose}" input_pose="{turn_pose}" translation_xyz="0.0;0.0;-0.08" quaternion_xyzw="0.0;0.0;0.0;1.0"/>
+      <Control ID="Fallback">
+        <Decorator ID="Timeout" msec="1000">
+          <Action ID="PublishStaticFrame" pose="{goal_pose}" child_frame_id="goal_pose" publish_rate="5"/>
+        </Decorator>
+        <Action ID="AlwaysSuccess"/>
+      </Control>
+      <Action ID="AddPoseStampedToVector" vector="{unscrew_poses}" input="{goal_pose}"/>
+      <Action ID="AddPoseStampedToVector" vector="{unscrew_poses}" input="{cap_pose}"/>
+      <Action ID="AddPoseStampedToVector" vector="{unscrew_poses}" input="{turn_pose}"/>
+      <Control ID="Fallback">
+        <Action ID="PlanCartesianPath" trajectory_sampling_rate="100.000000" acceleration_scale_factor="0.5" debug_solution="{unscrew_debug_solution}" velocity_scale_factor="0.1" blending_radius="0.020000" position_only="false" joint_trajectory_msg="{unscrew_trajectory}" tip_link="grasp_link" planning_group_name="manipulator" path="{unscrew_poses}"/>
+        <Action ID="WaitForUserTrajectoryApproval" solution="{unscrew_debug_solution}"/>
+      </Control>
+      <Action ID="WaitForUserTrajectoryApproval" solution="{unscrew_debug_solution}"/>
+      <Control ID="Sequence">
+        <Action ID="ActivateControllers" controller_names="/joint_trajectory_admittance_controller"/>
+        <Action ID="CallTriggerService" service_name="/joint_trajectory_admittance_controller/zero_fts"/>
+        <Action ID="ExecuteTrajectoryWithAdmittance" stiffness="120;120;100;120;120;120" damping="800;800;100;120;120;120" mass="40;40;20;20;20;20" goal_position_tolerance="0.001" controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory" path_position_tolerance="100.0" selected_axes="1;1;0;0;0;0" absolute_force_torque_threshold="100;100;100;10;10;10" joint_trajectory_msg="{unscrew_trajectory}"/>
+      </Control>
+      <!--<SubTree ID="Open Gripper" _collapsed="true"/>-->
+      <!--<Action ID="AddPoseStampedToVector" vector="{turn_back_pose_vec}" input="{turn_back_pose}"/>-->
+      <!--<Control ID="Fallback">-->
+      <!--<Action ID="PlanCartesianPath" trajectory_sampling_rate="100.000000" acceleration_scale_factor="0.5" debug_solution="{turn_back_debug_solution}" velocity_scale_factor="0.1" blending_radius="0.020000" position_only="false" joint_trajectory_msg="{turn_back_trajectory}" tip_link="grasp_link" planning_group_name="manipulator" path="{turn_back_pose_vec}"/>-->
+      <!--<Action ID="WaitForUserTrajectoryApproval" solution="{turn_back_debug_solution}"/>-->
+      <!--</Control>-->
+      <!--<Control ID="Sequence">-->
+      <!-- <Action ID="CallTriggerService" service_name="/joint_trajectory_admittance_controller/zero_fts"/> -->
+      <!--<Action ID="ExecuteTrajectoryWithAdmittance" stiffness="120;120;100;120;120;120" damping="800;800;100;120;120;120" mass="40;40;20;20;20;20" goal_position_tolerance="0.001" controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory" path_position_tolerance="100.0" selected_axes="1;1;0;0;0;0" absolute_force_torque_threshold="100;100;100;10;10;10" joint_trajectory_msg="{turn_back_trajectory}"/>-->
+      <!--</Control>-->
+      <!--<SubTree ID="Close Gripper" _collapsed="true"/>-->
+      <Action ID="AddPoseStampedToVector" vector="{retreat_pose_vec}" input="{retreat_pose}"/>
+      <Control ID="Fallback">
+        <Action ID="PlanCartesianPath" trajectory_sampling_rate="100.000000" acceleration_scale_factor="0.5" debug_solution="{retreat_debug_solution}" velocity_scale_factor="0.1" blending_radius="0.020000" position_only="false" joint_trajectory_msg="{retreat_trajectory}" tip_link="grasp_link" planning_group_name="manipulator" path="{retreat_pose_vec}"/>
+        <Action ID="WaitForUserTrajectoryApproval" solution="{retreat_debug_solution}"/>
+      </Control>
+      <Control ID="Sequence">
+        <Action ID="CallTriggerService" service_name="/joint_trajectory_admittance_controller/zero_fts"/>
+        <Action ID="ExecuteTrajectoryWithAdmittance" stiffness="120;120;100;120;120;120" damping="800;800;100;120;120;120" mass="40;40;20;20;20;20" goal_position_tolerance="0.001" controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory" path_position_tolerance="100.0" selected_axes="1;1;0;0;0;0" absolute_force_torque_threshold="100;100;100;10;10;10" joint_trajectory_msg="{retreat_trajectory}"/>
+      </Control>
+    </Control>
+  </BehaviorTree>
+</root>

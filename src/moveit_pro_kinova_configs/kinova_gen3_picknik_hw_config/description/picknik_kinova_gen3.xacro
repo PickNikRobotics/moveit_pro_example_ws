@@ -1,0 +1,265 @@
+<?xml version="1.0"?>
+<robot name="gen3" xmlns:xacro="http://ros.org/wiki/xacro">
+  <!-- Arguments for Kinova -->
+  <xacro:arg name="arm" default="gen3" />
+  <xacro:arg name="dof" default="7" />
+  <xacro:arg name="vision" default="false" />
+  <xacro:arg name="robot_ip" default="yyy.yyy.yyy.yyy" />
+  <xacro:arg name="gripper" default="" />
+  <xacro:arg name="username" default="admin" />
+  <xacro:arg name="password" default="admin" />
+  <xacro:arg name="port" default="10000" />
+  <xacro:arg name="port_realtime" default="10001" />
+  <xacro:arg name="session_inactivity_timeout_ms" default="60000" />
+  <xacro:arg name="connection_inactivity_timeout_ms" default="2000" />
+  <xacro:arg name="use_internal_bus_gripper_comm" default="true" />
+  <xacro:arg name="sim_gazebo" default="false" />
+  <xacro:arg name="sim_ignition" default="false" />
+  <xacro:arg name="sim_isaac" default="false" />
+  <xacro:arg name="prefix" default="" />
+  <xacro:arg name="use_fake_hardware" default="true" />
+  <xacro:arg name="fake_sensor_commands" default="true" />
+  <xacro:arg name="use_external_cable" default="true" />
+  <xacro:arg name="gripper_joint_name" default="robotiq_85_left_knuckle_joint" />
+  <xacro:arg name="gripper_max_velocity" default="100.0" />
+  <xacro:arg name="gripper_max_force" default="100.0" />
+  <xacro:arg name="gripper_com_port" default="/dev/ttyUSB0" />
+  <xacro:arg name="robotiq_fts" default="false" />
+  <xacro:arg name="fts_com_port" default="/dev/ttyUSB1" />
+
+  <!-- Import macros for main hardware components -->
+  <xacro:include filename="$(find kortex_description)/robots/kortex_robot.xacro" />
+
+  <!-- Import environment macros -->
+  <xacro:include filename="$(find picknik_accessories)/descriptions/geometry/cube.urdf.xacro"/>
+
+  <!-- World is centered under base_link of the robot, on the ground -->
+  <link name="world"/>
+
+  <!-- Include and load arm and gripper macro files -->
+  <xacro:include filename="$(find kortex_description)/arms/$(arg arm)/$(arg dof)dof/urdf/$(arg arm)_macro.xacro" />
+  <xacro:include filename="$(find kinova_gen3_base_config)/description/robotiq_2f_85_macro.xacro" />
+  <!-- <xacro:include filename="$(find kortex_description)/grippers/$(arg gripper)/urdf/$(arg gripper)_macro.xacro" /> -->
+
+  <!-- Initial positions for simulations (Mock Hardware and Gazebo) -->
+  <xacro:arg name="initial_positions_file" default="$(find kinova_gen3_picknik_hw_config)/config/initial_positions.yaml"/>
+  <xacro:property name="initial_positions_file" default="$(arg initial_positions_file)"/>
+  <xacro:property name="robotiq_fts_property" default="$(arg robotiq_fts)"/>
+
+  <!-- Load the arm -->
+  <xacro:load_arm
+    parent="world"
+    dof="$(arg dof)"
+    vision="$(arg vision)"
+    robot_ip="$(arg robot_ip)"
+    username="$(arg username)"
+    password="$(arg password)"
+    port="$(arg port)"
+    port_realtime="$(arg port_realtime)"
+    session_inactivity_timeout_ms="$(arg session_inactivity_timeout_ms)"
+    connection_inactivity_timeout_ms="$(arg connection_inactivity_timeout_ms)"
+    prefix="$(arg prefix)"
+    use_internal_bus_gripper_comm="$(arg use_internal_bus_gripper_comm)"
+    use_fake_hardware="$(arg use_fake_hardware)"
+    fake_sensor_commands="$(arg fake_sensor_commands)"
+    sim_gazebo="$(arg sim_gazebo)"
+    sim_ignition="$(arg sim_ignition)"
+    sim_isaac="$(arg sim_isaac)"
+    gripper_joint_name="$(arg gripper_joint_name)"
+    gripper_max_velocity="$(arg gripper_max_velocity)"
+    gripper_max_force="$(arg gripper_max_force)"
+    use_external_cable="$(arg use_external_cable)"
+    initial_positions="${xacro.load_yaml(initial_positions_file)}">
+    <origin xyz="0 0 0.02" rpy="0 0 0" />
+  </xacro:load_arm>
+
+  <xacro:property name="gripper_parent_link" value="end_effector_link"/>
+
+  <!-- If we're using a robotiq fts then add the fts + adapter parts to the urdf -->
+  <xacro:if value="${robotiq_fts_property}">
+    <!-- Adapter that goes between the last link on the kinova and the Robotiq FTS plate -->
+    <link name="fts_coupling_adapter_link">
+      <visual>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <geometry>
+          <cylinder length="0.01115" radius="0.0445"/>
+        </geometry>
+        <material name="green">
+          <color rgba="0 1 0 1"/>
+        </material>
+      </visual>
+      <collision>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <geometry>
+          <cylinder length="0.01115" radius="0.0445"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="kinova_fts_coupling_adapter_joint" type="fixed">
+      <parent link="end_effector_link"/>
+      <child link="fts_coupling_adapter_link"/>
+      <origin rpy="0 0 0" xyz="0 0 0.008675"/> <!-- (cylinder length / 2) + 0.0031 offset -->
+    </joint>
+    <!-- Plate that goes between the adapter and the Robotiq FTS -->
+    <link name="fts_coupling_link">
+      <visual>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <geometry>
+          <cylinder length="0.0067" radius="0.0445"/>
+        </geometry>
+        <material name="black">
+          <color rgba="0 0 0 1"/>
+        </material>
+      </visual>
+      <collision>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <geometry>
+          <cylinder length="0.0067" radius="0.0445"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="fts_coupling_adapter_fts_coupling_joint" type="fixed">
+      <parent link="fts_coupling_adapter_link"/>
+      <child link="fts_coupling_link"/>
+      <origin rpy="0 0 0" xyz="0 0 0.008925"/> <!-- (cylinder1 length / 2) + (cylinder2 length / 2) -->
+    </joint>
+    <!-- Robotiq FTS -->
+    <link name="fts_link">
+      <visual>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <geometry>
+          <cylinder length="0.0348" radius="0.0445"/>
+        </geometry>
+        <material name="black">
+          <color rgba="0 0 0 1"/>
+        </material>
+      </visual>
+      <collision>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <geometry>
+          <cylinder length="0.0348" radius="0.0445"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="fts_plate_fts_joint" type="fixed">
+      <parent link="fts_coupling_link"/>
+      <child link="fts_link"/>
+      <!-- Rotate this link so the FTS link axes are aligned with the FTS hardware -->
+      <origin rpy="0 0 ${pi}" xyz="0 0 0.02075"/> <!-- (cylinder2 length / 2) + (cylinder3 length / 2) -->
+    </joint>
+    <!-- Robotiq gripper controller plate that goes between the FTS and the gripper -->
+    <link name="gripper_plate_link">
+      <visual>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <geometry>
+          <cylinder length="0.0165" radius="0.0375"/>
+        </geometry>
+        <material name="black">
+          <color rgba="0 0 0 1"/>
+        </material>
+      </visual>
+      <collision>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <geometry>
+          <cylinder length="0.0165" radius="0.0375"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="fts_gripper_plate_joint" type="fixed">
+      <parent link="fts_link"/>
+      <child link="gripper_plate_link"/>
+      <origin rpy="0 0 0" xyz="0 0 0.02565"/>
+    </joint>
+    <link name="gripper_attachment_link"/>
+    <joint name="gripper_attachment_joint" type="fixed">
+      <parent link="gripper_plate_link"/>
+      <child link="gripper_attachment_link"/>
+      <origin rpy="0 0 ${-pi}" xyz="0 0 0.00515"/> <!-- (cylinder3 length / 2) - 0.0031 offset -->
+    </joint>
+    <!-- Change the gripper parent link if we're using the Robotiq FTS kit -->
+    <xacro:property name="gripper_parent_link" value="gripper_attachment_link"/>
+
+    <!-- Robotiq FTS ros2_control macro to start the drivers -->
+    <xacro:include filename="$(find robotiq_ft_sensor_description)/urdf/robotiq_fts.ros2_control.xacro" />
+    <xacro:robotiq_fts_ros2_control
+      name=""
+      use_fake_mode="$(arg use_fake_hardware)"
+      max_retries="100"
+      ftdi_id="$(arg fts_com_port)"
+      tf_prefix=""
+    />
+
+  </xacro:if>
+
+  <!-- change the parent when adding in links in between the gripper and the arm (like a force torque sensor) -->
+  <xacro:load_gripper
+    parent="${gripper_parent_link}"
+    prefix="$(arg prefix)"
+    use_fake_hardware="$(arg use_fake_hardware)"
+    fake_sensor_commands="$(arg fake_sensor_commands)"
+    sim_ignition="$(arg sim_ignition)"
+    sim_isaac="$(arg sim_isaac)"
+    use_internal_bus_gripper_comm="$(arg use_internal_bus_gripper_comm)">
+  </xacro:load_gripper>
+
+  <!-- Environment -->
+  <xacro:cube link_name="table" connected_to="world" length="2.00" width="2.00" height="0.25" alpha="0.3">
+    <origin xyz="0.8 0.0 ${-0.25/2}" rpy="0 0 0"/>
+  </xacro:cube>
+  <xacro:cube link_name="wall" connected_to="world" length="0.25" width="2.00" height="3.0" alpha="0.3">
+    <origin xyz="-0.4 0.0 0.0" rpy="0 0 0"/>
+  </xacro:cube>
+
+  <!-- Robot mount -->
+  <link name="mount_link">
+    <visual> <!-- visual reach -->
+      <origin xyz="0 0 0.01" rpy="0 0 0" />
+      <geometry>
+        <cylinder radius="0.2" length="0.02"/>
+      </geometry>
+      <material name="Black">
+        <color rgba="0.0 0.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <collision><!-- table collision -->
+      <origin xyz="0 0 0.01" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.2" length="0.02"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="mount_joint" type="fixed">
+    <parent link="world"/>
+    <child link = "mount_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <!-- Visual aids for grasping -->
+  <link name="finger_tip_closed_point">
+    <visual>
+      <geometry>
+        <sphere radius="0.007"/>
+      </geometry>
+      <material name="">
+            <color rgba="0 1.0 0 0.7"/>
+      </material>
+    </visual>
+  </link>
+
+  <joint name="finger_tip_closed_point_joint" type="fixed">
+    <parent link="robotiq_85_base_link"/>
+    <child link = "finger_tip_closed_point"/>
+    <origin xyz="0 0 0.16" rpy="0 0 0"/>
+  </joint>
+
+  <!-- This link aligns the axes of the grasp frame to our required convention for motion planning tasks. -->
+  <link name="grasp_link"/>
+
+  <joint name="grasp_link_joint" type="fixed">
+    <parent link="robotiq_85_base_link"/>
+    <child link = "grasp_link"/>
+    <origin xyz="0 0 0.15" rpy="0 0 0"/>
+  </joint>
+
+
+</robot>
