@@ -26,11 +26,7 @@
           output_poses="{output_poses}"
         />
         <!--Flip the direction of the grasp pose-->
-        <Decorator
-          ID="ForEachPoseStamped"
-          vector_in="{output_poses}"
-          out="{flipped_pose}"
-        >
+        <Decorator ID="ForEach" vector_in="{output_poses}" out="{flipped_pose}">
           <Action
             ID="TransformPose"
             output_pose="{corrected_pose}"

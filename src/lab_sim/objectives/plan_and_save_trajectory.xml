@@ -8,6 +8,7 @@
     _subtreeOnly="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
+      <!-- Before we plan we want to make sure we are at a known position, so when we execute the plan it can be done from the same position -->
       <SubTree
         ID="Move to Waypoint"
         _collapsed="true"
@@ -15,12 +16,20 @@
         joint_group_name="manipulator"
         planner_interface="moveit_default"
         controller_names="/joint_trajectory_controller"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        velocity_scale_factor="1.0"
       />
+      <!-- Create a vector of poses so we can add them all to the MTC task at once -->
       <SubTree
         ID="Create Pose Vector"
         _collapsed="false"
         target_poses="{target_poses}"
       />
+      <!-- Add the cartesian poses we created in the previous step -->
       <SubTree
         ID="Add Poses to MTC Task"
         _collapsed="true"
@@ -30,6 +39,7 @@
         ik_frame="grasp_link"
         mtc_task="{mtc_task}"
       />
+      <!-- Add joint-state waypoints to the MTC task as well -->
       <SubTree
         ID="Add Waypoints to MTC Task"
         _collapsed="false"
@@ -38,16 +48,24 @@
         joint_group_name="manipulator"
         planner_interface="moveit_default"
       />
+      <!-- Perform the computationally intensive calculation now -->
       <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
-      <Action ID="WaitForUserTrajectoryApproval" />
-      <!--The following behavior can be found in the example_behaviors package.-->
+      <!-- Preview the trajectory for approval -->
+      <Action ID="WaitForUserTrajectoryApproval" solution="{mtc_solution}" />
+      <!-- The MTC solution does not contain time parameterization, so we can use TOTG to convert it to a JointTrajectory. The source code for the following behavior can be found in the example_behaviors package -->
       <Action
         ID="ConvertMtcSolutionToJointTrajectory"
         joint_trajectory="{joint_trajectory_msg}"
+        acceleration_scaling_factor="1.000000"
+        joint_group="manipulator"
+        sampling_rate="100"
+        solution="{mtc_solution}"
+        velocity_scaling_factor="1.000000"
       />
       <Action
         ID="SaveJointTrajectoryToYaml"
         yaml_filename="~/user_ws/src/lab_sim/objectives/joint_trajectory"
+        message="{joint_trajectory_msg}"
       />
     </Control>
   </BehaviorTree>
@@ -55,6 +73,7 @@
     <SubTree ID="Plan and Save Trajectory">
       <MetadataFields>
         <Metadata subcategory="Application - Advanced Examples" />
+        <Metadata runnable="true" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
