@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Create Pose Vector">
   <!--//////////-->
   <BehaviorTree
@@ -5,13 +6,15 @@
     _favorite="false"
     _subtreeOnly="true"
     _description=""
+    target_poses="{target_poses}"
   >
     <Control ID="Sequence">
       <Action
         ID="CreateStampedPose"
         orientation_xyzw="0;-1;0;0"
-        position_xyz="1;0.5;1"
+        position_xyz="0.75;0.5;0.9"
         stamped_pose="{stamped_pose}"
+        reference_frame="world"
       />
       <Action
         ID="AddPoseStampedToVector"
@@ -23,6 +26,31 @@
         orientation_xyzw="0;-1;0;0"
         position_xyz="0.5;0.5;0.8"
         stamped_pose="{stamped_pose}"
+        reference_frame="world"
+      />
+      <Action
+        ID="AddPoseStampedToVector"
+        vector="{target_poses}"
+        input="{stamped_pose}"
+      />
+      <Action
+        ID="CreateStampedPose"
+        orientation_xyzw="0;-1;0;0"
+        position_xyz="0.25;0.5;0.7"
+        stamped_pose="{stamped_pose}"
+        reference_frame="world"
+      />
+      <Action
+        ID="AddPoseStampedToVector"
+        vector="{target_poses}"
+        input="{stamped_pose}"
+      />
+      <Action
+        ID="CreateStampedPose"
+        orientation_xyzw="0;-1;0;0"
+        position_xyz="0;0.5;0.6"
+        stamped_pose="{stamped_pose}"
+        reference_frame="world"
       />
       <Action
         ID="AddPoseStampedToVector"
@@ -34,6 +62,31 @@
         orientation_xyzw="0;-1;0;0"
         position_xyz="-0.25;0.5;0.7"
         stamped_pose="{stamped_pose}"
+        reference_frame="world"
+      />
+      <Action
+        ID="AddPoseStampedToVector"
+        vector="{target_poses}"
+        input="{stamped_pose}"
+      />
+      <Action
+        ID="CreateStampedPose"
+        orientation_xyzw="0;-1;0;0"
+        position_xyz="-0.5;0.5;0.8"
+        stamped_pose="{stamped_pose}"
+        reference_frame="world"
+      />
+      <Action
+        ID="AddPoseStampedToVector"
+        vector="{target_poses}"
+        input="{stamped_pose}"
+      />
+      <Action
+        ID="CreateStampedPose"
+        orientation_xyzw="0;-1;0;0"
+        position_xyz="-0.75;0.5;0.9"
+        stamped_pose="{stamped_pose}"
+        reference_frame="world"
       />
       <Action
         ID="AddPoseStampedToVector"
@@ -45,6 +98,7 @@
         orientation_xyzw="0;-1;0;0"
         position_xyz="-1;0.5;1"
         stamped_pose="{stamped_pose}"
+        reference_frame="world"
       />
       <Action
         ID="AddPoseStampedToVector"
@@ -58,6 +112,7 @@
       <output_port name="target_poses" default="{target_poses}" />
       <MetadataFields>
         <Metadata subcategory="Application - Basic Examples" />
+        <Metadata runnable="false" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
