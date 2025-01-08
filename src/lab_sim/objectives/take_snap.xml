@@ -3,7 +3,7 @@
   <BehaviorTree
     ID="Take scene camera snapshot"
     _description="Take a pointcloud snapshot of the scene with a depth camera"
-    _favorite="true"
+    _favorite="false"
     _subtreeOnly="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
