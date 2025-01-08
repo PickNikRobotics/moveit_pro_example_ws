@@ -1,16 +1,18 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<root BTCPP_format="4" main_tree_to_execute="Constrained Pick and Place">
+<root BTCPP_format="4" main_tree_to_execute="Move Beakers to Burners">
   <!--//////////-->
   <BehaviorTree
-    ID="Constrained Pick and Place"
-    _description="More advanced example of picking and placing an (invisible) object with orientation constraints enforced on the gripper's motion"
-    _favorite="false"
+    ID="Move Beakers to Burners"
+    _description="Example of picking and placing objects with orientation constraints enforced on the arm's motion"
+    _favorite="true"
+    _subtreeOnly="false"
   >
     <Control ID="Sequence">
       <SubTree
         ID="Move to Waypoint"
         _collapsed="true"
-        waypoint_name="Look at Table"
+        constraints="{constraints}"
+        waypoint_name="Beaker 1a - Pre Pick"
         joint_group_name="manipulator"
         controller_names="/joint_trajectory_controller"
         velocity_scale_factor="1.0"
@@ -20,140 +22,34 @@
         keep_orientation="false"
       />
       <SubTree ID="Open Gripper" />
-      <Decorator ID="KeepRunningUntilFailure">
-        <Control ID="Sequence">
-          <!--Move to pick location-->
-          <SubTree
-            ID="Move to Waypoint"
-            waypoint_name="Above Pick Cube"
-            joint_group_name="manipulator"
-            controller_names="/joint_trajectory_controller"
-            velocity_scale_factor="1.0"
-            acceleration_scale_factor="1.0"
-            link_padding="0.01"
-            keep_orientation_tolerance="0.05"
-            keep_orientation="true"
-          />
-          <SubTree
-            ID="Move to Waypoint"
-            waypoint_name="Pick Cube"
-            joint_group_name="manipulator"
-            controller_names="/joint_trajectory_controller"
-            velocity_scale_factor="1.0"
-            acceleration_scale_factor="1.0"
-            link_padding="0.01"
-            keep_orientation_tolerance="0.05"
-            keep_orientation="true"
-          />
-          <!--We force success as the gripper closes, since we are commanding a position it will never reach (fingers fully closed)-->
-          <Decorator ID="ForceSuccess">
-            <SubTree ID="Close Gripper" />
-          </Decorator>
-          <!--Move to place (drop) location-->
-          <SubTree
-            ID="Move to Waypoint"
-            controller_names="/joint_trajectory_controller"
-            joint_group_name="manipulator"
-            _collapsed="true"
-            waypoint_name="Above Pick Cube"
-            velocity_scale_factor="1.0"
-            acceleration_scale_factor="1.0"
-            link_padding="0.01"
-            keep_orientation_tolerance="0.05"
-            keep_orientation="true"
-          />
-          <SubTree
-            ID="Move to Waypoint"
-            controller_names="/joint_trajectory_controller"
-            joint_group_name="manipulator"
-            _collapsed="true"
-            waypoint_name="Above Place Cube"
-            velocity_scale_factor="1.0"
-            acceleration_scale_factor="1.0"
-            link_padding="0.01"
-            keep_orientation_tolerance="0.05"
-            keep_orientation="true"
-          />
-          <SubTree
-            ID="Move to Waypoint"
-            controller_names="/joint_trajectory_controller"
-            joint_group_name="manipulator"
-            _collapsed="true"
-            waypoint_name="Place Cube"
-            velocity_scale_factor="1.0"
-            acceleration_scale_factor="1.0"
-            link_padding="0.01"
-            keep_orientation_tolerance="0.05"
-            keep_orientation="true"
-          />
-          <SubTree ID="Open Gripper" />
-          <SubTree
-            ID="Move to Waypoint"
-            controller_names="/joint_trajectory_controller"
-            joint_group_name="manipulator"
-            _collapsed="true"
-            waypoint_name="Above Place Cube"
-            velocity_scale_factor="1.0"
-            acceleration_scale_factor="1.0"
-            link_padding="0.01"
-            keep_orientation_tolerance="0.05"
-            keep_orientation="true"
-          />
-          <SubTree
-            ID="Move to Waypoint"
-            controller_names="/joint_trajectory_controller"
-            joint_group_name="manipulator"
-            _collapsed="true"
-            waypoint_name="Place Cube"
-            velocity_scale_factor="1.0"
-            acceleration_scale_factor="1.0"
-            link_padding="0.01"
-            keep_orientation_tolerance="0.05"
-            keep_orientation="true"
-          />
-          <SubTree ID="Close Gripper" />
-          <SubTree
-            ID="Move to Waypoint"
-            controller_names="/joint_trajectory_controller"
-            joint_group_name="manipulator"
-            _collapsed="true"
-            waypoint_name="Above Place Cube"
-            velocity_scale_factor="1.0"
-            acceleration_scale_factor="1.0"
-            link_padding="0.01"
-            keep_orientation_tolerance="0.05"
-            keep_orientation="true"
-          />
-          <SubTree
-            ID="Move to Waypoint"
-            controller_names="/joint_trajectory_controller"
-            joint_group_name="manipulator"
-            _collapsed="true"
-            waypoint_name="Above Pick Cube"
-            velocity_scale_factor="1.0"
-            acceleration_scale_factor="1.0"
-            link_padding="0.01"
-            keep_orientation_tolerance="0.05"
-            keep_orientation="true"
-          />
-          <SubTree
-            ID="Move to Waypoint"
-            waypoint_name="Pick Cube"
-            joint_group_name="manipulator"
-            controller_names="/joint_trajectory_controller"
-            velocity_scale_factor="1.0"
-            acceleration_scale_factor="1.0"
-            link_padding="0.01"
-            keep_orientation_tolerance="0.05"
-            keep_orientation="true"
-          />
-          <SubTree ID="Open Gripper" />
-        </Control>
-      </Decorator>
+      <SubTree
+        ID="Constrained Pick and Place Subtree"
+        pre_pick="Beaker 1a - Pre Pick"
+        pick="Beaker 1b - Pick"
+        pre_place="Beaker 1c - Pre Place"
+        place="Beaker 1d - Place"
+        name="Beaker 1"
+      />
+      <SubTree
+        ID="Constrained Pick and Place Subtree"
+        pre_pick="Beaker 2a - Pre Pick"
+        pick="Beaker 2b - Pick"
+        pre_place="Beaker 2c - Pre Place"
+        place="Beaker 2d - Place"
+        name="Beaker 2"
+      />
+      <SubTree
+        ID="Constrained Pick and Place Subtree"
+        pre_pick="Beaker 3a - Pre Pick"
+        pick="Beaker 3b - Pick"
+        pre_place="Beaker 3c - Pre Place"
+        place="Beaker 3d - Place"
+        name="Beaker 3"
+      />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Constrained Pick and Place">
+    <SubTree ID="Move Beakers to Burners" />
       <MetadataFields>
         <Metadata subcategory="Application - Advanced Examples" />
       </MetadataFields>
