@@ -3,7 +3,7 @@
   <BehaviorTree
     ID="Clear Snapshot"
     _description="Clear the point cloud snapshot"
-    _favorite="true"
+    _favorite="false"
   >
     <Action ID="ClearSnapshot" />
   </BehaviorTree>
