@@ -8,7 +8,7 @@
     _subtreeOnly="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
-      <!-- Before we plan we want to make sure we are at a known position, so when we execute the plan it can be done from the same position -->
+      <!--Before we plan we want to make sure we are at a known position, so when we execute the plan it can be done from the same position-->
       <SubTree
         ID="Move to Waypoint"
         _collapsed="true"
@@ -23,45 +23,30 @@
         link_padding="0.01"
         velocity_scale_factor="1.0"
       />
-      <!-- Create a vector of poses so we can add them all to the MTC task at once -->
+      <!--Create a vector of poses we want to move through-->
       <SubTree
         ID="Create Pose Vector"
         _collapsed="false"
         target_poses="{target_poses}"
       />
-      <!-- Add the cartesian poses we created in the previous step -->
-      <SubTree
-        ID="Add Poses to MTC Task"
-        _collapsed="true"
-        target_poses="{target_poses}"
-        controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-        planning_group_name="manipulator"
-        ik_frame="grasp_link"
-        mtc_task="{mtc_task}"
-      />
-      <!-- Add joint-state waypoints to the MTC task as well -->
-      <SubTree
-        ID="Add Waypoints to MTC Task"
-        _collapsed="false"
-        mtc_task="{mtc_task}"
-        waypoint_names="Pick Cube;Place Cube"
-        joint_group_name="manipulator"
-        planner_interface="moveit_default"
-      />
-      <!-- Perform the computationally intensive calculation now -->
-      <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
-      <!-- Preview the trajectory for approval -->
-      <Action ID="WaitForUserTrajectoryApproval" solution="{mtc_solution}" />
-      <!-- The MTC solution does not contain time parameterization, so we can use TOTG to convert it to a JointTrajectory. The source code for the following behavior can be found in the example_behaviors package -->
+      <!--Plan a cartesian path through the desired poses-->
       <Action
-        ID="ConvertMtcSolutionToJointTrajectory"
-        joint_trajectory="{joint_trajectory_msg}"
-        acceleration_scaling_factor="1.000000"
-        joint_group="manipulator"
-        sampling_rate="100"
-        solution="{mtc_solution}"
-        velocity_scaling_factor="1.000000"
+        ID="PlanCartesianPath"
+        acceleration_scale_factor="1.000000"
+        blending_radius="0.020000"
+        ik_cartesian_space_density="0.010000"
+        ik_joint_space_density="0.100000"
+        path="{target_poses}"
+        planning_group_name="manipulator"
+        position_only="false"
+        tip_link="grasp_link"
+        trajectory_sampling_rate="100"
+        velocity_scale_factor="1.000000"
+        debug_solution="{debug_solution}"
+        joint_trajectory_msg="{joint_trajectory_msg}"
       />
+      <!--Preview the trajectory for approval and save if approved-->
+      <Action ID="WaitForUserTrajectoryApproval" solution="{debug_solution}" />
       <Action
         ID="SaveJointTrajectoryToYaml"
         yaml_filename="~/user_ws/src/lab_sim/objectives/joint_trajectory"
