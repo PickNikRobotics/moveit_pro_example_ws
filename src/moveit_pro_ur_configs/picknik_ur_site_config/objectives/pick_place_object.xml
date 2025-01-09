@@ -258,7 +258,6 @@
             waypoint_name="Place"
             joint_group_name="manipulator"
             controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-            planner_interface="moveit_default"
           />
           <Action
             ID="MoveGripperAction"
@@ -270,7 +269,6 @@
             waypoint_name="Look at Pick and Place Zone"
             joint_group_name="manipulator"
             controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-            planner_interface="moveit_default"
           />
         </Control>
         <!-- The "Else" condition of the TryGraspOuter IfThenElse control. Move to the Look at Pick and Place Zone pose if all retry attempts failed. -->
@@ -284,7 +282,6 @@
             waypoint_name="Look at Pick and Place Zone"
             joint_group_name="manipulator"
             controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-            planner_interface="moveit_default"
           />
           <Action ID="AlwaysFailure" />
         </Control>
