@@ -1,5 +1,9 @@
-<mujoco model="kinova scene">
-  <include file="gen3_7dof.xml" />
+<mujoco model="satellite scene">
+  <compiler angle="radian" meshdir="assets" />
+  <option integrator="implicitfast" />
+
+  <include file="gen3_7dof_assets.xml"/>
+
   <statistic center="0.3 0 0.4" extent="1" />
   <default>
     <geom solref=".004 1" />
@@ -61,16 +65,16 @@
     <geom name="floor" size="0 0 0.05" type="plane" material="groundplane" />
     <camera
       name="scene_camera"
-      pos="0.0 0.3 0.55"
+      pos="-0.3 0.3 1.0"
       fovy="58"
       mode="fixed"
       resolution="640 480"
-      quat="0.365715 0.232986 -0.484157 -0.759975"
+      euler="0 -1.0472 -1.5708"
     />
     <site
       name="scene_camera_optical_frame"
-      pos="0.0 0.3 0.55"
-      quat="0.365715 0.232986 -0.484157 -0.759975"
+      pos="-0.3 0.3 1.0"
+      euler="3.1416 -1.0472 -1.5708"
       size="0.03"
     />
   </worldbody>
@@ -119,7 +123,7 @@
   </asset>
 
   <worldbody>
-    <body name="satellite" pos=".43 -0.2 .133" quat="0.584012 0.0 0.0 0.811745">
+    <body name="satellite">
       <freejoint />
       <inertial
         pos="0.0 0.0 0.0"
@@ -167,5 +171,35 @@
       <geom class="collision" mesh="ring_collision_31" />
       <geom class="collision" mesh="ring_collision_32" />
     </body>
+    <body name="gen3_7dof" pos="0 0 0.5" quat="0.5 0.5 0.5 0.5">
+      <include file="gen3_7dof_body.xml"/>
+    </body>
   </worldbody>
+
+  <keyframe>
+    <!-- qpos -->
+    <!-- satellite [x, y, z, qw, qx, qy, qz] -->
+    <!-- joint_1 joint_2 joint_3 joint_4 joint_5 joint_6 joint_7 robotiq_85_right_knuckle_joint -->
+    <!-- robotiq_85_right_knuckle_joint robotiq_85_right_finger_joint robotiq_85_right_inner_knuckle_joint robotiq_85_right_finger_tip_joint robotiq_85_left_knuckle_joint robotiq_85_left_finger_joint robotiq_85_left_inner_knuckle_joint robotiq_85_left_finger_tip_joint -->
+    <!-- qvel -->
+    <!-- satellite [x, y, z, vx, vy, vz] -->
+    <!-- joint_1 joint_2 joint_3 joint_4 joint_5 joint_6 joint_7 robotiq_85_right_knuckle_joint -->
+    <!-- robotiq_85_right_knuckle_joint robotiq_85_right_finger_joint robotiq_85_right_inner_knuckle_joint robotiq_85_right_finger_tip_joint robotiq_85_left_knuckle_joint robotiq_85_left_finger_joint robotiq_85_left_inner_knuckle_joint robotiq_85_left_finger_tip_joint -->
+    <!-- ctrl -->
+    <!-- joint_1 joint_2 joint_3 joint_4 joint_5 joint_6 joint_7 robotiq_85_right_knuckle_joint -->
+    <key
+      name="default"
+      qpos="
+        1 0 0.1 0.7071 0 -0.7071 0
+        0 0 0 0 0 0 0 0
+        0 0 0 0 0 0 0"
+      qvel="
+        0 0 0 0 0 0
+        0 0 0 0 0 0 0 0
+        0 0 0 0 0 0 0"
+      ctrl="
+        0 0 0 0 0 0 0 0"
+      />
+  </keyframe>
+
 </mujoco>
