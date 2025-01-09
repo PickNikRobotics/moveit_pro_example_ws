@@ -3,7 +3,7 @@
   <!--//////////-->
   <BehaviorTree
     ID="_Scan Scene"
-    _description="Move robot our of scene to enable full snapshot of scene."
+    _description="Move robot out of scene to enable full snapshot of scene."
     _favorite="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
