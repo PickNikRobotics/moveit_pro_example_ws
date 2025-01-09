@@ -25,11 +25,11 @@
 
     <!-- Import macros for main hardware components -->
     <xacro:include filename="$(find kortex_description)/arms/$(arg arm)/$(arg dof)dof/urdf/$(arg arm)_macro.xacro" />
-    <xacro:include filename="$(find kortex_description)/grippers/$(arg gripper)/urdf/$(arg gripper)_macro.xacro" />
+    <!-- <xacro:include filename="$(find kortex_description)/grippers/$(arg gripper)/urdf/$(arg gripper)_macro.xacro" /> -->
     <xacro:include filename="$(find picknik_accessories)/descriptions/sensors/realsense_d415.urdf.xacro"/>
 
     <!-- Import environment macros -->
-    <xacro:include filename="$(find picknik_accessories)/descriptions/geometry/cube.urdf.xacro"/>
+    <!-- <xacro:include filename="$(find picknik_accessories)/descriptions/geometry/cube.urdf.xacro"/> -->
 
     <!-- World is centered under base_link of the robot, on the ground -->
     <link name="world"/>
@@ -40,7 +40,7 @@
 
     <!-- Load the arm -->
     <joint name="base_joint" type="fixed">
-      <origin rpy="0 0 0" xyz="0 0 0.02"/>
+      <origin rpy="1.5708 0 1.5708" xyz="0 0 0.5"/>
       <parent link="world"/>
       <child link="base_link"/>
     </joint>
@@ -536,9 +536,9 @@
     </joint>
 
     <!-- Environment -->
-    <xacro:cube link_name="table" connected_to="world" length="2.00" width="2.00" height="0.25" alpha="0.3">
+    <!-- <xacro:cube link_name="table" connected_to="world" length="2.00" width="2.00" height="0.25" alpha="0.3">
       <origin xyz="0 0 -0.145" rpy="0 0 0"/>
-    </xacro:cube>
+    </xacro:cube> -->
 
     <!-- Visual aids for grasping -->
     <link name="finger_tip_closed_point">
@@ -572,7 +572,7 @@
     <joint name="external_camera_joint" type="fixed">
       <parent link="world" />
       <child link="external_camera_link" />
-      <origin xyz="-0.3 0.3 1.0" rpy="0.0 0.4 0" />
+      <origin xyz="-0.3 0.3 1.0" rpy="0 0.5236 0" />
     </joint>
 
     <xacro:realsense_d415 parent="external_camera_link" name="scene_camera">
