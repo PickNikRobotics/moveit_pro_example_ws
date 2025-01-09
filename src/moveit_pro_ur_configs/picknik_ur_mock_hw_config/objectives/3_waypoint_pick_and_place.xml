@@ -15,7 +15,6 @@
         waypoint_name="Look at Machine"
         joint_group_name="manipulator"
         controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-        planner_interface="moveit_default"
       />
       <Action
         ID="MoveGripperAction"
@@ -32,7 +31,6 @@
               waypoint_name="Grasp Left"
               joint_group_name="manipulator"
               controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-              planner_interface="moveit_default"
             />
             <Action
               ID="MoveGripperAction"
@@ -44,14 +42,12 @@
               waypoint_name="Look at Machine"
               joint_group_name="manipulator"
               controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-              planner_interface="moveit_default"
             />
             <SubTree
               ID="Move to Waypoint"
               waypoint_name="Grasp Machine"
               joint_group_name="manipulator"
               controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-              planner_interface="moveit_default"
             />
             <Action
               ID="MoveGripperAction"
@@ -63,7 +59,6 @@
               waypoint_name="Look at Machine"
               joint_group_name="manipulator"
               controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-              planner_interface="moveit_default"
             />
           </Control>
           <!--Pick object from the CNC machine, put it down on the right, and go back to center pose-->
@@ -73,7 +68,6 @@
               waypoint_name="Grasp Machine"
               joint_group_name="manipulator"
               controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-              planner_interface="moveit_default"
             />
             <Action
               ID="MoveGripperAction"
@@ -85,14 +79,12 @@
               waypoint_name="Look at Machine"
               joint_group_name="manipulator"
               controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-              planner_interface="moveit_default"
             />
             <SubTree
               ID="Move to Waypoint"
               waypoint_name="Grasp Left"
               joint_group_name="manipulator"
               controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-              planner_interface="moveit_default"
             />
             <Action
               ID="MoveGripperAction"
@@ -104,7 +96,6 @@
               waypoint_name="Look at Machine"
               joint_group_name="manipulator"
               controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-              planner_interface="moveit_default"
             />
           </Control>
         </Control>

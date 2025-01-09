@@ -6,7 +6,6 @@
     _subtreeOnly="true"
     _description=""
     joint_group_name="manipulator"
-    planner_interface="moveit_default"
     mtc_task="{mtc_task}"
   >
     <Control ID="Sequence">
@@ -17,11 +16,10 @@
         joint_group_name="{joint_group_name}"
       />
       <Action
-        ID="SetupMTCMoveToJointState"
+        ID="SetupMTCPlanToJointState"
         joint_state="{target_joint_state}"
-        name="SetupMTCMoveToJointState"
+        name="SetupMTCPlanToJointState"
         planning_group_name="{joint_group_name}"
-        planner_interface="{planner_interface}"
         task="{mtc_task}"
       />
       <Action
@@ -31,11 +29,10 @@
         joint_group_name="{joint_group_name}"
       />
       <Action
-        ID="SetupMTCMoveToJointState"
+        ID="SetupMTCPlanToJointState"
         joint_state="{target_joint_state}"
-        name="SetupMTCMoveToJointState"
+        name="SetupMTCPlanToJointState"
         planning_group_name="{joint_group_name}"
-        planner_interface="{planner_interface}"
         task="{mtc_task}"
       />
     </Control>
@@ -43,7 +40,6 @@
   <TreeNodesModel>
     <SubTree ID="Add Waypoints to MTC Task">
       <input_port name="joint_group_name" default="manipulator" />
-      <input_port name="planner_interface" default="moveit_default" />
       <inout_port name="mtc_task" default="{mtc_task}" />
       <MetadataFields>
         <Metadata subcategory="Application - Basic Examples" />

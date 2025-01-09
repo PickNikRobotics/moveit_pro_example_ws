@@ -14,7 +14,6 @@
         _collapsed="true"
         waypoint_name="Workspace Right"
         joint_group_name="manipulator"
-        planner_interface="moveit_default"
         controller_names="/joint_trajectory_controller"
         acceleration_scale_factor="1.0"
         controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"

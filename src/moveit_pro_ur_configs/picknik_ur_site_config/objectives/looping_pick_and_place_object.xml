@@ -34,7 +34,6 @@
         waypoint_name="Look at Pick and Place Zone"
         joint_group_name="manipulator"
         controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-        planner_interface="moveit_default"
       />
 
       <!-- This loops forever because the behavior tree under this decorator never returns FAILURE. -->
@@ -156,7 +155,6 @@
                   waypoint_name="Look at Pick and Place Zone"
                   joint_group_name="manipulator"
                   controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-                  planner_interface="moveit_default"
                 />
 
                 <!-- Move to the current place waypoint set by IterateThroughPlaceWaypoints, then open the gripper. -->
@@ -165,7 +163,6 @@
                   waypoint_name="{place_waypoint}"
                   joint_group_name="manipulator"
                   controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-                  planner_interface="moveit_default"
                 />
                 <Action
                   ID="MoveGripperAction"
@@ -179,7 +176,6 @@
                   waypoint_name="Look at Pick and Place Zone"
                   joint_group_name="manipulator"
                   controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-                  planner_interface="moveit_default"
                 />
               </Control>
             </Decorator>

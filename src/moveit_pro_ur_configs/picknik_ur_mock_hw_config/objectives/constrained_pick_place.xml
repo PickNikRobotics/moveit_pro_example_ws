@@ -8,17 +8,6 @@
   >
     <Decorator ID="KeepRunningUntilFailure">
       <Control ID="Sequence">
-        <!--Create a special type of motion planning configuration that includes an upwards orientation requirement-->
-        <Action
-          ID="InitializeMotionConstraints"
-          constraints_name="gripper pointing down"
-          constraints="{constraints}"
-        />
-        <Action
-          ID="AppendOrientationConstraint"
-          config_file_name="my_constraints.yaml"
-          constraints="{constraints}"
-        />
         <!--Move to pick location-->
         <SubTree ID="Open Gripper" />
         <!--Note: Sampling based planners can be non-deterministic. The retry decorator improves the likelihood of success-->
@@ -27,8 +16,7 @@
             ID="Move to Waypoint"
             waypoint_name="Grasp Right"
             joint_group_name="manipulator"
-            controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-            planner_interface="moveit_default"
+            controller_names="/joint_trajectory_controller"
           />
         </Decorator>
         <!--Pick-->
@@ -37,11 +25,12 @@
         <Decorator ID="RetryUntilSuccessful" num_attempts="3">
           <SubTree
             ID="Move to Waypoint"
-            controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
+            controller_names="/joint_trajectory_controller"
             joint_group_name="manipulator"
             waypoint_name="Grasp Left"
-            planner_interface="moveit_default"
-            constraints="{constraints}"
+            link_padding="0.0"
+            keep_orientation="true"
+            keep_orientation_tolerance="0.2"
           />
         </Decorator>
       </Control>

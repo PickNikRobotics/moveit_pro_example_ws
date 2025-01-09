@@ -19,7 +19,7 @@
         />
         <Action ID="SetupMTCCurrentState" task="{move_to_pose_task}" />
         <Action
-          ID="SetupMTCMoveToPose"
+          ID="SetupMTCPlanToPose"
           ik_frame="grasp_link"
           planning_group_name="manipulator"
           target_pose="{target_pose}"
