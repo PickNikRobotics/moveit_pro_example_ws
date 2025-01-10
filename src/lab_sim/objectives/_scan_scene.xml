@@ -28,6 +28,11 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="_Scan Scene" />
+    <SubTree ID="_Scan Scene">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Basic Examples" />
+      </MetadataFields>
+    </SubTree>
   </TreeNodesModel>
 </root>
