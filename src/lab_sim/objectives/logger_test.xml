@@ -1,0 +1,11 @@
+<root BTCPP_format="4" main_tree_to_execute="Logger Test">
+  <!--//////////-->
+  <BehaviorTree ID="Logger Test" _description="" _favorite="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="ExampleConvertMtcSolutionToJointTrajectory" joint_group="manipulator"/>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Logger Test"/>
+  </TreeNodesModel>
+</root>

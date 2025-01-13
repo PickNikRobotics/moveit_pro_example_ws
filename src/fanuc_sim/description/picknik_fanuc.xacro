@@ -45,6 +45,31 @@
     <origin rpy="0 0 0" xyz="0 0 0.15" />
   </joint>
 
+  <!-- Need these entries in URDF due to limitations in GetMeshNormalPoses behavior -->
+  <link name="convex_hemisphere">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://picknik_accessories/mujoco_assets/assets/convex_hemisphere.stl"
+        />
+      </geometry>
+      <xacro:material_fanuc_gray28 />
+    </visual>
+    <!-- <collision>
+      <geometry>
+        <mesh
+          filename="package://picknik_accessories/mujoco_assets/assets/convex_hemisphere.stl"
+        />
+      </geometry>
+    </collision> -->
+  </link>
+  <joint name="convex_hemisphere_joint" type="fixed">
+    <parent link="world" />
+    <child link="convex_hemisphere" />
+      <origin xyz="0.75 0 0.6" rpy="0 0 1.5708" />
+  </joint>
+
   <xacro:fanuc_lrmate200id prefix="" />
   <xacro:fanuc_lrmate200id_ros2_control
     name="fanuc_robot"
