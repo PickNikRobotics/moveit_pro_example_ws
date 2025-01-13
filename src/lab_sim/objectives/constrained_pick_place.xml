@@ -49,7 +49,7 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Move Beakers to Burners" />
+    <SubTree ID="Move Beakers to Burners">
       <MetadataFields>
         <Metadata subcategory="Application - Advanced Examples" />
       </MetadataFields>
