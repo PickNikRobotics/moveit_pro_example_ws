@@ -37,7 +37,7 @@
   <joint name="scene_joint" type="fixed">
     <parent link="world" />
     <child link="arm_pedestal" />
-    <origin rpy="0 0 0" xyz="0 0.3 0.15" />
+    <origin rpy="0 0 0" xyz="0 0 0.15" />
   </joint>
   <joint name="base_joint" type="fixed">
     <parent link="arm_pedestal" />
@@ -45,27 +45,29 @@
     <origin rpy="0 0 0" xyz="0 0 0.15" />
   </joint>
 
-  <link name="table">
+  <!-- Need these entries in URDF due to limitations in GetMeshNormalPoses behavior -->
+  <link name="convex_hemisphere">
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0" />
       <geometry>
-        <box size="1 1 0.05" />
+        <mesh
+          filename="package://picknik_accessories/mujoco_assets/assets/convex_hemisphere.stl"
+        />
       </geometry>
-      <material name="brown">
-        <color rgba="0.3 0.15 0.05 1" />
-      </material>
+      <xacro:material_fanuc_gray28 />
     </visual>
-    <collision>
-      <origin rpy="0 0 0" xyz="0 0 0" />
+    <!-- <collision>
       <geometry>
-        <box size="1 1 0.05" />
+        <mesh
+          filename="package://picknik_accessories/mujoco_assets/assets/convex_hemisphere.stl"
+        />
       </geometry>
-    </collision>
+    </collision> -->
   </link>
-  <joint name="table_joint" type="fixed">
+  <joint name="convex_hemisphere_joint" type="fixed">
     <parent link="world" />
-    <child link="table" />
-    <origin rpy="0 0 0" xyz="0 1 0.45" />
+    <child link="convex_hemisphere" />
+      <origin xyz="0.75 0 0.6" rpy="0 0 1.5708" />
   </joint>
 
   <xacro:fanuc_lrmate200id prefix="" />

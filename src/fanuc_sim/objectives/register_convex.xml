@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Register convex">
+  <!--//////////-->
+  <BehaviorTree ID="Register convex" _description="" _favorite="true">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="ClearSnapshot" />
+      <SubTree ID="Reset Planning Scene" _collapsed="true" />
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="false"
+        waypoint_name="View Convex"
+        joint_group_name="manipulator"
+        planner_interface="moveit_default"
+        controller_names="/joint_trajectory_controller"
+      />
+      <Action
+        ID="CreateStampedPose"
+        stamped_pose="{initial_guess}"
+        reference_frame="world"
+        orientation_xyzw="0; 0; 0.707; 0.707"
+        position_xyz="0.750; 0.000; 0.600"
+        name="Initial guess"
+      />
+      <Action
+        ID="SavePoseStampedToYaml"
+        message="{initial_guess}"
+        yaml_filename="~/user_ws/initial_guess"
+      />
+      <Action
+        ID="VisualizePose"
+        marker_name="pose"
+        marker_lifetime="0.000000"
+        marker_size="0.100000"
+        pose="{initial_guess}"
+      />
+      <SubTree
+        ID="Load Mesh as Colored Pointcloud"
+        _collapsed="false"
+        point_cloud="{red_cloud}"
+        color="255;0;0"
+        file_path="~/user_ws/install/fanuc_sim/share/fanuc_sim/description/assets/convex_hemisphere.stl"
+        initial_pose="{initial_guess}"
+        target_frame="world"
+        name="Load initial estimate"
+      />
+      <Action
+        ID="SendPointCloudToUI"
+        point_cloud="{red_cloud}"
+        pcd_topic="/pcd_pointcloud_captures"
+      />
+      <Action
+        ID="GetPointCloud"
+        message_out="{wrist_point_cloud}"
+        timeout_sec="5.000000"
+        topic_name="/wrist_mounted_camera/points"
+      />
+      <Action
+        ID="TransformPointCloudFrame"
+        output_cloud="{wrist_point_cloud}"
+        target_frame="world"
+        input_cloud="{wrist_point_cloud}"
+      />
+      <Action
+        ID="SendPointCloudToUI"
+        point_cloud="{wrist_point_cloud}"
+        pcd_topic="/pcd_pointcloud_captures"
+      />
+      <Action
+        ID="RegisterPointClouds"
+        target_pose_in_base_frame="{registered_pose}"
+        max_correspondence_distance="0.5"
+        max_iterations="100"
+        target_point_cloud="{wrist_point_cloud}"
+        base_point_cloud="{red_cloud}"
+      />
+      <SubTree
+        ID="Load Mesh as Colored Pointcloud"
+        _collapsed="false"
+        target_frame="world"
+        point_cloud="{green_cloud}"
+        color="0;255;0"
+        file_path="~/user_ws/install/fanuc_sim/share/fanuc_sim/description/assets/convex_hemisphere.stl"
+        initial_pose="{registered_pose}"
+      />
+      <Action
+        ID="SendPointCloudToUI"
+        point_cloud="{green_cloud}"
+        pcd_topic="/pcd_pointcloud_captures"
+      />
+      <Action
+        ID="VisualizePose"
+        marker_name="registered_pose"
+        marker_lifetime="0.000000"
+        marker_size="0.100000"
+        pose="{registered_pose}"
+      />
+      <Action
+        ID="SavePoseStampedToYaml"
+        message="{registered_pose}"
+        yaml_filename="~/user_ws/registered_pose"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Register convex" />
+  </TreeNodesModel>
+</root>

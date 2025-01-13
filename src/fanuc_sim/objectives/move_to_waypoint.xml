@@ -1,8 +1,13 @@
+<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Move to Waypoint">
   <BehaviorTree
     ID="Move to Waypoint"
     _description="This Objective is used when moving to one of the saved waypoints in your site configuration"
     _subtreeOnly="true"
+    waypoint_name="Point A"
+    joint_group_name="manipulator"
+    planner_interface="moveit_default"
+    controller_names="/joint_trajectory_controller"
   >
     <Control ID="Sequence" name="root">
       <Action
@@ -17,7 +22,11 @@
         controller_names="{controller_names}"
         task="{move_to_waypoint_task}"
       />
-      <Action ID="SetupMTCCurrentState" task="{move_to_waypoint_task}" />
+      <Action
+        ID="SetupMTCCurrentState"
+        task="{move_to_waypoint_task}"
+        skip_collision_check="false"
+      />
       <Action
         ID="SetupMTCMoveToJointState"
         joint_state="{target_joint_state}"
@@ -33,7 +42,8 @@
         task="{move_to_waypoint_task}"
       />
       <Action
-        ID="BlockingExecuteMTCTask"
+        ID="ExecuteMTCTask"
+        goal_duration_tolerance="-1.000000"
         solution="{move_to_waypoint_solution}"
       />
     </Control>
