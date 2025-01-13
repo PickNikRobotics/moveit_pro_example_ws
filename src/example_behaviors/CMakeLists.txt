@@ -15,7 +15,6 @@ example_interfaces)
 foreach(package IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${package} REQUIRED)
 endforeach()
-find_package(moveit_pro_ml REQUIRED)
 
 add_library(
   example_behaviors
@@ -41,7 +40,6 @@ target_include_directories(
   PRIVATE ${PCL_INCLUDE_DIRS})
 ament_target_dependencies(example_behaviors
                           ${THIS_PACKAGE_INCLUDE_DEPENDS})
-target_link_libraries(example_behaviors onnx_sam2)
 
 # Install Libraries
 install(
