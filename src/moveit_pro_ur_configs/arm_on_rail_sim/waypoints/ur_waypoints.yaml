@@ -1,9 +1,9 @@
 - description: ''
   favorite: false
   joint_group_names:
-  - gripper
-  - linear_actuator
-  - manipulator
+    - gripper
+    - linear_actuator
+    - manipulator
   joint_state:
     effort: []
     header:
