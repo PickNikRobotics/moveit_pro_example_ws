@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Stitch Joint Trajectory">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Stitch Joint Trajectory"
+    _subtreeOnly="false"
+    joint_names="{joint_names}"
+    joint_trajectory_msg="{joint_trajectory_msg}"
+    start_time="{start_time}"
+    stitch_target_state="{stitch_target_state}"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <!--Extract a RobotJointState from the trajectory at a certain time from start-->
+      <Action
+        ID="GetTrajectoryStateAtTime"
+        time_from_reference="{start_time}"
+        joint_state="{stitch_state}"
+        from_start="true"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+      />
+      <!--Generate a new trajectory, starting from the extracted RobotJointState-->
+      <Action
+        ID="GeneratePointToPointTrajectory"
+        start_state="{stitch_state}"
+        target_state="{stitch_target_state}"
+        joint_trajectory_msg="{stitch_joint_trajectory_msg}"
+        velocity_scale_factor="1.0"
+        start_time="{start_time}"
+        acceleration_scale_factor="1.0"
+        jerk_scale_factor="0.5"
+        planning_group_name="manipulator"
+        trajectory_sampling_rate="100"
+      />
+      <!--Set admittance parameters and activate Joint Trajectory and Admittance Controller-->
+      <Action
+        ID="SetAdmittanceParameters"
+        config_file_name="admittance_parameters.yaml"
+        admittance_parameters_msg="{admittance_parameters_msg}"
+      />
+      <Action
+        ID="ActivateControllers"
+        controller_names="/joint_trajectory_admittance_controller"
+      />
+      <!--Execute the first portion of the initial trajectory, then execute the second trajectory-->
+      <Action ID="Script" code="delay := start_time" />
+      <Action ID="Script" code="delay *= 1000" />
+      <Control ID="Parallel" failure_count="2" success_count="1">
+        <Action
+          ID="ExecuteTrajectoryWithAdmittance"
+          path_position_tolerance="0.2"
+          absolute_force_torque_threshold="45;45;45;10;10;10"
+          admittance_parameters_msg="{admittance_parameters_msg}"
+          controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+          goal_duration_tolerance="-1.000000"
+          goal_position_tolerance="0.001000"
+          joint_trajectory_msg="{joint_trajectory_msg}"
+        />
+        <Decorator ID="Delay" delay_msec="{delay}">
+          <Action
+            ID="ExecuteTrajectoryWithAdmittance"
+            joint_trajectory_msg="{stitch_joint_trajectory_msg}"
+            absolute_force_torque_threshold="450;450;450;100;100;100"
+            goal_position_tolerance="0.001000"
+            path_position_tolerance="0.2"
+            admittance_parameters_msg="{admittance_parameters_msg}"
+            controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+            goal_duration_tolerance="-1.000000"
+          />
+        </Decorator>
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Stitch Joint Trajectory">
+      <inout_port name="joint_names" default="{joint_names}" />
+      <inout_port
+        name="joint_trajectory_msg"
+        default="{joint_trajectory_msg}"
+      />
+      <inout_port name="start_time" default="{start_time}" />
+      <inout_port name="stitch_target_state" default="{stitch_target_state}" />
+      <MetadataFields>
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

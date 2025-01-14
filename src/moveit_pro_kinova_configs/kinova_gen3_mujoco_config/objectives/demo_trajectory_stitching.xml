@@ -1,13 +1,14 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Demo Trajectory Stitching">
   <!--//////////-->
   <BehaviorTree
     ID="Demo Trajectory Stitching"
-    _description="Take a pointcloud snapshot of the scene with a depth camera"
+    _description="Stitch two trajectories together. Extract a joint state at a give time from an existing trajectory, generate a new trajectory from that joint state, and then interrupt the first trajectory at the same time (and joint state) the stitch trajectory was generated from."
     _favorite="false"
     _subtreeOnly="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
+      <!--For demo objectives, we start the robot at a known position-->
       <SubTree
         ID="Move to Waypoint"
         _collapsed="true"
@@ -22,10 +23,12 @@
         link_padding="0.01"
         velocity_scale_factor="1.0"
       />
+      <!--Get the most recent information on the robot and its environment-->
       <Action
         ID="GetCurrentPlanningScene"
         planning_scene_msg="{planning_scene}"
       />
+      <!--Get the current values of the robot joints, and unpack them on to the blackboard-->
       <Action
         ID="GetRobotJointState"
         planning_group_name="manipulator"
@@ -41,6 +44,7 @@
         position="{start_position}"
         velocity="{start_velocity}"
       />
+      <!--Create a RobotJointState for the current and final joint states-->
       <Action
         ID="CreateJointState"
         joint_state_msg="{start_state}"
@@ -55,19 +59,7 @@
         joint_state_msg="{target_state}"
         velocities="0.0;0.0;0.0;0.0;0.0;0.0;0.0"
       />
-      <Action
-        ID="GetRobotJointState"
-        planning_group_name="manipulator"
-        planning_scene="{planning_scene}"
-        joint_state="{joint_state}"
-      />
-      <Action
-        ID="CreateJointState"
-        positions="-0.5;-0.51;-3.025;-2.31;0.2;1.159;1.37"
-        joint_names="{joint_names}"
-        joint_state_msg="{stitch_target_state}"
-        velocities="0.0;0.0;0.0;0.0;0.0;0.0;0.0"
-      />
+      <!--Generate a trajectory from the robot start state to the end state-->
       <Action
         ID="GeneratePointToPointTrajectory"
         jerk_scale_factor="0.5"
@@ -80,62 +72,26 @@
         trajectory_sampling_rate="100"
         joint_trajectory_msg="{joint_trajectory_msg}"
       />
+      <!--Execute the initial trajectory, stitching in a new trajectory to a new target state-->
       <Action
-        ID="GetTrajectoryStateAtTime"
-        time_from_reference="0.8"
-        joint_state="{stitch_state}"
-        from_start="true"
+        ID="CreateJointState"
+        positions="-0.5;-0.51;-3.025;-2.31;0.2;1.159;1.37"
+        joint_names="{joint_names}"
+        joint_state_msg="{stitch_target_state}"
+        velocities="0.0;0.0;0.0;0.0;0.0;0.0;0.0"
+      />
+      <SubTree
+        ID="Stitch Joint Trajectory"
+        joint_names="{joint_names}"
         joint_trajectory_msg="{joint_trajectory_msg}"
-      />
-      <Action
-        ID="GeneratePointToPointTrajectory"
-        start_state="{stitch_state}"
-        target_state="{stitch_target_state}"
-        joint_trajectory_msg="{stitch_joint_trajectory_msg}"
-        velocity_scale_factor="1.0"
         start_time="0.8"
-        acceleration_scale_factor="1.0"
-        jerk_scale_factor="0.5"
-        planning_group_name="manipulator"
-        trajectory_sampling_rate="100"
+        stitch_target_state="{stitch_target_state}"
+        _collapsed="false"
       />
-      <Action
-        ID="SetAdmittanceParameters"
-        config_file_name="admittance_parameters.yaml"
-        admittance_parameters_msg="{admittance_parameters_msg}"
-      />
-      <Action
-        ID="ActivateControllers"
-        controller_names="/joint_trajectory_admittance_controller"
-      />
-      <Control ID="Parallel" failure_count="2" success_count="1">
-        <Action
-          ID="ExecuteTrajectoryWithAdmittance"
-          path_position_tolerance="0.2"
-          absolute_force_torque_threshold="45;45;45;10;10;10"
-          admittance_parameters_msg="{admittance_parameters_msg}"
-          controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory"
-          goal_duration_tolerance="-1.000000"
-          goal_position_tolerance="0.001000"
-          joint_trajectory_msg="{joint_trajectory_msg}"
-        />
-        <Decorator ID="Delay" delay_msec="400">
-          <Action
-            ID="ExecuteTrajectoryWithAdmittance"
-            joint_trajectory_msg="{stitch_joint_trajectory_msg}"
-            absolute_force_torque_threshold="450;450;450;100;100;100"
-            goal_position_tolerance="0.001000"
-            path_position_tolerance="0.2"
-            admittance_parameters_msg="{admittance_parameters_msg}"
-            controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory"
-            goal_duration_tolerance="-1.000000"
-          />
-        </Decorator>
-      </Control>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Test Trajectory Stitching">
+    <SubTree ID="Demo Trajectory Stitching">
       <MetadataFields>
         <Metadata runnable="true" />
       </MetadataFields>
