@@ -188,7 +188,7 @@
         task="{mtc_task}"
       />
       <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
-      <Action ID="SetupMTCPlanToPose" target_pose="{hole_object}" />
+      <Action ID="SetupMTCMoveToPose" target_pose="{hole_object}" />
       <Action ID="PlanMTCTask" task="{mtc_task}" solution="{mtc_solution}" />
       <Action ID="ExecuteMTCTask" solution="{mtc_solution}" />
       <Action

@@ -46,7 +46,7 @@
               input_pose="{pose}"
             />
             <Action
-              ID="SetupMTCPlanToPose"
+              ID="SetupMTCMoveToPose"
               ik_frame="grasp_link"
               planning_group_name="manipulator"
               target_pose="{target_pose}"
