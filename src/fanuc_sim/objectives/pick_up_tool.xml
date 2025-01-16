@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Pick Up Tool">
   <!--//////////-->
   <BehaviorTree
@@ -16,13 +17,27 @@
         ID="InitializeMTCTask"
         task_id="pick_up_tool"
         controller_names="/joint_trajectory_controller"
+        task="{mtc_task}"
       />
-      <Action ID="SetupMTCCurrentState" />
       <Action
-        ID="SetupMTCMoveToPose"
-        target_pose="{approach_pose}"
+        ID="SetupMTCCurrentState"
+        skip_collision_check="false"
+        task="{mtc_task}"
+      />
+      <Action
+        ID="SetupMTCPlanToPose"
+        acceleration_scale_factor="0.5"
         ik_frame="tool0"
-        planner_interface="pro_rrt"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.100000"
+        link_padding="0.000000"
+        max_iterations="5000"
+        monitored_stage="current state"
+        planning_group_name="manipulator"
+        target_pose="{approach_pose}"
+        trajectory_sampling_rate="100"
+        velocity_scale_factor="0.5"
+        task="{mtc_task}"
       />
       <Action
         ID="SetupMTCMoveAlongFrameAxis"
@@ -30,9 +45,21 @@
         max_distance="0.095"
         min_distance="0.095"
         axis_frame="tool0"
+        acceleration_scale="0.5"
+        axis_x="0.000000"
+        axis_y="0.000000"
+        axis_z="1.000000"
+        ignore_environment_collisions="false"
+        planning_group_name="manipulator"
+        velocity_scale="0.5"
+        task="{mtc_task}"
       />
-      <Action ID="PlanMTCTask" />
-      <Action ID="ExecuteMTCTask" />
+      <Action ID="PlanMTCTask" task="{mtc_task}" solution="{mtc_solution}" />
+      <Action
+        ID="ExecuteMTCTask"
+        goal_duration_tolerance="-1.000000"
+        solution="{mtc_solution}"
+      />
       <Action
         ID="MoveGripperAction"
         position="1"
