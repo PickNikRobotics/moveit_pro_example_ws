@@ -1,3 +1,6 @@
 [submodule "src/picknik_accessories"]
 	path = src/picknik_accessories
 	url = https://github.com/PickNikRobotics/picknik_accessories.git
+[submodule "src/external_dependencies/ur_description"]
+	path = src/external_dependencies/ur_description
+	url = https://github.com/PickNikRobotics/Universal_Robots_ROS2_Description.git
