@@ -1,0 +1,946 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:macro name="hangar_urdf" params="parent">
+    <!-- connect collisions to parent frame, e.g. world frame -->
+    <joint name="parent_collision_SM_Floor_376_joint" type="fixed">
+      <parent link="${parent}"/>
+      <child link="collision_SM_Floor_376"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+    </joint>
+
+    <!-- Use single link for visual mesh -->
+    <link name="visual_mesh">
+      <visual>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_floor.dae" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </visual>
+    </link>
+    <joint name="collision_SM_Floor_376_visual_mesh" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="visual_mesh"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+    </joint>
+
+    <link name="collision_SM_Floor_376">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+<!--        <geometry>-->
+<!--          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_SM_Floor_376.obj" scale="1.0 1.0 1.0"/>-->
+<!--        </geometry>-->
+      </collision>
+    </link>
+    <link name="collision_Cube">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="7.231803894042969 -12.968037605285645 1.2229089736938477"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_Cube.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_Cube_001">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="11.559602737426758 -16.50021743774414 1.300389289855957"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_Cube_001.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_Cube_002">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="-19.29080581665039 -9.404716491699219 1.300389289855957"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_Cube_002.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_Cube_004">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="-22.69596290588379 -17.617074966430664 1.300389289855957"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_Cube_004.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_Cube_005">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="-23.86355972290039 -14.983379364013672 1.4106760025024414"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_Cube_005.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_Cube_006">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="-24.01235008239746 -9.977728843688965 1.5179872512817383"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_Cube_006.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_Cube_007">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="24.00054931640625 -17.497241973876953 1.5179872512817383"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_Cube_007.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_Cube_008">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="24.14933967590332 -14.472247123718262 1.5179872512817383"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_Cube_008.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_Cube_009">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="24.14933967590332 -9.992019653320312 1.5179872512817383"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_Cube_009.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_Cube_010">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="-23.473466873168945 5.19831657409668 1.300389289855957"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_Cube_010.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_Cube_011">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="-23.901172637939453 6.610162734985352 1.300389289855957"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_Cube_011.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_Cube_012">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="-24.305641174316406 1.2454547882080078 0.9974985122680664"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_Cube_012.obj" scale="0.9999999403953552 0.9999999403953552 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_Cube_013">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="24.2586669921875 3.900186538696289 0.9974985122680664"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_Cube_013.obj" scale="0.9999999403953552 0.9999999403953552 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_Cube_014">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="24.2586669921875 4.701450347900391 0.9974985122680664"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_Cube_014.obj" scale="0.9999999403953552 0.9999999403953552 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_Cube_015">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="7.401407241821289 28.786008834838867 1.2229089736938477"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_Cube_015.obj" scale="1.0000001192092896 1.0000001192092896 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_Plane">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.5"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_Plane.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_Plane_001">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.5"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_Plane_001.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_Plane_002">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="-2.11828875541687 2.8453807830810547 0.5"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_Plane_002.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_Plane_003">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="0.02430248260498047 0.0 0.5"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_Plane_003.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_Plane_004">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="2.1425912380218506 2.8453807830810547 0.5"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_Plane_004.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_Plane_005">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="0.021426012739539146 7.306234359741211 0.5"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_Plane_005.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_Plane_006">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="0.021426014602184296 3.115325927734375 0.5"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_Plane_006.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_Plane_007">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="7.323379039764404 3.26959228515625 0.5"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_Plane_007.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_Plane_008">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="-7.353374481201172 3.26959228515625 0.5"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_Plane_008.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_Plane_009">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="-3.717996597290039 0.3755512237548828 0.5"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_Plane_009.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_Plane_010">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.5"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_Plane_010.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_Plane_011">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.5"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_Plane_011.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_Plane_012">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.5"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_Plane_012.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_SM_Box_A7_73">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="-22.699996948242188 -25.599994659423828 2.436284065246582"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_SM_Box_A7_73.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_SM_Box_A8">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="-22.699996948242188 -22.89999771118164 2.436284065246582"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_SM_Box_A8.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_SM_Box_C7_77">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="-20.899995803833008 -24.700000762939453 1.8653459548950195"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_SM_Box_C7_77.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_SM_Pillar2_001">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="-9.499999046325684 20.499998092651367 2.149998664855957"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_SM_Pillar2_001.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_SM_Pillar3_001">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="-9.499999046325684 24.499998092651367 2.149998664855957"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_SM_Pillar3_001.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_SM_Pillar4_001">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="-9.499999046325684 27.999998092651367 2.149998664855957"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_SM_Pillar4_001.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_SM_Pillar5_001">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="9.000000953674316 16.999998092651367 2.149998664855957"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_SM_Pillar5_001.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_SM_Pillar6_001">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="9.000000953674316 20.499998092651367 2.149998664855957"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_SM_Pillar6_001.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_SM_Pillar7_001">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="9.000000953674316 24.499998092651367 2.149998664855957"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_SM_Pillar7_001.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_SM_Pillar8_001">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="9.000000953674316 27.999998092651367 2.149998664855957"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_SM_Pillar8_001.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_SM_Pillar_10_001">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="-9.499999046325684 16.999998092651367 2.149998664855957"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_SM_Pillar_10_001.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_SM_Room_426_001">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="17.14999771118164 22.499998092651367 3.09999942779541"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_SM_Room_426_001.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_SM_Room_426_002">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="-19.69150733947754 22.499998092651367 3.09999942779541"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_SM_Room_426_002.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_SM_Room_426_003">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="-18.11935043334961 14.202417373657227 3.09999942779541"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_SM_Room_426_003.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_SM_Room_426_004">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="16.634126663208008 14.202417373657227 3.09999942779541"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_SM_Room_426_004.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_SM_WallBack_396_001">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="-0.0011624015169218183 32.404884338378906 11.901654243469238"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_SM_WallBack_396_001.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_SM_WallBack_396_002">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="-0.0011624015169218183 32.404884338378906 11.901654243469238"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_SM_WallBack_396_002.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_SM_WallFront_382_001">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="-2.543131586207892e-06 -27.749998092651367 12.743973731994629"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_SM_WallFront_382_001.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_SM_WallFront_382_002">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="-2.543131586207892e-06 -27.749998092651367 12.743973731994629"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_SM_WallFront_382_002.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_SM_WallSide16_002">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="25.105857849121094 28.749216079711914 10.689190864562988"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_SM_WallSide16_002.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_SM_WallSide4_001">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="-25.105867385864258 6.250787734985352 10.689190864562988"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_SM_WallSide4_001.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_supports">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="-18.47951889038086 -4.999992370605469 13.032681465148926"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_supports.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_supports_001">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="-18.47951889038086 -4.999992370605469 13.032681465148926"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_supports_001.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_supports_002">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="-18.47951889038086 -4.999992370605469 13.032681465148926"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_supports_002.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_supports_003">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="-18.47951889038086 -4.999992370605469 13.032681465148926"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_supports_003.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_supports_004">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="-18.47951889038086 -4.999992370605469 13.032681465148926"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_supports_004.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_supports_005">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="-18.47951889038086 -4.999992370605469 13.032681465148926"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_supports_005.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_supports_006">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="-18.47951889038086 -4.999992370605469 13.032681465148926"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_supports_006.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_supports_007">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="-18.47951889038086 -4.999992370605469 13.032681465148926"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_supports_007.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_supports_008">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="-18.47951889038086 -4.999992370605469 13.032681465148926"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_supports_008.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_supports_009">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="-18.47951889038086 -4.999992370605469 13.032681465148926"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_supports_009.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_supports_010">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="-18.47951889038086 -4.999992370605469 13.032681465148926"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_supports_010.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_supports_011">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="-18.47951889038086 -4.999992370605469 13.032681465148926"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_supports_011.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_supports_012">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="-18.47951889038086 -4.999992370605469 13.032681465148926"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_supports_012.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_supports_013">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="-18.47951889038086 -4.999992370605469 13.032681465148926"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_supports_013.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_supports_014">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="-18.47951889038086 -4.999992370605469 13.032681465148926"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_supports_014.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_supports_015">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="-18.47951889038086 -4.999992370605469 13.032681465148926"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_mesh/collision_supports_015.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="collision_SM_Floor_376_collision_Cube_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_Cube"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_Cube_001_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_Cube_001"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_Cube_002_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_Cube_002"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_Cube_004_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_Cube_004"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_Cube_005_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_Cube_005"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_Cube_006_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_Cube_006"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_Cube_007_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_Cube_007"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_Cube_008_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_Cube_008"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_Cube_009_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_Cube_009"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_Cube_010_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_Cube_010"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_Cube_011_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_Cube_011"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_Cube_012_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_Cube_012"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_Cube_013_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_Cube_013"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_Cube_014_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_Cube_014"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_Cube_015_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_Cube_015"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_Plane_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_Plane"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_Plane_001_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_Plane_001"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_Plane_002_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_Plane_002"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_Plane_003_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_Plane_003"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_Plane_004_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_Plane_004"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_Plane_005_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_Plane_005"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_Plane_006_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_Plane_006"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_Plane_007_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_Plane_007"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_Plane_008_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_Plane_008"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_Plane_009_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_Plane_009"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_Plane_010_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_Plane_010"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_Plane_011_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_Plane_011"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_Plane_012_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_Plane_012"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_SM_Box_A7_73_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_SM_Box_A7_73"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_SM_Box_A8_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_SM_Box_A8"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_SM_Box_C7_77_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_SM_Box_C7_77"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_SM_Pillar2_001_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_SM_Pillar2_001"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_SM_Pillar3_001_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_SM_Pillar3_001"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_SM_Pillar4_001_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_SM_Pillar4_001"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_SM_Pillar5_001_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_SM_Pillar5_001"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_SM_Pillar6_001_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_SM_Pillar6_001"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_SM_Pillar7_001_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_SM_Pillar7_001"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_SM_Pillar8_001_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_SM_Pillar8_001"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_SM_Pillar_10_001_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_SM_Pillar_10_001"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_SM_Room_426_001_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_SM_Room_426_001"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_SM_Room_426_002_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_SM_Room_426_002"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_SM_Room_426_003_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_SM_Room_426_003"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_SM_Room_426_004_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_SM_Room_426_004"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_SM_WallBack_396_001_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_SM_WallBack_396_001"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_SM_WallBack_396_002_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_SM_WallBack_396_002"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_SM_WallFront_382_001_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_SM_WallFront_382_001"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_SM_WallFront_382_002_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_SM_WallFront_382_002"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_SM_WallSide16_002_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_SM_WallSide16_002"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_SM_WallSide4_001_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_SM_WallSide4_001"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_supports_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_supports"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_supports_001_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_supports_001"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_supports_002_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_supports_002"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_supports_003_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_supports_003"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_supports_004_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_supports_004"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_supports_005_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_supports_005"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_supports_006_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_supports_006"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_supports_007_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_supports_007"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_supports_008_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_supports_008"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_supports_009_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_supports_009"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_supports_010_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_supports_010"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_supports_011_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_supports_011"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_supports_012_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_supports_012"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_supports_013_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_supports_013"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_supports_014_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_supports_014"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    <joint name="collision_SM_Floor_376_collision_supports_015_joint" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="collision_supports_015"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
+
+    </joint>
+    
+  </xacro:macro>
+</robot>
