@@ -11,93 +11,105 @@
   >
     <Control ID="Sequence">
       <!--Move to pick location-->
-      <!--Note: Sampling based planners can be non-deterministic. The retry decorator improves the likelihood of success-->
-      <Decorator ID="RetryUntilSuccessful" num_attempts="3">
-        <SubTree
-          ID="Move to Waypoint"
-          waypoint_name="{pre_pick}"
-          joint_group_name="manipulator"
-          controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-          planner_interface="moveit_default"
-          keep_orientation="true"
-          keep_orientation_tolerance="0.2"
-        />
-      </Decorator>
-      <Decorator ID="RetryUntilSuccessful" num_attempts="3">
-        <SubTree
-          ID="Move to Waypoint"
-          waypoint_name="{pick}"
-          joint_group_name="manipulator"
-          controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-          planner_interface="moveit_default"
-          keep_orientation="true"
-          keep_orientation_tolerance="0.2"
-        />
-      </Decorator>
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="{pre_pick}"
+        joint_group_name="manipulator"
+        controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
+        planner_interface="moveit_default"
+        keep_orientation="true"
+        keep_orientation_tolerance="0.2"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        link_padding="0.01"
+        velocity_scale_factor="1.0"
+      />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="{pick}"
+        joint_group_name="manipulator"
+        controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
+        planner_interface="moveit_default"
+        keep_orientation="true"
+        keep_orientation_tolerance="0.2"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        link_padding="0.01"
+        velocity_scale_factor="1.0"
+      />
       <!--We force success as the gripper closes, since we are commanding a position it will never reach (fingers fully closed)-->
       <Decorator ID="ForceSuccess">
         <SubTree ID="Close Gripper" />
       </Decorator>
       <!--Move to place (drop) location-->
-      <Decorator ID="RetryUntilSuccessful" num_attempts="3">
-        <SubTree
-          ID="Move to Waypoint"
-          controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-          joint_group_name="manipulator"
-          planner_interface="moveit_default"
-          keep_orientation="true"
-          keep_orientation_tolerance="0.2"
-          _collapsed="true"
-          waypoint_name="{pre_pick}"
-        />
-      </Decorator>
-      <Decorator ID="RetryUntilSuccessful" num_attempts="3">
-        <SubTree
-          ID="Move to Waypoint"
-          controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-          joint_group_name="manipulator"
-          planner_interface="moveit_default"
-          keep_orientation="true"
-          keep_orientation_tolerance="0.2"
-          _collapsed="true"
-          waypoint_name="{pre_place}"
-        />
-      </Decorator>
-      <Decorator ID="RetryUntilSuccessful" num_attempts="3">
-        <SubTree
-          ID="Move to Waypoint"
-          controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-          joint_group_name="manipulator"
-          planner_interface="moveit_default"
-          keep_orientation="true"
-          keep_orientation_tolerance="0.2"
-          _collapsed="true"
-          waypoint_name="{place}"
-        />
-      </Decorator>
+      <SubTree
+        ID="Move to Waypoint"
+        controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
+        joint_group_name="manipulator"
+        planner_interface="moveit_default"
+        keep_orientation="true"
+        keep_orientation_tolerance="0.2"
+        _collapsed="true"
+        waypoint_name="{pre_pick}"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        link_padding="0.01"
+        velocity_scale_factor="1.0"
+      />
+      <SubTree
+        ID="Move to Waypoint"
+        controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
+        joint_group_name="manipulator"
+        planner_interface="moveit_default"
+        keep_orientation="true"
+        keep_orientation_tolerance="0.2"
+        _collapsed="true"
+        waypoint_name="{pre_place}"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        link_padding="0.01"
+        velocity_scale_factor="1.0"
+      />
+      <SubTree
+        ID="Move to Waypoint"
+        controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
+        joint_group_name="manipulator"
+        planner_interface="moveit_default"
+        keep_orientation="true"
+        keep_orientation_tolerance="0.2"
+        _collapsed="true"
+        waypoint_name="{place}"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        link_padding="0.01"
+        velocity_scale_factor="1.0"
+      />
       <SubTree ID="Open Gripper" />
-      <Decorator ID="RetryUntilSuccessful" num_attempts="3">
-        <SubTree
-          ID="Move to Waypoint"
-          controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-          joint_group_name="manipulator"
-          planner_interface="moveit_default"
-          keep_orientation="true"
-          keep_orientation_tolerance="0.2"
-          _collapsed="true"
-          waypoint_name="{pre_place}"
-        />
-      </Decorator>
+      <SubTree
+        ID="Move to Waypoint"
+        controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
+        joint_group_name="manipulator"
+        planner_interface="moveit_default"
+        keep_orientation="true"
+        keep_orientation_tolerance="0.2"
+        _collapsed="true"
+        waypoint_name="{pre_place}"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        link_padding="0.01"
+        velocity_scale_factor="1.0"
+      />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Constrained Pick and Place Subtree">
-      <inout_port name="pre_pick" default="" />
       <inout_port name="pick" default="" />
-      <inout_port name="pre_place" default="" />
       <inout_port name="place" default="" />
+      <inout_port name="pre_pick" default="" />
+      <inout_port name="pre_place" default="" />
       <MetadataFields>
         <Metadata subcategory="Application - Advanced Examples" />
+        <Metadata runnable="false" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
