@@ -1,0 +1,103 @@
+<mujoco model="bar">
+  <asset>
+    <mesh name="beer_bottle" file="./assets/beer_bottle.stl" />
+    <material name="glass" rgba="0.0 0.7 0.1 0.9" />
+  </asset>
+  <worldbody>
+    <geom
+      name="bar"
+      type="box"
+      size="2.5 0.75 0.45"
+      pos="0 2 0.45"
+      rgba="0.75 0.75 0.75 1"
+    />
+    <site name="bar" pos="0 2 0.45" />
+    <geom
+      name="table_1"
+      type="box"
+      size="0.75 0.75 0.45"
+      pos="1.75 5.5 0.45"
+      rgba="0.75 0.75 0.75 1"
+    />
+    <site name="table_1" pos="1.75 5.5 0.45" />
+    <geom
+      name="table_2"
+      type="box"
+      size="0.75 0.75 0.45"
+      pos="-1.75 5.5 0.45"
+      rgba="0.75 0.75 0.75 1"
+    />
+    <site name="table_2" pos="-1.75 5.5 0.45" />
+    <geom
+      name="table_3"
+      type="box"
+      size="0.75 0.75 0.45"
+      pos="1.75 9 0.45"
+      rgba="0.75 0.75 0.75 1"
+    />
+    <site name="table_3" pos="1.75 9 0.45" />
+    <geom
+      name="table_4"
+      type="box"
+      size="0.75 0.75 0.45"
+      pos="-1.75 9 0.45"
+      rgba="0.75 0.75 0.75 1"
+    />
+    <site name="table_4" pos="-1.75 9 0.45" />
+    <body name="beer_bottle_1" pos="-1 2 0.9">
+      <freejoint />
+      <site name="beer_bottle_1" />
+      <geom
+        type="mesh"
+        mesh="beer_bottle"
+        mass="0.25"
+        material="glass"
+        friction="0.8 0.2"
+      />
+    </body>
+    <body name="beer_bottle_2" pos="-0.5 2 0.9">
+      <freejoint />
+      <site name="beer_bottle_2" />
+      <geom
+        type="mesh"
+        mesh="beer_bottle"
+        mass="0.25"
+        material="glass"
+        friction="0.8 0.2"
+      />
+    </body>
+    <body name="beer_bottle_3" pos="0 1.5 0.9">
+      <freejoint />
+      <site name="beer_bottle_3" />
+      <geom
+        type="mesh"
+        mesh="beer_bottle"
+        mass="0.25"
+        material="glass"
+        friction="0.8 0.2"
+      />
+    </body>
+    <body name="beer_bottle_4" pos="0.5 1.5 0.9">
+      <freejoint />
+      <site name="beer_bottle_4" />
+      <geom
+        type="mesh"
+        mesh="beer_bottle"
+        mass="0.25"
+        material="glass"
+        friction="0.8 0.2"
+      />
+    </body>
+    <body name="beer_bottle_5" pos="1 2 0.9">
+      <freejoint />
+      <site name="beer_bottle_5" />
+      <geom
+        type="mesh"
+        mesh="beer_bottle"
+        mass="0.25"
+        material="glass"
+        friction="0.8 0.2"
+      />
+    </body>
+  </worldbody>
+</mujoco>

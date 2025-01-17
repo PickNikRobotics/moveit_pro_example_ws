@@ -1,0 +1,31 @@
+<mujoco>
+  <compiler angle="radian" meshdir="assets" autolimits="true" />
+  <include file="ur5e_ridgeback.xml" />
+  <include file="hangar.xml" />
+  <option integrator="implicit" timestep="0.005" />
+  <visual>
+    <headlight diffuse="1.0 1.0 1.0" ambient="0.4 0.4 0.4" specular="0 0 0" />
+    <rgba haze="0.15 0.25 0.35 1" />
+    <global offwidth="1280" offheight="720" azimuth="120" elevation="90" />
+  </visual>
+  <asset>
+    <texture type="skybox" file="assets/space.png" gridsize="3 4" gridlayout=".U..LFRB.D.."/>
+  </asset>
+
+  <worldbody>
+    <!-- Scene Camera -->
+    <site
+      name="scene_camera_optical_frame"
+      pos="-1.0 -2.0 2.966"
+      euler="3.99 0.000 0"
+    />
+<!--    <camera-->
+<!--      name="scene_camera"-->
+<!--      pos="-1.0 -2.0 2.966"-->
+<!--      fovy="58"-->
+<!--      mode="fixed"-->
+<!--      resolution="1920 1080"-->
+<!--      euler="0.849 0.000 0.0"-->
+<!--    />-->
+  </worldbody>
+</mujoco>

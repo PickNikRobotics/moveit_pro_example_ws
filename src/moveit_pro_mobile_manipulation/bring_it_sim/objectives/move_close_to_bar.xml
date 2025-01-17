@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Move close to bar">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Move close to bar"
+    _description="Move close enough to the bar to pick up a beer"
+    _favorite="true"
+  >
+    <Control ID="Sequence">
+      <Action
+        ID="CreateStampedPose"
+        orientation_xyzw="0;0;0;1"
+        position_xyz="0;1;0"
+        stamped_pose="{home_location}"
+        reference_frame="world"
+      />
+      <Action
+        ID="VisualizeMesh"
+        mesh_path="package://bring_it_sim/description/assets/locationmarker.dae"
+        mesh_pose="{home_location}"
+      />
+      <Action
+        ID="NavigateToPoseAction"
+        pose_stamped="{home_location}"
+        behavior_tree_path="/opt/ros/humble/share/nav2_bt_navigator/behavior_trees/navigate_to_pose_w_replanning_and_recovery.xml"
+        action_name="/navigate_to_pose"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Move close to bar" />
+  </TreeNodesModel>
+</root>
