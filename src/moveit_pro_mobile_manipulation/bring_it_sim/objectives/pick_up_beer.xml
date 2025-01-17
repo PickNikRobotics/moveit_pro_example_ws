@@ -1,0 +1,15 @@
+<root BTCPP_format="4" main_tree_to_execute="Pick up Beer">
+  <!--//////////-->
+  <BehaviorTree ID="Pick up Beer" _description="" _favorite="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree ID="Clear Snapshot" _collapsed="true" />
+      <SubTree ID="Look at table" _collapsed="true" />
+      <!--Take a snapshot so we have a visualization of the cubes to use in grasp pose correction-->
+      <SubTree ID="Take scene camera snapshot" _collapsed="true" />
+      <SubTree ID="Pick beer" _collapsed="true" beer_frame="{frame_id}" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Pick up Beer" />
+  </TreeNodesModel>
+</root>

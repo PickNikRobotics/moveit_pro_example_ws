@@ -1,0 +1,6 @@
+image: hangar_map.png
+resolution: 0.01
+origin: [-25, -6.6913, 0.000000]
+negate: 0
+occupied_thresh: 0.65
+free_thresh: 0.196

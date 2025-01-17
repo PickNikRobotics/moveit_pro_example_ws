@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root BTCPP_format="4" main_tree_to_execute="Bring It">
+  <!--//////////-->
+  <BehaviorTree ID="Bring It" _description="Bring beer to table" _favorite="true">
+    <Control ID="Sequence">
+      <Action ID="CreateStampedPose" reference_frame="world" stamped_pose="{place_pose}" orientation_xyzw="0;1.0;0;0" position_xyz="-4.5;8.4;0.5"/>
+      <Decorator ID="RetryUntilSuccessful" num_attempts="1000">
+        <Decorator ID="ForceFailure">
+          <Control ID="Sequence">
+            <Control ID="Fallback">
+              <SubTree ID="Bring It start from waypoint" waypoint_name="View Boxes" _collapsed="true" threshold="0.25" prompt="a small brown box" negative_prompts="yellow ladder;" prompts="small boxes" place_pose="{place_pose}" erosion_size="10"/>
+              <SubTree ID="Bring It start from waypoint" waypoint_name="View Boxes 2" place_pose="{place_pose}" threshold="0.4" _collapsed="true" prompts="small boxes" negative_prompts="gray;gray;rails" erosion_size="2"/>
+            </Control>
+            <Action ID="TransformPose" input_pose="{place_pose}" output_pose="{place_pose}" translation_xyz="0.4;0;0"/>
+          </Control>
+        </Decorator>
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Bring It"><MetadataFields>
+        <Metadata runnable="true"/>
+      </MetadataFields></SubTree>
+  </TreeNodesModel>
+</root>

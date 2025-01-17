@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:macro name="vacuum_urdf" params="parent">
+    <!-- connect collisions to parent frame, e.g. world frame -->
+    <joint name="parent_vacuum_base_joint" type="fixed">
+      <parent link="${parent}"/>
+      <child link="vacuum_base"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+    </joint>
+
+    <link name="vacuum_base">
+      <visual>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+        <geometry>
+          <mesh filename="package://bring_it_sim/description/assets/vacuum.dae" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </visual>
+    </link>
+    
+    <link name="collision_vacuum_base">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+        <geometry>
+          <mesh filename="package://bring_it_sim/description/assets/collision_vacuum_base.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_vacuum_suction_cups">
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+        <geometry>
+          <mesh filename="package://bring_it_sim/description/assets/collision_vacuum_suction_cups.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="vacuum_base_collision_vacuum_base_joint" type="fixed">
+      <parent link="vacuum_base"/>
+      <child link="collision_vacuum_base"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+    </joint>
+
+    <joint name="vacuum_base_collision_vacuum_suction_cups_joint" type="fixed">
+      <parent link="vacuum_base"/>
+      <child link="collision_vacuum_suction_cups"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+    </joint>
+
+    <link name="grasp_link"/>
+    <joint name="vacuum_base_grasp_link_joint" type="fixed">
+      <parent link="vacuum_base"/>
+      <child link="grasp_link"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 0.093 0.159"/>
+    </joint>
+
+  </xacro:macro>
+</robot>

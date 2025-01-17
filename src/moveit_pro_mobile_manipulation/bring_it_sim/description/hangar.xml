@@ -1,0 +1,3504 @@
+<mujoco>
+  <compiler angle="radian" meshdir="assets" autolimits="true" />
+  <visual>
+    <headlight diffuse="0.5 0.5 0.5" ambient="0.6 0.6 0.6" specular="0 0 0" />
+    <rgba haze="0.15 0.25 0.35 1" />
+    <global azimuth="120" elevation="-20" />
+  </visual>
+  <asset>
+    <texture
+      type="skybox"
+      file="assets/space.png"
+      gridsize="3 4"
+      gridlayout=".U..LFRB.D.."
+    />
+    <texture
+      type="skybox"
+      file="assets/space.png"
+      gridsize="3 4"
+      gridlayout=".U..LFRB.D.."
+    />
+  </asset>
+  <worldbody>
+    <body
+      name="SM_WallSide4"
+      pos="-25.105867385864258 32.0594482421875 10.189191818237305"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallSide4 geom"
+        mesh="SM_WallSide4"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_WallSide16"
+      pos="25.105857849121094 54.55787658691406 10.189191818237305"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallSide16 geom"
+        mesh="SM_WallSide16"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_Roof4"
+      pos="-12.036163330078125 24.558650970458984 18.083402633666992"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Roof4 geom"
+        mesh="SM_Roof4"
+        material="glass"
+      />
+    </body>
+    <body
+      name="SM_Roof16_360"
+      pos="12.03618335723877 2.0586605072021484 18.08340835571289"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Roof16_360 geom"
+        mesh="SM_Roof16_360"
+        material="glass"
+      />
+    </body>
+    <body
+      name="SM_Floor_376"
+      pos="0.0 25.80866050720215 -0.5"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Floor_376 geom"
+        mesh="SM_Floor_376"
+        material="floor"
+      />
+    </body>
+    <body
+      name="SM_WallFront_382"
+      pos="-0.001163438311778009 -1.5790290832519531 14.412371635437012"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallFront_382 geom"
+        mesh="SM_WallFront_382"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_WallBack_396"
+      pos="-0.0011624015169218183 58.21354293823242 11.401654243469238"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallBack_396 geom"
+        mesh="SM_WallBack_396"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_DoorSlide_399"
+      pos="-0.026868805289268494 57.99137496948242 6.278013706207275"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_DoorSlide_399 geom"
+        mesh="SM_DoorSlide_399"
+        material="glass"
+      />
+    </body>
+    <body
+      name="SM_WallSupport"
+      pos="-18.47951889038086 50.80866622924805 12.53268051147461"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallSupport geom"
+        mesh="SM_WallSupport"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_WallSupport2"
+      pos="-18.47951889038086 43.30866622924805 12.53268051147461"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallSupport2 geom"
+        mesh="SM_WallSupport2"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_WallSupport3"
+      pos="-18.47951889038086 35.80866622924805 12.53268051147461"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallSupport3 geom"
+        mesh="SM_WallSupport3"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_WallSupport4"
+      pos="-18.47951889038086 28.30866813659668 12.53268051147461"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallSupport4 geom"
+        mesh="SM_WallSupport4"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_WallSupport5"
+      pos="-18.47951889038086 20.80866813659668 12.53268051147461"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallSupport5 geom"
+        mesh="SM_WallSupport5"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_WallSupport6"
+      pos="-18.47951889038086 13.30866813659668 12.53268051147461"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallSupport6 geom"
+        mesh="SM_WallSupport6"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_WallSupport7"
+      pos="-18.47951889038086 5.80866813659668 12.53268051147461"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallSupport7 geom"
+        mesh="SM_WallSupport7"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_WallSupport8"
+      pos="18.479324340820312 5.80864143371582 12.53268051147461"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallSupport8 geom"
+        mesh="SM_WallSupport8"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_WallSupport9"
+      pos="18.479366302490234 13.308650016784668 12.53268051147461"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallSupport9 geom"
+        mesh="SM_WallSupport9"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_WallSupport10"
+      pos="18.479389190673828 20.80864715576172 12.53268051147461"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallSupport10 geom"
+        mesh="SM_WallSupport10"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_WallSupport11"
+      pos="18.479413986206055 28.308656692504883 12.53268051147461"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallSupport11 geom"
+        mesh="SM_WallSupport11"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_WallSupport12"
+      pos="18.47945785522461 35.80866622924805 12.53268051147461"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallSupport12 geom"
+        mesh="SM_WallSupport12"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_WallSupport13"
+      pos="18.479488372802734 43.30866622924805 12.53268051147461"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallSupport13 geom"
+        mesh="SM_WallSupport13"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_WallSupport14"
+      pos="18.47951889038086 50.80866622924805 12.53268051147461"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallSupport14 geom"
+        mesh="SM_WallSupport14"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_Room_426"
+      pos="17.14999771118164 48.308658599853516 2.6000020503997803"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Room_426 geom"
+        mesh="SM_Room_426"
+        material="walls"
+      />
+    </body>
+    <body
+      name="SM_DoorSingle_430"
+      pos="-8.858838081359863 58.2630500793457 1.0016013383865356"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_DoorSingle_430 geom"
+        mesh="SM_DoorSingle_430"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_DoorSingle2"
+      pos="-11.9847412109375 48.04981994628906 1.0025235414505005"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_DoorSingle2 geom"
+        mesh="SM_DoorSingle2"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_AccessStand_441"
+      pos="-19.30655288696289 16.40500831604004 0.8803966641426086"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_AccessStand_441 geom"
+        mesh="SM_AccessStand_441"
+        material="yellow metal"
+      />
+    </body>
+    <body
+      name="SM_Lamps6"
+      pos="13.000012397766113 13.308566093444824 14.159097671508789"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Lamps6 geom"
+        mesh="SM_Lamps6"
+        material="light"
+      />
+    </body>
+    <body
+      name="SM_TrashBin_22"
+      pos="24.357282638549805 29.708660125732422 0.6565067172050476"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_TrashBin_22 geom"
+        mesh="SM_TrashBin_22"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="collision_Cube_004"
+      pos="-11.981542587280273 6.327070713043213 0.5064430832862854"
+      quat="0.9604685306549072 0.0 0.0 -0.27838853001594543"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_Cube_004 geom"
+        mesh="collision_Cube_004"
+      />
+      <body
+        name="SM_Ladder_31"
+        pos="0.0027790069580078125 0.03064107894897461 0.13250821828842163"
+        quat="1.0 0.0 0.0 0.0"
+      >
+        <geom
+          class="visual"
+          type="mesh"
+          name="SM_Ladder_31 geom"
+          mesh="SM_Ladder_31"
+          material="metal_hangar"
+        />
+      </body>
+    </body>
+
+    <body
+      name="SM_Shelf_A2"
+      pos="23.998563766479492 8.312459945678711 1.1799222230911255"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Shelf_A2 geom"
+        mesh="SM_Shelf_A2"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_Shelf_A3"
+      pos="-24.00143814086914 15.81245231628418 1.1799222230911255"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Shelf_A3 geom"
+        mesh="SM_Shelf_A3"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_Shelf_B_39"
+      pos="-23.850627899169922 10.819804191589355 0.9544692635536194"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Shelf_B_39 geom"
+        mesh="SM_Shelf_B_39"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_Shelf_B2"
+      pos="24.149372100830078 11.319804191589355 0.9544692635536194"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Shelf_B2 geom"
+        mesh="SM_Shelf_B2"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_Shelf_B3"
+      pos="24.149372100830078 15.819796562194824 0.9544692635536194"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Shelf_B3 geom"
+        mesh="SM_Shelf_B3"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_Box_A_44"
+      pos="-20.89999771118164 54.308658599853516 5.436284065246582"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Box_A_44 geom"
+        mesh="SM_Box_A_44"
+        material="box"
+      />
+    </body>
+    <body
+      name="SM_Box_A2"
+      pos="-18.699996948242188 54.308658599853516 5.436284065246582"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Box_A2 geom"
+        mesh="SM_Box_A2"
+        material="box"
+      />
+    </body>
+    <body
+      name="SM_Box_A3"
+      pos="-16.499998092651367 54.308658599853516 5.436284065246582"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Box_A3 geom"
+        mesh="SM_Box_A3"
+        material="box"
+      />
+    </body>
+    <body
+      name="SM_Box_A4"
+      pos="-20.89999771118164 51.60866165161133 5.436284065246582"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Box_A4 geom"
+        mesh="SM_Box_A4"
+        material="box"
+      />
+    </body>
+    <body
+      name="SM_Box_A5"
+      pos="-18.699996948242188 51.60866165161133 5.436284065246582"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Box_A5 geom"
+        mesh="SM_Box_A5"
+        material="box"
+      />
+    </body>
+    <body
+      name="SM_Box_A6"
+      pos="-16.499998092651367 51.60866165161133 5.436284065246582"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Box_A6 geom"
+        mesh="SM_Box_A6"
+        material="box"
+      />
+    </body>
+    <body
+      name="SM_Box_B_54"
+      pos="-14.19999885559082 53.70866012573242 5.239261150360107"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Box_B_54 geom"
+        mesh="SM_Box_B_54"
+        material="box"
+      />
+    </body>
+    <body
+      name="SM_Box_B2"
+      pos="-13.299997329711914 53.70866012573242 5.239261150360107"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Box_B2 geom"
+        mesh="SM_Box_B2"
+        material="box"
+      />
+    </body>
+    <body
+      name="SM_Box_B3"
+      pos="-12.399999618530273 53.70866012573242 5.239261150360107"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Box_B3 geom"
+        mesh="SM_Box_B3"
+        material="box"
+      />
+    </body>
+    <body
+      name="SM_Box_B4"
+      pos="-11.5 53.70866012573242 5.239261150360107"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Box_B4 geom"
+        mesh="SM_Box_B4"
+        material="box"
+      />
+    </body>
+    <body
+      name="SM_Box_B5"
+      pos="-10.59999942779541 53.70866012573242 5.239261150360107"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Box_B5 geom"
+        mesh="SM_Box_B5"
+        material="box"
+      />
+    </body>
+    <body
+      name="SM_Box_B6"
+      pos="-9.69999885559082 53.70866012573242 5.239261150360107"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Box_B6 geom"
+        mesh="SM_Box_B6"
+        material="box"
+      />
+    </body>
+    <body
+      name="SM_Box_B7"
+      pos="-8.800000190734863 53.70866012573242 5.239261150360107"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Box_B7 geom"
+        mesh="SM_Box_B7"
+        material="box"
+      />
+    </body>
+    <body
+      name="SM_Box_C_63"
+      pos="-23.299999237060547 46.808658599853516 4.965346336364746"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Box_C_63 geom"
+        mesh="SM_Box_C_63"
+        material="box"
+      />
+    </body>
+    <body
+      name="SM_Box_C2"
+      pos="-21.999998092651367 46.808658599853516 4.965346336364746"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Box_C2 geom"
+        mesh="SM_Box_C2"
+        material="box"
+      />
+    </body>
+    <body
+      name="SM_Box_C3"
+      pos="-20.699996948242188 46.808658599853516 4.965346336364746"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Box_C3 geom"
+        mesh="SM_Box_C3"
+        material="box"
+      />
+    </body>
+    <body
+      name="SM_Box_C4_68"
+      pos="23.500001907348633 53.15865707397461 4.965346336364746"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Box_C4_68 geom"
+        mesh="SM_Box_C4_68"
+        material="box"
+      />
+    </body>
+    <body
+      name="SM_Box_C5"
+      pos="22.19999885559082 53.15865707397461 4.965346336364746"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Box_C5 geom"
+        mesh="SM_Box_C5"
+        material="box"
+      />
+    </body>
+    <body
+      name="SM_Box_C6"
+      pos="20.900001525878906 53.15865707397461 4.965346336364746"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Box_C6 geom"
+        mesh="SM_Box_C6"
+        material="box"
+      />
+    </body>
+    <body
+      name="collision_SM_Box_A7_73"
+      pos="-22.699996948242188 0.2086658477783203 1.936284065246582"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_SM_Box_A7_73 geom"
+        mesh="collision_SM_Box_A7_73"
+      />
+    </body>
+    <body
+      name="collision_SM_Box_A8"
+      pos="-22.699996948242188 2.908662796020508 1.936284065246582"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_SM_Box_A8 geom"
+        mesh="collision_SM_Box_A8"
+      />
+    </body>
+    <body
+      name="collision_SM_Box_C7_77"
+      pos="-20.899995803833008 1.1086597442626953 1.3653459548950195"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_SM_Box_C7_77 geom"
+        mesh="collision_SM_Box_C7_77"
+      />
+    </body>
+    <body
+      name="SM_Room2_3"
+      pos="-17.25 48.308658599853516 2.600001335144043"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Room2_3 geom"
+        mesh="SM_Room2_3"
+        material="walls"
+      />
+    </body>
+    <body
+      name="SM_Pillar_10"
+      pos="-9.499999046325684 42.808658599853516 1.649998664855957"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Pillar_10 geom"
+        mesh="SM_Pillar_10"
+        material="walls"
+      />
+    </body>
+    <body
+      name="SM_Pillar2"
+      pos="-9.499999046325684 46.308658599853516 1.649998664855957"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Pillar2 geom"
+        mesh="SM_Pillar2"
+        material="walls"
+      />
+    </body>
+    <body
+      name="SM_Pillar3"
+      pos="-9.499999046325684 50.308658599853516 1.649998664855957"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Pillar3 geom"
+        mesh="SM_Pillar3"
+        material="walls"
+      />
+    </body>
+    <body
+      name="SM_Pillar4"
+      pos="-9.499999046325684 53.808658599853516 1.649998664855957"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Pillar4 geom"
+        mesh="SM_Pillar4"
+        material="walls"
+      />
+    </body>
+    <body
+      name="SM_Pillar5"
+      pos="9.000000953674316 42.808658599853516 1.649998664855957"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Pillar5 geom"
+        mesh="SM_Pillar5"
+        material="walls"
+      />
+    </body>
+    <body
+      name="SM_Pillar6"
+      pos="9.000000953674316 46.308658599853516 1.649998664855957"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Pillar6 geom"
+        mesh="SM_Pillar6"
+        material="walls"
+      />
+    </body>
+    <body
+      name="SM_Pillar7"
+      pos="9.000000953674316 50.308658599853516 1.649998664855957"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Pillar7 geom"
+        mesh="SM_Pillar7"
+        material="walls"
+      />
+    </body>
+    <body
+      name="SM_Pillar8"
+      pos="9.000000953674316 53.808658599853516 1.649998664855957"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Pillar8 geom"
+        mesh="SM_Pillar8"
+        material="walls"
+      />
+    </body>
+    <body
+      name="SM_DoorSingle3"
+      pos="11.854381561279297 48.067501068115234 1.0016013383865356"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_DoorSingle3 geom"
+        mesh="SM_DoorSingle3"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_DoorDouble_26"
+      pos="25.2814998626709 24.80866050720215 1.0649999380111694"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_DoorDouble_26 geom"
+        mesh="SM_DoorDouble_26"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_DoorDouble2"
+      pos="-25.000579833984375 24.30866050720215 1.0649999380111694"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_DoorDouble2 geom"
+        mesh="SM_DoorDouble2"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_DoorSingle4"
+      pos="21.258838653564453 -1.6457252502441406 1.0016013383865356"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_DoorSingle4 geom"
+        mesh="SM_DoorSingle4"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_Stairs_32"
+      pos="17.748929977416992 39.79243087768555 1.639772653579712"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Stairs_32 geom"
+        mesh="SM_Stairs_32"
+        material="walls"
+      />
+    </body>
+    <body
+      name="SM_Stairs2"
+      pos="-17.748912811279297 39.792415618896484 1.6397724151611328"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Stairs2 geom"
+        mesh="SM_Stairs2"
+        material="walls"
+      />
+    </body>
+    <body
+      name="SM_StairsRailing_Inner_2"
+      pos="18.00760841369629 40.89141845703125 2.7805166244506836"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_StairsRailing_Inner_2 geom"
+        mesh="SM_StairsRailing_Inner_2"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_StairsRailing_Outer_7"
+      pos="18.999317169189453 38.7586784362793 2.959934949874878"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_StairsRailing_Outer_7 geom"
+        mesh="SM_StairsRailing_Outer_7"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_StairsRailing_Top_10"
+      pos="14.234500885009766 41.46199035644531 4.4237823486328125"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_StairsRailing_Top_10 geom"
+        mesh="SM_StairsRailing_Top_10"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_StairsRailing_Outer2"
+      pos="-18.999317169189453 38.75865173339844 2.959934949874878"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_StairsRailing_Outer2 geom"
+        mesh="SM_StairsRailing_Outer2"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_StairsRailing_Inner2"
+      pos="-18.057634353637695 40.89144515991211 2.7805166244506836"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_StairsRailing_Inner2 geom"
+        mesh="SM_StairsRailing_Inner2"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_StairsRailing_Top2_15"
+      pos="-14.334492683410645 41.45530319213867 4.4237823486328125"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_StairsRailing_Top2_15 geom"
+        mesh="SM_StairsRailing_Top2_15"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_DoorSingle5"
+      pos="-21.458837509155273 41.26304626464844 1.0016013383865356"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_DoorSingle5 geom"
+        mesh="SM_DoorSingle5"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_DoorSingle6"
+      pos="20.941164016723633 41.26304626464844 1.0016013383865356"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_DoorSingle6 geom"
+        mesh="SM_DoorSingle6"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_WallRailing_H_2"
+      pos="0.0 28.20865821838379 19.900009155273438"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallRailing_H_2 geom"
+        mesh="SM_WallRailing_H_2"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_WallRailing_H2_5"
+      pos="2.500000238418579 28.20865821838379 19.400009155273438"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallRailing_H2_5 geom"
+        mesh="SM_WallRailing_H2_5"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_WallRailing_H3"
+      pos="5.0 28.20865821838379 19.000009536743164"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallRailing_H3 geom"
+        mesh="SM_WallRailing_H3"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_WallRailing_H4"
+      pos="7.499999523162842 28.20865821838379 18.500009536743164"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallRailing_H4 geom"
+        mesh="SM_WallRailing_H4"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_WallRailing_H5"
+      pos="9.999999046325684 28.20865821838379 18.10000991821289"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallRailing_H5 geom"
+        mesh="SM_WallRailing_H5"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_WallRailing_H6"
+      pos="12.499999046325684 28.20865821838379 17.60000991821289"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallRailing_H6 geom"
+        mesh="SM_WallRailing_H6"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_WallRailing_H7"
+      pos="14.999999046325684 28.20865821838379 17.200008392333984"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallRailing_H7 geom"
+        mesh="SM_WallRailing_H7"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_WallRailing_H8"
+      pos="17.5 28.20865821838379 16.80000877380371"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallRailing_H8 geom"
+        mesh="SM_WallRailing_H8"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_WallRailing_H9"
+      pos="20.0 28.20865821838379 16.30000877380371"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallRailing_H9 geom"
+        mesh="SM_WallRailing_H9"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_WallRailing_H10"
+      pos="22.500001907348633 28.20865821838379 15.900009155273438"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallRailing_H10 geom"
+        mesh="SM_WallRailing_H10"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_WallRailing_H11"
+      pos="-2.499999761581421 28.20865821838379 19.400009155273438"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallRailing_H11 geom"
+        mesh="SM_WallRailing_H11"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_WallRailing_H12"
+      pos="-5.0 28.20865821838379 19.000009536743164"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallRailing_H12 geom"
+        mesh="SM_WallRailing_H12"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_WallRailing_H13"
+      pos="-7.500000476837158 28.20865821838379 18.500009536743164"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallRailing_H13 geom"
+        mesh="SM_WallRailing_H13"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_WallRailing_H14"
+      pos="-10.000000953674316 28.20865821838379 18.10000991821289"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallRailing_H14 geom"
+        mesh="SM_WallRailing_H14"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_WallRailing_H15"
+      pos="-12.500000953674316 28.20865821838379 17.60000991821289"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallRailing_H15 geom"
+        mesh="SM_WallRailing_H15"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_WallRailing_H16"
+      pos="-15.000000953674316 28.20865821838379 17.200008392333984"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallRailing_H16 geom"
+        mesh="SM_WallRailing_H16"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_WallRailing_H17"
+      pos="-17.5 28.20865821838379 16.80000877380371"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallRailing_H17 geom"
+        mesh="SM_WallRailing_H17"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_WallRailing_H18"
+      pos="-20.0 28.20865821838379 16.400009155273438"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallRailing_H18 geom"
+        mesh="SM_WallRailing_H18"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_WallRailing_H19"
+      pos="-22.499998092651367 28.20865821838379 15.900009155273438"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallRailing_H19 geom"
+        mesh="SM_WallRailing_H19"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_DoorDouble3"
+      pos="24.936420440673828 24.30866050720215 1.0649999380111694"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_DoorDouble3 geom"
+        mesh="SM_DoorDouble3"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_AccessStand2"
+      pos="11.576964378356934 9.308902740478516 0.8804012537002563"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_AccessStand2 geom"
+        mesh="SM_AccessStand2"
+        material="yellow metal"
+      />
+    </body>
+    <body
+      name="SM_Ladder2"
+      pos="-23.856979370117188 32.41215515136719 0.9320219159126282"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Ladder2 geom"
+        mesh="SM_Ladder2"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_Ladder3"
+      pos="-23.48493003845215 31.00689125061035 0.9328975081443787"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Ladder3 geom"
+        mesh="SM_Ladder3"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_TrashBin2"
+      pos="24.357282638549805 30.5086612701416 0.6565067172050476"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_TrashBin2 geom"
+        mesh="SM_TrashBin2"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_Box_C8"
+      pos="20.941354751586914 56.158653259277344 1.3647199869155884"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom class="visual" type="mesh" name="SM_Box_C8 geom" mesh="SM_Box_C8" />
+    </body>
+    <body
+      name="SM_Box_C9"
+      pos="20.641357421875 57.458656311035156 1.26472008228302"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom class="visual" type="mesh" name="SM_Box_C9 geom" mesh="SM_Box_C9" />
+    </body>
+    <body
+      name="SM_Box_C10"
+      pos="-20.699996948242188 56.70866012573242 1.3653464317321777"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Box_C10 geom"
+        mesh="SM_Box_C10"
+      />
+    </body>
+    <body
+      name="SM_Box_B8"
+      pos="-16.699996948242188 57.20866012573242 1.6392604112625122"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Box_B8 geom"
+        mesh="SM_Box_B8"
+        material="box"
+      />
+    </body>
+    <body
+      name="SM_Railing_Corner6_20_GEN_VARIABLE_StaticMeshActor_CAT_486"
+      pos="18.93362045288086 19.601991653442383 2.220768690109253"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Railing_Corner6_20_GEN_VARIABLE_StaticMeshActor_CAT_486 geom"
+        mesh="SM_Railing_Corner6_20_GEN_VARIABLE_StaticMeshActor_CAT_486"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_DockingStation_Stairs2_GEN_VARIABLE_StaticMeshActor_CAT_7726"
+      pos="-7.349991321563721 27.711814880371094 2.0999999046325684"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_DockingStation_Stairs2_GEN_VARIABLE_StaticMeshActor_CAT_7726 geom"
+        mesh="SM_DockingStation_Stairs2_GEN_VARIABLE_StaticMeshActor_CAT_7726"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_DockingStation_Top_50_GEN_VARIABLE_StaticMeshActor_CAT_7711"
+      pos="0.7765927314758301 31.804637908935547 5.241786003112793"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_DockingStation_Top_50_GEN_VARIABLE_StaticMeshActor_CAT_7711 geom"
+        mesh="SM_DockingStation_Top_50_GEN_VARIABLE_StaticMeshActor_CAT_7711"
+        material="yellow metal"
+      />
+    </body>
+    <body
+      name="SM_DockingStation_Stairs_46_GEN_VARIABLE_StaticMeshActo_37a21c2"
+      pos="7.349991321563721 27.711814880371094 2.0999999046325684"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_DockingStation_Stairs_46_GEN_VARIABLE_StaticMeshActo_37a21c2 geom"
+        mesh="SM_DockingStation_Stairs_46_GEN_VARIABLE_StaticMeshActo_37a21c2"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_DockingStation_438_GEN_VARIABLE_StaticMeshActor_CAT_7694"
+      pos="-1.9280387277831323e-06 28.468456268310547 1.0099992752075195"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_DockingStation_438_GEN_VARIABLE_StaticMeshActor_CAT_7694 geom"
+        mesh="SM_DockingStation_438_GEN_VARIABLE_StaticMeshActor_CAT_7694"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_Cart2"
+      pos="7.451595306396484 54.622371673583984 0.8229033350944519"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Cart2 geom"
+        mesh="SM_Cart2"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_TrashBin4"
+      pos="-24.406410217285156 27.068607330322266 0.6565067172050476"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_TrashBin4 geom"
+        mesh="SM_TrashBin4"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_WallFront_382.003"
+      pos="-2.543131586207892e-06 -1.9413375854492188 12.243973731994629"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallFront_382.003 geom"
+        mesh="SM_WallFront_382.003"
+        material="walls"
+      />
+    </body>
+    <body
+      name="SM_DoorSlide_399.001"
+      pos="-0.026868795976042747 57.99137496948242 6.278016567230225"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_DoorSlide_399.001 geom"
+        mesh="SM_DoorSlide_399.001"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_WallSide16.001"
+      pos="25.105857849121094 54.55787658691406 10.189190864562988"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallSide16.001 geom"
+        mesh="SM_WallSide16.001"
+        material="walls"
+      />
+    </body>
+    <body
+      name="SM_WallSide16.002"
+      pos="25.105857849121094 54.55787658691406 10.189191818237305"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallSide16.002 geom"
+        mesh="SM_WallSide16.002"
+        material="glass"
+      />
+    </body>
+    <body
+      name="collision_SM_WallSide4.001"
+      pos="-25.105867385864258 32.0594482421875 10.189190864562988"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_SM_WallSide4.001 geom"
+        mesh="collision_SM_WallSide4.001"
+      />
+    </body>
+    <body
+      name="SM_WallSide4.002"
+      pos="-25.105867385864258 32.0594482421875 10.189191818237305"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallSide4.002 geom"
+        mesh="SM_WallSide4.002"
+        material="glass"
+      />
+    </body>
+    <body
+      name="SM_Lamps6.001"
+      pos="13.000012397766113 13.308566093444824 14.159097671508789"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Lamps6.001 geom"
+        mesh="SM_Lamps6.001"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_WallBack_396.001"
+      pos="-0.0011624015169218183 58.21354293823242 11.401654243469238"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallBack_396.001 geom"
+        mesh="SM_WallBack_396.001"
+        material="walls"
+      />
+    </body>
+    <body
+      name="SM_Roof16_360.001"
+      pos="12.03618335723877 2.0586605072021484 18.08340835571289"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Roof16_360.001 geom"
+        mesh="SM_Roof16_360.001"
+        material="walls"
+      />
+    </body>
+    <body
+      name="SM_Roof4.001"
+      pos="-12.036163330078125 24.558650970458984 18.083402633666992"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Roof4.001 geom"
+        mesh="SM_Roof4.001"
+        material="walls"
+      />
+    </body>
+    <body
+      name="Cube.003"
+      pos="-5.911145210266113 7.195913791656494 0.0"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="Cube.003 geom"
+        mesh="Cube.003"
+        material="yellow_tape"
+      />
+    </body>
+    <body
+      name="collision_Plane"
+      pos="0.0 25.80866050720215 0.0"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_Plane geom"
+        mesh="collision_Plane"
+      />
+    </body>
+    <body
+      name="collision_Plane.001"
+      pos="0.0 25.80866050720215 0.0"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_Plane.001 geom"
+        mesh="collision_Plane.001"
+      />
+    </body>
+    <body
+      name="collision_Plane.002"
+      pos="-2.11828875541687 28.654041290283203 0.0"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_Plane.002 geom"
+        mesh="collision_Plane.002"
+      />
+    </body>
+    <body
+      name="collision_Plane.003"
+      pos="0.02430248260498047 25.80866050720215 0.0"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_Plane.003 geom"
+        mesh="collision_Plane.003"
+      />
+    </body>
+    <body
+      name="collision_Plane.004"
+      pos="2.1425912380218506 28.654041290283203 0.0"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_Plane.004 geom"
+        mesh="collision_Plane.004"
+      />
+    </body>
+    <body
+      name="collision_Plane.005"
+      pos="0.021426012739539146 33.11489486694336 0.0"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_Plane.005 geom"
+        mesh="collision_Plane.005"
+      />
+    </body>
+    <body
+      name="collision_Plane.006"
+      pos="0.021426014602184296 28.923986434936523 0.0"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_Plane.006 geom"
+        mesh="collision_Plane.006"
+      />
+    </body>
+    <body
+      name="collision_Plane.007"
+      pos="7.323379039764404 29.0782527923584 0.0"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_Plane.007 geom"
+        mesh="collision_Plane.007"
+      />
+    </body>
+    <body
+      name="collision_Plane.008"
+      pos="-7.353374481201172 29.0782527923584 0.0"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_Plane.008 geom"
+        mesh="collision_Plane.008"
+      />
+    </body>
+    <body
+      name="collision_Plane.009"
+      pos="-3.717996597290039 26.18421173095703 0.0"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_Plane.009 geom"
+        mesh="collision_Plane.009"
+      />
+    </body>
+    <body
+      name="collision_Cube"
+      pos="-11.642203330993652 1.8356692790985107 0.43372729420661926"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_Cube geom"
+        mesh="collision_Cube"
+      />
+      <body
+        name="SM_Cart_28"
+        pos="0.0004825592041015625 0.033867597579956055 -0.009417742490768433"
+        quat="1.0 0.0 0.0 0.0"
+      >
+        <geom
+          class="visual"
+          type="mesh"
+          name="SM_Cart_28 geom"
+          mesh="SM_Cart_28"
+          material="metal_hangar"
+        />
+      </body>
+    </body>
+    <body
+      name="collision_Cube.001"
+      pos="11.559602737426758 9.308443069458008 0.800389289855957"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_Cube.001 geom"
+        mesh="collision_Cube.001"
+      />
+    </body>
+    <body
+      name="collision_Cube.002"
+      pos="-19.29080581665039 16.40394401550293 0.800389289855957"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_Cube.002 geom"
+        mesh="collision_Cube.002"
+      />
+    </body>
+    <body
+      name="collision_Cube.004"
+      pos="-22.69596290588379 8.191585540771484 0.800389289855957"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_Cube.004 geom"
+        mesh="collision_Cube.004"
+      />
+    </body>
+    <body
+      name="collision_Cube.005"
+      pos="-23.86355972290039 10.825281143188477 0.9106760025024414"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_Cube.005 geom"
+        mesh="collision_Cube.005"
+      />
+    </body>
+    <body
+      name="collision_Cube.006"
+      pos="-24.01235008239746 15.830931663513184 1.0179872512817383"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_Cube.006 geom"
+        mesh="collision_Cube.006"
+      />
+    </body>
+    <body
+      name="collision_Cube.007"
+      pos="24.00054931640625 8.311418533325195 1.0179872512817383"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_Cube.007 geom"
+        mesh="collision_Cube.007"
+      />
+    </body>
+    <body
+      name="collision_Cube.008"
+      pos="24.14933967590332 11.336413383483887 1.0179872512817383"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_Cube.008 geom"
+        mesh="collision_Cube.008"
+      />
+    </body>
+    <body
+      name="collision_Cube.009"
+      pos="24.14933967590332 15.816640853881836 1.0179872512817383"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_Cube.009 geom"
+        mesh="collision_Cube.009"
+      />
+    </body>
+    <body
+      name="collision_Cube.010"
+      pos="-23.473466873168945 31.006977081298828 0.800389289855957"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_Cube.010 geom"
+        mesh="collision_Cube.010"
+      />
+    </body>
+    <body
+      name="collision_Cube.011"
+      pos="-23.901172637939453 32.4188232421875 0.800389289855957"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_Cube.011 geom"
+        mesh="collision_Cube.011"
+      />
+    </body>
+    <body
+      name="collision_Cube.012"
+      pos="-24.305641174316406 27.054115295410156 0.4974985122680664"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_Cube.012 geom"
+        mesh="collision_Cube.012"
+      />
+    </body>
+    <body
+      name="collision_Cube.013"
+      pos="24.2586669921875 29.708847045898438 0.4974985122680664"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_Cube.013 geom"
+        mesh="collision_Cube.013"
+      />
+    </body>
+    <body
+      name="collision_Cube.014"
+      pos="24.2586669921875 30.51011085510254 0.4974985122680664"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_Cube.014 geom"
+        mesh="collision_Cube.014"
+      />
+    </body>
+    <body
+      name="collision_Cube.015"
+      pos="7.401407241821289 54.594669342041016 0.7229089736938477"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_Cube.015 geom"
+        mesh="collision_Cube.015"
+      />
+    </body>
+    <body
+      name="collision_SM_Room_426.001"
+      pos="17.14999771118164 48.308658599853516 2.59999942779541"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_SM_Room_426.001 geom"
+        mesh="collision_SM_Room_426.001"
+        material="walls"
+      />
+    </body>
+    <body
+      name="SM_Room_426.002"
+      pos="-19.69150733947754 48.308658599853516 2.59999942779541"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Room_426.002 geom"
+        mesh="SM_Room_426.002"
+        material="walls"
+      />
+    </body>
+    <body
+      name="collision_Plane.010"
+      pos="0.0 25.80866050720215 0.0"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_Plane.010 geom"
+        mesh="collision_Plane.010"
+      />
+    </body>
+    <body
+      name="collision_Plane.011"
+      pos="0.0 25.80866050720215 0.0"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_Plane.011 geom"
+        mesh="collision_Plane.011"
+      />
+    </body>
+    <body
+      name="collision_Plane.012"
+      pos="0.0 25.80866050720215 0.0"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_Plane.012 geom"
+        mesh="collision_Plane.012"
+      />
+    </body>
+    <body
+      name="collision_supports"
+      pos="-18.47951889038086 20.80866813659668 12.532681465148926"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_supports geom"
+        mesh="collision_supports"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="collision_supports.001"
+      pos="-18.47951889038086 20.80866813659668 12.532681465148926"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_supports.001 geom"
+        mesh="collision_supports.001"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="collision_supports.002"
+      pos="-18.47951889038086 20.80866813659668 12.532681465148926"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_supports.002 geom"
+        mesh="collision_supports.002"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="collision_supports.003"
+      pos="-18.47951889038086 20.80866813659668 12.532681465148926"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_supports.003 geom"
+        mesh="collision_supports.003"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="collision_supports.004"
+      pos="-18.47951889038086 20.80866813659668 12.532681465148926"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_supports.004 geom"
+        mesh="collision_supports.004"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="collision_supports.005"
+      pos="-18.47951889038086 20.80866813659668 12.532681465148926"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_supports.005 geom"
+        mesh="collision_supports.005"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="collision_supports.006"
+      pos="-18.47951889038086 20.80866813659668 12.532681465148926"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_supports.006 geom"
+        mesh="collision_supports.006"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="collision_supports.007"
+      pos="-18.47951889038086 20.80866813659668 12.532681465148926"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_supports.007 geom"
+        mesh="collision_supports.007"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="collision_supports.008"
+      pos="-18.47951889038086 20.80866813659668 12.532681465148926"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_supports.008 geom"
+        mesh="collision_supports.008"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="collision_supports.009"
+      pos="-18.47951889038086 20.80866813659668 12.532681465148926"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_supports.009 geom"
+        mesh="collision_supports.009"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="collision_supports.010"
+      pos="-18.47951889038086 20.80866813659668 12.532681465148926"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_supports.010 geom"
+        mesh="collision_supports.010"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="collision_supports.011"
+      pos="-18.47951889038086 20.80866813659668 12.532681465148926"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_supports.011 geom"
+        mesh="collision_supports.011"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="collision_supports.012"
+      pos="-18.47951889038086 20.80866813659668 12.532681465148926"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_supports.012 geom"
+        mesh="collision_supports.012"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="collision_supports.013"
+      pos="-18.47951889038086 20.80866813659668 12.532681465148926"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_supports.013 geom"
+        mesh="collision_supports.013"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="collision_supports.014"
+      pos="-18.47951889038086 20.80866813659668 12.532681465148926"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_supports.014 geom"
+        mesh="collision_supports.014"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="collision_supports.015"
+      pos="-18.47951889038086 20.80866813659668 12.532681465148926"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_supports.015 geom"
+        mesh="collision_supports.015"
+        material="metal_hangar"
+      />
+    </body>
+    <body
+      name="SM_WallBack_396.002"
+      pos="-0.0011624015169218183 58.21354293823242 11.401654243469238"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallBack_396.002 geom"
+        mesh="SM_WallBack_396.002"
+        material="walls"
+      />
+    </body>
+    <body
+      name="SM_WallBack_396.003"
+      pos="-0.0011624015169218183 58.21354293823242 11.401654243469238"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallBack_396.003 geom"
+        mesh="SM_WallBack_396.003"
+        material="walls"
+      />
+    </body>
+    <body
+      name="SM_WallFront_382.002"
+      pos="-2.543131586207892e-06 -1.9413375854492188 12.243975639343262"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallFront_382.002 geom"
+        mesh="SM_WallFront_382.002"
+        material="walls"
+      />
+    </body>
+    <body
+      name="SM_WallFront_382.00311"
+      pos="-2.543131586207892e-06 -1.9413375854492188 12.243973731994629"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallFront_382.00311 geom"
+        mesh="SM_WallFront_382.00311"
+        material="walls"
+      />
+    </body>
+    <body
+      name="collision_SM_Room_426.003"
+      pos="-18.11935043334961 40.011077880859375 2.59999942779541"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_SM_Room_426.003 geom"
+        mesh="collision_SM_Room_426.003"
+        material="walls"
+      />
+    </body>
+    <body
+      name="collision_SM_Room_426.004"
+      pos="16.634126663208008 40.011077880859375 2.59999942779541"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_SM_Room_426.004 geom"
+        mesh="collision_SM_Room_426.004"
+        material="walls"
+      />
+    </body>
+    <body
+      name="collision_SM_Floor_376"
+      pos="0.0 25.80866050720215 -0.5"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_SM_Floor_376 geom"
+        mesh="collision_SM_Floor_376"
+      />
+    </body>
+    <body
+      name="SM_WallSide4.001"
+      pos="-25.105867385864258 32.0594482421875 10.189190864562988"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_WallSide4.001 geom"
+        mesh="SM_WallSide4.001"
+        material="walls"
+      />
+    </body>
+    <body
+      name="collision_SM_WallBack_396.001"
+      pos="-0.0011624015169218183 58.21354293823242 11.401654243469238"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_SM_WallBack_396.001 geom"
+        mesh="collision_SM_WallBack_396.001"
+      />
+    </body>
+    <body
+      name="collision_SM_WallBack_396.002"
+      pos="-0.0011624015169218183 58.21354293823242 11.401654243469238"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_SM_WallBack_396.002 geom"
+        mesh="collision_SM_WallBack_396.002"
+      />
+    </body>
+    <body
+      name="collision_SM_WallSide16.002"
+      pos="25.105857849121094 54.55787658691406 10.189190864562988"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_SM_WallSide16.002 geom"
+        mesh="collision_SM_WallSide16.002"
+      />
+    </body>
+    <body
+      name="collision_SM_WallFront_382.001"
+      pos="-2.543131586207892e-06 -1.9413375854492188 12.243973731994629"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_SM_WallFront_382.001 geom"
+        mesh="collision_SM_WallFront_382.001"
+      />
+    </body>
+    <body
+      name="collision_SM_WallFront_382.002"
+      pos="-2.543131586207892e-06 -1.9413375854492188 12.243973731994629"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_SM_WallFront_382.002 geom"
+        mesh="collision_SM_WallFront_382.002"
+      />
+    </body>
+    <body
+      name="SM_Box_A7_73.001"
+      pos="-22.699996948242188 0.2086658477783203 1.936284065246582"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Box_A7_73.001 geom"
+        mesh="SM_Box_A7_73.001"
+        material="box"
+      />
+    </body>
+    <body
+      name="SM_Box_A8.001"
+      pos="-22.699996948242188 2.908662796020508 1.936284065246582"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Box_A8.001 geom"
+        mesh="SM_Box_A8.001"
+        material="box"
+      />
+    </body>
+    <body
+      name="SM_Box_C7_77.001"
+      pos="-20.899995803833008 1.1086597442626953 1.3653459548950195"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="SM_Box_C7_77.001 geom"
+        mesh="SM_Box_C7_77.001"
+        material="box"
+      />
+    </body>
+    <body
+      name="collision_SM_Pillar4.001"
+      pos="-9.499999046325684 53.808658599853516 1.649998664855957"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_SM_Pillar4.001 geom"
+        mesh="collision_SM_Pillar4.001"
+      />
+    </body>
+    <body
+      name="collision_SM_Pillar3.001"
+      pos="-9.499999046325684 50.308658599853516 1.649998664855957"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_SM_Pillar3.001 geom"
+        mesh="collision_SM_Pillar3.001"
+      />
+    </body>
+    <body
+      name="collision_SM_Pillar2.001"
+      pos="-9.499999046325684 46.308658599853516 1.649998664855957"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_SM_Pillar2.001 geom"
+        mesh="collision_SM_Pillar2.001"
+      />
+    </body>
+    <body
+      name="collision_SM_Pillar_10.001"
+      pos="-9.499999046325684 42.808658599853516 1.649998664855957"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_SM_Pillar_10.001 geom"
+        mesh="collision_SM_Pillar_10.001"
+      />
+    </body>
+    <body
+      name="collision_SM_Pillar8.001"
+      pos="9.000000953674316 53.808658599853516 1.649998664855957"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_SM_Pillar8.001 geom"
+        mesh="collision_SM_Pillar8.001"
+      />
+    </body>
+    <body
+      name="collision_SM_Pillar7.001"
+      pos="9.000000953674316 50.308658599853516 1.649998664855957"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_SM_Pillar7.001 geom"
+        mesh="collision_SM_Pillar7.001"
+      />
+    </body>
+    <body
+      name="collision_SM_Pillar6.001"
+      pos="9.000000953674316 46.308658599853516 1.649998664855957"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_SM_Pillar6.001 geom"
+        mesh="collision_SM_Pillar6.001"
+      />
+    </body>
+    <body
+      name="collision_SM_Pillar5.001"
+      pos="9.000000953674316 42.808658599853516 1.649998664855957"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_SM_Pillar5.001 geom"
+        mesh="collision_SM_Pillar5.001"
+      />
+    </body>
+    <body
+      name="collision_Cube_002.001"
+      pos="-11.812490463256836 2.936809539794922 0.800389289855957"
+      quat="4.371138828673793e-08 0.0 0.0 -1.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_Cube_002.001 geom"
+        mesh="collision_Cube_002.001"
+      />
+      <body
+        name="SM_AccessStand_441.001"
+        pos="-0.0157470703125 0.0010638236999511719 0.08000737428665161"
+        quat="1.0 0.0 0.0 0.0"
+      >
+        <geom
+          class="visual"
+          type="mesh"
+          name="SM_AccessStand_441.001 geom"
+          mesh="SM_AccessStand_441.001"
+          material="yellow metal"
+        />
+      </body>
+    </body>
+    <body
+      name="tire_lndg_rear_l_in.109"
+      pos="0.003512459108605981 17.572731018066406 2.220263957977295"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="tire_lndg_rear_l_in.109 geom"
+        mesh="tire_lndg_rear_l_in.109"
+      />
+    </body>
+    <body
+      name="tire_lndg_rear_l_in.001"
+      pos="0.003512459108605981 17.572731018066406 2.220263957977295"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="tire_lndg_rear_l_in.001 geom"
+        mesh="tire_lndg_rear_l_in.001"
+        material="Material.001"
+      />
+    </body>
+    <body
+      name="tire_lndg_rear_l_in.002"
+      pos="0.003512459108605981 17.572731018066406 2.220263957977295"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="tire_lndg_rear_l_in.002 geom"
+        mesh="tire_lndg_rear_l_in.002"
+      />
+    </body>
+    <body
+      name="tire_lndg_rear_l_in.003"
+      pos="0.003512459108605981 17.572731018066406 2.220263957977295"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="tire_lndg_rear_l_in.003 geom"
+        mesh="tire_lndg_rear_l_in.003"
+        material="rubber"
+      />
+    </body>
+    <body
+      name="tire_lndg_rear_l_in.004"
+      pos="0.003512459108605981 17.572731018066406 2.220263957977295"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="tire_lndg_rear_l_in.004 geom"
+        mesh="tire_lndg_rear_l_in.004"
+      />
+    </body>
+    <body
+      name="tire_lndg_rear_l_in.005"
+      pos="0.003512459108605981 17.572731018066406 2.220263957977295"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="tire_lndg_rear_l_in.005 geom"
+        mesh="tire_lndg_rear_l_in.005"
+      />
+    </body>
+    <body
+      name="tire_lndg_rear_l_in.006"
+      pos="0.003512459108605981 17.572731018066406 2.220263957977295"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="tire_lndg_rear_l_in.006 geom"
+        mesh="tire_lndg_rear_l_in.006"
+      />
+    </body>
+    <body
+      name="tire_lndg_rear_l_in.007"
+      pos="0.003512459108605981 17.572731018066406 2.220263957977295"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="tire_lndg_rear_l_in.007 geom"
+        mesh="tire_lndg_rear_l_in.007"
+        material="Material"
+      />
+    </body>
+    <body
+      name="tire_lndg_rear_l_in.008"
+      pos="0.003512459108605981 17.572731018066406 2.220263957977295"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="tire_lndg_rear_l_in.008 geom"
+        mesh="tire_lndg_rear_l_in.008"
+      />
+    </body>
+    <body
+      name="tire_lndg_rear_l_in.009"
+      pos="0.003512459108605981 17.572731018066406 2.220263957977295"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="tire_lndg_rear_l_in.009 geom"
+        mesh="tire_lndg_rear_l_in.009"
+      />
+    </body>
+    <body
+      name="tire_lndg_rear_l_in.010"
+      pos="0.003512459108605981 17.572731018066406 2.220263957977295"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="tire_lndg_rear_l_in.010 geom"
+        mesh="tire_lndg_rear_l_in.010"
+      />
+    </body>
+    <body
+      name="tire_lndg_rear_l_in.011"
+      pos="0.003512459108605981 17.572731018066406 2.220263957977295"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="tire_lndg_rear_l_in.011 geom"
+        mesh="tire_lndg_rear_l_in.011"
+      />
+    </body>
+    <body
+      name="tire_lndg_rear_l_in.012"
+      pos="0.003512459108605981 17.572731018066406 2.220263957977295"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="tire_lndg_rear_l_in.012 geom"
+        mesh="tire_lndg_rear_l_in.012"
+      />
+    </body>
+    <body
+      name="tire_lndg_rear_l_in.013"
+      pos="0.003512459108605981 17.572731018066406 2.220263957977295"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="tire_lndg_rear_l_in.013 geom"
+        mesh="tire_lndg_rear_l_in.013"
+      />
+    </body>
+    <body
+      name="collision_box_3"
+      pos="-9.765350341796875 3.763852119445801 0.1250065267086029"
+      quat="0.9793436527252197 0.0 0.0 0.20220300555229187"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_box_3 geom"
+        mesh="collision_box_3"
+      />
+      <body
+        name="box_3"
+        pos="-1.9073486328125e-06 -1.9073486328125e-06 0.0"
+        quat="1.0 0.0 0.0 0.0"
+      >
+        <geom
+          class="visual"
+          type="mesh"
+          name="box_3 geom"
+          mesh="box_3"
+          material="box"
+        />
+      </body>
+      <joint type="free" name="box_fee_joint_1.006" pos="0.0 0.0 0.0" />
+    </body>
+    <body
+      name="collision_box_2"
+      pos="-9.425559043884277 5.182408332824707 0.1250065267086029"
+      quat="0.803748607635498 0.0 0.0 0.5949690341949463"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_box_2 geom"
+        mesh="collision_box_2"
+      />
+      <body name="box_2" pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0">
+        <geom
+          class="visual"
+          type="mesh"
+          name="box_2 geom"
+          mesh="box_2"
+          material="box"
+        />
+      </body>
+      <joint type="free" name="box_fee_joint_1.001" pos="0.0 0.0 0.0" />
+    </body>
+    <body
+      name="collision_box_1"
+      pos="-9.571712493896484 2.127570629119873 0.125006765127182"
+      quat="0.9880627393722534 0.0 0.0 -0.15405221283435822"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_box_1 geom"
+        mesh="collision_box_1"
+      />
+      <body
+        name="box_1"
+        pos="-1.9073486328125e-06 -4.76837158203125e-07 0.0"
+        quat="1.0 0.0 0.0 0.0"
+      >
+        <geom
+          class="visual"
+          type="mesh"
+          name="box_1 geom"
+          mesh="box_1"
+          material="box"
+        />
+      </body>
+      <joint
+        type="free"
+        name="box_fee_joint_1"
+        pos="-1.9073486328125e-06 -4.76837158203125e-07 0.0"
+      />
+    </body>
+    <body
+      name="collision_box_7"
+      pos="-12.00039291381836 5.1587724685668945 0.1250065267086029"
+      quat="0.6656379699707031 0.0 0.0 0.7462748289108276"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_box_7 geom"
+        mesh="collision_box_7"
+      />
+      <body
+        name="box_7"
+        pos="0.0 -9.5367431640625e-07 0.0"
+        quat="1.0 0.0 0.0 0.0"
+      >
+        <geom
+          class="visual"
+          type="mesh"
+          name="box_7 geom"
+          mesh="box_7"
+          material="box"
+        />
+      </body>
+      <joint
+        type="free"
+        name="box_fee_joint_1.003"
+        pos="9.5367431640625e-07 -1.9073486328125e-06 -1.4901161193847656e-08"
+      />
+    </body>
+    <body
+      name="collision_box_5"
+      pos="-12.821616172790527 4.422228813171387 0.1250065267086029"
+      quat="0.7372055649757385 0.0 0.0 0.6756685376167297"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_box_5 geom"
+        mesh="collision_box_5"
+      />
+      <body name="box_5" pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0">
+        <geom
+          class="visual"
+          type="mesh"
+          name="box_5 geom"
+          mesh="box_5"
+          material="box"
+        />
+      </body>
+      <joint type="free" name="box_fee_joint_1.004" pos="0.0 0.0 0.0" />
+    </body>
+    <body
+      name="collision_box_4"
+      pos="-11.175603866577148 5.302310943603516 0.1250065267086029"
+      quat="0.9810431003570557 0.0 0.0 -0.19378963112831116"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_box_4 geom"
+        mesh="collision_box_4"
+      />
+      <body name="box_4" pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0">
+        <geom
+          class="visual"
+          type="mesh"
+          name="box_4 geom"
+          mesh="box_4"
+          material="box"
+        />
+      </body>
+      <joint type="free" name="box_fee_joint_1.002" pos="0.0 0.0 0.0" />
+    </body>
+    <body
+      name="collision_box_8"
+      pos="-8.844049453735352 3.162076950073242 0.1250065267086029"
+      quat="0.9648564457893372 0.0 0.0 0.26277756690979004"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_box_8 geom"
+        mesh="collision_box_8"
+      />
+      <body
+        name="box_8"
+        pos="-5.245208740234375e-06 4.76837158203125e-07 -1.4901161193847656e-08"
+        quat="1.0 0.0 0.0 0.0"
+      >
+        <geom
+          class="visual"
+          type="mesh"
+          name="box_8 geom"
+          mesh="box_8"
+          material="box"
+        />
+      </body>
+      <joint
+        type="free"
+        name="box_fee_joint_1.005"
+        pos="-3.814697265625e-06 -9.5367431640625e-07 0.0"
+      />
+    </body>
+    <body
+      name="collision_box_6"
+      pos="-10.643143653869629 1.4997047185897827 0.1250065267086029"
+      quat="0.8876487016677856 0.0 0.0 0.4605211913585663"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_box_6 geom"
+        mesh="collision_box_6"
+      />
+      <body
+        name="box_6"
+        pos="1.430511474609375e-06 -9.5367431640625e-07 -1.4901161193847656e-08"
+        quat="1.0 0.0 0.0 0.0"
+      >
+        <geom
+          class="visual"
+          type="mesh"
+          name="box_6 geom"
+          mesh="box_6"
+          material="box"
+        />
+      </body>
+      <joint
+        type="free"
+        name="box_fee_joint_1.007"
+        pos="1.9073486328125e-06 -9.5367431640625e-07 -2.9802322387695312e-08"
+      />
+    </body>
+  </worldbody>
+  <asset>
+    <mesh name="SM_WallSide4" file="hangar_mesh/SM_WallSide4.obj" />
+    <mesh name="SM_WallSide16" file="hangar_mesh/SM_WallSide16.obj" />
+    <mesh name="SM_Roof4" file="hangar_mesh/SM_Roof4.obj" />
+    <mesh name="SM_Roof16_360" file="hangar_mesh/SM_Roof16_360.obj" />
+    <mesh name="SM_Floor_376" file="hangar_mesh/SM_Floor_376.obj" />
+    <mesh name="SM_WallFront_382" file="hangar_mesh/SM_WallFront_382.obj" />
+    <mesh name="SM_WallBack_396" file="hangar_mesh/SM_WallBack_396.obj" />
+    <mesh name="SM_DoorSlide_399" file="hangar_mesh/SM_DoorSlide_399.obj" />
+    <mesh name="SM_WallSupport" file="hangar_mesh/SM_WallSupport.obj" />
+    <mesh name="SM_WallSupport2" file="hangar_mesh/SM_WallSupport2.obj" />
+    <mesh name="SM_WallSupport3" file="hangar_mesh/SM_WallSupport3.obj" />
+    <mesh name="SM_WallSupport4" file="hangar_mesh/SM_WallSupport4.obj" />
+    <mesh name="SM_WallSupport5" file="hangar_mesh/SM_WallSupport5.obj" />
+    <mesh name="SM_WallSupport6" file="hangar_mesh/SM_WallSupport6.obj" />
+    <mesh name="SM_WallSupport7" file="hangar_mesh/SM_WallSupport7.obj" />
+    <mesh name="SM_WallSupport8" file="hangar_mesh/SM_WallSupport8.obj" />
+    <mesh name="SM_WallSupport9" file="hangar_mesh/SM_WallSupport9.obj" />
+    <mesh name="SM_WallSupport10" file="hangar_mesh/SM_WallSupport10.obj" />
+    <mesh name="SM_WallSupport11" file="hangar_mesh/SM_WallSupport11.obj" />
+    <mesh name="SM_WallSupport12" file="hangar_mesh/SM_WallSupport12.obj" />
+    <mesh name="SM_WallSupport13" file="hangar_mesh/SM_WallSupport13.obj" />
+    <mesh name="SM_WallSupport14" file="hangar_mesh/SM_WallSupport14.obj" />
+    <mesh name="SM_Room_426" file="hangar_mesh/SM_Room_426.obj" />
+    <mesh name="SM_DoorSingle_430" file="hangar_mesh/SM_DoorSingle_430.obj" />
+    <mesh name="SM_DoorSingle2" file="hangar_mesh/SM_DoorSingle2.obj" />
+    <mesh name="SM_AccessStand_441" file="hangar_mesh/SM_AccessStand_441.obj" />
+    <mesh
+      name="collision_Cube_002.001"
+      file="hangar_mesh/collision_Cube_002.001.obj"
+    />
+    <mesh
+      name="SM_AccessStand_441.001"
+      file="hangar_mesh/SM_AccessStand_441.001.obj"
+    />
+    <mesh name="SM_Lamps6" file="hangar_mesh/SM_Lamps6.obj" />
+    <mesh name="SM_TrashBin_22" file="hangar_mesh/SM_TrashBin_22.obj" />
+    <mesh name="SM_Cart_28" file="hangar_mesh/SM_Cart_28.obj" />
+    <mesh name="SM_Ladder_31" file="hangar_mesh/SM_Ladder_31.obj" />
+    <mesh name="collision_Cube_004" file="hangar_mesh/collision_Cube_004.obj" />
+    <mesh name="SM_Shelf_A2" file="hangar_mesh/SM_Shelf_A2.obj" />
+    <mesh name="SM_Shelf_A3" file="hangar_mesh/SM_Shelf_A3.obj" />
+    <mesh name="SM_Shelf_B_39" file="hangar_mesh/SM_Shelf_B_39.obj" />
+    <mesh name="SM_Shelf_B2" file="hangar_mesh/SM_Shelf_B2.obj" />
+    <mesh name="SM_Shelf_B3" file="hangar_mesh/SM_Shelf_B3.obj" />
+    <mesh name="SM_Box_A_44" file="hangar_mesh/SM_Box_A_44.obj" />
+    <mesh name="SM_Box_A2" file="hangar_mesh/SM_Box_A2.obj" />
+    <mesh name="SM_Box_A3" file="hangar_mesh/SM_Box_A3.obj" />
+    <mesh name="SM_Box_A4" file="hangar_mesh/SM_Box_A4.obj" />
+    <mesh name="SM_Box_A5" file="hangar_mesh/SM_Box_A5.obj" />
+    <mesh name="SM_Box_A6" file="hangar_mesh/SM_Box_A6.obj" />
+    <mesh name="SM_Box_B_54" file="hangar_mesh/SM_Box_B_54.obj" />
+    <mesh name="SM_Box_B2" file="hangar_mesh/SM_Box_B2.obj" />
+    <mesh name="SM_Box_B3" file="hangar_mesh/SM_Box_B3.obj" />
+    <mesh name="SM_Box_B4" file="hangar_mesh/SM_Box_B4.obj" />
+    <mesh name="SM_Box_B5" file="hangar_mesh/SM_Box_B5.obj" />
+    <mesh name="SM_Box_B6" file="hangar_mesh/SM_Box_B6.obj" />
+    <mesh name="SM_Box_B7" file="hangar_mesh/SM_Box_B7.obj" />
+    <mesh name="SM_Box_C_63" file="hangar_mesh/SM_Box_C_63.obj" />
+    <mesh name="SM_Box_C2" file="hangar_mesh/SM_Box_C2.obj" />
+    <mesh name="SM_Box_C3" file="hangar_mesh/SM_Box_C3.obj" />
+    <mesh name="SM_Box_C4_68" file="hangar_mesh/SM_Box_C4_68.obj" />
+    <mesh name="SM_Box_C5" file="hangar_mesh/SM_Box_C5.obj" />
+    <mesh name="SM_Box_C6" file="hangar_mesh/SM_Box_C6.obj" />
+    <mesh
+      name="collision_SM_Box_A7_73"
+      file="hangar_mesh/collision_SM_Box_A7_73.obj"
+    />
+    <mesh
+      name="collision_SM_Box_A8"
+      file="hangar_mesh/collision_SM_Box_A8.obj"
+    />
+    <mesh
+      name="collision_SM_Box_C7_77"
+      file="hangar_mesh/collision_SM_Box_C7_77.obj"
+    />
+    <mesh name="SM_Room2_3" file="hangar_mesh/SM_Room2_3.obj" />
+    <mesh name="SM_Pillar_10" file="hangar_mesh/SM_Pillar_10.obj" />
+    <mesh name="SM_Pillar2" file="hangar_mesh/SM_Pillar2.obj" />
+    <mesh name="SM_Pillar3" file="hangar_mesh/SM_Pillar3.obj" />
+    <mesh name="SM_Pillar4" file="hangar_mesh/SM_Pillar4.obj" />
+    <mesh name="SM_Pillar5" file="hangar_mesh/SM_Pillar5.obj" />
+    <mesh name="SM_Pillar6" file="hangar_mesh/SM_Pillar6.obj" />
+    <mesh name="SM_Pillar7" file="hangar_mesh/SM_Pillar7.obj" />
+    <mesh name="SM_Pillar8" file="hangar_mesh/SM_Pillar8.obj" />
+    <mesh name="SM_DoorSingle3" file="hangar_mesh/SM_DoorSingle3.obj" />
+    <mesh name="SM_DoorDouble_26" file="hangar_mesh/SM_DoorDouble_26.obj" />
+    <mesh name="SM_DoorDouble2" file="hangar_mesh/SM_DoorDouble2.obj" />
+    <mesh name="SM_DoorSingle4" file="hangar_mesh/SM_DoorSingle4.obj" />
+    <mesh name="SM_Stairs_32" file="hangar_mesh/SM_Stairs_32.obj" />
+    <mesh name="SM_Stairs2" file="hangar_mesh/SM_Stairs2.obj" />
+    <mesh
+      name="SM_StairsRailing_Inner_2"
+      file="hangar_mesh/SM_StairsRailing_Inner_2.obj"
+    />
+    <mesh
+      name="SM_StairsRailing_Outer_7"
+      file="hangar_mesh/SM_StairsRailing_Outer_7.obj"
+    />
+    <mesh
+      name="SM_StairsRailing_Top_10"
+      file="hangar_mesh/SM_StairsRailing_Top_10.obj"
+    />
+    <mesh
+      name="SM_StairsRailing_Outer2"
+      file="hangar_mesh/SM_StairsRailing_Outer2.obj"
+    />
+    <mesh
+      name="SM_StairsRailing_Inner2"
+      file="hangar_mesh/SM_StairsRailing_Inner2.obj"
+    />
+    <mesh
+      name="SM_StairsRailing_Top2_15"
+      file="hangar_mesh/SM_StairsRailing_Top2_15.obj"
+    />
+    <mesh name="SM_DoorSingle5" file="hangar_mesh/SM_DoorSingle5.obj" />
+    <mesh name="SM_DoorSingle6" file="hangar_mesh/SM_DoorSingle6.obj" />
+    <mesh name="SM_WallRailing_H_2" file="hangar_mesh/SM_WallRailing_H_2.obj" />
+    <mesh
+      name="SM_WallRailing_H2_5"
+      file="hangar_mesh/SM_WallRailing_H2_5.obj"
+    />
+    <mesh name="SM_WallRailing_H3" file="hangar_mesh/SM_WallRailing_H3.obj" />
+    <mesh name="SM_WallRailing_H4" file="hangar_mesh/SM_WallRailing_H4.obj" />
+    <mesh name="SM_WallRailing_H5" file="hangar_mesh/SM_WallRailing_H5.obj" />
+    <mesh name="SM_WallRailing_H6" file="hangar_mesh/SM_WallRailing_H6.obj" />
+    <mesh name="SM_WallRailing_H7" file="hangar_mesh/SM_WallRailing_H7.obj" />
+    <mesh name="SM_WallRailing_H8" file="hangar_mesh/SM_WallRailing_H8.obj" />
+    <mesh name="SM_WallRailing_H9" file="hangar_mesh/SM_WallRailing_H9.obj" />
+    <mesh name="SM_WallRailing_H10" file="hangar_mesh/SM_WallRailing_H10.obj" />
+    <mesh name="SM_WallRailing_H11" file="hangar_mesh/SM_WallRailing_H11.obj" />
+    <mesh name="SM_WallRailing_H12" file="hangar_mesh/SM_WallRailing_H12.obj" />
+    <mesh name="SM_WallRailing_H13" file="hangar_mesh/SM_WallRailing_H13.obj" />
+    <mesh name="SM_WallRailing_H14" file="hangar_mesh/SM_WallRailing_H14.obj" />
+    <mesh name="SM_WallRailing_H15" file="hangar_mesh/SM_WallRailing_H15.obj" />
+    <mesh name="SM_WallRailing_H16" file="hangar_mesh/SM_WallRailing_H16.obj" />
+    <mesh name="SM_WallRailing_H17" file="hangar_mesh/SM_WallRailing_H17.obj" />
+    <mesh name="SM_WallRailing_H18" file="hangar_mesh/SM_WallRailing_H18.obj" />
+    <mesh name="SM_WallRailing_H19" file="hangar_mesh/SM_WallRailing_H19.obj" />
+    <mesh name="SM_DoorDouble3" file="hangar_mesh/SM_DoorDouble3.obj" />
+    <mesh name="SM_AccessStand2" file="hangar_mesh/SM_AccessStand2.obj" />
+    <mesh name="SM_Ladder2" file="hangar_mesh/SM_Ladder2.obj" />
+    <mesh name="SM_Ladder3" file="hangar_mesh/SM_Ladder3.obj" />
+    <mesh name="SM_TrashBin2" file="hangar_mesh/SM_TrashBin2.obj" />
+    <mesh name="SM_Box_C8" file="hangar_mesh/SM_Box_C8.obj" />
+    <mesh name="SM_Box_C9" file="hangar_mesh/SM_Box_C9.obj" />
+    <mesh name="SM_Box_C10" file="hangar_mesh/SM_Box_C10.obj" />
+    <mesh name="SM_Box_B8" file="hangar_mesh/SM_Box_B8.obj" />
+    <mesh
+      name="SM_Railing_Corner6_20_GEN_VARIABLE_StaticMeshActor_CAT_486"
+      file="hangar_mesh/SM_Railing_Corner6_20_GEN_VARIABLE_StaticMeshActor_CAT_486.obj"
+    />
+    <mesh
+      name="SM_DockingStation_Stairs2_GEN_VARIABLE_StaticMeshActor_CAT_7726"
+      file="hangar_mesh/SM_DockingStation_Stairs2_GEN_VARIABLE_StaticMeshActor_CAT_7726.obj"
+    />
+    <mesh
+      name="SM_DockingStation_Top_50_GEN_VARIABLE_StaticMeshActor_CAT_7711"
+      file="hangar_mesh/SM_DockingStation_Top_50_GEN_VARIABLE_StaticMeshActor_CAT_7711.obj"
+    />
+    <mesh
+      name="SM_DockingStation_Stairs_46_GEN_VARIABLE_StaticMeshActo_37a21c2"
+      file="hangar_mesh/SM_DockingStation_Stairs_46_GEN_VARIABLE_StaticMeshActo_37a21c2.obj"
+    />
+    <mesh
+      name="SM_DockingStation_438_GEN_VARIABLE_StaticMeshActor_CAT_7694"
+      file="hangar_mesh/SM_DockingStation_438_GEN_VARIABLE_StaticMeshActor_CAT_7694.obj"
+    />
+    <mesh name="SM_Cart2" file="hangar_mesh/SM_Cart2.obj" />
+    <mesh name="SM_TrashBin4" file="hangar_mesh/SM_TrashBin4.obj" />
+    <mesh
+      name="SM_WallFront_382.003"
+      file="hangar_mesh/SM_WallFront_382.003.obj"
+    />
+    <mesh
+      name="SM_WallFront_382.00311"
+      file="hangar_mesh/SM_WallFront_382.00311.obj"
+    />
+    <mesh
+      name="SM_DoorSlide_399.001"
+      file="hangar_mesh/SM_DoorSlide_399.001.obj"
+    />
+    <mesh name="SM_WallSide16.001" file="hangar_mesh/SM_WallSide16.001.obj" />
+    <mesh name="SM_WallSide16.002" file="hangar_mesh/SM_WallSide16.002.obj" />
+    <mesh
+      name="collision_SM_WallSide4.001"
+      file="hangar_mesh/collision_SM_WallSide4.001.obj"
+    />
+    <mesh name="SM_WallSide4.002" file="hangar_mesh/SM_WallSide4.002.obj" />
+    <mesh name="SM_Lamps6.001" file="hangar_mesh/SM_Lamps6.001.obj" />
+    <mesh
+      name="SM_WallBack_396.001"
+      file="hangar_mesh/SM_WallBack_396.001.obj"
+    />
+    <mesh name="SM_Roof16_360.001" file="hangar_mesh/SM_Roof16_360.001.obj" />
+    <mesh name="SM_Roof4.001" file="hangar_mesh/SM_Roof4.001.obj" />
+    <mesh name="Cube.003" file="hangar_mesh/Cube.003.obj" />
+    <mesh name="collision_Plane" file="hangar_mesh/collision_Plane.obj" />
+    <mesh
+      name="collision_Plane.001"
+      file="hangar_mesh/collision_Plane.001.obj"
+    />
+    <mesh
+      name="collision_Plane.002"
+      file="hangar_mesh/collision_Plane.002.obj"
+    />
+    <mesh
+      name="collision_Plane.003"
+      file="hangar_mesh/collision_Plane.003.obj"
+    />
+    <mesh
+      name="collision_Plane.004"
+      file="hangar_mesh/collision_Plane.004.obj"
+    />
+    <mesh
+      name="collision_Plane.005"
+      file="hangar_mesh/collision_Plane.005.obj"
+    />
+    <mesh
+      name="collision_Plane.006"
+      file="hangar_mesh/collision_Plane.006.obj"
+    />
+    <mesh
+      name="collision_Plane.007"
+      file="hangar_mesh/collision_Plane.007.obj"
+    />
+    <mesh
+      name="collision_Plane.008"
+      file="hangar_mesh/collision_Plane.008.obj"
+    />
+    <mesh
+      name="collision_Plane.009"
+      file="hangar_mesh/collision_Plane.009.obj"
+    />
+    <mesh name="collision_Cube" file="hangar_mesh/collision_Cube.obj" />
+    <mesh name="collision_Cube.001" file="hangar_mesh/collision_Cube.001.obj" />
+    <mesh name="collision_Cube.002" file="hangar_mesh/collision_Cube.002.obj" />
+    <mesh name="collision_Cube.004" file="hangar_mesh/collision_Cube.004.obj" />
+    <mesh name="collision_Cube.005" file="hangar_mesh/collision_Cube.005.obj" />
+    <mesh name="collision_Cube.006" file="hangar_mesh/collision_Cube.006.obj" />
+    <mesh name="collision_Cube.007" file="hangar_mesh/collision_Cube.007.obj" />
+    <mesh name="collision_Cube.008" file="hangar_mesh/collision_Cube.008.obj" />
+    <mesh name="collision_Cube.009" file="hangar_mesh/collision_Cube.009.obj" />
+    <mesh name="collision_Cube.010" file="hangar_mesh/collision_Cube.010.obj" />
+    <mesh name="collision_Cube.011" file="hangar_mesh/collision_Cube.011.obj" />
+    <mesh name="collision_Cube.012" file="hangar_mesh/collision_Cube.012.obj" />
+    <mesh name="collision_Cube.013" file="hangar_mesh/collision_Cube.013.obj" />
+    <mesh name="collision_Cube.014" file="hangar_mesh/collision_Cube.014.obj" />
+    <mesh name="collision_Cube.015" file="hangar_mesh/collision_Cube.015.obj" />
+    <mesh
+      name="collision_SM_Room_426.001"
+      file="hangar_mesh/collision_SM_Room_426.001.obj"
+    />
+    <mesh name="SM_Room_426.002" file="hangar_mesh/SM_Room_426.002.obj" />
+    <mesh
+      name="collision_Plane.010"
+      file="hangar_mesh/collision_Plane.010.obj"
+    />
+    <mesh
+      name="collision_Plane.011"
+      file="hangar_mesh/collision_Plane.011.obj"
+    />
+    <mesh
+      name="collision_Plane.012"
+      file="hangar_mesh/collision_Plane.012.obj"
+    />
+    <mesh name="collision_supports" file="hangar_mesh/collision_supports.obj" />
+    <mesh
+      name="collision_supports.001"
+      file="hangar_mesh/collision_supports.001.obj"
+    />
+    <mesh
+      name="collision_supports.002"
+      file="hangar_mesh/collision_supports.002.obj"
+    />
+    <mesh
+      name="collision_supports.003"
+      file="hangar_mesh/collision_supports.003.obj"
+    />
+    <mesh
+      name="collision_supports.004"
+      file="hangar_mesh/collision_supports.004.obj"
+    />
+    <mesh
+      name="collision_supports.005"
+      file="hangar_mesh/collision_supports.005.obj"
+    />
+    <mesh
+      name="collision_supports.006"
+      file="hangar_mesh/collision_supports.006.obj"
+    />
+    <mesh
+      name="collision_supports.007"
+      file="hangar_mesh/collision_supports.007.obj"
+    />
+    <mesh
+      name="collision_supports.008"
+      file="hangar_mesh/collision_supports.008.obj"
+    />
+    <mesh
+      name="collision_supports.009"
+      file="hangar_mesh/collision_supports.009.obj"
+    />
+    <mesh
+      name="collision_supports.010"
+      file="hangar_mesh/collision_supports.010.obj"
+    />
+    <mesh
+      name="collision_supports.011"
+      file="hangar_mesh/collision_supports.011.obj"
+    />
+    <mesh
+      name="collision_supports.012"
+      file="hangar_mesh/collision_supports.012.obj"
+    />
+    <mesh
+      name="collision_supports.013"
+      file="hangar_mesh/collision_supports.013.obj"
+    />
+    <mesh
+      name="collision_supports.014"
+      file="hangar_mesh/collision_supports.014.obj"
+    />
+    <mesh
+      name="collision_supports.015"
+      file="hangar_mesh/collision_supports.015.obj"
+    />
+    <mesh
+      name="SM_WallBack_396.002"
+      file="hangar_mesh/SM_WallBack_396.002.obj"
+    />
+    <mesh
+      name="SM_WallBack_396.003"
+      file="hangar_mesh/SM_WallBack_396.003.obj"
+    />
+    <mesh
+      name="SM_WallFront_382.002"
+      file="hangar_mesh/SM_WallFront_382.002.obj"
+    />
+    <mesh
+      name="collision_SM_WallFront_382.003"
+      file="hangar_mesh/collision_SM_WallFront_382.003.obj"
+    />
+    <mesh
+      name="collision_SM_Room_426.003"
+      file="hangar_mesh/collision_SM_Room_426.003.obj"
+    />
+    <mesh
+      name="collision_SM_Room_426.004"
+      file="hangar_mesh/collision_SM_Room_426.004.obj"
+    />
+    <mesh
+      name="collision_SM_Floor_376"
+      file="hangar_mesh/collision_SM_Floor_376.obj"
+    />
+    <mesh name="SM_WallSide4.001" file="hangar_mesh/SM_WallSide4.001.obj" />
+    <mesh
+      name="collision_SM_WallBack_396.001"
+      file="hangar_mesh/collision_SM_WallBack_396.001.obj"
+    />
+    <mesh
+      name="collision_SM_WallBack_396.002"
+      file="hangar_mesh/collision_SM_WallBack_396.002.obj"
+    />
+    <mesh
+      name="collision_SM_WallSide16.002"
+      file="hangar_mesh/collision_SM_WallSide16.002.obj"
+    />
+    <mesh
+      name="collision_SM_WallFront_382.001"
+      file="hangar_mesh/collision_SM_WallFront_382.001.obj"
+    />
+    <mesh
+      name="collision_SM_WallFront_382.002"
+      file="hangar_mesh/collision_SM_WallFront_382.002.obj"
+    />
+    <mesh name="SM_Box_A7_73.001" file="hangar_mesh/SM_Box_A7_73.001.obj" />
+    <mesh name="SM_Box_A8.001" file="hangar_mesh/SM_Box_A8.001.obj" />
+    <mesh name="SM_Box_C7_77.001" file="hangar_mesh/SM_Box_C7_77.001.obj" />
+    <mesh
+      name="collision_SM_Pillar4.001"
+      file="hangar_mesh/collision_SM_Pillar4.001.obj"
+    />
+    <mesh
+      name="collision_SM_Pillar3.001"
+      file="hangar_mesh/collision_SM_Pillar3.001.obj"
+    />
+    <mesh
+      name="collision_SM_Pillar2.001"
+      file="hangar_mesh/collision_SM_Pillar2.001.obj"
+    />
+    <mesh
+      name="collision_SM_Pillar_10.001"
+      file="hangar_mesh/collision_SM_Pillar_10.001.obj"
+    />
+    <mesh
+      name="collision_SM_Pillar8.001"
+      file="hangar_mesh/collision_SM_Pillar8.001.obj"
+    />
+    <mesh
+      name="collision_SM_Pillar7.001"
+      file="hangar_mesh/collision_SM_Pillar7.001.obj"
+    />
+    <mesh
+      name="collision_SM_Pillar6.001"
+      file="hangar_mesh/collision_SM_Pillar6.001.obj"
+    />
+    <mesh
+      name="collision_SM_Pillar5.001"
+      file="hangar_mesh/collision_SM_Pillar5.001.obj"
+    />
+    <mesh
+      name="tire_lndg_rear_l_in.109"
+      file="hangar_mesh/tire_lndg_rear_l_in.109.obj"
+    />
+    <mesh
+      name="tire_lndg_rear_l_in.001"
+      file="hangar_mesh/tire_lndg_rear_l_in.001.obj"
+    />
+    <mesh
+      name="tire_lndg_rear_l_in.002"
+      file="hangar_mesh/tire_lndg_rear_l_in.002.obj"
+    />
+    <mesh
+      name="tire_lndg_rear_l_in.003"
+      file="hangar_mesh/tire_lndg_rear_l_in.003.obj"
+    />
+    <mesh
+      name="tire_lndg_rear_l_in.004"
+      file="hangar_mesh/tire_lndg_rear_l_in.004.obj"
+    />
+    <mesh
+      name="tire_lndg_rear_l_in.005"
+      file="hangar_mesh/tire_lndg_rear_l_in.005.obj"
+    />
+    <mesh
+      name="tire_lndg_rear_l_in.006"
+      file="hangar_mesh/tire_lndg_rear_l_in.006.obj"
+    />
+    <mesh
+      name="tire_lndg_rear_l_in.007"
+      file="hangar_mesh/tire_lndg_rear_l_in.007.obj"
+    />
+    <mesh
+      name="tire_lndg_rear_l_in.008"
+      file="hangar_mesh/tire_lndg_rear_l_in.008.obj"
+    />
+    <mesh
+      name="tire_lndg_rear_l_in.009"
+      file="hangar_mesh/tire_lndg_rear_l_in.009.obj"
+    />
+    <mesh
+      name="tire_lndg_rear_l_in.010"
+      file="hangar_mesh/tire_lndg_rear_l_in.010.obj"
+    />
+    <mesh
+      name="tire_lndg_rear_l_in.011"
+      file="hangar_mesh/tire_lndg_rear_l_in.011.obj"
+    />
+    <mesh
+      name="tire_lndg_rear_l_in.012"
+      file="hangar_mesh/tire_lndg_rear_l_in.012.obj"
+    />
+    <mesh
+      name="tire_lndg_rear_l_in.013"
+      file="hangar_mesh/tire_lndg_rear_l_in.013.obj"
+    />
+    <mesh name="collision_box_1" file="hangar_mesh/collision_box_1.obj" />
+    <mesh name="collision_box_2" file="hangar_mesh/collision_box_2.obj" />
+    <mesh name="collision_box_3" file="hangar_mesh/collision_box_3.obj" />
+    <mesh name="collision_box_4" file="hangar_mesh/collision_box_4.obj" />
+    <mesh name="collision_box_5" file="hangar_mesh/collision_box_5.obj" />
+    <mesh name="collision_box_6" file="hangar_mesh/collision_box_6.obj" />
+    <mesh name="collision_box_7" file="hangar_mesh/collision_box_7.obj" />
+    <mesh name="collision_box_8" file="hangar_mesh/collision_box_8.obj" />
+    <mesh name="box_1" file="hangar_mesh/box_1.obj" />
+    <mesh name="box_2" file="hangar_mesh/box_2.obj" />
+    <mesh name="box_3" file="hangar_mesh/box_3.obj" />
+    <mesh name="box_4" file="hangar_mesh/box_4.obj" />
+    <mesh name="box_5" file="hangar_mesh/box_5.obj" />
+    <mesh name="box_6" file="hangar_mesh/box_6.obj" />
+    <mesh name="box_7" file="hangar_mesh/box_7.obj" />
+    <mesh name="box_8" file="hangar_mesh/box_8.obj" />
+    <material
+      name="metal_hangar"
+      rgba="0.25 0.25 0.25 1.0"
+      reflectance="0.8960324823856354"
+      metallic="0.7795275449752808"
+    />
+    <material
+      name="glass"
+      rgba="0.8258873820304871 0.9459500908851624 0.9999716877937317 0.28333336114883423"
+      reflectance="0.9740158449858427"
+      metallic="0.0"
+    />
+    <texture
+      type="2d"
+      name="floor"
+      file="assets/floor.png"
+      mark="edge"
+      width="2048"
+      height="2048"
+    />
+    <material
+      name="floor"
+      texture="floor"
+      texuniform="true"
+      texrepeat="1 1"
+      reflectance="0.4472135901451111"
+      metallic="0.0"
+    />
+    <texture
+      type="2d"
+      name="walls"
+      file="assets/walls.png"
+      mark="edge"
+      width="2048"
+      height="2048"
+    />
+    <material
+      name="walls"
+      texture="walls"
+      texuniform="true"
+      texrepeat="1 1"
+      reflectance="0.4472135901451111"
+      metallic="0.0"
+    />
+    <material
+      name="yellow metal"
+      rgba="1.0 0.6478113532066345 0.015450038015842438 1.0"
+      reflectance="0.880284458398819"
+      metallic="0.8976377844810486"
+    />
+    <material
+      name="light"
+      rgba="0.9999716877937317 0.9999716877937317 0.9999716877937317 1.0"
+      reflectance="0.5"
+      metallic="0.0"
+    />
+    <material
+      name="box"
+      rgba="0.7859447598457336 0.521110475063324 0.2919864058494568 1.0"
+      reflectance="0.4472135901451111"
+      metallic="0.0"
+    />
+    <material
+      name="yellow_tape"
+      rgba="0.8001177906990051 0.6553049087524414 0.0 1.0"
+      reflectance="0.18644070625305176"
+      metallic="0.0"
+    />
+    <material
+      name="Material.001"
+      rgba="0.9999716877937317 0.9999716877937317 0.9999716877937317 1.0"
+      reflectance="0.5"
+      metallic="0.0"
+    />
+    <material
+      name="rubber"
+      rgba="0.01345729734748602 0.01345729734748602 0.01345729734748602 1.0"
+      reflectance="0.5"
+      metallic="0.0"
+    />
+    <material
+      name="Material"
+      rgba="0.1858992576599121 0.1858992576599121 0.1858992576599121 1.0"
+      reflectance="1.0"
+      metallic="0.06779661029577255"
+    />
+  </asset>
+</mujoco>
