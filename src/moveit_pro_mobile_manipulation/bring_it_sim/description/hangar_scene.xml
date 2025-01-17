@@ -1,0 +1,106 @@
+<mujoco>
+  <option>
+    <flag multiccd="enable" />
+  </option>
+  <compiler angle="radian" meshdir="assets" autolimits="true" />
+  <include file="ur5e_ridgeback.xml" />
+  <include file="hangar.xml" />
+  <option integrator="implicit" timestep="0.01" />
+  <visual>
+    <headlight diffuse="1.0 1.0 1.0" ambient="0.4 0.4 0.4" specular="0 0 0" />
+    <rgba haze="0.15 0.25 0.35 1" />
+    <global offwidth="1280" offheight="720" azimuth="0" elevation="180" />
+    <map znear=".0001" />
+  </visual>
+  <asset>
+    <texture
+      type="skybox"
+      file="assets/space.png"
+      gridsize="3 4"
+      gridlayout=".U..LFRB.D.."
+    />
+  </asset>
+
+  <worldbody>
+    <!-- Scene Camera -->
+    <!--    <site-->
+    <!--      name="scene_camera_optical_frame"-->
+    <!--      pos="-14.4207 -4.39686 9.04094"-->
+    <!--      quat="0.415847 -0.883719 0.194298 -0.09143"-->
+    <!--    />-->
+    <!--    <camera-->
+    <!--      name="scene_camera"-->
+    <!--      pos="-14.4207 -4.39686 9.04094"-->
+    <!--      quat="0.883719 0.415847 -0.09143 -0.194298"-->
+    <!--      fovy="45"-->
+    <!--      mode="fixed"-->
+    <!--      resolution="1280 720"-->
+    <!--    />-->
+  </worldbody>
+
+  <keyframe>
+    <key
+      name="default"
+      qpos="-0.0576239 -0.0172046 -0.0185516 0.00183643 -0.104441 -5.86852e-08 -5.78748e-08 -5.23725e-08 -4.36527e-08 -3.40517e-08 -2.61422e-08 -2.20435e-08 -2.28539e-08 -2.83562e-08 -0.574246 -0.581266 -5.45865e-08 -0.230591 3.23249e-08 2.59432e-08 1.70253e-08 7.96051e-09 1.17788e-09 -1.50522e-09 6.30151e-10 7.01182e-09 -0.230843 -0.260034 3.17772e-08 3.44603e-08 -0.188217 1.65809e-08 1.02713e-08 1.21264e-09 -8.16771e-09 -1.53564e-08 -1.84271e-08 -1.65571e-08 -1.02474e-08 -0.24846 -0.2671 1.53802e-08 1.84509e-08 -0.186578 -1.85093e-08 -1.66726e-08 -1.0385e-08 -1.33104e-09 8.06315e-09 1.52804e-08 1.83869e-08 1.65503e-08 1.02626e-08 -0.503391 -0.520458 -1.54028e-08 -0.00374438 -1.18339 1.00254 0.806741 1.5707 3.15041 -9.76535 3.7638 0.124902 0.97941 1.32151e-06 -9.14725e-06 0.201881 -9.42551 5.1824 0.124903 0.803499 9.50258e-06 -3.70911e-08 0.595306 -11.438 1.94748 0.78904 -0.383066 0.383808 0.594164 -0.594071 -12.0004 5.15872 0.124902 0.666052 -7.33131e-06 -6.66383e-06 0.745905 -12.0488 1.18718 0.125027 0.34658 -0.34669 -0.616068 0.616562 -11.1756 5.30231 0.124903 0.98111 -1.25581e-05 -2.16444e-06 -0.193453 -8.84404 3.16202 0.124904 0.964915 1.25055e-05 2.1434e-06 0.262563 -10.7473
+       0 -1.57 0 -0.707107 -0.707107 0"
+    />
+  </keyframe>
+  <equality>
+    <weld
+      name="box_1_suction"
+      body1="collision_vacuum_suction_cups"
+      body2="collision_box_1"
+      active="false"
+      torquescale="20"
+    />
+    <weld
+      name="box_2_suction"
+      body1="collision_vacuum_suction_cups"
+      body2="collision_box_2"
+      active="false"
+      torquescale="20"
+    />
+    <weld
+      name="box_3_suction"
+      body1="collision_vacuum_suction_cups"
+      body2="collision_box_3"
+      active="false"
+      torquescale="20"
+    />
+    <weld
+      name="box_4_suction"
+      body1="collision_vacuum_suction_cups"
+      body2="collision_box_4"
+      active="false"
+      torquescale="20"
+    />
+    <weld
+      name="box_5_suction"
+      body1="collision_vacuum_suction_cups"
+      body2="collision_box_5"
+      active="false"
+      torquescale="20"
+    />
+    <weld
+      name="box_6_suction"
+      body1="collision_vacuum_suction_cups"
+      body2="collision_box_6"
+      active="false"
+      torquescale="20"
+    />
+    <weld
+      name="box_7_suction"
+      body1="collision_vacuum_suction_cups"
+      body2="collision_box_7"
+      active="false"
+      torquescale="20"
+    />
+    <weld
+      name="box_8_suction"
+      body1="collision_vacuum_suction_cups"
+      body2="collision_box_8"
+      active="false"
+      torquescale="20"
+    />
+  </equality>
+</mujoco>

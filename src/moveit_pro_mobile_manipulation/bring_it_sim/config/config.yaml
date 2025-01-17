@@ -1,0 +1,102 @@
+#
+#  This contains information for a unique instance of a robot.
+#
+
+# Name of the package to specialize
+based_on_package: "picknik_ur_base_config"
+hardware:
+  # Parameters used to configure the robot description through XACRO.
+  # A URDF and SRDF are both required.
+  # [Required]
+  robot_description:
+    urdf:
+      package: "bring_it_sim"
+      path: "description/ur5e_ridgeback.xacro"
+    srdf:
+      package: "bring_it_sim"
+      path: "config/moveit/picknik_ur.srdf"
+    urdf_params:
+      - joint_limits_parameters_file:
+          package: "bring_it_sim"
+          path: "config/moveit/joint_limits.yaml"
+      - mujoco_model: "description/hangar_scene.xml"
+
+  # Specify any additional launch files for running the robot in simulation mode.
+  # Used when hardware.simulated is True.
+  # [Optional, defaults to a blank launch file if not specified]
+  simulated_robot_driver_persist_launch_file:
+    package: "bring_it_sim"
+    path: "launch/sim/robot_drivers_to_persist_sim.launch.py"
+
+moveit_params:
+  servo:
+    package: "bring_it_sim"
+    path: "config/moveit/ur_servo.yaml"
+  joint_limits:
+    package: "bring_it_sim"
+    path: "config/moveit/joint_limits.yaml"
+  servo_joint_limits:
+    package: "bring_it_sim"
+    path: "config/moveit/hard_joint_limits.yaml"
+  kinematics:
+    package: "bring_it_sim"
+    path: "config/moveit/trac_ik_kinematics_distance.yaml"
+  servo_kinematics:
+    package: "bring_it_sim"
+    path: "config/moveit/trac_ik_kinematics_speed.yaml"
+  sensors_3d:
+    package: "bring_it_sim"
+    path: "config/moveit/sensors_3d.yaml"
+  ompl_planning:
+    package: "bring_it_sim"
+    path: "config/moveit/ompl_planning.yaml"
+
+
+# Configuration for loading behaviors and objectives.
+# [Required]
+objectives:
+  # List of plugins for loading custom behaviors.
+  # [Required]
+  behavior_loader_plugins:
+    # This plugin will load the core MoveIt Pro Behaviors.
+    # Add additional plugin loaders as needed.
+    core:
+      - "moveit_studio::behaviors::CoreBehaviorsLoader"
+      - "moveit_studio::behaviors::MTCCoreBehaviorsLoader"
+      - "moveit_studio::behaviors::NavBehaviorsLoader"
+      - "moveit_studio::behaviors::ServoBehaviorsLoader"
+      - "moveit_studio::behaviors::VisionBehaviorsLoader"
+  # Specify source folder for objectives
+  # [Required]
+  objective_library_paths:
+    bring_it_sim_objectives:
+      package_name: "bring_it_sim"
+      relative_path: "objectives"
+
+  # Specify the location of the saved waypoints file.
+  # [Required]
+  waypoints_file:
+    package_name: "bring_it_sim"
+    relative_path: "waypoints/ur_waypoints.yaml"
+
+# Configuration for launching ros2_control processes.
+# [Required, if using ros2_control]
+ros2_control:
+  config:
+    package: "bring_it_sim"
+    path: "config/control/picknik_ur.ros2_control.yaml"
+
+  # MoveIt Pro will load and activate these controllers at start up to ensure they are available.
+  # If not specified, it is up to the user to ensure the appropriate controllers are active and available
+  # for running the application.
+  # [Optional, default=[]]
+  controllers_active_at_startup:
+    - "force_torque_sensor_broadcaster"
+    - "joint_state_broadcaster"
+    - "servo_controller"
+    - "platform_velocity_controller_nav2"
+    - "vacuum_gripper"
+  # Load but do not start these controllers so they can be activated later if needed.
+  controllers_inactive_at_startup:
+    - "joint_trajectory_controller"
+    - "platform_velocity_controller"

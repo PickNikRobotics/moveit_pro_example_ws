@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root BTCPP_format="4" main_tree_to_execute="Move to Pose No Preview">
+  <BehaviorTree ID="Move to Pose No Preview" _description="Plan and execute motion to a Cartesian coordinate pose in a ROS message type, using inverse kinematics." _subtreeOnly="true" target_pose="{target_pose}">
+    <Control ID="Sequence">
+      <Action ID="InitializeMTCTask" task_id="move_to_pose" controller_names="/joint_trajectory_controller" task="{move_to_pose_task}"/>
+      <Action ID="SetupMTCCurrentState" task="{move_to_pose_task}" skip_collision_check="false"/>
+      <Action ID="SetupMTCMoveToPose" ik_frame="grasp_link" planning_group_name="manipulator" target_pose="{target_pose}" task="{move_to_pose_task}" planner_interface="moveit_default" monitored_stage="current state"/>
+      <Action ID="PlanMTCTask" solution="{move_to_pose_solution}" task="{move_to_pose_task}"/>
+      <Action ID="ExecuteMTCTask" solution="{move_to_pose_solution}" goal_duration_tolerance="-1.000000"/>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Move to Pose No Preview">
+      <input_port name="target_pose" default="{target_pose}"/>
+    <MetadataFields>
+        <Metadata subcategory="Motion - Execute"/>
+        <Metadata runnable="false"/>
+      </MetadataFields></SubTree>
+  </TreeNodesModel>
+</root>

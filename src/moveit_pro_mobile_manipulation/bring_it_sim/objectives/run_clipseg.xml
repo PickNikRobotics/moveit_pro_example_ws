@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root BTCPP_format="4" main_tree_to_execute="run_clipseg">
+  <!--//////////-->
+  <BehaviorTree ID="run_clipseg" _subtreeOnly="false" _description="" _favorite="true">
+    <Control ID="Sequence">
+      <Action ID="GetImage" timeout_sec="5.000000" topic_name="/wrist_camera/color" message_out="{image}"/>
+      <Action ID="GetMasks2DFromTextQuery" image="{image}" masks2d="{masks2d}" clipseg_model_path="models/clipseg.onnx" clip_model_path="models/clip.onnx" model_package="lab_sim" negative_prompts="gray;gray;rails" prompts="small boxes" erosion_size="5" threshold="0.4"/>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="run_clipseg"><MetadataFields>
+        <Metadata runnable="true"/>
+      </MetadataFields></SubTree>
+  </TreeNodesModel>
+</root>
