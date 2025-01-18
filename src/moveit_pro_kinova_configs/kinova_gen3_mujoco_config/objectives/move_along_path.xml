@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Move Along Path">
   <!--//////////-->
   <BehaviorTree
@@ -8,6 +8,19 @@
     _hardcoded="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="false"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        controller_names="/joint_trajectory_controller"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        velocity_scale_factor="1.0"
+        waypoint_name="View Satellite"
+      />
       <Control ID="Sequence">
         <Action
           ID="ActivateControllers"
@@ -69,7 +82,7 @@
             path="{pose_stamped_vector}"
             planning_group_name="manipulator"
             tip_link="end_effector_link"
-            tip_offset="0.0;0.0;0.0"
+            tip_offset="0.0;0.0;0.0;0.0;0.0;0.0"
             position_only="false"
             blending_radius="0.02"
             velocity_scale_factor="0.5"
@@ -77,6 +90,8 @@
             trajectory_sampling_rate="100"
             joint_trajectory_msg="{joint_trajectory_msg}"
             debug_solution="{debug_solution}"
+            ik_cartesian_space_density="0.010000"
+            ik_joint_space_density="0.100000"
           />
           <Action
             ID="GetCurrentPlanningScene"
@@ -97,9 +112,17 @@
             joint_trajectory_msg="{joint_trajectory_msg}"
             goal_position_tolerance="0.000000"
             goal_time_tolerance="0.000000"
+            goal_duration_tolerance="-1.000000"
           />
         </Control>
       </Decorator>
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Move Along Path">
+      <MetadataFields>
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>
