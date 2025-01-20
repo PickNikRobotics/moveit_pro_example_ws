@@ -24,15 +24,18 @@
   <xacro:include filename="$(find bring_it_sim)/description/picknik_ur_attachments_macro.xacro"/>
   <xacro:include filename="$(find bring_it_sim)/description/picknik_ur_mujoco_ros2_control.xacro"/>
   <xacro:include filename="$(find ridgeback_description)/urdf/ridgeback.urdf.xacro"/>
+  <xacro:include filename="$(find bring_it_sim)/description/hangar_urdf.xacro"/>
 
   <link name="world"/>
+
+  <!-- Hangar  -->
+  <xacro:hangar_urdf parent="world"/>
 
   <!-- Gripper and UR adapter and realsense camera -->
   <xacro:picknik_ur_attachments parent="tool0" child="grasp_link" has_tool_changer="$(arg has_tool_changer)"/>
 
   <!-- Ridgeback -->
   <xacro:ridgeback parent="ridgeback_base_link"/>
-
 
   <joint name="ham_assem_joint" type="fixed">
     <parent link="ridgeback_base_link"/>
