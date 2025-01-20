@@ -8,7 +8,7 @@
   />
   <node
     pkg="bring_it_sim"
-    exec="odometry_joint_state_publisher"
+    exec="odometry_joint_state_publisher.py"
     name="odometry_joint_state_publisher"
     output="both"
   />

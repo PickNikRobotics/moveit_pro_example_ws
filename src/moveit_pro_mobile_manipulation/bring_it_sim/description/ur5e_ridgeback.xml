@@ -781,12 +781,20 @@
   </worldbody>
 
   <actuator>
-    <general class="size3" name="shoulder_pan_joint" joint="shoulder_pan_joint"/>
-    <general class="size3" name="shoulder_lift_joint" joint="shoulder_lift_joint"/>
-    <general class="size3_limited" name="elbow_joint" joint="elbow_joint"/>
-    <general class="size3" name="wrist_1_joint" joint="wrist_1_joint"/>
-    <general class="size3" name="wrist_2_joint" joint="wrist_2_joint"/>
-    <general class="size3" name="wrist_3_joint" joint="wrist_3_joint"/>
+    <general
+      class="size3"
+      name="shoulder_pan_joint"
+      joint="shoulder_pan_joint"
+    />
+    <general
+      class="size3"
+      name="shoulder_lift_joint"
+      joint="shoulder_lift_joint"
+    />
+    <general class="size3_limited" name="elbow_joint" joint="elbow_joint" />
+    <general class="size3" name="wrist_1_joint" joint="wrist_1_joint" />
+    <general class="size3" name="wrist_2_joint" joint="wrist_2_joint" />
+    <general class="size3" name="wrist_3_joint" joint="wrist_3_joint" />
     <general
       class="2f85"
       name="robotiq_85_left_knuckle_joint"
