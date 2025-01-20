@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:macro name="box" params="name size parent">
+
+    <joint name="${parent}_${name}" type="floating">
+      <parent link="${parent}"/>
+      <child link="${name}"/>
+    </joint>
+
+    <link name="${name}">
+      <visual>
+        <geometry>
+          <box size="${size}" />
+        </geometry>
+        <material name="Cyan">
+          <color rgba="0 1.0 1.0 1.0"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <box size="${size}" />
+        </geometry>
+      </collision>
+    </link>
+  </xacro:macro>
+
+  <xacro:macro name="beer" params="name parent">
+    <joint name="${parent}_${name}" type="floating">
+      <parent link="${parent}"/>
+      <child link="${name}"/>
+    </joint>
+
+    <link name="${name}">
+      <visual>
+        <geometry>
+          <mesh filename="package://bring_it_sim/description/assets/beer_bottle.stl"/>
+        </geometry>
+        <material name="glass">
+          <color rgba="0.0 0.7 0.1 0.9"/>
+        </material>
+      </visual>
+      <collision>
+	<origin xyz="0 0 0.125" />
+        <geometry>
+          <cylinder radius="0.035" length="0.25"/>
+        </geometry>
+      </collision>
+    </link>
+  </xacro:macro>
+
+  <!-- Spawn bar objects based on TF published by mujoco -->
+  <xacro:box name="bar" size="5 1.5 0.90" parent="world" />
+  <xacro:box name="table_1" size="1.5 1.5 0.90" parent="world" />
+  <xacro:box name="table_2" size="1.5 1.5 0.90" parent="world" />
+  <xacro:box name="table_3" size="1.5 1.5 0.90" parent="world" />
+  <xacro:box name="table_4" size="1.5 1.5 0.90" parent="world" />
+  <xacro:beer name="beer_bottle_1" parent="world" />
+  <xacro:beer name="beer_bottle_2" parent="world" />
+  <xacro:beer name="beer_bottle_3" parent="world" />
+  <xacro:beer name="beer_bottle_4" parent="world" />
+  <xacro:beer name="beer_bottle_5" parent="world" />
+
+</robot>
