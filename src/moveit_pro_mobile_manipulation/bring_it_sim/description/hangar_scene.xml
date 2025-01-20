@@ -6,10 +6,15 @@
   <visual>
     <headlight diffuse="1.0 1.0 1.0" ambient="0.4 0.4 0.4" specular="0 0 0" />
     <rgba haze="0.15 0.25 0.35 1" />
-    <global offwidth="1280" offheight="720" azimuth="0" elevation="180"/>
+    <global offwidth="1280" offheight="720" azimuth="0" elevation="180" />
   </visual>
   <asset>
-    <texture type="skybox" file="assets/space.png" gridsize="3 4" gridlayout=".U..LFRB.D.."/>
+    <texture
+      type="skybox"
+      file="assets/space.png"
+      gridsize="3 4"
+      gridlayout=".U..LFRB.D.."
+    />
   </asset>
 
   <worldbody>
@@ -19,13 +24,13 @@
       pos="-1.0 -2.0 2.966"
       euler="3.99 0.000 0"
     />
-<!--    <camera-->
-<!--      name="scene_camera"-->
-<!--      pos="-1.0 -2.0 2.966"-->
-<!--      fovy="58"-->
-<!--      mode="fixed"-->
-<!--      resolution="1920 1080"-->
-<!--      euler="0.849 0.000 0.0"-->
-<!--    />-->
+    <!--    <camera-->
+    <!--      name="scene_camera"-->
+    <!--      pos="-1.0 -2.0 2.966"-->
+    <!--      fovy="58"-->
+    <!--      mode="fixed"-->
+    <!--      resolution="1920 1080"-->
+    <!--      euler="0.849 0.000 0.0"-->
+    <!--    />-->
   </worldbody>
 </mujoco>
