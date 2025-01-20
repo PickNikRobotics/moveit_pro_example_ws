@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Activate Vacuum">
+  <BehaviorTree
+    ID="Activate Vacuum"
+    _description="Activate the vacuum gripper"
+    _subtreeOnly="false"
+  >
+    <Control ID="Sequence" name="root">
+      <Action
+        ID="MoveGripperAction"
+        position="1"
+        gripper_command_action_name="/suction_cup_controller/gripper_cmd"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Activate Vacuum" />
+  </TreeNodesModel>
+</root>
