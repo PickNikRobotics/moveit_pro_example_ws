@@ -2680,6 +2680,222 @@
         mesh="tire_lndg_rear_l_in.013"
       />
     </body>
+    <body
+      name="collision_box_3"
+      pos="-10.5618314743042 3.720798969268799 0.2458113431930542"
+      quat="0.9793436527252197 0.0 0.0 0.20220300555229187"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_box_3 geom"
+        mesh="collision_box_3"
+      />
+      <body
+        name="box_3"
+        pos="0.0 -7.152557373046875e-07 0.0"
+        quat="1.0 0.0 0.0 0.0"
+      >
+        <geom
+          class="visual"
+          type="mesh"
+          name="box_3 geom"
+          mesh="box_3"
+          material="box"
+        />
+      </body>
+      <joint
+        type="free"
+        name="box_fee_joint_1.006"
+        pos="0.0 -7.152557373046875e-07 0.0"
+      />
+    </body>
+    <body
+      name="collision_box_2"
+      pos="-9.533191680908203 5.340269565582275 0.2458113431930542"
+      quat="0.803748607635498 0.0 0.0 0.5949690341949463"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_box_2 geom"
+        mesh="collision_box_2"
+      />
+      <body name="box_2" pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0">
+        <geom
+          class="visual"
+          type="mesh"
+          name="box_2 geom"
+          mesh="box_2"
+          material="box"
+        />
+      </body>
+      <joint type="free" name="box_fee_joint_1.001" pos="0.0 0.0 0.0" />
+    </body>
+    <body
+      name="collision_box_1"
+      pos="-9.499957084655762 2.3858888149261475 0.2458115816116333"
+      quat="0.9880627393722534 0.0 0.0 -0.15405221283435822"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_box_1 geom"
+        mesh="collision_box_1"
+      />
+      <body
+        name="box_1"
+        pos="-9.5367431640625e-07 -2.384185791015625e-07 0.0"
+        quat="1.0 0.0 0.0 0.0"
+      >
+        <geom
+          class="visual"
+          type="mesh"
+          name="box_1 geom"
+          mesh="box_1"
+          material="box"
+        />
+      </body>
+      <joint
+        type="free"
+        name="box_fee_joint_1"
+        pos="-9.5367431640625e-07 -2.384185791015625e-07 0.0"
+      />
+    </body>
+    <body
+      name="collision_box_7"
+      pos="-13.478546142578125 3.3146679401397705 0.2458113431930542"
+      quat="0.6656379699707031 0.0 0.0 0.7462748289108276"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_box_7 geom"
+        mesh="collision_box_7"
+      />
+      <body
+        name="box_7"
+        pos="0.0 -9.5367431640625e-07 0.0"
+        quat="1.0 0.0 0.0 0.0"
+      >
+        <geom
+          class="visual"
+          type="mesh"
+          name="box_7 geom"
+          mesh="box_7"
+          material="box"
+        />
+      </body>
+      <joint
+        type="free"
+        name="box_fee_joint_1.003"
+        pos="9.5367431640625e-07 -2.86102294921875e-06 -2.9802322387695312e-08"
+      />
+    </body>
+    <body
+      name="collision_box_5"
+      pos="-11.99643325805664 3.6042213439941406 0.2458113431930542"
+      quat="0.7372055649757385 0.0 0.0 0.6756685376167297"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_box_5 geom"
+        mesh="collision_box_5"
+      />
+      <body name="box_5" pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0">
+        <geom
+          class="visual"
+          type="mesh"
+          name="box_5 geom"
+          mesh="box_5"
+          material="box"
+        />
+      </body>
+      <joint type="free" name="box_fee_joint_1.004" pos="0.0 0.0 0.0" />
+    </body>
+    <body
+      name="collision_box_4"
+      pos="-11.642011642456055 5.087045669555664 0.2458113431930542"
+      quat="0.9810431003570557 0.0 0.0 -0.19378963112831116"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_box_4 geom"
+        mesh="collision_box_4"
+      />
+      <body name="box_4" pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0">
+        <geom
+          class="visual"
+          type="mesh"
+          name="box_4 geom"
+          mesh="box_4"
+          material="box"
+        />
+      </body>
+      <joint type="free" name="box_fee_joint_1.002" pos="0.0 0.0 0.0" />
+    </body>
+    <body
+      name="collision_box_8"
+      pos="-12.625539779663086 1.8417842388153076 0.2458113431930542"
+      quat="0.9648564457893372 0.0 0.0 0.26277756690979004"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_box_8 geom"
+        mesh="collision_box_8"
+      />
+      <body
+        name="box_8"
+        pos="-3.814697265625e-06 0.0 -2.9802322387695312e-08"
+        quat="1.0 0.0 0.0 0.0"
+      >
+        <geom
+          class="visual"
+          type="mesh"
+          name="box_8 geom"
+          mesh="box_8"
+          material="box"
+        />
+      </body>
+      <joint
+        type="free"
+        name="box_fee_joint_1.005"
+        pos="-1.9073486328125e-06 -4.76837158203125e-07 -1.4901161193847656e-08"
+      />
+    </body>
+    <body
+      name="collision_box_6"
+      pos="-11.195656776428223 1.4781781435012817 0.2458113431930542"
+      quat="0.8876487016677856 0.0 0.0 0.4605211913585663"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_box_6 geom"
+        mesh="collision_box_6"
+      />
+      <body
+        name="box_6"
+        pos="1.9073486328125e-06 0.0 -2.9802322387695312e-08"
+        quat="1.0 0.0 0.0 0.0"
+      >
+        <geom
+          class="visual"
+          type="mesh"
+          name="box_6 geom"
+          mesh="box_6"
+          material="box"
+        />
+      </body>
+      <joint
+        type="free"
+        name="box_fee_joint_1.007"
+        pos="1.9073486328125e-06 -9.5367431640625e-07 -4.470348358154297e-08"
+      />
+    </body>
   </worldbody>
   <asset>
     <mesh name="SM_WallSide4" file="hangar_mesh/SM_WallSide4.obj" />
@@ -3139,6 +3355,22 @@
       name="tire_lndg_rear_l_in.013"
       file="hangar_mesh/tire_lndg_rear_l_in.013.obj"
     />
+    <mesh name="collision_box_1" file="hangar_mesh/collision_box_1.obj" />
+    <mesh name="collision_box_2" file="hangar_mesh/collision_box_2.obj" />
+    <mesh name="collision_box_3" file="hangar_mesh/collision_box_3.obj" />
+    <mesh name="collision_box_4" file="hangar_mesh/collision_box_4.obj" />
+    <mesh name="collision_box_5" file="hangar_mesh/collision_box_5.obj" />
+    <mesh name="collision_box_6" file="hangar_mesh/collision_box_6.obj" />
+    <mesh name="collision_box_7" file="hangar_mesh/collision_box_7.obj" />
+    <mesh name="collision_box_8" file="hangar_mesh/collision_box_8.obj" />
+    <mesh name="box_1" file="hangar_mesh/box_1.obj" />
+    <mesh name="box_2" file="hangar_mesh/box_2.obj" />
+    <mesh name="box_3" file="hangar_mesh/box_3.obj" />
+    <mesh name="box_4" file="hangar_mesh/box_4.obj" />
+    <mesh name="box_5" file="hangar_mesh/box_5.obj" />
+    <mesh name="box_6" file="hangar_mesh/box_6.obj" />
+    <mesh name="box_7" file="hangar_mesh/box_7.obj" />
+    <mesh name="box_8" file="hangar_mesh/box_8.obj" />
     <material
       name="metal_hangar"
       rgba="0.25 0.25 0.25 1.0"

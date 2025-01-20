@@ -201,12 +201,6 @@
   </asset>
 
   <worldbody>
-    <light
-      name="spotlight"
-      mode="targetbodycom"
-      target="wrist_2_link"
-      pos="0 -1 2"
-    />
 
     <body name="base_platform_rotation" pos="0 0 0" euler="0 0 0">
       <inertial mass="0.01" pos="0 0 0" diaginertia="0.001 0.001 0.001" />

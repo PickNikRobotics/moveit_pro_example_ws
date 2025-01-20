@@ -1,4 +1,7 @@
 <mujoco>
+  <option>
+    <flag multiccd="enable" />
+  </option>
   <compiler angle="radian" meshdir="assets" autolimits="true" />
   <include file="ur5e_ridgeback.xml" />
   <include file="hangar.xml" />
