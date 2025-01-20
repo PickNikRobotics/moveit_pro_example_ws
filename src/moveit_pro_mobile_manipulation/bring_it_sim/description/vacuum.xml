@@ -1,0 +1,17 @@
+<mujoco>
+  <body name="vacuum_base" pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0">
+    <geom class="visual" type="mesh" name="vacuum_base geom" mesh="vacuum_base" material="metal"/>
+    <body name="collision_vacuum_base" pos="2.925628969631447e-17 0.09096898138523102 0.0491398349404335" quat="1.0 0.0 0.0 0.0">
+      <geom class="collision" type="mesh" name="collision_vacuum_base geom" mesh="collision_vacuum_base"/>
+    </body>
+    <body name="collision_vacuum_suction_cups" pos="2.925628969631447e-17 0.09096898138523102 0.13839076459407806" quat="1.0 0.0 0.0 0.0">
+      <geom class="collision" type="mesh" name="collision_vacuum_suction_cups geom" mesh="collision_vacuum_suction_cups"/>
+    </body>
+    <body name="vacuum_base_top" pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0">
+      <geom class="visual" type="mesh" name="vacuum_base_top geom" mesh="vacuum_base_top" material="dark metal"/>
+      <body name="vacuum_suction_cups" pos="0.0 0.0 0.0" quat="1.0 0.0 0.0 0.0">
+        <geom class="visual" type="mesh" name="vacuum_suction_cups geom" mesh="vacuum_suction_cups" material="plastic"/>
+      </body>
+    </body>
+  </body>
+</mujoco>
