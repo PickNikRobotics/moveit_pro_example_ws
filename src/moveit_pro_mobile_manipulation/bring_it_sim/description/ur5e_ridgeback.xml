@@ -13,7 +13,7 @@
         ctrlrange="-6.2831 6.2831"
         gainprm="2000"
         biasprm="0 -2000 -400"
-        forcerange="-150 150"
+        forcerange="-50000 50000"
       />
       <default class="size3">
         <default class="size3_limited">
@@ -197,7 +197,7 @@
     <mesh name="summit_xls_omni_wheel_1" file="omni_wheel_1.stl" />
     <mesh name="summit_xls_omni_wheel_2" file="omni_wheel_2.stl" />
     <mesh name="ham_assem" file="HAM_Assem.stl" />
-    <mesh name="camera_adapter" file="assets/camera_adapter.stl" />
+    <mesh name="camera_adapter" file="camera_adapter.stl" />
   </asset>
 
   <worldbody>
@@ -781,56 +781,20 @@
   </worldbody>
 
   <actuator>
-    <general
-      class="size3"
-      name="shoulder_pan_joint"
-      joint="shoulder_pan_joint"
-      gainprm="75000"
-      biasprm="0 -75000 -15000"
-    />
-    <general
-      class="size3"
-      name="shoulder_lift_joint"
-      joint="shoulder_lift_joint"
-      gainprm="75000"
-      biasprm="0 -75000 -15000"
-    />
-    <general
-      class="size3_limited"
-      name="elbow_joint"
-      joint="elbow_joint"
-      gainprm="75000"
-      biasprm="0 -75000 -15000"
-    />
-    <general
-      class="size3"
-      name="wrist_1_joint"
-      joint="wrist_1_joint"
-      gainprm="50000"
-      biasprm="0 -50000 -10000"
-    />
-    <general
-      class="size3"
-      name="wrist_2_joint"
-      joint="wrist_2_joint"
-      gainprm="50000"
-      biasprm="0 -50000 -10000"
-    />
-    <general
-      class="size3"
-      name="wrist_3_joint"
-      joint="wrist_3_joint"
-      gainprm="50000"
-      biasprm="0 -50000 -10000"
-    />
+    <general class="size3" name="shoulder_pan_joint" joint="shoulder_pan_joint"/>
+    <general class="size3" name="shoulder_lift_joint" joint="shoulder_lift_joint"/>
+    <general class="size3_limited" name="elbow_joint" joint="elbow_joint"/>
+    <general class="size3" name="wrist_1_joint" joint="wrist_1_joint"/>
+    <general class="size3" name="wrist_2_joint" joint="wrist_2_joint"/>
+    <general class="size3" name="wrist_3_joint" joint="wrist_3_joint"/>
     <general
       class="2f85"
       name="robotiq_85_left_knuckle_joint"
       tendon="split"
-      forcerange="-5 5"
+      forcerange="-25 25"
       ctrlrange="0 .8"
       gainprm="100 0 0"
-      biasprm="0 -100 -150"
+      biasprm="0 -100 -30"
     />
   </actuator>
 
