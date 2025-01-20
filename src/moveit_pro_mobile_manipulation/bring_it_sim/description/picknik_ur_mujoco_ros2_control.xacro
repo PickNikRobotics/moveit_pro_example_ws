@@ -92,7 +92,7 @@
           <param name="publish_odom">true</param>
           <param name="odom_child_frame">ridgeback_base_link</param>
           <param name="odom_zero_z">true</param>
-        <param name="mujoco_viewer">true</param>
+          <param name="mujoco_viewer">true</param>
       </hardware>
     </ros2_control>
   </xacro:macro>

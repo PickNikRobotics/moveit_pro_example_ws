@@ -6,7 +6,7 @@
   <visual>
     <headlight diffuse="1.0 1.0 1.0" ambient="0.4 0.4 0.4" specular="0 0 0" />
     <rgba haze="0.15 0.25 0.35 1" />
-    <global offwidth="1280" offheight="720" azimuth="120" elevation="90" />
+    <global offwidth="1280" offheight="720" azimuth="0" elevation="180"/>
   </visual>
   <asset>
     <texture type="skybox" file="assets/space.png" gridsize="3 4" gridlayout=".U..LFRB.D.."/>
