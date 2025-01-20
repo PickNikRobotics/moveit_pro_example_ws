@@ -5,6 +5,7 @@
     params="name initial_positions_file hardware_interface mujoco_model"
   >
     <xacro:arg name="mujoco_model" default="description/scene.xml" />
+    <xacro:arg name="mujoco_viewer" default="false" />
     <xacro:arg name="hardware_interface" default="mock" />
     <xacro:property
       name="initial_positions"
@@ -26,6 +27,7 @@
           <plugin>picknik_mujoco_ros/MujocoSystem</plugin>
           <param name="mujoco_model">$(arg mujoco_model)</param>
           <param name="mujoco_model_package">fanuc_sim</param>
+          <param name="mujoco_viewer">$(arg mujoco_viewer)</param>
           <param name="render_publish_rate">10</param>
           <param name="tf_publish_rate">60</param>
           <param name="lidar_publish_rate">10</param>
