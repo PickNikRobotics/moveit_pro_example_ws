@@ -72,7 +72,7 @@ class OdometryJointStateRepublisher(Node):
         # Define a QoS profile
         qos_profile_pub = QoSProfile(
             reliability=QoSReliabilityPolicy.RELIABLE,  # Ensure reliability
-            durability=QoSDurabilityPolicy.TRANSIENT_LOCAL,  # Non-persistent messages
+            durability=QoSDurabilityPolicy.VOLATILE,  # Non-persistent messages
             history=QoSHistoryPolicy.KEEP_LAST,  # Keep only the last few messages
             depth=1,  # Queue size
         )

@@ -6,10 +6,10 @@
   <include
     file="$(find-pkg-share moveit_studio_rest_api)/launch/rest_api.launch.xml"
   />
-  <node
-    pkg="bring_it_sim"
-    exec="odometry_joint_state_publisher.py"
-    name="odometry_joint_state_publisher"
-    output="both"
-  />
+  <!--  <node-->
+  <!--    pkg="bring_it_sim"-->
+  <!--    exec="odometry_joint_state_publisher.py"-->
+  <!--    name="odometry_joint_state_publisher"-->
+  <!--    output="both"-->
+  <!--  />-->
 </launch>

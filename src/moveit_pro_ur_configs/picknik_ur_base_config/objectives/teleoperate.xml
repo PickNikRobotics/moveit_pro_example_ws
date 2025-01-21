@@ -1,6 +1,6 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Teleoperate">
-  <!-- ////////// -->
+  <!--//////////-->
   <BehaviorTree
     ID="Teleoperate"
     _description="Handles the different variations of teleoperation from the web UI. Can be used standalone."
@@ -18,6 +18,7 @@
     <SubTree ID="Teleoperate">
       <MetadataFields>
         <Metadata subcategory="User Input" />
+        <Metadata runnable="true" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
