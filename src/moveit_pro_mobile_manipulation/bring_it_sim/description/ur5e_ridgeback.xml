@@ -195,13 +195,16 @@
   <worldbody>
     <body name="base_platform_rotation" pos="0 0 0" euler="0 0 0">
       <inertial mass="0.01" pos="0 0 0" diaginertia="0.001 0.001 0.001" />
-      <joint
-        type="free"
-        stiffness="0"
-        damping="0"
-        frictionloss="0"
-        armature="0"
-      />
+      <!--      <joint-->
+      <!--        type="free"-->
+      <!--        stiffness="0"-->
+      <!--        damping="0"-->
+      <!--        frictionloss="0"-->
+      <!--        armature="0"-->
+      <!--      />-->
+      <joint name="linear_x_joint" type="slide" axis="1 0 0" />
+      <joint name="linear_y_joint" type="slide" axis="0 1 0" />
+      <joint name="rotational_yaw_joint" type="hinge" axis="0 0 1" />
       <body name="base_platform" pos="0 0 0" euler="0 0 0">
         <body name="ridgeback_base_link">
           <geom
@@ -473,20 +476,42 @@
   </worldbody>
 
   <actuator>
-    <general
+    <velocity
       class="size3"
       name="shoulder_pan_joint"
       joint="shoulder_pan_joint"
+      kv="500"
     />
-    <general
+    <velocity
       class="size3"
       name="shoulder_lift_joint"
       joint="shoulder_lift_joint"
+      kv="500"
     />
-    <general class="size3_limited" name="elbow_joint" joint="elbow_joint" />
-    <general class="size3" name="wrist_1_joint" joint="wrist_1_joint" />
-    <general class="size3" name="wrist_2_joint" joint="wrist_2_joint" />
-    <general class="size3" name="wrist_3_joint" joint="wrist_3_joint" />
+    <velocity
+      class="size3_limited"
+      name="elbow_joint"
+      joint="elbow_joint"
+      kv="500"
+    />
+    <velocity
+      class="size3"
+      name="wrist_1_joint"
+      joint="wrist_1_joint"
+      kv="500"
+    />
+    <velocity
+      class="size3"
+      name="wrist_2_joint"
+      joint="wrist_2_joint"
+      kv="500"
+    />
+    <velocity
+      class="size3"
+      name="wrist_3_joint"
+      joint="wrist_3_joint"
+      kv="500"
+    />
   </actuator>
 
   <contact>
@@ -497,25 +522,25 @@
     <velocity
       name="front_right_wheel"
       joint="front_right_wheel"
-      ctrlrange="-2 2"
+      ctrlrange="-5 5"
       kv="50"
     />
     <velocity
       name="front_left_wheel"
       joint="front_left_wheel"
-      ctrlrange="-2 2"
+      ctrlrange="-5 5"
       kv="50"
     />
     <velocity
       name="rear_right_wheel"
       joint="rear_right_wheel"
-      ctrlrange="-2 2"
+      ctrlrange="-5 5"
       kv="50"
     />
     <velocity
       name="rear_left_wheel"
       joint="rear_left_wheel"
-      ctrlrange="-2 2"
+      ctrlrange="-5 5"
       kv="50"
     />
   </actuator>

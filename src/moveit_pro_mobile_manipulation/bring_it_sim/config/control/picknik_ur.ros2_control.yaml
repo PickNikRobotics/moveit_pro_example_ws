@@ -128,6 +128,35 @@ joint_trajectory_controller:
     state_publish_rate: 100.0
     action_monitor_rate: 20.0
     allow_partial_joints_goal: false
+    open_loop_control: false # this is closed loop
+    gains:
+      shoulder_pan_joint:
+        p: 1.0
+        ff_velocity_scale: 1.0
+      shoulder_lift_joint:
+        p: 1.0
+        ff_velocity_scale: 1.0
+      elbow_joint:
+        p: 1.0
+        ff_velocity_scale: 1.0
+      wrist_1_joint:
+        p: 1.0
+        ff_velocity_scale: 1.0
+      wrist_2_joint:
+        p: 1.0
+        ff_velocity_scale: 1.0
+      wrist_3_joint:
+        p: 1.0
+        ff_velocity_scale: 1.0
+      linear_x_joint:
+        p: 0.2
+        ff_velocity_scale: 1.0
+      linear_y_joint:
+        p: 0.2
+        ff_velocity_scale: 1.0
+      rotational_yaw_joint:
+        p: 0.2
+        ff_velocity_scale: 1.0
     constraints:
       stopped_velocity_tolerance: 0.0
       goal_time: 0.0
@@ -143,6 +172,13 @@ joint_trajectory_controller:
         goal: 0.05
       wrist_3_joint:
         goal: 0.05
+      linear_x_joint:
+        goal: 0.05
+      linear_y_joint:
+        goal: 0.05
+      rotational_yaw_joint:
+        goal: 0.05
+
     acceleration_limits:
       shoulder_pan_joint: 10.0
       shoulder_lift_joint: 10.0
