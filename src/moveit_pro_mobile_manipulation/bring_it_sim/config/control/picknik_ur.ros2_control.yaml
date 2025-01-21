@@ -5,8 +5,6 @@ controller_manager:
       type: joint_state_broadcaster/JointStateBroadcaster
     joint_trajectory_controller:
       type: joint_trajectory_controller/JointTrajectoryController
-    robotiq_gripper_controller:
-      type: position_controllers/GripperActionController
     servo_controller:
       type: joint_trajectory_controller/JointTrajectoryController
     force_torque_sensor_broadcaster:
@@ -87,7 +85,6 @@ joint_state_broadcaster:
       - wrist_1_joint
       - wrist_2_joint
       - wrist_3_joint
-      - robotiq_85_left_knuckle_joint
       - front_rocker
       - front_left_wheel
       - front_right_wheel
@@ -144,11 +141,6 @@ joint_trajectory_controller:
       wrist_2_joint: 10.0
       wrist_3_joint: 10.0
 
-robotiq_gripper_controller:
-  ros__parameters:
-    default: true
-    joint: robotiq_85_left_knuckle_joint
-    allow_stalling: true
 servo_controller:
   ros__parameters:
     joints:

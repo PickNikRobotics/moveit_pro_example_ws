@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:macro name="vacuum_urdf" params="parent">
+    <!-- connect collisions to parent frame, e.g. world frame -->
+    <joint name="parent_vacuum_base_joint" type="fixed">
+      <parent link="${parent}"/>
+      <child link="vacuum_base"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+    </joint>
+
+    <link name="vacuum_base">
+
+      <visual>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+        <geometry>
+          <mesh filename="package://bring_it_sim/description/assets/vacuum_base.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </visual>
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+        <geometry>
+          <mesh filename="package://bring_it_sim/description/assets/vacuum_base.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_vacuum_base">
+
+      <visual>
+        <origin rpy="0.0 -0.0 0.0" xyz="2.925628969631447e-17 0.09096898138523102 0.0491398349404335"/>
+        <geometry>
+          <mesh filename="package://bring_it_sim/description/assets/collision_vacuum_base.obj" scale="0.09352162480354309 0.13757896423339844 0.02057690918445587"/>
+        </geometry>
+      </visual>
+      <collision>
+        <origin rpy="0.0 -0.0 0.0" xyz="2.925628969631447e-17 0.09096898138523102 0.0491398349404335"/>
+        <geometry>
+          <mesh filename="package://bring_it_sim/description/assets/collision_vacuum_base.obj" scale="0.09352162480354309 0.13757896423339844 0.02057690918445587"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="collision_vacuum_suction_cups">
+
+      <visual>
+        <origin rpy="0.0 -0.0 0.0" xyz="2.925628969631447e-17 0.09096898138523102 0.13839076459407806"/>
+        <geometry>
+          <mesh filename="package://bring_it_sim/description/assets/collision_vacuum_suction_cups.obj" scale="0.08370228856801987 0.13757896423339844 0.02057690918445587"/>
+        </geometry>
+      </visual>
+      <collision>
+        <origin rpy="0.0 -0.0 0.0" xyz="2.925628969631447e-17 0.09096898138523102 0.13839076459407806"/>
+        <geometry>
+          <mesh filename="package://bring_it_sim/description/assets/collision_vacuum_suction_cups.obj" scale="0.08370228856801987 0.13757896423339844 0.02057690918445587"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="vacuum_base_top">
+
+      <visual>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+        <geometry>
+          <mesh filename="package://bring_it_sim/description/assets/vacuum_base_top.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </visual>
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+        <geometry>
+          <mesh filename="package://bring_it_sim/description/assets/vacuum_base_top.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="vacuum_suction_cups">
+
+      <visual>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+        <geometry>
+          <mesh filename="package://bring_it_sim/description/assets/vacuum_suction_cups.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </visual>
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+        <geometry>
+          <mesh filename="package://bring_it_sim/description/assets/vacuum_suction_cups.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="vacuum_base_collision_vacuum_base_joint" type="fixed">
+      <parent link="vacuum_base"/>
+      <child link="collision_vacuum_base"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+
+    </joint>
+    <joint name="vacuum_base_collision_vacuum_suction_cups_joint" type="fixed">
+      <parent link="vacuum_base"/>
+      <child link="collision_vacuum_suction_cups"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+
+    </joint>
+    <joint name="vacuum_base_vacuum_base_top_joint" type="fixed">
+      <parent link="vacuum_base"/>
+      <child link="vacuum_base_top"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+
+    </joint>
+    <joint name="vacuum_base_top_vacuum_suction_cups_joint" type="fixed">
+      <parent link="vacuum_base_top"/>
+      <child link="vacuum_suction_cups"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+
+    </joint>
+
+  </xacro:macro>
+</robot>

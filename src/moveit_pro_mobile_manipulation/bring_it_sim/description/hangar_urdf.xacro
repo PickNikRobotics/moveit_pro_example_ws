@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
   <xacro:macro name="hangar_urdf" params="parent">
-    <!-- connect collisions to parent frmae, e.g. world frame -->
+    <!-- connect collisions to parent frame, e.g. world frame -->
     <joint name="parent_collision_SM_Floor_376_joint" type="fixed">
       <parent link="${parent}"/>
       <child link="collision_SM_Floor_376"/>

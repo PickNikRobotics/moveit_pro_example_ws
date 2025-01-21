@@ -25,6 +25,7 @@
   <xacro:include filename="$(find bring_it_sim)/description/picknik_ur_mujoco_ros2_control.xacro"/>
   <xacro:include filename="$(find ridgeback_description)/urdf/ridgeback.urdf.xacro"/>
   <xacro:include filename="$(find bring_it_sim)/description/hangar_urdf.xacro"/>
+  <xacro:include filename="$(find bring_it_sim)/description/vacuum_urdf.xacro"/>
 
   <link name="world"/>
 
@@ -32,7 +33,7 @@
   <xacro:hangar_urdf parent="world"/>
 
   <!-- Gripper and UR adapter and realsense camera -->
-  <xacro:picknik_ur_attachments parent="tool0" child="grasp_link" has_tool_changer="$(arg has_tool_changer)"/>
+<!--  <xacro:picknik_ur_attachments parent="tool0" child="grasp_link" has_tool_changer="$(arg has_tool_changer)"/>-->
 
   <!-- Ridgeback -->
   <xacro:ridgeback parent="ridgeback_base_link"/>
@@ -103,6 +104,8 @@
     <!-- Guesstimates below -->
     <origin xyz="0 0.0 0.0" rpy="0 0 0" />
   </xacro:picknik_ur>
+
+  <xacro:vacuum_urdf parent="tool0"/>
 
   <!-- MuJoCo Hardware interface -->
   <xacro:picknik_ur_mujoco_ros2_control mujoco_model="$(arg mujoco_model)"/>

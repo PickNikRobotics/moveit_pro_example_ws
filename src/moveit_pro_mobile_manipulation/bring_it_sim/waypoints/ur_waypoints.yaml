@@ -13,7 +13,6 @@
         nanosec: 0
         sec: 0
     name:
-      - robotiq_85_left_knuckle_joint
       - linear_x_joint
       - linear_y_joint
       - rotational_yaw_joint
@@ -107,7 +106,6 @@
         nanosec: 0
         sec: 0
     name:
-      - robotiq_85_left_knuckle_joint
       - linear_x_joint
       - linear_y_joint
       - rotational_yaw_joint
