@@ -12,7 +12,7 @@
       <visual>
         <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
         <geometry>
-          <mesh filename="package://bring_it_sim/description/assets/vacuum_base.obj" scale="1.0 1.0 1.0"/>
+          <mesh filename="package://bring_it_sim/description/assets/vacuum.dae" scale="1.0 1.0 1.0"/>
         </geometry>
       </visual>
     </link>
@@ -34,24 +34,6 @@
       </collision>
     </link>
 
-    <link name="vacuum_base_top">
-      <visual>
-        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
-        <geometry>
-          <mesh filename="package://bring_it_sim/description/assets/vacuum_base_top.obj" scale="1.0 1.0 1.0"/>
-        </geometry>
-      </visual>
-    </link>
-
-    <link name="vacuum_suction_cups">
-      <visual>
-        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
-        <geometry>
-          <mesh filename="package://bring_it_sim/description/assets/vacuum_suction_cups.obj" scale="1.0 1.0 1.0"/>
-        </geometry>
-      </visual>
-    </link>
-
     <joint name="vacuum_base_collision_vacuum_base_joint" type="fixed">
       <parent link="vacuum_base"/>
       <child link="collision_vacuum_base"/>
@@ -64,21 +46,9 @@
       <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
     </joint>
 
-    <joint name="vacuum_base_vacuum_base_top_joint" type="fixed">
-      <parent link="vacuum_base"/>
-      <child link="vacuum_base_top"/>
-      <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
-    </joint>
-
-    <joint name="vacuum_base_top_vacuum_suction_cups_joint" type="fixed">
-      <parent link="vacuum_base_top"/>
-      <child link="vacuum_suction_cups"/>
-      <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
-    </joint>
-
     <link name="grasp_link"/>
-    <joint name="vacuum_suction_cups_grasp_link_joint" type="fixed">
-      <parent link="vacuum_suction_cups"/>
+    <joint name="vacuum_base_grasp_link_joint" type="fixed">
+      <parent link="vacuum_base"/>
       <child link="grasp_link"/>
       <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.1"/>
     </joint>

@@ -4,6 +4,52 @@
   - gripper
   - linear_actuator
   - manipulator
+  - wheel_actuator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - linear_x_joint
+    - linear_y_joint
+    - rotational_yaw_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
+    - -7.320701748314112
+    - 5.022566835727205
+    - -3.133169263103569
+    - -6.286857110306328e-07
+    - -2.4531022862338365
+    - 1.9778248523706892
+    - 0.8099393349404539
+    - 1.570606160931757
+    - 3.1399796315659443
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: View Boxes
+- description: ''
+  favorite: true
+  joint_group_names:
+  - gripper
+  - linear_actuator
+  - manipulator
   joint_state:
     effort: []
     header:
@@ -62,12 +108,12 @@
     - wrist_2_joint
     - wrist_3_joint
     position:
-    - 6.014304535634426e-07
-    - -2.4531147766584134
-    - 1.977827335693212
-    - 0.2632151707982655
-    - 1.5607932148556802
-    - 8.75170462506889e-10
+    - -7.075668223457106e-07
+    - -2.4531033170170784
+    - 1.9778256511053713
+    - 0.8099487364403655
+    - 1.5706061326892435
+    - 3.139979679969124
     velocity: []
   multi_dof_joint_state:
     header:
@@ -81,7 +127,7 @@
     wrench: []
   name: Stowed
 - description: ''
-  favorite: true
+  favorite: false
   joint_group_names:
   - gripper
   - linear_actuator

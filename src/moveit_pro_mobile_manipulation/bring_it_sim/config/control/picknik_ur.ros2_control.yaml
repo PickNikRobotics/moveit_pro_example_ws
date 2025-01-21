@@ -94,6 +94,7 @@ joint_state_broadcaster:
       - position
       - velocity
 
+
 joint_trajectory_controller:
   ros__parameters:
     joints:
@@ -103,8 +104,11 @@ joint_trajectory_controller:
       - wrist_1_joint
       - wrist_2_joint
       - wrist_3_joint
+      - linear_x_joint
+      - linear_y_joint
+      - rotational_yaw_joint
     command_interfaces:
-      - position
+      - velocity
     state_interfaces:
       - position
       - velocity
@@ -115,6 +119,12 @@ joint_trajectory_controller:
       - wrist_1_joint
       - wrist_2_joint
       - wrist_3_joint
+      #      - linear_x_joint
+      - platform_velocity_controller/linear/x
+      #      - linear_y_joint
+      - platform_velocity_controller/linear/y
+      #      - rotational_yaw_joint
+      - platform_velocity_controller/angular/z
     state_publish_rate: 100.0
     action_monitor_rate: 20.0
     allow_partial_joints_goal: false
