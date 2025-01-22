@@ -522,25 +522,25 @@
     <velocity
       name="front_right_wheel"
       joint="front_right_wheel"
-      ctrlrange="-5 5"
+      ctrlrange="-15 15"
       kv="50"
     />
     <velocity
       name="front_left_wheel"
       joint="front_left_wheel"
-      ctrlrange="-5 5"
+      ctrlrange="-15 15"
       kv="50"
     />
     <velocity
       name="rear_right_wheel"
       joint="rear_right_wheel"
-      ctrlrange="-5 5"
+      ctrlrange="-15 15"
       kv="50"
     />
     <velocity
       name="rear_left_wheel"
       joint="rear_left_wheel"
-      ctrlrange="-5 5"
+      ctrlrange="-15 15"
       kv="50"
     />
   </actuator>
