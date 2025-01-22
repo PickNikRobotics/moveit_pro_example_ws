@@ -82,6 +82,7 @@
     <SubTree ID="Segment Point Cloud from Clicked Point">
       <MetadataFields>
         <Metadata runnable="true" />
+        <Metadata subcategory="Perception - 3D Point Cloud" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
