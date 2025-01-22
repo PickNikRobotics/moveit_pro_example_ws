@@ -101,6 +101,9 @@
       <inout_port name="pick" default="" />
       <inout_port name="pre_place" default="" />
       <inout_port name="place" default="" />
+      <MetadataFields>
+        <Metadata subcategory="Application - Advanced Examples" />
+      </MetadataFields>
     </SubTree>
   </TreeNodesModel>
 </root>
