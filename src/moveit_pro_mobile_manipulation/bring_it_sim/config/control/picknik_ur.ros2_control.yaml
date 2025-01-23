@@ -193,9 +193,6 @@ servo_controller:
       - wrist_1_joint
       - wrist_2_joint
       - wrist_3_joint
-      - linear_x_joint
-      - linear_y_joint
-      - rotational_yaw_joint
     command_interfaces:
       - velocity
     state_interfaces:
@@ -208,9 +205,6 @@ servo_controller:
       - wrist_1_joint
       - wrist_2_joint
       - wrist_3_joint
-      - platform_velocity_controller/linear/x
-      - platform_velocity_controller/linear/y
-      - platform_velocity_controller/angular/z
     state_publish_rate: 100.0
     action_monitor_rate: 20.0
     allow_partial_joints_goal: false
@@ -233,15 +227,6 @@ servo_controller:
         ff_velocity_scale: 1.0
       wrist_3_joint:
         p: 1.0
-        ff_velocity_scale: 1.0
-      linear_x_joint:
-        p: 2.0
-        ff_velocity_scale: 1.0
-      linear_y_joint:
-        p: 2.0
-        ff_velocity_scale: 1.0
-      rotational_yaw_joint:
-        p: 2.0
         ff_velocity_scale: 1.0
     constraints:
       stopped_velocity_tolerance: 0.0

@@ -1,58 +1,44 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version='1.0' encoding='utf-8'?>
 <root BTCPP_format="4" main_tree_to_execute="Bring It">
   <!--//////////-->
-  <BehaviorTree
-    ID="Bring It"
-    _description="Bring beer to table"
-    _favorite="true"
-  >
-    <Decorator ID="KeepRunningUntilFailure">
-      <Control ID="Sequence">
-        <Action
-          ID="LoadPoseStampedVectorFromYaml"
-          output="{table_drops}"
-          file_path="table_drop_locations.yaml"
-        />
-        <Decorator
-          ID="ForEachPoseStamped"
-          vector_in="{table_drops}"
-          out="{navigation_goal}"
-        >
-          <Control ID="Sequence">
-            <Action
-              ID="VisualizeMesh"
-              mesh_path="package://bring_it_sim/description/assets/locationmarker.dae"
-              mesh_pose="{navigation_goal}"
-            />
-            <Action
-              ID="NavigateToPoseAction"
-              pose_stamped="{navigation_goal}"
-              behavior_tree_path="/opt/ros/humble/share/nav2_bt_navigator/behavior_trees/navigate_to_pose_w_replanning_and_recovery.xml"
-              action_name="/navigate_to_pose"
-            />
-          </Control>
-        </Decorator>
-        <Action
-          ID="CreateStampedPose"
-          orientation_xyzw="0;0;0;1"
-          position_xyz="0;0;0"
-          stamped_pose="{home_location}"
-        />
-        <Action
-          ID="VisualizeMesh"
-          mesh_path="package://bring_it_sim/description/assets/locationmarker.dae"
-          mesh_pose="{home_location}"
-        />
-        <Action
-          ID="NavigateToPoseAction"
-          pose_stamped="{home_location}"
-          behavior_tree_path="/opt/ros/humble/share/nav2_bt_navigator/behavior_trees/navigate_to_pose_w_replanning_and_recovery.xml"
-          action_name="/navigate_to_pose"
-        />
-      </Control>
-    </Decorator>
+  <BehaviorTree ID="Bring It" _description="Bring beer to table" _favorite="true">
+    <Control ID="Sequence">
+      <SubTree ID="Move to Waypoint" _collapsed="true" acceleration_scale_factor="1.0" controller_action_server="/joint_trajectory_controller/follow_joint_trajectory" controller_names="/joint_trajectory_controller" joint_group_name="manipulator" keep_orientation="false" keep_orientation_tolerance="0.05" link_padding="0.0" velocity_scale_factor="1.0" waypoint_name="View Boxes"/>
+      <SubTree ID="Clear Snapshot" _collapsed="true"/>
+      <SubTree ID="Take wrist camera snapshot" _collapsed="false"/>
+      <Action ID="GetPointCloud" topic_name="/wrist_camera/points" timeout_sec="5.000000" message_out="{point_cloud}"/>
+      <Action ID="SendPointCloudToUI" pcd_topic="/pcd_pointcloud_captures" point_cloud="{point_cloud}"/>
+      <Action ID="GetImage" timeout_sec="5.000000" topic_name="/wrist_camera/color" message_out="{image}"/>
+      <Action ID="GetCameraInfo" timeout_sec="5.000000" topic_name="/wrist_camera/camera_info" message_out="{camera_info}"/>
+      <Action ID="GetMasks2DFromTextQuery" image="{image}" masks2d="{masks2d}" clipseg_model_path="models/clipseg.onnx" clip_model_path="models/clip.onnx" model_package="lab_sim" prompt="an object"/>
+      <Action ID="GetMasks3DFromMasks2D" camera_info="{camera_info}" masks2d="{masks2d}" point_cloud="{point_cloud}" masks3d="{masks3d}"/>
+      <Action ID="GetGraspableObjectsFromMasks3D" base_frame="world" face_separation_threshold="0.5" masks3d="{masks3d}" minimum_face_area="0.01" plane_inlier_threshold="0.001" point_cloud="{point_cloud}" graspable_objects="{graspable_objects}"/>
+      <Action ID="GetCurrentPlanningScene" planning_scene_msg="{planning_scene}"/>
+      <Decorator ID="ForEach" vector_in="{graspable_objects}" index="{index}" out="{graspable_object}">
+        <Control ID="Sequence">
+<!--          <Action ID="InitializeMTCTask" controller_names="/joint_trajectory_controller" task="{mtc_task}"/>-->
+<!--          <Action ID="SetupMTCCurrentState" skip_collision_check="false" task="{mtc_task}"/>-->
+<!--          <Action ID="LoadObjectiveParameters" parameters="{parameters}" config_file_name="looping_bin_pick_vacuum_config.yaml"/>-->
+<!--          <Action ID="SetupMTCGenerateVacuumGrasps" monitored_stage="current state" target_object="{graspable_object}" task="{mtc_task}" parameters="{parameters}"/>-->
+<!--          <Action ID="PlanMTCTask" task="{mtc_task}" solution="{mtc_solution}"/>-->
+
+          <Action ID="InitializeMTCTask" controller_names="/joint_trajectory_controller" task="{task}" task_id=""/>
+          <Action ID="SetupMTCApproachGrasp" parameters="{parameters}" target_object="{graspable_objects}" monitored_stage="{monitored_stage}" task="{task}"/>
+          <Action ID="SetupMTCGenerateVacuumGrasps" parameters="{parameters}" target_object="{graspable_objects}" monitored_stage="{monitored_stage}" task="{task}"/>
+          <Action ID="SetupMTCRetractFromGrasp" parameters="{parameters}" target_object="{graspable_objects}" task="{task}"/>
+<!--          <Action ID="SetupMTCInterpolateToJointState" joint_state="{joint_state_place}" planning_group_name="manipulator" task="{task}"/>-->
+<!--          <Action ID="SetupMTCMoveToNamedState" planning_group_name="gripper" goal_state_name="open" task="{task}"/>-->
+<!--          <Action ID="SetupMTCInterpolateToJointState" joint_state="{joint_state_pre_grasp}" planning_group_name="manipulator" task="{task}"/>-->
+          <Action ID="PlanMTCTask" solution="{solution}" task="{task}"/>
+
+          <Action ID="ExecuteMTCTask" goal_duration_tolerance="-1.000000" solution="{mtc_solution}"/>
+        </Control>
+      </Decorator>
+    </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Bring It" />
+    <SubTree ID="Bring It"><MetadataFields>
+        <Metadata runnable="true"/>
+      </MetadataFields></SubTree>
   </TreeNodesModel>
 </root>
