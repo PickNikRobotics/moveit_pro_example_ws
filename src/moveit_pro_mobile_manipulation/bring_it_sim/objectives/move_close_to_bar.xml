@@ -1,10 +1,9 @@
-<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Move close to bar">
   <!--//////////-->
   <BehaviorTree
     ID="Move close to bar"
     _description="Move close enough to the bar to pick up a beer"
-    _favorite="true"
+    _favorite="false"
   >
     <Control ID="Sequence">
       <Action

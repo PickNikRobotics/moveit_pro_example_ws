@@ -1,19 +1,32 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Bring It">
   <!--//////////-->
-  <BehaviorTree ID="Bring It" _description="Bring beer to table" _favorite="true">
+  <BehaviorTree
+    ID="Bring It"
+    _description="Bring beer to table"
+    _favorite="true"
+  >
     <Decorator ID="RetryUntilSuccessful" num_attempts="1000">
       <Decorator ID="ForceFailure">
         <Control ID="Fallback">
-          <SubTree ID="Bring It start from waypoint" waypoint_name="View Boxes"/>
-          <SubTree ID="Bring It start from waypoint" waypoint_name="View Boxes 2"/>
+          <SubTree
+            ID="Bring It start from waypoint"
+            waypoint_name="View Boxes"
+            _collapsed="false"
+          />
+          <SubTree
+            ID="Bring It start from waypoint"
+            waypoint_name="View Boxes 2"
+          />
         </Control>
       </Decorator>
     </Decorator>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Bring It"><MetadataFields>
-        <Metadata runnable="true"/>
-      </MetadataFields></SubTree>
+    <SubTree ID="Bring It">
+      <MetadataFields>
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
   </TreeNodesModel>
 </root>

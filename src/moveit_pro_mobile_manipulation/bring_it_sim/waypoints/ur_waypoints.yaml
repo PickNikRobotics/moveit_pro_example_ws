@@ -1,11 +1,9 @@
 - description: ''
-  favorite: true
+  favorite: false
   joint_group_names:
-  - arm_only
   - gripper
   - linear_actuator
   - manipulator
-  - wheel_actuator
   joint_state:
     effort: []
     header:
@@ -14,57 +12,9 @@
         nanosec: 0
         sec: 0
     name:
-    - shoulder_pan_joint
-    - shoulder_lift_joint
-    - elbow_joint
-    - wrist_1_joint
-    - wrist_2_joint
-    - wrist_3_joint
     - linear_x_joint
     - linear_y_joint
     - rotational_yaw_joint
-    - front_left_wheel
-    - front_right_wheel
-    - rear_left_wheel
-    - rear_right_wheel
-    position:
-    - -0.0008001832141951217
-    - -1.091263878023053
-    - 0.9941257052584567
-    - 0.8029338703195633
-    - 1.569538406668199
-    - 3.140462779759508
-    - -9.336471782787802
-    - 0.3650036215028754
-    - 2.0
-    - 179.76420366693685
-    - -309.38161611817713
-    - 143.37197055628542
-    - 89.90568873360932
-    velocity: []
-  multi_dof_joint_state:
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    joint_names: []
-    transforms: []
-    twist: []
-    wrench: []
-  name: View Boxes 2
-- description: ''
-  favorite: true
-  joint_group_names:
-  - arm_only
-  joint_state:
-    effort: []
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    name:
     - shoulder_pan_joint
     - shoulder_lift_joint
     - elbow_joint
@@ -72,6 +22,9 @@
     - wrist_2_joint
     - wrist_3_joint
     position:
+    - -6.322982066323121
+    - 7.5
+    - 1.57
     - -0.2763174289192866
     - -0.03329912124317757
     - 1.6219825441986198
@@ -89,64 +42,7 @@
     transforms: []
     twist: []
     wrench: []
-  name: Look at Ground
-- description: ''
-  favorite: false
-  joint_group_names:
-  - gripper
-  - linear_actuator
-  - manipulator
-  - wheel_actuator
-  joint_state:
-    effort: []
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    name:
-    - linear_x_joint
-    - linear_y_joint
-    - rotational_yaw_joint
-    - shoulder_pan_joint
-    - shoulder_lift_joint
-    - elbow_joint
-    - wrist_1_joint
-    - wrist_2_joint
-    - wrist_3_joint
-    - front_rocker
-    - front_left_wheel
-    - front_right_wheel
-    - rear_left_wheel
-    - rear_right_wheel
-    position:
-    - 0.1025781249307494
-    - 0
-    - 0
-    - 0
-    - 0.8371631576820436
-    - -0.3352390746492166
-    - 0.19765088507041076
-    - -2.3182411494283217
-    - -1.4856134479671956
-    - -0.059141607883296456
-    - 6.680871677833013e-05
-    - -5.2400322737957
-    - 5.2356089836249575
-    - -5.238369713479739
-    - 5.233722234090497
-    velocity: []
-  multi_dof_joint_state:
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    joint_names: []
-    transforms: []
-    twist: []
-    wrench: []
-  name: Near bottle 3
+  name: Goal Location
 - description: ''
   favorite: true
   joint_group_names:
@@ -192,3 +88,95 @@
     twist: []
     wrench: []
   name: View Boxes
+- description: ''
+  favorite: true
+  joint_group_names:
+  - arm_only
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
+    - -0.2763174289192866
+    - -0.03329912124317757
+    - 1.6219825441986198
+    - 3.1160231058296772
+    - -1.5872227113667408
+    - 2.826779483878693
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Look at Ground
+- description: ''
+  favorite: true
+  joint_group_names:
+  - arm_only
+  - gripper
+  - linear_actuator
+  - manipulator
+  - wheel_actuator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    - linear_x_joint
+    - linear_y_joint
+    - rotational_yaw_joint
+    - front_left_wheel
+    - front_right_wheel
+    - rear_left_wheel
+    - rear_right_wheel
+    position:
+    - -0.0008001832141951217
+    - -1.091263878023053
+    - 0.9941257052584567
+    - 0.8029338703195633
+    - 1.569538406668199
+    - 3.140462779759508
+    - -9.336471782787802
+    - 0.3650036215028754
+    - 2
+    - 179.76420366693685
+    - -309.38161611817713
+    - 143.37197055628542
+    - 89.90568873360932
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: View Boxes 2

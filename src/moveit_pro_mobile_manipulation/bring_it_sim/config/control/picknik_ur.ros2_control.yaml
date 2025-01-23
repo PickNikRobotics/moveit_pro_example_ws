@@ -11,6 +11,15 @@ controller_manager:
       type: force_torque_sensor_broadcaster/ForceTorqueSensorBroadcaster
     platform_velocity_controller:
       type: clearpath_mecanum_drive_controller/MecanumDriveController
+    vacuum_gripper:
+      type: position_controllers/GripperActionController
+
+vacuum_gripper:
+  ros__parameters:
+    default: true
+    joint: suction_cup
+    allow_stalling: true
+
 
 platform_velocity_controller:
   ros__parameters:
@@ -90,6 +99,9 @@ joint_state_broadcaster:
       - front_right_wheel
       - rear_left_wheel
       - rear_right_wheel
+      - linear_x_joint
+      - linear_y_joint
+      - rotational_yaw_joint
     interfaces:
       - position
       - velocity
