@@ -5,7 +5,7 @@ SetupMTCApproachGrasp:
   end_effector_name: "moveit_ee"
   hand_frame_name: "grasp_link"
 
-  approach_distance: 0.05
+  approach_distance: 0.1
 
   enforce_visibility_constraint: true
   camera_optical_frame_id: wrist_camera_optical_frame

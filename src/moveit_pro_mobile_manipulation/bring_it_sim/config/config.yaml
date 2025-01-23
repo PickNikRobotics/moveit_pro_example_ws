@@ -44,6 +44,9 @@ moveit_params:
   servo_kinematics:
     package: "bring_it_sim"
     path: "config/moveit/trac_ik_kinematics_speed.yaml"
+  sensors_3d:
+    package: "bring_it_sim"
+    path: "config/moveit/sensors_3d.yaml"
 
 
 # Configuration for loading behaviors and objectives.

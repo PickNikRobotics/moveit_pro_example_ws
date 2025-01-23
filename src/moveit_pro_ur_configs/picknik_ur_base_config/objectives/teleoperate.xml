@@ -5,7 +5,16 @@
     <SubTree ID="Request Teleoperation" enable_user_interaction="false" user_interaction_prompt="" initial_teleop_mode="3"/>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Teleoperate"><MetadataFields>
+    <SubTree ID="Teleoperate">
+      <MetadataFields>
+        <Metadata subcategory="User Input"/>
+        <Metadata runnable="true"/>
+      </MetadataFields>
+      <MetadataFields>
+        <Metadata subcategory="User Input"/>
+        <Metadata runnable="true"/>
+      </MetadataFields>
+    <MetadataFields>
         <Metadata subcategory="User Input"/>
         <Metadata runnable="true"/>
       </MetadataFields></SubTree>
