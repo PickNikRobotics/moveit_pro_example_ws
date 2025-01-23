@@ -6,7 +6,6 @@ find_package(ament_cmake REQUIRED)
 install(
   DIRECTORY
     launch
-    meshes
     scripts
     urdf
   DESTINATION
