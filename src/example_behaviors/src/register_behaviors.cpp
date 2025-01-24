@@ -2,19 +2,19 @@
 #include <moveit_studio_behavior_interface/behavior_context.hpp>
 #include <moveit_studio_behavior_interface/shared_resources_node_loader.hpp>
 
-#include <example_behaviors/example_hello_world.hpp>
+#include <example_behaviors/example_add_two_ints_service_client.hpp>
 #include <example_behaviors/example_convert_mtc_solution_to_joint_trajectory.hpp>
 #include <example_behaviors/example_delayed_message.hpp>
-#include <example_behaviors/example_setup_mtc_wave_hand.hpp>
-#include <example_behaviors/example_add_two_ints_service_client.hpp>
 #include <example_behaviors/example_fibonacci_action_client.hpp>
 #include <example_behaviors/example_get_string_from_topic.hpp>
-#include <example_behaviors/example_publish_color_rgba.hpp>
-#include <example_behaviors/example_setup_mtc_pick_from_pose.hpp>
-#include <example_behaviors/example_setup_mtc_place_from_pose.hpp>
+#include <example_behaviors/example_hello_world.hpp>
 #include <example_behaviors/example_ndt_registration.hpp>
+#include <example_behaviors/example_publish_color_rgba.hpp>
 #include <example_behaviors/example_ransac_registration.hpp>
 #include <example_behaviors/example_sam2_segmentation.hpp>
+#include <example_behaviors/example_setup_mtc_pick_from_pose.hpp>
+#include <example_behaviors/example_setup_mtc_place_from_pose.hpp>
+#include <example_behaviors/example_setup_mtc_wave_hand.hpp>
 
 #include <pluginlib/class_list_macros.hpp>
 
@@ -27,21 +27,30 @@ public:
                          const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources) override
   {
     moveit_studio::behaviors::registerBehavior<ExampleHelloWorld>(factory, "ExampleHelloWorld", shared_resources);
-    moveit_studio::behaviors::registerBehavior<ExampleConvertMtcSolutionToJointTrajectory>(factory, "ExampleConvertMtcSolutionToJointTrajectory", shared_resources);
-    moveit_studio::behaviors::registerBehavior<ExampleDelayedMessage>(factory, "ExampleDelayedMessage", shared_resources);
-    moveit_studio::behaviors::registerBehavior<ExampleSetupMTCWaveHand>(factory, "ExampleSetupMTCWaveHand", shared_resources);
-    moveit_studio::behaviors::registerBehavior<ExampleGetStringFromTopic>(factory, "ExampleGetStringFromTopic", shared_resources);
-    moveit_studio::behaviors::registerBehavior<ExampleAddTwoIntsServiceClient>(factory, "ExampleAddTwoIntsServiceClient",
+    moveit_studio::behaviors::registerBehavior<ExampleConvertMtcSolutionToJointTrajectory>(
+        factory, "ExampleConvertMtcSolutionToJointTrajectory", shared_resources);
+    moveit_studio::behaviors::registerBehavior<ExampleDelayedMessage>(factory, "ExampleDelayedMessage",
+                                                                      shared_resources);
+    moveit_studio::behaviors::registerBehavior<ExampleSetupMTCWaveHand>(factory, "ExampleSetupMTCWaveHand",
                                                                         shared_resources);
+    moveit_studio::behaviors::registerBehavior<ExampleGetStringFromTopic>(factory, "ExampleGetStringFromTopic",
+                                                                          shared_resources);
+    moveit_studio::behaviors::registerBehavior<ExampleAddTwoIntsServiceClient>(
+        factory, "ExampleAddTwoIntsServiceClient", shared_resources);
     moveit_studio::behaviors::registerBehavior<ExampleFibonacciActionClient>(factory, "ExampleFibonacciActionClient",
-                                                                      shared_resources);
-    moveit_studio::behaviors::registerBehavior<ExamplePublishColorRGBA>(factory, "ExamplePublishColorRGBA", shared_resources);
-    moveit_studio::behaviors::registerBehavior<ExampleSetupMtcPickFromPose>(factory, "ExampleSetupMtcPickFromPose", shared_resources);
+                                                                             shared_resources);
+    moveit_studio::behaviors::registerBehavior<ExamplePublishColorRGBA>(factory, "ExamplePublishColorRGBA",
+                                                                        shared_resources);
+    moveit_studio::behaviors::registerBehavior<ExampleSetupMtcPickFromPose>(factory, "ExampleSetupMtcPickFromPose",
+                                                                            shared_resources);
     moveit_studio::behaviors::registerBehavior<ExampleSetupMtcPlaceFromPose>(factory, "ExampleSetupMtcPlaceFromPose",
-                                                                      shared_resources);
-    moveit_studio::behaviors::registerBehavior<ExampleNDTRegistration>(factory, "ExampleNDTRegistration", shared_resources);
-    moveit_studio::behaviors::registerBehavior<ExampleRANSACRegistration>(factory, "ExampleRANSACRegistration", shared_resources);
-    moveit_studio::behaviors::registerBehavior<ExampleSAM2Segmentation>(factory, "ExampleSAM2Segmentation", shared_resources);
+                                                                             shared_resources);
+    moveit_studio::behaviors::registerBehavior<ExampleNDTRegistration>(factory, "ExampleNDTRegistration",
+                                                                       shared_resources);
+    moveit_studio::behaviors::registerBehavior<ExampleRANSACRegistration>(factory, "ExampleRANSACRegistration",
+                                                                          shared_resources);
+    moveit_studio::behaviors::registerBehavior<ExampleSAM2Segmentation>(factory, "ExampleSAM2Segmentation",
+                                                                        shared_resources);
   }
 };
 }  // namespace example_behaviors
