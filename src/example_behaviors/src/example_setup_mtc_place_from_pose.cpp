@@ -1,16 +1,16 @@
 #include <example_behaviors/example_setup_mtc_place_from_pose.hpp>
 
 #include <behaviortree_cpp/bt_factory.h>
-#include <moveit/task_constructor/stages.h>
 #include <moveit/task_constructor/solvers.h>
+#include <moveit/task_constructor/stages.h>
 #include <moveit/task_constructor/task.h>
+#include <yaml-cpp/yaml.h>
 #include <moveit_msgs/msg/collision_object.hpp>
 #include <moveit_studio_behavior_interface/behavior_context.hpp>
 #include <moveit_studio_behavior_interface/check_for_error.hpp>
 #include <moveit_studio_common/utils/yaml_parsing_tools.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
 #include <tf2_eigen/tf2_eigen.hpp>
-#include <yaml-cpp/yaml.h>
 
 namespace
 {
