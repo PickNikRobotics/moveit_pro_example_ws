@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Clean convex">
+  <!--//////////-->
+  <BehaviorTree ID="Clean convex" _description="" _favorite="true">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="CreateStampedPose"
+        stamped_pose="{initial_guess}"
+        reference_frame="world"
+        orientation_xyzw="0; 0; 0.707; 0.707"
+        position_xyz="0.750; 0.000; 0.600"
+        name="Initial guess"
+      />
+      <Action
+        ID="SavePoseStampedToYaml"
+        message="{initial_guess}"
+        yaml_filename="~/user_ws/initial_guess"
+      />
+      <Action
+        ID="VisualizePose"
+        marker_name="pose"
+        marker_lifetime="0.000000"
+        marker_size="0.100000"
+        pose="{initial_guess}"
+      />
+      <Action
+        ID="GetMeshNormalPoses"
+        discretization_step_size="0.050000"
+        mesh_normal_poses="{mesh_normal_poses}"
+        link_name="convex_hemisphere"
+      />
+      <Action
+        ID="PublishMarkers"
+        marker_poses="{mesh_normal_poses}"
+        marker_scale_xyz="1;1;1"
+        marker_type="cube"
+      />
+      <!--link6, flange, tool0-->
+      <Action
+        ID="PlanCartesianPath"
+        trajectory_sampling_rate="100"
+        debug_solution="{debug_solution}"
+        velocity_scale_factor="1.000000"
+        acceleration_scale_factor="1.000000"
+        ik_joint_space_density="0.001000"
+        blending_radius="0.020000"
+        ik_cartesian_space_density="0.001000"
+        position_only="true"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+        tip_link="flange"
+        planning_group_name="manipulator"
+        path="{mesh_normal_poses}"
+      />
+      <Action ID="WaitForUserTrajectoryApproval" solution="{debug_solution}" />
+      <Action
+        ID="ExecuteFollowJointTrajectory"
+        goal_duration_tolerance="-1.000000"
+        goal_position_tolerance="0.000000"
+        goal_time_tolerance="0.000000"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+        execute_follow_joint_trajectory_action_name="/joint_trajectory_controller/follow_joint_trajectory"
+      />
+      <Decorator ID="RetryUntilSuccessful" num_attempts="-1">
+        <Control ID="Sequence">
+          <Decorator
+            ID="ForEachPoseStamped"
+            index="{index}"
+            out="{stamped_pose}"
+            vector_in="{mesh_normal_poses}"
+          >
+            <Control ID="Sequence">
+              <Action
+                ID="VisualizePose"
+                marker_name="pose"
+                marker_lifetime="0.000000"
+                pose="{stamped_pose}"
+                marker_size=".5"
+              />
+              <Action ID="WaitForDuration" delay_duration="0.5" />
+            </Control>
+          </Decorator>
+          <Action ID="AlwaysFailure" />
+        </Control>
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Clean convex" />
+  </TreeNodesModel>
+</root>
