@@ -34,7 +34,7 @@
               ID="TransformPose"
               input_pose="{place_pose}"
               output_pose="{place_pose}"
-              translation_xyz="0.3;0;0"
+              translation_xyz="0.4;0;0"
             />
           </Control>
         </Decorator>

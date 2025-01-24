@@ -25,17 +25,17 @@
     <!-- Scene Camera -->
     <site
       name="scene_camera_optical_frame"
-      pos="-1.0 -2.0 2.966"
-      euler="3.99 0.000 0"
+      pos="-14.4207 -4.39686 9.04094"
+      quat="0.415847 -0.883719 0.194298 -0.09143"
     />
-    <!--    <camera-->
-    <!--      name="scene_camera"-->
-    <!--      pos="-1.0 -2.0 2.966"-->
-    <!--      fovy="58"-->
-    <!--      mode="fixed"-->
-    <!--      resolution="1920 1080"-->
-    <!--      euler="0.849 0.000 0.0"-->
-    <!--    />-->
+    <camera
+      name="scene_camera"
+      pos="-14.4207 -4.39686 9.04094"
+      quat="0.883719 0.415847 -0.09143 -0.194298"
+      fovy="45"
+      mode="fixed"
+      resolution="1280 720"
+    />
   </worldbody>
 
   <keyframe>
