@@ -9,14 +9,14 @@
       <Action ID="GetPointCloud" topic_name="/wrist_camera/points" timeout_sec="5.000000" message_out="{point_cloud}"/>
       <Action ID="TransformPointCloudFrame" input_cloud="{point_cloud}" target_frame="world" output_cloud="{point_cloud}"/>
       <Action ID="CreateStampedPose" reference_frame="world" stamped_pose="{stamped_pose}" position_xyz="0;0;0.55"/>
-      <Action ID="CropPointsInBox" crop_box_centroid_pose="{stamped_pose}" point_cloud="{point_cloud}" point_cloud_cropped="{point_cloud}" crop_box_size="100;100;1"/>
+      <Action ID="CropPointsInBox" crop_box_centroid_pose="{stamped_pose}" point_cloud="{point_cloud}" point_cloud_cropped="{point_cloud}" crop_box_size="30;30;1"/>
       <SubTree ID="Reset Planning Scene" _collapsed="false"/>
       <Action ID="UpdatePlanningSceneService" point_cloud="{point_cloud}" point_cloud_service="/point_cloud_service"/>
       <Action ID="SendPointCloudToUI" pcd_topic="/pcd_pointcloud_captures" point_cloud="{point_cloud}"/>
       <Action ID="GetImage" timeout_sec="5.000000" topic_name="/wrist_camera/color" message_out="{image}"/>
       <Action ID="GetCameraInfo" timeout_sec="5.000000" topic_name="/wrist_camera/camera_info" message_out="{camera_info}"/>
       <Control ID="Sequence">
-        <Action ID="GetMasks2DFromTextQuery" image="{image}" masks2d="{masks2d}" clipseg_model_path="models/clipseg.onnx" clip_model_path="models/clip.onnx" model_package="lab_sim" prompt="a small box"/>
+        <Action ID="GetMasks2DFromTextQuery" image="{image}" masks2d="{masks2d}" clipseg_model_path="models/clipseg.onnx" clip_model_path="models/clip.onnx" model_package="lab_sim" prompt="a small 3d cube box"/>
         <Action ID="GetMasks3DFromMasks2D" camera_info="{camera_info}" masks2d="{masks2d}" point_cloud="{point_cloud}" masks3d="{masks3d}"/>
         <Action ID="GetGraspableObjectsFromMasks3D" base_frame="world" masks3d="{masks3d}" minimum_face_area="0.03" plane_inlier_threshold="0.00001" point_cloud="{point_cloud}" graspable_objects="{graspable_objects}" face_separation_threshold="1.5"/>
         <Action ID="GetCurrentPlanningScene" planning_scene_msg="{planning_scene}"/>

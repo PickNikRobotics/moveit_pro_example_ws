@@ -89,12 +89,12 @@
     <dynamics damping="20.0" friction="500.0" />
   </joint>
 
-  <joint name="rotational_yaw_joint" type="revolute">
+  <joint name="rotational_yaw_joint" type="continuous">
     <axis xyz="0 0 1"/>
     <parent link="virtual_rail_link_2"/>
     <child link="ridgeback_base_link"/>
     <origin rpy="0 0 0" xyz="0 0 0"/>
-    <limit effort="150.0" lower="-${2*PI}" upper="${2*PI}" velocity="0.5235987755982988"/>
+    <limit effort="150.0" velocity="0.5235987755982988"/>
     <dynamics damping="0" friction="0"/>
   </joint>
 

@@ -8,8 +8,8 @@
         <Decorator ID="ForceFailure">
           <Control ID="Sequence">
             <Control ID="Fallback">
-              <SubTree ID="Bring It start from waypoint" waypoint_name="View Boxes" _collapsed="false" place_pose="{place_pose}"/>
               <SubTree ID="Bring It start from waypoint" waypoint_name="View Boxes 2" place_pose="{place_pose}"/>
+              <SubTree ID="Bring It start from waypoint" waypoint_name="View Boxes" _collapsed="true" place_pose="{place_pose}"/>
             </Control>
             <Action ID="TransformPose" input_pose="{place_pose}" output_pose="{place_pose}" translation_xyz="0.4;0;0"/>
           </Control>

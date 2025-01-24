@@ -384,19 +384,6 @@
         material="metal_hangar"
       />
     </body>
-    <body
-      name="SM_Cart_28"
-      pos="7.232607841491699 12.897068977355957 0.7072127461433411"
-      quat="1.0 0.0 0.0 0.0"
-    >
-      <geom
-        class="visual"
-        type="mesh"
-        name="SM_Cart_28 geom"
-        mesh="SM_Cart_28"
-        material="metal_hangar"
-      />
-    </body>
     <body name="collision_Cube_004" pos="-11.981542587280273 6.327070713043213 0.5064430832862854" quat="0.9604685306549072 0.0 0.0 -0.27838853001594543">
       <geom class="collision" type="mesh" name="collision_Cube_004 geom" mesh="collision_Cube_004"  />
       <body name="SM_Ladder_31" pos="0.0027790069580078125 0.03064107894897461 0.13250821828842163" quat="1.0 0.0 0.0 0.0">
@@ -1755,17 +1742,11 @@
         mesh="collision_Plane.009"
       />
     </body>
-    <body
-      name="collision_Cube"
-      pos="7.231803894042969 12.840622901916504 0.7229089736938477"
-      quat="1.0 0.0 0.0 0.0"
-    >
-      <geom
-        class="collision"
-        type="mesh"
-        name="collision_Cube geom"
-        mesh="collision_Cube"
-      />
+    <body name="collision_Cube" pos="-11.642203330993652 1.8356692790985107 0.7229089736938477" quat="1.0 0.0 0.0 0.0">
+      <geom class="collision" type="mesh" name="collision_Cube geom" mesh="collision_Cube"  />
+      <body name="SM_Cart_28" pos="0.000804901123046875 0.056446075439453125 -0.015696227550506592" quat="1.0 0.0 0.0 0.0">
+        <geom class="visual" type="mesh" name="SM_Cart_28 geom" mesh="SM_Cart_28" material="metal_hangar" />
+      </body>
     </body>
     <body
       name="collision_Cube.001"
