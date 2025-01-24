@@ -40,11 +40,6 @@
         gap="0.04"
       />
       <site name="suction_cup" type="box" size="0.1 0.1 0.1" />
-      <geom
-        class="visual"
-        type="mesh"
-        mesh="collision_vacuum_suction_cups"
-      />
     </body>
     <body
       name="vacuum_base_top"

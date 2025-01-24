@@ -7,7 +7,7 @@ SetupMTCApproachGrasp:
 
   approach_distance: 0.1
 
-  enforce_visibility_constraint: true
+  enforce_visibility_constraint: false
   camera_optical_frame_id: wrist_camera_optical_frame
   camera_field_of_view_angle: 1.0472
   sensor_z_offset: 0.0
@@ -30,7 +30,7 @@ SetupMTCGenerateVacuumGrasps:
     padding_dimension: 0.01
 
     # Number of samples to generate
-    samples_per_plane: 2
+    samples_per_plane: 5
     num_orientation_samples: 5
 
   # Grasp data configs
