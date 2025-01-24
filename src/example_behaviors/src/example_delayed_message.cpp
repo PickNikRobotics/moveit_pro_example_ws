@@ -2,8 +2,9 @@
 
 namespace example_behaviors
 {
-ExampleDelayedMessage::ExampleDelayedMessage(const std::string& name, const BT::NodeConfiguration& config,
-                               const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources)
+ExampleDelayedMessage::ExampleDelayedMessage(
+    const std::string& name, const BT::NodeConfiguration& config,
+    const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources)
   : moveit_studio::behaviors::SharedResourcesNode<BT::StatefulActionNode>(name, config, shared_resources)
 {
 }

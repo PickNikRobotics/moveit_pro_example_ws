@@ -1,7 +1,7 @@
 #pragma once
 
-#include <moveit_studio_behavior_interface/action_client_behavior_base.hpp>
 #include <example_interfaces/action/fibonacci.hpp>
+#include <moveit_studio_behavior_interface/action_client_behavior_base.hpp>
 
 using moveit_studio::behaviors::ActionClientBehaviorBase;
 using moveit_studio::behaviors::BehaviorContext;
@@ -13,7 +13,7 @@ class ExampleFibonacciActionClient final : public ActionClientBehaviorBase<Fibon
 {
 public:
   ExampleFibonacciActionClient(const std::string& name, const BT::NodeConfiguration& config,
-                        const std::shared_ptr<BehaviorContext>& shared_resources);
+                               const std::shared_ptr<BehaviorContext>& shared_resources);
 
   /** @brief Implementation of the required providedPorts() function for the hello_world Behavior. */
   static BT::PortsList providedPorts();

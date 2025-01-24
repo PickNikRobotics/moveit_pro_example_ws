@@ -3,7 +3,7 @@
 namespace example_behaviors
 {
 ExampleHelloWorld::ExampleHelloWorld(const std::string& name, const BT::NodeConfiguration& config,
-                       const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources)
+                                     const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources)
   : moveit_studio::behaviors::SharedResourcesNode<BT::SyncActionNode>(name, config, shared_resources)
 {
 }

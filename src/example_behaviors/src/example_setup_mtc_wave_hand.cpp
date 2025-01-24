@@ -20,8 +20,9 @@ const rclcpp::Logger kLogger = rclcpp::get_logger("WaveHello");
 
 namespace example_behaviors
 {
-ExampleSetupMTCWaveHand::ExampleSetupMTCWaveHand(const std::string& name, const BT::NodeConfiguration& config,
-                                   const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources)
+ExampleSetupMTCWaveHand::ExampleSetupMTCWaveHand(
+    const std::string& name, const BT::NodeConfiguration& config,
+    const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources)
   : moveit_studio::behaviors::AsyncBehaviorBase(name, config, shared_resources)
 {
 }
