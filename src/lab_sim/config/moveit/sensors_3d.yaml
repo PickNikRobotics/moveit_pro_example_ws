@@ -2,14 +2,14 @@ sensors:
   - wrist_camera
 
 wrist_camera:
-    sensor_plugin: occupancy_map_monitor/PointCloudOctomapUpdater
-    point_cloud_topic: /wrist_camera/points # The topic on which the sensor data is received.
-    max_range: 3.0 #  Points further than this will not be used.
-    point_subsample: 1 # Choose one of every point_subsample points.
-    padding_offset: 0.01 # The size of the padding (in cm).
-    padding_scale: 1.0 # The scale of the padding.
-    max_update_rate: 0.5 # The maximum rate at which the sensor is allowed to update the octomap.
-    filtered_cloud_topic: /wrist_camera/filtered_points # The topic on which the filtered cloud will be published
+  sensor_plugin: occupancy_map_monitor/PointCloudOctomapUpdater
+  point_cloud_topic: /wrist_camera/points # The topic on which the sensor data is received.
+  max_range: 3.0 #  Points further than this will not be used.
+  point_subsample: 1 # Choose one of every point_subsample points.
+  padding_offset: 0.01 # The size of the padding (in cm).
+  padding_scale: 1.0 # The scale of the padding.
+  max_update_rate: 0.5 # The maximum rate at which the sensor is allowed to update the octomap.
+  filtered_cloud_topic: /wrist_camera/filtered_points # The topic on which the filtered cloud will be published
 
 # Specifies the resolution at which the octomap is maintained (in meters).
 octomap_resolution: 0.01
