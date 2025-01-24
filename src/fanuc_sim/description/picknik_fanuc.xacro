@@ -6,6 +6,7 @@
   />
   <xacro:arg name="hardware_interface" default="mock" />
   <xacro:arg name="mujoco_model" default="description/scene.xml" />
+  <param name="mujoco_viewer">true</param>
   <xacro:include
     filename="$(find fanuc_sim)/description/lrmate200id_macro.xacro"
   />

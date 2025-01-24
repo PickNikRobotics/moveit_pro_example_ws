@@ -1,12 +1,9 @@
 <mujoco model="fanuc_tool">
-  <compiler angle="radian" autolimits="true" />
-  <option integrator="RK4" timestep="0.005" />
-
   <worldbody>
     <body
       name="gripper_base"
       gravcomp="1"
-      pos="0.25 0.3 0.3"
+      pos="0.25 0.0 0.3"
       euler="3.1415 0 0"
     >
       <joint
