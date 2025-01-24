@@ -186,10 +186,7 @@
     <mesh name="vacuum_base_top" file="vacuum_base_top.obj" />
     <mesh name="vacuum_suction_cups" file="vacuum_suction_cups.obj" />
     <mesh name="collision_vacuum_base" file="collision_vacuum_base.obj" />
-    <mesh
-      name="collision_vacuum_suction_cups"
-      file="collision_vacuum_suction_cups.obj"
-    />
+    <mesh name="collision_vacuum_suction_cups" file="collision_vacuum_suction_cups.obj" scale="1.0 1.0 1.0" />
   </asset>
 
   <worldbody>

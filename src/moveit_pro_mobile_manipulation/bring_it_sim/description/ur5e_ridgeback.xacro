@@ -74,7 +74,7 @@
     <parent link="world" />
     <child link="virtual_rail_link_1" />
     <origin xyz="0 0 0" rpy="0 0 0" />
-    <limit effort="1000.0" lower="-20.0" upper="20.0" velocity="0.175" acceleration="10.0"/>
+    <limit effort="1000.0" lower="-100.0" upper="100.0" velocity="0.175" acceleration="10.0"/>
     <dynamics damping="20.0" friction="500.0" />
   </joint>
 
@@ -85,7 +85,7 @@
     <parent link="virtual_rail_link_1" />
     <child link="virtual_rail_link_2" />
     <origin xyz="0 0 0" rpy="0 0 0" />
-    <limit effort="1000.0" lower="-20.0" upper="20.0" velocity="0.175" acceleration="10.0"/>
+    <limit effort="1000.0" lower="-100.0" upper="100.0" velocity="0.175" acceleration="10.0"/>
     <dynamics damping="20.0" friction="500.0" />
   </joint>
 
@@ -94,7 +94,7 @@
     <parent link="virtual_rail_link_2"/>
     <child link="ridgeback_base_link"/>
     <origin rpy="0 0 0" xyz="0 0 0"/>
-    <limit effort="150.0" lower="-3.141592653589793" upper="3.141592653589793" velocity="0.5235987755982988"/>
+    <limit effort="150.0" lower="-${2*PI}" upper="${2*PI}" velocity="0.5235987755982988"/>
     <dynamics damping="0" friction="0"/>
   </joint>
 

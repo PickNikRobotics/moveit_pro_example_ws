@@ -37,9 +37,9 @@ joint_limits:
     has_velocity_limits: true
     max_acceleration: !degrees 20.0
     max_effort: 150.0
-    max_position: !degrees  180.0
+    max_position: !degrees  360.0
     max_velocity: !degrees  60.0
-    min_position: !degrees -180.0
+    min_position: !degrees -360.0
   shoulder_pan_joint:
     has_acceleration_limits: true
     has_effort_limits: true
