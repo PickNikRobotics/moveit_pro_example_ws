@@ -10,7 +10,10 @@
     <!--CHAINS: When a chain is specified, all the links along the chain (including endpoints) are included in the group. Additionally, all the joints that are parents to included links are also included. This means that joints along the chain and the parent joint of the base link are included in the group-->
     <!--SUBGROUPS: Groups can also be formed by referencing to already defined group names-->
     <group name="manipulator">
-        <chain base_link="base_link" tip_link="grasp_link"/>
+        <chain base_link="ridgeback_base_link" tip_link="grasp_link"/>
+<!--        <link name="chassis_link"/>-->
+<!--        <link name="riser_link"/>-->
+<!--        <link name="top_link"/>-->
         <joint name="linear_x_joint"/>
         <joint name="linear_y_joint"/>
         <joint name="rotational_yaw_joint"/>
@@ -20,8 +23,18 @@
     </group>
     <group name="gripper">
         <chain base_link="vacuum_base" tip_link="grasp_link"/>
+        <link name="collision_vacuum_base"/>
+        <link name="collision_vacuum_suction_cups"/>
+    </group>
+    <group name="hand">
+        <chain base_link="vacuum_base" tip_link="grasp_link"/>
+        <link name="collision_vacuum_base"/>
+        <link name="collision_vacuum_suction_cups"/>
     </group>
     <group name="linear_actuator">
+        <link name="chassis_link"/>
+        <link name="riser_link"/>
+        <link name="top_link"/>
         <joint name="linear_x_joint"/>
         <joint name="linear_y_joint"/>
         <joint name="rotational_yaw_joint"/>
