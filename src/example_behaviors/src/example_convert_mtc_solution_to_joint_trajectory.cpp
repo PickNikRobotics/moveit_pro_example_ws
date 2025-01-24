@@ -27,14 +27,11 @@ BT::PortsList ExampleConvertMtcSolutionToJointTrajectory::providedPorts()
   return {
     BT::InputPort<moveit_task_constructor_msgs::msg::Solution>(kPortIDSolution, "{mtc_solution}",
                                                                "MoveIt Task Constructor solution."),
-    BT::InputPort<std::string>(kPortIDJointGroup, "manipulator",
-                               "Joint group name used in the MTC solution."),
-    BT::InputPort<double>(kPortIDVelocityScalingFactor, 1.0,
-                          "Velocity scaling factor for trajectory generation."),
+    BT::InputPort<std::string>(kPortIDJointGroup, "manipulator", "Joint group name used in the MTC solution."),
+    BT::InputPort<double>(kPortIDVelocityScalingFactor, 1.0, "Velocity scaling factor for trajectory generation."),
     BT::InputPort<double>(kPortIDAccelerationScalingFactor, 1.0,
                           "Acceleration scaling factor for trajectory generation."),
-    BT::InputPort<int>(kPortIDSamplingRate, 100,
-                       "Sampling rate for trajectory generation."),
+    BT::InputPort<int>(kPortIDSamplingRate, 100, "Sampling rate for trajectory generation."),
     BT::OutputPort<trajectory_msgs::msg::JointTrajectory>(kPortIDJointTrajectory, "{joint_trajectory_msg}",
                                                           "Resulting joint trajectory."),
   };
@@ -43,7 +40,8 @@ BT::PortsList ExampleConvertMtcSolutionToJointTrajectory::providedPorts()
 BT::KeyValueVector ExampleConvertMtcSolutionToJointTrajectory::metadata()
 {
   return { { "subcategory", "Motion Planning" },
-           { "description", "Extracts joint space trajectories from an MTC solution and adds time parameterization using TOTG." } };
+           { "description",
+             "Extracts joint space trajectories from an MTC solution and adds time parameterization using TOTG." } };
 }
 
 BT::NodeStatus ExampleConvertMtcSolutionToJointTrajectory::tick()
@@ -58,7 +56,9 @@ BT::NodeStatus ExampleConvertMtcSolutionToJointTrajectory::tick()
   const auto sampling_rate = getInput<int>(kPortIDSamplingRate);
 
   // Check that the required input data port was set
-  if (const auto error = maybe_error(solution, joint_group_name, velocity_scaling_factor, acceleration_scaling_factor, sampling_rate); error)
+  if (const auto error =
+          maybe_error(solution, joint_group_name, velocity_scaling_factor, acceleration_scaling_factor, sampling_rate);
+      error)
   {
     spdlog::error("Failed to get required value from input data port: {}", error.value());
     return BT::NodeStatus::FAILURE;
@@ -90,8 +90,8 @@ BT::NodeStatus ExampleConvertMtcSolutionToJointTrajectory::tick()
   const auto& waypoints = extractJointPositions(solution.value());
 
   // Use trajectory_utils.hpp to create a trajectory
-  auto trajectory_result = createTrajectoryFromWaypoints(
-      *joint_model_group, waypoints, velocity_scaling_factor.value(), acceleration_scaling_factor.value(), sampling_rate.value());
+  auto trajectory_result = createTrajectoryFromWaypoints(*joint_model_group, waypoints, velocity_scaling_factor.value(),
+                                                         acceleration_scaling_factor.value(), sampling_rate.value());
 
   if (!trajectory_result)
   {
@@ -108,7 +108,8 @@ BT::NodeStatus ExampleConvertMtcSolutionToJointTrajectory::tick()
   return BT::NodeStatus::SUCCESS;
 }
 
-const std::vector<Eigen::VectorXd>& ExampleConvertMtcSolutionToJointTrajectory::extractJointPositions(const moveit_task_constructor_msgs::msg::Solution& solution)
+const std::vector<Eigen::VectorXd>& ExampleConvertMtcSolutionToJointTrajectory::extractJointPositions(
+    const moveit_task_constructor_msgs::msg::Solution& solution)
 {
   static std::vector<Eigen::VectorXd> waypoints;
   waypoints.clear();
@@ -123,8 +124,7 @@ const std::vector<Eigen::VectorXd>& ExampleConvertMtcSolutionToJointTrajectory::
       continue;
     }
 
-    spdlog::info("Processing sub-trajectory {} with {} points.",
-                 sub_traj_idx, joint_traj.points.size());
+    spdlog::info("Processing sub-trajectory {} with {} points.", sub_traj_idx, joint_traj.points.size());
 
     for (const auto& point : joint_traj.points)
     {

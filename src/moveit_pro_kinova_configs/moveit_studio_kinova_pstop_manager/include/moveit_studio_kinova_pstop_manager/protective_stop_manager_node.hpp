@@ -10,12 +10,12 @@
 #pragma once
 
 #include <controller_manager_msgs/srv/switch_controller.hpp>
-#include <rclcpp/rclcpp.hpp>
-#include <std_srvs/srv/trigger.hpp>
-#include <moveit_studio_agent_msgs/msg/fault_status.hpp>
-#include <std_msgs/msg/bool.hpp>
 #include <example_interfaces/msg/bool.hpp>
 #include <example_interfaces/srv/trigger.hpp>
+#include <moveit_studio_agent_msgs/msg/fault_status.hpp>
+#include <rclcpp/rclcpp.hpp>
+#include <std_msgs/msg/bool.hpp>
+#include <std_srvs/srv/trigger.hpp>
 
 namespace moveit_studio::kinova_pstop_manager
 {
