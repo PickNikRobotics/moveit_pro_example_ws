@@ -55,7 +55,8 @@ tl::expected<Fibonacci::Goal, std::string> ExampleFibonacciActionClient::createG
   return example_interfaces::build<Fibonacci::Goal>().order(order.value());
 }
 
-tl::expected<bool, std::string> ExampleFibonacciActionClient::processResult(const std::shared_ptr<Fibonacci::Result> result)
+tl::expected<bool, std::string>
+ExampleFibonacciActionClient::processResult(const std::shared_ptr<Fibonacci::Result> result)
 {
   std::stringstream stream;
   for (const auto& value : result->sequence)
