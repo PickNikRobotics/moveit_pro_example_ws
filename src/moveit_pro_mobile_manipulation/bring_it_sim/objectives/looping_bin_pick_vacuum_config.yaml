@@ -5,7 +5,7 @@ SetupMTCApproachGrasp:
   end_effector_name: "moveit_ee"
   hand_frame_name: "grasp_link"
 
-  approach_distance: 0.1
+  approach_distance: 0.05
 
   enforce_visibility_constraint: false
   camera_optical_frame_id: wrist_camera_optical_frame
@@ -30,8 +30,8 @@ SetupMTCGenerateVacuumGrasps:
     padding_dimension: 0.01
 
     # Number of samples to generate
-    samples_per_plane: 5
-    num_orientation_samples: 5
+    samples_per_plane: 2
+    num_orientation_samples: 20
 
   # Grasp data configs
   grasp_data:
