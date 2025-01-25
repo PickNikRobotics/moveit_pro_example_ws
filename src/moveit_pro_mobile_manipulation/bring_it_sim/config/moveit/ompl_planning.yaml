@@ -10,6 +10,9 @@ response_adapters:
   - default_planning_response_adapters/AddTimeOptimalParameterization
   - default_planning_response_adapters/ValidateSolution
 
+# need to fix start state for planner or floating joint robots
+fix_start_state: true
+
 planner_configs:
   APSConfigDefault:
     type: geometric::AnytimePathShortening

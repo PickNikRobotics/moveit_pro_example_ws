@@ -11,9 +11,6 @@
     <!--SUBGROUPS: Groups can also be formed by referencing to already defined group names-->
     <group name="manipulator">
         <chain base_link="ridgeback_base_link" tip_link="grasp_link"/>
-<!--        <link name="chassis_link"/>-->
-<!--        <link name="riser_link"/>-->
-<!--        <link name="top_link"/>-->
         <joint name="linear_x_joint"/>
         <joint name="linear_y_joint"/>
         <joint name="rotational_yaw_joint"/>

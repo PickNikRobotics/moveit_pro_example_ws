@@ -87,7 +87,8 @@
           clipseg_model_path="models/clipseg.onnx"
           clip_model_path="models/clip.onnx"
           model_package="lab_sim"
-          prompt="{prompt}"
+          prompts="{prompts}"
+          negative_prompts="{negative_prompts}"
         />
         <Action
           ID="GetMasks3DFromMasks2D"
@@ -189,7 +190,8 @@
   <TreeNodesModel>
     <SubTree ID="Bring It start from waypoint">
       <input_port name="place_pose" default="{place_pose}" />
-      <input_port name="prompt" default="{prompt}" />
+      <input_port name="prompts" default="{prompts}" />
+      <input_port name="negative_prompts" default="{negative_prompts}" />
       <input_port name="threshold" default="{threshold}" />
       <input_port name="waypoint_name" default="View Boxes" />
       <MetadataFields>

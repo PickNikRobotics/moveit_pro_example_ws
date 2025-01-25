@@ -47,6 +47,9 @@ moveit_params:
   sensors_3d:
     package: "bring_it_sim"
     path: "config/moveit/sensors_3d.yaml"
+  ompl_planning:
+    package: "bring_it_sim"
+    path: "config/moveit/ompl_planning.yaml"
 
 
 # Configuration for loading behaviors and objectives.
