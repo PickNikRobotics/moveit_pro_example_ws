@@ -1,3 +1,39 @@
 [submodule "src/picknik_accessories"]
 	path = src/picknik_accessories
 	url = https://github.com/PickNikRobotics/picknik_accessories.git
+[submodule "src/external_dependencies/serial"]
+	path = src/external_dependencies/serial
+	url = https://github.com/tylerjw/serial.git
+	branch = ros2
+[submodule "src/external_dependencies/ros2_robotiq_gripper"]
+	path = src/external_dependencies/ros2_robotiq_gripper
+	url = https://github.com/PickNikRobotics/ros2_robotiq_gripper
+	branch = humble
+[submodule "src/external_dependencies/ridgeback"]
+	path = src/external_dependencies/ridgeback
+	url = https://github.com/sjahr/ridgeback
+	branch = ros2
+[submodule "src/fanuc_sim"]
+	path = src/fanuc_sim
+	url = https://github.com/PickNikRobotics/fanuc_sim
+	branch = main
+[submodule "src/moveit_pro_mobile_manipulation"]
+	path = src/moveit_pro_mobile_manipulation
+	url = https://github.com/PickNikRobotics/moveit_pro_mobile_manipulation
+	branch = main
+[submodule "src/moveit_pro_kinova_configs"]
+	path = src/moveit_pro_kinova_configs
+	url = https://github.com/PickNikRobotics/moveit_pro_kinova_configs
+	branch = main
+[submodule "src/moveit_pro_ur_configs"]
+	path = src/moveit_pro_ur_configs
+	url = https://github.com/PickNikRobotics/moveit_pro_ur_configs
+	branch = main
+[submodule "src/lab_sim"]
+	path = src/lab_sim
+	url = https://github.com/PickNikRobotics/lab_sim
+	branch = main
+[submodule "src/example_behaviors"]
+	path = src/example_behaviors
+	url = https://github.com/PickNikRobotics/example_behaviors
+	branch = main
