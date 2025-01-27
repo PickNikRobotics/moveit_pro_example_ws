@@ -74,7 +74,7 @@
           <plugin>picknik_mujoco_ros/MujocoSystem</plugin>
           <param name="mujoco_model">${mujoco_model}</param>
           <param name="mujoco_model_package">bring_it_sim</param>
-          <param name="render_publish_rate">10</param>
+          <param name="render_publish_rate">20</param>
           <param name="tf_publish_rate">60</param>
           <param name="lidar_publish_rate">10</param>
 <!--          <param name="ignore_joint_validation">linear_x_joint linear_y_joint rotational_yaw_joint</param>-->

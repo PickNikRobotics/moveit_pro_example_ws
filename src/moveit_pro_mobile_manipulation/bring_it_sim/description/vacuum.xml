@@ -36,8 +36,8 @@
         type="mesh"
         name="collision_vacuum_suction_cups geom"
         mesh="collision_vacuum_suction_cups"
-        margin="0.04"
-        gap="0.04"
+        margin="0.02"
+        gap="0.02"
       />
       <site name="suction_cup" type="box" size="0.1 0.1 0.1" />
     </body>
