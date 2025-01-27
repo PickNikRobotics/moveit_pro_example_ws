@@ -24,9 +24,9 @@ hardware:
   # Specify any additional launch files for running the robot in simulation mode.
   # Used when hardware.simulated is True.
   # [Optional, defaults to a blank launch file if not specified]
-  #simulated_robot_driver_persist_launch_file:
-  #  package: "bring_it_sim"
-  #  path: "launch/sim/robot_drivers_to_persist_sim.launch.py"
+  simulated_robot_driver_persist_launch_file:
+    package: "bring_it_sim"
+    path: "launch/sim/robot_drivers_to_persist_sim.launch.py"
 
 moveit_params:
   servo:

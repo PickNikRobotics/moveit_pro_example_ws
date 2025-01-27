@@ -33,12 +33,14 @@
         waypoint_name="{waypoint_name}"
       />
       <SubTree ID="Clear Snapshot" _collapsed="false" />
-      <Action
-        ID="GetPointCloud"
-        topic_name="/wrist_camera/points"
-        timeout_sec="5.000000"
-        message_out="{point_cloud}"
-      />
+      <Decorator ID="Delay" delay_msec="2000">
+        <Action
+          ID="GetPointCloud"
+          topic_name="/wrist_camera/points"
+          timeout_sec="5.000000"
+          message_out="{point_cloud}"
+        />
+      </Decorator>
       <Action
         ID="SendPointCloudToUI"
         pcd_topic="/pcd_pointcloud_captures"
@@ -54,13 +56,13 @@
         ID="CreateStampedPose"
         reference_frame="world"
         stamped_pose="{stamped_pose}"
-        position_xyz="0;0;2.05"
+        position_xyz="0;0;2.01"
       />
       <Action
         ID="CropPointsInBox"
         crop_box_centroid_pose="{stamped_pose}"
         point_cloud="{point_cloud}"
-        point_cloud_cropped="{point_cloud}"
+        point_cloud_cropped="{point_cloud_cropped}"
         crop_box_size="30;30;4"
       />
       <Action
@@ -115,7 +117,7 @@
                   ID="GetMasks3DFromMasks2D"
                   camera_info="{camera_info}"
                   masks2d="{masks2d}"
-                  point_cloud="{point_cloud}"
+                  point_cloud="{point_cloud_cropped}"
                   masks3d="{masks3d}"
                 />
                 <Action ID="ClearSnapshot" />
@@ -129,7 +131,7 @@
                     <Action
                       ID="GetPointCloudFromMask3D"
                       mask3d="{mask3d}"
-                      point_cloud="{point_cloud}"
+                      point_cloud="{point_cloud_cropped}"
                       point_cloud_fragment="{point_cloud_fragment}"
                     />
                     <Action
@@ -141,7 +143,7 @@
                 </Decorator>
                 <Action
                   ID="UpdatePlanningSceneService"
-                  point_cloud="{point_cloud}"
+                  point_cloud="{point_cloud_cropped}"
                   point_cloud_service="/point_cloud_service"
                 />
                 <Action
@@ -150,7 +152,7 @@
                   masks3d="{masks3d}"
                   minimum_face_area="0.0003"
                   plane_inlier_threshold="0.01"
-                  point_cloud="{point_cloud}"
+                  point_cloud="{point_cloud_cropped}"
                   graspable_objects="{graspable_objects}"
                   face_separation_threshold="0.2"
                 />
@@ -218,6 +220,68 @@
                       gripper_command_action_name="/vacuum_gripper/gripper_cmd"
                       position="1.0"
                     />
+                    <Decorator ID="Delay" delay_msec="1000">
+                      <Control ID="Sequence" name="TopLevelSequence">
+                        <Action
+                          ID="LoadPointCloudFromFile"
+                          color="0;255;0"
+                          file_path="box.stl"
+                          point_cloud="{box_mesh}"
+                          frame_id="grasp_link"
+                          num_sampled_points="100000"
+                          scale="1.000000"
+                        />
+                        <Action
+                          ID="CreateStampedPose"
+                          reference_frame="grasp_link"
+                          stamped_pose="{intial_mesh_pose}"
+                          position_xyz="0;0;0.125"
+                        />
+                        <Action
+                          ID="TransformPointCloud"
+                          input_cloud="{box_mesh}"
+                          transform_pose="{intial_mesh_pose}"
+                          output_cloud="{box_mesh}"
+                        />
+                        <Action
+                          ID="TransformPointCloudFrame"
+                          input_cloud="{box_mesh}"
+                          output_cloud="{box_mesh}"
+                          target_frame="world"
+                        />
+                        <Action
+                          ID="TransformPointCloudFrame"
+                          input_cloud="{point_cloud_fragment}"
+                          target_frame="world"
+                          output_cloud="{point_cloud_fragment}"
+                        />
+                        <Action
+                          ID="RegisterPointClouds"
+                          max_iterations="50"
+                          target_point_cloud="{point_cloud_fragment}"
+                          target_pose_in_base_frame="{target_pose}"
+                          base_point_cloud="{box_mesh}"
+                          max_correspondence_distance="0.03"
+                        />
+                        <Action
+                          ID="TransformPointCloud"
+                          input_cloud="{box_mesh}"
+                          transform_pose="{target_pose}"
+                          output_cloud="{icp_cloud}"
+                        />
+                        <Action
+                          ID="TransformPointCloudFrame"
+                          input_cloud="{icp_cloud}"
+                          output_cloud="{icp_cloud}"
+                          target_frame="world"
+                        />
+                        <Action
+                          ID="SendPointCloudToUI"
+                          pcd_topic="/pcd_pointcloud_captures"
+                          point_cloud="{icp_cloud}"
+                        />
+                      </Control>
+                    </Decorator>
                     <SubTree
                       ID="Move to Pose"
                       _collapsed="true"

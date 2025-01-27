@@ -26,9 +26,9 @@
     <link name="collision_SM_Floor_376">
       <collision>
         <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
-        <geometry>
-          <mesh filename="package://bring_it_sim/description/assets/hangar_mesh/collision_SM_Floor_376.obj" scale="1.0 1.0 1.0"/>
-        </geometry>
+<!--        <geometry>-->
+<!--          <mesh filename="package://bring_it_sim/description/assets/hangar_mesh/collision_SM_Floor_376.obj" scale="1.0 1.0 1.0"/>-->
+<!--        </geometry>-->
       </collision>
     </link>
     <link name="collision_Cube">

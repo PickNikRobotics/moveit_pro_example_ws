@@ -301,8 +301,8 @@ def generate_launch_description():
     ld.add_action(bringup_cmd_group)
 
     ld.add_action(declare_rviz_config_file_cmd)
-    ld.add_action(declare_use_rviz_cmd)
-    ld.add_action(rviz_cmd)
+    # ld.add_action(declare_use_rviz_cmd)
+    # ld.add_action(rviz_cmd)
 
     ld.add_action(mock_dashboard_client)
 
