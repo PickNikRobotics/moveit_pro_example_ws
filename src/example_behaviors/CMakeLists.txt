@@ -15,7 +15,6 @@ example_interfaces)
 foreach(package IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${package} REQUIRED)
 endforeach()
-find_package(moveit_pro_ml REQUIRED)
 
 add_library(
   example_behaviors
