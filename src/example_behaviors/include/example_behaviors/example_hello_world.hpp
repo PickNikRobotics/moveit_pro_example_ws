@@ -26,7 +26,7 @@ public:
    * the initialize() function is called, so these classes should not be used within the constructor.
    */
   ExampleHelloWorld(const std::string& name, const BT::NodeConfiguration& config,
-             const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources);
+                    const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources);
 
   /**
    * @brief Implementation of the required providedPorts() function for the hello_world Behavior.
@@ -48,9 +48,9 @@ public:
   /**
    * @brief Implementation of BT::SyncActionNode::tick() for ExampleHelloWorld.
    * @details This function is where the Behavior performs its work when the behavior tree is being run.
-   * Since ExampleHelloWorld is derived from BT::SyncActionNode, it is very important that its tick() function always finishes
-   * very quickly. If tick() blocks before returning, it will block execution of the entire behavior tree, which may
-   * have undesirable consequences for other Behaviors that require a fast update rate to work correctly.
+   * Since ExampleHelloWorld is derived from BT::SyncActionNode, it is very important that its tick() function always
+   * finishes very quickly. If tick() blocks before returning, it will block execution of the entire behavior tree,
+   * which may have undesirable consequences for other Behaviors that require a fast update rate to work correctly.
    * @return BT::NodeStatus::RUNNING, BT::NodeStatus::SUCCESS, or BT::NodeStatus::FAILURE depending on the result of the
    * work done in this function.
    */

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <moveit_studio_behavior_interface/service_client_behavior_base.hpp>
 #include <example_interfaces/srv/add_two_ints.hpp>
+#include <moveit_studio_behavior_interface/service_client_behavior_base.hpp>
 
 using moveit_studio::behaviors::BehaviorContext;
 using moveit_studio::behaviors::ServiceClientBehaviorBase;
@@ -13,7 +13,7 @@ class ExampleAddTwoIntsServiceClient final : public ServiceClientBehaviorBase<Ad
 {
 public:
   ExampleAddTwoIntsServiceClient(const std::string& name, const BT::NodeConfiguration& config,
-                          const std::shared_ptr<BehaviorContext>& shared_resources);
+                                 const std::shared_ptr<BehaviorContext>& shared_resources);
 
   /** @brief Implementation of the required providedPorts() function for the hello_world Behavior. */
   static BT::PortsList providedPorts();
