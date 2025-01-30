@@ -6,9 +6,9 @@
 
 #pragma once
 
-#include <rclcpp/rclcpp.hpp>
-#include <example_interfaces/srv/trigger.hpp>
 #include <example_interfaces/msg/bool.hpp>
+#include <example_interfaces/srv/trigger.hpp>
+#include <rclcpp/rclcpp.hpp>
 
 namespace moveit_studio::kinova_pstop_manager
 {
