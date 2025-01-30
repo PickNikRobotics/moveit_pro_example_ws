@@ -1,18 +1,18 @@
 #pragma once
 
-#include <Eigen/Core>
 #include <behaviortree_cpp/action_node.h>
 #include <behaviortree_cpp/bt_factory.h>
 #include <moveit/robot_model_loader/robot_model_loader.h>
+#include <spdlog/spdlog.h>
+#include <yaml-cpp/yaml.h>
+#include <Eigen/Core>
 #include <moveit_msgs/msg/robot_trajectory.hpp>
 #include <moveit_studio_behavior/utils/trajectory_utils.hpp>
 #include <moveit_studio_behavior_interface/behavior_context.hpp>
 #include <moveit_studio_behavior_interface/check_for_error.hpp>
 #include <moveit_studio_behavior_interface/shared_resources_node.hpp>
 #include <moveit_task_constructor_msgs/msg/solution.hpp>
-#include <spdlog/spdlog.h>
 #include <trajectory_msgs/msg/joint_trajectory.hpp>
-#include <yaml-cpp/yaml.h>
 
 namespace example_behaviors
 {
@@ -29,11 +29,13 @@ namespace example_behaviors
  * | sampling_rate     | Input         | int                                                     |
  * | joint_trajectory  | Output        | trajectory_msgs::msg::JointTrajectory                   |
  */
-class ExampleConvertMtcSolutionToJointTrajectory final : public moveit_studio::behaviors::SharedResourcesNode<BT::SyncActionNode>
+class ExampleConvertMtcSolutionToJointTrajectory final
+  : public moveit_studio::behaviors::SharedResourcesNode<BT::SyncActionNode>
 {
 public:
-  ExampleConvertMtcSolutionToJointTrajectory(const std::string& name, const BT::NodeConfiguration& config,
-                                      const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources);
+  ExampleConvertMtcSolutionToJointTrajectory(
+      const std::string& name, const BT::NodeConfiguration& config,
+      const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources);
 
   static BT::PortsList providedPorts();
 
