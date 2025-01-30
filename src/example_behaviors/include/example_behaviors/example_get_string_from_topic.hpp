@@ -12,7 +12,7 @@ class ExampleGetStringFromTopic final : public GetMessageFromTopicBehaviorBase<s
 {
 public:
   ExampleGetStringFromTopic(const std::string& name, const BT::NodeConfiguration& config,
-                     const std::shared_ptr<BehaviorContext>& shared_resources);
+                            const std::shared_ptr<BehaviorContext>& shared_resources);
 
   /** @brief Implementation of the required providedPorts() function for the hello_world Behavior. */
   static BT::PortsList providedPorts();

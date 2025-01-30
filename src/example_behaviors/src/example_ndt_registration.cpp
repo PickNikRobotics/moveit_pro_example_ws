@@ -1,26 +1,25 @@
-#include <example_behaviors/example_ndt_registration.hpp>
+#include <pcl/features/fpfh.h>
+#include <pcl/features/normal_3d.h>
+#include <pcl/filters/approximate_voxel_grid.h>
+#include <pcl/keypoints/uniform_sampling.h>
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
 #include <pcl/registration/ndt.h>
-#include <tl_expected/expected.hpp>
+#include <pcl/registration/sample_consensus_prerejective.h>
+#include <pcl/search/kdtree.h>
+#include <pcl_conversions/pcl_conversions.h>
+#include <example_behaviors/example_ndt_registration.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
 #include <moveit_studio_behavior_interface/async_behavior_base.hpp>
 #include <moveit_studio_behavior_interface/check_for_error.hpp>
-#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <moveit_studio_vision/common/get_all_indices.hpp>
+#include <moveit_studio_vision/common/select_point_indices.hpp>
+#include <moveit_studio_vision/pointcloud/point_cloud_tools.hpp>
+#include <moveit_studio_vision_msgs/msg/mask3_d.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <std_msgs/msg/header.hpp>
 #include <tf2_eigen/tf2_eigen.hpp>
 #include <tl_expected/expected.hpp>
-#include <moveit_studio_vision_msgs/msg/mask3_d.hpp>
-#include <pcl_conversions/pcl_conversions.h>
-#include <moveit_studio_vision/common/get_all_indices.hpp>
-#include <moveit_studio_vision/common/select_point_indices.hpp>
-#include <moveit_studio_vision/pointcloud/point_cloud_tools.hpp>
-#include <pcl/filters/approximate_voxel_grid.h>
-#include <pcl/point_types.h>
-#include <pcl/point_cloud.h>
-#include <pcl/features/normal_3d.h>
-#include <pcl/features/fpfh.h>
-#include <pcl/keypoints/uniform_sampling.h>
-#include <pcl/registration/sample_consensus_prerejective.h>
-#include <pcl/search/kdtree.h>
 
 namespace example_behaviors
 {
@@ -33,8 +32,9 @@ getFilteredPointCloudFromMessage(const sensor_msgs::msg::PointCloud2& cloud_msg)
   const auto cloud = std::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>();
   pcl::fromROSMsg(cloud_msg, *cloud);
 
-  const pcl::PointIndices valid_indices = moveit_studio::selectPointIndices(*cloud, moveit_studio::point_cloud_tools::getAllIndices(cloud),
-                                                             moveit_studio::NeitherNanNorNearZeroPointValidator<pcl::PointXYZRGB>);
+  const pcl::PointIndices valid_indices =
+      moveit_studio::selectPointIndices(*cloud, moveit_studio::point_cloud_tools::getAllIndices(cloud),
+                                        moveit_studio::NeitherNanNorNearZeroPointValidator<pcl::PointXYZRGB>);
   auto filtered_cloud = std::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>();
   pcl::copyPointCloud(*cloud, valid_indices, *filtered_cloud);
 
@@ -50,7 +50,6 @@ ExampleNDTRegistration::ExampleNDTRegistration(
 {
 }
 
-
 BT::PortsList ExampleNDTRegistration::providedPorts()
 {
   return { BT::InputPort<sensor_msgs::msg::PointCloud2>("base_point_cloud", "{point_cloud}",
@@ -63,10 +62,8 @@ BT::PortsList ExampleNDTRegistration::providedPorts()
                               "from the actual transform, but it may take longer to complete."),
            BT::InputPort<double>("transformation_epsilon", 0.001,
                                  "Minimum transformation difference for termination condition <double>"),
-           BT::InputPort<double>("step_size", 0.1,
-                                 "Maximum step size for More-Thuente line search <double>"),
-           BT::InputPort<double>("resolution", 1.0,
-                                 "Resolution of NDT grid structure (VoxelGridCovariance) <double>"),
+           BT::InputPort<double>("step_size", 0.1, "Maximum step size for More-Thuente line search <double>"),
+           BT::InputPort<double>("resolution", 1.0, "Resolution of NDT grid structure (VoxelGridCovariance) <double>"),
            BT::InputPort<double>("inlier_threshold", 1.0,
                                  "Resolution of NDT grid structure (VoxelGridCovariance) <double>"),
            BT::OutputPort<geometry_msgs::msg::PoseStamped>("target_pose_in_base_frame", "{target_pose}",
@@ -75,9 +72,10 @@ BT::PortsList ExampleNDTRegistration::providedPorts()
 }
 BT::KeyValueVector ExampleNDTRegistration::metadata()
 {
-return { {"subcategory", "Perception - 3D Point Cloud"}, {"description", "Finds the pose of a target point cloud relative to the base frame of a base point cloud using the Normal Distributions Transform (NDT) algorithm"} };
+  return { { "subcategory", "Perception - 3D Point Cloud" },
+           { "description", "Finds the pose of a target point cloud relative to the base frame of a base point cloud "
+                            "using the Normal Distributions Transform (NDT) algorithm" } };
 }
-
 
 tl::expected<bool, std::string> ExampleNDTRegistration::doWork()
 {
@@ -88,8 +86,8 @@ tl::expected<bool, std::string> ExampleNDTRegistration::doWork()
   const auto step_size = getInput<double>("step_size");
   const auto resolution = getInput<double>("resolution");
 
-  if (const auto error =
-          moveit_studio::behaviors::maybe_error(base_point_cloud_msg, target_point_cloud_msg, max_iterations, transformation_epsilon, step_size, resolution);
+  if (const auto error = moveit_studio::behaviors::maybe_error(
+          base_point_cloud_msg, target_point_cloud_msg, max_iterations, transformation_epsilon, step_size, resolution);
       error)
   {
     return tl::make_unexpected("Failed to get required value from input data port: " + error.value());
@@ -110,24 +108,23 @@ tl::expected<bool, std::string> ExampleNDTRegistration::doWork()
 
   // Setting scale dependent NDT parameters
   // Setting minimum transformation difference for termination condition.
-  ndt.setTransformationEpsilon (transformation_epsilon.value());
+  ndt.setTransformationEpsilon(transformation_epsilon.value());
   // Setting maximum step size for More-Thuente line search.
-  ndt.setStepSize (step_size.value());
-  //Setting Resolution of NDT grid structure (VoxelGridCovariance).
-  ndt.setResolution (resolution.value());
+  ndt.setStepSize(step_size.value());
+  // Setting Resolution of NDT grid structure (VoxelGridCovariance).
+  ndt.setResolution(resolution.value());
 
   // Setting max number of registration iterations.
-  ndt.setMaximumIterations (max_iterations.value());
+  ndt.setMaximumIterations(max_iterations.value());
 
   // Setting point cloud to be aligned.
-  ndt.setInputSource (base_cloud);
+  ndt.setInputSource(base_cloud);
   // Setting point cloud to be aligned to.
-  ndt.setInputTarget (target_cloud);
-
+  ndt.setInputTarget(target_cloud);
 
   // Calculating required rigid transform to align the input cloud to the target cloud.
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr output_cloud (new pcl::PointCloud<pcl::PointXYZRGB>);
-  ndt.align (*output_cloud);
+  pcl::PointCloud<pcl::PointXYZRGB>::Ptr output_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+  ndt.align(*output_cloud);
 
   if (!ndt.hasConverged())
   {
@@ -142,6 +139,5 @@ tl::expected<bool, std::string> ExampleNDTRegistration::doWork()
 
   return true;
 }
-
 
 }  // namespace example_behaviors

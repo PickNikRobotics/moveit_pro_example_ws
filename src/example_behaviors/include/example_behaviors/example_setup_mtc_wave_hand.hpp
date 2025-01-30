@@ -3,10 +3,10 @@
 #pragma once
 
 #include <behaviortree_cpp/action_node.h>
-#include <moveit_studio_behavior_interface/shared_resources_node.hpp>
+#include <moveit_studio_behavior_interface/async_behavior_base.hpp>
 #include <moveit_studio_behavior_interface/behavior_context.hpp>
 #include <moveit_studio_behavior_interface/check_for_error.hpp>
-#include <moveit_studio_behavior_interface/async_behavior_base.hpp>
+#include <moveit_studio_behavior_interface/shared_resources_node.hpp>
 
 namespace example_behaviors
 {
@@ -39,7 +39,7 @@ public:
    * behavior tree factory when this Behavior is created within a new behavior tree.
    */
   ExampleSetupMTCWaveHand(const std::string& name, const BT::NodeConfiguration& config,
-                   const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources);
+                          const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources);
 
   /**
    * @brief Implementation of the required providedPorts() function for the ExampleSetupMTCWaveHand Behavior.
