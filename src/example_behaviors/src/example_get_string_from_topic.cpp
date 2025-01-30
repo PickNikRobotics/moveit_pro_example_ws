@@ -6,7 +6,7 @@
 namespace example_behaviors
 {
 ExampleGetStringFromTopic::ExampleGetStringFromTopic(const std::string& name, const BT::NodeConfiguration& config,
-                                       const std::shared_ptr<BehaviorContext>& shared_resources)
+                                                     const std::shared_ptr<BehaviorContext>& shared_resources)
   : GetMessageFromTopicBehaviorBase<std_msgs::msg::String>(name, config, shared_resources)
 {
 }
