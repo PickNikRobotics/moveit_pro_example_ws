@@ -17,7 +17,7 @@
         name="Initial Guess"
       />
       <SubTree
-        ID="Load Mesh as Red Pointcloud"
+        ID="Load Mesh as Red Point Cloud"
         _collapsed="false"
         output_cloud="{red_cloud}"
         initial_pose="{stamped_pose}"
@@ -43,7 +43,7 @@
         max_iterations="100"
       />
       <SubTree
-        ID="Load Mesh as Green Pointcloud"
+        ID="Load Mesh as Green Point Cloud"
         _collapsed="false"
         output_cloud="{green_cloud}"
         initial_pose="{stamped_pose}"
@@ -61,7 +61,7 @@
   <TreeNodesModel>
     <SubTree ID="Register CAD Part">
       <MetadataFields>
-        <Metadata subcategory="Perception - Planning Scene" />
+        <Metadata subcategory="Application - Advanced Examples" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
