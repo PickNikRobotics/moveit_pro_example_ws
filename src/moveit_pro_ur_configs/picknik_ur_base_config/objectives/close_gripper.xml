@@ -15,7 +15,7 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Close Gripper" >
+    <SubTree ID="Close Gripper">
       <MetadataFields>
         <Metadata subcategory="Grasping" />
       </MetadataFields>
