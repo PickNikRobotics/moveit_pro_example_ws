@@ -81,6 +81,7 @@
     <SubTree ID="Segment Point Cloud from Clicked Point">
       <MetadataFields>
         <Metadata runnable="true" />
+        <Metadata subcategory="Application - Advanced Examples" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
