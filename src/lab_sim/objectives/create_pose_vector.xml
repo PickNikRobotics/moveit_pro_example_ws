@@ -111,7 +111,7 @@
     <SubTree ID="Create Pose Vector">
       <output_port name="target_poses" default="{target_poses}" />
       <MetadataFields>
-        <Metadata subcategory="Application - Basic Examples" />
+        <Metadata subcategory="Vector Handling" />
         <Metadata runnable="false" />
       </MetadataFields>
     </SubTree>
