@@ -7,11 +7,4 @@
   >
     <Action ID="ClearSnapshot" />
   </BehaviorTree>
-  <TreeNodesModel>
-    <SubTree ID="Clear Snapshot">
-      <MetadataFields>
-        <Metadata subcategory="Perception - 3D Point Cloud" />
-      </MetadataFields>
-    </SubTree>
-  </TreeNodesModel>
 </root>
