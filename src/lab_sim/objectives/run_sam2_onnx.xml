@@ -36,6 +36,10 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Segment Point Cloud from Clicked Point" />
+    <SubTree ID="Segment Point Cloud from Clicked Point">
+      <MetadataFields>
+        <Metadata subcategory="Application - Advanced Examples" />
+      </MetadataFields>
+    </SubTree>
   </TreeNodesModel>
 </root>
