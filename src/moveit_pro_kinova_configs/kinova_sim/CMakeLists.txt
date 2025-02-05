@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(kinova_gen3_mujoco_config)
+project(kinova_sim)
 
 find_package(ament_cmake REQUIRED)
 
