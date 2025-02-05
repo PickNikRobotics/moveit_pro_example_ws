@@ -37,7 +37,7 @@ The structure of this repository is as follows:
     │   └── picknik_ur_site_config
     ├── <a href="https://github.com/PickNikRobotics/moveit_pro_kinova_configs">moveit_pro_kinova_configs</a>
     │   ├── kinova_gen3_base_config
-    │   ├── kinova_gen3_mujoco_config
+    │   ├── kinova_sim
     │   └── moveit_studio_kinova_pstop_manager
     ├── <a href="https://github.com/PickNikRobotics/moveit_pro_mobile_manipulation">moveit_pro_mobile_manipulation</a>
     │   ├── mobile_manipulation_config
