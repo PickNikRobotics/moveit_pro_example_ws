@@ -686,7 +686,7 @@
       <hardware>
         <plugin>picknik_mujoco_ros/MujocoSystem</plugin>
         <param name="mujoco_model">$(arg mujoco_model)</param>
-        <param name="mujoco_model_package">kinova_gen3_mujoco_config</param>
+        <param name="mujoco_model_package">kinova_sim</param>
         <param name="render_publish_rate">10</param>
         <param name="tf_publish_rate">60</param>
       </hardware>
