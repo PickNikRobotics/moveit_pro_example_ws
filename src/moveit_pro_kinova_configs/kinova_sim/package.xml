@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <package format="3">
-  <name>kinova_gen3_mujoco_config</name>
+  <name>kinova_sim</name>
   <version>6.5.0</version>
 
   <description>
