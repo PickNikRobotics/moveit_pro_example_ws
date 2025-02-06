@@ -10,7 +10,7 @@
   <TreeNodesModel>
     <SubTree ID="Clear Snapshot">
       <MetadataFields>
-        <Metadata subcategory="Perception - Planning Scene" />
+        <Metadata subcategory="Perception - 3D Point Cloud" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>

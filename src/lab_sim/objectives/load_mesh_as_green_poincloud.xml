@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<root BTCPP_format="4" main_tree_to_execute="Load Mesh as Green Pointcloud">
+<root BTCPP_format="4" main_tree_to_execute="Load Mesh as Green Point Cloud">
   <!--//////////-->
   <BehaviorTree
-    ID="Load Mesh as Green Pointcloud"
+    ID="Load Mesh as Green Point Cloud"
     _description=""
     _favorite="false"
     _subtreeOnly="true"
@@ -27,7 +27,7 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Load Mesh as Green Pointcloud">
+    <SubTree ID="Load Mesh as Green Point Cloud">
       <output_port name="point_cloud" default="{green_cloud}" />
       <input_port name="_collapsed" default="true" />
       <input_port name="initial_pose" default="{stamped_pose}" />

@@ -41,7 +41,7 @@
   <TreeNodesModel>
     <SubTree ID="Pick first object in vector">
       <MetadataFields>
-        <Metadata subcategory="Application - Basic Examples" />
+        <Metadata subcategory="Motion - Planning" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
