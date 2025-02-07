@@ -115,6 +115,7 @@
       <inout_port name="pre_place" default="" />
       <MetadataFields>
         <Metadata runnable="false" />
+        <Metadata subcategory="Application - Advanced Examples" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
