@@ -18,6 +18,9 @@
         acceleration_scale_factor="1.0"
         link_padding="0.01"
         keep_orientation="false"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        keep_orientation_tolerance="0.05"
+        keep_orientation_link_names="grasp_link"
       />
       <SubTree ID="Open Gripper" />
       <SubTree

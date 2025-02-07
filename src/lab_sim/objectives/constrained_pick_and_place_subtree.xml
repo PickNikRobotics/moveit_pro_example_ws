@@ -23,6 +23,7 @@
         controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
         link_padding="0.01"
         velocity_scale_factor="1.0"
+        keep_orientation_link_names="grasp_link"
       />
       <SubTree
         ID="Move to Waypoint"
@@ -36,6 +37,7 @@
         controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
         link_padding="0.01"
         velocity_scale_factor="1.0"
+        keep_orientation_link_names="grasp_link"
       />
       <!--We force success as the gripper closes, since we are commanding a position it will never reach (fingers fully closed)-->
       <Decorator ID="ForceSuccess">
@@ -55,6 +57,7 @@
         controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
         link_padding="0.01"
         velocity_scale_factor="1.0"
+        keep_orientation_link_names="grasp_link"
       />
       <SubTree
         ID="Move to Waypoint"
@@ -69,6 +72,7 @@
         controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
         link_padding="0.01"
         velocity_scale_factor="1.0"
+        keep_orientation_link_names="grasp_link"
       />
       <SubTree
         ID="Move to Waypoint"
@@ -83,6 +87,7 @@
         controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
         link_padding="0.01"
         velocity_scale_factor="1.0"
+        keep_orientation_link_names="grasp_link"
       />
       <SubTree ID="Open Gripper" />
       <SubTree
@@ -98,6 +103,7 @@
         controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
         link_padding="0.01"
         velocity_scale_factor="1.0"
+        keep_orientation_link_names="grasp_link"
       />
     </Control>
   </BehaviorTree>
@@ -109,11 +115,6 @@
       <inout_port name="pre_place" default="" />
       <MetadataFields>
         <Metadata runnable="false" />
-      </MetadataFields>
-      <MetadataFields>
-        <Metadata runnable="false" />
-      </MetadataFields>
-      <MetadataFields>
         <Metadata subcategory="Application - Advanced Examples" />
       </MetadataFields>
     </SubTree>
