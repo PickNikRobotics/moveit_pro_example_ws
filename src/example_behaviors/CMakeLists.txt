@@ -40,7 +40,6 @@ target_include_directories(
   PRIVATE ${PCL_INCLUDE_DIRS})
 ament_target_dependencies(example_behaviors
                           ${THIS_PACKAGE_INCLUDE_DEPENDS})
-target_link_libraries(example_behaviors onnx_sam2)
 
 # Install Libraries
 install(
