@@ -42,7 +42,7 @@
       <input_port name="joint_group_name" default="manipulator" />
       <inout_port name="mtc_task" default="{mtc_task}" />
       <MetadataFields>
-        <Metadata subcategory="Application - Basic Examples" />
+        <Metadata subcategory="Motion - Task Planning" />
         <Metadata runnable="false" />
       </MetadataFields>
     </SubTree>
