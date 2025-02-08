@@ -18,29 +18,9 @@
   <asset>
     <texture
       type="skybox"
-      builtin="gradient"
-      rgb1="0.3 0.5 0.7"
-      rgb2="0 0 0"
-      width="512"
-      height="3072"
-    />
-    <texture
-      type="2d"
-      name="groundplane"
-      builtin="checker"
-      mark="edge"
-      rgb1="0.2 0.3 0.4"
-      rgb2="0.1 0.2 0.3"
-      markrgb="0.8 0.8 0.8"
-      width="300"
-      height="300"
-    />
-    <material
-      name="groundplane"
-      texture="groundplane"
-      texuniform="true"
-      texrepeat="5 5"
-      reflectance="0.2"
+      file="assets/space.png"
+      gridsize="3 4"
+      gridlayout=".U..LFRB.D.."
     />
     <texture
       type="2d"
@@ -58,28 +38,6 @@
       height="32"
     />
     <material name="satellite" texture="satellite" />
-  </asset>
-
-  <worldbody>
-    <light pos="0 0 1.5" dir="0 0 -1" directional="true" />
-    <geom name="floor" size="0 0 0.05" type="plane" material="groundplane" />
-    <camera
-      name="scene_camera"
-      pos="-0.3 0.3 1.0"
-      fovy="58"
-      mode="fixed"
-      resolution="640 480"
-      euler="0 -1.0472 -1.5708"
-    />
-    <site
-      name="scene_camera_optical_frame"
-      pos="-0.3 0.3 1.0"
-      euler="3.1416 -1.0472 -1.5708"
-      size="0.03"
-    />
-  </worldbody>
-
-  <asset>
     <mesh name="april_tag" file="april_tag.obj" />
     <mesh name="satellite" file="satellite.obj" />
     <mesh name="satellite_box" file="satellite_box.obj" />
@@ -123,6 +81,21 @@
   </asset>
 
   <worldbody>
+    <light pos="1 1 1.5" dir="0 0 -1" directional="true"/>
+    <camera
+      name="scene_camera"
+      pos="-0.3 0.3 1.0"
+      fovy="58"
+      mode="fixed"
+      resolution="640 480"
+      euler="0 -1.0472 -1.5708"
+    />
+    <site
+      name="scene_camera_optical_frame"
+      pos="-0.3 0.3 1.0"
+      euler="3.1416 -1.0472 -1.5708"
+      size="0.03"
+    />
     <body name="satellite">
       <freejoint />
       <inertial
