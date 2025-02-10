@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(fanuc_sim)
+project(factory_sim)
 
 find_package(ament_cmake REQUIRED)
 find_package(picknik_accessories REQUIRED)

@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <robot xmlns:xacro="http://wiki.ros.org/xacro">
   <xacro:include
-    filename="$(find fanuc_sim)/description/fanuc_materials.xacro"
+    filename="$(find factory_sim)/description/fanuc_materials.xacro"
   />
 
   <xacro:macro name="fanuc_lrmate200id" params="prefix">

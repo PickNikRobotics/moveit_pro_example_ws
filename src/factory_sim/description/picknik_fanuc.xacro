@@ -2,15 +2,16 @@
 <robot name="fanuc_lrmate200id" xmlns:xacro="http://wiki.ros.org/xacro">
   <xacro:arg
     name="initial_positions_file"
-    default="$(find fanuc_sim)/config/initial_positions.yaml"
+    default="$(find factory_sim)/config/initial_positions.yaml"
   />
   <xacro:arg name="hardware_interface" default="mock" />
   <xacro:arg name="mujoco_model" default="description/scene.xml" />
+  <!-- <param name="mujoco_viewer">true</param> -->
   <xacro:include
-    filename="$(find fanuc_sim)/description/lrmate200id_macro.xacro"
+    filename="$(find factory_sim)/description/lrmate200id_macro.xacro"
   />
   <xacro:include
-    filename="$(find fanuc_sim)/description/fanuc_lrmate200id.ros2_control.xacro"
+    filename="$(find factory_sim)/description/fanuc_lrmate200id.ros2_control.xacro"
   />
 
   <link name="world"/>
@@ -37,7 +38,7 @@
   <joint name="scene_joint" type="fixed">
     <parent link="world" />
     <child link="arm_pedestal" />
-    <origin rpy="0 0 0" xyz="0 0.3 0.15" />
+    <origin rpy="0 0 0" xyz="0 0 0.15" />
   </joint>
   <joint name="base_joint" type="fixed">
     <parent link="arm_pedestal" />
@@ -45,7 +46,7 @@
     <origin rpy="0 0 0" xyz="0 0 0.15" />
   </joint>
 
-  <link name="table">
+  <!-- <link name="table">
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0" />
       <geometry>
@@ -66,6 +67,36 @@
     <parent link="world" />
     <child link="table" />
     <origin rpy="0 0 0" xyz="0 1 0.45" />
+  </joint> -->
+
+  <link name="convex_bowl">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+            <!-- <mesh filename="package://picknik_accessories/mujoco_assets/assets/bowl.stl"/> -->
+            <mesh filename="package://picknik_accessories/mujoco_assets/assets/bowl_concave_hemisphere.stl"/>
+      </geometry>
+    </visual>
+  </link>
+  <joint name="convex_bowl_joint" type="fixed">
+    <parent link="world" />
+    <child link="convex_bowl" />
+    <origin rpy="0 1.5707 0" xyz="0.65 0.2 0.9" />
+  </joint>
+
+  <link name="concave_bowl">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+            <!-- <mesh filename="package://picknik_accessories/mujoco_assets/assets/bowl.stl"/> -->
+            <mesh filename="package://picknik_accessories/mujoco_assets/assets/bowl_convex_hemisphere.stl"/>
+      </geometry>
+    </visual>
+  </link>
+  <joint name="concave_bowl_joint" type="fixed">
+    <parent link="world" />
+    <child link="concave_bowl" />
+    <origin rpy="0 -1.5707 0" xyz="0.75 -0.2 0.9" />
   </joint>
 
   <xacro:fanuc_lrmate200id prefix="" />

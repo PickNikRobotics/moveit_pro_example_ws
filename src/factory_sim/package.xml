@@ -1,9 +1,11 @@
 <?xml version="1.0" ?>
 <package format="3">
-  <name>fanuc_sim</name>
-  <version>6.5.0</version>
+  <name>factory_sim</name>
+  <version>7.2.0</version>
 
-  <description>Base configuration package for Picknik's Fanuc arms</description>
+  <description>
+    A MoveIt Pro configuration for a Fanuc LR Mate 200iD.
+  </description>
 
   <maintainer email="support@picknik.ai">MoveIt Pro Maintainer</maintainer>
 

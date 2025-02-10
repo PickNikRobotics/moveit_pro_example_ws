@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Teleoperate">
   <!--//////////-->
   <BehaviorTree
@@ -13,4 +14,11 @@
       initial_teleop_mode="3"
     />
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Teleoperate">
+      <MetadataFields>
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>
