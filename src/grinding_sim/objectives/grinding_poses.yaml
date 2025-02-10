@@ -1,0 +1,64 @@
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.059
+    y: 0.152
+    z: 0.203
+  orientation:
+    x: 0.678
+    y: -0.678
+    z: -0.201
+    w: 0.201
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.057
+    y: -0.131
+    z: 0.203
+  orientation:
+    x: 0.678
+    y: -0.678
+    z: -0.201
+    w: 0.202
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.126
+    y: -0.131
+    z: 0.158
+  orientation:
+    x: 0.678
+    y: -0.678
+    z: -0.201
+    w: 0.202
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.126
+    y: 0.152
+    z: 0.158
+  orientation:
+    x: 0.678
+    y: -0.678
+    z: -0.202
+    w: 0.202
