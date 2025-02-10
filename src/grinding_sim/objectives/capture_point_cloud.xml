@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Capture Point Cloud">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Capture Point Cloud"
+    _description=""
+    _favorite="false"
+    _subtreeOnly="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="GetPointCloud"
+        timeout_sec="5.000000"
+        topic_name="/scene_camera/points"
+        message_out="{point_cloud}"
+      />
+      <Action
+        ID="CreateStampedPose"
+        reference_frame="world"
+        stamped_pose="{stamped_pose}"
+        position_xyz="0;-1.69;1.0"
+      />
+      <Action
+        ID="CropPointsInBox"
+        crop_box_centroid_pose="{stamped_pose}"
+        point_cloud="{point_cloud}"
+        point_cloud_cropped="{point_cloud_cropped}"
+        crop_box_size="1.0;0.5;0.55"
+      />
+      <Action
+        ID="SendPointCloudToUI"
+        point_cloud="{point_cloud_cropped}"
+        pcd_topic="/pcd_pointcloud_captures"
+      />
+      <Action
+        ID="SavePointCloudToFile"
+        file_path="~/.config/moveit_pro/saved_behavior_data"
+        file_prefix="engine_block"
+        point_cloud="{point_cloud_cropped}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Capture Point Cloud">
+      <MetadataFields>
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
