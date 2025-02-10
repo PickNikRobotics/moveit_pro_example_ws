@@ -4,3 +4,6 @@
 [submodule "src/external_dependencies/Universal_Robots_ROS2_Description"]
 	path = src/external_dependencies/ur_description
 	url = https://github.com/PickNikRobotics/Universal_Robots_ROS2_Description.git
+[submodule "src/external_dependencies/clearpath_mecanum_drive_controller"]
+	path = src/external_dependencies/clearpath_mecanum_drive_controller
+	url = https://github.com/PickNikRobotics/clearpath_mecanum_drive_controller.git
