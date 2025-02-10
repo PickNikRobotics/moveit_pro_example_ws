@@ -1,0 +1,32 @@
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.067
+    y: 0.224
+    z: 0.178
+  orientation:
+    x: -0.678
+    y: 0.679
+    z: 0.199
+    w: -0.199
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.040
+    y: -0.286
+    z: 0.226
+  orientation:
+    x: -0.667
+    y: 0.674
+    z: 0.215
+    w: -0.233
