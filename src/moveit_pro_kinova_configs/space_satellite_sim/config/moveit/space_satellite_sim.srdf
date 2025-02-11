@@ -38,7 +38,6 @@
     <disable_collisions link1="base_link" link2="half_arm_2_link" reason="Never"/>
     <disable_collisions link1="base_link" link2="scene_camera_link" reason="Adjacent"/>
     <disable_collisions link1="base_link" link2="shoulder_link" reason="Adjacent"/>
-    <disable_collisions link1="base_link" link2="table" reason="Adjacent"/>
     <disable_collisions link1="bracelet_link" link2="forearm_link" reason="Never"/>
     <disable_collisions link1="bracelet_link" link2="half_arm_2_link" reason="Never"/>
     <disable_collisions link1="bracelet_link" link2="robotiq_85_base_link" reason="Adjacent"/>
@@ -71,7 +70,6 @@
     <disable_collisions link1="half_arm_1_link" link2="scene_camera_link" reason="Never"/>
     <disable_collisions link1="half_arm_1_link" link2="shoulder_link" reason="Adjacent"/>
     <disable_collisions link1="half_arm_1_link" link2="spherical_wrist_1_link" reason="Never"/>
-    <disable_collisions link1="half_arm_1_link" link2="table" reason="Never"/>
     <disable_collisions link1="half_arm_2_link" link2="robotiq_85_base_link" reason="Never"/>
     <disable_collisions link1="half_arm_2_link" link2="robotiq_85_left_finger_tip_link" reason="Never"/>
     <disable_collisions link1="half_arm_2_link" link2="robotiq_85_left_inner_knuckle_link" reason="Never"/>
@@ -143,8 +141,13 @@
     <disable_collisions link1="robotiq_85_right_knuckle_link" link2="spherical_wrist_2_link" reason="Never"/>
     <disable_collisions link1="scene_camera_link" link2="shoulder_link" reason="Never"/>
     <disable_collisions link1="scene_camera_link" link2="spherical_wrist_1_link" reason="Never"/>
-    <disable_collisions link1="scene_camera_link" link2="table" reason="Adjacent"/>
     <disable_collisions link1="shoulder_link" link2="spherical_wrist_1_link" reason="Never"/>
-    <disable_collisions link1="shoulder_link" link2="table" reason="Never"/>
     <disable_collisions link1="spherical_wrist_1_link" link2="spherical_wrist_2_link" reason="Adjacent"/>
+    <disable_collisions link1="base_link" link2="interface" reason="Adjacent"/>
+    <disable_collisions link1="epastar" link2="interface" reason="Adjacent"/>
+    <disable_collisions link1="epastar" link2="pole" reason="Adjacent"/>
+    <disable_collisions link1="epastar" link2="rpo_suite" reason="Adjacent"/>
+    <disable_collisions link1="epastar" link2="rpo_suite" reason="Adjacent"/>
+    <disable_collisions link1="interface" link2="rpo_suite" reason="Adjacent"/>
+    <disable_collisions link1="pole" link2="solar_panels" reason="Adjacent"/>
 </robot>
