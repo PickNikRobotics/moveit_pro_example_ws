@@ -16,6 +16,6 @@
 
         # optional list of tags
         tag:
-            ids: [5]            # tag ID
-            frames: [satellite_tag]  # optional frame name
-            sizes: [0.051]   # optional tag-specific edge size
+            ids: [0, 1, 2]            # tag ID
+            frames: [satellite_tag_0, satellite_tag_1, satellite_tag_2]  # optional frame name
+            sizes: [0.1, 0.1, 0.1]   # optional tag-specific edge size
