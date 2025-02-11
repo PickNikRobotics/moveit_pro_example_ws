@@ -316,7 +316,6 @@
                                 material="black"
                               />
                             </body>
-                            <!--                              TODO uncomment to enable RAFTI fingers -->
                             <body
                               name="right_rafti_finger_link"
                               pos="0 0 0.01"
@@ -474,7 +473,6 @@
                                 material="black"
                               />
                             </body>
-                            <!--                              TODO uncomment to enable RAFTI fingers -->
                             <body
                               name="left_rafti_finger_link"
                               pos="0 0 0.01"

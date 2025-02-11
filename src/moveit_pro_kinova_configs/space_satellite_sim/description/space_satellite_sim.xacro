@@ -3,7 +3,7 @@
     <!-- Arguments for Kinova -->
     <xacro:arg name="arm" default="gen3" />
     <xacro:arg name="dof" default="7" />
-    <xacro:arg name="mujoco_keyframe" default="default" />
+    <xacro:arg name="mujoco_keyframe" default="" />
     <xacro:arg name="mujoco_model" default="description/mujoco/scene.xml" />
     <xacro:arg name="mujoco_viewer" default="false" />
 
@@ -669,7 +669,7 @@
       </joint>
       <hardware>
         <plugin>picknik_mujoco_ros/MujocoSystem</plugin>
-        <param name="mujoco_keyframe">$(arg mujoco_keyframe)</param>
+        <!-- <param name="mujoco_keyframe">$(arg mujoco_keyframe)</param> -->
         <param name="mujoco_model">$(arg mujoco_model)</param>
         <param name="mujoco_model_package">space_satellite_sim</param>
         <param name="mujoco_viewer">$(arg mujoco_viewer)</param>
