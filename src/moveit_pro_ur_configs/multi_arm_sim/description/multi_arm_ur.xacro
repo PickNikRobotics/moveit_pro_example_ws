@@ -91,7 +91,7 @@
   <!-- Initial positions for simulations (Mock Hardware and Gazebo) -->
   <xacro:arg
     name="initial_positions_file"
-    default="$(find picknik_ur_multi_arm_config)/config/initial_positions.yaml"
+    default="$(find multi_arm_sim)/config/initial_positions.yaml"
   />
   <xacro:property
     name="initial_positions_file"
