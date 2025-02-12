@@ -9,6 +9,7 @@
 #include <example_behaviors/example_get_string_from_topic.hpp>
 #include <example_behaviors/example_hello_world.hpp>
 #include <example_behaviors/example_ndt_registration.hpp>
+#include <example_behaviors/example_pointcloud_subtraction.hpp>
 #include <example_behaviors/example_publish_color_rgba.hpp>
 #include <example_behaviors/example_ransac_registration.hpp>
 #include <example_behaviors/example_sam2_segmentation.hpp>
@@ -51,6 +52,8 @@ public:
                                                                           shared_resources);
     moveit_studio::behaviors::registerBehavior<ExampleSAM2Segmentation>(factory, "ExampleSAM2Segmentation",
                                                                         shared_resources);
+    moveit_studio::behaviors::registerBehavior<ExamplePointCloudSubtraction>(factory, "ExamplePointCloudSubtraction",
+                                                                             shared_resources);
   }
 };
 }  // namespace example_behaviors

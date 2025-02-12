@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Compare PCDs">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Compare PCDs"
+    _description=""
+    _favorite="false"
+    _subtreeOnly="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="LoadPointCloudFromFile"
+        frame_id="world"
+        num_sampled_points="10000"
+        point_cloud="{point_cloud_tall}"
+        scale="10.000000"
+        color="255;0;0"
+        file_path="models/tall_cylinder.stl"
+        package_name="example_behaviors"
+      />
+      <Action
+        ID="LoadPointCloudFromFile"
+        frame_id="world"
+        num_sampled_points="10000"
+        point_cloud="{point_cloud_short}"
+        scale="10.000000"
+        color="0;0;255"
+        file_path="models/short_cylinder.stl"
+        package_name="example_behaviors"
+      />
+      <Action
+        ID="ExamplePointCloudSubtraction"
+        base_point_cloud="{point_cloud_tall}"
+        search_radius="0.1"
+        subtracted_point_cloud="{point_cloud}"
+        subtraction_point_cloud="{point_cloud_short}"
+      />
+      <Action
+        ID="SendPointCloudToUI"
+        pcd_topic="/pcd_pointcloud_captures"
+        point_cloud="{point_cloud}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Compare PCDs">
+      <MetadataFields>
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
