@@ -7,6 +7,8 @@
     _favorite="false"
     _hardcoded="false"
     _subtreeOnly="true"
+    enable_user_interaction="false"
+    initial_teleop_mode="3"
   >
     <Control ID="Sequence">
       <Action ID="Script" code="teleop_mode := 0" />
@@ -141,8 +143,15 @@
             <!--Cartesian and joint jogging-->
             <Control ID="Sequence" _while="teleop_mode == 2">
               <Action
-                ID="TeleoperateTwist"
-                controller_name="servo_controller"
+                ID="ActivateControllers"
+                controller_names="velocity_force_controller"
+              />
+              <Action
+                ID="PoseJog"
+                controller_names="velocity_force_controller"
+                link_padding="0.010000"
+                planning_group_names="manipulator"
+                stop_safety_factor="1.500000"
               />
             </Control>
             <Control ID="Sequence" _while="teleop_mode == 1">
