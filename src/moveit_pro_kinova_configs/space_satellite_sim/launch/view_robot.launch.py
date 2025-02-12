@@ -17,7 +17,11 @@ def generate_launch_description():
             PathJoinSubstitution([FindExecutable(name="xacro")]),
             " ",
             PathJoinSubstitution(
-                [FindPackageShare("space_satellite_sim"), "description", "space_satellite_sim.xacro"]
+                [
+                    FindPackageShare("space_satellite_sim"),
+                    "description",
+                    "space_satellite_sim.xacro",
+                ]
             ),
         ]
     )
