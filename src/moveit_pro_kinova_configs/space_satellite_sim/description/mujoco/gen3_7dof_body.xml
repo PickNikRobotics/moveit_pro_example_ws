@@ -1,5 +1,4 @@
 <mujocoinclude>
-
   <body name="base_link" gravcomp="1" pos="0 0 0.02" quat="1 0 0 0">
     <inertial
       pos="-0.000648 -0.000166 0.084487"
@@ -161,10 +160,7 @@
                     mesh="bracelet_with_vision_link"
                     material="white"
                   />
-                  <geom
-                    class="collision"
-                    mesh="bracelet_with_vision_link_c"
-                  />
+                  <geom class="collision" mesh="bracelet_with_vision_link_c" />
                   <body childclass="2f85">
                     <!-- site for end effector's f/t sensor right at the base of the robotiq gripper -->
                     <site
@@ -518,5 +514,4 @@
       </body>
     </body>
   </body>
-
 </mujocoinclude>

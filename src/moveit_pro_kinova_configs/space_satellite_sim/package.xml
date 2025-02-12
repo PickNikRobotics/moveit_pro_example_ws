@@ -4,7 +4,8 @@
   <version>0.1.0</version>
 
   <description>
-    A MoveIt Pro configuration to simulate satellite grappling with a Kinova Gen3 robot using mock hardware with MuJoCo.
+    A MoveIt Pro configuration to simulate satellite grappling with a Kinova
+    Gen3 robot using mock hardware with MuJoCo.
   </description>
 
   <maintainer email="paul.gesel@picknik.ai">Paul Gesel</maintainer>

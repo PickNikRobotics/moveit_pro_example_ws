@@ -1,5 +1,4 @@
 <mujocoinclude>
-
   <default>
     <!-- kinova defaults -->
     <default class="kinova">
@@ -168,10 +167,22 @@
       file="robotiq_2f85/silicone_pad.stl"
     />
     <mesh name="rafti_finger" file="rafti/rafti_finger.obj" />
-    <mesh name="rafti_finger_collision_1" file="rafti/rafti_finger_collision_1.obj" />
-    <mesh name="rafti_finger_collision_2" file="rafti/rafti_finger_collision_2.obj" />
-    <mesh name="rafti_finger_collision_3" file="rafti/rafti_finger_collision_3.obj" />
-    <mesh name="rafti_finger_collision_4" file="rafti/rafti_finger_collision_4.obj" />
+    <mesh
+      name="rafti_finger_collision_1"
+      file="rafti/rafti_finger_collision_1.obj"
+    />
+    <mesh
+      name="rafti_finger_collision_2"
+      file="rafti/rafti_finger_collision_2.obj"
+    />
+    <mesh
+      name="rafti_finger_collision_3"
+      file="rafti/rafti_finger_collision_3.obj"
+    />
+    <mesh
+      name="rafti_finger_collision_4"
+      file="rafti/rafti_finger_collision_4.obj"
+    />
   </asset>
 
   <contact>
@@ -294,5 +305,4 @@
     <force name="ee_force_sensor" site="fts" />
     <torque name="ee_torque_sensor" site="fts" />
   </sensor>
-
 </mujocoinclude>
