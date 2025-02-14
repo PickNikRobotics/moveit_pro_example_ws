@@ -1,0 +1,73 @@
+<mujoco>
+  <body
+    name="vacuum_base"
+    gravcomp="1"
+    pos="0.0 0.0 0.0"
+    quat="0.5 0.0 0.0 -0.5"
+  >
+    <geom
+      class="visual"
+      type="mesh"
+      name="vacuum_base geom"
+      mesh="vacuum_base"
+      material="metal"
+    />
+    <body
+      name="collision_vacuum_base"
+      gravcomp="1"
+      pos="0.0 0.0 0.0"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_vacuum_base geom"
+        mesh="collision_vacuum_base"
+      />
+    </body>
+    <body
+      name="collision_vacuum_suction_cups"
+      gravcomp="1"
+      pos="0.0 0.0 0.0"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="collision"
+        type="mesh"
+        name="collision_vacuum_suction_cups geom"
+        mesh="collision_vacuum_suction_cups"
+        margin="0.02"
+        gap="0.02"
+      />
+      <site name="suction_cup" type="box" size="0.1 0.1 0.1" />
+    </body>
+    <body
+      name="vacuum_base_top"
+      gravcomp="1"
+      pos="0.0 0.0 0.0"
+      quat="1.0 0.0 0.0 0.0"
+    >
+      <geom
+        class="visual"
+        type="mesh"
+        name="vacuum_base_top geom"
+        mesh="vacuum_base_top"
+        material="dark metal"
+      />
+      <body
+        name="vacuum_suction_cups"
+        gravcomp="1"
+        pos="0.0 0.0 0.0"
+        quat="1.0 0.0 0.0 0.0"
+      >
+        <geom
+          class="visual"
+          type="mesh"
+          name="vacuum_suction_cups geom"
+          mesh="vacuum_suction_cups"
+          material="plastic"
+        />
+      </body>
+    </body>
+  </body>
+</mujoco>
