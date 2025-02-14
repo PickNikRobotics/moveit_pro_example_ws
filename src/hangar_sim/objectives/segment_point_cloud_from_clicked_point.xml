@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Segment Point Cloud from Clicked Point"
+>
+  <!--//////////-->
+  <BehaviorTree
+    ID="Segment Point Cloud from Clicked Point"
+    _description="Captures a point cloud and requests the user to click an object in the image to be segmented. The point cloud is then filtered to only include the selected object."
+    _favorite="true"
+  >
+    <Control ID="Sequence">
+      <Action ID="ClearSnapshot" />
+      <Action
+        ID="GetImage"
+        topic_name="/wrist_camera/color"
+        timeout_sec="5.000000"
+        message_out="{image}"
+      />
+      <Action
+        ID="GetPointsFromUser"
+        point_prompts="Select the object to be segmented (1/3);Select the objects to be segmented (2/3);Select the objects to be segmented (3/3)"
+        point_names="Point1;Point2;Point3;"
+        view_name="/wrist_camera/color"
+        pixel_coords="{pixel_coords}"
+      />
+      <Action
+        ID="GetMasks2DFromPointQuery"
+        image="{image}"
+        pixel_coords="{pixel_coords}"
+        masks2d="{masks2d}"
+        decoder_model_path="models/decoder.onnx"
+        encoder_model_path="models/sam2_hiera_large_encoder.onnx"
+        model_package="lab_sim"
+      />
+      <Action
+        ID="PublishMask2D"
+        image="{image}"
+        masks="{masks2d}"
+        masks_visualization_topic="/masks_visualization"
+      />
+      <Action
+        ID="GetPointCloud"
+        topic_name="/wrist_camera/points"
+        timeout_sec="5.000000"
+        message_out="{point_cloud}"
+      />
+      <Action
+        ID="GetCameraInfo"
+        topic_name="/wrist_camera/camera_info"
+        message_out="{camera_info}"
+        timeout_sec="5.000000"
+      />
+      <Action
+        ID="GetMasks3DFromMasks2D"
+        camera_info="{camera_info}"
+        masks2d="{masks2d}"
+        point_cloud="{point_cloud}"
+        masks3d="{masks3d}"
+      />
+      <Decorator
+        ID="ForEach"
+        vector_in="{masks3d}"
+        out="{mask3d}"
+        index="{index}"
+      >
+        <Action
+          ID="GetPointCloudFromMask3D"
+          point_cloud="{point_cloud}"
+          mask3d="{mask3d}"
+          point_cloud_fragment="{point_cloud_fragment}"
+        />
+      </Decorator>
+      <Action
+        ID="SendPointCloudToUI"
+        point_cloud="{point_cloud_fragment}"
+        pcd_topic="/pcd_pointcloud_captures"
+      />
+      <Action
+        ID="PublishPointCloud"
+        point_cloud="{point_cloud_fragment}"
+        point_cloud_topic="/my_point_cloud"
+      />
+      <Action ID="SwitchUIPrimaryView" primary_view_name="Visualization" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Segment Point Cloud from Clicked Point">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Perception - 2D Image" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
