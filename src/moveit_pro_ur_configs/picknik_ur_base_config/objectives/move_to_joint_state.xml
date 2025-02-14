@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Move to Joint State">
+  <BehaviorTree
+    ID="Move to Joint State"
+    _description="Plan and execute motion to a set of joint angles specified in a ROS message type."
+    _subtreeOnly="true"
+    acceleration_scale_factor="1.0"
+    controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+    controller_names="joint_trajectory_controller"
+    joint_group_name="manipulator"
+    keep_orientation="false"
+    keep_orientation_tolerance="0.05"
+    link_padding="0.01"
+    target_joint_state="{target_joint_state}"
+    velocity_scale_factor="1.0"
+    keep_orientation_link_names="grasp_link"
+  >
+    <Control ID="Sequence">
+      <Action ID="ActivateControllers" controller_names="{controller_names}" />
+      <Action
+        ID="PlanToJointGoal"
+        joint_goal="{target_joint_state}"
+        keep_orientation_tolerance="{keep_orientation_tolerance}"
+        link_padding="{link_padding}"
+        keep_orientation="{keep_orientation}"
+        acceleration_scale_factor="{acceleration_scale_factor}"
+        velocity_scale_factor="{velocity_scale_factor}"
+        planning_group_name="{joint_group_name}"
+        keep_orientation_link_names="{keep_orientation_link_names}"
+        max_iterations="5000"
+        trajectory_sampling_rate="100"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+      />
+      <Action
+        ID="ExecuteFollowJointTrajectory"
+        execute_follow_joint_trajectory_action_name="{controller_action_server}"
+        goal_duration_tolerance="-1.000000"
+        goal_position_tolerance="0.000000"
+        goal_time_tolerance="0.000000"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Move to Joint State">
+      <input_port name="acceleration_scale_factor" default="1.0" />
+      <input_port
+        name="controller_action_server"
+        default="/joint_trajectory_controller/follow_joint_trajectory"
+      />
+      <input_port
+        name="controller_names"
+        default="joint_trajectory_controller"
+      />
+      <input_port name="joint_group_name" default="manipulator" />
+      <input_port name="keep_orientation" default="false" />
+      <input_port name="keep_orientation_tolerance" default="0.05" />
+      <input_port name="link_padding" default="0.01" />
+      <input_port name="target_joint_state" default="{target_joint_state}" />
+      <input_port name="velocity_scale_factor" default="1.0" />
+      <input_port name="keep_orientation_link_names" default="grasp_link" />
+      <MetadataFields>
+        <Metadata subcategory="Motion - Execute" />
+        <Metadata runnable="false" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
