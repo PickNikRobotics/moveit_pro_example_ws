@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<library path="dummy_controller_handle_plugin">
+  <class
+    name="clearpath_mecanum_drive_controller/MecanumDriveController"
+    type="moveit_studio_ros_control_interface::DummyControllerAllocator"
+    base_class_type="moveit_ros_control_interface::ControllerHandleAllocator"
+  >
+    <description>
+      A very minimal controller handle allocator plugin to allow the
+      MecanumDriveController to be enabled and disabled through the MoveIt
+      controller manager.
+    </description>
+  </class>
+</library>

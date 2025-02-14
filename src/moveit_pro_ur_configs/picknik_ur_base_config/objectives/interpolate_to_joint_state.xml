@@ -9,7 +9,7 @@
       <Action
         ID="InitializeMTCTask"
         task_id="interpolate_to_joint_state"
-        controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
+        controller_names="{controller_names}"
         task="{interpolate_to_waypoint_task}"
       />
       <Action ID="SetupMTCCurrentState" task="{interpolate_to_waypoint_task}" />
@@ -34,6 +34,10 @@
   <TreeNodesModel>
     <SubTree ID="Interpolate to Joint State">
       <input_port name="target_joint_state" default="{target_joint_state}" />
+      <input_port
+        name="controller_names"
+        default="/joint_trajectory_controller /robotiq_gripper_controller"
+      />
       <MetadataFields>
         <Metadata subcategory="Motion - Execute" />
       </MetadataFields>
