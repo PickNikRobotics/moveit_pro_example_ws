@@ -1,0 +1,4 @@
+manipulator:
+  kinematics_solver: pose_ik_plugin/PoseIKPlugin
+  target_tolerance: 0.001
+  solve_mode: "first_found"

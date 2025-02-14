@@ -1,0 +1,78 @@
+<?xml version="1.0" ?>
+<robot name="fanuc_lrmate200id" xmlns:xacro="http://wiki.ros.org/xacro">
+  <xacro:arg
+    name="initial_positions_file"
+    default="$(find fanuc_sim)/config/initial_positions.yaml"
+  />
+  <xacro:arg name="hardware_interface" default="mock" />
+  <xacro:arg name="mujoco_model" default="description/scene.xml" />
+  <xacro:include
+    filename="$(find fanuc_sim)/description/lrmate200id_macro.xacro"
+  />
+  <xacro:include
+    filename="$(find fanuc_sim)/description/fanuc_lrmate200id.ros2_control.xacro"
+  />
+
+  <link name="world"/>
+  <link name="arm_pedestal">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <box size="0.4 0.4 0.3" />
+      </geometry>
+    </visual>
+    <visual>
+      <origin rpy="0 0 0" xyz="0.23 0.03 0.1" />
+      <geometry>
+        <box size="0.12 0.02 0.02" />
+      </geometry>
+    </visual>
+    <visual>
+      <origin rpy="0 0 0" xyz="0.23 -0.03 0.1" />
+      <geometry>
+        <box size="0.12 0.02 0.02" />
+      </geometry>
+    </visual>
+  </link>
+  <joint name="scene_joint" type="fixed">
+    <parent link="world" />
+    <child link="arm_pedestal" />
+    <origin rpy="0 0 0" xyz="0 0.3 0.15" />
+  </joint>
+  <joint name="base_joint" type="fixed">
+    <parent link="arm_pedestal" />
+    <child link="base_link" />
+    <origin rpy="0 0 0" xyz="0 0 0.15" />
+  </joint>
+
+  <link name="table">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <box size="1 1 0.05" />
+      </geometry>
+      <material name="brown">
+        <color rgba="0.3 0.15 0.05 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <box size="1 1 0.05" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="table_joint" type="fixed">
+    <parent link="world" />
+    <child link="table" />
+    <origin rpy="0 0 0" xyz="0 1 0.45" />
+  </joint>
+
+  <xacro:fanuc_lrmate200id prefix="" />
+  <xacro:fanuc_lrmate200id_ros2_control
+    name="fanuc_robot"
+    initial_positions_file="$(arg initial_positions_file)"
+    hardware_interface="$(arg hardware_interface)"
+    mujoco_model="$(arg mujoco_model)"
+  />
+</robot>

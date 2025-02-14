@@ -1,0 +1,4 @@
+objectives:
+  behavior_loader_plugins:
+    example_behaviors:
+      - "example_behaviors::ExampleBehaviorsLoader"
