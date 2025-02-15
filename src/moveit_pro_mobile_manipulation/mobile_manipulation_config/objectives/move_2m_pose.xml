@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root BTCPP_format="4" main_tree_to_execute="Move 2m pose">
+  <!--//////////-->
+  <BehaviorTree ID="Move 2m pose" _description="" _favorite="false" _subtreeOnly="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree ID="Move to Waypoint" _collapsed="true" acceleration_scale_factor="1.0" controller_action_server="/joint_trajectory_controller/follow_joint_trajectory" controller_names="/joint_trajectory_controller" joint_group_name="manipulator" keep_orientation="false" keep_orientation_tolerance="0.05" link_padding="0.01" velocity_scale_factor="1.0" waypoint_name="Look at Airfoil"/>
+      <Action ID="CreateStampedPose" reference_frame="grasp_link" stamped_pose="{stamped_pose}" orientation_xyzw="0;0;0;1" position_xyz="0;0;2"/>
+      <Action ID="VisualizePose" marker_lifetime="0.000000" marker_name="pose" marker_size="0.100000" pose="{stamped_pose}"/>
+      <SubTree ID="Move to a StampedPose" _collapsed="true" controller_names="/joint_trajectory_controller" target_pose="{stamped_pose}"/>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Move 2m pose"><MetadataFields>
+        <Metadata runnable="true"/>
+      </MetadataFields></SubTree>
+  </TreeNodesModel>
+</root>
