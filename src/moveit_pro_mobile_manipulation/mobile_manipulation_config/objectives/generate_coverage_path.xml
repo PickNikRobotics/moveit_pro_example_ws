@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root BTCPP_format="4" main_tree_to_execute="Generate coverage path">
+  <!--//////////-->
+  <BehaviorTree ID="Generate coverage path" _description="" _favorite="false" _subtreeOnly="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="CreateStampedPose" reference_frame="grasp_link" stamped_pose="{stamped_pose}" orientation_xyzw="0;0;1;0" position_xyz="0;0;0.1"/>
+      <Action ID="GenerateCoveragePath" vector_of_poses="{pose_stamped_vector}" bottom_right_corner="{stamped_pose}" height="0.6" stride_distance="0.1" width="0.6"/>
+      <Action ID="VisualizePath" marker_lifetime="0.000000" path="{pose_stamped_vector}"/>
+      <Action ID="PlanCartesianPath" acceleration_scale_factor="1.000000" blending_radius="0.020000" debug_solution="{debug_solution}" ik_cartesian_space_density="0.010000" ik_joint_space_density="0.100000" joint_trajectory_msg="{joint_trajectory_msg}" path="{pose_stamped_vector}" planning_group_name="manipulator" position_only="false" tip_link="grasp_link" trajectory_sampling_rate="100" velocity_scale_factor="1.000000"/>
+      <Action ID="WaitForUserTrajectoryApproval" solution="{debug_solution}"/>
+      <Action ID="ExecuteFollowJointTrajectory" execute_follow_joint_trajectory_action_name="/joint_trajectory_controller/follow_joint_trajectory" goal_duration_tolerance="-1.000000" goal_position_tolerance="0.000000" goal_time_tolerance="0.000000" joint_trajectory_msg="{joint_trajectory_msg}"/>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Generate coverage path"><MetadataFields>
+        <Metadata runnable="true"/>
+      </MetadataFields></SubTree>
+  </TreeNodesModel>
+</root>

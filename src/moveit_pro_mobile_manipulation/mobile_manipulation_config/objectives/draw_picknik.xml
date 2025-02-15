@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root BTCPP_format="4" main_tree_to_execute="Draw Picknik">
+  <!--//////////-->
+  <BehaviorTree ID="Draw Picknik" _description="" _favorite="false" _subtreeOnly="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="LoadPoseStampedVectorFromYaml" output="{pose_stamped_msgs}" file_path="path.yaml"/>
+      <Action ID="CreateStampedPose" reference_frame="grasp_link" stamped_pose="{stamped_pose}" orientation_xyzw="0;0;1;0" position_xyz="0;0;0"/>
+      <Action ID="VisualizePose" marker_lifetime="0.000000" marker_name="pose" marker_size="0.100000" pose="{stamped_pose}"/>
+      <Control ID="Parallel" failure_count="1" success_count="2">
+        <Action ID="PublishStaticFrame" child_frame_id="local" pose="{stamped_pose}" publish_rate="50"/>
+        <Control ID="Sequence">
+          <Action ID="WaitForDuration" delay_duration="1"/>
+          <Action ID="PlanCartesianPath" acceleration_scale_factor="1.000000" blending_radius="0.001" debug_solution="{debug_solution}" ik_cartesian_space_density="0.010000" ik_joint_space_density="0.100000" joint_trajectory_msg="{joint_trajectory_msg}" path="{pose_stamped_msgs}" planning_group_name="manipulator" position_only="true" tip_link="grasp_link" trajectory_sampling_rate="100" velocity_scale_factor="1.000000"/>
+          <Action ID="VisualizePath" marker_lifetime="0.000000" path="{pose_stamped_msgs}"/>
+          <Action ID="WaitForUserTrajectoryApproval" solution="{debug_solution}"/>
+          <Action ID="ExecuteFollowJointTrajectory" execute_follow_joint_trajectory_action_name="/joint_trajectory_controller/follow_joint_trajectory" goal_duration_tolerance="-1.000000" goal_position_tolerance="0.000000" goal_time_tolerance="0.000000" joint_trajectory_msg="{joint_trajectory_msg}"/>
+        </Control>
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Draw Picknik"><MetadataFields>
+        <Metadata runnable="true"/>
+      </MetadataFields></SubTree>
+  </TreeNodesModel>
+</root>
