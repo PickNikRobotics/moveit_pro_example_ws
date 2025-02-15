@@ -1,8 +1,6 @@
 - description: ''
   favorite: false
   joint_group_names:
-  - gripper
-  - linear_actuator
   - manipulator
   joint_state:
     effort: []
@@ -18,27 +16,13 @@
     - wrist_1_joint
     - wrist_2_joint
     - wrist_3_joint
-    - linear_x_joint
-    - linear_y_joint
-    - rotational_yaw_joint
-    - front_left_wheel
-    - front_right_wheel
-    - rear_left_wheel
-    - rear_right_wheel
     position:
-    - -0.003738784044683501
-    - -1.1833848468688086
-    - 1.002538078176773
-    - 0.8067381103398776
-    - 1.5706980002739934
-    - 3.150410899529277
-    - -0.07207130127690735
-    - -0.02369797544394028
-    - -0.02531176395460309
-    - -0.09266642709106662
-    - -0.23557464236464182
-    - -0.18822018729128204
-    - -0.18656676335864855
+    - 3.838708212040785e-05
+    - -1.5708913289619557
+    - -8.853305963254242e-05
+    - -1.5708707287616255
+    - -1.5708347082445497
+    - 5.262830815735838e-07
     velocity: []
   multi_dof_joint_state:
     header:
@@ -50,7 +34,7 @@
     transforms: []
     twist: []
     wrench: []
-  name: Initial Pose
+  name: Arm upright
 - description: ''
   favorite: false
   joint_group_names:
@@ -82,19 +66,19 @@
     - rear_left_wheel
     - rear_right_wheel
     position:
-    - -2.223614395803042e-06
-    - -1.570948106783178
-    - -0.0019291040557095557
-    - -1.5711393189992668
-    - -1.5708513194849385
-    - 1.5684084557132322e-06
-    - -6.499372338819932
-    - 7.159543268978053
-    - 1.7219908136112807
-    - -184.27503164809855
-    - 73.59944964015912
-    - 49.03228603651597
-    - -165.64553914942525
+    - -0.031728481550079304
+    - -1.5562971214767365
+    - 0.079265965007876
+    - -1.5718199330508862
+    - -1.2848637059890662
+    - 0.02145814998279633
+    - -3.7530328568442513
+    - 9.927768114612965
+    - 0.21201817498956405
+    - -82.99100539844943
+    - 231.86494206573718
+    - 214.85620939660976
+    - -90.2456426427412
     velocity: []
   multi_dof_joint_state:
     header:
@@ -106,101 +90,16 @@
     transforms: []
     twist: []
     wrench: []
-  name: Yellow area
-- description: ''
-  favorite: true
-  joint_group_names:
-  - gripper
-  - linear_actuator
-  - manipulator
-  joint_state:
-    effort: []
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    name:
-    - linear_x_joint
-    - linear_y_joint
-    - rotational_yaw_joint
-    - shoulder_pan_joint
-    - shoulder_lift_joint
-    - elbow_joint
-    - wrist_1_joint
-    - wrist_2_joint
-    - wrist_3_joint
-    position:
-    - -6.322982066323121
-    - 7.5
-    - -4.713185307
-    - -0.2763174289192866
-    - -0.3
-    - 1.9
-    - 3.1160231058296772
-    - -1.5872227113667408
-    - 2.826779483878693
-    velocity: []
-  multi_dof_joint_state:
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    joint_names: []
-    transforms: []
-    twist: []
-    wrench: []
-  name: Goal Location
-- description: ''
-  favorite: true
-  joint_group_names:
-  - gripper
-  - linear_actuator
-  - manipulator
-  joint_state:
-    effort: []
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    name:
-    - linear_x_joint
-    - linear_y_joint
-    - rotational_yaw_joint
-    - shoulder_pan_joint
-    - shoulder_lift_joint
-    - elbow_joint
-    - wrist_1_joint
-    - wrist_2_joint
-    - wrist_3_joint
-    position:
-    - -7.5
-    - 5.5
-    - -2.7
-    - 0
-    - -1.19
-    - 1
-    - 0.9
-    - 1.570606160931757
-    - 3.1399796315659443
-    velocity: []
-  multi_dof_joint_state:
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    joint_names: []
-    transforms: []
-    twist: []
-    wrench: []
-  name: View Boxes
+  name: View Plane
 - description: ''
   favorite: false
   joint_group_names:
   - arm_only
+  - gripper
+  - hand
+  - linear_actuator
+  - manipulator
+  - wheel_actuator
   joint_state:
     effort: []
     header:
@@ -215,13 +114,27 @@
     - wrist_1_joint
     - wrist_2_joint
     - wrist_3_joint
+    - linear_x_joint
+    - linear_y_joint
+    - rotational_yaw_joint
+    - front_left_wheel
+    - front_right_wheel
+    - rear_left_wheel
+    - rear_right_wheel
     position:
-    - -0.2763174289192866
-    - -0.03329912124317757
-    - 1.6219825441986198
-    - 3.1160231058296772
-    - -1.5872227113667408
-    - 2.826779483878693
+    - 0.0001252230582440989
+    - -1.5711894640623076
+    - 0.07917710527990936
+    - -1.5708087121932468
+    - -1.5708453463802912
+    - -0.00022165247304159529
+    - -4.113316847963269
+    - 12.918999730656832
+    - -0.037283236347385236
+    - -213.69277739236233
+    - 193.46627388607538
+    - 190.77164583281487
+    - -210.67226952086472
     velocity: []
   multi_dof_joint_state:
     header:
@@ -233,7 +146,7 @@
     transforms: []
     twist: []
     wrench: []
-  name: Look at Ground
+  name: Look at Plane
 - description: ''
   favorite: true
   joint_group_names:
@@ -293,11 +206,6 @@
   favorite: false
   joint_group_names:
   - arm_only
-  - gripper
-  - hand
-  - linear_actuator
-  - manipulator
-  - wheel_actuator
   joint_state:
     effort: []
     header:
@@ -312,27 +220,13 @@
     - wrist_1_joint
     - wrist_2_joint
     - wrist_3_joint
-    - linear_x_joint
-    - linear_y_joint
-    - rotational_yaw_joint
-    - front_left_wheel
-    - front_right_wheel
-    - rear_left_wheel
-    - rear_right_wheel
     position:
-    - 0.0001252230582440989
-    - -1.5711894640623076
-    - 0.07917710527990936
-    - -1.5708087121932468
-    - -1.5708453463802912
-    - -0.00022165247304159529
-    - -4.113316847963269
-    - 12.918999730656832
-    - -0.037283236347385236
-    - -213.69277739236233
-    - 193.46627388607538
-    - 190.77164583281487
-    - -210.67226952086472
+    - -0.2763174289192866
+    - -0.03329912124317757
+    - 1.6219825441986198
+    - 3.1160231058296772
+    - -1.5872227113667408
+    - 2.826779483878693
     velocity: []
   multi_dof_joint_state:
     header:
@@ -344,7 +238,97 @@
     transforms: []
     twist: []
     wrench: []
-  name: Look at Plane
+  name: Look at Ground
+- description: ''
+  favorite: true
+  joint_group_names:
+  - gripper
+  - linear_actuator
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - linear_x_joint
+    - linear_y_joint
+    - rotational_yaw_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
+    - -7.5
+    - 5.5
+    - -2.7
+    - 0
+    - -1.19
+    - 1
+    - 0.9
+    - 1.570606160931757
+    - 3.1399796315659443
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: View Boxes
+- description: ''
+  favorite: true
+  joint_group_names:
+  - gripper
+  - linear_actuator
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - linear_x_joint
+    - linear_y_joint
+    - rotational_yaw_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
+    - -6.322982066323121
+    - 7.5
+    - -4.713185307
+    - -0.2763174289192866
+    - -0.3
+    - 1.9
+    - 3.1160231058296772
+    - -1.5872227113667408
+    - 2.826779483878693
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Goal Location
 - description: ''
   favorite: false
   joint_group_names:
@@ -376,19 +360,19 @@
     - rear_left_wheel
     - rear_right_wheel
     position:
-    - -0.031728481550079304
-    - -1.5562971214767365
-    - 0.079265965007876
-    - -1.5718199330508862
-    - -1.2848637059890662
-    - 0.02145814998279633
-    - -3.7530328568442513
-    - 9.927768114612965
-    - 0.21201817498956405
-    - -82.99100539844943
-    - 231.86494206573718
-    - 214.85620939660976
-    - -90.2456426427412
+    - -2.223614395803042e-06
+    - -1.570948106783178
+    - -0.0019291040557095557
+    - -1.5711393189992668
+    - -1.5708513194849385
+    - 1.5684084557132322e-06
+    - -6.499372338819932
+    - 7.159543268978053
+    - 1.7219908136112807
+    - -184.27503164809855
+    - 73.59944964015912
+    - 49.03228603651597
+    - -165.64553914942525
     velocity: []
   multi_dof_joint_state:
     header:
@@ -400,4 +384,57 @@
     transforms: []
     twist: []
     wrench: []
-  name: View Plane
+  name: Yellow area
+- description: ''
+  favorite: false
+  joint_group_names:
+  - gripper
+  - linear_actuator
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    - linear_x_joint
+    - linear_y_joint
+    - rotational_yaw_joint
+    - front_left_wheel
+    - front_right_wheel
+    - rear_left_wheel
+    - rear_right_wheel
+    position:
+    - -0.003738784044683501
+    - -1.1833848468688086
+    - 1.002538078176773
+    - 0.8067381103398776
+    - 1.5706980002739934
+    - 3.150410899529277
+    - -0.07207130127690735
+    - -0.02369797544394028
+    - -0.02531176395460309
+    - -0.09266642709106662
+    - -0.23557464236464182
+    - -0.18822018729128204
+    - -0.18656676335864855
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Initial Pose
