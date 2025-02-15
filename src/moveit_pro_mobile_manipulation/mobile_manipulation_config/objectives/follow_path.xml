@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root BTCPP_format="4" main_tree_to_execute="Follow Path">
+  <!--//////////-->
+  <BehaviorTree ID="Follow Path" _description="" _favorite="false" _subtreeOnly="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree ID="Move to Waypoint" _collapsed="true" acceleration_scale_factor="1.0" controller_action_server="/joint_trajectory_controller/follow_joint_trajectory" controller_names="/joint_trajectory_controller" joint_group_name="manipulator" keep_orientation="false" keep_orientation_tolerance="0.05" link_padding="0.01" velocity_scale_factor="1.0" waypoint_name="Look at Airfoil"/>
+      <Action ID="CreateStampedPose" reference_frame="grasp_link" stamped_pose="{stamped_pose}" orientation_xyzw="0;0;0;1" position_xyz="0;0;0.2"/>
+      <Action ID="VisualizePose" marker_lifetime="0.000000" marker_name="pose" marker_size="0.100000" pose="{stamped_pose}"/>
+      <Action ID="AddPoseStampedToVector" input="{stamped_pose}" vector="{pose_stamped_vector}"/>
+      <Action ID="VisualizePath" marker_lifetime="0.000000" path="{pose_stamped_vector}"/>
+      <Action ID="PlanCartesianPath" acceleration_scale_factor="1.000000" blending_radius="0.020000" debug_solution="{debug_solution}" ik_cartesian_space_density="0.010000" ik_joint_space_density="0.100000" joint_trajectory_msg="{joint_trajectory_msg}" path="{pose_stamped_vector}" planning_group_name="manipulator" position_only="true" tip_link="grasp_link" trajectory_sampling_rate="100" velocity_scale_factor="1.000000"/>
+      <Action ID="GetCurrentPlanningScene" planning_scene_msg="{planning_scene}"/>
+      <Control ID="Fallback">
+        <Action ID="ValidateTrajectory" cartesian_space_step="0.020000" debug_solution="{debug_solution}" joint_space_step="0.100000" joint_trajectory_msg="{joint_trajectory_msg}" planning_group_name="manipulator" planning_scene_msg="{planning_scene}"/>
+        <Action ID="WaitForUserTrajectoryApproval" solution="{debug_solution}"/>
+      </Control>
+      <Action ID="ExecuteFollowJointTrajectory" execute_follow_joint_trajectory_action_name="/joint_trajectory_controller/follow_joint_trajectory" goal_duration_tolerance="-1.000000" goal_position_tolerance="0.000000" goal_time_tolerance="0.000000" joint_trajectory_msg="{joint_trajectory_msg}"/>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Follow Path"><MetadataFields>
+        <Metadata runnable="true"/>
+      </MetadataFields></SubTree>
+  </TreeNodesModel>
+</root>
