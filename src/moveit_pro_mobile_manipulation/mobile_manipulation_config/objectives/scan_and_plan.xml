@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root BTCPP_format="4" main_tree_to_execute="Scan and Plan">
+  <!--//////////-->
+  <BehaviorTree ID="Scan and Plan" _description="" _favorite="false" _subtreeOnly="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree ID="Move to Waypoint" _collapsed="true" acceleration_scale_factor="1.0" controller_action_server="/joint_trajectory_controller/follow_joint_trajectory" controller_names="/joint_trajectory_controller" joint_group_name="manipulator" keep_orientation="false" keep_orientation_tolerance="0.05" link_padding="0.01" velocity_scale_factor="1.0" waypoint_name="Look at Airfoil"/>
+      <SubTree ID="Estimate Object Pose" _collapsed="true" guess_orientation="0;0;0.707;0.707" guess_position="4.5;0;0.5" icp_max_correspondence_distance="0.5" object_model_file_path="~/user_ws/install/mobile_manipulation_config/share/mobile_manipulation_config/description/assets/airfoil.stl" stamped_pose="{stamped_pose}"/>
+      <Action ID="VisualizePose" marker_lifetime="0.000000" marker_name="pose" marker_size="0.100000" pose="{stamped_pose}"/>
+      <Action ID="TransformPose" input_pose="{stamped_pose}" output_pose="{output_pose}" quaternion_xyzw="0.5;-0.5;0.5;0.5" translation_xyz="2.5;0.2;-0.2"/>
+      <Action ID="GenerateCoveragePath" vector_of_poses="{pose_stamped_vector}" bottom_right_corner="{output_pose}" stride_distance="0.4" width="0.6" height="5"/>
+      <Action ID="VisualizePath" marker_lifetime="0.000000" path="{pose_stamped_vector}"/>
+      <Action ID="PlanCartesianPath" acceleration_scale_factor="1.000000" blending_radius="0.020000" debug_solution="{debug_solution}" ik_cartesian_space_density="0.010000" ik_joint_space_density="0.100000" joint_trajectory_msg="{joint_trajectory_msg}" path="{pose_stamped_vector}" planning_group_name="manipulator" position_only="true" tip_link="grasp_link" trajectory_sampling_rate="100" velocity_scale_factor="1.000000"/>
+      <Action ID="WaitForUserTrajectoryApproval" solution="{debug_solution}"/>
+      <Action ID="ExecuteFollowJointTrajectory" execute_follow_joint_trajectory_action_name="/joint_trajectory_controller/follow_joint_trajectory" goal_duration_tolerance="-1.000000" goal_position_tolerance="0.000000" goal_time_tolerance="0.000000" joint_trajectory_msg="{joint_trajectory_msg}"/>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Scan and Plan"><MetadataFields>
+        <Metadata runnable="true"/>
+      </MetadataFields></SubTree>
+  </TreeNodesModel>
+</root>
