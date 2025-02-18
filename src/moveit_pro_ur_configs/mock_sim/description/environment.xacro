@@ -15,7 +15,7 @@
         <origin xyz="0 0 0" rpy="0 0 0" />
         <geometry>
           <mesh
-            filename="file://$(find picknik_ur_mock_hw_config)/meshes/cnc.dae"
+            filename="file://$(find mock_sim)/meshes/cnc.dae"
             scale="1 1 1"
           />
         </geometry>
@@ -25,7 +25,7 @@
         <origin xyz="0 0 0" rpy="0 0 0" />
         <geometry>
           <mesh
-            filename="file://$(find picknik_ur_mock_hw_config)/meshes/cnc-collision.dae"
+            filename="file://$(find mock_sim)/meshes/cnc-collision.dae"
             scale="1 1 1"
           />
         </geometry>
@@ -44,7 +44,7 @@
         <origin xyz="0 0 0" rpy="0 0 0" />
         <geometry>
           <mesh
-            filename="file://$(find picknik_ur_mock_hw_config)/meshes/base.dae"
+            filename="file://$(find mock_sim)/meshes/base.dae"
             scale="1 1 1"
           />
         </geometry>
@@ -53,7 +53,7 @@
         <origin xyz="0 0 0" rpy="0 0 0" />
         <geometry>
           <mesh
-            filename="file://$(find picknik_ur_mock_hw_config)/meshes/base.dae"
+            filename="file://$(find mock_sim)/meshes/base.dae"
             scale="1 1 1"
           />
         </geometry>
@@ -72,7 +72,7 @@
         <origin xyz="0 0 0" rpy="0 0 0" />
         <geometry>
           <mesh
-            filename="file://$(find picknik_ur_mock_hw_config)/meshes/table.dae"
+            filename="file://$(find mock_sim)/meshes/table.dae"
             scale="1 1 1"
           />
         </geometry>
@@ -81,7 +81,7 @@
         <origin xyz="0 0 0" rpy="0 0 0" />
         <geometry>
           <mesh
-            filename="file://$(find picknik_ur_mock_hw_config)/meshes/table-collision.dae"
+            filename="file://$(find mock_sim)/meshes/table-collision.dae"
             scale="1 1 1"
           />
         </geometry>
@@ -99,7 +99,7 @@
         <origin xyz="0 0 0" rpy="0 0 0" />
         <geometry>
           <mesh
-            filename="file://$(find picknik_ur_mock_hw_config)/meshes/table.dae"
+            filename="file://$(find mock_sim)/meshes/table.dae"
             scale="1 1 1"
           />
         </geometry>
@@ -108,7 +108,7 @@
         <origin xyz="0 0 0" rpy="0 0 0" />
         <geometry>
           <mesh
-            filename="file://$(find picknik_ur_mock_hw_config)/meshes/table-collision.dae"
+            filename="file://$(find mock_sim)/meshes/table-collision.dae"
             scale="1 1 1"
           />
         </geometry>
@@ -127,7 +127,7 @@
         <origin xyz="0 0 0" rpy="0 0 0" />
         <geometry>
           <mesh
-            filename="file://$(find picknik_ur_mock_hw_config)/meshes/cylinder-item.dae"
+            filename="file://$(find mock_sim)/meshes/cylinder-item.dae"
             scale="1 1 1"
           />
         </geometry>
@@ -146,7 +146,7 @@
         <origin xyz="0 0 0" rpy="0 0 0" />
         <geometry>
           <mesh
-            filename="file://$(find picknik_ur_mock_hw_config)/meshes/cylinder-item.dae"
+            filename="file://$(find mock_sim)/meshes/cylinder-item.dae"
             scale="1 1 1"
           />
         </geometry>

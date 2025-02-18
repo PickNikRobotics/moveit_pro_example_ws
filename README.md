@@ -31,7 +31,7 @@ The structure of this repository is as follows:
     ├── <a href="https://github.com/PickNikRobotics/lab_sim">lab_sim</a>
     ├── <a href="https://github.com/PickNikRobotics/moveit_pro_ur_configs">moveit_pro_ur_configs</a>
     │   ├── picknik_ur_base_config
-    │   ├── picknik_ur_mock_hw_config
+    │   ├── mock_sim
     │   ├── multi_arm_sim
     │   ├── picknik_ur_sim_config
     │   └── picknik_ur_site_config

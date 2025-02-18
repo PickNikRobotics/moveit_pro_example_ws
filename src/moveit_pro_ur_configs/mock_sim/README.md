@@ -1,4 +1,4 @@
-# picknik_ur_mock_hw_config
+# mock_sim
 
 A MoveIt Pro configuration to simulate a UR arm using mock hardware.
 
