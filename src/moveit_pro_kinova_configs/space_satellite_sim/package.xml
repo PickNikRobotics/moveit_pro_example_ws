@@ -1,0 +1,33 @@
+<?xml version="1.0" ?>
+<package format="3">
+  <name>space_satellite_sim</name>
+  <version>0.1.0</version>
+
+  <description>
+    A MoveIt Pro configuration to simulate satellite grappling with a Kinova
+    Gen3 robot using mock hardware with MuJoCo.
+  </description>
+
+  <maintainer email="paul.gesel@picknik.ai">Paul Gesel</maintainer>
+  <maintainer email="david.yackzan@picknik.ai">David Yackzan</maintainer>
+
+  <license>BSD-3-Clause</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>apriltag_ros</depend>
+
+  <exec_depend>joint_trajectory_admittance_controller</exec_depend>
+  <exec_depend>kinova_sim</exec_depend>
+  <exec_depend>kortex_description</exec_depend>
+  <exec_depend>moveit_studio_kinova_pstop_manager</exec_depend>
+  <exec_depend>picknik_mujoco_ros</exec_depend>
+  <exec_depend>picknik_accessories</exec_depend>
+  <exec_depend>realsense2_description</exec_depend>
+  <exec_depend>robotiq_description</exec_depend>
+  <exec_depend>velocity_force_controller</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
