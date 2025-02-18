@@ -1,0 +1,26 @@
+- name: Home
+  joint_group_names:
+    - manipulator
+  joint_state:
+    header:
+      frame_id: world
+      stamp:
+        sec: 0
+        nanosec: 0
+    name: [joint_1, joint_2, joint_3, joint_4, joint_5, joint_6, joint_7]
+    position: [0, 2.0944, 0, -2.66, 0, 2.1364, 1.5708]
+    velocity: []
+    effort: []
+- name: View Satellite
+  joint_group_names:
+    - manipulator
+  joint_state:
+    header:
+      frame_id: world
+      stamp:
+        sec: 0
+        nanosec: 0
+    name: [joint_1, joint_2, joint_3, joint_4, joint_5, joint_6, joint_7]
+    position: [0, 2.0944, 0, -2.66, 0, 0.5656, 0]
+    velocity: []
+    effort: []

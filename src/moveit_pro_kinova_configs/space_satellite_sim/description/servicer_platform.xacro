@@ -1,0 +1,133 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <!-- Macro definition for the servicer platform -->
+  <xacro:macro name="servicer_platform" params="parent_frame *origin">
+
+    <!-- Materials definitions -->
+    <material name="gold">
+      <color rgba="0.7 0.6 0.4 1" />
+    </material>
+    <material name="blue">
+      <color rgba="0.1 0.1 0.7 1" />
+    </material>
+    <material name="silver">
+      <color rgba="0.6 0.6 0.6 1" />
+    </material>
+    
+    <!-- Servicer Platform -->
+    <link name="servicer_platform" />
+    
+    <joint name="servicer_platform_joint" type="fixed">
+      <parent link="${parent_frame}" />
+      <child link="servicer_platform" />
+      <xacro:insert_block name="origin" />
+    </joint>
+
+    <!-- EPAStar -->
+    <link name="epastar">
+      <visual>
+        <geometry>
+          <mesh filename="package://space_satellite_sim/meshes/visual/epastar.stl" />
+        </geometry>
+        <material name="silver" />
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://space_satellite_sim/meshes/collision/epastar.stl" />
+        </geometry>
+      </collision>
+    </link>
+
+    <!-- Joint connecting to parent -->
+    <joint name="epastar_joint" type="fixed">
+      <parent link="servicer_platform" />
+      <child link="epastar" />
+      <origin rpy="0 0 0" xyz="0 0 0" />
+    </joint>
+
+    <!-- Interface -->
+    <link name="interface">
+      <visual>
+        <geometry>
+          <mesh filename="package://space_satellite_sim/meshes/visual/interface.stl" />
+        </geometry>
+        <material name="gold" />
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://space_satellite_sim/meshes/collision/interface.stl" />
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="interface_joint" type="fixed">
+      <parent link="servicer_platform" />
+      <child link="interface" />
+      <origin rpy="0 0 0" xyz="0 0 0" />
+    </joint>
+
+    <!-- RPO Suite -->
+    <link name="rpo_suite">
+      <visual>
+        <geometry>
+          <mesh filename="package://space_satellite_sim/meshes/visual/rpo_suite.stl" />
+        </geometry>
+        <material name="silver" />
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://space_satellite_sim/meshes/collision/rpo_suite.stl" />
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="rpo_suite_joint" type="fixed">
+      <parent link="servicer_platform" />
+      <child link="rpo_suite" />
+      <origin rpy="0 0 0" xyz="0 0 0" />
+    </joint>
+
+    <!-- Pole -->
+    <link name="pole">
+      <visual>
+        <geometry>
+          <mesh filename="package://space_satellite_sim/meshes/visual/pole.stl" />
+        </geometry>
+        <material name="silver" />
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://space_satellite_sim/meshes/collision/pole.stl" />
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="pole_joint" type="fixed">
+      <parent link="servicer_platform" />
+      <child link="pole" />
+      <origin rpy="0 0 0" xyz="0 0 0" />
+    </joint>
+
+    <!-- Solar Panels -->
+    <link name="solar_panels">
+      <visual>
+        <geometry>
+          <mesh filename="package://space_satellite_sim/meshes/visual/solar_panels.stl" />
+        </geometry>
+        <material name="blue" />
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://space_satellite_sim/meshes/collision/solar_panels.stl" />
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="solar_panels_joint" type="fixed">
+      <parent link="servicer_platform" />
+      <child link="solar_panels" />
+      <origin rpy="0 0 0" xyz="0 0 0" />
+    </joint>
+
+  </xacro:macro>
+</robot>
