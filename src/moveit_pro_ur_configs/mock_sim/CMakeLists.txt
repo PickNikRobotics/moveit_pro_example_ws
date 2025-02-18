@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(picknik_ur_mock_hw_config)
+project(mock_sim)
 
 find_package(ament_cmake REQUIRED)
 
