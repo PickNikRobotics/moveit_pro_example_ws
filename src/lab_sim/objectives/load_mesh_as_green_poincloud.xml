@@ -3,7 +3,7 @@
   <!--//////////-->
   <BehaviorTree
     ID="Load Mesh as Green Point Cloud"
-    _description=""
+    _description="Loads a point cloud from a file and colors it green."
     _favorite="false"
     _subtreeOnly="true"
   >
