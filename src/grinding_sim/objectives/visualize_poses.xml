@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Visualize Poses">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Visualize Poses"
+    _description=""
+    _favorite="true"
+    _subtreeOnly="false"
+    action_poses="action_poses"
+    reference_frame="reference_frame"
+    approach_pose="approach_pose"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        controller_names="/joint_trajectory_controller"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        velocity_scale_factor="1.0"
+        waypoint_name="Retract"
+      />
+      <SubTree
+        ID="Register Machined Part"
+        _collapsed="false"
+        registered_pose="{registered_pose}"
+      />
+      <!--Publish frame of registered part so we visualize poses in reference to it-->
+      <Control ID="Fallback">
+        <Decorator ID="Timeout" msec="500">
+          <Action
+            ID="PublishStaticFrame"
+            pose="{registered_pose}"
+            publish_rate="50"
+            child_frame_id="registered_pose"
+          />
+        </Decorator>
+        <Action ID="AlwaysSuccess" />
+      </Control>
+      <Action
+        ID="LoadPoseStampedVectorFromYaml"
+        output="{grinding_poses}"
+        file_path="grinding_poses.yaml"
+      />
+      <!--Use a script with a pose counter so we can give a unique name to each marker (allowing multiple poses to be visualized)-->
+      <Action ID="Script" code="pose_count := 0" />
+      <Decorator
+        ID="ForEach"
+        vector_in="{grinding_poses}"
+        out="{target_pose}"
+        index="{index}"
+      >
+        <Control ID="Sequence">
+          <!--Visualize and add each pose to the vector-->
+          <Action
+            ID="VisualizePose"
+            marker_name="{pose_count}"
+            pose="{target_pose}"
+            marker_lifetime="0.000000"
+            marker_size="0.100000"
+          />
+          <Action ID="Script" code="pose_count += 1" />
+        </Control>
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Visualize Poses">
+      <MetadataFields>
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
