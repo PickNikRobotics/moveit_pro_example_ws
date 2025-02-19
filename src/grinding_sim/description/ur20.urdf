@@ -80,7 +80,7 @@
     <visual>
       <origin rpy="0 0 3.141592653589793" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://picknik_accessories/mujoco_assets/grinding_sim/ur20/base/base.dae"/>
+        <mesh filename="package://picknik_accessories/mujoco_assets/grinding_sim_assets/ur20/base/base.dae"/>
       </geometry>
     </visual>
     <collision>
@@ -99,7 +99,7 @@
     <visual>
       <origin rpy="0 0 3.141592653589793" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://picknik_accessories/mujoco_assets/grinding_sim/ur20/shoulder/shoulder.dae"/>
+        <mesh filename="package://picknik_accessories/mujoco_assets/grinding_sim_assets/ur20/shoulder/shoulder.dae"/>
       </geometry>
     </visual>
     <collision>
@@ -118,7 +118,7 @@
     <visual>
       <origin rpy="1.5707963267948966 0 -1.5707963267948966" xyz="0 0 0.26"/>
       <geometry>
-        <mesh filename="package://picknik_accessories/mujoco_assets/grinding_sim/ur20/upperarm/upperarm.dae"/>
+        <mesh filename="package://picknik_accessories/mujoco_assets/grinding_sim_assets/ur20/upperarm/upperarm.dae"/>
       </geometry>
     </visual>
     <collision>
@@ -137,7 +137,7 @@
     <visual>
       <origin rpy="1.5707963267948966 0 -1.5707963267948966" xyz="0 0 0.043"/>
       <geometry>
-        <mesh filename="package://picknik_accessories/mujoco_assets/grinding_sim/ur20/forearm/forearm.dae"/>
+        <mesh filename="package://picknik_accessories/mujoco_assets/grinding_sim_assets/ur20/forearm/forearm.dae"/>
       </geometry>
     </visual>
     <collision>
@@ -156,7 +156,7 @@
     <visual>
       <origin rpy="1.5707963267948966 0 0" xyz="0 0 -0.0775"/>
       <geometry>
-        <mesh filename="package://picknik_accessories/mujoco_assets/grinding_sim/ur20/wrist1/wrist1.dae"/>
+        <mesh filename="package://picknik_accessories/mujoco_assets/grinding_sim_assets/ur20/wrist1/wrist1.dae"/>
       </geometry>
     </visual>
     <collision>
@@ -175,7 +175,7 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 -0.0749"/>
       <geometry>
-        <mesh filename="package://picknik_accessories/mujoco_assets/grinding_sim/ur20/wrist2/wrist2.dae"/>
+        <mesh filename="package://picknik_accessories/mujoco_assets/grinding_sim_assets/ur20/wrist2/wrist2.dae"/>
       </geometry>
     </visual>
     <collision>
@@ -194,7 +194,7 @@
     <visual>
       <origin rpy="1.5707963267948966 0 0" xyz="0 0 -0.07"/>
       <geometry>
-        <mesh filename="package://picknik_accessories/mujoco_assets/grinding_sim/ur20/wrist3/wrist3.dae"/>
+        <mesh filename="package://picknik_accessories/mujoco_assets/grinding_sim_assets/ur20/wrist3/wrist3.dae"/>
       </geometry>
     </visual>
     <collision>
@@ -318,13 +318,13 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://picknik_accessories/mujoco_assets/grinding_sim/tool_base/tool_base_decimated.dae"/>
+        <mesh filename="package://picknik_accessories/mujoco_assets/grinding_sim_assets/tool_base/tool_base_decimated.dae"/>
       </geometry>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://picknik_accessories/mujoco_assets/grinding_sim/tool_base/tool_base.stl"/>
+        <mesh filename="package://picknik_accessories/mujoco_assets/grinding_sim_assets/tool_base/tool_base.stl"/>
       </geometry>
     </collision>
   </link>
@@ -332,13 +332,13 @@
     <visual>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://picknik_accessories/mujoco_assets/grinding_sim/tool0_tool/tool0_tool_decimated.dae"/>
+        <mesh filename="package://picknik_accessories/mujoco_assets/grinding_sim_assets/tool0_tool/tool0_tool_decimated.dae"/>
       </geometry>
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0 0 0"/>
       <geometry>
-        <mesh filename="package://picknik_accessories/mujoco_assets/grinding_sim/tool0_tool/tool0_tool.stl"/>
+        <mesh filename="package://picknik_accessories/mujoco_assets/grinding_sim_assets/tool0_tool/tool0_tool.stl"/>
       </geometry>
     </collision>
   </link>
@@ -372,7 +372,7 @@
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://picknik_accessories/mujoco_assets/grinding_sim/workcell.stl"
+          filename="package://picknik_accessories/mujoco_assets/grinding_sim_assets/workcell.stl"
         />
       </geometry>
       <material name="gray">
@@ -383,7 +383,7 @@
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://picknik_accessories/mujoco_assets/grinding_sim/workcell.stl"
+          filename="package://picknik_accessories/mujoco_assets/grinding_sim_assets/workcell.stl"
         />
       </geometry>
     </collision>

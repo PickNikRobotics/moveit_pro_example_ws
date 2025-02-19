@@ -1,5 +1,5 @@
 <mujoco model="ur20 grinding scene">
-  <compiler angle="radian" autolimits="true" assetdir="grinding_sim" />
+  <compiler angle="radian" autolimits="true" assetdir="grinding_sim_assets" />
 
   <default>
     <!-- Actuator & joint defaults -->
