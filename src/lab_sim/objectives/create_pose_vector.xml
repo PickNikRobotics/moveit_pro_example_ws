@@ -5,7 +5,7 @@
     ID="Create Pose Vector"
     _favorite="false"
     _subtreeOnly="true"
-    _description=""
+    _description="Creates a sequence of stamped poses and adds them to a vector"
     target_poses="{target_poses}"
   >
     <Control ID="Sequence">
