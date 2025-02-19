@@ -15,7 +15,7 @@
         ID="LoadPointCloudFromFile"
         color="{color}"
         package_name="picknik_accessories"
-        file_path="mujoco_assets/grinding_sim/engine_block/engine_block.pcd"
+        file_path="mujoco_assets/grinding_sim_assets/engine_block/engine_block.pcd"
         point_cloud="{engine_block_cloud}"
         frame_id="world"
         num_sampled_points="10000"
