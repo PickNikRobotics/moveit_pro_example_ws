@@ -7,7 +7,7 @@
   <BehaviorTree
     ID="Constrained Pick and Place Subtree"
     _subtreeOnly="true"
-    _description=""
+    _description="Takes in waypoints to run a constrained pick and place operation."
   >
     <Control ID="Sequence">
       <!--Move to pick location-->
@@ -115,7 +115,7 @@
       <inout_port name="pre_place" default="" />
       <MetadataFields>
         <Metadata runnable="false" />
-        <Metadata subcategory="Application - Advanced Examples" />
+        <Metadata subcategory="Motion - Execute" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
