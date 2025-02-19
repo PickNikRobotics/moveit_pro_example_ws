@@ -4,25 +4,18 @@
     ID="Close Gripper"
     _description="Close the gripper"
     _favorite="true"
-    _subtreeOnly="false"
+    _subtreeOnly="true"
   >
     <Control ID="Sequence" name="root">
-      <Action
-        ID="MoveGripperAction"
-        gripper_command_action_name="/robotiq_gripper_controller/gripper_cmd"
-        position="0.7929"
-        timeout="15.000000"
-      />
+      <!--Not used in this config-->
+      <Action ID="AlwaysFailure" />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Close Gripper">
       <MetadataFields>
         <Metadata subcategory="Grasping" />
-        <Metadata runnable="true" />
-      </MetadataFields>
-      <MetadataFields>
-        <Metadata subcategory="Grasping" />
+        <Metadata runnable="false" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
