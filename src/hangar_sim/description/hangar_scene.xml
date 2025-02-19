@@ -12,14 +12,6 @@
     <global offwidth="1280" offheight="720" azimuth="0" elevation="180" />
     <map znear=".0001" />
   </visual>
-  <asset>
-    <texture
-      type="skybox"
-      file="assets/space.png"
-      gridsize="3 4"
-      gridlayout=".U..LFRB.D.."
-    />
-  </asset>
 
   <worldbody>
     <!-- Scene Camera -->
