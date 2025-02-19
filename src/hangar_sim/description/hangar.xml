@@ -12,12 +12,6 @@
       gridsize="3 4"
       gridlayout=".U..LFRB.D.."
     />
-    <texture
-      type="skybox"
-      file="assets/space.png"
-      gridsize="3 4"
-      gridlayout=".U..LFRB.D.."
-    />
   </asset>
   <worldbody>
     <body
