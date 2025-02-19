@@ -5,7 +5,7 @@ find_package(ament_cmake REQUIRED)
 
 # Install all XML files in directory
 set(PREMIER_ASSETS_DIR
-"${CMAKE_INSTALL_PREFIX}/../picknik_accessories/share/picknik_accessories/mujoco_assets/grinding_sim"
+"${CMAKE_INSTALL_PREFIX}/../picknik_accessories/share/picknik_accessories/mujoco_assets/grinding_sim_assets"
 )
 # Destination directory
 set(DEST_DIR "${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/description/")
