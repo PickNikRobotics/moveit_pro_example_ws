@@ -18,11 +18,11 @@
   <xacro:arg name="tool_device_name" default="/dev/ttyUSB0" />
   <xacro:arg
     name="initial_positions_file"
-    default="$(find picknik_ur_mock_hw_config)/config/initial_positions.yaml"
+    default="$(find mock_sim)/config/initial_positions.yaml"
   />
   <xacro:arg
     name="environment_xacro"
-    default="$(find picknik_ur_mock_hw_config)/description/environment.xacro"
+    default="$(find mock_sim)/description/environment.xacro"
   />
 
   <!-- Import UR and environment macros -->
