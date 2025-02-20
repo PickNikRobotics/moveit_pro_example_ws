@@ -3,23 +3,34 @@
 
 # Services that are listed under `/opt/moveit_pro/docker-compose.yaml` are mirrored here for merging.
 # Feel free to remove services here that are unmodified.
+#
 services:
+
   # The base image that all MoveIt Pro services extend off of. Builds the user workspace.
   base:
+
   # Starts the MoveIt Pro Agent and the Bridge between the Agent and the Web UI.
   agent_bridge:
-
     # IMPORTANT: Enable Nvidia GPUs by uncommenting the lines below:
+    # runtime: nvidia
     # deploy:
-    #   resources:
-    #     reservations:
-    #       devices:
-    #         - driver: nvidia
-    #           count: 1
-    #           capabilities: [gpu]
-
+    #     resources:
+    #       reservations:
+    #         devices:
+    #           - driver: nvidia
+    #             count: 1
+    #             capabilities: [gpu, compute, utility,graphics, video]
   # Starts the robot drivers.
   drivers:
+    # IMPORTANT: Enable Nvidia GPUs by uncommenting the lines below:
+    # runtime: nvidia
+    # deploy:
+    #     resources:
+    #       reservations:
+    #         devices:
+    #           - driver: nvidia
+    #             count: 1
+    #             capabilities: [gpu, compute, utility, graphics, video]
 
   # Starts the web UI frontend.
   web_ui:
