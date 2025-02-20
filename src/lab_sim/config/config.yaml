@@ -28,9 +28,6 @@ moveit_params:
   servo_joint_limits:
     package: "lab_sim"
     path: "config/moveit/hard_joint_limits.yaml"
-  sensors_3d:
-    package: "lab_sim"
-    path: "config/moveit/sensors_3d.yaml"
 
 # Configuration for loading behaviors and objectives.
 # [Required]
