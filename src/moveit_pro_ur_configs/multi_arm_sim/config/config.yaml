@@ -34,10 +34,10 @@ hardware:
   # [Required]
   robot_description:
     urdf:
-      package: "picknik_ur_multi_arm_config"
+      package: "multi_arm_sim"
       path: "description/multi_arm_ur.xacro"
     srdf:
-      package: "picknik_ur_multi_arm_config"
+      package: "multi_arm_sim"
       path: "config/moveit/multi_arm_ur.srdf"
     # Specify any additional parameters required for the URDF.
     # Many of these are specific to the UR descriptions packages, and can be customized as needed.
@@ -82,7 +82,7 @@ moveit_params:
   joint_group_name: "first_manipulator"
 
   ompl_planning:
-    package: "picknik_ur_multi_arm_config"
+    package: "multi_arm_sim"
     path: "config/moveit/ompl_planning.yaml"
   pilz_planning:
     package: "picknik_ur_base_config"
@@ -91,19 +91,19 @@ moveit_params:
     package: "picknik_ur_base_config"
     path: "config/moveit/stomp_planning.yaml"
   kinematics:
-    package: "picknik_ur_multi_arm_config"
+    package: "multi_arm_sim"
     path: "config/moveit/pose_ik_distance.yaml"
   servo:
-    package: "picknik_ur_multi_arm_config"
+    package: "multi_arm_sim"
     path: "config/moveit/multi_ur_servo.yaml"
   sensors_3d:
     package: "picknik_ur_base_config"
     path: "config/moveit/sensors_3d.yaml"
   servo_kinematics:
-    package: "picknik_ur_multi_arm_config"
+    package: "multi_arm_sim"
     path: "config/moveit/pose_ik_speed.yaml"
   joint_limits:
-    package: "picknik_ur_multi_arm_config"
+    package: "multi_arm_sim"
     path: "config/moveit/multi_arm_joint_limits.yaml"
   pilz_cartesian_limits:
     package: "picknik_ur_base_config"
@@ -125,7 +125,7 @@ moveit_params:
 # [Required, if using ros2_control]
 ros2_control:
   config:
-    package: "picknik_ur_multi_arm_config"
+    package: "multi_arm_sim"
     path: "config/control/picknik_multi_ur.ros2_control.yaml"
   # MoveIt Pro will load and activate these controllers at start up to ensure they are available.
   # If not specified, it is up to the user to ensure the appropriate controllers are active and available
@@ -174,10 +174,10 @@ objectives:
   # [Required]
   objective_library_paths:
     core:
-      package_name: "picknik_ur_multi_arm_config"
+      package_name: "multi_arm_sim"
       relative_path: "objectives"
   # Specify the location of the saved waypoints file.
   # [Required]
   waypoints_file:
-    package_name: "picknik_ur_multi_arm_config"
+    package_name: "multi_arm_sim"
     relative_path: "waypoints/ur_waypoints.yaml"
