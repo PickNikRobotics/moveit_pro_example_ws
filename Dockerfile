@@ -230,6 +230,28 @@ ARG USERNAME
 ARG USER_WS=/home/${USERNAME}/user_ws
 ENV USER_WS=${USER_WS}
 
+#########################################
+# ENABLE GPU INFERENCE BY UNCOMMENTING  #
+# #######################################
+# RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+#     --mount=type=cache,target=/var/lib/apt,sharing=locked \
+#     apt-get update && apt-get install wget -y -q --no-install-recommends && \
+#     wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.1-1_all.deb && \
+#     dpkg -i cuda-keyring_1.1-1_all.deb && \
+#     apt-get update && \
+#     apt-get install -q -y \
+#       libcudnn9-cuda-12 \
+#       libcudnn9-dev-cuda-12 \
+#       libcublas-12-6 \
+#       cuda-cudart-12-6 \
+#       libcurand-12-6 \
+#       libcufft-12-6 \
+#       libnvinfer10 \
+#       libnvinfer-plugin10 \
+#       libnvonnxparsers10 \
+#       libtree
+# ENV LD_LIBRARY_PATH=/usr/local/lib/python3.10/dist-packages/onnxruntime/capi:/usr/lib/x86_64-linux-gnu:/usr/local/cuda-12.6/targets/x86_64-linux/lib:$LD_LIBRARY_PATH
+
 # Compile the workspace
 WORKDIR $USER_WS
 
