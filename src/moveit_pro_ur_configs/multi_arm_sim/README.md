@@ -1,4 +1,4 @@
-# picknik_ur_multi_arm_config
+# multi_arm_sim
 
 A MoveIt Pro example configuration package for using multiple UR5e arms using mock hardware.
 
