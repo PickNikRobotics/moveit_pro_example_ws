@@ -51,7 +51,7 @@ install(
   INCLUDES
   DESTINATION include)
 
-install(DIRECTORY config models DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
 
 if(BUILD_TESTING)
   moveit_pro_behavior_test(example_behaviors)

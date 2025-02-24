@@ -1,0 +1,308 @@
+<mujocoinclude>
+  <default>
+    <!-- kinova defaults -->
+    <default class="kinova">
+      <material specular="0.5" shininess="0.25" />
+      <joint armature="0.1" damping="1" axis="0 0 1" range="-2.8973 2.8973" />
+      <general
+        dyntype="none"
+        biastype="affine"
+        ctrlrange="-6.28 6.28"
+        forcerange="-87 87"
+      />
+      <default class="infiniteJoints">
+        <joint limited="false" />
+      </default>
+      <default class="limitedJoints">
+        <joint limited="true" />
+      </default>
+      <site size="0.001" rgba="0.5 0.5 0.5 0.3" group="4" />
+    </default>
+    <!-- robotiq 2f85 defaults -->
+    <default class="2f85">
+      <mesh scale="0.001 0.001 0.001" />
+      <general biastype="affine" />
+
+      <joint axis="1 0 0" />
+      <default class="knuckle_link">
+        <joint
+          range="0 0.8"
+          armature="0.005"
+          damping="0.1"
+          solimplimit="0.95 0.99 0.001"
+          solreflimit="0.005 1"
+        />
+      </default>
+      <default class="finger_tip_link">
+        <joint
+          range="-0.872664 0.872664"
+          armature="0.001"
+          pos="0 -0.018 0.0065"
+          solimplimit="0.95 0.99 0.001"
+          solreflimit="0.005 1"
+        />
+      </default>
+      <default class="inner_knuckle_link">
+        <joint
+          range="-0.29670597283 0.8"
+          armature="0.001"
+          stiffness="0.05"
+          springref="2.62"
+          damping="0.00125"
+        />
+      </default>
+      <default class="finger_link">
+        <joint
+          range="-1.57 0"
+          armature="0.001"
+          solimplimit="0.95 0.99 0.001"
+          solreflimit="0.005 1"
+        />
+      </default>
+
+      <default class="visual">
+        <geom type="mesh" contype="0" conaffinity="0" group="2" />
+      </default>
+      <default class="collision">
+        <geom type="mesh" group="3" condim="6" />
+        <default class="pad_box1">
+          <geom
+            mass="0"
+            type="box"
+            pos="0 -0.0026 0.028125"
+            size="0.011 0.004 0.009375"
+            friction="0.7"
+            solimp="0.95 0.99 0.001"
+            solref="0.004 1"
+            priority="1"
+            rgba="0.55 0.55 0.55 1"
+          />
+        </default>
+        <default class="pad_box2">
+          <geom
+            mass="0"
+            type="box"
+            pos="0 -0.0026 0.009375"
+            size="0.011 0.004 0.009375"
+            friction="0.6"
+            solimp="0.95 0.99 0.001"
+            solref="0.004 1"
+            priority="1"
+            rgba="0.45 0.45 0.45 1"
+          />
+        </default>
+      </default>
+    </default>
+  </default>
+
+  <asset>
+    <material name="metal" rgba="0.58 0.58 0.58 1" />
+    <material name="silicone" rgba="0.1882 0.1882 0.1882 1" />
+    <material name="white" rgba="1.0 1.0 1.0 1" />
+    <material name="gray" rgba="0.4627 0.4627 0.4627 1" />
+    <material name="black" rgba="0.149 0.149 0.149 1" />
+
+    <!-- Kinova collision meshes -->
+    <mesh name="base_link_c" file="kinova/base_link.STL" />
+    <mesh name="shoulder_link_c" file="kinova/shoulder_link.STL" />
+    <mesh name="half_arm_1_link_c" file="kinova/half_arm_1_link.STL" />
+    <mesh name="half_arm_2_link_c" file="kinova/half_arm_2_link.STL" />
+    <mesh name="forearm_link_c" file="kinova/forearm_link.STL" />
+    <mesh
+      name="spherical_wrist_1_link_c"
+      file="kinova/spherical_wrist_1_link.STL"
+    />
+    <mesh
+      name="spherical_wrist_2_link_c"
+      file="kinova/spherical_wrist_2_link.STL"
+    />
+    <mesh
+      name="bracelet_with_vision_link_c"
+      file="kinova/bracelet_with_vision_link.STL"
+    />
+    <!-- Kinova visual meshes -->
+    <mesh name="base_link" file="kinova/base_link.obj" />
+    <mesh name="shoulder_link" file="kinova/shoulder_link.obj" />
+    <mesh name="half_arm_1_link" file="kinova/half_arm_1_link.obj" />
+    <mesh name="half_arm_2_link" file="kinova/half_arm_2_link.obj" />
+    <mesh name="forearm_link" file="kinova/forearm_link.obj" />
+    <mesh
+      name="spherical_wrist_1_link"
+      file="kinova/spherical_wrist_1_link.obj"
+    />
+    <mesh
+      name="spherical_wrist_2_link"
+      file="kinova/spherical_wrist_2_link.obj"
+    />
+    <mesh
+      name="bracelet_with_vision_link"
+      file="kinova/bracelet_with_vision_link.obj"
+    />
+    <!-- Robotiq 2f85 meshes -->
+    <mesh name="robotiq_85_base" class="2f85" file="robotiq_2f85/base.stl" />
+    <mesh
+      name="robotiq_85_knuckle_link"
+      class="2f85"
+      file="robotiq_2f85/knuckle_link.stl"
+    />
+    <mesh
+      name="robotiq_85_inner_knuckle_link"
+      class="2f85"
+      file="robotiq_2f85/inner_knuckle_link.stl"
+    />
+    <mesh
+      name="robotiq_85_finger_link"
+      class="2f85"
+      file="robotiq_2f85/finger_link.stl"
+    />
+    <mesh
+      name="robotiq_85_finger_tip_link"
+      class="2f85"
+      file="robotiq_2f85/finger_tip_link.stl"
+    />
+    <mesh name="robotiq_85_pad" class="2f85" file="robotiq_2f85/pad.stl" />
+    <mesh
+      name="robotiq_85_silicone_pad"
+      class="2f85"
+      file="robotiq_2f85/silicone_pad.stl"
+    />
+    <mesh name="rafti_finger" file="rafti/rafti_finger.obj" />
+    <mesh
+      name="rafti_finger_collision_1"
+      file="rafti/rafti_finger_collision_1.obj"
+    />
+    <mesh
+      name="rafti_finger_collision_2"
+      file="rafti/rafti_finger_collision_2.obj"
+    />
+    <mesh
+      name="rafti_finger_collision_3"
+      file="rafti/rafti_finger_collision_3.obj"
+    />
+    <mesh
+      name="rafti_finger_collision_4"
+      file="rafti/rafti_finger_collision_4.obj"
+    />
+  </asset>
+
+  <contact>
+    <exclude body1="base_link" body2="shoulder_link" />
+  </contact>
+
+  <actuator>
+    <position class="kinova" name="joint_1" joint="joint_1" kp="800" kv="260" />
+    <position class="kinova" name="joint_2" joint="joint_2" kp="800" kv="260" />
+    <position class="kinova" name="joint_3" joint="joint_3" kp="260" kv="86" />
+    <position class="kinova" name="joint_4" joint="joint_4" kp="260" kv="86" />
+    <position class="kinova" name="joint_5" joint="joint_5" kp="130" kv="45" />
+    <position class="kinova" name="joint_6" joint="joint_6" kp="130" kv="45" />
+    <position class="kinova" name="joint_7" joint="joint_7" kp="130" kv="45" />
+  </actuator>
+
+  <!-- Robotiq gripper contact -->
+  <contact>
+    <exclude
+      body1="robotiq_85_base_link"
+      body2="robotiq_85_left_knuckle_link"
+    />
+    <exclude
+      body1="robotiq_85_base_link"
+      body2="robotiq_85_right_knuckle_link"
+    />
+    <exclude
+      body1="robotiq_85_base_link"
+      body2="robotiq_85_left_inner_knuckle_link"
+    />
+    <exclude
+      body1="robotiq_85_base_link"
+      body2="robotiq_85_right_inner_knuckle_link"
+    />
+    <exclude
+      body1="robotiq_85_right_finger_link"
+      body2="robotiq_85_right_finger_tip_link"
+    />
+    <exclude
+      body1="robotiq_85_left_finger_link"
+      body2="robotiq_85_left_finger_tip_link"
+    />
+    <!--                              TODO uncomment to enable RAFTI fingers -->
+    <exclude
+      body1="right_rafti_finger_link"
+      body2="robotiq_85_right_finger_tip_link"
+    />
+    <exclude
+      body1="right_rafti_finger_link"
+      body2="robotiq_85_right_inner_knuckle_link"
+    />
+    <exclude
+      body1="right_rafti_finger_link"
+      body2="robotiq_85_right_knuckle_link"
+    />
+    <exclude
+      body1="left_rafti_finger_link"
+      body2="robotiq_85_left_finger_tip_link"
+    />
+    <exclude
+      body1="left_rafti_finger_link"
+      body2="robotiq_85_left_inner_knuckle_link"
+    />
+    <exclude
+      body1="left_rafti_finger_link"
+      body2="robotiq_85_left_knuckle_link"
+    />
+  </contact>
+
+  <!--
+    This adds stability to the model by having a tendon that distributes the forces between both
+    joints, such that the equality constraint doesn't have to do that much work in order to equalize
+    both joints. Since both joints share the same sign, we split the force between both equally by
+    setting coef=0.5
+  -->
+  <tendon>
+    <fixed name="split">
+      <joint joint="robotiq_85_right_knuckle_joint" coef="0.5" />
+      <joint joint="robotiq_85_left_knuckle_joint" coef="0.5" />
+    </fixed>
+  </tendon>
+
+  <equality>
+    <connect
+      anchor="0 0 0"
+      body1="robotiq_85_right_finger_tip_link"
+      body2="robotiq_85_right_finger_link"
+      solimp="0.95 0.99 0.001"
+      solref="0.005 1"
+    />
+    <connect
+      anchor="0 0 0"
+      body1="robotiq_85_left_finger_tip_link"
+      body2="robotiq_85_left_finger_link"
+      solimp="0.95 0.99 0.001"
+      solref="0.005 1"
+    />
+    <joint
+      joint1="robotiq_85_left_knuckle_joint"
+      joint2="robotiq_85_right_knuckle_joint"
+      polycoef="0 1 0 0 0"
+      solimp="0.95 0.99 0.001"
+      solref="0.005 1"
+    />
+  </equality>
+
+  <actuator>
+    <position
+      class="2f85"
+      name="robotiq_85_left_knuckle_joint"
+      tendon="split"
+      forcerange="-5 5"
+      ctrlrange="0 .8"
+      kp="100"
+      kv="100"
+    />
+  </actuator>
+
+  <sensor>
+    <force name="ee_force_sensor" site="fts" />
+    <torque name="ee_torque_sensor" site="fts" />
+  </sensor>
+</mujocoinclude>
