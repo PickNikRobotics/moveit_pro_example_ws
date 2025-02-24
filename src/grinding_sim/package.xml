@@ -1,0 +1,37 @@
+<?xml version="1.0" ?>
+<package format="3">
+  <name>grinding_sim</name>
+  <version>7.0.0</version>
+
+  <description>
+    Simulation configuration package for Premier Lab's Fanuc R-2000iD/165FH
+  </description>
+
+  <maintainer email="support@picknik.ai">MoveIt Pro Maintainer</maintainer>
+
+  <license>BSD-3-Clause</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>picknik_accessories</depend>
+
+  <exec_depend>admittance_controller</exec_depend>
+  <exec_depend>kinematics_interface_kdl</exec_depend>
+  <exec_depend>moveit_planners_stomp</exec_depend>
+  <exec_depend>moveit_ros_perception</exec_depend>
+  <exec_depend>moveit_studio_agent</exec_depend>
+  <exec_depend>moveit_studio_behavior</exec_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+
+  <test_depend>ament_clang_format</test_depend>
+  <test_depend>ament_clang_tidy</test_depend>
+  <test_depend>ament_cmake_copyright</test_depend>
+  <test_depend>ament_cmake_lint_cmake</test_depend>
+  <test_depend>picknik_ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
