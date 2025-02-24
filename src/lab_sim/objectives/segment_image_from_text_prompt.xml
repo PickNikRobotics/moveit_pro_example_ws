@@ -10,15 +10,15 @@
     <Control ID="Sequence">
       <SubTree
         ID="Segment Image from No Negative Text Prompt Subtree"
-        _collapsed="false"
+        _collapsed="true"
         clip_model_path="models/clip.onnx"
         clipseg_model_path="models/clipseg.onnx"
         erosion_size="2"
         masks_visualization_topic="/masks_visualization"
         model_package="lab_sim"
         threshold="0.28"
-        topic_name="/wrist_camera/color"
         prompts="an object"
+        image_topic_name="/wrist_camera/color"
       />
     </Control>
   </BehaviorTree>
