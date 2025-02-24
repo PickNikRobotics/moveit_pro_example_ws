@@ -17,7 +17,7 @@
         masks_visualization_topic="/masks_visualization"
         model_package="lab_sim"
         threshold="0.5"
-        topic_name="/wrist_camera/color"
+        image_topic_name="/wrist_camera/color"
         prompts="small boxes"
         negative_prompts="grey"
       />
