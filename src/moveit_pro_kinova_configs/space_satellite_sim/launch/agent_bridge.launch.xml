@@ -1,0 +1,8 @@
+<launch>
+  <include
+    file="$(find-pkg-share moveit_studio_agent)/launch/studio_agent_bridge.launch.xml"
+  />
+  <include
+    file="$(find-pkg-share space_satellite_sim)/launch/36h11.launch.yml"
+  />
+</launch>

@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Move Boxes to Loading Zone Start from Waypoint"
+>
+  <!--//////////-->
+  <BehaviorTree
+    ID="Move Boxes to Loading Zone Start from Waypoint"
+    _subtreeOnly="false"
+    waypoint_name="View Boxes"
+    place_pose="{place_pose}"
+    threshold="{threshold}"
+    prompt="{prompt}"
+    negative_prompts="{negative_prompts}"
+    prompts="{prompts}"
+    erosion_size="0"
+    _favorite="true"
+  >
+    <Control ID="Sequence">
+      <Action
+        ID="MoveGripperAction"
+        position="0.0"
+        timeout="10.000000"
+        gripper_command_action_name="/vacuum_gripper/gripper_cmd"
+      />
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        controller_names="/joint_trajectory_controller"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.0"
+        velocity_scale_factor="1.0"
+        waypoint_name="{waypoint_name}"
+        keep_orientation_link_names="grasp_link"
+      />
+      <SubTree ID="Clear Snapshot" _collapsed="false" />
+      <Decorator ID="Delay" delay_msec="2000">
+        <Action
+          ID="GetPointCloud"
+          topic_name="/wrist_camera/points"
+          timeout_sec="5.000000"
+          message_out="{point_cloud}"
+        />
+      </Decorator>
+      <Action
+        ID="SendPointCloudToUI"
+        pcd_topic="/pcd_pointcloud_captures"
+        point_cloud="{point_cloud}"
+      />
+      <Action
+        ID="TransformPointCloudFrame"
+        input_cloud="{point_cloud}"
+        target_frame="world"
+        output_cloud="{point_cloud}"
+      />
+      <Action
+        ID="CreateStampedPose"
+        reference_frame="world"
+        stamped_pose="{stamped_pose}"
+        position_xyz="0;0;2.05"
+      />
+      <Action
+        ID="CropPointsInBox"
+        crop_box_centroid_pose="{stamped_pose}"
+        point_cloud="{point_cloud}"
+        point_cloud_cropped="{point_cloud_cropped}"
+        crop_box_size="40;40;4"
+      />
+      <Action
+        ID="UpdatePlanningSceneService"
+        point_cloud="{point_cloud_cropped}"
+        point_cloud_service="/point_cloud_service"
+      />
+      <Action
+        ID="GetImage"
+        timeout_sec="5.000000"
+        topic_name="/wrist_camera/color"
+        message_out="{image}"
+      />
+      <Action
+        ID="GetCameraInfo"
+        timeout_sec="5.000000"
+        topic_name="/wrist_camera/camera_info"
+        message_out="{camera_info}"
+      />
+      <Control ID="Sequence">
+        <Action
+          ID="GetMasks2DFromTextQuery"
+          image="{image}"
+          masks2d="{clip_masks2d}"
+          threshold="{threshold}"
+          clipseg_model_path="models/clipseg.onnx"
+          clip_model_path="models/clip.onnx"
+          model_package="lab_sim"
+          prompts="{prompts}"
+          negative_prompts="{negative_prompts}"
+          erosion_size="{erosion_size}"
+        />
+        <Action
+          ID="PublishMask2D"
+          image="{image}"
+          masks="{clip_masks2d}"
+          masks_visualization_topic="/masks_visualization"
+        />
+        <Decorator ID="Inverter">
+          <Decorator
+            ID="ForEach"
+            vector_in="{clip_masks2d}"
+            index="{index}"
+            out="{clip_mask2d}"
+          >
+            <Decorator ID="Inverter">
+              <Control ID="Sequence">
+                <Action
+                  ID="GetCenterFromMask2D"
+                  mask="{clip_mask2d}"
+                  center="{pixel_coords}"
+                />
+                <Action
+                  ID="GetMasks2DFromPointQuery"
+                  image="{image}"
+                  pixel_coords="{pixel_coords}"
+                  masks2d="{masks2d}"
+                  model_package="lab_sim"
+                  decoder_model_path="models/decoder.onnx"
+                  encoder_model_path="models/sam2_hiera_large_encoder.onnx"
+                />
+                <Action
+                  ID="PublishMask2D"
+                  image="{image}"
+                  masks="{masks2d}"
+                  masks_visualization_topic="/masks_visualization"
+                />
+                <Action
+                  ID="GetMasks3DFromMasks2D"
+                  camera_info="{camera_info}"
+                  masks2d="{masks2d}"
+                  point_cloud="{point_cloud_cropped}"
+                  masks3d="{masks3d}"
+                />
+                <Decorator
+                  ID="ForEach"
+                  vector_in="{masks3d}"
+                  index="{index}"
+                  out="{mask3d}"
+                >
+                  <Control ID="Sequence">
+                    <Action
+                      ID="GetPointCloudFromMask3D"
+                      mask3d="{mask3d}"
+                      point_cloud="{point_cloud_cropped}"
+                      point_cloud_fragment="{point_cloud_fragment}"
+                    />
+                    <Action
+                      ID="SendPointCloudToUI"
+                      pcd_topic="/pcd_pointcloud_captures"
+                      point_cloud="{point_cloud_fragment}"
+                    />
+                  </Control>
+                </Decorator>
+                <Action
+                  ID="GetGraspableObjectsFromMasks3D"
+                  base_frame="world"
+                  masks3d="{masks3d}"
+                  minimum_face_area="0.0003"
+                  plane_inlier_threshold="0.01"
+                  point_cloud="{point_cloud_cropped}"
+                  graspable_objects="{graspable_objects}"
+                  face_separation_threshold="0.2"
+                />
+                <Decorator
+                  ID="ForEach"
+                  vector_in="{graspable_objects}"
+                  index="{index}"
+                  out="{graspable_object}"
+                >
+                  <Control ID="Sequence">
+                    <Action
+                      ID="LoadObjectiveParameters"
+                      parameters="{parameters}"
+                      config_file_name="box_picking_vacuum_config.yaml"
+                    />
+                    <Action
+                      ID="InitializeMTCTask"
+                      controller_names="/joint_trajectory_controller"
+                      task="{task}"
+                      task_id=""
+                    />
+                    <Action
+                      ID="SetupMTCCurrentState"
+                      skip_collision_check="false"
+                      task="{task}"
+                    />
+                    <Action
+                      ID="SetupMTCUpdateGroupCollisionRule"
+                      allow_collision="true"
+                      group_name="gripper"
+                      object_name="&lt;octomap&gt;"
+                      task="{task}"
+                    />
+                    <Action
+                      ID="SetupMTCApproachGrasp"
+                      parameters="{parameters}"
+                      target_object="{graspable_object}"
+                      monitored_stage="{monitored_stage}"
+                      task="{task}"
+                    />
+                    <Action
+                      ID="SetupMTCGenerateVacuumGrasps"
+                      parameters="{parameters}"
+                      target_object="{graspable_object}"
+                      monitored_stage="{monitored_stage}"
+                      task="{task}"
+                    />
+                    <Control ID="Parallel" success_count="2" failure_count="1">
+                      <Control ID="Sequence">
+                        <Action
+                          ID="PlanMTCTask"
+                          solution="{solution}"
+                          task="{task}"
+                        />
+                        <Action
+                          ID="ExecuteMTCTask"
+                          goal_duration_tolerance="-1.000000"
+                          solution="{solution}"
+                        />
+                      </Control>
+                      <Control ID="Sequence" name="TopLevelSequence">
+                        <Action
+                          ID="LoadPointCloudFromFile"
+                          color="0;255;0"
+                          file_path="box.stl"
+                          point_cloud="{box_mesh}"
+                          frame_id="world"
+                          num_sampled_points="50000"
+                          scale="1.000000"
+                        />
+                        <Action
+                          ID="GetCentroidFromPointCloud"
+                          point_cloud="{point_cloud_fragment}"
+                          output_pose="{point_cloud_fragment_center}"
+                        />
+                        <Action
+                          ID="TransformPointCloud"
+                          input_cloud="{box_mesh}"
+                          transform_pose="{point_cloud_fragment_center}"
+                          output_cloud="{box_mesh}"
+                        />
+                        <Action
+                          ID="RegisterPointClouds"
+                          target_point_cloud="{point_cloud_fragment}"
+                          target_pose_in_base_frame="{target_pose}"
+                          base_point_cloud="{box_mesh}"
+                          max_correspondence_distance="0.05"
+                          max_iterations="40"
+                        />
+                        <Action
+                          ID="TransformPointCloud"
+                          input_cloud="{box_mesh}"
+                          transform_pose="{target_pose}"
+                          output_cloud="{icp_cloud}"
+                        />
+                        <Action
+                          ID="TransformPointCloudFrame"
+                          input_cloud="{icp_cloud}"
+                          output_cloud="{icp_cloud}"
+                          target_frame="world"
+                        />
+                        <Action
+                          ID="SendPointCloudToUI"
+                          pcd_topic="/pcd_pointcloud_captures"
+                          point_cloud="{icp_cloud}"
+                        />
+                      </Control>
+                    </Control>
+                    <Action
+                      ID="MoveGripperAction"
+                      timeout="10.000000"
+                      gripper_command_action_name="/vacuum_gripper/gripper_cmd"
+                      position="1.0"
+                    />
+                    <SubTree
+                      ID="Move to Pose No Preview"
+                      _collapsed="true"
+                      target_pose="{place_pose}"
+                    />
+                    <Action
+                      ID="MoveGripperAction"
+                      position="0.0"
+                      timeout="10.000000"
+                      gripper_command_action_name="/vacuum_gripper/gripper_cmd"
+                    />
+                  </Control>
+                </Decorator>
+              </Control>
+            </Decorator>
+          </Decorator>
+        </Decorator>
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Move Boxes to Loading Zone Start from Waypoint">
+      <input_port name="erosion_size" default="0" />
+      <input_port name="negative_prompts" default="{negative_prompts}" />
+      <input_port name="place_pose" default="{place_pose}" />
+      <inout_port name="prompt" default="{prompt}" />
+      <input_port name="prompts" default="{prompts}" />
+      <input_port name="threshold" default="{threshold}" />
+      <input_port name="waypoint_name" default="View Boxes" />
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Advanced Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

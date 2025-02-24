@@ -1,0 +1,13 @@
+# Blender 4.3.2 MTL File: 'uploads_files_3584161_Hangar.blend'
+# www.blender.org
+
+newmtl walls
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd /home/paul/Downloads/hangar/Textures/Walls/Asphalt009_2K_Color.jpg
+map_Ns /home/paul/Downloads/hangar/Textures/Walls/Asphalt009_2K_Roughness.jpg
+map_Bump -bm 1.000000 /home/paul/Downloads/hangar/Textures/Walls/Asphalt009_2K_NormalGL.jpg

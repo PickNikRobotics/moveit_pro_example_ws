@@ -79,14 +79,23 @@
     <visual>
       <origin rpy="1.5707963267948966 0 1.5707963267948966" xyz="0.00987 -0.02 0"/>
       <geometry>
-        <mesh filename="package://realsense2_description/meshes/d415.stl"/>
+        <box size="0.02005 0.099 0.023" />
       </geometry>
       <material name="rs_aluminum">
-        <color rgba="0.5 0.5 0.5 1.0"/>
+        <color rgba="0.5 0.5 0.5 1.0" />
+      </material>
+    </visual>
+    <visual>
+      <origin rpy="1.5707963267948966 0 1.5707963267948966" xyz="0.020395 -0.02 0"/>
+      <geometry>
+        <box size="0.001 0.099 0.023" />
+      </geometry>
+      <material name="black">
+        <color rgba="0.0 0.0 0.0 1.0" />
       </material>
     </visual>
     <collision>
-      <origin rpy="0 0 0" xyz="0 -0.02 0"/>
+      <origin rpy="1.5707963267948966 0 1.5707963267948966" xyz="0.020395 -0.02 0"/>
       <geometry>
         <box size="0.02005 0.099 0.023"/>
       </geometry>

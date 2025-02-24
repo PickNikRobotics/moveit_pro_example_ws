@@ -4,7 +4,7 @@ This is fork of the [MoveIt Pro Empty Workspace](https://github.com/PickNikRobot
 This workspace contains reference materials for using MoveIt Pro, including:
 - [Example base UR5e configuration](src/moveit_pro_ur_configs/picknik_ur_base_config)
 - [A physics based simulation environment with a robot on a linear rail](src/lab_sim)
-- [Mobile manipulation configuration](src/moveit_pro_mobile_manipulation/picknik_ur_mobile_config)
+- [Mobile manipulation configuration](src/hangar_sim)
 - [Example behaviors](src/example_behaviors)
 
 Since the [picknik_accessories](https://github.com/PickNikRobotics/picknik_accessories) package uses git LFS, [it cannot be added as a subtree](https://github.com/git-lfs/git-lfs/issues/854).
