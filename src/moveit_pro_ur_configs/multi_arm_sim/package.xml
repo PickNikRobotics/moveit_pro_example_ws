@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <package format="3">
-  <name>picknik_ur_multi_arm_config</name>
+  <name>multi_arm_sim</name>
   <version>6.5.0</version>
 
   <description>Example configuration package for multiple UR arms.</description>
