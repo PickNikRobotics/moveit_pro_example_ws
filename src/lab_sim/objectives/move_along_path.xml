@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='utf-8'?>
+<root BTCPP_format="4" main_tree_to_execute="Move Along Path">
+  <!--//////////-->
+  <BehaviorTree ID="Move Along Path" _description="" _favorite="false" _subtreeOnly="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Control ID="Sequence">
+        <Action ID="CreateStampedPose" reference_frame="world" stamped_pose="{pose_1}" orientation_xyzw="0;1;0;0" position_xyz="-1.16;0.61;1.0"/>
+        <Action ID="AddPoseStampedToVector" input="{pose_1}" vector="{pose_stamped_vector}"/>
+        <Action ID="CreateStampedPose" reference_frame="world" stamped_pose="{pose_2}" position_xyz="-1.16;0.4178;1.0042" orientation_xyzw="0.0015751786456726362;0.94438243121779686;0.32881161147752225;-0.0047187473923115397"/>
+        <Action ID="AddPoseStampedToVector" input="{pose_2}" vector="{pose_stamped_vector}"/>
+        <Action ID="CreateStampedPose" reference_frame="world" stamped_pose="{pose_3}" orientation_xyzw="0.0015751786456726362;0.94438243121779686;0.32881161147752225;-0.0047187473923115397" position_xyz="-0.0298;0.4178;1.0042"/>
+        <Action ID="AddPoseStampedToVector" input="{pose_3}" vector="{pose_stamped_vector}"/>
+        <Action ID="CreateStampedPose" reference_frame="world" stamped_pose="{pose_4}" orientation_xyzw="0;1;0;0" position_xyz="-0.03;0.61;1.0"/>
+        <Action ID="AddPoseStampedToVector" input="{pose_4}" vector="{pose_stamped_vector}"/>
+        <Action ID="VisualizePath" marker_lifetime="0.000000" path="{pose_stamped_vector}"/>
+        <Decorator ID="KeepRunningUntilFailure">
+          <Control ID="Sequence">
+            <SubTree ID="Move to Waypoint" _collapsed="true" acceleration_scale_factor="1.0" controller_action_server="/joint_trajectory_controller/follow_joint_trajectory" controller_names="/joint_trajectory_controller" joint_group_name="manipulator" keep_orientation="false" keep_orientation_link_names="grasp_link" keep_orientation_tolerance="0.05" link_padding="0.01" velocity_scale_factor="1.0" waypoint_name="Look at Table"/>
+            <Action ID="PlanCartesianPath" acceleration_scale_factor="1.000000" blending_radius="0.020000" debug_solution="{debug_solution}" ik_cartesian_space_density="0.010000" ik_joint_space_density="0.100000" joint_trajectory_msg="{joint_trajectory_msg}" path="{pose_stamped_vector}" planning_group_name="manipulator" position_only="false" tip_link="grasp_link" trajectory_sampling_rate="100" velocity_scale_factor="1.000000"/>
+            <Action ID="GetCurrentPlanningScene" planning_scene_msg="{planning_scene}"/>
+            <Action ID="ValidateTrajectory" cartesian_space_step="0.020000" debug_solution="{debug_solution}" joint_space_step="0.100000" joint_trajectory_msg="{joint_trajectory_msg}" planning_group_name="manipulator" planning_scene_msg="{planning_scene}"/>
+            <Action ID="ExecuteFollowJointTrajectory" execute_follow_joint_trajectory_action_name="/joint_trajectory_controller/follow_joint_trajectory" goal_duration_tolerance="-1.000000" goal_position_tolerance="0.000000" goal_time_tolerance="0.000000" joint_trajectory_msg="{joint_trajectory_msg}"/>
+          </Control>
+        </Decorator>
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Move Along Path"><MetadataFields>
+        <Metadata runnable="true"/>
+      </MetadataFields></SubTree>
+  </TreeNodesModel>
+</root>
