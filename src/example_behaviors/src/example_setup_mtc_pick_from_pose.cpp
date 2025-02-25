@@ -6,6 +6,7 @@
 #include <moveit/task_constructor/task.h>
 #include <yaml-cpp/yaml.h>
 #include <moveit_msgs/msg/collision_object.hpp>
+#include <moveit_studio_behavior/utils/mtc_rrtconnect_planner.hpp>
 #include <moveit_studio_behavior_interface/behavior_context.hpp>
 #include <moveit_studio_behavior_interface/check_for_error.hpp>
 #include <moveit_studio_common/utils/yaml_parsing_tools.hpp>
@@ -78,8 +79,7 @@ BT::NodeStatus ExampleSetupMtcPickFromPose::tick()
   }
 
   // Create planners
-  const auto mtc_pipeline_planner = std::make_shared<moveit::task_constructor::solvers::PipelinePlanner>(
-      shared_resources_->node, "ompl", "RRTConnectkConfigDefault");
+  const auto mtc_pipeline_planner = std::make_shared<moveit_studio::behaviors::mtc_solvers::MTCRRTConnectPlanner>();
   const auto mtc_joint_interpolation_planner =
       std::make_shared<moveit::task_constructor::solvers::JointInterpolationPlanner>();
   const auto mtc_cartesian_planner = std::make_shared<moveit::task_constructor::solvers::CartesianPath>();
