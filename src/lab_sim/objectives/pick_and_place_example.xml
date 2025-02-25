@@ -1,5 +1,6 @@
+<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Pick And Place Example">
-  <!-- ////////// -->
+  <!--//////////-->
   <BehaviorTree
     ID="Pick And Place Example"
     _description="Pick and place example objective"
@@ -22,10 +23,14 @@
           controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
           task="{mtc_pick_task}"
         />
-        <Action ID="SetupMTCCurrentState" task="{mtc_pick_task}" />
-        <!-- The following behavior can be found in the example_behaviors package. -->
         <Action
-          ID="SetupMtcPickFromPose"
+          ID="SetupMTCCurrentState"
+          task="{mtc_pick_task}"
+          skip_collision_check="false"
+        />
+        <!--The following behavior can be found in the example_behaviors package.-->
+        <Action
+          ID="ExampleSetupMtcPickFromPose"
           grasp_pose="{pick_pose}"
           task="{mtc_pick_task}"
         />
@@ -34,7 +39,11 @@
           task="{mtc_pick_task}"
           solution="{mtc_pick_solution}"
         />
-        <Action ID="ExecuteMTCTask" solution="{mtc_pick_solution}" />
+        <Action
+          ID="ExecuteMTCTask"
+          solution="{mtc_pick_solution}"
+          goal_duration_tolerance="-1.000000"
+        />
       </Control>
       <Control ID="Sequence" name="Place">
         <Action
@@ -43,7 +52,11 @@
           controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
           task="{mtc_place_task}"
         />
-        <Action ID="SetupMTCCurrentState" task="{mtc_place_task}" />
+        <Action
+          ID="SetupMTCCurrentState"
+          task="{mtc_place_task}"
+          skip_collision_check="false"
+        />
         <Action
           ID="CreateStampedPose"
           reference_frame="world"
@@ -51,9 +64,9 @@
           orientation_xyzw="0;1;0;0"
           stamped_pose="{place_pose}"
         />
-        <!-- The following behavior can be found in the example_behaviors package. -->
+        <!--The following behavior can be found in the example_behaviors package.-->
         <Action
-          ID="SetupMtcPlaceFromPose"
+          ID="ExampleSetupMtcPlaceFromPose"
           place_pose="{place_pose}"
           task="{mtc_place_task}"
         />
@@ -62,7 +75,11 @@
           task="{mtc_place_task}"
           solution="{mtc_place_solution}"
         />
-        <Action ID="ExecuteMTCTask" solution="{mtc_place_solution}" />
+        <Action
+          ID="ExecuteMTCTask"
+          solution="{mtc_place_solution}"
+          goal_duration_tolerance="-1.000000"
+        />
       </Control>
     </Control>
   </BehaviorTree>
