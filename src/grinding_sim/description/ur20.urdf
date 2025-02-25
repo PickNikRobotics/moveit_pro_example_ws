@@ -372,7 +372,7 @@
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://picknik_accessories/mujoco_assets/grinding_sim_assets/workcell.stl"
+          filename="package://picknik_accessories/mujoco_assets/grinding_sim_assets/workcell.obj"
         />
       </geometry>
       <material name="gray">
@@ -383,7 +383,7 @@
       <origin xyz="0 0 0" rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://picknik_accessories/mujoco_assets/grinding_sim_assets/workcell.stl"
+          filename="package://picknik_accessories/mujoco_assets/grinding_sim_assets/workcell.obj"
         />
       </geometry>
     </collision>
