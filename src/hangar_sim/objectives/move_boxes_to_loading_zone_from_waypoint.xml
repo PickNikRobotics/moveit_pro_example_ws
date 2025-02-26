@@ -6,7 +6,7 @@
   <!--//////////-->
   <BehaviorTree
     ID="Move Boxes to Loading Zone Start from Waypoint"
-    _subtreeOnly="false"
+    _subtreeOnly="true"
     waypoint_name="View Boxes"
     place_pose="{place_pose}"
     threshold="{threshold}"
@@ -313,7 +313,7 @@
       <input_port name="threshold" default="{threshold}" />
       <input_port name="waypoint_name" default="View Boxes" />
       <MetadataFields>
-        <Metadata runnable="true" />
+        <Metadata runnable="false" />
         <Metadata subcategory="Application - Advanced Examples" />
       </MetadataFields>
     </SubTree>
