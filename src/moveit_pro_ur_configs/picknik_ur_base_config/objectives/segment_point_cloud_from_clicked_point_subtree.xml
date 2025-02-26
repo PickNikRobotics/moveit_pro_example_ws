@@ -9,6 +9,13 @@
     _subtreeOnly="true"
     _description="Captures a point cloud and requests the user to click an object in the image to be segmented. The point cloud is then filtered to only include the selected object."
     _favorite="true"
+    camera_topic_name="{camera_topic_name}"
+    decoder_model_path="{decoder_model_path}"
+    encoder_model_path="{encoder_model_path}"
+    image_topic_name="{image_topic_name}"
+    masks_visualization_topic="{masks_visualization_topic}"
+    model_package="{model_package}"
+    points_topic_name="{points_topic_name}"
   >
     <Control ID="Sequence">
       <Action ID="ClearSnapshot" />
@@ -22,6 +29,7 @@
         model_package="{model_package}"
         pixel_coords="{pixel_coords}"
         masks2d="{masks2d}"
+        image_topic_name="{image_topic_name}"
       />
       <Action
         ID="GetPointCloud"
@@ -42,28 +50,11 @@
         point_cloud="{point_cloud}"
         masks3d="{masks3d}"
       />
-      <Decorator
-        ID="ForEach"
-        vector_in="{masks3d}"
-        out="{mask3d}"
-        index="{index}"
-      >
-        <Action
-          ID="GetPointCloudFromMask3D"
-          point_cloud="{point_cloud}"
-          mask3d="{mask3d}"
-          point_cloud_fragment="{point_cloud_fragment}"
-        />
-      </Decorator>
-      <Action
-        ID="SendPointCloudToUI"
-        point_cloud="{point_cloud_fragment}"
-        pcd_topic="/pcd_pointcloud_captures"
-      />
-      <Action
-        ID="PublishPointCloud"
-        point_cloud="{point_cloud_fragment}"
-        point_cloud_topic="/my_point_cloud"
+      <SubTree
+        ID="Visualize Segmented Point Cloud"
+        _collapsed="true"
+        masks3d="{masks3d}"
+        point_cloud="{point_cloud}"
       />
     </Control>
   </BehaviorTree>
@@ -79,14 +70,6 @@
       />
       <input_port name="model_package" default="{model_package}" />
       <input_port name="points_topic_name" default="{points_topic_name}" />
-      <MetadataFields>
-        <Metadata runnable="false" />
-        <Metadata subcategory="Perception - ML" />
-      </MetadataFields>
-      <MetadataFields>
-        <Metadata runnable="false" />
-        <Metadata subcategory="Perception - ML" />
-      </MetadataFields>
       <MetadataFields>
         <Metadata runnable="false" />
         <Metadata subcategory="Perception - ML" />
