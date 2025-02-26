@@ -102,10 +102,6 @@
         <Metadata subcategory="Perception - 3D Point Cloud" />
         <Metadata runnable="true" />
       </MetadataFields>
-      <MetadataFields>
-        <Metadata subcategory="Perception - 3D Point Cloud" />
-        <Metadata runnable="true" />
-      </MetadataFields>
     </SubTree>
   </TreeNodesModel>
 </root>
