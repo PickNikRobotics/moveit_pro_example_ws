@@ -28,24 +28,36 @@
         <group name="fourth_manipulator"/>
     </group>
     <group name="gripper">
-        <chain base_link="first_robotiq_85_base_link" tip_link="first_robotiq_85_left_finger_link"/>
-        <chain base_link="first_robotiq_85_base_link" tip_link="first_robotiq_85_right_finger_link"/>
-        <chain base_link="first_robotiq_85_base_link" tip_link="first_grasp_link"/>
+        <joint name="first_robotiq_85_left_finger_tip_joint"/>
+        <joint name="first_robotiq_85_left_inner_knuckle_joint"/>
+        <joint name="first_robotiq_85_left_knuckle_joint"/>
+        <joint name="first_robotiq_85_right_finger_tip_joint"/>
+        <joint name="first_robotiq_85_right_inner_knuckle_joint"/>
+        <joint name="first_robotiq_85_right_knuckle_joint"/>
     </group>
     <group name="second_gripper">
-        <chain base_link="second_robotiq_85_base_link" tip_link="second_robotiq_85_left_finger_link"/>
-        <chain base_link="second_robotiq_85_base_link" tip_link="second_robotiq_85_right_finger_link"/>
-        <chain base_link="second_robotiq_85_base_link" tip_link="second_grasp_link"/>
+        <joint name="second_robotiq_85_left_finger_tip_joint"/>
+        <joint name="second_robotiq_85_left_inner_knuckle_joint"/>
+        <joint name="second_robotiq_85_left_knuckle_joint"/>
+        <joint name="second_robotiq_85_right_finger_tip_joint"/>
+        <joint name="second_robotiq_85_right_inner_knuckle_joint"/>
+        <joint name="second_robotiq_85_right_knuckle_joint"/>
     </group>
     <group name="third_gripper">
-        <chain base_link="third_robotiq_85_base_link" tip_link="third_robotiq_85_left_finger_link"/>
-        <chain base_link="third_robotiq_85_base_link" tip_link="third_robotiq_85_right_finger_link"/>
-        <chain base_link="third_robotiq_85_base_link" tip_link="third_grasp_link"/>
+        <joint name="third_robotiq_85_left_finger_tip_joint"/>
+        <joint name="third_robotiq_85_left_inner_knuckle_joint"/>
+        <joint name="third_robotiq_85_left_knuckle_joint"/>
+        <joint name="third_robotiq_85_right_finger_tip_joint"/>
+        <joint name="third_robotiq_85_right_inner_knuckle_joint"/>
+        <joint name="third_robotiq_85_right_knuckle_joint"/>
     </group>
     <group name="fourth_gripper">
-        <chain base_link="fourth_robotiq_85_base_link" tip_link="fourth_robotiq_85_left_finger_link"/>
-        <chain base_link="fourth_robotiq_85_base_link" tip_link="fourth_robotiq_85_right_finger_link"/>
-        <chain base_link="fourth_robotiq_85_base_link" tip_link="fourth_grasp_link"/>
+        <joint name="fourth_robotiq_85_left_finger_tip_joint"/>
+        <joint name="fourth_robotiq_85_left_inner_knuckle_joint"/>
+        <joint name="fourth_robotiq_85_left_knuckle_joint"/>
+        <joint name="fourth_robotiq_85_right_finger_tip_joint"/>
+        <joint name="fourth_robotiq_85_right_inner_knuckle_joint"/>
+        <joint name="fourth_robotiq_85_right_knuckle_joint"/>
     </group>
     <!--GROUP STATES: Purpose: Define a named state for a particular group, in terms of joint values. This is useful to define states like 'folded arms'-->
     <group_state name="open_right" group="gripper">
