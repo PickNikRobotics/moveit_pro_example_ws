@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Multi End-Effector Cartesian Motion"
+>
+  <!--//////////-->
+  <BehaviorTree
+    ID="Multi End-Effector Cartesian Motion"
+    _description=""
+    _favorite="false"
+    _subtreeOnly="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="InitializeMTCTask"
+        controller_names="/multi_arm_joint_trajectory_controller"
+        task="{mtc_task}"
+      />
+      <Action
+        ID="SetupMTCCurrentState"
+        skip_collision_check="false"
+        task="{mtc_task}"
+      />
+      <Action
+        ID="SetupMTCMultiEEFMoveAlongAxis"
+        acceleration_scale_factor="1.0"
+        axis_x="0;0;1;1"
+        axis_y="0;1;0;0"
+        axis_z="1;0;0;0"
+        ik_frames="first_grasp_link;second_grasp_link;third_grasp_link;fourth_grasp_link"
+        max_distance="0.1;0.05;0.2;0.05"
+        min_distance="0.1;0.05;0.2;0.05"
+        monitored_stage="current state"
+        planning_group_names="first_manipulator;second_manipulator;third_manipulator;fourth_manipulator"
+        task="{mtc_task}"
+        velocity_scale_factor="1.0"
+      />
+      <Action
+        ID="SetupMTCMultiEEFMoveAlongAxis"
+        acceleration_scale_factor="1.0"
+        axis_x="0;0;-1;-1"
+        axis_y="0;-1;0;0"
+        axis_z="-1;0;0;0"
+        ik_frames="first_grasp_link;second_grasp_link;third_grasp_link;fourth_grasp_link"
+        max_distance="0.1;0.05;0.2;0.05"
+        min_distance="0.1;0.05;0.2;0.05"
+        monitored_stage="current state"
+        planning_group_names="first_manipulator;second_manipulator;third_manipulator;fourth_manipulator"
+        task="{mtc_task}"
+        velocity_scale_factor="1.0"
+      />
+      <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
+      <Action
+        ID="ExecuteMTCTask"
+        goal_duration_tolerance="-1.000000"
+        solution="{mtc_solution}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Multi End-Effector Cartesian Motion">
+      <MetadataFields>
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
