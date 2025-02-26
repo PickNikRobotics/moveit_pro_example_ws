@@ -25,6 +25,8 @@
         erosion_size="2"
         prompts="an object"
         threshold="0.28"
+        masks3d="{masks3d}"
+        point_cloud="{point_cloud}"
       />
     </Control>
   </BehaviorTree>

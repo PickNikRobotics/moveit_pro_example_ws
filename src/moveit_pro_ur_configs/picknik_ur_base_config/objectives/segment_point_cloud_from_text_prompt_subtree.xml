@@ -21,6 +21,8 @@
     erosion_size="{erosion_size}"
     prompts="{prompts}"
     threshold="{threshold}"
+    masks3d="{masks3d}"
+    point_cloud="{point_cloud}"
   >
     <Control ID="Sequence">
       <Action ID="ClearSnapshot" />
@@ -57,30 +59,24 @@
         point_cloud="{point_cloud}"
         masks3d="{masks3d}"
       />
+      <SubTree
+        ID="Create Point Cloud Vector From Masks"
+        _collapsed="false"
+        masks3d="{masks3d}"
+        point_cloud="{point_cloud}"
+        point_cloud_vector="{point_cloud_vector}"
+      />
       <Decorator
         ID="ForEach"
-        vector_in="{masks3d}"
-        out="{mask3d}"
         index="{index}"
+        out="{point_cloud_fragment}"
+        vector_in="{point_cloud_vector}"
       >
-        <Control ID="Sequence">
-          <Action
-            ID="GetPointCloudFromMask3D"
-            point_cloud="{point_cloud}"
-            mask3d="{mask3d}"
-            point_cloud_fragment="{point_cloud_fragment}"
-          />
-          <Action
-            ID="SendPointCloudToUI"
-            point_cloud="{point_cloud_fragment}"
-            pcd_topic="/pcd_pointcloud_captures"
-          />
-          <Action
-            ID="PublishPointCloud"
-            point_cloud="{point_cloud_fragment}"
-            point_cloud_topic="/my_point_cloud"
-          />
-        </Control>
+        <Action
+          ID="SendPointCloudToUI"
+          pcd_topic="/pcd_pointcloud_captures"
+          point_cloud="{point_cloud_fragment}"
+        />
       </Decorator>
     </Control>
   </BehaviorTree>
@@ -103,7 +99,10 @@
         name="masks_visualization_topic"
         default="/masks_visualization"
       />
+      <output_port name="masks3d" default="{masks3d}" />
       <input_port name="model_package" default="lab_sim" />
+      <output_port name="point_cloud" default="{point_cloud}" />
+      <output_port name="point_cloud_vector" default="{point_cloud_vector}" />
       <input_port name="points_topic_name" default="/wrist_camera/points" />
       <input_port name="prompts" default="{prompts}" />
       <input_port name="threshold" default="{threshold}" />
