@@ -38,7 +38,7 @@
               path="{pose_stamped_msgs}"
               planning_group_name="manipulator"
               tip_link="grasp_link"
-              tip_offset="0.0;0.0;0.0"
+              tip_offset="0.0;0.0;0.0;0.0;0.0;0.0"
               position_only="false"
               blending_radius="0.001"
               velocity_scale_factor="0.5"
