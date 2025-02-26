@@ -32,8 +32,8 @@
   <TreeNodesModel>
     <SubTree ID="Load Engine Block Pointcloud">
       <input_port name="color" default="255;0;0" />
-      <input_port name="initial_pose" default="{initial_pose}" />
       <output_port name="engine_block_cloud" default="{engine_block_cloud}" />
+      <input_port name="initial_pose" default="{initial_pose}" />
       <MetadataFields>
         <Metadata subcategory="Perception - 3D Point Cloud" />
         <Metadata runnable="false" />
