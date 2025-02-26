@@ -69,10 +69,10 @@ ros2_control:
     - "force_torque_sensor_broadcaster"
     - "robotiq_gripper_controller"
     - "joint_state_broadcaster"
-    - "servo_controller"
     - "joint_trajectory_controller"
   # Load but do not start these controllers so they can be activated later if needed.
   controllers_inactive_at_startup:
+    - "servo_controller"
     - "joint_trajectory_admittance_controller"
     - "velocity_force_controller"
   # Any controllers here will not be spawned by MoveIt Pro.
