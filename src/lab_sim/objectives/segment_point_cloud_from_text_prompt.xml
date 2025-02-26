@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <root
   BTCPP_format="4"
-  main_tree_to_execute="Segment Point Cloud from Clicked Point"
+  main_tree_to_execute="Segment Point Cloud from Text Prompt"
 >
   <!--//////////-->
   <BehaviorTree
-    ID="Segment Point Cloud from Clicked Point"
+    ID="Segment Point Cloud from Text Prompt"
     _description="Captures a point cloud and requests the user to click an object in the image to be segmented. The point cloud is then filtered to only include the selected object."
     _favorite="true"
   >
     <Control ID="Sequence">
       <SubTree
-        ID="Segment Point Cloud from Clicked Point Subtree"
+        ID="Segment Point Cloud from Text Prompt Subtree"
         _collapsed="true"
         camera_topic_name="/wrist_camera/camera_info"
         decoder_model_path="models/decoder.onnx"
@@ -20,14 +20,19 @@
         masks_visualization_topic="/masks_visualization"
         model_package="lab_sim"
         points_topic_name="/wrist_camera/points"
+        clip_model_path="models/clip.onnx"
+        clipseg_model_path="models/clipseg.onnx"
+        erosion_size="2"
+        prompts="an object"
+        threshold="0.28"
       />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Segment Point Cloud from Clicked Point">
+    <SubTree ID="Segment Point Cloud from Text Prompt">
       <MetadataFields>
         <Metadata runnable="true" />
-        <Metadata subcategory="Perception - ML" />
+        <Metadata subcategory="Application - Advanced Examples" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
