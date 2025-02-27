@@ -4,7 +4,7 @@
   <BehaviorTree
     ID="Pick first object in vector"
     _subtreeOnly="true"
-    _description=""
+    _description="Iterates over a vector of target poses and plans and executes pick object motions for each."
   >
     <Decorator ID="ForEach" vector_in="{pose_vector}" out="{grasp_pose}">
       <Control ID="Sequence">
