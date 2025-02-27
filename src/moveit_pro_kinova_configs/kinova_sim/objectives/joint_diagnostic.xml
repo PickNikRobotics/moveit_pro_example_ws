@@ -4,7 +4,7 @@
   <BehaviorTree
     ID="Joint Diagnostic"
     _description="Move to a known pose and cycle through the min and max limits of a joint repeatedly"
-    _favorite="true"
+    _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree

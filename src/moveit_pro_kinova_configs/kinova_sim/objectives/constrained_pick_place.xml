@@ -4,7 +4,7 @@
   <BehaviorTree
     ID="Constrained Pick and Place"
     _description="Pick and place an object with constraints on the gripper's range of motion"
-    _favorite="true"
+    _favorite="false"
   >
     <Decorator ID="KeepRunningUntilFailure">
       <Control ID="Sequence">

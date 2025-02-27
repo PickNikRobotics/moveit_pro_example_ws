@@ -4,7 +4,7 @@
   <BehaviorTree
     ID="Push Button With a Trajectory"
     _description="An example for how to use the JTAC to execute a trajectory with compliance."
-    _favorite="true"
+    _favorite="false"
     _subtreeOnly="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">

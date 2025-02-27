@@ -1,16 +1,17 @@
-<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="3 Waypoints Pick and Place">
   <!--//////////-->
   <BehaviorTree
     ID="3 Waypoints Pick and Place"
     _description="Basic example of repeatedly grabbing a small (invisible) object, placing it at desired destination, and then moving back to a home position"
-    _favorite="true"
+    _favorite="false"
   >
     <Control ID="Sequence">
+      <!--Reset the planning scene to ensure no old collision objects are hanging around-->
+      <Action ID="ClearSnapshot" />
       <!--Setup the environment to its "home" configuration - move to center and open gripper-->
       <SubTree
         ID="Move to Waypoint"
-        waypoint_name="Look at Table"
+        waypoint_name="Table"
         joint_group_name="manipulator"
         controller_names="/joint_trajectory_controller"
       />
@@ -26,7 +27,7 @@
           <Control ID="Sequence">
             <SubTree
               ID="Move to Waypoint"
-              waypoint_name="Pick Cube"
+              waypoint_name="Pick"
               joint_group_name="manipulator"
               controller_names="/joint_trajectory_controller"
             />
@@ -37,7 +38,7 @@
             />
             <SubTree
               ID="Move to Waypoint"
-              waypoint_name="Look at Table"
+              waypoint_name="Table"
               joint_group_name="manipulator"
               controller_names="/joint_trajectory_controller"
             />
@@ -45,7 +46,7 @@
               ID="Move to Waypoint"
               joint_group_name="manipulator"
               controller_names="/joint_trajectory_controller"
-              waypoint_name="Place Cube"
+              waypoint_name="Place"
             />
             <Action
               ID="MoveGripperAction"
@@ -54,7 +55,7 @@
             />
             <SubTree
               ID="Move to Waypoint"
-              waypoint_name="Look at Table"
+              waypoint_name="Table"
               joint_group_name="manipulator"
               controller_names="/joint_trajectory_controller"
             />
@@ -63,7 +64,7 @@
           <Control ID="Sequence">
             <SubTree
               ID="Move to Waypoint"
-              waypoint_name="Place Cube"
+              waypoint_name="Place"
               joint_group_name="manipulator"
               controller_names="/joint_trajectory_controller"
             />
@@ -74,13 +75,13 @@
             />
             <SubTree
               ID="Move to Waypoint"
-              waypoint_name="Look at Table"
+              waypoint_name="Table"
               joint_group_name="manipulator"
               controller_names="/joint_trajectory_controller"
             />
             <SubTree
               ID="Move to Waypoint"
-              waypoint_name="Pick Cube"
+              waypoint_name="Pick"
               joint_group_name="manipulator"
               controller_names="/joint_trajectory_controller"
             />
@@ -91,7 +92,7 @@
             />
             <SubTree
               ID="Move to Waypoint"
-              waypoint_name="Look at Table"
+              waypoint_name="Table"
               joint_group_name="manipulator"
               controller_names="/joint_trajectory_controller"
             />
@@ -100,11 +101,4 @@
       </Decorator>
     </Control>
   </BehaviorTree>
-  <TreeNodesModel>
-    <SubTree ID="3 Waypoints Pick and Place">
-      <MetadataFields>
-        <Metadata subcategory="Application - Basic Examples" />
-      </MetadataFields>
-    </SubTree>
-  </TreeNodesModel>
 </root>
