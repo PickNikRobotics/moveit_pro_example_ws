@@ -34,9 +34,16 @@ controller_interface::InterfaceConfiguration RobotiqActivationController::comman
 {
   controller_interface::InterfaceConfiguration config;
   config.type = controller_interface::interface_configuration_type::INDIVIDUAL;
-
-  config.names.emplace_back("reactivate_gripper/reactivate_gripper_cmd");
-  config.names.emplace_back("reactivate_gripper/reactivate_gripper_response");
+  std::string gripper_cmd_interface_;
+    // Retrieve the parameter "name" (set via your YAML file) from the node.
+    if (!get_node()->get_parameter("name", gripper_cmd_interface_)) {
+      RCLCPP_WARN(get_node()->get_logger(),
+                  "Parameter 'name' not set; using default 'reactivate_gripper'");
+      gripper_cmd_interface_ = "reactivate_gripper";
+    }
+      
+  config.names.emplace_back(gripper_cmd_interface_ + "/reactivate_gripper_cmd");
+  config.names.emplace_back(gripper_cmd_interface_ + "/reactivate_gripper_response");
 
   return config;
 }
@@ -44,7 +51,7 @@ controller_interface::InterfaceConfiguration RobotiqActivationController::comman
 controller_interface::InterfaceConfiguration RobotiqActivationController::state_interface_configuration() const
 {
   controller_interface::InterfaceConfiguration config;
-  config.type = controller_interface::interface_configuration_type::INDIVIDUAL;
+  config.type = controller_interface::interface_configuration_type::NONE;
 
   return config;
 }
