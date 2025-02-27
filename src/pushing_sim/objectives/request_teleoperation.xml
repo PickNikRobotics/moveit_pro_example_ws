@@ -109,7 +109,6 @@
                       ID="Move to Joint State"
                       _collapsed="false"
                       target_joint_state="{target_joint_state}"
-                      link_padding="0.0"
                     />
                     <Action
                       ID="PublishEmpty"

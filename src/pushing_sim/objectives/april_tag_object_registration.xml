@@ -12,7 +12,7 @@
         ID="Move to Waypoint"
         waypoint_name="View Satellite"
         joint_group_name="manipulator"
-        controller_names="/joint_trajectory_controller;/robotiq_gripper_controller"
+        controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
       />
       <Action ID="ClearSnapshot" />
       <SubTree ID="Open Gripper" _collapsed="true" />
@@ -22,6 +22,7 @@
         _collapsed="true"
         num_samples="1"
         tag_id="5"
+        apriltag_config="51mm_apriltag_detection_config.yaml"
         max_distance="0.02"
         max_rotation="0.2"
         avg_pose="{tag_pose}"
@@ -231,7 +232,7 @@
           blending_radius="0.020000"
           position_only="false"
           joint_trajectory_msg="{joint_trajectory_msg}"
-          tip_links="grasp_link"
+          tip_link="grasp_link"
           planning_group_name="manipulator"
           path="{pose_stamped_vector}"
         />
@@ -254,11 +255,4 @@
       <SubTree ID="Close Gripper" _collapsed="true" />
     </Control>
   </BehaviorTree>
-  <TreeNodesModel>
-    <SubTree ID="April Tag Object Registration">
-      <MetadataFields>
-        <Metadata subcategory="Application - Advanced Examples" />
-      </MetadataFields>
-    </SubTree>
-  </TreeNodesModel>
 </root>

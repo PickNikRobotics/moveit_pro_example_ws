@@ -4,7 +4,7 @@
   <BehaviorTree
     ID="_Scan Scene"
     _description="Move robot out of scene to enable full snapshot of scene."
-    _favorite="true"
+    _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action ID="ClearSnapshot" />
