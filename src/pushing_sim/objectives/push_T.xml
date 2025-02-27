@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Push T">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Push T"
+    _description="Push the T."
+    _favorite="true"
+    _subtreeOnly="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="ActivateControllers"
+        controller_names="velocity_force_controller"
+      />
+      <Decorator ID="RetryUntilSuccessful" num_attempts="10000000">
+        <Control ID="Sequence" name="TopLevelSequence">
+          <Action
+            ID="T_pushing"
+            twist_stamped="{desired_twist}"
+            wrench_stamped="{desired_wrench}"
+          />
+          <Action
+            ID="PublishVelocityForceCommand"
+            force_controlled_axes="0;0;0;0;0;0"
+            publish_rate="10"
+            twist_stamped="{desired_twist}"
+            velocity_controlled_axes="1;1;1;1;1;1"
+            velocity_force_controller_command_topic="/velocity_force_controller/command"
+            wrench_gain="0.0"
+            wrench_stamped="{desired_wrench}"
+          />
+          <Action ID="AlwaysFailure" />
+        </Control>
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Push T">
+      <MetadataFields>
+        <Metadata subcategory="Motion - Execute" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

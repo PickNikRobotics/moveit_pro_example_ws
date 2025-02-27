@@ -2,10 +2,10 @@ AppendOrientationConstraint:
   constraint_frame: "world"
   link_frame: "grasp_link"
   orientation:  # radians
-    x: 1.57
+    x: -3.14
     y: 0.0
-    z: 3.14
+    z: -1.57
   tolerance:    # radians
-    x: 0.2
-    y: 0.2
+    x: 0.1
+    y: 0.1
     z: 10.0
