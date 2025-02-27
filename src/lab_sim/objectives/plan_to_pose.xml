@@ -2,7 +2,7 @@
   <!--//////////-->
   <BehaviorTree
     ID="Add Poses to MTC Task"
-    _description=""
+    _description="Initializes a new MTC task with the current state and adds a sequence of target poses."
     _favorite="false"
     _subtreeOnly="true"
   >
