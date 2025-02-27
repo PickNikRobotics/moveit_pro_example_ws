@@ -4,7 +4,7 @@
   <BehaviorTree
     ID="Compliant Grasp RAFTI VFC"
     _description="Grasp RAFTI with admittance."
-    _favorite="true"
+    _favorite="false"
     _hardcoded="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">

@@ -1,0 +1,128 @@
+<!-- UR5e inspired from https://github.com/google-deepmind/mujoco_menagerie/tree/main/universal_robots_ur5e -->
+<mujoco model="office scene">
+  <include file="gen3_7dof.xml" />
+
+  <option integrator="implicit">
+    <flag multiccd="enable" />
+  </option>
+
+  <visual>
+    <rgba haze="0.15 0.25 0.35 1" />
+    <global azimuth="120" elevation="-20" offwidth="640" offheight="480" />
+  </visual>
+
+  <default>
+    <geom friction="0.3" solimp="0.9 0.97 0.001" solref=".005 1" />
+    <joint solimplimit="0 0.99 0.01" solreflimit=".005 1" />
+  </default>
+
+  <asset>
+    <texture name="rug_texture" type="2d" file="assets/rug.png" />
+    <material name="rug" texture="rug_texture" texrepeat="1 1" />
+
+    <texture name="table_texture" type="2d" file="assets/table_bake.png" />
+    <material
+      name="table"
+      texture="table_texture"
+      texrepeat="1 1"
+      roughness="0.1"
+    />
+    <material
+      name="T_mat"
+      rgba="0 0.58823529 0.94117647 1.0"
+      specular="0.0"
+      shininess="0.0"
+    />
+    <material
+      name="tape_mat"
+      rgba="0.2 0.7 0.2 1.0"
+      specular="0.0"
+      shininess="0.0"
+    />
+  </asset>
+
+  <statistic center="0.3 0 0.4" extent="0.8" />
+
+  <asset>
+    <texture
+      type="skybox"
+      builtin="gradient"
+      rgb1="0.3 0.5 0.7"
+      rgb2="0 0 0"
+      width="512"
+      height="3072"
+    />
+  </asset>
+  <asset>
+    <mesh name="table" file="table.obj" />
+    <mesh name="floor" file="floor.obj" />
+    <mesh name="tape" file="tape.obj" />
+    <mesh name="T_collision_1" file="T_collision_1.obj" />
+    <mesh name="T_collision_2" file="T_collision_2.obj" />
+  </asset>
+
+  <worldbody>
+    <light pos="0 0 1.5" dir="-1 -1 -1" directional="true" diffuse=".7 .7 .7" />
+
+    <body name="scene" pos="0 0.45 -0.75">
+      <geom type="mesh" mesh="floor" material="rug" />
+      <geom
+        type="mesh"
+        pos="0 0 0.75"
+        contype="0"
+        conaffinity="0"
+        mesh="table"
+        material="table"
+      />
+      <geom
+        type="box"
+        size="0.55984 0.312652 0.0155825"
+        pos="0 0 0.75"
+        group="3"
+      />
+      <geom
+        type="mesh"
+        pos="0 0 0.75"
+        contype="0"
+        conaffinity="0"
+        mesh="tape"
+        material="tape_mat"
+      />
+      <camera
+        name="scene_camera"
+        mode="fixed"
+        resolution="640 480"
+        pos="-0.021452 0.55013 1.190536"
+        quat="0 0 -0.401941 -0.915666"
+      />
+      <site
+        name="scene_camera_optical_frame"
+        pos="-0.021452 0.55013 1.617391"
+        quat="0 0 -0.243671 -0.969858"
+      />
+    </body>
+    <body pos="0 0.45 0.1">
+      <!--       <inertial mass="0.1" pos="0 0 0" diaginertia="0.00001 0.00001 0.00001"/>-->
+      <freejoint />
+      <geom density="200" type="mesh" mesh="T_collision_1" material="T_mat" />
+      <geom density="200" type="mesh" mesh="T_collision_2" material="T_mat" />
+      <site name="point_1" size="0.00001" pos="0.01656 -0.074204 0" />
+      <site name="point_2" size="0.00001" pos="0.01656 0.042103 0" />
+      <site name="point_3" size="0.00001" pos="0.070488 0.042103 0" />
+      <site name="point_4" size="0.00001" pos="0.070488 0.073118 0" />
+      <site name="point_5" size="0.00001" pos="-0.070406 0.073118 0" />
+      <site name="point_6" size="0.00001" pos="-0.070406 0.042103 0" />
+      <site name="point_7" size="0.00001" pos="-0.017036 0.042103 0" />
+      <site name="point_8" size="0.00001" pos="-0.017036 -0.074204 0" />
+      <site name="com" size="0.00001" pos="0 0.021265 0" />
+    </body>
+    <site name="target" size="0.00001" pos="0 0.45 0.031" />
+  </worldbody>
+
+  <keyframe>
+    <key
+      name="home"
+      qpos="-0.982958 -0.596154 -0.180735 1.4674 -0.188922 1.74071 -1.20581 0.784714 0.000368712 0.782839 -0.762532 0.784714 0.000371053 0.782824 -0.7626 -4.62558e-11 0.45 0.031095 1 0 0 0"
+    />
+  </keyframe>
+</mujoco>
