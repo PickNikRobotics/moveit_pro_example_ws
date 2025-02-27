@@ -1,0 +1,337 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 1000  # Hz
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+    joint_trajectory_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+    joint_trajectory_admittance_controller:
+      type: joint_trajectory_admittance_controller/JointTrajectoryAdmittanceController
+    twist_controller:
+      type: picknik_twist_controller/PicknikTwistController
+    # The gripper controller just relays position commands
+    robotiq_gripper_controller:
+      type: position_controllers/GripperActionController
+    fault_controller:
+      type: picknik_reset_fault_controller/PicknikResetFaultController
+    servo_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+    force_torque_sensor_broadcaster:
+      type: force_torque_sensor_broadcaster/ForceTorqueSensorBroadcaster
+    admittance_controller_open_door:
+      type: admittance_controller/AdmittanceController
+    joint_trajectory_controller_chained_open_door:
+      type: joint_trajectory_controller/JointTrajectoryController
+    velocity_force_controller:
+      type: velocity_force_controller/VelocityForceController
+
+joint_trajectory_controller:
+  ros__parameters:
+    joints:
+      - joint_1
+      - joint_2
+      - joint_3
+      - joint_4
+      - joint_5
+      - joint_6
+      - joint_7
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
+    state_publish_rate: 100.0
+    action_monitor_rate: 20.0
+    allow_partial_joints_goal: false
+    constraints:
+      stopped_velocity_tolerance: 0.0
+      goal_time: 10.0
+      joint_1:
+        goal: 0.05
+      joint_2:
+        goal: 0.05
+      joint_3:
+        goal: 0.05
+      joint_4:
+        goal: 0.05
+      joint_5:
+        goal: 0.05
+      joint_6:
+        goal: 0.05
+      joint_7:
+        goal: 0.05
+
+twist_controller:
+  ros__parameters:
+    joint: tcp
+    interface_names:
+      - twist.linear.x
+      - twist.linear.y
+      - twist.linear.z
+      - twist.angular.x
+      - twist.angular.y
+      - twist.angular.z
+
+robotiq_gripper_controller:
+  ros__parameters:
+    default: true
+    joint: robotiq_85_left_knuckle_joint
+    allow_stalling: true
+
+servo_controller:
+  ros__parameters:
+    joints:
+      - joint_1
+      - joint_2
+      - joint_3
+      - joint_4
+      - joint_5
+      - joint_6
+      - joint_7
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
+    command_joints:
+      - joint_1
+      - joint_2
+      - joint_3
+      - joint_4
+      - joint_5
+      - joint_6
+      - joint_7
+    state_publish_rate: 100.0
+    action_monitor_rate: 20.0
+    allow_partial_joints_goal: false
+    constraints:
+      stopped_velocity_tolerance: 0.0
+      goal_time: 0.0
+      joint_1:
+        goal: 0.05
+      joint_2:
+        goal: 0.05
+      joint_3:
+        goal: 0.05
+      joint_4:
+        goal: 0.05
+      joint_5:
+        goal: 0.05
+      joint_6:
+        goal: 0.05
+      joint_7:
+        goal: 0.05
+
+force_torque_sensor_broadcaster:
+  ros__parameters:
+    sensor_name: fts
+    state_interface_names:
+      - force.x
+      - force.y
+      - force.z
+      - torque.x
+      - torque.y
+      - torque.z
+    frame_id: fts_link
+
+
+joint_trajectory_admittance_controller:
+  ros__parameters:
+    joints:
+      - joint_1
+      - joint_2
+      - joint_3
+      - joint_4
+      - joint_5
+      - joint_6
+      - joint_7
+    base_frame: base_link
+    sensor_frame: fts_link
+    ee_frame: grasp_link
+    ft_sensor_name: fts
+    stop_accelerations: [3.0, 3.0, 3.0, 3.0, 5.0, 5.0, 5.0]
+
+
+joint_trajectory_controller_chained_open_door:
+  ros__parameters:
+    joints:
+      - joint_1
+      - joint_2
+      - joint_3
+      - joint_4
+      - joint_5
+      - joint_6
+      - joint_7
+    command_interfaces:
+      - position
+      - velocity
+    state_interfaces:
+      - position
+      - velocity
+    command_joints:
+      - admittance_controller_open_door/joint_1
+      - admittance_controller_open_door/joint_2
+      - admittance_controller_open_door/joint_3
+      - admittance_controller_open_door/joint_4
+      - admittance_controller_open_door/joint_5
+      - admittance_controller_open_door/joint_6
+      - admittance_controller_open_door/joint_7
+    state_publish_rate: 100.0
+    action_monitor_rate: 20.0
+    allow_partial_joints_goal: false
+    constraints:
+      stopped_velocity_tolerance: 0.0
+      goal_time: 0.0
+      joint_1:
+        goal: 0.25
+      joint_2:
+        goal: 0.25
+      joint_3:
+        goal: 0.25
+      joint_4:
+        goal: 0.25
+      joint_5:
+        goal: 0.25
+      joint_6:
+        goal: 0.25
+      joint_7:
+        goal: 0.25
+
+admittance_controller_open_door:
+  ros__parameters:
+    joints:
+      - joint_1
+      - joint_2
+      - joint_3
+      - joint_4
+      - joint_5
+      - joint_6
+      - joint_7
+
+    command_interfaces:
+      - position
+
+    state_interfaces:
+      - position
+      - velocity
+
+    chainable_command_interfaces:
+      - position
+      - velocity
+
+    kinematics:
+      plugin_name: kinematics_interface_kdl/KinematicsInterfaceKDL
+      plugin_package: kinematics_interface
+      base: base_link  # Assumed to be stationary
+      tip: grasp_link  # The end effector frame
+      alpha: 0.05
+
+    ft_sensor:
+      name: fts
+      frame:
+        id: fts_link  # Wrench measurements are in this frame
+      filter_coefficient: 0.1
+
+    control:
+      frame:
+        id: grasp_link  # Admittance calcs (displacement etc) are done in this frame. Usually the tool or end-effector
+
+    fixed_world_frame:
+      frame:            # Gravity points down (neg. Z) in this frame (Usually: world or base_link)
+        id: base_link   # Admittance calcs (displacement etc) are done in this frame. Usually the tool or end-effector
+
+    gravity_compensation:
+      frame:
+        id: fts_link
+
+      CoG:  # specifies the center of gravity of the end effector
+        pos:
+          - 0.1  # x
+          - 0.0  # y
+          - 0.0  # z
+        force: 0.0  # mass * 9.81
+
+    admittance:
+      selected_axes:
+        - true  # x
+        - true  # y
+        - true  # z
+        - true  # rx
+        - true  # ry
+        - true  # rz
+
+      # Having ".0" at the end is MUST, otherwise there is a loading error
+      # F = M*a + D*v + S*(x - x_d)
+      mass:
+        - 3.0  # x
+        - 3.0  # y
+        - 3.0  # z
+        - 3.0  # rx
+        - 3.0  # ry
+        - 3.0  # rz
+
+      damping_ratio:  # damping can be used instead: zeta = D / (2 * sqrt( M * S ))
+        - 5.0  # x
+        - 5.0  # y
+        - 5.0  # z
+        - 5.0  # rx
+        - 5.0  # ry
+        - 5.0  # rz
+
+      stiffness:
+        - 50.0  # x
+        - 50.0  # y
+        - 50.0  # z
+        - 25.0  # rx
+        - 25.0  # ry
+        - 25.0  # rz
+
+    # general settings
+    enable_parameter_update_without_reactivation: true
+
+velocity_force_controller:
+  ros__parameters:
+    joints:
+      - joint_1
+      - joint_2
+      - joint_3
+      - joint_4
+      - joint_5
+      - joint_6
+      - joint_7
+    base_frame: base_link
+    sensor_frame: fts_link
+    ee_frame: grasp_link
+    ft_sensor_name: fts
+    ft_force_deadband: 2.0
+    ft_torque_deadband: 1.0
+    max_joint_velocity:
+      - 0.524
+      - 0.524
+      - 0.524
+      - 0.524
+      - 1.407
+      - 1.407
+      - 1.407
+    max_joint_acceleration:
+      - 52.4
+      - 52.4
+      - 52.4
+      - 52.4
+      - 52.4
+      - 52.4
+      - 52.4
+    max_cartesian_velocity:
+      - 0.25
+      - 0.25
+      - 0.25
+      - 1.5707
+      - 1.5707
+      - 1.5707
+    max_cartesian_acceleration:
+      - 20.0
+      - 20.0
+      - 20.0
+      - 40.0
+      - 40.0
+      - 40.0
