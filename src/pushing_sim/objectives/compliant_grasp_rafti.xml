@@ -1,27 +1,28 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<root BTCPP_format="4" main_tree_to_execute="April Tag Object Registration">
+<root BTCPP_format="4" main_tree_to_execute="Compliant Grasp RAFTI">
   <!--//////////-->
   <BehaviorTree
-    ID="April Tag Object Registration"
-    _description="Estimate the pose of an object using ICP."
+    ID="Compliant Grasp RAFTI"
+    _description="Grasp RAFTI with admittance."
     _favorite="false"
     _hardcoded="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="ClearSnapshot" />
+      <SubTree ID="Open Gripper" _collapsed="true" />
       <SubTree
         ID="Move to Waypoint"
         waypoint_name="View Satellite"
         joint_group_name="manipulator"
-        controller_names="joint_trajectory_controller"
+        controller_names="/joint_trajectory_controller"
       />
-      <Action ID="ClearSnapshot" />
-      <SubTree ID="Open Gripper" _collapsed="true" />
-      <SubTree ID="Take Snapshot" _collapsed="true" />
+      <SubTree ID="Take Snapshot" _collapsed="false" />
       <SubTree
         ID="Sample April Tag"
-        _collapsed="true"
+        _collapsed="false"
         num_samples="1"
         tag_id="5"
+        apriltag_config="51mm_apriltag_detection_config.yaml"
         max_distance="0.02"
         max_rotation="0.2"
         avg_pose="{tag_pose}"
@@ -89,11 +90,11 @@
           />
           <Action
             ID="GetSyncedImageAndPointCloud"
-            point_cloud_topic_name="/wrist_camera/points"
-            rgb_image_topic_name="/wrist_camera/color"
-            rgb_camera_info_topic_name="/wrist_camera/camera_info"
             point_cloud="{point_cloud}"
             rgb_image="{rgb_image}"
+            point_cloud_topic_name="/wrist_camera/points"
+            rgb_camera_info_topic_name="/wrist_camera/camera_info"
+            rgb_image_topic_name="/wrist_camera/color"
             rgb_camera_info="{rgb_camera_info}"
           />
           <Action
@@ -106,9 +107,9 @@
             ID="RegisterPointClouds"
             base_point_cloud="{model_point_cloud}"
             target_point_cloud="{point_cloud}"
-            max_correspondence_distance="0.01"
+            max_iterations="30"
+            max_correspondence_distance="0.02"
             target_pose_in_base_frame="{model_to_real_pose}"
-            max_iterations="5"
           />
           <Action
             ID="TransformPointCloud"
@@ -158,8 +159,8 @@
           <Action
             ID="TransformPose"
             input_pose="{model_object}"
-            translation_xyz="0.155;-0.1075;0.0"
-            quaternion_xyzw="0.5;-0.5;-0.5;0.5"
+            translation_xyz="0.0;0.025;0.3"
+            quaternion_xyzw="-0.707107;0.707107;0.0;0.0"
             output_pose="{hole_object}"
           />
           <Action
@@ -182,83 +183,64 @@
         </Control>
       </Control>
       <Action
+        ID="InitializeMTCTask"
+        task_id=""
+        controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
+        task="{mtc_task}"
+      />
+      <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
+      <Action ID="SetupMTCPlanToPose" target_pose="{hole_object}" />
+      <Action ID="PlanMTCTask" task="{mtc_task}" solution="{mtc_solution}" />
+      <Action ID="ExecuteMTCTask" solution="{mtc_solution}" />
+      <Action
         ID="TransformPose"
         input_pose="{hole_object}"
-        translation_xyz="0.0;0.0;-0.11"
-        quaternion_xyzw="0.0;0.0;0.0;1.0"
+        translation_xyz="0.0;0.0;-0.1"
+        quaternion_xyzw="0.0;1.0;0.0;0.0"
         output_pose="{goal_pose}"
       />
       <Action
-        ID="TransformPose"
-        input_pose="{goal_pose}"
-        translation_xyz="0.0;0.1;0.0"
-        quaternion_xyzw="0.0;0.0;0.0;1.0"
-        output_pose="{initial_goal_pose}"
+        ID="InitializeMTCTask"
+        task_id=""
+        controller_names="/joint_trajectory_controller_chained_open_door /robotiq_gripper_controller"
+        task="{mtc_task}"
       />
-      <Control ID="Fallback">
-        <Decorator ID="Timeout" msec="1000">
-          <Action
-            ID="PublishStaticFrame"
-            pose="{goal_pose}"
-            child_frame_id="goal_pose"
-            publish_rate="5"
-          />
-        </Decorator>
-        <Action ID="AlwaysSuccess" />
-      </Control>
+      <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
       <Action
-        ID="AddPoseStampedToVector"
-        vector="{pose_stamped_vector}"
-        input="{initial_goal_pose}"
+        ID="SetupMTCUpdateGroupCollisionRule"
+        group_name="gripper"
+        object_name="&lt;octomap&gt;"
+        allow_collision="true"
+        task="{mtc_task}"
       />
       <Action
-        ID="AddPoseStampedToVector"
-        vector="{pose_stamped_vector}"
-        input="{goal_pose}"
+        ID="SetupMTCMoveAlongFrameAxis"
+        task="{mtc_task}"
+        hand_frame="grasp_link"
+        axis_frame="grasp_link"
+        axis_x="0.0"
+        axis_y="0.0"
+        axis_z="1.0"
+        max_distance="0.1"
+        min_distance="0"
+        planning_group_name="manipulator"
+        velocity_scale=".2"
+        acceleration_scale="1.0"
       />
+      <Action ID="PlanMTCTask" task="{mtc_task}" solution="{mtc_solution}" />
+      <SubTree ID="Re-Zero Force-Torque Sensors" _collapsed="true" />
       <Action
-        ID="AddPoseStampedToVector"
-        vector="{pose_stamped_vector}"
-        input="{hole_object}"
+        ID="ActivateControllers"
+        controller_names="admittance_controller_open_door"
       />
-      <Control ID="Fallback">
-        <Action
-          ID="PlanCartesianPath"
-          trajectory_sampling_rate="100.000000"
-          acceleration_scale_factor="0.5"
-          debug_solution="{debug_solution}"
-          velocity_scale_factor="0.2"
-          blending_radius="0.020000"
-          position_only="false"
-          joint_trajectory_msg="{joint_trajectory_msg}"
-          tip_links="grasp_link"
-          planning_group_name="manipulator"
-          path="{pose_stamped_vector}"
-        />
-        <Action
-          ID="WaitForUserTrajectoryApproval"
-          solution="{debug_solution}"
-        />
-      </Control>
-      <Action ID="WaitForUserTrajectoryApproval" solution="{debug_solution}" />
-      <Control ID="Fallback">
-        <Action
-          ID="ExecuteFollowJointTrajectory"
-          joint_trajectory_msg="{joint_trajectory_msg}"
-          execute_follow_joint_trajectory_action_name="/joint_trajectory_controller/follow_joint_trajectory"
-          goal_time_tolerance="1.0"
-          goal_position_tolerance="0.01"
-        />
-        <Action ID="AlwaysSuccess" />
-      </Control>
+      <Action ID="ExecuteMTCTask" solution="{mtc_solution}" />
       <SubTree ID="Close Gripper" _collapsed="true" />
+      <Decorator ID="Delay" delay_msec="1000">
+        <Action
+          ID="ActivateControllers"
+          controller_names="joint_trajectory_controller"
+        />
+      </Decorator>
     </Control>
   </BehaviorTree>
-  <TreeNodesModel>
-    <SubTree ID="April Tag Object Registration">
-      <MetadataFields>
-        <Metadata subcategory="Application - Advanced Examples" />
-      </MetadataFields>
-    </SubTree>
-  </TreeNodesModel>
 </root>

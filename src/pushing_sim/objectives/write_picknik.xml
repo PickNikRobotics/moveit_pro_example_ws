@@ -24,8 +24,8 @@
         />
         <Control ID="Sequence" name="TopLevelSequence">
           <Action
-            ID="SwitchController"
-            activate_controllers="joint_trajectory_controller"
+            ID="ActivateControllers"
+            controller_names="joint_trajectory_controller"
           />
           <Action
             ID="LoadPoseStampedVectorFromYaml"
@@ -37,8 +37,8 @@
               ID="PlanCartesianPath"
               path="{pose_stamped_msgs}"
               planning_group_name="manipulator"
-              tip_links="grasp_link"
-              tip_offset="0.0;0.0;0.0;0.0;0.0;0.0"
+              tip_link="grasp_link"
+              tip_offset="0.0;0.0;0.0"
               position_only="false"
               blending_radius="0.001"
               velocity_scale_factor="0.5"
@@ -63,11 +63,4 @@
       </Control>
     </Control>
   </BehaviorTree>
-  <TreeNodesModel>
-    <SubTree ID="Write PickNik">
-      <MetadataFields>
-        <Metadata subcategory="Application - Advanced Examples" />
-      </MetadataFields>
-    </SubTree>
-  </TreeNodesModel>
 </root>

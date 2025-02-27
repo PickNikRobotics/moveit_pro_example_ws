@@ -4,7 +4,7 @@
   <BehaviorTree
     ID="Move Along Path Admittance"
     _description="Moves the robot tip on a rectangular path."
-    _favorite="true"
+    _favorite="false"
     _hardcoded="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">

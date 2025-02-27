@@ -13,7 +13,7 @@
         _collapsed="false"
         acceleration_scale_factor="1.0"
         controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-        controller_names="joint_trajectory_controller"
+        controller_names="/joint_trajectory_controller"
         joint_group_name="manipulator"
         keep_orientation="false"
         keep_orientation_tolerance="0.05"
@@ -23,8 +23,8 @@
       />
       <Control ID="Sequence">
         <Action
-          ID="SwitchController"
-          activate_controllers="joint_trajectory_controller"
+          ID="ActivateControllers"
+          controller_names="/joint_trajectory_controller"
         />
         <Action
           ID="CreateStampedPose"
@@ -81,7 +81,7 @@
             ID="PlanCartesianPath"
             path="{pose_stamped_vector}"
             planning_group_name="manipulator"
-            tip_links="end_effector_link"
+            tip_link="end_effector_link"
             tip_offset="0.0;0.0;0.0;0.0;0.0;0.0"
             position_only="false"
             blending_radius="0.02"
@@ -121,7 +121,7 @@
   <TreeNodesModel>
     <SubTree ID="Move Along Path">
       <MetadataFields>
-        <Metadata subcategory="Application - Basic Examples" />
+        <Metadata runnable="true" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
