@@ -50,7 +50,7 @@
     <joint name="vacuum_base_grasp_link_joint" type="fixed">
       <parent link="vacuum_base"/>
       <child link="grasp_link"/>
-      <origin rpy="0.0 0.0 0.0" xyz="0.0 0.093 0.159"/>
+      <origin rpy="0.0 0.0 3.1415" xyz="0.0 0.093 0.159"/>
     </joint>
 
   </xacro:macro>
