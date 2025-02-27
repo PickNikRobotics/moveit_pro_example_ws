@@ -219,6 +219,7 @@ first_robotiq_gripper_controller:
 
 first_robotiq_activation_controller:
   ros__parameters:
+    name: first_robotiq_activation_controller
     default: true
 
 second_robotiq_gripper_controller:
@@ -229,6 +230,7 @@ second_robotiq_gripper_controller:
 
 second_robotiq_activation_controller:
   ros__parameters:
+    name: second_robotiq_activation_controller
     default: true
 
 third_robotiq_gripper_controller:
@@ -239,6 +241,7 @@ third_robotiq_gripper_controller:
 
 third_robotiq_activation_controller:
   ros__parameters:
+    name: third_robotiq_activation_controller
     default: true
 
 fourth_robotiq_gripper_controller:
@@ -249,4 +252,5 @@ fourth_robotiq_gripper_controller:
 
 fourth_robotiq_activation_controller:
   ros__parameters:
+    name: fourth_robotiq_activation_controller
     default: true
