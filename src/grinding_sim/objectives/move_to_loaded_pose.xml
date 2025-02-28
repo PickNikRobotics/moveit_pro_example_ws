@@ -13,7 +13,10 @@
         output="{target_pose}"
         file_path="approach_pose.yaml"
       />
-      <Action ID="BreakpointSubscriber" breakpoint_topic="/studio_breakpoint" />
+      <Action
+        ID="BreakpointSubscriber"
+        breakpoint_topic="/moveit_pro_breakpoint"
+      />
       <SubTree
         ID="Move to Pose"
         _collapsed="false"
