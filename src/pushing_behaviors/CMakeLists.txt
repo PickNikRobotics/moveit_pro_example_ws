@@ -3,7 +3,6 @@ project(pushing_behaviors CXX)
 
 find_package(moveit_studio_common REQUIRED)
 find_package(example_interfaces REQUIRED)
-moveit_studio_package()
 
 set(THIS_PACKAGE_INCLUDE_DEPENDS
         moveit_studio_behavior
@@ -19,6 +18,7 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
 foreach(package IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${package} REQUIRED)
 endforeach()
+find_package(OsqpEigen REQUIRED)
 
 add_library(
   pushing_behaviors
@@ -32,6 +32,8 @@ target_include_directories(
   PRIVATE ${PCL_INCLUDE_DIRS})
 ament_target_dependencies(pushing_behaviors
                           ${THIS_PACKAGE_INCLUDE_DEPENDS})
+
+target_link_libraries(pushing_behaviors OsqpEigen::OsqpEigen)
 
 # Install Libraries
 install(

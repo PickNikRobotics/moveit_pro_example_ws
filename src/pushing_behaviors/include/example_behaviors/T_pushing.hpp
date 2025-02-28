@@ -3,6 +3,8 @@
 #include <behaviortree_cpp/action_node.h>
 
 // This header includes the SharedResourcesNode type
+#include "OsqpEigen/OsqpEigen.h"
+
 #include <moveit_studio_behavior_interface/async_behavior_base.hpp>
 #include <moveit_studio_behavior_interface/shared_resources_node.hpp>
 
@@ -69,9 +71,19 @@ private:
     return future_;
   }
 
+  Eigen::Vector3d get_velocities(const Eigen::Vector3d& rp, const Eigen::Vector3d& vp, const Eigen::Vector3d& N);
+
   /** @brief Classes derived from AsyncBehaviorBase must have this shared_future as a class member */
   std::shared_future<tl::expected<bool, std::string>> future_;
 
   std::shared_ptr<rclcpp::Publisher<visualization_msgs::msg::MarkerArray>> marker_publisher_;
+
+  OsqpEigen::Solver solver_;
+  Eigen::SparseMatrix<double> hessian_;
+  Eigen::SparseMatrix<double> linearMatrix_;
+  Eigen::Vector<double, 3> gradient_;
+  Eigen::Vector<double, 1> lowerBound_;
+  Eigen::Vector<double, 1> upperBound_;
+  Eigen::Vector<double, 3> com_;
 };
 }  // namespace example_behaviors
