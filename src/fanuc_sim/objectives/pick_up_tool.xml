@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Pick Up Tool">
   <!--//////////-->
   <BehaviorTree
@@ -30,7 +30,7 @@
         ik_frame="tool0"
         keep_orientation="false"
         keep_orientation_tolerance="0.100000"
-        link_padding="0.000000"
+        link_padding="0.001000"
         max_iterations="5000"
         monitored_stage="current state"
         planning_group_name="manipulator"
@@ -38,6 +38,7 @@
         trajectory_sampling_rate="100"
         velocity_scale_factor="0.5"
         task="{mtc_task}"
+        keep_orientation_link_names="grasp_link"
       />
       <Action
         ID="SetupMTCMoveAlongFrameAxis"
