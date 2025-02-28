@@ -12,7 +12,7 @@
   </visual>
 
   <default>
-    <geom friction=".5" solimp="0.9 0.97 0.001" solref=".005 1" />
+    <geom friction=".005" solimp="0.9 0.97 0.001" solref=".005 1" />
     <joint solimplimit="0 0.99 0.01" solreflimit=".005 1" />
   </default>
 
@@ -90,6 +90,7 @@
       />
     </body>
     <body pos="0 0.38 0.1">
+       <inertial mass="0.1" pos="0 0 0" diaginertia="0.00001 0.00001 0.00001"/>
       <freejoint />
       <geom density="200" type="mesh" mesh="T_collision_1" material="T_mat" />
       <geom density="200" type="mesh" mesh="T_collision_2" material="T_mat" />
