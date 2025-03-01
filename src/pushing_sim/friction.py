@@ -1,23 +1,29 @@
 import cvxpy as cp
 import numpy as np
 
-T = np.array([
-    [1, 1, 1, 1, 1, 1],  # 2.5
-    [1, 1, 1, 1, 1, 1],
-    [0, 0, 1, 1, 0, 0],  # ~0.8
-    [0, 0, 1, 1, 0, 0],
-    [0, 0, 1, 1, 0, 0],
-    [0, 0, 1, 1, 0, 0],  # -2.5
-])
+T = np.array(
+    [
+        [1, 1, 1, 1, 1, 1],  # 2.5
+        [1, 1, 1, 1, 1, 1],
+        [0, 0, 1, 1, 0, 0],  # ~0.8
+        [0, 0, 1, 1, 0, 0],
+        [0, 0, 1, 1, 0, 0],
+        [0, 0, 1, 1, 0, 0],  # -2.5
+    ]
+)
 
 
 def get_points(T):
     points = []
-    com = np.zeros(2, )
+    com = np.zeros(
+        2,
+    )
     for y_ind in range(T.shape[0]):
         for x_ind in range(T.shape[1]):
             if T[y_ind, x_ind] > 0:
-                arr = np.array([x_ind - T.shape[1] / 2 + .5, -(y_ind - T.shape[0] / 2) - .5])
+                arr = np.array(
+                    [x_ind - T.shape[1] / 2 + 0.5, -(y_ind - T.shape[0] / 2) - 0.5]
+                )
                 points.append(arr)
                 com += arr
 
@@ -25,6 +31,7 @@ def get_points(T):
 
 
 points, com = get_points(T)
+
 
 def get_eqs(point, com):
     diff = np.hstack([point - com, 0.0])
@@ -40,7 +47,6 @@ for point in points:
     row_x, row_y = get_eqs(point, com)
     rows.append(row_x)
     rows.append(row_y)
-
 
 
 # Define M (linear transformation matrix) and a (target vector)
