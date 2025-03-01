@@ -72,6 +72,8 @@ private:
   }
 
   Eigen::Vector3d get_velocities(const Eigen::Vector3d& rp, const Eigen::Vector3d& vp, const Eigen::Vector3d& N);
+  double get_cost(const Eigen::Vector3d& rp, const Eigen::Vector3d& vp, const Eigen::Vector3d& N,
+                  const Eigen::Isometry3d& target_com_transform);
 
   /** @brief Classes derived from AsyncBehaviorBase must have this shared_future as a class member */
   std::shared_future<tl::expected<bool, std::string>> future_;
@@ -85,5 +87,10 @@ private:
   Eigen::Vector<double, 1> lowerBound_;
   Eigen::Vector<double, 1> upperBound_;
   Eigen::Vector<double, 3> com_;
+
+  Eigen::Vector3d best_rp_ = Eigen::Vector3d::Zero();
+  Eigen::Vector3d best_vp_ = Eigen::Vector3d::Zero();
+  Eigen::Vector3d best_N_ = Eigen::Vector3d::Zero();
+  rclcpp::Time last_update_ = rclcpp::Time(0, 0, RCL_ROS_TIME);
 };
 }  // namespace example_behaviors
