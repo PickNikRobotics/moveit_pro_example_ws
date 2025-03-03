@@ -63,7 +63,7 @@ std::tuple<Eigen::Vector3d, Eigen::Vector3d> get_eqs(const Eigen::Vector3d& poin
 
 T_pushing::T_pushing(const std::string& name, const BT::NodeConfiguration& config,
                      const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources)
-  : AsyncBehaviorBase(name, config, shared_resources)
+  : SharedResourcesNode<BT::StatefulActionNode>(name, config, shared_resources)
 {
   marker_publisher_ = shared_resources_->node->create_publisher<visualization_msgs::msg::MarkerArray>(
       "visual_markers", rclcpp::SystemDefaultsQoS());
@@ -212,14 +212,15 @@ std::tuple<double, double> T_pushing::get_cost(const Eigen::Vector3d& rp, const 
   return { cost, x };
 }
 
-tl::expected<bool, std::string> T_pushing::doWork()
+BT::NodeStatus T_pushing::onRunning()
 {
   const auto ports = moveit_studio::behaviors::getRequiredInputs();
 
   // If a port was set incorrectly, log an error message and return FAILURE
   if (!ports.has_value())
   {
-    return tl::make_unexpected(fmt::format("Failed to get required value from input data port: {}", ports.error()));
+    shared_resources_->logger->publishFailureMessage(name(),fmt::format("Failed to get required value from input data port: {}", ports.error()));
+    return BT::NodeStatus::FAILURE;
   }
   // const auto& [] = ports.value();
 
@@ -249,7 +250,8 @@ tl::expected<bool, std::string> T_pushing::doWork()
   }
   catch (tf2::TransformException& ex)
   {
-    return tl::make_unexpected(ex.what());
+    shared_resources_->logger->publishFailureMessage(name(), ex.what());
+    return BT::NodeStatus::FAILURE;
   }
 
   auto [min_cost, x_best] = get_cost(best_rp_, best_vp_, best_N_, target_com_transform);
@@ -332,6 +334,14 @@ tl::expected<bool, std::string> T_pushing::doWork()
 
   setOutput(kPortIDWrenchStamped, wrench_msg);
 
-  return true;
+  return BT::NodeStatus::SUCCESS;
 }
+
+BT::NodeStatus T_pushing::onStart()
+{
+  return BT::NodeStatus::RUNNING;
+}
+
+void T_pushing::onHalted(){ }
+
 }  // namespace example_behaviors
