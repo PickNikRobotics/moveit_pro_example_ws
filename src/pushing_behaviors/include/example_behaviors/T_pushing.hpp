@@ -17,7 +17,7 @@ namespace example_behaviors
  * @brief The T_pushing Behavior uses FailureLoggerROS to log a "Hello World" message and will always
  * return SUCCESS
  */
-class T_pushing : public moveit_studio::behaviors::AsyncBehaviorBase
+class T_pushing  final : public moveit_studio::behaviors::SharedResourcesNode<BT::StatefulActionNode>
 {
 public:
   /**
@@ -52,24 +52,16 @@ public:
    */
   static BT::KeyValueVector metadata();
 
-  /**
-   * @brief Implementation of BT::SyncActionNode::tick() for T_pushing.
-   * @details This function is where the Behavior performs its work when the behavior tree is being run.
-   * Since T_pushing is derived from BT::SyncActionNode, it is very important that its tick() function always
-   * finishes very quickly. If tick() blocks before returning, it will block execution of the entire behavior tree,
-   * which may have undesirable consequences for other Behaviors that require a fast update rate to work correctly.
-   * @return BT::NodeStatus::RUNNING, BT::NodeStatus::SUCCESS, or BT::NodeStatus::FAILURE depending on the result of the
-   * work done in this function.
-   */
+  // Validate inputs and register a timer callback that will publish the command at a fixed rate.
+  BT::NodeStatus onStart() override;
 
-  tl::expected<bool, std::string> doWork() override;
+  // Check if a halt was requested, and delete the timer callback if so.
+  BT::NodeStatus onRunning() override;
+
+  // Flag that a halt was requested.
+  void onHalted() override;
 
 private:
-  /** @brief Classes derived from AsyncBehaviorBase must implement getFuture() so that it returns a shared_future class member */
-  std::shared_future<tl::expected<bool, std::string>>& getFuture() override
-  {
-    return future_;
-  }
 
   Eigen::Vector3d get_velocities(const Eigen::Vector3d& rp, const Eigen::Vector3d& vp, const Eigen::Vector3d& N);
   std::tuple<double, double> get_cost(const Eigen::Vector3d& rp, const Eigen::Vector3d& vp, const Eigen::Vector3d& N,
