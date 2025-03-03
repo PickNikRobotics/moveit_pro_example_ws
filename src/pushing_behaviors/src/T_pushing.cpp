@@ -270,7 +270,7 @@ namespace example_behaviors
     Eigen::Vector3d velocity;
     // if ((ee_com_transform.translation() - (best_rp_ + (best_N_ * 0.02)) ).norm() > 0.01)
     Eigen::Vector3d pose_goal = best_rp_ + (best_N_ * FINGER_WIDTH);
-    pose_goal[2] -= 0.031027 / 2;
+    pose_goal[2] -= 0.02;
 
     if ((ee_com_transform.translation() - pose_goal).norm() > 0.05)
     {
