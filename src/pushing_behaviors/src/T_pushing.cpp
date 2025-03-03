@@ -176,8 +176,8 @@ BT::KeyValueVector T_pushing::metadata()
   return { { "subcategory", "Example Behaviors" }, { "description", "Push the T" } };
 }
 
-double T_pushing::get_cost(const Eigen::Vector3d& rp, const Eigen::Vector3d& vp, const Eigen::Vector3d& N,
-                           const Eigen::Isometry3d& target_com_transform)
+std::tuple<double, double> T_pushing::get_cost(const Eigen::Vector3d& rp, const Eigen::Vector3d& vp,
+                                               const Eigen::Vector3d& N, const Eigen::Isometry3d& target_com_transform)
 {
   Eigen::Vector3d velocities = get_velocities(rp, vp, N);
   auto xd = velocities[0];
@@ -202,13 +202,14 @@ double T_pushing::get_cost(const Eigen::Vector3d& rp, const Eigen::Vector3d& vp,
 
   // Solving for t using SVD
   double x = A.jacobiSvd(Eigen::ComputeFullU | Eigen::ComputeFullV).solve(b)[0];
+
   double cost = (A * x - b).norm();
   if (x < 0.0)
   {
     cost += 1E99;
   }
 
-  return cost;
+  return { cost, x };
 }
 
 tl::expected<bool, std::string> T_pushing::doWork()
@@ -251,11 +252,17 @@ tl::expected<bool, std::string> T_pushing::doWork()
     return tl::make_unexpected(ex.what());
   }
 
-  if ((shared_resources_->node->now() - last_update_).seconds() > 0.1)
+  auto [min_cost, x_best] = get_cost(best_rp_, best_vp_, best_N_, target_com_transform);
+  std::cout << "x = " << x_best << std::endl;
+  if (x_best < 0.005)
   {
-    double min_cost = get_cost(best_rp_, best_vp_, best_N_, target_com_transform);
+    min_cost = 1E99;
+  }
+
+  if ((shared_resources_->node->now() - last_update_).seconds() > 0.01)
+  {
     Eigen::Vector3d velocities = Eigen::Vector3d::Zero();
-    for (int iter = 0; iter < 10; iter++)
+    for (int iter = 0; iter < 1; iter++)
     {
       for (size_t i = 0; i < site_transforms.size(); ++i)
       {
@@ -271,15 +278,16 @@ tl::expected<bool, std::string> T_pushing::doWork()
         t = 0.5 * t + 0.5;
         Eigen::Vector3d rp = t * TF1.translation() + (1 - t) * TF2.translation();
 
-        double cost = get_cost(rp, vp, N, target_com_transform);
+        auto [cost, x] = get_cost(rp, vp, N, target_com_transform);
 
-        if (cost + 0.03 < min_cost)
+        if (cost < 0.5 * min_cost)
         {
           best_rp_ = rp;
           best_vp_ = vp;
           best_N_ = N;
           min_cost = cost;
           std::cout << "cost = " << min_cost << std::endl;
+          alpha_ = shared_resources_->node->now();
         }
       }
     }
@@ -293,16 +301,21 @@ tl::expected<bool, std::string> T_pushing::doWork()
   {
     Eigen::Vector3d velocity_com;
     velocity_com = pose_goal - ee_com_transform.translation();
-    velocity_com[0] = pose_goal[0] - ee_com_transform.translation()[0];
-    velocity_com[1] = pose_goal[1] - ee_com_transform.translation()[1];
-    auto dist = std::min(3 * sqrt(velocity_com[0] * velocity_com[0] + velocity_com[1] * velocity_com[1]), 0.15);
-    velocity_com[2] = dist - ee_com_transform.translation()[2];
+    double dx = (pose_goal[0] - ee_com_transform.translation()[0]);
+    double dy = (pose_goal[1] - ee_com_transform.translation()[1]);
+
+    velocity_com[0] = dx * std::min(1.0, (shared_resources_->node->now() - alpha_).seconds());
+    velocity_com[1] = dy * std::min(1.0, (shared_resources_->node->now() - alpha_).seconds());
+
+    auto dist = std::min(3 * sqrt(dx * dx + dy * dy), 0.15);
+    velocity_com[2] = 1.0 * (dist - ee_com_transform.translation()[2]);
     velocity = ee_com_transform.linear().inverse() * velocity_com;
   }
   else
   {
     Eigen::Vector3d velocity_com;
-    velocity_com = 0.01 * best_vp_;
+    // velocity_com = 0.04 * best_vp_ / (1.0 +  (shared_resources_->node->now() - alpha_).seconds());
+    velocity_com = 0.05 * best_vp_;
     velocity = ee_com_transform.linear().inverse() * velocity_com;
   }
 
