@@ -64,20 +64,14 @@ public:
 private:
 
   Eigen::Vector3d get_velocities(const Eigen::Vector3d& rp, const Eigen::Vector3d& vp, const Eigen::Vector3d& N);
-  std::tuple<double, double> get_cost(const Eigen::Vector3d& rp, const Eigen::Vector3d& vp, const Eigen::Vector3d& N,
+  std::tuple<double, Eigen::Vector3d> get_cost(const Eigen::Vector3d& rp, const Eigen::Vector3d& vp, const Eigen::Vector3d& N,
                                       const Eigen::Isometry3d& target_com_transform);
 
-  /** @brief Classes derived from AsyncBehaviorBase must have this shared_future as a class member */
-  std::shared_future<tl::expected<bool, std::string>> future_;
 
   std::shared_ptr<rclcpp::Publisher<visualization_msgs::msg::MarkerArray>> marker_publisher_;
 
-  OsqpEigen::Solver solver_;
-  Eigen::SparseMatrix<double> hessian_;
-  Eigen::SparseMatrix<double> linearMatrix_;
-  Eigen::Vector<double, 3> gradient_;
-  Eigen::Vector<double, 1> lowerBound_;
-  Eigen::Vector<double, 1> upperBound_;
+  Eigen::Matrix<double, 3, 3> H;
+  Eigen::Vector<double, 3> c;
   Eigen::Vector<double, 3> com_;
 
   Eigen::Vector3d best_rp_ = Eigen::Vector3d::Zero();
