@@ -30,7 +30,8 @@
         />
         <!--The following behavior can be found in the example_behaviors package.-->
         <Action
-          ID="ExampleSetupMtcPickFromPose"
+          # An example implementation of this behavior called ExampleSetupMtcPickFromPose can be found in the example_behaviors package
+          ID="SetupMtcPickFromPose"
           grasp_pose="{pick_pose}"
           task="{mtc_pick_task}"
         />
