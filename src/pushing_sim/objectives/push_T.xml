@@ -60,14 +60,6 @@
         <Metadata subcategory="Motion - Execute" />
         <Metadata runnable="true" />
       </MetadataFields>
-      <MetadataFields>
-        <Metadata subcategory="Motion - Execute" />
-        <Metadata runnable="true" />
-      </MetadataFields>
-      <MetadataFields>
-        <Metadata subcategory="Motion - Execute" />
-        <Metadata runnable="true" />
-      </MetadataFields>
     </SubTree>
   </TreeNodesModel>
 </root>

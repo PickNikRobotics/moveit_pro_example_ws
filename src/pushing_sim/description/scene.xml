@@ -94,17 +94,17 @@
       <freejoint />
       <geom density="200" type="mesh" mesh="T_collision_1" material="T_mat" />
       <geom density="200" type="mesh" mesh="T_collision_2" material="T_mat" />
-      <site name="point_1" size="0.01" pos="0.01656 -0.074204 0" />
-      <site name="point_2" size="0.01" pos="0.01656 0.042103 0" />
-      <site name="point_3" size="0.01" pos="0.070488 0.042103 0" />
-      <site name="point_4" size="0.01" pos="0.070488 0.073118 0" />
-      <site name="point_5" size="0.01" pos="-0.070406 0.073118 0" />
-      <site name="point_6" size="0.01" pos="-0.070406 0.042103 0" />
-      <site name="point_7" size="0.01" pos="-0.017036 0.042103 0" />
-      <site name="point_8" size="0.01" pos="-0.017036 -0.074204 0" />
-      <site name="com" size="0.01" pos="0 0.021265 0" />
+      <site name="point_1" size="0.00001" pos="0.01656 -0.074204 0" />
+      <site name="point_2" size="0.00001" pos="0.01656 0.042103 0" />
+      <site name="point_3" size="0.00001" pos="0.070488 0.042103 0" />
+      <site name="point_4" size="0.00001" pos="0.070488 0.073118 0" />
+      <site name="point_5" size="0.00001" pos="-0.070406 0.073118 0" />
+      <site name="point_6" size="0.00001" pos="-0.070406 0.042103 0" />
+      <site name="point_7" size="0.00001" pos="-0.017036 0.042103 0" />
+      <site name="point_8" size="0.00001" pos="-0.017036 -0.074204 0" />
+      <site name="com" size="0.00001" pos="0 0.021265 0" />
     </body>
-    <site name="target" size="0.01" pos="0 0.38 0.031" />
+    <site name="target" size="0.00001" pos="0 0.38 0.031" />
   </worldbody>
 
   <keyframe>
