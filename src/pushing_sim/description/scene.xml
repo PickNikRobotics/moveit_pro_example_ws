@@ -12,7 +12,7 @@
   </visual>
 
   <default>
-    <geom friction=".5" solimp="0.9 0.97 0.001" solref=".005 1" />
+    <geom friction="0.5" solimp="0.9 0.97 0.001" solref=".005 1" />
     <joint solimplimit="0 0.99 0.01" solreflimit=".005 1" />
   </default>
 
@@ -64,7 +64,7 @@
   <worldbody>
     <light pos="0 0 1.5" dir="-1 -1 -1" directional="true" diffuse=".7 .7 .7" />
 
-    <body name="scene" pos="0 0.38 -0.75">
+    <body name="scene" pos="0 0.45 -0.75">
       <geom type="mesh" mesh="floor" material="rug" />
       <geom
         type="mesh"
@@ -89,7 +89,7 @@
         material="tape_mat"
       />
     </body>
-    <body pos="0 0.38 0.1">
+    <body pos="0 0.45 0.1">
       <!--       <inertial mass="0.1" pos="0 0 0" diaginertia="0.00001 0.00001 0.00001"/>-->
       <freejoint />
       <geom density="200" type="mesh" mesh="T_collision_1" material="T_mat" />
@@ -104,13 +104,13 @@
       <site name="point_8" size="0.00001" pos="-0.017036 -0.074204 0" />
       <site name="com" size="0.00001" pos="0 0.021265 0" />
     </body>
-    <site name="target" size="0.00001" pos="0 0.38 0.031" />
+    <site name="target" size="0.00001" pos="0 0.45 0.031" />
   </worldbody>
 
   <keyframe>
     <key
       name="home"
-      qpos="-0.982958 -0.596154 -0.180735 1.4674 -0.188922 1.74071 -1.20581 0.784714 0.000368712 0.782839 -0.762532 0.784714 0.000371053 0.782824 -0.7626 -4.62558e-11 0.379998 0.031095 1 0 0 0"
+      qpos="-0.982958 -0.596154 -0.180735 1.4674 -0.188922 1.74071 -1.20581 0.784714 0.000368712 0.782839 -0.762532 0.784714 0.000371053 0.782824 -0.7626 -4.62558e-11 0.45 0.031095 1 0 0 0"
     />
   </keyframe>
 </mujoco>
