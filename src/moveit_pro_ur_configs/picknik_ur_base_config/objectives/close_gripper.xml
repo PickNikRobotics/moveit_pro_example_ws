@@ -21,9 +21,6 @@
         <Metadata subcategory="Grasping" />
         <Metadata runnable="true" />
       </MetadataFields>
-      <MetadataFields>
-        <Metadata subcategory="Grasping" />
-      </MetadataFields>
     </SubTree>
   </TreeNodesModel>
 </root>
