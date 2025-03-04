@@ -180,9 +180,15 @@ objectives:
   # Specify source folder for objectives
   # [Required]
   objective_library_paths:
-    core:
-      package_name: "picknik_ur_base_config"
-      relative_path: "objectives"
+    core_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/core"
+    motion_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/motion"
+    perception_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/perception"
   # Specify the location of the saved waypoints file.
   # [Required]
   waypoints_file:
