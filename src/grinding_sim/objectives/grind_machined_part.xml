@@ -129,14 +129,6 @@
         <Metadata runnable="true" />
         <Metadata subcategory="Application - Grinding" />
       </MetadataFields>
-      <MetadataFields>
-        <Metadata runnable="true" />
-        <Metadata subcategory="Application - Grinding" />
-      </MetadataFields>
-      <MetadataFields>
-        <Metadata runnable="true" />
-        <Metadata subcategory="Application - Grinding" />
-      </MetadataFields>
     </SubTree>
   </TreeNodesModel>
 </root>
