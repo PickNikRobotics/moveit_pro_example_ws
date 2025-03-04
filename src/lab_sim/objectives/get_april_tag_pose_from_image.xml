@@ -1,5 +1,5 @@
+<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Get AprilTag Pose from Image">
-  <!-- ////////// -->
   <BehaviorTree
     ID="Get AprilTag Pose from Image"
     _subtreeOnly="true"
@@ -18,6 +18,7 @@
         ID="GetImage"
         topic_name="/wrist_camera/color"
         message_out="{image}"
+        timeout_sec="5.000000"
       />
       <Action
         ID="DetectAprilTags"
@@ -26,22 +27,29 @@
         parameters="{parameters}"
         detections="{detections}"
       />
-      <Action ID="GetDetectionPose" />
+      <Action
+        ID="GetDetectionPose"
+        detection_pose="{detection_pose}"
+        detections="{detections}"
+        target_id="-1"
+      />
       <Action
         ID="TransformPoseFrame"
         input_pose="{detection_pose}"
         output_pose="{detection_pose}"
+        target_frame_id="world"
       />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Get AprilTag Pose from Image">
-      <input_port name="image" default="{image}" />
       <input_port name="camera_info" default="{camera_info}" />
-      <input_port name="parameters" default="{parameters}" />
       <output_port name="detection_pose" default="{detection_pose}" />
+      <input_port name="image" default="{image}" />
+      <input_port name="parameters" default="{parameters}" />
       <MetadataFields>
         <Metadata subcategory="Perception - 2D Image" />
+        <Metadata runnable="false" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
