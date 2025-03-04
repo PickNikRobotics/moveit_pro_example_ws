@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8" ?>
 <root
   BTCPP_format="4"
   main_tree_to_execute="Wait for Trajectory Approval if User Available"
@@ -6,6 +5,7 @@
   <BehaviorTree
     ID="Wait for Trajectory Approval if User Available"
     _description="Preview a shared pointer to an MTC Solution object via an input data port if a user is available."
+    _subtreeOnly="true"
   >
     <Control ID="Fallback" name="wait_for_approval_if_user_available">
       <Decorator ID="Inverter">
@@ -14,4 +14,12 @@
       <Action ID="WaitForUserTrajectoryApproval" solution="{solution}" />
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Wait for Trajectory Approval if User Available">
+      <inout_port name="solution" default="" />
+      <MetadataFields>
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>

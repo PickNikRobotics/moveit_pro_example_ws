@@ -1,8 +1,9 @@
-<?xml version="1.0" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Interpolate to Joint State">
   <BehaviorTree
     ID="Interpolate to Joint State"
     _description="Move to a specified joint state using joint interpolation"
+    _subtreeOnly="true"
   >
     <Control ID="Sequence">
       <Action
@@ -33,6 +34,10 @@
   <TreeNodesModel>
     <SubTree ID="Interpolate to Joint State">
       <input_port name="target_joint_state" default="{target_joint_state}" />
+      <MetadataFields>
+        <Metadata subcategory="Motion - Execute" />
+        <Metadata runnable="false" />
+      </MetadataFields>
       <MetadataFields>
         <Metadata subcategory="Motion - Execute" />
       </MetadataFields>
