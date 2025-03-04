@@ -16,7 +16,7 @@ namespace
   // Port names for input and output ports.
   constexpr auto kPortIDTwistStamped = "twist_stamped";
   constexpr auto kPortIDWrenchStamped = "wrench_stamped";
-  constexpr double FINGER_WIDTH = 0.015;
+  constexpr double FINGER_WIDTH = 0.018;
 } // namespace
 
 namespace example_behaviors
@@ -270,7 +270,7 @@ namespace example_behaviors
     Eigen::Vector3d velocity;
     // if ((ee_com_transform.translation() - (best_rp_ + (best_N_ * 0.02)) ).norm() > 0.01)
     Eigen::Vector3d pose_goal = best_rp_ + (best_N_ * FINGER_WIDTH);
-    pose_goal[2] -= 0.02;
+    pose_goal[2] -= 0.03;
 
     if ((ee_com_transform.translation() - pose_goal).norm() > 0.05)
     {

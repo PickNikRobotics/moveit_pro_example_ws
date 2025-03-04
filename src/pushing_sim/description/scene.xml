@@ -12,7 +12,7 @@
   </visual>
 
   <default>
-    <geom friction="0.5" solimp="0.9 0.97 0.001" solref=".005 1" />
+    <geom friction="0.1" solimp="0.9 0.97 0.001" solref=".005 1" />
     <joint solimplimit="0 0.99 0.01" solreflimit=".005 1" />
   </default>
 
