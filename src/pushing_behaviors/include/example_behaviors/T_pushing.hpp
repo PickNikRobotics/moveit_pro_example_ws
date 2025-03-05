@@ -17,7 +17,7 @@ namespace example_behaviors
  * @brief The T_pushing Behavior uses FailureLoggerROS to log a "Hello World" message and will always
  * return SUCCESS
  */
-class T_pushing  final : public moveit_studio::behaviors::SharedResourcesNode<BT::StatefulActionNode>
+class T_pushing final : public moveit_studio::behaviors::SharedResourcesNode<BT::StatefulActionNode>
 {
 public:
   /**
@@ -62,11 +62,9 @@ public:
   void onHalted() override;
 
 private:
-
   Eigen::Vector3d get_velocities(const Eigen::Vector3d& rp, const Eigen::Vector3d& vp, const Eigen::Vector3d& N);
-  std::tuple<double, Eigen::Vector3d> get_cost(const Eigen::Vector3d& rp, const Eigen::Vector3d& vp, const Eigen::Vector3d& N,
-                                      const Eigen::Isometry3d& target_com_transform);
-
+  std::tuple<double, Eigen::Vector3d> get_cost(const Eigen::Vector3d& rp, const Eigen::Vector3d& vp,
+                                               const Eigen::Vector3d& N, const Eigen::Isometry3d& target_com_transform);
 
   std::shared_ptr<rclcpp::Publisher<visualization_msgs::msg::MarkerArray>> marker_publisher_;
 
