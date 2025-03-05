@@ -1,9 +1,12 @@
 #include <behaviortree_cpp/bt_factory.h>
 #include <moveit_studio_behavior_interface/behavior_context.hpp>
+#include <moveit_studio_behavior_interface/json_serialization.hpp>
 #include <moveit_studio_behavior_interface/shared_resources_node_loader.hpp>
+#include <std_msgs/msg/string.hpp>
 
 #include <example_behaviors/example_add_two_ints_service_client.hpp>
 #include <example_behaviors/example_convert_mtc_solution_to_joint_trajectory.hpp>
+#include <example_behaviors/example_create_string_msg.hpp>
 #include <example_behaviors/example_delayed_message.hpp>
 #include <example_behaviors/example_fibonacci_action_client.hpp>
 #include <example_behaviors/example_get_string_from_topic.hpp>
@@ -51,6 +54,10 @@ public:
                                                                           shared_resources);
     moveit_studio::behaviors::registerBehavior<ExampleSAM2Segmentation>(factory, "ExampleSAM2Segmentation",
                                                                         shared_resources);
+    moveit_studio::behaviors::registerBehavior<ExampleCreateStringMsg>(factory, "ExampleCreateStringMsg",
+                                                                       shared_resources);
+    // Register ROS messages for blackboard viewer.
+    register_ros_msg<std_msgs::msg::String>();
   }
 };
 }  // namespace example_behaviors
