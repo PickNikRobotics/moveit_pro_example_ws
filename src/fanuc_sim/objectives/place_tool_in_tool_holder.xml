@@ -28,7 +28,7 @@
         ID="SetupMTCIgnoreCollisionsBetweenObjects"
         allow_collision="true"
         task="{mtc_task}"
-        object_names="link_5;suction_gripper"
+        object_names="link_5;link_6;suction_gripper"
       />
       <Action
         ID="SetupMTCPlanToPose"
@@ -44,6 +44,7 @@
         trajectory_sampling_rate="100"
         velocity_scale_factor="0.5"
         task="{mtc_task}"
+        keep_orientation_link_names="grasp_link"
       />
       <Action
         ID="SetupMTCMoveAlongFrameAxis"
@@ -78,6 +79,10 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Place Tool in Tool Holder" />
+    <SubTree ID="Place Tool in Tool Holder">
+      <MetadataFields>
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
   </TreeNodesModel>
 </root>
