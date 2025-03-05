@@ -1,3 +1,4 @@
+import time
 from typing import IO, Any, Iterable, Iterator, Optional, Union, List
 
 import copy
@@ -8,7 +9,7 @@ from mcap_ros2.reader import read_ros2_messages, McapROS2Message
 from pathlib import Path
 
 from collections import defaultdict
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset, IterableDataset, DataLoader
 import torch
 import zstandard as zstd
 import io
@@ -22,6 +23,7 @@ bridge = CvBridge()
 start_indicator_str = "Starting demonstration"
 stop_indicator_str = "Stopping demonstration"
 demonstration_indicator_topic = "/demonstration_indicator"
+
 
 def get_mcap_files(data_dir="/media/paul/DATA/pushing_data"):
     directory_path = Path(data_dir)
@@ -43,11 +45,9 @@ def get_ros_bag_reader(mcap_file: Path):
 
 
 def get_demonstration_meta_data(mcap_files: List[Path]):
-    metadata = []
     demonstration_data = dict()
     for mcap_file in mcap_files:
         reader = get_ros_bag_reader(mcap_file)
-
         for mcap_ros_msg in reader:
             msg = mcap_ros_msg.ros_msg
             if msg.data == start_indicator_str:
@@ -57,53 +57,36 @@ def get_demonstration_meta_data(mcap_files: List[Path]):
             elif msg.data == stop_indicator_str and "start_time" in demonstration_data:
                 demonstration_data["files"].add(mcap_file)
                 demonstration_data["stop_time"] = mcap_ros_msg.publish_time_ns
-                metadata.append(copy.deepcopy(demonstration_data))
+                yield copy.deepcopy(demonstration_data)
                 demonstration_data.clear()
 
-    return metadata
+
+def foo(q):
+    mcap_files = get_mcap_files()
+    metadata = get_demonstration_meta_data(mcap_files)
+    for val in metadata:
+        q.put(val)
+    q.put(None)
+
+class MCAPDataset(IterableDataset):
+    def __init__(self):
+        self.ctx = mp.get_context('spawn')
+        self.q = self.ctx.Queue()
+        self.p = self.ctx.Process(target=foo, args=(self.q,))
+        self.p.start()
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        data_point = self.q.get()
+        if data_point is None:
+            raise StopIteration
+        return data_point
 
 
-mcap_files = get_mcap_files()
-metadata = get_demonstration_meta_data(mcap_files)
 
-for data in metadata:
-    print(data)
-
-exit(1)
-
-
-class MCAPDataset(Dataset):
-    def __init__(self, mcap_file_path, topic_name):
-        self.mcap_file_path = mcap_file_path
-        self.topic_name = topic_name
-        self.messages = self._load_messages()
-
-    def _load_messages(self):
-        messages = []
-        with open(self.mcap_file_path, "rb") as f:
-            reader = make_reader(f)
-            for schema, channel, message in reader.iter_messages(
-                    topics=[self.topic_name]
-            ):
-                messages.append(message)
-        return messages
-
-    def __len__(self):
-        return len(self.messages)
-
-    def __getitem__(self, idx):
-        # Extract data from the message
-        message = self.messages[idx]
-        return message.data  # Or parse the data based on schema
-
-
-# Usage
-mcap_file_path = "your_mcap_file.mcap"
-topic_name = "your_topic_name"
-dataset = MCAPDataset(mcap_file_path, topic_name)
-dataloader = DataLoader(dataset, batch_size=32, shuffle=True)
-
-# Iterate through the dataloader
-for batch in dataloader:
-    # Process the batch of data
-    print(batch)
+if __name__ == '__main__':
+    loader = MCAPDataset()
+    for i in loader:
+        print(i)
