@@ -32,6 +32,7 @@ add_library(
   src/example_ndt_registration.cpp
   src/example_ransac_registration.cpp
   src/example_sam2_segmentation.cpp
+  src/example_create_string_msg.cpp
   src/register_behaviors.cpp)
 target_include_directories(
   example_behaviors
