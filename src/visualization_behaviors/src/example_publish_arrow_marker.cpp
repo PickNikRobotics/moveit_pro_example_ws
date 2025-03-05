@@ -61,7 +61,7 @@ BT::NodeStatus ExamplePublishArrowMarker::tick()
     transform_start = shared_resources_->transform_buffer_ptr->lookupTransform(
         "world", start_pose_stamped.header.frame_id, tf2::TimePointZero);
     transform_end = shared_resources_->transform_buffer_ptr->lookupTransform(
-        "world", start_pose_stamped.header.frame_id, tf2::TimePointZero);
+        "world", end_pose_stamped.header.frame_id, tf2::TimePointZero);
   }
   catch (tf2::TransformException& ex)
   {
