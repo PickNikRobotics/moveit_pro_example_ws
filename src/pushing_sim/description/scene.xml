@@ -88,6 +88,18 @@
         mesh="tape"
         material="tape_mat"
       />
+      <camera
+        name="scene_camera"
+        mode="fixed"
+        resolution="640 480"
+        pos="-0.021452 0.55013 1.190536"
+        quat="0 0 -0.401941 -0.915666"
+      />
+      <site
+        name="scene_camera_optical_frame"
+        pos="-0.021452 0.55013 1.617391"
+        quat="0 0 -0.243671 -0.969858"
+      />
     </body>
     <body pos="0 0.45 0.1">
       <!--       <inertial mass="0.1" pos="0 0 0" diaginertia="0.00001 0.00001 0.00001"/>-->
