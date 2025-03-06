@@ -1180,26 +1180,6 @@
     />
     <dynamics damping="20.0" friction="500.0" />
   </joint>
-  <!-- Table -->
-  <link name="table">
-    <visual>
-      <origin rpy="0 0 0" xyz="0 0 -0.45" />
-      <geometry>
-        <box size="3.5 1 0.9" />
-      </geometry>
-    </visual>
-    <collision>
-      <origin rpy="0 0 0" xyz="0 0 -0.45" />
-      <geometry>
-        <box size="3.5 1 0.9" />
-      </geometry>
-    </collision>
-  </link>
-  <joint name="table_joint" type="fixed">
-    <parent link="world" />
-    <child link="table" />
-    <origin rpy="0 0 0" xyz="0 1 0.45" />
-  </joint>
   <ros2_control name="ur_mujoco_control" type="system">
     <hardware>
       <plugin>picknik_mujoco_ros/MujocoSystem</plugin>
