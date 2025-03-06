@@ -20,9 +20,9 @@
       />
       <Action ID="SetupMTCCurrentState" task="{move_to_waypoint_task}" />
       <Action
-        ID="SetupMTCMoveToJointState"
+        ID="SetupMTCPlanToJointState"
         joint_state="{target_joint_state}"
-        name="SetupMTCMoveToJointState"
+        name="SetupMTCPlanToJointState"
         planning_group_name="{joint_group_name}"
         planner_interface="{planner_interface}"
         constraints="{constraints}"

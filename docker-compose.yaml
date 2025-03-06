@@ -11,7 +11,7 @@ services:
 
   # Starts the MoveIt Pro Agent and the Bridge between the Agent and the Web UI.
   agent_bridge:
-    # IMPORTANT: Enable Nvidia GPUs by uncommenting the lines below:
+    # IMPORTANT: Enable Nvidia GPU ACCELERATION by uncommenting the lines below:
     # runtime: nvidia
     # deploy:
     #     resources:
@@ -22,7 +22,7 @@ services:
     #             capabilities: [gpu, compute, utility,graphics, video]
   # Starts the robot drivers.
   drivers:
-    # IMPORTANT: Enable Nvidia GPUs by uncommenting the lines below:
+    # IMPORTANT: Enable Nvidia GPU ACCELERATION by uncommenting the lines below:
     # runtime: nvidia
     # deploy:
     #     resources:

@@ -38,7 +38,7 @@
       />
       <input_port
         name="controller_action_server"
-        default="/joint_trajectory_controller/follow_joint_trajectory"
+        default="/multi_arm_joint_trajectory_controller/follow_joint_trajectory"
       />
       <MetadataFields>
         <Metadata subcategory="Motion - Execute" />

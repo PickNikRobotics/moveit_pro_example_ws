@@ -19,9 +19,9 @@
         />
         <Action ID="SetupMTCCurrentState" task="{move_to_waypoint_task}" />
         <Action
-          ID="SetupMTCMoveToJointState"
+          ID="SetupMTCPlanToJointState"
           joint_state="{target_joint_state}"
-          name="SetupMTCMoveToJointState_First"
+          name="SetupMTCPlanToJointState_First"
           planning_group_name="manipulator"
           task="{move_to_waypoint_task}"
         />

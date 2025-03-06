@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Pick object">
   <!--//////////-->
   <BehaviorTree
@@ -31,6 +32,10 @@
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Pick object">
+      <MetadataFields>
+        <Metadata subcategory="Motion - Execute" />
+        <Metadata runnable="false" />
+      </MetadataFields>
       <MetadataFields>
         <Metadata subcategory="Motion - Execute" />
       </MetadataFields>
