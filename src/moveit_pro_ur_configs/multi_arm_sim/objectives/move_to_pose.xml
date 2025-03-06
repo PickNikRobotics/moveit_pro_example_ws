@@ -2,7 +2,7 @@
 <root BTCPP_format="4" main_tree_to_execute="Move to Pose">
   <BehaviorTree
     ID="Move to Pose"
-    _description="Uses inverse kinematics to move the robot to a set gripper position"
+    _description="Plan and execute motion to a Cartesian coordinate pose in a ROS message type, using inverse kinematics."
   >
     <Control ID="Sequence">
       <Action
