@@ -15,7 +15,7 @@
       <Action
         ID="AddToolToScene"
         relative_pose="{tool_pose}"
-        package_name="fanuc_sim"
+        package_name="factory_sim"
         tool_urdf_file_path="description/tool.urdf"
         tool_name="suction_gripper"
       />

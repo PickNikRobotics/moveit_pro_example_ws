@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Activate Vacuum">
   <BehaviorTree
     ID="Activate Vacuum"
@@ -10,6 +10,7 @@
         ID="MoveGripperAction"
         position="1"
         gripper_command_action_name="/suction_cup_controller/gripper_cmd"
+        timeout="10.000000"
       />
     </Control>
   </BehaviorTree>

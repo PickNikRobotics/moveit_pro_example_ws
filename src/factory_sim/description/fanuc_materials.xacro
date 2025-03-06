@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <robot xmlns:xacro="http://wiki.ros.org/xacro">
   <xacro:include
-    filename="$(find fanuc_sim)/description/fanuc_colours.xacro"
+    filename="$(find factory_sim)/description/fanuc_colours.xacro"
   />
 
   <xacro:macro name="material_fanuc_yellow">

@@ -7,14 +7,18 @@
     _favorite="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree ID="Setup Planning Scene" _collapsed="true" />
       <SubTree ID="Pick Up Tool" _collapsed="true" />
-      <SubTree ID="Pick Up Block With Tool" _collapsed="true" />
       <Action ID="WaitForDuration" delay_duration="2" />
       <SubTree ID="Deactivate Vacuum" _collapsed="true" />
       <SubTree ID="Place Tool in Tool Holder" _collapsed="true" />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Tool Attachment Example" />
+    <SubTree ID="Tool Attachment Example">
+      <MetadataFields>
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
   </TreeNodesModel>
 </root>
