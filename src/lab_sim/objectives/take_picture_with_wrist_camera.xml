@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Take Wrist Camera Image">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Take Wrist Camera Image"
+    _subtreeOnly="true"
+    _description="Loads wrist camera parameters and records color image."
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="LoadObjectiveParameters"
+        config_file_name="apriltag_detection_config.yaml"
+        parameters="{wrist_camera_parameters}"
+      />
+      <Action
+        ID="GetCameraInfo"
+        topic_name="/wrist_camera/camera_info"
+        message_out="{wrist_camera_info}"
+        timeout_sec="5.000000"
+      />
+      <Action
+        ID="GetImage"
+        topic_name="/wrist_camera/color"
+        message_out="{wrist_camera_image}"
+        timeout_sec="5.000000"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Take Wrist Camera Image">
+      <inout_port name="wrist_camera_image" default="{wrist_camera_image}" />
+      <inout_port name="wrist_camera_info" default="{wrist_camera_info}" />
+      <inout_port
+        name="wrist_camera_parameters"
+        default="{wrist_camera_parameters}"
+      />
+      <MetadataFields>
+        <Metadata subcategory="Perception - 2D Image" />
+        <Metadata runnable="false" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

@@ -3,7 +3,7 @@
   <!--//////////-->
   <BehaviorTree
     ID="Load Mesh as Red Point Cloud"
-    _description=""
+    _description="Loads a mesh from a file and colors it red."
     _favorite="false"
     _subtreeOnly="true"
   >
