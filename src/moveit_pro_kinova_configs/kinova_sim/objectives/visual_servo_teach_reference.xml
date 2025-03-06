@@ -14,7 +14,7 @@
         max_rotation="0.2"
         avg_pose="{tag_pose}"
         tag_id="0"
-        num_samples="0"
+        num_samples="1"
       />
       <Action
         ID="CreateStampedPose"

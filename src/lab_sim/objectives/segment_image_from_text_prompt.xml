@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Segment Image from Text Prompt">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Segment Image from Text Prompt"
+    _subtreeOnly="false"
+    _description="Run text based segmentation and visualize he masks."
+    _favorite="true"
+  >
+    <Control ID="Sequence">
+      <Action
+        ID="SwitchUIPrimaryView"
+        primary_view_name="/masks_visualization"
+      />
+      <SubTree
+        ID="Segment Image from No Negative Text Prompt Subtree"
+        _collapsed="true"
+        clip_model_path="models/clip.onnx"
+        clipseg_model_path="models/clipseg.onnx"
+        erosion_size="2"
+        masks_visualization_topic="/masks_visualization"
+        model_package="lab_sim"
+        threshold="0.28"
+        prompts="an object"
+        image_topic_name="/wrist_camera/color"
+        masks2d="{masks2d}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Segment Image from Text Prompt">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Advanced Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
