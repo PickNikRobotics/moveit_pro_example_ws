@@ -26,9 +26,9 @@ hardware:
     urdf_params:
       - arm: "gen3"
       - dof: "7"
-      - mujoco_keyframe: "view_tag"
+      - mujoco_keyframe: "default"
       - mujoco_model: "description/mujoco/scene.xml"
-      - mujoco_viewer: "true"
+      - mujoco_viewer: "false"
 
 # Configuration for launching ros2_control processes.
 # [Required, if using ros2_control]

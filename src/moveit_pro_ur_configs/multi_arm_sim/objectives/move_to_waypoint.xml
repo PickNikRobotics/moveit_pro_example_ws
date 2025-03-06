@@ -38,11 +38,11 @@
       <input_port name="acceleration_scale_factor" default="1.0" />
       <input_port
         name="controller_names"
-        default="/joint_trajectory_controller"
+        default="/multi_arm_joint_trajectory_controller"
       />
       <input_port
         name="controller_action_server"
-        default="/joint_trajectory_controller/follow_joint_trajectory"
+        default="/multi_arm_joint_trajectory_controller/follow_joint_trajectory"
       />
       <MetadataFields>
         <Metadata subcategory="Motion - Execute" />
