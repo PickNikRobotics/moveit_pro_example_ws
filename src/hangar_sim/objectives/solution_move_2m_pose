@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
-<root BTCPP_format="4" main_tree_to_execute="Move 2m pose">
+<root BTCPP_format="4" main_tree_to_execute="Solution - Move 2m to pose">
   <!--//////////-->
-  <BehaviorTree ID="Move 2m pose" _description="" _favorite="false" _subtreeOnly="false">
+  <BehaviorTree ID="Solution - Move 2m to pose" _description="" _favorite="false" _subtreeOnly="false">
     <Control ID="Sequence" name="TopLevelSequence">
       <Action ID="CreateStampedPose" reference_frame="grasp_link" stamped_pose="{stamped_pose}" orientation_xyzw="0;0;0;1" position_xyz="0;0;2"/>
       <Action ID="VisualizePose" marker_lifetime="0.000000" marker_name="pose" marker_size="0.100000" pose="{stamped_pose}"/>
@@ -9,8 +9,9 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Move 2m pose"><MetadataFields>
-        <Metadata runnable="true"/>
+    <SubTree ID="Solution - Move 2m to pose"><MetadataFields>
+       <Metadata subcategory="Training Examples" />
+       <Metadata runnable="true"/>
       </MetadataFields></SubTree>
   </TreeNodesModel>
 </root>
