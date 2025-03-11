@@ -3,7 +3,7 @@
   <!--//////////-->
   <BehaviorTree ID="Solution - Generate coverage path" _description="" _favorite="false" _subtreeOnly="false">
     <Control ID="Sequence" name="TopLevelSequence">
-      <Action ID="CreateStampedPose" reference_frame="grasp_link" stamped_pose="{stamped_pose}" orientation_xyzw="0;0;1;0" position_xyz="0;0;0.1"/>
+      <Action ID="CreateStampedPose" reference_frame="grasp_link" stamped_pose="{stamped_pose}" orientation_xyzw="0;0;0;1" position_xyz="0;-0.5;1"/>
       <Action ID="VisualizePose" marker_lifetime="0.000000" marker_name="pose" marker_size="0.100000" pose="{stamped_pose}"/>
       <Action ID="GenerateCoveragePath" vector_of_poses="{pose_stamped_vector}" bottom_right_corner="{stamped_pose}" height="0.5" stride_distance="0.1" width="0.5"/>
       <Action ID="VisualizePath" marker_lifetime="0.000000" path="{pose_stamped_vector}"/>
