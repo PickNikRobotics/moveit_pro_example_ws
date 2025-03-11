@@ -3,7 +3,7 @@
   <!--//////////-->
   <BehaviorTree
     ID="Pick And Place Example"
-    _description="Pick and place example objective"
+    _description="Picks up a cube and then places it."
     _favorite="false"
     _hardcoded="false"
   >

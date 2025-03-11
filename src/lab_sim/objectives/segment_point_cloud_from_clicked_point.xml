@@ -6,7 +6,7 @@
   <!--//////////-->
   <BehaviorTree
     ID="Segment Point Cloud from Clicked Point"
-    _description="Captures a point cloud and requests the user to click an object in the image to be segmented. The point cloud is then filtered to only include the selected object."
+    _description="Captures a point cloud and requests the user to click on three objects in the image to be segmented. The point cloud is then filtered to only include the selected objects."
     _favorite="true"
   >
     <Control ID="Sequence">

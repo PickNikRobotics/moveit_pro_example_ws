@@ -3,7 +3,7 @@
   <!--//////////-->
   <BehaviorTree
     ID="Grasp Object from Text Prompt"
-    _description="Captures a point cloud and requests the user to click an object in the image to be segmented. The point cloud is then filtered to only include the selected object."
+    _description="Captures and segments objects from a point cloud based on a text prompt. Then grasps the first object returned from the segmentation."
     _favorite="true"
   >
     <Control ID="Sequence">
