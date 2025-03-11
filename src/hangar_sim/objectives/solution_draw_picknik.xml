@@ -1,3 +1,4 @@
+<?xml version='1.0' encoding='utf-8'?>
 <root BTCPP_format="4" main_tree_to_execute="Solution - Draw Picknik">
   <!--//////////-->
   <BehaviorTree ID="Solution - Draw Picknik" _description="Training example that shows how to load a Cartesian path from a file and execute the path" _favorite="false" _subtreeOnly="false">
@@ -22,6 +23,9 @@
         <Metadata runnable="true"/>
         <Metadata subcategory="Training Examples"/>
       </MetadataFields>
-    </SubTree>
+    <MetadataFields>
+        <Metadata runnable="true"/>
+        <Metadata subcategory="Training Examples"/>
+      </MetadataFields></SubTree>
   </TreeNodesModel>
 </root>
