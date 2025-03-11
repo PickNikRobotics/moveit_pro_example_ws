@@ -2,7 +2,7 @@
   <!--//////////-->
   <BehaviorTree
     ID="Pick up Cube"
-    _description="Pick up the cube using a manually defined PoseStamped"
+    _description="Pick up a cube from a manually defined location"
     _favorite="false"
     _subtreeOnly="false"
   >
