@@ -8,7 +8,7 @@
 
   <visual>
     <rgba haze="0.15 0.25 0.35 1" />
-    <global azimuth="120" elevation="-20" offwidth="640" offheight="480" />
+    <global azimuth="120" elevation="-20" offwidth="320" offheight="240" />
   </visual>
 
   <default>
@@ -91,7 +91,7 @@
       <camera
         name="scene_camera"
         mode="fixed"
-        resolution="640 480"
+        resolution="320 240"
         pos="-0.021452 0.55013 1.190536"
         quat="0 0 -0.401941 -0.915666"
       />
