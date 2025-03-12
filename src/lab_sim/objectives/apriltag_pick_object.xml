@@ -76,7 +76,7 @@
       />
       <SubTree
         ID="Pick from Pose"
-        _collapsed="true"
+        _collapsed="false"
         grasp_pose="{object_pose}"
         grasp_poses="{grasp_poses}"
         approach_distance="0.1"

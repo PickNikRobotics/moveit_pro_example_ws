@@ -26,11 +26,15 @@
           ID="Pick from Pose"
           _collapsed="true"
           grasp_poses="{pick_place_poses}"
+          approach_distance="0.1"
+          retract_xyz="0;0;-0.1"
         />
         <SubTree
           ID="Place at Pose"
           _collapsed="true"
           place_poses="{pick_place_poses}"
+          approach_distance="0.1"
+          retract_xyz="0;0;-0.1"
         />
       </Control>
     </Control>

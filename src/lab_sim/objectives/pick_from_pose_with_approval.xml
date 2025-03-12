@@ -101,10 +101,9 @@
         <Metadata subcategory="Application - Basic Examples" />
         <Metadata runnable="false" />
       </MetadataFields>
-
-      <inout_port name="retract_xyz" default="0;0;-0.1" />
       <inout_port name="approach_distance" default="0.1" />
       <inout_port name="grasp_poses" default="{grasp_poses}" />
+      <inout_port name="retract_xyz" default="0;0;-0.1" />
     </SubTree>
   </TreeNodesModel>
 </root>

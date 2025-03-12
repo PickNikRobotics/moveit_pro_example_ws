@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Reflect Poses subtree">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Reflect Poses subtree"
+    name=""
+    _description="Takes a set of poses, transforms each pose around an axis, and returns the combined set."
+  >
+    <Control ID="Sequence">
+      <Action ID="ResetPoseStampedVector" vector="{output_poses}" />
+      <Decorator
+        ID="ForEach"
+        index="{index}"
+        out="{single_pose}"
+        vector_in="{input_poses}"
+      >
+        <Control ID="Sequence">
+          <Action
+            ID="AddPoseStampedToVector"
+            input="{single_pose}"
+            vector="{output_poses}"
+          />
+          <Action
+            ID="TransformPose"
+            input_pose="{single_pose}"
+            output_pose="{rotated_pose}"
+            translation_xyz="0;0;0"
+            quaternion_xyzw="{reflection_axis}"
+          />
+          <Action
+            ID="AddPoseStampedToVector"
+            input="{rotated_pose}"
+            vector="{output_poses}"
+          />
+        </Control>
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Reflect Poses subtree">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Application - Advanced Examples" />
+      </MetadataFields>
+      <inout_port name="input_poses" default="{input_poses}" />
+      <inout_port name="output_poses" default="{output_poses}" />
+      <inout_port name="reflection_axis" default="{reflection_axis}" />
+    </SubTree>
+  </TreeNodesModel>
+</root>
