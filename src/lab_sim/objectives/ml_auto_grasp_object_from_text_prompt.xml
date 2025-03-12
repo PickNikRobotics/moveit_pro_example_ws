@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="ML Auto Grasp Object from Text Prompt"
+>
+  <!--//////////-->
+  <BehaviorTree
+    ID="ML Auto Grasp Object from Text Prompt"
+    _description="Uses ML models to identify and grasp plan to pick up objects."
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="LogMessage"
+        log_level="warn"
+        message="There might be some warnings and errors when this Objective runs, as long as the Objective completes successfully, everything worked as intended."
+        name="Caution about errors"
+      />
+      <Action
+        ID="ResetPoseStampedVector"
+        vector="{bottle_place_poses}"
+        name="Initialize placement vector"
+      />
+      <Action
+        ID="LoadPoseStampedVectorFromYaml"
+        output="{bottle_place_poses}"
+        file_path="pill_bottle_place_poses.yaml"
+        name="Load placement poses"
+      />
+      <Decorator
+        ID="ForEach"
+        index="{index}"
+        out="{current_bottle_place_pose}"
+        vector_in="{bottle_place_poses}"
+        name="Try to place at each location"
+      >
+        <Decorator ID="RetryUntilSuccessful" num_attempts="10">
+          <Control ID="Sequence" name="TopLevelSequence">
+            <Action ID="ClearSnapshot" />
+            <SubTree ID="Open Gripper" _collapsed="true" />
+            <Action
+              ID="VisualizePose"
+              marker_lifetime="0.000000"
+              marker_name="bottle_drop_pose"
+              marker_size="0.100000"
+              pose="{current_bottle_place_pose}"
+              name="Show drop pose"
+            />
+            <SubTree
+              ID="Move to Waypoint"
+              _collapsed="true"
+              acceleration_scale_factor="1.0"
+              controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+              controller_names="joint_trajectory_controller"
+              joint_group_name="manipulator"
+              keep_orientation="false"
+              keep_orientation_tolerance="0.05"
+              link_padding="0.01"
+              seed="0"
+              velocity_scale_factor="1.0"
+              waypoint_name="Look at Bottles Left"
+              name="Look at pill bottles"
+            />
+            <SubTree
+              ID="Get Grasp from Text Prompt Subtree"
+              _collapsed="true"
+              camera_image_topic="/wrist_camera/color"
+              camera_info_topic="/wrist_camera/camera_info"
+              camera_points_topic="/wrist_camera/points"
+              planning_group="manipulator"
+              output_grasp="{output_grasp}"
+              object_prompt="a pill bottle"
+              mask_threshold=".15"
+              mask_erosion="15"
+              name="Get grasp pose for a pill bottle"
+            />
+            <SubTree
+              ID="Pick from Pose"
+              _collapsed="true"
+              approach_distance="0.1"
+              retract_xyz="0;0;-0.1"
+              grasp_pose="{output_grasp}"
+              name="Pick up pill bottle"
+            />
+            <SubTree
+              ID="Move to Waypoint"
+              _collapsed="true"
+              acceleration_scale_factor="1.0"
+              controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+              controller_names="joint_trajectory_controller"
+              joint_group_name="manipulator"
+              keep_orientation="false"
+              keep_orientation_tolerance="0.05"
+              link_padding="0.01"
+              seed="0"
+              velocity_scale_factor="1.0"
+              waypoint_name="Predrop Bottles Right"
+              name="Move to predrop location"
+            />
+            <SubTree
+              ID="Place at Pose"
+              _collapsed="true"
+              approach_distance="0.1"
+              retract_xyz="0;0;-0.1"
+              place_pose="{current_bottle_place_pose}"
+              name="Place pill bottle on table"
+            />
+          </Control>
+        </Decorator>
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="ML Auto Grasp Object from Text Prompt">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - ML (GPU Recommended)" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
