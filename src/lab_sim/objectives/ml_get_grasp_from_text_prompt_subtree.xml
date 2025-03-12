@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root BTCPP_format="4" main_tree_to_execute="ML Get Grasp from Text Prompt Subtree">
+  <!--//////////-->
+  <BehaviorTree ID="ML Get Grasp from Text Prompt Subtree" _description="Uses ML models to identify objects and infer grasp poses from text prompt." _favorite="true">
+    <Control ID="Fallback">
+      <Control ID="Sequence">
+        <SubTree ID="ML Get Candidate Grasps Subtree" _collapsed="true" camera_image_topic="{camera_image_topic}" camera_info_topic="{camera_info_topic}" camera_points_topic="{camera_points_topic}" object_prompt="{object_prompt}" grasps="{grasps}" mask_erosion="{mask_erosion}" mask_threshold="{mask_threshold}"/>
+        <SubTree ID="Reflect Poses subtree" _collapsed="true" input_poses="{grasps}" output_poses="{grasps_modified}" reflection_axis="0;0;1;0"/>
+        <SubTree ID="Get Collision Free Grasp subtree" _collapsed="true" input_grasps="{grasps_modified}" output_grasp="{output_grasp}"/>
+        <SubTree ID="Visualize Grasps subtree" _collapsed="true" input_grasps="{output_grasp}"/>
+      </Control>
+      <Control ID="Sequence">
+        <Action ID="LogMessage" log_level="warning" message="ML pipeline failed to find requested object in scene."/>
+        <Action ID="AlwaysFailure"/>
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="ML Get Grasp from Text Prompt Subtree">
+      <MetadataFields>
+        <Metadata runnable="false"/>
+        <Metadata subcategory="Application - ML (GPU Recommended)"/>
+      </MetadataFields>
+      <inout_port name="camera_image_topic" default="{camera_image_topic}"/>
+      <inout_port name="camera_info_topic" default="{camera_info_topic}"/>
+      <inout_port name="camera_points_topic" default="{camera_points_topic}"/>
+      <inout_port name="mask_erosion" default="{mask_erosion}"/>
+      <inout_port name="mask_threshold" default="{mask_threshold}"/>
+      <inout_port name="object_prompt" default="{object_prompt}"/>
+      <inout_port name="output_grasp" default="{output_grasp}"/>
+      <inout_port name="planning_group" default="{planning_group}"/>
+    </SubTree>
+  </TreeNodesModel>
+</root>

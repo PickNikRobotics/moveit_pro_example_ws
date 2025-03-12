@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Take scene camera snapshot">
   <!--//////////-->
   <BehaviorTree
@@ -6,10 +7,19 @@
     _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
-      <!-- Clear out old snapshot data -->
+      <!--Clear out old snapshot data-->
       <Action ID="ClearSnapshot" />
-      <Action ID="GetPointCloud" topic_name="/scene_camera/points" />
-      <Action ID="SendPointCloudToUI" />
+      <Action
+        ID="GetPointCloud"
+        topic_name="/scene_camera/points"
+        message_out="{point_cloud}"
+        timeout_sec="5.000000"
+      />
+      <Action
+        ID="SendPointCloudToUI"
+        pcd_topic="/pcd_pointcloud_captures"
+        point_cloud="{point_cloud}"
+      />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>

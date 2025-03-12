@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root BTCPP_format="4" main_tree_to_execute="ML Auto Grasp Object from Text Prompt">
+  <!--//////////-->
+  <BehaviorTree ID="ML Auto Grasp Object from Text Prompt" _description="Uses ML models to identify and grasp plan to pick up objects." _favorite="true">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="LoadPoseStampedVectorFromYaml" output="{bottle_place_poses}" file_path="griz_grasp_poses.yaml"/>
+      <Decorator ID="ForEach" index="{index}" out="{current_bottle_place_pose}" vector_in="{bottle_place_poses}">
+        <Decorator ID="RetryUntilSuccessful" num_attempts="10">
+          <Control ID="Sequence" name="TopLevelSequence">
+            <Action ID="ClearSnapshot"/>
+            <SubTree ID="Open Gripper" _collapsed="true"/>
+            <SubTree ID="Move to Waypoint" _collapsed="true" acceleration_scale_factor="1.0" controller_action_server="/joint_trajectory_controller/follow_joint_trajectory" controller_names="/joint_trajectory_controller" joint_group_name="manipulator" keep_orientation="false" keep_orientation_tolerance="0.05" link_padding="0.01" seed="0" velocity_scale_factor="1.0" waypoint_name="Look at Bottles Left"/>
+            <SubTree ID="ML Get Grasp from Text Prompt Subtree" _collapsed="true" camera_image_topic="/wrist_camera/color" camera_info_topic="/wrist_camera/camera_info" camera_points_topic="/wrist_camera/points" planning_group="manipulator" output_grasp="{output_grasp}" object_prompt="an object" mask_erosion="5" mask_threshold="0.4"/>
+            <SubTree ID="Pick from Pose" _collapsed="true" approach_distance="0.1" grasp_poses="{output_grasp}" retract_xyz="0;0;-0.1"/>
+            <Action ID="VisualizePose" marker_lifetime="0.000000" marker_name="bottle_pose" marker_size="0.100000" pose="{current_bottle_place_pose}"/>
+            <SubTree ID="Move to Waypoint" _collapsed="true" acceleration_scale_factor="1.0" controller_action_server="/joint_trajectory_controller/follow_joint_trajectory" controller_names="/joint_trajectory_controller" joint_group_name="manipulator" keep_orientation="false" keep_orientation_tolerance="0.05" link_padding="0.01" seed="0" velocity_scale_factor="1.0" waypoint_name="Look at Bottles Right"/>
+            <Action ID="ResetPoseStampedVector" vector="{current_bottle_place_pose_vector}"/>
+            <Action ID="AddPoseStampedToVector" input="{current_bottle_place_pose}" vector="{current_bottle_place_pose_vector}"/>
+            <SubTree ID="Place at Pose" _collapsed="true" approach_distance="0.1" place_poses="{current_bottle_place_pose_vector}" retract_xyz="0;0;-0.1"/>
+          </Control>
+        </Decorator>
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="ML Auto Grasp Object from Text Prompt">
+      <MetadataFields>
+        <Metadata runnable="true"/>
+        <Metadata subcategory="Application - ML (GPU Recommended)"/>
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

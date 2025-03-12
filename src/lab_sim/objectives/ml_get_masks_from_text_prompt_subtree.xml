@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="ML Get Masks from Text Prompt Subtree"
+>
+  <!--//////////-->
+  <BehaviorTree
+    ID="ML Get Masks from Text Prompt Subtree"
+    _description="Returns masks for object in text prompt from image"
+  >
+    <Control ID="Sequence">
+      <Action
+        ID="GetMasks2DFromTextQuery"
+        erosion_size="5"
+        image="{input_image}"
+        masks2d="{output_masks}"
+        prompts="{object_prompt}"
+        threshold="0.5"
+        model_package="lab_sim"
+        clip_model_path="models/clip.onnx"
+        clipseg_model_path="models/clipseg.onnx"
+      />
+      <Decorator
+        ID="ForEach"
+        vector_in="{output_masks}"
+        out="{single_mask}"
+        index="{index}"
+      >
+        <!--This ForEach is here to check if the vector is empty. If it is, ForEach returns FAILURE, but if we enter the loop we return SUCCESS.-->
+        <Action ID="AlwaysSuccess" />
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="ML Get Masks from Text Prompt Subtree">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Application - ML (GPU Recommended)" />
+      </MetadataFields>
+      <inout_port name="input_image" default="{input_image}" />
+      <inout_port name="object_prompt" default="{object_prompt}" />
+      <inout_port name="output_masks" default="{output_masks}" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

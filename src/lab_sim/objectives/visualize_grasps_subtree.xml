@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Visualize Grasps subtree">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Visualize Grasps subtree"
+    _description="Iterates through grasp poses and visualizes them using mesh icon"
+  >
+    <Control ID="Sequence">
+      <Action ID="ResetPoseStampedVector" vector="{grasp_world_vector}" />
+      <Decorator
+        ID="ForEach"
+        index="{index}"
+        out="{grasp}"
+        vector_in="{input_grasps}"
+      >
+        <Control ID="Sequence">
+          <Action
+            ID="TransformPoseFrame"
+            input_pose="{grasp}"
+            output_pose="{grasp_world}"
+            target_frame_id="world"
+          />
+          <Action
+            ID="AddPoseStampedToVector"
+            input="{grasp_world}"
+            vector="{grasp_world_vector}"
+          />
+        </Control>
+      </Decorator>
+      <Action
+        ID="VisualizeMesh"
+        marker_lifetime="0.000000"
+        mesh_path="package://lab_sim/objectives/gripper_token.dae"
+        mesh_pose="{grasp_world_vector}"
+        color_mix="1.0"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Visualize Grasps subtree">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Application - Advanced Examples" />
+      </MetadataFields>
+      <inout_port name="input_grasps" default="{input_grasps}" />
+    </SubTree>
+  </TreeNodesModel>
+</root>
