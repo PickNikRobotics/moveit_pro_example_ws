@@ -1,8 +1,5 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<root
-  BTCPP_format="4"
-  main_tree_to_execute="Segment Point Cloud from Clicked Point"
->
+<?xml version='1.0' encoding='utf-8'?>
+<root BTCPP_format="4" main_tree_to_execute="Segment Point Cloud from Clicked Point">
   <!--//////////-->
   <BehaviorTree
     ID="Segment Point Cloud from Clicked Point"
@@ -24,11 +21,9 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Segment Point Cloud from Clicked Point">
-      <MetadataFields>
-        <Metadata runnable="true" />
-        <Metadata subcategory="Application - Advanced Examples" />
-      </MetadataFields>
-    </SubTree>
+    <SubTree ID="Segment Point Cloud from Clicked Point"><MetadataFields>
+        <Metadata runnable="true"/>
+        <Metadata subcategory="Application - Advanced Examples"/>
+      </MetadataFields></SubTree>
   </TreeNodesModel>
 </root>
