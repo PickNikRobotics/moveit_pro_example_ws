@@ -57,6 +57,7 @@ objectives:
     package_name: "lab_sim"
     relative_path: "waypoints/ur_waypoints.yaml"
 
+
 # Configuration for launching ros2_control processes.
 # [Required, if using ros2_control]
 ros2_control:
