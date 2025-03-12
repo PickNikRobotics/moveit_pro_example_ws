@@ -28,6 +28,9 @@ moveit_params:
   servo_joint_limits:
     package: "lab_sim"
     path: "config/moveit/hard_joint_limits.yaml"
+  pose_jog:
+    package: "lab_sim"
+    path: "config/moveit/pose_jog.yaml"
 
 # Configuration for loading behaviors and objectives.
 # [Required]
@@ -53,7 +56,6 @@ objectives:
   waypoints_file:
     package_name: "lab_sim"
     relative_path: "waypoints/ur_waypoints.yaml"
-
 
 # Configuration for launching ros2_control processes.
 # [Required, if using ros2_control]
