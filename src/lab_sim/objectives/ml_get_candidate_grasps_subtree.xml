@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="ML Get Candidate Grasps Subtree">
+  <!--//////////-->
+  <BehaviorTree ID="ML Get Candidate Grasps Subtree" _description="">
+    <Control ID="Sequence">
+      <Action
+        ID="GetImage"
+        topic_name="{camera_image_topic}"
+        timeout_sec="5.000000"
+        message_out="{image}"
+      />
+      <Action
+        ID="GetPointCloud"
+        topic_name="{camera_points_topic}"
+        timeout_sec="5.000000"
+        message_out="{point_cloud}"
+      />
+      <Action
+        ID="GetCameraInfo"
+        topic_name="{camera_info_topic}"
+        message_out="{camera_info}"
+        timeout_sec="5.000000"
+      />
+      <Control ID="IfThenElse">
+        <Action
+          ID="GetMasks2DFromTextQuery"
+          image="{image}"
+          masks2d="{masks2d}"
+          prompts="{object_prompt}"
+          threshold="{mask_threshold}"
+          clip_model_path="models/clip.onnx"
+          clipseg_model_path="models/clipseg.onnx"
+          model_package="lab_sim"
+          erosion_size="{mask_erosion}"
+        />
+        <Control ID="Sequence">
+          <Action
+            ID="PublishMask2D"
+            image="{image}"
+            masks="{masks2d}"
+            masks_visualization_topic="/masks_visualization"
+            opacity="0.500000"
+            bounding_box_detection_class="{object_prompt}"
+          />
+          <Control ID="IfThenElse">
+            <SubTree
+              ID="Refine Masks With SAM2 Subtree"
+              _collapsed="true"
+              input_image="{image}"
+              input_masks="{masks2d}"
+              refined_masks="{masks2d}"
+            />
+            <Control ID="Sequence">
+              <Action
+                ID="PublishMask2D"
+                image="{image}"
+                masks="{masks2d}"
+                masks_visualization_topic="/masks_visualization"
+                opacity="0.500000"
+                bounding_box_detection_class="{object_prompt}"
+              />
+              <Action
+                ID="GetMasks3DFromMasks2D"
+                camera_info="{camera_info}"
+                masks2d="{masks2d}"
+                point_cloud="{point_cloud}"
+                masks3d="{masks3d}"
+              />
+              <Decorator
+                ID="ForEach"
+                vector_in="{masks3d}"
+                out="{mask3d}"
+                index="{index}"
+              >
+                <Action
+                  ID="GetPointCloudFromMask3D"
+                  point_cloud="{point_cloud}"
+                  mask3d="{mask3d}"
+                  point_cloud_fragment="{point_cloud_fragment}"
+                />
+              </Decorator>
+              <Action
+                ID="SendPointCloudToUI"
+                point_cloud="{point_cloud_fragment}"
+                pcd_topic="/pcd_pointcloud_captures"
+              />
+              <Action
+                ID="PublishPointCloud"
+                point_cloud="{point_cloud_fragment}"
+                point_cloud_topic="/my_point_cloud"
+              />
+              <Action
+                ID="GetGraspPoseFromPointCloud"
+                grasps="{grasps}"
+                number_of_grasps_to_return="10"
+                point_cloud="{point_cloud_fragment}"
+                model_package="lab_sim"
+                model_path="models/l2g.onnx"
+              />
+            </Control>
+            <Control ID="Sequence">
+              <Action
+                ID="LogMessage"
+                message="SAM2 mask refinement failed"
+                log_level="error"
+              />
+              <Action ID="AlwaysFailure" />
+            </Control>
+          </Control>
+        </Control>
+        <Control ID="Sequence">
+          <Action
+            ID="LogMessage"
+            message="ClipSeg failed to find requested object"
+            log_level="error"
+          />
+          <Action ID="AlwaysFailure" />
+        </Control>
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="ML Get Candidate Grasps Subtree">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Application - ML (GPU Recommended)" />
+      </MetadataFields>
+      <inout_port name="camera_image_topic" default="{camera_image_topic}" />
+      <inout_port name="camera_info_topic" default="{camera_info_topic}" />
+      <inout_port name="camera_points_topic" default="{camera_points_topic}" />
+      <inout_port name="grasps" default="{grasps}" />
+      <inout_port name="mask_erosion" default="{mask_erosion}" />
+      <inout_port name="mask_threshold" default="{mask_threshold}" />
+      <inout_port name="object_prompt" default="{object_prompt}" />
+    </SubTree>
+  </TreeNodesModel>
+</root>
