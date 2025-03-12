@@ -18,7 +18,12 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Solution - Follow Path"><MetadataFields>
+    <SubTree ID="Solution - Follow Path">
+      <MetadataFields>
+        <Metadata subcategory="Training Examples"/>
+        <Metadata runnable="true"/>
+      </MetadataFields>
+    <MetadataFields>
         <Metadata subcategory="Training Examples"/>
         <Metadata runnable="true"/>
       </MetadataFields></SubTree>
