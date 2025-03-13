@@ -26,8 +26,6 @@ ARG USER_GID
 # Copy source code from the workspace's ROS 2 packages to a workspace inside the container
 ARG USER_WS=/home/${USERNAME}/user_ws
 ENV USER_WS=${USER_WS}
-RUN mkdir -p ${USER_WS}/src ${USER_WS}/build ${USER_WS}/install ${USER_WS}/log
-COPY ./src ${USER_WS}/src
 
 # Also mkdir with user permission directories which will be mounted later to avoid docker creating them as root
 WORKDIR $USER_WS
@@ -55,6 +53,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    --mount=type=bind,target=${USER_WS}/,source=. \
     . /opt/overlay_ws/install/setup.sh && \
     apt-get update && \
     rosdep install -q -y \
@@ -132,8 +131,6 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 # Copy source code from the workspace's ROS 2 packages to a workspace inside the container
 ARG USER_WS=/home/${USERNAME}/user_ws
 ENV USER_WS=${USER_WS}
-RUN mkdir -p ${USER_WS}/src ${USER_WS}/build ${USER_WS}/install ${USER_WS}/log
-COPY ./src ${USER_WS}/src
 
 # Also mkdir with user permission directories which will be mounted later to avoid docker creating them as root
 WORKDIR $USER_WS
@@ -161,6 +158,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    --mount=type=bind,target=${USER_WS}/,source=. \
     . /opt/overlay_ws/install/setup.sh && \
     apt-get update && \
     rosdep install -q -y \
