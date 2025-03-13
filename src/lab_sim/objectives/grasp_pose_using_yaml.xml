@@ -3,7 +3,7 @@
   <!--//////////-->
   <BehaviorTree
     ID="Grasp Pose Using Yaml"
-    _description="Reads yaml for grasp pose offset and picks up an object that has an AprilTag marker."
+    _description="Reads a YAML file for grasp pose offset and picks up an object that has an AprilTag marker."
     _favorite="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
