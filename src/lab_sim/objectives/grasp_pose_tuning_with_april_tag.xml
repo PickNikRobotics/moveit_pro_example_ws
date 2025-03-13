@@ -3,7 +3,7 @@
   <!--//////////-->
   <BehaviorTree
     ID="Grasp Pose Tuning With April Tag"
-    _description="Moves the gripper to the April Tag and then prompts the user to teleop to a grasp pose. Saves the resulting pose to yaml."
+    _description="Moves the gripper to the April Tag and then prompts the user to teleop to a grasp pose. Saves the resulting pose to a YAML file."
     _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
