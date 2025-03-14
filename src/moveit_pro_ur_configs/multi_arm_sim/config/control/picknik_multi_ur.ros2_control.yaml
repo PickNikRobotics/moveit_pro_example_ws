@@ -15,20 +15,12 @@ controller_manager:
       type: joint_trajectory_controller/JointTrajectoryController
     first_robotiq_gripper_controller:
       type: position_controllers/GripperActionController
-    first_robotiq_activation_controller:
-      type: robotiq_controllers/RobotiqActivationController
     second_robotiq_gripper_controller:
       type: position_controllers/GripperActionController
-    second_robotiq_activation_controller:
-      type: robotiq_controllers/RobotiqActivationController
     third_robotiq_gripper_controller:
       type: position_controllers/GripperActionController
-    third_robotiq_activation_controller:
-      type: robotiq_controllers/RobotiqActivationController
     fourth_robotiq_gripper_controller:
       type: position_controllers/GripperActionController
-    fourth_robotiq_activation_controller:
-      type: robotiq_controllers/RobotiqActivationController
     servo_controller:
       type: joint_trajectory_controller/JointTrajectoryController
 
@@ -217,19 +209,11 @@ first_robotiq_gripper_controller:
     joint: first_robotiq_85_left_knuckle_joint
     allow_stalling: true
 
-first_robotiq_activation_controller:
-  ros__parameters:
-    default: true
-
 second_robotiq_gripper_controller:
   ros__parameters:
     default: true
     joint: second_robotiq_85_left_knuckle_joint
     allow_stalling: true
-
-second_robotiq_activation_controller:
-  ros__parameters:
-    default: true
 
 third_robotiq_gripper_controller:
   ros__parameters:
@@ -237,16 +221,8 @@ third_robotiq_gripper_controller:
     joint: third_robotiq_85_left_knuckle_joint
     allow_stalling: true
 
-third_robotiq_activation_controller:
-  ros__parameters:
-    default: true
-
 fourth_robotiq_gripper_controller:
   ros__parameters:
     default: true
     joint: fourth_robotiq_85_left_knuckle_joint
     allow_stalling: true
-
-fourth_robotiq_activation_controller:
-  ros__parameters:
-    default: true
