@@ -465,9 +465,10 @@
                         <body childclass="2f85">
                           <!-- site for end effector's f/t sensor right at the base of the robotiq gripper -->
                           <site
-                            name="robotiq_ft_sensor"
+                            name="tcp_fts_sensor"
                             size="0.01"
-                            pos="0.0 0.0 -0.0615"
+                            pos="0.001 0.1 0"
+                            quat="-1 1 0 0"
                           />
                           1
                           <!-- Right-hand side 4-bar linkage -->
@@ -892,8 +893,8 @@
   </equality>
 
   <sensor>
-    <force site="robotiq_ft_sensor" />
-    <torque site="robotiq_ft_sensor" />
+    <force site="tcp_fts_sensor" />
+    <torque site="tcp_fts_sensor" />
   </sensor>
 
   <keyframe>
