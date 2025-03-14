@@ -29,12 +29,5 @@ jobs:
       - name: Check .gitmodules file for Git-over-SSH URLs
         run: "! grep 'git@' .gitmodules"
 
-  validate-objectives:
-    name: Validate objectives
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: actions/checkout@v3
-      - name: Validate objectives
-        run: |
-          ./validate_objectives.py
-          echo "Validated objectives"
+  validate_objectives:
+    uses: PickNikRobotics/moveit_pro_ci/.github/workflows/validate_objectives.yaml@1671ff96df85c1f331d6c8f44708333ea8c2cec8
