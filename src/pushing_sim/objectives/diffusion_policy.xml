@@ -1,0 +1,59 @@
+<root BTCPP_format="4" main_tree_to_execute="Diffusion Policy">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Diffusion Policy"
+    _description=""
+    _favorite="false"
+    _hardcoded="false"
+  >
+    <Control ID="Sequence">
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        controller_names="/joint_trajectory_controller"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        velocity_scale_factor="1.0"
+        waypoint_name="Look At T"
+      />
+      <Action
+        ID="ActivateControllers"
+        controller_names="velocity_force_controller"
+      />
+      <Control ID="Parallel" failure_count="2" success_count="1">
+        <Action
+          ID="DiffusionPolicy"
+          model_package="pushing_behaviors"
+          diffusion_action_extract_model_path="models/DiffusionExtractAction.onnx"
+          diffusion_encoder_model_path="models/DiffusionPolicyEncoder.onnx"
+          diffusion_step_model_path="models/DiffusionStep.onnx"
+          scene_camera_topic="/scene_camera/color"
+          wrist_camera_topic="/wrist_camera/color"
+          timeout="15.000000"
+          twist_stamped="{desired_twist}"
+          wrench_stamped="{desired_wrench}"
+        />
+        <Decorator ID="Delay" delay_msec="8000">
+          <Action
+            ID="PublishVelocityForceCommand"
+            force_controlled_axes="0;0;0;0;0;0"
+            publish_rate="10"
+            twist_stamped="{desired_twist}"
+            velocity_controlled_axes="1;1;1;1;1;1"
+            velocity_force_controller_command_topic="/velocity_force_controller/command"
+            wrench_gain="0.0"
+            wrench_stamped="{desired_wrench}"
+          />
+        </Decorator>
+      </Control>
+      <!--<Action ID="GetSyncedImages" camera_info_1="{camera_info_1}" camera_info_1_topic_name="/wrist_camera/camera_info" camera_info_2="{camera_info_2}" camera_info_2_topic_name="/scene_camera/camera_info" image_1="{wrist_image}" image_1_topic_name="/wrist_camera/color" image_2="{scene_image}" image_2_topic_name="/scene_camera/color"/>-->
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Diffusion Policy" />
+  </TreeNodesModel>
+</root>
