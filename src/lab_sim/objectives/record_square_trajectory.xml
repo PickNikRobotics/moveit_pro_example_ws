@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Record Square Trajectory">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Record Square Trajectory"
+    _description=""
+    _favorite="true"
+    _subtreeOnly="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Control ID="Parallel" failure_count="1" success_count="1">
+        <Decorator ID="KeepRunningUntilFailure">
+          <Action
+            ID="RecordJointTrajectory"
+            joint_state_topic="/joint_states"
+            joint_trajectory_message="{joint_trajectory_msg}"
+            planning_group_name="manipulator"
+            start_recording_service="/start_recording_joint_trajectory"
+            stop_recording_service="/stop_recording_joint_trajectory"
+            timeout_sec="5.000000"
+            joint_space_step="0.01"
+          />
+        </Decorator>
+        <Control ID="Sequence">
+          <SubTree
+            ID="Move to Waypoint"
+            _collapsed="true"
+            acceleration_scale_factor="1.0"
+            controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+            controller_names="/joint_trajectory_controller"
+            joint_group_name="manipulator"
+            keep_orientation="false"
+            keep_orientation_link_names="grasp_link"
+            keep_orientation_tolerance="0.05"
+            link_padding="0.01"
+            velocity_scale_factor="1.0"
+            waypoint_name="Beaker 3a - Pre Pick"
+          />
+          <Action
+            ID="CallTriggerService"
+            service_name="/start_recording_joint_trajectory"
+          />
+          <SubTree ID="Move Along Square" _collapsed="true" />
+          <Action
+            ID="CallTriggerService"
+            service_name="/stop_recording_joint_trajectory"
+          />
+          <Action
+            ID="SaveJointTrajectoryToYaml"
+            message="{joint_trajectory_msg}"
+            yaml_filename="~/user_ws/src/lab_sim/objectives/square_traj"
+          />
+        </Control>
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Record Square Trajectory">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Advanced Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
