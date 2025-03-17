@@ -2,7 +2,7 @@
   <!--//////////-->
   <BehaviorTree
     ID="Playback Square Trajectory"
-    _description=""
+    _description="Loads and plays a JointTrajectory of the end-effector moving in a square trajectory."
     _favorite="true"
     _subtreeOnly="false"
   >
