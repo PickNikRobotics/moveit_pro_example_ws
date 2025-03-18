@@ -631,13 +631,13 @@
   </worldbody>
 
   <actuator>
-    <position class="kinova" name="joint_1" joint="joint_1" kp="800" kv="260" />
-    <position class="kinova" name="joint_2" joint="joint_2" kp="800" kv="260" />
-    <position class="kinova" name="joint_3" joint="joint_3" kp="260" kv="86" />
-    <position class="kinova" name="joint_4" joint="joint_4" kp="260" kv="86" />
-    <position class="kinova" name="joint_5" joint="joint_5" kp="130" kv="45" />
-    <position class="kinova" name="joint_6" joint="joint_6" kp="130" kv="45" />
-    <position class="kinova" name="joint_7" joint="joint_7" kp="130" kv="45" />
+    <position class="kinova" name="joint_1" joint="joint_1" kp="1000" dampratio="1" />
+    <position class="kinova" name="joint_2" joint="joint_2" kp="1000" dampratio="1"  />
+    <position class="kinova" name="joint_3" joint="joint_3" kp="1000" dampratio="1"  />
+    <position class="kinova" name="joint_4" joint="joint_4" kp="1000" dampratio="1" />
+    <position class="kinova" name="joint_5" joint="joint_5" kp="1000" dampratio="1"  />
+    <position class="kinova" name="joint_6" joint="joint_6" kp="1000" dampratio="1"  />
+    <position class="kinova" name="joint_7" joint="joint_7" kp="1000" dampratio="1"  />
   </actuator>
 
   <!-- Robotiq gripper contact -->
