@@ -2,6 +2,9 @@
 build:
   # Enable this for bidirectional syncing from the UI
   symlink-install: true
+  allow-overriding:
+    - robotiq_description
+    - ur_description
   mixin:
     # Enable ccache support
     - ccache
