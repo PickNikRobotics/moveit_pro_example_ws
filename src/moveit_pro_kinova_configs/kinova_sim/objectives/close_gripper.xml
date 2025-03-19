@@ -9,4 +9,12 @@
       />
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Close Gripper">
+      <MetadataFields>
+        <Metadata subcategory="Grasping" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>
