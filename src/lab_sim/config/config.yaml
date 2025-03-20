@@ -28,6 +28,9 @@ moveit_params:
   servo_joint_limits:
     package: "lab_sim"
     path: "config/moveit/hard_joint_limits.yaml"
+  pose_jog:
+    package: "lab_sim"
+    path: "config/moveit/pose_jog.yaml"
 
 # Configuration for loading behaviors and objectives.
 # [Required]

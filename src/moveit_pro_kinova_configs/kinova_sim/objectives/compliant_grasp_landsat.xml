@@ -92,4 +92,11 @@
       <SubTree ID="Close Gripper" _collapsed="true" />
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Compliant Grasp Landsat">
+      <MetadataFields>
+        <Metadata subcategory="Application - Advanced Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>

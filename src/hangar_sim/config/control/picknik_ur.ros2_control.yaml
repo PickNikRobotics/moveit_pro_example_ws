@@ -350,7 +350,7 @@ servo_controller:
 
 force_torque_sensor_broadcaster:
   ros__parameters:
-    sensor_name: robotiq_ft_sensor
+    sensor_name: tcp_fts_sensor
     state_interface_names:
       - force.x
       - force.y
@@ -358,4 +358,4 @@ force_torque_sensor_broadcaster:
       - torque.x
       - torque.y
       - torque.z
-    frame_id: robotiq_ft_sensor
+    frame_id: tool0
