@@ -1,0 +1,49 @@
+<root BTCPP_format="4" main_tree_to_execute="Pick from Pose">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Pick from Pose"
+    _description="Takes a grasp pose as input and picks up the object at that pose"
+    _favorite="false"
+    _subtreeOnly="true"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="LoadObjectiveParameters"
+        parameters="{parameters}"
+        config_file_name="pick_object_config.yaml"
+      />
+      <Action
+        ID="InitializeMTCTask"
+        controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
+        task="{mtc_task}"
+        task_id="pick_object"
+      />
+      <Action
+        ID="SetupMTCCurrentState"
+        skip_collision_check="false"
+        task="{mtc_task}"
+      />
+      <Action
+        ID="SetupMTCPickObject"
+        grasp_pose="{grasp_pose}"
+        monitored_stage="current state"
+        task="{mtc_task}"
+        parameters="{parameters}"
+      />
+      <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
+      <Action
+        ID="ExecuteMTCTask"
+        goal_duration_tolerance="-1.000000"
+        solution="{mtc_solution}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Pick from Pose">
+      <inout_port name="grasp_pose" default="{object_pose}" />
+      <MetadataFields>
+        <Metadata subcategory="Application - Basic Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
