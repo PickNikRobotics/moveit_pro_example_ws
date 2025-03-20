@@ -1188,7 +1188,7 @@
       <param name="render_publish_rate">10</param>
       <param name="tf_publish_rate">60</param>
       <param name="lidar_publish_rate">10</param>
-      <param name="mujoco_viewer">true</param>
+      <param name="mujoco_viewer">false</param>
     </hardware>
   </ros2_control>
 </robot>
