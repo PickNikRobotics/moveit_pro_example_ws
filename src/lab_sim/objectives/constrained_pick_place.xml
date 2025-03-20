@@ -1,58 +1,19 @@
-<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Move Beakers to Burners">
   <!--//////////-->
-  <BehaviorTree
-    ID="Move Beakers to Burners"
-    _description="Example of picking and placing objects with orientation constraints enforced on the arm's motion"
-    _favorite="true"
-    _subtreeOnly="false"
-  >
+  <BehaviorTree ID="Move Beakers to Burners" _description="Example of picking and placing objects with orientation constraints enforced on the arm's motion" _favorite="true">
     <Control ID="Sequence">
-      <SubTree
-        ID="Move to Waypoint"
-        _collapsed="true"
-        waypoint_name="Beaker 1a - Pre Pick"
-        joint_group_name="manipulator"
-        controller_names="/joint_trajectory_controller"
-        velocity_scale_factor="1.0"
-        acceleration_scale_factor="1.0"
-        link_padding="0.01"
-        keep_orientation="false"
-        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-        keep_orientation_tolerance="0.05"
-        keep_orientation_link_names="grasp_link"
-      />
-      <SubTree ID="Open Gripper" />
-      <SubTree
-        ID="Constrained Pick and Place Subtree"
-        pre_pick="Beaker 1a - Pre Pick"
-        pick="Beaker 1b - Pick"
-        pre_place="Beaker 1c - Pre Place"
-        place="Beaker 1d - Place"
-        name="Beaker 1"
-      />
-      <SubTree
-        ID="Constrained Pick and Place Subtree"
-        pre_pick="Beaker 2a - Pre Pick"
-        pick="Beaker 2b - Pick"
-        pre_place="Beaker 2c - Pre Place"
-        place="Beaker 2d - Place"
-        name="Beaker 2"
-      />
-      <SubTree
-        ID="Constrained Pick and Place Subtree"
-        pre_pick="Beaker 3a - Pre Pick"
-        pick="Beaker 3b - Pick"
-        pre_place="Beaker 3c - Pre Place"
-        place="Beaker 3d - Place"
-        name="Beaker 3"
-      />
+      <SubTree ID="Move to Waypoint" _collapsed="true" waypoint_name="Beaker 1a - Pre Pick" joint_group_name="manipulator" controller_names="/joint_trajectory_controller" velocity_scale_factor="1.0" acceleration_scale_factor="1.0" link_padding="0.01" keep_orientation="false" controller_action_server="/joint_trajectory_controller/follow_joint_trajectory" keep_orientation_tolerance="0.05" keep_orientation_link_names="grasp_link"/>
+      <SubTree ID="Open Gripper"/>
+      <SubTree ID="Constrained Pick and Place Subtree" pre_pick="Beaker 1a - Pre Pick" pick="Beaker 1b - Pick" pre_place="Beaker 1c - Pre Place" place="Beaker 1d - Place" name="Beaker 1"/>
+      <SubTree ID="Constrained Pick and Place Subtree" pre_pick="Beaker 2a - Pre Pick" pick="Beaker 2b - Pick" pre_place="Beaker 2c - Pre Place" place="Beaker 2d - Place" name="Beaker 2"/>
+      <SubTree ID="Constrained Pick and Place Subtree" pre_pick="Beaker 3a - Pre Pick" pick="Beaker 3b - Pick" pre_place="Beaker 3c - Pre Place" place="Beaker 3d - Place" name="Beaker 3"/>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Move Beakers to Burners">
       <MetadataFields>
-        <Metadata subcategory="Application - Advanced Examples" />
+        <Metadata subcategory="Application - Advanced Examples"/>
+        <Metadata runnable="true"/>
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
