@@ -258,4 +258,11 @@
       </Decorator>
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Compliant Grasp RAFTI VFC">
+      <MetadataFields>
+        <Metadata subcategory="Application - Advanced Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>
