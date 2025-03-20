@@ -98,4 +98,11 @@
       </Control>
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Visual Servo To Reference">
+      <MetadataFields>
+        <Metadata subcategory="Application - Advanced Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>
