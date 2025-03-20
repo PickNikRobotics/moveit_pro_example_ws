@@ -35,7 +35,6 @@ force_torque_sensor_broadcaster:
       - torque.y
       - torque.z
     frame_id: tool0
-    topic_name: ft_data
 
 joint_trajectory_controller:
   ros__parameters:

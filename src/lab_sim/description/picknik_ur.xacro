@@ -648,6 +648,9 @@
     <mimic joint="robotiq_85_left_knuckle_joint" multiplier="-1" />
   </joint>
   <!-- This link aligns the axes of the grasp frame to our required convention for motion planning tasks. -->
+  <!-- Positive X points to the robots left and is parallel to the direction the fingers move -->
+  <!-- Positive Y points up towards the top of the gripper (from the wrist camera's perspective, if present) -->
+  <!-- Positive Z points out of the gripper -->
   <link name="grasp_link" />
   <joint name="grasp_link_joint" type="fixed">
     <parent link="robotiq_85_base_link" />
@@ -1185,9 +1188,13 @@
       <plugin>picknik_mujoco_ros/MujocoSystem</plugin>
       <param name="mujoco_model">$(arg mujoco_model)</param>
       <param name="mujoco_model_package">lab_sim</param>
+      <!-- The rate <camera> data is published at -->
       <param name="render_publish_rate">10</param>
+      <!-- The rate transforms to <site> poses are published at -->
       <param name="tf_publish_rate">60</param>
+      <!-- The rate <rangefinder> data is published at -->
       <param name="lidar_publish_rate">10</param>
+      <!-- Whether to launch the MuJoCo interactive viewer -->
       <param name="mujoco_viewer">false</param>
     </hardware>
   </ros2_control>

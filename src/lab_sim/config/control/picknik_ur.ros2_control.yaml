@@ -146,7 +146,9 @@ servo_controller:
 
 force_torque_sensor_broadcaster:
   ros__parameters:
-    sensor_name: robotiq_ft_sensor
+    # The hardware interface name.
+    # If you share a ros2_control.yaml across hardware and simulation, the simulation <site> name should be set to the hardware's hardware interface name.
+    sensor_name: tcp_fts_sensor
     state_interface_names:
       - force.x
       - force.y
@@ -154,8 +156,10 @@ force_torque_sensor_broadcaster:
       - torque.x
       - torque.y
       - torque.z
-    frame_id: robotiq_ft_sensor
-    topic_name: ft_data
+    # The frame the sensor is published in.
+    # If you share a ros2_control.yaml across hardware and simulation, frame_id should reference the link in your URDF corresponding to the hardware's pose, and your site and URDF link should be identical.
+    # To verify simulation and hardware frames are identical, `ros2 run tf2_ros tf2_echo site_name hardware_frame` should return all 0s.
+    frame_id: tool0
 
 
 joint_trajectory_admittance_controller:
@@ -174,9 +178,9 @@ joint_trajectory_admittance_controller:
     sensor_frame: tool0
     # Specifies the frame/link name of the end-effector frame. Must exist in the robot description.
     ee_frame: grasp_link
-    # The name of the force torque sensor in the robot description which will be used in the admittance calculation.
+    # The name of the force/torque ros2_control hardware interface which will be used in the admittance calculation.
     # If empty, the controller will run without admittance.
-    ft_sensor_name: robotiq_ft_sensor
+    ft_sensor_name: tcp_fts_sensor
     # Joint accelerations to use for immediate stops (e.g. when cancelling a running trajectory).
     # Chosen to match MoveIt configs.
     stop_accelerations: [30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0]
@@ -224,8 +228,8 @@ velocity_force_controller:
     # The frame where the force / torque sensor reading is given.
     # (Needs to exist in the kinematic chain).
     sensor_frame: tool0
-    # The force/torque sensor name.
-    ft_sensor_name: robotiq_ft_sensor
+    # The force/torque ros2_control hardware interface name.
+    ft_sensor_name: tcp_fts_sensor
     # An optional deadband to apply to the force/torque signal. Set to 0.0 to disable.
     ft_force_deadband: 2.0
     ft_torque_deadband: 1.0
