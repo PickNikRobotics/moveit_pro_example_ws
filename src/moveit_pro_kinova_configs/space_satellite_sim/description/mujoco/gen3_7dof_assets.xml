@@ -302,7 +302,7 @@
   </actuator>
 
   <sensor>
-    <force name="ee_force_sensor" site="fts" />
-    <torque name="ee_torque_sensor" site="fts" />
+    <force site="fts" />
+    <torque site="fts" />
   </sensor>
 </mujocoinclude>
