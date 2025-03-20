@@ -269,6 +269,31 @@
               conaffinity="0"
               group="2"
             />
+            <geom
+              name="ham_assem_collision_1"
+              mass="0"
+              type="box"
+              pos="0 0.60358  0.148988"
+              size="0.395 0.01 0.307422"
+              group="3"
+            />
+            <geom
+              name="ham_assem_collision_2"
+              mass="0"
+              type="box"
+              pos="-0.26118 0.60358 -0.299002"
+              size="0.133638 0.01 0.140708"
+              group="3"
+            />
+            <geom
+              name="ham_assem_collision_3"
+              mass="0"
+              type="box"
+              pos="0.26118 0.60358 -0.299002"
+              size="0.133638 0.01 0.140708"
+              group="3"
+            />
+
             <!-- UR5E -->
             <body
               name="base"
@@ -425,9 +450,9 @@
                           <body>
                             <!-- site for end effector's f/t sensor right at the base of the gripper -->
                             <site
-                              name="robotiq_ft_sensor"
+                              name="tcp_fts_sensor"
                               size="0.01"
-                              pos="0 0.1 0"
+                              pos="0.001 0.1 0"
                               quat="-1 1 0 0"
                             />
                             <body
@@ -547,7 +572,7 @@
   </actuator>
 
   <sensor>
-    <force name="ee_force_sensor" site="robotiq_ft_sensor" />
-    <torque name="ee_torque_sensor" site="robotiq_ft_sensor" />
+    <force site="tcp_fts_sensor" />
+    <torque site="tcp_fts_sensor" />
   </sensor>
 </mujoco>
