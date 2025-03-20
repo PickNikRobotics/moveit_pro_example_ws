@@ -269,6 +269,31 @@
               conaffinity="0"
               group="2"
             />
+            <geom
+              name="ham_assem_collision_1"
+              mass="0"
+              type="box"
+              pos="0 0.60358  0.148988"
+              size="0.395 0.01 0.307422"
+              group="3"
+            />
+            <geom
+              name="ham_assem_collision_2"
+              mass="0"
+              type="box"
+              pos="-0.26118 0.60358 -0.299002"
+              size="0.133638 0.01 0.140708"
+              group="3"
+            />
+            <geom
+              name="ham_assem_collision_3"
+              mass="0"
+              type="box"
+              pos="0.26118 0.60358 -0.299002"
+              size="0.133638 0.01 0.140708"
+              group="3"
+            />
+
             <!-- UR5E -->
             <body
               name="base"
