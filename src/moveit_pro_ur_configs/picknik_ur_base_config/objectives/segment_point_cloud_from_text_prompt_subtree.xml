@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8" ?>
 <root
   BTCPP_format="4"
   main_tree_to_execute="Segment Point Cloud from Text Prompt Subtree"
@@ -6,7 +5,6 @@
   <!--//////////-->
   <BehaviorTree
     ID="Segment Point Cloud from Text Prompt Subtree"
-    _subtreeOnly="true"
     _description="Captures a point cloud and requests the user to click an object in the image to be segmented. The point cloud is then filtered to only include the selected object."
     _favorite="true"
     camera_topic_name="/wrist_camera/camera_info"
@@ -28,7 +26,7 @@
       <Action ID="ClearSnapshot" />
       <SubTree
         ID="Segment Image from No Negative Text Prompt Subtree"
-        _collapsed="true"
+        _collapsed="false"
         clip_model_path="{clip_model_path}"
         clipseg_model_path="{clipseg_model_path}"
         erosion_size="{erosion_size}"
@@ -82,6 +80,11 @@
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Segment Point Cloud from Text Prompt Subtree">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Perception - ML" />
+      </MetadataFields>
+
       <input_port
         name="camera_topic_name"
         default="/wrist_camera/camera_info"
@@ -106,10 +109,6 @@
       <input_port name="points_topic_name" default="/wrist_camera/points" />
       <input_port name="prompts" default="{prompts}" />
       <input_port name="threshold" default="{threshold}" />
-      <MetadataFields>
-        <Metadata runnable="false" />
-        <Metadata subcategory="Perception - ML" />
-      </MetadataFields>
     </SubTree>
   </TreeNodesModel>
 </root>
