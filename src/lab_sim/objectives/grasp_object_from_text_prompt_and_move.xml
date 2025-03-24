@@ -11,6 +11,7 @@
     <Decorator ID="Repeat" num_cycles="3">
       <Control ID="Sequence" name="TopLevelSequence">
         <SubTree ID="Grasp Object from Text Prompt" _collapsed="false" />
+        <SubTree ID="Clear Previous Obstacles" _collapsed="true" />
         <SubTree
           ID="Move to Waypoint"
           controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
