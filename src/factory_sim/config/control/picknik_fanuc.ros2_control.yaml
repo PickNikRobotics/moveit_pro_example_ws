@@ -24,12 +24,14 @@ tool_attach_controller:
     default: true
     joint: suction_cup_tool_interface
     allow_stalling: true
+    stall_timeout: 0.01
 
 suction_cup_controller:
   ros__parameters:
     default: true
     joint: suction_cup_tool_tip
     allow_stalling: true
+    stall_timeout: 0.01
 
 joint_state_broadcaster:
   ros__parameters:
