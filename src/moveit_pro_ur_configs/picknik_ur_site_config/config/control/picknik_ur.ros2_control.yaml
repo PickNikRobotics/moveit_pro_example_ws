@@ -121,6 +121,9 @@ robotiq_gripper_controller:
     default: true
     joint: robotiq_85_left_knuckle_joint
     allow_stalling: true
+    # These need to be tuned for HW:
+    # stall_timeout: 0.05
+    # goal_tolerance: 0.02
 
 robotiq_activation_controller:
   ros__parameters:
