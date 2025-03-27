@@ -3,7 +3,7 @@
   <!--//////////-->
   <BehaviorTree
     ID="Move to Look at Plane"
-    _description=""
+    _description="Move the base an arm close to the plane"
     _favorite="false"
     _subtreeOnly="false"
   >
