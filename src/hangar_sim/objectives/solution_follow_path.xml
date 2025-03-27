@@ -3,7 +3,7 @@
   <!--//////////-->
   <BehaviorTree
     ID="Solution - Follow Path"
-    _description=""
+    _description="An example of planning and executing a straight line path with base and arm motion"
     _favorite="false"
     _subtreeOnly="false"
   >
