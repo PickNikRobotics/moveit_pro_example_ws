@@ -3,7 +3,7 @@
   <!--//////////-->
   <BehaviorTree
     ID="Solution - Generate coverage path"
-    _description=""
+    _description="A training example that plans and executes a coverage path with base and arm motion"
     _favorite="false"
     _subtreeOnly="false"
   >

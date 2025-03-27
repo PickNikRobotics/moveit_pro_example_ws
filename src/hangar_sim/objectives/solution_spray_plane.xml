@@ -3,7 +3,7 @@
   <!--//////////-->
   <BehaviorTree
     ID="Solution - Spray Plane"
-    _description=""
+    _description="An example of computing and executing a coverage path for spraying the plane"
     _favorite="false"
     _subtreeOnly="false"
   >

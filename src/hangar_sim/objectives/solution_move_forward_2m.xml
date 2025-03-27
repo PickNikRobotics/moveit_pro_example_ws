@@ -3,7 +3,7 @@
   <!--//////////-->
   <BehaviorTree
     ID="Solution - Move Forward 2m"
-    _description=""
+    _description="A training example that moves to a 3D pose using base and arm motion"
     _favorite="false"
     _subtreeOnly="false"
   >

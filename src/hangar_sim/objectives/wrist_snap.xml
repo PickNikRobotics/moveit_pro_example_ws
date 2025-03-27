@@ -2,7 +2,7 @@
   <!--//////////-->
   <BehaviorTree
     ID="Take wrist camera snapshot"
-    _description=""
+    _description="Capture a point cloud snapshot of the wrist camera and send it to the UI"
     _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
