@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Move to Look at Plane">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Move to Look at Plane"
+    _description="Move the base an arm close to the plane"
+    _favorite="false"
+    _subtreeOnly="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        controller_names="/joint_trajectory_controller"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_link_names="grasp_link"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.0"
+        velocity_scale_factor="1.0"
+        waypoint_name="Look at Plane"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Move to Look at Plane">
+      <MetadataFields>
+        <Metadata subcategory="Training Examples" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
