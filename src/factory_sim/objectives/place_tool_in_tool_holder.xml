@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Place Tool in Tool Holder">
   <!--//////////-->
   <BehaviorTree
@@ -17,6 +16,7 @@
         task_id="pick_up_tool"
         controller_names="/joint_trajectory_controller"
         task="{mtc_task}"
+        trajectory_monitoring="false"
       />
       <Action
         ID="SetupMTCCurrentState"
@@ -43,7 +43,7 @@
         trajectory_sampling_rate="100"
         velocity_scale_factor="0.5"
         task="{mtc_task}"
-        keep_orientation_link_names="grasp_link"
+        keep_orientation_link_names="tool0"
       />
       <Action
         ID="SetupMTCMoveAlongFrameAxis"
