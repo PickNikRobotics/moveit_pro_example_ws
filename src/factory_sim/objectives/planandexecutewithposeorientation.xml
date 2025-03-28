@@ -2,7 +2,7 @@
   <!--//////////-->
   <BehaviorTree
     ID="PlanAndExecuteWithPoseOrientation"
-    _description="Planning to a pose with orientation constraints."
+    _description="Planning to an approach pose then plan to a target pose with optional orientation constraints."
   >
     <Control ID="Sequence" name="Plan to approach then target">
       <Action ID="ActivateControllers" controller_names="{controller_names}" />
@@ -26,7 +26,7 @@
         link_padding="0.01"
         max_iterations="50000"
         monitored_stage="current state"
-        planning_group_name="{planning_group_name}"
+        planning_group_name="{joint_group_name}"
         target_pose="{approach_pose}"
         trajectory_sampling_rate="100"
         velocity_scale_factor="1.000000"
@@ -42,7 +42,7 @@
         link_padding="0.01"
         max_iterations="50000"
         monitored_stage="current state"
-        planning_group_name="{planning_group_name}"
+        planning_group_name="{joint_group_name}"
         target_pose="{target_pose}"
         trajectory_sampling_rate="100"
         velocity_scale_factor="1.000000"
@@ -88,7 +88,7 @@
                   acceleration_scale_factor="1.0"
                   controller_action_server="{controller_action_server}"
                   controller_names="{controller_names}"
-                  joint_group_name="{planning_group_name}"
+                  joint_group_name="{joint_group_name}"
                   keep_orientation="false"
                   keep_orientation_tolerance="0.05"
                   link_padding="0.01"
@@ -133,7 +133,6 @@
         default="{execute_trajectories}"
       />
       <inout_port name="ik_frame" default="{ik_frame}" />
-      <inout_port name="joint_group_name" default="{joint_group_name}" />
       <inout_port name="keep_orientation" default="{keep_orientation}" />
       <inout_port
         name="keep_orientation_link_names"
@@ -143,7 +142,7 @@
         name="keep_orientation_tolerance"
         default="{keep_orientation_tolerance}"
       />
-      <inout_port name="planning_group_name" default="{planning_group_name}" />
+      <inout_port name="joint_group_name" default="{joint_group_name}" />
       <inout_port
         name="starting_joint_state"
         default="{starting_joint_state}"
