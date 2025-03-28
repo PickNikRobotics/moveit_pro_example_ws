@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Teleoperate">
   <!--//////////-->
   <BehaviorTree
@@ -11,6 +10,7 @@
       enable_user_interaction="false"
       user_interaction_prompt="Teleoperate"
       initial_teleop_mode="3"
+      _collapsed="true"
     />
   </BehaviorTree>
   <TreeNodesModel>
