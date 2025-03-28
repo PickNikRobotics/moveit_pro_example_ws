@@ -3,20 +3,12 @@
   <BehaviorTree
     ID="Reachability Analysis for mesh"
     _description="Given a starting waypoint and mesh in the URDF attempt to Cartesian move from starting waypoint to each mesh normal."
-    controller_action_server="{controller_action_server}"
-    controller_name="{controller_name}"
-    execute_trajectories="true"
-    mesh_link_name="{mesh_link_name}"
-    planning_group_name="{planning_group_name}"
-    starting_waypoint="{starting_waypoint}"
-    tip_link="{tip_link}"
-    tip_offset="0;0;0;0;0;0"
   >
     <Control ID="Sequence">
       <Control ID="Sequence" name="Move to starting waypoint">
         <Action
           ID="RetrieveWaypoint"
-          joint_group_name="{planning_group_name}"
+          joint_group_name="{joint_group_name}"
           waypoint_joint_state="{starting_joint_state}"
           waypoint_name="{starting_waypoint}"
         />
@@ -26,8 +18,8 @@
           target_joint_state="{starting_joint_state}"
           acceleration_scale_factor="1.0"
           controller_action_server="{controller_action_server}"
-          controller_names="{controller_name}"
-          joint_group_name="{planning_group_name}"
+          controller_names="{controller_names}"
+          joint_group_name="{joint_group_name}"
           keep_orientation="false"
           keep_orientation_tolerance="0.05"
           link_padding="0.01"
@@ -96,7 +88,16 @@
           index="{index}"
         >
           <Control ID="Sequence">
-            <SubTree ID="PlanAndExecuteWithPositionOnlyIK" _collapsed="true" />
+            <SubTree 
+              ID="PlanAndExecuteWithPositionOnlyIK"
+              _collapsed="true"
+              target_pose="{target_pose}"
+              ik_frame="{ik_frame}"
+              joint_group_name="{joint_group_name}"
+              tip_offset="{tip_offset}"
+              controller_action_server="{controller_action_server}"
+              controller_names="{controller_names}"
+            />
           </Control>
         </Decorator>
         <Action
@@ -121,13 +122,13 @@
         name="controller_action_server"
         default="{controller_action_server}"
       />
-      <inout_port name="controller_name" default="{controller_name}" />
+      <inout_port name="controller_names" default="{controller_names}" />
       <inout_port name="execute_trajectories" default="true" />
       <inout_port name="mesh_link_name" default="{mesh_link_name}" />
-      <inout_port name="planning_group_name" default="{planning_group_name}" />
+      <inout_port name="joint_group_name" default="{joint_group_name}" />
       <inout_port name="starting_waypoint" default="{starting_waypoint}" />
-      <inout_port name="tip_link" default="{tip_link}" />
-      <inout_port name="tip_offset" default="0;0;0;0;0;0" />
+      <inout_port name="ik_frame" default="{ik_frame}" />
+      <inout_port name="tip_offset" default="{tip_offset}" />
     </SubTree>
   </TreeNodesModel>
 </root>
