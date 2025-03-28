@@ -208,21 +208,29 @@ first_robotiq_gripper_controller:
     default: true
     joint: first_robotiq_85_left_knuckle_joint
     allow_stalling: true
+    stall_timeout: 0.05
+    goal_tolerance: 0.02
 
 second_robotiq_gripper_controller:
   ros__parameters:
     default: true
     joint: second_robotiq_85_left_knuckle_joint
     allow_stalling: true
+    stall_timeout: 0.05
+    goal_tolerance: 0.02
 
 third_robotiq_gripper_controller:
   ros__parameters:
     default: true
     joint: third_robotiq_85_left_knuckle_joint
     allow_stalling: true
+    stall_timeout: 0.05
+    goal_tolerance: 0.02
 
 fourth_robotiq_gripper_controller:
   ros__parameters:
     default: true
     joint: fourth_robotiq_85_left_knuckle_joint
     allow_stalling: true
+    stall_timeout: 0.05
+    goal_tolerance: 0.02
