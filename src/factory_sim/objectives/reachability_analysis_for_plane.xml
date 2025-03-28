@@ -8,7 +8,7 @@
       <Control ID="Sequence" name="Move to starting waypoint">
         <Action
           ID="RetrieveWaypoint"
-          joint_group_name="{planning_group_name}"
+          joint_group_name="{joint_group_name}"
           waypoint_joint_state="{starting_joint_state}"
           waypoint_name="{starting_waypoint}"
         />
@@ -19,7 +19,7 @@
           acceleration_scale_factor="1.0"
           controller_action_server="{controller_action_server}"
           controller_names="{controller_names}"
-          joint_group_name="{planning_group_name}"
+          joint_group_name="{joint_group_name}"
           keep_orientation="false"
           keep_orientation_tolerance="0.05"
           link_padding="0.01"
@@ -192,7 +192,7 @@
               target_pose="{place_pose}"
               starting_joint_state="{starting_joint_state}"
               keep_orientation_link_names="{ik_frame}"
-              planning_group_name="{planning_group_name}"
+              planning_group_name="{joint_group_name}"
               execute_trajectories="{execute_trajectories}"
               approach_pose="{approach_pose}"
               keep_orientation_tolerance="{keep_orientation_tolerance}"
@@ -240,7 +240,7 @@
         name="pick_height_translation"
         default="{pick_height_translation}"
       />
-      <inout_port name="planning_group_name" default="{planning_group_name}" />
+      <inout_port name="joint_group_name" default="{joint_group_name}" />
       <inout_port
         name="reachability_origin_pose"
         default="{reachability_origin_pose}"

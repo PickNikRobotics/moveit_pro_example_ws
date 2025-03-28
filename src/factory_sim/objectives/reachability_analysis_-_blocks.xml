@@ -8,7 +8,7 @@
     <Control ID="Sequence" name="">
       <Control ID="Sequence" name="Add visualization from scene camera">
         <SubTree ID="Clear Snapshot" _collapsed="true" />
-        <!--<SubTree ID="Take Snapshot" _collapsed="true" />-->
+        <SubTree ID="Take Snapshot" _collapsed="true" />
       </Control>
       <Action
         ID="CreateStampedPose"
@@ -21,7 +21,7 @@
       <SubTree
         ID="Reachability Analysis for plane"
         _collapsed="true"
-        planning_group_name="manipulator"
+        joint_group_name="manipulator"
         controller_names="/joint_trajectory_controller"
         controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
         reachability_origin_pose="{stamped_pose}"
