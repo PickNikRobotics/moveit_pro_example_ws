@@ -1,9 +1,7 @@
-<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Reachability Analysis for plane">
   <!--//////////-->
   <BehaviorTree
     ID="Reachability Analysis for plane"
-    _subtreeOnly="true"
     column_spacing_translation="0;0.25;0"
     num_45_deg_rotations="0"
     num_columns="3"
@@ -207,6 +205,7 @@
                 controller_names="{controller_name}"
                 task="{mtc_task}"
                 task_id="move_to_pose"
+                trajectory_monitoring="false"
               />
               <Action
                 ID="SetupMTCCurrentState"
@@ -245,7 +244,10 @@
                 task="{mtc_task}"
               />
               <Decorator ID="ForceSuccess">
-                <Control ID="IfThenElse">
+                <Control
+                  ID="IfThenElse"
+                  name="If we are able to plan a path, optionally execute it"
+                >
                   <Control ID="Sequence">
                     <Action
                       ID="PlanMTCTask"
@@ -285,7 +287,11 @@
                       </Control>
                     </Decorator>
                   </Control>
-                  <Action ID="AlwaysSuccess" />
+                  <Action
+                    ID="LogMessage"
+                    log_level="warn"
+                    message="&quot;Unable to plan to pose&quot;"
+                  />
                 </Control>
               </Decorator>
             </Control>
@@ -296,6 +302,11 @@
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Reachability Analysis for plane">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Reachability" />
+      </MetadataFields>
+
       <inout_port name="column_spacing_translation" default="0;0.25;0" />
       <inout_port
         name="controller_action_server"
@@ -319,10 +330,6 @@
         default="&quot;Initial Position&quot;"
       />
       <inout_port name="tip_link" default="{tip_link}" />
-      <MetadataFields>
-        <Metadata runnable="false" />
-        <Metadata subcategory="Reachability" />
-      </MetadataFields>
     </SubTree>
   </TreeNodesModel>
 </root>
