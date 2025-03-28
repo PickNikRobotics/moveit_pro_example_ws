@@ -6,6 +6,10 @@
     _favorite="true"
   >
     <Control ID="Sequence" name="">
+      <Control ID="Sequence" name="Visualize what we are planning to">
+        <SubTree ID="Clear Snapshot" _collapsed="true" />
+        <SubTree ID="Take Snapshot" _collapsed="true" />
+      </Control>
       <SubTree
         ID="Reachability Analysis for mesh"
         _collapsed="true"

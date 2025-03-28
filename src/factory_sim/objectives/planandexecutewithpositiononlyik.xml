@@ -1,0 +1,118 @@
+<root BTCPP_format="4" main_tree_to_execute="PlanAndExecuteWithPositionOnlyIK">
+  <!--//////////-->
+  <BehaviorTree ID="PlanAndExecuteWithPositionOnlyIK">
+    <Control ID="Sequence">
+      <Action ID="Script" code="pose_count += 1" />
+      <Action ID="ResetPoseStampedVector" vector="{plan_pose}" />
+      <Action
+        ID="TransformPose"
+        input_pose="{target_pose}"
+        output_pose="{approach_target_pose}"
+        quaternion_xyzw="0;0;0;1"
+        translation_xyz="0;0;-0.1"
+      />
+      <Action
+        ID="VisualizePose"
+        marker_name="approach_pose"
+        pose="{approach_target_pose}"
+        marker_lifetime="0.000000"
+        marker_size="0.100000"
+      />
+      <Action
+        ID="AddPoseStampedToVector"
+        input="{approach_target_pose}"
+        vector="{plan_pose}"
+      />
+      <Action
+        ID="VisualizePose"
+        marker_name="pose"
+        pose="{target_pose}"
+        marker_lifetime="0.000000"
+        marker_size="0.100000"
+      />
+      <Action
+        ID="AddPoseStampedToVector"
+        input="{target_pose}"
+        vector="{plan_pose}"
+      />
+      <Control
+        ID="IfThenElse"
+        name="If we are able to plan a path, optionally execute it"
+      >
+        <Control ID="Sequence">
+          <Action
+            ID="PlanCartesianPath"
+            trajectory_sampling_rate="30"
+            debug_solution="{debug_solution}"
+            velocity_scale_factor="1.000000"
+            acceleration_scale_factor="1.000000"
+            blending_radius="0.020000"
+            position_only="true"
+            joint_trajectory_msg="{joint_trajectory_msg}"
+            tip_link="{tip_link}"
+            planning_group_name="{planning_group_name}"
+            path="{plan_pose}"
+            tip_offset="{tip_offset}"
+            ik_cartesian_space_density="0.010000"
+            ik_joint_space_density="0.100000"
+          />
+          <Action
+            ID="WaitForUserTrajectoryApproval"
+            solution="{debug_solution}"
+          />
+        </Control>
+        <Decorator
+          ID="Precondition"
+          else="SUCCESS"
+          if="execute_trajectories == &quot;true&quot;"
+        >
+          <Control ID="Sequence">
+            <Action
+              ID="ExecuteFollowJointTrajectory"
+              execute_follow_joint_trajectory_action_name="{controller_action_server}"
+              goal_duration_tolerance="-1.000000"
+              goal_position_tolerance="0.000000"
+              goal_time_tolerance="0.000000"
+              joint_trajectory_msg="{joint_trajectory_msg}"
+            />
+            <SubTree
+              ID="Move to Joint State"
+              _collapsed="true"
+              target_joint_state="{starting_joint_state}"
+              acceleration_scale_factor="1.0"
+              controller_action_server="{controller_action_server}"
+              controller_names="{controller_name}"
+              joint_group_name="{planning_group_name}"
+              keep_orientation="false"
+              keep_orientation_tolerance="0.05"
+              link_padding="0.01"
+              velocity_scale_factor="1.0"
+            />
+          </Control>
+        </Decorator>
+        <Control
+          ID="IfThenElse"
+          name="Notify of planning failure and pause for inspection"
+        >
+          <Action
+            ID="LogMessage"
+            log_level="warn"
+            message="Pausing. Unable to plan to reachability pose. Press Resume when ready."
+          />
+          <Action
+            ID="BreakpointSubscriber"
+            breakpoint_topic="/moveit_pro_breakpoint"
+          />
+        </Control>
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="PlanAndExecuteWithPositionOnlyIK">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Motion - Execution" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

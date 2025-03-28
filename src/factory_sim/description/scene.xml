@@ -59,16 +59,16 @@
     <!-- Add a scene camera -->
     <camera
       name="scene_camera"
-      pos="-1.15 0.000 1.900"
+      pos="-1.046 1.252 2.019"
       fovy="58"
       mode="fixed"
       resolution="640 480"
-      xyaxes="0.000 -1.000 0.000 0.713 0.000 0.701"
+      xyaxes="-0.607 -0.795 0.000 0.555 -0.424 0.715"
     />
     <site
       name="scene_camera_optical_frame"
-      pos="-1.15 0.000 1.900"
-      xyaxes="0.000 -1.000 0.000 -0.713 -0.000 -0.701"
+      pos="-1.046 1.252 2.019"
+      xyaxes="-0.607 -0.795 0.000 -0.555 0.424 -0.715"
     />
 
     <body name="arm_pedestal" pos="0.0 0.0 0.15">
@@ -182,7 +182,7 @@
     <replicate count="3" sep="-" offset=".07 0 0">
       <replicate count="6" sep="-" offset="0 .07 0">
         <replicate count="2" sep="-" offset="0 0 0.5">
-          <body name="sphere-0" pos="-0.35 0.4 0.5">
+          <body name="sphere-0" pos="-0.35 0.4 0.5" euler="0.5 0.5 0.5">
             <joint type="slide" axis="1 0 0" group="3" />
             <joint type="slide" axis="0 1 0" group="3" />
             <joint type="slide" axis="0 0 1" group="3" />
@@ -203,7 +203,7 @@
     <replicate count="3" sep="-" offset=".07 0 0">
       <replicate count="6" sep="-" offset="0 .07 0">
         <replicate count="2" sep="-" offset="0 0 0.5">
-          <body name="sphere-1" pos="-0.3 0.45 0.75">
+          <body name="sphere-1" pos="-0.3 0.45 0.75" euler="-0.5 -0.5 -0.5">
             <joint type="slide" axis="1 0 0" group="3" />
             <joint type="slide" axis="0 1 0" group="3" />
             <joint type="slide" axis="0 0 1" group="3" />

@@ -2,21 +2,7 @@
   <!--//////////-->
   <BehaviorTree
     ID="Reachability Analysis for plane"
-    column_spacing_translation="0;0.25;0"
-    num_45_deg_rotations="0"
-    num_columns="3"
-    num_rows="3"
-    pick_height_translation="0;0;-0.3"
-    reachability_origin_pose="{reachability_origin_pose}"
-    row_spacing_translation="0.35;0;0"
-    execute_trajectories="true"
     _description="Given a grid of points, attempt to free space plan to a vertical approach pose, then Cartesian move to the grid point."
-    pick_height="-0.3"
-    starting_waypoint="&quot;Initial Position&quot;"
-    controller_action_server="{controller_action_server}"
-    controller_name="{controller_name}"
-    planning_group_name="{planning_group_name}"
-    tip_link="{tip_link}"
   >
     <Control ID="Sequence">
       <Control ID="Sequence" name="Move to starting waypoint">
@@ -32,7 +18,7 @@
           target_joint_state="{starting_joint_state}"
           acceleration_scale_factor="1.0"
           controller_action_server="{controller_action_server}"
-          controller_names="{controller_name}"
+          controller_names="{controller_names}"
           joint_group_name="{planning_group_name}"
           keep_orientation="false"
           keep_orientation_tolerance="0.05"
@@ -43,7 +29,7 @@
       <Control ID="Sequence" name="Visualize key poses">
         <Action
           ID="CreateStampedPose"
-          reference_frame="{tip_link}"
+          reference_frame="{ik_frame}"
           stamped_pose="{tool_pose}"
           orientation_xyzw="0;0;0;1"
           position_xyz="0;0;0"
@@ -179,122 +165,38 @@
           out="{place_pose}"
         >
           <Control ID="Sequence">
-            <Control ID="Sequence" name="Make approach pose">
+            <Control ID="Sequence" name="Visualize approach">
               <Action
                 ID="TransformPose"
-                output_pose="{place_approach_pose}"
                 input_pose="{place_pose}"
-                translation_xyz="{pick_height_translation}"
+                output_pose="{approach_pose}"
                 quaternion_xyzw="0;0;0;1"
+                translation_xyz="{pick_height_translation}"
               />
               <Action
                 ID="VisualizePose"
-                marker_name="place_approach_pose"
+                marker_name="approach_pose"
+                pose="{approach_pose}"
                 marker_lifetime="0.000000"
                 marker_size="0.100000"
-                pose="{place_approach_pose}"
               />
             </Control>
-            <Control ID="Sequence" name="Plan to approach then place">
-              <Action
-                ID="ActivateControllers"
-                controller_names="{controller_name}"
-              />
-              <Action
-                ID="InitializeMTCTask"
-                controller_names="{controller_name}"
-                task="{mtc_task}"
-                task_id="move_to_pose"
-                trajectory_monitoring="false"
-              />
-              <Action
-                ID="SetupMTCCurrentState"
-                skip_collision_check="true"
-                task="{mtc_task}"
-              />
-              <Action
-                ID="SetupMTCPlanToPose"
-                acceleration_scale_factor="1.000000"
-                ik_frame="{tip_link}"
-                keep_orientation="false"
-                link_padding="0.000000"
-                max_iterations="50000"
-                monitored_stage="current state"
-                planning_group_name="{planning_group_name}"
-                target_pose="{place_approach_pose}"
-                trajectory_sampling_rate="100"
-                velocity_scale_factor="1.000000"
-                task="{mtc_task}"
-                keep_orientation_tolerance="3"
-                keep_orientation_link_names="grasp_link"
-              />
-              <Action
-                ID="SetupMTCMoveAlongFrameAxis"
-                acceleration_scale=".5"
-                axis_frame="{tip_link}"
-                axis_x="0.000000"
-                axis_y="0.000000"
-                axis_z="1"
-                hand_frame="{tip_link}"
-                ignore_environment_collisions="true"
-                max_distance="{pick_height}"
-                min_distance="{pick_height}"
-                planning_group_name="{planning_group_name}"
-                velocity_scale=".5"
-                task="{mtc_task}"
-              />
-              <Decorator ID="ForceSuccess">
-                <Control
-                  ID="IfThenElse"
-                  name="If we are able to plan a path, optionally execute it"
-                >
-                  <Control ID="Sequence">
-                    <Action
-                      ID="PlanMTCTask"
-                      task="{mtc_task}"
-                      solution="{mtc_solution}"
-                    />
-                    <Action
-                      ID="WaitForUserTrajectoryApproval"
-                      solution="{mtc_solution}"
-                    />
-                  </Control>
-                  <Control ID="Sequence">
-                    <Decorator
-                      ID="Precondition"
-                      else="SUCCESS"
-                      if="execute_trajectories == &quot;true&quot;"
-                    >
-                      <Control ID="Sequence">
-                        <Action
-                          ID="ExecuteMTCTask"
-                          goal_duration_tolerance="-1.000000"
-                          solution="{mtc_solution}"
-                        />
-                        <SubTree
-                          ID="Move to Joint State"
-                          _collapsed="true"
-                          target_joint_state="{starting_joint_state}"
-                          acceleration_scale_factor="1.0"
-                          controller_action_server="{controller_action_server}"
-                          controller_names="{controller_name}"
-                          joint_group_name="{planning_group_name}"
-                          keep_orientation="false"
-                          keep_orientation_tolerance="0.05"
-                          link_padding="0.01"
-                          velocity_scale_factor="1.0"
-                        />
-                      </Control>
-                    </Decorator>
-                  </Control>
-                  <Action
-                    ID="LogMessage"
-                    log_level="warn"
-                    message="&quot;Unable to plan to pose&quot;"
-                  />
-                </Control>
-              </Decorator>
-            </Control>
+            <SubTree
+              ID="PlanAndExecuteWithPoseOrientation"
+              _collapsed="false"
+              controller_action_server="{controller_action_server}"
+              controller_names="{controller_names}"
+              ik_frame="{ik_frame}"
+              joint_group_name="{joint_group_name}"
+              keep_orientation="false"
+              target_pose="{place_pose}"
+              starting_joint_state="{starting_joint_state}"
+              keep_orientation_link_names="{ik_frame}"
+              planning_group_name="{planning_group_name}"
+              execute_trajectories="{execute_trajectories}"
+              approach_pose="{approach_pose}"
+              keep_orientation_tolerance="{keep_orientation_tolerance}"
+            />
           </Control>
         </Decorator>
       </Control>
@@ -307,29 +209,47 @@
         <Metadata subcategory="Reachability" />
       </MetadataFields>
 
-      <inout_port name="column_spacing_translation" default="0;0.25;0" />
+      <inout_port
+        name="column_spacing_translation"
+        default="{column_spacing_translation}"
+      />
       <inout_port
         name="controller_action_server"
         default="{controller_action_server}"
       />
-      <inout_port name="controller_name" default="{controller_name}" />
-      <inout_port name="execute_trajectories" default="true" />
+      <inout_port name="controller_names" default="{controller_names}" />
+      <inout_port
+        name="execute_trajectories"
+        default="{execute_trajectories}"
+      />
+      <inout_port name="ik_frame" default="{ik_frame}" />
+      <inout_port name="keep_orientation" default="{keep_orientation}" />
+      <inout_port
+        name="keep_orientation_link_names"
+        default="{keep_orientation_link_names}"
+      />
+      <inout_port
+        name="keep_orientation_tolerance"
+        default="{keep_orientation_tolerance}"
+      />
       <inout_port name="num_45_deg_rotations" default="0" />
-      <inout_port name="num_columns" default="3" />
-      <inout_port name="num_rows" default="3" />
-      <inout_port name="pick_height" default="-0.3" />
-      <inout_port name="pick_height_translation" default="0;0;-0.3" />
+      <inout_port name="num_columns" default="{num_columns}" />
+      <inout_port name="num_rows" default="{num_rows}" />
+      <inout_port name="pick_height" default="{pick_height}" />
+      <inout_port
+        name="pick_height_translation"
+        default="{pick_height_translation}"
+      />
       <inout_port name="planning_group_name" default="{planning_group_name}" />
       <inout_port
         name="reachability_origin_pose"
         default="{reachability_origin_pose}"
       />
-      <inout_port name="row_spacing_translation" default="0.35;0;0" />
       <inout_port
-        name="starting_waypoint"
-        default="&quot;Initial Position&quot;"
+        name="row_spacing_translation"
+        default="{row_spacing_translation}"
       />
-      <inout_port name="tip_link" default="{tip_link}" />
+      <inout_port name="starting_waypoint" default="{starting_waypoint}" />
     </SubTree>
   </TreeNodesModel>
 </root>
