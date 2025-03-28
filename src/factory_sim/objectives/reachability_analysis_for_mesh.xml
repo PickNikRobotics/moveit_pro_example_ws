@@ -65,7 +65,10 @@
           out="{target_pose}"
           index="{index}"
         >
-          <Control ID="Sequence">
+          <Control
+            ID="Sequence"
+            name="Reorient normal to our grasp planning convention"
+          >
             <Action
               ID="TransformPose"
               input_pose="{target_pose}"
@@ -93,81 +96,7 @@
           index="{index}"
         >
           <Control ID="Sequence">
-            <Action
-              ID="VisualizePose"
-              marker_name="pose"
-              pose="{target_pose}"
-              marker_lifetime="0.000000"
-              marker_size="0.100000"
-            />
-            <Action ID="Script" code="pose_count += 1" />
-            <Action ID="ResetPoseStampedVector" vector="{plan_pose}" />
-            <Action
-              ID="AddPoseStampedToVector"
-              input="{target_pose}"
-              vector="{plan_pose}"
-            />
-            <Control
-              ID="IfThenElse"
-              name="If we are able to plan a path, optionally execute it"
-            >
-              <Control ID="Sequence">
-                <Action
-                  ID="PlanCartesianPath"
-                  trajectory_sampling_rate="30"
-                  debug_solution="{debug_solution}"
-                  velocity_scale_factor="1.000000"
-                  acceleration_scale_factor="1.000000"
-                  blending_radius="0.020000"
-                  position_only="false"
-                  joint_trajectory_msg="{joint_trajectory_msg}"
-                  tip_link="{tip_link}"
-                  planning_group_name="{planning_group_name}"
-                  path="{plan_pose}"
-                  tip_offset="{tip_offset}"
-                  ik_cartesian_space_density="0.010000"
-                  ik_joint_space_density="0.100000"
-                />
-                <Action
-                  ID="WaitForUserTrajectoryApproval"
-                  solution="{debug_solution}"
-                />
-              </Control>
-              <Decorator
-                ID="Precondition"
-                else="SUCCESS"
-                if="execute_trajectories == &quot;true&quot;"
-              >
-                <Control ID="Sequence">
-                  <Action
-                    ID="ExecuteFollowJointTrajectory"
-                    execute_follow_joint_trajectory_action_name="{controller_action_server}"
-                    goal_duration_tolerance="-1.000000"
-                    goal_position_tolerance="0.000000"
-                    goal_time_tolerance="0.000000"
-                    joint_trajectory_msg="{joint_trajectory_msg}"
-                  />
-                  <SubTree
-                    ID="Move to Joint State"
-                    _collapsed="true"
-                    target_joint_state="{starting_joint_state}"
-                    acceleration_scale_factor="1.0"
-                    controller_action_server="{controller_action_server}"
-                    controller_names="{controller_name}"
-                    joint_group_name="{planning_group_name}"
-                    keep_orientation="false"
-                    keep_orientation_tolerance="0.05"
-                    link_padding="0.01"
-                    velocity_scale_factor="1.0"
-                  />
-                </Control>
-              </Decorator>
-              <Action
-                ID="LogMessage"
-                log_level="warn"
-                message="&quot;Unable to plan to pose&quot;"
-              />
-            </Control>
+            <SubTree ID="PlanAndExecuteWithPositionOnlyIK" _collapsed="true" />
           </Control>
         </Decorator>
         <Action

@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Tool Attachment Example">
   <!--//////////-->
   <BehaviorTree
@@ -7,7 +6,7 @@
     _favorite="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
-      <SubTree ID="Pick Up Tool" _collapsed="true" />
+      <SubTree ID="Pick Up Tool from Holder" _collapsed="true" />
       <Action ID="WaitForDuration" delay_duration="2" />
       <SubTree ID="Deactivate Vacuum" _collapsed="true" />
       <SubTree ID="Place Tool in Tool Holder" _collapsed="true" />
