@@ -4,7 +4,6 @@
     ID="Reachability Analysis - blocks"
     _description="An example of performing reachability analysis for an overhead picking task."
     _favorite="true"
-    _subtreeOnly="false"
   >
     <Control ID="Sequence" name="">
       <Action
@@ -38,6 +37,7 @@
     <SubTree ID="Reachability Analysis - blocks">
       <MetadataFields>
         <Metadata subcategory="Reachability" />
+        <Metadata runnable="true" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
