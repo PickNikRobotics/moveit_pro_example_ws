@@ -7,20 +7,20 @@
       <Action
         ID="TransformPose"
         input_pose="{target_pose}"
-        output_pose="{approach_target_pose}"
+        output_pose="{approach_pose}"
         quaternion_xyzw="0;0;0;1"
         translation_xyz="0;0;-0.1"
       />
       <Action
         ID="VisualizePose"
         marker_name="approach_pose"
-        pose="{approach_target_pose}"
+        pose="{approach_pose}"
         marker_lifetime="0.000000"
         marker_size="0.100000"
       />
       <Action
         ID="AddPoseStampedToVector"
-        input="{approach_target_pose}"
+        input="{approach_pose}"
         vector="{plan_pose}"
       />
       <Action
@@ -49,8 +49,8 @@
             blending_radius="0.020000"
             position_only="true"
             joint_trajectory_msg="{joint_trajectory_msg}"
-            tip_link="{tip_link}"
-            planning_group_name="{planning_group_name}"
+            tip_link="{ik_frame}"
+            planning_group_name="{joint_group_name}"
             path="{plan_pose}"
             tip_offset="{tip_offset}"
             ik_cartesian_space_density="0.010000"
@@ -66,7 +66,10 @@
           else="SUCCESS"
           if="execute_trajectories == &quot;true&quot;"
         >
-          <Control ID="Sequence">
+          <Control
+            ID="Sequence"
+            name="Optionally execute trajectory and return to start joint state"
+          >
             <Action
               ID="ExecuteFollowJointTrajectory"
               execute_follow_joint_trajectory_action_name="{controller_action_server}"
@@ -81,8 +84,8 @@
               target_joint_state="{starting_joint_state}"
               acceleration_scale_factor="1.0"
               controller_action_server="{controller_action_server}"
-              controller_names="{controller_name}"
-              joint_group_name="{planning_group_name}"
+              controller_names="{controller_names}"
+              joint_group_name="{joint_group_name}"
               keep_orientation="false"
               keep_orientation_tolerance="0.05"
               link_padding="0.01"
@@ -113,6 +116,12 @@
         <Metadata runnable="false" />
         <Metadata subcategory="Motion - Execution" />
       </MetadataFields>
+      <inout_port name="target_pose" default="{target_pose}" />
+      <inout_port name="ik_frame" default="{ik_frame}" />
+      <inout_port name="joint_group_name" default="{joint_group_name}" />
+      <inout_port name="tip_offset" default="{tip_offset}" />
+      <inout_port name="controller_action_server" default="{controller_action_server}" />
+      <inout_port name="controller_names" default="{controller_names}" />
     </SubTree>
   </TreeNodesModel>
 </root>

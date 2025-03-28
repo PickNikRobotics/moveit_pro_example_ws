@@ -183,7 +183,7 @@
             </Control>
             <SubTree
               ID="PlanAndExecuteWithPoseOrientation"
-              _collapsed="false"
+              _collapsed="true"
               controller_action_server="{controller_action_server}"
               controller_names="{controller_names}"
               ik_frame="{ik_frame}"
