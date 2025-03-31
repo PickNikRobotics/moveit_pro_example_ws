@@ -40,10 +40,10 @@ moveit_params:
     path: "config/moveit/hard_joint_limits.yaml"
   kinematics:
     package: "hangar_sim"
-    path: "config/moveit/trac_ik_kinematics_distance.yaml"
+    path: "config/moveit/pose_ik_distance.yaml"
   servo_kinematics:
     package: "hangar_sim"
-    path: "config/moveit/trac_ik_kinematics_speed.yaml"
+    path: "config/moveit/pose_ik_speed.yaml"
   sensors_3d:
     package: "hangar_sim"
     path: "config/moveit/sensors_3d.yaml"
