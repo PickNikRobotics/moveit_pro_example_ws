@@ -68,9 +68,6 @@ moveit_params:
   ompl_planning:
     package: "kinova_gen3_base_config"
     path: "config/moveit/ompl_planning.yaml"
-  pilz_planning:
-    package: "kinova_gen3_base_config"
-    path: "config/moveit/pilz_industrial_motion_planner_planning.yaml"
   stomp_planning:
     package: "kinova_gen3_base_config"
     path: "config/moveit/stomp_planning.yaml"
@@ -89,9 +86,6 @@ moveit_params:
   servo_joint_limits:
     package: "kinova_gen3_base_config"
     path: "config/moveit/servo_joint_limits.yaml"
-  pilz_cartesian_limits:
-    package: "kinova_gen3_base_config"
-    path: "config/moveit/pilz_cartesian_limits.yaml"
 
   publish:
     planning_scene: True
