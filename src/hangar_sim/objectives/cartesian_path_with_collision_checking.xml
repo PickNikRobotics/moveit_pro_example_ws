@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8" ?>
 <root
   BTCPP_format="4"
   main_tree_to_execute="Cartesian Path with Collision Checking"
@@ -8,7 +7,6 @@
     ID="Cartesian Path with Collision Checking"
     _description="An example of planning and executing a straight line path with base and arm motion"
     _favorite="false"
-    _subtreeOnly="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree
@@ -45,11 +43,6 @@
         vector="{pose_stamped_vector}"
       />
       <Action
-        ID="VisualizePath"
-        marker_lifetime="0.000000"
-        path="{pose_stamped_vector}"
-      />
-      <Action
         ID="PlanCartesianPath"
         acceleration_scale_factor="1.000000"
         blending_radius="0.020000"
@@ -83,14 +76,6 @@
           solution="{debug_solution}"
         />
       </Control>
-      <Action
-        ID="ExecuteFollowJointTrajectory"
-        execute_follow_joint_trajectory_action_name="/joint_trajectory_controller/follow_joint_trajectory"
-        goal_duration_tolerance="-1.000000"
-        goal_position_tolerance="0.000000"
-        goal_time_tolerance="0.000000"
-        joint_trajectory_msg="{joint_trajectory_msg}"
-      />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
