@@ -1,0 +1,16 @@
+<root BTCPP_format="4" main_tree_to_execute="Activate Vacuum">
+  <!--//////////-->
+  <BehaviorTree ID="Activate Vacuum" _description="" _favorite="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="CallTriggerService" service_name="/suction_cup_enable"/>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Activate Vacuum">
+      <MetadataFields>
+        <Metadata runnable="true"/>
+        <Metadata subcategory="Grasping"/>
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

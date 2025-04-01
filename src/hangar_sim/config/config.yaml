@@ -91,11 +91,11 @@ ros2_control:
   # for running the application.
   # [Optional, default=[]]
   controllers_active_at_startup:
+    - "gripper_controller"
     - "force_torque_sensor_broadcaster"
     - "joint_state_broadcaster"
     - "joint_trajectory_controller"
     - "platform_velocity_controller"
-    - "vacuum_gripper"
   # Load but do not start these controllers so they can be activated later if needed.
   controllers_inactive_at_startup:
     - "servo_controller"

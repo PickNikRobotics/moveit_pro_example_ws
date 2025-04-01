@@ -1,12 +1,9 @@
-<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Activate Vacuum">
   <BehaviorTree ID="Activate Vacuum" _description="Activate the vacuum gripper">
     <Control ID="Sequence" name="root">
       <Action
-        ID="MoveGripperAction"
-        position="1"
-        gripper_command_action_name="/suction_cup_controller/gripper_cmd"
-        timeout="10.000000"
+        ID="CallTriggerService"
+        service_name="/suction_cup_tool_tip_enable"
       />
     </Control>
   </BehaviorTree>
