@@ -69,4 +69,12 @@
       </Decorator>
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Pick Object">
+      <MetadataFields>
+        <Metadata subcategory="Application - Basic Examples" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>
