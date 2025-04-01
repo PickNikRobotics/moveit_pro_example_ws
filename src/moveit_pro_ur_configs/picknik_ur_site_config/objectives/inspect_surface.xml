@@ -63,4 +63,11 @@
       <Action ID="ExecuteMTCTask" solution="{move_to_pose_solution}" />
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Inspect Surface">
+      <MetadataFields>
+        <Metadata subcategory="Perception - Machine Learning" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>
