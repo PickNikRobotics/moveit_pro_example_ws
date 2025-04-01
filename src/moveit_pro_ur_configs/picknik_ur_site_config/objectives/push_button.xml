@@ -117,4 +117,12 @@
       />
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Push Button">
+      <MetadataFields>
+        <Metadata subcategory="Application - Basic Examples" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>

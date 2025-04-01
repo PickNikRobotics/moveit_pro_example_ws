@@ -47,4 +47,12 @@
       <Action ID="ExecuteFollowJointTrajectory" />
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="14 Solution - Constrain Orientation">
+      <MetadataFields>
+        <Metadata subcategory="Application - Training Solution" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>

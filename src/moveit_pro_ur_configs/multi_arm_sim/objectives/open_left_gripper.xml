@@ -10,4 +10,11 @@
       />
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Open Second Gripper">
+      <MetadataFields>
+        <Metadata subcategory="Grasping" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>

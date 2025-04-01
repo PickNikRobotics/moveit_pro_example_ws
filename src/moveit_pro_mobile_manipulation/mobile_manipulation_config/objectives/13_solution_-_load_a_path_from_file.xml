@@ -26,4 +26,12 @@
       </Control>
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="13 Solution - Load a path from file">
+      <MetadataFields>
+        <Metadata subcategory="Application - Training Solution" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>
