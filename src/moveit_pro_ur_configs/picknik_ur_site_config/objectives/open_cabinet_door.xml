@@ -178,4 +178,11 @@
       </Control>
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Open Cabinet Door">
+      <MetadataFields>
+        <Metadata subcategory="Perception - Machine Learning" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>

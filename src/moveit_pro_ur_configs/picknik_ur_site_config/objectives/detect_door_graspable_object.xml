@@ -88,4 +88,11 @@
       </Decorator>
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Detect Door Graspable Object">
+      <MetadataFields>
+        <Metadata subcategory="Perception - Machine Learning" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>
