@@ -13,15 +13,13 @@ controller_manager:
       type: clearpath_mecanum_drive_controller/MecanumDriveController
     platform_velocity_controller_nav2:
       type: clearpath_mecanum_drive_controller/MecanumDriveController
-    vacuum_gripper:
-      type: position_controllers/GripperActionController
+    gripper_controller:
+      type: io_controller/IOController
 
-vacuum_gripper:
+gripper_controller:
   ros__parameters:
-    default: true
-    joint: suction_cup
-    allow_stalling: true
-    stall_timeout: 0.01
+    interface_names: [suction_cup]
+    interface_types: [position]
 
 platform_velocity_controller:
   ros__parameters:
@@ -165,6 +163,7 @@ joint_state_broadcaster:
       - linear_x_joint
       - linear_y_joint
       - rotational_yaw_joint
+      - suction_cup
     interfaces:
       - position
       - velocity
