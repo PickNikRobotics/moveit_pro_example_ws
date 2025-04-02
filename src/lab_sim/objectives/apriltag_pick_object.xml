@@ -111,9 +111,6 @@
         <Metadata subcategory="Application - Advanced Examples" />
         <Metadata runnable="true" />
       </MetadataFields>
-      <MetadataFields>
-        <Metadata subcategory="Application - Advanced Examples" />
-      </MetadataFields>
     </SubTree>
   </TreeNodesModel>
 </root>

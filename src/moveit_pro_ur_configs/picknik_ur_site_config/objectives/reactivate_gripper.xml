@@ -14,6 +14,11 @@
     <Action ID="CallTriggerService">
       <inout_port name="service_name" />
     </Action>
+    <SubTree ID="Reactivate Gripper">
+      <MetadataFields>
+        <Metadata subcategory="Grasping" />
+      </MetadataFields>
+    </SubTree>
   </TreeNodesModel>
   <!-- ////////// -->
 </root>
