@@ -53,4 +53,12 @@
       </Control>
     </Decorator>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Sample April Tag">
+      <MetadataFields>
+        <Metadata subcategory="Perception - Machine Learning" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>

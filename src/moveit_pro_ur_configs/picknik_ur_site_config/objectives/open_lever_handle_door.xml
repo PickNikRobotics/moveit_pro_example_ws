@@ -140,4 +140,11 @@
       <SubTree ID="Close Gripper" _collapsed="true" />
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Open Lever Handle Door">
+      <MetadataFields>
+        <Metadata subcategory="Perception - Machine Learning" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>

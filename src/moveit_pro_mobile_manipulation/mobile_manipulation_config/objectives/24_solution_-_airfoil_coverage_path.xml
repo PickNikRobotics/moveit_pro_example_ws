@@ -43,4 +43,12 @@
       <Action ID="VisualizePath" path="{pose_stamped_vector}" />
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="24 Solution - Airfoil Coverage Path">
+      <MetadataFields>
+        <Metadata subcategory="Application - Training Solution" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>
