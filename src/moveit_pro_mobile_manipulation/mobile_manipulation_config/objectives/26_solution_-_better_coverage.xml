@@ -59,4 +59,12 @@
       <Action ID="ExecuteFollowJointTrajectory" />
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="26 Solution - Better Coverage">
+      <MetadataFields>
+        <Metadata subcategory="Application - Training Solution" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>
