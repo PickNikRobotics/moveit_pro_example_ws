@@ -200,4 +200,12 @@
       </Decorator>
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Looping Pick and Place Object">
+      <MetadataFields>
+        <Metadata subcategory="Application - Basic Examples" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>

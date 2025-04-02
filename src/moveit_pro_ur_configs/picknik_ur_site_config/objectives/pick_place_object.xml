@@ -288,4 +288,12 @@
       </Control>
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Pick and Place Object">
+      <MetadataFields>
+        <Metadata subcategory="Application - Basic Examples" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>
