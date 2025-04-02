@@ -29,4 +29,12 @@
       <Action ID="VisualizePose" pose="{model_to_real_pose}" />
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="22 Solution - Visualize airfoil frame">
+      <MetadataFields>
+        <Metadata subcategory="Application - Training Solution" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>

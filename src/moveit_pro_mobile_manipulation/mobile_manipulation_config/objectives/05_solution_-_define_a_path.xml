@@ -22,4 +22,12 @@
       <Action ID="AddPoseStampedToVector" input="{stamped_pose}" />
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="05 Solution - Define a path">
+      <MetadataFields>
+        <Metadata subcategory="Application - Training Solution" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>

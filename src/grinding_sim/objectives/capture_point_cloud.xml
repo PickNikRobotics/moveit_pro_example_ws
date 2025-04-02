@@ -43,6 +43,7 @@
   <TreeNodesModel>
     <SubTree ID="Capture Point Cloud">
       <MetadataFields>
+        <Metadata subcategory="Perception - 3D Point Cloud" />
         <Metadata runnable="true" />
       </MetadataFields>
     </SubTree>

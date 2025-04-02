@@ -89,6 +89,7 @@
   <TreeNodesModel>
     <SubTree ID="Multi-tip IK Example">
       <MetadataFields>
+        <Metadata subcategory="Application - Advanced Examples" />
         <Metadata runnable="true" />
       </MetadataFields>
     </SubTree>

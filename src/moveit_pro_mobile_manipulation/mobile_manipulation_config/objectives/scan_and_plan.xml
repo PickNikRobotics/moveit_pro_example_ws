@@ -86,6 +86,7 @@
   <TreeNodesModel>
     <SubTree ID="Scan and Plan">
       <MetadataFields>
+        <Metadata subcategory="Application - Basic Examples" />
         <Metadata runnable="true" />
       </MetadataFields>
     </SubTree>

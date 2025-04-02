@@ -115,6 +115,7 @@
   <TreeNodesModel>
     <SubTree ID="Draw Square">
       <MetadataFields>
+        <Metadata subcategory="Application - Basic Examples" />
         <Metadata runnable="true" />
       </MetadataFields>
     </SubTree>
