@@ -1,26 +1,124 @@
-- name: Home
+- description: ''
+  favorite: false
   joint_group_names:
-    - manipulator
+  - manipulator
   joint_state:
+    effort: []
     header:
       frame_id: world
       stamp:
-        sec: 0
         nanosec: 0
-    name: [joint_1, joint_2, joint_3, joint_4, joint_5, joint_6, joint_7]
-    position: [0, 2.0944, 0, -2.66, 0, 2.1364, 1.5708]
+        sec: 0
+    name:
+    - joint_1
+    - joint_2
+    - joint_3
+    - joint_4
+    - joint_5
+    - joint_6
+    - joint_7
+    position:
+    - 0
+    - 2.0944
+    - 0
+    - -2.66
+    - 0
+    - 2.1364
+    - 1.5708
     velocity: []
-    effort: []
-- name: View Satellite
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Home
+- description: ''
+  favorite: false
   joint_group_names:
-    - manipulator
+  - manipulator
   joint_state:
+    effort: []
     header:
       frame_id: world
       stamp:
-        sec: 0
         nanosec: 0
-    name: [joint_1, joint_2, joint_3, joint_4, joint_5, joint_6, joint_7]
-    position: [0, 2.0944, 0, -2.66, 0, 0.5656, 0]
+        sec: 0
+    name:
+    - joint_1
+    - joint_2
+    - joint_3
+    - joint_4
+    - joint_5
+    - joint_6
+    - joint_7
+    position:
+    - 0
+    - 2.0944
+    - 0
+    - -2.66
+    - 0
+    - 0.5656
+    - 0
     velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: View Satellite
+- description: ''
+  favorite: false
+  joint_group_names:
+  - gripper
+  - manipulator
+  joint_state:
     effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - robotiq_85_left_finger_joint
+    - robotiq_85_right_finger_joint
+    - joint_1
+    - joint_2
+    - joint_3
+    - joint_4
+    - joint_5
+    - joint_6
+    - joint_7
+    position:
+    - 0.002702553530778338
+    - 0.00014644140651922082
+    - 0.0001464415653216075
+    - -1.5708000000645088
+    - 1.8326000034301706
+    - -3.1062507453508373e-10
+    - -2.356200003095631
+    - -5.610938392614224e-11
+    - 0.2617999999768723
+    - 1.5707999999999966
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: View Tag
