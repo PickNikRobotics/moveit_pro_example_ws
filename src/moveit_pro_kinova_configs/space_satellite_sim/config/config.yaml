@@ -63,7 +63,7 @@ objectives:
     perception_objectives:
       package_name: "moveit_pro_objectives"
       relative_path: "objectives/perception"
-    simulation_objectives:
+    sim_objectives:
       package_name: "space_satellite_sim"
       relative_path: "objectives"
   # Specify the location of the saved waypoints file.
