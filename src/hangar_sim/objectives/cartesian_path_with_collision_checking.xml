@@ -1,11 +1,12 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<root BTCPP_format="4" main_tree_to_execute="Solution - Generate coverage path">
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Cartesian Path with Collision Checking"
+>
   <!--//////////-->
   <BehaviorTree
-    ID="Solution - Generate coverage path"
-    _description="A training example that plans and executes a coverage path with base and arm motion"
+    ID="Cartesian Path with Collision Checking"
+    _description="An example of planning and executing a straight line path with base and arm motion"
     _favorite="false"
-    _subtreeOnly="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree
@@ -16,18 +17,18 @@
         controller_names="/joint_trajectory_controller"
         joint_group_name="manipulator"
         keep_orientation="false"
-        keep_orientation_link_names="grasp_link"
         keep_orientation_tolerance="0.05"
         link_padding="0.0"
         velocity_scale_factor="1.0"
         waypoint_name="Look at Plane"
+        keep_orientation_link_names="grasp_link"
       />
       <Action
         ID="CreateStampedPose"
         reference_frame="grasp_link"
         stamped_pose="{stamped_pose}"
         orientation_xyzw="0;0;0;1"
-        position_xyz="0;-0.5;1"
+        position_xyz="0;0;5"
       />
       <Action
         ID="VisualizePose"
@@ -37,17 +38,9 @@
         pose="{stamped_pose}"
       />
       <Action
-        ID="GenerateCoveragePath"
-        vector_of_poses="{pose_stamped_vector}"
-        bottom_right_corner="{stamped_pose}"
-        height="0.5"
-        stride_distance="0.1"
-        width="0.5"
-      />
-      <Action
-        ID="VisualizePath"
-        marker_lifetime="0.000000"
-        path="{pose_stamped_vector}"
+        ID="AddPoseStampedToVector"
+        input="{stamped_pose}"
+        vector="{pose_stamped_vector}"
       />
       <Action
         ID="PlanCartesianPath"
@@ -59,23 +52,38 @@
         joint_trajectory_msg="{joint_trajectory_msg}"
         path="{pose_stamped_vector}"
         planning_group_name="manipulator"
-        position_only="false"
+        position_only="true"
         tip_link="grasp_link"
         trajectory_sampling_rate="100"
         velocity_scale_factor="1.000000"
       />
       <Action
-        ID="ExecuteFollowJointTrajectory"
-        execute_follow_joint_trajectory_action_name="/joint_trajectory_controller/follow_joint_trajectory"
-        goal_duration_tolerance="-1.000000"
-        goal_position_tolerance="0.000000"
-        goal_time_tolerance="0.000000"
-        joint_trajectory_msg="{joint_trajectory_msg}"
+        ID="GetCurrentPlanningScene"
+        planning_scene_msg="{planning_scene}"
       />
+      <Control ID="Fallback">
+        <Action
+          ID="ValidateTrajectory"
+          cartesian_space_step="0.020000"
+          debug_solution="{debug_solution}"
+          joint_space_step="0.100000"
+          joint_trajectory_msg="{joint_trajectory_msg}"
+          planning_group_name="manipulator"
+          planning_scene_msg="{planning_scene}"
+        />
+        <Action
+          ID="WaitForUserTrajectoryApproval"
+          solution="{debug_solution}"
+        />
+      </Control>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Solution - Generate coverage path">
+    <SubTree ID="Cartesian Path with Collision Checking">
+      <MetadataFields>
+        <Metadata subcategory="Training Examples" />
+        <Metadata runnable="true" />
+      </MetadataFields>
       <MetadataFields>
         <Metadata subcategory="Training Examples" />
         <Metadata runnable="true" />
