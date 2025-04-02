@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<root BTCPP_format="4" main_tree_to_execute="Solution - Follow Path">
+<root BTCPP_format="4" main_tree_to_execute="Cartesian Plan Simple Square">
   <!--//////////-->
   <BehaviorTree
-    ID="Solution - Follow Path"
-    _description="An example of planning and executing a straight line path with base and arm motion"
+    ID="Cartesian Plan Simple Square"
+    _description="Training example that shows how to create a path from poses and execute the path"
     _favorite="false"
     _subtreeOnly="false"
   >
@@ -16,18 +16,18 @@
         controller_names="/joint_trajectory_controller"
         joint_group_name="manipulator"
         keep_orientation="false"
+        keep_orientation_link_names="grasp_link"
         keep_orientation_tolerance="0.05"
         link_padding="0.0"
         velocity_scale_factor="1.0"
         waypoint_name="Look at Plane"
-        keep_orientation_link_names="grasp_link"
       />
       <Action
         ID="CreateStampedPose"
         reference_frame="grasp_link"
         stamped_pose="{stamped_pose}"
         orientation_xyzw="0;0;0;1"
-        position_xyz="0;0;5"
+        position_xyz="0;0;0.4"
       />
       <Action
         ID="VisualizePose"
@@ -35,6 +35,54 @@
         marker_name="pose"
         marker_size="0.100000"
         pose="{stamped_pose}"
+      />
+      <Action
+        ID="AddPoseStampedToVector"
+        input="{stamped_pose}"
+        vector="{pose_stamped_vector}"
+      />
+      <Action
+        ID="CreateStampedPose"
+        reference_frame="grasp_link"
+        stamped_pose="{stamped_pose}"
+        orientation_xyzw="0;0;0;1"
+        position_xyz="0;-0.4;0.4"
+      />
+      <Action
+        ID="AddPoseStampedToVector"
+        input="{stamped_pose}"
+        vector="{pose_stamped_vector}"
+      />
+      <Action
+        ID="CreateStampedPose"
+        reference_frame="grasp_link"
+        stamped_pose="{stamped_pose}"
+        orientation_xyzw="0;0;0;1"
+        position_xyz="0.4;-0.4;0.4"
+      />
+      <Action
+        ID="AddPoseStampedToVector"
+        input="{stamped_pose}"
+        vector="{pose_stamped_vector}"
+      />
+      <Action
+        ID="CreateStampedPose"
+        reference_frame="grasp_link"
+        stamped_pose="{stamped_pose}"
+        orientation_xyzw="0;0;0;1"
+        position_xyz="0.4;0;0.4"
+      />
+      <Action
+        ID="AddPoseStampedToVector"
+        input="{stamped_pose}"
+        vector="{pose_stamped_vector}"
+      />
+      <Action
+        ID="CreateStampedPose"
+        reference_frame="grasp_link"
+        stamped_pose="{stamped_pose}"
+        orientation_xyzw="0;0;0;1"
+        position_xyz="0;0;0.4"
       />
       <Action
         ID="AddPoseStampedToVector"
@@ -56,30 +104,13 @@
         joint_trajectory_msg="{joint_trajectory_msg}"
         path="{pose_stamped_vector}"
         planning_group_name="manipulator"
-        position_only="true"
+        position_only="false"
         tip_link="grasp_link"
         trajectory_sampling_rate="100"
         velocity_scale_factor="1.000000"
       />
-      <Action
-        ID="GetCurrentPlanningScene"
-        planning_scene_msg="{planning_scene}"
-      />
-      <Control ID="Fallback">
-        <Action
-          ID="ValidateTrajectory"
-          cartesian_space_step="0.020000"
-          debug_solution="{debug_solution}"
-          joint_space_step="0.100000"
-          joint_trajectory_msg="{joint_trajectory_msg}"
-          planning_group_name="manipulator"
-          planning_scene_msg="{planning_scene}"
-        />
-        <Action
-          ID="WaitForUserTrajectoryApproval"
-          solution="{debug_solution}"
-        />
-      </Control>
+      <Action ID="IsUserAvailable" />
+      <Action ID="WaitForUserTrajectoryApproval" solution="{debug_solution}" />
       <Action
         ID="ExecuteFollowJointTrajectory"
         execute_follow_joint_trajectory_action_name="/joint_trajectory_controller/follow_joint_trajectory"
@@ -91,11 +122,7 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Solution - Follow Path">
-      <MetadataFields>
-        <Metadata subcategory="Training Examples" />
-        <Metadata runnable="true" />
-      </MetadataFields>
+    <SubTree ID="Cartesian Plan Simple Square">
       <MetadataFields>
         <Metadata subcategory="Training Examples" />
         <Metadata runnable="true" />
