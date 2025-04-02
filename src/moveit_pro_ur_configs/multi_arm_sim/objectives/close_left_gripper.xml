@@ -12,4 +12,11 @@
       />
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Close Second Gripper">
+      <MetadataFields>
+        <Metadata subcategory="Grasping" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>

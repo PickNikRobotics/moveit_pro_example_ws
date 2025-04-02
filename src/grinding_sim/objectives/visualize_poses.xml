@@ -72,6 +72,7 @@
     <SubTree ID="Visualize Poses">
       <MetadataFields>
         <Metadata runnable="true" />
+        <Metadata subcategory="Pose Handling" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>

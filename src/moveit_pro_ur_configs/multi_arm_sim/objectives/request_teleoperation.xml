@@ -147,4 +147,11 @@
       </Control>
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Request Teleoperation">
+      <MetadataFields>
+        <Metadata subcategory="User Input" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>
