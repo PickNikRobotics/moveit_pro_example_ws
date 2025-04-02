@@ -151,6 +151,7 @@
   <TreeNodesModel>
     <SubTree ID="Request Teleoperation">
       <MetadataFields>
+        <Metadata subcategory="User Input" />
         <Metadata runnable="false" />
       </MetadataFields>
     </SubTree>

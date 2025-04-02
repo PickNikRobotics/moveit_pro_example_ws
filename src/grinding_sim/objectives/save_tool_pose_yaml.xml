@@ -31,6 +31,7 @@
   <TreeNodesModel>
     <SubTree ID="Save Tool Pose Yaml">
       <MetadataFields>
+        <Metadata subcategory="Grasping" />
         <Metadata runnable="true" />
       </MetadataFields>
     </SubTree>
