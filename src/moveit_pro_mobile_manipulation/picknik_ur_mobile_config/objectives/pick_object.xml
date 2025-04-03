@@ -55,4 +55,12 @@
       />
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Pick object">
+      <MetadataFields>
+        <Metadata subcategory="Motion - Execute" />
+        <Metadata runnable="false" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>

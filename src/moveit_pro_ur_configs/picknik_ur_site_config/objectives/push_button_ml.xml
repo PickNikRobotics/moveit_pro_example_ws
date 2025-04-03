@@ -170,4 +170,11 @@
       />
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Push Button ML">
+      <MetadataFields>
+        <Metadata subcategory="Perception - Machine Learning" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>
