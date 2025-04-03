@@ -1,110 +1,35 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version='1.0' encoding='utf-8'?>
 <root BTCPP_format="4" main_tree_to_execute="Register Machined Part">
   <!--//////////-->
-  <BehaviorTree
-    ID="Register Machined Part"
-    _description=""
-    _favorite="true"
-    registered_pose="{registered_pose}"
-  >
+  <BehaviorTree ID="Register Machined Part" _description="" _favorite="true" registered_pose="{registered_pose}">
     <Control ID="Sequence" name="TopLevelSequence">
-      <Action ID="ClearSnapshot" />
-      <Action
-        ID="CreateStampedPose"
-        position_xyz="0.2;-1.5;0.710"
-        orientation_xyzw="0.000;0.000;0.3827;0.9239"
-        name="Initial Guess"
-        stamped_pose="{guess_pose}"
-        reference_frame="world"
-      />
-      <SubTree
-        ID="Load Engine Block Pointcloud"
-        _collapsed="true"
-        color="0;0;255"
-        initial_pose="{guess_pose}"
-        engine_block_cloud="{blue_engine_block_cloud}"
-      />
-      <Action
-        ID="SendPointCloudToUI"
-        point_cloud="{blue_engine_block_cloud}"
-        pcd_topic="/pcd_pointcloud_captures"
-      />
-      <Action
-        ID="GetPointCloud"
-        topic_name="/scene_camera/points"
-        message_out="{scene_point_cloud}"
-        timeout_sec="5.000000"
-      />
-      <Action
-        ID="CreateStampedPose"
-        reference_frame="world"
-        stamped_pose="{centroid_pose}"
-        position_xyz="0;-1.69;1.0"
-      />
-      <Action
-        ID="CropPointsInBox"
-        crop_box_centroid_pose="{centroid_pose}"
-        point_cloud="{scene_point_cloud}"
-        point_cloud_cropped="{cropped_scene_point_cloud}"
-        crop_box_size="1.0;0.5;0.55"
-      />
-      <Action
-        ID="TransformPointCloudFrame"
-        input_cloud="{cropped_scene_point_cloud}"
-        output_cloud="{cropped_scene_point_cloud}"
-        target_frame="world"
-      />
-      <Action
-        ID="SendPointCloudToUI"
-        point_cloud="{cropped_scene_point_cloud}"
-        pcd_topic="/pcd_pointcloud_captures"
-      />
-      <Action
-        ID="RegisterPointClouds"
-        target_point_cloud="{cropped_scene_point_cloud}"
-        base_point_cloud="{blue_engine_block_cloud}"
-        max_iterations="100"
-        target_pose_in_base_frame="{registered_to_guess_pose}"
-        max_correspondence_distance="0.5"
-      />
-      <Action
-        ID="TransformPoseWithPose"
-        input_pose="{guess_pose}"
-        transform_pose="{registered_to_guess_pose}"
-        output_pose="{registered_pose}"
-      />
-      <SubTree
-        ID="Load Engine Block Pointcloud"
-        _collapsed="true"
-        color="0;255;0"
-        initial_pose="{registered_pose}"
-        engine_block_cloud="{green_engine_block_cloud}"
-      />
-      <Action ID="ClearSnapshot" />
-      <Action
-        ID="VisualizePose"
-        marker_lifetime="0.000000"
-        marker_name="registered_pose"
-        marker_size="0.100000"
-        pose="{registered_pose}"
-      />
-      <Action
-        ID="SendPointCloudToUI"
-        point_cloud="{green_engine_block_cloud}"
-        pcd_topic="/pcd_pointcloud_captures"
-      />
+      <Action ID="ClearSnapshot"/>
+      <Action ID="CreateStampedPose" position_xyz="0.2;-1.5;0.710" orientation_xyzw="0.000;0.000;0.3827;0.9239" name="Initial Guess" stamped_pose="{guess_pose}" reference_frame="world"/>
+      <SubTree ID="Load Engine Block Pointcloud" _collapsed="true" color="0;0;255" initial_pose="{guess_pose}" engine_block_cloud="{blue_engine_block_cloud}"/>
+      <Action ID="SendPointCloudToUI" point_cloud="{blue_engine_block_cloud}" pcd_topic="/pcd_pointcloud_captures"/>
+      <Action ID="GetPointCloud" topic_name="/scene_camera/points" message_out="{scene_point_cloud}" timeout_sec="5.000000"/>
+      <Action ID="CreateStampedPose" reference_frame="world" stamped_pose="{centroid_pose}" position_xyz="0;-1.69;1.0"/>
+      <Action ID="CropPointsInBox" crop_box_centroid_pose="{centroid_pose}" point_cloud="{scene_point_cloud}" point_cloud_cropped="{cropped_scene_point_cloud}" crop_box_size="1.0;0.5;0.55"/>
+      <Action ID="TransformPointCloudFrame" input_cloud="{cropped_scene_point_cloud}" output_cloud="{cropped_scene_point_cloud}" target_frame="world"/>
+      <Action ID="SendPointCloudToUI" point_cloud="{cropped_scene_point_cloud}" pcd_topic="/pcd_pointcloud_captures"/>
+      <Action ID="RegisterPointClouds" target_point_cloud="{cropped_scene_point_cloud}" base_point_cloud="{blue_engine_block_cloud}" max_iterations="100" target_pose_in_base_frame="{registered_to_guess_pose}" max_correspondence_distance="0.5"/>
+      <Action ID="TransformPoseWithPose" input_pose="{guess_pose}" transform_pose="{registered_to_guess_pose}" output_pose="{registered_pose}"/>
+      <SubTree ID="Load Engine Block Pointcloud" _collapsed="true" color="0;255;0" initial_pose="{registered_pose}" engine_block_cloud="{green_engine_block_cloud}"/>
+      <Action ID="ClearSnapshot"/>
+      <Action ID="VisualizePose" marker_lifetime="0.000000" marker_name="registered_pose" marker_size="0.100000" pose="{registered_pose}"/>
+      <Action ID="SendPointCloudToUI" point_cloud="{green_engine_block_cloud}" pcd_topic="/pcd_pointcloud_captures"/>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Register Machined Part">
-      <output_port name="registered_pose" default="{registered_pose}" />
+      <output_port name="registered_pose" default="{registered_pose}"/>
       <MetadataFields>
-        <Metadata subcategory="Perception - 3D Point Cloud" />
-        <Metadata runnable="true" />
+        <Metadata subcategory="Perception - 3D Point Cloud"/>
+        <Metadata runnable="true"/>
       </MetadataFields>
       <MetadataFields>
-        <Metadata subcategory="Perception - 3D Point Cloud" />
-        <Metadata runnable="true" />
+        <Metadata subcategory="Perception - 3D Point Cloud"/>
+        <Metadata runnable="true"/>
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>

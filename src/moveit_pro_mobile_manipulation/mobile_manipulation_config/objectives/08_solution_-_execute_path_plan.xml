@@ -1,28 +1,20 @@
+<?xml version='1.0' encoding='utf-8'?>
 <root BTCPP_format="4" main_tree_to_execute="08 Solution - Execute path plan">
   <!--//////////-->
-  <BehaviorTree
-    ID="08 Solution - Execute path plan"
-    _description="Plans joint-space motion to track a path, and executes it"
-    _favorite="false"
-  >
+  <BehaviorTree ID="08 Solution - Execute path plan" _description="Plans joint-space motion to track a path, and executes it" _favorite="false">
     <Control ID="Sequence" name="TopLevelSequence">
-      <Action
-        ID="CreateStampedPose"
-        orientation_xyzw="0;0;0;1"
-        position_xyz="0;0;0.2"
-        reference_frame="grasp_link"
-      />
-      <Action ID="AddPoseStampedToVector" input="{stamped_pose}" />
-      <Action ID="VisualizePose" />
-      <Action ID="PlanCartesianPath" />
-      <Action ID="ExecuteFollowJointTrajectory" />
+      <Action ID="CreateStampedPose" orientation_xyzw="0;0;0;1" position_xyz="0;0;0.2" reference_frame="grasp_link"/>
+      <Action ID="AddPoseStampedToVector" input="{stamped_pose}"/>
+      <Action ID="VisualizePose"/>
+      <Action ID="PlanCartesianPath"/>
+      <Action ID="ExecuteFollowJointTrajectory"/>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="08 Solution - Execute path plan">
       <MetadataFields>
-        <Metadata subcategory="Application - Training Solution" />
-        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Training Solution"/>
+        <Metadata runnable="true"/>
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>

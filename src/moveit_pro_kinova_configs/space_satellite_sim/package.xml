@@ -1,4 +1,4 @@
-<?xml version="1.0" ?>
+<?xml version='1.0' encoding='utf-8'?>
 <package format="3">
   <name>space_satellite_sim</name>
   <version>0.1.0</version>

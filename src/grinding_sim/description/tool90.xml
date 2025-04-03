@@ -1,115 +1,82 @@
+<?xml version='1.0' encoding='utf-8'?>
 <mujoco model="tool90">
-  <compiler angle="radian" autolimits="true" meshdir="assets" />
+  <compiler angle="radian" autolimits="true" meshdir="assets"/>
 
   <default>
     <!-- Geom defaults -->
     <default class="visual">
-      <geom group="2" type="mesh" contype="0" conaffinity="0" />
+      <geom group="2" type="mesh" contype="0" conaffinity="0"/>
     </default>
     <default class="collision">
-      <geom group="3" type="mesh" />
+      <geom group="3" type="mesh"/>
     </default>
   </default>
 
   <asset>
-    <texture
-      type="2d"
-      name="groundplane"
-      builtin="checker"
-      mark="edge"
-      rgb1="0.2 0.3 0.4"
-      rgb2="0.1 0.2 0.3"
-      markrgb="0.8 0.8 0.8"
-      width="300"
-      height="300"
-    />
-    <material
-      name="groundplane"
-      texture="groundplane"
-      texuniform="true"
-      texrepeat="5 5"
-      reflectance="0.2"
-    />
+    <texture type="2d" name="groundplane" builtin="checker" mark="edge" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3" markrgb="0.8 0.8 0.8" width="300" height="300"/>
+    <material name="groundplane" texture="groundplane" texuniform="true" texrepeat="5 5" reflectance="0.2"/>
     <!-- Base geometries -->
-    <mesh file="tool_base/tool_base.obj" />
-    <mesh name="base_geometry_0" file="tool_base/geometry_0.stl" />
-    <mesh name="base_geometry_1" file="tool_base/geometry_1.stl" />
-    <mesh name="base_geometry_2" file="tool_base/geometry_2.stl" />
-    <mesh name="base_geometry_3" file="tool_base/geometry_3.stl" />
-    <mesh name="base_geometry_4" file="tool_base/geometry_4.stl" />
-    <mesh name="base_geometry_5" file="tool_base/geometry_5.stl" />
-    <mesh name="base_geometry_6" file="tool_base/geometry_6.stl" />
-    <mesh name="base_geometry_7" file="tool_base/geometry_7.stl" />
+    <mesh file="tool_base/tool_base.obj"/>
+    <mesh name="base_geometry_0" file="tool_base/geometry_0.stl"/>
+    <mesh name="base_geometry_1" file="tool_base/geometry_1.stl"/>
+    <mesh name="base_geometry_2" file="tool_base/geometry_2.stl"/>
+    <mesh name="base_geometry_3" file="tool_base/geometry_3.stl"/>
+    <mesh name="base_geometry_4" file="tool_base/geometry_4.stl"/>
+    <mesh name="base_geometry_5" file="tool_base/geometry_5.stl"/>
+    <mesh name="base_geometry_6" file="tool_base/geometry_6.stl"/>
+    <mesh name="base_geometry_7" file="tool_base/geometry_7.stl"/>
 
     <!-- Tool geometries -->
-    <mesh file="tool90_tool/tool90_tool.obj" />
-    <mesh name="tool_geometry_0" file="tool90_tool/geometry_0.stl" />
-    <mesh name="tool_geometry_1" file="tool90_tool/geometry_1.stl" />
-    <mesh name="tool_geometry_2" file="tool90_tool/geometry_2.stl" />
-    <mesh name="tool_geometry_3" file="tool90_tool/geometry_3.stl" />
-    <mesh name="tool_geometry_4" file="tool90_tool/geometry_4.stl" />
-    <mesh name="tool_geometry_5" file="tool90_tool/geometry_5.stl" />
-    <mesh name="tool_geometry_6" file="tool90_tool/geometry_6.stl" />
-    <mesh name="tool_geometry_7" file="tool90_tool/geometry_7.stl" />
-    <mesh name="tool_geometry_8" file="tool90_tool/geometry_8.stl" />
-    <mesh name="tool_geometry_9" file="tool90_tool/geometry_9.stl" />
-    <mesh name="tool_geometry_10" file="tool90_tool/geometry_10.stl" />
-    <mesh name="tool_geometry_11" file="tool90_tool/geometry_11.stl" />
+    <mesh file="tool90_tool/tool90_tool.obj"/>
+    <mesh name="tool_geometry_0" file="tool90_tool/geometry_0.stl"/>
+    <mesh name="tool_geometry_1" file="tool90_tool/geometry_1.stl"/>
+    <mesh name="tool_geometry_2" file="tool90_tool/geometry_2.stl"/>
+    <mesh name="tool_geometry_3" file="tool90_tool/geometry_3.stl"/>
+    <mesh name="tool_geometry_4" file="tool90_tool/geometry_4.stl"/>
+    <mesh name="tool_geometry_5" file="tool90_tool/geometry_5.stl"/>
+    <mesh name="tool_geometry_6" file="tool90_tool/geometry_6.stl"/>
+    <mesh name="tool_geometry_7" file="tool90_tool/geometry_7.stl"/>
+    <mesh name="tool_geometry_8" file="tool90_tool/geometry_8.stl"/>
+    <mesh name="tool_geometry_9" file="tool90_tool/geometry_9.stl"/>
+    <mesh name="tool_geometry_10" file="tool90_tool/geometry_10.stl"/>
+    <mesh name="tool_geometry_11" file="tool90_tool/geometry_11.stl"/>
   </asset>
 
   <worldbody>
-    <light pos="0 0 1.5" dir="0 0 -1" directional="true" />
-    <geom
-      name="floor"
-      pos="0 0 0"
-      size="0 0 0.05"
-      type="plane"
-      material="groundplane"
-    />
+    <light pos="0 0 1.5" dir="0 0 -1" directional="true"/>
+    <geom name="floor" pos="0 0 0" size="0 0 0.05" type="plane" material="groundplane"/>
 
     <!-- Tool -->
     <body name="tool_base" pos="0 0 0" quat="1 0 0 0">
-      <geom quat="1 0 0 0" mesh="tool_base" class="visual" />
-      <geom quat="1 0 0 0" mesh="base_geometry_0" class="collision" />
-      <geom quat="1 0 0 0" mesh="base_geometry_1" class="collision" />
-      <geom quat="1 0 0 0" mesh="base_geometry_2" class="collision" />
-      <geom quat="1 0 0 0" mesh="base_geometry_3" class="collision" />
-      <geom quat="1 0 0 0" mesh="base_geometry_4" class="collision" />
-      <geom quat="1 0 0 0" mesh="base_geometry_5" class="collision" />
-      <geom quat="1 0 0 0" mesh="base_geometry_6" class="collision" />
-      <geom quat="1 0 0 0" mesh="base_geometry_7" class="collision" />
+      <geom quat="1 0 0 0" mesh="tool_base" class="visual"/>
+      <geom quat="1 0 0 0" mesh="base_geometry_0" class="collision"/>
+      <geom quat="1 0 0 0" mesh="base_geometry_1" class="collision"/>
+      <geom quat="1 0 0 0" mesh="base_geometry_2" class="collision"/>
+      <geom quat="1 0 0 0" mesh="base_geometry_3" class="collision"/>
+      <geom quat="1 0 0 0" mesh="base_geometry_4" class="collision"/>
+      <geom quat="1 0 0 0" mesh="base_geometry_5" class="collision"/>
+      <geom quat="1 0 0 0" mesh="base_geometry_6" class="collision"/>
+      <geom quat="1 0 0 0" mesh="base_geometry_7" class="collision"/>
       <body name="tool_tool" pos="0 0 0" quat="1 0 0 0">
-        <joint
-          name="tool_joint"
-          type="slide"
-          axis="0 1 0"
-          pos="0 0 0.1"
-          range="-0.015 0.015"
-        />
-        <geom quat="1 0 0 0" mesh="tool90_tool" class="visual" />
-        <geom quat="1 0 0 0" mesh="tool_geometry_0" class="collision" />
-        <geom quat="1 0 0 0" mesh="tool_geometry_1" class="collision" />
-        <geom quat="1 0 0 0" mesh="tool_geometry_2" class="collision" />
-        <geom quat="1 0 0 0" mesh="tool_geometry_3" class="collision" />
-        <geom quat="1 0 0 0" mesh="tool_geometry_4" class="collision" />
-        <geom quat="1 0 0 0" mesh="tool_geometry_5" class="collision" />
-        <geom quat="1 0 0 0" mesh="tool_geometry_6" class="collision" />
-        <geom quat="1 0 0 0" mesh="tool_geometry_7" class="collision" />
-        <geom quat="1 0 0 0" mesh="tool_geometry_8" class="collision" />
-        <geom quat="1 0 0 0" mesh="tool_geometry_9" class="collision" />
-        <geom quat="1 0 0 0" mesh="tool_geometry_10" class="collision" />
-        <geom quat="1 0 0 0" mesh="tool_geometry_11" class="collision" />
+        <joint name="tool_joint" type="slide" axis="0 1 0" pos="0 0 0.1" range="-0.015 0.015"/>
+        <geom quat="1 0 0 0" mesh="tool90_tool" class="visual"/>
+        <geom quat="1 0 0 0" mesh="tool_geometry_0" class="collision"/>
+        <geom quat="1 0 0 0" mesh="tool_geometry_1" class="collision"/>
+        <geom quat="1 0 0 0" mesh="tool_geometry_2" class="collision"/>
+        <geom quat="1 0 0 0" mesh="tool_geometry_3" class="collision"/>
+        <geom quat="1 0 0 0" mesh="tool_geometry_4" class="collision"/>
+        <geom quat="1 0 0 0" mesh="tool_geometry_5" class="collision"/>
+        <geom quat="1 0 0 0" mesh="tool_geometry_6" class="collision"/>
+        <geom quat="1 0 0 0" mesh="tool_geometry_7" class="collision"/>
+        <geom quat="1 0 0 0" mesh="tool_geometry_8" class="collision"/>
+        <geom quat="1 0 0 0" mesh="tool_geometry_9" class="collision"/>
+        <geom quat="1 0 0 0" mesh="tool_geometry_10" class="collision"/>
+        <geom quat="1 0 0 0" mesh="tool_geometry_11" class="collision"/>
       </body>
     </body>
   </worldbody>
 
   <actuator>
-    <position
-      name="tool_center"
-      joint="tool_joint"
-      kp="500000"
-      kv="100"
-      ctrlrange="-0.025 0.025"
-    />
+    <position name="tool_center" joint="tool_joint" kp="500000" kv="100" ctrlrange="-0.025 0.025"/>
   </actuator>
 </mujoco>

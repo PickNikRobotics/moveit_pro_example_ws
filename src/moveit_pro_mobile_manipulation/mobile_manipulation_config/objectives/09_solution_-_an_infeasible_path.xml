@@ -1,31 +1,19 @@
+<?xml version='1.0' encoding='utf-8'?>
 <root BTCPP_format="4" main_tree_to_execute="09 Solution - An infeasible path">
   <!--//////////-->
-  <BehaviorTree
-    ID="09 Solution - An infeasible path"
-    _description="An example of a path that is not feasible"
-    _favorite="false"
-  >
+  <BehaviorTree ID="09 Solution - An infeasible path" _description="An example of a path that is not feasible" _favorite="false">
     <Control ID="Sequence" name="TopLevelSequence">
-      <Action
-        ID="CreateStampedPose"
-        orientation_xyzw="0;0;0;1"
-        position_xyz="1;0;-0.5"
-        reference_frame="world"
-      />
-      <Action ID="AddPoseStampedToVector" input="{stamped_pose}" />
-      <Action ID="VisualizePose" />
-      <Action
-        ID="PlanCartesianPath"
-        ik_cartesian_space_density="0.01000"
-        ik_joint_space_density="0.01000"
-      />
+      <Action ID="CreateStampedPose" orientation_xyzw="0;0;0;1" position_xyz="1;0;-0.5" reference_frame="world"/>
+      <Action ID="AddPoseStampedToVector" input="{stamped_pose}"/>
+      <Action ID="VisualizePose"/>
+      <Action ID="PlanCartesianPath" ik_cartesian_space_density="0.01000" ik_joint_space_density="0.01000"/>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="09 Solution - An infeasible path">
       <MetadataFields>
-        <Metadata subcategory="Application - Training Solution" />
-        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Training Solution"/>
+        <Metadata runnable="true"/>
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
