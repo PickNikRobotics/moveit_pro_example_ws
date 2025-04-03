@@ -6,7 +6,7 @@
       <Action
         ID="MoveGripperAction"
         gripper_command_action_name="/second_robotiq_gripper_controller/gripper_cmd"
-        position="0.0"
+        position="0.05"
       />
     </Control>
   </BehaviorTree>

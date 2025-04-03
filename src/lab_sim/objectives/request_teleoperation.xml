@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Request Teleoperation">
   <!--The integer value used here for teleoperation mode comes from the moveit_studio_sdk_msgs/TeleoperationMode ROS message.-->
   <BehaviorTree
@@ -6,7 +5,6 @@
     _description="Handles the different variations of teleoperation from the web UI, with the option of interactive user prompts and choosing the initial mode. Should be used as a subtree with port remapping as part of an another Objective."
     _favorite="false"
     _hardcoded="false"
-    _subtreeOnly="true"
   >
     <Control ID="Sequence">
       <Action ID="Script" code="teleop_mode := 0" />
@@ -158,12 +156,13 @@
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Request Teleoperation">
+      <MetadataFields>
+        <Metadata subcategory="User Input" />
+        <Metadata runnable="false" />
+      </MetadataFields>
       <input_port name="enable_user_interaction" default="false" />
       <input_port name="initial_teleop_mode" default="3" />
       <input_port name="user_interaction_prompt" default="Teleoperate" />
-      <MetadataFields>
-        <Metadata subcategory="User Input" />
-      </MetadataFields>
     </SubTree>
   </TreeNodesModel>
 </root>
