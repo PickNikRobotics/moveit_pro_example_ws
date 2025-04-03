@@ -46,8 +46,8 @@
     <SubTree ID="Retract">
       <input_port name="distance" default="0.1" />
       <MetadataFields>
-        <Metadata subcategory="Motion - Execute" />
         <Metadata runnable="false" />
+        <Metadata subcategory="Motion - Execute" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>

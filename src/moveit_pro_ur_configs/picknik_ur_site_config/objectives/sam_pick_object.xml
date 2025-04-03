@@ -146,4 +146,12 @@
       </Decorator>
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="SAM Pick Object">
+      <MetadataFields>
+        <Metadata subcategory="Perception - Machine Learning" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>

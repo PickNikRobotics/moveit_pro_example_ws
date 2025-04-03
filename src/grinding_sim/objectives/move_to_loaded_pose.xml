@@ -27,6 +27,7 @@
   <TreeNodesModel>
     <SubTree ID="Move To Loaded Pose">
       <MetadataFields>
+        <Metadata subcategory="Motion - Execute" />
         <Metadata runnable="true" />
       </MetadataFields>
     </SubTree>

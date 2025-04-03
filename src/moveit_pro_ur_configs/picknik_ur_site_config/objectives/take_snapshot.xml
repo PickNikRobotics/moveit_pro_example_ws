@@ -26,4 +26,11 @@
       />
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Take Snapshot">
+      <MetadataFields>
+        <Metadata subcategory="Perception - 3D Point Cloud" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>

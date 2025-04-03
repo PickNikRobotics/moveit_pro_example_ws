@@ -35,4 +35,12 @@
       <Action ID="VisualizePose" pose="{output_pose}" marker_size="0.150000" />
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="23 Solution - Airfoil Coverage Origin">
+      <MetadataFields>
+        <Metadata subcategory="Application - Training Solution" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>
