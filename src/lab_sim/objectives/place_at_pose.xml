@@ -1,56 +1,23 @@
+<?xml version='1.0' encoding='utf-8'?>
 <root BTCPP_format="4" main_tree_to_execute="Place at Pose">
   <!--//////////-->
-  <BehaviorTree
-    ID="Place at Pose"
-    _subtreeOnly="true"
-    _description="Places object in gripper at the given input pose"
-  >
+  <BehaviorTree ID="Place at Pose" _subtreeOnly="true" _description="Places object in gripper at the given input pose">
     <Control ID="Sequence">
-      <Action
-        ID="LoadObjectiveParameters"
-        config_file_name="place_object_config.yaml"
-        parameters="{parameters}"
-      />
-      <Action
-        ID="InitializeMTCTask"
-        task_id="place_object"
-        controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-        task="{place_object_task}"
-      />
-      <Action
-        ID="SetupMTCCurrentState"
-        task="{place_object_task}"
-        skip_collision_check="false"
-      />
-      <Action
-        ID="SetupMTCPickObject"
-        grasp_pose="{grasp_pose}"
-        task="{place_object_task}"
-        parameters="{parameters}"
-        monitored_stage="current state"
-      />
-      <Action
-        ID="PlanMTCTask"
-        solution="{place_object_solution}"
-        task="{place_object_task}"
-      />
-      <SubTree
-        ID="Wait for Trajectory Approval if User Available"
-        solution="{place_object_solution}"
-      />
-      <Action
-        ID="ExecuteMTCTask"
-        solution="{place_object_solution}"
-        goal_duration_tolerance="-1.000000"
-      />
+      <Action ID="LoadObjectiveParameters" config_file_name="place_object_config.yaml" parameters="{parameters}"/>
+      <Action ID="InitializeMTCTask" task_id="place_object" controller_names="/joint_trajectory_controller /robotiq_gripper_controller" task="{place_object_task}"/>
+      <Action ID="SetupMTCCurrentState" task="{place_object_task}" skip_collision_check="false"/>
+      <Action ID="SetupMTCPickObject" grasp_pose="{grasp_pose}" task="{place_object_task}" parameters="{parameters}" monitored_stage="current state"/>
+      <Action ID="PlanMTCTask" solution="{place_object_solution}" task="{place_object_task}"/>
+      <SubTree ID="Wait for Trajectory Approval if User Available" solution="{place_object_solution}"/>
+      <Action ID="ExecuteMTCTask" solution="{place_object_solution}" goal_duration_tolerance="-1.000000"/>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Place at pose">
-      <inout_port name="grasp_pose" default="{object_pose}" />
+      <inout_port name="grasp_pose" default="{object_pose}"/>
       <MetadataFields>
-        <Metadata subcategory="Motion - Execute" />
-        <Metadata runnable="false" />
+        <Metadata subcategory="Motion - Execute"/>
+        <Metadata runnable="false"/>
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>

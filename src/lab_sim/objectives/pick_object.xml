@@ -1,39 +1,20 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version='1.0' encoding='utf-8'?>
 <root BTCPP_format="4" main_tree_to_execute="Pick object">
   <!--//////////-->
-  <BehaviorTree
-    ID="Pick object"
-    _description="Opens the gripper, defines a target pose for the object and performs a motion for picking it."
-    _favorite="false"
-    _subtreeOnly="true"
-  >
+  <BehaviorTree ID="Pick object" _description="Opens the gripper, defines a target pose for the object and performs a motion for picking it." _favorite="false" _subtreeOnly="true">
     <Control ID="Sequence">
-      <SubTree ID="Open Gripper" />
-      <Action ID="SwitchUIPrimaryView" primary_view_name="Visualization" />
-      <Action
-        ID="CreateStampedPose"
-        orientation_xyzw="0;1;0;0"
-        position_xyz="0.01;.75;0.515"
-        stamped_pose="{stamped_pose}"
-        reference_frame="world"
-      />
-      <Action
-        ID="AddPoseStampedToVector"
-        input="{stamped_pose}"
-        vector="{pose_vector}"
-      />
-      <SubTree
-        ID="Pick from Pose"
-        _collapsed="true"
-        grasp_pose="{stamped_pose}"
-      />
+      <SubTree ID="Open Gripper"/>
+      <Action ID="SwitchUIPrimaryView" primary_view_name="Visualization"/>
+      <Action ID="CreateStampedPose" orientation_xyzw="0;1;0;0" position_xyz="0.01;.75;0.515" stamped_pose="{stamped_pose}" reference_frame="world"/>
+      <Action ID="AddPoseStampedToVector" input="{stamped_pose}" vector="{pose_vector}"/>
+      <SubTree ID="Pick from Pose" _collapsed="true" grasp_pose="{stamped_pose}"/>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Pick object">
       <MetadataFields>
-        <Metadata subcategory="Motion - Execute" />
-        <Metadata runnable="false" />
+        <Metadata subcategory="Motion - Execute"/>
+        <Metadata runnable="false"/>
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>

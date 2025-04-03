@@ -1,298 +1,125 @@
+<?xml version='1.0' encoding='utf-8'?>
 <mujoco model="space satellite scene">
-  <compiler angle="radian" meshdir="assets" />
-  <option integrator="implicitfast" gravity="0 0 0" />
+  <compiler angle="radian" meshdir="assets"/>
+  <option integrator="implicitfast" gravity="0 0 0"/>
 
-  <include file="gen3_7dof_assets.xml" />
+  <include file="gen3_7dof_assets.xml"/>
 
-  <statistic center="0.3 0 0.4" extent="1" />
+  <statistic center="0.3 0 0.4" extent="1"/>
   <default>
-    <geom solref=".004 1" />
+    <geom solref=".004 1"/>
   </default>
 
   <visual>
-    <headlight diffuse="0.6 0.6 0.6" ambient="0.3 0.3 0.3" specular="0 0 0" />
-    <rgba haze="0.15 0.25 0.35 1" />
-    <global azimuth="120" elevation="-20" />
+    <headlight diffuse="0.6 0.6 0.6" ambient="0.3 0.3 0.3" specular="0 0 0"/>
+    <rgba haze="0.15 0.25 0.35 1"/>
+    <global azimuth="120" elevation="-20"/>
   </visual>
 
   <asset>
-    <texture
-      type="skybox"
-      file="assets/space.png"
-      gridsize="3 4"
-      gridlayout=".U..LFRB.D.."
-    />
-    <texture type="2d" name="ar_marker_0" file="assets/tag36_11_00000.png" />
-    <texture type="2d" name="ar_marker_1" file="assets/tag36_11_00001.png" />
-    <texture type="2d" name="ar_marker_2" file="assets/tag36_11_00002.png" />
-    <material name="ar_marker_0" texture="ar_marker_0" texuniform="false" />
-    <material name="ar_marker_1" texture="ar_marker_1" texuniform="false" />
-    <material name="ar_marker_2" texture="ar_marker_2" texuniform="false" />
-    <material name="landsat_gold" rgba="1.0 0.85 0.6  1" reflectance="0.2" />
-    <material name="metal_rafti" rgba="0.8 0.8 0.8 1" reflectance="0.5" />
-    <material
-      name="servicer_platform_blue"
-      rgba="0.1 0.1 0.7 1"
-      reflectance="0.5"
-    />
-    <material
-      name="servicer_platform_gold"
-      rgba="0.7 0.6 0.4 1"
-      reflectance="0.5"
-    />
-    <material
-      name="servicer_platform_silver"
-      rgba="0.6 0.6 0.6 1"
-      reflectance="0.5"
-    />
-    <mesh name="april_tag" file="april_tag.obj" />
-    <mesh name="landsat" file="landsat/landsat.obj" />
-    <mesh name="landsat_white" file="landsat/landsat_white.obj" />
-    <mesh name="landsat_glass" file="landsat/landsat_glass.obj" />
-    <mesh name="landsat_collision_1" file="landsat/landsat_collision_1.obj" />
-    <mesh name="landsat_collision_2" file="landsat/landsat_collision_2.obj" />
-    <mesh name="landsat_collision_3" file="landsat/landsat_collision_3.obj" />
-    <mesh name="landsat_collision_4" file="landsat/landsat_collision_4.obj" />
-    <mesh name="rafti" file="rafti/rafti.obj" />
-    <mesh name="rafti_collision_1" file="rafti/rafti_collision_1.obj" />
-    <mesh name="rafti_collision_2" file="rafti/rafti_collision_2.obj" />
-    <mesh name="rafti_collision_3" file="rafti/rafti_collision_3.obj" />
-    <mesh name="rafti_collision_4" file="rafti/rafti_collision_4.obj" />
-    <mesh name="rafti_collision_5" file="rafti/rafti_collision_5.obj" />
-    <mesh name="epastar" file="servicer_platform/epastar.obj" />
-    <mesh name="interface" file="servicer_platform/interface.obj" />
-    <mesh name="rpo_suite" file="servicer_platform/rpo_suite.obj" />
-    <mesh name="pole" file="servicer_platform/pole.obj" />
-    <mesh name="solar_panels" file="servicer_platform/solar_panels.obj" />
-    <mesh
-      name="epastar_collision"
-      file="servicer_platform/epastar_collision.obj"
-    />
-    <mesh
-      name="interface_collision"
-      file="servicer_platform/interface_collision.obj"
-    />
-    <mesh
-      name="rpo_suite_collision"
-      file="servicer_platform/rpo_suite_collision.obj"
-    />
-    <mesh name="pole_collision" file="servicer_platform/pole_collision.obj" />
-    <mesh
-      name="solar_panels_collision"
-      file="servicer_platform/solar_panels_collision.obj"
-    />
+    <texture type="skybox" file="assets/space.png" gridsize="3 4" gridlayout=".U..LFRB.D.."/>
+    <texture type="2d" name="ar_marker_0" file="assets/tag36_11_00000.png"/>
+    <texture type="2d" name="ar_marker_1" file="assets/tag36_11_00001.png"/>
+    <texture type="2d" name="ar_marker_2" file="assets/tag36_11_00002.png"/>
+    <material name="ar_marker_0" texture="ar_marker_0" texuniform="false"/>
+    <material name="ar_marker_1" texture="ar_marker_1" texuniform="false"/>
+    <material name="ar_marker_2" texture="ar_marker_2" texuniform="false"/>
+    <material name="landsat_gold" rgba="1.0 0.85 0.6  1" reflectance="0.2"/>
+    <material name="metal_rafti" rgba="0.8 0.8 0.8 1" reflectance="0.5"/>
+    <material name="servicer_platform_blue" rgba="0.1 0.1 0.7 1" reflectance="0.5"/>
+    <material name="servicer_platform_gold" rgba="0.7 0.6 0.4 1" reflectance="0.5"/>
+    <material name="servicer_platform_silver" rgba="0.6 0.6 0.6 1" reflectance="0.5"/>
+    <mesh name="april_tag" file="april_tag.obj"/>
+    <mesh name="landsat" file="landsat/landsat.obj"/>
+    <mesh name="landsat_white" file="landsat/landsat_white.obj"/>
+    <mesh name="landsat_glass" file="landsat/landsat_glass.obj"/>
+    <mesh name="landsat_collision_1" file="landsat/landsat_collision_1.obj"/>
+    <mesh name="landsat_collision_2" file="landsat/landsat_collision_2.obj"/>
+    <mesh name="landsat_collision_3" file="landsat/landsat_collision_3.obj"/>
+    <mesh name="landsat_collision_4" file="landsat/landsat_collision_4.obj"/>
+    <mesh name="rafti" file="rafti/rafti.obj"/>
+    <mesh name="rafti_collision_1" file="rafti/rafti_collision_1.obj"/>
+    <mesh name="rafti_collision_2" file="rafti/rafti_collision_2.obj"/>
+    <mesh name="rafti_collision_3" file="rafti/rafti_collision_3.obj"/>
+    <mesh name="rafti_collision_4" file="rafti/rafti_collision_4.obj"/>
+    <mesh name="rafti_collision_5" file="rafti/rafti_collision_5.obj"/>
+    <mesh name="epastar" file="servicer_platform/epastar.obj"/>
+    <mesh name="interface" file="servicer_platform/interface.obj"/>
+    <mesh name="rpo_suite" file="servicer_platform/rpo_suite.obj"/>
+    <mesh name="pole" file="servicer_platform/pole.obj"/>
+    <mesh name="solar_panels" file="servicer_platform/solar_panels.obj"/>
+    <mesh name="epastar_collision" file="servicer_platform/epastar_collision.obj"/>
+    <mesh name="interface_collision" file="servicer_platform/interface_collision.obj"/>
+    <mesh name="rpo_suite_collision" file="servicer_platform/rpo_suite_collision.obj"/>
+    <mesh name="pole_collision" file="servicer_platform/pole_collision.obj"/>
+    <mesh name="solar_panels_collision" file="servicer_platform/solar_panels_collision.obj"/>
   </asset>
 
   <worldbody>
-    <light pos="1 1 1.5" dir="0 0 -1" directional="true" />
-    <camera
-      name="scene_camera"
-      pos="-0.3 0.3 1.0"
-      fovy="58"
-      mode="fixed"
-      resolution="640 480"
-      euler="0 -1.0472 -1.5708"
-    />
-    <site
-      name="scene_camera_optical_frame"
-      pos="-0.3 0.3 1.0"
-      euler="3.1416 -1.0472 -1.5708"
-      size="0.03"
-    />
+    <light pos="1 1 1.5" dir="0 0 -1" directional="true"/>
+    <camera name="scene_camera" pos="-0.3 0.3 1.0" fovy="58" mode="fixed" resolution="640 480" euler="0 -1.0472 -1.5708"/>
+    <site name="scene_camera_optical_frame" pos="-0.3 0.3 1.0" euler="3.1416 -1.0472 -1.5708" size="0.03"/>
     <body name="landsat">
-      <freejoint name="landsat_joint" />
-      <geom
-        class="visual"
-        type="mesh"
-        material="landsat_gold"
-        mesh="landsat"
-        density="200"
-      />
-      <geom
-        class="visual"
-        type="mesh"
-        rgba="1.0 1.0 1.0 1"
-        mesh="landsat_white"
-        density="200"
-      />
-      <geom
-        class="visual"
-        type="mesh"
-        rgba="0.6 0.6 1.0 1"
-        mesh="landsat_glass"
-        density="200"
-      />
-      <geom
-        class="collision"
-        type="mesh"
-        mesh="landsat_collision_1"
-        density="1"
-      />
-      <geom
-        class="collision"
-        type="mesh"
-        mesh="landsat_collision_2"
-        density="1"
-      />
-      <geom
-        class="collision"
-        type="mesh"
-        mesh="landsat_collision_3"
-        density="1"
-      />
-      <geom
-        class="collision"
-        type="mesh"
-        mesh="landsat_collision_4"
-        density="1"
-      />
+      <freejoint name="landsat_joint"/>
+      <geom class="visual" type="mesh" material="landsat_gold" mesh="landsat" density="200"/>
+      <geom class="visual" type="mesh" rgba="1.0 1.0 1.0 1" mesh="landsat_white" density="200"/>
+      <geom class="visual" type="mesh" rgba="0.6 0.6 1.0 1" mesh="landsat_glass" density="200"/>
+      <geom class="collision" type="mesh" mesh="landsat_collision_1" density="1"/>
+      <geom class="collision" type="mesh" mesh="landsat_collision_2" density="1"/>
+      <geom class="collision" type="mesh" mesh="landsat_collision_3" density="1"/>
+      <geom class="collision" type="mesh" mesh="landsat_collision_4" density="1"/>
       <body name="rafti" pos="-0.565306 -0.3 -1.6" euler="0 -1.5708 0">
-        <geom class="visual" mesh="rafti" material="metal_rafti" />
-        <geom class="collision" mesh="rafti_collision_1" condim="6" />
-        <geom class="collision" mesh="rafti_collision_1" condim="6" />
-        <geom class="collision" mesh="rafti_collision_2" condim="6" />
-        <geom class="collision" mesh="rafti_collision_3" condim="6" />
-        <geom class="collision" mesh="rafti_collision_4" condim="6" />
-        <geom class="collision" mesh="rafti_collision_5" condim="6" />
+        <geom class="visual" mesh="rafti" material="metal_rafti"/>
+        <geom class="collision" mesh="rafti_collision_1" condim="6"/>
+        <geom class="collision" mesh="rafti_collision_1" condim="6"/>
+        <geom class="collision" mesh="rafti_collision_2" condim="6"/>
+        <geom class="collision" mesh="rafti_collision_3" condim="6"/>
+        <geom class="collision" mesh="rafti_collision_4" condim="6"/>
+        <geom class="collision" mesh="rafti_collision_5" condim="6"/>
         <body name="ar_marker_0" pos="0 -.2 .132" quat="1 0 0 0">
-          <geom
-            type="box"
-            size="0.0625 0.0625 0.005"
-            rgba="1 1 1 1"
-            material="ar_marker_0"
-          />
+          <geom type="box" size="0.0625 0.0625 0.005" rgba="1 1 1 1" material="ar_marker_0"/>
         </body>
         <body name="ar_marker_1" pos="0.2 0.2 .132" quat="1 0 0 0">
-          <geom
-            type="box"
-            size="0.0625 0.0625 0.005"
-            rgba="1 1 1 1"
-            material="ar_marker_1"
-          />
+          <geom type="box" size="0.0625 0.0625 0.005" rgba="1 1 1 1" material="ar_marker_1"/>
         </body>
         <body name="ar_marker_2" pos="-0.2 0.2 .132" quat="1 0 0 0">
-          <geom
-            type="box"
-            size="0.0625 0.0625 0.005"
-            rgba="1 1 1 1"
-            material="ar_marker_2"
-          />
+          <geom type="box" size="0.0625 0.0625 0.005" rgba="1 1 1 1" material="ar_marker_2"/>
         </body>
       </body>
     </body>
     <body name="servicer_platform_with_arm">
-      <inertial pos="0 0 0" mass="1000" diaginertia="100 100 100" />
-      <joint name="servicer_platform_x" type="slide" axis="1 0 0" />
-      <joint name="servicer_platform_y" type="slide" axis="0 1 0" />
-      <joint name="servicer_platform_z" type="slide" axis="0 0 1" />
-      <joint name="servicer_platform_roll" type="hinge" axis="1 0 0" />
-      <joint name="servicer_platform_pitch" type="hinge" axis="0 1 0" />
-      <joint name="servicer_platform_yaw" type="hinge" axis="0 0 1" />
+      <inertial pos="0 0 0" mass="1000" diaginertia="100 100 100"/>
+      <joint name="servicer_platform_x" type="slide" axis="1 0 0"/>
+      <joint name="servicer_platform_y" type="slide" axis="0 1 0"/>
+      <joint name="servicer_platform_z" type="slide" axis="0 0 1"/>
+      <joint name="servicer_platform_roll" type="hinge" axis="1 0 0"/>
+      <joint name="servicer_platform_pitch" type="hinge" axis="0 1 0"/>
+      <joint name="servicer_platform_yaw" type="hinge" axis="0 0 1"/>
       <body name="servicer_platform" pos="-0.2874 0.6350 -0.0508" euler="0 0 0">
-        <geom
-          class="visual"
-          type="mesh"
-          mesh="epastar"
-          material="servicer_platform_silver"
-          density="200"
-        />
-        <geom
-          class="visual"
-          type="mesh"
-          mesh="interface"
-          material="servicer_platform_gold"
-          density="200"
-        />
-        <geom
-          class="visual"
-          type="mesh"
-          mesh="rpo_suite"
-          material="servicer_platform_silver"
-          density="200"
-        />
-        <geom
-          class="visual"
-          type="mesh"
-          mesh="pole"
-          material="servicer_platform_silver"
-          density="200"
-        />
-        <geom
-          class="visual"
-          type="mesh"
-          mesh="solar_panels"
-          material="servicer_platform_blue"
-          density="200"
-        />
-        <geom
-          class="collision"
-          type="mesh"
-          mesh="epastar_collision"
-          density="1"
-        />
-        <geom
-          class="collision"
-          type="mesh"
-          mesh="interface_collision"
-          density="1"
-        />
-        <geom
-          class="collision"
-          type="mesh"
-          mesh="rpo_suite_collision"
-          density="1"
-        />
-        <geom class="collision" type="mesh" mesh="pole_collision" density="1" />
-        <geom
-          class="collision"
-          type="mesh"
-          mesh="solar_panels_collision"
-          density="1"
-        />
+        <geom class="visual" type="mesh" mesh="epastar" material="servicer_platform_silver" density="200"/>
+        <geom class="visual" type="mesh" mesh="interface" material="servicer_platform_gold" density="200"/>
+        <geom class="visual" type="mesh" mesh="rpo_suite" material="servicer_platform_silver" density="200"/>
+        <geom class="visual" type="mesh" mesh="pole" material="servicer_platform_silver" density="200"/>
+        <geom class="visual" type="mesh" mesh="solar_panels" material="servicer_platform_blue" density="200"/>
+        <geom class="collision" type="mesh" mesh="epastar_collision" density="1"/>
+        <geom class="collision" type="mesh" mesh="interface_collision" density="1"/>
+        <geom class="collision" type="mesh" mesh="rpo_suite_collision" density="1"/>
+        <geom class="collision" type="mesh" mesh="pole_collision" density="1"/>
+        <geom class="collision" type="mesh" mesh="solar_panels_collision" density="1"/>
       </body>
       <body name="gen3_7dof" pos="0.5 0 0" quat="0.5 0.5 0.5 0.5">
-        <include file="gen3_7dof_body.xml" />
+        <include file="gen3_7dof_body.xml"/>
       </body>
     </body>
   </worldbody>
 
   <actuator>
-    <motor
-      name="servicer_platform_x"
-      joint="servicer_platform_x"
-      ctrllimited="true"
-      ctrlrange="-100 100"
-    />
-    <motor
-      name="servicer_platform_y"
-      joint="servicer_platform_y"
-      ctrllimited="true"
-      ctrlrange="-100 100"
-    />
-    <motor
-      name="servicer_platform_z"
-      joint="servicer_platform_z"
-      ctrllimited="true"
-      ctrlrange="-100 100"
-    />
-    <motor
-      name="servicer_platform_roll"
-      joint="servicer_platform_roll"
-      ctrllimited="true"
-      ctrlrange="-100 100"
-    />
-    <motor
-      name="servicer_platform_pitch"
-      joint="servicer_platform_pitch"
-      ctrllimited="true"
-      ctrlrange="-100 100"
-    />
-    <motor
-      name="servicer_platform_yaw"
-      joint="servicer_platform_yaw"
-      ctrllimited="true"
-      ctrlrange="-100 100"
-    />
+    <motor name="servicer_platform_x" joint="servicer_platform_x" ctrllimited="true" ctrlrange="-100 100"/>
+    <motor name="servicer_platform_y" joint="servicer_platform_y" ctrllimited="true" ctrlrange="-100 100"/>
+    <motor name="servicer_platform_z" joint="servicer_platform_z" ctrllimited="true" ctrlrange="-100 100"/>
+    <motor name="servicer_platform_roll" joint="servicer_platform_roll" ctrllimited="true" ctrlrange="-100 100"/>
+    <motor name="servicer_platform_pitch" joint="servicer_platform_pitch" ctrllimited="true" ctrlrange="-100 100"/>
+    <motor name="servicer_platform_yaw" joint="servicer_platform_yaw" ctrllimited="true" ctrlrange="-100 100"/>
   </actuator>
 
   <keyframe>
@@ -315,37 +142,7 @@
     <!-- ctrl -->
     <!-- joint_1 joint_2 joint_3 joint_4 joint_5 joint_6 joint_7 robotiq_85_right_knuckle_joint -->
     <!-- servicer_platform [x, y, z, roll, pitch, yaw] -->
-    <key
-      name="default"
-      qpos="
-        2.15848 0.515016 1.77308 1 0 0 0
-        0 0 0 0 0 0
-        -1.5708 1.8326 0 -2.3562 0 0.2618 1.5708 0
-        0 0 0 0 0 0 0"
-      qvel="
-        0 0 0 0 0 0
-        0 0 0 0 0 0
-        0 0 0 0 0 0 0 0
-        0 0 0 0 0 0 0"
-      ctrl="
-        -1.5708 1.8326 0 -2.3562 0 0.2618 1.5708 0
-        0 0 0 0 0 0"
-    />
-    <key
-      name="moving_target_satellite"
-      qpos="
-        2.5 0.5 1.7 1 0 0 0
-        0 0 0 0 0 0
-        -1.5708 1.8326 0 -2.3562 0 0.2618 1.5708 0
-        0 0 0 0 0 0 0"
-      qvel="
-        -0.02 0.02 0 0 0 0.02
-        0 0 0 0 0 0
-        0 0 0 0 0 0 0 0
-        0 0 0 0 0 0 0"
-      ctrl="
-        -1.5708 1.8326 0 -2.3562 0 0.2618 1.5708 0
-        0 0 0 0 0 0"
-    />
+    <key name="default" qpos="         2.15848 0.515016 1.77308 1 0 0 0         0 0 0 0 0 0         -1.5708 1.8326 0 -2.3562 0 0.2618 1.5708 0         0 0 0 0 0 0 0" qvel="         0 0 0 0 0 0         0 0 0 0 0 0         0 0 0 0 0 0 0 0         0 0 0 0 0 0 0" ctrl="         -1.5708 1.8326 0 -2.3562 0 0.2618 1.5708 0         0 0 0 0 0 0"/>
+    <key name="moving_target_satellite" qpos="         2.5 0.5 1.7 1 0 0 0         0 0 0 0 0 0         -1.5708 1.8326 0 -2.3562 0 0.2618 1.5708 0         0 0 0 0 0 0 0" qvel="         -0.02 0.02 0 0 0 0.02         0 0 0 0 0 0         0 0 0 0 0 0 0 0         0 0 0 0 0 0 0" ctrl="         -1.5708 1.8326 0 -2.3562 0 0.2618 1.5708 0         0 0 0 0 0 0"/>
   </keyframe>
 </mujoco>

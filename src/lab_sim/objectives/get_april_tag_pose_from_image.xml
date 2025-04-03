@@ -1,55 +1,24 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version='1.0' encoding='utf-8'?>
 <root BTCPP_format="4" main_tree_to_execute="Get AprilTag Pose from Image">
-  <BehaviorTree
-    ID="Get AprilTag Pose from Image"
-    _subtreeOnly="true"
-    _description="Takes an image snapshot from the wrist camera and attempts to detect an april tag for pose estimation."
-  >
+  <BehaviorTree ID="Get AprilTag Pose from Image" _subtreeOnly="true" _description="Takes an image snapshot from the wrist camera and attempts to detect an april tag for pose estimation.">
     <Control ID="Sequence">
       <!--Get tag pose estimate in world frame-->
-      <Action
-        ID="DetectAprilTags"
-        image="{image}"
-        camera_info="{camera_info}"
-        parameters="{parameters}"
-        detections="{detections}"
-      />
-      <Action
-        ID="GetImage"
-        topic_name="/wrist_camera/color"
-        message_out="{image}"
-        timeout_sec="5.000000"
-      />
-      <Action
-        ID="DetectAprilTags"
-        image="{image}"
-        camera_info="{camera_info}"
-        parameters="{parameters}"
-        detections="{detections}"
-      />
-      <Action
-        ID="GetDetectionPose"
-        detection_pose="{detection_pose}"
-        detections="{detections}"
-        target_id="-1"
-      />
-      <Action
-        ID="TransformPoseFrame"
-        input_pose="{detection_pose}"
-        output_pose="{detection_pose}"
-        target_frame_id="world"
-      />
+      <Action ID="DetectAprilTags" image="{image}" camera_info="{camera_info}" parameters="{parameters}" detections="{detections}"/>
+      <Action ID="GetImage" topic_name="/wrist_camera/color" message_out="{image}" timeout_sec="5.000000"/>
+      <Action ID="DetectAprilTags" image="{image}" camera_info="{camera_info}" parameters="{parameters}" detections="{detections}"/>
+      <Action ID="GetDetectionPose" detection_pose="{detection_pose}" detections="{detections}" target_id="-1"/>
+      <Action ID="TransformPoseFrame" input_pose="{detection_pose}" output_pose="{detection_pose}" target_frame_id="world"/>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Get AprilTag Pose from Image">
-      <input_port name="camera_info" default="{camera_info}" />
-      <output_port name="detection_pose" default="{detection_pose}" />
-      <input_port name="image" default="{image}" />
-      <input_port name="parameters" default="{parameters}" />
+      <input_port name="camera_info" default="{camera_info}"/>
+      <output_port name="detection_pose" default="{detection_pose}"/>
+      <input_port name="image" default="{image}"/>
+      <input_port name="parameters" default="{parameters}"/>
       <MetadataFields>
-        <Metadata subcategory="Perception - 2D Image" />
-        <Metadata runnable="false" />
+        <Metadata subcategory="Perception - 2D Image"/>
+        <Metadata runnable="false"/>
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>

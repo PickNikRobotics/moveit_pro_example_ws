@@ -1,131 +1,44 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version='1.0' encoding='utf-8'?>
 <root BTCPP_format="4" main_tree_to_execute="Grasp Pose Using Yaml">
   <!--//////////-->
-  <BehaviorTree
-    ID="Grasp Pose Using Yaml"
-    _description="Reads a YAML file for grasp pose offset and picks up an object that has an AprilTag marker."
-    _favorite="true"
-  >
+  <BehaviorTree ID="Grasp Pose Using Yaml" _description="Reads a YAML file for grasp pose offset and picks up an object that has an AprilTag marker." _favorite="true">
     <Control ID="Sequence" name="TopLevelSequence">
-      <SubTree ID="Open Gripper" />
+      <SubTree ID="Open Gripper"/>
       <!--Be sure that no previous obstacle left in the scene interferes with planning.-->
-      <SubTree ID="Clear Previous Obstacles" _collapsed="true" />
+      <SubTree ID="Clear Previous Obstacles" _collapsed="true"/>
       <!--Look at table, find an april tag.-->
-      <SubTree ID="Look at table" _collapsed="true" />
-      <SubTree ID="Clear Previous Obstacles" _collapsed="true" />
-      <SubTree ID="Take wrist camera snapshot" _collapsed="true" />
-      <SubTree
-        ID="Take Wrist Camera Image"
-        _collapsed="true"
-        wrist_camera_image="{wrist_camera_image}"
-        wrist_camera_info="{wrist_camera_info}"
-        wrist_camera_parameters="{wrist_camera_parameters}"
-      />
-      <SubTree
-        ID="Get AprilTag Pose from Image"
-        image="{wrist_camera_image}"
-        camera_info="{wrist_camera_info}"
-        parameters="{wrist_camera_parameters}"
-        _collapsed="true"
-        detection_pose="{detection_pose}"
-      />
+      <SubTree ID="Look at table" _collapsed="true"/>
+      <SubTree ID="Clear Previous Obstacles" _collapsed="true"/>
+      <SubTree ID="Take wrist camera snapshot" _collapsed="true"/>
+      <SubTree ID="Take Wrist Camera Image" _collapsed="true" wrist_camera_image="{wrist_camera_image}" wrist_camera_info="{wrist_camera_info}" wrist_camera_parameters="{wrist_camera_parameters}"/>
+      <SubTree ID="Get AprilTag Pose from Image" image="{wrist_camera_image}" camera_info="{wrist_camera_info}" parameters="{wrist_camera_parameters}" _collapsed="true" detection_pose="{detection_pose}"/>
       <!--Move in for a closer look.-->
-      <Action
-        ID="TransformPose"
-        output_pose="{view_pose}"
-        input_pose="{detection_pose}"
-        quaternion_xyzw="0;0;0;1"
-        translation_xyz="0;-0.1;-0.15"
-      />
-      <SubTree
-        ID="Plan Move To Pose"
-        target_pose="{view_pose}"
-        move_to_pose_solution="{move_to_pose_solution}"
-      />
-      <Action
-        ID="ExecuteMTCTask"
-        solution="{move_to_pose_solution}"
-        goal_duration_tolerance="-1.000000"
-      />
+      <Action ID="TransformPose" output_pose="{view_pose}" input_pose="{detection_pose}" quaternion_xyzw="0;0;0;1" translation_xyz="0;-0.1;-0.15"/>
+      <SubTree ID="Plan Move To Pose" target_pose="{view_pose}" move_to_pose_solution="{move_to_pose_solution}"/>
+      <Action ID="ExecuteMTCTask" solution="{move_to_pose_solution}" goal_duration_tolerance="-1.000000"/>
       <!--Locate the april tag again more precisely.-->
-      <SubTree ID="Clear Previous Obstacles" _collapsed="true" />
-      <SubTree ID="Take wrist camera snapshot" _collapsed="true" />
-      <SubTree
-        ID="Take Wrist Camera Image"
-        _collapsed="true"
-        wrist_camera_image="{wrist_camera_image}"
-        wrist_camera_info="{wrist_camera_info}"
-        wrist_camera_parameters="{wrist_camera_parameters}"
-      />
-      <SubTree
-        ID="Get AprilTag Pose from Image"
-        image="{wrist_camera_image}"
-        camera_info="{wrist_camera_info}"
-        parameters="{wrist_camera_parameters}"
-        _collapsed="true"
-        detection_pose="{detection_pose}"
-      />
+      <SubTree ID="Clear Previous Obstacles" _collapsed="true"/>
+      <SubTree ID="Take wrist camera snapshot" _collapsed="true"/>
+      <SubTree ID="Take Wrist Camera Image" _collapsed="true" wrist_camera_image="{wrist_camera_image}" wrist_camera_info="{wrist_camera_info}" wrist_camera_parameters="{wrist_camera_parameters}"/>
+      <SubTree ID="Get AprilTag Pose from Image" image="{wrist_camera_image}" camera_info="{wrist_camera_info}" parameters="{wrist_camera_parameters}" _collapsed="true" detection_pose="{detection_pose}"/>
       <!--Load the gripper offset from yaml and combine with detected pose.-->
-      <Action
-        ID="LoadObjectiveParameters"
-        parameters="{relative_pose_parameters}"
-        config_file_name="relative_grasp_pose.yaml"
-      />
-      <Action
-        ID="TransformPoseFromYaml"
-        input_pose="{detection_pose}"
-        output_pose="{offset_pose}"
-        pose_parameters="{relative_pose_parameters}"
-        parameter_namespace="RelativePose"
-      />
-      <Action
-        ID="VisualizePose"
-        marker_lifetime="0.000000"
-        marker_name="pose"
-        marker_size="0.100000"
-        pose="{offset_pose}"
-      />
+      <Action ID="LoadObjectiveParameters" parameters="{relative_pose_parameters}" config_file_name="relative_grasp_pose.yaml"/>
+      <Action ID="TransformPoseFromYaml" input_pose="{detection_pose}" output_pose="{offset_pose}" pose_parameters="{relative_pose_parameters}" parameter_namespace="RelativePose"/>
+      <Action ID="VisualizePose" marker_lifetime="0.000000" marker_name="pose" marker_size="0.100000" pose="{offset_pose}"/>
       <!--Now pick the cube using the offset_pose.-->
-      <Action
-        ID="LoadObjectiveParameters"
-        config_file_name="pick_object_config.yaml"
-        parameters="{parameters}"
-      />
-      <Action
-        ID="InitializeMTCTask"
-        task_id="pick_object"
-        controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-        task="{pick_object_task}"
-      />
-      <Action
-        ID="SetupMTCCurrentState"
-        task="{pick_object_task}"
-        skip_collision_check="false"
-      />
-      <Action
-        ID="SetupMTCPickObject"
-        grasp_pose="{offset_pose}"
-        task="{pick_object_task}"
-        parameters="{parameters}"
-        monitored_stage="current state"
-      />
-      <Action
-        ID="PlanMTCTask"
-        solution="{pick_object_solution}"
-        task="{pick_object_task}"
-      />
-      <Action
-        ID="ExecuteMTCTask"
-        solution="{pick_object_solution}"
-        goal_duration_tolerance="-1.000000"
-      />
+      <Action ID="LoadObjectiveParameters" config_file_name="pick_object_config.yaml" parameters="{parameters}"/>
+      <Action ID="InitializeMTCTask" task_id="pick_object" controller_names="/joint_trajectory_controller /robotiq_gripper_controller" task="{pick_object_task}"/>
+      <Action ID="SetupMTCCurrentState" task="{pick_object_task}" skip_collision_check="false"/>
+      <Action ID="SetupMTCPickObject" grasp_pose="{offset_pose}" task="{pick_object_task}" parameters="{parameters}" monitored_stage="current state"/>
+      <Action ID="PlanMTCTask" solution="{pick_object_solution}" task="{pick_object_task}"/>
+      <Action ID="ExecuteMTCTask" solution="{pick_object_solution}" goal_duration_tolerance="-1.000000"/>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Grasp Pose Using Yaml">
       <MetadataFields>
-        <Metadata subcategory="Application - Advanced Examples" />
-        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Advanced Examples"/>
+        <Metadata runnable="true"/>
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>

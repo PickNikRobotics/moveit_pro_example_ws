@@ -1,37 +1,19 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version='1.0' encoding='utf-8'?>
 <root BTCPP_format="4" main_tree_to_execute="_Scan Scene">
   <!--//////////-->
-  <BehaviorTree
-    ID="_Scan Scene"
-    _description="Move robot out of scene to enable full snapshot of scene."
-    _favorite="true"
-  >
+  <BehaviorTree ID="_Scan Scene" _description="Move robot out of scene to enable full snapshot of scene." _favorite="true">
     <Control ID="Sequence" name="TopLevelSequence">
-      <Action ID="ClearSnapshot" />
-      <SubTree
-        ID="Move to Waypoint"
-        _collapsed="true"
-        joint_group_name="manipulator"
-        planner_interface="moveit_default"
-        controller_names="/joint_trajectory_controller"
-        waypoint_name="Park Far Right"
-      />
-      <SubTree ID="Take scene camera snapshot" _collapsed="true" />
-      <SubTree
-        ID="Move to Waypoint"
-        _collapsed="true"
-        joint_group_name="manipulator"
-        planner_interface="moveit_default"
-        controller_names="/joint_trajectory_controller"
-        waypoint_name="Look at Table"
-      />
+      <Action ID="ClearSnapshot"/>
+      <SubTree ID="Move to Waypoint" _collapsed="true" joint_group_name="manipulator" planner_interface="moveit_default" controller_names="/joint_trajectory_controller" waypoint_name="Park Far Right"/>
+      <SubTree ID="Take scene camera snapshot" _collapsed="true"/>
+      <SubTree ID="Move to Waypoint" _collapsed="true" joint_group_name="manipulator" planner_interface="moveit_default" controller_names="/joint_trajectory_controller" waypoint_name="Look at Table"/>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="_Scan Scene">
       <MetadataFields>
-        <Metadata runnable="true" />
-        <Metadata subcategory="Application - Basic Examples" />
+        <Metadata runnable="true"/>
+        <Metadata subcategory="Application - Basic Examples"/>
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
