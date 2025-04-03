@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<root BTCPP_format="4" main_tree_to_execute="Solution - Find and Spray Plane">
+<root BTCPP_format="4" main_tree_to_execute="Find and Spray Plane">
   <!--//////////-->
   <BehaviorTree
-    ID="Solution - Find and Spray Plane"
+    ID="Find and Spray Plane"
     _description="Finds the plane then generates and executes a coverage path"
     _favorite="false"
     _subtreeOnly="false"
@@ -82,7 +82,7 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Solution - Find and Spray Plane">
+    <SubTree ID="Find and Spray Plane">
       <MetadataFields>
         <Metadata subcategory="Training Examples" />
         <Metadata runnable="true" />

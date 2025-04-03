@@ -18,4 +18,12 @@
       <Action ID="ExecuteFollowJointTrajectory" />
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="08 Solution - Execute path plan">
+      <MetadataFields>
+        <Metadata subcategory="Application - Training Solution" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>

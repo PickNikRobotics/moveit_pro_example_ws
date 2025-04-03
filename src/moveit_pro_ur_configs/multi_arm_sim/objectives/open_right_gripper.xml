@@ -10,4 +10,11 @@
       />
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Open First Gripper">
+      <MetadataFields>
+        <Metadata subcategory="User Input" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>

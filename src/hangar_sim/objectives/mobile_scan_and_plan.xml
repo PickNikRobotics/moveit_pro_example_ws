@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<root BTCPP_format="4" main_tree_to_execute="Solution - Draw Square">
+<root BTCPP_format="4" main_tree_to_execute="Mobile Scan and Plan">
   <!--//////////-->
   <BehaviorTree
-    ID="Solution - Draw Square"
-    _description="Training example that shows how to create a path from poses and execute the path"
+    ID="Mobile Scan and Plan"
+    _description="An example of computing and executing a coverage path for spraying the plane"
     _favorite="false"
     _subtreeOnly="false"
   >
@@ -16,18 +16,18 @@
         controller_names="/joint_trajectory_controller"
         joint_group_name="manipulator"
         keep_orientation="false"
-        keep_orientation_link_names="grasp_link"
         keep_orientation_tolerance="0.05"
         link_padding="0.0"
         velocity_scale_factor="1.0"
         waypoint_name="Look at Plane"
+        keep_orientation_link_names="grasp_link"
       />
       <Action
         ID="CreateStampedPose"
         reference_frame="grasp_link"
         stamped_pose="{stamped_pose}"
-        orientation_xyzw="0;0;0;1"
-        position_xyz="0;0;0.4"
+        orientation_xyzw="0;0;.707;.707"
+        position_xyz="1;-0.5;1"
       />
       <Action
         ID="VisualizePose"
@@ -37,57 +37,12 @@
         pose="{stamped_pose}"
       />
       <Action
-        ID="AddPoseStampedToVector"
-        input="{stamped_pose}"
-        vector="{pose_stamped_vector}"
-      />
-      <Action
-        ID="CreateStampedPose"
-        reference_frame="grasp_link"
-        stamped_pose="{stamped_pose}"
-        orientation_xyzw="0;0;0;1"
-        position_xyz="0;-0.4;0.4"
-      />
-      <Action
-        ID="AddPoseStampedToVector"
-        input="{stamped_pose}"
-        vector="{pose_stamped_vector}"
-      />
-      <Action
-        ID="CreateStampedPose"
-        reference_frame="grasp_link"
-        stamped_pose="{stamped_pose}"
-        orientation_xyzw="0;0;0;1"
-        position_xyz="0.4;-0.4;0.4"
-      />
-      <Action
-        ID="AddPoseStampedToVector"
-        input="{stamped_pose}"
-        vector="{pose_stamped_vector}"
-      />
-      <Action
-        ID="CreateStampedPose"
-        reference_frame="grasp_link"
-        stamped_pose="{stamped_pose}"
-        orientation_xyzw="0;0;0;1"
-        position_xyz="0.4;0;0.4"
-      />
-      <Action
-        ID="AddPoseStampedToVector"
-        input="{stamped_pose}"
-        vector="{pose_stamped_vector}"
-      />
-      <Action
-        ID="CreateStampedPose"
-        reference_frame="grasp_link"
-        stamped_pose="{stamped_pose}"
-        orientation_xyzw="0;0;0;1"
-        position_xyz="0;0;0.4"
-      />
-      <Action
-        ID="AddPoseStampedToVector"
-        input="{stamped_pose}"
-        vector="{pose_stamped_vector}"
+        ID="GenerateCoveragePath"
+        vector_of_poses="{pose_stamped_vector}"
+        bottom_right_corner="{stamped_pose}"
+        stride_distance="0.5"
+        width="0.6"
+        height="5"
       />
       <Action
         ID="VisualizePath"
@@ -109,7 +64,6 @@
         trajectory_sampling_rate="100"
         velocity_scale_factor="1.000000"
       />
-      <Action ID="IsUserAvailable" />
       <Action ID="WaitForUserTrajectoryApproval" solution="{debug_solution}" />
       <Action
         ID="ExecuteFollowJointTrajectory"
@@ -122,7 +76,7 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Solution - Draw Square">
+    <SubTree ID="Mobile Scan and Plan">
       <MetadataFields>
         <Metadata subcategory="Training Examples" />
         <Metadata runnable="true" />

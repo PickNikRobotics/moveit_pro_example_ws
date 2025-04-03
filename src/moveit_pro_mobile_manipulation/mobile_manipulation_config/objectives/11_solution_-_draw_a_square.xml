@@ -44,4 +44,12 @@
       <Action ID="ExecuteFollowJointTrajectory" />
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="11 Solution - Draw a square">
+      <MetadataFields>
+        <Metadata subcategory="Application - Training Solution" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>

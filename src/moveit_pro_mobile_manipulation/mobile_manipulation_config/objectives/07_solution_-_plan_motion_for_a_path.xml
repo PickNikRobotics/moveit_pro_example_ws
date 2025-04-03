@@ -20,4 +20,12 @@
       <Action ID="PlanCartesianPath" />
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="07 Solution - Plan motion for a path">
+      <MetadataFields>
+        <Metadata subcategory="Application - Training Solution" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>

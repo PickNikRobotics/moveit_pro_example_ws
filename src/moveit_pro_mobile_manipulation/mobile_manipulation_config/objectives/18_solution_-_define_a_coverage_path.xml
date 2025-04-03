@@ -27,4 +27,12 @@
       <Action ID="VisualizePath" path="{pose_stamped_vector}" />
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="18 Solution - Define a coverage path">
+      <MetadataFields>
+        <Metadata subcategory="Application - Training Solution" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>

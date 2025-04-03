@@ -96,4 +96,11 @@
       </Control>
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Visual Servo to Reference">
+      <MetadataFields>
+        <Metadata subcategory="Motion - Execute" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>

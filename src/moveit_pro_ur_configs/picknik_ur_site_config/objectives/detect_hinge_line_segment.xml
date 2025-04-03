@@ -68,4 +68,11 @@
       />
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Detect Hinge Line Segment">
+      <MetadataFields>
+        <Metadata subcategory="Perception - Machine Learning" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>

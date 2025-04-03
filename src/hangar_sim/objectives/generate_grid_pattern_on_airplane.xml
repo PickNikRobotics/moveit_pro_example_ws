@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<root BTCPP_format="4" main_tree_to_execute="Solution - Spray Plane">
+<root BTCPP_format="4" main_tree_to_execute="Generate Grid Pattern on Airplane">
   <!--//////////-->
   <BehaviorTree
-    ID="Solution - Spray Plane"
-    _description="An example of computing and executing a coverage path for spraying the plane"
+    ID="Generate Grid Pattern on Airplane"
+    _description="A training example that plans and executes a coverage path with base and arm motion"
     _favorite="false"
     _subtreeOnly="false"
   >
@@ -16,18 +16,18 @@
         controller_names="/joint_trajectory_controller"
         joint_group_name="manipulator"
         keep_orientation="false"
+        keep_orientation_link_names="grasp_link"
         keep_orientation_tolerance="0.05"
         link_padding="0.0"
         velocity_scale_factor="1.0"
         waypoint_name="Look at Plane"
-        keep_orientation_link_names="grasp_link"
       />
       <Action
         ID="CreateStampedPose"
         reference_frame="grasp_link"
         stamped_pose="{stamped_pose}"
-        orientation_xyzw="0;0;.707;.707"
-        position_xyz="1;-0.5;1"
+        orientation_xyzw="0;0;0;1"
+        position_xyz="0;-0.5;1"
       />
       <Action
         ID="VisualizePose"
@@ -40,9 +40,9 @@
         ID="GenerateCoveragePath"
         vector_of_poses="{pose_stamped_vector}"
         bottom_right_corner="{stamped_pose}"
-        stride_distance="0.5"
-        width="0.6"
-        height="5"
+        height="0.5"
+        stride_distance="0.1"
+        width="0.5"
       />
       <Action
         ID="VisualizePath"
@@ -64,7 +64,6 @@
         trajectory_sampling_rate="100"
         velocity_scale_factor="1.000000"
       />
-      <Action ID="WaitForUserTrajectoryApproval" solution="{debug_solution}" />
       <Action
         ID="ExecuteFollowJointTrajectory"
         execute_follow_joint_trajectory_action_name="/joint_trajectory_controller/follow_joint_trajectory"
@@ -76,7 +75,7 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Solution - Spray Plane">
+    <SubTree ID="Generate Grid Pattern on Airplane">
       <MetadataFields>
         <Metadata subcategory="Training Examples" />
         <Metadata runnable="true" />
