@@ -78,13 +78,10 @@ repos:
         types: ["dockerfile"]
         entry: hadolint/hadolint:2.11.0 hadolint
 
-  - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: "v3.1.0"
+  - repo: https://github.com/GlodoUK/pre-commit-xmllint
+    rev: b9281d1cf34246ed43f2dd2634b855d04d06cb80
     hooks:
       # Use Prettier to lint XML files because, well.. its rules are prettier than most linters, as the name implies.
       # Also we use it in the UI, so it's familiar.
-      - id: prettier
-        additional_dependencies:
-          - "prettier@3.1.0"
-          - "@prettier/plugin-xml@3.3.1"
+      - id: lxml-format
         files: \.(xml)$

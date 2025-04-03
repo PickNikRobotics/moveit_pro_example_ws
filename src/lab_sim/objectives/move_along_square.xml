@@ -1,95 +1,23 @@
+<?xml version='1.0' encoding='utf-8'?>
 <root BTCPP_format="4" main_tree_to_execute="Move Along Square">
   <!-- ////////// -->
-  <BehaviorTree
-    ID="Move Along Square"
-    _subtreeOnly="true"
-    _description="Move along a square path"
-  >
+  <BehaviorTree ID="Move Along Square" _subtreeOnly="true" _description="Move along a square path">
     <Control ID="Sequence">
-      <Action
-        ID="InitializeMTCTask"
-        controller_names="/joint_trajectory_controller"
-        task="{mtc_task}"
-        task_id="move_along_axis"
-      />
-      <Action
-        ID="SetupMTCCurrentState"
-        skip_collision_check="false"
-        task="{mtc_task}"
-      />
-      <Action
-        ID="SetupMTCMoveAlongFrameAxis"
-        acceleration_scale="1.0"
-        axis_frame="world"
-        axis_y="0.0"
-        axis_z="1.0"
-        hand_frame="tool0"
-        ignore_environment_collisions="false"
-        max_distance="0.2"
-        min_distance="0.2"
-        planning_group_name="manipulator"
-        task="{mtc_task}"
-        velocity_scale="1.0"
-        axis_x="0.0"
-      />
-      <Action
-        ID="SetupMTCMoveAlongFrameAxis"
-        acceleration_scale="1.0"
-        axis_frame="world"
-        axis_y="0.0"
-        axis_z="0.0"
-        hand_frame="tool0"
-        ignore_environment_collisions="false"
-        max_distance="0.2"
-        min_distance="0.2"
-        planning_group_name="manipulator"
-        task="{mtc_task}"
-        velocity_scale="1.0"
-        axis_x="1.0"
-      />
-      <Action
-        ID="SetupMTCMoveAlongFrameAxis"
-        acceleration_scale="1.0"
-        axis_frame="world"
-        axis_y="0.0"
-        axis_z="-1.0"
-        hand_frame="tool0"
-        ignore_environment_collisions="false"
-        max_distance="0.2"
-        min_distance="0.2"
-        planning_group_name="manipulator"
-        task="{mtc_task}"
-        velocity_scale="1.0"
-        axis_x="0.0"
-      />
-      <Action
-        ID="SetupMTCMoveAlongFrameAxis"
-        acceleration_scale="1.0"
-        axis_frame="world"
-        axis_y="0.0"
-        axis_z="0.0"
-        hand_frame="tool0"
-        ignore_environment_collisions="false"
-        max_distance="0.2"
-        min_distance="0.2"
-        planning_group_name="manipulator"
-        task="{mtc_task}"
-        velocity_scale="1.0"
-        axis_x="-1.0"
-      />
-      <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
-      <Action
-        ID="ExecuteMTCTask"
-        goal_duration_tolerance="-1.000000"
-        solution="{mtc_solution}"
-      />
+      <Action ID="InitializeMTCTask" controller_names="/joint_trajectory_controller" task="{mtc_task}" task_id="move_along_axis"/>
+      <Action ID="SetupMTCCurrentState" skip_collision_check="false" task="{mtc_task}"/>
+      <Action ID="SetupMTCMoveAlongFrameAxis" acceleration_scale="1.0" axis_frame="world" axis_y="0.0" axis_z="1.0" hand_frame="tool0" ignore_environment_collisions="false" max_distance="0.2" min_distance="0.2" planning_group_name="manipulator" task="{mtc_task}" velocity_scale="1.0" axis_x="0.0"/>
+      <Action ID="SetupMTCMoveAlongFrameAxis" acceleration_scale="1.0" axis_frame="world" axis_y="0.0" axis_z="0.0" hand_frame="tool0" ignore_environment_collisions="false" max_distance="0.2" min_distance="0.2" planning_group_name="manipulator" task="{mtc_task}" velocity_scale="1.0" axis_x="1.0"/>
+      <Action ID="SetupMTCMoveAlongFrameAxis" acceleration_scale="1.0" axis_frame="world" axis_y="0.0" axis_z="-1.0" hand_frame="tool0" ignore_environment_collisions="false" max_distance="0.2" min_distance="0.2" planning_group_name="manipulator" task="{mtc_task}" velocity_scale="1.0" axis_x="0.0"/>
+      <Action ID="SetupMTCMoveAlongFrameAxis" acceleration_scale="1.0" axis_frame="world" axis_y="0.0" axis_z="0.0" hand_frame="tool0" ignore_environment_collisions="false" max_distance="0.2" min_distance="0.2" planning_group_name="manipulator" task="{mtc_task}" velocity_scale="1.0" axis_x="-1.0"/>
+      <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}"/>
+      <Action ID="ExecuteMTCTask" goal_duration_tolerance="-1.000000" solution="{mtc_solution}"/>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Move Along Square">
       <MetadataFields>
-        <Metadata runnable="false" />
-        <Metadata subcategory="Application - Basic Examples" />
+        <Metadata runnable="false"/>
+        <Metadata subcategory="Application - Basic Examples"/>
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>

@@ -1,197 +1,65 @@
+<?xml version='1.0' encoding='utf-8'?>
 <root BTCPP_format="4" main_tree_to_execute="Reachability Analysis for mesh">
   <!--//////////-->
-  <BehaviorTree
-    ID="Reachability Analysis for mesh"
-    _description="Given a starting waypoint and mesh in the URDF attempt to Cartesian move from starting waypoint to each mesh normal."
-    controller_action_server="{controller_action_server}"
-    controller_name="{controller_name}"
-    execute_trajectories="true"
-    mesh_link_name="{mesh_link_name}"
-    planning_group_name="{planning_group_name}"
-    starting_waypoint="{starting_waypoint}"
-    tip_link="{tip_link}"
-    tip_offset="0;0;0;0;0;0"
-    _subtreeOnly="true"
-  >
+  <BehaviorTree ID="Reachability Analysis for mesh" _description="Given a starting waypoint and mesh in the URDF attempt to Cartesian move from starting waypoint to each mesh normal." controller_action_server="{controller_action_server}" controller_name="{controller_name}" execute_trajectories="true" mesh_link_name="{mesh_link_name}" planning_group_name="{planning_group_name}" starting_waypoint="{starting_waypoint}" tip_link="{tip_link}" tip_offset="0;0;0;0;0;0" _subtreeOnly="true">
     <Control ID="Sequence">
       <Control ID="Sequence" name="Move to starting waypoint">
-        <Action
-          ID="RetrieveWaypoint"
-          joint_group_name="{planning_group_name}"
-          waypoint_joint_state="{starting_joint_state}"
-          waypoint_name="{starting_waypoint}"
-        />
-        <SubTree
-          ID="Move to Joint State"
-          _collapsed="false"
-          target_joint_state="{starting_joint_state}"
-          acceleration_scale_factor="1.0"
-          controller_action_server="{controller_action_server}"
-          controller_names="{controller_name}"
-          joint_group_name="{planning_group_name}"
-          keep_orientation="false"
-          keep_orientation_tolerance="0.05"
-          link_padding="0.01"
-          velocity_scale_factor="1.0"
-        />
+        <Action ID="RetrieveWaypoint" joint_group_name="{planning_group_name}" waypoint_joint_state="{starting_joint_state}" waypoint_name="{starting_waypoint}"/>
+        <SubTree ID="Move to Joint State" _collapsed="false" target_joint_state="{starting_joint_state}" acceleration_scale_factor="1.0" controller_action_server="{controller_action_server}" controller_names="{controller_name}" joint_group_name="{planning_group_name}" keep_orientation="false" keep_orientation_tolerance="0.05" link_padding="0.01" velocity_scale_factor="1.0"/>
       </Control>
       <Control ID="Sequence" name="Make vector of place poses to plan to">
-        <Action
-          ID="CreateStampedPose"
-          reference_frame="tool0"
-          stamped_pose="{tool_pose}"
-          orientation_xyzw="0;0;0;1"
-          position_xyz="0;0;0"
-        />
-        <Action
-          ID="VisualizePose"
-          marker_name="tool_pose"
-          pose="{tool_pose}"
-          marker_lifetime="0.000000"
-          marker_size="0.200000"
-        />
-        <Action
-          ID="GetMeshNormalPoses"
-          discretization_step_size="0.050000"
-          mesh_normal_poses="{mesh_normal_poses}"
-          link_name="{mesh_link_name}"
-        />
-        <Action
-          ID="ResetPoseStampedVector"
-          vector="{mesh_normal_poses_reoriented}"
-        />
-        <Decorator
-          ID="ForEach"
-          vector_in="{mesh_normal_poses}"
-          out="{target_pose}"
-          index="{index}"
-        >
+        <Action ID="CreateStampedPose" reference_frame="tool0" stamped_pose="{tool_pose}" orientation_xyzw="0;0;0;1" position_xyz="0;0;0"/>
+        <Action ID="VisualizePose" marker_name="tool_pose" pose="{tool_pose}" marker_lifetime="0.000000" marker_size="0.200000"/>
+        <Action ID="GetMeshNormalPoses" discretization_step_size="0.050000" mesh_normal_poses="{mesh_normal_poses}" link_name="{mesh_link_name}"/>
+        <Action ID="ResetPoseStampedVector" vector="{mesh_normal_poses_reoriented}"/>
+        <Decorator ID="ForEach" vector_in="{mesh_normal_poses}" out="{target_pose}" index="{index}">
           <Control ID="Sequence">
-            <Action
-              ID="TransformPose"
-              input_pose="{target_pose}"
-              output_pose="{output_pose}"
-              quaternion_xyzw="0.7071;0;0.7071;0"
-              translation_xyz="0;0;0"
-            />
-            <Action
-              ID="AddPoseStampedToVector"
-              input="{output_pose}"
-              vector="{mesh_normal_poses_reoriented}"
-            />
+            <Action ID="TransformPose" input_pose="{target_pose}" output_pose="{output_pose}" quaternion_xyzw="0.7071;0;0.7071;0" translation_xyz="0;0;0"/>
+            <Action ID="AddPoseStampedToVector" input="{output_pose}" vector="{mesh_normal_poses_reoriented}"/>
           </Control>
         </Decorator>
       </Control>
-      <Control
-        ID="Sequence"
-        name="Plan to each place pose from an approach pose"
-      >
-        <Action ID="Script" code="pose_count := 0" />
-        <Decorator
-          ID="ForEach"
-          vector_in="{mesh_normal_poses_reoriented}"
-          out="{target_pose}"
-          index="{index}"
-        >
+      <Control ID="Sequence" name="Plan to each place pose from an approach pose">
+        <Action ID="Script" code="pose_count := 0"/>
+        <Decorator ID="ForEach" vector_in="{mesh_normal_poses_reoriented}" out="{target_pose}" index="{index}">
           <Control ID="Sequence">
-            <Action
-              ID="VisualizePose"
-              marker_name="pose"
-              pose="{target_pose}"
-              marker_lifetime="0.000000"
-              marker_size="0.100000"
-            />
-            <Action ID="Script" code="pose_count += 1" />
-            <Action ID="ResetPoseStampedVector" vector="{plan_pose}" />
-            <Action
-              ID="AddPoseStampedToVector"
-              input="{target_pose}"
-              vector="{plan_pose}"
-            />
+            <Action ID="VisualizePose" marker_name="pose" pose="{target_pose}" marker_lifetime="0.000000" marker_size="0.100000"/>
+            <Action ID="Script" code="pose_count += 1"/>
+            <Action ID="ResetPoseStampedVector" vector="{plan_pose}"/>
+            <Action ID="AddPoseStampedToVector" input="{target_pose}" vector="{plan_pose}"/>
             <Control ID="IfThenElse">
               <Control ID="Sequence">
-                <Action
-                  ID="PlanCartesianPath"
-                  trajectory_sampling_rate="30"
-                  debug_solution="{debug_solution}"
-                  velocity_scale_factor="1.000000"
-                  acceleration_scale_factor="1.000000"
-                  blending_radius="0.020000"
-                  position_only="false"
-                  joint_trajectory_msg="{joint_trajectory_msg}"
-                  tip_link="{tip_link}"
-                  planning_group_name="{planning_group_name}"
-                  path="{plan_pose}"
-                  tip_offset="{tip_offset}"
-                  ik_cartesian_space_density="0.010000"
-                  ik_joint_space_density="0.100000"
-                />
-                <Action
-                  ID="WaitForUserTrajectoryApproval"
-                  solution="{debug_solution}"
-                />
+                <Action ID="PlanCartesianPath" trajectory_sampling_rate="30" debug_solution="{debug_solution}" velocity_scale_factor="1.000000" acceleration_scale_factor="1.000000" blending_radius="0.020000" position_only="false" joint_trajectory_msg="{joint_trajectory_msg}" tip_link="{tip_link}" planning_group_name="{planning_group_name}" path="{plan_pose}" tip_offset="{tip_offset}" ik_cartesian_space_density="0.010000" ik_joint_space_density="0.100000"/>
+                <Action ID="WaitForUserTrajectoryApproval" solution="{debug_solution}"/>
               </Control>
-              <Decorator
-                ID="Precondition"
-                else="SUCCESS"
-                if="execute_trajectories == &quot;true&quot;"
-              >
+              <Decorator ID="Precondition" else="SUCCESS" if="execute_trajectories == &quot;true&quot;">
                 <Control ID="Sequence">
-                  <Action
-                    ID="ExecuteFollowJointTrajectory"
-                    execute_follow_joint_trajectory_action_name="{controller_action_server}"
-                    goal_duration_tolerance="-1.000000"
-                    goal_position_tolerance="0.000000"
-                    goal_time_tolerance="0.000000"
-                    joint_trajectory_msg="{joint_trajectory_msg}"
-                  />
-                  <SubTree
-                    ID="Move to Joint State"
-                    _collapsed="true"
-                    target_joint_state="{starting_joint_state}"
-                    acceleration_scale_factor="1.0"
-                    controller_action_server="{controller_action_server}"
-                    controller_names="{controller_name}"
-                    joint_group_name="{planning_group_name}"
-                    keep_orientation="false"
-                    keep_orientation_tolerance="0.05"
-                    link_padding="0.01"
-                    velocity_scale_factor="1.0"
-                  />
+                  <Action ID="ExecuteFollowJointTrajectory" execute_follow_joint_trajectory_action_name="{controller_action_server}" goal_duration_tolerance="-1.000000" goal_position_tolerance="0.000000" goal_time_tolerance="0.000000" joint_trajectory_msg="{joint_trajectory_msg}"/>
+                  <SubTree ID="Move to Joint State" _collapsed="true" target_joint_state="{starting_joint_state}" acceleration_scale_factor="1.0" controller_action_server="{controller_action_server}" controller_names="{controller_name}" joint_group_name="{planning_group_name}" keep_orientation="false" keep_orientation_tolerance="0.05" link_padding="0.01" velocity_scale_factor="1.0"/>
                 </Control>
               </Decorator>
-              <Action ID="AlwaysSuccess" />
+              <Action ID="AlwaysSuccess"/>
             </Control>
           </Control>
         </Decorator>
         <!--link6, flange, tool0-->
-        <Action
-          ID="ExecuteFollowJointTrajectory"
-          goal_duration_tolerance="-1.000000"
-          goal_position_tolerance="0.000000"
-          goal_time_tolerance="0.000000"
-          joint_trajectory_msg="{joint_trajectory_msg}"
-          execute_follow_joint_trajectory_action_name="/joint_trajectory_controller/follow_joint_trajectory"
-        />
+        <Action ID="ExecuteFollowJointTrajectory" goal_duration_tolerance="-1.000000" goal_position_tolerance="0.000000" goal_time_tolerance="0.000000" joint_trajectory_msg="{joint_trajectory_msg}" execute_follow_joint_trajectory_action_name="/joint_trajectory_controller/follow_joint_trajectory"/>
       </Control>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Reachability Analysis for mesh">
-      <inout_port
-        name="controller_action_server"
-        default="{controller_action_server}"
-      />
-      <inout_port name="controller_name" default="{controller_name}" />
-      <inout_port name="execute_trajectories" default="true" />
-      <inout_port name="mesh_link_name" default="{mesh_link_name}" />
-      <inout_port name="planning_group_name" default="{planning_group_name}" />
-      <inout_port name="starting_waypoint" default="{starting_waypoint}" />
-      <inout_port name="tip_link" default="{tip_link}" />
-      <inout_port name="tip_offset" default="0;0;0;0;0;0" />
+      <inout_port name="controller_action_server" default="{controller_action_server}"/>
+      <inout_port name="controller_name" default="{controller_name}"/>
+      <inout_port name="execute_trajectories" default="true"/>
+      <inout_port name="mesh_link_name" default="{mesh_link_name}"/>
+      <inout_port name="planning_group_name" default="{planning_group_name}"/>
+      <inout_port name="starting_waypoint" default="{starting_waypoint}"/>
+      <inout_port name="tip_link" default="{tip_link}"/>
+      <inout_port name="tip_offset" default="0;0;0;0;0;0"/>
       <MetadataFields>
-        <Metadata runnable="false" />
-        <Metadata subcategory="Reachability" />
+        <Metadata runnable="false"/>
+        <Metadata subcategory="Reachability"/>
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>

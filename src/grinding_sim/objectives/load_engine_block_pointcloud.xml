@@ -1,42 +1,20 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version='1.0' encoding='utf-8'?>
 <root BTCPP_format="4" main_tree_to_execute="Load Engine Block Pointcloud">
   <!--//////////-->
-  <BehaviorTree
-    ID="Load Engine Block Pointcloud"
-    _description=""
-    _favorite="false"
-    _subtreeOnly="true"
-    color="255;0;0"
-    initial_pose="{initial_pose}"
-    engine_block_cloud="{engine_block_cloud}"
-  >
+  <BehaviorTree ID="Load Engine Block Pointcloud" _description="" _favorite="false" _subtreeOnly="true" color="255;0;0" initial_pose="{initial_pose}" engine_block_cloud="{engine_block_cloud}">
     <Control ID="Sequence" name="TopLevelSequence">
-      <Action
-        ID="LoadPointCloudFromFile"
-        color="{color}"
-        package_name="picknik_accessories"
-        file_path="mujoco_assets/grinding_sim_assets/engine_block/engine_block.pcd"
-        point_cloud="{engine_block_cloud}"
-        frame_id="world"
-        num_sampled_points="10000"
-        scale="1.000000"
-      />
-      <Action
-        ID="TransformPointCloud"
-        input_cloud="{engine_block_cloud}"
-        transform_pose="{initial_pose}"
-        output_cloud="{engine_block_cloud}"
-      />
+      <Action ID="LoadPointCloudFromFile" color="{color}" package_name="picknik_accessories" file_path="mujoco_assets/grinding_sim_assets/engine_block/engine_block.pcd" point_cloud="{engine_block_cloud}" frame_id="world" num_sampled_points="10000" scale="1.000000"/>
+      <Action ID="TransformPointCloud" input_cloud="{engine_block_cloud}" transform_pose="{initial_pose}" output_cloud="{engine_block_cloud}"/>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Load Engine Block Pointcloud">
-      <input_port name="color" default="255;0;0" />
-      <input_port name="initial_pose" default="{initial_pose}" />
-      <output_port name="engine_block_cloud" default="{engine_block_cloud}" />
+      <input_port name="color" default="255;0;0"/>
+      <input_port name="initial_pose" default="{initial_pose}"/>
+      <output_port name="engine_block_cloud" default="{engine_block_cloud}"/>
       <MetadataFields>
-        <Metadata subcategory="Perception - 3D Point Cloud" />
-        <Metadata runnable="false" />
+        <Metadata subcategory="Perception - 3D Point Cloud"/>
+        <Metadata runnable="false"/>
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>

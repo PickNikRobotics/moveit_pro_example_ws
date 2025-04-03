@@ -1,58 +1,21 @@
+<?xml version='1.0' encoding='utf-8'?>
 <root BTCPP_format="4" main_tree_to_execute="Navigate to Clicked Point">
   <!--//////////-->
-  <BehaviorTree
-    ID="Navigate to Clicked Point"
-    _description="Navigate to a point clicked by the user in the UI"
-    _favorite="true"
-    _subtreeOnly="false"
-  >
+  <BehaviorTree ID="Navigate to Clicked Point" _description="Navigate to a point clicked by the user in the UI" _favorite="true" _subtreeOnly="false">
     <Control ID="Sequence" name="TopLevelSequence">
-      <Action
-        ID="CreateStampedPose"
-        reference_frame="base_link"
-        stamped_pose="{start}"
-      />
-      <Action
-        ID="ActivateControllers"
-        controller_names="platform_velocity_controller_nav2"
-      />
-      <Action
-        ID="GetPoseFromUser"
-        is_normal="true"
-        pose_prompt="Click point on UI"
-        user_pose="{goal}"
-        view_name="Visualization"
-      />
-      <Action
-        ID="ComputePathToPoseAction"
-        action_name="/compute_path_to_pose"
-        goal="{goal}"
-        ignore_stamp_time="true"
-        path="{path}"
-        planning_time="{planning_time}"
-        start="{start}"
-        timeout_sec="-1.000000"
-        use_start="false"
-        planner_id="GridBased"
-      />
-      <Action ID="WaitForUserPathApproval" path="{path}" />
-      <Action
-        ID="FollowPathAction"
-        action_name="/follow_path"
-        controller_id="FollowPath"
-        distance_to_goal="{distance_to_goal}"
-        goal_checker_id="general_goal_checker"
-        path="{path}"
-        speed="{speed}"
-        timeout_sec="-1.000000"
-      />
+      <Action ID="CreateStampedPose" reference_frame="base_link" stamped_pose="{start}"/>
+      <Action ID="ActivateControllers" controller_names="platform_velocity_controller_nav2"/>
+      <Action ID="GetPoseFromUser" is_normal="true" pose_prompt="Click point on UI" user_pose="{goal}" view_name="Visualization"/>
+      <Action ID="ComputePathToPoseAction" action_name="/compute_path_to_pose" goal="{goal}" ignore_stamp_time="true" path="{path}" planning_time="{planning_time}" start="{start}" timeout_sec="-1.000000" use_start="false" planner_id="GridBased"/>
+      <Action ID="WaitForUserPathApproval" path="{path}"/>
+      <Action ID="FollowPathAction" action_name="/follow_path" controller_id="FollowPath" distance_to_goal="{distance_to_goal}" goal_checker_id="general_goal_checker" path="{path}" speed="{speed}" timeout_sec="-1.000000"/>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Navigate to Clicked Point">
       <MetadataFields>
-        <Metadata runnable="true" />
-        <Metadata subcategory="Navigation" />
+        <Metadata runnable="true"/>
+        <Metadata subcategory="Navigation"/>
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>

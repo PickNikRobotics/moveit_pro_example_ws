@@ -1,122 +1,37 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<root
-  BTCPP_format="4"
-  main_tree_to_execute="Pick April Tag Labeled Object With Approval"
->
+<?xml version='1.0' encoding='utf-8'?>
+<root BTCPP_format="4" main_tree_to_execute="Pick April Tag Labeled Object With Approval">
   <!--//////////-->
-  <BehaviorTree
-    ID="Pick April Tag Labeled Object With Approval"
-    _description="Picks up an object that has an AprilTag marker."
-    _favorite="false"
-  >
+  <BehaviorTree ID="Pick April Tag Labeled Object With Approval" _description="Picks up an object that has an AprilTag marker." _favorite="false">
     <Control ID="Sequence" name="TopLevelSequence">
-      <SubTree ID="Look at table" _collapsed="true" />
-      <Action ID="ClearSnapshot" />
-      <SubTree ID="Take wrist camera snapshot" _collapsed="true" />
+      <SubTree ID="Look at table" _collapsed="true"/>
+      <Action ID="ClearSnapshot"/>
+      <SubTree ID="Take wrist camera snapshot" _collapsed="true"/>
       <Control ID="Sequence" name="Setup">
-        <SubTree ID="Open Gripper" />
+        <SubTree ID="Open Gripper"/>
       </Control>
-      <Action
-        ID="LoadObjectiveParameters"
-        config_file_name="apriltag_detection_config.yaml"
-        parameters="{parameters}"
-      />
-      <Action
-        ID="GetCameraInfo"
-        topic_name="/wrist_camera/camera_info"
-        message_out="{camera_info}"
-        timeout_sec="5.000000"
-      />
-      <Action
-        ID="GetImage"
-        topic_name="/wrist_camera/color"
-        message_out="{image}"
-        timeout_sec="5.000000"
-      />
-      <SubTree
-        ID="Get AprilTag Pose from Image"
-        image="{image}"
-        camera_info="{camera_info}"
-        parameters="{parameters}"
-        _collapsed="true"
-        detection_pose="{detection_pose}"
-      />
-      <Action
-        ID="TransformPose"
-        output_pose="{view_pose}"
-        input_pose="{detection_pose}"
-        quaternion_xyzw="0;0;0;1"
-        translation_xyz="0;-0.1;-0.15"
-      />
-      <SubTree
-        ID="Plan Move To Pose"
-        target_pose="{view_pose}"
-        move_to_pose_solution="{move_to_pose_solution}"
-      />
-      <Action
-        ID="ExecuteMTCTask"
-        solution="{move_to_pose_solution}"
-        goal_duration_tolerance="-1.000000"
-      />
-      <SubTree
-        ID="Get AprilTag Pose from Image"
-        image="{image}"
-        camera_info="{camera_info}"
-        parameters="{parameters}"
-        _collapsed="true"
-        detection_pose="{detection_pose}"
-      />
-      <Action
-        ID="TransformPose"
-        output_pose="{offset_pose}"
-        input_pose="{detection_pose}"
-        quaternion_xyzw="0;0;0;1"
-        translation_xyz="0;0;-0.01"
-      />
-      <Action
-        ID="LoadObjectiveParameters"
-        config_file_name="pick_object_config.yaml"
-        parameters="{parameters}"
-      />
-      <Action
-        ID="InitializeMTCTask"
-        task_id="pick_object"
-        controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-        task="{pick_object_task}"
-      />
-      <Action
-        ID="SetupMTCCurrentState"
-        task="{pick_object_task}"
-        skip_collision_check="false"
-      />
-      <Action
-        ID="SetupMTCPickObject"
-        grasp_pose="{offset_pose}"
-        task="{pick_object_task}"
-        parameters="{parameters}"
-        monitored_stage="current state"
-      />
-      <Action
-        ID="PlanMTCTask"
-        solution="{pick_object_solution}"
-        task="{pick_object_task}"
-      />
-      <Action
-        ID="WaitForUserTrajectoryApproval"
-        solution="{pick_object_solution}"
-      />
-      <Action
-        ID="ExecuteMTCTask"
-        solution="{pick_object_solution}"
-        goal_duration_tolerance="-1.000000"
-      />
+      <Action ID="LoadObjectiveParameters" config_file_name="apriltag_detection_config.yaml" parameters="{parameters}"/>
+      <Action ID="GetCameraInfo" topic_name="/wrist_camera/camera_info" message_out="{camera_info}" timeout_sec="5.000000"/>
+      <Action ID="GetImage" topic_name="/wrist_camera/color" message_out="{image}" timeout_sec="5.000000"/>
+      <SubTree ID="Get AprilTag Pose from Image" image="{image}" camera_info="{camera_info}" parameters="{parameters}" _collapsed="true" detection_pose="{detection_pose}"/>
+      <Action ID="TransformPose" output_pose="{view_pose}" input_pose="{detection_pose}" quaternion_xyzw="0;0;0;1" translation_xyz="0;-0.1;-0.15"/>
+      <SubTree ID="Plan Move To Pose" target_pose="{view_pose}" move_to_pose_solution="{move_to_pose_solution}"/>
+      <Action ID="ExecuteMTCTask" solution="{move_to_pose_solution}" goal_duration_tolerance="-1.000000"/>
+      <SubTree ID="Get AprilTag Pose from Image" image="{image}" camera_info="{camera_info}" parameters="{parameters}" _collapsed="true" detection_pose="{detection_pose}"/>
+      <Action ID="TransformPose" output_pose="{offset_pose}" input_pose="{detection_pose}" quaternion_xyzw="0;0;0;1" translation_xyz="0;0;-0.01"/>
+      <Action ID="LoadObjectiveParameters" config_file_name="pick_object_config.yaml" parameters="{parameters}"/>
+      <Action ID="InitializeMTCTask" task_id="pick_object" controller_names="/joint_trajectory_controller /robotiq_gripper_controller" task="{pick_object_task}"/>
+      <Action ID="SetupMTCCurrentState" task="{pick_object_task}" skip_collision_check="false"/>
+      <Action ID="SetupMTCPickObject" grasp_pose="{offset_pose}" task="{pick_object_task}" parameters="{parameters}" monitored_stage="current state"/>
+      <Action ID="PlanMTCTask" solution="{pick_object_solution}" task="{pick_object_task}"/>
+      <Action ID="WaitForUserTrajectoryApproval" solution="{pick_object_solution}"/>
+      <Action ID="ExecuteMTCTask" solution="{pick_object_solution}" goal_duration_tolerance="-1.000000"/>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Pick April Tag Labeled Object With Approval">
       <MetadataFields>
-        <Metadata subcategory="Application - Advanced Examples" />
-        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Advanced Examples"/>
+        <Metadata runnable="true"/>
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>

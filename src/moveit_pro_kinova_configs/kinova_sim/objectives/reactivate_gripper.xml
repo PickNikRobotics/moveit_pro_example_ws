@@ -1,18 +1,15 @@
-<?xml version="1.0" ?>
+<?xml version='1.0' encoding='utf-8'?>
 <root BTCPP_format="4" main_tree_to_execute="Reactivate Gripper">
   <!-- ////////// -->
   <BehaviorTree ID="Reactivate Gripper" _description="Reactivate the gripper">
     <Control ID="Sequence" name="root">
-      <Action
-        ID="CallTriggerService"
-        service_name="/robotiq_activation_controller/reactivate_gripper"
-      />
+      <Action ID="CallTriggerService" service_name="/robotiq_activation_controller/reactivate_gripper"/>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Reactivate Gripper">
       <MetadataFields>
-        <Metadata subcategory="Grasping" />
+        <Metadata subcategory="Grasping"/>
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>

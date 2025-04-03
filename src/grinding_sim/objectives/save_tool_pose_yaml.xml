@@ -1,38 +1,20 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version='1.0' encoding='utf-8'?>
 <root BTCPP_format="4" main_tree_to_execute="Save Tool Pose Yaml">
   <!--//////////-->
-  <BehaviorTree
-    ID="Save Tool Pose Yaml"
-    _description=""
-    _favorite="false"
-    _subtreeOnly="false"
-  >
+  <BehaviorTree ID="Save Tool Pose Yaml" _description="" _favorite="false" _subtreeOnly="false">
     <Control ID="Sequence" name="TopLevelSequence">
       <!-- Create a pose at the tool_tip by creating in the tool_tip frame without transforming it -->
-      <Action
-        ID="CreateStampedPose"
-        reference_frame="tool_tip"
-        stamped_pose="{tool_pose_tool_frame}"
-      />
+      <Action ID="CreateStampedPose" reference_frame="tool_tip" stamped_pose="{tool_pose_tool_frame}"/>
       <!-- Transform the pose to the world frame before saving -->
-      <Action
-        ID="TransformPoseFrame"
-        input_pose="{tool_pose_tool_frame}"
-        output_pose="{tool_pose_world_frame}"
-        target_frame_id="world"
-      />
-      <Action
-        ID="SavePoseStampedToYaml"
-        message="{tool_pose_world_frame}"
-        yaml_filename="tool_pose"
-      />
+      <Action ID="TransformPoseFrame" input_pose="{tool_pose_tool_frame}" output_pose="{tool_pose_world_frame}" target_frame_id="world"/>
+      <Action ID="SavePoseStampedToYaml" message="{tool_pose_world_frame}" yaml_filename="tool_pose"/>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Save Tool Pose Yaml">
       <MetadataFields>
-        <Metadata subcategory="Grasping" />
-        <Metadata runnable="true" />
+        <Metadata subcategory="Grasping"/>
+        <Metadata runnable="true"/>
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>

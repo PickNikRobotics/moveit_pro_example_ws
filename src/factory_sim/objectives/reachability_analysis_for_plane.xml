@@ -1,291 +1,79 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version='1.0' encoding='utf-8'?>
 <root BTCPP_format="4" main_tree_to_execute="Reachability Analysis for plane">
   <!--//////////-->
-  <BehaviorTree
-    ID="Reachability Analysis for plane"
-    _subtreeOnly="true"
-    column_spacing_translation="0;0.25;0"
-    num_45_deg_rotations="0"
-    num_columns="3"
-    num_rows="3"
-    pick_height_translation="0;0;-0.3"
-    reachability_origin_pose="{reachability_origin_pose}"
-    row_spacing_translation="0.35;0;0"
-    execute_trajectories="true"
-    _description="Given a grid of points, attempt to free space plan to a vertical approach pose, then Cartesian move to the grid point."
-    pick_height="-0.3"
-    starting_waypoint="&quot;Initial Position&quot;"
-    controller_action_server="{controller_action_server}"
-    controller_name="{controller_name}"
-    planning_group_name="{planning_group_name}"
-    tip_link="{tip_link}"
-  >
+  <BehaviorTree ID="Reachability Analysis for plane" _subtreeOnly="true" column_spacing_translation="0;0.25;0" num_45_deg_rotations="0" num_columns="3" num_rows="3" pick_height_translation="0;0;-0.3" reachability_origin_pose="{reachability_origin_pose}" row_spacing_translation="0.35;0;0" execute_trajectories="true" _description="Given a grid of points, attempt to free space plan to a vertical approach pose, then Cartesian move to the grid point." pick_height="-0.3" starting_waypoint="&quot;Initial Position&quot;" controller_action_server="{controller_action_server}" controller_name="{controller_name}" planning_group_name="{planning_group_name}" tip_link="{tip_link}">
     <Control ID="Sequence">
       <Control ID="Sequence" name="Move to starting waypoint">
-        <Action
-          ID="RetrieveWaypoint"
-          joint_group_name="{planning_group_name}"
-          waypoint_joint_state="{starting_joint_state}"
-          waypoint_name="{starting_waypoint}"
-        />
-        <SubTree
-          ID="Move to Joint State"
-          _collapsed="false"
-          target_joint_state="{starting_joint_state}"
-          acceleration_scale_factor="1.0"
-          controller_action_server="{controller_action_server}"
-          controller_names="{controller_name}"
-          joint_group_name="{planning_group_name}"
-          keep_orientation="false"
-          keep_orientation_tolerance="0.05"
-          link_padding="0.01"
-          velocity_scale_factor="1.0"
-        />
+        <Action ID="RetrieveWaypoint" joint_group_name="{planning_group_name}" waypoint_joint_state="{starting_joint_state}" waypoint_name="{starting_waypoint}"/>
+        <SubTree ID="Move to Joint State" _collapsed="false" target_joint_state="{starting_joint_state}" acceleration_scale_factor="1.0" controller_action_server="{controller_action_server}" controller_names="{controller_name}" joint_group_name="{planning_group_name}" keep_orientation="false" keep_orientation_tolerance="0.05" link_padding="0.01" velocity_scale_factor="1.0"/>
       </Control>
       <Control ID="Sequence" name="Visualize key poses">
-        <Action
-          ID="CreateStampedPose"
-          reference_frame="{tip_link}"
-          stamped_pose="{tool_pose}"
-          orientation_xyzw="0;0;0;1"
-          position_xyz="0;0;0"
-        />
-        <Action
-          ID="VisualizePose"
-          marker_name="tool_pose"
-          pose="{tool_pose}"
-          marker_lifetime="0.000000"
-          marker_size="0.200000"
-        />
-        <Action
-          ID="TransformPose"
-          input_pose="{reachability_origin_pose}"
-          output_pose="{starting_pose}"
-          quaternion_xyzw="0.7071;0.7071;0;0.0004"
-          translation_xyz="0;0;0"
-          name="Orient pose to downward wrist frame"
-        />
-        <Action
-          ID="TransformPose"
-          input_pose="{reachability_origin_pose}"
-          output_pose="{starting_pose}"
-          quaternion_xyzw="0;0;0;1"
-          translation_xyz="0;0;0"
-          name="Orient pose to downward wrist frame"
-        />
-        <Action
-          ID="VisualizePose"
-          marker_name="starting_pose"
-          pose="{starting_pose}"
-          marker_lifetime="0.000000"
-          marker_size="0.200000"
-        />
+        <Action ID="CreateStampedPose" reference_frame="{tip_link}" stamped_pose="{tool_pose}" orientation_xyzw="0;0;0;1" position_xyz="0;0;0"/>
+        <Action ID="VisualizePose" marker_name="tool_pose" pose="{tool_pose}" marker_lifetime="0.000000" marker_size="0.200000"/>
+        <Action ID="TransformPose" input_pose="{reachability_origin_pose}" output_pose="{starting_pose}" quaternion_xyzw="0.7071;0.7071;0;0.0004" translation_xyz="0;0;0" name="Orient pose to downward wrist frame"/>
+        <Action ID="TransformPose" input_pose="{reachability_origin_pose}" output_pose="{starting_pose}" quaternion_xyzw="0;0;0;1" translation_xyz="0;0;0" name="Orient pose to downward wrist frame"/>
+        <Action ID="VisualizePose" marker_name="starting_pose" pose="{starting_pose}" marker_lifetime="0.000000" marker_size="0.200000"/>
       </Control>
       <Control ID="Sequence" name="Make vector of place poses to plan to">
-        <Action ID="ResetPoseStampedVector" vector="{target_poses}" />
-        <Action
-          ID="TransformPose"
-          input_pose="{starting_pose}"
-          output_pose="{y_incremental_pose}"
-          quaternion_xyzw="0;0;0;1"
-          translation_xyz="0;0;0"
-        />
-        <Action
-          ID="TransformPose"
-          input_pose="{starting_pose}"
-          output_pose="{x_incremental_pose}"
-          quaternion_xyzw="0;0;0;1"
-          translation_xyz="0;0;0"
-        />
+        <Action ID="ResetPoseStampedVector" vector="{target_poses}"/>
+        <Action ID="TransformPose" input_pose="{starting_pose}" output_pose="{y_incremental_pose}" quaternion_xyzw="0;0;0;1" translation_xyz="0;0;0"/>
+        <Action ID="TransformPose" input_pose="{starting_pose}" output_pose="{x_incremental_pose}" quaternion_xyzw="0;0;0;1" translation_xyz="0;0;0"/>
         <Decorator ID="Repeat" num_cycles="{num_columns}">
           <Control ID="Sequence" name="column/y increments">
             <Decorator ID="Repeat" num_cycles="{num_rows}">
               <Control ID="Sequence" name="row/x increments and angle">
-                <Action
-                  ID="TransformPose"
-                  input_pose="{x_incremental_pose}"
-                  output_pose="{x_incremental_pose_rotated}"
-                  quaternion_xyzw="0;0;0;1"
-                  translation_xyz="0;0;0"
-                />
+                <Action ID="TransformPose" input_pose="{x_incremental_pose}" output_pose="{x_incremental_pose_rotated}" quaternion_xyzw="0;0;0;1" translation_xyz="0;0;0"/>
                 <Decorator ID="Repeat" num_cycles="{num_45_deg_rotations}">
-                  <Action
-                    ID="TransformPose"
-                    input_pose="{x_incremental_pose_rotated}"
-                    output_pose="{x_incremental_pose_rotated}"
-                    quaternion_xyzw="0; 0; 0.3826834; 0.9238795"
-                    translation_xyz="0;0;0"
-                  />
+                  <Action ID="TransformPose" input_pose="{x_incremental_pose_rotated}" output_pose="{x_incremental_pose_rotated}" quaternion_xyzw="0; 0; 0.3826834; 0.9238795" translation_xyz="0;0;0"/>
                 </Decorator>
-                <Action
-                  ID="AddPoseStampedToVector"
-                  input="{x_incremental_pose_rotated}"
-                  vector="{target_poses}"
-                />
-                <Action
-                  ID="TransformPose"
-                  input_pose="{x_incremental_pose}"
-                  output_pose="{x_incremental_pose}"
-                  quaternion_xyzw="0;0;0;1"
-                  translation_xyz="{row_spacing_translation}"
-                />
+                <Action ID="AddPoseStampedToVector" input="{x_incremental_pose_rotated}" vector="{target_poses}"/>
+                <Action ID="TransformPose" input_pose="{x_incremental_pose}" output_pose="{x_incremental_pose}" quaternion_xyzw="0;0;0;1" translation_xyz="{row_spacing_translation}"/>
               </Control>
             </Decorator>
-            <Action
-              ID="TransformPose"
-              input_pose="{y_incremental_pose}"
-              output_pose="{y_incremental_pose}"
-              quaternion_xyzw="0;0;0;1"
-              translation_xyz="{column_spacing_translation}"
-            />
-            <Action
-              ID="TransformPose"
-              input_pose="{y_incremental_pose}"
-              output_pose="{x_incremental_pose}"
-              quaternion_xyzw="0;0;0;1"
-              translation_xyz="0;0;0"
-            />
+            <Action ID="TransformPose" input_pose="{y_incremental_pose}" output_pose="{y_incremental_pose}" quaternion_xyzw="0;0;0;1" translation_xyz="{column_spacing_translation}"/>
+            <Action ID="TransformPose" input_pose="{y_incremental_pose}" output_pose="{x_incremental_pose}" quaternion_xyzw="0;0;0;1" translation_xyz="0;0;0"/>
           </Control>
         </Decorator>
       </Control>
       <Control ID="Sequence" name="Visualize vector of place poses">
         <!--Use a script with a pose counter so we can give a unique name to each marker (allowing multiple poses to be visualized)-->
-        <Action ID="Script" code="pose_count := 0" />
-        <Decorator
-          ID="ForEach"
-          vector_in="{target_poses}"
-          out="{target_pose}"
-          index="{index}"
-        >
+        <Action ID="Script" code="pose_count := 0"/>
+        <Decorator ID="ForEach" vector_in="{target_poses}" out="{target_pose}" index="{index}">
           <Control ID="Sequence">
             <!--Visualize and add each pose to the vector-->
-            <Action
-              ID="VisualizePose"
-              marker_name="{pose_count}"
-              pose="{target_pose}"
-              marker_lifetime="0.000000"
-              marker_size="0.100000"
-            />
-            <Action ID="Script" code="pose_count += 1" />
+            <Action ID="VisualizePose" marker_name="{pose_count}" pose="{target_pose}" marker_lifetime="0.000000" marker_size="0.100000"/>
+            <Action ID="Script" code="pose_count += 1"/>
           </Control>
         </Decorator>
       </Control>
-      <Control
-        ID="Sequence"
-        name="Plan to each place pose from an approach pose"
-      >
-        <Decorator
-          ID="ForEach"
-          vector_in="{target_poses}"
-          index="{index}"
-          out="{place_pose}"
-        >
+      <Control ID="Sequence" name="Plan to each place pose from an approach pose">
+        <Decorator ID="ForEach" vector_in="{target_poses}" index="{index}" out="{place_pose}">
           <Control ID="Sequence">
             <Control ID="Sequence" name="Make approach pose">
-              <Action
-                ID="TransformPose"
-                output_pose="{place_approach_pose}"
-                input_pose="{place_pose}"
-                translation_xyz="{pick_height_translation}"
-                quaternion_xyzw="0;0;0;1"
-              />
-              <Action
-                ID="VisualizePose"
-                marker_name="place_approach_pose"
-                marker_lifetime="0.000000"
-                marker_size="0.100000"
-                pose="{place_approach_pose}"
-              />
+              <Action ID="TransformPose" output_pose="{place_approach_pose}" input_pose="{place_pose}" translation_xyz="{pick_height_translation}" quaternion_xyzw="0;0;0;1"/>
+              <Action ID="VisualizePose" marker_name="place_approach_pose" marker_lifetime="0.000000" marker_size="0.100000" pose="{place_approach_pose}"/>
             </Control>
             <Control ID="Sequence" name="Plan to approach then place">
-              <Action
-                ID="ActivateControllers"
-                controller_names="{controller_name}"
-              />
-              <Action
-                ID="InitializeMTCTask"
-                controller_names="{controller_name}"
-                task="{mtc_task}"
-                task_id="move_to_pose"
-              />
-              <Action
-                ID="SetupMTCCurrentState"
-                skip_collision_check="true"
-                task="{mtc_task}"
-              />
-              <Action
-                ID="SetupMTCPlanToPose"
-                acceleration_scale_factor="1.000000"
-                ik_frame="{tip_link}"
-                keep_orientation="false"
-                link_padding="0.000000"
-                max_iterations="50000"
-                monitored_stage="current state"
-                planning_group_name="{planning_group_name}"
-                target_pose="{place_approach_pose}"
-                trajectory_sampling_rate="100"
-                velocity_scale_factor="1.000000"
-                task="{mtc_task}"
-                keep_orientation_tolerance="3"
-                keep_orientation_link_names="grasp_link"
-              />
-              <Action
-                ID="SetupMTCMoveAlongFrameAxis"
-                acceleration_scale=".5"
-                axis_frame="{tip_link}"
-                axis_x="0.000000"
-                axis_y="0.000000"
-                axis_z="1"
-                hand_frame="{tip_link}"
-                ignore_environment_collisions="true"
-                max_distance="{pick_height}"
-                min_distance="{pick_height}"
-                planning_group_name="{planning_group_name}"
-                velocity_scale=".5"
-                task="{mtc_task}"
-              />
+              <Action ID="ActivateControllers" controller_names="{controller_name}"/>
+              <Action ID="InitializeMTCTask" controller_names="{controller_name}" task="{mtc_task}" task_id="move_to_pose"/>
+              <Action ID="SetupMTCCurrentState" skip_collision_check="true" task="{mtc_task}"/>
+              <Action ID="SetupMTCPlanToPose" acceleration_scale_factor="1.000000" ik_frame="{tip_link}" keep_orientation="false" link_padding="0.000000" max_iterations="50000" monitored_stage="current state" planning_group_name="{planning_group_name}" target_pose="{place_approach_pose}" trajectory_sampling_rate="100" velocity_scale_factor="1.000000" task="{mtc_task}" keep_orientation_tolerance="3" keep_orientation_link_names="grasp_link"/>
+              <Action ID="SetupMTCMoveAlongFrameAxis" acceleration_scale=".5" axis_frame="{tip_link}" axis_x="0.000000" axis_y="0.000000" axis_z="1" hand_frame="{tip_link}" ignore_environment_collisions="true" max_distance="{pick_height}" min_distance="{pick_height}" planning_group_name="{planning_group_name}" velocity_scale=".5" task="{mtc_task}"/>
               <Decorator ID="ForceSuccess">
                 <Control ID="IfThenElse">
                   <Control ID="Sequence">
-                    <Action
-                      ID="PlanMTCTask"
-                      task="{mtc_task}"
-                      solution="{mtc_solution}"
-                    />
-                    <Action
-                      ID="WaitForUserTrajectoryApproval"
-                      solution="{mtc_solution}"
-                    />
+                    <Action ID="PlanMTCTask" task="{mtc_task}" solution="{mtc_solution}"/>
+                    <Action ID="WaitForUserTrajectoryApproval" solution="{mtc_solution}"/>
                   </Control>
                   <Control ID="Sequence">
-                    <Decorator
-                      ID="Precondition"
-                      else="SUCCESS"
-                      if="execute_trajectories == &quot;true&quot;"
-                    >
+                    <Decorator ID="Precondition" else="SUCCESS" if="execute_trajectories == &quot;true&quot;">
                       <Control ID="Sequence">
-                        <Action
-                          ID="ExecuteMTCTask"
-                          goal_duration_tolerance="-1.000000"
-                          solution="{mtc_solution}"
-                        />
-                        <SubTree
-                          ID="Move to Joint State"
-                          _collapsed="true"
-                          target_joint_state="{starting_joint_state}"
-                          acceleration_scale_factor="1.0"
-                          controller_action_server="{controller_action_server}"
-                          controller_names="{controller_name}"
-                          joint_group_name="{planning_group_name}"
-                          keep_orientation="false"
-                          keep_orientation_tolerance="0.05"
-                          link_padding="0.01"
-                          velocity_scale_factor="1.0"
-                        />
+                        <Action ID="ExecuteMTCTask" goal_duration_tolerance="-1.000000" solution="{mtc_solution}"/>
+                        <SubTree ID="Move to Joint State" _collapsed="true" target_joint_state="{starting_joint_state}" acceleration_scale_factor="1.0" controller_action_server="{controller_action_server}" controller_names="{controller_name}" joint_group_name="{planning_group_name}" keep_orientation="false" keep_orientation_tolerance="0.05" link_padding="0.01" velocity_scale_factor="1.0"/>
                       </Control>
                     </Decorator>
                   </Control>
-                  <Action ID="AlwaysSuccess" />
+                  <Action ID="AlwaysSuccess"/>
                 </Control>
               </Decorator>
             </Control>
@@ -296,32 +84,23 @@
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Reachability Analysis for plane">
-      <inout_port name="column_spacing_translation" default="0;0.25;0" />
-      <inout_port
-        name="controller_action_server"
-        default="{controller_action_server}"
-      />
-      <inout_port name="controller_name" default="{controller_name}" />
-      <inout_port name="execute_trajectories" default="true" />
-      <inout_port name="num_45_deg_rotations" default="0" />
-      <inout_port name="num_columns" default="3" />
-      <inout_port name="num_rows" default="3" />
-      <inout_port name="pick_height" default="-0.3" />
-      <inout_port name="pick_height_translation" default="0;0;-0.3" />
-      <inout_port name="planning_group_name" default="{planning_group_name}" />
-      <inout_port
-        name="reachability_origin_pose"
-        default="{reachability_origin_pose}"
-      />
-      <inout_port name="row_spacing_translation" default="0.35;0;0" />
-      <inout_port
-        name="starting_waypoint"
-        default="&quot;Initial Position&quot;"
-      />
-      <inout_port name="tip_link" default="{tip_link}" />
+      <inout_port name="column_spacing_translation" default="0;0.25;0"/>
+      <inout_port name="controller_action_server" default="{controller_action_server}"/>
+      <inout_port name="controller_name" default="{controller_name}"/>
+      <inout_port name="execute_trajectories" default="true"/>
+      <inout_port name="num_45_deg_rotations" default="0"/>
+      <inout_port name="num_columns" default="3"/>
+      <inout_port name="num_rows" default="3"/>
+      <inout_port name="pick_height" default="-0.3"/>
+      <inout_port name="pick_height_translation" default="0;0;-0.3"/>
+      <inout_port name="planning_group_name" default="{planning_group_name}"/>
+      <inout_port name="reachability_origin_pose" default="{reachability_origin_pose}"/>
+      <inout_port name="row_spacing_translation" default="0.35;0;0"/>
+      <inout_port name="starting_waypoint" default="&quot;Initial Position&quot;"/>
+      <inout_port name="tip_link" default="{tip_link}"/>
       <MetadataFields>
-        <Metadata runnable="false" />
-        <Metadata subcategory="Reachability" />
+        <Metadata runnable="false"/>
+        <Metadata subcategory="Reachability"/>
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>

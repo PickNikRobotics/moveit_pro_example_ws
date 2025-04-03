@@ -1,23 +1,19 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version='1.0' encoding='utf-8'?>
 <root BTCPP_format="4" main_tree_to_execute="Tool Attachment Example">
   <!--//////////-->
-  <BehaviorTree
-    ID="Tool Attachment Example"
-    _description="Pick up a vacuum gripper, pick up an object with it, drop the object and put the tool back in its holder"
-    _favorite="true"
-  >
+  <BehaviorTree ID="Tool Attachment Example" _description="Pick up a vacuum gripper, pick up an object with it, drop the object and put the tool back in its holder" _favorite="true">
     <Control ID="Sequence" name="TopLevelSequence">
-      <SubTree ID="Pick Up Tool" _collapsed="true" />
-      <Action ID="WaitForDuration" delay_duration="2" />
-      <SubTree ID="Deactivate Vacuum" _collapsed="true" />
-      <SubTree ID="Place Tool in Tool Holder" _collapsed="true" />
+      <SubTree ID="Pick Up Tool" _collapsed="true"/>
+      <Action ID="WaitForDuration" delay_duration="2"/>
+      <SubTree ID="Deactivate Vacuum" _collapsed="true"/>
+      <SubTree ID="Place Tool in Tool Holder" _collapsed="true"/>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Tool Attachment Example">
       <MetadataFields>
-        <Metadata subcategory="Application - Advanced Examples" />
-        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Advanced Examples"/>
+        <Metadata runnable="true"/>
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>

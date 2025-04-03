@@ -1,31 +1,16 @@
+<?xml version='1.0' encoding='utf-8'?>
 <root BTCPP_format="4" main_tree_to_execute="Reachability Analysis - bowls">
   <!--//////////-->
-  <BehaviorTree
-    ID="Reachability Analysis - bowls"
-    _description="An example of performing reachability analysis for a object-normal task such as painting or sanding."
-    _favorite="true"
-    _subtreeOnly="false"
-  >
+  <BehaviorTree ID="Reachability Analysis - bowls" _description="An example of performing reachability analysis for a object-normal task such as painting or sanding." _favorite="true" _subtreeOnly="false">
     <Control ID="Sequence" name="">
-      <SubTree
-        ID="Reachability Analysis for mesh"
-        _collapsed="true"
-        tip_link="tool0"
-        planning_group_name="manipulator"
-        controller_name="/joint_trajectory_controller"
-        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-        starting_waypoint="View bowls"
-        mesh_link_name="convex_bowl"
-        tip_offset="0;0;0;0;0;0"
-        execute_trajectories="true"
-      />
+      <SubTree ID="Reachability Analysis for mesh" _collapsed="true" tip_link="tool0" planning_group_name="manipulator" controller_name="/joint_trajectory_controller" controller_action_server="/joint_trajectory_controller/follow_joint_trajectory" starting_waypoint="View bowls" mesh_link_name="convex_bowl" tip_offset="0;0;0;0;0;0" execute_trajectories="true"/>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Reachability Analysis - bowls">
       <MetadataFields>
-        <Metadata subcategory="Reachability" />
-        <Metadata runnable="true" />
+        <Metadata subcategory="Reachability"/>
+        <Metadata runnable="true"/>
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>

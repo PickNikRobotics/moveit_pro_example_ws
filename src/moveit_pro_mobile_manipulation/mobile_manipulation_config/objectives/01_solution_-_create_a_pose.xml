@@ -1,24 +1,16 @@
+<?xml version='1.0' encoding='utf-8'?>
 <root BTCPP_format="4" main_tree_to_execute="01 Solution - Create a Pose">
   <!--//////////-->
-  <BehaviorTree
-    ID="01 Solution - Create a Pose"
-    _description="Creates a pose relative to a frame"
-    _favorite="false"
-  >
+  <BehaviorTree ID="01 Solution - Create a Pose" _description="Creates a pose relative to a frame" _favorite="false">
     <Control ID="Sequence" name="TopLevelSequence">
-      <Action
-        ID="CreateStampedPose"
-        orientation_xyzw="0;0;0;1"
-        position_xyz="0;0;0"
-        reference_frame="grasp_link"
-      />
+      <Action ID="CreateStampedPose" orientation_xyzw="0;0;0;1" position_xyz="0;0;0" reference_frame="grasp_link"/>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="01 Solution - Create a Pose">
       <MetadataFields>
-        <Metadata subcategory="Application - Training Solution" />
-        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Training Solution"/>
+        <Metadata runnable="true"/>
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>

@@ -1,96 +1,29 @@
+<?xml version='1.0' encoding='utf-8'?>
 <root BTCPP_format="4" main_tree_to_execute="Multi-tip IK Example">
   <!--//////////-->
   <BehaviorTree ID="Multi-tip IK Example" _description="" _favorite="true">
     <Control ID="Sequence" name="TopLevelSequence">
       <!--Create the target poses into a vector-->
-      <Action
-        ID="CreateStampedPose"
-        reference_frame="world"
-        stamped_pose="{target}"
-        position_xyz="-0.6;0.5;0.2"
-        orientation_xyzw="0.7071068;-0.7071068;0;0"
-      />
-      <Action
-        ID="VisualizePose"
-        marker_lifetime="0.000000"
-        marker_name="target_pose_1"
-        marker_size="0.100000"
-        pose="{target}"
-      />
-      <Action
-        ID="TransformPose"
-        input_pose="{target}"
-        output_pose="{target_pose_1}"
-        quaternion_xyzw="0;0.7071068;0;0.7071068"
-        translation_xyz="-0.05;0;0"
-      />
-      <Action
-        ID="VisualizePose"
-        marker_lifetime="0.000000"
-        marker_name="target_pose_1"
-        marker_size="0.100000"
-        pose="{target_pose_1}"
-      />
-      <Action
-        ID="AddPoseStampedToVector"
-        input="{target_pose_1}"
-        vector="{target_poses}"
-      />
-      <Action
-        ID="TransformPose"
-        input_pose="{target}"
-        output_pose="{target_pose_2}"
-        quaternion_xyzw="0;0.7071068;0;-0.7071068"
-        translation_xyz="0.05;0;0"
-      />
-      <Action
-        ID="VisualizePose"
-        marker_lifetime="0.000000"
-        marker_name="target_pose_2"
-        marker_size="0.100000"
-        pose="{target_pose_2}"
-      />
-      <Action
-        ID="AddPoseStampedToVector"
-        input="{target_pose_2}"
-        vector="{target_poses}"
-      />
+      <Action ID="CreateStampedPose" reference_frame="world" stamped_pose="{target}" position_xyz="-0.6;0.5;0.2" orientation_xyzw="0.7071068;-0.7071068;0;0"/>
+      <Action ID="VisualizePose" marker_lifetime="0.000000" marker_name="target_pose_1" marker_size="0.100000" pose="{target}"/>
+      <Action ID="TransformPose" input_pose="{target}" output_pose="{target_pose_1}" quaternion_xyzw="0;0.7071068;0;0.7071068" translation_xyz="-0.05;0;0"/>
+      <Action ID="VisualizePose" marker_lifetime="0.000000" marker_name="target_pose_1" marker_size="0.100000" pose="{target_pose_1}"/>
+      <Action ID="AddPoseStampedToVector" input="{target_pose_1}" vector="{target_poses}"/>
+      <Action ID="TransformPose" input_pose="{target}" output_pose="{target_pose_2}" quaternion_xyzw="0;0.7071068;0;-0.7071068" translation_xyz="0.05;0;0"/>
+      <Action ID="VisualizePose" marker_lifetime="0.000000" marker_name="target_pose_2" marker_size="0.100000" pose="{target_pose_2}"/>
+      <Action ID="AddPoseStampedToVector" input="{target_pose_2}" vector="{target_poses}"/>
       <!--Compute IK simultaneously for two tips-->
-      <Action
-        ID="GetCurrentPlanningScene"
-        planning_scene_msg="{planning_scene}"
-      />
-      <Action
-        ID="ComputeInverseKinematics"
-        ik_timeout_s="0.01"
-        planning_group_name="multi_arm_manipulator"
-        planning_scene_msg="{planning_scene}"
-        target_poses="{target_poses}"
-        tip_links="fourth_grasp_link;third_grasp_link"
-        solution="{solution}"
-        link_padding="0.01"
-      />
+      <Action ID="GetCurrentPlanningScene" planning_scene_msg="{planning_scene}"/>
+      <Action ID="ComputeInverseKinematics" ik_timeout_s="0.01" planning_group_name="multi_arm_manipulator" planning_scene_msg="{planning_scene}" target_poses="{target_poses}" tip_links="fourth_grasp_link;third_grasp_link" solution="{solution}" link_padding="0.01"/>
       <!--Move to the computed solution-->
-      <SubTree
-        ID="Move to Joint State"
-        _collapsed="false"
-        acceleration_scale_factor="1.0"
-        controller_action_server="/multi_arm_joint_trajectory_controller/follow_joint_trajectory"
-        controller_names="/multi_arm_joint_trajectory_controller"
-        joint_group_name="multi_arm_manipulator"
-        keep_orientation="false"
-        keep_orientation_tolerance="0.05"
-        link_padding="0.00"
-        target_joint_state="{solution}"
-        velocity_scale_factor="1.0"
-      />
+      <SubTree ID="Move to Joint State" _collapsed="false" acceleration_scale_factor="1.0" controller_action_server="/multi_arm_joint_trajectory_controller/follow_joint_trajectory" controller_names="/multi_arm_joint_trajectory_controller" joint_group_name="multi_arm_manipulator" keep_orientation="false" keep_orientation_tolerance="0.05" link_padding="0.00" target_joint_state="{solution}" velocity_scale_factor="1.0"/>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Multi-tip IK Example">
       <MetadataFields>
-        <Metadata subcategory="Application - Advanced Examples" />
-        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Advanced Examples"/>
+        <Metadata runnable="true"/>
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>

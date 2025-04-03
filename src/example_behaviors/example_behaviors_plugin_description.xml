@@ -1,7 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version='1.0' encoding='utf-8'?>
 <library path="example_behaviors">
-  <class
-    type="example_behaviors::ExampleBehaviorsLoader"
-    base_class_type="moveit_studio::behaviors::SharedResourcesNodeLoaderBase"
-  />
+  <class type="example_behaviors::ExampleBehaviorsLoader" base_class_type="moveit_studio::behaviors::SharedResourcesNodeLoaderBase"/>
 </library>
