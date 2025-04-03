@@ -21,7 +21,7 @@ vacuum_gripper:
     default: true
     joint: suction_cup
     allow_stalling: true
-
+    stall_timeout: 0.01
 
 platform_velocity_controller:
   ros__parameters:
