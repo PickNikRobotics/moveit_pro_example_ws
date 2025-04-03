@@ -46,6 +46,7 @@
   <TreeNodesModel>
     <SubTree ID="Move 2m pose">
       <MetadataFields>
+        <Metadata subcategory="Motion - Mobile Base" />
         <Metadata runnable="true" />
       </MetadataFields>
     </SubTree>

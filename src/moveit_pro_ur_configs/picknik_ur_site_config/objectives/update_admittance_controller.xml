@@ -17,4 +17,11 @@
       </Decorator>
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Update Admittance Controller">
+      <MetadataFields>
+        <Metadata subcategory="Perception - Scene Constraints" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>
