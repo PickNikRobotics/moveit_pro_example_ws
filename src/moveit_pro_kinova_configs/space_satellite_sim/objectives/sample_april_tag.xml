@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Sample April Tag">
-  <!-- ////////// -->
+  <!--//////////-->
   <BehaviorTree
     ID="Sample April Tag"
     _description="Samples the pose of an AprilTag and returns the average measurement."
@@ -15,14 +15,14 @@
         />
         <Action
           ID="GetCameraInfo"
-          topic_name="/wrist_mounted_camera/color/camera_info"
+          topic_name="/wrist_camera/camera_info"
           message_out="{camera_info}"
         />
         <Decorator ID="RetryUntilSuccessful" num_attempts="5">
           <Control ID="Sequence">
             <Action
               ID="GetImage"
-              topic_name="/wrist_mounted_camera/color/image_raw"
+              topic_name="/wrist_camera/color"
               message_out="{image}"
             />
             <Action
@@ -35,9 +35,9 @@
             <Action
               ID="GetDetectionPose"
               detections="{detections}"
-              target_id="{tag_id}"
               target_label=""
               detection_pose="{detection_pose}"
+              target_id="{tag_id}"
             />
           </Control>
         </Decorator>
@@ -55,9 +55,9 @@
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Sample April Tag">
+      <input_port name="tag_id" default="-1" />
       <MetadataFields>
-        <Metadata subcategory="Perception - Machine Learning" />
-        <Metadata runnable="true" />
+        <Metadata subcategory="Perception - Image Processing" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>

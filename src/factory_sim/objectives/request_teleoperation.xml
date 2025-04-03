@@ -166,10 +166,6 @@
         <Metadata runnable="false" />
         <Metadata subcategory="User Input" />
       </MetadataFields>
-      <MetadataFields>
-        <Metadata runnable="false" />
-        <Metadata subcategory="User Input" />
-      </MetadataFields>
     </SubTree>
   </TreeNodesModel>
 </root>
