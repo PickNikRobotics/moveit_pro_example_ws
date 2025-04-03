@@ -1,4 +1,3 @@
-<?xml version='1.0' encoding='utf-8'?>
 <root BTCPP_format="4" main_tree_to_execute="Do L2G">
   <!--//////////-->
   <BehaviorTree ID="Do L2G" _description="Learn to Grasp" _favorite="true">
@@ -16,13 +15,20 @@
       <Action ID="SendPointCloudToUI" point_cloud="{point_cloud_fragment}" pcd_topic="/pcd_pointcloud_captures"/>
       <Action ID="PublishPointCloud" point_cloud="{point_cloud_fragment}" point_cloud_topic="/my_point_cloud"/>
       <Action ID="SwitchUIPrimaryView" primary_view_name="Visualization"/>
-      <Action ID="L2GBehavior" grasps="{grasps}" number_of_grasps_to_return="10" number_of_points_in_cloud="500" point_cloud="{point_cloud_fragment}" model_path="models/l2g.onnx" model_package="lab_sim"/>
+      <Action ID="GetGraspPoseFromPointCloud" grasps="{grasps}" number_of_grasps_to_return="10" point_cloud="{point_cloud_fragment}" model_package="lab_sim" model_path="models/l2g.onnx"/>
+      <Decorator ID="ForEach" index="{index}" out="{grasp}" vector_in="{grasps}">
+        <Decorator ID="Delay" delay_msec="2000">
+          <Action ID="VisualizeMesh" marker_lifetime="0.000000" mesh_path="gripper_token.dae" mesh_pose="{gripper}"/>
+        </Decorator>
+      </Decorator>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Do L2G"><MetadataFields>
+    <SubTree ID="Do L2G">
+      <MetadataFields>
         <Metadata runnable="true"/>
         <Metadata subcategory="Application - Advanced Examples"/>
-      </MetadataFields></SubTree>
+      </MetadataFields>
+    </SubTree>
   </TreeNodesModel>
 </root>
