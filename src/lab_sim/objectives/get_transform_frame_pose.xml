@@ -32,7 +32,7 @@
       <inout_port name="requested_pose" default="" />
       <MetadataFields>
         <Metadata subcategory="Pose Handling" />
-        <Metadata runnable="true" />
+        <Metadata runnable="false" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
