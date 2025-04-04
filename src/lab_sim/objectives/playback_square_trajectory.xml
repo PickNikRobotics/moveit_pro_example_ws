@@ -46,9 +46,6 @@
     <SubTree ID="Playback Square Trajectory">
       <MetadataFields>
         <Metadata runnable="true" />
-      </MetadataFields>
-      <MetadataFields>
-        <Metadata runnable="true" />
         <Metadata subcategory="Application - Basic Examples" />
       </MetadataFields>
     </SubTree>
