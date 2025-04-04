@@ -57,6 +57,7 @@
   <TreeNodesModel>
     <SubTree ID="Joint Diagnostic">
       <MetadataFields>
+        <Metadata subcategory="Application - Basic Examples" />
         <Metadata runnable="true" />
       </MetadataFields>
     </SubTree>

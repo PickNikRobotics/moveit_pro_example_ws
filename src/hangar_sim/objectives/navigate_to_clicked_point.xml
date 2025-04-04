@@ -2,7 +2,7 @@
   <!--//////////-->
   <BehaviorTree
     ID="Navigate to Clicked Point"
-    _description=""
+    _description="Navigate to a point clicked by the user in the UI"
     _favorite="true"
     _subtreeOnly="false"
   >

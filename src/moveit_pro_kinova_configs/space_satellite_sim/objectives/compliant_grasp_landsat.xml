@@ -1,0 +1,139 @@
+<root BTCPP_format="4" main_tree_to_execute="Compliant Grasp Landsat">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Compliant Grasp Landsat"
+    _description="Grasp RAFTI on the Landsat with the JTAC."
+    _favorite="true"
+    _hardcoded="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="ClearSnapshot" />
+      <SubTree ID="Open Gripper" _collapsed="true" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="View Tag"
+        joint_group_name="manipulator"
+        controller_names="/joint_trajectory_controller"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        velocity_scale_factor="1.0"
+      />
+      <SubTree ID="Take Snapshot" _collapsed="false" />
+      <SubTree
+        ID="Sample April Tag"
+        _collapsed="false"
+        num_samples="1"
+        apriltag_config="100mm_apriltag_detection_config.yaml"
+        max_distance="0.02"
+        max_rotation="0.2"
+        avg_pose="{tag_pose}"
+        tag_id="0"
+      />
+      <Control ID="Fallback">
+        <Decorator ID="Timeout" msec="100">
+          <Action
+            ID="PublishStaticFrame"
+            pose="{tag_pose}"
+            child_frame_id="tag_pose"
+            publish_rate="50"
+          />
+        </Decorator>
+        <Action ID="AlwaysSuccess" />
+      </Control>
+      <Action
+        ID="CreateStampedPose"
+        stamped_pose="{rafti_pose}"
+        orientation_xyzw="0.707107;-0.707107;0;0"
+        position_xyz="0.0;-0.2;0.2"
+        reference_frame="tag_pose"
+      />
+      <Action
+        ID="AddPoseStampedToVector"
+        input="{rafti_pose}"
+        vector="{pose_stamped_vector}"
+      />
+      <Action
+        ID="CreateStampedPose"
+        stamped_pose="{grasp_pose}"
+        orientation_xyzw="0.707107;-0.707107;0;0"
+        position_xyz="0;-0.2;0.06"
+        reference_frame="tag_pose"
+      />
+      <Action
+        ID="AddPoseStampedToVector"
+        input="{grasp_pose}"
+        vector="{pose_stamped_vector}"
+      />
+      <Action
+        ID="TransformPoseFrame"
+        input_pose="{rafti_pose}"
+        output_pose="{rafti_pose_world}"
+        target_frame_id="world"
+      />
+      <Control ID="Fallback">
+        <Decorator ID="Timeout" msec="100">
+          <Action
+            ID="PublishStaticFrame"
+            pose="{rafti_pose_world}"
+            child_frame_id="rafti_pose"
+            publish_rate="50"
+          />
+        </Decorator>
+        <Action ID="AlwaysSuccess" />
+      </Control>
+      <Control ID="Fallback">
+        <Action
+          ID="PlanCartesianPath"
+          blending_radius="0.020000"
+          position_only="false"
+          acceleration_scale_factor="1.000000"
+          debug_solution="{debug_solution}"
+          ik_cartesian_space_density="0.010000"
+          ik_joint_space_density="0.100000"
+          joint_trajectory_msg="{joint_trajectory_msg}"
+          path="{pose_stamped_vector}"
+          planning_group_name="manipulator"
+          tip_link="grasp_link"
+          trajectory_sampling_rate="100"
+          velocity_scale_factor="1.000000"
+        />
+        <Action
+          ID="WaitForUserTrajectoryApproval"
+          solution="{debug_solution}"
+        />
+      </Control>
+      <Action ID="WaitForUserTrajectoryApproval" solution="{debug_solution}" />
+      <SubTree ID="Re-Zero Force-Torque Sensors" _collapsed="true" />
+      <Action
+        ID="ActivateControllers"
+        controller_names="joint_trajectory_admittance_controller"
+      />
+      <Action
+        ID="SetAdmittanceParameters"
+        config_file_name="jtac_parameters.yaml"
+        admittance_parameters_msg="{admittance_parameters_msg}"
+      />
+      <Action
+        ID="ExecuteTrajectoryWithAdmittance"
+        path_position_tolerance="2.0"
+        goal_position_tolerance="0.1000"
+        controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+        absolute_force_torque_threshold="45;45;45;10;10;10"
+        admittance_parameters_msg="{admittance_parameters_msg}"
+        goal_duration_tolerance="-1.000000"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+      />
+      <SubTree ID="Close Gripper" _collapsed="true" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Compliant Grasp Landsat">
+      <MetadataFields>
+        <Metadata subcategory="Application - Advanced Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
