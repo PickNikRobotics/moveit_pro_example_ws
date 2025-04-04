@@ -41,6 +41,10 @@
     </Decorator>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Cycle Between Poses" />
+    <SubTree ID="Cycle Between Poses">
+      <MetadataFields>
+        <Metadata subcategory="Motion - Execute" />
+      </MetadataFields>
+    </SubTree>
   </TreeNodesModel>
 </root>
