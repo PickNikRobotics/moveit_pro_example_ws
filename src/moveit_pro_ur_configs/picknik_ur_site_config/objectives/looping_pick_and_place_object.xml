@@ -27,7 +27,7 @@
       <Action
         ID="MoveGripperAction"
         gripper_command_action_name="/robotiq_gripper_controller/gripper_cmd"
-        position="0.0"
+        position="0.05"
       />
       <SubTree
         ID="Move to Waypoint"
@@ -167,7 +167,7 @@
                 <Action
                   ID="MoveGripperAction"
                   gripper_command_action_name="/robotiq_gripper_controller/gripper_cmd"
-                  position="0.0"
+                  position="0.05"
                 />
 
                 <!-- Finally, return home. -->
@@ -200,4 +200,12 @@
       </Decorator>
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Looping Pick and Place Object">
+      <MetadataFields>
+        <Metadata subcategory="Application - Basic Examples" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>

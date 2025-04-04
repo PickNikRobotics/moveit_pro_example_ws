@@ -6,8 +6,15 @@
       <Action
         ID="MoveGripperAction"
         gripper_command_action_name="/first_robotiq_gripper_controller/gripper_cmd"
-        position="0.0"
+        position="0.05"
       />
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Open First Gripper">
+      <MetadataFields>
+        <Metadata subcategory="User Input" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>

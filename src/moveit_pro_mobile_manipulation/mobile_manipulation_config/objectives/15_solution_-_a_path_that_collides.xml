@@ -26,4 +26,12 @@
       <Action ID="WaitForUserTrajectoryApproval" solution="{debug_solution}" />
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="15 Solution - A path that collides">
+      <MetadataFields>
+        <Metadata subcategory="Application - Training Solution" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>
