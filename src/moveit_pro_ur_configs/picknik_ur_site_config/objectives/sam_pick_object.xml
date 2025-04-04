@@ -22,7 +22,7 @@
       <Action
         ID="MoveGripperAction"
         gripper_command_action_name="/robotiq_gripper_controller/gripper_cmd"
-        position="0.0"
+        position="0.05"
       />
       <!--Get the point cloud from the wrist camera-->
       <Action
@@ -146,4 +146,12 @@
       </Decorator>
     </Control>
   </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="SAM Pick Object">
+      <MetadataFields>
+        <Metadata subcategory="Perception - Machine Learning" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
 </root>

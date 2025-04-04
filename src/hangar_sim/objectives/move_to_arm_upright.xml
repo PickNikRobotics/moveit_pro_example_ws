@@ -3,7 +3,7 @@
   <!--//////////-->
   <BehaviorTree
     ID="Move to Arm Upright"
-    _description=""
+    _description="Move the arm to an upright position"
     _favorite="false"
     _subtreeOnly="false"
   >

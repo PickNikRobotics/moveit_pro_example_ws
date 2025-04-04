@@ -93,6 +93,7 @@
     <SubTree ID="Follow Path">
       <MetadataFields>
         <Metadata runnable="true" />
+        <Metadata subcategory="Motion - Mobile Base" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>

@@ -7,3 +7,6 @@
 [submodule "src/external_dependencies/clearpath_mecanum_drive_controller"]
 	path = src/external_dependencies/clearpath_mecanum_drive_controller
 	url = https://github.com/PickNikRobotics/clearpath_mecanum_drive_controller.git
+[submodule "src/external_dependencies/fanuc"]
+	path = src/external_dependencies/fanuc
+	url = https://github.com/PickNikRobotics/fanuc.git

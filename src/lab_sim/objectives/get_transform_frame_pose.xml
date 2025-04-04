@@ -31,6 +31,7 @@
       <inout_port name="requested_frame" default="" />
       <inout_port name="requested_pose" default="" />
       <MetadataFields>
+        <Metadata subcategory="Pose Handling" />
         <Metadata runnable="true" />
       </MetadataFields>
     </SubTree>
