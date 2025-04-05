@@ -1,9 +1,7 @@
-<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Move to Pose">
   <BehaviorTree
     ID="Move to Pose"
     _description="Plan and execute motion to a Cartesian coordinate pose in a ROS message type, using inverse kinematics."
-    _subtreeOnly="true"
   >
     <Control ID="Sequence">
       <Action
@@ -11,14 +9,28 @@
         task_id="move_to_pose"
         controller_names="/joint_trajectory_controller"
         task="{move_to_pose_task}"
+        trajectory_monitoring="false"
       />
-      <Action ID="SetupMTCCurrentState" task="{move_to_pose_task}" />
+      <Action
+        ID="SetupMTCCurrentState"
+        task="{move_to_pose_task}"
+        skip_collision_check="false"
+      />
       <Action
         ID="SetupMTCPlanToPose"
         ik_frame="tool0"
         planning_group_name="manipulator"
         target_pose="{target_pose}"
         task="{move_to_pose_task}"
+        acceleration_scale_factor="1.000000"
+        keep_orientation="false"
+        keep_orientation_link_names="tool0"
+        keep_orientation_tolerance="0.100000"
+        link_padding="0.000000"
+        max_iterations="5000"
+        monitored_stage="current state"
+        trajectory_sampling_rate="100"
+        velocity_scale_factor="1.000000"
       />
       <Action
         ID="PlanMTCTask"
@@ -29,16 +41,20 @@
         ID="Wait for Trajectory Approval if User Available"
         solution="{move_to_pose_solution}"
       />
-      <Action ID="ExecuteMTCTask" solution="{move_to_pose_solution}" />
+      <Action
+        ID="ExecuteMTCTask"
+        solution="{move_to_pose_solution}"
+        goal_duration_tolerance="-1.000000"
+      />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Move to Pose">
-      <input_port name="target_pose" default="{target_pose}" />
       <MetadataFields>
         <Metadata runnable="false" />
         <Metadata subcategory="Motion - Execute" />
       </MetadataFields>
+      <input_port name="target_pose" default="{target_pose}" />
     </SubTree>
   </TreeNodesModel>
 </root>
