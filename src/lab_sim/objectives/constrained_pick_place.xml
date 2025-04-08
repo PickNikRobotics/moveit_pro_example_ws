@@ -5,7 +5,6 @@
     ID="Move Beakers to Burners"
     _description="Example of picking and placing objects with orientation constraints enforced on the arm's motion"
     _favorite="true"
-    _subtreeOnly="false"
   >
     <Control ID="Sequence">
       <SubTree

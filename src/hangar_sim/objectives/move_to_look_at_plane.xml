@@ -5,7 +5,6 @@
     ID="Move to Look at Plane"
     _description="Move the base an arm close to the plane"
     _favorite="false"
-    _subtreeOnly="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree

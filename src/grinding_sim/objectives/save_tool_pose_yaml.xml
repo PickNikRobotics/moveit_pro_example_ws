@@ -1,12 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Save Tool Pose Yaml">
   <!--//////////-->
-  <BehaviorTree
-    ID="Save Tool Pose Yaml"
-    _description=""
-    _favorite="false"
-    _subtreeOnly="false"
-  >
+  <BehaviorTree ID="Save Tool Pose Yaml" _description="" _favorite="false">
     <Control ID="Sequence" name="TopLevelSequence">
       <!-- Create a pose at the tool_tip by creating in the tool_tip frame without transforming it -->
       <Action
