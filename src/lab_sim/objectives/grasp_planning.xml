@@ -5,7 +5,6 @@
     ID="Grasp Planning"
     _description="Find a feasible grasp pose out of a set of manually-defined grasp candidates, and move there"
     _favorite="false"
-    _subtreeOnly="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree ID="Clear Snapshot" _collapsed="true" />

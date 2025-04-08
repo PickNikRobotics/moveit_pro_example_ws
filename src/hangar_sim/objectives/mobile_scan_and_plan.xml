@@ -5,7 +5,6 @@
     ID="Mobile Scan and Plan"
     _description="An example of computing and executing a coverage path for spraying the plane"
     _favorite="false"
-    _subtreeOnly="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree

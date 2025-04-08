@@ -5,7 +5,6 @@
     ID="Solution - Draw Picknik"
     _description="Training example that shows how to load a Cartesian path from a file and execute the path"
     _favorite="false"
-    _subtreeOnly="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action

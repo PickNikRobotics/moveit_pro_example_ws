@@ -4,7 +4,6 @@
     ID="Playback Square Trajectory"
     _description="Loads and plays a JointTrajectory of the end-effector moving in a square trajectory."
     _favorite="true"
-    _subtreeOnly="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action

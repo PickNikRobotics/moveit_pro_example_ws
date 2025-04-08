@@ -5,7 +5,6 @@
     ID="Record and Replay Scanning Motion"
     _description="Build a trajectory from a series of waypoints and MTC tasks to scan the environment, then save the trajectory to disk. If the trajectory is approved, it will be saved and then executed."
     _favorite="false"
-    _subtreeOnly="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <!--First we build the trajectory using caresian and joint-state waypoint. If the trajecotry is approved, it will be saved.-->

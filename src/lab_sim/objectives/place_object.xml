@@ -5,7 +5,6 @@
     ID="Place Object"
     _description="Place an object in the gripper at a manually specified location"
     _favorite="false"
-    _subtreeOnly="false"
   >
     <Control ID="Sequence" name="root">
       <Control ID="Sequence">

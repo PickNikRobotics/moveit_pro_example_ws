@@ -4,7 +4,6 @@
     ID="Pick up Cube"
     _description="Pick up a cube from a manually defined location"
     _favorite="false"
-    _subtreeOnly="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree ID="Clear Snapshot" _collapsed="true" />
