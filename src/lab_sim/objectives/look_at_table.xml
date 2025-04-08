@@ -4,7 +4,6 @@
     ID="Look at table"
     _description="Move the arm to a position that faces the table surface"
     _favorite="false"
-    _subtreeOnly="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree
