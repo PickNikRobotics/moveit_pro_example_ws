@@ -28,7 +28,7 @@ hardware:
       - dof: "7"
       - mujoco_keyframe: "default"
       - mujoco_model: "description/mujoco/scene.xml"
-      - mujoco_viewer: "false"
+      - mujoco_viewer: "true"
 
 # Configuration for launching ros2_control processes.
 # [Required, if using ros2_control]
