@@ -4,7 +4,6 @@
     ID="Pick from Pose"
     _description="Takes a grasp pose as input and picks up the object at that pose"
     _favorite="false"
-    _subtreeOnly="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action

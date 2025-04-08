@@ -4,7 +4,6 @@
   <BehaviorTree
     ID="Retract"
     _description="Move back a distance in the tool frame"
-    _subtreeOnly="true"
     distance="0.1"
   >
     <Control ID="Sequence" name="TopLevelSequence">
