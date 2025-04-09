@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Pick Up Tool from Holder">
   <!--//////////-->
   <BehaviorTree
@@ -87,7 +88,7 @@
     <SubTree ID="Pick Up Tool from Holder">
       <MetadataFields>
         <Metadata subcategory="Grasping" />
-        <Metadata runnable="true" />
+        <Metadata runnable="false" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
