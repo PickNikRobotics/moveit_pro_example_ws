@@ -58,6 +58,7 @@
       <input_port name="tag_id" default="-1" />
       <MetadataFields>
         <Metadata subcategory="Perception - Image Processing" />
+        <Metadata runnable="false" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
