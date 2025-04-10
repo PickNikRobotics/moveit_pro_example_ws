@@ -47,6 +47,10 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
       /home/${USERNAME}/.ros && \
     chown -R $USER_UID:$USER_GID /home/${USERNAME} /opt/overlay_ws/
 
+# Add user to dialout group to enable communication with serial USB devices (gripper, FTS, ...)
+# Add user to video group to enable communication with cameras
+RUN usermod -aG dialout,video ${USERNAME}
+
 # Install additional dependencies
 # You can also add any necessary apt-get install, pip install, etc. commands at this point.
 # NOTE: The /opt/overlay_ws folder contains MoveIt Pro binary packages and the source file.
