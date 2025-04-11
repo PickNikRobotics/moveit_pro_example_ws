@@ -14,7 +14,7 @@
         ID="Move to Waypoint"
         waypoint_name="Look at Machine"
         joint_group_name="manipulator"
-        controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
+        controller_names="/joint_trajectory_controller;/robotiq_gripper_controller"
       />
       <Action
         ID="MoveGripperAction"
@@ -30,7 +30,7 @@
               ID="Move to Waypoint"
               waypoint_name="Grasp Left"
               joint_group_name="manipulator"
-              controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
+              controller_names="/joint_trajectory_controller;/robotiq_gripper_controller"
             />
             <Action
               ID="MoveGripperAction"
@@ -41,13 +41,13 @@
               ID="Move to Waypoint"
               waypoint_name="Look at Machine"
               joint_group_name="manipulator"
-              controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
+              controller_names="/joint_trajectory_controller;/robotiq_gripper_controller"
             />
             <SubTree
               ID="Move to Waypoint"
               waypoint_name="Grasp Machine"
               joint_group_name="manipulator"
-              controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
+              controller_names="/joint_trajectory_controller;/robotiq_gripper_controller"
             />
             <Action
               ID="MoveGripperAction"
@@ -58,7 +58,7 @@
               ID="Move to Waypoint"
               waypoint_name="Look at Machine"
               joint_group_name="manipulator"
-              controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
+              controller_names="/joint_trajectory_controller;/robotiq_gripper_controller"
             />
           </Control>
           <!--Pick object from the CNC machine, put it down on the right, and go back to center pose-->
@@ -67,7 +67,7 @@
               ID="Move to Waypoint"
               waypoint_name="Grasp Machine"
               joint_group_name="manipulator"
-              controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
+              controller_names="/joint_trajectory_controller;/robotiq_gripper_controller"
             />
             <Action
               ID="MoveGripperAction"
@@ -78,13 +78,13 @@
               ID="Move to Waypoint"
               waypoint_name="Look at Machine"
               joint_group_name="manipulator"
-              controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
+              controller_names="/joint_trajectory_controller;/robotiq_gripper_controller"
             />
             <SubTree
               ID="Move to Waypoint"
               waypoint_name="Grasp Left"
               joint_group_name="manipulator"
-              controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
+              controller_names="/joint_trajectory_controller;/robotiq_gripper_controller"
             />
             <Action
               ID="MoveGripperAction"
@@ -95,7 +95,7 @@
               ID="Move to Waypoint"
               waypoint_name="Look at Machine"
               joint_group_name="manipulator"
-              controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
+              controller_names="/joint_trajectory_controller;/robotiq_gripper_controller"
             />
           </Control>
         </Control>
