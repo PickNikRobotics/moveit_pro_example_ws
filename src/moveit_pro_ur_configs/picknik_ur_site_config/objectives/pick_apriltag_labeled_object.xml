@@ -13,7 +13,7 @@
           ID="Move to Waypoint"
           waypoint_name="Look at April Tag"
           joint_group_name="manipulator"
-          controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
+          controller_names="/joint_trajectory_controller;/robotiq_gripper_controller"
         />
       </Control>
       <SubTree
