@@ -33,7 +33,7 @@
         ID="Move to Waypoint"
         waypoint_name="Look at Pick and Place Zone"
         joint_group_name="manipulator"
-        controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
+        controller_names="/joint_trajectory_controller;/robotiq_gripper_controller"
       />
 
       <!-- This loops forever because the behavior tree under this decorator never returns FAILURE. -->
@@ -154,7 +154,7 @@
                   ID="Move to Waypoint"
                   waypoint_name="Look at Pick and Place Zone"
                   joint_group_name="manipulator"
-                  controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
+                  controller_names="/joint_trajectory_controller;/robotiq_gripper_controller"
                 />
 
                 <!-- Move to the current place waypoint set by IterateThroughPlaceWaypoints, then open the gripper. -->
@@ -162,7 +162,7 @@
                   ID="Move to Waypoint"
                   waypoint_name="{place_waypoint}"
                   joint_group_name="manipulator"
-                  controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
+                  controller_names="/joint_trajectory_controller;/robotiq_gripper_controller"
                 />
                 <Action
                   ID="MoveGripperAction"
@@ -175,7 +175,7 @@
                   ID="Move to Waypoint"
                   waypoint_name="Look at Pick and Place Zone"
                   joint_group_name="manipulator"
-                  controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
+                  controller_names="/joint_trajectory_controller;/robotiq_gripper_controller"
                 />
               </Control>
             </Decorator>
@@ -191,7 +191,7 @@
               ID="Move to Waypoint"
               waypoint_name="Look at Pick and Place Zone"
               joint_group_name="manipulator"
-              controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
+              controller_names="/joint_trajectory_controller;/robotiq_gripper_controller"
             />
             <Action ID="WaitForDuration" delay_duration="5" />
             <Action ID="AlwaysSuccess" />
