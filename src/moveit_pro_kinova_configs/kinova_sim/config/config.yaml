@@ -82,9 +82,6 @@ moveit_params:
   stomp_planning:
     package: "kinova_sim"
     path: "config/moveit/stomp_planning.yaml"
-  pilz_planning:
-    package: "kinova_sim"
-    path: "config/moveit/pilz_industrial_motion_planner_planning.yaml"
   kinematics:
     package: "kinova_sim"
     path: "config/moveit/pose_ik_distance.yaml"
@@ -103,9 +100,6 @@ moveit_params:
   servo_joint_limits:
     package: "kinova_sim"
     path: "config/moveit/servo_joint_limits.yaml"
-  pilz_cartesian_limits:
-    package: "kinova_sim"
-    path: "config/moveit/pilz_cartesian_limits.yaml"
 
   publish:
     planning_scene: True
@@ -138,8 +132,6 @@ ros2_control:
   controllers_inactive_at_startup:
     - "joint_trajectory_controller"
     - "joint_trajectory_admittance_controller"
-    - "admittance_controller_open_door"
-    - "joint_trajectory_controller_chained_open_door"
     - "velocity_force_controller"
   # Any controllers here will not be spawned by MoveIt Pro.
   # [Optional, default=[]]
