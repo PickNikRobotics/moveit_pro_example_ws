@@ -23,11 +23,7 @@
           controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
           task="{mtc_pick_task}"
         />
-        <Action
-          ID="SetupMTCCurrentState"
-          task="{mtc_pick_task}"
-          skip_collision_check="false"
-        />
+        <Action ID="SetupMTCCurrentState" task="{mtc_pick_task}" />
         <!--The following behavior can be found in the example_behaviors package.-->
         <Action
           ID="SetupMtcPickFromPose"
@@ -52,11 +48,7 @@
           controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
           task="{mtc_place_task}"
         />
-        <Action
-          ID="SetupMTCCurrentState"
-          task="{mtc_place_task}"
-          skip_collision_check="false"
-        />
+        <Action ID="SetupMTCCurrentState" task="{mtc_place_task}" />
         <Action
           ID="CreateStampedPose"
           reference_frame="world"
