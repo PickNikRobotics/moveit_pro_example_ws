@@ -18,11 +18,7 @@
         task="{mtc_task}"
         task_id="pick_object"
       />
-      <Action
-        ID="SetupMTCCurrentState"
-        skip_collision_check="false"
-        task="{mtc_task}"
-      />
+      <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
       <Action
         ID="SetupMTCPickObject"
         grasp_pose="{grasp_pose}"

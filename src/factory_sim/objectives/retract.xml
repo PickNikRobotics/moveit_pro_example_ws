@@ -14,11 +14,7 @@
         task_id="retract"
         task="{mtc_task}"
       />
-      <Action
-        ID="SetupMTCCurrentState"
-        skip_collision_check="true"
-        task="{mtc_task}"
-      />
+      <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
       <Action
         ID="SetupMTCMoveAlongFrameAxis"
         axis_frame="tool0"

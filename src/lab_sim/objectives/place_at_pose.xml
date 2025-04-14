@@ -17,11 +17,7 @@
         controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
         task="{place_object_task}"
       />
-      <Action
-        ID="SetupMTCCurrentState"
-        task="{place_object_task}"
-        skip_collision_check="false"
-      />
+      <Action ID="SetupMTCCurrentState" task="{place_object_task}" />
       <Action
         ID="SetupMTCPickObject"
         grasp_pose="{grasp_pose}"
