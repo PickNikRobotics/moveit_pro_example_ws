@@ -110,6 +110,14 @@
                       ID="Move to Joint State"
                       _collapsed="false"
                       target_joint_state="{target_joint_state}"
+                      acceleration_scale_factor="1.0"
+                      controller_action_server="/multi_arm_joint_trajectory_controller/follow_joint_trajectory"
+                      controller_names="joint_trajectory_controller"
+                      joint_group_name="manipulator"
+                      keep_orientation="false"
+                      keep_orientation_tolerance="0.05"
+                      link_padding="0.01"
+                      velocity_scale_factor="1.0"
                     />
                     <Action
                       ID="PublishEmpty"
@@ -134,7 +142,7 @@
             <Control ID="Sequence" _while="teleop_mode == 2">
               <Action
                 ID="ActivateControllers"
-                controller_names="first_velocity_force_controller second_velocity_force_controller"
+                controller_names="{controllers}"
               />
               <Action
                 ID="PoseJog"
