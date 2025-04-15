@@ -106,15 +106,15 @@ moveit_params:
   sensors_3d:
     package: "picknik_ur_base_config"
     path: "config/moveit/sensors_3d.yaml"
-  servo_kinematics:
-    package: "picknik_ur_base_config"
-    path: "config/moveit/pose_ik_speed.yaml"
   joint_limits:
     package: "picknik_ur_base_config"
     path: "config/moveit/joint_limits.yaml"
   servo_joint_limits:
     package: "picknik_ur_base_config"
     path: "config/moveit/hard_joint_limits.yaml"
+  pose_jog:
+    package: "picknik_ur_base_config"
+    path: "config/moveit/pose_jog.yaml"
 
   publish:
     planning_scene: True
