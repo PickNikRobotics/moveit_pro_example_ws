@@ -185,7 +185,7 @@
       <Action
         ID="InitializeMTCTask"
         task_id=""
-        controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
+        controller_names="/joint_trajectory_controller;/robotiq_gripper_controller"
         task="{mtc_task}"
       />
       <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
@@ -202,7 +202,7 @@
       <Action
         ID="InitializeMTCTask"
         task_id=""
-        controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
+        controller_names="/joint_trajectory_controller;/robotiq_gripper_controller"
         task="{mtc_task}"
       />
       <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
