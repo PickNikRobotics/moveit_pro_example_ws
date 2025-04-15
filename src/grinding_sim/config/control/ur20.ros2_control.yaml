@@ -7,6 +7,8 @@ controller_manager:
       type: joint_trajectory_controller/JointTrajectoryController
     servo_controller:
       type: joint_trajectory_controller/JointTrajectoryController
+    velocity_force_controller:
+      type: velocity_force_controller/VelocityForceController
 
 
 joint_state_broadcaster:
@@ -118,3 +120,59 @@ servo_controller:
       wrist_1_joint: 10.0
       wrist_2_joint: 10.0
       wrist_3_joint: 10.0
+
+velocity_force_controller:
+  ros__parameters:
+    # Joints that the controller will control.
+    joints:
+      - shoulder_pan_joint
+      - shoulder_lift_joint
+      - elbow_joint
+      - wrist_1_joint
+      - wrist_2_joint
+      - wrist_3_joint
+    # Base frame of the kinematic chain, for computation of arm kinematics.
+    base_frame: base_link
+    # The tip link of the kinematic chain, i.e. the frame that will be controlled.
+    ee_frame: tool_tip
+    sensor_frame: tool_tip
+    # Maximum joint-space velocities.
+    max_joint_velocity:
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+    # Maximum joint-space accelerations.
+    max_joint_acceleration:
+      - 2.0
+      - 2.0
+      - 2.0
+      - 2.0
+      - 2.0
+      - 2.0
+    # Maximum Cartesian-space velocities.
+    max_cartesian_velocity:
+      - 0.25
+      - 0.25
+      - 0.25
+      - 1.0
+      - 1.0
+      - 1.0
+    # Maximum Cartesian-space accelerations.
+    max_cartesian_acceleration:
+      - 2.0
+      - 2.0
+      - 2.0
+      - 4.0
+      - 4.0
+      - 4.0
+    # Rate in Hz at which the controller will publish the state.
+    state_publish_rate: 10
+    # Damping coefficient for the Jacobian damped least-squares inverse.
+    jacobian_damping: 0.005
+    # Timeout in seconds after which the controller will stop motion if no new commands are received.
+    command_timeout: 0.2
+    # Padding (in radians) to add to joint position limits as a safety margin.
+    joint_limit_position_tolerance: 0.02
