@@ -118,7 +118,7 @@
                   blending_radius="0.020000"
                   position_only="false"
                   joint_trajectory_msg="{joint_trajectory_msg}"
-                  tip_link="{tip_link}"
+                  tip_links="{tip_link}"
                   planning_group_name="{planning_group_name}"
                   path="{plan_pose}"
                   tip_offset="{tip_offset}"

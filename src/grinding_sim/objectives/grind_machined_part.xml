@@ -86,7 +86,7 @@
         path="{grinding_poses}"
         planning_group_name="manipulator"
         position_only="false"
-        tip_link="tool_tip"
+        tip_links="tool_tip"
         trajectory_sampling_rate="100"
         velocity_scale_factor="0.01"
         debug_solution="{debug_solution}"

@@ -69,7 +69,7 @@
             ID="PlanCartesianPath"
             path="{pose_stamped_vector}"
             planning_group_name="manipulator"
-            tip_link="end_effector_link"
+            tip_links="end_effector_link"
             tip_offset="0.0;0.0;0.0;0.0;0.0;0.0"
             position_only="false"
             blending_radius="0.001"
