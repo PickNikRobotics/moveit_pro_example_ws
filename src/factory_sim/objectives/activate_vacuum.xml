@@ -1,5 +1,5 @@
 <root BTCPP_format="4" main_tree_to_execute="Activate Vacuum">
-  <BehaviorTree ID="Activate Vacuum" _description="Activate the vacuum gripper">
+  <BehaviorTree ID="Activate Vacuum">
     <Control ID="Sequence" name="root">
       <Action
         ID="MoveGripperAction"
@@ -12,6 +12,7 @@
   <TreeNodesModel>
     <SubTree ID="Activate Vacuum">
       <MetadataFields>
+        <Metadata description="Activate the vacuum gripper" />
         <Metadata subcategory="Grasping" />
       </MetadataFields>
     </SubTree>

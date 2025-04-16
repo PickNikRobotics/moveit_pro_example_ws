@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Move to Pose">
-  <BehaviorTree
-    ID="Move to Pose"
-    _description="Plan and execute motion to a Cartesian coordinate pose in a ROS message type, using inverse kinematics."
-    _subtreeOnly="true"
-  >
+  <BehaviorTree ID="Move to Pose">
     <Control ID="Sequence">
       <Action
         ID="InitializeMTCTask"
@@ -37,6 +33,9 @@
       <input_port name="target_pose" default="{target_pose}" />
       <MetadataFields>
         <Metadata runnable="false" />
+        <Metadata
+          description="Plan and execute motion to a Cartesian coordinate pose in a ROS message type, using inverse kinematics."
+        />
         <Metadata subcategory="Motion - Execute" />
       </MetadataFields>
     </SubTree>

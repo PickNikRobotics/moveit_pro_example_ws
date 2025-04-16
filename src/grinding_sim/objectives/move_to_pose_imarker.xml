@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Move to Pose iMarker">
-  <BehaviorTree
-    ID="Move to Pose iMarker"
-    _description="Uses inverse kinematics to move the robot to a set gripper position"
-    _subtreeOnly="true"
-  >
+  <BehaviorTree ID="Move to Pose iMarker">
     <Control ID="Sequence">
       <Action
         ID="InitializeMTCTask"
@@ -52,6 +48,9 @@
     <SubTree ID="Move to Pose iMarker">
       <input_port name="target_pose" default="{target_pose}" />
       <MetadataFields>
+        <Metadata
+          description="Uses inverse kinematics to move the robot to a set gripper position"
+        />
         <Metadata subcategory="Motion - Execute" />
       </MetadataFields>
     </SubTree>

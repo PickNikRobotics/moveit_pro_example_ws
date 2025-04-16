@@ -4,12 +4,7 @@
   main_tree_to_execute="Segment Image from Text Prompt Subtree"
 >
   <!--//////////-->
-  <BehaviorTree
-    ID="Segment Image from Text Prompt Subtree"
-    _subtreeOnly="true"
-    _description="Run text based segmentation and visualize the masks."
-    _favorite="true"
-  >
+  <BehaviorTree ID="Segment Image from Text Prompt Subtree" _favorite="true">
     <Control ID="Sequence">
       <Action
         ID="GetImage"

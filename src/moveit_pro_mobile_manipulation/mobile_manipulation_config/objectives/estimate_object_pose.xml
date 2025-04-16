@@ -1,13 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Estimate Object Pose">
   <!--//////////-->
-  <BehaviorTree
-    ID="Estimate Object Pose"
-    _description="Estimate an object pose from a reference mesh file using ICP on live point cloud data."
-    _favorite="false"
-    _hardcoded="false"
-    _subtreeOnly="true"
-  >
+  <BehaviorTree ID="Estimate Object Pose" _favorite="false" _hardcoded="false">
     <Control ID="Sequence">
       <Action
         ID="LoadPointCloudFromFile"

@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Take Wrist Camera Image">
   <!--//////////-->
-  <BehaviorTree
-    ID="Take Wrist Camera Image"
-    _subtreeOnly="true"
-    _description="Loads wrist camera parameters and records color image."
-  >
+  <BehaviorTree ID="Take Wrist Camera Image">
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
         ID="LoadObjectiveParameters"

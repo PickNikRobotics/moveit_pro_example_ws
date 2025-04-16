@@ -1,11 +1,6 @@
 <root BTCPP_format="4" main_tree_to_execute="Add Poses to MTC Task">
   <!--//////////-->
-  <BehaviorTree
-    ID="Add Poses to MTC Task"
-    _description="Initializes a new MTC task with the current state and adds a sequence of target poses."
-    _favorite="false"
-    _subtreeOnly="true"
-  >
+  <BehaviorTree ID="Add Poses to MTC Task" _favorite="false">
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
         ID="InitializeMTCTask"

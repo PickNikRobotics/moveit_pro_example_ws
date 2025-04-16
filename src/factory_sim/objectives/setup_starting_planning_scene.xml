@@ -1,10 +1,6 @@
 <root BTCPP_format="4" main_tree_to_execute="Setup Initial Planning Scene">
   <!--//////////-->
-  <BehaviorTree
-    ID="Setup Initial Planning Scene"
-    _description="Sets the tool at its initial pose in the Planning Scene"
-    _favorite="true"
-  >
+  <BehaviorTree ID="Setup Initial Planning Scene">
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
         ID="CreateStampedPose"
@@ -23,6 +19,9 @@
   <TreeNodesModel>
     <SubTree ID="Setup Initial Planning Scene">
       <MetadataFields>
+        <Metadata
+          description="Sets the tool at its initial pose in the Planning Scene"
+        />
         <Metadata subcategory="Motion - Planning" />
       </MetadataFields>
     </SubTree>

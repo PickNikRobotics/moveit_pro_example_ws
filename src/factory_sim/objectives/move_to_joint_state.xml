@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Move to Joint State">
-  <BehaviorTree
-    ID="Move to Joint State"
-    _description="Move to a specified joint state"
-    _subtreeOnly="true"
-  >
+  <BehaviorTree ID="Move to Joint State">
     <Control ID="Sequence">
       <Action ID="ActivateControllers" controller_names="{controller_names}" />
       <Action
@@ -42,6 +38,7 @@
       />
       <MetadataFields>
         <Metadata runnable="false" />
+        <Metadata description="Move to a specified joint state" />
         <Metadata subcategory="Motion - Execute" />
       </MetadataFields>
     </SubTree>

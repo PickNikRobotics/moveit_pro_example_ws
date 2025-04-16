@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Place Tool in Tool Holder">
   <!--//////////-->
-  <BehaviorTree
-    ID="Place Tool in Tool Holder"
-    _description="Puts the tool back in the tool holder"
-  >
+  <BehaviorTree ID="Place Tool in Tool Holder">
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
         ID="CreateStampedPose"
@@ -80,6 +77,7 @@
   <TreeNodesModel>
     <SubTree ID="Place Tool in Tool Holder">
       <MetadataFields>
+        <Metadata description="Puts the tool back in the tool holder" />
         <Metadata runnable="true" />
         <Metadata subcategory="Grasping" />
       </MetadataFields>

@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Move to a StampedPose">
-  <BehaviorTree
-    ID="Move to a StampedPose"
-    _description="Uses inverse kinematics to move the robot tip to a given pose"
-    _subtreeOnly="true"
-  >
+  <BehaviorTree ID="Move to a StampedPose">
     <Control ID="Fallback" name="root">
       <Control ID="Sequence">
         <Action
@@ -57,6 +53,9 @@
       />
       <input_port name="target_pose" default="{stamped_pose}" />
       <MetadataFields>
+        <Metadata
+          description="Uses inverse kinematics to move the robot tip to a given pose"
+        />
         <Metadata subcategory="Motion - Execute" />
       </MetadataFields>
     </SubTree>

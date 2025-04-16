@@ -1,10 +1,6 @@
 <root BTCPP_format="4" main_tree_to_execute="Clear Previous Obstacles">
   <!-- ////////// -->
-  <BehaviorTree
-    ID="Clear Previous Obstacles"
-    _subtreeOnly="true"
-    _description="Clear previous scene obstacles"
-  >
+  <BehaviorTree ID="Clear Previous Obstacles">
     <Control ID="Sequence" name="Setup">
       <Action ID="ClearSnapshot" />
       <SubTree ID="Reset Planning Scene" _collapsed="true" />

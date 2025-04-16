@@ -4,11 +4,7 @@
   main_tree_to_execute="Segment Point Cloud from Clicked Point"
 >
   <!--//////////-->
-  <BehaviorTree
-    ID="Segment Point Cloud from Clicked Point"
-    _description="Captures a point cloud and requests the user to click an object in the image to be segmented. The point cloud is then filtered to only include the selected object."
-    _favorite="true"
-  >
+  <BehaviorTree ID="Segment Point Cloud from Clicked Point">
     <Control ID="Sequence">
       <SubTree
         ID="Segment Point Cloud from Clicked Point Subtree"
@@ -26,6 +22,9 @@
   <TreeNodesModel>
     <SubTree ID="Segment Point Cloud from Clicked Point">
       <MetadataFields>
+        <Metadata
+          description="Captures a point cloud and requests the user to click an object in the image to be segmented. The point cloud is then filtered to only include the selected object."
+        />
         <Metadata runnable="true" />
         <Metadata subcategory="Perception - ML" />
       </MetadataFields>

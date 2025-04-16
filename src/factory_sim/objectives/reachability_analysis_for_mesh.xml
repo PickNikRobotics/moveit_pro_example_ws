@@ -2,7 +2,6 @@
   <!--//////////-->
   <BehaviorTree
     ID="Reachability Analysis for mesh"
-    _description="Given a starting waypoint and mesh in the URDF attempt to Cartesian move from starting waypoint to each mesh normal."
     controller_action_server="{controller_action_server}"
     controller_name="{controller_name}"
     execute_trajectories="true"
@@ -11,7 +10,6 @@
     starting_waypoint="{starting_waypoint}"
     tip_link="{tip_link}"
     tip_offset="0;0;0;0;0;0"
-    _subtreeOnly="true"
   >
     <Control ID="Sequence">
       <Control ID="Sequence" name="Move to starting waypoint">
@@ -191,6 +189,9 @@
       <inout_port name="tip_offset" default="0;0;0;0;0;0" />
       <MetadataFields>
         <Metadata runnable="false" />
+        <Metadata
+          description="Given a starting waypoint and mesh in the URDF attempt to Cartesian move from starting waypoint to each mesh normal."
+        />
         <Metadata subcategory="Reachability" />
       </MetadataFields>
     </SubTree>

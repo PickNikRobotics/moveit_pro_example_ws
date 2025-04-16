@@ -1,12 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Load Mesh as Green Point Cloud">
   <!--//////////-->
-  <BehaviorTree
-    ID="Load Mesh as Green Point Cloud"
-    _description="Loads a point cloud from a file and colors it green."
-    _favorite="false"
-    _subtreeOnly="true"
-  >
+  <BehaviorTree ID="Load Mesh as Green Point Cloud" _favorite="false">
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
         ID="LoadPointCloudFromFile"
