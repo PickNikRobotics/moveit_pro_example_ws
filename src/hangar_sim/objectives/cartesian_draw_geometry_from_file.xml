@@ -1,13 +1,16 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Cartesian Draw Geometry From File">
   <!--//////////-->
   <BehaviorTree
     ID="Cartesian Draw Geometry From File"
     _description="Training example that shows how to load a Cartesian path from a file and execute the path"
     _favorite="false"
-    _subtreeOnly="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="ActivateControllers"
+        controller_names="joint_trajectory_controller"
+      />
       <Action
         ID="LoadPoseStampedVectorFromYaml"
         output="{pose_stamped_msgs}"
