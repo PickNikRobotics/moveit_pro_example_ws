@@ -108,7 +108,7 @@
                       <Action
                         ID="InitializeMTCTask"
                         task_id="looping_pick_and_place_object"
-                        controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
+                        controller_names="/joint_trajectory_controller;/robotiq_gripper_controller"
                         task="{task}"
                       />
                       <Action ID="SetupMTCCurrentState" task="{task}" />

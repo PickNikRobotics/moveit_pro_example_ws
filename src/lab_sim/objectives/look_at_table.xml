@@ -1,10 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Look at table">
   <!--//////////-->
   <BehaviorTree
     ID="Look at table"
     _description="Move the arm to a position that faces the table surface"
     _favorite="false"
-    _subtreeOnly="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree
@@ -14,6 +14,13 @@
         joint_group_name="manipulator"
         controller_names="/joint_trajectory_controller;/robotiq_gripper_controller"
         use_all_planners="false"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        seed="0"
+        velocity_scale_factor="1.0"
       />
     </Control>
   </BehaviorTree>
@@ -21,6 +28,7 @@
     <SubTree ID="Look at table">
       <MetadataFields>
         <Metadata subcategory="Application - Basic Examples" />
+        <Metadata runnable="true" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
