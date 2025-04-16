@@ -4,7 +4,6 @@
     ID="Take scene camera snapshot"
     _description="Take a pointcloud snapshot of the scene with a depth camera"
     _favorite="false"
-    _subtreeOnly="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <!-- Clear out old snapshot data -->

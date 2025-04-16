@@ -5,7 +5,6 @@
     ID="Sample April Tag"
     _description="Samples the pose of an AprilTag and returns the average measurement."
     _favorite="false"
-    _subtreeOnly="true"
   >
     <Decorator ID="Repeat" num_cycles="{num_samples}" name="SamplePose">
       <Control ID="Sequence">
