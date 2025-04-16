@@ -97,9 +97,6 @@ moveit_params:
   stomp_planning:
     package: "picknik_ur_base_config"
     path: "config/moveit/stomp_planning.yaml"
-  pilz_planning:
-    package: "picknik_ur_base_config"
-    path: "config/moveit/pilz_industrial_motion_planner_planning.yaml"
   kinematics:
     package: "picknik_ur_base_config"
     path: "config/moveit/pose_ik_distance.yaml"
@@ -118,9 +115,6 @@ moveit_params:
   servo_joint_limits:
     package: "picknik_ur_base_config"
     path: "config/moveit/hard_joint_limits.yaml"
-  pilz_cartesian_limits:
-    package: "picknik_ur_base_config"
-    path: "config/moveit/pilz_cartesian_limits.yaml"
 
   publish:
     planning_scene: True

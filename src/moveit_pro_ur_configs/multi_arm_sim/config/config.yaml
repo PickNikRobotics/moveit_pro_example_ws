@@ -84,9 +84,6 @@ moveit_params:
   ompl_planning:
     package: "multi_arm_sim"
     path: "config/moveit/ompl_planning.yaml"
-  pilz_planning:
-    package: "picknik_ur_base_config"
-    path: "config/moveit/pilz_industrial_motion_planner_planning.yaml"
   stomp_planning:
     package: "picknik_ur_base_config"
     path: "config/moveit/stomp_planning.yaml"
@@ -105,9 +102,6 @@ moveit_params:
   joint_limits:
     package: "multi_arm_sim"
     path: "config/moveit/multi_arm_joint_limits.yaml"
-  pilz_cartesian_limits:
-    package: "picknik_ur_base_config"
-    path: "config/moveit/pilz_cartesian_limits.yaml"
 
   publish:
     planning_scene: True
@@ -145,7 +139,7 @@ ros2_control:
   # Load but do not start these controllers so they can be activated later if needed.
   # [Optional, default=[]]
   controllers_inactive_at_startup:
-    - "multi_arm_joint_trajectory_controller"
+    - "joint_trajectory_controller"
   # Any controllers here will not be spawned by MoveIt Pro.
   # [Optional, default=[]]
   controllers_not_managed: []

@@ -64,9 +64,6 @@ moveit_params:
   stomp_planning:
     package: "grinding_sim"
     path: "config/moveit/stomp_planning.yaml"
-  pilz_planning:
-    package: "grinding_sim"
-    path: "config/moveit/pilz_industrial_motion_planner_planning.yaml"
   kinematics:
     package: "grinding_sim"
     path: "config/moveit/pose_ik_distance.yaml"
@@ -82,9 +79,6 @@ moveit_params:
   servo_joint_limits:
     package: "grinding_sim"
     path: "config/moveit/joint_limits.yaml"
-  pilz_cartesian_limits:
-    package: "grinding_sim"
-    path: "config/moveit/pilz_cartesian_limits.yaml"
 
   publish:
     planning_scene: True
