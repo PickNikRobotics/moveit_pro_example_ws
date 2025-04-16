@@ -80,7 +80,7 @@
   <TreeNodesModel>
     <SubTree ID="Place Tool in Tool Holder">
       <MetadataFields>
-        <Metadata runnable="true" />
+        <Metadata runnable="false" />
         <Metadata subcategory="Grasping" />
       </MetadataFields>
     </SubTree>

@@ -1,7 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Multi-tip IK Example">
   <!--//////////-->
   <BehaviorTree ID="Multi-tip IK Example" _description="" _favorite="true">
     <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        controller_names="/joint_trajectory_controller"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        velocity_scale_factor="1.0"
+        waypoint_name="Start"
+      />
       <!--Create the target poses into a vector-->
       <Action
         ID="CreateStampedPose"
@@ -63,7 +77,7 @@
       <Action
         ID="ComputeInverseKinematics"
         ik_timeout_s="0.01"
-        planning_group_name="multi_arm_manipulator"
+        planning_group_name="manipulator"
         planning_scene_msg="{planning_scene}"
         target_poses="{target_poses}"
         tip_links="fourth_grasp_link;third_grasp_link"
@@ -75,9 +89,9 @@
         ID="Move to Joint State"
         _collapsed="false"
         acceleration_scale_factor="1.0"
-        controller_action_server="/multi_arm_joint_trajectory_controller/follow_joint_trajectory"
-        controller_names="/multi_arm_joint_trajectory_controller"
-        joint_group_name="multi_arm_manipulator"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        controller_names="/joint_trajectory_controller"
+        joint_group_name="manipulator"
         keep_orientation="false"
         keep_orientation_tolerance="0.05"
         link_padding="0.00"
