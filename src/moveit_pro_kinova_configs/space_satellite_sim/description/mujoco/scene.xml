@@ -96,7 +96,7 @@
     <site
       name="scene_camera_optical_frame"
       pos="-0.3 0.3 1.0"
-      euler="3.1416 -1.0472 -1.5708"
+      euler="3.1416 1.0472 1.5708"
       size="0.03"
     />
     <body name="landsat">
@@ -181,6 +181,21 @@
       </body>
     </body>
     <body name="servicer_platform_with_arm">
+      <camera
+        name="servicer_camera"
+        pos="0.6 1 0"
+        fovy="58"
+        mode="fixed"
+        resolution="640 480"
+        euler="1.5708 -2 0.0"
+        user="1"
+      />
+      <site
+        name="servicer_camera_optical_frame"
+        pos="0.6 1 0"
+        euler="-1.5708 2 0.0"
+        size="0.03"
+      />
       <inertial pos="0 0 0" mass="1000" diaginertia="100 100 100" />
       <joint name="servicer_platform_x" type="slide" axis="1 0 0" />
       <joint name="servicer_platform_y" type="slide" axis="0 1 0" />
@@ -339,7 +354,7 @@
         -1.5708 1.8326 0 -2.3562 0 0.2618 1.5708 0
         0 0 0 0 0 0 0"
       qvel="
-        -0.02 0.02 0 0 0 0.02
+        -0.03 0.03 0 0 0 0.03
         0 0 0 0 0 0
         0 0 0 0 0 0 0 0
         0 0 0 0 0 0 0"
