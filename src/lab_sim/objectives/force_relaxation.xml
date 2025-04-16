@@ -1,12 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Force Relaxation">
   <!--//////////-->
-  <BehaviorTree
-    ID="Force Relaxation"
-    _description="Relaxes the force sensed at the force/torque sensor by moving the robot tip in the direction of the sensed force."
-    _favorite="false"
-    _subtreeOnly="true"
-  >
+  <BehaviorTree ID="Force Relaxation" _favorite="false">
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
         ID="CreateStampedTwist"

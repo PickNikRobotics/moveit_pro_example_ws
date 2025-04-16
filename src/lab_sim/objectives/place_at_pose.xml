@@ -1,10 +1,6 @@
 <root BTCPP_format="4" main_tree_to_execute="Place at Pose">
   <!--//////////-->
-  <BehaviorTree
-    ID="Place at Pose"
-    _subtreeOnly="true"
-    _description="Places object in gripper at the given input pose"
-  >
+  <BehaviorTree ID="Place at Pose">
     <Control ID="Sequence">
       <Action
         ID="LoadObjectiveParameters"

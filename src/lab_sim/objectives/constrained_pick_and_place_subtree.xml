@@ -4,11 +4,7 @@
   main_tree_to_execute="Constrained Pick and Place Subtree"
 >
   <!--//////////-->
-  <BehaviorTree
-    ID="Constrained Pick and Place Subtree"
-    _subtreeOnly="true"
-    _description="Takes in waypoints to run a constrained pick and place operation."
-  >
+  <BehaviorTree ID="Constrained Pick and Place Subtree">
     <Control ID="Sequence">
       <!--Move to pick location-->
       <SubTree

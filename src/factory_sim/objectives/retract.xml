@@ -1,12 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Retract">
   <!--//////////-->
-  <BehaviorTree
-    ID="Retract"
-    _description="Move back a distance in the tool frame"
-    _subtreeOnly="true"
-    distance="0.1"
-  >
+  <BehaviorTree ID="Retract" distance="0.1">
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
         ID="InitializeMTCTask"
@@ -47,6 +42,7 @@
       <input_port name="distance" default="0.1" />
       <MetadataFields>
         <Metadata runnable="false" />
+        <Metadata description="Move back a distance in the tool frame" />
         <Metadata subcategory="Motion - Execute" />
       </MetadataFields>
     </SubTree>

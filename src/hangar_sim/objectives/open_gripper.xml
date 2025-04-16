@@ -1,11 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Open Gripper">
-  <BehaviorTree
-    ID="Open Gripper"
-    _description="Open the gripper"
-    _favorite="true"
-    _subtreeOnly="true"
-  >
+  <BehaviorTree ID="Open Gripper" _favorite="true">
     <Control ID="Sequence" name="root">
       <!--Not used in this config-->
       <Action ID="AlwaysFailure" />

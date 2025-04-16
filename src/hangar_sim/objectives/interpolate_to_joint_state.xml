@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Interpolate to Joint State">
-  <BehaviorTree
-    ID="Interpolate to Joint State"
-    _description="Move to a specified joint state using joint interpolation"
-    _subtreeOnly="true"
-  >
+  <BehaviorTree ID="Interpolate to Joint State">
     <Control ID="Sequence">
       <Action
         ID="InitializeMTCTask"
@@ -39,6 +35,9 @@
         default="/joint_trajectory_controller"
       />
       <MetadataFields>
+        <Metadata
+          description="Move to a specified joint state using joint interpolation"
+        />
         <Metadata subcategory="Motion - Execute" />
       </MetadataFields>
     </SubTree>

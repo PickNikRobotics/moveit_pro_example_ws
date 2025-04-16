@@ -1,15 +1,13 @@
 <?xml version="1.0" ?>
 <root BTCPP_format="4" main_tree_to_execute="Clear Snapshot">
   <!-- ////////// -->
-  <BehaviorTree
-    ID="Clear Snapshot"
-    _description="Clear the point cloud snapshot"
-  >
+  <BehaviorTree ID="Clear Snapshot">
     <Action ID="ClearSnapshot" />
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Clear Snapshot">
       <MetadataFields>
+        <Metadata description="Clear the point cloud snapshot" />
         <Metadata subcategory="Perception - 3D Point Cloud" />
       </MetadataFields>
     </SubTree>

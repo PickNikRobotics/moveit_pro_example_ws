@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Pick Up Tool">
   <!--//////////-->
-  <BehaviorTree
-    ID="Pick Up Tool"
-    _description="Pick up the tool from the tool holder"
-  >
+  <BehaviorTree ID="Pick Up Tool">
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
         ID="CreateStampedPose"
@@ -92,6 +89,7 @@
   <TreeNodesModel>
     <SubTree ID="Pick Up Tool">
       <MetadataFields>
+        <Metadata description="Pick up the tool from the tool holder" />
         <Metadata subcategory="Grasping" />
         <Metadata runnable="true" />
       </MetadataFields>
