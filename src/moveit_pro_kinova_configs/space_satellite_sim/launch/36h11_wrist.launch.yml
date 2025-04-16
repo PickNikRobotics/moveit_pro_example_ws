@@ -1,0 +1,25 @@
+launch:
+- arg:
+    name: device
+    default: "0"
+
+- node_container:
+    pkg: rclcpp_components
+    exec: component_container
+    name: apriltag_wrist_container
+    namespace: ""
+    composable_node:
+    - pkg: apriltag_ros
+      plugin: AprilTagNode
+      name: apriltag_wrist
+      namespace: apriltag_wrist
+      remap:
+      - from: /apriltag_wrist/image_rect
+        to: /wrist_camera/color
+      - from: /apriltag_wrist/camera_info
+        to: /wrist_camera/camera_info
+      param:
+      - from: $(find-pkg-share space_satellite_sim)/launch/tags_36h11.yaml
+      extra_arg:
+      - name: use_intra_process_comms
+        value: "True"
