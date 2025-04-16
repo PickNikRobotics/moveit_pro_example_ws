@@ -232,7 +232,7 @@
           blending_radius="0.020000"
           position_only="false"
           joint_trajectory_msg="{joint_trajectory_msg}"
-          tip_link="grasp_link"
+          tip_links="grasp_link"
           planning_group_name="manipulator"
           path="{pose_stamped_vector}"
         />
