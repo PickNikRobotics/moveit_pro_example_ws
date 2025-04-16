@@ -93,7 +93,7 @@
     <SubTree ID="Pick Up Tool">
       <MetadataFields>
         <Metadata subcategory="Grasping" />
-        <Metadata runnable="true" />
+        <Metadata runnable="false" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
