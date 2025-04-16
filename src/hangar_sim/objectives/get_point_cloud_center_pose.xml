@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Get Point Cloud Center Pose">
   <!--//////////-->
   <BehaviorTree
@@ -46,7 +47,7 @@
       <inout_port name="output_pose" default="{plane_pose}" />
       <MetadataFields>
         <Metadata subcategory="Training Examples" />
-        <Metadata runnable="true" />
+        <Metadata runnable="false" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
