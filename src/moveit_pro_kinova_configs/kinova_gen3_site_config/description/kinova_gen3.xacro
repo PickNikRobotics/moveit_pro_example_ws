@@ -1,0 +1,132 @@
+<?xml version="1.0"?>
+<robot name="gen3" xmlns:xacro="http://ros.org/wiki/xacro">
+  <!-- Arguments for Kinova -->
+  <xacro:arg name="vision" default="false" />
+  <xacro:arg name="robot_ip" default="yyy.yyy.yyy.yyy" />
+  <xacro:arg name="robotiq_gripper" default="robotiq_2f_85" />
+  <xacro:arg name="username" default="admin" />
+  <xacro:arg name="password" default="admin" />
+  <xacro:arg name="port" default="10000" />
+  <xacro:arg name="port_realtime" default="10001" />
+  <xacro:arg name="session_inactivity_timeout_ms" default="60000" />
+  <xacro:arg name="connection_inactivity_timeout_ms" default="2000" />
+  <xacro:arg name="use_internal_bus_gripper_comm" default="true" />
+  <xacro:arg name="prefix" default="" />
+  <xacro:arg name="use_fake_hardware" default="false" />
+  <xacro:arg name="fake_sensor_commands" default="false" />
+  <xacro:arg name="use_external_cable" default="false" />
+  <xacro:arg name="gripper_joint_name" default="robotiq_85_left_knuckle_joint" />
+  <xacro:arg name="gripper_max_velocity" default="100.0" />
+  <xacro:arg name="gripper_max_force" default="100.0" />
+  <xacro:arg name="gripper_com_port" default="/dev/ttyUSB0" />
+
+  <!-- Import environment macros -->
+  <xacro:include filename="$(find picknik_accessories)/descriptions/geometry/cube.urdf.xacro"/>
+
+  <!-- World is centered under base_link of the robot, on the ground -->
+  <link name="world"/>
+
+  <!-- Include and load arm and gripper macro files -->
+  <xacro:include filename="$(find kortex_description)/arms/gen3/7dof/urdf/gen3_macro.xacro" />
+  <xacro:include filename="$(find kortex_description)/grippers/$(arg gripper)/urdf/$(arg gripper)_macro.xacro" />
+
+  <!-- Initial positions for simulations (Mock Hardware and Gazebo) -->
+  <xacro:arg name="initial_positions_file" default="$(find kinova_gen3_site_config)/config/initial_positions.yaml"/>
+  <xacro:property name="initial_positions_file" default="$(arg initial_positions_file)"/>
+
+  <!-- Load the arm -->
+  <xacro:load_arm
+    parent="world"
+    dof="7"
+    vision="$(arg vision)"
+    robot_ip="$(arg robot_ip)"
+    username="$(arg username)"
+    password="$(arg password)"
+    port="$(arg port)"
+    port_realtime="$(arg port_realtime)"
+    session_inactivity_timeout_ms="$(arg session_inactivity_timeout_ms)"
+    connection_inactivity_timeout_ms="$(arg connection_inactivity_timeout_ms)"
+    prefix="$(arg prefix)"
+    use_internal_bus_gripper_comm="$(arg use_internal_bus_gripper_comm)"
+    use_fake_hardware="$(arg use_fake_hardware)"
+    fake_sensor_commands="$(arg fake_sensor_commands)"
+    gripper_joint_name="$(arg gripper_joint_name)"
+    gripper_max_velocity="$(arg gripper_max_velocity)"
+    gripper_max_force="$(arg gripper_max_force)"
+    use_external_cable="$(arg use_external_cable)"
+    initial_positions="${xacro.load_yaml(initial_positions_file)}">
+    <origin xyz="0 0 0.02" rpy="0 0 0" />
+  </xacro:load_arm>
+
+  <!-- change the parent when adding in links in between the gripper and the arm (like a force torque sensor) -->
+  <xacro:property name="gripper_parent_link" value="end_effector_link"/>
+  <xacro:load_gripper
+    parent="${gripper_parent_link}"
+    prefix="$(arg prefix)"
+    use_fake_hardware="$(arg use_fake_hardware)"
+    fake_sensor_commands="$(arg fake_sensor_commands)"
+    use_internal_bus_gripper_comm="$(arg use_internal_bus_gripper_comm)"
+    com_port="$(arg gripper_com_port)">
+  </xacro:load_gripper>
+
+  <!-- Environment -->
+  <xacro:cube link_name="table" connected_to="world" length="2.00" width="2.00" height="0.25" alpha="0.3">
+    <origin xyz="0.8 0.0 ${-0.25/2}" rpy="0 0 0"/>
+  </xacro:cube>
+  <xacro:cube link_name="wall" connected_to="world" length="0.25" width="2.00" height="3.0" alpha="0.3">
+    <origin xyz="-0.4 0.0 0.0" rpy="0 0 0"/>
+  </xacro:cube>
+
+  <!-- Robot mount -->
+  <link name="mount_link">
+    <visual> <!-- visual reach -->
+      <origin xyz="0 0 0.01" rpy="0 0 0" />
+      <geometry>
+        <cylinder radius="0.2" length="0.02"/>
+      </geometry>
+      <material name="Black">
+        <color rgba="0.0 0.0 0.0 1.0"/>
+      </material>
+    </visual>
+    <collision><!-- table collision -->
+      <origin xyz="0 0 0.01" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.2" length="0.02"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="mount_joint" type="fixed">
+    <parent link="world"/>
+    <child link = "mount_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <!-- Visual aids for grasping -->
+  <link name="finger_tip_closed_point">
+    <visual>
+      <geometry>
+        <sphere radius="0.007"/>
+      </geometry>
+      <material name="">
+            <color rgba="0 1.0 0 0.7"/>
+      </material>
+    </visual>
+  </link>
+
+  <joint name="finger_tip_closed_point_joint" type="fixed">
+    <parent link="robotiq_85_base_link"/>
+    <child link = "finger_tip_closed_point"/>
+    <origin xyz="0 0 0.16" rpy="0 0 0"/>
+  </joint>
+
+  <!-- This link aligns the axes of the grasp frame to our required convention for motion planning tasks. -->
+  <link name="grasp_link"/>
+
+  <joint name="grasp_link_joint" type="fixed">
+    <parent link="robotiq_85_base_link"/>
+    <child link = "grasp_link"/>
+    <origin xyz="0 0 0.15" rpy="0 0 0"/>
+  </joint>
+
+
+</robot>
