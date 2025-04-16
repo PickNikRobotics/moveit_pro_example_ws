@@ -5,7 +5,6 @@
     ID="Solution - Draw Square"
     _description="Training example that shows how to create a path from poses and execute the path"
     _favorite="false"
-    _subtreeOnly="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree

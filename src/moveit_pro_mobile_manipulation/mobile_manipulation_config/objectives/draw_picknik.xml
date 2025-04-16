@@ -1,12 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Draw Picknik">
   <!--//////////-->
-  <BehaviorTree
-    ID="Draw Picknik"
-    _description=""
-    _favorite="false"
-    _subtreeOnly="false"
-  >
+  <BehaviorTree ID="Draw Picknik" _description="" _favorite="false">
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
         ID="LoadPoseStampedVectorFromYaml"

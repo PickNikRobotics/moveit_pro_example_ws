@@ -3,7 +3,6 @@
   <BehaviorTree
     ID="Move to Pose"
     _description="Plan and execute motion to a Cartesian coordinate pose in a ROS message type, using inverse kinematics."
-    _subtreeOnly="true"
   >
     <Control ID="Sequence">
       <Action

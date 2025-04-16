@@ -4,7 +4,6 @@
     ID="Reachability Analysis - bowls"
     _description="An example of performing reachability analysis for a object-normal task such as painting or sanding."
     _favorite="true"
-    _subtreeOnly="false"
   >
     <Control ID="Sequence" name="">
       <SubTree

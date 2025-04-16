@@ -5,7 +5,6 @@
     ID="Visualize Poses"
     _description=""
     _favorite="true"
-    _subtreeOnly="false"
     action_poses="action_poses"
     reference_frame="reference_frame"
     approach_pose="approach_pose"
