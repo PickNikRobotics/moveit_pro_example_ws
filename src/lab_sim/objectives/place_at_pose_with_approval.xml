@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<root BTCPP_format="4" main_tree_to_execute="Pick from Pose">
+<root BTCPP_format="4" main_tree_to_execute="Place at Pose with Approval">
   <!--//////////-->
   <BehaviorTree
-    ID="Pick from Pose"
-    _description="Takes a grasp pose as input and picks up the object at that pose"
+    ID="Place at Pose with Approval"
+    _description="Takes a place pose as input and places the object at that pose. Asks for approval before executing the trajectory."
     _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
@@ -11,7 +11,7 @@
         ID="InitializeMTCTask"
         controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
         task="{mtc_task}"
-        task_id="pick_object"
+        task_id="place_object"
         trajectory_monitoring="false"
       />
       <Action
@@ -34,8 +34,8 @@
         axis_y="0.000000"
         axis_z="1.000000"
         hand_frame="grasp_link"
-        max_distance="{approach_distance}"
-        min_distance="{approach_distance}"
+        max_distance="0.100000"
+        min_distance="0.100000"
         planning_group_name="manipulator"
         task="{mtc_task}"
         velocity_scale="1.000000"
@@ -48,21 +48,26 @@
         ik_timeout_s="0.01"
         max_ik_solutions="4"
         monitored_stage="current state"
-        target_poses="{grasp_poses}"
+        target_poses="{place_poses}"
         task="{mtc_task}"
       />
       <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
+      <SubTree
+        ID="Wait for Trajectory Approval if User Available"
+        _collapsed="true"
+        solution="{mtc_solution}"
+      />
       <Action
         ID="ExecuteMTCTask"
         goal_duration_tolerance="-1.000000"
         solution="{mtc_solution}"
       />
-      <SubTree ID="Close Gripper" _collapsed="true" />
+      <SubTree ID="Open Gripper" _collapsed="true" />
       <Action
         ID="CreateStampedPose"
         reference_frame="grasp_link"
         stamped_pose="{retract_pose}"
-        position_xyz="{retract_xyz}"
+        position_xyz="0;0;-0.1"
       />
       <Action
         ID="AddPoseStampedToVector"
@@ -95,15 +100,13 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Pick from Pose">
+    <SubTree ID="Place at Pose with Approval">
       <MetadataFields>
         <Metadata subcategory="Application - Basic Examples" />
         <Metadata runnable="false" />
       </MetadataFields>
 
-      <inout_port name="approach_distance" default="0.1" />
-      <inout_port name="grasp_poses" default="{grasp_poses}" />
-      <inout_port name="retract_xyz" default="0;0;-0.1" />
+      <inout_port name="place_poses" default="{place_poses}" />
     </SubTree>
   </TreeNodesModel>
 </root>
