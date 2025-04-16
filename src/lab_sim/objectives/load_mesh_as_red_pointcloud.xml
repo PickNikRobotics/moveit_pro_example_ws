@@ -5,7 +5,6 @@
     ID="Load Mesh as Red Point Cloud"
     _description="Loads a mesh from a file and colors it red."
     _favorite="false"
-    _subtreeOnly="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action

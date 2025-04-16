@@ -5,7 +5,6 @@
     ID="Pick object"
     _description="Opens the gripper, defines a target pose for the object and performs a motion for picking it."
     _favorite="false"
-    _subtreeOnly="true"
   >
     <Control ID="Sequence">
       <SubTree ID="Open Gripper" />
