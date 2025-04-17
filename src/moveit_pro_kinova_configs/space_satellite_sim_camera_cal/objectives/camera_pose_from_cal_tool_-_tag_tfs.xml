@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Camera Pose from Cal Tool - Tag TFs"
+>
+  <!--//////////-->
+  <BehaviorTree
+    ID="Camera Pose from Cal Tool - Tag TFs"
+    computed_pose="{computed_pose}"
+    _description="Use (externally) published TF frames of the calibration tool's AprilTags to compute the camera pose."
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree
+        ID="Get Pose from TF Frame"
+        _collapsed="true"
+        pose_frame="satellite_tag_1"
+        reference_frame="{camera_optical_frame}"
+        tf_pose="{right_pose}"
+        name="Right AprilTag"
+      />
+      <SubTree
+        ID="Get Pose from TF Frame"
+        _collapsed="true"
+        pose_frame="satellite_tag_0"
+        reference_frame="{camera_optical_frame}"
+        tf_pose="{left_pose}"
+        name="Left AprilTag"
+      />
+      <SubTree
+        ID="Get Pose from TF Frame"
+        _collapsed="true"
+        pose_frame="satellite_tag_2"
+        reference_frame="{camera_optical_frame}"
+        tf_pose="{bottom_pose}"
+        name="Bottom AprilTag"
+      />
+      <Action
+        ID="CalibrateCameraPose"
+        base_link="base_link"
+        calibration_tool_frame="calibration_tool_frame"
+        computed_pose="{computed_pose}"
+        right_tag_pose="{right_pose}"
+        left_tag_pose="{left_pose}"
+        bottom_tag_pose="{bottom_pose}"
+        camera_optical_frame="{camera_optical_frame}"
+      />
+      <Action
+        ID="VisualizePose"
+        marker_name="Single-Image Optical Pose"
+        marker_size="0.1"
+        pose="{computed_pose}"
+        name=""
+        marker_lifetime="0.0"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Camera Pose from Cal Tool - Tag TFs">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Perception - Camera Calibration" />
+      </MetadataFields>
+      <inout_port
+        name="camera_optical_frame"
+        default="{camera_optical_frame}"
+      />
+      <output_port name="computed_pose" default="{computed_pose}" />
+    </SubTree>
+  </TreeNodesModel>
+</root>
