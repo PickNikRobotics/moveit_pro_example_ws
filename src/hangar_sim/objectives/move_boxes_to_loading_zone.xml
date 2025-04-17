@@ -3,7 +3,7 @@
   <!--//////////-->
   <BehaviorTree
     ID="Move Boxes to Loading Zone"
-    _description="Move all of the boxes into the loading zero suing ML perception."
+    _description="Move all of the boxes into the loading zone using ML perception."
     _favorite="true"
   >
     <Control ID="Sequence">

@@ -6,8 +6,8 @@
 #include <spdlog/spdlog.h>
 #include <yaml-cpp/yaml.h>
 #include <Eigen/Core>
+#include <cartesian_planning/trajectory_utils.hpp>
 #include <moveit_msgs/msg/robot_trajectory.hpp>
-#include <moveit_studio_behavior/utils/trajectory_utils.hpp>
 #include <moveit_studio_behavior_interface/behavior_context.hpp>
 #include <moveit_studio_behavior_interface/check_for_error.hpp>
 #include <moveit_studio_behavior_interface/shared_resources_node.hpp>
