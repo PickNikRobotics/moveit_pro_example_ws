@@ -6,7 +6,6 @@
   <BehaviorTree
     ID="Wait for Trajectory Approval if User Available"
     _description="Preview a shared pointer to an MTC Solution object via an input data port if a user is available."
-    _subtreeOnly="true"
   >
     <Control ID="Fallback" name="wait_for_approval_if_user_available">
       <Decorator ID="Inverter">
@@ -19,6 +18,7 @@
     <SubTree ID="Wait for Trajectory Approval if User Available">
       <MetadataFields>
         <Metadata subcategory="User Input" />
+        <Metadata runnable="false" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
