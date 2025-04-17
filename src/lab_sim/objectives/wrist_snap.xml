@@ -4,7 +4,6 @@
     ID="Take wrist camera snapshot"
     _description="Capture and visualise a pointcloud with the wrist camera"
     _favorite="false"
-    _subtreeOnly="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <!-- Do not clear snapshots first, so we can take multiple snapshots from different angles -->

@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <root BTCPP_format="4" main_tree_to_execute="Close First Gripper">
-  <BehaviorTree ID="Close First Gripper" _description="Close the first gripper">
+  <BehaviorTree ID="Close Gripper" _description="Close the first gripper">
     <Control ID="Sequence" name="root">
       <Action
         ID="MoveGripperAction"
@@ -10,7 +10,7 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Close First Gripper">
+    <SubTree ID="Close Gripper">
       <MetadataFields>
         <Metadata subcategory="Grasping" />
       </MetadataFields>

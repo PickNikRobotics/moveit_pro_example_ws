@@ -5,7 +5,6 @@
     ID="Get Transform Frame Pose"
     _description="Returns the pose of the requested frame in the world frame."
     _favorite="false"
-    _subtreeOnly="true"
     name="Returns the pose of the requested frame in the world frame"
   >
     <Control ID="Sequence" name="TopLevelSequence">

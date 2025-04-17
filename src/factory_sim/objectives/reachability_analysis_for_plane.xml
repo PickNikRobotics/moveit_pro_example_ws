@@ -3,7 +3,21 @@
   <!--//////////-->
   <BehaviorTree
     ID="Reachability Analysis for plane"
+    column_spacing_translation="0;0.25;0"
+    num_45_deg_rotations="0"
+    num_columns="3"
+    num_rows="3"
+    pick_height_translation="0;0;-0.3"
+    reachability_origin_pose="{reachability_origin_pose}"
+    row_spacing_translation="0.35;0;0"
+    execute_trajectories="true"
     _description="Given a grid of points, attempt to move to a vertical approach pose then move to the grid point."
+    pick_height="-0.3"
+    starting_waypoint="&quot;Initial Position&quot;"
+    controller_action_server="{controller_action_server}"
+    controller_name="{controller_name}"
+    planning_group_name="{planning_group_name}"
+    tip_link="{tip_link}"
   >
     <Control ID="Sequence">
       <Control ID="Sequence" name="Move to starting waypoint">
