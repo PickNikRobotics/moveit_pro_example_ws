@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <root
   BTCPP_format="4"
   main_tree_to_execute="Move Boxes to Loading Zone Start from Waypoint"
@@ -36,6 +36,7 @@
         velocity_scale_factor="1.0"
         waypoint_name="{waypoint_name}"
         keep_orientation_link_names="grasp_link"
+        seed="0"
       />
       <SubTree ID="Clear Snapshot" _collapsed="false" />
       <Decorator ID="Delay" delay_msec="2000">
@@ -105,6 +106,7 @@
           image="{image}"
           masks="{clip_masks2d}"
           masks_visualization_topic="/masks_visualization"
+          opacity="0.500000"
         />
         <Decorator ID="Inverter">
           <Decorator
@@ -134,6 +136,7 @@
                   image="{image}"
                   masks="{masks2d}"
                   masks_visualization_topic="/masks_visualization"
+                  opacity="0.500000"
                 />
                 <Action
                   ID="GetMasks3DFromMasks2D"
@@ -189,6 +192,7 @@
                       controller_names="/joint_trajectory_controller"
                       task="{task}"
                       task_id=""
+                      trajectory_monitoring="false"
                     />
                     <Action
                       ID="SetupMTCCurrentState"
@@ -208,6 +212,7 @@
                       target_object="{graspable_object}"
                       monitored_stage="{monitored_stage}"
                       task="{task}"
+                      link_padding="0.0"
                     />
                     <Action
                       ID="SetupMTCGenerateVacuumGrasps"
@@ -305,6 +310,10 @@
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Move Boxes to Loading Zone Start from Waypoint">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Application - Advanced Examples" />
+      </MetadataFields>
       <input_port name="erosion_size" default="0" />
       <input_port name="negative_prompts" default="{negative_prompts}" />
       <input_port name="place_pose" default="{place_pose}" />
@@ -312,10 +321,6 @@
       <input_port name="prompts" default="{prompts}" />
       <input_port name="threshold" default="{threshold}" />
       <input_port name="waypoint_name" default="View Boxes" />
-      <MetadataFields>
-        <Metadata runnable="false" />
-        <Metadata subcategory="Application - Advanced Examples" />
-      </MetadataFields>
     </SubTree>
   </TreeNodesModel>
 </root>
