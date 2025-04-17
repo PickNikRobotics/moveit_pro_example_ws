@@ -3,7 +3,6 @@
   <!--//////////-->
   <BehaviorTree
     ID="Plan Move To Pose"
-    _subtreeOnly="true"
     _description="Plan an MTC task, but do not execute it"
   >
     <Control ID="Sequence">

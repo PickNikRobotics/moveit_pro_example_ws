@@ -5,7 +5,6 @@
     ID="Solution - Find and Spray Plane"
     _description="Finds the plane then generates and executes a coverage path"
     _favorite="false"
-    _subtreeOnly="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree

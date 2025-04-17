@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Cycle Between Poses">
   <!--//////////-->
   <BehaviorTree
@@ -12,8 +12,8 @@
         <SubTree
           ID="Move to Waypoint"
           _collapsed="true"
-          joint_group_name="multi_arm_manipulator"
-          controller_names="/multi_arm_joint_trajectory_controller"
+          joint_group_name="manipulator"
+          controller_names="/joint_trajectory_controller"
           velocity_scale_factor="1.0"
           acceleration_scale_factor="1.0"
           link_padding="0.0"
@@ -21,13 +21,14 @@
           keep_orientation="false"
           waypoint_name="Home"
           target_joint_state="{target_joint_state}"
-          controller_action_server="/multi_arm_joint_trajectory_controller/follow_joint_trajectory"
+          controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+          seed="0"
         />
         <SubTree
           ID="Move to Waypoint"
           _collapsed="true"
-          joint_group_name="multi_arm_manipulator"
-          controller_names="/multi_arm_joint_trajectory_controller"
+          joint_group_name="manipulator"
+          controller_names="/joint_trajectory_controller"
           velocity_scale_factor="1.0"
           acceleration_scale_factor="1.0"
           link_padding="0.0"
@@ -35,7 +36,8 @@
           keep_orientation="false"
           waypoint_name="Flip"
           target_joint_state="{target_joint_state}"
-          controller_action_server="/multi_arm_joint_trajectory_controller/follow_joint_trajectory"
+          controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+          seed="0"
         />
       </Control>
     </Decorator>
