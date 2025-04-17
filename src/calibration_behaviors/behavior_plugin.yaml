@@ -1,0 +1,4 @@
+objectives:
+  behavior_loader_plugins:
+    calibration_behaviors:
+      - "calibration_behaviors::CalibrationBehaviorsLoader"
