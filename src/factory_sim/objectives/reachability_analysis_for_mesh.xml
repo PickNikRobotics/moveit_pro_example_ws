@@ -4,6 +4,14 @@
   <BehaviorTree
     ID="Reachability Analysis for mesh"
     _description="Given a starting waypoint and mesh in the URDF, attempt to move to an approach and target pose for each mesh normal."
+    controller_action_server="{controller_action_server}"
+    controller_name="{controller_name}"
+    execute_trajectories="true"
+    mesh_link_name="{mesh_link_name}"
+    planning_group_name="{planning_group_name}"
+    starting_waypoint="{starting_waypoint}"
+    tip_link="{tip_link}"
+    tip_offset="0;0;0;0;0;0"
   >
     <Control ID="Sequence">
       <Control ID="Sequence" name="Move to starting waypoint">
