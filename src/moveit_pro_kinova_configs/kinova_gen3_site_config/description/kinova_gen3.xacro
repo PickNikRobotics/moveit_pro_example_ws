@@ -28,7 +28,7 @@
 
   <!-- Include and load arm and gripper macro files -->
   <xacro:include filename="$(find kortex_description)/arms/gen3/7dof/urdf/gen3_macro.xacro" />
-  <xacro:include filename="$(find kortex_description)/grippers/$(arg gripper)/urdf/$(arg gripper)_macro.xacro" />
+  <xacro:include filename="$(find kortex_description)/grippers/$(arg robotiq_gripper)/urdf/$(arg robotiq_gripper)_macro.xacro" />
 
   <!-- Initial positions for simulations (Mock Hardware and Gazebo) -->
   <xacro:arg name="initial_positions_file" default="$(find kinova_gen3_site_config)/config/initial_positions.yaml"/>
