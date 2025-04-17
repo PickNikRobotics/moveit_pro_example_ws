@@ -15,8 +15,6 @@
 #include <example_behaviors/example_publish_color_rgba.hpp>
 #include <example_behaviors/example_ransac_registration.hpp>
 #include <example_behaviors/example_sam2_segmentation.hpp>
-#include <example_behaviors/example_setup_mtc_pick_from_pose.hpp>
-#include <example_behaviors/example_setup_mtc_place_from_pose.hpp>
 #include <example_behaviors/example_setup_mtc_wave_hand.hpp>
 
 #include <pluginlib/class_list_macros.hpp>
@@ -44,10 +42,6 @@ public:
                                                                              shared_resources);
     moveit_studio::behaviors::registerBehavior<ExamplePublishColorRGBA>(factory, "ExamplePublishColorRGBA",
                                                                         shared_resources);
-    moveit_studio::behaviors::registerBehavior<ExampleSetupMtcPickFromPose>(factory, "ExampleSetupMtcPickFromPose",
-                                                                            shared_resources);
-    moveit_studio::behaviors::registerBehavior<ExampleSetupMtcPlaceFromPose>(factory, "ExampleSetupMtcPlaceFromPose",
-                                                                             shared_resources);
     moveit_studio::behaviors::registerBehavior<ExampleNDTRegistration>(factory, "ExampleNDTRegistration",
                                                                        shared_resources);
     moveit_studio::behaviors::registerBehavior<ExampleRANSACRegistration>(factory, "ExampleRANSACRegistration",
