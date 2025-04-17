@@ -19,8 +19,8 @@ hardware:
       - robot_ip: "192.168.1.10"
       # Either robotiq_2f_85 or robotiq_2f_140
       - robotiq_gripper: "robotiq_2f_85"
-      # Either robotiq_2f_85_left_knuckle_joint or left_inner_knuckle_joint
-      - gripper_joint_name: "robotiq_2f_85_left_knuckle_joint"
+      # Either robotiq_85_left_knuckle_joint or left_inner_knuckle_joint
+      - gripper_joint_name: "robotiq_85_left_knuckle_joint"
       - use_fake_hardware: "false"
       - fake_sensor_commands: "false"
       # When set to true, will route gripper comms through kinova and gripper_com_port is unused.
