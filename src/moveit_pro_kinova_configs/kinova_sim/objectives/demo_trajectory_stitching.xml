@@ -5,7 +5,6 @@
     ID="Demo Trajectory Stitching"
     _description="Take a pointcloud snapshot of the scene with a depth camera"
     _favorite="false"
-    _subtreeOnly="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree

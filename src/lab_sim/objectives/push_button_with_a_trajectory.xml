@@ -5,7 +5,6 @@
     ID="Push Button With a Trajectory"
     _description="An example for how to use the JTAC to execute a trajectory with compliance."
     _favorite="true"
-    _subtreeOnly="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree ID="Close Gripper" _collapsed="true" />
