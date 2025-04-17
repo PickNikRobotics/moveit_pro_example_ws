@@ -1,0 +1,92 @@
+#
+#  This contains information for a unique instance of a robot.
+#
+
+# Name of the package to specialize
+based_on_package: "kinova_gen3_base_config"
+
+hardware:
+  simulated: False
+  robot_description:
+    urdf:
+      package: "kinova_gen3_site_config"
+      path: "description/kinova_gen3.xacro"
+    srdf:
+      package: "kinova_gen3_site_config"
+      path: "config/moveit/kinova_gen3.srdf"
+    urdf_params:
+      - vision: "false"
+      - robot_ip: "192.168.1.10"
+      # Either robotiq_2f_85 or robotiq_2f_140
+      - robotiq_gripper: "robotiq_2f_85"
+      # Either robotiq_85_left_knuckle_joint or left_inner_knuckle_joint
+      - gripper_joint_name: "robotiq_85_left_knuckle_joint"
+      - use_fake_hardware: "false"
+      - fake_sensor_commands: "false"
+      # When set to true, will route gripper comms through kinova and gripper_com_port is unused.
+      - use_internal_bus_gripper_comm: "true"
+      - gripper_com_port: "/dev/ttyUSB0"  # Must be 1st serial device plugged in to populate as ttyUSB0
+
+# This Configures moveit params that are in moveit_config.py
+moveit_params:
+  joint_group_name: "manipulator"
+
+  ompl_planning:
+    package: "kinova_gen3_base_config"
+    path: "config/moveit/ompl_planning.yaml"
+  kinematics:
+    package: "kinova_gen3_base_config"
+    path: "config/moveit/pose_ik_distance.yaml"
+  servo_kinematics:
+    package: "kinova_gen3_base_config"
+    path: "config/moveit/pose_ik_speed.yaml"
+  servo:
+    package: "kinova_gen3_site_config"
+    path: "config/moveit/kinova_gen3_servo.yaml"
+  sensors_3d:
+    package: "kinova_gen3_base_config"
+    path: "config/moveit/sensors_3d.yaml"
+  joint_limits:
+    package: "kinova_gen3_site_config"
+    path: "config/moveit/joint_limits.yaml"
+  servo_joint_limits:
+    package: "kinova_gen3_site_config"
+    path: "config/moveit/hard_joint_limits.yaml"
+
+  publish:
+    planning_scene: True
+    geometry_updates: True
+    state_updates: True
+    transforms_updates: True
+
+  trajectory_execution:
+    manage_controllers: True
+    allowed_execution_duration_scaling: 2.0
+    allowed_goal_duration_margin: 5.0
+    allowed_start_tolerance: 0.01
+
+objectives:
+  objective_library_paths:
+    hardware_objectives:
+      package_name: "kinova_gen3_site_config"
+      relative_path: "objectives"
+  waypoints_file:
+    package_name: "kinova_gen3_site_config"
+    relative_path: "waypoints/waypoints.yaml"
+
+# This configures what controllers gets run at startup
+ros2_control:
+  config:
+    package: "kinova_gen3_site_config"
+    path: "config/control/picknik_kinova_gen3.ros2_control.yaml"
+  # Load and start these controllers so they can be used immediately.
+  controllers_active_at_startup:
+    - "robotiq_gripper_controller"
+    - "joint_state_broadcaster"
+    - "servo_controller"
+    - "fault_controller"
+  # Load but do not start these controllers so they can be activated later if needed.
+  controllers_inactive_at_startup:
+    - "joint_trajectory_controller"
+    - "joint_trajectory_admittance_controller"
+    - "velocity_force_controller"
