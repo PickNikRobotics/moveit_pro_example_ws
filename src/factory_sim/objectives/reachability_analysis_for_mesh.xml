@@ -1,165 +1,56 @@
+<?xml version='1.0' encoding='UTF-8'?>
 <root BTCPP_format="4" main_tree_to_execute="Reachability Analysis for mesh">
   <!--//////////-->
-  <BehaviorTree
-    ID="Reachability Analysis for mesh"
-    _description="Given a starting waypoint and mesh in the URDF, attempt to move to an approach and target pose for each mesh normal."
-  >
-    <Control ID="Sequence">
-      <Control ID="Sequence" name="Move to starting waypoint">
-        <Action
-          ID="RetrieveWaypoint"
-          joint_group_name="{joint_group_name}"
-          waypoint_joint_state="{starting_joint_state}"
-          waypoint_name="{starting_waypoint}"
-        />
-        <SubTree
-          ID="Move to Joint State"
-          _collapsed="false"
-          target_joint_state="{starting_joint_state}"
-          acceleration_scale_factor="1.0"
-          controller_action_server="{controller_action_server}"
-          controller_names="{controller_names}"
-          joint_group_name="{joint_group_name}"
-          keep_orientation="false"
-          keep_orientation_tolerance="0.05"
-          link_padding="0.01"
-          velocity_scale_factor="1.0"
-        />
-      </Control>
-      <Control ID="Sequence" name="Make vector of place poses to plan to">
-        <Action
-          ID="CreateStampedPose"
-          reference_frame="tool0"
-          stamped_pose="{tool_pose}"
-          orientation_xyzw="0;0;0;1"
-          position_xyz="0;0;0"
-        />
-        <Action
-          ID="VisualizePose"
-          marker_name="tool_pose"
-          pose="{tool_pose}"
-          marker_lifetime="0.000000"
-          marker_size="0.200000"
-        />
-        <Action
-          ID="GetMeshNormalPoses"
-          discretization_step_size="0.050000"
-          mesh_normal_poses="{mesh_normal_poses}"
-          link_name="{mesh_link_name}"
-        />
-        <Action
-          ID="ResetPoseStampedVector"
-          vector="{mesh_normal_poses_reoriented}"
-        />
-        <Decorator
-          ID="ForEach"
-          vector_in="{mesh_normal_poses}"
-          out="{target_pose}"
-          index="{index}"
-        >
-          <Control
-            ID="Sequence"
-            name="Reorient normal to our grasp planning convention"
-          >
-            <Action
-              ID="TransformPose"
-              input_pose="{target_pose}"
-              output_pose="{output_pose}"
-              quaternion_xyzw="0.7071;0;0.7071;0"
-              translation_xyz="0;0;0"
-            />
-            <Action
-              ID="AddPoseStampedToVector"
-              input="{output_pose}"
-              vector="{mesh_normal_poses_reoriented}"
-            />
-          </Control>
-        </Decorator>
-      </Control>
-      <Control
-        ID="Sequence"
-        name="Plan to each place pose from an approach pose"
-      >
-        <Decorator
-          ID="ForEach"
-          vector_in="{mesh_normal_poses_reoriented}"
-          out="{target_pose}"
-          index="{index}"
-        >
-          <Control ID="Sequence">
-            <Action
-              ID="TransformPose"
-              input_pose="{target_pose}"
-              output_pose="{approach_pose}"
-              quaternion_xyzw="0;0;0;1"
-              translation_xyz="{approach_translation}"
-            />
-            <SubTree
-              ID="Plan And Execute With Orientation Samples"
-              _collapsed="true"
-              starting_joint_state="{starting_joint_state}"
-              approach_pose="{approach_pose}"
-              approach_distance="{approach_distance}"
-              target_pose="{target_pose}"
-              joint_group_name="{joint_group_name}"
-              controller_names="{controller_names}"
-              controller_action_server="{controller_action_server}"
-              execute_trajectories="{execute_trajectories}"
-              end_effector_joint_group="{end_effector_joint_group}"
-              ik_frame="{ik_frame}"
-            />
-          </Control>
-        </Decorator>
-        <Action
-          ID="ExecuteFollowJointTrajectory"
-          goal_duration_tolerance="-1.000000"
-          goal_position_tolerance="0.000000"
-          goal_time_tolerance="0.000000"
-          joint_trajectory_msg="{joint_trajectory_msg}"
-          execute_follow_joint_trajectory_action_name="/joint_trajectory_controller/follow_joint_trajectory"
-        />
-      </Control>
-    </Control>
-  </BehaviorTree>
+  <BehaviorTree ID="Reachability Analysis for mesh" _description="Given a starting waypoint and mesh in the URDF, attempt to move to an approach and target pose for each mesh normal.">
+    
+  <Control ID="Sequence">
+      
+      
+      
+    <Control ID="Sequence" name="Move to starting waypoint">
+        
+        
+      <Action ID="RetrieveWaypoint" joint_group_name="{joint_group_name}" waypoint_joint_state="{starting_joint_state}" waypoint_name="{starting_waypoint}"/><SubTree ID="Move to Joint State" _collapsed="false" target_joint_state="{starting_joint_state}" acceleration_scale_factor="1.0" controller_action_server="{controller_action_server}" controller_names="{controller_names}" joint_group_name="{joint_group_name}" keep_orientation="false" keep_orientation_tolerance="0.05" link_padding="0.01" velocity_scale_factor="1.0"/></Control><Control ID="Sequence" name="Make vector of place poses to plan to">
+        
+        
+        
+        
+        
+      <Action ID="CreateStampedPose" reference_frame="tool0" stamped_pose="{tool_pose}" orientation_xyzw="0;0;0;1" position_xyz="0;0;0"/><Action ID="VisualizePose" marker_name="tool_pose" pose="{tool_pose}" marker_lifetime="0.000000" marker_size="0.200000"/><Action ID="GetMeshNormalPoses" discretization_step_size="0.050000" mesh_normal_poses="{mesh_normal_poses}" link_name="{mesh_link_name}"/><Action ID="ResetPoseStampedVector" vector="{mesh_normal_poses_reoriented}"/><Decorator ID="ForEach" vector_in="{mesh_normal_poses}" out="{target_pose}" index="{index}">
+          
+        <Control ID="Sequence" name="Reorient normal to our grasp planning convention">
+            
+            
+          <Action ID="TransformPose" input_pose="{target_pose}" output_pose="{output_pose}" quaternion_xyzw="0.7071;0;0.7071;0" translation_xyz="0;0;0"/><Action ID="AddPoseStampedToVector" input="{output_pose}" vector="{mesh_normal_poses_reoriented}"/></Control></Decorator></Control><Control ID="Sequence" name="Plan to each place pose from an approach pose">
+        
+        
+      <Decorator ID="ForEach" vector_in="{mesh_normal_poses_reoriented}" out="{target_pose}" index="{index}">
+          
+        <Control ID="Sequence">
+            
+            
+          <Action ID="TransformPose" input_pose="{target_pose}" output_pose="{approach_pose}" quaternion_xyzw="0;0;0;1" translation_xyz="{approach_translation}"/><SubTree ID="Plan And Execute With Orientation Samples" _collapsed="true" starting_joint_state="{starting_joint_state}" approach_pose="{approach_pose}" approach_distance="{approach_distance}" target_pose="{target_pose}" joint_group_name="{joint_group_name}" controller_names="{controller_names}" controller_action_server="{controller_action_server}" execute_trajectories="{execute_trajectories}" end_effector_joint_group="{end_effector_joint_group}" ik_frame="{ik_frame}"/></Control></Decorator></Control></Control></BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Reachability Analysis for mesh">
       <MetadataFields>
-        <Metadata runnable="false" />
-        <Metadata subcategory="Reachability" />
+        <Metadata runnable="false"/>
+        <Metadata subcategory="Reachability"/>
       </MetadataFields>
 
-      <inout_port name="approach_distance" default="{approach_distance}" />
-      <inout_port
-        name="approach_translation"
-        default="{approach_translation}"
-      />
-      <inout_port
-        name="controller_action_server"
-        default="{controller_action_server}"
-      />
-      <inout_port name="controller_names" default="{controller_names}" />
-      <inout_port
-        name="end_effector_joint_group"
-        default="{end_effector_joint_group}"
-      />
-      <inout_port
-        name="execute_trajectories"
-        default="{execute_trajectories}"
-      />
-      <inout_port name="ik_frame" default="{ik_frame}" />
-      <inout_port name="joint_group_name" default="{joint_group_name}" />
-      <inout_port name="keep_orientation" default="{keep_orientation}" />
-      <inout_port
-        name="keep_orientation_link_names"
-        default="{keep_orientation_link_names}"
-      />
-      <inout_port
-        name="keep_orientation_tolerance"
-        default="{keep_orientation_tolerance}"
-      />
-      <inout_port name="mesh_link_name" default="{mesh_link_name}" />
-      <inout_port name="position_only_ik" default="{position_only_ik}" />
-      <inout_port name="starting_waypoint" default="{starting_waypoint}" />
-    </SubTree>
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+    <inout_port name="approach_distance" default="{approach_distance}"/><inout_port name="approach_translation" default="{approach_translation}"/><inout_port name="controller_action_server" default="{controller_action_server}"/><inout_port name="controller_names" default="{controller_names}"/><inout_port name="end_effector_joint_group" default="{end_effector_joint_group}"/><inout_port name="execute_trajectories" default="{execute_trajectories}"/><inout_port name="ik_frame" default="{ik_frame}"/><inout_port name="joint_group_name" default="{joint_group_name}"/><inout_port name="keep_orientation" default="{keep_orientation}"/><inout_port name="keep_orientation_link_names" default="{keep_orientation_link_names}"/><inout_port name="keep_orientation_tolerance" default="{keep_orientation_tolerance}"/><inout_port name="mesh_link_name" default="{mesh_link_name}"/><inout_port name="position_only_ik" default="{position_only_ik}"/><inout_port name="starting_waypoint" default="{starting_waypoint}"/></SubTree>
   </TreeNodesModel>
 </root>
