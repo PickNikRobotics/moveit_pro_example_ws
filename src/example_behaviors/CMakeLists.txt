@@ -22,8 +22,6 @@ add_library(
   src/example_fibonacci_action_client.cpp
   src/example_hello_world.cpp
   src/example_publish_color_rgba.cpp
-  src/example_setup_mtc_pick_from_pose.cpp
-  src/example_setup_mtc_place_from_pose.cpp
   src/example_setup_mtc_wave_hand.cpp
   src/example_ndt_registration.cpp
   src/example_ransac_registration.cpp

@@ -14,7 +14,7 @@
         ID="Move to Waypoint"
         waypoint_name="{pre_pick}"
         joint_group_name="manipulator"
-        controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
+        controller_names="/joint_trajectory_controller;/robotiq_gripper_controller"
         planner_interface="moveit_default"
         keep_orientation="true"
         keep_orientation_tolerance="0.2"
@@ -28,7 +28,7 @@
         ID="Move to Waypoint"
         waypoint_name="{pick}"
         joint_group_name="manipulator"
-        controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
+        controller_names="/joint_trajectory_controller;/robotiq_gripper_controller"
         planner_interface="moveit_default"
         keep_orientation="true"
         keep_orientation_tolerance="0.2"
@@ -45,7 +45,7 @@
       <!--Move to place (drop) location-->
       <SubTree
         ID="Move to Waypoint"
-        controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
+        controller_names="/joint_trajectory_controller;/robotiq_gripper_controller"
         joint_group_name="manipulator"
         planner_interface="moveit_default"
         keep_orientation="true"
@@ -60,7 +60,7 @@
       />
       <SubTree
         ID="Move to Waypoint"
-        controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
+        controller_names="/joint_trajectory_controller;/robotiq_gripper_controller"
         joint_group_name="manipulator"
         planner_interface="moveit_default"
         keep_orientation="true"
@@ -75,7 +75,7 @@
       />
       <SubTree
         ID="Move to Waypoint"
-        controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
+        controller_names="/joint_trajectory_controller;/robotiq_gripper_controller"
         joint_group_name="manipulator"
         planner_interface="moveit_default"
         keep_orientation="true"
@@ -91,7 +91,7 @@
       <SubTree ID="Open Gripper" />
       <SubTree
         ID="Move to Waypoint"
-        controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
+        controller_names="/joint_trajectory_controller;/robotiq_gripper_controller"
         joint_group_name="manipulator"
         planner_interface="moveit_default"
         keep_orientation="true"

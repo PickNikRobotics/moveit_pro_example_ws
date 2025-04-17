@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Grasp Planning">
   <!--//////////-->
   <BehaviorTree
@@ -59,8 +59,9 @@
         <Action
           ID="InitializeMTCTask"
           task_id="pick_object"
-          controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
+          controller_names="/joint_trajectory_controller;/robotiq_gripper_controller"
           task="{pick_object_task}"
+          trajectory_monitoring="false"
         />
         <Action
           ID="SetupMTCCurrentState"
