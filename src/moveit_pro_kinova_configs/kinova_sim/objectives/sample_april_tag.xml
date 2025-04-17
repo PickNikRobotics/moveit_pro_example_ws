@@ -4,7 +4,6 @@
   <BehaviorTree
     ID="Sample April Tag"
     _description="Samples the pose of an AprilTag and returns the average measurement."
-    _subtreeOnly="true"
     _favorite="false"
   >
     <Decorator ID="Repeat" num_cycles="{num_samples}" name="SamplePose">
@@ -59,6 +58,7 @@
       <input_port name="tag_id" default="-1" />
       <MetadataFields>
         <Metadata subcategory="Perception - Image Processing" />
+        <Metadata runnable="false" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
