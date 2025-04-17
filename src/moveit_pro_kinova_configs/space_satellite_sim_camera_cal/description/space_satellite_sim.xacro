@@ -3,7 +3,7 @@
   <!-- Arguments for Kinova -->
   <xacro:arg name="arm" default="gen3" />
   <xacro:arg name="dof" default="7" />
-  <xacro:arg name="mujoco_keyframe" default="default" />
+  <!-- <xacro:arg name="mujoco_keyframe" default="default" /> -->
   <xacro:arg name="mujoco_model" default="description/mujoco/scene.xml" />
   <xacro:arg name="mujoco_viewer" default="false" />
 
@@ -546,6 +546,67 @@
     <origin xyz="0 0 0.15" rpy="0 0 0"/>
   </joint>
 
+  <!-- Calibration tool -->
+  <link name="calibration_tool_link">
+    <visual>
+      <geometry>
+        <mesh filename="file://$(find space_satellite_sim_camera_cal)/description/mujoco/assets/calibration_tool.stl"/>
+      </geometry>
+    </visual>
+  </link>
+  <joint name="calibration_tool_joint" type="fixed">
+    <parent link="robotiq_85_base_link"/>
+    <child link="calibration_tool_link"/>
+    <origin xyz="0 0 0.169" rpy="0 0 0"/>
+  </joint>
+  <link name="calibration_tag_right">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 1.5708 0"/>
+      <geometry>
+        <mesh filename="package://picknik_accessories/descriptions/ar_markers/Marker0.dae" scale=".05 .102 .102"/>
+        <!-- .dae tag side len = 0.5m, and tag size is 0.051m -> scale=0.102m -->
+      </geometry>
+    </visual>
+  </link>
+  <joint name="calibration_tag_right_joint" type="fixed">
+    <parent link="calibration_tool_link"/>
+    <child link="calibration_tag_right"/>
+    <origin xyz="-0.08625 -0.04925 -0.01" rpy="0 0 0"/>
+  </joint>
+  <link name="calibration_tag_left">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 1.5708 0"/>
+      <geometry>
+        <mesh filename="package://picknik_accessories/descriptions/ar_markers/Marker1.dae" scale=".05 .102 .102"/>
+      </geometry>
+    </visual>
+  </link>
+  <joint name="calibration_tag_left_joint" type="fixed">
+    <parent link="calibration_tool_link"/>
+    <child link="calibration_tag_left"/>
+    <origin xyz="0.08625 -0.04925 -0.01" rpy="0 0 0"/>
+  </joint>
+  <link name="calibration_tag_bottom">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 1.5708 0"/>
+      <geometry>
+        <mesh filename="package://picknik_accessories/descriptions/ar_markers/Marker2.dae" scale=".05 .102 .102"/>
+      </geometry>
+    </visual>
+  </link>
+  <joint name="calibration_tag_bottom_joint" type="fixed">
+    <parent link="calibration_tool_link"/>
+    <child link="calibration_tag_bottom"/>
+    <origin xyz="0.0 -0.18125 -0.01" rpy="0 0 0"/>
+  </joint>
+
+  <link name="calibration_tool_frame"/>
+  <joint name="calibration_tool_frame_joint" type="fixed">
+    <parent link="calibration_tool_link"/>
+    <child link = "calibration_tool_frame"/>
+    <origin xyz="0 -0.09325 -0.01" rpy="0 ${pi} ${pi}"/>
+  </joint>
+
   <!-- Servicer Camera -->
   <link name="servicer_camera_mount_link" />
   <joint name="servicer_camera_mount_joint" type="fixed">
@@ -677,9 +738,9 @@
     </joint>
     <hardware>
       <plugin>picknik_mujoco_ros/MujocoSystem</plugin>
-      <param name="mujoco_keyframe">$(arg mujoco_keyframe)</param>
+      <!-- <param name="mujoco_keyframe">$(arg mujoco_keyframe)</param> -->
       <param name="mujoco_model">$(arg mujoco_model)</param>
-      <param name="mujoco_model_package">space_satellite_sim</param>
+      <param name="mujoco_model_package">space_satellite_sim_camera_cal</param>
       <param name="mujoco_viewer">$(arg mujoco_viewer)</param>
       <param name="render_publish_rate">10</param>
       <param name="tf_publish_rate">60</param>
