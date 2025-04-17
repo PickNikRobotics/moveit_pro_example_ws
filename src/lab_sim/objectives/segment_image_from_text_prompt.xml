@@ -3,7 +3,6 @@
   <!--//////////-->
   <BehaviorTree
     ID="Segment Image from Text Prompt"
-    _subtreeOnly="false"
     _description="Run text based segmentation and visualize he masks."
     _favorite="true"
   >

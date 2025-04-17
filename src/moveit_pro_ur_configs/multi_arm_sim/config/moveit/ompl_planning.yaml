@@ -132,7 +132,7 @@ fourth_gripper:
     - PRMkConfigDefault
     - PRMstarkConfigDefault
 
-multi_arm_manipulator:
+manipulator:
   default_planner_config: RRTConnectkConfigDefault
   planner_configs:
     - APSConfigDefault

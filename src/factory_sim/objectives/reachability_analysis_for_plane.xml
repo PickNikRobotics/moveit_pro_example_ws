@@ -3,7 +3,6 @@
   <!--//////////-->
   <BehaviorTree
     ID="Reachability Analysis for plane"
-    _subtreeOnly="true"
     column_spacing_translation="0;0.25;0"
     num_45_deg_rotations="0"
     num_columns="3"
