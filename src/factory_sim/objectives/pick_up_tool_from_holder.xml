@@ -1,11 +1,20 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<root BTCPP_format="4" main_tree_to_execute="Pick Up Tool">
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Pick Up Tool from Holder">
   <!--//////////-->
   <BehaviorTree
-    ID="Pick Up Tool"
+    ID="Pick Up Tool from Holder"
     _description="Pick up the tool from the tool holder"
   >
     <Control ID="Sequence" name="TopLevelSequence">
+      <Control ID="Sequence" name="Assume tool is in tool holder">
+        <Action
+          ID="LogMessage"
+          log_level="info"
+          message="Assuming tool is in tool holder"
+        />
+        <SubTree ID="Reset Planning Scene" _collapsed="true" />
+        <SubTree ID="Setup Initial Planning Scene" _collapsed="true" />
+      </Control>
       <Action
         ID="CreateStampedPose"
         reference_frame="tool_attach_site"
@@ -17,6 +26,7 @@
         task_id="pick_up_tool"
         controller_names="/joint_trajectory_controller"
         task="{mtc_task}"
+        trajectory_monitoring="false"
       />
       <Action
         ID="SetupMTCCurrentState"
@@ -37,7 +47,7 @@
         trajectory_sampling_rate="100"
         velocity_scale_factor="0.5"
         task="{mtc_task}"
-        keep_orientation_link_names="grasp_link"
+        keep_orientation_link_names="tool0"
       />
       <Action
         ID="SetupMTCMoveAlongFrameAxis"
@@ -66,31 +76,16 @@
         gripper_command_action_name="/tool_attach_controller/gripper_cmd"
         timeout="10"
       />
-      <Control ID="Fallback">
-        <Action
-          ID="AttachTool"
-          parent_link_name="tool0"
-          tool_name="suction_gripper"
-        />
-        <Control ID="Sequence">
-          <Action
-            ID="LogMessage"
-            log_level="warn"
-            message="Tool missing from planning scene - running &quot;Setup Initial Planning Scene&quot; with assumption it is in tool holder."
-          />
-          <SubTree ID="Setup Initial Planning Scene" _collapsed="true" />
-          <Action
-            ID="AttachTool"
-            parent_link_name="tool0"
-            tool_name="suction_gripper"
-          />
-        </Control>
-      </Control>
+      <Action
+        ID="AttachTool"
+        parent_link_name="tool0"
+        tool_name="suction_gripper"
+      />
       <SubTree ID="Retract" _collapsed="true" distance="0.35" />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Pick Up Tool">
+    <SubTree ID="Pick Up Tool from Holder">
       <MetadataFields>
         <Metadata subcategory="Grasping" />
         <Metadata runnable="false" />
