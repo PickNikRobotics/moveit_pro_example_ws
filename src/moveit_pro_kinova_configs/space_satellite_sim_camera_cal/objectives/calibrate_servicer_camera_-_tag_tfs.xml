@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Calibrate Servicer Camera - Tag TFs"
+>
+  <!--//////////-->
+  <BehaviorTree
+    ID="Calibrate Servicer Camera - Tag TFs"
+    _description="Calibrate the servicer camera from multiple waypoints using externally published detected AprilTag TF frames."
+    _favorite="false"
+  >
+    <SubTree
+      ID="Calibrate Camera - Tag TFs"
+      _collapsed="true"
+      camera_mounting_frame="servicer_camera_mount_link"
+      camera_optical_frame="servicer_camera_color_optical_frame"
+      mounting_pose_save_file="calibrated_servicer_cam_mount_pose_TF.txt"
+      mounting_pose_parent_frame="world"
+    />
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Calibrate Servicer Camera - Tag TFs">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Perception - Camera Calibration" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
