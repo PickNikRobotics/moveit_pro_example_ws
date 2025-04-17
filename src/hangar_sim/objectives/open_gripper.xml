@@ -4,7 +4,6 @@
     ID="Open Gripper"
     _description="Open the gripper"
     _favorite="true"
-    _subtreeOnly="true"
   >
     <Control ID="Sequence" name="root">
       <!--Not used in this config-->

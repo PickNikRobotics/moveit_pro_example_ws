@@ -3,7 +3,6 @@
   <!--//////////-->
   <BehaviorTree
     ID="Segment Image from Point Subtree"
-    _subtreeOnly="true"
     _description="Captures an image and segments it using the user provided prompt points."
     _favorite="true"
     decoder_model_path="models/decoder.onnx"
