@@ -40,33 +40,95 @@
           adjusted_poses="{adjusted_poses}"
         />
       </Control>
-      <Decorator ID="ForEach" vector_in="{adjusted_poses}" out="{grasp_pose}">
-        <Control ID="Sequence">
-          <Action
-            ID="InitializeMTCTask"
-            task_id="pick_object"
-            controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-            task="{pick_object_task}"
-          />
-          <Action ID="SetupMTCCurrentState" task="{pick_object_task}" />
-          <Action
-            ID="SetupMTCPickObject"
-            grasp_pose="{grasp_pose}"
-            task="{pick_object_task}"
-            parameters="{parameters}"
-          />
-          <Action
-            ID="PlanMTCTask"
-            solution="{pick_object_solution}"
-            task="{pick_object_task}"
-          />
-          <SubTree
-            ID="Wait for Trajectory Approval if User Available"
-            solution="{pick_object_solution}"
-          />
-          <Action ID="ExecuteMTCTask" solution="{pick_object_solution}" />
-        </Control>
-      </Decorator>
+      <Action
+        ID="InitializeMTCTask"
+        task_id="pick_object"
+        controller_names="/joint_trajectory_controller;/robotiq_gripper_controller"
+        task="{pick_object_task}"
+      />
+      <Action ID="SetupMTCCurrentState" task="{pick_object_task}" />
+      <Action
+        ID="SetupMTCConnectWithTrajectory"
+        planner_interface="pro_rrt"
+        planning_group_name="manipulator"
+        task="{mtc_task}"
+        constraints="{constraints}"
+      />
+      <Action
+        ID="SetupMTCMoveAlongFrameAxis"
+        acceleration_scale="1.000000"
+        axis_frame="world"
+        axis_x="0.000000"
+        axis_y="0.000000"
+        axis_z="-1.000000"
+        hand_frame="grasp_link"
+        max_distance="0.100000"
+        min_distance="0.100000"
+        planning_group_name="manipulator"
+        task="{pick_object_task}"
+        velocity_scale="1.000000"
+        ignore_environment_collisions="false"
+      />
+      <Action
+        ID="SetupMTCBatchPoseIK"
+        end_effector_group="moveit_ee"
+        end_effector_link="grasp_link"
+        ik_timeout_s="0.01"
+        max_ik_solutions="4"
+        monitored_stage="current state"
+        target_poses="{grasp_poses}"
+        task="{pick_object_task}"
+      />
+      <Action
+        ID="PlanMTCTask"
+        solution="{mtc_solution}"
+        task="{pick_object_task}"
+      />
+      <SubTree
+        ID="Wait for Trajectory Approval if User Available"
+        _collapsed="false"
+        solution="{mtc_solution}"
+      />
+      <Action
+        ID="ExecuteMTCTask"
+        goal_duration_tolerance="-1.000000"
+        solution="{mtc_solution}"
+      />
+      <SubTree ID="Close Gripper" _collapsed="true" />
+      <Action
+        ID="CreateStampedPose"
+        reference_frame="grasp_link"
+        stamped_pose="{retract_pose}"
+        position_xyz="0;0;-0.1"
+      />
+      <Action
+        ID="AddPoseStampedToVector"
+        input="{retract_pose}"
+        vector="{retract_path}"
+      />
+      <Action
+        ID="PlanCartesianPath"
+        acceleration_scale_factor="1.000000"
+        blending_radius="0.020000"
+        debug_solution="{debug_solution}"
+        ik_cartesian_space_density="0.010000"
+        ik_joint_space_density="0.100000"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+        path="{retract_path}"
+        planning_group_name="manipulator"
+        position_only="false"
+        tip_link="grasp_link"
+        trajectory_sampling_rate="100"
+        velocity_scale_factor="1.000000"
+      />
+      <Action
+        ID="ExecuteFollowJointTrajectory"
+        execute_follow_joint_trajectory_action_name="/joint_trajectory_controller/follow_joint_trajectory"
+        goal_duration_tolerance="-1.000000"
+        goal_position_tolerance="0.000000"
+        goal_time_tolerance="0.000000"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+      />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>

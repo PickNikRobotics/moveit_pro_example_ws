@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Grapple Moving Satellite with Fuse"
+>
+  <!--//////////-->
+  <BehaviorTree
+    ID="Grapple Moving Satellite with Fuse"
+    _description="Track and grapple satellite using Fuse state estimation of target April tags. Initiate satellite motion or reset position with Key 1 in the MuJoCo viewer."
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree ID="Open Gripper" _collapsed="true" />
+      <Action
+        ID="ActivateControllers"
+        controller_names="/velocity_force_controller"
+      />
+      <Action
+        ID="CreateStampedPose"
+        stamped_pose="{target_pose_offset}"
+        orientation_xyzw="-0.7071068;0.7071068;0;0"
+        position_xyz="0.0;0.0;0.2"
+        reference_frame="world"
+        name="target pose offset"
+      />
+      <Action
+        ID="CreateStampedWrench"
+        torque_xyz="0.0;0.0;0.0"
+        force_xyz="0.0;0.0;0.0"
+        stamped_wrench="{desired_wrench}"
+        name="Always 0, not using Force"
+        reference_frame="world"
+      />
+      <Action
+        ID="CreateStampedTwist"
+        name="Init 0 Pose (until FF-VFC outputs)"
+        angular_velocity_xyz="0;0;0"
+        linear_velocity_xyz="0;0;0"
+        stamped_twist="{desired_twist}"
+        reference_frame="world"
+      />
+      <Control ID="Parallel" failure_count="1" success_count="1">
+        <Decorator ID="KeepRunningUntilFailure">
+          <Action
+            ID="GetOdom"
+            odometry_topic_name="odom_filtered"
+            odometry_pose="{odometry_pose}"
+            subscribed_odometry="{subscribed_odometry}"
+          />
+        </Decorator>
+        <Control ID="Sequence" name="TopLevelSequence">
+          <Decorator ID="Repeat" num_cycles="-1">
+            <Control ID="Sequence" name="TopLevelSequence">
+              <Action
+                ID="WaitForDuration"
+                name="needed so agent doesn't crash"
+                delay_duration="0.1"
+              />
+              <Action
+                ID="VisualizePose"
+                name="odom pose for debug"
+                pose="{odometry_pose}"
+                marker_name="odom_pose"
+                marker_lifetime="0.000000"
+                marker_size="0.100000"
+              />
+              <Action
+                ID="ComputeVelocityToAlignWithTarget"
+                output_control_velocity="{desired_twist}"
+                proportional_gain_angular="0.5"
+                proportional_gain_linear="0.4"
+                end_effector_frame="grasp_link"
+                target_motion_state="{subscribed_odometry}"
+                target_pose_offset="{target_pose_offset}"
+                output_pose_error="{error_pose}"
+              />
+            </Control>
+          </Decorator>
+        </Control>
+        <Decorator ID="KeepRunningUntilFailure">
+          <Action
+            ID="PublishVelocityForceCommand"
+            wrench_gain="0.1"
+            velocity_controlled_axes="1;1;1;1;1;1"
+            force_controlled_axes="0;0;0;0;0;0"
+            publish_rate="10"
+            twist_stamped="{desired_twist}"
+            velocity_force_controller_command_topic="/pose_jog/manipulator"
+            wrench_stamped="{desired_wrench}"
+          />
+        </Decorator>
+        <Decorator ID="KeepRunningUntilFailure">
+          <Action
+            ID="PoseJog"
+            controller_names="velocity_force_controller"
+            link_padding="0.010000"
+            planning_group_names="manipulator"
+            stop_safety_factor="1.200000"
+          />
+        </Decorator>
+        <Control ID="Sequence" name="TopLevelSequence">
+          <Action
+            ID="WaitForDuration"
+            delay_duration="0.2"
+            name="Wait for {error_pose} to be created."
+          />
+          <Decorator ID="RetryUntilSuccessful" num_attempts="-1">
+            <Control ID="Sequence">
+              <Action
+                ID="WaitForDuration"
+                name="needed so agent doesn't crash"
+                delay_duration="0.1"
+              />
+              <Action
+                ID="IsPoseNearIdentity"
+                pose="{error_pose}"
+                position_tolerance="0.03"
+                rotation_tolerance="0.2"
+              />
+            </Control>
+          </Decorator>
+          <Action
+            ID="CreateStampedPose"
+            reference_frame="world"
+            stamped_pose="{target_pose_offset}"
+            orientation_xyzw="-0.7071068;0.7071068;0;0"
+            position_xyz="0;0;0.085"
+          />
+          <Decorator ID="RetryUntilSuccessful" num_attempts="-1">
+            <Control ID="Sequence">
+              <Action
+                ID="WaitForDuration"
+                name="needed so agent doesn't crash"
+                delay_duration="0.1"
+              />
+              <Action
+                ID="IsPoseNearIdentity"
+                pose="{error_pose}"
+                position_tolerance="0.02"
+                rotation_tolerance="0.1"
+              />
+            </Control>
+          </Decorator>
+          <SubTree ID="Close Gripper" _collapsed="true" />
+        </Control>
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Grapple Moving Satellite with Fuse">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Advanced Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

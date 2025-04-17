@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Pick April Tag Labeled Object">
   <!--//////////-->
   <BehaviorTree
@@ -71,37 +71,15 @@
         translation_xyz="0;0;-0.01"
       />
       <Action
-        ID="LoadObjectiveParameters"
-        config_file_name="pick_object_config.yaml"
-        parameters="{parameters}"
+        ID="AddPoseStampedToVector"
+        input="{offset_pose}"
+        vector="{grasp_poses}"
       />
-      <Action
-        ID="InitializeMTCTask"
-        task_id="pick_object"
-        controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
-        task="{pick_object_task}"
-      />
-      <Action
-        ID="SetupMTCCurrentState"
-        task="{pick_object_task}"
-        skip_collision_check="false"
-      />
-      <Action
-        ID="SetupMTCPickObject"
-        grasp_pose="{offset_pose}"
-        task="{pick_object_task}"
-        parameters="{parameters}"
-        monitored_stage="current state"
-      />
-      <Action
-        ID="PlanMTCTask"
-        solution="{pick_object_solution}"
-        task="{pick_object_task}"
-      />
-      <Action
-        ID="ExecuteMTCTask"
-        solution="{pick_object_solution}"
-        goal_duration_tolerance="-1.000000"
+      <SubTree
+        ID="Pick from Pose"
+        _collapsed="true"
+        grasp_pose="{object_pose}"
+        grasp_poses="{grasp_poses}"
       />
     </Control>
   </BehaviorTree>
