@@ -23,6 +23,15 @@ controller_manager:
 
 joint_trajectory_controller:
   ros__parameters:
+    gains:
+      joint_1:
+        angle_wraparound: true
+      joint_3:
+        angle_wraparound: true
+      joint_5:
+        angle_wraparound: true
+      joint_7:
+        angle_wraparound: true
     joints:
       - joint_1
       - joint_2
