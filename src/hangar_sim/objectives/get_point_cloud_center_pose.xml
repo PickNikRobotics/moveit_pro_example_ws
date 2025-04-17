@@ -5,7 +5,6 @@
     ID="Get Point Cloud Center Pose"
     _description="Take a wrist camera snapshot and return the center pose of the point cloud"
     _favorite="false"
-    _subtreeOnly="false"
     input_pose="{stamped_pose}"
     output_pose="{plane_pose}"
   >
@@ -48,7 +47,7 @@
       <inout_port name="output_pose" default="{plane_pose}" />
       <MetadataFields>
         <Metadata subcategory="Training Examples" />
-        <Metadata runnable="true" />
+        <Metadata runnable="false" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>

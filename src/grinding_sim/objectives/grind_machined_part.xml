@@ -1,12 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Grind Machined Part">
   <!--//////////-->
-  <BehaviorTree
-    ID="Grind Machined Part"
-    _description=""
-    _favorite="true"
-    _subtreeOnly="false"
-  >
+  <BehaviorTree ID="Grind Machined Part" _description="" _favorite="true">
     <Control ID="Sequence" name="TopLevelSequence">
       <Action ID="ClearSnapshot" />
       <!--View workspace and register part-->
