@@ -2,7 +2,6 @@
   <!-- ////////// -->
   <BehaviorTree
     ID="Clear Previous Obstacles"
-    _subtreeOnly="true"
     _description="Clear previous scene obstacles"
   >
     <Control ID="Sequence" name="Setup">
