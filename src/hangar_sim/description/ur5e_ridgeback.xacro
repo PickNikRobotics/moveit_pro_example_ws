@@ -109,5 +109,18 @@
 
   <!-- MuJoCo Hardware interface -->
   <xacro:picknik_ur_mujoco_ros2_control mujoco_model="$(arg mujoco_model)"/>
+  <!-- Clearpath control hardware interface for controlling mobile base with a JTC -->
+  <ros2_control name="clearpath_controller_interface" type="system">
+    <hardware>
+      <plugin>clearpath_controller_interface/ClearpathControllerInterface</plugin>
+      <param name="odom_topic">/odom</param>
+      <param name="cmd_vel_topic">/platform_velocity_controller/cmd_vel_unstamped</param>
+      <param name="max_linear_velocity">10</param>
+      <param name="max_angular_velocity">10</param>
+    </hardware>
+    <joint name="linear_x_joint"/>
+    <joint name="linear_y_joint"/>
+    <joint name="rotational_yaw_joint"/>
+  </ros2_control>
 
 </robot>
