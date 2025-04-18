@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Loop Pointcloud">
+  <!--//////////-->
+  <BehaviorTree ID="Loop Pointcloud" _description="" _favorite="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Decorator ID="Repeat" num_cycles="150">
+        <Action
+          ID="GetPointCloud"
+          message_out="{point_cloud}"
+          timeout_sec="5.000000"
+          topic_name="/scene_camera/points"
+        />
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Loop Pointcloud">
+      <MetadataFields>
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

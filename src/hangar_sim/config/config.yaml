@@ -96,6 +96,7 @@ ros2_control:
     - "joint_trajectory_controller"
     - "platform_velocity_controller"
     - "vacuum_gripper"
+    - "base_joint_trajectory_controller"
   # Load but do not start these controllers so they can be activated later if needed.
   controllers_inactive_at_startup:
     - "servo_controller"
