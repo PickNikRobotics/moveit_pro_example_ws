@@ -29,6 +29,7 @@
         <link name="collision_vacuum_suction_cups"/>
     </group>
     <group name="linear_actuator">
+        <link name="world"/>
         <link name="chassis_link"/>
         <link name="riser_link"/>
         <link name="top_link"/>

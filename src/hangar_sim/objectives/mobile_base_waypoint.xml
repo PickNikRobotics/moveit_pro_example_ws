@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Mobile Base Waypoint">
+  <BehaviorTree
+    ID="Mobile Base Waypoint"
+    _description="Plan and execute motion to a MoveIt Pro-created named Waypoint, which is saved in joint space to the file system."
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="root">
+      <Action
+        ID="RetrieveWaypoint"
+        joint_group_name="linear_actuator"
+        waypoint_joint_state="{target_joint_state}"
+        waypoint_name="mobile_base2"
+      />
+      <Action
+        ID="ActivateControllers"
+        controller_names="/base_joint_trajectory_controller"
+      />
+      <Action
+        ID="PlanToJointGoal"
+        joint_goal="{target_joint_state}"
+        keep_orientation_tolerance="0.1"
+        link_padding="0.0"
+        keep_orientation="false"
+        acceleration_scale_factor="1.0"
+        velocity_scale_factor="1.0"
+        planning_group_name="linear_actuator"
+        seed="0"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+        keep_orientation_link_names="grasp_link"
+        max_iterations="5000"
+        trajectory_sampling_rate="100"
+      />
+      <Action
+        ID="SetAdmittanceParameters"
+        admittance_parameters_msg="{admittance_parameters_msg}"
+        config_file_name="admittance_parameters_no_admittance.yaml"
+      />
+      <Action
+        ID="ExecuteTrajectoryWithAdmittance"
+        absolute_force_torque_threshold="45;45;45;10;10;10"
+        admittance_parameters_msg="{admittance_parameters_msg}"
+        controller_action_name="/base_joint_trajectory_controller/follow_joint_trajectory"
+        goal_duration_tolerance="-1.000000"
+        goal_position_tolerance="0.001000"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+        path_position_tolerance="10"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Mobile Base Waypoint">
+      <MetadataFields>
+        <Metadata subcategory="Motion - Execute" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
