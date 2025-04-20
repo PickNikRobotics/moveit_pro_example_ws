@@ -16,7 +16,7 @@ hardware:
       package: "lab_sim"
       path: "config/moveit/picknik_ur.srdf"
     urdf_params:
-      - mujoco_model: "description/scene.xml"
+      - mujoco_model: "description/simple_scene.xml"
 
 moveit_params:
   servo:

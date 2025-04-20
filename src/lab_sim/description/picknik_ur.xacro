@@ -1189,7 +1189,7 @@
       <param name="mujoco_model">$(arg mujoco_model)</param>
       <param name="mujoco_model_package">lab_sim</param>
       <!-- The rate <camera> data is published at -->
-      <param name="render_publish_rate">10</param>
+      <param name="render_publish_rate">0</param>
       <!-- The rate transforms to <site> poses are published at -->
       <param name="tf_publish_rate">60</param>
       <!-- The rate <rangefinder> data is published at -->
