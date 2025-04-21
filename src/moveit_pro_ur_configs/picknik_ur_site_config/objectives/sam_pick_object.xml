@@ -149,7 +149,7 @@
   <TreeNodesModel>
     <SubTree ID="SAM Pick Object">
       <MetadataFields>
-        <Metadata subcategory="Perception - Machine Learning" />
+        <Metadata subcategory="Perception - ML" />
         <Metadata runnable="true" />
       </MetadataFields>
     </SubTree>
