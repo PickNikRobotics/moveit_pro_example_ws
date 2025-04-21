@@ -96,12 +96,12 @@ moveit_params:
   sensors_3d:
     package: "picknik_ur_base_config"
     path: "config/moveit/sensors_3d.yaml"
-  servo_kinematics:
-    package: "multi_arm_sim"
-    path: "config/moveit/pose_ik_speed.yaml"
   joint_limits:
     package: "multi_arm_sim"
     path: "config/moveit/multi_arm_joint_limits.yaml"
+  pose_jog:
+    package: "multi_arm_sim"
+    path: "config/moveit/pose_jog.yaml"
 
   publish:
     planning_scene: True
@@ -127,7 +127,6 @@ ros2_control:
   # [Optional, default=[]]
   controllers_active_at_startup:
     - "joint_state_broadcaster"
-    - "servo_controller"
     - "first_io_and_status_controller"
     - "second_io_and_status_controller"
     - "third_io_and_status_controller"
@@ -140,6 +139,10 @@ ros2_control:
   # [Optional, default=[]]
   controllers_inactive_at_startup:
     - "joint_trajectory_controller"
+    - "first_velocity_force_controller"
+    - "second_velocity_force_controller"
+    - "third_velocity_force_controller"
+    - "fourth_velocity_force_controller"
   # Any controllers here will not be spawned by MoveIt Pro.
   # [Optional, default=[]]
   controllers_not_managed: []
