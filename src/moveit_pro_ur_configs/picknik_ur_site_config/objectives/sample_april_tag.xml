@@ -56,7 +56,7 @@
   <TreeNodesModel>
     <SubTree ID="Sample April Tag">
       <MetadataFields>
-        <Metadata subcategory="Perception - Machine Learning" />
+        <Metadata subcategory="Perception - ML" />
         <Metadata runnable="true" />
       </MetadataFields>
     </SubTree>

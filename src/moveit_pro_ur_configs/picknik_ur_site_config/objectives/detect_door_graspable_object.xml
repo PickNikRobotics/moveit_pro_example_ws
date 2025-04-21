@@ -91,7 +91,7 @@
   <TreeNodesModel>
     <SubTree ID="Detect Door Graspable Object">
       <MetadataFields>
-        <Metadata subcategory="Perception - Machine Learning" />
+        <Metadata subcategory="Perception - ML" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
