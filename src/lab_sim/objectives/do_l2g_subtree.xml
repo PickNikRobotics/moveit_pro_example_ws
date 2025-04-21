@@ -1,0 +1,78 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root BTCPP_format="4" main_tree_to_execute="Do L2G subtree">
+  <!--//////////-->
+  <BehaviorTree ID="Do L2G subtree" _description="Learn to Grasp" _favorite="true">
+    
+  
+
+<Control ID="Sequence">
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+    
+      
+      
+      
+      
+      
+      
+      
+      
+      
+      
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+<SubTree ID="Clear Snapshot" _collapsed="true"/><SubTree ID="Open Gripper" _collapsed="true"/><SubTree ID="Move to Waypoint" _collapsed="true" controller_names="/joint_trajectory_controller" joint_group_name="linear_actuator_and_manipulator" planner_interface="moveit_default" waypoint_name="look at sock"/><Action ID="CreateStampedPose" reference_frame="grasp_link" stamped_pose="{retreat_grasp}"/><Action ID="TransformPoseFrame" input_pose="{retreat_grasp}" output_pose="{retreat_world}" target_frame_id="world"/><Control ID="Sequence"><Action ID="GetImage" topic_name="{camera_image_topic}" timeout_sec="5.000000" message_out="{image}"/><Action ID="GetMasks2DFromTextQuery" image="{image}" masks2d="{masks2d}" threshold="0.500000" clip_model_path="models/clip.onnx" clipseg_model_path="models/clipseg.onnx" model_package="ur5e_linear_actuator_space_station_config" prompts="sock" erosion_size="5"/><Control ID="Fallback"><Decorator ID="Inverter"><Decorator ID="ForEach" vector_in="{masks2d}" out="{mask2d}" index="{index}"><Control ID="Sequence"><Action ID="GetCenterFromMask2D" center="{center2d}" mask="{mask2d}"/><Action ID="GetMasks2DFromPointQuery" image="{image}" masks2d="{masks2d}" pixel_coords="{center2d}" decoder_model_path="models/decoder.onnx" encoder_model_path="models/sam2_hiera_large_encoder.onnx" model_package="ur5e_linear_actuator_space_station_config"/><Action ID="AlwaysFailure"/></Control></Decorator></Decorator></Control><Action ID="GetPointCloud" topic_name="{camera_points_topic}" timeout_sec="5.000000" message_out="{point_cloud}"/><Action ID="GetCameraInfo" topic_name="{camera_info_topic}" message_out="{camera_info}" timeout_sec="5.000000"/><Action ID="GetMasks3DFromMasks2D" camera_info="{camera_info}" masks2d="{masks2d}" point_cloud="{point_cloud}" masks3d="{masks3d}"/><Decorator ID="ForEach" vector_in="{masks3d}" out="{mask3d}" index="{index}">
+    
+  <Action ID="GetPointCloudFromMask3D" point_cloud="{point_cloud}" mask3d="{mask3d}" point_cloud_fragment="{point_cloud_fragment}"/></Decorator><Action ID="SendPointCloudToUI" point_cloud="{point_cloud_fragment}" pcd_topic="/pcd_pointcloud_captures"/><Action ID="PublishPointCloud" point_cloud="{point_cloud_fragment}" point_cloud_topic="/my_point_cloud"/><Action ID="SwitchUIPrimaryView" primary_view_name="Visualization"/><Action ID="GetGraspPoseFromPointCloud" grasps="{grasps}" number_of_grasps_to_return="10" point_cloud="{point_cloud_fragment}" model_package="ur5e_linear_actuator_space_station_config" model_path="models/l2g.onnx"/></Control><Control ID="Sequence"><Action ID="ResetPoseStampedVector" vector="{grasps_modified}"/><Decorator ID="ForEach" index="{index}" out="{grasp}" vector_in="{grasps}"><Control ID="Sequence"><Action ID="AddPoseStampedToVector" input="{grasp}" vector="{grasps_modified}"/><Action ID="TransformPose" input_pose="{grasp}" output_pose="{grasp_rot}" translation_xyz="0;0;0" quaternion_xyzw="0;0;1;0"/><Action ID="AddPoseStampedToVector" input="{grasp_rot}" vector="{grasps_modified}"/></Control></Decorator></Control><Decorator ID="Inverter"><Decorator ID="ForEach" index="{index}" out="{grasp}" vector_in="{grasps_modified}">
+      
+    <Control ID="Sequence">
+          
+          
+          
+          
+        <Action ID="TransformPoseFrame" input_pose="{grasp}" output_pose="{grasp_grasp}" target_frame_id="grasp_link"/><Action ID="TransformPose" input_pose="{grasp_grasp}" output_pose="{grasp_grasp}" translation_xyz="0;0;-0.02" quaternion_xyzw="0;0;1;0"/><Action ID="TransformPoseFrame" input_pose="{grasp_grasp}" output_pose="{grasp_world}" target_frame_id="world"/><Action ID="VisualizeMesh" marker_lifetime="0.000000" mesh_path="package://ur5e_linear_actuator_space_station_config/objectives/gripper_token.dae" mesh_pose="{grasp_world}"/><Action ID="VisualizePose" marker_lifetime="0.000000" marker_name="pose" marker_size="0.100000" pose="{grasp_world}"/><Decorator ID="Inverter"><Control ID="Sequence"><Control ID="Sequence"><Action ID="TransformPose" input_pose="{grasp_world}" output_pose="{grasp_mtc_world}" translation_xyz="0;0.0;-0.03"/><Action ID="InitializeMTCTask" task_id="move_to_pose" task="{move_to_pose_task}" trajectory_monitoring="false" controller_names="/joint_trajectory_controller"/><Action ID="SetupMTCCurrentState" task="{move_to_pose_task}" skip_collision_check="false"/><Action ID="SetupMTCUpdateGroupCollisionRule" allow_collision="true" object_name="&lt;octomap&gt;" task="{move_to_pose_task}" group_name="gripper"/><Action ID="SetupMTCMoveToPose" ik_frame="grasp_link" planning_group_name="linear_actuator_and_manipulator" target_pose="{grasp_mtc_world}" task="{move_to_pose_task}" planner_interface="moveit_default" monitored_stage="current state"/><Action ID="PlanMTCTask" solution="{move_to_pose_solution}" task="{move_to_pose_task}"/></Control><Control ID="Sequence"><Action ID="ResetPoseStampedVector" vector="{grasp_goal}"/><Action ID="TransformPose" input_pose="{grasp_grasp}" output_pose="{pregrasp_grasp}" translation_xyz="0;0;-0.05"/><Action ID="AddPoseStampedToVector" input="{pregrasp_grasp}" vector="{grasp_goal}"/><Action ID="AddPoseStampedToVector" input="{grasp_grasp}" vector="{grasp_goal}"/><Action ID="PlanCartesianPath" acceleration_scale_factor="1.000000" blending_radius="0.020000" debug_solution="{debug_solution}" ik_cartesian_space_density="0.010000" ik_joint_space_density="0.100000" joint_trajectory_msg="{joint_trajectory_msg}" path="{grasp_goal}" planning_group_name="linear_actuator_and_manipulator" position_only="false" tip_link="grasp_link" trajectory_sampling_rate="100" velocity_scale_factor="1.000000"/></Control></Control></Decorator></Control></Decorator></Decorator><Action ID="IsUserAvailable"/><Control ID="Fallback"><Action ID="AlwaysSuccess"/><Action ID="WaitForUserTrajectoryApproval" solution="{debug_solution}"/></Control><SubTree ID="Re-Zero Force-Torque Sensors" _collapsed="false"/><Action ID="ActivateControllers" controller_names="/joint_trajectory_admittance_controller"/><Action ID="SetAdmittanceParameters" admittance_parameters_msg="{admittance_parameters_msg}" config_file_name="admittance.yaml"/><Action ID="ExecuteTrajectoryWithAdmittance" absolute_force_torque_threshold="45;45;45;10;10;10" admittance_parameters_msg="{admittance_parameters_msg}" controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory" goal_duration_tolerance="-1.000000" goal_position_tolerance="0.01000" joint_trajectory_msg="{joint_trajectory_msg}" path_position_tolerance="0.10000"/><SubTree ID="Close Gripper" _collapsed="false"/><Decorator ID="Delay" delay_msec="1500"><Control ID="Sequence"><Action ID="ResetPoseStampedVector" vector="{retreat_vector}"/><Action ID="AddPoseStampedToVector" input="{retreat_world}" vector="{retreat_vector}"/><Action ID="PlanCartesianPath" acceleration_scale_factor="1.000000" blending_radius="0.020000" debug_solution="{debug_solution}" ik_cartesian_space_density="0.010000" ik_joint_space_density="0.100000" joint_trajectory_msg="{joint_trajectory_msg}" path="{retreat_vector}" planning_group_name="linear_actuator_and_manipulator" position_only="false" tip_link="grasp_link" trajectory_sampling_rate="100" velocity_scale_factor="1.000000"/><Action ID="ActivateControllers" controller_names="/joint_trajectory_controller"/><Action ID="ExecuteFollowJointTrajectory" execute_follow_joint_trajectory_action_name="/joint_trajectory_controller/follow_joint_trajectory" goal_duration_tolerance="-1.000000" goal_position_tolerance="0.010000" goal_time_tolerance="0.000000" joint_trajectory_msg="{joint_trajectory_msg}"/></Control></Decorator><Control ID="Sequence"><SubTree ID="Move to Waypoint" _collapsed="true" controller_names="/joint_trajectory_controller" joint_group_name="linear_actuator_and_manipulator" planner_interface="moveit_default" waypoint_name="drop sock"/><SubTree ID="Open Gripper" _collapsed="true"/><SubTree ID="Move to Waypoint" _collapsed="true" controller_names="/joint_trajectory_controller" joint_group_name="linear_actuator_and_manipulator" planner_interface="moveit_default" waypoint_name="look at sock"/></Control><SubTree ID="Clear Snapshot" _collapsed="true"/></Control></BehaviorTree>
+<TreeNodesModel>
+  <SubTree ID="Do L2G subtree">
+    <MetadataFields>
+      <Metadata runnable="false"/>
+      <Metadata subcategory="Application - Advanced Examples"/>
+    </MetadataFields>
+    
+    
+    
+  <inout_port name="camera_image_topic" default="{camera_image_topic}"/><inout_port name="camera_info_topic" default="{camera_info_topic}"/><inout_port name="camera_points_topic" default="{camera_points_topic}"/></SubTree>
+</TreeNodesModel>
+</root>
