@@ -17,7 +17,8 @@ controller_manager:
     # In a real robot, this controller would activate / deactivate a suction cup mechanism.
     suction_cup_controller:
       type: position_controllers/GripperActionController
-
+    velocity_force_controller:
+      type: velocity_force_controller/VelocityForceController
 
 tool_attach_controller:
   ros__parameters:
@@ -101,3 +102,61 @@ servo_controller:
         goal: 0.05
       joint_6:
         goal: 0.05
+
+velocity_force_controller:
+  ros__parameters:
+    # Joints that the controller will control.
+    joints:
+      - joint_1
+      - joint_2
+      - joint_3
+      - joint_4
+      - joint_5
+      - joint_6
+    # Base frame of the kinematic chain, for computation of arm kinematics.
+    base_frame: base_link
+    # The tip link of the kinematic chain, i.e. the frame that will be controlled.
+    ee_frame: tool0
+    # The frame where the force / torque sensor reading is given.
+    # (Needs to exist in the kinematic chain).
+    sensor_frame: tool0
+    # Maximum joint-space velocities.
+    max_joint_velocity:
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+    # Maximum joint-space accelerations.
+    max_joint_acceleration:
+      - 2.0
+      - 2.0
+      - 2.0
+      - 2.0
+      - 2.0
+      - 2.0
+    # Maximum Cartesian-space velocities.
+    max_cartesian_velocity:
+      - 0.25
+      - 0.25
+      - 0.25
+      - 1.0
+      - 1.0
+      - 1.0
+    # Maximum Cartesian-space accelerations.
+    max_cartesian_acceleration:
+      - 2.0
+      - 2.0
+      - 2.0
+      - 4.0
+      - 4.0
+      - 4.0
+    # Rate in Hz at which the controller will publish the state.
+    state_publish_rate: 10
+    # Damping coefficient for the Jacobian damped least-squares inverse.
+    jacobian_damping: 0.005
+    # Timeout in seconds after which the controller will stop motion if no new commands are received.
+    command_timeout: 0.2
+    # Padding (in radians) to add to joint position limits as a safety margin.
+    joint_limit_position_tolerance: 0.02

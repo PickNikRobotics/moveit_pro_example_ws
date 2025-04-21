@@ -71,15 +71,15 @@ moveit_params:
   servo:
     package: "factory_sim"
     path: "config/moveit/servo.yaml"
-  servo_kinematics:
-    package: "factory_sim"
-    path: "config/moveit/pose_ik_speed.yaml"
   joint_limits:
     package: "factory_sim"
     path: "config/moveit/joint_limits.yaml"
   servo_joint_limits:
     package: "factory_sim"
     path: "config/moveit/joint_limits.yaml"
+  pose_jog:
+    package: "factory_sim"
+    path: "config/moveit/pose_jog.yaml"
   publish:
     planning_scene: True
     geometry_updates: True
@@ -111,6 +111,7 @@ ros2_control:
   # [Optional, default=[]]
   controllers_inactive_at_startup:
     - "servo_controller"
+    - "velocity_force_controller"
   # Any controllers here will not be spawned by MoveIt Pro.
   # [Optional, default=[]]
   controllers_not_managed: []

@@ -70,15 +70,15 @@ moveit_params:
   servo:
     package: "grinding_sim"
     path: "config/moveit/servo.yaml"
-  servo_kinematics:
-    package: "grinding_sim"
-    path: "config/moveit/pose_ik_speed.yaml"
   joint_limits:
     package: "grinding_sim"
     path: "config/moveit/joint_limits.yaml"
   servo_joint_limits:
     package: "grinding_sim"
     path: "config/moveit/joint_limits.yaml"
+  pose_jog:
+    package: "grinding_sim"
+    path: "config/moveit/pose_jog.yaml"
 
   publish:
     planning_scene: True
@@ -104,20 +104,12 @@ ros2_control:
   # [Optional, default=[]]
   controllers_active_at_startup:
     - "joint_state_broadcaster"
-    - "servo_controller"
+    - "joint_trajectory_controller"
   # Load but do not start these controllers so they can be activated later if needed.
   # [Optional, default=[]]
   controllers_inactive_at_startup:
-    - "joint_trajectory_controller"
-  # Any controllers here will not be spawned by MoveIt Pro.
-  # [Optional, default=[]]
-  controllers_not_managed: []
-    # - "joint_trajectory_controller"
-    # - "servo_controller"
-    # - "joint_state_broadcaster"
-  # Optionally configure remapping rules to let multiple controllers receive commands on the same topic.
-  # [Optional, default=[]]
-  controller_shared_topics: []
+    - "servo_controller"
+    - "velocity_force_controller"
 
 # Configuration for loading behaviors and objectives.
 # [Required]
