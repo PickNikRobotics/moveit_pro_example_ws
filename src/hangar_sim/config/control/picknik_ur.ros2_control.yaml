@@ -15,6 +15,8 @@ controller_manager:
       type: clearpath_mecanum_drive_controller/MecanumDriveController
     vacuum_gripper:
       type: position_controllers/GripperActionController
+    velocity_force_controller:
+      type: velocity_force_controller/VelocityForceController
 
 vacuum_gripper:
   ros__parameters:
@@ -359,3 +361,87 @@ force_torque_sensor_broadcaster:
       - torque.y
       - torque.z
     frame_id: tool0
+
+
+velocity_force_controller:
+  ros__parameters:
+    # Joints that the controller will use.
+    # The joints must be in the same order as they appear in the kinematic chain.
+    joints:
+      - linear_x_joint
+      - linear_y_joint
+      - rotational_yaw_joint
+      - shoulder_pan_joint
+      - shoulder_lift_joint
+      - elbow_joint
+      - wrist_1_joint
+      - wrist_2_joint
+      - wrist_3_joint
+    # The joints that the controller will command.
+    # The 'platform' joints are renamed to match the joint names exposed by the 'platform_velocity_controller', which
+    # enables layered control of those joints.
+    command_joints:
+      - platform_velocity_controller/linear_x_joint
+      - platform_velocity_controller/linear_y_joint
+      - platform_velocity_controller/rotational_yaw_joint
+      - shoulder_pan_joint
+      - shoulder_lift_joint
+      - elbow_joint
+      - wrist_1_joint
+      - wrist_2_joint
+      - wrist_3_joint
+    # Command just velocity to support layering with the mobile base controller.
+    command_interfaces: ["velocity"]
+    # Base frame of the kinematic chain, for computation of arm kinematics.
+    base_frame: world
+    # The tip link of the kinematic chain, i.e. the frame that will be controlled.
+    ee_frame: grasp_link
+    # The frame where the force / torque sensor reading is given.
+    # (Needs to exist in the kinematic chain).
+    sensor_frame: tool0
+    # Maximum joint-space velocities.
+    max_joint_velocity:
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+    # Maximum joint-space accelerations.
+    max_joint_acceleration:
+      - 2.0
+      - 2.0
+      - 2.0
+      - 2.0
+      - 2.0
+      - 2.0
+      - 2.0
+      - 2.0
+      - 2.0
+    # Maximum Cartesian-space velocities.
+    max_cartesian_velocity:
+      - 0.25
+      - 0.25
+      - 0.25
+      - 1.0
+      - 1.0
+      - 1.0
+    # Maximum Cartesian-space accelerations.
+    max_cartesian_acceleration:
+      - 2.0
+      - 2.0
+      - 2.0
+      - 4.0
+      - 4.0
+      - 4.0
+    # Rate in Hz at which the controller will publish the state.
+    state_publish_rate: 10
+    # Damping coefficient for the Jacobian damped least-squares inverse.
+    jacobian_damping: 0.002
+    # Timeout in seconds after which the controller will stop motion if no new commands are received.
+    command_timeout: 0.2
+    # Padding (in radians) to add to joint position limits as a safety margin.
+    joint_limit_position_tolerance: 0.02
