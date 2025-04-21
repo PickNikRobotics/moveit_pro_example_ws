@@ -3,14 +3,13 @@
   <!--//////////-->
   <BehaviorTree
     ID="Plan Move To Pose"
-    _subtreeOnly="true"
     _description="Plan an MTC task, but do not execute it"
   >
     <Control ID="Sequence">
       <Action
         ID="InitializeMTCTask"
         task_id="move_to_pose"
-        controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
+        controller_names="/joint_trajectory_controller;/robotiq_gripper_controller"
         task="{move_to_pose_task}"
       />
       <Action ID="SetupMTCCurrentState" task="{move_to_pose_task}" />

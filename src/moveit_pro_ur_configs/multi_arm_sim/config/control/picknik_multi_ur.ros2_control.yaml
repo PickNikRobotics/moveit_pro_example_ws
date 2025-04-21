@@ -11,7 +11,7 @@ controller_manager:
       type: ur_controllers/GPIOController
     fourth_io_and_status_controller:
       type: ur_controllers/GPIOController
-    multi_arm_joint_trajectory_controller:
+    joint_trajectory_controller:
       type: joint_trajectory_controller/JointTrajectoryController
     first_robotiq_gripper_controller:
       type: position_controllers/GripperActionController
@@ -48,7 +48,7 @@ fourth_io_and_status_controller:
   ros__parameters:
     tf_prefix: "fourth_"
 
-multi_arm_joint_trajectory_controller:
+joint_trajectory_controller:
   ros__parameters:
     joints:
       - first_shoulder_pan_joint

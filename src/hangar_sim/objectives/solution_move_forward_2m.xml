@@ -5,7 +5,6 @@
     ID="Solution - Move Forward 2m"
     _description=""
     _favorite="false"
-    _subtreeOnly="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action

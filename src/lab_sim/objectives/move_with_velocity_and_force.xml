@@ -5,7 +5,6 @@
     ID="Push Button"
     _description="An example for how to use the VFC to move with a velocity / force reference until it collides"
     _favorite="true"
-    _subtreeOnly="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree ID="Close Gripper" _collapsed="true" />
