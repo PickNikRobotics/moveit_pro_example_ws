@@ -173,7 +173,7 @@
   <TreeNodesModel>
     <SubTree ID="Push Button ML">
       <MetadataFields>
-        <Metadata subcategory="Perception - Machine Learning" />
+        <Metadata subcategory="Perception - ML" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>

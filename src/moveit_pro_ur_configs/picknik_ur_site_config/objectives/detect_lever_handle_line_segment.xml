@@ -83,7 +83,7 @@
   <TreeNodesModel>
     <SubTree ID="Detect Lever Handle Line Segment">
       <MetadataFields>
-        <Metadata subcategory="Perception - Machine Learning" />
+        <Metadata subcategory="Perception - ML" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
