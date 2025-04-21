@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Grasp Object from Text Prompt">
   <!--//////////-->
   <BehaviorTree
@@ -20,10 +21,11 @@
         link_padding="0.01"
         velocity_scale_factor="1.0"
         waypoint_name="Above Pick Cube"
+        seed="0"
       />
       <SubTree
         ID="Segment Point Cloud from Text Prompt Subtree"
-        _collapsed="false"
+        _collapsed="true"
         camera_topic_name="/wrist_camera/camera_info"
         decoder_model_path="models/decoder.onnx"
         encoder_model_path="models/sam2_hiera_large_encoder.onnx"
@@ -47,6 +49,7 @@
         vector_in="{point_cloud_vector}"
       >
         <Control ID="Sequence">
+          <Action ID="ResetPoseStampedVector" vector="{grasp_poses}" />
           <Action
             ID="GetCentroidFromPointCloud"
             output_pose="{centroid_pose}"
@@ -71,6 +74,7 @@
           task_id="grasp"
           controller_names="/joint_trajectory_controller;/robotiq_gripper_controller"
           task="{mtc_task}"
+          trajectory_monitoring="false"
         />
         <Action
           ID="SetupMTCCurrentState"
@@ -119,6 +123,7 @@
         link_padding="0.01"
         velocity_scale_factor="1.0"
         waypoint_name="Above Pick Cube"
+        seed="0"
       />
     </Control>
   </BehaviorTree>
