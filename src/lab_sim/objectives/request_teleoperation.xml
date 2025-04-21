@@ -15,6 +15,8 @@
           user_interaction_prompt="{user_interaction_prompt}"
           initial_teleop_mode="{initial_teleop_mode}"
           current_teleop_mode="{teleop_mode}"
+          planning_groups="{planning_groups}"
+          controllers="{controllers}"
         />
         <Decorator ID="KeepRunningUntilFailure">
           <Control ID="Sequence">
@@ -39,6 +41,7 @@
                       ID="Interpolate to Joint State"
                       _collapsed="false"
                       target_joint_state="{target_joint_state}"
+                      controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
                     />
                     <Action
                       ID="PublishEmpty"
@@ -139,8 +142,15 @@
             <!--Cartesian and joint jogging-->
             <Control ID="Sequence" _while="teleop_mode == 2">
               <Action
-                ID="TeleoperateTwist"
-                controller_name="servo_controller"
+                ID="ActivateControllers"
+                controller_names="velocity_force_controller"
+              />
+              <Action
+                ID="PoseJog"
+                controller_names="{controllers}"
+                link_padding="0.010000"
+                planning_group_names="{planning_groups}"
+                stop_safety_factor="1.500000"
               />
             </Control>
             <Control ID="Sequence" _while="teleop_mode == 1">

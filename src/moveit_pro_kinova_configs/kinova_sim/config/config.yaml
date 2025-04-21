@@ -91,15 +91,15 @@ moveit_params:
   sensors_3d:
     package: "kinova_sim"
     path: "config/moveit/sensors_3d.yaml"
-  servo_kinematics:
-    package: "kinova_sim"
-    path: "config/moveit/pose_ik_speed.yaml"
   joint_limits:
     package: "kinova_sim"
     path: "config/moveit/joint_limits.yaml"
   servo_joint_limits:
     package: "kinova_sim"
     path: "config/moveit/servo_joint_limits.yaml"
+  pose_jog:
+    package: "kinova_sim"
+    path: "config/moveit/pose_jog.yaml"
 
   publish:
     planning_scene: True

@@ -238,30 +238,30 @@ velocity_force_controller:
     ft_torque_deadband: 1.0
     # Maximum joint-space velocities.
     max_joint_velocity:
-      - 0.524
-      - 0.524
-      - 0.524
-      - 0.524
-      - 1.047
-      - 1.047
-      - 1.047
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
     # Maximum joint-space accelerations.
     max_joint_acceleration:
-      - 0.524
-      - 0.524
-      - 0.524
-      - 0.524
-      - 0.524
-      - 0.524
-      - 0.524
+      - 2.0
+      - 2.0
+      - 2.0
+      - 2.0
+      - 2.0
+      - 2.0
+      - 2.0
     # Maximum Cartesian-space velocities.
     max_cartesian_velocity:
       - 0.25
       - 0.25
       - 0.25
-      - 1.5707
-      - 1.5707
-      - 1.5707
+      - 1.0
+      - 1.0
+      - 1.0
     # Maximum Cartesian-space accelerations.
     max_cartesian_acceleration:
       - 2.0
@@ -274,9 +274,9 @@ velocity_force_controller:
     # Cutoff frequency ratio for the FTS filter. Valid values range from 0 to 1, where 1 is the sampling frequency.
     ft_cutoff_frequency_ratio: 1.0
     # Rate in Hz at which the controller will publish the state.
-    state_publish_rate: 50
+    state_publish_rate: 10
     # Damping coefficient for the Jacobian damped least-squares inverse.
-    jacobian_damping: 0.001
+    jacobian_damping: 0.002
     # Timeout in seconds after which the controller will stop motion if no new commands are received.
     command_timeout: 0.2
     # Padding (in radians) to add to joint position limits as a safety margin.

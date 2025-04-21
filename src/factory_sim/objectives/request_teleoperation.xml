@@ -18,6 +18,8 @@
           user_interaction_prompt="{user_interaction_prompt}"
           initial_teleop_mode="{initial_teleop_mode}"
           current_teleop_mode="{teleop_mode}"
+          planning_groups="{planning_groups}"
+          controllers="{controllers}"
         />
         <Decorator ID="KeepRunningUntilFailure">
           <Control ID="Sequence">
@@ -141,8 +143,15 @@
             <!--Cartesian and joint jogging-->
             <Control ID="Sequence" _while="teleop_mode == 2">
               <Action
-                ID="TeleoperateTwist"
-                controller_name="servo_controller"
+                ID="ActivateControllers"
+                controller_names="{controllers}"
+              />
+              <Action
+                ID="PoseJog"
+                controller_names="{controllers}"
+                link_padding="0.010000"
+                planning_group_names="{planning_groups}"
+                stop_safety_factor="1.500000"
               />
             </Control>
             <Control ID="Sequence" _while="teleop_mode == 1">
