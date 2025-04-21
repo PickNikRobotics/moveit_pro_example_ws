@@ -71,7 +71,7 @@
   <TreeNodesModel>
     <SubTree ID="Detect Hinge Line Segment">
       <MetadataFields>
-        <Metadata subcategory="Perception - Machine Learning" />
+        <Metadata subcategory="Perception - ML" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
