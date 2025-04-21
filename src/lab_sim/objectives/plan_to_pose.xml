@@ -4,12 +4,11 @@
     ID="Add Poses to MTC Task"
     _description="Initializes a new MTC task with the current state and adds a sequence of target poses."
     _favorite="false"
-    _subtreeOnly="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
         ID="InitializeMTCTask"
-        controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
+        controller_names="/joint_trajectory_controller;/robotiq_gripper_controller"
         task="{mtc_task}"
       />
       <!-- Start the MTC task from the robot's current pose -->
@@ -46,7 +45,7 @@
       <input_port name="target_poses" default="{target_poses}" />
       <input_port
         name="controller_names"
-        default="/joint_trajectory_controller /robotiq_gripper_controller"
+        default="/joint_trajectory_controller;/robotiq_gripper_controller"
       />
       <input_port name="planning_group_name" default="manipulator" />
       <input_port name="ik_frame" default="grasp_link" />

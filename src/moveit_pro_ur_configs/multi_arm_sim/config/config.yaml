@@ -138,12 +138,11 @@ ros2_control:
   # Load but do not start these controllers so they can be activated later if needed.
   # [Optional, default=[]]
   controllers_inactive_at_startup:
-    - "multi_arm_joint_trajectory_controller"
+    - "joint_trajectory_controller"
     - "first_velocity_force_controller"
     - "second_velocity_force_controller"
     - "third_velocity_force_controller"
     - "fourth_velocity_force_controller"
-    - "servo_controller"
   # Any controllers here will not be spawned by MoveIt Pro.
   # [Optional, default=[]]
   controllers_not_managed: []

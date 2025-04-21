@@ -5,13 +5,9 @@ find_package(moveit_studio_common REQUIRED)
 find_package(example_interfaces REQUIRED)
 moveit_studio_package()
 
-set(THIS_PACKAGE_INCLUDE_DEPENDS moveit_studio_behavior moveit_studio_behavior_interface pluginlib 
-moveit_studio_vision
-moveit_studio_vision_msgs
-PCL
-pcl_conversions
-pcl_ros
-example_interfaces)
+set(THIS_PACKAGE_INCLUDE_DEPENDS cartesian_planning moveit_studio_behavior
+  moveit_studio_behavior_interface pluginlib moveit_studio_vision
+  moveit_studio_vision_msgs PCL pcl_conversions pcl_ros example_interfaces)
 foreach(package IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${package} REQUIRED)
 endforeach()
@@ -26,8 +22,6 @@ add_library(
   src/example_fibonacci_action_client.cpp
   src/example_hello_world.cpp
   src/example_publish_color_rgba.cpp
-  src/example_setup_mtc_pick_from_pose.cpp
-  src/example_setup_mtc_place_from_pose.cpp
   src/example_setup_mtc_wave_hand.cpp
   src/example_ndt_registration.cpp
   src/example_ransac_registration.cpp

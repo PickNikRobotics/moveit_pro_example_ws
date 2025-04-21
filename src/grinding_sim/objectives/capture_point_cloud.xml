@@ -1,12 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Capture Point Cloud">
   <!--//////////-->
-  <BehaviorTree
-    ID="Capture Point Cloud"
-    _description=""
-    _favorite="false"
-    _subtreeOnly="false"
-  >
+  <BehaviorTree ID="Capture Point Cloud" _description="" _favorite="false">
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
         ID="GetPointCloud"

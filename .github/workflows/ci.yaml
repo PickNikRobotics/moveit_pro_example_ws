@@ -33,4 +33,4 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
-      - uses: PickNikRobotics/moveit_pro_lint@add-composite-action
+      - uses: PickNikRobotics/moveit_pro_lint@v0.0.1

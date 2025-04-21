@@ -5,7 +5,6 @@
     ID="Generate Grid Pattern on Airplane"
     _description="A training example that plans and executes a coverage path with base and arm motion"
     _favorite="false"
-    _subtreeOnly="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree

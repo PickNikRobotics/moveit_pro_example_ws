@@ -5,7 +5,6 @@
     ID="Solution - Generate coverage path"
     _description=""
     _favorite="false"
-    _subtreeOnly="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree

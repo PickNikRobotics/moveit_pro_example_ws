@@ -21,7 +21,7 @@
     <group name="fourth_manipulator">
         <chain base_link="fourth_base_link" tip_link="fourth_grasp_link"/>
     </group>
-    <group name="multi_arm_manipulator">
+    <group name="manipulator">
         <group name="first_manipulator"/>
         <group name="second_manipulator"/>
         <group name="third_manipulator"/>

@@ -5,7 +5,6 @@
     ID="Load Engine Block Pointcloud"
     _description=""
     _favorite="false"
-    _subtreeOnly="true"
     color="255;0;0"
     initial_pose="{initial_pose}"
     engine_block_cloud="{engine_block_cloud}"

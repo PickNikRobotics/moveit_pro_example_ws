@@ -5,7 +5,6 @@
     ID="Force Relaxation"
     _description="Relaxes the force sensed at the force/torque sensor by moving the robot tip in the direction of the sensed force."
     _favorite="false"
-    _subtreeOnly="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action

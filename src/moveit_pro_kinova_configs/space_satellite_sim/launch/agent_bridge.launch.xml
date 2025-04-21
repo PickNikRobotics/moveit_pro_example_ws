@@ -2,4 +2,11 @@
   <include
     file="$(find-pkg-share moveit_studio_agent)/launch/studio_agent_bridge.launch.xml"
   />
+  <include
+    file="$(find-pkg-share space_satellite_sim)/launch/36h11.launch.yml"
+  />
+  <include
+    file="$(find-pkg-share space_satellite_sim)/launch/36h11_wrist.launch.yml"
+  />
+  <include file="$(find-pkg-share space_satellite_sim)/launch/fuse.launch.py" />
 </launch>

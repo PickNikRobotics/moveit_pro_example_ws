@@ -6,7 +6,6 @@
   <!--//////////-->
   <BehaviorTree
     ID="Segment Point Cloud from Text Prompt Subtree"
-    _subtreeOnly="true"
     _description="Captures a point cloud and requests the user to click an object in the image to be segmented. The point cloud is then filtered to only include the selected object."
     _favorite="true"
     camera_topic_name="/wrist_camera/camera_info"
