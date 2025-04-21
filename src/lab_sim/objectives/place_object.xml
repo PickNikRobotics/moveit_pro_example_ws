@@ -1,11 +1,10 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Place Object">
   <!--//////////-->
   <BehaviorTree
     ID="Place Object"
     _description="Place an object in the gripper at a manually specified location"
     _favorite="false"
-    _subtreeOnly="false"
   >
     <Control ID="Sequence" name="root">
       <Control ID="Sequence">
@@ -17,11 +16,16 @@
           stamped_pose="{stamped_pose}"
           reference_frame="world"
         />
+        <Action
+          ID="AddPoseStampedToVector"
+          input="{stamped_pose}"
+          vector="{place_poses}"
+        />
       </Control>
       <SubTree
-        ID="Place at Pose"
+        ID="Place at Pose with Approval"
         _collapsed="true"
-        grasp_pose="{stamped_pose}"
+        place_poses="{place_poses}"
       />
     </Control>
   </BehaviorTree>

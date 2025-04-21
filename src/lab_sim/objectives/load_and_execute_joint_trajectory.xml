@@ -5,7 +5,6 @@
     ID="Load and Execute Joint Trajectory"
     _description="Load a trajectory that was saved as a YAML file"
     _favorite="true"
-    _subtreeOnly="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <!--Make sure to move the robot to the same starting position as the saved trajectory starts, otherwise the joint_trajectory_controller will use joint interpolation to align the robot with the path-->

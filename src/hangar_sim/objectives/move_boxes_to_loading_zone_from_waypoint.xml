@@ -7,7 +7,6 @@
   <BehaviorTree
     ID="Move Boxes to Loading Zone Start from Waypoint"
     _description="Move boxes to loading zone from waypoint"
-    _subtreeOnly="true"
     waypoint_name="View Boxes"
     place_pose="{place_pose}"
     threshold="{threshold}"
