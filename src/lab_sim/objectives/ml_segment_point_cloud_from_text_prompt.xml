@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <root
   BTCPP_format="4"
-  main_tree_to_execute="Segment Point Cloud from Text Prompt"
+  main_tree_to_execute="ML Segment Point Cloud from Text Prompt"
 >
   <!--//////////-->
   <BehaviorTree
-    ID="Segment Point Cloud from Text Prompt"
+    ID="ML Segment Point Cloud from Text Prompt"
     _description="Captures a point cloud and requests the user to click an object in the image to be segmented. The point cloud is then filtered to only include the selected object."
     _favorite="true"
   >
@@ -32,10 +32,10 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Segment Point Cloud from Text Prompt">
+    <SubTree ID="ML Segment Point Cloud from Text Prompt">
       <MetadataFields>
         <Metadata runnable="true" />
-        <Metadata subcategory="Application - Advanced Examples" />
+        <Metadata subcategory="Application - ML (GPU Recommended)" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
