@@ -51,6 +51,8 @@
               camera_optical_frame="{camera_optical_frame}"
               computed_pose="{computed_pose}"
               parameters="{parameters}"
+              camera_image_topic="{camera_image_topic}"
+              camera_info_topic="{camera_info_topic}"
             />
           </Decorator>
           <Action
@@ -78,6 +80,9 @@
         <Metadata runnable="false" />
         <Metadata subcategory="Perception - Camera Calibration" />
       </MetadataFields>
+
+      <inout_port name="camera_info_topic" default="{camera_info_topic}" />
+      <inout_port name="camera_image_topic" default="{camera_image_topic}" />
       <inout_port
         name="camera_optical_frame"
         default="{camera_optical_frame}"

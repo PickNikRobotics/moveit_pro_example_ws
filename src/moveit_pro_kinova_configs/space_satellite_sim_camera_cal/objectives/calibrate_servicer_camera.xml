@@ -11,7 +11,7 @@
       _collapsed="true"
       camera_mounting_frame="servicer_camera_mounting_frame"
       camera_optical_frame="servicer_camera_optical_frame"
-      mounting_pose_save_file="calibrated_servicer_camera_mounting_pose.txt"
+      mounting_pose_save_file="calibrated_servicer_cam_mounting_pose.txt"
       mounting_pose_parent_frame="world"
     />
   </BehaviorTree>
