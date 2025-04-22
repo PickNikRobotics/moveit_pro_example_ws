@@ -15,7 +15,7 @@
       <SubTree
         ID="Add Pose from TF Frame to Vector"
         _collapsed="true"
-        pose_frame="calibration_tag_right"
+        pose_frame="satellite_tag_1"
         reference_frame="{camera_optical_frame}"
         vector="{pose_stamped_vector}"
         name="Right AprilTag"
@@ -23,7 +23,7 @@
       <SubTree
         ID="Add Pose from TF Frame to Vector"
         _collapsed="true"
-        pose_frame="calibration_tag_left"
+        pose_frame="satellite_tag_0"
         reference_frame="{camera_optical_frame}"
         vector="{pose_stamped_vector}"
         name="Left AprilTag"
@@ -31,7 +31,7 @@
       <SubTree
         ID="Add Pose from TF Frame to Vector"
         _collapsed="true"
-        pose_frame="calibration_tag_bottom"
+        pose_frame="satellite_tag_2"
         reference_frame="{camera_optical_frame}"
         vector="{pose_stamped_vector}"
         name="Bottom AprilTag"

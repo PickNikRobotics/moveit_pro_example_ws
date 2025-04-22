@@ -7,7 +7,7 @@
       <general
         dyntype="none"
         biastype="affine"
-        ctrlrange="-6.28 6.28"
+        ctrlrange="-180.0 180.0"
         forcerange="-87 87"
       />
       <default class="infiniteJoints">
