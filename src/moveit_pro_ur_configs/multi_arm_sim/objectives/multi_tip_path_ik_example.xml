@@ -73,7 +73,7 @@
           ik_joint_space_density="0.100000"
           joint_trajectory_msg="{joint_trajectory_msg}"
           path="{pose_stamped_vector}"
-          planning_group_name="multi_arm_manipulator"
+          planning_group_name="manipulator"
           position_only="false"
           tip_links="third_grasp_link;second_grasp_link"
           trajectory_sampling_rate="100"
@@ -86,7 +86,7 @@
       </Control>
       <Action
         ID="ExecuteFollowJointTrajectory"
-        execute_follow_joint_trajectory_action_name="/multi_arm_joint_trajectory_controller/follow_joint_trajectory"
+        execute_follow_joint_trajectory_action_name="/joint_trajectory_controller/follow_joint_trajectory"
         goal_duration_tolerance="-1.000000"
         goal_position_tolerance="0.000000"
         goal_time_tolerance="0.000000"
