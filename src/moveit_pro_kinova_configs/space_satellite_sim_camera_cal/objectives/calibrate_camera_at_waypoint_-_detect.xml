@@ -36,7 +36,7 @@
       <Action ID="ResetPoseStampedVector" vector="{poses_at_waypoint_vec}" />
       <Decorator
         ID="Repeat"
-        num_cycles="100"
+        num_cycles="20"
         name="Take multiple calibrations at this waypoint "
       >
         <Control ID="Sequence" name="TopLevelSequence">

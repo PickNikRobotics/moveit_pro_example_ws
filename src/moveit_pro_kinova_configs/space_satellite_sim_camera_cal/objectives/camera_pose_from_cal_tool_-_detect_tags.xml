@@ -36,14 +36,14 @@
         _collapsed="true"
         detections="{detections}"
         name="topRight"
-        target_id="0"
+        target_id="1"
         pose_vector_to_append="{pose_stamped_vector}"
       />
       <SubTree
         ID="Add AprilTag Pose To Vector"
         _collapsed="true"
         detections="{detections}"
-        target_id="5"
+        target_id="0"
         name="topLeft"
         pose_vector_to_append="{pose_stamped_vector}"
       />
@@ -51,7 +51,7 @@
         ID="Add AprilTag Pose To Vector"
         _collapsed="true"
         detections="{detections}"
-        target_id="3"
+        target_id="2"
         name="bottom"
         pose_vector_to_append="{pose_stamped_vector}"
       />

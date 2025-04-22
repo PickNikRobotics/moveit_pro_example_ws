@@ -114,8 +114,7 @@ BT::NodeStatus CalibrateCameraPose::tick()
   camera_to_calibration_tool.linear().col(2) = z_axis;
   camera_to_calibration_tool.translation() = center_point;
 
-  if (auto determinant = camera_to_calibration_tool.rotation().determinant();
-      abs(determinant) - 1 > std::numeric_limits<double>::epsilon())
+  if (auto determinant = camera_to_calibration_tool.rotation().determinant(); abs(determinant) - 1 > 1e-12)
   {
     shared_resources_->logger->publishFailureMessage(
         fmt::format("Rotation matrix of computed pose is not normalized. Determinant={}", determinant));

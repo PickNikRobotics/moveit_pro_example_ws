@@ -15,14 +15,6 @@
         computed_poses_vector="{computed_poses_vector}"
         parameters="{parameters}"
         camera_optical_frame="{camera_optical_frame}"
-        waypoint_name="Camera Calibration 4"
-      />
-      <SubTree
-        ID="Calibrate Camera at Waypoint - Detect"
-        _collapsed="true"
-        computed_poses_vector="{computed_poses_vector}"
-        parameters="{parameters}"
-        camera_optical_frame="{camera_optical_frame}"
         waypoint_name="Camera Calibration 1"
       />
       <SubTree
@@ -40,6 +32,14 @@
         parameters="{parameters}"
         camera_optical_frame="{camera_optical_frame}"
         waypoint_name="Camera Calibration 3"
+      />
+      <SubTree
+        ID="Calibrate Camera at Waypoint - Detect"
+        _collapsed="true"
+        computed_poses_vector="{computed_poses_vector}"
+        parameters="{parameters}"
+        camera_optical_frame="{camera_optical_frame}"
+        waypoint_name="Camera Calibration 4"
       />
       <Decorator
         ID="ForEach"
