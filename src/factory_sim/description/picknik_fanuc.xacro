@@ -53,6 +53,9 @@
       <geometry>
             <mesh filename="package://picknik_accessories/mujoco_assets/assets/bowl_concave_hemisphere.stl"/>
       </geometry>
+      <material name="invisible">
+          <color rgba="0 0 0 0"/>
+      </material>
     </visual>
   </link>
   <joint name="convex_bowl_joint" type="fixed">
@@ -67,6 +70,9 @@
       <geometry>
             <mesh filename="package://picknik_accessories/mujoco_assets/assets/bowl_convex_hemisphere.stl"/>
       </geometry>
+      <material name="invisible">
+          <color rgba="0 0 0 0"/>
+      </material>
     </visual>
   </link>
   <joint name="concave_bowl_joint" type="fixed">
