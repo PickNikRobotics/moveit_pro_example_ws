@@ -5,4 +5,7 @@
   <include
     file="$(find-pkg-share space_satellite_sim_camera_cal)/launch/36h11.launch.yml"
   />
+  <include
+    file="$(find-pkg-share space_satellite_sim_camera_cal)/launch/36h11_scene.launch.yml"
+  />
 </launch>

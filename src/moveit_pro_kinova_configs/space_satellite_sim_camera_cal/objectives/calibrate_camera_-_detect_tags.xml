@@ -16,6 +16,8 @@
         parameters="{parameters}"
         camera_optical_frame="{camera_optical_frame}"
         waypoint_name="Camera Calibration 1"
+        camera_image_topic="{camera_image_topic}"
+        camera_info_topic="{camera_info_topic}"
       />
       <SubTree
         ID="Calibrate Camera at Waypoint - Detect"
@@ -24,6 +26,8 @@
         parameters="{parameters}"
         camera_optical_frame="{camera_optical_frame}"
         waypoint_name="Camera Calibration 2"
+        camera_image_topic="{camera_image_topic}"
+        camera_info_topic="{camera_info_topic}"
       />
       <SubTree
         ID="Calibrate Camera at Waypoint - Detect"
@@ -32,6 +36,8 @@
         parameters="{parameters}"
         camera_optical_frame="{camera_optical_frame}"
         waypoint_name="Camera Calibration 3"
+        camera_image_topic="{camera_image_topic}"
+        camera_info_topic="{camera_info_topic}"
       />
       <SubTree
         ID="Calibrate Camera at Waypoint - Detect"
@@ -40,6 +46,8 @@
         parameters="{parameters}"
         camera_optical_frame="{camera_optical_frame}"
         waypoint_name="Camera Calibration 4"
+        camera_image_topic="{camera_image_topic}"
+        camera_info_topic="{camera_info_topic}"
       />
       <Decorator
         ID="ForEach"
@@ -128,6 +136,11 @@
         <Metadata subcategory="Perception - Camera Calibration" />
       </MetadataFields>
 
+      <inout_port name="camera_image_topic" default="/scene_camera/color" />
+      <inout_port
+        name="camera_info_topic"
+        default="/scene_camera/camera_info"
+      />
       <input_port name="camera_mounting_frame" default="external_camera_link" />
       <input_port
         name="camera_optical_frame"

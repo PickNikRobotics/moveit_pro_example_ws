@@ -15,13 +15,13 @@
         ID="GetImage"
         message_out="{image}"
         timeout_sec="2.0"
-        topic_name="/servicer_camera/color"
+        topic_name="{camera_image_topic}"
       />
       <Action
         ID="GetCameraInfo"
         message_out="{camera_info}"
         timeout_sec="2.0"
-        topic_name="/servicer_camera/camera_info"
+        topic_name="{camera_info_topic}"
       />
       <Action
         ID="DetectAprilTags"
@@ -115,6 +115,8 @@
         <Metadata subcategory="Perception - Camera Calibration" />
       </MetadataFields>
 
+      <inout_port name="camera_image_topic" default="{camera_image_topic}" />
+      <inout_port name="camera_info_topic" default="{camera_info_topic}" />
       <inout_port
         name="camera_optical_frame"
         default="{camera_optical_frame}"

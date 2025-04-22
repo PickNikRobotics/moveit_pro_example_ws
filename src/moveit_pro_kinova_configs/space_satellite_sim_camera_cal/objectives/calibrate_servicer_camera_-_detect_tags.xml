@@ -6,7 +6,7 @@
   <!--//////////-->
   <BehaviorTree
     ID="Calibrate Servicer Camera - Detect Tags"
-    _description="Calibrate the servicer camera from multiple waypoints."
+    _description="Calibrate the servicer camera from multiple waypoints using the DetectAprilTags behavior."
     _favorite="false"
   >
     <SubTree
@@ -14,8 +14,10 @@
       _collapsed="true"
       camera_mounting_frame="servicer_camera_mounting_frame"
       camera_optical_frame="servicer_camera_optical_frame"
-      mounting_pose_save_file="calibrated_servicer_camera_mounting_pose.txt"
+      mounting_pose_save_file="calibrated_servicer_cam_mounting_pose.txt"
       mounting_pose_parent_frame="world"
+      camera_image_topic="/servicer_camera/color"
+      camera_info_topic="/servicer_camera/camera_info"
     />
   </BehaviorTree>
   <TreeNodesModel>
