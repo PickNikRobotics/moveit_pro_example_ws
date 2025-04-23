@@ -50,7 +50,7 @@
             path="{pose_stamped_msgs}"
             planning_group_name="manipulator"
             position_only="false"
-            tip_link="grasp_link"
+            tip_links="grasp_link"
             trajectory_sampling_rate="100"
             velocity_scale_factor="1.000000"
           />
