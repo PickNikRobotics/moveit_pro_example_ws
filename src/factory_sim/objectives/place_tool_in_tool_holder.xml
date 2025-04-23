@@ -19,11 +19,7 @@
         task="{mtc_task}"
         trajectory_monitoring="false"
       />
-      <Action
-        ID="SetupMTCCurrentState"
-        skip_collision_check="false"
-        task="{mtc_task}"
-      />
+      <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
       <Action
         ID="SetupMTCIgnoreCollisionsBetweenObjects"
         allow_collision="true"
