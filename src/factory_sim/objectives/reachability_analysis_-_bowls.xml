@@ -6,17 +6,27 @@
     _favorite="true"
   >
     <Control ID="Sequence" name="">
+      <Control ID="Sequence" name="Visualize what we are planning to">
+        <SubTree ID="Clear Snapshot" _collapsed="true" />
+        <SubTree ID="Take Snapshot" _collapsed="true" />
+      </Control>
       <SubTree
         ID="Reachability Analysis for mesh"
         _collapsed="true"
-        tip_link="tool0"
-        planning_group_name="manipulator"
-        controller_name="/joint_trajectory_controller"
+        approach_translation="0;0;-0.1"
+        position_only_ik="true"
+        ik_frame="tool0"
+        approach_distance="0.1"
+        end_effector_joint_group="fanuc_ee"
+        joint_group_name="manipulator"
+        controller_names="/joint_trajectory_controller"
         controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
         starting_waypoint="View bowls"
         mesh_link_name="convex_bowl"
-        tip_offset="0;0;0;0;0;0"
         execute_trajectories="true"
+        keep_orientation="true"
+        keep_orientation_tolerance="0.5"
+        keep_orientation_link_names="tool0"
       />
     </Control>
   </BehaviorTree>

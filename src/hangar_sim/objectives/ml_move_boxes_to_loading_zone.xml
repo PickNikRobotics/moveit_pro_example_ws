@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<root BTCPP_format="4" main_tree_to_execute="Move Boxes to Loading Zone">
+<root BTCPP_format="4" main_tree_to_execute="ML Move Boxes to Loading Zone">
   <!--//////////-->
   <BehaviorTree
-    ID="Move Boxes to Loading Zone"
+    ID="ML Move Boxes to Loading Zone"
     _description="Move all of the boxes into the loading zone using ML perception."
     _favorite="true"
   >
@@ -52,10 +52,10 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Move Boxes to Loading Zone">
+    <SubTree ID="ML Move Boxes to Loading Zone">
       <MetadataFields>
         <Metadata runnable="true" />
-        <Metadata subcategory="Application - Advanced Examples" />
+        <Metadata subcategory="Application - ML (GPU Recommended)" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
