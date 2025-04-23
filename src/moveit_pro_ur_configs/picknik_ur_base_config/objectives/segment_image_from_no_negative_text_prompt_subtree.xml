@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <root
   BTCPP_format="4"
   main_tree_to_execute="Segment Image from No Negative Text Prompt Subtree"
@@ -32,31 +32,33 @@
         image="{image}"
         masks="{masks2d}"
         masks_visualization_topic="{masks_visualization_topic}"
+        opacity="0.500000"
+        bounding_box_detection_class="{prompts}"
       />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Segment Image from No Negative Text Prompt Subtree">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Perception - ML" />
+      </MetadataFields>
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Perception - ML" />
+      </MetadataFields>
       <input_port name="clip_model_path" default="{clip_model_path}" />
       <input_port name="clipseg_model_path" default="{clipseg_model_path}" />
       <input_port name="erosion_size" default="{erosion_size}" />
+      <input_port name="image_topic_name" default="{image_topic_name}" />
       <input_port
         name="masks_visualization_topic"
         default="{masks_visualization_topic}"
       />
+      <output_port name="masks2d" default="{masks2d}" />
       <input_port name="model_package" default="{model_package}" />
       <input_port name="prompts" default="{prompts}" />
       <input_port name="threshold" default="{threshold}" />
-      <input_port name="image_topic_name" default="{image_topic_name}" />
-      <output_port name="masks2d" default="{masks2d}" />
-      <MetadataFields>
-        <Metadata runnable="false" />
-        <Metadata subcategory="Perception - ML" />
-      </MetadataFields>
-      <MetadataFields>
-        <Metadata runnable="false" />
-        <Metadata subcategory="Perception - ML" />
-      </MetadataFields>
     </SubTree>
   </TreeNodesModel>
 </root>

@@ -63,11 +63,7 @@
           task="{pick_object_task}"
           trajectory_monitoring="false"
         />
-        <Action
-          ID="SetupMTCCurrentState"
-          task="{pick_object_task}"
-          skip_collision_check="false"
-        />
+        <Action ID="SetupMTCCurrentState" task="{pick_object_task}" />
         <Action
           ID="SetupMTCConnectWithTrajectory"
           constraints="{constraints}"

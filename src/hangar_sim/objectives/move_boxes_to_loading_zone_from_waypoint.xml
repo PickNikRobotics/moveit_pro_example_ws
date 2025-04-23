@@ -190,11 +190,7 @@
                       task="{task}"
                       task_id=""
                     />
-                    <Action
-                      ID="SetupMTCCurrentState"
-                      skip_collision_check="false"
-                      task="{task}"
-                    />
+                    <Action ID="SetupMTCCurrentState" task="{task}" />
                     <Action
                       ID="SetupMTCUpdateGroupCollisionRule"
                       allow_collision="true"
