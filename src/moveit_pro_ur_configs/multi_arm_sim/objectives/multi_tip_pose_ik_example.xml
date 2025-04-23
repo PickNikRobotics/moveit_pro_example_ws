@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<root BTCPP_format="4" main_tree_to_execute="Multi-tip IK Example">
+<root BTCPP_format="4" main_tree_to_execute="Multi-tip Pose IK Example">
   <!--//////////-->
-  <BehaviorTree ID="Multi-tip IK Example" _description="" _favorite="true">
+  <BehaviorTree ID="Multi-tip Pose IK Example" _description="" _favorite="true">
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree
         ID="Move to Waypoint"
@@ -15,19 +15,20 @@
         link_padding="0.01"
         velocity_scale_factor="1.0"
         waypoint_name="Start"
+        seed="0"
       />
       <!--Create the target poses into a vector-->
       <Action
         ID="CreateStampedPose"
         reference_frame="world"
         stamped_pose="{target}"
-        position_xyz="-0.6;0.5;0.2"
+        position_xyz="-0.4;0.2;0.2"
         orientation_xyzw="0.7071068;-0.7071068;0;0"
       />
       <Action
         ID="VisualizePose"
         marker_lifetime="0.000000"
-        marker_name="target_pose_1"
+        marker_name="target"
         marker_size="0.100000"
         pose="{target}"
       />
@@ -69,7 +70,8 @@
         input="{target_pose_2}"
         vector="{target_poses}"
       />
-      <!--Compute IK simultaneously for two tips-->
+      <!--Compute
+      IK simultaneously for two tips-->
       <Action
         ID="GetCurrentPlanningScene"
         planning_scene_msg="{planning_scene}"
@@ -80,11 +82,12 @@
         planning_group_name="manipulator"
         planning_scene_msg="{planning_scene}"
         target_poses="{target_poses}"
-        tip_links="fourth_grasp_link;third_grasp_link"
+        tip_links="third_grasp_link;second_grasp_link"
         solution="{solution}"
         link_padding="0.01"
       />
-      <!--Move to the computed solution-->
+      <!--Move
+      to the computed solution-->
       <SubTree
         ID="Move to Joint State"
         _collapsed="false"
@@ -97,11 +100,12 @@
         link_padding="0.00"
         target_joint_state="{solution}"
         velocity_scale_factor="1.0"
+        seed="0"
       />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Multi-tip IK Example">
+    <SubTree ID="Multi-tip Pose IK Example">
       <MetadataFields>
         <Metadata subcategory="Application - Advanced Examples" />
         <Metadata runnable="true" />
