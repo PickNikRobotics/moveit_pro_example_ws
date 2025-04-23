@@ -11,7 +11,6 @@
         ID="Move to Waypoint"
         _collapsed="true"
         joint_group_name="manipulator"
-        planner_interface="moveit_default"
         controller_names="/joint_trajectory_controller"
         waypoint_name="Home"
         acceleration_scale_factor="1.0"
