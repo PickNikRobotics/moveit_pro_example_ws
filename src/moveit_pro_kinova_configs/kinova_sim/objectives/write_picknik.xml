@@ -37,7 +37,7 @@
               ID="PlanCartesianPath"
               path="{pose_stamped_msgs}"
               planning_group_name="manipulator"
-              tip_link="grasp_link"
+              tip_links="grasp_link"
               tip_offset="0.0;0.0;0.0;0.0;0.0;0.0"
               position_only="false"
               blending_radius="0.001"
