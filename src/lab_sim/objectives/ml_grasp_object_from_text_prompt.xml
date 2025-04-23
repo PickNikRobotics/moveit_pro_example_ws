@@ -75,11 +75,7 @@
           task="{mtc_task}"
           trajectory_monitoring="false"
         />
-        <Action
-          ID="SetupMTCCurrentState"
-          task="{mtc_task}"
-          skip_collision_check="false"
-        />
+        <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
         <Action
           ID="SetupMTCConnectWithTrajectory"
           planner_interface="pro_rrt"
