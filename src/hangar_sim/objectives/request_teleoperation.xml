@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Request Teleoperation">
   <!--The integer value used here for teleoperation mode comes from the moveit_studio_sdk_msgs/TeleoperationMode ROS message.-->
   <BehaviorTree
@@ -18,6 +18,8 @@
           user_interaction_prompt="{user_interaction_prompt}"
           initial_teleop_mode="{initial_teleop_mode}"
           current_teleop_mode="{teleop_mode}"
+          planning_groups="{planning_groups}"
+          controllers="{controllers}"
         />
         <Decorator ID="KeepRunningUntilFailure">
           <Control ID="Sequence">
@@ -120,6 +122,7 @@
                       keep_orientation_tolerance="0.05"
                       link_padding="0.0"
                       velocity_scale_factor="1.0"
+                      seed="0"
                     />
                     <Action
                       ID="PublishEmpty"
@@ -143,8 +146,15 @@
             <!--Cartesian and joint jogging-->
             <Control ID="Sequence" _while="teleop_mode == 2">
               <Action
-                ID="TeleoperateTwist"
-                controller_name="servo_controller"
+                ID="ActivateControllers"
+                controller_names="velocity_force_controller"
+              />
+              <Action
+                ID="PoseJog"
+                controller_names="{controllers}"
+                link_padding="0.00000"
+                planning_group_names="{planning_groups}"
+                stop_safety_factor="1.500000"
               />
             </Control>
             <Control ID="Sequence" _while="teleop_mode == 1">
@@ -160,13 +170,13 @@
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Request Teleoperation">
-      <input_port name="enable_user_interaction" default="false" />
-      <input_port name="initial_teleop_mode" default="3" />
-      <input_port name="user_interaction_prompt" default="" />
       <MetadataFields>
         <Metadata subcategory="User Input" />
         <Metadata runnable="false" />
       </MetadataFields>
+      <input_port name="enable_user_interaction" default="false" />
+      <input_port name="initial_teleop_mode" default="3" />
+      <input_port name="user_interaction_prompt" default="" />
     </SubTree>
   </TreeNodesModel>
 </root>
