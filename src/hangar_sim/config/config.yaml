@@ -50,6 +50,9 @@ moveit_params:
   ompl_planning:
     package: "hangar_sim"
     path: "config/moveit/ompl_planning.yaml"
+  pose_jog:
+    package: "hangar_sim"
+    path: "config/moveit/pose_jog.yaml"
 
 
 # Configuration for loading behaviors and objectives.
@@ -100,3 +103,4 @@ ros2_control:
   controllers_inactive_at_startup:
     - "servo_controller"
     - "platform_velocity_controller_nav2"
+    - "velocity_force_controller"

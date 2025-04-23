@@ -215,7 +215,7 @@ joint_trajectory_admittance_controller:
 
 velocity_force_controller:
   ros__parameters:
-    # Joints that the controller will control.
+    # Joints that the controller will claim.
     joints:
       - linear_rail_joint
       - shoulder_pan_joint
@@ -281,3 +281,9 @@ velocity_force_controller:
     command_timeout: 0.2
     # Padding (in radians) to add to joint position limits as a safety margin.
     joint_limit_position_tolerance: 0.02
+    # Joints that the controller will command. If not specified, if takes the same value as `joints`.
+    # This can be useful to implement layered control, where some joints may be controlled by a different controller
+    # downstream.
+    # command_joints: []
+    # The type of command interface to use. Supported values are "position" and "velocity".
+    command_interfaces: ["position"]
