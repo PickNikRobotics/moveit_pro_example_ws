@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Multi-tip Path IK Example">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Multi-tip Path IK Example"
+    _description="An example of computing Path IK for two tips moving synchronously"
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree ID="Multi-tip Pose IK Example" _collapsed="true" />
+      <Control ID="Sequence">
+        <Action
+          ID="CreateStampedPose"
+          reference_frame="third_grasp_link"
+          stamped_pose="{stamped_pose}"
+        />
+        <Action
+          ID="AddPoseStampedToVector"
+          input="{stamped_pose}"
+          vector="{pose_stamped_vector}"
+        />
+        <Action
+          ID="CreateStampedPose"
+          reference_frame="third_grasp_link"
+          stamped_pose="{stamped_pose}"
+          position_xyz="0.2;0.0;0"
+        />
+        <Action
+          ID="AddPoseStampedToVector"
+          input="{stamped_pose}"
+          vector="{pose_stamped_vector}"
+        />
+        <Action
+          ID="CreateStampedPose"
+          reference_frame="third_grasp_link"
+          stamped_pose="{stamped_pose}"
+          position_xyz="0.2;0.0;-0.1"
+        />
+        <Action
+          ID="AddPoseStampedToVector"
+          input="{stamped_pose}"
+          vector="{pose_stamped_vector}"
+        />
+        <Action
+          ID="CreateStampedPose"
+          reference_frame="third_grasp_link"
+          stamped_pose="{stamped_pose}"
+          position_xyz="0.0;0.0;-0.1"
+        />
+        <Action
+          ID="AddPoseStampedToVector"
+          input="{stamped_pose}"
+          vector="{pose_stamped_vector}"
+        />
+        <Action
+          ID="CreateStampedPose"
+          reference_frame="third_grasp_link"
+          stamped_pose="{stamped_pose}"
+        />
+        <Action
+          ID="AddPoseStampedToVector"
+          input="{stamped_pose}"
+          vector="{pose_stamped_vector}"
+        />
+      </Control>
+      <Control ID="Fallback">
+        <Action
+          ID="PlanCartesianPath"
+          acceleration_scale_factor="1.000000"
+          blending_radius="0.020000"
+          debug_solution="{debug_solution}"
+          ik_cartesian_space_density="0.010000"
+          ik_joint_space_density="0.100000"
+          joint_trajectory_msg="{joint_trajectory_msg}"
+          path="{pose_stamped_vector}"
+          planning_group_name="manipulator"
+          position_only="false"
+          tip_links="third_grasp_link;second_grasp_link"
+          trajectory_sampling_rate="100"
+          velocity_scale_factor="1.000000"
+        />
+        <Action
+          ID="WaitForUserTrajectoryApproval"
+          solution="{debug_solution}"
+        />
+      </Control>
+      <Action
+        ID="ExecuteFollowJointTrajectory"
+        execute_follow_joint_trajectory_action_name="/joint_trajectory_controller/follow_joint_trajectory"
+        goal_duration_tolerance="-1.000000"
+        goal_position_tolerance="0.000000"
+        goal_time_tolerance="0.000000"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Multi-tip Path IK Example">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Advanced Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
