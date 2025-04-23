@@ -51,7 +51,7 @@
               planning_group_name="manipulator"
               target_pose="{target_pose}"
               task="{close_cabinet_door_task}"
-              planner_interface="moveit_default"
+              planner_interface="pro_rrt"
             />
           </Control>
         </Decorator>
