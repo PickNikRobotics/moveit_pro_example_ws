@@ -41,7 +41,7 @@
                       ID="Interpolate to Joint State"
                       _collapsed="false"
                       target_joint_state="{target_joint_state}"
-                      controller_names="/joint_trajectory_controller /robotiq_gripper_controller"
+                      controller_names="/joint_trajectory_controller;/robotiq_gripper_controller"
                     />
                     <Action
                       ID="PublishEmpty"
@@ -76,6 +76,7 @@
                       ID="Move to Pose"
                       _collapsed="false"
                       target_pose="{target_pose}"
+                      controller_names="/joint_trajectory_controller;/robotiq_gripper_controller"
                     />
                     <Action
                       ID="PublishEmpty"
