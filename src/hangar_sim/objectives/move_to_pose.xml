@@ -50,6 +50,7 @@
       <input_port name="target_pose" default="{target_pose}" />
       <MetadataFields>
         <Metadata subcategory="Motion - Execute" />
+        <Metadata runnable="false" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
