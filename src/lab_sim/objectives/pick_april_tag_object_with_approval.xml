@@ -17,11 +17,6 @@
         <SubTree ID="Open Gripper" />
       </Control>
       <Action
-        ID="LoadObjectiveParameters"
-        config_file_name="apriltag_detection_config.yaml"
-        parameters="{parameters}"
-      />
-      <Action
         ID="GetCameraInfo"
         topic_name="/wrist_camera/camera_info"
         message_out="{camera_info}"
@@ -58,6 +53,12 @@
         solution="{move_to_pose_solution}"
         goal_duration_tolerance="-1.000000"
       />
+      <Action
+        ID="GetImage"
+        topic_name="/wrist_camera/color"
+        message_out="{image}"
+        timeout_sec="5.000000"
+      />
       <SubTree
         ID="Get AprilTag Pose from Image"
         image="{image}"
@@ -82,6 +83,8 @@
         ID="Pick from Pose With Approval"
         _collapsed="false"
         grasp_poses="{grasp_poses}"
+        approach_distance="0.1"
+        retract_xyz="0;0;-0.1"
       />
     </Control>
   </BehaviorTree>
