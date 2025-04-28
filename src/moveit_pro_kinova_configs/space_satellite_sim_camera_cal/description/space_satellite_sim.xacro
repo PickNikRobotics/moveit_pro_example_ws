@@ -555,9 +555,9 @@
     </visual>
   </link>
   <joint name="calibration_tool_joint" type="fixed">
-    <parent link="grasp_link"/>
+    <parent link="robotiq_85_base_link"/>
     <child link="calibration_tool_link"/>
-    <origin xyz="0 0 0.019" rpy="0 0 0"/>
+    <origin xyz="0 0 0.169" rpy="0 0 0"/>
   </joint>
   <link name="calibration_tag_right">
     <visual>
@@ -607,15 +607,27 @@
     <origin xyz="0 -0.09325 -0.01" rpy="0 ${pi} ${pi}"/>
   </joint>
 
-  <!-- Camera External -->
-  <link name="external_camera_link" />
-  <joint name="external_camera_joint" type="fixed">
+  <!-- Servicer Camera -->
+  <link name="servicer_camera_mount_link" />
+  <joint name="servicer_camera_mount_joint" type="fixed">
     <parent link="world" />
-    <child link="external_camera_link" />
+    <child link="servicer_camera_mount_link" />
+    <origin xyz=" 0.585021 0.966828 -0.0111449" rpy="0.00122423 0.00171265 -0.426171" />
+  </joint>
+
+  <xacro:realsense_d415 parent="servicer_camera_mount_link" name="servicer_camera">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+  </xacro:realsense_d415>
+
+  <!-- Scene Camera -->
+  <link name="scene_camera_mount_link" />
+  <joint name="scene_camera_mount_joint" type="fixed">
+    <parent link="world" />
+    <child link="scene_camera_mount_link" />
     <origin xyz="-0.3 0.3 1.0" rpy="0 0.5236 0" />
   </joint>
 
-  <xacro:realsense_d415 parent="external_camera_link" name="scene_camera">
+  <xacro:realsense_d415 parent="scene_camera_mount_link" name="scene_camera">
     <origin xyz="0 0 0" rpy="0 0 0" />
   </xacro:realsense_d415>
 

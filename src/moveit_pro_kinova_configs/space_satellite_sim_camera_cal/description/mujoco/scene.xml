@@ -104,12 +104,6 @@
         user="1"
       />
       <site
-        name="servicer_camera_mounting_frame"
-        pos="0.6 1 0"
-        euler="1.5708 -2 0.0"
-        size="0.03"
-      />
-      <site
         name="servicer_camera_optical_frame"
         pos="0.6 1 0"
         euler="-1.5708 2 0.0"
