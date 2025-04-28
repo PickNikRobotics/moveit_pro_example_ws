@@ -58,16 +58,6 @@ BT::NodeStatus SaveCalibrationPoseYaml::tick()
   double roll, pitch, yaw;
   tf2::Matrix3x3(quat).getRPY(roll, pitch, yaw);
 
-  // Create the YAML to save.
-  YAML::Node node;
-  std::string calibration_data_str = "camera_pose";
-  node[calibration_data_str]["x"] = pose_stamped.pose.position.x;
-  node[calibration_data_str]["y"] = pose_stamped.pose.position.y;
-  node[calibration_data_str]["z"] = pose_stamped.pose.position.z;
-  node[calibration_data_str]["roll"] = roll;
-  node[calibration_data_str]["pitch"] = pitch;
-  node[calibration_data_str]["yaw"] = yaw;
-
   // Attempt to save the file.
   const std::string objective_source_directory =
       shared_resources_->node->get_parameter("config_source_directory").as_string() + "/objectives";
@@ -82,7 +72,9 @@ BT::NodeStatus SaveCalibrationPoseYaml::tick()
   shared_resources_->logger->publishInfoMessage(
       fmt::format("Writing calibration file to '{}'", filepath_maybe.value().string()));
   std::ofstream file_out(filepath_maybe.value());
-  file_out << node;
+  // Format for raw copy to .xacro
+  file_out << "<origin xyz=\" " << pose_stamped.pose.position.x << " " << pose_stamped.pose.position.y << " "
+           << pose_stamped.pose.position.z << "\" rpy=\"" << roll << " " << pitch << " " << yaw << "\" />";
   file_out.close();
 
   return BT::NodeStatus::SUCCESS;

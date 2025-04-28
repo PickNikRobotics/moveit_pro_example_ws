@@ -1,5 +1,5 @@
 <mujocoinclude>
-  <body name="base_link" gravcomp="1" pos="0 0 0.02" quat="1 0 0 0">
+  <body name="base_link" gravcomp="1" pos="0 0 0" quat="1 0 0 0">
     <inertial
       pos="-0.000648 -0.000166 0.084487"
       quat="1 0 0 0"
