@@ -9,11 +9,6 @@
     <Decorator ID="Repeat" num_cycles="{num_samples}" name="SamplePose">
       <Control ID="Sequence">
         <Action
-          ID="LoadObjectiveParameters"
-          config_file_name="{apriltag_config}"
-          parameters="{parameters}"
-        />
-        <Action
           ID="GetCameraInfo"
           topic_name="/wrist_camera/camera_info"
           message_out="{camera_info}"
@@ -29,8 +24,15 @@
               ID="DetectAprilTags"
               image="{image}"
               camera_info="{camera_info}"
-              parameters="{parameters}"
               detections="{detections}"
+              apriltag_family_name="36h11"
+              max_hamming="0"
+              n_threads="1"
+              quad_decimate="2.0"
+              quad_sigma="0.0"
+              refine_edges="true"
+              tag_size="0.051"
+              z_up="true"
             />
             <Action
               ID="GetDetectionPose"
