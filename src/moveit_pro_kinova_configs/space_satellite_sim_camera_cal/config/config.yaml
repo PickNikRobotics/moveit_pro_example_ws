@@ -25,9 +25,6 @@ hardware:
     # Many of these are specific to the UR descriptions packages, and can be customized as needed.
     # [Optional]
     urdf_params:
-      - arm: "gen3"
-      - dof: "7"
-      # - mujoco_keyframe: "default"
       - mujoco_model: "description/mujoco/scene.xml"
       - mujoco_viewer: "false"
 

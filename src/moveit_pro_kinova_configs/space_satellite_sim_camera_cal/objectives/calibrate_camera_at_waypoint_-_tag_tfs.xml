@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<root BTCPP_format="4" main_tree_to_execute="Calibrate Camera at Waypoint">
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Calibrate Camera at Waypoint - Tag TFs"
+>
   <!--//////////-->
   <BehaviorTree
-    ID="Calibrate Camera at Waypoint"
+    ID="Calibrate Camera at Waypoint - Tag TFs"
     computed_poses_vector="{computed_poses_vector}"
     parameters="{parameters}"
     waypoint_name="{waypoint_name}"
-    _description="Calibrates the camera pose using the calibration tool at a single waypoint. "
+    _description="Calibrates the camera pose using the calibration tool at a single waypoint using using externally published detected AprilTag TF frames."
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree
@@ -27,7 +30,7 @@
       />
       <Action
         ID="WaitForDuration"
-        delay_duration="1.0"
+        delay_duration="2.5"
         name="Wait for arm to settle."
       />
       <Action ID="ResetPoseStampedVector" vector="{poses_at_waypoint_vec}" />
@@ -63,6 +66,17 @@
         pose_stamped_vector="{poses_at_waypoint_vec}"
       />
       <Action
+        ID="Script"
+        code="pose_name := &quot;Cal at '&quot; + waypoint_name + &quot;'&quot;"
+      />
+      <Action
+        ID="VisualizePose"
+        marker_lifetime="0.000000"
+        marker_name="{pose_name}"
+        marker_size="0.05"
+        pose="{average_pose_stamped}"
+      />
+      <Action
         ID="AddPoseStampedToVector"
         input="{average_pose_stamped}"
         vector="{computed_poses_vector}"
@@ -70,7 +84,7 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Calibrate Camera at Waypoint">
+    <SubTree ID="Calibrate Camera at Waypoint - Tag TFs">
       <MetadataFields>
         <Metadata runnable="false" />
         <Metadata subcategory="Perception - Camera Calibration" />

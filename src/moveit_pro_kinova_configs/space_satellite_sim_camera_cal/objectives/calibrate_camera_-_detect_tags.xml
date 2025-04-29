@@ -3,6 +3,22 @@
   <!--//////////-->
   <BehaviorTree ID="Calibrate Camera - Detect Tags" _description="">
     <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree
+        ID="Visualize TF"
+        _collapsed="true"
+        marker_lifetime="0.0"
+        marker_size="0.075"
+        tf_frame_name="{camera_optical_frame}"
+        marker_name="Current URDF Optical Pose"
+      />
+      <SubTree
+        ID="Visualize TF"
+        _collapsed="true"
+        marker_lifetime="0.0"
+        marker_size="0.075"
+        tf_frame_name="{camera_mounting_frame}"
+        marker_name="Current URDF Mount Pose"
+      />
       <Action ID="ResetPoseStampedVector" vector="{computed_poses_vector}" />
       <SubTree
         ID="Calibrate Camera at Waypoint - Detect"
@@ -40,24 +56,6 @@
         camera_image_topic="{camera_image_topic}"
         camera_info_topic="{camera_info_topic}"
       />
-      <Decorator
-        ID="ForEach"
-        index="{index}"
-        out="{out}"
-        vector_in="{computed_poses_vector}"
-      >
-        <Control ID="Sequence" name="TopLevelSequence">
-          <Action ID="Script" code="name := index" />
-          <Action
-            ID="VisualizePose"
-            marker_lifetime="0.000000"
-            marker_size="0.05"
-            pose="{out}"
-            name="Avg Pose Per Waypoint"
-            marker_name="{name}"
-          />
-        </Control>
-      </Decorator>
       <Action
         ID="AveragePoseStampedVector"
         average_pose_stamped="{calibrated_optical_pose}"
@@ -66,10 +64,10 @@
       <Action
         ID="VisualizePose"
         marker_lifetime="0.000000"
-        marker_size="0.100000"
+        marker_size="0.130000"
         pose="{calibrated_optical_pose}"
         name="Calibrated Optical Pose"
-        marker_name="Calibrated optical pose"
+        marker_name="Calibrated Optical Pose"
       />
       <Action
         ID="TransformPoseFrame"
@@ -108,10 +106,10 @@
       <Action
         ID="VisualizePose"
         marker_lifetime="0.000000"
-        marker_size="0.100000"
+        marker_size="0.130000"
         pose="{calibrated_mounting_in_parent}"
         name="Calibrated Camera Mounting Pose"
-        marker_name="Calibrated camera mounting pose (to file)"
+        marker_name="Calibrated Cam Mount Pose (to file)"
       />
       <Action
         ID="SaveCalibrationPoseYaml"
@@ -126,16 +124,18 @@
         <Metadata runnable="false" />
         <Metadata subcategory="Perception - Camera Calibration" />
       </MetadataFields>
-
       <inout_port name="camera_image_topic" default="/scene_camera/color" />
       <inout_port
         name="camera_info_topic"
         default="/scene_camera/camera_info"
       />
-      <input_port name="camera_mounting_frame" default="external_camera_link" />
+      <input_port
+        name="camera_mounting_frame"
+        default="scene_camera_mount_link"
+      />
       <input_port
         name="camera_optical_frame"
-        default="scene_camera_optical_frame"
+        default="scene_camera_color_optical_frame"
       />
       <inout_port name="mounting_pose_parent_frame" default="world" />
       <input_port

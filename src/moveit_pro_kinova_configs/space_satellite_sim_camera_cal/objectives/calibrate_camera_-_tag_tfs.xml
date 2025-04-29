@@ -3,9 +3,25 @@
   <!--//////////-->
   <BehaviorTree ID="Calibrate Camera - Tag TFs" _description="">
     <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree
+        ID="Visualize TF"
+        _collapsed="true"
+        marker_lifetime="0.0"
+        marker_size="0.075"
+        tf_frame_name="{camera_optical_frame}"
+        marker_name="Current URDF Optical Pose"
+      />
+      <SubTree
+        ID="Visualize TF"
+        _collapsed="true"
+        marker_lifetime="0.0"
+        marker_size="0.075"
+        tf_frame_name="{camera_mounting_frame}"
+        marker_name="Current URDF Mount Pose"
+      />
       <Action ID="ResetPoseStampedVector" vector="{computed_poses_vector}" />
       <SubTree
-        ID="Calibrate Camera at Waypoint"
+        ID="Calibrate Camera at Waypoint - Tag TFs"
         _collapsed="true"
         computed_poses_vector="{computed_poses_vector}"
         parameters="{parameters}"
@@ -13,7 +29,7 @@
         waypoint_name="Camera Calibration 1"
       />
       <SubTree
-        ID="Calibrate Camera at Waypoint"
+        ID="Calibrate Camera at Waypoint - Tag TFs"
         _collapsed="true"
         computed_poses_vector="{computed_poses_vector}"
         parameters="{parameters}"
@@ -21,7 +37,7 @@
         waypoint_name="Camera Calibration 2"
       />
       <SubTree
-        ID="Calibrate Camera at Waypoint"
+        ID="Calibrate Camera at Waypoint - Tag TFs"
         _collapsed="true"
         computed_poses_vector="{computed_poses_vector}"
         parameters="{parameters}"
@@ -29,31 +45,13 @@
         waypoint_name="Camera Calibration 3"
       />
       <SubTree
-        ID="Calibrate Camera at Waypoint"
+        ID="Calibrate Camera at Waypoint - Tag TFs"
         _collapsed="true"
         computed_poses_vector="{computed_poses_vector}"
         parameters="{parameters}"
         camera_optical_frame="{camera_optical_frame}"
         waypoint_name="Camera Calibration 4"
       />
-      <Decorator
-        ID="ForEach"
-        index="{index}"
-        out="{out}"
-        vector_in="{computed_poses_vector}"
-      >
-        <Control ID="Sequence" name="TopLevelSequence">
-          <Action ID="Script" code="name := index" />
-          <Action
-            ID="VisualizePose"
-            marker_lifetime="0.000000"
-            marker_size="0.05"
-            pose="{out}"
-            name="Avg Pose Per Waypoint"
-            marker_name="{name}"
-          />
-        </Control>
-      </Decorator>
       <Action
         ID="AveragePoseStampedVector"
         average_pose_stamped="{calibrated_optical_pose}"

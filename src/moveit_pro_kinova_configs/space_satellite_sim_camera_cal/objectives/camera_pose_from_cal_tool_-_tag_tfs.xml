@@ -35,23 +35,6 @@
         vector="{pose_stamped_vector}"
         name="Bottom AprilTag"
       />
-      <Decorator
-        ID="ForEach"
-        index="{index}"
-        out="{out_tag_pose}"
-        vector_in="{pose_stamped_vector}"
-      >
-        <Control ID="Sequence">
-          <Action ID="Script" code="name := index+100" />
-          <Action
-            ID="VisualizePose"
-            marker_lifetime="0.000000"
-            marker_size="0.100000"
-            pose="{out_tag_pose}"
-            marker_name="{name}"
-          />
-        </Control>
-      </Decorator>
       <Action
         ID="CalibrateCameraPose"
         base_link="base_link"
@@ -64,24 +47,8 @@
       />
       <Action
         ID="VisualizePose"
-        marker_lifetime="0.0"
-        marker_size="0.100000"
-        pose="{camera_to_calib_pose}"
-        name=""
-        marker_name="AprilTag center pose"
-      />
-      <Action
-        ID="VisualizePose"
-        marker_lifetime="0.0"
-        marker_size="0.100000"
-        pose="{base_to_calib_pose}"
-        name=""
-        marker_name="Current Calibration Tool Pose"
-      />
-      <Action
-        ID="VisualizePose"
         marker_name="Single-Image Optical Pose"
-        marker_size="0.100000"
+        marker_size="0.1"
         pose="{computed_pose}"
         name=""
         marker_lifetime="0.0"
