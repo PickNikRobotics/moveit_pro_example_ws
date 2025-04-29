@@ -7,7 +7,6 @@
   <BehaviorTree
     ID="Calibrate Camera at Waypoint - Detect"
     computed_poses_vector="{computed_poses_vector}"
-    parameters="{parameters}"
     waypoint_name="{waypoint_name}"
     _description="Calibrates the camera pose using the calibration tool at a single waypoint. "
   >
@@ -30,7 +29,7 @@
       />
       <Action
         ID="WaitForDuration"
-        delay_duration="1.0"
+        delay_duration="2.5"
         name="Wait for arm to settle."
       />
       <Action ID="ResetPoseStampedVector" vector="{poses_at_waypoint_vec}" />
@@ -50,7 +49,6 @@
               _collapsed="true"
               camera_optical_frame="{camera_optical_frame}"
               computed_pose="{computed_pose}"
-              parameters="{parameters}"
               camera_image_topic="{camera_image_topic}"
               camera_info_topic="{camera_info_topic}"
             />
@@ -91,7 +89,6 @@
         name="computed_poses_vector"
         default="{computed_poses_vector}"
       />
-      <input_port name="parameters" default="{parameters}" />
       <input_port name="waypoint_name" default="{waypoint_name}" />
     </SubTree>
   </TreeNodesModel>

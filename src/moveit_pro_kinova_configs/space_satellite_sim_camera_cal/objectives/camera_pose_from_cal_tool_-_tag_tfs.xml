@@ -7,7 +7,6 @@
   <BehaviorTree
     ID="Camera Pose from Cal Tool - Tag TFs"
     computed_pose="{computed_pose}"
-    parameters="{parameters}"
     _description="Use (externally) published TF frames of the calibration tool's AprilTags to compute the camera pose."
   >
     <Control ID="Sequence" name="TopLevelSequence">
@@ -100,7 +99,6 @@
         default="{camera_optical_frame}"
       />
       <output_port name="computed_pose" default="{computed_pose}" />
-      <input_port name="parameters" default="{parameters}" />
     </SubTree>
   </TreeNodesModel>
 </root>

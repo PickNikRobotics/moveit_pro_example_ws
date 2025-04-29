@@ -3,17 +3,11 @@
   <!--//////////-->
   <BehaviorTree ID="Calibrate Camera - Detect Tags" _description="">
     <Control ID="Sequence" name="TopLevelSequence">
-      <Action
-        ID="LoadObjectiveParameters"
-        parameters="{parameters}"
-        config_file_name="51mm_apriltag_detection_config.yaml"
-      />
       <Action ID="ResetPoseStampedVector" vector="{computed_poses_vector}" />
       <SubTree
         ID="Calibrate Camera at Waypoint - Detect"
         _collapsed="true"
         computed_poses_vector="{computed_poses_vector}"
-        parameters="{parameters}"
         camera_optical_frame="{camera_optical_frame}"
         waypoint_name="Camera Calibration 1"
         camera_image_topic="{camera_image_topic}"
@@ -23,7 +17,6 @@
         ID="Calibrate Camera at Waypoint - Detect"
         _collapsed="true"
         computed_poses_vector="{computed_poses_vector}"
-        parameters="{parameters}"
         camera_optical_frame="{camera_optical_frame}"
         waypoint_name="Camera Calibration 2"
         camera_image_topic="{camera_image_topic}"
@@ -33,7 +26,6 @@
         ID="Calibrate Camera at Waypoint - Detect"
         _collapsed="true"
         computed_poses_vector="{computed_poses_vector}"
-        parameters="{parameters}"
         camera_optical_frame="{camera_optical_frame}"
         waypoint_name="Camera Calibration 3"
         camera_image_topic="{camera_image_topic}"
@@ -43,7 +35,6 @@
         ID="Calibrate Camera at Waypoint - Detect"
         _collapsed="true"
         computed_poses_vector="{computed_poses_vector}"
-        parameters="{parameters}"
         camera_optical_frame="{camera_optical_frame}"
         waypoint_name="Camera Calibration 4"
         camera_image_topic="{camera_image_topic}"
