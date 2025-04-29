@@ -7,7 +7,6 @@
   <BehaviorTree
     ID="Camera Pose from Cal Tool - Detect Tags"
     computed_pose="{computed_pose}"
-    parameters="{parameters}"
     _description="Directly detect the calibration tool's AprilTags to compute the camera pose."
   >
     <Control ID="Sequence" name="TopLevelSequence">
@@ -28,7 +27,14 @@
         camera_info="{camera_info}"
         detections="{detections}"
         image="{image}"
-        parameters="{parameters}"
+        apriltag_family_name="36h11"
+        max_hamming="0"
+        n_threads="1"
+        quad_decimate="2.0"
+        quad_sigma="0.0"
+        refine_edges="true"
+        z_up="true"
+        tag_size="0.051"
       />
       <Action ID="ResetPoseStampedVector" vector="{pose_stamped_vector}" />
       <SubTree
@@ -122,7 +128,6 @@
         default="{camera_optical_frame}"
       />
       <output_port name="computed_pose" default="{computed_pose}" />
-      <input_port name="parameters" default="{parameters}" />
     </SubTree>
   </TreeNodesModel>
 </root>

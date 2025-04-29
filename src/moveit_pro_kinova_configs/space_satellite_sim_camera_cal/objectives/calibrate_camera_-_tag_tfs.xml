@@ -1,13 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<root BTCPP_format="4" main_tree_to_execute="Calibrate Camera">
+<root BTCPP_format="4" main_tree_to_execute="Calibrate Camera - Tag TFs">
   <!--//////////-->
-  <BehaviorTree ID="Calibrate Camera">
+  <BehaviorTree ID="Calibrate Camera - Tag TFs" _description="">
     <Control ID="Sequence" name="TopLevelSequence">
-      <Action
-        ID="LoadObjectiveParameters"
-        parameters="{parameters}"
-        config_file_name="51mm_apriltag_detection_config.yaml"
-      />
       <Action ID="ResetPoseStampedVector" vector="{computed_poses_vector}" />
       <SubTree
         ID="Calibrate Camera at Waypoint"
@@ -122,20 +117,23 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Calibrate Camera">
+    <SubTree ID="Calibrate Camera - Tag TFs">
       <MetadataFields>
         <Metadata runnable="false" />
         <Metadata subcategory="Perception - Camera Calibration" />
       </MetadataFields>
-      <input_port name="camera_mounting_frame" default="external_camera_link" />
+      <input_port
+        name="camera_mounting_frame"
+        default="scene_camera_mount_link"
+      />
       <input_port
         name="camera_optical_frame"
-        default="scene_camera_optical_frame"
+        default="scene_camera_color_optical_frame"
       />
       <inout_port name="mounting_pose_parent_frame" default="world" />
       <input_port
         name="mounting_pose_save_file"
-        default="calibrated_scene_camera_mounting_pose.txt"
+        default="calibrated_scene_camera_mount_pose.txt"
       />
     </SubTree>
   </TreeNodesModel>

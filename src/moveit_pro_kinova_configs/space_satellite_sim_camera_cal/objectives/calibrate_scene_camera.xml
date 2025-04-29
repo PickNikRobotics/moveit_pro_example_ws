@@ -3,15 +3,17 @@
   <!--//////////-->
   <BehaviorTree
     ID="Calibrate Scene Camera"
-    _description="Calibrate the scene camera from multiple waypoints."
+    _description="Calibrate the scene camera from multiple waypoints using the DetectAprilTags behavior."
     _favorite="false"
   >
     <SubTree
-      ID="Calibrate Camera"
+      ID="Calibrate Camera - Detect Tags"
       _collapsed="true"
-      camera_mounting_frame="external_camera_link"
+      camera_mounting_frame="scene_camera_mount_link"
       camera_optical_frame="scene_camera_color_optical_frame"
-      mounting_pose_save_file="calibrated_scene_cam_mounting_pose.txt"
+      mounting_pose_save_file="calibrated_scene_cam_mount_pose.txt"
+      camera_image_topic="/scene_camera/color"
+      camera_info_topic="/scene_camera/camera_info"
       mounting_pose_parent_frame="world"
     />
   </BehaviorTree>
