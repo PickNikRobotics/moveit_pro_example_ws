@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Loop Detect AprilTag">
   <!--//////////-->
   <BehaviorTree
@@ -10,11 +10,6 @@
       <!--Keep executing until failure-->
       <Decorator ID="KeepRunningUntilFailure">
         <Control ID="Sequence" name="GetDetection">
-          <Action
-            ID="LoadObjectiveParameters"
-            config_file_name="51mm_apriltag_detection_config.yaml"
-            parameters="{parameters}"
-          />
           <Action
             ID="GetCameraInfo"
             topic_name="/wrist_camera/camera_info"
@@ -31,8 +26,15 @@
             ID="DetectAprilTags"
             image="{image}"
             camera_info="{camera_info}"
-            parameters="{parameters}"
             detections="{detections}"
+            apriltag_family_name="36h11"
+            max_hamming="0"
+            n_threads="1"
+            quad_decimate="2.0"
+            quad_sigma="0.0"
+            refine_edges="true"
+            z_up="true"
+            tag_size="0.051"
           />
         </Control>
       </Decorator>
