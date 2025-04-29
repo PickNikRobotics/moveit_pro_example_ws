@@ -142,17 +142,23 @@
             </Decorator>
             <!--Cartesian and joint jogging-->
             <Control ID="Sequence" _while="teleop_mode == 2">
-              <Action
-                ID="ActivateControllers"
-                controller_names="{controllers}"
-              />
-              <Action
-                ID="PoseJog"
-                controller_names="{controllers}"
-                link_padding="0.010000"
-                planning_group_names="{planning_groups}"
-                stop_safety_factor="1.500000"
-              />
+              <Decorator ID="Repeat" num_cycles="-1">
+                <Control ID="Sequence">
+                  <Action
+                    ID="ActivateControllers"
+                    controller_names="{controllers}"
+                  />
+                  <Decorator ID="ForceSuccess">
+                    <Action
+                      ID="PoseJog"
+                      controller_names="{controllers}"
+                      link_padding="0.0"
+                      planning_group_names="{planning_groups}"
+                      stop_safety_factor="1.500000"
+                    />
+                  </Decorator>
+                </Control>
+              </Decorator>
             </Control>
             <Control ID="Sequence" _while="teleop_mode == 1">
               <Action
