@@ -66,6 +66,17 @@
         pose_stamped_vector="{poses_at_waypoint_vec}"
       />
       <Action
+        ID="Script"
+        code="pose_name := &quot;Cal at '&quot; + waypoint_name + &quot;'&quot;"
+      />
+      <Action
+        ID="VisualizePose"
+        marker_lifetime="0.000000"
+        marker_name="{pose_name}"
+        marker_size="0.05"
+        pose="{average_pose_stamped}"
+      />
+      <Action
         ID="AddPoseStampedToVector"
         input="{average_pose_stamped}"
         vector="{computed_poses_vector}"
@@ -78,9 +89,8 @@
         <Metadata runnable="false" />
         <Metadata subcategory="Perception - Camera Calibration" />
       </MetadataFields>
-
-      <inout_port name="camera_info_topic" default="{camera_info_topic}" />
       <inout_port name="camera_image_topic" default="{camera_image_topic}" />
+      <inout_port name="camera_info_topic" default="{camera_info_topic}" />
       <inout_port
         name="camera_optical_frame"
         default="{camera_optical_frame}"
