@@ -47,6 +47,7 @@
     <SubTree ID="Move to Pose iMarker">
       <input_port name="target_pose" default="{target_pose}" />
       <MetadataFields>
+        <Metadata runnable="false" />
         <Metadata subcategory="Motion - Execute" />
       </MetadataFields>
     </SubTree>

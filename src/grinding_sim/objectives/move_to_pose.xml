@@ -29,6 +29,7 @@
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Move to Pose">
+      <Metadata runnable="false" />
       <input_port name="target_pose" default="{target_pose}" />
       <MetadataFields>
         <Metadata subcategory="Motion - Execute" />
