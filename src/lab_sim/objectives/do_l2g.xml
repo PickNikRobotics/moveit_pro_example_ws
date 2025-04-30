@@ -107,6 +107,9 @@
         ID="Pick from Pose"
         _collapsed="true"
         grasp_pose="{grasp_world}"
+        approach_distance="0.1"
+        grasp_poses="{grasp_poses}"
+        retract_xyz="0;0;-0.1"
       />
     </Control>
   </BehaviorTree>
@@ -114,7 +117,7 @@
     <SubTree ID="Do L2G">
       <MetadataFields>
         <Metadata runnable="true" />
-        <Metadata subcategory="Application - Advanced Examples" />
+        <Metadata subcategory="Application - ML (GPU Recommended)" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
