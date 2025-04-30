@@ -1,4 +1,6 @@
-RelativePose:
+header:
+  frame_id: world
+pose:
   position:
     x: -0.0025512052998043211
     y: -0.0094682145455754485
