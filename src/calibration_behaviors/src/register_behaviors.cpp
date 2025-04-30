@@ -4,7 +4,7 @@
 
 #include "calibration_behaviors/average_pose_stamped_vector.hpp"
 #include "calibration_behaviors/calibrate_camera_pose.hpp"
-#include "calibration_behaviors/save_calibration_pose_yaml.hpp"
+#include "calibration_behaviors/save_pose_for_urdf.hpp"
 
 #include "pluginlib/class_list_macros.hpp"
 
@@ -19,8 +19,7 @@ public:
     moveit_studio::behaviors::registerBehavior<AveragePoseStampedVector>(factory, "AveragePoseStampedVector",
                                                                          shared_resources);
     moveit_studio::behaviors::registerBehavior<CalibrateCameraPose>(factory, "CalibrateCameraPose", shared_resources);
-    moveit_studio::behaviors::registerBehavior<SaveCalibrationPoseYaml>(factory, "SaveCalibrationPoseYaml",
-                                                                        shared_resources);
+    moveit_studio::behaviors::registerBehavior<SavePoseForUrdf>(factory, "SavePoseForUrdf", shared_resources);
   }
 };
 }  // namespace calibration_behaviors

@@ -14,7 +14,7 @@ add_library(
   SHARED
   src/average_pose_stamped_vector.cpp
   src/calibrate_camera_pose.cpp
-  src/save_calibration_pose_yaml.cpp
+  src/save_pose_for_urdf.cpp
   src/register_behaviors.cpp)
 target_include_directories(
   calibration_behaviors

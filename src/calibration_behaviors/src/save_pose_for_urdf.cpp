@@ -1,4 +1,4 @@
-#include "calibration_behaviors/save_calibration_pose_yaml.hpp"
+#include "calibration_behaviors/save_pose_for_urdf.hpp"
 
 #include <fstream>
 #include <vector>
@@ -19,14 +19,13 @@ constexpr auto kPortIDFileName = "file_name";
 
 namespace calibration_behaviors
 {
-SaveCalibrationPoseYaml::SaveCalibrationPoseYaml(
-    const std::string& name, const BT::NodeConfiguration& config,
-    const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources)
+SavePoseForUrdf::SavePoseForUrdf(const std::string& name, const BT::NodeConfiguration& config,
+                                 const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources)
   : moveit_studio::behaviors::SharedResourcesNode<BT::SyncActionNode>(name, config, shared_resources)
 {
 }
 
-BT::PortsList SaveCalibrationPoseYaml::providedPorts()
+BT::PortsList SavePoseForUrdf::providedPorts()
 {
   return BT::PortsList(
       { BT::InputPort<geometry_msgs::msg::PoseStamped>(kPortIDCalibrationPoseStamped, "{average_pose_stamped}",
@@ -34,12 +33,12 @@ BT::PortsList SaveCalibrationPoseYaml::providedPorts()
         BT::InputPort<std::string>(kPortIDFileName, "calibration_pose.yaml", "Path at which to save the file.") });
 }
 
-BT::KeyValueVector SaveCalibrationPoseYaml::metadata()
+BT::KeyValueVector SavePoseForUrdf::metadata()
 {
   return { { "description", "Calibrate scene camera extrinsics" } };
 }
 
-BT::NodeStatus SaveCalibrationPoseYaml::tick()
+BT::NodeStatus SavePoseForUrdf::tick()
 {
   const auto ports = moveit_studio::behaviors::getRequiredInputs(
       getInput<geometry_msgs::msg::PoseStamped>(kPortIDCalibrationPoseStamped), getInput<std::string>(kPortIDFileName));
