@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
-  <xacro:macro name="picknik_ur_mujoco_ros2_control" params="mujoco_model">
+  <xacro:macro name="picknik_ur_mujoco_ros2_control" params="mujoco_model mujoco_viewer:=false">
 
     <ros2_control name="ur_mujoco_control" type="system">
       <hardware>
@@ -13,7 +13,7 @@
           <param name="publish_odom">true</param>
           <param name="odom_child_frame">ridgeback_base_link</param>
           <param name="odom_zero_z">true</param>
-<!--          <param name="mujoco_viewer">true</param>-->
+          <param name="mujoco_viewer">${mujoco_viewer}</param>
           <param name="mujoco_keyframe">default</param>
       </hardware>
     </ros2_control>
