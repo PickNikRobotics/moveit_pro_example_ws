@@ -42,9 +42,8 @@
         source_to_destination_pose="{tag_to_user_grasp_pose}"
       />
       <Action
-        ID="SavePoseToYaml"
+        ID="SavePoseStampedToYaml"
         yaml_filename="visual_servo_reference"
-        namespace="ServoReference"
         message="{tag_to_user_grasp_pose}"
       />
     </Control>
