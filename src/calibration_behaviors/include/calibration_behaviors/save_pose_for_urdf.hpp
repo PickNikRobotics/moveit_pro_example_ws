@@ -9,11 +9,11 @@ namespace calibration_behaviors
 /**
  * @brief TODO(...)
  */
-class SaveCalibrationPoseYaml : public moveit_studio::behaviors::SharedResourcesNode<BT::SyncActionNode>
+class SavePoseForUrdf : public moveit_studio::behaviors::SharedResourcesNode<BT::SyncActionNode>
 {
 public:
   /**
-   * @brief Constructor for the SaveCalibrationPoseYaml behavior.
+   * @brief Constructor for the SavePoseForUrdf behavior.
    * @param name The name of a particular instance of this Behavior. This will be set by the behavior tree factory when
    * this Behavior is created within a new behavior tree.
    * @param config This contains runtime configuration info for this Behavior, such as the mapping between the
@@ -22,8 +22,8 @@ public:
    * @details An important limitation is that the members of the base Behavior class are not instantiated until after
    * the initialize() function is called, so these classes should not be used within the constructor.
    */
-  SaveCalibrationPoseYaml(const std::string& name, const BT::NodeConfiguration& config,
-                          const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources);
+  SavePoseForUrdf(const std::string& name, const BT::NodeConfiguration& config,
+                  const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources);
 
   /**
    * @brief Implementation of the required providedPorts() function for the calibrate_camera_pose Behavior.
@@ -43,9 +43,9 @@ public:
   static BT::KeyValueVector metadata();
 
   /**
-   * @brief Implementation of BT::SyncActionNode::tick() for SaveCalibrationPoseYaml.
+   * @brief Implementation of BT::SyncActionNode::tick() for SavePoseForUrdf.
    * @details This function is where the Behavior performs its work when the behavior tree is being run. Since
-   * SaveCalibrationPoseYaml is derived from BT::SyncActionNode, it is very important that its tick() function always
+   * SavePoseForUrdf is derived from BT::SyncActionNode, it is very important that its tick() function always
    * finishes very quickly. If tick() blocks before returning, it will block execution of the entire behavior tree,
    * which may have undesirable consequences for other Behaviors that require a fast update rate to work correctly.
    */

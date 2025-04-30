@@ -112,7 +112,7 @@
         marker_name="Calibrated Cam Mount Pose (to file)"
       />
       <Action
-        ID="SaveCalibrationPoseYaml"
+        ID="SavePoseForUrdf"
         calibration_pose_stamped="{calibrated_mounting_in_parent}"
         file_name="{mounting_pose_save_file}"
       />
