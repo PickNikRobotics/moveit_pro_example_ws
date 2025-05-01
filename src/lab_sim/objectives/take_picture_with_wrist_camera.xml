@@ -7,11 +7,6 @@
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
-        ID="LoadObjectiveParameters"
-        config_file_name="apriltag_detection_config.yaml"
-        parameters="{wrist_camera_parameters}"
-      />
-      <Action
         ID="GetCameraInfo"
         topic_name="/wrist_camera/camera_info"
         message_out="{wrist_camera_info}"
