@@ -24,10 +24,6 @@
     <SubTree ID="Take Wrist Camera Image">
       <inout_port name="wrist_camera_image" default="{wrist_camera_image}" />
       <inout_port name="wrist_camera_info" default="{wrist_camera_info}" />
-      <inout_port
-        name="wrist_camera_parameters"
-        default="{wrist_camera_parameters}"
-      />
       <MetadataFields>
         <Metadata subcategory="Perception - 2D Image" />
         <Metadata runnable="false" />
