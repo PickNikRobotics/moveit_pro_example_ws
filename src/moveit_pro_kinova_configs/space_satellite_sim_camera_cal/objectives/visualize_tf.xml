@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Visualize TF">
   <!--//////////-->
-  <BehaviorTree ID="Visualize TF">
+  <BehaviorTree ID="Visualize TF" _description="Visualize a TF frame.">
     <Control ID="Sequence">
       <Decorator ID="Repeat" num_cycles="10">
         <Action
