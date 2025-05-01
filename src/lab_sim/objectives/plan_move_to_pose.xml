@@ -11,6 +11,7 @@
         task_id="move_to_pose"
         controller_names="/joint_trajectory_controller;/robotiq_gripper_controller"
         task="{move_to_pose_task}"
+        trajectory_monitoring="false"
       />
       <Action ID="SetupMTCCurrentState" task="{move_to_pose_task}" />
       <Action
@@ -19,6 +20,15 @@
         planning_group_name="manipulator"
         target_pose="{target_pose}"
         task="{move_to_pose_task}"
+        acceleration_scale_factor="1.000000"
+        keep_orientation="false"
+        keep_orientation_link_names="grasp_link"
+        keep_orientation_tolerance="0.100000"
+        link_padding="0.000000"
+        max_iterations="5000"
+        monitored_stage="current state"
+        trajectory_sampling_rate="100"
+        velocity_scale_factor="1.000000"
       />
       <Action
         ID="PlanMTCTask"
@@ -29,14 +39,15 @@
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Plan Move To Pose">
-      <input_port name="target_pose" default="{target_pose}" />
+      <MetadataFields>
+        <Metadata subcategory="Motion - Planning" />
+        <Metadata runnable="false" />
+      </MetadataFields>
       <output_port
         name="move_to_pose_solution"
         default="{move_to_pose_solution}"
       />
-      <MetadataFields>
-        <Metadata subcategory="Motion - Planning" />
-      </MetadataFields>
+      <input_port name="target_pose" default="{target_pose}" />
     </SubTree>
   </TreeNodesModel>
 </root>
