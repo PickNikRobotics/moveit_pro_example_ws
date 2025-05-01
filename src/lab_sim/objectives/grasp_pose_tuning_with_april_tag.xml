@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Grasp Pose Tuning With April Tag">
   <!--//////////-->
   <BehaviorTree
@@ -94,10 +94,9 @@
         source_to_destination_pose="{relative_pose}"
       />
       <Action
-        ID="SavePoseToYaml"
+        ID="SavePoseStampedToYaml"
         message="{relative_pose}"
         yaml_filename="relative_grasp_pose"
-        namespace="RelativePose"
       />
       <!--Now that it is saved to yaml, it can be loaded as a grasp offset. Test with the "Grasp Pose Using Yaml" objective.-->
     </Control>
