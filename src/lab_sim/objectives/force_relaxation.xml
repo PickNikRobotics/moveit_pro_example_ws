@@ -26,6 +26,8 @@
             publish_rate="50"
             twist_stamped="{zero_twist}"
             wrench_stamped="{zero_wrench}"
+            velocity_controlled_axes="0;0;0;0;0;0"
+            velocity_force_controller_command_topic="/velocity_force_controller/command"
           />
         </Decorator>
       </Decorator>
@@ -39,6 +41,7 @@
             velocity_controlled_axes="1;1;1;0;0;0"
             wrench_stamped="{zero_wrench}"
             twist_stamped="{zero_twist}"
+            velocity_force_controller_command_topic="/velocity_force_controller/command"
           />
         </Decorator>
       </Decorator>
@@ -46,12 +49,13 @@
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Force Relaxation">
-      <input_port name="wrench_gain" default="0.01" />
-      <input_port name="relaxation_time_ms" default="500" />
-      <input_port name="tip_link" default="grasp_link" />
       <MetadataFields>
         <Metadata subcategory="Motion - Controls" />
+        <Metadata runnable="false" />
       </MetadataFields>
+      <input_port name="relaxation_time_ms" default="500" />
+      <input_port name="tip_link" default="grasp_link" />
+      <input_port name="wrench_gain" default="0.01" />
     </SubTree>
   </TreeNodesModel>
 </root>
