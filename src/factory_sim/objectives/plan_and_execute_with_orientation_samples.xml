@@ -83,6 +83,7 @@
           ID="SetupMTCBatchPoseIK"
           end_effector_group="{end_effector_joint_group}"
           end_effector_link="{ik_frame}"
+          ik_group="manipulator"
           ik_timeout_s="0.01"
           max_ik_solutions="1"
           monitored_stage="current state"
