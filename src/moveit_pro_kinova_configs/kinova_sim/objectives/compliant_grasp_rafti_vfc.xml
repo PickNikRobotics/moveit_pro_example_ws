@@ -22,7 +22,6 @@
         _collapsed="false"
         num_samples="1"
         tag_id="5"
-        apriltag_config="51mm_apriltag_detection_config.yaml"
         max_distance="0.02"
         max_rotation="0.2"
         avg_pose="{tag_pose}"
