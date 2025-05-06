@@ -15,6 +15,13 @@
         waypoint_name="View Satellite"
         joint_group_name="manipulator"
         controller_names="/joint_trajectory_controller"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        seed="0"
+        velocity_scale_factor="1.0"
       />
       <SubTree ID="Take Snapshot" _collapsed="false" />
       <SubTree
@@ -158,7 +165,7 @@
           <Action
             ID="TransformPose"
             input_pose="{model_object}"
-            translation_xyz="0.0;0.025;0.3"
+            translation_xyz="0.0;0.0;0.3"
             quaternion_xyzw="-0.707107;0.707107;0.0;0.0"
             output_pose="{hole_object}"
           />
@@ -186,11 +193,31 @@
         task_id=""
         controller_names="/joint_trajectory_controller;/robotiq_gripper_controller"
         task="{mtc_task}"
+        trajectory_monitoring="false"
       />
       <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
-      <Action ID="SetupMTCPlanToPose" target_pose="{hole_object}" />
+      <Action
+        ID="SetupMTCPlanToPose"
+        target_pose="{hole_object}"
+        acceleration_scale_factor="1.000000"
+        ik_frame="grasp_link"
+        keep_orientation="false"
+        keep_orientation_link_names="grasp_link"
+        keep_orientation_tolerance="0.100000"
+        link_padding="0.000000"
+        max_iterations="5000"
+        monitored_stage="current state"
+        planning_group_name="manipulator"
+        task="{mtc_task}"
+        trajectory_sampling_rate="100"
+        velocity_scale_factor="1.000000"
+      />
       <Action ID="PlanMTCTask" task="{mtc_task}" solution="{mtc_solution}" />
-      <Action ID="ExecuteMTCTask" solution="{mtc_solution}" />
+      <Action
+        ID="ExecuteMTCTask"
+        solution="{mtc_solution}"
+        goal_duration_tolerance="-1.000000"
+      />
       <Action
         ID="TransformPose"
         input_pose="{hole_object}"
@@ -203,6 +230,7 @@
         task_id=""
         controller_names="/joint_trajectory_controller;/robotiq_gripper_controller"
         task="{mtc_task}"
+        trajectory_monitoring="false"
       />
       <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
       <Action
@@ -225,10 +253,15 @@
         planning_group_name="manipulator"
         velocity_scale=".2"
         acceleration_scale="1.0"
+        ignore_environment_collisions="false"
       />
       <Action ID="PlanMTCTask" task="{mtc_task}" solution="{mtc_solution}" />
       <SubTree ID="Re-Zero Force-Torque Sensors" _collapsed="true" />
-      <Action ID="ExecuteMTCTask" solution="{mtc_solution}" />
+      <Action
+        ID="ExecuteMTCTask"
+        solution="{mtc_solution}"
+        goal_duration_tolerance="-1.000000"
+      />
       <Action
         ID="ActivateControllers"
         controller_names="velocity_force_controller"
@@ -238,15 +271,26 @@
         angular_velocity_xyz="0.0;0.0;0.0"
         linear_velocity_xyz="0.0;0.0;0.0"
         stamped_twist="{desired_twist}"
+        reference_frame="world"
       />
       <Action
         ID="CreateStampedWrench"
         torque_xyz="0.0;0.0;0.0"
         force_xyz="0.0;0.0;0.0"
         stamped_wrench="{desired_wrench}"
+        reference_frame="world"
       />
       <Control ID="Parallel" success_count="1" failure_count="1">
-        <Action ID="PublishVelocityForceCommand" />
+        <Action
+          ID="PublishVelocityForceCommand"
+          force_controlled_axes="1;1;1;1;1;1"
+          publish_rate="10"
+          twist_stamped="{desired_twist}"
+          velocity_controlled_axes="0;0;0;0;0;0"
+          velocity_force_controller_command_topic="/velocity_force_controller/command"
+          wrench_gain="0.0"
+          wrench_stamped="{desired_wrench}"
+        />
         <SubTree ID="Close Gripper" _collapsed="true" />
       </Control>
       <Decorator ID="Delay" delay_msec="1000">
