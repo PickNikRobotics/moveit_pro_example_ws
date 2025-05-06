@@ -52,6 +52,9 @@ moveit_params:
   servo_joint_limits:
     package: "kinova_gen3_site_config"
     path: "config/moveit/hard_joint_limits.yaml"
+  pose_jog:
+    package: "kinova_gen3_site_config"
+    path: "config/moveit/pose_jog.yaml"
 
   publish:
     planning_scene: True
