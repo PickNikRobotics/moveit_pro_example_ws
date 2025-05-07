@@ -40,8 +40,6 @@
         base_link="base_link"
         calibration_tool_frame="calibration_tool_frame"
         computed_pose="{computed_pose}"
-        debug_base_calibration_pose="{base_to_calib_pose}"
-        debug_camera_calibration_pose="{camera_to_calib_pose}"
         detected_poses="{pose_stamped_vector}"
         camera_optical_frame="{camera_optical_frame}"
       />
