@@ -69,16 +69,10 @@
         quaternion_xyzw="1;0;0;0"
         translation_xyz="0;0;0.01"
       />
-      <Action
-        ID="AddPoseStampedToVector"
-        input="{offset_pose}"
-        vector="{grasp_poses}"
-      />
       <SubTree
         ID="Pick from Pose"
         _collapsed="true"
-        grasp_pose="{object_pose}"
-        grasp_poses="{grasp_poses}"
+        grasp_pose="{offset_pose}"
         approach_distance="0.1"
         retract_xyz="0;0;-0.1"
       />
