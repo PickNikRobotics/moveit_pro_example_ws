@@ -7,7 +7,7 @@
         <Decorator ID="ForEach" vector_in="{input_masks}" out="{input_mask}" index="{index}">
           <Control ID="Sequence">
             <Action ID="GetCenterFromMask2D" center="{center2d}" mask="{input_mask}"/>
-            <Action ID="GetMasks2DFromPointQuery" image="{input_image}" masks2d="{refined_masks}" pixel_coords="{center2d}" decoder_model_path="models/decoder.onnx" encoder_model_path="models/sam2_hiera_large_encoder.onnx" model_package="ur5e_linear_actuator_space_station_config"/>
+            <Action ID="GetMasks2DFromPointQuery" image="{input_image}" masks2d="{refined_masks}" pixel_coords="{center2d}" decoder_model_path="models/decoder.onnx" encoder_model_path="models/sam2_hiera_large_encoder.onnx" model_package="lab_sim"/>
             <Action ID="AlwaysFailure"/>
           </Control>
         </Decorator>
@@ -21,8 +21,8 @@
         <Metadata subcategory="Application - ML (GPU Recommended)"/>
       </MetadataFields>
       <inout_port name="input_image" default="{input_image}"/>
-      <inout_port name="refined_masks" default="{refined_masks}"/>
       <inout_port name="input_masks" default="{input_masks}"/>
+      <inout_port name="refined_masks" default="{refined_masks}"/>
     </SubTree>
   </TreeNodesModel>
 </root>

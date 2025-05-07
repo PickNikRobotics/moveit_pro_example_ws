@@ -3,7 +3,7 @@
   <!--//////////-->
   <BehaviorTree ID="ML Auto Grasp Object from Text Prompt" _description="Uses ML models to identify and grasp plan to pick up objects." _favorite="false">
     <Control ID="Sequence" name="TopLevelSequence">
-      <SubTree ID="ML Get Grasp Pose from Text Prom subtree" _collapsed="true" camera_image_topic="/wrist_camera/color" camera_info_topic="/wrist_camera/camera_info" camera_points_topic="/wrist_camera/points" planning_group="manipulator"/>
+      <SubTree ID="ML Get Grasp Pose from Text Prom subtree" _collapsed="false" camera_image_topic="/wrist_camera/color" camera_info_topic="/wrist_camera/camera_info" camera_points_topic="/wrist_camera/points" planning_group="manipulator" object_prompt="wnite plastic bottle"/>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
