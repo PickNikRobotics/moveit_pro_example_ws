@@ -74,15 +74,10 @@
         quaternion_xyzw="1;0;0;0"
         translation_xyz="0;0;0.01"
       />
-      <Action
-        ID="AddPoseStampedToVector"
-        input="{grasp_pose}"
-        vector="{grasp_poses}"
-      />
       <SubTree
         ID="Pick from Pose With Approval"
         _collapsed="false"
-        grasp_poses="{grasp_poses}"
+        grasp_pose="{grasp_pose}"
         approach_distance="0.1"
         retract_xyz="0;0;-0.1"
       />
