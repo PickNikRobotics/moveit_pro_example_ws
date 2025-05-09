@@ -40,7 +40,7 @@
     transforms: []
     twist: []
     wrench: []
-  name: Beaker 1d - Place
+  name: Flask 1d - Place
 - description: ''
   favorite: false
   joint_group_names:
@@ -83,7 +83,7 @@
     transforms: []
     twist: []
     wrench: []
-  name: Beaker 3c - Pre Place
+  name: Flask 3c - Pre Place
 - description: ''
   favorite: false
   joint_group_names:
@@ -126,7 +126,7 @@
     transforms: []
     twist: []
     wrench: []
-  name: Beaker 1b - Pick
+  name: Flask 1b - Pick
 - description: ''
   favorite: false
   joint_group_names:
@@ -255,7 +255,7 @@
     transforms: []
     twist: []
     wrench: []
-  name: Beaker 2c - Pre Place
+  name: Flask 2c - Pre Place
 - description: ''
   favorite: false
   joint_group_names:
@@ -298,7 +298,7 @@
     transforms: []
     twist: []
     wrench: []
-  name: Beaker 1c - Pre Place
+  name: Flask 1c - Pre Place
 - description: ''
   favorite: false
   joint_group_names:
@@ -341,7 +341,7 @@
     transforms: []
     twist: []
     wrench: []
-  name: Beaker 2b - Pick
+  name: Flask 2b - Pick
 - description: ''
   favorite: false
   joint_group_names:
@@ -384,7 +384,7 @@
     transforms: []
     twist: []
     wrench: []
-  name: Beaker 2d - Place
+  name: Flask 2d - Place
 - description: ''
   favorite: false
   joint_group_names:
@@ -470,7 +470,7 @@
     transforms: []
     twist: []
     wrench: []
-  name: Beaker 3d - Place
+  name: Flask 3d - Place
 - description: Move out of view of scene camera
   favorite: false
   joint_group_names:
@@ -599,7 +599,7 @@
     transforms: []
     twist: []
     wrench: []
-  name: Beaker 3b - Pick
+  name: Flask 3b - Pick
 - description: ''
   favorite: false
   joint_group_names:
@@ -642,7 +642,7 @@
     transforms: []
     twist: []
     wrench: []
-  name: Beaker 3a - Pre Pick
+  name: Flask 3a - Pre Pick
 - description: ''
   favorite: false
   joint_group_names:
@@ -814,7 +814,7 @@
     transforms: []
     twist: []
     wrench: []
-  name: Beaker 1a - Pre Pick
+  name: Flask 1a - Pre Pick
 - description: ''
   favorite: false
   joint_group_names:
@@ -900,7 +900,7 @@
     transforms: []
     twist: []
     wrench: []
-  name: Beaker 2a - Pre Pick
+  name: Flask 2a - Pre Pick
 - description: ''
   favorite: false
   joint_group_names:
