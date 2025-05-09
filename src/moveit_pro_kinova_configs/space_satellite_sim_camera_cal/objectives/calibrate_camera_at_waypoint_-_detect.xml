@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Calibrate Camera at Waypoint - Detect"
+>
+  <!--//////////-->
+  <BehaviorTree
+    ID="Calibrate Camera at Waypoint - Detect"
+    computed_poses_vector="{computed_poses_vector}"
+    waypoint_name="{waypoint_name}"
+    _description="Calibrates the camera pose using the calibration tool at a single waypoint. "
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        controller_names="/joint_trajectory_controller"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        velocity_scale_factor="1.0"
+        waypoint_name="{waypoint_name}"
+        planner_interface="moveit_default"
+        keep_orientation_link_names="grasp_link"
+        seed="0"
+      />
+      <Action
+        ID="WaitForDuration"
+        delay_duration="2.5"
+        name="Wait for arm to settle."
+      />
+      <Action ID="ResetPoseStampedVector" vector="{poses_at_waypoint_vec}" />
+      <Decorator
+        ID="Repeat"
+        num_cycles="20"
+        name="Take multiple calibrations at this waypoint "
+      >
+        <Control ID="Sequence" name="TopLevelSequence">
+          <Decorator
+            ID="RetryUntilSuccessful"
+            num_attempts="5"
+            name="Optional retry tag detection for variable conditions"
+          >
+            <SubTree
+              ID="Camera Pose from Cal Tool - Detect Tags"
+              _collapsed="true"
+              camera_optical_frame="{camera_optical_frame}"
+              computed_pose="{computed_pose}"
+              camera_image_topic="{camera_image_topic}"
+              camera_info_topic="{camera_info_topic}"
+            />
+          </Decorator>
+          <Action
+            ID="AddPoseStampedToVector"
+            input="{computed_pose}"
+            vector="{poses_at_waypoint_vec}"
+          />
+        </Control>
+      </Decorator>
+      <Action
+        ID="AveragePoseStampedVector"
+        average_pose_stamped="{average_pose_stamped}"
+        pose_stamped_vector="{poses_at_waypoint_vec}"
+      />
+      <Action
+        ID="Script"
+        code="pose_name := &quot;Cal at '&quot; + waypoint_name + &quot;'&quot;"
+      />
+      <Action
+        ID="VisualizePose"
+        marker_lifetime="0.000000"
+        marker_name="{pose_name}"
+        marker_size="0.05"
+        pose="{average_pose_stamped}"
+      />
+      <Action
+        ID="AddPoseStampedToVector"
+        input="{average_pose_stamped}"
+        vector="{computed_poses_vector}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Calibrate Camera at Waypoint - Detect">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Perception - Camera Calibration" />
+      </MetadataFields>
+      <inout_port name="camera_image_topic" default="{camera_image_topic}" />
+      <inout_port name="camera_info_topic" default="{camera_info_topic}" />
+      <inout_port
+        name="camera_optical_frame"
+        default="{camera_optical_frame}"
+      />
+      <inout_port
+        name="computed_poses_vector"
+        default="{computed_poses_vector}"
+      />
+      <input_port name="waypoint_name" default="{waypoint_name}" />
+    </SubTree>
+  </TreeNodesModel>
+</root>
