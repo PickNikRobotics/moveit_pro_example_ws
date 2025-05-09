@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root BTCPP_format="4" main_tree_to_execute="ML Visualize Candidate Grasps">
+  <!--//////////-->
+  <BehaviorTree ID="ML Visualize Candidate Grasps" _description="Visualizes candidate grasps using current camera view" _favorite="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree ID="ML Get Candidate Grasps Subtree" _collapsed="true" camera_image_topic="/wrist_camera/color" camera_info_topic="/wrist_camera/camera_info" camera_points_topic="/wrist_camera/points" grasps="{grasps}" object_prompt="white plastic bottle"/>
+      <SubTree ID="Visualize Grasps subtree" _collapsed="true" input_grasps="{grasps}"/>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="ML Visualize Candidate Grasps">
+      <MetadataFields>
+        <Metadata runnable="true"/>
+        <Metadata subcategory="Application - ML (GPU Recommended)"/>
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

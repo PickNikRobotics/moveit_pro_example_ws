@@ -2,9 +2,25 @@
 <root BTCPP_format="4" main_tree_to_execute="ML Auto Grasp Object from Text Prompt">
   <!--//////////-->
   <BehaviorTree ID="ML Auto Grasp Object from Text Prompt" _description="Uses ML models to identify and grasp plan to pick up objects." _favorite="true">
-    <Control ID="Sequence" name="TopLevelSequence">
-      <SubTree ID="ML Get Grasp Pose from Text Prom subtree" _collapsed="false" camera_image_topic="/wrist_camera/color" camera_info_topic="/wrist_camera/camera_info" camera_points_topic="/wrist_camera/points" planning_group="manipulator" object_prompt="wnite plastic bottle"/>
-    </Control>
+    <Decorator ID="Repeat" num_cycles="1">
+      <Control ID="Sequence" name="TopLevelSequence">
+        <Action ID="ClearSnapshot"/>
+        <SubTree ID="Open Gripper" _collapsed="true"/>
+        <SubTree ID="Move to Waypoint" _collapsed="true" acceleration_scale_factor="1.0" controller_action_server="/joint_trajectory_controller/follow_joint_trajectory" controller_names="/joint_trajectory_controller" joint_group_name="manipulator" keep_orientation="false" keep_orientation_tolerance="0.05" link_padding="0.01" seed="0" velocity_scale_factor="1.0" waypoint_name="Look at Bottles Left"/>
+        <Control ID="IfThenElse">
+          <SubTree ID="ML Get Grasp from Text Prompt Subtree" _collapsed="true" camera_image_topic="/wrist_camera/color" camera_info_topic="/wrist_camera/camera_info" camera_points_topic="/wrist_camera/points" planning_group="manipulator" object_prompt="bottle" output_grasp="{output_grasp}"/>
+          <Control ID="Sequence" name="TopLevelSequence">
+            <SubTree ID="Pick from Pose" _collapsed="true" approach_distance="0.1" grasp_poses="{output_grasp}" retract_xyz="0;0;-0.1"/>
+            <SubTree ID="Move to Waypoint" _collapsed="true" acceleration_scale_factor="1.0" controller_action_server="/joint_trajectory_controller/follow_joint_trajectory" controller_names="/joint_trajectory_controller" joint_group_name="manipulator" keep_orientation="false" keep_orientation_tolerance="0.05" link_padding="0.01" seed="0" velocity_scale_factor="1.0" waypoint_name="Drop Bottles Right"/>
+            <SubTree ID="Open Gripper" _collapsed="true"/>
+          </Control>
+          <Control ID="Sequence" name="TopLevelSequence">
+            <Action ID="LogMessage" log_level="warning" message="ML pipeline failed to find requested object in scene."/>
+            <Action ID="AlwaysSuccess"/>
+          </Control>
+        </Control>
+      </Control>
+    </Decorator>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="ML Auto Grasp Object from Text Prompt">

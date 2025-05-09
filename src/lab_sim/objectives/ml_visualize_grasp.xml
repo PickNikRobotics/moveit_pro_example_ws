@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root BTCPP_format="4" main_tree_to_execute="ML Visualize Grasp">
+  <!--//////////-->
+  <BehaviorTree ID="ML Visualize Grasp" _description="Visualizes grasp from L2G that was collision and feasibility checked" _favorite="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree ID="ML Get Grasp from Text Prompt Subtree" _collapsed="true" camera_image_topic="/wrist_camera/color" camera_info_topic="/wrist_camera/camera_info" camera_points_topic="/wrist_camera/points" object_prompt="small plastic bottle" output_grasp="{output_grasp}" planning_group="manipulator"/>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="ML Visualize Grasp">
+      <MetadataFields>
+        <Metadata runnable="true"/>
+        <Metadata subcategory="Application - ML (GPU Recommended)"/>
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

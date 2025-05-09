@@ -600,7 +600,7 @@
     twist: []
     wrench: []
   name: Beaker 3d - Place
-- description: ''
+- description: Place right of the burner to drop bottles
   favorite: false
   joint_group_names:
   - gripper
@@ -623,14 +623,14 @@
     - wrist_2_joint
     - wrist_3_joint
     position:
-    - 0.05258790297111514
-    - 0.3186348710471688
-    - -0.046772425351257335
-    - -0.7557418150501668
-    - 1.0501891461379689
-    - -2.088925422148616
-    - -1.5408692091942051
-    - -0.03714692359972211
+    - 0.05256810171517791
+    - -0.5114386933170334
+    - -0.25153027757375424
+    - -0.6427398672090716
+    - 1.7918071850631692
+    - 2.370970173749842
+    - -1.3499978974536815
+    - -0.11226800099170835
     velocity: []
   multi_dof_joint_state:
     header:
@@ -642,7 +642,93 @@
     transforms: []
     twist: []
     wrench: []
-  name: Look At Table 2
+  name: Drop Bottles Right
+- description: Location left of the burner to look for bottles
+  favorite: false
+  joint_group_names:
+  - gripper
+  - linear_actuator
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - linear_rail_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
+    - 0.0525886975514658
+    - 0.3527049464988592
+    - -0.11684083331660702
+    - -0.648782665527618
+    - 0.7796095822533963
+    - -1.6637960203151432
+    - -1.5576541077586412
+    - -0.1159408516434217
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Look at Bottles Left
+- description: Location right of the burner to look for bottles
+  favorite: false
+  joint_group_names:
+  - gripper
+  - linear_actuator
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - linear_rail_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
+    - 0.015497512992888403
+    - -0.30043432637388423
+    - -0.5633260917177001
+    - -1.0380134734382191
+    - 1.3917004588826107
+    - -2.0511006361392683
+    - -1.4288070275965448
+    - -0.5375451351338122
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Look at Bottles Right
 - description: ''
   favorite: false
   joint_group_names:

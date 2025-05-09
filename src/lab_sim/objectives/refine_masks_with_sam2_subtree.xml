@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<root BTCPP_format="4" main_tree_to_execute="Refine Masks With SAM2">
+<root BTCPP_format="4" main_tree_to_execute="Refine Masks With SAM2 Subtree">
   <!--//////////-->
-  <BehaviorTree ID="Refine Masks With SAM2">
+  <BehaviorTree ID="Refine Masks With SAM2 Subtree" _description="">
     <Control ID="Fallback">
       <Decorator ID="Inverter">
         <Decorator ID="ForEach" vector_in="{input_masks}" out="{input_mask}" index="{index}">
@@ -15,7 +15,7 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Refine Masks With SAM2">
+    <SubTree ID="Refine Masks With SAM2 Subtree">
       <MetadataFields>
         <Metadata runnable="false"/>
         <Metadata subcategory="Application - ML (GPU Recommended)"/>
