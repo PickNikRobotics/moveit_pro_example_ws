@@ -41,9 +41,6 @@ moveit_params:
   kinematics:
     package: "hangar_sim"
     path: "config/moveit/pose_ik_distance.yaml"
-  servo_kinematics:
-    package: "hangar_sim"
-    path: "config/moveit/pose_ik_speed.yaml"
   sensors_3d:
     package: "hangar_sim"
     path: "config/moveit/sensors_3d.yaml"
