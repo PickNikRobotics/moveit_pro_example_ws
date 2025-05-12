@@ -37,9 +37,6 @@ moveit_params:
   kinematics:
     package: "kinova_gen3_base_config"
     path: "config/moveit/pose_ik_distance.yaml"
-  servo_kinematics:
-    package: "kinova_gen3_base_config"
-    path: "config/moveit/pose_ik_speed.yaml"
   servo:
     package: "kinova_gen3_site_config"
     path: "config/moveit/kinova_gen3_servo.yaml"
