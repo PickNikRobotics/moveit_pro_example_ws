@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Classical Pick and Place Object">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Classical Pick and Place Object"
+    _description="Pick and Place a block using non-ML algorithms"
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        controller_names="/joint_trajectory_controller"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        seed="0"
+        velocity_scale_factor="1.0"
+        waypoint_name="Look at Cubes"
+      />
+      <Control ID="Sequence">
+        <SubTree ID="Clear Snapshot" _collapsed="true" />
+        <Action
+          ID="LoadObjectiveParameters"
+          parameters="{parameters}"
+          config_file_name="pick_place_object_config.yaml"
+        />
+        <Action
+          ID="GetPointCloud"
+          message_out="{point_cloud}"
+          timeout_sec="5.000000"
+          topic_name="/wrist_camera/points"
+        />
+        <Action
+          ID="SendPointCloudToUI"
+          pcd_topic="/pcd_pointcloud_captures"
+          point_cloud="{point_cloud}"
+        />
+        <Action
+          ID="FindSingularCuboids"
+          detected_shapes="{detected_shapes}"
+          point_cloud="{point_cloud}"
+          parameters="{parameters}"
+        />
+        <!--<Action ID="FindSingularCuboids" base_frame="world" cluster_distance_threshold="0.01" crop_box_origin_xyz="0.2;0.75;0.5" crop_box_size_xyz="2.0;2.0;1.0" detected_shapes="{detected_shapes}" plane_model_threshold="0.01" point_cloud="{point_cloud}"/>-->
+        <Action ID="Script" code="pose_ctr := 0" />
+        <Decorator
+          ID="ForEach"
+          index="{index}"
+          out="{shape}"
+          vector_in="{detected_shapes}"
+        >
+          <Control ID="Sequence">
+            <Action
+              ID="ExtractGraspableObjectPose"
+              graspable_object="{shape}"
+              pose="{pose_stamped}"
+            />
+            <Action ID="Script" code="pose_ctr += 1" />
+            <Action
+              ID="VisualizePose"
+              marker_lifetime="0.000000"
+              marker_name="{pose_ctr}"
+              marker_size="0.100000"
+              pose="{pose_stamped}"
+            />
+          </Control>
+        </Decorator>
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Classical Pick and Place Object">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Advanced Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
