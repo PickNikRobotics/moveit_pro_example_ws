@@ -1,22 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Setup Initial Planning Scene">
   <!--//////////-->
   <BehaviorTree
     ID="Setup Initial Planning Scene"
-    _description="Sets the tool at its initial pose in the Planning Scene"
+    _description="Sets the tools at their initial pose in the Planning Scene"
     _favorite="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
         ID="CreateStampedPose"
-        stamped_pose="{tool_pose}"
-        reference_frame="tool_attach_site"
+        stamped_pose="{suction_tool_pose}"
+        reference_frame="suction_gripper_attach_site"
       />
       <Action
         ID="AddToolToScene"
-        relative_pose="{tool_pose}"
+        relative_pose="{suction_tool_pose}"
         package_name="factory_sim"
-        tool_urdf_file_path="description/tool.urdf"
+        tool_urdf_file_path="description/suction_tool.urdf"
         tool_name="suction_gripper"
+      />
+      <Action
+        ID="CreateStampedPose"
+        stamped_pose="{inspection_tool_pose}"
+        reference_frame="inspection_tool_attach_site"
+      />
+      <Action
+        ID="AddToolToScene"
+        relative_pose="{inspection_tool_pose}"
+        package_name="factory_sim"
+        tool_urdf_file_path="description/inspection_tool.urdf"
+        tool_name="inspector"
       />
     </Control>
   </BehaviorTree>
