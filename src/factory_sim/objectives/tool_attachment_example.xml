@@ -7,9 +7,23 @@
     _favorite="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
-      <SubTree ID="Pick Up Tool from Holder" _collapsed="true" />
+      <Control ID="Sequence">
+        <SubTree ID="Reset Planning Scene" _collapsed="true" />
+        <SubTree ID="Setup Initial Planning Scene" _collapsed="true" />
+      </Control>
+      <SubTree
+        ID="Pick Up Tool from Holder"
+        _collapsed="true"
+        tool_name="suction_gripper"
+        tool_attach_site="suction_gripper_attach_site"
+      />
       <Action ID="WaitForDuration" delay_duration="2" />
-      <SubTree ID="Place Tool in Tool Holder" _collapsed="true" />
+      <SubTree
+        ID="Place Tool in Tool Holder"
+        _collapsed="true"
+        tool_name="suction_gripper"
+        tool_return_site="suction_gripper_holder_site"
+      />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>

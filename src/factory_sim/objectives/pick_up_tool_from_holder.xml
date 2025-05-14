@@ -6,18 +6,9 @@
     _description="Pick up the tool from the tool holder"
   >
     <Control ID="Sequence" name="TopLevelSequence">
-      <Control ID="Sequence" name="Assume tool is in tool holder">
-        <Action
-          ID="LogMessage"
-          log_level="info"
-          message="Assuming tool is in tool holder"
-        />
-        <SubTree ID="Reset Planning Scene" _collapsed="true" />
-        <SubTree ID="Setup Initial Planning Scene" _collapsed="true" />
-      </Control>
       <Action
         ID="CreateStampedPose"
-        reference_frame="tool_attach_site"
+        reference_frame="{tool_attach_site}"
         position_xyz="0;0;-0.1"
         stamped_pose="{approach_pose}"
       />
@@ -75,7 +66,8 @@
       <Action
         ID="AttachTool"
         parent_link_name="tool0"
-        tool_name="suction_gripper"
+        tool_name="{tool_name}"
+        allowed_collision_links="link_6"
       />
       <SubTree ID="Retract" _collapsed="true" distance="0.35" />
     </Control>
@@ -86,6 +78,8 @@
         <Metadata subcategory="Grasping" />
         <Metadata runnable="false" />
       </MetadataFields>
+      <inout_port name="tool_name" default="" />
+      <inout_port name="tool_attach_site" default="" />
     </SubTree>
   </TreeNodesModel>
 </root>
