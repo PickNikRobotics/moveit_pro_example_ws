@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Automated Tool Changing Example">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Automated Tool Changing Example"
+    _description="Example of changing tool depending on if the robot is already holding a tool"
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Control ID="Sequence">
+        <SubTree ID="Reset Planning Scene" _collapsed="true" />
+        <SubTree ID="Setup Initial Planning Scene" _collapsed="true" />
+      </Control>
+      <SubTree
+        ID="Automated Tool Changing Example Subtree"
+        _collapsed="false"
+        pickup_tool="suction_gripper"
+        tool_1_name="suction_gripper"
+        tool_1_pickup_site="suction_gripper_attach_site"
+        tool_1_return_site="suction_gripper_holder_site"
+        tool_2_name="inspector"
+        tool_2_pickup_site="inspection_tool_attach_site"
+        tool_2_return_site="inspection_tool_holder_site"
+        tool_names="suction_gripper;inspector"
+      />
+      <SubTree
+        ID="Automated Tool Changing Example Subtree"
+        _collapsed="true"
+        pickup_tool="inspector"
+        tool_1_name="suction_gripper"
+        tool_1_pickup_site="suction_gripper_attach_site"
+        tool_1_return_site="suction_gripper_holder_site"
+        tool_2_name="inspector"
+        tool_2_pickup_site="inspection_tool_attach_site"
+        tool_2_return_site="inspection_tool_holder_site"
+        tool_names="suction_gripper;inspector"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Automated Tool Changing Example">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Advanced Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
