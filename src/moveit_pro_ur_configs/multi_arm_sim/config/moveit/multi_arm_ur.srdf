@@ -28,6 +28,7 @@
         <group name="fourth_manipulator"/>
     </group>
     <group name="gripper">
+        <link name="first_grasp_link"/>
         <joint name="first_robotiq_85_left_finger_tip_joint"/>
         <joint name="first_robotiq_85_left_inner_knuckle_joint"/>
         <joint name="first_robotiq_85_left_knuckle_joint"/>
@@ -36,6 +37,7 @@
         <joint name="first_robotiq_85_right_knuckle_joint"/>
     </group>
     <group name="second_gripper">
+        <link name="second_grasp_link"/>
         <joint name="second_robotiq_85_left_finger_tip_joint"/>
         <joint name="second_robotiq_85_left_inner_knuckle_joint"/>
         <joint name="second_robotiq_85_left_knuckle_joint"/>
@@ -44,6 +46,7 @@
         <joint name="second_robotiq_85_right_knuckle_joint"/>
     </group>
     <group name="third_gripper">
+        <link name="third_grasp_link"/>
         <joint name="third_robotiq_85_left_finger_tip_joint"/>
         <joint name="third_robotiq_85_left_inner_knuckle_joint"/>
         <joint name="third_robotiq_85_left_knuckle_joint"/>
@@ -52,6 +55,7 @@
         <joint name="third_robotiq_85_right_knuckle_joint"/>
     </group>
     <group name="fourth_gripper">
+        <link name="fourth_grasp_link"/>
         <joint name="fourth_robotiq_85_left_finger_tip_joint"/>
         <joint name="fourth_robotiq_85_left_inner_knuckle_joint"/>
         <joint name="fourth_robotiq_85_left_knuckle_joint"/>
