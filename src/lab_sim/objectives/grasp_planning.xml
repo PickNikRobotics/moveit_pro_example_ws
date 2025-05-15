@@ -67,7 +67,7 @@
         <Action
           ID="SetupMTCConnectWithTrajectory"
           constraints="{constraints}"
-          planner_interface="moveit_pro"
+          planner_interface="pro_rrt"
           planning_group_name="manipulator"
           task="{pick_object_task}"
         />

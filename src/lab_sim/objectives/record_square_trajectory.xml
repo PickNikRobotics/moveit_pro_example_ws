@@ -33,7 +33,7 @@
             keep_orientation_tolerance="0.05"
             link_padding="0.01"
             velocity_scale_factor="1.0"
-            waypoint_name="Beaker 3a - Pre Pick"
+            waypoint_name="Flask 3a - Pre Pick"
           />
           <Action
             ID="CallTriggerService"
