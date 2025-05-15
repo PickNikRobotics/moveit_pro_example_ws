@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <root
   BTCPP_format="4"
   main_tree_to_execute="Move Boxes to Loading Zone Start from Waypoint"
@@ -36,6 +36,7 @@
         velocity_scale_factor="1.0"
         waypoint_name="{waypoint_name}"
         keep_orientation_link_names="grasp_link"
+        seed="0"
       />
       <SubTree ID="Clear Snapshot" _collapsed="false" />
       <Decorator ID="Delay" delay_msec="2000">
@@ -105,6 +106,7 @@
           image="{image}"
           masks="{clip_masks2d}"
           masks_visualization_topic="/masks_visualization"
+          opacity="0.500000"
         />
         <Decorator ID="Inverter">
           <Decorator
@@ -134,6 +136,7 @@
                   image="{image}"
                   masks="{masks2d}"
                   masks_visualization_topic="/masks_visualization"
+                  opacity="0.500000"
                 />
                 <Action
                   ID="GetMasks3DFromMasks2D"
@@ -180,15 +183,35 @@
                 >
                   <Control ID="Sequence">
                     <Action
-                      ID="LoadObjectiveParameters"
-                      parameters="{parameters}"
-                      config_file_name="box_picking_vacuum_config.yaml"
+                      ID="CreateStampedPose"
+                      reference_frame="world"
+                      stamped_pose="{ee_to_tcp}"
+                      position_xyz="0;0;0"
+                      orientation_xyzw="0;0;0;1"
+                    />
+                    <Action
+                      ID="GetCurrentPlanningScene"
+                      planning_scene_msg="{planning_scene}"
+                    />
+                    <Action
+                      ID="GenerateVacuumGraspPoses"
+                      ee_to_tcp_tf="{ee_to_tcp}"
+                      end_effector_group_name="gripper"
+                      generate_centroid_grasps="true"
+                      grasp_poses="{grasp_poses}"
+                      num_orientation_samples="20"
+                      padding_dimension="0.01"
+                      planning_scene_msg="{planning_scene}"
+                      samples_per_plane="2"
+                      target_object="{graspable_object}"
+                      ui_grasp_link="grasp_link"
                     />
                     <Action
                       ID="InitializeMTCTask"
                       controller_names="/joint_trajectory_controller"
                       task="{task}"
                       task_id=""
+                      trajectory_monitoring="false"
                     />
                     <Action ID="SetupMTCCurrentState" task="{task}" />
                     <Action
@@ -199,17 +222,36 @@
                       task="{task}"
                     />
                     <Action
-                      ID="SetupMTCApproachGrasp"
-                      parameters="{parameters}"
-                      target_object="{graspable_object}"
-                      monitored_stage="{monitored_stage}"
+                      ID="SetupMTCConnectWithTrajectory"
+                      constraints="{constraints}"
+                      planner_interface="pro_rrt"
+                      planning_group_name="manipulator"
                       task="{task}"
                     />
                     <Action
-                      ID="SetupMTCGenerateVacuumGrasps"
-                      parameters="{parameters}"
-                      target_object="{graspable_object}"
-                      monitored_stage="{monitored_stage}"
+                      ID="SetupMTCMoveAlongFrameAxis"
+                      acceleration_scale="1.000000"
+                      axis_frame="grasp_link"
+                      axis_x="0.000000"
+                      axis_y="0.000000"
+                      axis_z="1.000000"
+                      hand_frame="grasp_link"
+                      ignore_environment_collisions="false"
+                      max_distance="0.2"
+                      min_distance="0.05"
+                      planning_group_name="manipulator"
+                      task="{task}"
+                      velocity_scale="1.000000"
+                    />
+                    <Action
+                      ID="SetupMTCBatchPoseIK"
+                      end_effector_group="moveit_ee"
+                      end_effector_link="grasp_link"
+                      ik_group="manipulator"
+                      ik_timeout_s="0.01"
+                      max_ik_solutions="1"
+                      monitored_stage="allow collision (&lt;octomap&gt;, gripper)"
+                      target_poses="{grasp_poses}"
                       task="{task}"
                     />
                     <Control ID="Parallel" success_count="2" failure_count="1">
@@ -301,6 +343,10 @@
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Move Boxes to Loading Zone Start from Waypoint">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Application - Advanced Examples" />
+      </MetadataFields>
       <input_port name="erosion_size" default="0" />
       <input_port name="negative_prompts" default="{negative_prompts}" />
       <input_port name="place_pose" default="{place_pose}" />
@@ -308,10 +354,6 @@
       <input_port name="prompts" default="{prompts}" />
       <input_port name="threshold" default="{threshold}" />
       <input_port name="waypoint_name" default="View Boxes" />
-      <MetadataFields>
-        <Metadata runnable="false" />
-        <Metadata subcategory="Application - Advanced Examples" />
-      </MetadataFields>
     </SubTree>
   </TreeNodesModel>
 </root>
