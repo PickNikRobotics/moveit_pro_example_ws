@@ -5,7 +5,7 @@
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree ID="Request Teleoperation" _collapsed="true" enable_user_interaction="true" initial_teleop_mode="3" user_interaction_prompt="Teleoperate end effector to grasp pose"/>
       <SubTree ID="Get Transform Frame Pose" _collapsed="true" requested_pose="{grasp_pose}" requested_frame="grasp_link"/>
-      <Action ID="SavePoseStampedToYaml" message="{grasp_pose}" yaml_filename="griz_grasp_pose" namespace="GraspPose2"/>
+      <Action ID="SavePoseStampedToYaml" message="{grasp_pose}" yaml_filename="griz_left_drop_pose" namespace="GraspPose2"/>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
