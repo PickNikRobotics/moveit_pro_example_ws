@@ -10,7 +10,8 @@
       <Action
         ID="LoadPointCloudFromFile"
         color="255;0;0"
-        file_path="~/user_ws/install/lab_sim/share/lab_sim/description/assets/Cube.stl"
+        package_name="lab_sim"
+        file_path="description/assets/Cube.stl"
         point_cloud="{point_cloud}"
       />
       <Action
