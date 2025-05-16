@@ -21,831 +21,14 @@
     - wrist_2_joint
     - wrist_3_joint
     position:
-      - 0.5527237261550169
-      - -0.8095633402493997
-      - 0.8041978448752184
-      - 0.3469595920821291
-      - -0.4759133036391534
-      - -3.0449635096222445
-      - -2.3752901974217586
-      - -0.03355586908682823
-    velocity: []
-  multi_dof_joint_state:
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    joint_names: []
-    transforms: []
-    twist: []
-    wrench: []
-  name: Flask 1d - Place
-- description: ''
-  favorite: false
-  joint_group_names:
-    - gripper
-    - linear_actuator
-    - manipulator
-  joint_state:
-    effort: []
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    name:
-      - robotiq_85_left_knuckle_joint
-      - linear_rail_joint
-      - shoulder_pan_joint
-      - shoulder_lift_joint
-      - elbow_joint
-      - wrist_1_joint
-      - wrist_2_joint
-      - wrist_3_joint
-    position:
-      - 0.7639667711919623
-      - -0.8205919083342896
-      - 0.6106411457210819
-      - 0.09629022558040691
-      - -0.4356003871725801
-      - -2.8163100209411844
-      - -2.181786596029688
-      - -0.027837851359850115
-    velocity: []
-  multi_dof_joint_state:
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    joint_names: []
-    transforms: []
-    twist: []
-    wrench: []
-  name: Flask 3c - Pre Place
-- description: ''
-  favorite: false
-  joint_group_names:
-    - gripper
-    - linear_actuator
-    - manipulator
-  joint_state:
-    effort: []
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    name:
-      - robotiq_85_left_knuckle_joint
-      - linear_rail_joint
-      - shoulder_pan_joint
-      - shoulder_lift_joint
-      - elbow_joint
-      - wrist_1_joint
-      - wrist_2_joint
-      - wrist_3_joint
-    position:
-      - 0.052558135449284636
-      - 0.1015560185661144
-      - 0.8742197383524934
-      - 0.596069253342475
-      - -0.5146934305221308
-      - -3.1414852154720943
-      - -2.4442469657377055
-      - 0.06294310366684684
-    velocity: []
-  multi_dof_joint_state:
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    joint_names: []
-    transforms: []
-    twist: []
-    wrench: []
-  name: Flask 1b - Pick
-- description: ''
-  favorite: false
-  joint_group_names:
-    - gripper
-    - linear_actuator
-    - manipulator
-  joint_state:
-    effort: []
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    name:
-      - robotiq_85_left_knuckle_joint
-      - linear_rail_joint
-      - shoulder_pan_joint
-      - shoulder_lift_joint
-      - elbow_joint
-      - wrist_1_joint
-      - wrist_2_joint
-      - wrist_3_joint
-    position:
-      - 0.36093425387337075
-      - 0.3468469487674742
-      - -0.08122232656648681
-      - -1.1118986430431266
-      - 0.7735698103006698
-      - -1.2414135949062157
-      - -3.14
-      - -0.0803135811027271
-    velocity: []
-  multi_dof_joint_state:
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    joint_names: []
-    transforms: []
-    twist: []
-    wrench: []
-  name: Wrist 2 Min
-- description: ''
-  favorite: false
-  joint_group_names:
-    - gripper
-    - linear_actuator
-    - manipulator
-  joint_state:
-    effort: []
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    name:
-      - robotiq_85_left_knuckle_joint
-      - linear_rail_joint
-      - shoulder_pan_joint
-      - shoulder_lift_joint
-      - elbow_joint
-      - wrist_1_joint
-      - wrist_2_joint
-      - wrist_3_joint
-    position:
-      - 0.36093425387337075
-      - 0.3468469487674742
-      - -0.08122232656648681
-      - -1.1118986430431266
-      - 0.7735698103006698
-      - -1.2414135949062157
-      - -1.5575126426436692
-      - -0.0803135811027271
-    velocity: []
-  multi_dof_joint_state:
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    joint_names: []
-    transforms: []
-    twist: []
-    wrench: []
-  name: Look at Table
-- description: ''
-  favorite: false
-  joint_group_names:
-    - gripper
-    - linear_actuator
-    - manipulator
-  joint_state:
-    effort: []
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    name:
-      - robotiq_85_left_knuckle_joint
-      - linear_rail_joint
-      - shoulder_pan_joint
-      - shoulder_lift_joint
-      - elbow_joint
-      - wrist_1_joint
-      - wrist_2_joint
-      - wrist_3_joint
-    position:
-      - 0.5527279024765758
-      - -0.9244326009773784
-      - 0.8128532763795221
-      - 0.19375908538144387
-      - -0.4813430484021708
-      - -2.882600666994581
-      - -2.3839438626762592
-      - -0.033962625761634384
-    velocity: []
-  multi_dof_joint_state:
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    joint_names: []
-    transforms: []
-    twist: []
-    wrench: []
-  name: Flask 2c - Pre Place
-- description: ''
-  favorite: false
-  joint_group_names:
-    - gripper
-    - linear_actuator
-    - manipulator
-  joint_state:
-    effort: []
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    name:
-      - robotiq_85_left_knuckle_joint
-      - linear_rail_joint
-      - shoulder_pan_joint
-      - shoulder_lift_joint
-      - elbow_joint
-      - wrist_1_joint
-      - wrist_2_joint
-      - wrist_3_joint
-    position:
-      - 0.552721299565486
-      - -0.8026817877894441
-      - 0.7832655701857458
-      - 0.2347983960726958
-      - -0.47185366935901807
-      - -2.944152059324353
-      - -2.3543647658190983
-      - -0.0324954245702678
-    velocity: []
-  multi_dof_joint_state:
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    joint_names: []
-    transforms: []
-    twist: []
-    wrench: []
-  name: Flask 1c - Pre Place
-- description: ''
-  favorite: false
-  joint_group_names:
-    - gripper
-    - linear_actuator
-    - manipulator
-  joint_state:
-    effort: []
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    name:
-      - robotiq_85_left_knuckle_joint
-      - linear_rail_joint
-      - shoulder_pan_joint
-      - shoulder_lift_joint
-      - elbow_joint
-      - wrist_1_joint
-      - wrist_2_joint
-      - wrist_3_joint
-    position:
-      - 0.017721560439610148
-      - 0.2691509193711033
-      - 0.7727615348146952
-      - 0.5552397114893021
-      - -0.5137325863770072
-      - -3.0003468873078876
-      - -2.335831248791311
-      - 0.12529289653514364
-    velocity: []
-  multi_dof_joint_state:
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    joint_names: []
-    transforms: []
-    twist: []
-    wrench: []
-  name: Flask 2b - Pick
-- description: ''
-  favorite: false
-  joint_group_names:
-    - gripper
-    - linear_actuator
-    - manipulator
-  joint_state:
-    effort: []
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    name:
-      - robotiq_85_left_knuckle_joint
-      - linear_rail_joint
-      - shoulder_pan_joint
-      - shoulder_lift_joint
-      - elbow_joint
-      - wrist_1_joint
-      - wrist_2_joint
-      - wrist_3_joint
-    position:
-      - 0.5527294577060091
-      - -0.9178831799453755
-      - 0.8032232530956076
-      - 0.36305116959502753
-      - -0.4822710241456316
-      - -3.0466827988573497
-      - -2.3743200968681815
-      - -0.03356569648918818
-    velocity: []
-  multi_dof_joint_state:
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    joint_names: []
-    transforms: []
-    twist: []
-    wrench: []
-  name: Flask 2d - Place
-- description: ''
-  favorite: false
-  joint_group_names:
-    - gripper
-    - linear_actuator
-    - manipulator
-  joint_state:
-    effort: []
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    name:
-      - robotiq_85_left_knuckle_joint
-      - linear_rail_joint
-      - shoulder_pan_joint
-      - shoulder_lift_joint
-      - elbow_joint
-      - wrist_1_joint
-      - wrist_2_joint
-      - wrist_3_joint
-    position:
-      - 0.36093425387337075
-      - 0.3468469487674742
-      - -0.08122232656648681
-      - -1.1118986430431266
-      - 0.7735698103006698
-      - -1.2414135949062157
-      - 3.14
-      - -0.0803135811027271
-    velocity: []
-  multi_dof_joint_state:
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    joint_names: []
-    transforms: []
-    twist: []
-    wrench: []
-  name: Wrist 2 Max
-- description: ''
-  favorite: false
-  joint_group_names:
-    - gripper
-    - linear_actuator
-    - manipulator
-  joint_state:
-    effort: []
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    name:
-      - robotiq_85_left_knuckle_joint
-      - linear_rail_joint
-      - shoulder_pan_joint
-      - shoulder_lift_joint
-      - elbow_joint
-      - wrist_1_joint
-      - wrist_2_joint
-      - wrist_3_joint
-    position:
-      - 0.7639656639313784
-      - -0.8204325716971375
-      - 0.6051040370509869
-      - 0.33021173155820605
-      - -0.441945944944294
-      - -3.047095890623255
-      - -2.176250244653335
-      - -0.02772141144783419
-    velocity: []
-  multi_dof_joint_state:
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    joint_names: []
-    transforms: []
-    twist: []
-    wrench: []
-  name: Flask 3d - Place
-- description: Move out of view of scene camera
-  favorite: false
-  joint_group_names:
-    - gripper
-    - linear_actuator
-    - manipulator
-  joint_state:
-    effort: []
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    name:
-      - robotiq_85_left_knuckle_joint
-      - linear_rail_joint
-      - shoulder_pan_joint
-      - shoulder_lift_joint
-      - elbow_joint
-      - wrist_1_joint
-      - wrist_2_joint
-      - wrist_3_joint
-    position:
-      - 0.00780498767879874
-      - -1.7207208458780023
-      - -2.9355287074907658e-05
-      - -1.8849275826089145
-      - 1.102019084998803
-      - -1.2563366868253756
-      - -1.5707679924921147
-      - 1.5931846964135707e-07
-    velocity: []
-  multi_dof_joint_state:
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    joint_names: []
-    transforms: []
-    twist: []
-    wrench: []
-  name: Park Far Right
-- description: ''
-  favorite: false
-  joint_group_names:
-    - gripper
-    - linear_actuator
-    - manipulator
-  joint_state:
-    effort: []
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    name:
-      - robotiq_85_left_knuckle_joint
-      - linear_rail_joint
-      - shoulder_pan_joint
-      - shoulder_lift_joint
-      - elbow_joint
-      - wrist_1_joint
-      - wrist_2_joint
-      - wrist_3_joint
-    position:
-      - 0.06656710337674145
-      - 0.1162925924535442
-      - 0.2054240147028693
-      - -0.987070953194143
-      - 1.3146849599773849
-      - -1.8698622612624394
-      - -1.5707050706852668
-      - 0.20529114323213696
-    velocity: []
-  multi_dof_joint_state:
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    joint_names: []
-    transforms: []
-    twist: []
-    wrench: []
-  name: Above Place Cube
-- description: ''
-  favorite: false
-  joint_group_names:
-    - gripper
-    - linear_actuator
-    - manipulator
-  joint_state:
-    effort: []
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    name:
-      - robotiq_85_left_knuckle_joint
-      - linear_rail_joint
-      - shoulder_pan_joint
-      - shoulder_lift_joint
-      - elbow_joint
-      - wrist_1_joint
-      - wrist_2_joint
-      - wrist_3_joint
-    position:
-      - 0.01772162964006715
-      - 0.07592482714796696
-      - 0.7452091128812429
-      - 0.5731708863903833
-      - -0.5272977039075434
-      - -3.0065755351034587
-      - -2.308742635428776
-      - 0.11856214137460191
-    velocity: []
-  multi_dof_joint_state:
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    joint_names: []
-    transforms: []
-    twist: []
-    wrench: []
-  name: Flask 3b - Pick
-- description: ''
-  favorite: false
-  joint_group_names:
-    - gripper
-    - linear_actuator
-    - manipulator
-  joint_state:
-    effort: []
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    name:
-      - robotiq_85_left_knuckle_joint
-      - linear_rail_joint
-      - shoulder_pan_joint
-      - shoulder_lift_joint
-      - elbow_joint
-      - wrist_1_joint
-      - wrist_2_joint
-      - wrist_3_joint
-    position:
-      - 0.017721719550362367
-      - 0.10614201950655074
-      - 0.6667921047157305
-      - -0.020173732725037447
-      - -0.48719718634786974
-      - -2.46144527046315
-      - -2.2314189585794835
-      - 0.10080448035214111
-    velocity: []
-  multi_dof_joint_state:
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    joint_names: []
-    transforms: []
-    twist: []
-    wrench: []
-  name: Flask 3a - Pre Pick
-- description: ''
-  favorite: false
-  joint_group_names:
-    - gripper
-    - linear_actuator
-    - manipulator
-  joint_state:
-    effort: []
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    name:
-      - robotiq_85_left_knuckle_joint
-      - linear_rail_joint
-      - shoulder_pan_joint
-      - shoulder_lift_joint
-      - elbow_joint
-      - wrist_1_joint
-      - wrist_2_joint
-      - wrist_3_joint
-    position:
-      - 0.039808309949994805
-      - -0.5839327290315586
-      - -0.2687381616263423
-      - -1.4142103820838365
-      - 1.1521752505644343
-      - -1.3067562163163808
-      - -1.5708040696131618
-      - -0.2687661213277525
-    velocity: []
-  multi_dof_joint_state:
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    joint_names: []
-    transforms: []
-    twist: []
-    wrench: []
-  name: Workspace Right
-- description: ''
-  favorite: false
-  joint_group_names:
-    - gripper
-    - linear_actuator
-    - manipulator
-  joint_state:
-    effort: []
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    name:
-      - robotiq_85_left_knuckle_joint
-      - linear_rail_joint
-      - shoulder_pan_joint
-      - shoulder_lift_joint
-      - elbow_joint
-      - wrist_1_joint
-      - wrist_2_joint
-      - wrist_3_joint
-    position:
-      - 0.7639616943900628
-      - 0.5467729038282597
-      - -1.1106700374717813
-      - -0.6197663519343527
-      - 1.2680653231682326
-      - -2.801491408619309
-      - -1.2801931991207176
-      - -0.8417481239202634
-    velocity: []
-  multi_dof_joint_state:
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    joint_names: []
-    transforms: []
-    twist: []
-    wrench: []
-  name: VFC Start
-- description: ''
-  favorite: false
-  joint_group_names:
-    - gripper
-    - linear_actuator
-    - manipulator
-  joint_state:
-    effort: []
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    name:
-      - robotiq_85_left_knuckle_joint
-      - linear_rail_joint
-      - shoulder_pan_joint
-      - shoulder_lift_joint
-      - elbow_joint
-      - wrist_1_joint
-      - wrist_2_joint
-      - wrist_3_joint
-    position:
-      - 0.06656710453529632
-      - -0.026311129005491703
-      - 0.391188076851874
-      - -0.6421557305136849
-      - 1.2200227002982904
-      - -2.1172063445999307
-      - -1.5707036597762196
-      - 0.39119709035689026
-    velocity: []
-  multi_dof_joint_state:
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    joint_names: []
-    transforms: []
-    twist: []
-    wrench: []
-  name: Place Cube
-- description: ''
-  favorite: false
-  joint_group_names:
-    - gripper
-    - linear_actuator
-    - manipulator
-  joint_state:
-    effort: []
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    name:
-      - robotiq_85_left_knuckle_joint
-      - linear_rail_joint
-      - shoulder_pan_joint
-      - shoulder_lift_joint
-      - elbow_joint
-      - wrist_1_joint
-      - wrist_2_joint
-      - wrist_3_joint
-    position:
-      - 0.012216800212355133
-      - 0.04970573711721682
-      - 0.8984514823861834
-      - 0.1063125865651509
-      - -0.41508272007941566
-      - -2.751881697859383
-      - -2.4680827148226405
-      - 0.06614325541815676
-    velocity: []
-  multi_dof_joint_state:
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    joint_names: []
-    transforms: []
-    twist: []
-    wrench: []
-  name: Flask 1a - Pre Pick
-- description: ''
-  favorite: false
-  joint_group_names:
-    - gripper
-    - linear_actuator
-    - manipulator
-  joint_state:
-    effort: []
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    name:
-      - robotiq_85_left_knuckle_joint
-      - linear_rail_joint
-      - shoulder_pan_joint
-      - shoulder_lift_joint
-      - elbow_joint
-      - wrist_1_joint
-      - wrist_2_joint
-      - wrist_3_joint
-    position:
-      - 0.06656709465883658
-      - 0.31742962464478663
-      - -0.07518824419393247
-      - -0.7207568718596512
-      - 0.8665668564352057
-      - -1.6837956156664982
-      - -1.5707507158288945
-      - -0.07517349313281775
+    - 0.06656709465883658
+    - 0.31742962464478663
+    - -0.07518824419393247
+    - -0.7207568718596512
+    - 0.8665668564352057
+    - -1.6837956156664982
+    - -1.5707507158288945
+    - -0.07517349313281775
     velocity: []
   multi_dof_joint_state:
     header:
@@ -1073,49 +256,6 @@
     twist: []
     wrench: []
   name: Beaker 1d - Place
-- description: ''
-  favorite: false
-  joint_group_names:
-  - gripper
-  - linear_actuator
-  - manipulator
-  joint_state:
-    effort: []
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    name:
-    - robotiq_85_left_knuckle_joint
-    - linear_rail_joint
-    - shoulder_pan_joint
-    - shoulder_lift_joint
-    - elbow_joint
-    - wrist_1_joint
-    - wrist_2_joint
-    - wrist_3_joint
-    position:
-    - 0.7888251346894957
-    - 0.28410448263455473
-    - 0.7522809111415887
-    - 0.14258472176098788
-    - -0.6567553362551677
-    - -2.6535637271089603
-    - -2.3237504598801015
-    - -0.010010484715838389
-    velocity: []
-  multi_dof_joint_state:
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    joint_names: []
-    transforms: []
-    twist: []
-    wrench: []
-  name: Flask 2a - Pre Pick
 - description: ''
   favorite: false
   joint_group_names:
@@ -1417,6 +557,522 @@
     twist: []
     wrench: []
   name: Beaker 3d - Place
+- description: ''
+  favorite: false
+  joint_group_names:
+  - gripper
+  - linear_actuator
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - linear_rail_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
+    - 0.012216800212355133
+    - 0.04970573711721682
+    - 0.8984514823861834
+    - 0.1063125865651509
+    - -0.41508272007941566
+    - -2.751881697859383
+    - -2.4680827148226405
+    - 0.06614325541815676
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Flask 1a - Pre Pick
+- description: ''
+  favorite: false
+  joint_group_names:
+  - gripper
+  - linear_actuator
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - linear_rail_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
+    - 0.052558135449284636
+    - 0.1015560185661144
+    - 0.8742197383524934
+    - 0.596069253342475
+    - -0.5146934305221308
+    - -3.1414852154720943
+    - -2.4442469657377055
+    - 0.06294310366684684
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Flask 1b - Pick
+- description: ''
+  favorite: false
+  joint_group_names:
+  - gripper
+  - linear_actuator
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - linear_rail_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
+    - 0.552721299565486
+    - -0.8026817877894441
+    - 0.7832655701857458
+    - 0.2347983960726958
+    - -0.47185366935901807
+    - -2.944152059324353
+    - -2.3543647658190983
+    - -0.0324954245702678
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Flask 1c - Pre Place
+- description: ''
+  favorite: false
+  joint_group_names:
+  - gripper
+  - linear_actuator
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - linear_rail_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
+    - 0.5527237261550169
+    - -0.8095633402493997
+    - 0.8041978448752184
+    - 0.3469595920821291
+    - -0.4759133036391534
+    - -3.0449635096222445
+    - -2.3752901974217586
+    - -0.03355586908682823
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Flask 1d - Place
+- description: ''
+  favorite: false
+  joint_group_names:
+  - gripper
+  - linear_actuator
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - linear_rail_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
+    - 0.7888251346894957
+    - 0.28410448263455473
+    - 0.7522809111415887
+    - 0.14258472176098788
+    - -0.6567553362551677
+    - -2.6535637271089603
+    - -2.3237504598801015
+    - -0.010010484715838389
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Flask 2a - Pre Pick
+- description: ''
+  favorite: false
+  joint_group_names:
+  - gripper
+  - linear_actuator
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - linear_rail_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
+    - 0.017721560439610148
+    - 0.2691509193711033
+    - 0.7727615348146952
+    - 0.5552397114893021
+    - -0.5137325863770072
+    - -3.0003468873078876
+    - -2.335831248791311
+    - 0.12529289653514364
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Flask 2b - Pick
+- description: ''
+  favorite: false
+  joint_group_names:
+  - gripper
+  - linear_actuator
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - linear_rail_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
+    - 0.5527279024765758
+    - -0.9244326009773784
+    - 0.8128532763795221
+    - 0.19375908538144387
+    - -0.4813430484021708
+    - -2.882600666994581
+    - -2.3839438626762592
+    - -0.033962625761634384
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Flask 2c - Pre Place
+- description: ''
+  favorite: false
+  joint_group_names:
+  - gripper
+  - linear_actuator
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - linear_rail_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
+    - 0.5527294577060091
+    - -0.9178831799453755
+    - 0.8032232530956076
+    - 0.36305116959502753
+    - -0.4822710241456316
+    - -3.0466827988573497
+    - -2.3743200968681815
+    - -0.03356569648918818
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Flask 2d - Place
+- description: ''
+  favorite: false
+  joint_group_names:
+  - gripper
+  - linear_actuator
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - linear_rail_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
+    - 0.017721719550362367
+    - 0.10614201950655074
+    - 0.6667921047157305
+    - -0.020173732725037447
+    - -0.48719718634786974
+    - -2.46144527046315
+    - -2.2314189585794835
+    - 0.10080448035214111
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Flask 3a - Pre Pick
+- description: ''
+  favorite: false
+  joint_group_names:
+  - gripper
+  - linear_actuator
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - linear_rail_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
+    - 0.01772162964006715
+    - 0.07592482714796696
+    - 0.7452091128812429
+    - 0.5731708863903833
+    - -0.5272977039075434
+    - -3.0065755351034587
+    - -2.308742635428776
+    - 0.11856214137460191
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Flask 3b - Pick
+- description: ''
+  favorite: false
+  joint_group_names:
+  - gripper
+  - linear_actuator
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - linear_rail_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
+    - 0.7639667711919623
+    - -0.8205919083342896
+    - 0.6106411457210819
+    - 0.09629022558040691
+    - -0.4356003871725801
+    - -2.8163100209411844
+    - -2.181786596029688
+    - -0.027837851359850115
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Flask 3c - Pre Place
+- description: ''
+  favorite: false
+  joint_group_names:
+  - gripper
+  - linear_actuator
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - linear_rail_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
+    - 0.7639656639313784
+    - -0.8204325716971375
+    - 0.6051040370509869
+    - 0.33021173155820605
+    - -0.441945944944294
+    - -3.047095890623255
+    - -2.176250244653335
+    - -0.02772141144783419
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Flask 3d - Place
 - description: Location left of the burner to look for bottles
   favorite: false
   joint_group_names:
@@ -1483,14 +1139,14 @@
     - wrist_2_joint
     - wrist_3_joint
     position:
-    - 0.05258829754109497
-    - -0.4816147822165432
-    - -0.266886055459585
-    - -0.97398269998303
-    - 1.3338473550487981
-    - -2.07100259958577
-    - -1.4935925458179649
-    - -0.24782524072121254
+    - 0.05258520151512678
+    - -0.1587900132826854
+    - -0.47962004475903713
+    - -0.9046817974280744
+    - 1.7404817794391547
+    - -2.8523155844520125
+    - -1.7540978369877829
+    - -0.04762996681539734
     velocity: []
   multi_dof_joint_state:
     header:
@@ -1675,6 +1331,49 @@
     twist: []
     wrench: []
   name: Place Cube
+- description: Location for the robot to go to before placing bottle.
+  favorite: false
+  joint_group_names:
+  - gripper
+  - linear_actuator
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - linear_rail_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
+    - 0.005274374788506071
+    - -0.65899502183384
+    - -0.011044571105883248
+    - -0.9740961688696632
+    - 1.2354891461984063
+    - -2.0150613197113008
+    - -1.5477140380091456
+    - -0.0030875579024600766
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Predrop Bottles Right
 - description: ''
   favorite: false
   joint_group_names:
