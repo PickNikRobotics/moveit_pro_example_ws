@@ -32,6 +32,7 @@
       <input_port name="initial_pose" default="{stamped_pose}" />
       <MetadataFields>
         <Metadata subcategory="Perception - 3D Point Cloud" />
+        <Metadata runnable="false" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>

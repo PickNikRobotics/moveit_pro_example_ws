@@ -38,13 +38,19 @@
         axis_frame="grasp_link"
       />
       <Action
+        ID="AddPoseStampedToVector"
+        input="{grasp_pose}"
+        vector="{grasp_pose_vector}"
+      />
+      <Action
         ID="SetupMTCBatchPoseIK"
         end_effector_group="moveit_ee"
         end_effector_link="grasp_link"
+        ik_group="manipulator"
         ik_timeout_s="0.01"
         max_ik_solutions="4"
         monitored_stage="current state"
-        target_poses="{grasp_poses}"
+        target_poses="{grasp_pose_vector}"
         task="{mtc_task}"
       />
       <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
@@ -101,10 +107,9 @@
         <Metadata subcategory="Application - Basic Examples" />
         <Metadata runnable="false" />
       </MetadataFields>
-
-      <inout_port name="retract_xyz" default="0;0;-0.1" />
       <inout_port name="approach_distance" default="0.1" />
-      <inout_port name="grasp_poses" default="{grasp_poses}" />
+      <inout_port name="grasp_pose" default="{grasp_pose}" />
+      <inout_port name="retract_xyz" default="0;0;-0.1" />
     </SubTree>
   </TreeNodesModel>
 </root>

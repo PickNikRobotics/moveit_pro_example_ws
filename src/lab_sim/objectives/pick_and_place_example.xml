@@ -17,20 +17,15 @@
           orientation_xyzw="0;1;0;0"
           stamped_pose="{pick_place_pose}"
         />
-        <Action
-          ID="AddPoseStampedToVector"
-          input="{pick_place_pose}"
-          vector="{pick_place_poses}"
-        />
         <SubTree
           ID="Pick from Pose"
           _collapsed="true"
-          grasp_poses="{pick_place_poses}"
+          grasp_pose="{pick_place_pose}"
         />
         <SubTree
           ID="Place at Pose"
           _collapsed="true"
-          place_poses="{pick_place_poses}"
+          place_pose="{pick_place_pose}"
         />
       </Control>
     </Control>

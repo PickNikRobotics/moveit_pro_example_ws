@@ -34,8 +34,8 @@
         ID="TransformPose"
         output_pose="{view_pose}"
         input_pose="{detection_pose}"
-        quaternion_xyzw="0;0;0;1"
-        translation_xyz="0;-0.1;-0.15"
+        quaternion_xyzw="1;0;0;0"
+        translation_xyz="0;0.1;0.15"
       />
       <SubTree
         ID="Plan Move To Pose"
@@ -67,16 +67,15 @@
       />
       <!--Load the gripper offset from yaml and combine with detected pose.-->
       <Action
-        ID="LoadObjectiveParameters"
-        parameters="{relative_pose_parameters}"
-        config_file_name="relative_grasp_pose.yaml"
+        ID="LoadPoseStampedFromYaml"
+        output="{relative_pose}"
+        file_path="relative_grasp_pose.yaml"
       />
       <Action
-        ID="TransformPoseFromYaml"
-        input_pose="{detection_pose}"
+        ID="TransformPoseWithPose"
+        input_pose="{relative_pose}"
         output_pose="{offset_pose}"
-        pose_parameters="{relative_pose_parameters}"
-        parameter_namespace="RelativePose"
+        transform_pose="{detection_pose}"
       />
       <Action
         ID="VisualizePose"
@@ -85,16 +84,10 @@
         marker_size="0.100000"
         pose="{offset_pose}"
       />
-      <!--Now pick the cube using the offset_pose.-->
-      <Action
-        ID="AddPoseStampedToVector"
-        input="{offset_pose}"
-        vector="{grasp_poses}"
-      />
       <SubTree
         ID="Pick from Pose"
         _collapsed="true"
-        grasp_poses="{grasp_poses}"
+        grasp_pose="{offset_pose}"
       />
     </Control>
   </BehaviorTree>
