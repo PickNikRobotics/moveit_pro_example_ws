@@ -41,9 +41,6 @@ moveit_params:
   kinematics:
     package: "hangar_sim"
     path: "config/moveit/pose_ik_distance.yaml"
-  servo_kinematics:
-    package: "hangar_sim"
-    path: "config/moveit/pose_ik_speed.yaml"
   sensors_3d:
     package: "hangar_sim"
     path: "config/moveit/sensors_3d.yaml"
@@ -96,11 +93,11 @@ ros2_control:
   controllers_active_at_startup:
     - "force_torque_sensor_broadcaster"
     - "joint_state_broadcaster"
-    - "joint_trajectory_controller"
     - "platform_velocity_controller"
     - "vacuum_gripper"
   # Load but do not start these controllers so they can be activated later if needed.
   controllers_inactive_at_startup:
+    - "joint_trajectory_controller"
     - "servo_controller"
     - "platform_velocity_controller_nav2"
     - "velocity_force_controller"

@@ -26,9 +26,9 @@
         avg_pose="{tag_pose}"
       />
       <Action
-        ID="LoadObjectiveParameters"
-        config_file_name="apriltag1_grasp_offset.yaml"
-        parameters="{pose_parameters}"
+        ID="LoadPoseStampedFromYaml"
+        output="{relative_pose}"
+        file_path="apriltag1_grasp_offset.yaml"
       />
       <Control ID="Sequence" name="GraspObject">
         <Action
@@ -38,11 +38,10 @@
           output_pose="{tag_pose_world}"
         />
         <Action
-          ID="TransformPoseFromYaml"
-          input_pose="{tag_pose_world}"
-          pose_parameters="{pose_parameters}"
-          parameter_namespace="GraspOffset"
+          ID="TransformPoseWithPose"
+          input_pose="{relative_pose}"
           output_pose="{grasp_pose}"
+          transform_pose="{tag_pose_world}"
         />
         <SubTree ID="Pick Object" grasp_pose="{grasp_pose}" />
       </Control>

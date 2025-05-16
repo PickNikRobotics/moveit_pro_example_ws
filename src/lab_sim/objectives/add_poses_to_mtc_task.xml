@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Add Poses to MTC Task">
   <!--//////////-->
   <BehaviorTree
@@ -10,10 +11,11 @@
         ID="InitializeMTCTask"
         controller_names="/joint_trajectory_controller;/robotiq_gripper_controller"
         task="{mtc_task}"
+        trajectory_monitoring="false"
       />
-      <!-- Start the MTC task from the robot's current pose -->
+      <!--Start the MTC task from the robot's current pose-->
       <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
-      <!-- Use a script with a pose counter so we can give a unique name to each marker (allowing multiple poses to be visualized) -->
+      <!--Use a script with a pose counter so we can give a unique name to each marker (allowing multiple poses to be visualized)-->
       <Action ID="Script" code="pose_ctr := 0" />
       <Decorator
         ID="ForEach"
@@ -22,11 +24,13 @@
         index="{index}"
       >
         <Control ID="Sequence">
-          <!-- Visualize and add each pose to the vector -->
+          <!--Visualize and add each pose to the vector-->
           <Action
             ID="VisualizePose"
             marker_name="{pose_ctr}"
             pose="{target_pose}"
+            marker_lifetime="0.000000"
+            marker_size="0.100000"
           />
           <Action ID="Script" code="pose_ctr += 1" />
           <Action
@@ -35,6 +39,15 @@
             planning_group_name="{planning_group_name}"
             target_pose="{target_pose}"
             task="{mtc_task}"
+            acceleration_scale_factor="1.000000"
+            keep_orientation="false"
+            keep_orientation_link_names="grasp_link"
+            keep_orientation_tolerance="0.100000"
+            link_padding="0.000000"
+            max_iterations="5000"
+            monitored_stage="current state"
+            trajectory_sampling_rate="100"
+            velocity_scale_factor="1.000000"
           />
         </Control>
       </Decorator>
@@ -42,17 +55,18 @@
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Add Poses to MTC Task">
-      <input_port name="target_poses" default="{target_poses}" />
+      <MetadataFields>
+        <Metadata subcategory="Motion - Task Planning" />
+        <Metadata runnable="false" />
+      </MetadataFields>
       <input_port
         name="controller_names"
         default="/joint_trajectory_controller;/robotiq_gripper_controller"
       />
-      <input_port name="planning_group_name" default="manipulator" />
       <input_port name="ik_frame" default="grasp_link" />
       <inout_port name="mtc_task" default="{mtc_task}" />
-      <MetadataFields>
-        <Metadata subcategory="Motion - Task Planning" />
-      </MetadataFields>
+      <input_port name="planning_group_name" default="manipulator" />
+      <input_port name="target_poses" default="{target_poses}" />
     </SubTree>
   </TreeNodesModel>
 </root>
