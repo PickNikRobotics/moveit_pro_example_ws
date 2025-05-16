@@ -10,29 +10,28 @@
     _description="Use (externally) published TF frames of the calibration tool's AprilTags to compute the camera pose."
   >
     <Control ID="Sequence" name="TopLevelSequence">
-      <Action ID="ResetPoseStampedVector" vector="{pose_stamped_vector}" />
       <SubTree
-        ID="Add Pose from TF Frame to Vector"
+        ID="Get Pose from TF Frame"
         _collapsed="true"
         pose_frame="satellite_tag_1"
         reference_frame="{camera_optical_frame}"
-        vector="{pose_stamped_vector}"
+        tf_pose="{right_pose}"
         name="Right AprilTag"
       />
       <SubTree
-        ID="Add Pose from TF Frame to Vector"
+        ID="Get Pose from TF Frame"
         _collapsed="true"
         pose_frame="satellite_tag_0"
         reference_frame="{camera_optical_frame}"
-        vector="{pose_stamped_vector}"
+        tf_pose="{left_pose}"
         name="Left AprilTag"
       />
       <SubTree
-        ID="Add Pose from TF Frame to Vector"
+        ID="Get Pose from TF Frame"
         _collapsed="true"
         pose_frame="satellite_tag_2"
         reference_frame="{camera_optical_frame}"
-        vector="{pose_stamped_vector}"
+        tf_pose="{bottom_pose}"
         name="Bottom AprilTag"
       />
       <Action
@@ -40,7 +39,9 @@
         base_link="base_link"
         calibration_tool_frame="calibration_tool_frame"
         computed_pose="{computed_pose}"
-        detected_poses="{pose_stamped_vector}"
+        right_tag_pose="{right_pose}"
+        left_tag_pose="{left_pose}"
+        bottom_tag_pose="{bottom_pose}"
         camera_optical_frame="{camera_optical_frame}"
       />
       <Action

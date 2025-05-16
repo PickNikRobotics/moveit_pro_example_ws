@@ -36,37 +36,35 @@
         z_up="true"
         tag_size="0.051"
       />
-      <Action ID="ResetPoseStampedVector" vector="{pose_stamped_vector}" />
-      <SubTree
-        ID="Add AprilTag Pose To Vector"
-        _collapsed="true"
+      <Action
+        ID="GetDetectionPose"
         detections="{detections}"
         name="topRight"
         target_id="1"
-        pose_vector_to_append="{pose_stamped_vector}"
+        detection_pose="{right_pose}"
       />
-      <SubTree
-        ID="Add AprilTag Pose To Vector"
-        _collapsed="true"
+      <Action
+        ID="GetDetectionPose"
         detections="{detections}"
         target_id="0"
         name="topLeft"
-        pose_vector_to_append="{pose_stamped_vector}"
+        detection_pose="{left_pose}"
       />
-      <SubTree
-        ID="Add AprilTag Pose To Vector"
-        _collapsed="true"
+      <Action
+        ID="GetDetectionPose"
         detections="{detections}"
         target_id="2"
         name="bottom"
-        pose_vector_to_append="{pose_stamped_vector}"
+        detection_pose="{bottom_pose}"
       />
       <Action
         ID="CalibrateCameraPose"
         base_link="base_link"
         calibration_tool_frame="calibration_tool_frame"
         computed_pose="{computed_pose}"
-        detected_poses="{pose_stamped_vector}"
+        right_tag_pose="{right_pose}"
+        left_tag_pose="{left_pose}"
+        bottom_tag_pose="{bottom_pose}"
         camera_optical_frame="{camera_optical_frame}"
       />
       <Action
