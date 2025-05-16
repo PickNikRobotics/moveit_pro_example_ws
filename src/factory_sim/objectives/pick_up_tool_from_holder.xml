@@ -67,7 +67,7 @@
         ID="AttachTool"
         parent_link_name="tool0"
         tool_name="{tool_name}"
-        allowed_collision_links="link_6"
+        allowed_collision_links="link_5;link_6"
       />
       <SubTree ID="Retract" _collapsed="true" distance="0.35" />
     </Control>
@@ -78,8 +78,8 @@
         <Metadata subcategory="Grasping" />
         <Metadata runnable="false" />
       </MetadataFields>
-      <inout_port name="tool_name" default="" />
       <inout_port name="tool_attach_site" default="" />
+      <inout_port name="tool_name" default="" />
     </SubTree>
   </TreeNodesModel>
 </root>

@@ -20,12 +20,18 @@
         trajectory_monitoring="false"
       />
       <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
-      <Action
-        ID="SetupMTCIgnoreCollisionsBetweenObjects"
-        allow_collision="true"
-        task="{mtc_task}"
-        object_names="{ignore_collisions_between_these_objects}"
-      />
+      <Decorator
+        ID="Precondition"
+        else="SUCCESS"
+        if="ignore_collisions_between_these_objects!=&quot;&quot;"
+      >
+        <Action
+          ID="SetupMTCIgnoreCollisionsBetweenObjects"
+          allow_collision="true"
+          task="{mtc_task}"
+          object_names="{ignore_collisions_between_these_objects}"
+        />
+      </Decorator>
       <Action
         ID="SetupMTCPlanToPose"
         acceleration_scale_factor="0.5"
