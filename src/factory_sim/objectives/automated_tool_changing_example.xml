@@ -3,10 +3,11 @@
   <!--//////////-->
   <BehaviorTree
     ID="Automated Tool Changing Example"
-    _description="Example of changing tool depending on if the robot is already holding a tool"
+    _description="Pick up the black tool, place it back, then pick up the blue tool. If a tool is already attached, it will return it to the correct holder first."
     _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree ID="Automated Return Held Tool" _collapsed="false" />
       <Control ID="Sequence">
         <SubTree ID="Reset Planning Scene" _collapsed="true" />
         <SubTree ID="Setup Initial Planning Scene" _collapsed="true" />

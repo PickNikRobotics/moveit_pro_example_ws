@@ -3,10 +3,11 @@
   <!--//////////-->
   <BehaviorTree
     ID="Inspect Convex Bowl"
-    _description="Inspect the Convex bowl"
+    _description="Inspect the Convex bowl with the blue tool. If a tool is already attached, it will return it to the correct holder first."
     _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree ID="Automated Return Held Tool" _collapsed="true" />
       <SubTree ID="Reset Planning Scene" _collapsed="true" />
       <SubTree ID="Setup Initial Planning Scene" _collapsed="true" />
       <SubTree
