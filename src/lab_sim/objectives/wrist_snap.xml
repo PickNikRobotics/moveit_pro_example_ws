@@ -7,7 +7,11 @@
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <!-- Do not clear snapshots first, so we can take multiple snapshots from different angles -->
-      <Action ID="GetPointCloud" topic_name="/wrist_camera/points" />
+      <Action
+        ID="GetPointCloud"
+        topic_name="/wrist_camera/points"
+        timeout_sec="15"
+      />
       <Action ID="SendPointCloudToUI" />
     </Control>
   </BehaviorTree>
