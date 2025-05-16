@@ -10,7 +10,7 @@
       <Action
         ID="CreateStampedPose"
         stamped_pose="{suction_tool_pose}"
-        reference_frame="suction_gripper_attach_site"
+        reference_frame="suction_gripper_holder_site"
       />
       <Action
         ID="AddToolToScene"
@@ -22,7 +22,7 @@
       <Action
         ID="CreateStampedPose"
         stamped_pose="{inspection_tool_pose}"
-        reference_frame="inspection_tool_attach_site"
+        reference_frame="inspection_tool_holder_site"
       />
       <Action
         ID="AddToolToScene"

@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Reset Planning Scene">
   <!--//////////-->
-  <BehaviorTree ID="Reset Planning Scene" _description="" _hardcoded="false">
+  <BehaviorTree
+    ID="Reset Planning Scene"
+    _description="Resets the planning scene. Does not reset the simulation, so any held tools will still be attached."
+    _hardcoded="false"
+  >
     <Control ID="Sequence">
       <Action
         ID="LogMessage"
