@@ -22,8 +22,8 @@
       <Action ID="WaitForDuration" delay_duration="2" />
       <SubTree
         ID="Place Tool in Tool Holder"
-        _collapsed="true"
-        ignore_collisions_between_these_objects=""
+        _collapsed="false"
+        ignore_collisions_between_these_objects="link_5;link_6;suction_gripper"
         tool_name="suction_gripper"
         tool_return_site="suction_gripper_holder_site"
       />
