@@ -138,6 +138,7 @@ ros2_control:
   # Load but do not start these controllers so they can be activated later if needed.
   # [Optional, default=[]]
   controllers_inactive_at_startup:
+    - "servo_controller"
     - "joint_trajectory_controller"
     - "first_velocity_force_controller"
     - "second_velocity_force_controller"

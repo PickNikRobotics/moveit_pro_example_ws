@@ -40,8 +40,8 @@
         ID="TransformPose"
         output_pose="{view_pose}"
         input_pose="{detection_pose}"
-        quaternion_xyzw="0;0;0;1"
-        translation_xyz="0;-0.1;-0.15"
+        quaternion_xyzw="1;0;0;0"
+        translation_xyz="0;0.1;0.15"
       />
       <SubTree
         ID="Plan Move To Pose"
@@ -71,18 +71,13 @@
         ID="TransformPose"
         output_pose="{grasp_pose}"
         input_pose="{detection_pose}"
-        quaternion_xyzw="0;0;0;1"
-        translation_xyz="0;0;-0.01"
-      />
-      <Action
-        ID="AddPoseStampedToVector"
-        input="{grasp_pose}"
-        vector="{grasp_poses}"
+        quaternion_xyzw="1;0;0;0"
+        translation_xyz="0;0;0.01"
       />
       <SubTree
         ID="Pick from Pose With Approval"
         _collapsed="false"
-        grasp_poses="{grasp_poses}"
+        grasp_pose="{grasp_pose}"
         approach_distance="0.1"
         retract_xyz="0;0;-0.1"
       />
