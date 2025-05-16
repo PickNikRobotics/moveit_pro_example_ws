@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Detach and Remove Tool">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Detach and Remove Tool"
+    _description="Detach a tool from the arm and remove it from the planning scene"
+  >
+    <Control ID="Fallback">
+      <Decorator ID="ForceFailure">
+        <Action ID="DetachTool" tool_name="{tool_name}" />
+      </Decorator>
+      <Action ID="RemoveToolFromScene" tool_name="{tool_name}" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Detach and Remove Tool">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Motion - Planning" />
+      </MetadataFields>
+      <inout_port name="tool_name" default="tool_1" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

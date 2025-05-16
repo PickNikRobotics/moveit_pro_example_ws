@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Automated Tool Changing Example Subtree"
+>
+  <!--//////////-->
+  <BehaviorTree
+    ID="Automated Tool Changing Example Subtree"
+    _description=""
+    _favorite="false"
+  >
+    <Control ID="IfThenElse">
+      <Control ID="Sequence">
+        <Action
+          ID="GetCurrentPlanningScene"
+          planning_scene_msg="{planning_scene}"
+        />
+        <Action ID="IsAnyObjectAttached" planning_scene="{planning_scene}" />
+      </Control>
+      <Control ID="IfThenElse">
+        <Action
+          ID="WhichObjectIsAttached"
+          object_name="{tool_name}"
+          object_names="{tool_names}"
+          planning_scene="{planning_scene}"
+        />
+        <Control ID="Sequence">
+          <SubTree
+            ID="Automated Return Tool Subtree"
+            _collapsed="true"
+            return_tool="{tool_name}"
+            tool_1_name="{tool_1_name}"
+            tool_1_return_site="{tool_1_return_site}"
+            ignore_collisions_between_these_objects_for_tool_1_return="link_5;link_6;suction_gripper"
+            tool_2_name="{tool_2_name}"
+            tool_2_return_site="{tool_2_return_site}"
+            ignore_collisions_between_these_objects_for_tool_2_return="link_5;link_6;inspector"
+          />
+          <SubTree
+            ID="Automated Pickup Tool Subtree"
+            _collapsed="true"
+            pickup_tool="{pickup_tool}"
+            tool_1_name="{tool_1_name}"
+            tool_1_pickup_site="{tool_1_pickup_site}"
+            tool_2_name="{tool_2_name}"
+            tool_2_pickup_site="{tool_2_pickup_site}"
+          />
+        </Control>
+        <Action
+          ID="LogMessage"
+          log_level="error"
+          message="Planning Scene is in an unexpected state"
+        />
+      </Control>
+      <SubTree
+        ID="Automated Pickup Tool Subtree"
+        _collapsed="true"
+        pickup_tool="{pickup_tool}"
+        tool_1_name="{tool_1_name}"
+        tool_1_pickup_site="{tool_1_pickup_site}"
+        tool_2_name="{tool_2_name}"
+        tool_2_pickup_site="{tool_2_pickup_site}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Automated Tool Changing Example Subtree">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Application - Advanced Examples" />
+      </MetadataFields>
+      <inout_port name="pickup_tool" default="" />
+      <inout_port name="tool_1_name" default="" />
+      <inout_port name="tool_1_pickup_site" default="" />
+      <inout_port name="tool_1_return_site" default="" />
+      <inout_port name="tool_2_name" default="" />
+      <inout_port name="tool_2_pickup_site" default="" />
+      <inout_port name="tool_2_return_site" default="" />
+      <inout_port name="tool_names" default="" />
+    </SubTree>
+  </TreeNodesModel>
+</root>
