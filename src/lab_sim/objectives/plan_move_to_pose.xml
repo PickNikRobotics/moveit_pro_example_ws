@@ -36,6 +36,7 @@
       />
       <MetadataFields>
         <Metadata subcategory="Motion - Planning" />
+        <Metadata runnable="false" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>

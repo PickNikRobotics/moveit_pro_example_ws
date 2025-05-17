@@ -7,11 +7,6 @@
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
-        ID="LoadObjectiveParameters"
-        config_file_name="apriltag_detection_config.yaml"
-        parameters="{wrist_camera_parameters}"
-      />
-      <Action
         ID="GetCameraInfo"
         topic_name="/wrist_camera/camera_info"
         message_out="{wrist_camera_info}"
@@ -29,10 +24,6 @@
     <SubTree ID="Take Wrist Camera Image">
       <inout_port name="wrist_camera_image" default="{wrist_camera_image}" />
       <inout_port name="wrist_camera_info" default="{wrist_camera_info}" />
-      <inout_port
-        name="wrist_camera_parameters"
-        default="{wrist_camera_parameters}"
-      />
       <MetadataFields>
         <Metadata subcategory="Perception - 2D Image" />
         <Metadata runnable="false" />

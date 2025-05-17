@@ -23,15 +23,10 @@
         marker_size="0.100000"
         pose="{stamped_pose}"
       />
-      <Action
-        ID="AddPoseStampedToVector"
-        input="{stamped_pose}"
-        vector="{grasp_poses}"
-      />
       <SubTree
         ID="Pick from Pose"
         _collapsed="true"
-        grasp_poses="{grasp_poses}"
+        grasp_pose="{stamped_pose}"
         approach_distance="0.1"
         retract_xyz="0;0;-0.1"
       />
