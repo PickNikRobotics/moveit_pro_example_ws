@@ -9,9 +9,9 @@
   >
     <Control ID="Sequence">
       <Action
-        ID="LoadObjectiveParameters"
-        config_file_name="visual_servo_reference.yaml"
-        parameters="{servo_reference_parameters}"
+        ID="LoadPoseStampedFromYaml"
+        output="{relative_pose}"
+        file_path="visual_servo_reference.yaml"
       />
       <Action ID="ActivateControllers" controller_names="servo_controller" />
       <Control ID="Sequence">
@@ -32,11 +32,10 @@
           output_pose="{tag_pose_base}"
         />
         <Action
-          ID="TransformPoseFromYaml"
-          input_pose="{tag_pose_base}"
-          parameter_namespace="ServoReference"
-          pose_parameters="{servo_reference_parameters}"
+          ID="TransformPoseWithPose"
+          input_pose="{relative_pose}"
           output_pose="{reference_pose}"
+          transform_pose="{tag_pose_base}"
         />
       </Control>
       <Control ID="Parallel" success_count="1" failure_count="1">
@@ -72,11 +71,10 @@
         <Decorator ID="KeepRunningUntilFailure">
           <Control ID="Sequence">
             <Action
-              ID="TransformPoseFromYaml"
-              input_pose="{tag_pose_avg}"
-              parameter_namespace="ServoReference"
-              pose_parameters="{servo_reference_parameters}"
+              ID="TransformPoseWithPose"
+              input_pose="{relative_pose}"
               output_pose="{reference_pose}"
+              transform_pose="{tag_pose_avg}"
             />
           </Control>
         </Decorator>
