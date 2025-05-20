@@ -10,6 +10,7 @@
         task_id="interpolate_to_joint_state"
         controller_names="{controller_names}"
         task="{interpolate_to_waypoint_task}"
+        trajectory_monitoring="false"
       />
       <Action ID="SetupMTCCurrentState" task="{interpolate_to_waypoint_task}" />
       <Action
@@ -27,19 +28,21 @@
       <Action
         ID="ExecuteMTCTask"
         solution="{interpolate_to_waypoint_solution}"
+        goal_duration_tolerance="-1.000000"
       />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Interpolate to Joint State">
-      <input_port name="target_joint_state" default="{target_joint_state}" />
+      <MetadataFields>
+        <Metadata subcategory="Motion - Execute" />
+        <Metadata runnable="false" />
+      </MetadataFields>
       <input_port
         name="controller_names"
         default="/joint_trajectory_controller"
       />
-      <MetadataFields>
-        <Metadata subcategory="Motion - Execute" />
-      </MetadataFields>
+      <input_port name="target_joint_state" default="{target_joint_state}" />
     </SubTree>
   </TreeNodesModel>
 </root>
