@@ -1,9 +1,9 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Segment Image from Text Prompt">
   <!--//////////-->
   <BehaviorTree
     ID="Segment Image from Text Prompt"
-    _description="Run text based segmentation and visualize he masks."
+    _description="Run text based segmentation and visualize the masks."
     _favorite="true"
   >
     <Control ID="Sequence">
@@ -19,6 +19,7 @@
         image_topic_name="/wrist_camera/color"
         prompts="small boxes"
         negative_prompts="grey"
+        masks2d="{masks2d}"
       />
     </Control>
   </BehaviorTree>
