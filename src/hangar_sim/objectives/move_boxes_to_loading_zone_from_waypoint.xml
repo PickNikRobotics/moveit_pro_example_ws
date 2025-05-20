@@ -227,7 +227,6 @@
                       planner_interface="pro_rrt"
                       planning_group_name="manipulator"
                       task="{task}"
-                      link_padding="0.0"
                     />
                     <Action
                       ID="SetupMTCMoveAlongFrameAxis"
