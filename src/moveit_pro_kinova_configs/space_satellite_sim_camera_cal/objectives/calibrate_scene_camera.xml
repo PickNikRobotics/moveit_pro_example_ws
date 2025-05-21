@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Calibrate Scene Camera">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Calibrate Scene Camera"
+    _description="Calibrate the scene camera from multiple waypoints using the DetectAprilTags behavior."
+    _favorite="false"
+  >
+    <SubTree
+      ID="Calibrate Camera - Detect Tags"
+      _collapsed="true"
+      camera_mounting_frame="scene_camera_mount_link"
+      camera_optical_frame="scene_camera_color_optical_frame"
+      mounting_pose_save_file="calibrated_scene_cam_mount_pose.txt"
+      camera_image_topic="/scene_camera/color"
+      camera_info_topic="/scene_camera/camera_info"
+      mounting_pose_parent_frame="world"
+    />
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Calibrate Scene Camera">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Perception - Camera Calibration" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
