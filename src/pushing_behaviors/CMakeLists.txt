@@ -13,6 +13,7 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
         tf2_eigen
         tf2_geometry_msgs
         tf2_ros
+        fmt
         visualization_msgs
         example_interfaces)
 foreach(package IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
@@ -33,7 +34,7 @@ target_include_directories(
 ament_target_dependencies(pushing_behaviors
                           ${THIS_PACKAGE_INCLUDE_DEPENDS})
 
-target_link_libraries(pushing_behaviors OsqpEigen::OsqpEigen)
+target_link_libraries(pushing_behaviors fmt::fmt OsqpEigen::OsqpEigen)
 
 # endforeach()
 

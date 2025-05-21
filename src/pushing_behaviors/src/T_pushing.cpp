@@ -1,7 +1,9 @@
 #include <example_behaviors/T_pushing.hpp>
 
-#include <Eigen/Dense>
 #include <vector>
+
+#include <Eigen/Dense>
+#include "fmt/format.h"
 
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/twist_stamped.hpp>
