@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Calibrate Camera - Detect Tags">
+  <!--//////////-->
+  <BehaviorTree ID="Calibrate Camera - Detect Tags" _description="">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree
+        ID="Visualize TF"
+        _collapsed="true"
+        marker_lifetime="0.0"
+        marker_size="0.075"
+        tf_frame_name="{camera_optical_frame}"
+        marker_name="Current URDF Optical Pose"
+      />
+      <SubTree
+        ID="Visualize TF"
+        _collapsed="true"
+        marker_lifetime="0.0"
+        marker_size="0.075"
+        tf_frame_name="{camera_mounting_frame}"
+        marker_name="Current URDF Mount Pose"
+      />
+      <Action ID="ResetPoseStampedVector" vector="{computed_poses_vector}" />
+      <SubTree
+        ID="Calibrate Camera at Waypoint - Detect"
+        _collapsed="true"
+        computed_poses_vector="{computed_poses_vector}"
+        camera_optical_frame="{camera_optical_frame}"
+        waypoint_name="Camera Calibration 1"
+        camera_image_topic="{camera_image_topic}"
+        camera_info_topic="{camera_info_topic}"
+      />
+      <SubTree
+        ID="Calibrate Camera at Waypoint - Detect"
+        _collapsed="true"
+        computed_poses_vector="{computed_poses_vector}"
+        camera_optical_frame="{camera_optical_frame}"
+        waypoint_name="Camera Calibration 2"
+        camera_image_topic="{camera_image_topic}"
+        camera_info_topic="{camera_info_topic}"
+      />
+      <SubTree
+        ID="Calibrate Camera at Waypoint - Detect"
+        _collapsed="true"
+        computed_poses_vector="{computed_poses_vector}"
+        camera_optical_frame="{camera_optical_frame}"
+        waypoint_name="Camera Calibration 3"
+        camera_image_topic="{camera_image_topic}"
+        camera_info_topic="{camera_info_topic}"
+      />
+      <SubTree
+        ID="Calibrate Camera at Waypoint - Detect"
+        _collapsed="true"
+        computed_poses_vector="{computed_poses_vector}"
+        camera_optical_frame="{camera_optical_frame}"
+        waypoint_name="Camera Calibration 4"
+        camera_image_topic="{camera_image_topic}"
+        camera_info_topic="{camera_info_topic}"
+      />
+      <Action
+        ID="AveragePoseStampedVector"
+        average_pose_stamped="{calibrated_optical_pose}"
+        pose_stamped_vector="{computed_poses_vector}"
+      />
+      <Action
+        ID="VisualizePose"
+        marker_lifetime="0.000000"
+        marker_size="0.130000"
+        pose="{calibrated_optical_pose}"
+        name="Calibrated Optical Pose"
+        marker_name="Calibrated Optical Pose"
+      />
+      <Action
+        ID="TransformPoseFrame"
+        input_pose="{calibrated_optical_pose}"
+        output_pose="{cal_optical_in_current_optical}"
+        name="calibration: delta from current"
+        target_frame_id="{camera_optical_frame}"
+      />
+      <Action
+        ID="CreateStampedPose"
+        stamped_pose="{current_mounting_pose}"
+        name="camera current_mounting_pose"
+        reference_frame="{camera_mounting_frame}"
+      />
+      <Action
+        ID="TransformPoseFrame"
+        input_pose="{current_mounting_pose}"
+        output_pose="{mounting_in_current_optical}"
+        name="Delta from camera optical to camera mounting"
+        target_frame_id="{camera_optical_frame}"
+      />
+      <Action
+        ID="TransformPoseWithPose"
+        input_pose="{mounting_in_current_optical}"
+        output_pose="{cal_mounting_in_current_optical}"
+        transform_pose="{cal_optical_in_current_optical}"
+        name="current_optical to cal_mount"
+      />
+      <Action
+        ID="TransformPoseFrame"
+        input_pose="{cal_mounting_in_current_optical}"
+        output_pose="{calibrated_mounting_in_parent}"
+        name="mounting in parent frame"
+        target_frame_id="{mounting_pose_parent_frame}"
+      />
+      <Action
+        ID="VisualizePose"
+        marker_lifetime="0.000000"
+        marker_size="0.130000"
+        pose="{calibrated_mounting_in_parent}"
+        name="Calibrated Camera Mounting Pose"
+        marker_name="Calibrated Cam Mount Pose (to file)"
+      />
+      <Action
+        ID="SavePoseForUrdf"
+        calibration_pose_stamped="{calibrated_mounting_in_parent}"
+        file_name="{mounting_pose_save_file}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Calibrate Camera - Detect Tags">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Perception - Camera Calibration" />
+      </MetadataFields>
+      <inout_port name="camera_image_topic" default="/scene_camera/color" />
+      <inout_port
+        name="camera_info_topic"
+        default="/scene_camera/camera_info"
+      />
+      <input_port
+        name="camera_mounting_frame"
+        default="scene_camera_mount_link"
+      />
+      <input_port
+        name="camera_optical_frame"
+        default="scene_camera_color_optical_frame"
+      />
+      <inout_port name="mounting_pose_parent_frame" default="world" />
+      <input_port
+        name="mounting_pose_save_file"
+        default="calibrated_scene_camera_mounting_pose.txt"
+      />
+    </SubTree>
+  </TreeNodesModel>
+</root>
