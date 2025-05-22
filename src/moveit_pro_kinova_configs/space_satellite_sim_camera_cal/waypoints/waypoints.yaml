@@ -1,0 +1,308 @@
+- description: Top right
+  favorite: false
+  joint_group_names:
+  - gripper
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - robotiq_85_left_finger_joint
+    - robotiq_85_right_finger_joint
+    - joint_1
+    - joint_2
+    - joint_3
+    - joint_4
+    - joint_5
+    - joint_6
+    - joint_7
+    position:
+    - 0.0029407721601535414
+    - 0.00014643648808031575
+    - 0.0001464364880981395
+    - -1.3560149448140466
+    - 1.960292012904828
+    - 0.49307325871760727
+    - -2.06282022573697
+    - 3.0478928742999747
+    - -0.04877669889701706
+    - 2.3589407180453588
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Camera Calibration 1
+- description: Top left
+  favorite: false
+  joint_group_names:
+  - gripper
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - robotiq_85_left_finger_joint
+    - robotiq_85_right_finger_joint
+    - joint_1
+    - joint_2
+    - joint_3
+    - joint_4
+    - joint_5
+    - joint_6
+    - joint_7
+    position:
+    - 0.002940772160166073
+    - 0.00014643648807793333
+    - 0.0001464364881008069
+    - -0.4878544141168188
+    - 1.4616845571129944
+    - 0.8544098157913117
+    - 0.4133536892906244
+    - 4.987626102889544
+    - -1.3010749688535521
+    - -1.2909359555326554
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Camera Calibration 3
+- description: Middle
+  favorite: false
+  joint_group_names:
+  - gripper
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - robotiq_85_left_finger_joint
+    - robotiq_85_right_finger_joint
+    - joint_1
+    - joint_2
+    - joint_3
+    - joint_4
+    - joint_5
+    - joint_6
+    - joint_7
+    position:
+    - 0.0029407720309839493
+    - 0.0001464364880962395
+    - 0.00014643648811561374
+    - -0.8989894807272686
+    - 1.917071952949326
+    - -0.20289623842725046
+    - -1.9421395463517077
+    - 6.279999934642587
+    - -0.17348692943098556
+    - -1.3797340372046427
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Camera Calibration 2
+- description: Bottom left
+  favorite: false
+  joint_group_names:
+  - gripper
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - robotiq_85_left_finger_joint
+    - robotiq_85_right_finger_joint
+    - joint_1
+    - joint_2
+    - joint_3
+    - joint_4
+    - joint_5
+    - joint_6
+    - joint_7
+    position:
+    - 0.0029407721601837065
+    - 0.00014643648808152494
+    - 0.000146436488098661
+    - 0.007851390582270227
+    - 1.5321810315137459
+    - -1.3029375077292578
+    - -0.1349632545404066
+    - -1.9245204743963213
+    - 0.9655727119903809
+    - 6.280000000000036
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Camera Calibration 4
+- description: ''
+  favorite: false
+  joint_group_names:
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: world
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - joint_1
+    - joint_2
+    - joint_3
+    - joint_4
+    - joint_5
+    - joint_6
+    - joint_7
+    position:
+    - 0
+    - 2.0944
+    - 0
+    - -2.66
+    - 0
+    - 2.1364
+    - 1.5708
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Home
+- description: ''
+  favorite: false
+  joint_group_names:
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: world
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - joint_1
+    - joint_2
+    - joint_3
+    - joint_4
+    - joint_5
+    - joint_6
+    - joint_7
+    position:
+    - 0
+    - 2.0944
+    - 0
+    - -2.66
+    - 0
+    - 0.5656
+    - 0
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: View Satellite
+- description: ''
+  favorite: false
+  joint_group_names:
+  - gripper
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - robotiq_85_left_finger_joint
+    - robotiq_85_right_finger_joint
+    - joint_1
+    - joint_2
+    - joint_3
+    - joint_4
+    - joint_5
+    - joint_6
+    - joint_7
+    position:
+    - 0.002702553530778338
+    - 0.00014644140651922082
+    - 0.0001464415653216075
+    - -1.5708000000645088
+    - 1.8326000034301706
+    - -3.1062507453508373e-10
+    - -2.356200003095631
+    - -5.610938392614224e-11
+    - 0.2617999999768723
+    - 1.5707999999999966
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: View Tag
