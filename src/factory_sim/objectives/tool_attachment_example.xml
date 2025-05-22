@@ -3,13 +3,30 @@
   <!--//////////-->
   <BehaviorTree
     ID="Tool Attachment Example"
-    _description="Pick up a vacuum gripper, pick up an object with it, drop the object and put the tool back in its holder"
+    _description="Attach the black tool. If a tool is already attached, it will return it to the correct holder first."
     _favorite="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
-      <SubTree ID="Pick Up Tool from Holder" _collapsed="true" />
+      <SubTree ID="Automated Return Held Tool" _collapsed="true" />
+      <Control ID="Sequence">
+        <SubTree ID="Reset Planning Scene" _collapsed="true" />
+        <SubTree ID="Setup Initial Planning Scene" _collapsed="true" />
+      </Control>
+      <SubTree
+        ID="Pick Up Tool from Holder"
+        _collapsed="true"
+        ignore_collisions_between_these_objects=""
+        tool_name="suction_gripper"
+        tool_attach_site="suction_gripper_attach_site"
+      />
       <Action ID="WaitForDuration" delay_duration="2" />
-      <SubTree ID="Place Tool in Tool Holder" _collapsed="true" />
+      <SubTree
+        ID="Place Tool in Tool Holder"
+        _collapsed="false"
+        ignore_collisions_between_these_objects="link_5;link_6;suction_gripper"
+        tool_name="suction_gripper"
+        tool_return_site="suction_gripper_holder_site"
+      />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
