@@ -73,9 +73,22 @@
 
     <body name="arm_pedestal" pos="0.0 0.0 0.15">
       <geom type="box" size="0.2 0.2 0.15" />
-      <geom type="box" size="0.06 0.01 0.01" pos="0.23 0.03 0.1" />
-      <geom type="box" size="0.06 0.01 0.01" pos="0.23 -0.03 0.1" />
-      <site name="tool_holder_site" pos="0.25 0 0.15" euler="3.1415 0 0" />
+      <!-- Holder for tool 1 -->
+      <geom type="box" size="0.06 0.01 0.01" pos="0.23 0.05 0.1" />
+      <geom type="box" size="0.06 0.01 0.01" pos="0.23 0.11 0.1" />
+      <site
+        name="suction_gripper_holder_site"
+        pos="0.25 0.08 0.15"
+        euler="3.1415 0 0"
+      />
+      <!-- Holder for tool 2 -->
+      <geom type="box" size="0.06 0.01 0.01" pos="0.23 -0.05 0.1" />
+      <geom type="box" size="0.06 0.01 0.01" pos="0.23 -0.11 0.1" />
+      <site
+        name="inspection_tool_holder_site"
+        pos="0.25 -0.08 0.15"
+        euler="3.1415 0 0"
+      />
     </body>
 
     <body name="arm_mount" pos="0.0 0.0 0.3">
@@ -366,15 +379,25 @@
     </body>
   </worldbody>
 
-  <!-- Add tool -->
-  <include file="tool.xml" />
+  <!-- Add tools -->
+  <include file="suction_tool.xml" />
+  <include file="inspection_tool.xml" />
 
   <!-- Define weld constraints between the robot flange (tool0) and the gripper -->
   <equality>
     <weld
-      name="tool_attachment"
+      name="tool_attachment_one"
       body1="tool0"
       body2="gripper_base"
+      active="false"
+      torquescale="1"
+    />
+  </equality>
+  <equality>
+    <weld
+      name="tool_attachment_two"
+      body1="tool0"
+      body2="inspection_tool_base"
       active="false"
       torquescale="1"
     />
