@@ -1,0 +1,23 @@
+<?xml version="1.0" ?>
+<package format="3">
+  <name>space_satellite_sim_camera_cal</name>
+  <version>7.7.0</version>
+
+  <description>
+    MoveIt Pro sub-configuration of the space_satellite_sim package to use for
+    calibrating the scene camera pose.
+  </description>
+
+  <maintainer email="richard.pratt@picknik.ai">Richard Pratt</maintainer>
+
+  <license>Proprietary</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>space_satellite_sim</depend>
+  <depend>apriltag_ros</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
