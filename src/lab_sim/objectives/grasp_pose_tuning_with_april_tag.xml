@@ -34,8 +34,8 @@
         ID="TransformPose"
         output_pose="{view_pose}"
         input_pose="{detection_pose}"
-        quaternion_xyzw="1;0;0;0"
-        translation_xyz="0;0.1;0.15"
+        quaternion_xyzw="0;0;0;1"
+        translation_xyz="0;-0.1;-0.15"
       />
       <SubTree
         ID="Plan Move To Pose"
