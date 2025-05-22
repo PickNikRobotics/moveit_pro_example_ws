@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Automated Return Tool Subtree">
+  <!-- ////////// -->
+  <BehaviorTree
+    ID="Automated Return Tool Subtree"
+    _description="Subtree for returning the currently held tool to the correct holder"
+  >
+    <Control ID="Sequence">
+      <Control ID="Fallback">
+        <Decorator
+          ID="Precondition"
+          else="FAILURE"
+          if="return_tool==tool_1_name"
+        >
+          <SubTree
+            ID="Place Tool in Tool Holder"
+            _collapsed="true"
+            tool_name="{tool_1_name}"
+            tool_return_site="{tool_1_return_site}"
+            ignore_collisions_between_these_objects="{ignore_collisions_between_these_objects_for_tool_1_return}"
+          />
+        </Decorator>
+        <Decorator
+          ID="Precondition"
+          else="FAILURE"
+          if="return_tool==tool_2_name"
+        >
+          <SubTree
+            ID="Place Tool in Tool Holder"
+            _collapsed="true"
+            tool_name="{tool_2_name}"
+            tool_return_site="{tool_2_return_site}"
+            ignore_collisions_between_these_objects="{ignore_collisions_between_these_objects_for_tool_2_return}"
+          />
+        </Decorator>
+        <Decorator ID="ForceFailure">
+          <Action
+            ID="LogMessage"
+            message="Attached tool is not in list of tool names"
+            log_level="error"
+          />
+        </Decorator>
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Automated Return Tool Subtree">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Application - Advanced Examples" />
+      </MetadataFields>
+      <inout_port name="return_tool" default="" />
+      <inout_port name="tool_1_name" default="" />
+      <inout_port name="tool_1_return_site" default="" />
+      <inout_port
+        name="ignore_collisions_between_these_objects_for_tool_1_return"
+        default=""
+      />
+      <inout_port name="tool_2_name" default="" />
+      <inout_port name="tool_2_return_site" default="" />
+      <inout_port
+        name="ignore_collisions_between_these_objects_for_tool_2_return"
+        default=""
+      />
+    </SubTree>
+  </TreeNodesModel>
+</root>
