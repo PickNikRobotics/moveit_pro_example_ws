@@ -11,6 +11,7 @@
           task_id="move_to_pose"
           controller_names="{controller_names}"
           task="{move_to_pose_task}"
+          trajectory_monitoring="false"
         />
         <Action ID="SetupMTCCurrentState" task="{move_to_pose_task}" />
         <Action
@@ -19,6 +20,15 @@
           planning_group_name="manipulator"
           target_pose="{target_pose}"
           task="{move_to_pose_task}"
+          acceleration_scale_factor="1.000000"
+          keep_orientation="false"
+          keep_orientation_link_names="grasp_link"
+          keep_orientation_tolerance="0.100000"
+          link_padding="0.000000"
+          max_iterations="5000"
+          monitored_stage="current state"
+          trajectory_sampling_rate="100"
+          velocity_scale_factor="1.000000"
         />
         <Action
           ID="PlanMTCTask"
@@ -29,7 +39,11 @@
           ID="Wait for Trajectory Approval if User Available"
           solution="{move_to_pose_solution}"
         />
-        <Action ID="ExecuteMTCTask" solution="{move_to_pose_solution}" />
+        <Action
+          ID="ExecuteMTCTask"
+          solution="{move_to_pose_solution}"
+          goal_duration_tolerance="-1.000000"
+        />
         <Action
           ID="PublishEmpty"
           topic="/studio_ui/motion_ended"
@@ -50,14 +64,15 @@
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Move to a StampedPose">
+      <MetadataFields>
+        <Metadata subcategory="Motion - Execute" />
+        <Metadata runnable="false" />
+      </MetadataFields>
       <input_port
         name="controller_names"
         default="/joint_trajectory_controller"
       />
       <input_port name="target_pose" default="{stamped_pose}" />
-      <MetadataFields>
-        <Metadata subcategory="Motion - Execute" />
-      </MetadataFields>
     </SubTree>
   </TreeNodesModel>
 </root>
