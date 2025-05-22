@@ -26,35 +26,28 @@
           <Action
             ID="TransformPoseFrame"
             input_pose="{grasp_grasp}"
-            output_pose="{grasp_world}"
+            output_pose="{output_grasp}"
             target_frame_id="world"
           />
-          <Action ID="ResetPoseStampedVector" vector="{output_grasp}" />
           <Action
-            ID="AddPoseStampedToVector"
-            input="{grasp_world}"
-            vector="{output_grasp}"
+            ID="VisualizePose"
+            marker_lifetime="0.000000"
+            marker_name="grasp pose"
+            marker_size="0.100000"
+            pose="{output_grasp}"
           />
           <Action
             ID="VisualizeMesh"
             marker_lifetime="0.000000"
             mesh_path="package://lab_sim/objectives/gripper_token.dae"
             mesh_pose="{output_grasp}"
-            color_mix="0.1"
-          />
-          <Action
-            ID="VisualizePose"
-            marker_lifetime="0.000000"
-            marker_name="pose"
-            marker_size="0.100000"
-            pose="{grasp_world}"
           />
           <Decorator ID="Inverter">
             <Control ID="Sequence">
               <Control ID="Sequence">
                 <Action
                   ID="TransformPose"
-                  input_pose="{grasp_world}"
+                  input_pose="{output_grasp}"
                   output_pose="{grasp_mtc_world}"
                   translation_xyz="0;0.0;-0.03"
                 />
