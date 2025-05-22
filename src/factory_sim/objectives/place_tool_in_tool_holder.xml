@@ -8,7 +8,7 @@
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
         ID="CreateStampedPose"
-        reference_frame="tool_holder_site"
+        reference_frame="{tool_return_site}"
         position_xyz="0;0;-0.15"
         stamped_pose="{approach_pose}"
       />
@@ -20,12 +20,18 @@
         trajectory_monitoring="false"
       />
       <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
-      <Action
-        ID="SetupMTCIgnoreCollisionsBetweenObjects"
-        allow_collision="true"
-        task="{mtc_task}"
-        object_names="link_5;link_6;suction_gripper"
-      />
+      <Decorator
+        ID="Precondition"
+        else="SUCCESS"
+        if="ignore_collisions_between_these_objects!=&quot;&quot;"
+      >
+        <Action
+          ID="SetupMTCIgnoreCollisionsBetweenObjects"
+          allow_collision="true"
+          task="{mtc_task}"
+          object_names="{ignore_collisions_between_these_objects}"
+        />
+      </Decorator>
       <Action
         ID="SetupMTCPlanToPose"
         acceleration_scale_factor="0.5"
@@ -70,7 +76,7 @@
         gripper_command_action_name="/tool_attach_controller/gripper_cmd"
         timeout="10"
       />
-      <Action ID="DetachTool" tool_name="suction_gripper" />
+      <Action ID="DetachTool" tool_name="{tool_name}" />
       <SubTree ID="Retract" _collapsed="true" distance="0.35" />
     </Control>
   </BehaviorTree>
@@ -80,6 +86,9 @@
         <Metadata runnable="false" />
         <Metadata subcategory="Grasping" />
       </MetadataFields>
+      <inout_port name="ignore_collisions_between_these_objects" default="" />
+      <inout_port name="tool_name" default="" />
+      <inout_port name="tool_return_site" default="" />
     </SubTree>
   </TreeNodesModel>
 </root>

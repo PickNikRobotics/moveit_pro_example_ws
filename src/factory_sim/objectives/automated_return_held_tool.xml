@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Automated Return Held Tool">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Automated Return Held Tool"
+    _description="Returns the currently held tool to the correct holder"
+    _favorite="false"
+  >
+    <Control ID="IfThenElse">
+      <Control ID="Sequence">
+        <Action
+          ID="GetCurrentPlanningScene"
+          planning_scene_msg="{planning_scene}"
+        />
+        <Action ID="IsAnyObjectAttached" planning_scene="{planning_scene}" />
+      </Control>
+      <Control ID="IfThenElse">
+        <Control ID="Sequence">
+          <Action
+            ID="WhichObjectIsAttached"
+            object_name="{tool_name}"
+            planning_scene="{planning_scene}"
+            object_names="suction_gripper;inspector"
+          />
+        </Control>
+        <SubTree
+          ID="Automated Return Tool Subtree"
+          _collapsed="true"
+          return_tool="{tool_name}"
+          tool_1_name="suction_gripper"
+          tool_1_return_site="suction_gripper_holder_site"
+          ignore_collisions_between_these_objects_for_tool_1_return="link_5;link_6;suction_gripper"
+          tool_2_name="inspector"
+          tool_2_return_site="inspection_tool_holder_site"
+          ignore_collisions_between_these_objects_for_tool_2_return="link_5;link_6;inspector"
+        />
+        <Decorator ID="ForceFailure">
+          <Action
+            ID="LogMessage"
+            log_level="error"
+            message="PlanningScene in unknown state"
+          />
+        </Decorator>
+      </Control>
+      <Action
+        ID="LogMessage"
+        log_level="info"
+        message="Currently not holding a tool"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Automated Return Held Tool">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Advanced Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
