@@ -13,7 +13,7 @@
         output="{relative_pose}"
         file_path="visual_servo_reference.yaml"
       />
-      <Action ID="ActivateControllers" controller_names="servo_controller" />
+      <Action ID="SwitchController" activate_controllers="servo_controller" />
       <Control ID="Sequence">
         <SubTree
           ID="Sample April Tag"

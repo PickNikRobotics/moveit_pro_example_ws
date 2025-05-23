@@ -215,17 +215,8 @@ joint_trajectory_admittance_controller:
 
 velocity_force_controller:
   ros__parameters:
-    # Joints that the controller will claim.
-    joints:
-      - linear_rail_joint
-      - shoulder_pan_joint
-      - shoulder_lift_joint
-      - elbow_joint
-      - wrist_1_joint
-      - wrist_2_joint
-      - wrist_3_joint
-    # Base frame of the kinematic chain, for computation of arm kinematics.
-    base_frame: base_link
+    # Joint group to control.
+    planning_group_name: manipulator
     # The tip link of the kinematic chain, i.e. the frame that will be controlled.
     ee_frame: grasp_link
     # The frame where the force / torque sensor reading is given.

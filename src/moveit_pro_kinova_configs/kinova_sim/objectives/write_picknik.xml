@@ -24,8 +24,8 @@
         />
         <Control ID="Sequence" name="TopLevelSequence">
           <Action
-            ID="ActivateControllers"
-            controller_names="joint_trajectory_controller"
+            ID="SwitchController"
+            activate_controllers="joint_trajectory_controller"
           />
           <Action
             ID="LoadPoseStampedVectorFromYaml"
