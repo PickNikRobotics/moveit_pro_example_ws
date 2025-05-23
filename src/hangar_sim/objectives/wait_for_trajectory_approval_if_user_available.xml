@@ -11,8 +11,11 @@
       <Decorator ID="Inverter">
         <Action ID="IsUserAvailable" />
       </Decorator>
-      <Action ID="WaitForUserTrajectoryApproval" solution="{solution}" />
-      cartesian_path_links="ridgeback_base_link;grasp_link" />
+      <Action
+        ID="WaitForUserTrajectoryApproval"
+        solution="{solution}"
+        cartesian_path_links="ridgeback_base_link;grasp_link"
+      />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
