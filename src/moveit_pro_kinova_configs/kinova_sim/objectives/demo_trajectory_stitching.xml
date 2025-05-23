@@ -103,8 +103,8 @@
         admittance_parameters_msg="{admittance_parameters_msg}"
       />
       <Action
-        ID="ActivateControllers"
-        controller_names="/joint_trajectory_admittance_controller"
+        ID="SwitchController"
+        activate_controllers="joint_trajectory_admittance_controller"
       />
       <Control ID="Parallel" failure_count="2" success_count="1">
         <Action

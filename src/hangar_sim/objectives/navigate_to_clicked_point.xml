@@ -12,8 +12,8 @@
         stamped_pose="{start}"
       />
       <Action
-        ID="ActivateControllers"
-        controller_names="platform_velocity_controller_nav2"
+        ID="SwitchController"
+        activate_controllers="platform_velocity_controller_nav2"
       />
       <Action
         ID="GetPoseFromUser"
