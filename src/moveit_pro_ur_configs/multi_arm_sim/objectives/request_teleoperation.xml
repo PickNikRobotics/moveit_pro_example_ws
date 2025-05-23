@@ -144,8 +144,8 @@
               <Decorator ID="Repeat" num_cycles="-1">
                 <Control ID="Sequence">
                   <Action
-                    ID="ActivateControllers"
-                    controller_names="{controllers}"
+                    ID="SwitchController"
+                    activate_controllers="{controllers}"
                   />
                   <Decorator ID="ForceSuccess">
                     <Action
