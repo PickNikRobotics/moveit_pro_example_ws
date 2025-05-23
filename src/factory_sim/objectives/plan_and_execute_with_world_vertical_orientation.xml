@@ -5,7 +5,7 @@
     _description="Free space plan to an approach pose then free space plan to a target pose with optional orientation constraints. With orientation constraints the gripper will maintain its orientation relative to the world vertical axis when moving from the approach to target pose."
   >
     <Control ID="Sequence" name="Plan to approach then target">
-      <Action ID="ActivateControllers" controller_names="{controller_names}" />
+      <Action ID="SwitchController" activate_controllers="{controller_names}" />
       <Action
         ID="InitializeMTCTask"
         controller_names="{controller_names}"

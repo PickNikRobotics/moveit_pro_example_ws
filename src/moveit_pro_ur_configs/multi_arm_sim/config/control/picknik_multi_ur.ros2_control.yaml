@@ -331,16 +331,8 @@ fourth_robotiq_gripper_controller:
 
 first_velocity_force_controller:
   ros__parameters:
-    # Joints that the controller will control.
-    joints:
-      - first_shoulder_pan_joint
-      - first_shoulder_lift_joint
-      - first_elbow_joint
-      - first_wrist_1_joint
-      - first_wrist_2_joint
-      - first_wrist_3_joint
-    # Base frame of the kinematic chain, for computation of arm kinematics.
-    base_frame: first_base_link
+    # Joint group to control.
+    planning_group_name: first_manipulator
     # The tip link of the kinematic chain, i.e. the frame that will be controlled.
     ee_frame: first_grasp_link
     # The frame where the force / torque sensor reading is given.
@@ -397,16 +389,8 @@ first_velocity_force_controller:
 
 second_velocity_force_controller:
   ros__parameters:
-    # Joints that the controller will control.
-    joints:
-      - second_shoulder_pan_joint
-      - second_shoulder_lift_joint
-      - second_elbow_joint
-      - second_wrist_1_joint
-      - second_wrist_2_joint
-      - second_wrist_3_joint
-    # Base frame of the kinematic chain, for computation of arm kinematics.
-    base_frame: second_base_link
+    # Joint group to control.
+    planning_group_name: second_manipulator
     # The tip link of the kinematic chain, i.e. the frame that will be controlled.
     ee_frame: second_grasp_link
     # The frame where the force / torque sensor reading is given.
@@ -463,16 +447,8 @@ second_velocity_force_controller:
 
 third_velocity_force_controller:
   ros__parameters:
-    # Joints that the controller will control.
-    joints:
-      - third_shoulder_pan_joint
-      - third_shoulder_lift_joint
-      - third_elbow_joint
-      - third_wrist_1_joint
-      - third_wrist_2_joint
-      - third_wrist_3_joint
-    # Base frame of the kinematic chain, for computation of arm kinematics.
-    base_frame: third_base_link
+    # Joint group to control.
+    planning_group_name: third_manipulator
     # The tip link of the kinematic chain, i.e. the frame that will be controlled.
     ee_frame: third_grasp_link
     # The frame where the force / torque sensor reading is given.
@@ -528,16 +504,8 @@ third_velocity_force_controller:
 
 fourth_velocity_force_controller:
   ros__parameters:
-    # Joints that the controller will control.
-    joints:
-      - fourth_shoulder_pan_joint
-      - fourth_shoulder_lift_joint
-      - fourth_elbow_joint
-      - fourth_wrist_1_joint
-      - fourth_wrist_2_joint
-      - fourth_wrist_3_joint
-    # Base frame of the kinematic chain, for computation of arm kinematics.
-    base_frame: fourth_base_link
+    # Joint group to control.
+    planning_group_name: fourth_manipulator
     # The tip link of the kinematic chain, i.e. the frame that will be controlled.
     ee_frame: fourth_grasp_link
     # The frame where the force / torque sensor reading is given.
