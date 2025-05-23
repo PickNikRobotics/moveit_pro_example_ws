@@ -263,8 +263,8 @@
         goal_duration_tolerance="-1.000000"
       />
       <Action
-        ID="ActivateControllers"
-        controller_names="velocity_force_controller"
+        ID="SwitchController"
+        activate_controllers="velocity_force_controller"
       />
       <Action
         ID="CreateStampedTwist"
@@ -295,8 +295,8 @@
       </Control>
       <Decorator ID="Delay" delay_msec="1000">
         <Action
-          ID="ActivateControllers"
-          controller_names="joint_trajectory_controller"
+          ID="SwitchController"
+          activate_controllers="joint_trajectory_controller"
         />
       </Decorator>
     </Control>
