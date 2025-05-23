@@ -11,16 +11,20 @@
       <Decorator ID="Inverter">
         <Action ID="IsUserAvailable" />
       </Decorator>
-      <Action ID="WaitForUserTrajectoryApproval" solution="{solution}" />
-      cartesian_path_links="tool0" />
+      <Action
+        ID="WaitForUserTrajectoryApproval"
+        solution="{solution}"
+        cartesian_path_links="first_grasp_link;second_grasp_link;third_grasp_link;fourth_grasp_link"
+      />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Wait for Trajectory Approval if User Available">
       <MetadataFields>
-        <Metadata runnable="false" />
         <Metadata subcategory="User Input" />
+        <Metadata runnable="false" />
       </MetadataFields>
+      <inout_port name="solution" default="" />
     </SubTree>
   </TreeNodesModel>
 </root>
