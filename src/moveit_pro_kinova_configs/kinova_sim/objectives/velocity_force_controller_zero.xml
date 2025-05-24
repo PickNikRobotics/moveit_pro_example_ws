@@ -14,8 +14,8 @@
         linear_velocity_xyz="0.0;0.0;0.0"
       />
       <Action
-        ID="ActivateControllers"
-        controller_names="/velocity_force_controller"
+        ID="SwitchController"
+        activate_controllers="velocity_force_controller"
       />
       <Action
         ID="CreateStampedWrench"
