@@ -597,14 +597,14 @@
     <child link="robotiq_85_left_knuckle_link" />
     <axis xyz="0 -1 0" />
     <origin rpy="0 0 0" xyz="0.03060114 0.0 0.05490452" />
-    <limit effort="50" lower="0.0" upper="0.8" velocity="0.5" />
+    <limit effort="3" lower="0.0" upper="0.8" velocity="0.5" />
   </joint>
   <joint name="robotiq_85_right_knuckle_joint" type="revolute">
     <parent link="robotiq_85_base_link" />
     <child link="robotiq_85_right_knuckle_link" />
     <axis xyz="0 1 0" />
     <origin rpy="0 0 0" xyz="-0.03060114 0.0 0.05490452" />
-    <limit effort="50" lower="0.0" upper="0.8" velocity="0.5" />
+    <limit effort="3" lower="0.0" upper="0.8" velocity="0.5" />
     <mimic joint="robotiq_85_left_knuckle_joint" multiplier="1" />
   </joint>
   <joint name="robotiq_85_left_finger_joint" type="fixed">
