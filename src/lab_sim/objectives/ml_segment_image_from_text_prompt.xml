@@ -3,7 +3,7 @@
   <!--//////////-->
   <BehaviorTree
     ID="ML Segment Image from Text Prompt"
-    _description="Run text based segmentation and visualize he masks."
+    _description="Run an ML model to find all objects and visualize the masks with bounding boxes."
     _favorite="true"
   >
     <Control ID="Sequence">
