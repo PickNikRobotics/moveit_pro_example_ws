@@ -6,29 +6,61 @@
   >
     <Control ID="Sequence">
       <Action
-        ID="InitializeMTCTask"
-        task_id="interpolate_to_joint_state"
-        controller_names="{controller_names}"
-        task="{interpolate_to_waypoint_task}"
-        trajectory_monitoring="false"
+        ID="GetCurrentPlanningScene"
+        planning_scene_msg="{planning_scene}"
       />
-      <Action ID="SetupMTCCurrentState" task="{interpolate_to_waypoint_task}" />
       <Action
-        ID="SetupMTCInterpolateToJointState"
-        joint_state="{target_joint_state}"
-        name="SetupMTCInterpolateToJointState_First"
+        ID="GetRobotJointState"
+        joint_state="{current_state}"
         planning_group_name="manipulator"
-        task="{interpolate_to_waypoint_task}"
+        planning_scene="{planning_scene}"
       />
       <Action
-        ID="PlanMTCTask"
-        solution="{interpolate_to_waypoint_solution}"
-        task="{interpolate_to_waypoint_task}"
+        ID="UnpackJointStateMessage"
+        effort="{start_effort}"
+        header="{start_header}"
+        joint_state="{current_state}"
+        name_="{start_joint_names}"
+        position="{start_position}"
+        velocity="{start_velocity}"
       />
       <Action
-        ID="ExecuteMTCTask"
-        solution="{interpolate_to_waypoint_solution}"
+        ID="CreateJointState"
+        joint_state_msg="{start_state}"
+        efforts="{start_effort}"
+        joint_names="{start_joint_names}"
+        velocities="{start_velocity}"
+        positions="{start_position}"
+      />
+      <Action
+        ID="GeneratePointToPointTrajectory"
+        acceleration_scale_factor="1.000000"
+        jerk_scale_factor="1.000000"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+        planning_group_name="manipulator"
+        start_state="{start_state}"
+        start_time="0.000000"
+        target_state="{target_joint_state}"
+        trajectory_sampling_rate="100"
+        velocity_scale_factor="1.000000"
+      />
+      <Action ID="ActivateControllers" controller_names="{controller_names}" />
+      <Action
+        ID="ValidateTrajectory"
+        cartesian_space_step="0.020000"
+        debug_solution="{debug_solution}"
+        joint_space_step="0.100000"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+        planning_group_name="manipulator"
+        planning_scene_msg="{planning_scene}"
+      />
+      <Action
+        ID="ExecuteFollowJointTrajectory"
+        execute_follow_joint_trajectory_action_name="/joint_trajectory_controller/follow_joint_trajectory"
         goal_duration_tolerance="-1.000000"
+        goal_position_tolerance="0.000000"
+        goal_time_tolerance="0.000000"
+        joint_trajectory_msg="{joint_trajectory_msg}"
       />
     </Control>
   </BehaviorTree>
