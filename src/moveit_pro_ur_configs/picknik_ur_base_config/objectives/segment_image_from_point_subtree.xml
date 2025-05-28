@@ -22,7 +22,7 @@
       />
       <Action
         ID="GetPointsFromUser"
-        point_prompts="Select an object to be segmented (1/3);Select another object to be segmented (2/3);Select another object to be segmented (3/3)"
+        point_prompts="Select the object to be segmented (1/3);Select another point on the object to be segmented (2/3);Select another point on the object to be segmented (3/3)"
         point_names="Point1;Point2;Point3;"
         view_name="{image_topic_name}"
         pixel_coords="{pixel_coords}"
