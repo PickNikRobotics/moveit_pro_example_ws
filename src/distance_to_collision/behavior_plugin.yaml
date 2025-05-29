@@ -1,0 +1,4 @@
+objectives:
+  behavior_loader_plugins:
+    distance_to_collision:
+      - "distance_to_collision::DistanceToCollisionBehaviorsLoader"
