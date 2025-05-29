@@ -51,6 +51,7 @@ cancel_objectives = {
     "Place Object",
     "Plan and Save Trajectory",
     "Record and Replay Scanning Motion",
+    "Classical Pick and Place",
 }
 
 skip_objectives = {
