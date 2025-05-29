@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Test Distance To Collision">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Test Distance To Collision"
+    _description=""
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="CreatePointMessage" point="{point}" x="{x}" y="{y}" z="{z}" />
+      <Action
+        ID="GetPointCloud"
+        message_out="{point_cloud}"
+        timeout_sec="5.000000"
+        topic_name="/wrist_camera/points"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Test Distance To Collision">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Tests" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
