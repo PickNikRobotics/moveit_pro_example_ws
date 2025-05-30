@@ -102,3 +102,4 @@ ros2_control:
     - "servo_controller"
     - "platform_velocity_controller_nav2"
     - "velocity_force_controller"
+    - "arm_only_velocity_force_controller"
