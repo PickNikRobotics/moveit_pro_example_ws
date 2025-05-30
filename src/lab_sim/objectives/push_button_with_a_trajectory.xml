@@ -59,8 +59,8 @@
       />
       <!--Activate the JTAC, tare the sensor and execute the trajectory with compliance-->
       <Action
-        ID="ActivateControllers"
-        controller_names="joint_trajectory_admittance_controller"
+        ID="SwitchController"
+        activate_controllers="joint_trajectory_admittance_controller"
       />
       <Action
         ID="CallTriggerService"
