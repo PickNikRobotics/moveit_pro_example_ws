@@ -101,4 +101,12 @@
     mujoco_model="$(arg mujoco_model)"
     mujoco_viewer="$(arg mujoco_viewer)"
   />
+
+  <!-- Create a grasp link at the tool so we can inherit default teleop objectives -->
+  <link name="grasp_link"/>
+  <joint name="grasp_link_joint" type="fixed">
+    <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
+    <parent link="tool0"/>
+    <child link="grasp_link"/>
+  </joint>
 </robot>
