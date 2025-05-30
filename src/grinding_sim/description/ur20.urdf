@@ -360,11 +360,12 @@
     <parent link="tool0_0"/>
     <child link="tool0"/>
   </joint>
-  <link name="tool_tip"/>
-  <joint name="tool_tip_joint" type="fixed">
+  <!-- Create a grasp link at the tool so we can inherit default teleop objectives -->
+  <link name="grasp_link"/>
+  <joint name="grasp_link_joint" type="fixed">
     <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
     <parent link="tool0"/>
-    <child link="tool_tip"/>
+    <child link="grasp_link"/>
   </joint>
   <!-- Premier labs workcell -->
   <link name="workcell">

@@ -126,8 +126,8 @@ velocity_force_controller:
     # Joint group to control.
     planning_group_name: manipulator
     # The tip link of the kinematic chain, i.e. the frame that will be controlled.
-    ee_frame: tool_tip
-    sensor_frame: tool_tip
+    ee_frame: grasp_link
+    sensor_frame: grasp_link
     # Maximum joint-space velocities.
     max_joint_velocity:
       - 1.0

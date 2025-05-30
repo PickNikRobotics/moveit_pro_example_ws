@@ -3,10 +3,10 @@
   <!--//////////-->
   <BehaviorTree ID="Save Tool Pose Yaml" _description="" _favorite="false">
     <Control ID="Sequence" name="TopLevelSequence">
-      <!-- Create a pose at the tool_tip by creating in the tool_tip frame without transforming it -->
+      <!-- Create a pose at the grasp_link by creating in the grasp_link frame without transforming it -->
       <Action
         ID="CreateStampedPose"
-        reference_frame="tool_tip"
+        reference_frame="grasp_link"
         stamped_pose="{tool_pose_tool_frame}"
       />
       <!-- Transform the pose to the world frame before saving -->
