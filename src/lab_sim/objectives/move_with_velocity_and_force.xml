@@ -16,8 +16,8 @@
         controller_names="/joint_trajectory_controller"
       />
       <Action
-        ID="ActivateControllers"
-        controller_names="/velocity_force_controller"
+        ID="SwitchController"
+        activate_controllers="velocity_force_controller"
       />
       <Action
         ID="CallTriggerService"

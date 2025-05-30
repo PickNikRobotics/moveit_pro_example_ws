@@ -5,7 +5,7 @@
     _description="Move to a specified joint state"
   >
     <Control ID="Sequence">
-      <Action ID="ActivateControllers" controller_names="{controller_names}" />
+      <Action ID="SwitchController" activate_controllers="{controller_names}" />
       <Action
         ID="PlanToJointGoal"
         joint_goal="{target_joint_state}"

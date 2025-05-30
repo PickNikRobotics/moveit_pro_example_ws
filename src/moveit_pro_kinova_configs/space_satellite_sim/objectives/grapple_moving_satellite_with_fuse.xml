@@ -12,8 +12,8 @@
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree ID="Open Gripper" _collapsed="true" />
       <Action
-        ID="ActivateControllers"
-        controller_names="/velocity_force_controller"
+        ID="SwitchController"
+        activate_controllers="velocity_force_controller"
       />
       <Action
         ID="CreateStampedPose"

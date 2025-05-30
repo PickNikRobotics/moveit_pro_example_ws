@@ -10,8 +10,8 @@
     <Control ID="Sequence" name="TopLevelSequence">
       <Control ID="Sequence">
         <Action
-          ID="ActivateControllers"
-          controller_names="/joint_trajectory_admittance_controller"
+          ID="SwitchController"
+          activate_controllers="joint_trajectory_admittance_controller"
         />
         <Action
           ID="CreateStampedPose"
