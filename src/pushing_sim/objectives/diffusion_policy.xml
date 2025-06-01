@@ -1,31 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Diffusion Policy">
   <!--//////////-->
-  <BehaviorTree ID="Diffusion Policy" _description="" _favorite="true" _hardcoded="false">
+  <BehaviorTree
+    ID="Diffusion Policy"
+    _description=""
+    _favorite="true"
+    _hardcoded="false"
+  >
     <Control ID="Sequence">
-      <SubTree ID="Move to Waypoint" _collapsed="true" acceleration_scale_factor="1.0" controller_action_server="/joint_trajectory_controller/follow_joint_trajectory" controller_names="/joint_trajectory_controller" joint_group_name="manipulator" keep_orientation="false" keep_orientation_tolerance="0.05" link_padding="0.01" velocity_scale_factor="1.0" waypoint_name="Look At T"/>
-      <SubTree ID="Close Gripper" _collapsed="true"/>
-      <Action ID="CreateStampedWrench" reference_frame="world" stamped_wrench="{desired_wrench}"/>
-      <Action ID="CreateStampedTwist" reference_frame="world" stamped_twist="{desired_twist}"/>
-      <SubTree ID="Re-Zero Force-Torque Sensors" _collapsed="true"/>
-      <Action ID="ActivateControllers" controller_names="velocity_force_controller"/>
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        controller_names="/joint_trajectory_controller"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        velocity_scale_factor="1.0"
+        waypoint_name="Look At T"
+      />
+      <SubTree ID="Close Gripper" _collapsed="true" />
+      <Action
+        ID="CreateStampedWrench"
+        reference_frame="world"
+        stamped_wrench="{desired_wrench}"
+      />
+      <Action
+        ID="CreateStampedTwist"
+        reference_frame="world"
+        stamped_twist="{desired_twist}"
+      />
+      <SubTree ID="Re-Zero Force-Torque Sensors" _collapsed="true" />
+      <Action
+        ID="ActivateControllers"
+        controller_names="velocity_force_controller"
+      />
       <Control ID="Parallel" failure_count="2" success_count="1">
         <Decorator ID="RetryUntilSuccessful" num_attempts="1000000">
           <Control ID="Sequence">
             <Control ID="Parallel" failure_count="2" success_count="1">
-              <Action ID="ForceExceedsThreshold" force_threshold="20.000000" hand_frame_name="grasp_link" minimum_consecutive_wrench_values="30" wrench_frame_name="fts_link" wrench_topic_name="/force_torque_sensor_broadcaster/wrench"/>
-              <Action ID="DiffusionPolicy" model_package="pushing_behaviors" diffusion_action_extract_model_path="models/DiffusionExtractAction.onnx" diffusion_encoder_model_path="models/DiffusionPolicyEncoder.onnx" diffusion_step_model_path="models/DiffusionStep.onnx" scene_camera_topic="/scene_camera/color" wrist_camera_topic="/wrist_camera/color" timeout="300.000000" twist_stamped="{desired_twist}" wrench_stamped="{desired_wrench}" execution_speed="0.5" velocity_gain="2.000000" model_latency="0.2"/>
+              <Action
+                ID="ForceExceedsThreshold"
+                force_threshold="20.000000"
+                hand_frame_name="grasp_link"
+                minimum_consecutive_wrench_values="30"
+                wrench_frame_name="fts_link"
+                wrench_topic_name="/force_torque_sensor_broadcaster/wrench"
+              />
+              <Action
+                ID="DiffusionPolicy"
+                model_package="pushing_behaviors"
+                diffusion_action_extract_model_path="models/DiffusionExtractAction.onnx"
+                diffusion_encoder_model_path="models/DiffusionPolicyEncoder.onnx"
+                diffusion_step_model_path="models/DiffusionStep.onnx"
+                scene_camera_topic="/scene_camera/color"
+                wrist_camera_topic="/wrist_camera/color"
+                timeout="300.000000"
+                twist_stamped="{desired_twist}"
+                wrench_stamped="{desired_wrench}"
+                execution_speed="0.5"
+                velocity_gain="2.000000"
+                model_latency="0.2"
+                controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+                goal_duration_tolerance="-1.000000"
+                joint_state_topic="/joint_states"
+                planning_group_name="manipulator"
+              />
             </Control>
-            <Action ID="CreateStampedTwist" reference_frame="world" stamped_twist="{desired_twist}" linear_velocity_xyz="0;-0.05;-0.1"/>
+            <Action
+              ID="CreateStampedTwist"
+              reference_frame="world"
+              stamped_twist="{desired_twist}"
+              linear_velocity_xyz="0;-0.05;-0.1"
+            />
             <Decorator ID="Delay" delay_msec="3000">
-              <Action ID="AlwaysFailure"/>
+              <Action ID="AlwaysFailure" />
             </Decorator>
           </Control>
         </Decorator>
-        <Action ID="PublishVelocityForceCommand" force_controlled_axes="0;0;0;0;0;0" publish_rate="10" twist_stamped="{desired_twist}" velocity_controlled_axes="1;1;1;1;1;1" velocity_force_controller_command_topic="/velocity_force_controller/command" wrench_gain="0.0" wrench_stamped="{desired_wrench}"/>
+        <Action
+          ID="PublishVelocityForceCommand"
+          force_controlled_axes="0;0;0;0;0;0"
+          publish_rate="10"
+          twist_stamped="{desired_twist}"
+          velocity_controlled_axes="1;1;1;1;1;1"
+          velocity_force_controller_command_topic="/velocity_force_controller/command"
+          wrench_gain="0.0"
+          wrench_stamped="{desired_wrench}"
+        />
       </Control>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Diffusion Policy"/>
+    <SubTree ID="Diffusion Policy" />
   </TreeNodesModel>
 </root>
