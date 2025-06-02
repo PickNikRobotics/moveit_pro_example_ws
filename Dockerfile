@@ -18,6 +18,8 @@ ARG USER_GID=1000
 # hadolint ignore=DL3006
 FROM ${MOVEIT_STUDIO_BASE_IMAGE} AS base
 
+RUN sed -i 's/\[signed-by=\/usr\/share\/keyrings\/ros2_snapshots.gpg\]/\[trusted=yes\]/' /etc/apt/sources.list.d/ros2-humble-snapshot.list
+
 # Create a non-root user
 ARG USERNAME
 ARG USER_UID
@@ -112,6 +114,8 @@ FROM ${MOVEIT_STUDIO_BASE_IMAGE} AS base-gpu
 ARG USERNAME
 ARG USER_UID
 ARG USER_GID
+
+RUN sed -i 's/\[signed-by=\/usr\/share\/keyrings\/ros2_snapshots.gpg\]/\[trusted=yes\]/' /etc/apt/sources.list.d/ros2-humble-snapshot.list
 
 # hadolint ignore=DL3008
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
