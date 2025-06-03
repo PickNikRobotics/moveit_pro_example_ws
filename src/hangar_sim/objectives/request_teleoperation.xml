@@ -6,8 +6,6 @@
     _description="Handles the different variations of teleoperation from the web UI, with the option of interactive user prompts and choosing the initial mode. Should be used as a subtree with port remapping as part of an another Objective."
     _favorite="false"
     _hardcoded="false"
-    enable_user_interaction="false"
-    initial_teleop_mode="3"
   >
     <Control ID="Sequence">
       <Action ID="Script" code="teleop_mode := 0" />
@@ -37,7 +35,7 @@
                   <Control ID="Sequence">
                     <Action
                       ID="RetrieveJointStateParameter"
-                      timeout_sec="2"
+                      timeout_sec="-1"
                       joint_state="{target_joint_state}"
                     />
                     <SubTree
@@ -79,6 +77,7 @@
                       ID="Move to Pose"
                       _collapsed="false"
                       target_pose="{target_pose}"
+                      controller_names="/joint_trajectory_controller"
                     />
                     <Action
                       ID="PublishEmpty"
@@ -149,11 +148,6 @@
                 <Control ID="Sequence">
                   <Action
                     ID="SwitchController"
-                    activate_asap="true"
-                    controller_list_action_name="/controller_manager/list_controllers"
-                    controller_switch_action_name="/controller_manager/switch_controller"
-                    strictness="2"
-                    timeout="0.000000"
                     activate_controllers="{controllers}"
                   />
                   <Decorator ID="ForceSuccess">
@@ -182,13 +176,13 @@
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Request Teleoperation">
+      <input_port name="enable_user_interaction" default="false" />
+      <input_port name="user_interaction_prompt" default="" />
+      <input_port name="initial_teleop_mode" default="3" />
       <MetadataFields>
         <Metadata subcategory="User Input" />
         <Metadata runnable="false" />
       </MetadataFields>
-      <input_port name="enable_user_interaction" default="false" />
-      <input_port name="initial_teleop_mode" default="3" />
-      <input_port name="user_interaction_prompt" default="" />
     </SubTree>
   </TreeNodesModel>
 </root>
