@@ -8,7 +8,7 @@
         <SubTree ID="Close Gripper" _collapsed="true"/>
         <SubTree ID="Re-Zero Force-Torque Sensors" _collapsed="true"/>
         <Action ID="ActivateControllers" controller_names="joint_trajectory_admittance_controller"/>
-        <Action ID="DiffusionPolicy" model_package="pushing_sim" diffusion_action_extract_model_path="models/DiffusionExtractAction.onnx" diffusion_encoder_model_path="models/DiffusionPolicyEncoder.onnx" diffusion_step_model_path="models/DiffusionStep.onnx" scene_camera_topic="/scene_camera/color" wrist_camera_topic="/wrist_camera/color" timeout="300.000000" model_latency="0.3" controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory" joint_state_topic="/joint_states" planning_group_name="manipulator" execution_speed="0.5" absolute_force_torque_threshold="45;45;45;10;10;10" goal_path_tolerance="0.3"/>
+        <Action ID="DiffusionPolicy" model_package="pushing_sim" diffusion_action_extract_model_path="models/DiffusionExtractAction.onnx" diffusion_encoder_model_path="models/DiffusionPolicyEncoder.onnx" diffusion_step_model_path="models/DiffusionStep.onnx" scene_camera_topic="/scene_camera/color" wrist_camera_topic="/wrist_camera/color" timeout="300.000000" controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory" joint_state_topic="/joint_states" planning_group_name="manipulator" execution_speed="0.5" absolute_force_torque_threshold="45;45;45;10;10;10" goal_path_tolerance="100"/>
       </Control>
     </Decorator>
   </BehaviorTree>
