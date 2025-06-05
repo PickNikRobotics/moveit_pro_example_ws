@@ -11,7 +11,7 @@
         ID="Move to Waypoint"
         waypoint_name="Hinge View"
         joint_group_name="manipulator"
-        controller_names="/joint_trajectory_controller;/robotiq_gripper_controller"
+        controller_names="joint_trajectory_controller"
       />
       <SubTree ID="Clear Snapshot" _collapsed="true" />
       <SubTree ID="Reset Planning Scene" _collapsed="true" />
