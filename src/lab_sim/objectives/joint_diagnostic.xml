@@ -11,7 +11,7 @@
         ID="Move to Waypoint"
         waypoint_name="Look at Table"
         joint_group_name="manipulator"
-        controller_names="/joint_trajectory_controller"
+        controller_names="joint_trajectory_controller"
         link_padding="0.0"
       />
       <Decorator ID="KeepRunningUntilFailure">
@@ -21,14 +21,14 @@
             ID="Move to Waypoint"
             waypoint_name="Wrist 2 Max"
             joint_group_name="manipulator"
-            controller_names="/joint_trajectory_controller"
+            controller_names="joint_trajectory_controller"
             link_padding="0.0"
           />
           <SubTree
             ID="Move to Waypoint"
             waypoint_name="Wrist 2 Min"
             joint_group_name="manipulator"
-            controller_names="/joint_trajectory_controller"
+            controller_names="joint_trajectory_controller"
             link_padding="0.0"
           />
         </Control>
