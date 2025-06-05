@@ -15,14 +15,14 @@
           ID="Move to Waypoint"
           waypoint_name="Grasp Right"
           joint_group_name="manipulator"
-          controller_names="/joint_trajectory_controller"
+          controller_names="joint_trajectory_controller"
         />
         <!--Pick-->
         <SubTree ID="Close Gripper" />
         <!--Move to place (drop) location-->
         <SubTree
           ID="Move to Waypoint"
-          controller_names="/joint_trajectory_controller"
+          controller_names="joint_trajectory_controller"
           joint_group_name="manipulator"
           waypoint_name="Grasp Left"
           link_padding="0.0"
