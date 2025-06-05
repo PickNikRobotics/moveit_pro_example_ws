@@ -78,7 +78,7 @@
             ID="Move to Waypoint"
             waypoint_name="Look at Right Table"
             joint_group_name="manipulator"
-            controller_names="/joint_trajectory_controller"
+            controller_names="joint_trajectory_controller"
           />
           <!--Plan and validate the trajectory-->
           <Action
