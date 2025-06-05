@@ -42,7 +42,7 @@
                       ID="Interpolate to Joint State"
                       _collapsed="false"
                       target_joint_state="{target_joint_state}"
-                      controller_names="/joint_trajectory_controller"
+                      controller_names="joint_trajectory_controller"
                     />
                     <Action
                       ID="PublishEmpty"
