@@ -13,7 +13,7 @@
         _collapsed="true"
         waypoint_name="VFC Start"
         joint_group_name="manipulator"
-        controller_names="/joint_trajectory_controller"
+        controller_names="joint_trajectory_controller"
       />
       <Action
         ID="SwitchController"
@@ -75,7 +75,7 @@
         ID="Move to Waypoint"
         _collapsed="true"
         joint_group_name="manipulator"
-        controller_names="/joint_trajectory_controller"
+        controller_names="joint_trajectory_controller"
         waypoint_name="Look at Table"
       />
     </Control>
