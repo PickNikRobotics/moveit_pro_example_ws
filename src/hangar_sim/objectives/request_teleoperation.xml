@@ -149,12 +149,13 @@
                 <Control ID="Sequence">
                   <Action
                     ID="SwitchController"
-                    activate_asap="true"
-                    controller_list_action_name="/controller_manager/list_controllers"
-                    controller_switch_action_name="/controller_manager/switch_controller"
-                    strictness="2"
-                    timeout="0.000000"
+                    activate_controllers="platform_velocity_controller"
+                    deactivate_controllers="platform_velocity_controller_nav2"
+                  />
+                  <Action
+                    ID="SwitchController"
                     activate_controllers="{controllers}"
+                    deactivate_controllers="platform_velocity_controller_nav2"
                   />
                   <Decorator ID="ForceSuccess">
                     <Action
