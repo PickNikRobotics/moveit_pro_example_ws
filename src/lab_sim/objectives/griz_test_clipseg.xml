@@ -1,0 +1,19 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root BTCPP_format="4" main_tree_to_execute="GRIZ Test ClipSeg">
+  <!--//////////-->
+  <BehaviorTree ID="GRIZ Test ClipSeg" _description="" _favorite="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="LoadImageFromFile" frame_id="camera" image="{image}" file_path="/home/griswald/user_ws/src/lab_sim/objectives/large_cat.jpg"/>
+      <Action ID="GetMasks2DFromTextQuery" erosion_size="0" image="{image}" masks2d="{masks2d}" prompts="a cat" threshold=".5" model_package="lab_sim" clip_model_path="models/clip.onnx" clipseg_model_path="models/clipseg.onnx"/>
+      <Action ID="PublishMask2D" image="{image}" masks="{masks2d}" masks_visualization_topic="/masks_visualization" opacity="0.500000" bounding_box_detection_class="a cat"/>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="GRIZ Test ClipSeg">
+      <MetadataFields>
+        <Metadata runnable="true"/>
+        <Metadata subcategory="Application - ML (GPU Recommended)"/>
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
