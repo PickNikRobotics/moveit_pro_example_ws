@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="MPC Pose Tracking">
+  <!--//////////-->
+  <BehaviorTree ID="MPC Pose Tracking" _description="" _favorite="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Control ID="Sequence">
+        <SubTree
+          ID="Move to Waypoint"
+          _collapsed="true"
+          acceleration_scale_factor="1.0"
+          controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+          controller_names="/joint_trajectory_controller"
+          joint_group_name="manipulator"
+          keep_orientation="false"
+          keep_orientation_tolerance="0.05"
+          link_padding="0.01"
+          seed="0"
+          velocity_scale_factor="1.0"
+          waypoint_name="Above Pick Cube"
+        />
+        <Action
+          ID="CreateStampedPose"
+          reference_frame="pinch"
+          stamped_pose="{stamped_pose}"
+          position_xyz="0;0.3;0.2"
+          orientation_xyzw="0;0;1;1"
+        />
+        <Action
+          ID="TransformPoseFrame"
+          input_pose="{stamped_pose}"
+          output_pose="{stamped_pose_linear}"
+          target_frame_id="world"
+        />
+        <Action
+          ID="CreateStampedPose"
+          reference_frame="world"
+          stamped_pose="{stamped_pose_rotation}"
+        />
+        <Action
+          ID="TransformPoseWithPose"
+          input_pose="{stamped_pose_rotation}"
+          output_pose="{stamped_pose}"
+          transform_pose="{stamped_pose_rotation}"
+        />
+        <Action
+          ID="CreateStampedTwist"
+          reference_frame="world"
+          stamped_twist="{stamped_twist}"
+          linear_velocity_xyz="-0.1;0.0;0.1"
+          angular_velocity_xyz="0;0;0.3"
+        />
+        <Decorator ID="Delay" delay_msec="100">
+          <Decorator ID="ForceSuccess">
+            <Decorator ID="Timeout" msec="15000">
+              <Control ID="Parallel" success_count="1">
+                <Decorator ID="KeepRunningUntilFailure">
+                  <Decorator ID="Delay" delay_msec="10">
+                    <Control ID="Sequence">
+                      <Action
+                        ID="TransformPose"
+                        input_pose="{stamped_pose_linear}"
+                        output_pose="{stamped_pose_linear}"
+                        translation_xyz="0.001;0.0;-0.0003"
+                      />
+                      <Action
+                        ID="TransformPose"
+                        input_pose="{stamped_pose_rotation}"
+                        output_pose="{stamped_pose_rotation}"
+                        quaternion_xyzw="0;0;-0.004;.999"
+                      />
+                      <Action
+                        ID="TransformPoseWithPose"
+                        input_pose="{stamped_pose_rotation}"
+                        output_pose="{stamped_pose}"
+                        transform_pose="{stamped_pose_linear}"
+                      />
+                    </Control>
+                  </Decorator>
+                </Decorator>
+                <Decorator ID="KeepRunningUntilFailure">
+                  <Decorator ID="Delay" delay_msec="100">
+                    <Control ID="Sequence">
+                      <Action
+                        ID="VisualizePose"
+                        marker_lifetime="0.000000"
+                        marker_name="target"
+                        marker_size="0.100000"
+                        pose="{stamped_pose}"
+                      />
+                      <Action
+                        ID="CreateStampedPose"
+                        reference_frame="pinch"
+                        stamped_pose="{current_pinch}"
+                      />
+                      <Action
+                        ID="TransformPoseFrame"
+                        input_pose="{current_pinch}"
+                        output_pose="{current_pinch}"
+                        target_frame_id="world"
+                      />
+                      <Action
+                        ID="VisualizePose"
+                        marker_lifetime="0.000000"
+                        marker_name="current_pinch"
+                        marker_size="0.07"
+                        pose="{current_pinch}"
+                      />
+                    </Control>
+                  </Decorator>
+                </Decorator>
+                <Action
+                  ID="MPCPoseTracking"
+                  horizon="0.1;"
+                  timestep="0.010000;"
+                  gradient_num_trajectory="32.000000;"
+                  gradient_spline_points="1.000000;"
+                  planning_group="manipulator"
+                  sampling_control_width="0.015000;"
+                  sampling_exploration="0.050000;"
+                  sampling_sample_width="0.010000;"
+                  sampling_spline_points="10.000000;"
+                  timeout="300.000000"
+                  mujoco_model="description/simple_scene.xml"
+                  mujoco_model_package="lab_sim"
+                  gripper_site_name="pinch"
+                  total_return="{total_return}"
+                  differentiable="0"
+                  max_cartesian_velocity_goal="0.5"
+                  cartesian_velocity_body="tool_changer"
+                  max_cartesian_acceleration_goal="500.000000"
+                  cartesian_acceleration_body="tool_changer"
+                  warmup_iterations="256"
+                  max_velocity_goal="0.000000"
+                  acceleration="0"
+                  cartesian_acceleration="100.000000"
+                  cartesian_velocity="100.000000"
+                  force_torque="0.000000"
+                  site_tracking="1.000000"
+                  velocity="0.000000"
+                  follow_joint_trajectory_topic="/joint_trajectory_controller/follow_joint_trajectory"
+                  set_ctrl_command_to_current_state="true"
+                  target_pose="{stamped_pose}"
+                  target_twist="{stamped_twist}"
+                />
+              </Control>
+            </Decorator>
+          </Decorator>
+        </Decorator>
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="MPC Pose Tracking">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - MPC Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
