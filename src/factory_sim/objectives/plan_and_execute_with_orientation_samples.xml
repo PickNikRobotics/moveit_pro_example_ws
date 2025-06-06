@@ -127,6 +127,7 @@
               <Action
                 ID="WaitForUserTrajectoryApproval"
                 solution="{mtc_solution}"
+                cartesian_path_links="tool0"
               />
               <Decorator
                 ID="Precondition"
@@ -180,7 +181,6 @@
         <Metadata runnable="false" />
         <Metadata subcategory="Motion - Execution" />
       </MetadataFields>
-
       <inout_port name="approach_distance" default="{approach_distance}" />
       <inout_port name="approach_pose" default="{approach_pose}" />
       <inout_port
