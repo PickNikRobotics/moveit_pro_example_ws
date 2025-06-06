@@ -149,7 +149,13 @@
                 <Control ID="Sequence">
                   <Action
                     ID="SwitchController"
+                    activate_controllers="platform_velocity_controller"
+                    deactivate_controllers="platform_velocity_controller_nav2"
+                  />
+                  <Action
+                    ID="SwitchController"
                     activate_controllers="{controllers}"
+                    deactivate_controllers="platform_velocity_controller_nav2"
                   />
                   <Decorator ID="ForceSuccess">
                     <Action
