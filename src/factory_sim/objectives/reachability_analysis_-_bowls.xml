@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Reachability Analysis - bowls">
   <!--//////////-->
   <BehaviorTree
@@ -19,7 +20,7 @@
         approach_distance="0.1"
         end_effector_joint_group="fanuc_ee"
         joint_group_name="manipulator"
-        controller_names="/joint_trajectory_controller"
+        controller_names="joint_trajectory_controller"
         controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
         starting_waypoint="View bowls"
         mesh_link_name="convex_bowl"
