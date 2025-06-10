@@ -1,0 +1,10 @@
+<!-- This is a simplified model used for MPC optimization -->
+<mujoco model="ur5e scene">
+  <include file="ur5e/ur5e_linear_rail_globals.xml" />
+  <include file="robotiq_2f85/robotiq2f85_globals.xml" />
+  <compiler angle="radian" autolimits="true" />
+  <option integrator="implicitfast" />
+  <worldbody>
+    <include file="ur5e/ur5e_linear_rail.xml" />
+  </worldbody>
+</mujoco>
