@@ -29,36 +29,44 @@
     </group>
     <group name="gripper">
         <joint name="first_robotiq_85_left_finger_tip_joint"/>
+        <joint name="first_robotiq_85_left_finger_joint"/>
         <joint name="first_robotiq_85_left_inner_knuckle_joint"/>
         <joint name="first_robotiq_85_left_knuckle_joint"/>
         <joint name="first_robotiq_85_right_finger_tip_joint"/>
+        <joint name="first_robotiq_85_right_finger_joint"/>
         <joint name="first_robotiq_85_right_inner_knuckle_joint"/>
         <joint name="first_robotiq_85_right_knuckle_joint"/>
         <link name="first_grasp_link"/>
     </group>
     <group name="second_gripper">
         <joint name="second_robotiq_85_left_finger_tip_joint"/>
+        <joint name="second_robotiq_85_left_finger_joint"/>
         <joint name="second_robotiq_85_left_inner_knuckle_joint"/>
         <joint name="second_robotiq_85_left_knuckle_joint"/>
         <joint name="second_robotiq_85_right_finger_tip_joint"/>
+        <joint name="second_robotiq_85_right_finger_joint"/>
         <joint name="second_robotiq_85_right_inner_knuckle_joint"/>
         <joint name="second_robotiq_85_right_knuckle_joint"/>
         <link name="second_grasp_link"/>
     </group>
     <group name="third_gripper">
         <joint name="third_robotiq_85_left_finger_tip_joint"/>
+        <joint name="third_robotiq_85_left_finger_joint"/>
         <joint name="third_robotiq_85_left_inner_knuckle_joint"/>
         <joint name="third_robotiq_85_left_knuckle_joint"/>
         <joint name="third_robotiq_85_right_finger_tip_joint"/>
+        <joint name="third_robotiq_85_right_finger_joint"/>
         <joint name="third_robotiq_85_right_inner_knuckle_joint"/>
         <joint name="third_robotiq_85_right_knuckle_joint"/>
         <link name="third_grasp_link"/>
     </group>
     <group name="fourth_gripper">
         <joint name="fourth_robotiq_85_left_finger_tip_joint"/>
+        <joint name="fourth_robotiq_85_left_finger_joint"/>
         <joint name="fourth_robotiq_85_left_inner_knuckle_joint"/>
         <joint name="fourth_robotiq_85_left_knuckle_joint"/>
         <joint name="fourth_robotiq_85_right_finger_tip_joint"/>
+        <joint name="fourth_robotiq_85_right_finger_joint"/>
         <joint name="fourth_robotiq_85_right_inner_knuckle_joint"/>
         <joint name="fourth_robotiq_85_right_knuckle_joint"/>
         <link name="fourth_grasp_link"/>
