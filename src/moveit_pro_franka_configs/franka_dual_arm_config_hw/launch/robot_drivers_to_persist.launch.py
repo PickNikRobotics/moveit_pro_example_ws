@@ -60,8 +60,6 @@ package_share = get_package_share_directory('franka_bringup')
 utils_path = os.path.join(package_share, '..', '..', 'lib', 'franka_bringup', 'utils')
 sys.path.append(os.path.abspath(utils_path))
 
-from launch_utils import load_yaml  # noqa: E402
-
 # Iterates over the uncommented lines in file specified by the robot_config_file parameter.
 # "Includes" franka.launch.py for each active (uncommented) Robot.
 # That file is well documented.
@@ -71,45 +69,51 @@ from launch_utils import load_yaml  # noqa: E402
 
 
 def generate_robot_nodes(context):
-    config_file = LaunchConfiguration('robot_config_file').perform(context)
-    configs = load_yaml(config_file)
     nodes = []
-    for item_name, config in configs.items():
-        namespace = config['namespace']
-        nodes.append(
-            IncludeLaunchDescription(
-                PythonLaunchDescriptionSource(
-                    PathJoinSubstitution([
-                        FindPackageShare('franka_bringup'), 'launch', 'franka.launch.py'
-                    ])
-                ),
-                launch_arguments={
-                    'arm_id': str(config['arm_id']),
-                    'arm_prefix': str(config['arm_prefix']),
-                    'namespace': str(namespace),
-                    'urdf_file': str(config['urdf_file']),
-                    'robot_ip': str(config['robot_ip']),
-                    'load_gripper': str(config['load_gripper']),
-                    'use_fake_hardware': str(config['use_fake_hardware']),
-                    'fake_sensor_commands': str(config['fake_sensor_commands']),
-                    'joint_sources': ','.join(config['joint_sources']),
-                    'joint_state_rate': str(config['joint_state_rate']),
-                }.items(),
-            )
+    # Left arm
+    nodes.append(
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                PathJoinSubstitution([
+                    FindPackageShare('franka_dual_arm_config_hw'), 'launch', 'left_franka.launch.py'
+                ])
+            ),
+            launch_arguments={
+                'arm_id': "",
+                'arm_prefix': "left",
+                'namespace': "left",
+                'urdf_file': "fr3/fr3.urdf.xacro",
+                'robot_ip': "192.168.1.21",
+                'load_gripper': "true",
+                'use_fake_hardware': "false",
+                'fake_sensor_commands': "false",
+                'joint_sources': "joint_state_broadcaster, left_velocity_force_controller",
+                'joint_state_rate': "30",
+            }.items(),
         )
-        # for controller_name in config['controllers_active_at_startup']:
-        #     nodes.append(
-        #         Node(
-        #             package='controller_manager',
-        #             executable='spawner',
-        #             namespace=namespace,
-        #             arguments=[controller_name, '--controller-manager-timeout', '30'],
-        #             parameters=[PathJoinSubstitution([
-        #                 FindPackageShare('franka_dual_arm_config_hw'), 'config/control', "franka_ros2_control.yaml",
-        #             ])],
-        #             output='screen',
-        #         )
-        #     )
+    )
+    # Right arm
+    nodes.append(
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                PathJoinSubstitution([
+                    FindPackageShare('franka_dual_arm_config_hw'), 'launch', 'left_franka.launch.py'
+                ])
+            ),
+            launch_arguments={
+                'arm_id': "",
+                'arm_prefix': "right",
+                'namespace': "right",
+                'urdf_file': "fr3/fr3.urdf.xacro",
+                'robot_ip': "192.168.1.22",
+                'load_gripper': "true",
+                'use_fake_hardware': "false",
+                'fake_sensor_commands': "false",
+                'joint_sources': "joint_state_broadcaster, left_velocity_force_controller",
+                'joint_state_rate': "30",
+            }.items(),
+        )
+    )
     return nodes
 
 # The generate_launch_description function is the entry point (like "main")
