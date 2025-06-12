@@ -27,6 +27,12 @@ ARG USER_GID
 ARG USER_WS=/home/${USERNAME}/user_ws
 ENV USER_WS=${USER_WS}
 
+# Set real time limits
+# Ensure the directory exists
+RUN mkdir -p /etc/security
+# Copy the custom limits configuration into the container
+COPY src/moveit_pro_franka_configs/franka_hw_config/config/rt_limits.conf /etc/security/limits.conf
+
 # Also mkdir with user permission directories which will be mounted later to avoid docker creating them as root
 WORKDIR $USER_WS
 # hadolint ignore=DL3008
@@ -50,6 +56,10 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 # Add user to dialout group to enable communication with serial USB devices (gripper, FTS, ...)
 # Add user to video group to enable communication with cameras
 RUN usermod -aG dialout,video ${USERNAME}
+
+# Add user to the realtime group to enable RT limits
+RUN groupadd realtime && \
+    usermod -a -G realtime ${USERNAME}
 
 # Install additional dependencies
 # You can also add any necessary apt-get install, pip install, etc. commands at this point.
