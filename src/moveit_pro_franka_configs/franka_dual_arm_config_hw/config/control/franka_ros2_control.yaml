@@ -114,7 +114,7 @@ left_velocity_force_controller:
     # Base frame of the kinematic chain, for computation of arm kinematics.
     base_frame: left_fr3_link0
     # The tip link of the kinematic chain, i.e. the frame that will be controlled.
-    ee_frame: left_grasp_link
+    ee_frame: left_fr3_link8
     # The frame where the force / torque sensor reading is given.
     # (Needs to exist in the kinematic chain).
     sensor_frame: left_fr3_link8
@@ -189,7 +189,7 @@ right_velocity_force_controller:
     # Base frame of the kinematic chain, for computation of arm kinematics.
     base_frame: right_fr3_link0
     # The tip link of the kinematic chain, i.e. the frame that will be controlled.
-    ee_frame: right_grasp_link
+    ee_frame: right_fr3_link8
     # The frame where the force / torque sensor reading is given.
     # (Needs to exist in the kinematic chain).
     sensor_frame: right_fr3_link8
