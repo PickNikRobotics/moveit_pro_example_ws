@@ -1,6 +1,7 @@
 - name: Home
   joint_group_names:
-    - manipulator
+    - right_manipulator
+    - left_manipulator
   joint_state:
     header:
       frame_id: world
