@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="franka">
-  <xacro:arg name="right_robot_ip" default="172.16.0.2" />
-  <xacro:arg name="left_robot_ip" default="172.16.0.3" />
+  <xacro:arg name="right_robot_ip" default="192.168.1.22" />
+  <xacro:arg name="left_robot_ip" default="192.168.1.21" />
   <xacro:arg name="ee_id" default="franka_hand" />
   <xacro:arg name="rpy_ee" default="0 0 -0.785" />
 
@@ -11,7 +11,7 @@
   <joint name="right_moint_joint" type="fixed">
      <parent link="world"/>
      <child link = "right_mount"/>
-    <origin xyz="0 -0.06 0.342" rpy="0.8936 -0.1746 0.4636"/>
+    <origin xyz="0.035 -0.050681 0.356" rpy="0.8936 -0.1746 0.4636"/>
   </joint>
   <xacro:franka_robot arm_id="fr3"
                       joint_limits="${xacro.load_yaml('$(find franka_description)/robots/fr3/joint_limits.yaml')}"
@@ -41,7 +41,7 @@
   <joint name="left_moint_joint" type="fixed">
      <parent link="world"/>
      <child link = "left_mount"/>
-    <origin xyz="0 0.06 0.342" rpy="-0.8936 -0.1746 -0.4636"/>
+    <origin xyz="0.035 0.050681 0.356" rpy="-0.8936 -0.1746 -0.4636"/>
   </joint>
   <xacro:franka_robot arm_id="fr3"
                       joint_limits="${xacro.load_yaml('$(find franka_description)/robots/fr3/joint_limits.yaml')}"
