@@ -35,10 +35,10 @@
   </group>
 
   <!-- Group containing both arms -->
-  <group name="manipulator">
+  <!--<group name="manipulator">
     <group name="left_manipulator"/>
     <group name="right_manipulator"/>
-  </group>
+  </group> -->
 
   <end_effector name="left_hand_tcp" parent_link="left_fr3_link8" group="left_hand" parent_group="left_arm"/>
   <end_effector name="right_hand_tcp" parent_link="right_fr3_link8" group="right_hand" parent_group="right_arm"/>
