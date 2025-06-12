@@ -48,7 +48,7 @@ hardware:
 # [Required]
 moveit_params:
   # Used by the Waypoint Manager to save joint states from this joint group.
-  joint_group_name: "manipulator"
+  joint_group_name: "right_manipulator"
 
   ompl_planning:
     package: "franka_dual_arm_config"
