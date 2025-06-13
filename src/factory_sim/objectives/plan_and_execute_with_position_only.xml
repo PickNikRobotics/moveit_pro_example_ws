@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" ?>
 <root
   BTCPP_format="4"
   main_tree_to_execute="Plan And Execute With Position Only"
@@ -72,6 +73,7 @@
             <Action
               ID="WaitForUserTrajectoryApproval"
               solution="{debug_solution}"
+              cartesian_path_links="tool0"
             />
             <Decorator
               ID="Precondition"
@@ -130,7 +132,6 @@
         <Metadata runnable="false" />
         <Metadata subcategory="Motion - Execution" />
       </MetadataFields>
-
       <inout_port name="approach_pose" default="{approach_pose}" />
       <inout_port
         name="controller_action_server"
