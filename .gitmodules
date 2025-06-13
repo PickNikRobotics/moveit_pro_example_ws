@@ -16,3 +16,12 @@
 [submodule "src/external_dependencies/ros2_kortex"]
 	path = src/external_dependencies/ros2_kortex
 	url = https://github.com/PickNikRobotics/ros2_kortex.git
+[submodule "src/external_dependencies/libfranka"]
+	path = src/external_dependencies/libfranka
+	url = https://github.com/frankaemika/libfranka.git
+[submodule "src/external_dependencies/franka_description"]
+	path = src/external_dependencies/franka_description
+	url = https://github.com/frankaemika/franka_description.git
+[submodule "src/external_dependencies/franka_ros2"]
+	path = src/external_dependencies/franka_ros2
+	url = https://github.com/frankaemika/franka_ros2.git
