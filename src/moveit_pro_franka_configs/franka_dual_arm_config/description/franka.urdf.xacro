@@ -230,6 +230,8 @@
         <param name="mujoco_model_package">franka_dual_arm_config</param>
         <param name="render_publish_rate">10</param>
         <param name="tf_publish_rate">60</param>
+        <param name="mujoco_viewer">false</param>
+        <param name="mujoco_keyframe">home</param>
       </hardware>
     </ros2_control>
 </robot>
