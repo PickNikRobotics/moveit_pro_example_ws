@@ -28,5 +28,5 @@ manipulator:
     - RRTConnectkConfigDefault
   enforce_constrained_state_space: true
   ##Note: commenting the following line lets moveit chose RRTConnect as default planner rather than LBKPIECE
-  projection_evaluator: joints(shoulder_pan_joint,shoulder_lift_joint)
+  projection_evaluator: joints(joint_2,joint_3)
   longest_valid_segment_fraction: 0.01

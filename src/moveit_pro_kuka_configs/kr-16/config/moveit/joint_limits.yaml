@@ -10,7 +10,7 @@
 #
 # NOTE: Acceleration limits are not publicly available so we have picked a reasonable upper limit
 joint_limits:
-  linear_rail_joint:
+  joint_1:
     has_acceleration_limits: true
     has_effort_limits: true
     has_position_limits: true
@@ -20,7 +20,7 @@ joint_limits:
     max_position: 2.9
     max_velocity: 1.0
     min_position: -2.1
-  shoulder_pan_joint:
+  joint_2:
     has_acceleration_limits: true
     has_effort_limits: true
     has_position_limits: true
@@ -30,7 +30,7 @@ joint_limits:
     max_position: !degrees  180.0
     max_velocity: !degrees  30.0
     min_position: !degrees -180.0
-  shoulder_lift_joint:
+  joint_3:
     has_acceleration_limits: true
     has_effort_limits: true
     has_position_limits: true
@@ -40,7 +40,7 @@ joint_limits:
     max_position: !degrees  90.0
     max_velocity: !degrees  30.0
     min_position: !degrees -270.0
-  elbow_joint:
+  joint_4:
     has_acceleration_limits: true
     has_effort_limits: true
     has_position_limits: true
@@ -49,7 +49,7 @@ joint_limits:
     max_effort: 150.0
     # we artificially limit this joint to half its actual joint position limit
     # to avoid (MoveIt/OMPL) planning problems, as due to the physical
-    # construction of the robot, it's impossible to rotate the 'elbow_joint'
+    # construction of the robot, it's impossible to rotate the 'joint_4'
     # over more than approx +- 1 pi (the shoulder lift joint gets in the way).
     #
     # This leads to planning problems as the search space will be divided into
@@ -60,7 +60,7 @@ joint_limits:
     max_position: !degrees  180.0
     max_velocity: !degrees  30.0
     min_position: !degrees -180.0
-  wrist_1_joint:
+  joint_5:
     has_acceleration_limits: true
     has_effort_limits: true
     has_position_limits: true
@@ -70,7 +70,7 @@ joint_limits:
     max_position: !degrees  180.0
     max_velocity: !degrees  60.0
     min_position: !degrees -180.0
-  wrist_2_joint:
+  joint_6:
     has_acceleration_limits: true
     has_effort_limits: true
     has_position_limits: true
@@ -80,18 +80,3 @@ joint_limits:
     max_position: !degrees  180.0
     max_velocity: !degrees  60.0
     min_position: !degrees -180.0
-  wrist_3_joint:
-    has_acceleration_limits: true
-    has_effort_limits: true
-    has_position_limits: true
-    has_velocity_limits: true
-    max_acceleration: !degrees 30.0
-    max_effort: 28.0
-    max_position: !degrees  360.0
-    max_velocity: !degrees  60.0
-    min_position: !degrees -360.0
-  robotiq_85_left_knuckle_joint:
-    has_velocity_limits: true
-    max_velocity: 0.5
-    has_acceleration_limits: true
-    max_acceleration: 1.0
