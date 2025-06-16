@@ -138,6 +138,8 @@ ros2_control:
     - "left_velocity_force_controller"
     - "right_velocity_force_controller"
     - "servo_controller"
+    - "left_joint_trajectory_controller"
+    - "right_joint_trajectory_controller"
   # Any controllers here will not be spawned by MoveIt Pro.
   # [Optional, default=[]]
   controllers_not_managed: []
