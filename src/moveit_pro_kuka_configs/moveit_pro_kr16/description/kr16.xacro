@@ -12,7 +12,7 @@
     <hardware>
       <plugin>picknik_mujoco_ros/MujocoSystem</plugin>
       <param name="mujoco_model">$(arg mujoco_model)</param>
-      <param name="mujoco_model_package">kr-16</param>
+      <param name="mujoco_model_package">moveit_pro_kr16</param>
       <!-- The rate <camera> data is published at -->
       <param name="render_publish_rate">10</param>
       <!-- The rate transforms to <site> poses are published at -->

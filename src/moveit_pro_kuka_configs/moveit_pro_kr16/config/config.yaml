@@ -12,15 +12,25 @@ hardware:
   robot_description:
     urdf:
       package: "moveit_pro_kr16"
-      path: "description/kr-16.xacro"
+      path: "description/kr16.xacro"
     srdf:
       package: "kuka_kr_moveit_config"
       path: "urdf/kr16_r2010_2_arm.srdf"
     urdf_params:
       - mujoco_model: "description/scene.xml"
-
 moveit_params:
+  # Used by the Waypoint Manager to save joint states from this joint group.
   joint_group_name: "manipulator"
+
+  ompl_planning:
+    package: "moveit_pro_kr16"
+    path: "config/moveit/ompl_planning.yaml"
+  stomp_planning:
+    package: "moveit_pro_kr16"
+    path: "config/moveit/stomp_planning.yaml"
+  kinematics:
+    package: "moveit_pro_kr16"
+    path: "config/moveit/pose_ik_distance.yaml"
   servo:
     package: "moveit_pro_kr16"
     path: "config/moveit/servo.yaml"
@@ -29,10 +39,21 @@ moveit_params:
     path: "config/moveit/joint_limits.yaml"
   servo_joint_limits:
     package: "moveit_pro_kr16"
-    path: "config/moveit/hard_joint_limits.yaml"
+    path: "config/moveit/joint_limits.yaml"
   pose_jog:
     package: "moveit_pro_kr16"
     path: "config/moveit/pose_jog.yaml"
+  publish:
+    planning_scene: True
+    geometry_updates: True
+    state_updates: True
+    transforms_updates: True
+
+  trajectory_execution:
+    manage_controllers: True
+    allowed_execution_duration_scaling: 2.0
+    allowed_goal_duration_margin: 5.0
+    allowed_start_tolerance: 0.01
 
 # Configuration for loading behaviors and objectives.
 # [Required]
@@ -61,12 +82,12 @@ objectives:
       package_name: "moveit_pro_objectives"
       relative_path: "objectives/perception"
     sim_objectives:
-      package_name: "kr-16"
+      package_name: "moveit_pro_kr16"
       relative_path: "objectives"
   # Specify the location of the saved waypoints file.
   # [Required]
   waypoints_file:
-    package_name: "kr-16"
+    package_name: "moveit_pro_kr16"
     relative_path: "waypoints/kr16_waypoints.yaml"
 
 # Configuration for launching ros2_control processes.
