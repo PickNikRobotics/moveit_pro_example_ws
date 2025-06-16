@@ -1,0 +1,106 @@
+<mujoco model="kr16">
+  <compiler angle="radian" />
+
+  <asset>
+    <mesh name="base_link" file="base_link_collision.stl" />
+    <mesh name="link_1" file="link_1_collision.stl" />
+    <mesh name="link_2" file="link_2_collision.stl" />
+    <mesh name="link_3" file="link_3_collision.stl" />
+    <mesh name="link_4" file="link_4_collision.stl" />
+    <mesh name="link_5" file="link_5_collision.stl" />
+    <mesh name="link_6" file="link_6_collision.stl" />
+    <mesh name="base_link_visual" file="base_link_visual.stl" />
+    <mesh name="link_1_visual" file="link_1_visual.stl" />
+    <mesh name="link_2_visual" file="link_2_visual.stl" />
+    <mesh name="link_3_visual" file="link_3_visual.stl" />
+    <mesh name="link_4_visual" file="link_4_visual.stl" />
+    <mesh name="link_5_visual" file="link_5_visual.stl" />
+    <mesh name="link_6_visual" file="link_6_visual.stl" />
+  </asset>
+
+  <worldbody>
+    <geom type="mesh" mesh="base_link" rgba="0 0 0 0" />
+    <geom type="mesh" mesh="base_link_visual" contype="0" conaffinity="0" />
+    <body name="link_1" quat="0 -1 0 0">
+      <joint
+        name="joint_1"
+        pos="0 0 0"
+        axis="0 0 1"
+        range="-3.22886 3.22886"
+        actuatorfrcrange="-1905.3 1905.3"
+      />
+      <geom type="mesh" mesh="link_1" rgba="0 0 0 0" />
+      <geom type="mesh" mesh="link_1_visual" contype="0" conaffinity="0" />
+      <body name="link_2" pos="0.16 0 -0.52" quat="0.707107 0.707107 0 0">
+        <joint
+          name="joint_2"
+          pos="0 0 0"
+          axis="0 0 1"
+          range="-3.22886 1.13446"
+          actuatorfrcrange="-1633.63 1633.63"
+        />
+        <geom type="mesh" mesh="link_2" rgba="0 0 0 0" />
+        <geom type="mesh" mesh="link_2_visual" contype="0" conaffinity="0" />
+        <body name="link_3" pos="0.98 0 0" quat="0.707107 0 0 -0.707107">
+          <joint
+            name="joint_3"
+            pos="0 0 0"
+            axis="0 0 1"
+            range="-2.40855 3.05433"
+            actuatorfrcrange="-850.58 850.58"
+          />
+          <geom type="mesh" mesh="link_3" rgba="0 0 0 0" />
+          <geom type="mesh" mesh="link_3_visual" contype="0" conaffinity="0" />
+          <body name="link_4" pos="0.15 0 0" quat="0.707107 0.707107 0 0">
+            <joint
+              name="joint_4"
+              pos="0 0 0"
+              axis="0 0 1"
+              range="-6.10865 6.10865"
+              actuatorfrcrange="-266.21 266.21"
+            />
+            <geom type="mesh" mesh="link_4" rgba="0 0 0 0" />
+            <geom
+              type="mesh"
+              mesh="link_4_visual"
+              contype="0"
+              conaffinity="0"
+            />
+            <body name="link_5" pos="0 0 -0.86" quat="0.707107 -0.707107 0 0">
+              <joint
+                name="joint_5"
+                pos="0 0 0"
+                axis="0 0 1"
+                range="-2.26893 2.26893"
+                actuatorfrcrange="-255.438 255.438"
+              />
+              <geom type="mesh" mesh="link_5" rgba="0 0 0 0" />
+              <geom
+                type="mesh"
+                mesh="link_5_visual"
+                contype="0"
+                conaffinity="0"
+              />
+              <body name="link_6" quat="0.707107 0.707107 0 0">
+                <joint
+                  name="joint_6"
+                  pos="0 0 0"
+                  axis="0 0 1"
+                  range="-6.10865 6.10865"
+                  actuatorfrcrange="-111.658 111.658"
+                />
+                <geom type="mesh" mesh="link_6" rgba="0 0 0 0" />
+                <geom
+                  type="mesh"
+                  mesh="link_6_visual"
+                  contype="0"
+                  conaffinity="0"
+                />
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+</mujoco>
