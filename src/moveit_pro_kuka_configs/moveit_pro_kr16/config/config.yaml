@@ -4,32 +4,34 @@
 
 # Name of the package to specialize
 hardware:
+  # [Required]
+  simulated: true
   # Parameters used to configure the robot description through XACRO.
   # A URDF and SRDF are both required.
   # [Required]
   robot_description:
     urdf:
-      package: "kr-16"
+      package: "moveit_pro_kr16"
       path: "description/kr-16.xacro"
     srdf:
       package: "kuka_kr_moveit_config"
       path: "urdf/kr16_r2010_2_arm.srdf"
     urdf_params:
-      # TODO
       - mujoco_model: "description/scene.xml"
 
 moveit_params:
+  joint_group_name: "manipulator"
   servo:
-    package: "kr-16"
+    package: "moveit_pro_kr16"
     path: "config/moveit/servo.yaml"
   joint_limits:
-    package: "kr-16"
+    package: "moveit_pro_kr16"
     path: "config/moveit/joint_limits.yaml"
   servo_joint_limits:
-    package: "kr-16"
+    package: "moveit_pro_kr16"
     path: "config/moveit/hard_joint_limits.yaml"
   pose_jog:
-    package: "kr-16"
+    package: "moveit_pro_kr16"
     path: "config/moveit/pose_jog.yaml"
 
 # Configuration for loading behaviors and objectives.
@@ -49,6 +51,15 @@ objectives:
   # Specify source folder for objectives
   # [Required]
   objective_library_paths:
+    core_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/core"
+    motion_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/motion"
+    perception_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/perception"
     sim_objectives:
       package_name: "kr-16"
       relative_path: "objectives"
@@ -62,7 +73,7 @@ objectives:
 # [Required, if using ros2_control]
 ros2_control:
   config:
-    package: "kr-16"
+    package: "moveit_pro_kr16"
     path: "config/control/picknik_kr16.ros2_control.yaml"
   # MoveIt Pro will load and activate these controllers at start up to ensure they are available.
   # If not specified, it is up to the user to ensure the appropriate controllers are active and available
