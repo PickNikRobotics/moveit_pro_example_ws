@@ -22,10 +22,8 @@
   <exec_depend>moveit_ros_perception</exec_depend>
   <exec_depend>moveit_studio_agent</exec_depend>
   <exec_depend>moveit_studio_behavior</exec_depend>
-  <exec_depend>moveit_studio_ur_pstop_manager</exec_depend>
   <exec_depend>picknik_accessories</exec_depend>
   <exec_depend>picknik_mujoco_ros</exec_depend>
-  <exec_depend>picknik_ur_base_config</exec_depend>
   <exec_depend>realsense2_camera</exec_depend>
   <exec_depend>realsense2_description</exec_depend>
   <exec_depend>robotiq_controllers</exec_depend>
