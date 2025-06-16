@@ -1,10 +1,12 @@
 <mujoco model="fr3 scene">
-  <statistic center="0.2 0 0.4" extent=".8" />
+  <include file="franka3.xml"/>
+
+  <statistic center="0.2 0.2 0.5" extent="1.8" />
 
   <visual>
-    <headlight diffuse="0.6 0.6 0.6" ambient="0.3 0.3 0.3" specular="0 0 0" />
-    <rgba haze="0.15 0.25 0.35 1" />
-    <global azimuth="120" elevation="-20" />
+    <global azimuth="120" elevation="-21" fovy="58"/>  
+    <headlight ambient="0.3 0.3 0.3" diffuse="0.6 0.6 0.6" specular="0 0 0"/>
+    <rgba haze="0.15 0.25 0.35 1"/>
   </visual>
 
   <asset>
@@ -34,7 +36,6 @@
       texrepeat="5 5"
       reflectance="0.2"
     />
-    <model name="fr3" file="franka3.xml" />
   </asset>
 
   <worldbody>
@@ -53,21 +54,14 @@
       resolution="640 480"
       euler="-0.54 0.8 2.14"
     />
-    <body name="dual_arm_setup">
-      <body
-        name="rightarm"
-        pos="0 -0.06 0.342"
-        euler="51.18507533 -10.00159382 26.54771649"
-      >
-        <attach model="fr3" body="base" prefix="right_" />
-      </body>
-      <body
-        name="leftarm"
-        pos="0 0.06 0.342"
-        euler="-51.18507533 -10.00159382 -26.54771649"
-      >
-        <attach model="fr3" body="base" prefix="left_" />
-      </body>
-    </body>
   </worldbody>
+
+  <keyframe>
+    <key name="home"
+      qpos="0 0 0 0 0 3.14 0 0 0 0 0 0 0 0 3.14 0 0 0"
+      qvel="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
+      ctrl="0 0 0 0 0 3.14 0 0 0 0 0 0 0 0 3.14 0 0 0"
+    />
+  </keyframe>
+
 </mujoco>
