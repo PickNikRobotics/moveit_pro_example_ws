@@ -1,82 +1,40 @@
-# Joints limits
-#
-# Sources:
-#
-#  - Universal Robots e-Series, User Manual, UR5e, Version 5.8
-#    https://s3-eu-west-1.amazonaws.com/ur-support-site/69091/99404_UR5e_User_Manual_en_Global.pdf
-#  - Support > Articles > UR articles > Max. joint torques
-#    https://www.universal-robots.com/articles/ur-articles/max-joint-torques
-#    retrieved: 2020-06-16, last modified: 2020-06-09
-#
-# NOTE: Acceleration limits are not publicly available so we have picked a reasonable upper limit
+# joint_limits.yaml allows the dynamics properties specified in the URDF to be overwritten or augmented as needed
+
+# For beginners, we downscale velocity and acceleration limits.
+# You can always specify higher scaling factors (<= 1.0) in your motion requests.  # Increase the values below to 1.0 to always move at maximum speed.
+default_velocity_scaling_factor: 0.1
+default_acceleration_scaling_factor: 0.1
+
+# Specific joint properties can be changed with the keys [max_position, min_position, max_velocity, max_acceleration]
+# Joint limits can be turned off with [has_velocity_limits, has_acceleration_limits]
 joint_limits:
   joint_1:
-    has_acceleration_limits: true
-    has_effort_limits: true
-    has_position_limits: true
     has_velocity_limits: true
+    max_velocity: 7.8539816339744828
+    has_acceleration_limits: true
     max_acceleration: 10.0
-    max_effort: 1500.0
-    max_position: 2.9
-    max_velocity: 1.0
-    min_position: -2.1
   joint_2:
-    has_acceleration_limits: true
-    has_effort_limits: true
-    has_position_limits: true
     has_velocity_limits: true
-    max_acceleration: !degrees 30.0
-    max_effort: 150.0
-    max_position: !degrees  180.0
-    max_velocity: !degrees  30.0
-    min_position: !degrees -180.0
+    max_velocity: 6.6322511575784526
+    has_acceleration_limits: true
+    max_acceleration: 10.0
   joint_3:
-    has_acceleration_limits: true
-    has_effort_limits: true
-    has_position_limits: true
     has_velocity_limits: true
-    max_acceleration: !degrees 30.0
-    max_effort: 150.0
-    max_position: !degrees  90.0
-    max_velocity: !degrees  30.0
-    min_position: !degrees -270.0
+    max_velocity: 9.0757121103705138
+    has_acceleration_limits: true
+    max_acceleration: 10.0
   joint_4:
-    has_acceleration_limits: true
-    has_effort_limits: true
-    has_position_limits: true
     has_velocity_limits: true
-    max_acceleration: !degrees 30.0
-    max_effort: 150.0
-    # we artificially limit this joint to half its actual joint position limit
-    # to avoid (MoveIt/OMPL) planning problems, as due to the physical
-    # construction of the robot, it's impossible to rotate the 'joint_4'
-    # over more than approx +- 1 pi (the shoulder lift joint gets in the way).
-    #
-    # This leads to planning problems as the search space will be divided into
-    # two sections, with no connections from one to the other.
-    #
-    # Refer to https://github.com/ros-industrial/universal_robot/issues/265 for
-    # more information.
-    max_position: !degrees  180.0
-    max_velocity: !degrees  30.0
-    min_position: !degrees -180.0
+    max_velocity: 9.5993108859688121
+    has_acceleration_limits: true
+    max_acceleration: 10.0
   joint_5:
-    has_acceleration_limits: true
-    has_effort_limits: true
-    has_position_limits: true
     has_velocity_limits: true
-    max_acceleration: !degrees 30.0
-    max_effort: 28.0
-    max_position: !degrees  180.0
-    max_velocity: !degrees  60.0
-    min_position: !degrees -180.0
+    max_velocity: 9.5120444233690957
+    has_acceleration_limits: true
+    max_acceleration: 10.0
   joint_6:
-    has_acceleration_limits: true
-    has_effort_limits: true
-    has_position_limits: true
     has_velocity_limits: true
-    max_acceleration: !degrees 30.0
-    max_effort: 28.0
-    max_position: !degrees  180.0
-    max_velocity: !degrees  60.0
-    min_position: !degrees -180.0
+    max_velocity: 17.453292519943297
+    has_acceleration_limits: true
+    max_acceleration: 10.0
