@@ -1,0 +1,84 @@
+#
+#  This contains information for a unique instance of a robot.
+#
+
+# Name of the package to specialize
+hardware:
+  # Parameters used to configure the robot description through XACRO.
+  # A URDF and SRDF are both required.
+  # [Required]
+  robot_description:
+    urdf:
+      package: "kr-16"
+      path: "description/kr-16.xacro"
+    srdf:
+      package: "kuka_kr_moveit_config"
+      path: "urdf/kr16_r2010_2_arm.srdf"
+    urdf_params:
+      # TODO
+      - mujoco_model: "description/scene.xml"
+
+moveit_params:
+  servo:
+    package: "kr-16"
+    path: "config/moveit/servo.yaml"
+  joint_limits:
+    package: "kr-16"
+    path: "config/moveit/joint_limits.yaml"
+  servo_joint_limits:
+    package: "kr-16"
+    path: "config/moveit/hard_joint_limits.yaml"
+  pose_jog:
+    package: "kr-16"
+    path: "config/moveit/pose_jog.yaml"
+
+# Configuration for loading behaviors and objectives.
+# [Required]
+objectives:
+  # List of plugins for loading custom behaviors.
+  # [Required]
+  behavior_loader_plugins:
+    # This plugin will load the core MoveIt Pro Behaviors.
+    # Add additional plugin loaders as needed.
+    core:
+      - "moveit_studio::behaviors::CoreBehaviorsLoader"
+      - "moveit_studio::behaviors::MTCCoreBehaviorsLoader"
+      - "moveit_studio::behaviors::ServoBehaviorsLoader"
+      - "moveit_studio::behaviors::VisionBehaviorsLoader"
+      - "moveit_studio::behaviors::ConverterBehaviorsLoader"
+  # Specify source folder for objectives
+  # [Required]
+  objective_library_paths:
+    sim_objectives:
+      package_name: "kr-16"
+      relative_path: "objectives"
+  # Specify the location of the saved waypoints file.
+  # [Required]
+  waypoints_file:
+    package_name: "kr-16"
+    relative_path: "waypoints/kr16_waypoints.yaml"
+
+# Configuration for launching ros2_control processes.
+# [Required, if using ros2_control]
+ros2_control:
+  config:
+    package: "kr-16"
+    path: "config/control/picknik_kr16.ros2_control.yaml"
+  # MoveIt Pro will load and activate these controllers at start up to ensure they are available.
+  # If not specified, it is up to the user to ensure the appropriate controllers are active and available
+  # for running the application.
+  # [Optional, default=[]]
+  controllers_active_at_startup:
+    - "joint_state_broadcaster"
+    - "joint_trajectory_controller"
+  # Load but do not start these controllers so they can be activated later if needed.
+  controllers_inactive_at_startup:
+    - "servo_controller"
+    - "joint_trajectory_admittance_controller"
+    - "velocity_force_controller"
+  # Any controllers here will not be spawned by MoveIt Pro.
+  # [Optional, default=[]]
+  controllers_not_managed: []
+  # Optionally configure remapping rules to let multiple controllers receive commands on the same topic.
+  # [Optional, default=[]]
+  controller_shared_topics: []
