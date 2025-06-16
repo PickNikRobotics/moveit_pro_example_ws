@@ -18,6 +18,7 @@
   <depend>kuka_cybertech_support</depend>
 
   <exec_depend>admittance_controller</exec_depend>
+  <exec_depend>kuka_mock_hardware_interface</exec_depend>
   <exec_depend>moveit_planners_stomp</exec_depend>
   <exec_depend>moveit_ros_perception</exec_depend>
   <exec_depend>moveit_studio_agent</exec_depend>

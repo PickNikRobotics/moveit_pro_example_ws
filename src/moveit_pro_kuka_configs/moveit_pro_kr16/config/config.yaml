@@ -14,8 +14,8 @@ hardware:
       package: "moveit_pro_kr16"
       path: "description/kr16.xacro"
     srdf:
-      package: "kuka_kr_moveit_config"
-      path: "urdf/kr16_r2010_2_arm.srdf"
+      package: "moveit_pro_kr16"
+      path: "description/kr16.srdf"
     urdf_params:
       - mujoco_model: "description/scene.xml"
 moveit_params:
@@ -88,7 +88,7 @@ objectives:
   # [Required]
   waypoints_file:
     package_name: "moveit_pro_kr16"
-    relative_path: "waypoints/kr16_waypoints.yaml"
+    relative_path: "waypoints/waypoints.yaml"
 
 # Configuration for launching ros2_control processes.
 # [Required, if using ros2_control]
