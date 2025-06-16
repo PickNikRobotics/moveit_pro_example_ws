@@ -110,9 +110,9 @@ objectives:
     perception_objectives:
       package_name: "moveit_pro_objectives"
       relative_path: "objectives/perception"
-    #custom_objectives:
-    #  package_name: "franka_dual_arm_config"
-    #  relative_path: "objectives"
+    custom_objectives:
+      package_name: "franka_dual_arm_config"
+      relative_path: "objectives"
   # Specify the location of the saved waypoints file.
   # [Required]
   waypoints_file:
