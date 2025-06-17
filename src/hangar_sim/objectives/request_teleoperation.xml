@@ -78,7 +78,7 @@
                       _collapsed="false"
                       target_pose="{target_pose}"
                       link_padding="0.0"
-                      controller_names="/joint_trajectory_controller"
+                      controller_names="joint_trajectory_controller"
                     />
                     <Action
                       ID="PublishEmpty"
