@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Move to Pose">
   <BehaviorTree
     ID="Move to Pose"
@@ -20,7 +21,7 @@
         task="{move_to_pose_task}"
         acceleration_scale_factor="1.000000"
         keep_orientation="false"
-        keep_orientation_link_names=""
+        keep_orientation_link_names="grasp_link"
         keep_orientation_tolerance="0.100000"
         link_padding="0.010000"
         max_iterations="5000"
