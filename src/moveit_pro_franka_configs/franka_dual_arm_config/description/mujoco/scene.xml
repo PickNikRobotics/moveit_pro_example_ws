@@ -1,12 +1,12 @@
 <mujoco model="fr3 scene">
-  <include file="franka3.xml"/>
+  <include file="franka3.xml" />
 
   <statistic center="0.2 0.2 0.5" extent="1.8" />
 
   <visual>
-    <global azimuth="120" elevation="-21" fovy="58"/>  
-    <headlight ambient="0.3 0.3 0.3" diffuse="0.6 0.6 0.6" specular="0 0 0"/>
-    <rgba haze="0.15 0.25 0.35 1"/>
+    <global azimuth="120" elevation="-21" fovy="58" />
+    <headlight ambient="0.3 0.3 0.3" diffuse="0.6 0.6 0.6" specular="0 0 0" />
+    <rgba haze="0.15 0.25 0.35 1" />
   </visual>
 
   <asset>
@@ -57,7 +57,8 @@
   </worldbody>
 
   <keyframe>
-    <key name="home"
+    <key
+      name="home"
       qpos="0 -0.7854 0 -2.3562 0 1.5707 0.7853 0 0
             0 -0.7854 0 -2.3562 0 1.5707 0.7853 0 0"
       qvel="0 0 0 0 0 0 0 0 0
@@ -66,5 +67,4 @@
             0 -0.7854 0 -2.3562 0 1.5707 0.7853 0 0"
     />
   </keyframe>
-
 </mujoco>
