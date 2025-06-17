@@ -94,12 +94,14 @@
   </asset>
 
   <worldbody>
-
     <body name="dual_arm_setup">
-
       <!-- Left Arm -->
 
-      <body name="left_arm" pos="0 0.06 0.342" quat="0.883098 -0.400776 -0.175322 -0.169642">
+      <body
+        name="left_arm"
+        pos="0 0.06 0.342"
+        quat="0.883098 -0.400776 -0.175322 -0.169642"
+      >
         <body name="left_base" childclass="fr3">
           <body name="left_fr3_link0">
             <geom mesh="link0_0" material="black" class="visual" />
@@ -109,7 +111,11 @@
             <geom mesh="link0_4" material="white" class="visual" />
             <geom mesh="link0_5" material="red" class="visual" />
             <geom mesh="link0_6" material="black" class="visual" />
-            <geom name="left_fr3_link0_collision" mesh="link0_coll" class="collision" />
+            <geom
+              name="left_fr3_link0_collision"
+              mesh="link0_coll"
+              class="collision"
+            />
             <body name="left_fr3_link1" pos="0 0 0.333">
               <inertial
                 pos="4.128e-07 -0.0181251 -0.0386036"
@@ -188,7 +194,11 @@
                       class="collision"
                       mesh="link4_coll"
                     />
-                    <body name="left_fr3_link5" pos="-0.0825 0.384 0" quat="1 -1 0 0">
+                    <body
+                      name="left_fr3_link5"
+                      pos="-0.0825 0.384 0"
+                      quat="1 -1 0 0"
+                    >
                       <inertial
                         pos="-0.00160396 0.0292536 -0.0972966"
                         quat="0.919031 0.125604 0.0751531 -0.366003"
@@ -230,7 +240,11 @@
                         <geom mesh="link6_1" material="white" class="visual" />
                         <geom mesh="link6_2" material="white" class="visual" />
                         <geom mesh="link6_3" material="gray" class="visual" />
-                        <geom mesh="link6_4" material="button_red" class="visual" />
+                        <geom
+                          mesh="link6_4"
+                          material="button_red"
+                          class="visual"
+                        />
                         <geom mesh="link6_5" material="white" class="visual" />
                         <geom mesh="link6_6" material="black" class="visual" />
                         <geom
@@ -243,7 +257,11 @@
                           class="collision"
                           mesh="link6_coll"
                         />
-                        <body name="left_fr3_link7" pos="0.088 0 0" quat="1 1 0 0">
+                        <body
+                          name="left_fr3_link7"
+                          pos="0.088 0 0"
+                          quat="1 1 0 0"
+                        >
                           <inertial
                             pos="0.00452258 0.00862619 -0.0161633"
                             quat="0.727579 0.0978688 -0.24906 0.63168"
@@ -256,10 +274,26 @@
                             range="-3.0159 3.0159"
                             actuatorfrcrange="-12 12"
                           />
-                          <geom mesh="link7_0" material="black" class="visual" />
-                          <geom mesh="link7_1" material="white" class="visual" />
-                          <geom mesh="link7_2" material="white" class="visual" />
-                          <geom mesh="link7_3" material="black" class="visual" />
+                          <geom
+                            mesh="link7_0"
+                            material="black"
+                            class="visual"
+                          />
+                          <geom
+                            mesh="link7_1"
+                            material="white"
+                            class="visual"
+                          />
+                          <geom
+                            mesh="link7_2"
+                            material="white"
+                            class="visual"
+                          />
+                          <geom
+                            mesh="link7_3"
+                            material="black"
+                            class="visual"
+                          />
                           <geom
                             name="left_fr3_link7_collision"
                             class="collision"
@@ -281,9 +315,21 @@
                               material="off_white"
                               class="visual"
                             />
-                            <geom mesh="hand_1" material="black" class="visual" />
-                            <geom mesh="hand_2" material="black" class="visual" />
-                            <geom mesh="hand_3" material="white" class="visual" />
+                            <geom
+                              mesh="hand_1"
+                              material="black"
+                              class="visual"
+                            />
+                            <geom
+                              mesh="hand_2"
+                              material="black"
+                              class="visual"
+                            />
+                            <geom
+                              mesh="hand_3"
+                              material="white"
+                              class="visual"
+                            />
                             <geom
                               mesh="hand_4"
                               material="off_white"
@@ -296,7 +342,10 @@
                                 pos="0 0 0"
                                 diaginertia="2.375e-6 2.375e-6 7.5e-7"
                               />
-                              <joint name="left_fr3_finger_joint1" class="finger" />
+                              <joint
+                                name="left_fr3_finger_joint1"
+                                class="finger"
+                              />
                               <geom
                                 mesh="finger_0"
                                 material="off_white"
@@ -324,7 +373,10 @@
                                 pos="0 0 0"
                                 diaginertia="2.375e-6 2.375e-6 7.5e-7"
                               />
-                              <joint name="left_fr3_finger_joint2" class="finger" />
+                              <joint
+                                name="left_fr3_finger_joint2"
+                                class="finger"
+                              />
                               <geom
                                 mesh="finger_0"
                                 material="off_white"
@@ -356,7 +408,11 @@
 
       <!-- Right Arm -->
 
-      <body name="right_arm" pos="0 -0.06 0.342" quat="0.883098 0.400776 -0.175322 0.169642">
+      <body
+        name="right_arm"
+        pos="0 -0.06 0.342"
+        quat="0.883098 0.400776 -0.175322 0.169642"
+      >
         <body name="right_base" childclass="fr3">
           <body name="right_fr3_link0">
             <geom mesh="link0_0" material="black" class="visual" />
@@ -366,7 +422,11 @@
             <geom mesh="link0_4" material="white" class="visual" />
             <geom mesh="link0_5" material="red" class="visual" />
             <geom mesh="link0_6" material="black" class="visual" />
-            <geom name="right_fr3_link0_collision" mesh="link0_coll" class="collision" />
+            <geom
+              name="right_fr3_link0_collision"
+              mesh="link0_coll"
+              class="collision"
+            />
             <body name="right_fr3_link1" pos="0 0 0.333">
               <inertial
                 pos="4.128e-07 -0.0181251 -0.0386036"
@@ -445,7 +505,11 @@
                       class="collision"
                       mesh="link4_coll"
                     />
-                    <body name="right_fr3_link5" pos="-0.0825 0.384 0" quat="1 -1 0 0">
+                    <body
+                      name="right_fr3_link5"
+                      pos="-0.0825 0.384 0"
+                      quat="1 -1 0 0"
+                    >
                       <inertial
                         pos="-0.00160396 0.0292536 -0.0972966"
                         quat="0.919031 0.125604 0.0751531 -0.366003"
@@ -487,7 +551,11 @@
                         <geom mesh="link6_1" material="white" class="visual" />
                         <geom mesh="link6_2" material="white" class="visual" />
                         <geom mesh="link6_3" material="gray" class="visual" />
-                        <geom mesh="link6_4" material="button_red" class="visual" />
+                        <geom
+                          mesh="link6_4"
+                          material="button_red"
+                          class="visual"
+                        />
                         <geom mesh="link6_5" material="white" class="visual" />
                         <geom mesh="link6_6" material="black" class="visual" />
                         <geom
@@ -500,7 +568,11 @@
                           class="collision"
                           mesh="link6_coll"
                         />
-                        <body name="right_fr3_link7" pos="0.088 0 0" quat="1 1 0 0">
+                        <body
+                          name="right_fr3_link7"
+                          pos="0.088 0 0"
+                          quat="1 1 0 0"
+                        >
                           <inertial
                             pos="0.00452258 0.00862619 -0.0161633"
                             quat="0.727579 0.0978688 -0.24906 0.63168"
@@ -513,10 +585,26 @@
                             range="-3.0159 3.0159"
                             actuatorfrcrange="-12 12"
                           />
-                          <geom mesh="link7_0" material="black" class="visual" />
-                          <geom mesh="link7_1" material="white" class="visual" />
-                          <geom mesh="link7_2" material="white" class="visual" />
-                          <geom mesh="link7_3" material="black" class="visual" />
+                          <geom
+                            mesh="link7_0"
+                            material="black"
+                            class="visual"
+                          />
+                          <geom
+                            mesh="link7_1"
+                            material="white"
+                            class="visual"
+                          />
+                          <geom
+                            mesh="link7_2"
+                            material="white"
+                            class="visual"
+                          />
+                          <geom
+                            mesh="link7_3"
+                            material="black"
+                            class="visual"
+                          />
                           <geom
                             name="right_fr3_link7_collision"
                             class="collision"
@@ -538,9 +626,21 @@
                               material="off_white"
                               class="visual"
                             />
-                            <geom mesh="hand_1" material="black" class="visual" />
-                            <geom mesh="hand_2" material="black" class="visual" />
-                            <geom mesh="hand_3" material="white" class="visual" />
+                            <geom
+                              mesh="hand_1"
+                              material="black"
+                              class="visual"
+                            />
+                            <geom
+                              mesh="hand_2"
+                              material="black"
+                              class="visual"
+                            />
+                            <geom
+                              mesh="hand_3"
+                              material="white"
+                              class="visual"
+                            />
                             <geom
                               mesh="hand_4"
                               material="off_white"
@@ -553,7 +653,10 @@
                                 pos="0 0 0"
                                 diaginertia="2.375e-6 2.375e-6 7.5e-7"
                               />
-                              <joint name="right_fr3_finger_joint1" class="finger" />
+                              <joint
+                                name="right_fr3_finger_joint1"
+                                class="finger"
+                              />
                               <geom
                                 mesh="finger_0"
                                 material="off_white"
@@ -581,7 +684,10 @@
                                 pos="0 0 0"
                                 diaginertia="2.375e-6 2.375e-6 7.5e-7"
                               />
-                              <joint name="right_fr3_finger_joint2" class="finger" />
+                              <joint
+                                name="right_fr3_finger_joint2"
+                                class="finger"
+                              />
                               <geom
                                 mesh="finger_0"
                                 material="off_white"
@@ -610,12 +716,10 @@
           </body>
         </body>
       </body>
-
     </body>
   </worldbody>
 
   <actuator>
-
     <!-- left arm -->
 
     <position
@@ -747,6 +851,5 @@
       kp="1000"
       kv="100"
     />
-
   </actuator>
 </mujoco>
