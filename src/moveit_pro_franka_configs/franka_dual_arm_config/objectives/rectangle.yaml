@@ -1,0 +1,65 @@
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.10
+    y: -0.10
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.10
+    y: -0.10
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.10
+    y: 0.10
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.10
+    y: 0.10
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.10
+    y: -0.10
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
