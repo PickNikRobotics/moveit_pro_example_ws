@@ -5,7 +5,7 @@
       <Action
         ID="InitializeMTCTask"
         task_id="close_cabinet_door_retreat"
-        controller_names="/joint_trajectory_controller"
+        controller_names="joint_trajectory_controller"
         task="{retreat_task}"
       />
       <Action ID="SetupMTCCurrentState" task="{retreat_task}" />
