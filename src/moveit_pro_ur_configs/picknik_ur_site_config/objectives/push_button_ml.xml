@@ -95,7 +95,7 @@
         <Action
           ID="InitializeMTCTask"
           task_id="push_button_ml"
-          controller_names="/joint_trajectory_controller"
+          controller_names="joint_trajectory_controller"
           task="{push_along_axis_task}"
         />
         <Action ID="SetupMTCCurrentState" task="{push_along_axis_task}" />
