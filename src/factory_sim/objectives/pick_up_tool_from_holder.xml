@@ -15,7 +15,7 @@
       <Action
         ID="InitializeMTCTask"
         task_id="pick_up_tool"
-        controller_names="/joint_trajectory_controller"
+        controller_names="joint_trajectory_controller"
         task="{mtc_task}"
         trajectory_monitoring="false"
       />
