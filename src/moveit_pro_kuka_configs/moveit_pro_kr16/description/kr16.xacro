@@ -6,6 +6,12 @@
   <!-- Import kr16 urdf file -->
   <xacro:arg name="use_fake_hardware" default="true" />
   <xacro:include filename="$(find kuka_cybertech_support)/urdf/kr16_r2010_2.urdf.xacro" />
+  <link name="grasp_link"/>
+  <joint name="grasp_link_joint" type="fixed">
+    <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
+    <parent link="link_6"/>
+    <child link="grasp_link"/>
+  </joint>
 
 
   <ros2_control name="mujoco_control" type="system">
