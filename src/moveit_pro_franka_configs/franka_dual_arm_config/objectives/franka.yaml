@@ -1,0 +1,7853 @@
+
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.096814176
+    y: 0.015268731
+    z: -0.04
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.096814176
+    y: 0.015268731
+    z: -0.039990000000000005
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.096814176
+    y: 0.015268731
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.096814176
+    y: 0.015268731
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.096814176
+    y: 0.015268731
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.0920066254581436
+    y: 0.015268731
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.0920066254581436
+    y: 0.015268731
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.0920066254581436
+    y: 0.015268731
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.08719907491628721
+    y: 0.015268731
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.08719907491628721
+    y: 0.015268731
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.08719907491628721
+    y: 0.015268731
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.08239152437443081
+    y: 0.015268731
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.08239152437443081
+    y: 0.015268731
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.08239152437443081
+    y: 0.015268731
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.07758397383257443
+    y: 0.015268731
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.07758397383257443
+    y: 0.015268731
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.07758397383257443
+    y: 0.015268731
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.075073881
+    y: 0.012971273290718026
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.075073881
+    y: 0.012971273290718026
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.075073881
+    y: 0.012971273290718026
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.07608992845113836
+    y: 0.0091797702
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.07608992845113836
+    y: 0.0091797702
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.07608992845113836
+    y: 0.0091797702
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.08089747899299476
+    y: 0.0091797702
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.08089747899299476
+    y: 0.0091797702
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.08089747899299476
+    y: 0.0091797702
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.08570502953485117
+    y: 0.0091797702
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.08570502953485117
+    y: 0.0091797702
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.08570502953485117
+    y: 0.0091797702
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.08875833799999999
+    y: 0.007425528123292435
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.08875833799999999
+    y: 0.007425528123292435
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.08875833799999999
+    y: 0.007425528123292435
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.08801348268143604
+    y: 0.0033628329
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.08801348268143604
+    y: 0.0033628329
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.08801348268143604
+    y: 0.0033628329
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.08320593213957964
+    y: 0.0033628329
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.08320593213957964
+    y: 0.0033628329
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.08320593213957964
+    y: 0.0033628329
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.07839838159772325
+    y: 0.0033628329
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.07839838159772325
+    y: 0.0033628329
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.07839838159772325
+    y: 0.0033628329
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.07588992500000001
+    y: 0.0010637389558668367
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.07588992500000001
+    y: 0.0010637389558668367
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.07588992500000001
+    y: 0.0010637389558668367
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.07690761788598957
+    y: -0.0027261187
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.07690761788598957
+    y: -0.0027261187
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.07690761788598957
+    y: -0.0027261187
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.08171516842784597
+    y: -0.0027261187
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.08171516842784597
+    y: -0.0027261187
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.08171516842784597
+    y: -0.0027261187
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.08652271896970236
+    y: -0.0027261187
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.08652271896970236
+    y: -0.0027261187
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.08652271896970236
+    y: -0.0027261187
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.08875833799999999
+    y: -0.005298050211558751
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.08875833799999999
+    y: -0.005298050211558751
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.08875833799999999
+    y: -0.005298050211558751
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.08875833799999999
+    y: -0.010105600753415156
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.08875833799999999
+    y: -0.010105600753415156
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.08875833799999999
+    y: -0.010105600753415156
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.08875833799999999
+    y: -0.014913151295271546
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.08875833799999999
+    y: -0.014913151295271546
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.08875833799999999
+    y: -0.014913151295271546
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.09250787083712794
+    y: -0.015971169
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.09250787083712794
+    y: -0.015971169
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.09250787083712794
+    y: -0.015971169
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.09681417599999999
+    y: -0.015469923621015659
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.09681417599999999
+    y: -0.015469923621015659
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.09681417599999999
+    y: -0.015469923621015659
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.09681417599999999
+    y: -0.010662373079159257
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.09681417599999999
+    y: -0.010662373079159257
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.09681417599999999
+    y: -0.010662373079159257
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.09681417599999999
+    y: -0.005854822537302866
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.09681417599999999
+    y: -0.005854822537302866
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.09681417599999999
+    y: -0.005854822537302866
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.09681417599999999
+    y: -0.0010472719954464757
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.09681417599999999
+    y: -0.0010472719954464757
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.09681417599999999
+    y: -0.0010472719954464757
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.096814176
+    y: 0.0037602785464099144
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.096814176
+    y: 0.0037602785464099144
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.096814176
+    y: 0.0037602785464099144
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.096814176
+    y: 0.008567829088266329
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.096814176
+    y: 0.008567829088266329
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.096814176
+    y: 0.008567829088266329
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.096814176
+    y: 0.01337537963012272
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.096814176
+    y: 0.01337537963012272
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.096814176
+    y: 0.01337537963012272
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.05307029199310712
+    y: 0.0019661744922535363
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.05307029199310712
+    y: 0.0019661744922535363
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.05307029199310712
+    y: 0.0019661744922535363
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.051392267219106044
+    y: 0.006075263482760114
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.051392267219106044
+    y: 0.006075263482760114
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.051392267219106044
+    y: 0.006075263482760114
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.05397723855134222
+    y: 0.009213792440046387
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.05397723855134222
+    y: 0.009213792440046387
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.05397723855134222
+    y: 0.009213792440046387
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.059054375194325465
+    y: 0.0094308651
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.059054375194325465
+    y: 0.0094308651
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.059054375194325465
+    y: 0.0094308651
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.059485321
+    y: 0.0050542603638181445
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.059485321
+    y: 0.0050542603638181445
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.059485321
+    y: 0.0050542603638181445
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.05831514782196176
+    y: 0.0014168829999999999
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.05831514782196176
+    y: 0.0014168829999999999
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.05831514782196176
+    y: 0.0014168829999999999
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.059485321
+    y: -0.006736964219894629
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.059485321
+    y: -0.006736964219894629
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.059485321
+    y: -0.006736964219894629
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.059485321
+    y: -0.011544514761751046
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.059485321
+    y: -0.011544514761751046
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.059485321
+    y: -0.011544514761751046
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.05986621730360744
+    y: -0.015971169
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.05986621730360744
+    y: -0.015971169
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.05986621730360744
+    y: -0.015971169
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.06467376784546383
+    y: -0.015971169
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.06467376784546383
+    y: -0.015971169
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.06467376784546383
+    y: -0.015971169
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.06754115100000001
+    y: -0.014031001612679775
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.06754115100000001
+    y: -0.014031001612679775
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.06754115100000001
+    y: -0.014031001612679775
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.06754115100000001
+    y: -0.009223451070823356
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.06754115100000001
+    y: -0.009223451070823356
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.06754115100000001
+    y: -0.009223451070823356
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.06754115100000001
+    y: -0.004415900528966969
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.06754115100000001
+    y: -0.004415900528966969
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.06754115100000001
+    y: -0.004415900528966969
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.06754115100000001
+    y: 0.00039165001288942136
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.06754115100000001
+    y: 0.00039165001288942136
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.06754115100000001
+    y: 0.00039165001288942136
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.06754115100000001
+    y: 0.005199200554745808
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.06754115100000001
+    y: 0.005199200554745808
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.06754115100000001
+    y: 0.005199200554745808
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.06754115100000001
+    y: 0.010006751096602198
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.06754115100000001
+    y: 0.010006751096602198
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.06754115100000001
+    y: 0.010006751096602198
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.06754115100000001
+    y: 0.014814301638458616
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.06754115100000001
+    y: 0.014814301638458616
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.06754115100000001
+    y: 0.014814301638458616
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.063188029819685
+    y: 0.015268730999999999
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.063188029819685
+    y: 0.015268730999999999
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.063188029819685
+    y: 0.015268730999999999
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.0583804792778286
+    y: 0.015268730999999999
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.0583804792778286
+    y: 0.015268730999999999
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.0583804792778286
+    y: 0.015268730999999999
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.053158262010913795
+    y: 0.015203970910319078
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.053158262010913795
+    y: 0.015203970910319078
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.053158262010913795
+    y: 0.015203970910319078
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.04831361717225008
+    y: 0.014289877612129446
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.04831361717225008
+    y: 0.014289877612129446
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.04831361717225008
+    y: 0.014289877612129446
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.04493460890298865
+    y: 0.012010452507310185
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.04493460890298865
+    y: 0.012010452507310185
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.04493460890298865
+    y: 0.012010452507310185
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.04334265302217757
+    y: 0.007560977759742227
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.04334265302217757
+    y: 0.007560977759742227
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.04334265302217757
+    y: 0.007560977759742227
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.044148238564979195
+    y: 0.0026468249724071508
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.044148238564979195
+    y: 0.0026468249724071508
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.044148238564979195
+    y: 0.0026468249724071508
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.04729064178724355
+    y: -0.0005233731984409719
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.04729064178724355
+    y: -0.0005233731984409719
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.04729064178724355
+    y: -0.0005233731984409719
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.04688909675314571
+    y: -0.0025929600410298684
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.04688909675314571
+    y: -0.0025929600410298684
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.04688909675314571
+    y: -0.0025929600410298684
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.044100604700633525
+    y: -0.0063375883815692735
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.044100604700633525
+    y: -0.0063375883815692735
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.044100604700633525
+    y: -0.0063375883815692735
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.04189635028866721
+    y: -0.01077547678114332
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.04189635028866721
+    y: -0.01077547678114332
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.04189635028866721
+    y: -0.01077547678114332
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.03977079186196524
+    y: -0.015087615877598779
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.03977079186196524
+    y: -0.015087615877598779
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.03977079186196524
+    y: -0.015087615877598779
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.04315775509434618
+    y: -0.015971169000000004
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.04315775509434618
+    y: -0.015971169000000004
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.04315775509434618
+    y: -0.015971169000000004
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.04793671157920344
+    y: -0.01592529229867188
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.04793671157920344
+    y: -0.01592529229867188
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.04793671157920344
+    y: -0.01592529229867188
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.050054079089717145
+    y: -0.011609125360528164
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.050054079089717145
+    y: -0.011609125360528164
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.050054079089717145
+    y: -0.011609125360528164
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.0523112090192728
+    y: -0.007111144789609916
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.0523112090192728
+    y: -0.007111144789609916
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.0523112090192728
+    y: -0.007111144789609916
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.05559852939587128
+    y: -0.004321942326519796
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.05559852939587128
+    y: -0.004321942326519796
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.05559852939587128
+    y: -0.004321942326519796
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.016627268173101565
+    y: -0.010279769999999999
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.016627268173101565
+    y: -0.010279769999999999
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.016627268173101565
+    y: -0.010279769999999999
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.02143481871495792
+    y: -0.010279769999999999
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.02143481871495792
+    y: -0.010279769999999999
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.02143481871495792
+    y: -0.010279769999999999
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.026242369256814325
+    y: -0.010279769999999999
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.026242369256814325
+    y: -0.010279769999999999
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.026242369256814325
+    y: -0.010279769999999999
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.02912807684478679
+    y: -0.012986693517392596
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.02912807684478679
+    y: -0.012986693517392596
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.02912807684478679
+    y: -0.012986693517392596
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.031816729996142344
+    y: -0.015971169
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.031816729996142344
+    y: -0.015971169
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.031816729996142344
+    y: -0.015971169
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.036624280537998766
+    y: -0.015971169
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.036624280537998766
+    y: -0.015971169
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.036624280537998766
+    y: -0.015971169
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.037169266671804674
+    y: -0.013004436132243953
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.037169266671804674
+    y: -0.013004436132243953
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.037169266671804674
+    y: -0.013004436132243953
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.03549943729932379
+    y: -0.008496197886620281
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.03549943729932379
+    y: -0.008496197886620281
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.03549943729932379
+    y: -0.008496197886620281
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.033829607926842906
+    y: -0.003987959640996611
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.033829607926842906
+    y: -0.003987959640996611
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.033829607926842906
+    y: -0.003987959640996611
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.03215977855436204
+    y: 0.0005202786046270127
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.03215977855436204
+    y: 0.0005202786046270127
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.03215977855436204
+    y: 0.0005202786046270127
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.03048994918188116
+    y: 0.005028516850250683
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.03048994918188116
+    y: 0.005028516850250683
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.03048994918188116
+    y: 0.005028516850250683
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.02882011980940029
+    y: 0.009536755095874306
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.02882011980940029
+    y: 0.009536755095874306
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.02882011980940029
+    y: 0.009536755095874306
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.02715029043691941
+    y: 0.014044993341497978
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.02715029043691941
+    y: 0.014044993341497978
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.02715029043691941
+    y: 0.014044993341497978
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.023194457871718567
+    y: 0.015268730999999999
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.023194457871718567
+    y: 0.015268730999999999
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.023194457871718567
+    y: 0.015268730999999999
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.018386907329862208
+    y: 0.015268730999999999
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.018386907329862208
+    y: 0.015268730999999999
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.018386907329862208
+    y: 0.015268730999999999
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.01587245652025439
+    y: 0.011974034253628233
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.01587245652025439
+    y: 0.011974034253628233
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.01587245652025439
+    y: 0.011974034253628233
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.014202627223913791
+    y: 0.007465795979802569
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.014202627223913791
+    y: 0.007465795979802569
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.014202627223913791
+    y: 0.007465795979802569
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.012532797927573204
+    y: 0.002957557705976955
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.012532797927573204
+    y: 0.002957557705976955
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.012532797927573204
+    y: 0.002957557705976955
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.010862968631232602
+    y: -0.0015506805678487084
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.010862968631232602
+    y: -0.0015506805678487084
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.010862968631232602
+    y: -0.0015506805678487084
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.009193139334892016
+    y: -0.00605891884167432
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.009193139334892016
+    y: -0.00605891884167432
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.009193139334892016
+    y: -0.00605891884167432
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.007523310038551411
+    y: -0.010567157115499989
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.007523310038551411
+    y: -0.010567157115499989
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.007523310038551411
+    y: -0.010567157115499989
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.00585348074221081
+    y: -0.01507539538932565
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.00585348074221081
+    y: -0.01507539538932565
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.00585348074221081
+    y: -0.01507539538932565
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.009373995068821344
+    y: -0.015971169
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.009373995068821344
+    y: -0.015971169
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.009373995068821344
+    y: -0.015971169
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.013802994381144351
+    y: -0.015439827056433778
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.013802994381144351
+    y: -0.015439827056433778
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.013802994381144351
+    y: -0.015439827056433778
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.015373298594894579
+    y: -0.010895964504729365
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.015373298594894579
+    y: -0.010895964504729365
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.015373298594894579
+    y: -0.010895964504729365
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.022018317766896153
+    y: -0.004483761099999999
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.022018317766896153
+    y: -0.004483761099999999
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.022018317766896153
+    y: -0.004483761099999999
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.017747498733910225
+    y: -0.0041005905036655185
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.017747498733910225
+    y: -0.0041005905036655185
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.017747498733910225
+    y: -0.0041005905036655185
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.019309050299490697
+    y: 0.0004462874274578317
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.019309050299490697
+    y: 0.0004462874274578317
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.019309050299490697
+    y: 0.0004462874274578317
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.020870601865071187
+    y: 0.0049931653585812315
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.020870601865071187
+    y: 0.0049931653585812315
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.020870601865071187
+    y: 0.0049931653585812315
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.022434553580829575
+    y: 0.0063512742231578816
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.022434553580829575
+    y: 0.0063512742231578816
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.022434553580829575
+    y: 0.0063512742231578816
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.024002948139691154
+    y: 0.0018067521668534586
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.024002948139691154
+    y: 0.0018067521668534586
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.024002948139691154
+    y: 0.0018067521668534586
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.02557134269855273
+    y: -0.0027377698894509666
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.02557134269855273
+    y: -0.0027377698894509666
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.02557134269855273
+    y: -0.0027377698894509666
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.0015818164069143124
+    y: 0.015268731
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.0015818164069143124
+    y: 0.015268731
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.0015818164069143124
+    y: 0.015268731
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.006389366948770719
+    y: 0.015268731
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.006389366948770719
+    y: 0.015268731
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.006389366948770719
+    y: 0.015268731
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.009295052578374693
+    y: 0.01210750863030561
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.009295052578374693
+    y: 0.01210750863030561
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.009295052578374693
+    y: 0.01210750863030561
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.011547303945397965
+    y: 0.007860167580631624
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.011547303945397965
+    y: 0.007860167580631624
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.011547303945397965
+    y: 0.007860167580631624
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.013799555312421235
+    y: 0.0036128265309576407
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.013799555312421235
+    y: 0.0036128265309576407
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.013799555312421235
+    y: 0.0036128265309576407
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.016051806679444478
+    y: -0.0006345145187162959
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.016051806679444478
+    y: -0.0006345145187162959
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.016051806679444478
+    y: -0.0006345145187162959
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.018304058046467724
+    y: -0.004881855568390238
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.018304058046467724
+    y: -0.004881855568390238
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.018304058046467724
+    y: -0.004881855568390238
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.018980602000000003
+    y: -0.0027942643729174186
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.018980602000000003
+    y: -0.0027942643729174186
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.018980602000000003
+    y: -0.0027942643729174186
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.018980602000000003
+    y: 0.002013286168938989
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.018980602000000003
+    y: 0.002013286168938989
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.018980602000000003
+    y: 0.002013286168938989
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.018980602000000003
+    y: 0.0068208367107954
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.018980602000000003
+    y: 0.0068208367107954
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.018980602000000003
+    y: 0.0068208367107954
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.018980602000000003
+    y: 0.01162838725265181
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.018980602000000003
+    y: 0.01162838725265181
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.018980602000000003
+    y: 0.01162838725265181
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.02014780879450812
+    y: 0.015268731
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.02014780879450812
+    y: 0.015268731
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.02014780879450812
+    y: 0.015268731
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.02495535933636456
+    y: 0.015268731
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.02495535933636456
+    y: 0.015268731
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.02495535933636456
+    y: 0.015268731
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.026617951
+    y: 0.012123772121779022
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.026617951
+    y: 0.012123772121779022
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.026617951
+    y: 0.012123772121779022
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.026617951
+    y: 0.007316221579922614
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.026617951
+    y: 0.007316221579922614
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.026617951
+    y: 0.007316221579922614
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.026617951
+    y: 0.002508671038066206
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.026617951
+    y: 0.002508671038066206
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.026617951
+    y: 0.002508671038066206
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.026617951
+    y: -0.002298879503790202
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.026617951
+    y: -0.002298879503790202
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.026617951
+    y: -0.002298879503790202
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.026617951
+    y: -0.0071064300456465035
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.026617951
+    y: -0.0071064300456465035
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.026617951
+    y: -0.0071064300456465035
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.026617951
+    y: -0.01191398058750291
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.026617951
+    y: -0.01191398058750291
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.026617951
+    y: -0.01191398058750291
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.025867588870640678
+    y: -0.015971168999999997
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.025867588870640678
+    y: -0.015971168999999997
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.025867588870640678
+    y: -0.015971168999999997
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.02106003832878424
+    y: -0.015971168999999997
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.02106003832878424
+    y: -0.015971168999999997
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.02106003832878424
+    y: -0.015971168999999997
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.016979626353068943
+    y: -0.014762540847052226
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.016979626353068943
+    y: -0.014762540847052226
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.016979626353068943
+    y: -0.014762540847052226
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.014727373721067392
+    y: -0.010515200468162761
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.014727373721067392
+    y: -0.010515200468162761
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.014727373721067392
+    y: -0.010515200468162761
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.012475121089065788
+    y: -0.006267860089273203
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.012475121089065788
+    y: -0.006267860089273203
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.012475121089065788
+    y: -0.006267860089273203
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.010222868457064181
+    y: -0.0020205197103836435
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.010222868457064181
+    y: -0.0020205197103836435
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.010222868457064181
+    y: -0.0020205197103836435
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.007970615825062578
+    y: 0.002226820668505914
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.007970615825062578
+    y: 0.002226820668505914
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.007970615825062578
+    y: 0.002226820668505914
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.0062586603
+    y: 0.0043019662861978275
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.0062586603
+    y: 0.0043019662861978275
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.0062586603
+    y: 0.0043019662861978275
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.0062586603
+    y: -0.0005055842556584774
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.0062586603
+    y: -0.0005055842556584774
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.0062586603
+    y: -0.0005055842556584774
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.0062586603
+    y: -0.005313134797514889
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.0062586603
+    y: -0.005313134797514889
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.0062586603
+    y: -0.005313134797514889
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.0062586603
+    y: -0.0101206853393713
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.0062586603
+    y: -0.0101206853393713
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.0062586603
+    y: -0.0101206853393713
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.0062586603
+    y: -0.01492823588122771
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.0062586603
+    y: -0.01492823588122771
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.0062586603
+    y: -0.01492823588122771
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.0024940428769158964
+    y: -0.015971169
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.0024940428769158964
+    y: -0.015971169
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.0024940428769158964
+    y: -0.015971169
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.0013786882000000002
+    y: -0.015036349535059607
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.0013786882000000002
+    y: -0.015036349535059607
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.0013786882000000002
+    y: -0.015036349535059607
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.0013786882000000002
+    y: -0.010228798993203185
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.0013786882000000002
+    y: -0.010228798993203185
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.0013786882000000002
+    y: -0.010228798993203185
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.0013786882000000002
+    y: -0.0054212484513467595
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.0013786882000000002
+    y: -0.0054212484513467595
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.0013786882000000002
+    y: -0.0054212484513467595
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.0013786882000000002
+    y: -0.0006136979094903357
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.0013786882000000002
+    y: -0.0006136979094903357
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.0013786882000000002
+    y: -0.0006136979094903357
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.0013786882000000002
+    y: 0.004193852632366091
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.0013786882000000002
+    y: 0.004193852632366091
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.0013786882000000002
+    y: 0.004193852632366091
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.0013786882000000002
+    y: 0.009001403174222407
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.0013786882000000002
+    y: 0.009001403174222407
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.0013786882000000002
+    y: 0.009001403174222407
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.0013786882000000002
+    y: 0.013808953716078832
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.0013786882000000002
+    y: 0.013808953716078832
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: 0.0013786882000000002
+    y: 0.013808953716078832
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.03783324825793527
+    y: 0.015268731
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.03783324825793527
+    y: 0.015268731
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.03783324825793527
+    y: 0.015268731
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.042541305
+    y: 0.015169237200208295
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.042541305
+    y: 0.015169237200208295
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.042541305
+    y: 0.015169237200208295
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.042541305
+    y: 0.010361686658351875
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.042541305
+    y: 0.010361686658351875
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.042541305
+    y: 0.010361686658351875
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.042541305
+    y: 0.005554136116495558
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.042541305
+    y: 0.005554136116495558
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.042541305
+    y: 0.005554136116495558
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.04476631939177227
+    y: 0.006049938028836814
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.04476631939177227
+    y: 0.006049938028836814
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.04476631939177227
+    y: 0.006049938028836814
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.04819653235323927
+    y: 0.009418347334649826
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.04819653235323927
+    y: 0.009418347334649826
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.04819653235323927
+    y: 0.009418347334649826
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.05162674531470627
+    y: 0.012786756640462834
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.05162674531470627
+    y: 0.012786756640462834
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.05162674531470627
+    y: 0.012786756640462834
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.055419420213910234
+    y: 0.015268731
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.055419420213910234
+    y: 0.015268731
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.055419420213910234
+    y: 0.015268731
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.06022697075576656
+    y: 0.015268731
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.06022697075576656
+    y: 0.015268731
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.06022697075576656
+    y: 0.015268731
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.06241851397280744
+    y: 0.01419801783699204
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.06241851397280744
+    y: 0.01419801783699204
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.06241851397280744
+    y: 0.01419801783699204
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.05899057762079812
+    y: 0.010827291716543067
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.05899057762079812
+    y: 0.010827291716543067
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.05899057762079812
+    y: 0.010827291716543067
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.05556264126878878
+    y: 0.007456565596094092
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.05556264126878878
+    y: 0.007456565596094092
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.05556264126878878
+    y: 0.007456565596094092
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.052134704916779455
+    y: 0.004085839475645118
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.052134704916779455
+    y: 0.004085839475645118
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.052134704916779455
+    y: 0.004085839475645118
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.04870676856477021
+    y: 0.0007151133551962179
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.04870676856477021
+    y: 0.0007151133551962179
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.04870676856477021
+    y: 0.0007151133551962179
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.05163441450710056
+    y: -0.0026682655709788883
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.05163441450710056
+    y: -0.0026682655709788883
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.05163441450710056
+    y: -0.0026682655709788883
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.05504890273770573
+    y: -0.006052613711398658
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.05504890273770573
+    y: -0.006052613711398658
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.05504890273770573
+    y: -0.006052613711398658
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.058463390968310894
+    y: -0.00943696185181843
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.058463390968310894
+    y: -0.00943696185181843
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.058463390968310894
+    y: -0.00943696185181843
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.06187787919891606
+    y: -0.012821309992238203
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.06187787919891606
+    y: -0.012821309992238203
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.06187787919891606
+    y: -0.012821309992238203
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.06472269236642456
+    y: -0.015971169
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.06472269236642456
+    y: -0.015971169
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.06472269236642456
+    y: -0.015971169
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.05991514182456824
+    y: -0.015971169
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.05991514182456824
+    y: -0.015971169
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.05991514182456824
+    y: -0.015971169
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.0551075912827118
+    y: -0.015971169
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.0551075912827118
+    y: -0.015971169
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.0551075912827118
+    y: -0.015971169
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.05165121051092244
+    y: -0.012685595041487467
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.05165121051092244
+    y: -0.012685595041487467
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.05165121051092244
+    y: -0.012685595041487467
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.048234546705761126
+    y: -0.009303443262663151
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.048234546705761126
+    y: -0.009303443262663151
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.048234546705761126
+    y: -0.009303443262663151
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.04481788290059981
+    y: -0.005921291483838836
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.04481788290059981
+    y: -0.005921291483838836
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.04481788290059981
+    y: -0.005921291483838836
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.042541305
+    y: -0.005271911997172056
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.042541305
+    y: -0.005271911997172056
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.042541305
+    y: -0.005271911997172056
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.042541305
+    y: -0.010079462539028484
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.042541305
+    y: -0.010079462539028484
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.042541305
+    y: -0.010079462539028484
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.042541305
+    y: -0.014887013080884913
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.042541305
+    y: -0.014887013080884913
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.042541305
+    y: -0.014887013080884913
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.03881791037725866
+    y: -0.015971169
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.03881791037725866
+    y: -0.015971169
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.03881791037725866
+    y: -0.015971169
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.034485475
+    y: -0.015496053835402214
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.034485475
+    y: -0.015496053835402214
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.034485475
+    y: -0.015496053835402214
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.034485475
+    y: -0.010688503293545896
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.034485475
+    y: -0.010688503293545896
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.034485475
+    y: -0.010688503293545896
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.034485475
+    y: -0.00588095275168947
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.034485475
+    y: -0.00588095275168947
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.034485475
+    y: -0.00588095275168947
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.034485475
+    y: -0.0010734022098330485
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.034485475
+    y: -0.0010734022098330485
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.034485475
+    y: -0.0010734022098330485
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.034485475
+    y: 0.003734148332023377
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.034485475
+    y: 0.003734148332023377
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.034485475
+    y: 0.003734148332023377
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.034485475
+    y: 0.008541698873879802
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.034485475
+    y: 0.008541698873879802
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.034485475
+    y: 0.008541698873879802
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.034485475
+    y: 0.013349249415736118
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.034485475
+    y: 0.013349249415736118
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.034485475
+    y: 0.013349249415736118
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.08376154604240747
+    y: -0.01027977
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.08376154604240747
+    y: -0.01027977
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.08376154604240747
+    y: -0.01027977
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.07895399550055106
+    y: -0.01027977
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.07895399550055106
+    y: -0.01027977
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.07895399550055106
+    y: -0.01027977
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.07414644495869464
+    y: -0.01027977
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.07414644495869464
+    y: -0.01027977
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.07414644495869464
+    y: -0.01027977
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.07249875408705629
+    y: -0.014730443556870953
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.07249875408705629
+    y: -0.014730443556870953
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.07249875408705629
+    y: -0.014730443556870953
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.06857208555990188
+    y: -0.015971169
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.06857208555990188
+    y: -0.015971169
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.06857208555990188
+    y: -0.015971169
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.06403830936785651
+    y: -0.01578062281498997
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.06403830936785651
+    y: -0.01578062281498997
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.06403830936785651
+    y: -0.01578062281498997
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.06570813861343693
+    y: -0.011272384522362981
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.06570813861343693
+    y: -0.011272384522362981
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.06570813861343693
+    y: -0.011272384522362981
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.06737796785901735
+    y: -0.0067641462297359945
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.06737796785901735
+    y: -0.0067641462297359945
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.06737796785901735
+    y: -0.0067641462297359945
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.06904779710459777
+    y: -0.0022559079371090077
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.06904779710459777
+    y: -0.0022559079371090077
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.06904779710459777
+    y: -0.0022559079371090077
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.07071762635017814
+    y: 0.0022523303555178806
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.07071762635017814
+    y: 0.0022523303555178806
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.07071762635017814
+    y: 0.0022523303555178806
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.07238745559575856
+    y: 0.006760568648144868
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.07238745559575856
+    y: 0.006760568648144868
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.07238745559575856
+    y: 0.006760568648144868
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.07405728484133897
+    y: 0.011268806940771857
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.07405728484133897
+    y: 0.011268806940771857
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.07405728484133897
+    y: 0.011268806940771857
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.07608089937771563
+    y: 0.015268730999999999
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.07608089937771563
+    y: 0.015268730999999999
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.07608089937771563
+    y: 0.015268730999999999
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.08088844991957207
+    y: 0.015268730999999999
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.08088844991957207
+    y: 0.015268730999999999
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.08088844991957207
+    y: 0.015268730999999999
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.0853351186718658
+    y: 0.014750220622449187
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.0853351186718658
+    y: 0.014750220622449187
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.0853351186718658
+    y: 0.014750220622449187
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.08700494779054574
+    y: 0.010241982282818892
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.08700494779054574
+    y: 0.010241982282818892
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.08700494779054574
+    y: 0.010241982282818892
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.08867477690922569
+    y: 0.005733743943188594
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.08867477690922569
+    y: 0.005733743943188594
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.08867477690922569
+    y: 0.005733743943188594
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.09034460602790563
+    y: 0.0012255056035582986
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.09034460602790563
+    y: 0.0012255056035582986
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.09034460602790563
+    y: 0.0012255056035582986
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.09201443514658557
+    y: -0.0032827327360719994
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.09201443514658557
+    y: -0.0032827327360719994
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.09201443514658557
+    y: -0.0032827327360719994
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.09368426426526547
+    y: -0.007790971075702196
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.09368426426526547
+    y: -0.007790971075702196
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.09368426426526547
+    y: -0.007790971075702196
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.09535409338394542
+    y: -0.01229920941533249
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.09535409338394542
+    y: -0.01229920941533249
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.09535409338394542
+    y: -0.01229920941533249
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.09582236779547584
+    y: -0.015971169
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.09582236779547584
+    y: -0.015971169
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.09582236779547584
+    y: -0.015971169
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.09101481725361941
+    y: -0.015971169
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.09101481725361941
+    y: -0.015971169
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.09101481725361941
+    y: -0.015971169
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.087829558241204
+    y: -0.013694092137734102
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.087829558241204
+    y: -0.013694092137734102
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.087829558241204
+    y: -0.013694092137734102
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.07725703730849687
+    y: -0.004483761100000001
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.07725703730849687
+    y: -0.004483761100000001
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.07725703730849687
+    y: -0.004483761100000001
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.08206458785035328
+    y: -0.004483761100000001
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.08206458785035328
+    y: -0.004483761100000001
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.08206458785035328
+    y: -0.004483761100000001
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.08388841904431106
+    y: -0.002353694157934699
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.08388841904431106
+    y: -0.002353694157934699
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.08388841904431106
+    y: -0.002353694157934699
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.08232686944212292
+    y: 0.002193184447483535
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.08232686944212292
+    y: 0.002193184447483535
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.08232686944212292
+    y: 0.002193184447483535
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.08076531983993476
+    y: 0.006740063052901769
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.08076531983993476
+    y: 0.006740063052901769
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.08076531983993476
+    y: 0.006740063052901769
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.07919873838495829
+    y: 0.004605281885026949
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.07919873838495829
+    y: 0.004605281885026949
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.07919873838495829
+    y: 0.004605281885026949
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.07763034219247905
+    y: 6.0760392513173224e-05
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.07763034219247905
+    y: 6.0760392513173224e-05
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.07763034219247905
+    y: 6.0760392513173224e-05
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.076061946
+    y: -0.004483761100000001
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.076061946
+    y: -0.004483761100000001
+    z: 0.0
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.076061946
+    y: -0.004483761100000001
+    z: 1e-05
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.076061946
+    y: -0.004483761100000001
+    z: -0.039990000000000005
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
+---
+header:
+  frame_id: local
+pose:
+  position:
+    x: -0.076061946
+    y: -0.004483761100000001
+    z: -0.04
+  orientation:
+    x: 0
+    y: 0
+    z: 1
+    w: 0
