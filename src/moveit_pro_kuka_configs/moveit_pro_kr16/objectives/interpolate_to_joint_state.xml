@@ -16,7 +16,7 @@
         ID="SetupMTCInterpolateToJointState"
         joint_state="{target_joint_state}"
         name="SetupMTCInterpolateToJointState_First"
-        planning_group_name="all_joints"
+        planning_group_name="manipulator"
         task="{interpolate_to_waypoint_task}"
       />
       <Action
