@@ -9,6 +9,7 @@ install(
     description
     launch
     waypoints
+    objectives
   DESTINATION
     share/${PROJECT_NAME}
 )
