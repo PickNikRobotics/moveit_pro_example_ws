@@ -229,4 +229,13 @@
     <position class="kuka_actuator" name="joint_5" joint="joint_5" kp="100" />
     <position class="kuka_actuator" name="joint_6" joint="joint_6" kp="100" />
   </actuator>
+
+  <keyframe>
+    <key
+      name="default"
+      qpos="0 -1.5708 1.5708 0 0 0"
+      qvel="0 0 0 0 0 0"
+      ctrl="0 -1.5708 1.5708 0 0 0"
+    />
+  </keyframe>
 </mujoco>

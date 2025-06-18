@@ -18,6 +18,7 @@ hardware:
       path: "description/kr16.srdf"
     urdf_params:
       - mujoco_model: "description/scene.xml"
+      - mujoco_keyframe: "default"
 moveit_params:
   # Used by the Waypoint Manager to save joint states from this joint group.
   joint_group_name: "manipulator"

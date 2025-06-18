@@ -14,6 +14,7 @@
                     <param name="mujoco_model_package">moveit_pro_kr16</param>
                     <param name="render_publish_rate">10</param>
                     <param name="tf_publish_rate">60</param>
+                    <param name="mujoco_keyframe">default</param>
                 </xacro:if>
                 <xacro:unless value="${use_fake_hardware}">
                     <plugin>kuka_kss_rsi_driver::KukaRSIHardwareInterface</plugin>
