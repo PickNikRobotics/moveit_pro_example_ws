@@ -25,7 +25,7 @@
   <TreeNodesModel>
     <SubTree ID="Move to Joint State">
       <input_port name="target_joint_state" default="{target_joint_state}" />
-      <input_port name="joint_group_name" default="all_joints" />
+      <input_port name="joint_group_name" default="manipulator" />
       <input_port name="link_padding" default="0.01" />
       <input_port name="keep_orientation_tolerance" default="0.05" />
       <input_port name="keep_orientation" default="false" />

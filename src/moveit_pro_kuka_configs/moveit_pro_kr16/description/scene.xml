@@ -1,5 +1,6 @@
 <mujoco model="kr16">
-  <compiler angle="radian" />
+  <compiler angle="radian" autolimits="true" />
+  <option integrator="implicit" />
 
   <default>
     <default class="kuka_actuator">
@@ -74,83 +75,137 @@
       type="plane"
       material="groundplane"
     />
-    <geom type="mesh" mesh="base_link" rgba="0 0 0 0" />
-    <geom type="mesh" mesh="base_link_visual" contype="0" conaffinity="0" />
-    <body name="link_1" quat="0 -1 0 0">
-      <joint
-        name="joint_1"
-        pos="0 0 0"
-        axis="0 0 1"
-        range="-3.22886 3.22886"
-        actuatorfrcrange="-1905.3 1905.3"
+    <body name="base_link" gravcomp="1" pos="0 0 0" quat="1 0 0 0">
+      <geom type="mesh" mesh="base_link" rgba="0 0 0 0" />
+      <geom
+        type="mesh"
+        mesh="base_link_visual"
+        contype="0"
+        conaffinity="0"
+        mass="0.0"
       />
-      <geom type="mesh" mesh="link_1" rgba="0 0 0 0" />
-      <geom type="mesh" mesh="link_1_visual" contype="0" conaffinity="0" />
-      <body name="link_2" pos="0.16 0 -0.52" quat="0.707107 0.707107 0 0">
+      <body name="link_1" quat="0 -1 0 0" gravcomp="1">
+        <inertial mass="1.0" pos="0 0 0" diaginertia="1 1 1" />
         <joint
-          name="joint_2"
+          name="joint_1"
           pos="0 0 0"
           axis="0 0 1"
-          range="-3.22886 1.13446"
-          actuatorfrcrange="-1633.63 1633.63"
+          range="-3.22886 3.22886"
         />
-        <geom type="mesh" mesh="link_2" rgba="0 0 0 0" />
-        <geom type="mesh" mesh="link_2_visual" contype="0" conaffinity="0" />
-        <body name="link_3" pos="0.98 0 0" quat="0.707107 0 0 -0.707107">
+        <geom type="mesh" mesh="link_1" rgba="0 0 0 0" />
+        <geom
+          type="mesh"
+          mesh="link_1_visual"
+          contype="0"
+          conaffinity="0"
+          mass="0.0"
+        />
+        <body
+          name="link_2"
+          pos="0.16 0 -0.52"
+          quat="0.707107 0.707107 0 0"
+          gravcomp="1"
+        >
+          <inertial mass="1.0" pos="0 0 0" diaginertia="1 1 1" />
           <joint
-            name="joint_3"
+            name="joint_2"
             pos="0 0 0"
             axis="0 0 1"
-            range="-2.40855 3.05433"
-            actuatorfrcrange="-850.58 850.58"
+            range="-3.22886 1.13446"
+            actuatorfrcrange="-1633.63 1633.63"
           />
-          <geom type="mesh" mesh="link_3" rgba="0 0 0 0" />
-          <geom type="mesh" mesh="link_3_visual" contype="0" conaffinity="0" />
-          <body name="link_4" pos="0.15 0 0" quat="0.707107 0.707107 0 0">
+          <geom type="mesh" mesh="link_2" rgba="0 0 0 0" />
+          <geom
+            type="mesh"
+            mesh="link_2_visual"
+            contype="0"
+            conaffinity="0"
+            mass="0.0"
+          />
+          <body
+            name="link_3"
+            pos="0.98 0 0"
+            quat="0.707107 0 0 -0.707107"
+            gravcomp="1"
+          >
+            <inertial mass="1.0" pos="0 0 0" diaginertia="1 1 1" />
             <joint
-              name="joint_4"
+              name="joint_3"
               pos="0 0 0"
               axis="0 0 1"
-              range="-6.10865 6.10865"
-              actuatorfrcrange="-266.21 266.21"
+              range="-2.40855 3.05433"
+              actuatorfrcrange="-850.58 850.58"
             />
-            <geom type="mesh" mesh="link_4" rgba="0 0 0 0" />
+            <geom type="mesh" mesh="link_3" rgba="0 0 0 0" />
             <geom
               type="mesh"
-              mesh="link_4_visual"
+              mesh="link_3_visual"
               contype="0"
               conaffinity="0"
+              mass="0.0"
             />
-            <body name="link_5" pos="0 0 -0.86" quat="0.707107 -0.707107 0 0">
+            <body
+              name="link_4"
+              pos="0.15 0 0"
+              quat="0.707107 0.707107 0 0"
+              gravcomp="1"
+            >
+              <inertial mass="1.0" pos="0 0 0" diaginertia="1 1 1" />
               <joint
-                name="joint_5"
+                name="joint_4"
                 pos="0 0 0"
                 axis="0 0 1"
-                range="-2.26893 2.26893"
-                actuatorfrcrange="-255.438 255.438"
+                range="-6.10865 6.10865"
+                actuatorfrcrange="-266.21 266.21"
               />
-              <geom type="mesh" mesh="link_5" rgba="0 0 0 0" />
+              <geom type="mesh" mesh="link_4" rgba="0 0 0 0" />
               <geom
                 type="mesh"
-                mesh="link_5_visual"
+                mesh="link_4_visual"
                 contype="0"
                 conaffinity="0"
+                mass="0.0"
               />
-              <body name="link_6" quat="0.707107 0.707107 0 0">
+              <body
+                name="link_5"
+                pos="0 0 -0.86"
+                quat="0.707107 -0.707107 0 0"
+                gravcomp="1"
+              >
+                <inertial mass="1.0" pos="0 0 0" diaginertia="1 1 1" />
                 <joint
-                  name="joint_6"
+                  name="joint_5"
                   pos="0 0 0"
                   axis="0 0 1"
-                  range="-6.10865 6.10865"
-                  actuatorfrcrange="-111.658 111.658"
+                  range="-2.26893 2.26893"
+                  actuatorfrcrange="-255.438 255.438"
                 />
-                <geom type="mesh" mesh="link_6" rgba="0 0 0 0" />
+                <geom type="mesh" mesh="link_5" rgba="0 0 0 0" />
                 <geom
                   type="mesh"
-                  mesh="link_6_visual"
+                  mesh="link_5_visual"
                   contype="0"
                   conaffinity="0"
+                  mass="0.0"
                 />
+                <body name="link_6" quat="0.707107 0.707107 0 0" gravcomp="1">
+                  <inertial mass="1.0" pos="0 0 0" diaginertia="1 1 1" />
+                  <joint
+                    name="joint_6"
+                    pos="0 0 0"
+                    axis="0 0 1"
+                    range="-6.10865 6.10865"
+                    actuatorfrcrange="-111.658 111.658"
+                  />
+                  <geom type="mesh" mesh="link_6" rgba="0 0 0 0" />
+                  <geom
+                    type="mesh"
+                    mesh="link_6_visual"
+                    contype="0"
+                    conaffinity="0"
+                    mass="0.0"
+                  />
+                </body>
               </body>
             </body>
           </body>
@@ -160,29 +215,11 @@
   </worldbody>
 
   <actuator>
-    <position
-      class="kuka_actuator"
-      name="joint_1"
-      joint="joint_1"
-      kp="2000"
-      forcerange="-60000 60000"
-    />
-    <position
-      class="kuka_actuator"
-      name="joint_2"
-      joint="joint_2"
-      kp="20000"
-      forcerange="-80000 80000"
-    />
-    <position
-      class="kuka_actuator"
-      name="joint_3"
-      joint="joint_3"
-      kp="2000"
-      forcerange="-10000 10000"
-    />
-    <position class="kuka_actuator" name="joint_4" joint="joint_4" kp="1000" />
-    <position class="kuka_actuator" name="joint_5" joint="joint_5" kp="1000" />
-    <position class="kuka_actuator" name="joint_6" joint="joint_6" kp="1000" />
+    <position class="kuka_actuator" name="joint_1" joint="joint_1" kp="100" />
+    <position class="kuka_actuator" name="joint_2" joint="joint_2" kp="100" />
+    <position class="kuka_actuator" name="joint_3" joint="joint_3" kp="100" />
+    <position class="kuka_actuator" name="joint_4" joint="joint_4" kp="100" />
+    <position class="kuka_actuator" name="joint_5" joint="joint_5" kp="100" />
+    <position class="kuka_actuator" name="joint_6" joint="joint_6" kp="100" />
   </actuator>
 </mujoco>

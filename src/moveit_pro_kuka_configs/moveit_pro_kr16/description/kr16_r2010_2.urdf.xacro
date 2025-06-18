@@ -1,20 +1,25 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="kr16_r2010_2">
-  <!-- Import urdf file  -->
-  <xacro:include filename="$(find moveit_pro_kr16)/description/kr16_r2010_2_macro.xacro"/>
-  <!-- Read additional arguments  -->
-  <xacro:arg name="use_fake_hardware" default="false"/>
-  <xacro:arg name="roundtrip_time" default="0"/>
-  <xacro:arg name="client_ip" default="0.0.0.0"/>
-  <xacro:arg name="client_port" default="59152"/>
-  <xacro:arg name="prefix" default=""/>
-  <xacro:arg name="x" default="0"/>
-  <xacro:arg name="y" default="0"/>
-  <xacro:arg name="z" default="0"/>
-  <xacro:arg name="roll" default="0"/>
-  <xacro:arg name="pitch" default="0"/>
-  <xacro:arg name="yaw" default="0"/>
-  <xacro:kuka_kr16_r2010_2_robot client_ip="$(arg client_ip)" client_port="$(arg client_port)" prefix="$(arg prefix)" use_fake_hardware="$(arg use_fake_hardware)" roundtrip_time="$(arg roundtrip_time)">
-    <origin xyz="$(arg x) $(arg y) $(arg z)" rpy="$(arg roll) $(arg pitch) $(arg yaw)"/>
-  </xacro:kuka_kr16_r2010_2_robot>
+    <!-- Import urdf file  -->
+    <xacro:include filename="$(find moveit_pro_kr16)/description/kr16_r2010_2_macro.xacro" />
+    <!-- Read additional arguments  -->
+    <xacro:arg name="use_fake_hardware" default="false" />
+    <xacro:arg name="roundtrip_time" default="0" />
+    <xacro:arg name="client_ip" default="0.0.0.0" />
+    <xacro:arg name="client_port" default="59152" />
+    <xacro:arg name="prefix" default="" />
+    <xacro:arg name="x" default="0" />
+    <xacro:arg name="y" default="0" />
+    <xacro:arg name="z" default="0" />
+    <xacro:arg name="roll" default="0" />
+    <xacro:arg name="pitch" default="0" />
+    <xacro:arg name="yaw" default="0" />
+    <xacro:arg name="initial_positions_file"
+        default="$(find moveit_pro_kr16)/config/initial_positions.yaml" />
+    <xacro:kuka_kr16_r2010_2_robot client_ip="$(arg client_ip)" client_port="$(arg client_port)"
+        prefix="$(arg prefix)" use_fake_hardware="$(arg use_fake_hardware)"
+        roundtrip_time="$(arg roundtrip_time)"
+        initial_positions_file="$(arg initial_positions_file)">
+        <origin xyz="$(arg x) $(arg y) $(arg z)" rpy="$(arg roll) $(arg pitch) $(arg yaw)" />
+    </xacro:kuka_kr16_r2010_2_robot>
 </robot>
