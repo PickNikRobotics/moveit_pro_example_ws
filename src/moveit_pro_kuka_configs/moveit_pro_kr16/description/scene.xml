@@ -1,6 +1,13 @@
 <mujoco model="kr16">
   <compiler angle="radian" />
 
+  <default>
+    <default class="kuka_actuator">
+      <general ctrlrange="-6.28319 6.28319" />
+      <position dampratio="1.0" />
+    </default>
+  </default>
+
   <asset>
     <mesh name="base_link" file="assets/base_link_collision.stl" />
     <mesh name="link_1" file="assets/link_1_collision.stl" />
@@ -151,4 +158,31 @@
       </body>
     </body>
   </worldbody>
+
+  <actuator>
+    <position
+      class="kuka_actuator"
+      name="joint_1"
+      joint="joint_1"
+      kp="2000"
+      forcerange="-60000 60000"
+    />
+    <position
+      class="kuka_actuator"
+      name="joint_2"
+      joint="joint_2"
+      kp="20000"
+      forcerange="-80000 80000"
+    />
+    <position
+      class="kuka_actuator"
+      name="joint_3"
+      joint="joint_3"
+      kp="2000"
+      forcerange="-10000 10000"
+    />
+    <position class="kuka_actuator" name="joint_4" joint="joint_4" kp="1000" />
+    <position class="kuka_actuator" name="joint_5" joint="joint_5" kp="1000" />
+    <position class="kuka_actuator" name="joint_6" joint="joint_6" kp="1000" />
+  </actuator>
 </mujoco>
