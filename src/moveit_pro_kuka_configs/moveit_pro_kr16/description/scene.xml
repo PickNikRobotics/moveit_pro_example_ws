@@ -168,7 +168,7 @@
                 quat="0.707107 -0.707107 0 0"
                 gravcomp="1"
               >
-                <inertial mass="1.0" pos="0 0 0" diaginertia="1 1 1" />
+                <inertial mass="0.1" pos="0 0 0" diaginertia="0.01 0.01 0.01" />
                 <joint
                   name="joint_5"
                   pos="0 0 0"
@@ -185,7 +185,11 @@
                   mass="0.0"
                 />
                 <body name="link_6" quat="0.707107 0.707107 0 0" gravcomp="1">
-                  <inertial mass="1.0" pos="0 0 0" diaginertia="1 1 1" />
+                  <inertial
+                    mass="0.1"
+                    pos="0 0 0"
+                    diaginertia="0.01 0.01 0.01"
+                  />
                   <joint
                     name="joint_6"
                     pos="0 0 0"
@@ -218,9 +222,9 @@
     <exclude body1="link_5" body2="link_6" />
   </contact>
   <actuator>
-    <position class="kuka_actuator" name="joint_1" joint="joint_1" kp="100" />
-    <position class="kuka_actuator" name="joint_2" joint="joint_2" kp="100" />
-    <position class="kuka_actuator" name="joint_3" joint="joint_3" kp="100" />
+    <position class="kuka_actuator" name="joint_1" joint="joint_1" kp="1000" />
+    <position class="kuka_actuator" name="joint_2" joint="joint_2" kp="5000" />
+    <position class="kuka_actuator" name="joint_3" joint="joint_3" kp="500" />
     <position class="kuka_actuator" name="joint_4" joint="joint_4" kp="100" />
     <position class="kuka_actuator" name="joint_5" joint="joint_5" kp="100" />
     <position class="kuka_actuator" name="joint_6" joint="joint_6" kp="100" />
