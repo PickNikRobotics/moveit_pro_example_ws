@@ -106,7 +106,7 @@ def generate_robot_nodes(context):
 
     namespace = LaunchConfiguration('namespace').perform(context)
     controllers_yaml = PathJoinSubstitution([
-        FindPackageShare('franka_bringup'), 'config', "controllers.yaml"
+        FindPackageShare('franka_dual_arm_config_hw'), 'config/control', "right_franka_ros2_control.yaml"
     ]).perform(context)
 
     joint_sources_str = LaunchConfiguration('joint_sources').perform(context)
@@ -114,13 +114,6 @@ def generate_robot_nodes(context):
     joint_state_rate = int(LaunchConfiguration('joint_state_rate').perform(context))
 
     nodes = [
-        #Node(
-        #    package='robot_state_publisher',
-        #    executable='robot_state_publisher',
-        #    namespace=namespace,
-        #    parameters=[{'robot_description': robot_description}],
-        #    output='screen',
-        #),
         Node(
             package='controller_manager',
             executable='ros2_control_node',
@@ -132,34 +125,47 @@ def generate_robot_nodes(context):
             output='screen',
             on_exit=Shutdown(),
         ),
-        Node(
-            package='joint_state_publisher',
-            executable='joint_state_publisher',
-            name='joint_state_publisher',
-            #namespace=namespace,
-            parameters=[{
-                'joints': joint_sources,
-                'rate': joint_state_rate,
-                'use_robot_description': False,
-            }],
-            output='screen',
-        ),
+        #Node(
+        #    package='joint_state_publisher',
+        #    executable='joint_state_publisher',
+        #    name='joint_state_publisher',
+        #    namespace=namespace,
+        #    parameters=[{
+        #        'joints': joint_sources,
+        #        'rate': joint_state_rate,
+        #        'use_robot_description': False,
+        #    }],
+        #    remappings=[
+        #        ('/right/joint_states', '/joint_states')
+        #    ],
+        #    output='screen',
+        #),
         Node(
             package='controller_manager',
             executable='spawner',
             namespace=namespace,
             arguments=['joint_state_broadcaster'],
+            remappings=[
+                ('/left/joint_states', '/joint_states')
+            ],
             output='screen',
         ),
         Node(
             package='controller_manager',
             executable='spawner',
             namespace=namespace,
-            arguments=['franka_robot_state_broadcaster'],
-            parameters=[{'arm_id': LaunchConfiguration('arm_id').perform(context)}],
-            condition=UnlessCondition(LaunchConfiguration('use_fake_hardware')),
+            arguments=['joint_trajectory_controller', '--inactive'],
             output='screen',
         ),
+        #Node(
+        #    package='controller_manager',
+        #    executable='spawner',
+        #    namespace=namespace,
+        #    arguments=['franka_robot_state_broadcaster'],
+        #    parameters=[{'arm_id': LaunchConfiguration('arm_id').perform(context)}],
+        #    condition=UnlessCondition(LaunchConfiguration('use_fake_hardware')),
+        #    output='screen',
+        #),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource([PathJoinSubstitution(
                 [FindPackageShare('franka_gripper'), 'launch', 'gripper.launch.py'])]),

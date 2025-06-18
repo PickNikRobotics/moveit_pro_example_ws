@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root BTCPP_format="4" main_tree_to_execute="Dual Arm Hello World">
+  <!--//////////-->
+  <BehaviorTree ID="Dual Arm Hello World" _description="" _favorite="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Decorator ID="ForceSuccess">
+        <Action ID="SwitchController" activate_asap="true" controller_switch_action_name="/right/controller_manager/switch_controller" strictness="2" timeout="0.000000" activate_controllers="joint_trajectory_controller"/>
+      </Decorator>
+      <Action ID="RetrieveWaypoint" joint_group_name="right_manipulator" waypoint_joint_state="{target_joint_state}" waypoint_name="Some State"/>
+      <Action ID="PlanToJointGoal" acceleration_scale_factor="0.05" joint_goal="{target_joint_state}" joint_trajectory_msg="{joint_trajectory_msg}" keep_orientation="false" keep_orientation_link_names="grasp_link" keep_orientation_tolerance="0.1" link_padding="0.000000" max_iterations="5000" planning_group_name="right_manipulator" seed="0" trajectory_sampling_rate="100" velocity_scale_factor="0.05"/>
+      <Action ID="ExecuteFollowJointTrajectory" execute_follow_joint_trajectory_action_name="right/joint_trajectory_controller/follow_joint_trajectory" goal_duration_tolerance="-1.000000" goal_position_tolerance="0.000000" goal_time_tolerance="0.000000" joint_trajectory_msg="{joint_trajectory_msg}"/>
+      <Decorator ID="ForceSuccess">
+        <Action ID="SwitchController" activate_asap="true" controller_switch_action_name="/left/controller_manager/switch_controller" strictness="2" timeout="0.000000" activate_controllers="joint_trajectory_controller"/>
+      </Decorator>
+      <Action ID="RetrieveWaypoint" joint_group_name="left_manipulator" waypoint_joint_state="{target_joint_state}" waypoint_name="Some State"/>
+      <Action ID="PlanToJointGoal" acceleration_scale_factor="0.05" joint_goal="{target_joint_state}" joint_trajectory_msg="{joint_trajectory_msg}" keep_orientation="false" keep_orientation_link_names="grasp_link" keep_orientation_tolerance="0.1" link_padding="0.000000" max_iterations="5000" planning_group_name="left_manipulator" seed="0" trajectory_sampling_rate="100" velocity_scale_factor="0.05"/>
+      <Action ID="ExecuteFollowJointTrajectory" execute_follow_joint_trajectory_action_name="left/joint_trajectory_controller/follow_joint_trajectory" goal_duration_tolerance="-1.000000" goal_position_tolerance="0.000000" goal_time_tolerance="0.000000" joint_trajectory_msg="{joint_trajectory_msg}"/>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Dual Arm Hello World">
+      <MetadataFields>
+        <Metadata runnable="true"/>
+        <Metadata subcategory="Motion - Execute"/>
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
