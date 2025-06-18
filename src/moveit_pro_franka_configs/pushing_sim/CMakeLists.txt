@@ -4,7 +4,6 @@ project(pushing_sim)
 find_package(ament_cmake REQUIRED)
 find_package(picknik_accessories REQUIRED)
 
-
 # Install all XML files in directory
 set(PICKNIK_ACCESSORIES_SHARE_DIR
 "${CMAKE_INSTALL_PREFIX}/../picknik_accessories/share/picknik_accessories/mujoco_assets/"

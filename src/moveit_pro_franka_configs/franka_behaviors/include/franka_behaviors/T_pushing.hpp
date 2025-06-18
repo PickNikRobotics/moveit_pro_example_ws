@@ -11,7 +11,7 @@
 #include <rclcpp/publisher.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
-namespace example_behaviors
+namespace franka_behaviors
 {
 /**
  * @brief The T_pushing Behavior uses FailureLoggerROS to log a "Hello World" message and will always
@@ -78,4 +78,4 @@ private:
   rclcpp::Time alpha_ = rclcpp::Time(0, 0, RCL_ROS_TIME);
   rclcpp::Time last_update_ = rclcpp::Time(0, 0, RCL_ROS_TIME);
 };
-}  // namespace example_behaviors
+}  // namespace franka_behaviors
