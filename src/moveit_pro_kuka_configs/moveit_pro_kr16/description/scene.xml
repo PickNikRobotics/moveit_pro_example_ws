@@ -76,6 +76,7 @@
       material="groundplane"
     />
     <body name="base_link" gravcomp="1" pos="0 0 0" quat="1 0 0 0">
+      <inertial mass="1.0" pos="0 0 0" diaginertia="1 1 1" />
       <geom type="mesh" mesh="base_link" rgba="0 0 0 0" />
       <geom
         type="mesh"
@@ -86,12 +87,7 @@
       />
       <body name="link_1" quat="0 -1 0 0" gravcomp="1">
         <inertial mass="1.0" pos="0 0 0" diaginertia="1 1 1" />
-        <joint
-          name="joint_1"
-          pos="0 0 0"
-          axis="0 0 1"
-          range="-3.22886 3.22886"
-        />
+        <joint name="joint_1" pos="0 0 0" axis="0 0 1" limited="false" />
         <geom type="mesh" mesh="link_1" rgba="0 0 0 0" />
         <geom
           type="mesh"
@@ -213,7 +209,14 @@
       </body>
     </body>
   </worldbody>
-
+  <contact>
+    <exclude body1="base_link" body2="link_1" />
+    <exclude body1="link_1" body2="link_2" />
+    <exclude body1="link_2" body2="link_3" />
+    <exclude body1="link_3" body2="link_4" />
+    <exclude body1="link_4" body2="link_5" />
+    <exclude body1="link_5" body2="link_6" />
+  </contact>
   <actuator>
     <position class="kuka_actuator" name="joint_1" joint="joint_1" kp="100" />
     <position class="kuka_actuator" name="joint_2" joint="joint_2" kp="100" />
