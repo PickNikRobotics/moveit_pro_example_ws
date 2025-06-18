@@ -1,8 +1,9 @@
-#include <example_behaviors/T_pushing.hpp>
+#include <franka_behaviors/T_pushing.hpp>
 
 #include <Eigen/Dense>
 #include <vector>
 
+#include <fmt/format.h>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/twist_stamped.hpp>
 #include <geometry_msgs/msg/wrench_stamped.hpp>
@@ -19,7 +20,7 @@ constexpr auto kPortIDWrenchStamped = "wrench_stamped";
 constexpr double FINGER_WIDTH = 0.018;
 }  // namespace
 
-namespace example_behaviors
+namespace franka_behaviors
 {
 std::tuple<std::vector<Eigen::Vector3d>, Eigen::Vector3d> get_points(const Eigen::Matrix<double, 6, 6>& T)
 {
@@ -228,9 +229,8 @@ BT::NodeStatus T_pushing::onRunning()
   x_best[2] /= 5.0;
   std::cout << "x.norm() = " << x_best.norm() << std::endl;
 
-  // if ((shared_resources_->node->now() - last_update_).seconds() > 0.01)
-  // {
-  Eigen::Vector3d velocities = Eigen::Vector3d::Zero();
+  if ((shared_resources_->node->now() - last_update_).seconds() > 0.01)
+  {
   for (int iter = 0; iter < 3; iter++)
   {
     for (size_t i = 0; i < site_transforms.size(); ++i)
@@ -263,7 +263,7 @@ BT::NodeStatus T_pushing::onRunning()
     }
   }
   last_update_ = shared_resources_->node->now();
-  // }
+ }
 
   Eigen::Vector3d velocity;
   // if ((ee_com_transform.translation() - (best_rp_ + (best_N_ * 0.02)) ).norm() > 0.01)
@@ -327,4 +327,4 @@ BT::NodeStatus T_pushing::onStart()
 void T_pushing::onHalted()
 {
 }
-}  // namespace example_behaviors
+}  // namespace franka_behaviors

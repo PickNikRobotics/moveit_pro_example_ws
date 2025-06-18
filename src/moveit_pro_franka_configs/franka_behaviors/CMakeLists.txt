@@ -3,6 +3,7 @@ project(franka_behaviors CXX)
 
 find_package(moveit_studio_common REQUIRED)
 find_package(franka_ros2 REQUIRED)
+find_package(OsqpEigen REQUIRED)
 moveit_studio_package()
 
 set(THIS_PACKAGE_INCLUDE_DEPENDS moveit_studio_behavior moveit_studio_behavior_interface pluginlib 
@@ -15,6 +16,7 @@ add_library(
   franka_behaviors
   SHARED 
   src/franka_grasp_action.cpp
+  src/T_pushing.cpp
   src/register_behaviors.cpp)
 target_include_directories(
   franka_behaviors
@@ -22,6 +24,8 @@ target_include_directories(
   $<INSTALL_INTERFACE:include>)
 ament_target_dependencies(franka_behaviors
                           ${THIS_PACKAGE_INCLUDE_DEPENDS})
+
+target_link_libraries(franka_behaviors OsqpEigen::OsqpEigen)
 
 # Install Libraries
 install(
