@@ -5,7 +5,7 @@
 
   <!-- Import kr16 urdf file -->
   <xacro:arg name="use_fake_hardware" default="true" />
-  <xacro:include filename="$(find kuka_cybertech_support)/urdf/kr16_r2010_2.urdf.xacro" />
+  <xacro:include filename="$(find moveit_pro_kr16)/description/kr16_r2010_2.urdf.xacro" />
   <link name="grasp_link"/>
   <joint name="grasp_link_joint" type="fixed">
     <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
