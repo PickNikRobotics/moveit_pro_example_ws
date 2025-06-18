@@ -83,7 +83,7 @@ def generate_robot_nodes(context):
                 'arm_prefix': "left",
                 'namespace': "left",
                 'urdf_file': "fr3/fr3.urdf.xacro",
-                'robot_ip': "192.168.1.21",
+                'robot_ip': "172.16.0.4",
                 'load_gripper': "true",
                 'use_fake_hardware': "false",
                 'fake_sensor_commands': "false",
@@ -97,7 +97,7 @@ def generate_robot_nodes(context):
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
                 PathJoinSubstitution([
-                    FindPackageShare('franka_dual_arm_config_hw'), 'launch', 'left_franka.launch.py'
+                    FindPackageShare('franka_dual_arm_config_hw'), 'launch', 'right_franka.launch.py'
                 ])
             ),
             launch_arguments={
@@ -105,14 +105,27 @@ def generate_robot_nodes(context):
                 'arm_prefix': "right",
                 'namespace': "right",
                 'urdf_file': "fr3/fr3.urdf.xacro",
-                'robot_ip': "192.168.1.22",
+                'robot_ip': "172.16.0.5",
                 'load_gripper': "true",
                 'use_fake_hardware': "false",
                 'fake_sensor_commands': "false",
-                'joint_sources': "joint_state_broadcaster, left_velocity_force_controller",
+                'joint_sources': "joint_states, franka_gripper/joint_states",
                 'joint_state_rate': "30",
             }.items(),
         )
+    )
+    nodes.append(
+        Node(
+            package='joint_state_publisher',
+            executable='joint_state_publisher',
+            name='joint_state_publisher',
+            parameters=[{
+                'source_list': ["right/joint_states","right/franka_gripper/joint_states","left/joint_states","left/franka_gripper/joint_states"],
+                'rate': 50,
+                'use_robot_description': False,
+            }],
+            output='screen',
+        ),
     )
     return nodes
 
