@@ -214,7 +214,7 @@ left_velocity_force_controller:
     # command_joints: []
     # The type of command interface to use. Supported values are "position" and "velocity".
     command_interfaces: ["position"]
-    
+
 right_velocity_force_controller:
   ros__parameters:
     # Joints that the controller will claim.
