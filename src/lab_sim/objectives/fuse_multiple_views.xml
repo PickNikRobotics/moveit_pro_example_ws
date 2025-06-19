@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Fuse Multiple Views">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Fuse Multiple Views"
+    _description="Take multiple snapshots from the wrist camera and merge them into a single point cloud."
+    _favorite="true"
+  >
+    <Control ID="Sequence">
+      <SubTree ID="Clear Snapshot" _collapsed="true" />
+      <Action ID="SwitchUIPrimaryView" primary_view_name="Visualization" />
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        controller_names="joint_trajectory_controller"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        seed="0"
+        velocity_scale_factor="1.0"
+        waypoint_name="Look at Objects - Top"
+      />
+      <SubTree
+        ID="Add Point Cloud to Vector"
+        _collapsed="true"
+        point_cloud_vector="{point_cloud_vector}"
+        topic_name="/wrist_camera/points"
+      />
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        controller_names="joint_trajectory_controller"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        seed="0"
+        velocity_scale_factor="1.0"
+        waypoint_name="Look at Objects - Right"
+      />
+      <SubTree
+        ID="Add Point Cloud to Vector"
+        _collapsed="true"
+        point_cloud_vector="{point_cloud_vector}"
+        topic_name="/wrist_camera/points"
+      />
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        controller_names="joint_trajectory_controller"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        seed="0"
+        velocity_scale_factor="1.0"
+        waypoint_name="Look at Objects - Left"
+      />
+      <SubTree
+        ID="Add Point Cloud to Vector"
+        _collapsed="true"
+        point_cloud_vector="{point_cloud_vector}"
+        topic_name="/wrist_camera/points"
+      />
+      <Action
+        ID="MergePointClouds"
+        grid_resolution_meters="0.010000"
+        merged_cloud="{merged_cloud}"
+        point_clouds="{point_cloud_vector}"
+      />
+      <Action
+        ID="SendPointCloudToUI"
+        point_cloud="{merged_cloud}"
+        pcd_topic="/pcd_pointcloud_captures"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Fuse Multiple Views">
+      <MetadataFields>
+        <Metadata subcategory="Perception - 3D Point Cloud" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
