@@ -1,41 +1,119 @@
-- name: Left Home
+- description: ''
+  favorite: false
   joint_group_names:
-    - left_arm
+  - right_manipulator
+  - left_manipulator
+  - right_arm
+  - left_arm
   joint_state:
+    effort: []
     header:
       frame_id: world
       stamp:
-        sec: 0
         nanosec: 0
-    name: [left_fr3_joint1, left_fr3_joint2, left_fr3_joint3, left_fr3_joint4, left_fr3_joint5, left_fr3_joint6, left_fr3_joint7]
-    position: [0, -0.7854, 0, -2.3562, 0, 1.5707, 0.7853]
+        sec: 0
+    name:
+    - right_fr3_joint1
+    - right_fr3_joint2
+    - right_fr3_joint3
+    - right_fr3_joint4
+    - right_fr3_joint5
+    - right_fr3_joint6
+    - right_fr3_joint7
+    - left_fr3_joint1
+    - left_fr3_joint2
+    - left_fr3_joint3
+    - left_fr3_joint4
+    - left_fr3_joint5
+    - left_fr3_joint6
+    - left_fr3_joint7
+    position:
+    - 0
+    - -0.7854
+    - 0
+    - -2.3562
+    - 0
+    - 1.5707
+    - 0.7853
+    - 0
+    - -0.7854
+    - 0
+    - -2.3562
+    - 0
+    - 1.5707
+    - 0.7853
     velocity: []
-    effort: []
-- name: Right Home
-  joint_group_names:
-    - right_arm
-  joint_state:
+  multi_dof_joint_state:
     header:
-      frame_id: world
+      frame_id: ''
       stamp:
-        sec: 0
         nanosec: 0
-    name: [right_fr3_joint1, right_fr3_joint2, right_fr3_joint3, right_fr3_joint4, right_fr3_joint5, right_fr3_joint6, right_fr3_joint7]
-    position: [0, -0.7854, 0, -2.3562, 0, 1.5707, 0.7853]
-    velocity: []
-    effort: []
-- name: Home
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Home
+- description: ''
+  favorite: false
   joint_group_names:
-    - manipulator
+  - left_arm
+  - left_hand
+  - left_manipulator
+  - manipulator
+  - right_arm
+  - right_hand
+  - right_manipulator
   joint_state:
-    header:
-      frame_id: world
-      stamp:
-        sec: 0
-        nanosec: 0
-    name: [right_fr3_joint1, right_fr3_joint2, right_fr3_joint3, right_fr3_joint4, right_fr3_joint5, right_fr3_joint6, right_fr3_joint7,
-         left_fr3_joint1, left_fr3_joint2, left_fr3_joint3, left_fr3_joint4, left_fr3_joint5, left_fr3_joint6, left_fr3_joint7]
-    position: [0, -0.7854, 0, -2.3562, 0, 1.5707, 0.7853,
-           0, -0.7854, 0, -2.3562, 0, 1.5707, 0.7853]
-    velocity: []
     effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - left_fr3_joint1
+    - left_fr3_joint2
+    - left_fr3_joint3
+    - left_fr3_joint4
+    - left_fr3_joint5
+    - left_fr3_joint6
+    - left_fr3_joint7
+    - left_fr3_finger_joint1
+    - right_fr3_joint1
+    - right_fr3_joint2
+    - right_fr3_joint3
+    - right_fr3_joint4
+    - right_fr3_joint5
+    - right_fr3_joint6
+    - right_fr3_joint7
+    - right_fr3_finger_joint1
+    position:
+    - 0.2104633498032765
+    - 0.08731371348910807
+    - -0.6978125046105329
+    - -2.362852050999895
+    - 0.4425366266157937
+    - 2.569568862817941
+    - 0.44022115704472237
+    - 0
+    - -7.338835506277392e-05
+    - -0.7177527881526261
+    - 8.036712043953334e-05
+    - -2.282902332061505
+    - -0.0010433478584512073
+    - 1.7833356594486014
+    - 0.2418959983146476
+    - 0
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Some State
