@@ -49,15 +49,19 @@ import os
 import sys
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, OpaqueFunction
+from launch.actions import (
+    DeclareLaunchArgument,
+    IncludeLaunchDescription,
+    OpaqueFunction,
+)
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
 # Add the path to the `utils` folder
-package_share = get_package_share_directory('franka_bringup')
-utils_path = os.path.join(package_share, '..', '..', 'lib', 'franka_bringup', 'utils')
+package_share = get_package_share_directory("franka_bringup")
+utils_path = os.path.join(package_share, "..", "..", "lib", "franka_bringup", "utils")
 sys.path.append(os.path.abspath(utils_path))
 
 # Iterates over the uncommented lines in file specified by the robot_config_file parameter.
@@ -74,21 +78,25 @@ def generate_robot_nodes(context):
     nodes.append(
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
-                PathJoinSubstitution([
-                    FindPackageShare('franka_dual_arm_config_hw'), 'launch', 'left_franka.launch.py'
-                ])
+                PathJoinSubstitution(
+                    [
+                        FindPackageShare("franka_dual_arm_config_hw"),
+                        "launch",
+                        "left_franka.launch.py",
+                    ]
+                )
             ),
             launch_arguments={
-                'arm_id': "",
-                'arm_prefix': "left",
-                'namespace': "left",
-                'urdf_file': "fr3/fr3.urdf.xacro",
-                'robot_ip': "172.16.0.4",
-                'load_gripper': "true",
-                'use_fake_hardware': "false",
-                'fake_sensor_commands': "false",
-                'joint_sources': "joint_state_broadcaster, left_velocity_force_controller",
-                'joint_state_rate': "30",
+                "arm_id": "",
+                "arm_prefix": "left",
+                "namespace": "left",
+                "urdf_file": "fr3/fr3.urdf.xacro",
+                "robot_ip": "172.16.0.4",
+                "load_gripper": "true",
+                "use_fake_hardware": "false",
+                "fake_sensor_commands": "false",
+                "joint_sources": "joint_state_broadcaster, left_velocity_force_controller",
+                "joint_state_rate": "30",
             }.items(),
         )
     )
@@ -96,38 +104,50 @@ def generate_robot_nodes(context):
     nodes.append(
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
-                PathJoinSubstitution([
-                    FindPackageShare('franka_dual_arm_config_hw'), 'launch', 'right_franka.launch.py'
-                ])
+                PathJoinSubstitution(
+                    [
+                        FindPackageShare("franka_dual_arm_config_hw"),
+                        "launch",
+                        "right_franka.launch.py",
+                    ]
+                )
             ),
             launch_arguments={
-                'arm_id': "",
-                'arm_prefix': "right",
-                'namespace': "right",
-                'urdf_file': "fr3/fr3.urdf.xacro",
-                'robot_ip': "172.16.0.5",
-                'load_gripper': "true",
-                'use_fake_hardware': "false",
-                'fake_sensor_commands': "false",
-                'joint_sources': "joint_states, franka_gripper/joint_states",
-                'joint_state_rate': "30",
+                "arm_id": "",
+                "arm_prefix": "right",
+                "namespace": "right",
+                "urdf_file": "fr3/fr3.urdf.xacro",
+                "robot_ip": "172.16.0.5",
+                "load_gripper": "true",
+                "use_fake_hardware": "false",
+                "fake_sensor_commands": "false",
+                "joint_sources": "joint_states, franka_gripper/joint_states",
+                "joint_state_rate": "30",
             }.items(),
         )
     )
     nodes.append(
         Node(
-            package='joint_state_publisher',
-            executable='joint_state_publisher',
-            name='joint_state_publisher',
-            parameters=[{
-                'source_list': ["right/joint_states","right/franka_gripper/joint_states","left/joint_states","left/franka_gripper/joint_states"],
-                'rate': 50,
-                'use_robot_description': False,
-            }],
-            output='screen',
+            package="joint_state_publisher",
+            executable="joint_state_publisher",
+            name="joint_state_publisher",
+            parameters=[
+                {
+                    "source_list": [
+                        "right/joint_states",
+                        "right/franka_gripper/joint_states",
+                        "left/joint_states",
+                        "left/franka_gripper/joint_states",
+                    ],
+                    "rate": 50,
+                    "use_robot_description": False,
+                }
+            ],
+            output="screen",
         ),
     )
     return nodes
+
 
 # The generate_launch_description function is the entry point (like "main")
 # It is called by the ROS 2 launch system when the launch file is executed.
@@ -137,13 +157,19 @@ def generate_robot_nodes(context):
 
 
 def generate_launch_description():
-    return LaunchDescription([
-        DeclareLaunchArgument(
-            'robot_config_file',
-            default_value=PathJoinSubstitution([
-                FindPackageShare('franka_dual_arm_config_hw'), 'config/control', 'franka.config.yaml'
-            ]),
-            description='Path to the robot configuration file to load',
-        ),
-        OpaqueFunction(function=generate_robot_nodes),
-    ])
+    return LaunchDescription(
+        [
+            DeclareLaunchArgument(
+                "robot_config_file",
+                default_value=PathJoinSubstitution(
+                    [
+                        FindPackageShare("franka_dual_arm_config_hw"),
+                        "config/control",
+                        "franka.config.yaml",
+                    ]
+                ),
+                description="Path to the robot configuration file to load",
+            ),
+            OpaqueFunction(function=generate_robot_nodes),
+        ]
+    )
