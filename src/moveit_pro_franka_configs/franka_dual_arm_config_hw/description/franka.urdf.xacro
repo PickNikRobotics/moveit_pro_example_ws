@@ -11,7 +11,7 @@
   <joint name="right_moint_joint" type="fixed">
      <parent link="world"/>
      <child link = "right_mount"/>
-    <origin xyz="-0.6 -0.050681 0.356" rpy="0 0 0"/>
+    <origin xyz="0.035 -0.050681 0.356" rpy="0.8936 -0.1746 0.4636"/>
   </joint>
   <xacro:franka_robot arm_id="fr3"
                       joint_limits="${xacro.load_yaml('$(find franka_description)/robots/fr3/joint_limits.yaml')}"
@@ -41,7 +41,7 @@
   <joint name="left_moint_joint" type="fixed">
      <parent link="world"/>
      <child link = "left_mount"/>
-    <origin xyz="0.6 0.050681 0.356" rpy="0 0 0"/>
+    <origin xyz="0.035 0.050681 0.356" rpy="-0.8936 -0.1746 -0.4636"/>
   </joint>
   <xacro:franka_robot arm_id="fr3"
                       joint_limits="${xacro.load_yaml('$(find franka_description)/robots/fr3/joint_limits.yaml')}"

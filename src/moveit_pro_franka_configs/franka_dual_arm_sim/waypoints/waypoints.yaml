@@ -1,6 +1,7 @@
 - description: ''
   favorite: false
   joint_group_names:
+  - manipulator
   - right_manipulator
   - left_manipulator
   - right_arm
