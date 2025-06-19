@@ -57,6 +57,7 @@ cancel_objectives = {
 skip_objectives = {
     "Grasp Planning",
     "Joint Diagnostic",
+    "Fuse Multiple Views",
     "ML Segment Image from Text Prompt",
     "ML Segment Point Cloud from Clicked Point",
     "Pick up Cube",
