@@ -231,39 +231,39 @@ BT::NodeStatus T_pushing::onRunning()
 
   if ((shared_resources_->node->now() - last_update_).seconds() > 0.01)
   {
-  for (int iter = 0; iter < 3; iter++)
-  {
-    for (size_t i = 0; i < site_transforms.size(); ++i)
+    for (int iter = 0; iter < 3; iter++)
     {
-      const auto& TF1 = site_transforms[i];
-      const auto& TF2 = site_transforms[(i + 1) % site_transforms.size()];
-      Eigen::Vector3d going_direction = TF2.translation() - TF1.translation();
-      going_direction.normalize();
-      Eigen::Vector3d z_direction;
-      z_direction << 0, 0, 1;
-      Eigen::Vector3d N = going_direction.cross(z_direction);
-      Eigen::Vector3d vp = -N;
-      double t = Eigen::Matrix<double, 1, 1>::Random()(0, 0);
-      t = 0.5 * t + 0.5;  // [0, 1]
-
-      Eigen::Vector3d rp = t * (TF1.translation() + going_direction * FINGER_WIDTH) +
-                           (1 - t) * (TF2.translation() - going_direction * FINGER_WIDTH);
-
-      auto [cost, x] = get_cost(rp, vp, N, target_com_transform);
-
-      if (cost < 0.5 * min_best_cost && cost < min_cost)
+      for (size_t i = 0; i < site_transforms.size(); ++i)
       {
-        best_rp_ = rp;
-        best_vp_ = vp;
-        best_N_ = N;
-        min_cost = cost;
-        // std::cout << "cost = " << min_cost << std::endl;
-        alpha_ = shared_resources_->node->now();
+        const auto& TF1 = site_transforms[i];
+        const auto& TF2 = site_transforms[(i + 1) % site_transforms.size()];
+        Eigen::Vector3d going_direction = TF2.translation() - TF1.translation();
+        going_direction.normalize();
+        Eigen::Vector3d z_direction;
+        z_direction << 0, 0, 1;
+        Eigen::Vector3d N = going_direction.cross(z_direction);
+        Eigen::Vector3d vp = -N;
+        double t = Eigen::Matrix<double, 1, 1>::Random()(0, 0);
+        t = 0.5 * t + 0.5;  // [0, 1]
+
+        Eigen::Vector3d rp = t * (TF1.translation() + going_direction * FINGER_WIDTH) +
+                             (1 - t) * (TF2.translation() - going_direction * FINGER_WIDTH);
+
+        auto [cost, x] = get_cost(rp, vp, N, target_com_transform);
+
+        if (cost < 0.5 * min_best_cost && cost < min_cost)
+        {
+          best_rp_ = rp;
+          best_vp_ = vp;
+          best_N_ = N;
+          min_cost = cost;
+          // std::cout << "cost = " << min_cost << std::endl;
+          alpha_ = shared_resources_->node->now();
+        }
       }
     }
+    last_update_ = shared_resources_->node->now();
   }
-  last_update_ = shared_resources_->node->now();
- }
 
   Eigen::Vector3d velocity;
   // if ((ee_com_transform.translation() - (best_rp_ + (best_N_ * 0.02)) ).norm() > 0.01)
