@@ -4,8 +4,8 @@
   <version>6.5.0</version>
 
   <description>
-    MuJoCo simulation configuration package for Picknik's UR robot on a linear
-    rail
+    Example configuration package for MoveIt Pro with Franka in a simulated
+    environment.
   </description>
 
   <maintainer email="support@picknik.ai">MoveIt Pro Maintainer</maintainer>
@@ -15,18 +15,15 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <exec_depend>admittance_controller</exec_depend>
-  <exec_depend>moveit_planners_stomp</exec_depend>
+  <exec_depend>franka_base_config</exec_depend>
+  <exec_depend>franka_description</exec_depend>
+  <exec_depend>franka_ros2</exec_depend>
   <exec_depend>moveit_ros_perception</exec_depend>
   <exec_depend>moveit_studio_agent</exec_depend>
   <exec_depend>moveit_studio_behavior</exec_depend>
-  <exec_depend>moveit_studio_ur_pstop_manager</exec_depend>
   <exec_depend>picknik_accessories</exec_depend>
   <exec_depend>realsense2_camera</exec_depend>
   <exec_depend>realsense2_description</exec_depend>
-  <exec_depend>robotiq_description</exec_depend>
-  <exec_depend>robotiq_controllers</exec_depend>
-  <exec_depend>ur_description</exec_depend>
-  <exec_depend>ur_robot_driver</exec_depend>
   <exec_depend>picknik_mujoco_ros</exec_depend>
   <exec_depend>velocity_force_controller</exec_depend>
 

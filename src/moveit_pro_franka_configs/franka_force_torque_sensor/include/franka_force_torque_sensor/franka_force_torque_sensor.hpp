@@ -23,33 +23,29 @@
 
 using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
 
-namespace franka_force_torque_sensor {
+namespace franka_force_torque_sensor
+{
 
 /// The model example controller prints robot model parameters.
-class ForceTorqueSensor : public controller_interface::ControllerInterface {
- public:
-  [[nodiscard]] controller_interface::InterfaceConfiguration command_interface_configuration()
-      const override;
+class ForceTorqueSensor : public controller_interface::ControllerInterface
+{
+public:
+  [[nodiscard]] controller_interface::InterfaceConfiguration command_interface_configuration() const override;
 
-  [[nodiscard]] controller_interface::InterfaceConfiguration state_interface_configuration()
-      const override;
+  [[nodiscard]] controller_interface::InterfaceConfiguration state_interface_configuration() const override;
 
-  controller_interface::return_type update(const rclcpp::Time& time,
-                                           const rclcpp::Duration& period) override;
+  controller_interface::return_type update(const rclcpp::Time& time, const rclcpp::Duration& period) override;
   controller_interface::CallbackReturn on_init() override;
 
-  controller_interface::CallbackReturn on_configure(
-      const rclcpp_lifecycle::State& previous_state) override;
+  controller_interface::CallbackReturn on_configure(const rclcpp_lifecycle::State& previous_state) override;
 
-  controller_interface::CallbackReturn on_activate(
-      const rclcpp_lifecycle::State& previous_state) override;
+  controller_interface::CallbackReturn on_activate(const rclcpp_lifecycle::State& previous_state) override;
 
-  controller_interface::CallbackReturn on_deactivate(
-      const rclcpp_lifecycle::State& previous_state) override;
+  controller_interface::CallbackReturn on_deactivate(const rclcpp_lifecycle::State& previous_state) override;
 
- private:
+private:
   std::unique_ptr<franka_semantic_components::FrankaRobotState> franka_robot_state_;
 
-  std::string state_interface_name{"robot_state"};
+  std::string state_interface_name{ "robot_state" };
 };
 }  // namespace franka_force_torque_sensor
