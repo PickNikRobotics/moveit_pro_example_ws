@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Get Collision Free Grasp Subtree">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Get Collision Free Grasp Subtree"
+    _description="Takes a set of grasp poses and returns the first collision free pose."
+  >
+    <Decorator
+      ID="ForEachUntilSuccess"
+      index="{index}"
+      out="{grasp}"
+      vector_in="{input_grasps}"
+    >
+      <Control ID="Sequence">
+        <Control ID="Sequence" name="Retract pose by 2 cm and visualize">
+          <Action
+            ID="TransformPoseFrame"
+            input_pose="{grasp}"
+            output_pose="{grasp_grasp}"
+            target_frame_id="grasp_link"
+          />
+          <Action
+            ID="TransformPose"
+            input_pose="{grasp_grasp}"
+            output_pose="{grasp_grasp}"
+            translation_xyz="0;0;-0.02"
+            quaternion_xyzw="0;0;1;0"
+          />
+          <Action
+            ID="TransformPoseFrame"
+            input_pose="{grasp_grasp}"
+            output_pose="{output_grasp}"
+            target_frame_id="world"
+          />
+          <Action
+            ID="VisualizePose"
+            marker_lifetime="0.000000"
+            marker_name="grasp pose"
+            marker_size="0.100000"
+            pose="{output_grasp}"
+          />
+          <Action
+            ID="VisualizeMesh"
+            marker_lifetime="0.000000"
+            mesh_path="package://lab_sim/objectives/gripper_token.dae"
+            mesh_pose="{output_grasp}"
+          />
+        </Control>
+        <Control
+          ID="Sequence"
+          name="Collision check move to pregrasp pose 5 cm from retracted pose"
+        >
+          <Action
+            ID="TransformPose"
+            input_pose="{output_grasp}"
+            output_pose="{grasp_mtc_world}"
+            translation_xyz="0;0;-0.05"
+          />
+          <Action
+            ID="InitializeMTCTask"
+            task_id="move_to_pose"
+            task="{move_to_pose_task}"
+            trajectory_monitoring="false"
+            controller_names="/joint_trajectory_controller"
+          />
+          <Action ID="SetupMTCCurrentState" task="{move_to_pose_task}" />
+          <Action
+            ID="SetupMTCUpdateGroupCollisionRule"
+            allow_collision="true"
+            object_name="&lt;octomap&gt;"
+            task="{move_to_pose_task}"
+            group_name="gripper"
+          />
+          <Action
+            ID="SetupMTCPlanToPose"
+            acceleration_scale_factor="1.000000"
+            ik_frame="grasp_link"
+            keep_orientation="false"
+            keep_orientation_link_names="grasp_link"
+            keep_orientation_tolerance="0.100000"
+            link_padding="0.000000"
+            max_iterations="5000"
+            monitored_stage="current state"
+            planning_group_name="manipulator"
+            target_pose="{grasp_mtc_world}"
+            task="{move_to_pose_task}"
+            trajectory_sampling_rate="100"
+            velocity_scale_factor="1.000000"
+          />
+          <Action
+            ID="PlanMTCTask"
+            solution="{move_to_pose_solution}"
+            task="{move_to_pose_task}"
+          />
+        </Control>
+        <Control
+          ID="Sequence"
+          name="Collision check from pregrasp to grasp pose"
+        >
+          <Action
+            ID="TransformPose"
+            input_pose="{grasp_grasp}"
+            output_pose="{pregrasp_grasp}"
+            translation_xyz="0;0;-0.05"
+          />
+          <Action ID="ResetPoseStampedVector" vector="{grasp_goal}" />
+          <Action
+            ID="AddPoseStampedToVector"
+            input="{pregrasp_grasp}"
+            vector="{grasp_goal}"
+          />
+          <Action
+            ID="AddPoseStampedToVector"
+            input="{output_grasp}"
+            vector="{grasp_goal}"
+          />
+          <Action
+            ID="PlanCartesianPath"
+            acceleration_scale_factor="1.000000"
+            blending_radius="0.020000"
+            debug_solution="{debug_solution}"
+            ik_cartesian_space_density="0.010000"
+            ik_joint_space_density="0.100000"
+            joint_trajectory_msg="{joint_trajectory_msg}"
+            path="{grasp_goal}"
+            planning_group_name="manipulator"
+            position_only="false"
+            trajectory_sampling_rate="100"
+            velocity_scale_factor="1.000000"
+            tip_links="grasp_link"
+          />
+        </Control>
+      </Control>
+    </Decorator>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Get Collision Free Grasp Subtree">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Grasping" />
+      </MetadataFields>
+      <inout_port name="input_grasps" default="{input_grasps}" />
+      <inout_port name="output_grasp" default="{output_grasp}" />
+    </SubTree>
+  </TreeNodesModel>
+</root>
