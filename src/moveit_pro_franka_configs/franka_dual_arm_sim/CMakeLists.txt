@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(franka_dual_arm_config)
+project(franka_dual_arm_sim)
 
 find_package(ament_cmake REQUIRED)
 
