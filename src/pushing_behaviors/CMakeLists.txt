@@ -36,15 +36,6 @@ ament_target_dependencies(pushing_behaviors
 
 target_link_libraries(pushing_behaviors fmt::fmt OsqpEigen::OsqpEigen)
 
-# endforeach()
-
-install(
-        DIRECTORY
-        models
-        DESTINATION
-        share/${PROJECT_NAME}
-)
-
 # Install Libraries
 install(
   TARGETS pushing_behaviors
