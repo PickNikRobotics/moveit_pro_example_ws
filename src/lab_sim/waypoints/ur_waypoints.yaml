@@ -686,6 +686,178 @@
     twist: []
     wrench: []
   name: Look at Base
+- description: Location left of the burner to look for bottles
+  favorite: false
+  joint_group_names:
+  - gripper
+  - linear_actuator
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - linear_rail_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
+    - 0.052587508554489834
+    - 0.2968578480078406
+    - -0.006148632895028194
+    - -0.8175631700397911
+    - 1.2592096237510881
+    - -2.2864772465639494
+    - -1.548620949533172
+    - 0.0017334387814990154
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Look at Bottles Left
+- description: ''
+  favorite: false
+  joint_group_names:
+  - gripper
+  - linear_actuator
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - linear_rail_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
+    - 0.010668053371874283
+    - 0.7128770076950819
+    - -0.08122196808779752
+    - -1.11190218141
+    - 0.7735713019368727
+    - -1.2414136646059095
+    - -2.0026807593048916
+    - -0.08031321356876141
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Look at Objects - Left
+- description: ''
+  favorite: false
+  joint_group_names:
+  - gripper
+  - linear_actuator
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - linear_rail_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
+    - 0.0106680533718743
+    - 0.02603207104532889
+    - -0.08122196691189307
+    - -1.1119021813364924
+    - 0.7885756618064743
+    - -1.2414136646088876
+    - -1.1126763995038707
+    - -0.08031321356882577
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Look at Objects - Right
+- description: ''
+  favorite: false
+  joint_group_names:
+  - gripper
+  - linear_actuator
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - linear_rail_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
+    - 0.010668053371874292
+    - 0.34684536153674317
+    - -0.08122195487921627
+    - -1.1119021804297864
+    - 0.7735713027325338
+    - -1.241413664401271
+    - -1.557512703220074
+    - -0.08031321357409668
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Look at Objects - Top
 - description: ''
   favorite: false
   joint_group_names:
@@ -729,6 +901,221 @@
     twist: []
     wrench: []
   name: Look at Table
+- description: ''
+  favorite: false
+  joint_group_names:
+  - gripper
+  - linear_actuator
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - linear_rail_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
+    - 0.003289905825896901
+    - -1.2085967565116629
+    - -0.38053130439833605
+    - 0.06646891177887178
+    - 0.6704411533015396
+    - -2.2598174786501377
+    - -1.5491163084575408
+    - -0.37975580107980283
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Look at Tag 1
+- description: ''
+  favorite: false
+  joint_group_names:
+  - gripper
+  - linear_actuator
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - linear_rail_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
+    - 0.003289895001232932
+    - -0.584237138085879
+    - -0.22445303770229816
+    - -0.03740938238661679
+    - 0.8442556071089173
+    - -2.327480342361729
+    - -1.5419380273363887
+    - -0.22379315558677204
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Look at Tag 2
+- description: ''
+  favorite: false
+  joint_group_names:
+  - gripper
+  - linear_actuator
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - linear_rail_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
+    - 0.003289878545032619
+    - -0.013331825276253031
+    - -0.007738854023507954
+    - -0.07155091132172103
+    - 0.8464016738230742
+    - -2.2935454146048495
+    - -1.5311630331449393
+    - -0.00721935810195775
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Look at Tag 3
+- description: ''
+  favorite: false
+  joint_group_names:
+  - gripper
+  - linear_actuator
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - linear_rail_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
+    - 0.003289868143547263
+    - 0.5983636189339089
+    - 0.13555159878309758
+    - -0.05766674362562976
+    - 0.7293397422861606
+    - -2.1900791668360156
+    - -1.5241317280474103
+    - 0.13603181574026543
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Look at Tag 4
+- description: ''
+  favorite: false
+  joint_group_names:
+  - gripper
+  - linear_actuator
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - linear_rail_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
+    - 0.0032898512121919484
+    - 1.3252080263883375
+    - 0.2232575515459395
+    - -0.03160676238665353
+    - 0.5925165639376702
+    - -2.0736004948166467
+    - -1.5197166259507557
+    - 0.22373111913195776
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Look at Tag 6
 - description: Move out of view of scene camera
   favorite: false
   joint_group_names:
@@ -858,6 +1245,49 @@
     twist: []
     wrench: []
   name: Place Cube
+- description: Location for the robot to go to before placing bottle.
+  favorite: false
+  joint_group_names:
+  - gripper
+  - linear_actuator
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - linear_rail_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
+    - 0.005274374788506071
+    - -0.65899502183384
+    - -0.011044571105883248
+    - -0.9740961688696632
+    - 1.2354891461984063
+    - -2.0150613197113008
+    - -1.5477140380091456
+    - -0.0030875579024600766
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Predrop Bottles Right
 - description: ''
   favorite: false
   joint_group_names:
@@ -1030,218 +1460,3 @@
     twist: []
     wrench: []
   name: Wrist 2 Min
-- description: ''
-  favorite: false
-  joint_group_names:
-  - gripper
-  - linear_actuator
-  - manipulator
-  joint_state:
-    effort: []
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    name:
-    - robotiq_85_left_knuckle_joint
-    - linear_rail_joint
-    - shoulder_pan_joint
-    - shoulder_lift_joint
-    - elbow_joint
-    - wrist_1_joint
-    - wrist_2_joint
-    - wrist_3_joint
-    position:
-    - 0.010668053371874283
-    - 0.7128770076950819
-    - -0.08122196808779752
-    - -1.11190218141
-    - 0.7735713019368727
-    - -1.2414136646059095
-    - -2.0026807593048916
-    - -0.08031321356876141
-    velocity: []
-  multi_dof_joint_state:
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    joint_names: []
-    transforms: []
-    twist: []
-    wrench: []
-  name: Look at Objects - Left
-- description: ''
-  favorite: false
-  joint_group_names:
-  - gripper
-  - linear_actuator
-  - manipulator
-  joint_state:
-    effort: []
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    name:
-    - robotiq_85_left_knuckle_joint
-    - linear_rail_joint
-    - shoulder_pan_joint
-    - shoulder_lift_joint
-    - elbow_joint
-    - wrist_1_joint
-    - wrist_2_joint
-    - wrist_3_joint
-    position:
-    - 0.0106680533718743
-    - 0.02603207104532889
-    - -0.08122196691189307
-    - -1.1119021813364924
-    - 0.7885756618064743
-    - -1.2414136646088876
-    - -1.1126763995038707
-    - -0.08031321356882577
-    velocity: []
-  multi_dof_joint_state:
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    joint_names: []
-    transforms: []
-    twist: []
-    wrench: []
-  name: Look at Objects - Right
-- description: ''
-  favorite: false
-  joint_group_names:
-  - gripper
-  - linear_actuator
-  - manipulator
-  joint_state:
-    effort: []
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    name:
-    - robotiq_85_left_knuckle_joint
-    - linear_rail_joint
-    - shoulder_pan_joint
-    - shoulder_lift_joint
-    - elbow_joint
-    - wrist_1_joint
-    - wrist_2_joint
-    - wrist_3_joint
-    position:
-    - 0.010668053371874292
-    - 0.34684536153674317
-    - -0.08122195487921627
-    - -1.1119021804297864
-    - 0.7735713027325338
-    - -1.241413664401271
-    - -1.557512703220074
-    - -0.08031321357409668
-    velocity: []
-  multi_dof_joint_state:
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    joint_names: []
-    transforms: []
-    twist: []
-    wrench: []
-  name: Look at Objects - Top
-- description: Location left of the burner to look for bottles
-  favorite: false
-  joint_group_names:
-  - gripper
-  - linear_actuator
-  - manipulator
-  joint_state:
-    effort: []
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    name:
-    - robotiq_85_left_knuckle_joint
-    - linear_rail_joint
-    - shoulder_pan_joint
-    - shoulder_lift_joint
-    - elbow_joint
-    - wrist_1_joint
-    - wrist_2_joint
-    - wrist_3_joint
-    position:
-    - 0.052587508554489834
-    - 0.2968578480078406
-    - -0.006148632895028194
-    - -0.8175631700397911
-    - 1.2592096237510881
-    - -2.2864772465639494
-    - -1.548620949533172
-    - 0.0017334387814990154
-    velocity: []
-  multi_dof_joint_state:
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    joint_names: []
-    transforms: []
-    twist: []
-    wrench: []
-  name: Look at Bottles Left
-- description: Location for the robot to go to before placing bottle.
-  favorite: false
-  joint_group_names:
-  - gripper
-  - linear_actuator
-  - manipulator
-  joint_state:
-    effort: []
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    name:
-    - robotiq_85_left_knuckle_joint
-    - linear_rail_joint
-    - shoulder_pan_joint
-    - shoulder_lift_joint
-    - elbow_joint
-    - wrist_1_joint
-    - wrist_2_joint
-    - wrist_3_joint
-    position:
-    - 0.005274374788506071
-    - -0.65899502183384
-    - -0.011044571105883248
-    - -0.9740961688696632
-    - 1.2354891461984063
-    - -2.0150613197113008
-    - -1.5477140380091456
-    - -0.0030875579024600766
-    velocity: []
-  multi_dof_joint_state:
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    joint_names: []
-    transforms: []
-    twist: []
-    wrench: []
-  name: Predrop Bottles Right
