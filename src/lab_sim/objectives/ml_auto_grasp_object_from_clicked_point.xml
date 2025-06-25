@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="ML Auto Grasp Object from Clicked Point"
+>
+  <!--//////////-->
+  <BehaviorTree
+    ID="ML Auto Grasp Object from Clicked Point"
+    _description="Asks user to click on object to auto grasp and asks for approval before attempting pick."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="LogMessage"
+        log_level="warn"
+        message="There might be some warnings and errors when this Objective runs, as long as the Objective completes successfully, everything worked as intended."
+        name="Caution about errors"
+      />
+      <SubTree
+        ID="Fuse Multiple Views Subtree"
+        _collapsed="true"
+        merged_cloud="{point_cloud}"
+        waypoint1="Look at Objects - Right"
+        waypoint2="Look at Objects - Top"
+        waypoint3="Look at Objects - Left"
+        name="Scan the scene for a good point cloud"
+      />
+      <SubTree ID="Look at table" _collapsed="true" />
+      <SubTree
+        ID="Segment Image from Point Subtree"
+        _collapsed="true"
+        encoder_model_path="models/sam2_hiera_large_encoder.onnx"
+        image_topic_name="/wrist_camera/color"
+        masks_visualization_topic="/masks_visualization"
+        masks2d="{masks2d}"
+        model_package="lab_sim"
+        pixel_coords="{pixel_coords}"
+        decoder_model_path="models/decoder.onnx"
+        name="Ask the user to pick an object"
+      />
+      <Action
+        ID="GetCameraInfo"
+        message_out="{camera_info}"
+        timeout_sec="5.000000"
+        topic_name="/wrist_camera/camera_info"
+      />
+      <Action
+        ID="GetMasks3DFromMasks2D"
+        camera_info="{camera_info}"
+        masks2d="{masks2d}"
+        masks3d="{masks3d}"
+        point_cloud="{point_cloud}"
+        name="Project the 2D mask to 3D"
+      />
+      <SubTree
+        ID="Visualize Segmented Point Cloud"
+        _collapsed="true"
+        masks3d="{masks3d}"
+        point_cloud="{point_cloud}"
+      />
+      <Decorator
+        ID="ForEachUntilSuccess"
+        index="{index}"
+        out="{mask3d}"
+        vector_in="{masks3d}"
+        name="Mask out the first cloud that work"
+      >
+        <Action
+          ID="GetPointCloudFromMask3D"
+          mask3d="{mask3d}"
+          point_cloud="{point_cloud}"
+          point_cloud_fragment="{point_cloud_fragment}"
+        />
+      </Decorator>
+      <Action
+        ID="GetGraspPoseFromPointCloud"
+        grasps="{grasps}"
+        number_of_grasps_to_return="10"
+        point_cloud="{point_cloud_fragment}"
+        model_package="lab_sim"
+        model_path="models/l2g.onnx"
+      />
+      <SubTree
+        ID="Reflect Poses Subtree"
+        _collapsed="true"
+        input_poses="{grasps}"
+        output_poses="{grasps_z_modified}"
+        name="Add z reflected poses"
+        reflection_axis="0;0;1;0"
+      />
+      <SubTree
+        ID="Reflect Poses Subtree"
+        _collapsed="true"
+        input_poses="{grasps_z_modified}"
+        output_poses="{grasps_zy_modified}"
+        name="Add y reflected poses"
+        reflection_axis="0;1;0;0"
+      />
+      <Decorator
+        ID="ForEachUntilSuccess"
+        index="{index}"
+        vector_in="{grasps_zy_modified}"
+        out="{grasp_pose}"
+        name="Iterate through grasps and find a good one"
+      >
+        <Control ID="Sequence">
+          <Action
+            ID="VisualizePose"
+            marker_lifetime="0.000000"
+            marker_name="grasp pose"
+            marker_size="0.100000"
+            pose="{grasp_pose}"
+          />
+          <Action
+            ID="VisualizeMesh"
+            marker_lifetime="0.000000"
+            mesh_path="package://lab_sim/objectives/gripper_token.dae"
+            mesh_pose="{grasp_pose}"
+          />
+          <SubTree
+            ID="Pick from Pose With Approval"
+            _collapsed="true"
+            approach_distance="0.1"
+            grasp_pose="{grasp_pose}"
+            retract_xyz="0;0;-0.1"
+          />
+        </Control>
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="ML Auto Grasp Object from Clicked Point">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - ML (GPU Recommended)" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
