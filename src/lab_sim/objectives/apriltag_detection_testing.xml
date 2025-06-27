@@ -4,53 +4,24 @@
   <BehaviorTree
     ID="AprilTag Detection Testing"
     _description=""
-    _favorite="false"
+    _favorite="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
-        ID="GetCameraInfo"
-        message_out="{camera_info}"
-        timeout_sec="5.000000"
-        topic_name="/wrist_camera/camera_info"
+        ID="SwitchController"
+        activate_asap="true"
+        automatic_deactivation="true"
+        controller_list_action_name="/controller_manager/list_controllers"
+        controller_switch_action_name="/controller_manager/switch_controller"
+        strictness="1"
+        timeout="0.000000"
+        activate_controllers="joint_trajectory_controller"
       />
-      <Action
-        ID="GetImage"
-        message_out="{image}"
-        timeout_sec="5.000000"
-        topic_name="/wrist_camera/color"
-      />
-      <Action
-        ID="DetectAprilTags"
-        image="{image}"
-        camera_info="{camera_info}"
-        detections="{detections}"
-        apriltag_family_name="36h11"
-        max_hamming="0"
-        n_threads="1"
-        quad_decimate="2.0"
-        quad_sigma="0.0"
-        refine_edges="true"
-        tag_size="0.48"
-      />
-      <Action
-        ID="GetDetectionPose"
-        detection_pose="{detection_pose}"
-        detections="{detections}"
-        target_id="-1"
-      />
-      <Action
-        ID="TransformPoseFrame"
-        input_pose="{detection_pose}"
-        output_pose="{detection_pose}"
-        target_frame_id="world"
-      />
-      <Action
-        ID="VisualizePose"
-        marker_lifetime="0.000000"
-        marker_name="pose"
-        marker_size="0.100000"
-        pose="{detection_pose}"
-      />
+      <SubTree ID="Move To and Detect Tag" _collapsed="true" tag_name="tag1" />
+      <SubTree ID="Move To and Detect Tag" _collapsed="true" tag_name="tag2" />
+      <SubTree ID="Move To and Detect Tag" _collapsed="true" tag_name="tag3" />
+      <SubTree ID="Move To and Detect Tag" _collapsed="true" tag_name="tag4" />
+      <SubTree ID="Move To and Detect Tag" _collapsed="true" tag_name="tag5" />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Move To and Detect Tag Test">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Move To and Detect Tag Test"
+    _description=""
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree ID="Move To and Detect Tag" _collapsed="true" tag_name="tag1" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Move To and Detect Tag Test">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application Test" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
