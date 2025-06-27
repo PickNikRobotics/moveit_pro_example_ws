@@ -55,6 +55,16 @@
       />
       <site name="tag1" pos="0 0 0.05" euler="0 0 3.14159" />
     </body>
+    <body name="seperator1" pos="1.4 0.75 0.0">
+      <geom
+        type="box"
+        size="0.01 0.3 0.5"
+        rgba="1 1 1 1"
+        contype="0"
+        conaffinity="0"
+        group="2"
+      />
+    </body>
     <body name="block2" pos="1.0 0.75 0.575">
       <freejoint name="block2" />
       <geom
@@ -75,6 +85,16 @@
       />
       <site name="tag3" pos="0 0 0.05" euler="0 0 3.14159" />
     </body>
+    <body name="seperator2" pos="-0.25 0.75 0.0">
+      <geom
+        type="box"
+        size="0.01 0.3 0.5"
+        rgba="1 1 1 1"
+        contype="0"
+        conaffinity="0"
+        group="2"
+      />
+    </body>
     <body name="block4" pos="-0.5 0.75 0.575">
       <freejoint name="block4" />
       <geom
@@ -94,6 +114,16 @@
         material="apriltag_material1"
       />
       <site name="tag5" pos="0 0 0.05" euler="0 0 3.14159" />
+    </body>
+    <body name="seperator3" pos="-1.8 0.75 0.0">
+      <geom
+        type="box"
+        size="0.01 0.3 0.5"
+        rgba="1 1 1 1"
+        contype="0"
+        conaffinity="0"
+        group="2"
+      />
     </body>
     <body name="block6" pos="-2.0 0.75 0.575">
       <freejoint name="block6" />
