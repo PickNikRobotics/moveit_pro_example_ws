@@ -7,7 +7,27 @@
     _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
-      <SubTree ID="Move To and Detect Tag" _collapsed="true" tag_name="tag1" />
+      <SubTree
+        ID="Move To and Detect Tag -45"
+        _collapsed="true"
+        tag_name="tag2"
+      />
+      <Action
+        ID="CreateStampedPose"
+        reference_frame="grasp_link"
+        stamped_pose="{stamped_pose}"
+      />
+      <Action
+        ID="TransformPoseFrame"
+        input_pose="{stamped_pose}"
+        output_pose="{output_pose}"
+        target_frame_id="tag1"
+      />
+      <Action
+        ID="SavePoseStampedToYaml"
+        message="{output_pose}"
+        yaml_filename="ground_truth-45"
+      />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>

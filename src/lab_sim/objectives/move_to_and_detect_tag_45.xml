@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<root BTCPP_format="4" main_tree_to_execute="Move To and Detect Tag">
+<root BTCPP_format="4" main_tree_to_execute="Move To and Detect Tag 45">
   <!--//////////-->
-  <BehaviorTree ID="Move To and Detect Tag">
+  <BehaviorTree ID="Move To and Detect Tag 45" _description="">
     <Control ID="Sequence">
       <Action
         ID="CreateStampedPose"
@@ -80,7 +80,7 @@
         ID="TransformPoseFrame"
         input_pose="{detection_pose}"
         output_pose="{detection_pose}"
-        target_frame_id="world"
+        target_frame_id="grasp_link"
       />
       <Action
         ID="VisualizePose"
@@ -97,7 +97,7 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Move To and Detect Tag">
+    <SubTree ID="Move To and Detect Tag 45">
       <MetadataFields>
         <Metadata runnable="false" />
         <Metadata subcategory="Application Test" />
