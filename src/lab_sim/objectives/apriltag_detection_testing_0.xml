@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="AprilTag Detection Testing 0">
+  <!--//////////-->
+  <BehaviorTree
+    ID="AprilTag Detection Testing 0"
+    _description=""
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="SwitchController"
+        activate_asap="true"
+        automatic_deactivation="true"
+        controller_list_action_name="/controller_manager/list_controllers"
+        controller_switch_action_name="/controller_manager/switch_controller"
+        strictness="1"
+        timeout="0.000000"
+        activate_controllers="joint_trajectory_controller"
+      />
+      <SubTree
+        ID="Move To and Detect Tag 0"
+        _collapsed="true"
+        tag_name="tag1"
+      />
+      <SubTree
+        ID="Move To and Detect Tag 0"
+        _collapsed="true"
+        tag_name="tag2"
+      />
+      <SubTree
+        ID="Move To and Detect Tag 0"
+        _collapsed="true"
+        tag_name="tag3"
+      />
+      <SubTree
+        ID="Move To and Detect Tag 0"
+        _collapsed="true"
+        tag_name="tag4"
+      />
+      <SubTree
+        ID="Move To and Detect Tag 0"
+        _collapsed="true"
+        tag_name="tag5"
+      />
+      <SubTree
+        ID="Move To and Detect Tag 0"
+        _collapsed="true"
+        tag_name="tag6"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="AprilTag Detection Testing 0">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application Test" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
