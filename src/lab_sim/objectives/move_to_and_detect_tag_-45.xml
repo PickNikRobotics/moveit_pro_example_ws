@@ -68,7 +68,7 @@
         quad_decimate="2.0"
         quad_sigma="0.0"
         refine_edges="true"
-        tag_size="0.48"
+        tag_size="{tag_size}"
       />
       <Action
         ID="GetDetectionPose"
@@ -90,8 +90,25 @@
         pose="{detection_pose}"
       />
       <Action
+        ID="CreateStampedPose"
+        stamped_pose="{stamped_pose}"
+        reference_frame="{tag_name}"
+      />
+      <Action
+        ID="TransformPoseFrame"
+        input_pose="{stamped_pose}"
+        output_pose="{stamped_pose}"
+        target_frame_id="grasp_link"
+      />
+      <Action
+        ID="CalculatePoseOffset"
+        destination_pose="{detection_pose}"
+        source_pose="{stamped_pose}"
+        source_to_destination_pose="{pose_diff}"
+      />
+      <Action
         ID="SavePoseStampedToYaml"
-        message="{detection_pose}"
+        message="{pose_diff}"
         yaml_filename="{tag_name}"
       />
     </Control>
@@ -102,6 +119,7 @@
         <Metadata runnable="false" />
         <Metadata subcategory="Application Test" />
       </MetadataFields>
+      <inout_port name="tag_size" default="{tag_size}" />
       <inout_port name="tag_name" default="{tag_name}" />
     </SubTree>
   </TreeNodesModel>
