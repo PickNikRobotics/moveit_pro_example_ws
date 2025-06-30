@@ -11,7 +11,6 @@
                       inertials="${xacro.load_yaml('$(find franka_description)/robots/fr3/inertials.yaml')}"
                       kinematics="${xacro.load_yaml('$(find franka_description)/robots/fr3/kinematics.yaml')}"
                       dynamics="${xacro.load_yaml('$(find franka_description)/robots/fr3/dynamics.yaml')}"
-                      rpy="$(arg rpy_ee)"
                       gazebo="false"
                       hand="true"
                       ee_id="$(arg ee_id)"
