@@ -7,7 +7,6 @@
     - hand
     - linear_actuator
     - manipulator
-    - wheel_actuator
   joint_state:
     effort: []
     header:
@@ -25,10 +24,6 @@
       - linear_x_joint
       - linear_y_joint
       - rotational_yaw_joint
-      - front_left_wheel
-      - front_right_wheel
-      - rear_left_wheel
-      - rear_right_wheel
     position:
       - 3.3844296327677555e-05
       - -2.409204126381687
@@ -39,10 +34,6 @@
       - -0.023276224427107906
       - -0.0058495831086503745
       - 0.004015076834925194
-      - -22.06584329361449
-      - -10.501371456301147
-      - 1.7668871273048772
-      - -0.8618225719047045
     velocity: []
   multi_dof_joint_state:
     header:
@@ -78,10 +69,6 @@
       - linear_x_joint
       - linear_y_joint
       - rotational_yaw_joint
-      - front_left_wheel
-      - front_right_wheel
-      - rear_left_wheel
-      - rear_right_wheel
     position:
       - -0.003738784044683501
       - -1.1833848468688086
@@ -92,10 +79,6 @@
       - -0.07207130127690735
       - -0.02369797544394028
       - -0.02531176395460309
-      - -0.09266642709106662
-      - -0.23557464236464182
-      - -0.18822018729128204
-      - -0.18656676335864855
     velocity: []
   multi_dof_joint_state:
     header:
@@ -116,7 +99,6 @@
     - hand
     - linear_actuator
     - manipulator
-    - wheel_actuator
   joint_state:
     effort: []
     header:
@@ -134,10 +116,6 @@
       - linear_x_joint
       - linear_y_joint
       - rotational_yaw_joint
-      - front_left_wheel
-      - front_right_wheel
-      - rear_left_wheel
-      - rear_right_wheel
     position:
       - -2.223614395803042e-06
       - -1.570948106783178
@@ -148,10 +126,6 @@
       - -6.499372338819932
       - 7.159543268978053
       - 1.7219908136112807
-      - -184.27503164809855
-      - 73.59944964015912
-      - 49.03228603651597
-      - -165.64553914942525
     velocity: []
   multi_dof_joint_state:
     header:
@@ -298,7 +272,6 @@
     - gripper
     - linear_actuator
     - manipulator
-    - wheel_actuator
   joint_state:
     effort: []
     header:
@@ -316,10 +289,6 @@
       - linear_x_joint
       - linear_y_joint
       - rotational_yaw_joint
-      - front_left_wheel
-      - front_right_wheel
-      - rear_left_wheel
-      - rear_right_wheel
     position:
       - -0.0008653582257948239
       - -1.4999470460772262
@@ -330,10 +299,6 @@
       - -9.783676065147956
       - 0.40660310842674036
       - 2.4791171509157226
-      - -142.7198324618306
-      - 118.18098276217249
-      - 84.62734650605745
-      - -103.47962770449797
     velocity: []
   multi_dof_joint_state:
     header:
@@ -354,7 +319,6 @@
     - hand
     - linear_actuator
     - manipulator
-    - wheel_actuator
   joint_state:
     effort: []
     header:
@@ -372,10 +336,6 @@
       - linear_x_joint
       - linear_y_joint
       - rotational_yaw_joint
-      - front_left_wheel
-      - front_right_wheel
-      - rear_left_wheel
-      - rear_right_wheel
     position:
       - 0.0001252230582440989
       - -1.5711894640623076
@@ -386,10 +346,6 @@
       - -4.113316847963269
       - 12.918999730656832
       - -0.037283236347385236
-      - -213.69277739236233
-      - 193.46627388607538
-      - 190.77164583281487
-      - -210.67226952086472
     velocity: []
   multi_dof_joint_state:
     header:
@@ -410,7 +366,6 @@
     - hand
     - linear_actuator
     - manipulator
-    - wheel_actuator
   joint_state:
     effort: []
     header:
@@ -428,10 +383,6 @@
       - linear_x_joint
       - linear_y_joint
       - rotational_yaw_joint
-      - front_left_wheel
-      - front_right_wheel
-      - rear_left_wheel
-      - rear_right_wheel
     position:
       - 1.0946682149617285e-05
       - -0.3689827456561105
@@ -442,10 +393,6 @@
       - -0.04757441449879662
       - -0.017574458418236898
       - 0.026111551466290402
-      - 12.651554154311288
-      - 18.60798312674178
-      - 1.2418086465660534
-      - -0.1871134768866237
     velocity: []
   multi_dof_joint_state:
     header:
@@ -466,7 +413,6 @@
     - hand
     - linear_actuator
     - manipulator
-    - wheel_actuator
   joint_state:
     effort: []
     header:
@@ -484,10 +430,6 @@
       - linear_x_joint
       - linear_y_joint
       - rotational_yaw_joint
-      - front_left_wheel
-      - front_right_wheel
-      - rear_left_wheel
-      - rear_right_wheel
     position:
       - -0.031728481550079304
       - -1.5562971214767365
@@ -498,10 +440,6 @@
       - -3.7530328568442513
       - 9.927768114612965
       - 0.21201817498956405
-      - -82.99100539844943
-      - 231.86494206573718
-      - 214.85620939660976
-      - -90.2456426427412
     velocity: []
   multi_dof_joint_state:
     header:
