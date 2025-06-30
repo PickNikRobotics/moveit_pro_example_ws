@@ -11,7 +11,9 @@ ExampleHelloWorld::ExampleHelloWorld(const std::string& name, const BT::NodeConf
 BT::PortsList ExampleHelloWorld::providedPorts()
 {
   // This node has no input or output ports
-  return BT::PortsList({});
+  return BT::PortsList({ BT::InputPort<std::string>("Port 1", "", "Just a port"),
+                         BT::OutputPort<std::string>("Port 1", "{output}"
+                                                               "Just another port") });
 }
 
 BT::KeyValueVector ExampleHelloWorld::metadata()
