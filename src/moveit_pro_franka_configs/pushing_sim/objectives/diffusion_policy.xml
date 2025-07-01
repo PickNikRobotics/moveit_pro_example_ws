@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Diffusion Policy">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Diffusion Policy"
+    _description=""
+    _favorite="true"
+    _hardcoded="false"
+  >
+    <Decorator ID="RetryUntilSuccessful" num_attempts="10000">
+      <Control ID="Sequence">
+        <SubTree
+          ID="Move to Waypoint"
+          _collapsed="true"
+          acceleration_scale_factor="1.0"
+          controller_names="/joint_trajectory_controller"
+          joint_group_name="manipulator"
+          keep_orientation="false"
+          keep_orientation_tolerance="0.05"
+          link_padding="0.01"
+          velocity_scale_factor="1.0"
+          waypoint_name="Look At T"
+          controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        />
+        <SubTree ID="Close Gripper" _collapsed="true" />
+        <SubTree ID="Re-Zero Force-Torque Sensors" _collapsed="true" />
+        <Action
+          ID="ActivateControllers"
+          controller_names="joint_trajectory_admittance_controller"
+        />
+        <Action
+          ID="DiffusionPolicy"
+          model_package="pushing_sim"
+          diffusion_action_extract_model_path="models/DiffusionExtractAction.onnx"
+          diffusion_encoder_model_path="models/DiffusionPolicyEncoder.onnx"
+          diffusion_step_model_path="models/DiffusionStep.onnx"
+          scene_camera_topic="/scene_camera/color"
+          wrist_camera_topic="/wrist_camera/color"
+          timeout="300.000000"
+          controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+          joint_state_topic="/joint_states"
+          planning_group_name="manipulator"
+          execution_speed="0.5"
+          absolute_force_torque_threshold="45;45;45;10;10;10"
+          goal_path_tolerance="100"
+        />
+      </Control>
+    </Decorator>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Diffusion Policy" />
+  </TreeNodesModel>
+</root>
