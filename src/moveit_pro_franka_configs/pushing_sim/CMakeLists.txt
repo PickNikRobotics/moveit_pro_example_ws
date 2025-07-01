@@ -9,7 +9,7 @@ install(
     config
     description
     launch
-#    objectives
+    objectives
     waypoints
   DESTINATION
     share/${PROJECT_NAME}
