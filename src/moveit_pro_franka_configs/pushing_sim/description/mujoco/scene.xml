@@ -58,7 +58,6 @@
     <mesh name="T_collision_1" file="assets/T_collision_1.obj" />
     <mesh name="T_collision_2" file="assets/T_collision_2.obj" />
   </asset>
-  <include file="franka3.xml" />
   <worldbody>
     <light pos="0 0 1.5" dir="-1 -1 -1" directional="true" diffuse=".7 .7 .7" />
     <body name="scene" pos="0 0.45 -0.75">
@@ -118,6 +117,7 @@
     </body>
     <site name="target" size="0.00001" pos="0 0.45 0.031" />
   </worldbody>
+  <include file="franka3.xml" />
 
   <keyframe>
     <key
