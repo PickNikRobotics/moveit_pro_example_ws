@@ -10,6 +10,7 @@ ARG MOVEIT_STUDIO_BASE_IMAGE=picknikciuser/moveit-studio:${STUDIO_DOCKER_TAG:-ma
 ARG USERNAME=studio-user
 ARG USER_UID=1000
 ARG USER_GID=1000
+ARG ROS_DISTRO=humble
 
 ##################################################
 # Starting from the specified MoveIt Pro release #
@@ -72,7 +73,9 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     apt-get update && \
     rosdep install -q -y \
       --from-paths src \
-      --ignore-src
+      --ignore-src && \
+   apt-get install -y --no-install-recommends \
+      ros-${ROS_DISTRO}-ros-core ros-${ROS_DISTRO}-examples-rclcpp-minimal-service
 
 # Set up colcon defaults for the new user
 USER ${USERNAME}
@@ -177,7 +180,9 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     apt-get update && \
     rosdep install -q -y \
       --from-paths src \
-      --ignore-src
+      --ignore-src && \
+   apt-get install -y --no-install-recommends \
+      ros-${ROS_DISTRO}-ros-core ros-${ROS_DISTRO}-examples-rclcpp-minimal-service
 
 # Set up colcon defaults for the new user
 USER ${USERNAME}
