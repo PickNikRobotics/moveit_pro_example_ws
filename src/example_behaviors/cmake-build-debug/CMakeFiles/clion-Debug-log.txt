@@ -1,0 +1,345 @@
+/opt/clion-2025.1/bin/cmake/linux/x64/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/opt/clion-2025.1/bin/ninja/linux/x64/ninja -G Ninja -DPython_EXECUTABLE=/home/dwyackzan/moveit_pro_source/.venv/bin/python -DPython3_EXECUTABLE=/home/dwyackzan/moveit_pro_source/.venv/bin/python -S /home/dwyackzan/moveit_pro_source/src/moveit_pro/moveit_studio_ws/moveit_pro_example_ws/src/example_behaviors -B /home/dwyackzan/moveit_pro_source/src/moveit_pro/moveit_studio_ws/moveit_pro_example_ws/src/example_behaviors/cmake-build-debug
+-- The CXX compiler identification is GNU 11.4.0
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found moveit_studio_common: 8.4.0 (/home/dwyackzan/moveit_pro_source/install/moveit_studio_common/share/moveit_studio_common/cmake)
+-- Found Python3: /home/dwyackzan/moveit_pro_source/.venv/bin/python (found version "3.10.12") found components: Interpreter
+-- Found rosidl_generator_c: 3.1.6 (/opt/ros/humble/share/rosidl_generator_c/cmake)
+-- Found rosidl_adapter: 3.1.6 (/opt/ros/humble/share/rosidl_adapter/cmake)
+-- Found rosidl_generator_cpp: 3.1.6 (/opt/ros/humble/share/rosidl_generator_cpp/cmake)
+-- Using all available rosidl_typesupport_c: rosidl_typesupport_fastrtps_c;rosidl_typesupport_introspection_c
+-- Using all available rosidl_typesupport_cpp: rosidl_typesupport_fastrtps_cpp;rosidl_typesupport_introspection_cpp
+CMake Warning (dev) at /home/dwyackzan/moveit_pro_source/install/moveit_core/share/moveit_core/cmake/ConfigExtras.cmake:3 (find_package):
+  Policy CMP0167 is not set: The FindBoost module is removed.  Run "cmake
+  --help-policy CMP0167" for policy details.  Use the cmake_policy command to
+  set the policy and suppress this warning.
+
+Call Stack (most recent call first):
+  /home/dwyackzan/moveit_pro_source/install/moveit_core/share/moveit_core/cmake/moveit_coreConfig.cmake:41 (include)
+  /home/dwyackzan/moveit_pro_source/install/moveit_studio_common/share/moveit_studio_common/cmake/ament_cmake_export_dependencies-extras.cmake:21 (find_package)
+  /home/dwyackzan/moveit_pro_source/install/moveit_studio_common/share/moveit_studio_common/cmake/moveit_studio_commonConfig.cmake:41 (include)
+  CMakeLists.txt:4 (find_package)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+-- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: chrono date_time filesystem iostreams program_options regex serialization system thread
+-- Found parameter_traits: 0.4.0 (/opt/ros/humble/share/parameter_traits/cmake)
+-- Found rmw_implementation_cmake: 6.1.2 (/opt/ros/humble/share/rmw_implementation_cmake/cmake)
+-- Found rmw_cyclonedds_cpp: 1.3.4 (/opt/ros/humble/share/rmw_cyclonedds_cpp/cmake)
+-- Using RMW implementation 'rmw_cyclonedds_cpp' as default
+-- Found Threads: TRUE
+-- Found rclcpp_lifecycle: 16.0.11 (/opt/ros/humble/share/rclcpp_lifecycle/cmake)
+CMake Warning (dev) at /opt/ros/humble/share/geometric_shapes/cmake/ConfigExtras.cmake:31 (find_package):
+  Policy CMP0167 is not set: The FindBoost module is removed.  Run "cmake
+  --help-policy CMP0167" for policy details.  Use the cmake_policy command to
+  set the policy and suppress this warning.
+
+Call Stack (most recent call first):
+  /opt/ros/humble/share/geometric_shapes/cmake/geometric_shapesConfig.cmake:41 (include)
+  /home/dwyackzan/moveit_pro_source/install/moveit_core/share/moveit_core/cmake/ament_cmake_export_dependencies-extras.cmake:21 (find_package)
+  /home/dwyackzan/moveit_pro_source/install/moveit_core/share/moveit_core/cmake/moveit_coreConfig.cmake:41 (include)
+  /home/dwyackzan/moveit_pro_source/install/moveit_studio_common/share/moveit_studio_common/cmake/ament_cmake_export_dependencies-extras.cmake:21 (find_package)
+  /home/dwyackzan/moveit_pro_source/install/moveit_studio_common/share/moveit_studio_common/cmake/moveit_studio_commonConfig.cmake:41 (include)
+  CMakeLists.txt:4 (find_package)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+-- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: filesystem
+-- library: /usr/lib/x86_64-linux-gnu/libcurl.so
+-- Found Eigen3: TRUE (found version "3.4.0")
+-- Ensuring Eigen3 include directory is part of orocos-kdl CMake target
+CMake Warning (dev) at /home/dwyackzan/moveit_pro_source/install/moveit_ros_planning/share/moveit_ros_planning/cmake/ConfigExtras.cmake:3 (find_package):
+  Policy CMP0167 is not set: The FindBoost module is removed.  Run "cmake
+  --help-policy CMP0167" for policy details.  Use the cmake_policy command to
+  set the policy and suppress this warning.
+
+Call Stack (most recent call first):
+  /home/dwyackzan/moveit_pro_source/install/moveit_ros_planning/share/moveit_ros_planning/cmake/moveit_ros_planningConfig.cmake:41 (include)
+  /home/dwyackzan/moveit_pro_source/install/moveit_task_constructor_core/share/moveit_task_constructor_core/cmake/ament_cmake_export_dependencies-extras.cmake:21 (find_package)
+  /home/dwyackzan/moveit_pro_source/install/moveit_task_constructor_core/share/moveit_task_constructor_core/cmake/moveit_task_constructor_coreConfig.cmake:41 (include)
+  /home/dwyackzan/moveit_pro_source/install/moveit_studio_common/share/moveit_studio_common/cmake/ament_cmake_export_dependencies-extras.cmake:21 (find_package)
+  /home/dwyackzan/moveit_pro_source/install/moveit_studio_common/share/moveit_studio_common/cmake/moveit_studio_commonConfig.cmake:41 (include)
+  CMakeLists.txt:4 (find_package)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+-- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: system filesystem date_time program_options thread chrono
+CMake Warning (dev) at /home/dwyackzan/moveit_pro_source/install/moveit_ros_planning_interface/share/moveit_ros_planning_interface/cmake/ConfigExtras.cmake:7 (find_package):
+  Policy CMP0167 is not set: The FindBoost module is removed.  Run "cmake
+  --help-policy CMP0167" for policy details.  Use the cmake_policy command to
+  set the policy and suppress this warning.
+
+Call Stack (most recent call first):
+  /home/dwyackzan/moveit_pro_source/install/moveit_ros_planning_interface/share/moveit_ros_planning_interface/cmake/moveit_ros_planning_interfaceConfig.cmake:41 (include)
+  /home/dwyackzan/moveit_pro_source/install/moveit_task_constructor_core/share/moveit_task_constructor_core/cmake/ament_cmake_export_dependencies-extras.cmake:21 (find_package)
+  /home/dwyackzan/moveit_pro_source/install/moveit_task_constructor_core/share/moveit_task_constructor_core/cmake/moveit_task_constructor_coreConfig.cmake:41 (include)
+  /home/dwyackzan/moveit_pro_source/install/moveit_studio_common/share/moveit_studio_common/cmake/ament_cmake_export_dependencies-extras.cmake:21 (find_package)
+  /home/dwyackzan/moveit_pro_source/install/moveit_studio_common/share/moveit_studio_common/cmake/moveit_studio_commonConfig.cmake:41 (include)
+  CMakeLists.txt:4 (find_package)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+-- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: date_time filesystem program_options system thread
+CMake Warning (dev) at /home/dwyackzan/moveit_pro_source/install/moveit_ros_warehouse/share/moveit_ros_warehouse/cmake/ConfigExtras.cmake:3 (find_package):
+  Policy CMP0167 is not set: The FindBoost module is removed.  Run "cmake
+  --help-policy CMP0167" for policy details.  Use the cmake_policy command to
+  set the policy and suppress this warning.
+
+Call Stack (most recent call first):
+  /home/dwyackzan/moveit_pro_source/install/moveit_ros_warehouse/share/moveit_ros_warehouse/cmake/moveit_ros_warehouseConfig.cmake:41 (include)
+  /home/dwyackzan/moveit_pro_source/install/moveit_ros_planning_interface/share/moveit_ros_planning_interface/cmake/ament_cmake_export_dependencies-extras.cmake:21 (find_package)
+  /home/dwyackzan/moveit_pro_source/install/moveit_ros_planning_interface/share/moveit_ros_planning_interface/cmake/moveit_ros_planning_interfaceConfig.cmake:41 (include)
+  /home/dwyackzan/moveit_pro_source/install/moveit_task_constructor_core/share/moveit_task_constructor_core/cmake/ament_cmake_export_dependencies-extras.cmake:21 (find_package)
+  /home/dwyackzan/moveit_pro_source/install/moveit_task_constructor_core/share/moveit_task_constructor_core/cmake/moveit_task_constructor_coreConfig.cmake:41 (include)
+  /home/dwyackzan/moveit_pro_source/install/moveit_studio_common/share/moveit_studio_common/cmake/ament_cmake_export_dependencies-extras.cmake:21 (find_package)
+  /home/dwyackzan/moveit_pro_source/install/moveit_studio_common/share/moveit_studio_common/cmake/moveit_studio_commonConfig.cmake:41 (include)
+  CMakeLists.txt:4 (find_package)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+-- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: thread system filesystem regex date_time program_options
+CMake Warning (dev) at /home/dwyackzan/moveit_pro_source/install/moveit_ros_move_group/share/moveit_ros_move_group/cmake/ConfigExtras.cmake:3 (find_package):
+  Policy CMP0167 is not set: The FindBoost module is removed.  Run "cmake
+  --help-policy CMP0167" for policy details.  Use the cmake_policy command to
+  set the policy and suppress this warning.
+
+Call Stack (most recent call first):
+  /home/dwyackzan/moveit_pro_source/install/moveit_ros_move_group/share/moveit_ros_move_group/cmake/moveit_ros_move_groupConfig.cmake:41 (include)
+  /home/dwyackzan/moveit_pro_source/install/moveit_ros_planning_interface/share/moveit_ros_planning_interface/cmake/ament_cmake_export_dependencies-extras.cmake:21 (find_package)
+  /home/dwyackzan/moveit_pro_source/install/moveit_ros_planning_interface/share/moveit_ros_planning_interface/cmake/moveit_ros_planning_interfaceConfig.cmake:41 (include)
+  /home/dwyackzan/moveit_pro_source/install/moveit_task_constructor_core/share/moveit_task_constructor_core/cmake/ament_cmake_export_dependencies-extras.cmake:21 (find_package)
+  /home/dwyackzan/moveit_pro_source/install/moveit_task_constructor_core/share/moveit_task_constructor_core/cmake/moveit_task_constructor_coreConfig.cmake:41 (include)
+  /home/dwyackzan/moveit_pro_source/install/moveit_studio_common/share/moveit_studio_common/cmake/ament_cmake_export_dependencies-extras.cmake:21 (find_package)
+  /home/dwyackzan/moveit_pro_source/install/moveit_studio_common/share/moveit_studio_common/cmake/moveit_studio_commonConfig.cmake:41 (include)
+  CMakeLists.txt:4 (find_package)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+-- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: system filesystem date_time program_options thread
+-- Setting assimp_DIR to: '/opt/ros/humble/share/rviz_assimp_vendor/cmake/../../../opt/rviz_assimp_vendor/lib/cmake/assimp-4.1'
+-- Setting OGRE_DIR to: '/opt/ros/humble/share/rviz_ogre_vendor/cmake/../../../opt/rviz_ogre_vendor/lib/OGRE/cmake'
+-- Found OGRE
+--   static     : OFF
+--   components : HLMS;MeshLodGenerator;Overlay;Paging;Property;RTShaderSystem;Terrain;Volume
+--   plugins    : Plugin_BSPSceneManager;Plugin_OctreeSceneManager;Plugin_PCZSceneManager;Plugin_ParticleFX;RenderSystem_GL;RenderSystem_GL3Plus;Codec_STBI
+--   media      : /opt/ros/humble/opt/rviz_ogre_vendor/share/OGRE/Media
+-- OGRE_LIBRARIES: OgreHLMS;OgreMeshLodGenerator;OgreOverlay;OgrePaging;OgreProperty;OgreRTShaderSystem;OgreTerrain;OgreVolume;OgreMain
+-- OGRE_LIBRARY_DIRS: /opt/ros/humble/opt/rviz_ogre_vendor/lib
+-- OGRE_PLUGINS: Plugin_BSPSceneManager;Plugin_OctreeSceneManager;Plugin_PCZSceneManager;Plugin_ParticleFX;RenderSystem_GL;RenderSystem_GL3Plus;Codec_STBI
+-- OGRE_PLUGIN_DIR: /opt/ros/humble/opt/rviz_ogre_vendor/lib/OGRE
+-- rviz_ogre_vendor::OgreOverlay for IMPORTED_LOCATION_RELEASE: /opt/ros/humble/opt/rviz_ogre_vendor/lib/libOgreOverlay.so
+-- rviz_ogre_vendor::OgreOverlay for IMPORTED_LOCATION_DEBUG: /opt/ros/humble/opt/rviz_ogre_vendor/lib/libOgreOverlay.so
+-- rviz_ogre_vendor::OgreMain for IMPORTED_LOCATION_RELEASE: /opt/ros/humble/opt/rviz_ogre_vendor/lib/libOgreMain.so
+-- rviz_ogre_vendor::OgreMain for IMPORTED_LOCATION_DEBUG: /opt/ros/humble/opt/rviz_ogre_vendor/lib/libOgreMain.so
+-- Found ZLIB: /usr/lib/x86_64-linux-gnu/libz.so (found version "1.2.11")
+-- Found OpenGL: /usr/lib/x86_64-linux-gnu/libOpenGL.so
+-- Found X11: /usr/include
+-- Looking for XOpenDisplay in /usr/lib/x86_64-linux-gnu/libX11.so;/usr/lib/x86_64-linux-gnu/libXext.so
+-- Looking for XOpenDisplay in /usr/lib/x86_64-linux-gnu/libX11.so;/usr/lib/x86_64-linux-gnu/libXext.so - found
+-- Looking for gethostbyname
+-- Looking for gethostbyname - found
+-- Looking for connect
+-- Looking for connect - found
+-- Looking for remove
+-- Looking for remove - found
+-- Looking for shmat
+-- Looking for shmat - found
+-- Looking for IceConnectionNumber in ICE
+-- Looking for IceConnectionNumber in ICE - found
+-- Found example_interfaces: 0.9.3 (/opt/ros/humble/share/example_interfaces/cmake)
+-- Found cartesian_planning: 8.4.0 (/home/dwyackzan/moveit_pro_source/install/cartesian_planning/share/cartesian_planning/cmake)
+-- Found moveit_studio_behavior: 8.4.0 (/home/dwyackzan/moveit_pro_source/install/moveit_studio_behavior/share/moveit_studio_behavior/cmake)
+CMake Warning (dev) at /home/dwyackzan/moveit_pro_source/install/moveit_pro_ml/share/moveit_pro_ml/cmake/moveit_pro_ml_macros.cmake:6 (find_package):
+  Policy CMP0148 is not set: The FindPythonInterp and FindPythonLibs modules
+  are removed.  Run "cmake --help-policy CMP0148" for policy details.  Use
+  the cmake_policy command to set the policy and suppress this warning.
+
+Call Stack (most recent call first):
+  /home/dwyackzan/moveit_pro_source/install/moveit_pro_ml/share/moveit_pro_ml/cmake/moveit_pro_ml_macros.cmake:31 (get_onnxruntime_path)
+  /home/dwyackzan/moveit_pro_source/install/moveit_pro_ml/share/moveit_pro_ml/cmake/moveit_pro_ml-config.cmake:36 (get_onnxruntime_lib_dir)
+  /home/dwyackzan/moveit_pro_source/install/moveit_pro_ml_ros/share/moveit_pro_ml_ros/cmake/ament_cmake_export_dependencies-extras.cmake:21 (find_package)
+  /home/dwyackzan/moveit_pro_source/install/moveit_pro_ml_ros/share/moveit_pro_ml_ros/cmake/moveit_pro_ml_rosConfig.cmake:41 (include)
+  /home/dwyackzan/moveit_pro_source/install/moveit_studio_behavior/share/moveit_studio_behavior/cmake/ament_cmake_export_dependencies-extras.cmake:21 (find_package)
+  /home/dwyackzan/moveit_pro_source/install/moveit_studio_behavior/share/moveit_studio_behavior/cmake/moveit_studio_behaviorConfig.cmake:41 (include)
+  CMakeLists.txt:12 (find_package)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+-- Found PythonInterp: /usr/bin/python3.10 (found version "3.10.12")
+CMake Warning (dev) at /usr/lib/x86_64-linux-gnu/cmake/pcl/PCLConfig.cmake:146 (find_package):
+  Policy CMP0144 is not set: find_package uses upper-case <PACKAGENAME>_ROOT
+  variables.  Run "cmake --help-policy CMP0144" for policy details.  Use the
+  cmake_policy command to set the policy and suppress this warning.
+
+  CMake variable EIGEN_ROOT is set to:
+
+    /usr/include/eigen3
+
+  For compatibility, find_package is ignoring the variable, but code in a
+  .cmake module might still use it.
+Call Stack (most recent call first):
+  /usr/lib/x86_64-linux-gnu/cmake/pcl/PCLConfig.cmake:299 (find_eigen)
+  /usr/lib/x86_64-linux-gnu/cmake/pcl/PCLConfig.cmake:543 (find_external_library)
+  /home/dwyackzan/moveit_pro_source/install/moveit_pro_mpc/share/moveit_pro_mpc/cmake/ament_cmake_export_dependencies-extras.cmake:21 (find_package)
+  /home/dwyackzan/moveit_pro_source/install/moveit_pro_mpc/share/moveit_pro_mpc/cmake/moveit_pro_mpcConfig.cmake:41 (include)
+  /home/dwyackzan/moveit_pro_source/install/moveit_studio_behavior/share/moveit_studio_behavior/cmake/ament_cmake_export_dependencies-extras.cmake:21 (find_package)
+  /home/dwyackzan/moveit_pro_source/install/moveit_studio_behavior/share/moveit_studio_behavior/cmake/moveit_studio_behaviorConfig.cmake:41 (include)
+  CMakeLists.txt:12 (find_package)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+-- Checking for module 'eigen3'
+--   Found eigen3, version 3.4.0
+-- Found Eigen: /usr/include/eigen3 (Required is at least version "3.1")
+-- Eigen found (include: /usr/include/eigen3, version: 3.4.0)
+CMake Warning (dev) at /usr/lib/x86_64-linux-gnu/cmake/pcl/PCLConfig.cmake:128 (find_package):
+  Policy CMP0167 is not set: The FindBoost module is removed.  Run "cmake
+  --help-policy CMP0167" for policy details.  Use the cmake_policy command to
+  set the policy and suppress this warning.
+
+Call Stack (most recent call first):
+  /usr/lib/x86_64-linux-gnu/cmake/pcl/PCLConfig.cmake:297 (find_boost)
+  /usr/lib/x86_64-linux-gnu/cmake/pcl/PCLConfig.cmake:543 (find_external_library)
+  /home/dwyackzan/moveit_pro_source/install/moveit_pro_mpc/share/moveit_pro_mpc/cmake/ament_cmake_export_dependencies-extras.cmake:21 (find_package)
+  /home/dwyackzan/moveit_pro_source/install/moveit_pro_mpc/share/moveit_pro_mpc/cmake/moveit_pro_mpcConfig.cmake:41 (include)
+  /home/dwyackzan/moveit_pro_source/install/moveit_studio_behavior/share/moveit_studio_behavior/cmake/ament_cmake_export_dependencies-extras.cmake:21 (find_package)
+  /home/dwyackzan/moveit_pro_source/install/moveit_studio_behavior/share/moveit_studio_behavior/cmake/moveit_studio_behaviorConfig.cmake:41 (include)
+  CMakeLists.txt:12 (find_package)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+CMake Warning (dev) at /usr/lib/x86_64-linux-gnu/cmake/pcl/Modules/FindFLANN.cmake:44 (find_package):
+  Policy CMP0144 is not set: find_package uses upper-case <PACKAGENAME>_ROOT
+  variables.  Run "cmake --help-policy CMP0144" for policy details.  Use the
+  cmake_policy command to set the policy and suppress this warning.
+
+  CMake variable FLANN_ROOT is set to:
+
+    /usr
+
+  For compatibility, find_package is ignoring the variable, but code in a
+  .cmake module might still use it.
+Call Stack (most recent call first):
+  /usr/lib/x86_64-linux-gnu/cmake/pcl/PCLConfig.cmake:256 (find_package)
+  /usr/lib/x86_64-linux-gnu/cmake/pcl/PCLConfig.cmake:301 (find_flann)
+  /usr/lib/x86_64-linux-gnu/cmake/pcl/PCLConfig.cmake:543 (find_external_library)
+  /home/dwyackzan/moveit_pro_source/install/moveit_pro_mpc/share/moveit_pro_mpc/cmake/ament_cmake_export_dependencies-extras.cmake:21 (find_package)
+  /home/dwyackzan/moveit_pro_source/install/moveit_pro_mpc/share/moveit_pro_mpc/cmake/moveit_pro_mpcConfig.cmake:41 (include)
+  /home/dwyackzan/moveit_pro_source/install/moveit_studio_behavior/share/moveit_studio_behavior/cmake/ament_cmake_export_dependencies-extras.cmake:21 (find_package)
+  /home/dwyackzan/moveit_pro_source/install/moveit_studio_behavior/share/moveit_studio_behavior/cmake/moveit_studio_behaviorConfig.cmake:41 (include)
+  CMakeLists.txt:12 (find_package)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+-- Checking for module 'flann'
+--   Found flann, version 1.9.1
+-- Found FLANN: /usr/lib/x86_64-linux-gnu/libflann_cpp.so
+-- FLANN found (include: /usr/include, lib: /usr/lib/x86_64-linux-gnu/libflann_cpp.so)
+-- Checking for module 'libusb-1.0'
+--   Found libusb-1.0, version 1.0.25
+-- Found libusb: /usr/lib/x86_64-linux-gnu/libusb-1.0.so
+-- OpenNI found (version: 1.5.4.0, include: /usr/include/ni, lib: /usr/lib/libOpenNI.so;libusb::libusb)
+-- OpenNI2 found (version: 2.2.0.33, include: /usr/include/openni2, lib: /usr/lib/x86_64-linux-gnu/libOpenNI2.so;libusb::libusb)
+CMake Warning (dev) at /usr/lib/x86_64-linux-gnu/cmake/pcl/PCLConfig.cmake:128 (find_package):
+  Policy CMP0167 is not set: The FindBoost module is removed.  Run "cmake
+  --help-policy CMP0167" for policy details.  Use the cmake_policy command to
+  set the policy and suppress this warning.
+
+Call Stack (most recent call first):
+  /usr/lib/x86_64-linux-gnu/cmake/pcl/PCLConfig.cmake:297 (find_boost)
+  /usr/lib/x86_64-linux-gnu/cmake/pcl/PCLConfig.cmake:543 (find_external_library)
+  /home/dwyackzan/moveit_pro_source/install/moveit_pro_mpc/share/moveit_pro_mpc/cmake/ament_cmake_export_dependencies-extras.cmake:21 (find_package)
+  /home/dwyackzan/moveit_pro_source/install/moveit_pro_mpc/share/moveit_pro_mpc/cmake/moveit_pro_mpcConfig.cmake:41 (include)
+  /home/dwyackzan/moveit_pro_source/install/moveit_studio_behavior/share/moveit_studio_behavior/cmake/ament_cmake_export_dependencies-extras.cmake:21 (find_package)
+  /home/dwyackzan/moveit_pro_source/install/moveit_studio_behavior/share/moveit_studio_behavior/cmake/moveit_studio_behaviorConfig.cmake:41 (include)
+  CMakeLists.txt:12 (find_package)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+-- Eigen found (include: /usr/include/eigen3, version: 3.4.0)
+-- OpenNI found (version: 1.5.4.0, include: /usr/include/ni, lib: /usr/lib/libOpenNI.so;libusb::libusb)
+-- OpenNI2 found (version: 2.2.0.33, include: /usr/include/openni2, lib: /usr/lib/x86_64-linux-gnu/libOpenNI2.so;libusb::libusb)
+-- Found Qhull version 8.0.2
+-- OpenNI found (version: 1.5.4.0, include: /usr/include/ni, lib: /usr/lib/libOpenNI.so;libusb::libusb)
+-- Found PCL_COMMON: /usr/lib/x86_64-linux-gnu/libpcl_common.so
+-- Found PCL_KDTREE: /usr/lib/x86_64-linux-gnu/libpcl_kdtree.so
+-- Found PCL_OCTREE: /usr/lib/x86_64-linux-gnu/libpcl_octree.so
+-- Found PCL_SEARCH: /usr/lib/x86_64-linux-gnu/libpcl_search.so
+-- Found PCL_SAMPLE_CONSENSUS: /usr/lib/x86_64-linux-gnu/libpcl_sample_consensus.so
+-- Found PCL_FILTERS: /usr/lib/x86_64-linux-gnu/libpcl_filters.so
+-- Found PCL_2D: /usr/include/pcl-1.12
+-- Found PCL_GEOMETRY: /usr/include/pcl-1.12
+-- Found PCL_IO: /usr/lib/x86_64-linux-gnu/libpcl_io.so
+-- Found PCL_FEATURES: /usr/lib/x86_64-linux-gnu/libpcl_features.so
+-- Found PCL_ML: /usr/lib/x86_64-linux-gnu/libpcl_ml.so
+-- Found PCL_SEGMENTATION: /usr/lib/x86_64-linux-gnu/libpcl_segmentation.so
+-- Found PCL_VISUALIZATION: /usr/lib/x86_64-linux-gnu/libpcl_visualization.so
+-- Found PCL_SURFACE: /usr/lib/x86_64-linux-gnu/libpcl_surface.so
+-- Found PCL_REGISTRATION: /usr/lib/x86_64-linux-gnu/libpcl_registration.so
+-- Found PCL_KEYPOINTS: /usr/lib/x86_64-linux-gnu/libpcl_keypoints.so
+-- Found PCL_TRACKING: /usr/lib/x86_64-linux-gnu/libpcl_tracking.so
+-- Found PCL_RECOGNITION: /usr/lib/x86_64-linux-gnu/libpcl_recognition.so
+-- Found PCL_STEREO: /usr/lib/x86_64-linux-gnu/libpcl_stereo.so
+-- Found PCL_APPS: /usr/lib/x86_64-linux-gnu/libpcl_apps.so
+-- Found PCL_IN_HAND_SCANNER: /usr/include/pcl-1.12
+-- Found PCL_MODELER: /usr/include/pcl-1.12
+-- Found PCL_POINT_CLOUD_EDITOR: /usr/include/pcl-1.12
+-- Found PCL_OUTOFCORE: /usr/lib/x86_64-linux-gnu/libpcl_outofcore.so
+-- Found PCL_PEOPLE: /usr/lib/x86_64-linux-gnu/libpcl_people.so
+CMake Warning (dev) at /home/dwyackzan/moveit_pro_source/install/rrtconnect/share/rrtconnect/cmake/ConfigExtras.cmake:1 (find_package):
+  Policy CMP0167 is not set: The FindBoost module is removed.  Run "cmake
+  --help-policy CMP0167" for policy details.  Use the cmake_policy command to
+  set the policy and suppress this warning.
+
+Call Stack (most recent call first):
+  /home/dwyackzan/moveit_pro_source/install/rrtconnect/share/rrtconnect/cmake/rrtconnectConfig.cmake:41 (include)
+  /home/dwyackzan/moveit_pro_source/install/pro_rrt/share/pro_rrt/cmake/ament_cmake_export_dependencies-extras.cmake:21 (find_package)
+  /home/dwyackzan/moveit_pro_source/install/pro_rrt/share/pro_rrt/cmake/pro_rrtConfig.cmake:41 (include)
+  /home/dwyackzan/moveit_pro_source/install/moveit_studio_behavior/share/moveit_studio_behavior/cmake/ament_cmake_export_dependencies-extras.cmake:21 (find_package)
+  /home/dwyackzan/moveit_pro_source/install/moveit_studio_behavior/share/moveit_studio_behavior/cmake/moveit_studio_behaviorConfig.cmake:41 (include)
+  CMakeLists.txt:12 (find_package)
+This warning is for project developers.  Use -Wno-dev to suppress it.
+
+-- Found Boost: /usr/lib/x86_64-linux-gnu/cmake/Boost-1.74.0/BoostConfig.cmake (found version "1.74.0") found components: graph
+-- Found moveit_studio_behavior_interface: 8.4.0 (/home/dwyackzan/moveit_pro_source/install/moveit_studio_behavior_interface/share/moveit_studio_behavior_interface/cmake)
+-- Found ament_lint_auto: 0.12.11 (/opt/ros/humble/share/ament_lint_auto/cmake)
+-- Found gtest sources under '/opt/ros/humble/src/gtest_vendor': C++ tests using 'Google Test' will be built
+-- The C compiler identification is GNU 11.4.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+CMake Deprecation Warning at /opt/ros/humble/src/gtest_vendor/CMakeLists.txt:2 (cmake_minimum_required):
+  Compatibility with CMake < 3.10 will be removed from a future version of
+  CMake.
+
+  Update the VERSION argument <min> value.  Or, use the <min>...<max> syntax
+  to tell CMake that the project requires at least <min> but has been updated
+  to work with policies introduced by <max> or earlier.
+
+
+-- Configuring done (11.2s)
+CMake Error at /usr/lib/x86_64-linux-gnu/cmake/vtk-9.1/VTK-targets.cmake:518 (set_target_properties):
+  The link interface of target "VTK::mpi" contains:
+
+    MPI::MPI_C
+
+  but the target was not found.  Possible reasons include:
+
+    * There is a typo in the target name.
+    * A find_package call is missing for an IMPORTED target.
+    * An ALIAS target is missing.
+
+Call Stack (most recent call first):
+  /usr/lib/x86_64-linux-gnu/cmake/vtk-9.1/vtk-config.cmake:138 (include)
+  /usr/lib/x86_64-linux-gnu/cmake/pcl/PCLConfig.cmake:270 (find_package)
+  /usr/lib/x86_64-linux-gnu/cmake/pcl/PCLConfig.cmake:319 (find_VTK)
+  /usr/lib/x86_64-linux-gnu/cmake/pcl/PCLConfig.cmake:540 (find_external_library)
+  /home/dwyackzan/moveit_pro_source/install/moveit_pro_mpc/share/moveit_pro_mpc/cmake/ament_cmake_export_dependencies-extras.cmake:21 (find_package)
+  /home/dwyackzan/moveit_pro_source/install/moveit_pro_mpc/share/moveit_pro_mpc/cmake/moveit_pro_mpcConfig.cmake:41 (include)
+  /home/dwyackzan/moveit_pro_source/install/moveit_studio_behavior/share/moveit_studio_behavior/cmake/ament_cmake_export_dependencies-extras.cmake:21 (find_package)
+  /home/dwyackzan/moveit_pro_source/install/moveit_studio_behavior/share/moveit_studio_behavior/cmake/moveit_studio_behaviorConfig.cmake:41 (include)
+  CMakeLists.txt:12 (find_package)
+
+
+-- Generating done (0.5s)
+CMake Warning:
+  Manually-specified variables were not used by the project:
+
+    Python_EXECUTABLE
+
+
+CMake Generate step failed.  Build files cannot be regenerated correctly.

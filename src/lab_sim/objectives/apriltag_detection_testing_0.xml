@@ -17,42 +17,46 @@
         timeout="0.000000"
         activate_controllers="joint_trajectory_controller"
       />
-      <SubTree
-        ID="Move To and Detect Tag 0"
-        _collapsed="true"
-        tag_name="tag1"
-        tag_size="0.48"
-      />
-      <SubTree
-        ID="Move To and Detect Tag 0"
-        _collapsed="true"
-        tag_name="tag2"
-        tag_size="0.32"
-      />
-      <SubTree
-        ID="Move To and Detect Tag 0"
-        _collapsed="true"
-        tag_name="tag3"
-        tag_size="0.25"
-      />
-      <SubTree
-        ID="Move To and Detect Tag 0"
-        _collapsed="true"
-        tag_name="tag4"
-        tag_size="0.16"
-      />
-      <SubTree
-        ID="Move To and Detect Tag 0"
-        _collapsed="true"
-        tag_name="tag5"
-        tag_size="0.12"
-      />
-      <SubTree
-        ID="Move To and Detect Tag 0"
-        _collapsed="true"
-        tag_name="tag6"
-        tag_size="0.08"
-      />
+      <Decorator ID="Repeat" num_cycles="10">
+        <Control ID="Sequence">
+          <SubTree
+            ID="Move To and Detect Tag 0"
+            _collapsed="true"
+            tag_name="tag1"
+            tag_size="0.48"
+          />
+          <SubTree
+            ID="Move To and Detect Tag 0"
+            _collapsed="true"
+            tag_name="tag2"
+            tag_size="0.32"
+          />
+          <SubTree
+            ID="Move To and Detect Tag 0"
+            _collapsed="true"
+            tag_name="tag3"
+            tag_size="0.24"
+          />
+          <SubTree
+            ID="Move To and Detect Tag 0"
+            _collapsed="true"
+            tag_name="tag4"
+            tag_size="0.16"
+          />
+          <SubTree
+            ID="Move To and Detect Tag 0"
+            _collapsed="true"
+            tag_name="tag5"
+            tag_size="0.12"
+          />
+          <SubTree
+            ID="Move To and Detect Tag 0"
+            _collapsed="true"
+            tag_name="tag6"
+            tag_size="0.08"
+          />
+        </Control>
+      </Decorator>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
