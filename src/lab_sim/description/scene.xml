@@ -10,33 +10,32 @@
 
   <asset>
     <mesh name="cube" file="assets/Cube.stl" />
+    <!-- Define AprilTag textures -->
+    <texture name="arucotag" type="2d" file="aruco-1.png" />
+
+    <!-- Define block materials with AprilTags -->
+    <material name="arucotag_material" texture="arucotag" texuniform="false" />
   </asset>
 
-  <visual>
-    <headlight
-      ambient="0.0 0.0 0.0"
-      diffuse="0.4 0.4 0.4"
-      specular="0.5 0.5 0.5"
-      active="0"
-    />
-  </visual>
+  <!--  <visual>-->
+  <!--    <headlight-->
+  <!--      ambient="0.0 0.0 0.0"-->
+  <!--      diffuse="0.4 0.4 0.4"-->
+  <!--      specular="0.5 0.5 0.5"-->
+  <!--      active="0"-->
+  <!--    />-->
+  <!--  </visual>-->
 
   <worldbody>
-    <!--        <light pos="0 0 1.5" dir="0 0 -1" directional="true" />-->
+    <light pos="0 0 1.5" dir="0 0 -1" directional="true" />
 
-    <!--        <light-->
-    <!--          name="spotlight"-->
-    <!--          mode="targetbodycom"-->
-    <!--          target="wrist_2_link"-->
-    <!--          pos="0 -1 2"-->
-    <!--        />-->
-    <geom
-      name="floor"
-      pos="0 0 -0.512"
-      size="0 0 0.05"
-      type="plane"
-      material="groundplane"
+    <light
+      name="spotlight"
+      mode="targetbodycom"
+      target="wrist_2_link"
+      pos="0 -1 2"
     />
+    <geom name="floor" pos="0 0 -0.512" size="0 0 0.05" type="plane" />
     <!-- Scene Camera -->
     <site
       name="scene_camera_optical_frame"
@@ -60,11 +59,10 @@
         type="box"
         size="0.3 0.3 0.05"
         rgba="1 1 1 1"
-        material="apriltag_material1"
+        material="arucotag_material"
       />
       <site name="tag1" pos="0 0 0.05" euler="0 0 3.14159" />
-      <site name="tag1l" pos="0 -0.24 0.05" euler="0 0 3.14159" />
-      <site name="tag1r" pos="0 0.24 0.05" euler="0 0 3.14159" />
+      <site name="tag1r" pos="0 0 0.05" euler="0 0 0.0" />
     </body>
     <body name="seperator1" pos="1.4 0.75 0.0">
       <geom
@@ -82,11 +80,10 @@
         type="box"
         size="0.2 0.2 0.05"
         rgba="1 1 1 1"
-        material="apriltag_material1"
+        material="arucotag_material"
       />
       <site name="tag2" pos="0 0 0.05" euler="0 0 3.14159" />
-      <site name="tag2l" pos="0 -0.16 0.05" euler="0 0 3.14159" />
-      <site name="tag2r" pos="0 0.16 0.05" euler="0 0 3.14159" />
+      <site name="tag2r" pos="0 0 0.05" euler="0 0 0.0" />
     </body>
     <body name="block3" pos="0.25 0.75 0.575">
       <freejoint name="block3" />
@@ -94,9 +91,10 @@
         type="box"
         size="0.15 0.15 0.05"
         rgba="1 1 1 1"
-        material="apriltag_material1"
+        material="arucotag_material"
       />
       <site name="tag3" pos="0 0 0.05" euler="0 0 3.14159" />
+      <site name="tag3r" pos="0 0 0.05" euler="0 0 0.0" />
     </body>
     <body name="seperator2" pos="-0.25 0.75 0.0">
       <geom
@@ -114,9 +112,10 @@
         type="box"
         size="0.1 0.1 0.05"
         rgba="1 1 1 1"
-        material="apriltag_material1"
+        material="arucotag_material"
       />
       <site name="tag4" pos="0 0 0.05" euler="0 0 3.14159" />
+      <site name="tag4r" pos="0 0 0.05" euler="0 0 0.0" />
     </body>
     <body name="block5" pos="-1.25 0.75 0.575">
       <freejoint name="block5" />
@@ -124,9 +123,10 @@
         type="box"
         size="0.075 0.075 0.05"
         rgba="1 1 1 1"
-        material="apriltag_material1"
+        material="arucotag_material"
       />
       <site name="tag5" pos="0 0 0.05" euler="0 0 3.14159" />
+      <site name="tag5r" pos="0 0 0.05" euler="0 0 0.0" />
     </body>
     <body name="seperator3" pos="-1.8 0.75 0.0">
       <geom
@@ -144,9 +144,10 @@
         type="box"
         size="0.05 0.05 0.05"
         rgba="1 1 1 1"
-        material="apriltag_material1"
+        material="arucotag_material"
       />
       <site name="tag6" pos="0 0 0.05" euler="0 0 3.14159" />
+      <site name="tag6r" pos="0 0 0.05" euler="0 0 0.0" />
     </body>
     <include file="ur5e/ur5e_linear_rail.xml" />
   </worldbody>

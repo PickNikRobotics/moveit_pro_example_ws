@@ -1,0 +1,4 @@
+objectives:
+  behavior_loader_plugins:
+    detect_aruco_tag:
+      - "detect_aruco_tag::DetectArucoTagBehaviorsLoader"

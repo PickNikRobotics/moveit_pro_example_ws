@@ -8,10 +8,11 @@
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree
-        ID="Move To and Detect Tag 45"
+        ID="Move To and Detect Aruco Tag 0"
         _collapsed="true"
-        tag_name="tag3"
-        tag_size="0.25"
+        tag_name="tag4"
+        tag_size="0.195"
+        tag_name_r="tag4r"
       />
     </Control>
   </BehaviorTree>
