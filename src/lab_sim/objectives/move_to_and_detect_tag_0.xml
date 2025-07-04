@@ -10,6 +10,7 @@
         orientation_xyzw="1;0;0;0"
         position_xyz="0.;0.0;0.6"
       />
+      <Action ID="ResetPoseStampedVector" vector="{pose_stamped_vector}" />
       <Action
         ID="AddPoseStampedToVector"
         input="{stamped_pose}"
@@ -36,6 +37,11 @@
           solution="{debug_solution}"
         />
       </Control>
+      <Action
+        ID="WaitForUserTrajectoryApproval"
+        cartesian_path_links="grasp_link"
+        solution="{debug_solution}"
+      />
       <Action
         ID="ExecuteFollowJointTrajectory"
         execute_follow_joint_trajectory_action_name="/joint_trajectory_controller/follow_joint_trajectory"

@@ -1,0 +1,4 @@
+source;share/example_behaviors/local_setup.bash
+source;share/example_behaviors/local_setup.dsv
+source;share/example_behaviors/local_setup.sh
+source;share/example_behaviors/local_setup.zsh

@@ -10,14 +10,8 @@
       <SubTree
         ID="Move To and Detect Tag 45"
         _collapsed="true"
-        tag_name="tag1"
-        tag_size="0.48"
-      />
-      <SubTree
-        ID="Move To and Detect Tag -45"
-        _collapsed="true"
-        tag_name="tag2"
-        tag_size="0.32"
+        tag_name="tag3"
+        tag_size="0.25"
       />
     </Control>
   </BehaviorTree>
