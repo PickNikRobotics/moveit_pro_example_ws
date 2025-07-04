@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<library path="detect_aruco_tag">
+  <class
+    type="detect_aruco_tag::DetectArucoTagBehaviorsLoader"
+    base_class_type="moveit_studio::behaviors::SharedResourcesNodeLoaderBase"
+  />
+</library>
