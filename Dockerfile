@@ -142,6 +142,9 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
       libnvonnxparsers10 \
       libtree
 
+# Misleading name: onnxruntime_gpu is actually specifically the CUDA package. This is only shipped for x86-64
+RUN if [ "$(uname -m)" = "x86_64" ]; then pip3 install --no-cache-dir onnxruntime_gpu==1.19.0; fi
+
 # Copy source code from the workspace's ROS 2 packages to a workspace inside the container
 ARG USER_WS=/home/${USERNAME}/user_ws
 ENV USER_WS=${USER_WS}
