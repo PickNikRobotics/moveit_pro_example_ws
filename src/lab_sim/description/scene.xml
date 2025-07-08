@@ -12,24 +12,15 @@
     <mesh name="cube" file="assets/Cube.stl" />
   </asset>
 
-  <visual>
-    <headlight
-      ambient="0.0 0.0 0.0"
-      diffuse="0.4 0.4 0.4"
-      specular="0.5 0.5 0.5"
-      active="0"
-    />
-  </visual>
-
   <worldbody>
-    <!--        <light pos="0 0 1.5" dir="0 0 -1" directional="true" />-->
+    <light pos="0 0 1.5" dir="0 0 -1" directional="true" />
 
-    <!--        <light-->
-    <!--          name="spotlight"-->
-    <!--          mode="targetbodycom"-->
-    <!--          target="wrist_2_link"-->
-    <!--          pos="0 -1 2"-->
-    <!--        />-->
+    <light
+      name="spotlight"
+      mode="targetbodycom"
+      target="wrist_2_link"
+      pos="0 -1 2"
+    />
     <geom
       name="floor"
       pos="0 0 -0.512"

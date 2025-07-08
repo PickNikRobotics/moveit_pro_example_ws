@@ -7,51 +7,63 @@
     _favorite="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
-      <Action
-        ID="SwitchController"
-        activate_asap="true"
-        automatic_deactivation="true"
-        controller_list_action_name="/controller_manager/list_controllers"
-        controller_switch_action_name="/controller_manager/switch_controller"
-        strictness="1"
-        timeout="0.000000"
-        activate_controllers="joint_trajectory_controller"
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        controller_names="joint_trajectory_controller"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        seed="0"
+        velocity_scale_factor="1.0"
+        waypoint_name="Home"
       />
+      <Action ID="Script" code="run_counter := 0" />
       <Decorator ID="Repeat" num_cycles="10">
         <Control ID="Sequence">
+          <Action ID="Script" code="run_counter += 1" />
           <SubTree
             ID="Move To and Detect Tag 0"
             _collapsed="true"
+            run_counter="{run_counter}"
             tag_name="tag1"
             tag_size="0.48"
           />
           <SubTree
             ID="Move To and Detect Tag 0"
             _collapsed="true"
+            run_counter="{run_counter}"
             tag_name="tag2"
             tag_size="0.32"
           />
           <SubTree
             ID="Move To and Detect Tag 0"
             _collapsed="true"
+            run_counter="{run_counter}"
             tag_name="tag3"
             tag_size="0.24"
           />
           <SubTree
             ID="Move To and Detect Tag 0"
             _collapsed="true"
+            run_counter="{run_counter}"
             tag_name="tag4"
             tag_size="0.16"
           />
           <SubTree
             ID="Move To and Detect Tag 0"
             _collapsed="true"
+            run_counter="{run_counter}"
             tag_name="tag5"
             tag_size="0.12"
           />
           <SubTree
             ID="Move To and Detect Tag 0"
             _collapsed="true"
+            run_counter="{run_counter}"
             tag_name="tag6"
             tag_size="0.08"
           />
