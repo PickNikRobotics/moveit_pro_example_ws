@@ -38,11 +38,6 @@
         />
       </Control>
       <Action
-        ID="WaitForUserTrajectoryApproval"
-        cartesian_path_links="grasp_link"
-        solution="{debug_solution}"
-      />
-      <Action
         ID="ExecuteFollowJointTrajectory"
         execute_follow_joint_trajectory_action_name="/joint_trajectory_controller/follow_joint_trajectory"
         goal_duration_tolerance="-1.000000"
@@ -116,6 +111,8 @@
         ID="SavePoseStampedToYaml"
         message="{pose_diff}"
         yaml_filename="{tag_name}"
+        namespace="{run_counter}"
+        overwrite="false"
       />
     </Control>
   </BehaviorTree>
@@ -125,6 +122,7 @@
         <Metadata runnable="false" />
         <Metadata subcategory="Application Test" />
       </MetadataFields>
+      <inout_port name="run_counter" default="{run_counter}" />
       <inout_port name="tag_name" default="{tag_name}" />
       <inout_port name="tag_size" default="{tag_size}" />
     </SubTree>
