@@ -62,3 +62,29 @@ From the top level, you can execute:
 ```bash
 ./sync_subtrees.sh
 ```
+
+## AprilTag Detection Analysis
+
+### Data collection steps:
+
+1. To run the objectives for this detection analysis, a behavior update to the SaveToYaml Behavior is required that will
+   be released in MoveIt Pro version 8.4. If you are on a version older than 8.4.0 (which is unreleased as of this
+   writing), then you will need to manually pull a more recent version with the changes. To do this, once you have the
+   latest released version of MoveIt Pro [installed](https://docs.picknik.ai/software_installation/), edit the
+   `/opt/moveit_pro/.version` file on your host machine and replace the version name with
+   `save-to-yaml-dont-overwrite-if-namespaced`.
+1. Make sure the `apriltag-detection-testing` branch is checked out in your `moveit_pro_exmple_ws` workspace.
+1. Rebuild Pro with `moveit_pro build`.
+1. Launch moveit_pro using lab_sim with `moveit_pro run -c lab_sim`.
+1. Run the `AprilTag Detection Testing 0` objective which collects 10 samples of each of the 6 AprilTags with the camera
+   parallel to the tags.
+1. Once complete, move the YAML files with the results to a new directory in the objectives folder called
+   `0degree_runs`: `mv tag*.yaml 0degree_runs/.`.
+1. Run the `AprilTag Detection Testing 45` objective which collects 10 samples of each of the 6 AprilTags with the camera
+   at a 45 degree angle to the tags.
+1. Once complete, move the YAML files with the results to a new directory in the objectives folder called
+   `45degree_runs`: `mv tag*.yaml 45degree_runs/.`.
+
+### Data analysis steps:
+
+Simply run the `analyze_apriltag_detection.py` script.
