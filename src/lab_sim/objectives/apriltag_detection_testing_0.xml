@@ -75,7 +75,7 @@
     <SubTree ID="AprilTag Detection Testing 0">
       <MetadataFields>
         <Metadata runnable="true" />
-        <Metadata subcategory="Application Test" />
+        <Metadata subcategory="AprilTag Detection Analysis" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>

@@ -120,7 +120,7 @@
     <SubTree ID="Move To and Detect Tag 0">
       <MetadataFields>
         <Metadata runnable="false" />
-        <Metadata subcategory="Application Test" />
+        <Metadata subcategory="AprilTag Detection Analysis - Subtrees" />
       </MetadataFields>
       <inout_port name="run_counter" default="{run_counter}" />
       <inout_port name="tag_name" default="{tag_name}" />
