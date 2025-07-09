@@ -40,7 +40,6 @@ from moveit_pro_test_utils.objective_test_fixture import (
 cancel_objectives = {
     "3 Waypoints Pick and Place",
     "Cycle Between Waypoints",
-    "Grasp Object from Text Prompt",
     "Grasp Planning",
     "Grasp Pose Tuning With April Tag",
     "Grasp Pose Using Yaml",
@@ -56,6 +55,7 @@ cancel_objectives = {
 }
 
 skip_objectives = {
+    "Grasp Object from Text Prompt",  # https://github.com/PickNikRobotics/moveit_pro/issues/13236
     "Grasp Planning",
     "Joint Diagnostic",
     "Fuse Multiple Views",
