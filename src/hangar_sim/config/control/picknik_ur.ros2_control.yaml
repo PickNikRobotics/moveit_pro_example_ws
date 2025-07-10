@@ -203,7 +203,7 @@ joint_trajectory_controller:
       - platform_velocity_controller/rotational_yaw_joint
     state_publish_rate: 100.0
     action_monitor_rate: 20.0
-    allow_partial_joints_goal: false
+    allow_partial_joints_goal: true
     open_loop_control: false # this is closed loop
     gains:
       shoulder_pan_joint:
