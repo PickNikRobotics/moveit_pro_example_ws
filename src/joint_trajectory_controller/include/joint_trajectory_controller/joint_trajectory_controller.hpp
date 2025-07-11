@@ -162,7 +162,7 @@ protected:
 
   // Slider subscriber
   rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr slider_subscriber_ = nullptr;
-  std::atomic<int> slider_value_{ 0 };
+  std::atomic<int> slider_value_{ 100 };
 
   rclcpp::Service<control_msgs::srv::QueryTrajectoryState>::SharedPtr query_state_srv_;
 
