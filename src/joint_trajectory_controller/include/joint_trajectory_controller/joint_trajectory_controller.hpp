@@ -42,6 +42,7 @@
 #include "realtime_tools/realtime_buffer.hpp"
 #include "realtime_tools/realtime_publisher.hpp"
 #include "realtime_tools/realtime_server_goal_handle.hpp"
+#include "std_msgs/msg/int32.hpp"
 #include "trajectory_msgs/msg/joint_trajectory.hpp"
 #include "trajectory_msgs/msg/joint_trajectory_point.hpp"
 
@@ -167,6 +168,10 @@ protected:
   rclcpp::Subscription<trajectory_msgs::msg::JointTrajectory>::SharedPtr joint_command_subscriber_ =
     nullptr;
 
+  // Slider subscriber
+  rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr slider_subscriber_ = nullptr;
+  std::atomic<int> slider_value_{0};
+
   rclcpp::Service<control_msgs::srv::QueryTrajectoryState>::SharedPtr query_state_srv_;
 
   std::shared_ptr<Trajectory> traj_external_point_ptr_ = nullptr;
@@ -200,6 +205,10 @@ protected:
   // callback for topic interface
   JOINT_TRAJECTORY_CONTROLLER_PUBLIC
   void topic_callback(const std::shared_ptr<trajectory_msgs::msg::JointTrajectory> msg);
+
+  // callback for slider topic
+  JOINT_TRAJECTORY_CONTROLLER_PUBLIC
+  void slider_callback(const std::shared_ptr<std_msgs::msg::Int32> msg);
 
   // callbacks for action_server_
   JOINT_TRAJECTORY_CONTROLLER_PUBLIC
@@ -280,6 +289,8 @@ protected:
 
 private:
   void update_pids();
+
+  rclcpp::Time last_scaled_time_;
 
   bool contains_interface_type(
     const std::vector<std::string> & interface_type_list, const std::string & interface_type);
