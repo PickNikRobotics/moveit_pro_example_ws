@@ -27,18 +27,15 @@ TEST(TestLoadJointStateController, load_controller)
 {
   rclcpp::init(0, nullptr);
 
-  std::shared_ptr<rclcpp::Executor> executor =
-    std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
+  std::shared_ptr<rclcpp::Executor> executor = std::make_shared<rclcpp::executors::SingleThreadedExecutor>();
 
   controller_manager::ControllerManager cm(
-    std::make_unique<hardware_interface::ResourceManager>(
-      ros2_control_test_assets::minimal_robot_urdf),
-    executor, "test_controller_manager");
+      std::make_unique<hardware_interface::ResourceManager>(ros2_control_test_assets::minimal_robot_urdf), executor,
+      "test_controller_manager");
 
-  ASSERT_NE(
-    cm.load_controller(
-      "test_joint_trajectory_controller", "joint_trajectory_controller/JointTrajectoryController"),
-    nullptr);
+  ASSERT_NE(cm.load_controller("test_joint_trajectory_controller",
+                               "joint_trajectory_controller/JointTrajectoryController"),
+            nullptr);
 
   rclcpp::shutdown();
 }

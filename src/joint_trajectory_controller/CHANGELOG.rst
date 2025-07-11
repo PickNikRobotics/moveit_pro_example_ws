@@ -217,7 +217,7 @@ Changelog for package joint_trajectory_controller
 2.18.0 (2023-04-29)
 -------------------
 * Fix docs format (`#591 <https://github.com/ros-controls/ros2_controllers/issues/591>`_)
-* [JTC] Configurable joint positon error normalization behavior (`#491 <https://github.com/ros-controls/ros2_controllers/issues/491>`_) (`#579 <https://github.com/ros-controls/ros2_controllers/issues/579>`_)
+* [JTC] Configurable joint position error normalization behavior (`#491 <https://github.com/ros-controls/ros2_controllers/issues/491>`_) (`#579 <https://github.com/ros-controls/ros2_controllers/issues/579>`_)
 * Contributors: Christoph Fröhlich, Bence Magyar
 
 2.17.3 (2023-04-14)
@@ -263,7 +263,7 @@ Changelog for package joint_trajectory_controller
   * Change type cast wall timer period from second to nanoseconds.
   create_wall_timer() expects delay in nanoseconds (duration object) however the type cast to seconds will result in 0 (if duration is less than 1s) and thus causing timer to be fired non stop resulting in very high CPU usage.
   * Reset smartpointer so that create_wall_timer() call can destroy previous trajectory timer.
-  node->create_wall_timer() first removes timers associated with expired smartpointers before servicing current request.  The JTC timer pointer gets overwrite only after the create_wall_timer() returns and thus not able to remove previous trajectory timer resulting in upto two timers running for JTC during trajectory execution.  Althougth the previous timer does nothing but still get fired.
+  node->create_wall_timer() first removes timers associated with expired smartpointers before servicing current request.  The JTC timer pointer gets overwrite only after the create_wall_timer() returns and thus not able to remove previous trajectory timer resulting in up to two timers running for JTC during trajectory execution.  Although the previous timer does nothing but still get fired.
 * Contributors: Arshad Mehmood, Borong Yuan, Tyler Weaver, Andy Zelenak, Bence Magyar, Denis Štogl
 
 2.12.0 (2022-09-01)
@@ -470,7 +470,7 @@ Changelog for package joint_trajectory_controller
 
 0.2.0 (2021-02-06)
 ------------------
-* Use ros2 contol test assets (`#138 <https://github.com/ros-controls/ros2_controllers/issues/138>`_)
+* Use ros2 control test assets (`#138 <https://github.com/ros-controls/ros2_controllers/issues/138>`_)
   * Add description to test trajecotry_controller
   * Use ros2_control_test_assets package
   * Delete obsolete components plugin export

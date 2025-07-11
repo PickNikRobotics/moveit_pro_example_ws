@@ -60,7 +60,9 @@ struct StateTolerances
  */
 struct SegmentTolerances
 {
-  explicit SegmentTolerances(size_t size = 0) : state_tolerance(size), goal_state_tolerance(size) {}
+  explicit SegmentTolerances(size_t size = 0) : state_tolerance(size), goal_state_tolerance(size)
+  {
+  }
 
   /** State tolerances that apply during segment execution. */
   std::vector<StateTolerances> state_tolerance;
@@ -93,9 +95,9 @@ struct SegmentTolerances
  * \param params The ROS Parameters
  * \return Trajectory segment tolerances.
  */
-SegmentTolerances get_segment_tolerances(rclcpp::Logger & jtc_logger, const Params & params)
+SegmentTolerances get_segment_tolerances(rclcpp::Logger& jtc_logger, const Params& params)
 {
-  auto const & constraints = params.constraints;
+  auto const& constraints = params.constraints;
   auto const n_joints = params.joints.size();
 
   SegmentTolerances tolerances;
@@ -113,15 +115,9 @@ SegmentTolerances get_segment_tolerances(rclcpp::Logger & jtc_logger, const Para
     tolerances.goal_state_tolerance[i].position = constraints.joints_map.at(joint).goal;
     tolerances.goal_state_tolerance[i].velocity = constraints.stopped_velocity_tolerance;
 
-    RCLCPP_DEBUG(
-      logger, "%s %f", (joint + ".trajectory.position").c_str(),
-      tolerances.state_tolerance[i].position);
-    RCLCPP_DEBUG(
-      logger, "%s %f", (joint + ".goal.position").c_str(),
-      tolerances.goal_state_tolerance[i].position);
-    RCLCPP_DEBUG(
-      logger, "%s %f", (joint + ".goal.velocity").c_str(),
-      tolerances.goal_state_tolerance[i].velocity);
+    RCLCPP_DEBUG(logger, "%s %f", (joint + ".trajectory.position").c_str(), tolerances.state_tolerance[i].position);
+    RCLCPP_DEBUG(logger, "%s %f", (joint + ".goal.position").c_str(), tolerances.goal_state_tolerance[i].position);
+    RCLCPP_DEBUG(logger, "%s %f", (joint + ".goal.velocity").c_str(), tolerances.goal_state_tolerance[i].velocity);
   }
 
   return tolerances;
@@ -136,8 +132,7 @@ double resolve_tolerance_source(const double default_value, const double goal_va
   // * -1 - The tolerance is "erased".
   //        If there was a default, the joint will be allowed to move without restriction.
   constexpr double ERASE_VALUE = -1.0;
-  auto is_erase_value = [=](double value)
-  { return fabs(value - ERASE_VALUE) < std::numeric_limits<float>::epsilon(); };
+  auto is_erase_value = [=](double value) { return fabs(value - ERASE_VALUE) < std::numeric_limits<float>::epsilon(); };
 
   if (goal_value > 0.0)
   {
@@ -163,10 +158,9 @@ double resolve_tolerance_source(const double default_value, const double goal_va
  * \param joints The joints configured by ROS parameters
  * \return Trajectory segment tolerances.
  */
-SegmentTolerances get_segment_tolerances(
-  rclcpp::Logger & jtc_logger, const SegmentTolerances & default_tolerances,
-  const control_msgs::action::FollowJointTrajectory::Goal & goal,
-  const std::vector<std::string> & joints)
+SegmentTolerances get_segment_tolerances(rclcpp::Logger& jtc_logger, const SegmentTolerances& default_tolerances,
+                                         const control_msgs::action::FollowJointTrajectory::Goal& goal,
+                                         const std::vector<std::string>& joints)
 {
   SegmentTolerances active_tolerances(default_tolerances);
   static auto logger = jtc_logger.get_child("tolerance");
@@ -174,13 +168,12 @@ SegmentTolerances get_segment_tolerances(
   try
   {
     active_tolerances.goal_time_tolerance = resolve_tolerance_source(
-      default_tolerances.goal_time_tolerance, rclcpp::Duration(goal.goal_time_tolerance).seconds());
+        default_tolerances.goal_time_tolerance, rclcpp::Duration(goal.goal_time_tolerance).seconds());
   }
-  catch (const std::runtime_error & e)
+  catch (const std::runtime_error& e)
   {
-    RCLCPP_ERROR(
-      logger, "Specified illegal goal_time_tolerance: %f. Using default tolerances",
-      rclcpp::Duration(goal.goal_time_tolerance).seconds());
+    RCLCPP_ERROR(logger, "Specified illegal goal_time_tolerance: %f. Using default tolerances",
+                 rclcpp::Duration(goal.goal_time_tolerance).seconds());
     return default_tolerances;
   }
   RCLCPP_DEBUG(logger, "%s %f", "goal_time", active_tolerances.goal_time_tolerance);
@@ -193,12 +186,11 @@ SegmentTolerances get_segment_tolerances(
     auto it = std::find(joints.begin(), joints.end(), joint);
     if (it == joints.end())
     {
-      RCLCPP_ERROR(
-        logger, "%s",
-        ("joint '" + joint +
-         "' specified in goal.path_tolerance does not exist. "
-         "Using default tolerances.")
-          .c_str());
+      RCLCPP_ERROR(logger, "%s",
+                   ("joint '" + joint +
+                    "' specified in goal.path_tolerance does not exist. "
+                    "Using default tolerances.")
+                       .c_str());
       return default_tolerances;
     }
     auto i = static_cast<size_t>(std::distance(joints.cbegin(), it));
@@ -206,34 +198,30 @@ SegmentTolerances get_segment_tolerances(
     try
     {
       interface = "position";
-      active_tolerances.state_tolerance[i].position = resolve_tolerance_source(
-        default_tolerances.state_tolerance[i].position, joint_tol.position);
+      active_tolerances.state_tolerance[i].position =
+          resolve_tolerance_source(default_tolerances.state_tolerance[i].position, joint_tol.position);
       interface = "velocity";
-      active_tolerances.state_tolerance[i].velocity = resolve_tolerance_source(
-        default_tolerances.state_tolerance[i].velocity, joint_tol.velocity);
+      active_tolerances.state_tolerance[i].velocity =
+          resolve_tolerance_source(default_tolerances.state_tolerance[i].velocity, joint_tol.velocity);
       interface = "acceleration";
-      active_tolerances.state_tolerance[i].acceleration = resolve_tolerance_source(
-        default_tolerances.state_tolerance[i].acceleration, joint_tol.acceleration);
+      active_tolerances.state_tolerance[i].acceleration =
+          resolve_tolerance_source(default_tolerances.state_tolerance[i].acceleration, joint_tol.acceleration);
     }
-    catch (const std::runtime_error & e)
+    catch (const std::runtime_error& e)
     {
-      RCLCPP_ERROR(
-        logger,
-        "joint '%s' specified in goal.path_tolerance has a invalid %s tolerance. Using default "
-        "tolerances.",
-        joint.c_str(), interface.c_str());
+      RCLCPP_ERROR(logger,
+                   "joint '%s' specified in goal.path_tolerance has a invalid %s tolerance. Using default "
+                   "tolerances.",
+                   joint.c_str(), interface.c_str());
       return default_tolerances;
     }
 
-    RCLCPP_DEBUG(
-      logger, "%s %f", (joint + ".state_tolerance.position").c_str(),
-      active_tolerances.state_tolerance[i].position);
-    RCLCPP_DEBUG(
-      logger, "%s %f", (joint + ".state_tolerance.velocity").c_str(),
-      active_tolerances.state_tolerance[i].velocity);
-    RCLCPP_DEBUG(
-      logger, "%s %f", (joint + ".state_tolerance.acceleration").c_str(),
-      active_tolerances.state_tolerance[i].acceleration);
+    RCLCPP_DEBUG(logger, "%s %f", (joint + ".state_tolerance.position").c_str(),
+                 active_tolerances.state_tolerance[i].position);
+    RCLCPP_DEBUG(logger, "%s %f", (joint + ".state_tolerance.velocity").c_str(),
+                 active_tolerances.state_tolerance[i].velocity);
+    RCLCPP_DEBUG(logger, "%s %f", (joint + ".state_tolerance.acceleration").c_str(),
+                 active_tolerances.state_tolerance[i].acceleration);
   }
   for (auto goal_tol : goal.goal_tolerance)
   {
@@ -242,12 +230,11 @@ SegmentTolerances get_segment_tolerances(
     auto it = std::find(joints.begin(), joints.end(), joint);
     if (it == joints.end())
     {
-      RCLCPP_ERROR(
-        logger, "%s",
-        ("joint '" + joint +
-         "' specified in goal.goal_tolerance does not exist. "
-         "Using default tolerances.")
-          .c_str());
+      RCLCPP_ERROR(logger, "%s",
+                   ("joint '" + joint +
+                    "' specified in goal.goal_tolerance does not exist. "
+                    "Using default tolerances.")
+                       .c_str());
       return default_tolerances;
     }
     auto i = static_cast<size_t>(std::distance(joints.cbegin(), it));
@@ -255,34 +242,30 @@ SegmentTolerances get_segment_tolerances(
     try
     {
       interface = "position";
-      active_tolerances.goal_state_tolerance[i].position = resolve_tolerance_source(
-        default_tolerances.goal_state_tolerance[i].position, goal_tol.position);
+      active_tolerances.goal_state_tolerance[i].position =
+          resolve_tolerance_source(default_tolerances.goal_state_tolerance[i].position, goal_tol.position);
       interface = "velocity";
-      active_tolerances.goal_state_tolerance[i].velocity = resolve_tolerance_source(
-        default_tolerances.goal_state_tolerance[i].velocity, goal_tol.velocity);
+      active_tolerances.goal_state_tolerance[i].velocity =
+          resolve_tolerance_source(default_tolerances.goal_state_tolerance[i].velocity, goal_tol.velocity);
       interface = "acceleration";
-      active_tolerances.goal_state_tolerance[i].acceleration = resolve_tolerance_source(
-        default_tolerances.goal_state_tolerance[i].acceleration, goal_tol.acceleration);
+      active_tolerances.goal_state_tolerance[i].acceleration =
+          resolve_tolerance_source(default_tolerances.goal_state_tolerance[i].acceleration, goal_tol.acceleration);
     }
-    catch (const std::runtime_error & e)
+    catch (const std::runtime_error& e)
     {
-      RCLCPP_ERROR(
-        logger,
-        "joint '%s' specified in goal.goal_tolerance has a invalid %s tolerance. Using default "
-        "tolerances.",
-        joint.c_str(), interface.c_str());
+      RCLCPP_ERROR(logger,
+                   "joint '%s' specified in goal.goal_tolerance has a invalid %s tolerance. Using default "
+                   "tolerances.",
+                   joint.c_str(), interface.c_str());
       return default_tolerances;
     }
 
-    RCLCPP_DEBUG(
-      logger, "%s %f", (joint + ".goal_state_tolerance.position").c_str(),
-      active_tolerances.goal_state_tolerance[i].position);
-    RCLCPP_DEBUG(
-      logger, "%s %f", (joint + ".goal_state_tolerance.velocity").c_str(),
-      active_tolerances.goal_state_tolerance[i].velocity);
-    RCLCPP_DEBUG(
-      logger, "%s %f", (joint + ".goal_state_tolerance.acceleration").c_str(),
-      active_tolerances.goal_state_tolerance[i].acceleration);
+    RCLCPP_DEBUG(logger, "%s %f", (joint + ".goal_state_tolerance.position").c_str(),
+                 active_tolerances.goal_state_tolerance[i].position);
+    RCLCPP_DEBUG(logger, "%s %f", (joint + ".goal_state_tolerance.velocity").c_str(),
+                 active_tolerances.goal_state_tolerance[i].velocity);
+    RCLCPP_DEBUG(logger, "%s %f", (joint + ".goal_state_tolerance.acceleration").c_str(),
+                 active_tolerances.goal_state_tolerance[i].acceleration);
   }
 
   return active_tolerances;
@@ -295,21 +278,18 @@ SegmentTolerances get_segment_tolerances(
  * \param show_errors If the joint that violate its tolerance should be output to console. NOT
  * REALTIME if true \return True if \p state_error fulfills \p state_tolerance.
  */
-inline bool check_state_tolerance_per_joint(
-  const trajectory_msgs::msg::JointTrajectoryPoint & state_error, size_t joint_idx,
-  const StateTolerances & state_tolerance, bool show_errors = false)
+inline bool check_state_tolerance_per_joint(const trajectory_msgs::msg::JointTrajectoryPoint& state_error,
+                                            size_t joint_idx, const StateTolerances& state_tolerance,
+                                            bool show_errors = false)
 {
   using std::abs;
   const double error_position = state_error.positions[joint_idx];
-  const double error_velocity =
-    state_error.velocities.empty() ? 0.0 : state_error.velocities[joint_idx];
-  const double error_acceleration =
-    state_error.accelerations.empty() ? 0.0 : state_error.accelerations[joint_idx];
+  const double error_velocity = state_error.velocities.empty() ? 0.0 : state_error.velocities[joint_idx];
+  const double error_acceleration = state_error.accelerations.empty() ? 0.0 : state_error.accelerations[joint_idx];
 
-  const bool is_valid =
-    !(state_tolerance.position > 0.0 && abs(error_position) > state_tolerance.position) &&
-    !(state_tolerance.velocity > 0.0 && abs(error_velocity) > state_tolerance.velocity) &&
-    !(state_tolerance.acceleration > 0.0 && abs(error_acceleration) > state_tolerance.acceleration);
+  const bool is_valid = !(state_tolerance.position > 0.0 && abs(error_position) > state_tolerance.position) &&
+                        !(state_tolerance.velocity > 0.0 && abs(error_velocity) > state_tolerance.velocity) &&
+                        !(state_tolerance.acceleration > 0.0 && abs(error_acceleration) > state_tolerance.acceleration);
 
   if (is_valid)
   {
@@ -323,22 +303,16 @@ inline bool check_state_tolerance_per_joint(
 
     if (state_tolerance.position > 0.0 && abs(error_position) > state_tolerance.position)
     {
-      RCLCPP_ERROR(
-        logger, "Position Error: %f, Position Tolerance: %f", error_position,
-        state_tolerance.position);
+      RCLCPP_ERROR(logger, "Position Error: %f, Position Tolerance: %f", error_position, state_tolerance.position);
     }
     if (state_tolerance.velocity > 0.0 && abs(error_velocity) > state_tolerance.velocity)
     {
-      RCLCPP_ERROR(
-        logger, "Velocity Error: %f, Velocity Tolerance: %f", error_velocity,
-        state_tolerance.velocity);
+      RCLCPP_ERROR(logger, "Velocity Error: %f, Velocity Tolerance: %f", error_velocity, state_tolerance.velocity);
     }
-    if (
-      state_tolerance.acceleration > 0.0 && abs(error_acceleration) > state_tolerance.acceleration)
+    if (state_tolerance.acceleration > 0.0 && abs(error_acceleration) > state_tolerance.acceleration)
     {
-      RCLCPP_ERROR(
-        logger, "Acceleration Error: %f, Acceleration Tolerance: %f", error_acceleration,
-        state_tolerance.acceleration);
+      RCLCPP_ERROR(logger, "Acceleration Error: %f, Acceleration Tolerance: %f", error_acceleration,
+                   state_tolerance.acceleration);
     }
   }
   return false;

@@ -26,8 +26,7 @@
 namespace joint_trajectory_controller
 {
 using TrajectoryPointIter = std::vector<trajectory_msgs::msg::JointTrajectoryPoint>::iterator;
-using TrajectoryPointConstIter =
-  std::vector<trajectory_msgs::msg::JointTrajectoryPoint>::const_iterator;
+using TrajectoryPointConstIter = std::vector<trajectory_msgs::msg::JointTrajectoryPoint>::const_iterator;
 
 class Trajectory
 {
@@ -39,10 +38,8 @@ public:
   explicit Trajectory(std::shared_ptr<trajectory_msgs::msg::JointTrajectory> joint_trajectory);
 
   JOINT_TRAJECTORY_CONTROLLER_PUBLIC
-  explicit Trajectory(
-    const rclcpp::Time & current_time,
-    const trajectory_msgs::msg::JointTrajectoryPoint & current_point,
-    std::shared_ptr<trajectory_msgs::msg::JointTrajectory> joint_trajectory);
+  explicit Trajectory(const rclcpp::Time& current_time, const trajectory_msgs::msg::JointTrajectoryPoint& current_point,
+                      std::shared_ptr<trajectory_msgs::msg::JointTrajectory> joint_trajectory);
 
   /**
    *  Set the point before the trajectory message is replaced/appended
@@ -53,10 +50,9 @@ public:
    * wrap around (ie. is continuous).
    */
   JOINT_TRAJECTORY_CONTROLLER_PUBLIC
-  void set_point_before_trajectory_msg(
-    const rclcpp::Time & current_time,
-    const trajectory_msgs::msg::JointTrajectoryPoint & current_point,
-    const std::vector<bool> & joints_angle_wraparound = std::vector<bool>());
+  void set_point_before_trajectory_msg(const rclcpp::Time& current_time,
+                                       const trajectory_msgs::msg::JointTrajectoryPoint& current_point,
+                                       const std::vector<bool>& joints_angle_wraparound = std::vector<bool>());
 
   JOINT_TRAJECTORY_CONTROLLER_PUBLIC
   void update(std::shared_ptr<trajectory_msgs::msg::JointTrajectory> joint_trajectory);
@@ -96,11 +92,9 @@ public:
    *      description above.
    */
   JOINT_TRAJECTORY_CONTROLLER_PUBLIC
-  bool sample(
-    const rclcpp::Time & sample_time,
-    const interpolation_methods::InterpolationMethod interpolation_method,
-    trajectory_msgs::msg::JointTrajectoryPoint & output_state,
-    TrajectoryPointConstIter & start_segment_itr, TrajectoryPointConstIter & end_segment_itr);
+  bool sample(const rclcpp::Time& sample_time, const interpolation_methods::InterpolationMethod interpolation_method,
+              trajectory_msgs::msg::JointTrajectoryPoint& output_state, TrajectoryPointConstIter& start_segment_itr,
+              TrajectoryPointConstIter& end_segment_itr);
 
   /**
    * Do interpolation between 2 states given a time in between their respective timestamps
@@ -124,10 +118,9 @@ public:
    * \param[out] output The state at \p sample_time.
    */
   JOINT_TRAJECTORY_CONTROLLER_PUBLIC
-  void interpolate_between_points(
-    const rclcpp::Time & time_a, const trajectory_msgs::msg::JointTrajectoryPoint & state_a,
-    const rclcpp::Time & time_b, const trajectory_msgs::msg::JointTrajectoryPoint & state_b,
-    const rclcpp::Time & sample_time, trajectory_msgs::msg::JointTrajectoryPoint & output);
+  void interpolate_between_points(const rclcpp::Time& time_a, const trajectory_msgs::msg::JointTrajectoryPoint& state_a,
+                                  const rclcpp::Time& time_b, const trajectory_msgs::msg::JointTrajectoryPoint& state_b,
+                                  const rclcpp::Time& sample_time, trajectory_msgs::msg::JointTrajectoryPoint& output);
 
   JOINT_TRAJECTORY_CONTROLLER_PUBLIC
   TrajectoryPointConstIter begin() const;
@@ -151,7 +144,10 @@ public:
   }
 
   JOINT_TRAJECTORY_CONTROLLER_PUBLIC
-  bool is_sampled_already() const { return sampled_already_; }
+  bool is_sampled_already() const
+  {
+    return sampled_already_;
+  }
 
   /// Get the index of the segment start returned by the last \p sample() operation.
   /**
@@ -159,13 +155,15 @@ public:
    * used to speed up the selection of relevant trajectory points.
    */
   JOINT_TRAJECTORY_CONTROLLER_PUBLIC
-  size_t last_sample_index() const { return last_sample_idx_; }
+  size_t last_sample_index() const
+  {
+    return last_sample_idx_;
+  }
 
 private:
-  void deduce_from_derivatives(
-    trajectory_msgs::msg::JointTrajectoryPoint & first_state,
-    trajectory_msgs::msg::JointTrajectoryPoint & second_state, const size_t dim,
-    const double delta_t);
+  void deduce_from_derivatives(trajectory_msgs::msg::JointTrajectoryPoint& first_state,
+                               trajectory_msgs::msg::JointTrajectoryPoint& second_state, const size_t dim,
+                               const double delta_t);
 
   std::shared_ptr<trajectory_msgs::msg::JointTrajectory> trajectory_msg_;
   rclcpp::Time trajectory_start_time_;
@@ -183,7 +181,7 @@ private:
  * mapping vector is <tt>"{2, 1}"</tt>.
  */
 template <class T>
-inline std::vector<size_t> mapping(const T & t1, const T & t2)
+inline std::vector<size_t> mapping(const T& t1, const T& t2)
 {
   // t1 must be a subset of t2
   if (t1.size() > t2.size())
@@ -216,9 +214,8 @@ inline std::vector<size_t> mapping(const T & t1, const T & t2)
  * \param joints_angle_wraparound Vector of boolean where true value corresponds to a joint that
  * wrap around (ie. is continuous).
  */
-void wraparound_joint(
-  std::vector<double> & current_position, const std::vector<double> next_position,
-  const std::vector<bool> & joints_angle_wraparound);
+void wraparound_joint(std::vector<double>& current_position, const std::vector<double> next_position,
+                      const std::vector<bool>& joints_angle_wraparound);
 
 }  // namespace joint_trajectory_controller
 
