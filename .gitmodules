@@ -25,3 +25,6 @@
 [submodule "src/external_dependencies/franka_config/franka_description"]
 	path = src/external_dependencies/franka_config/franka_description
 	url = https://github.com/frankarobotics/franka_description.git
+[submodule "src/external_dependencies/ros2_control_cmake"]
+	path = src/external_dependencies/ros2_control_cmake
+	url = https://github.com/ros-controls/ros2_control_cmake.git
