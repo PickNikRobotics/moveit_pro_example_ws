@@ -36,6 +36,7 @@
 #include "rclcpp_action/create_server.hpp"
 #include "rclcpp_action/server_goal_handle.hpp"
 #include "rclcpp_lifecycle/state.hpp"
+#include "std_msgs/msg/int32.hpp"
 
 namespace joint_trajectory_controller
 {
@@ -203,6 +204,7 @@ controller_interface::return_type JointTrajectoryController::update(
     if (!traj_external_point_ptr_->is_sampled_already())
     {
       first_sample = true;
+      last_scaled_time_ = time;
       if (params_.open_loop_control)
       {
         traj_external_point_ptr_->set_point_before_trajectory_msg(
@@ -214,12 +216,16 @@ controller_interface::return_type JointTrajectoryController::update(
           time, state_current_, joints_angle_wraparound_);
       }
     }
+    double scale_percentage = 0.01*slider_value_.load();
+    rclcpp::Duration deltatime_scaled = period * scale_percentage;
+    rclcpp::Time sample_time = last_scaled_time_ + deltatime_scaled;
 
     // find segment for current timestamp
     TrajectoryPointConstIter start_segment_itr, end_segment_itr;
     const bool valid_point = traj_external_point_ptr_->sample(
-      time, interpolation_method_, state_desired_, start_segment_itr, end_segment_itr);
-
+      sample_time, interpolation_method_, state_desired_, start_segment_itr, end_segment_itr);
+    last_scaled_time_ = sample_time;
+    
     if (valid_point)
     {
       const rclcpp::Time traj_start = traj_external_point_ptr_->time_from_start();
@@ -335,7 +341,7 @@ controller_interface::return_type JointTrajectoryController::update(
       {
         // send feedback
         auto feedback = std::make_shared<FollowJTrajAction::Feedback>();
-        feedback->header.stamp = time;
+        feedback->header.stamp = last_scaled_time_;
         feedback->joint_names = params_.joints;
 
         feedback->actual = state_current_;
@@ -833,6 +839,12 @@ controller_interface::CallbackReturn JointTrajectoryController::on_configure(
       "~/joint_trajectory", rclcpp::SystemDefaultsQoS(),
       std::bind(&JointTrajectoryController::topic_callback, this, std::placeholders::_1));
 
+  // create slider subscriber
+  slider_subscriber_ =
+    get_node()->create_subscription<std_msgs::msg::Int32>(
+      "/slider_value", rclcpp::SystemDefaultsQoS(),
+      std::bind(&JointTrajectoryController::slider_callback, this, std::placeholders::_1));
+
   // State publisher
   RCLCPP_INFO(logger, "Controller state will be published at %.2f Hz.", params_.state_publish_rate);
   if (params_.state_publish_rate > 0.0)
@@ -1216,6 +1228,12 @@ void JointTrajectoryController::topic_callback(
     add_new_trajectory_msg(msg);
     rt_is_holding_ = false;
   }
+};
+
+void JointTrajectoryController::slider_callback(
+  const std::shared_ptr<std_msgs::msg::Int32> msg)
+{
+  slider_value_.store(msg->data);
 };
 
 rclcpp_action::GoalResponse JointTrajectoryController::goal_received_callback(
