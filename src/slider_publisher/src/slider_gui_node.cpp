@@ -11,15 +11,15 @@ class SliderPublisher : public QWidget
 {
 public:
   SliderPublisher(rclcpp::Node::SharedPtr node)
-      : QWidget(), node_(node), value_(0)
+      : QWidget(), node_(node), value_(100)
   {
     setWindowTitle("Slider Publisher");
     auto *layout = new QVBoxLayout(this);
-    label_ = new QLabel("Value: 0", this);
+    label_ = new QLabel("Value: 100", this);
     slider_ = new QSlider(Qt::Horizontal, this);
     slider_->setRange(0, 100);
     slider_->setSingleStep(1);
-    slider_->setValue(0);
+    slider_->setValue(100);
     layout->addWidget(label_);
     layout->addWidget(slider_);
     setLayout(layout);
