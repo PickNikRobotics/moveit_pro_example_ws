@@ -73,31 +73,25 @@ public:
   controller_interface::InterfaceConfiguration state_interface_configuration() const override;
 
   JOINT_TRAJECTORY_CONTROLLER_PUBLIC
-  controller_interface::return_type update(
-    const rclcpp::Time & time, const rclcpp::Duration & period) override;
+  controller_interface::return_type update(const rclcpp::Time& time, const rclcpp::Duration& period) override;
 
   JOINT_TRAJECTORY_CONTROLLER_PUBLIC
   controller_interface::CallbackReturn on_init() override;
 
   JOINT_TRAJECTORY_CONTROLLER_PUBLIC
-  controller_interface::CallbackReturn on_configure(
-    const rclcpp_lifecycle::State & previous_state) override;
+  controller_interface::CallbackReturn on_configure(const rclcpp_lifecycle::State& previous_state) override;
 
   JOINT_TRAJECTORY_CONTROLLER_PUBLIC
-  controller_interface::CallbackReturn on_activate(
-    const rclcpp_lifecycle::State & previous_state) override;
+  controller_interface::CallbackReturn on_activate(const rclcpp_lifecycle::State& previous_state) override;
 
   JOINT_TRAJECTORY_CONTROLLER_PUBLIC
-  controller_interface::CallbackReturn on_deactivate(
-    const rclcpp_lifecycle::State & previous_state) override;
+  controller_interface::CallbackReturn on_deactivate(const rclcpp_lifecycle::State& previous_state) override;
 
   JOINT_TRAJECTORY_CONTROLLER_PUBLIC
-  controller_interface::CallbackReturn on_cleanup(
-    const rclcpp_lifecycle::State & previous_state) override;
+  controller_interface::CallbackReturn on_cleanup(const rclcpp_lifecycle::State& previous_state) override;
 
   JOINT_TRAJECTORY_CONTROLLER_PUBLIC
-  controller_interface::CallbackReturn on_error(
-    const rclcpp_lifecycle::State & previous_state) override;
+  controller_interface::CallbackReturn on_error(const rclcpp_lifecycle::State& previous_state) override;
 
 protected:
   // To reduce number of variables and to make the code shorter the interfaces are ordered in types
@@ -127,8 +121,7 @@ protected:
 
   trajectory_msgs::msg::JointTrajectoryPoint last_commanded_state_;
   /// Specify interpolation method. Default to splines.
-  interpolation_methods::InterpolationMethod interpolation_method_{
-    interpolation_methods::DEFAULT_INTERPOLATION};
+  interpolation_methods::InterpolationMethod interpolation_method_{ interpolation_methods::DEFAULT_INTERPOLATION };
 
   // The interfaces are defined as the types in 'allowed_interface_types_' member.
   // For convenience, for each type the interfaces are ordered so that i-th position
@@ -162,21 +155,19 @@ protected:
   // Timeout to consider commands old
   double cmd_timeout_;
   // True if holding position or repeating last trajectory point in case of success
-  std::atomic<bool> rt_is_holding_{false};
+  std::atomic<bool> rt_is_holding_{ false };
   // TODO(karsten1987): eventually activate and deactivate subscriber directly when its supported
-  std::atomic<bool> subscriber_is_active_{false};
-  rclcpp::Subscription<trajectory_msgs::msg::JointTrajectory>::SharedPtr joint_command_subscriber_ =
-    nullptr;
+  std::atomic<bool> subscriber_is_active_{ false };
+  rclcpp::Subscription<trajectory_msgs::msg::JointTrajectory>::SharedPtr joint_command_subscriber_ = nullptr;
 
   // Slider subscriber
   rclcpp::Subscription<std_msgs::msg::Int32>::SharedPtr slider_subscriber_ = nullptr;
-  std::atomic<int> slider_value_{0};
+  std::atomic<int> slider_value_{ 0 };
 
   rclcpp::Service<control_msgs::srv::QueryTrajectoryState>::SharedPtr query_state_srv_;
 
   std::shared_ptr<Trajectory> traj_external_point_ptr_ = nullptr;
-  realtime_tools::RealtimeBuffer<std::shared_ptr<trajectory_msgs::msg::JointTrajectory>>
-    traj_msg_external_point_ptr_;
+  realtime_tools::RealtimeBuffer<std::shared_ptr<trajectory_msgs::msg::JointTrajectory>> traj_msg_external_point_ptr_;
 
   std::shared_ptr<trajectory_msgs::msg::JointTrajectory> hold_position_msg_ptr_ = nullptr;
 
@@ -197,8 +188,8 @@ protected:
   using RealtimeGoalHandleBuffer = realtime_tools::RealtimeBuffer<RealtimeGoalHandlePtr>;
 
   rclcpp_action::Server<FollowJTrajAction>::SharedPtr action_server_;
-  RealtimeGoalHandleBuffer rt_active_goal_;       ///< Currently active action goal, if any.
-  std::atomic<bool> rt_has_pending_goal_{false};  ///< Is there a pending action goal?
+  RealtimeGoalHandleBuffer rt_active_goal_;         ///< Currently active action goal, if any.
+  std::atomic<bool> rt_has_pending_goal_{ false };  ///< Is there a pending action goal?
   rclcpp::TimerBase::SharedPtr goal_handle_timer_;
   rclcpp::Duration action_monitor_period_ = rclcpp::Duration(50ms);
 
@@ -212,33 +203,28 @@ protected:
 
   // callbacks for action_server_
   JOINT_TRAJECTORY_CONTROLLER_PUBLIC
-  rclcpp_action::GoalResponse goal_received_callback(
-    const rclcpp_action::GoalUUID & uuid, std::shared_ptr<const FollowJTrajAction::Goal> goal);
+  rclcpp_action::GoalResponse goal_received_callback(const rclcpp_action::GoalUUID& uuid,
+                                                     std::shared_ptr<const FollowJTrajAction::Goal> goal);
   JOINT_TRAJECTORY_CONTROLLER_PUBLIC
-  rclcpp_action::CancelResponse goal_cancelled_callback(
-    const std::shared_ptr<rclcpp_action::ServerGoalHandle<FollowJTrajAction>> goal_handle);
+  rclcpp_action::CancelResponse
+  goal_cancelled_callback(const std::shared_ptr<rclcpp_action::ServerGoalHandle<FollowJTrajAction>> goal_handle);
   JOINT_TRAJECTORY_CONTROLLER_PUBLIC
-  void goal_accepted_callback(
-    std::shared_ptr<rclcpp_action::ServerGoalHandle<FollowJTrajAction>> goal_handle);
+  void goal_accepted_callback(std::shared_ptr<rclcpp_action::ServerGoalHandle<FollowJTrajAction>> goal_handle);
 
   // fill trajectory_msg so it matches joints controlled by this controller
   // positions set to current position, velocities, accelerations and efforts to 0.0
   JOINT_TRAJECTORY_CONTROLLER_PUBLIC
-  void fill_partial_goal(
-    std::shared_ptr<trajectory_msgs::msg::JointTrajectory> trajectory_msg) const;
+  void fill_partial_goal(std::shared_ptr<trajectory_msgs::msg::JointTrajectory> trajectory_msg) const;
   // sorts the joints of the incoming message to our local order
   JOINT_TRAJECTORY_CONTROLLER_PUBLIC
-  void sort_to_local_joint_order(
-    std::shared_ptr<trajectory_msgs::msg::JointTrajectory> trajectory_msg);
+  void sort_to_local_joint_order(std::shared_ptr<trajectory_msgs::msg::JointTrajectory> trajectory_msg);
   JOINT_TRAJECTORY_CONTROLLER_PUBLIC
-  bool validate_trajectory_msg(const trajectory_msgs::msg::JointTrajectory & trajectory) const;
+  bool validate_trajectory_msg(const trajectory_msgs::msg::JointTrajectory& trajectory) const;
   JOINT_TRAJECTORY_CONTROLLER_PUBLIC
-  void add_new_trajectory_msg(
-    const std::shared_ptr<trajectory_msgs::msg::JointTrajectory> & traj_msg);
+  void add_new_trajectory_msg(const std::shared_ptr<trajectory_msgs::msg::JointTrajectory>& traj_msg);
   JOINT_TRAJECTORY_CONTROLLER_PUBLIC
-  bool validate_trajectory_point_field(
-    size_t joint_names_size, const std::vector<double> & vector_field,
-    const std::string & string_for_vector_field, size_t i, bool allow_empty) const;
+  bool validate_trajectory_point_field(size_t joint_names_size, const std::vector<double>& vector_field,
+                                       const std::string& string_for_vector_field, size_t i, bool allow_empty) const;
 
   // the tolerances from the node parameter
   SegmentTolerances default_tolerances_;
@@ -268,11 +254,10 @@ protected:
 
   using JointTrajectoryPoint = trajectory_msgs::msg::JointTrajectoryPoint;
   JOINT_TRAJECTORY_CONTROLLER_PUBLIC
-  void publish_state(
-    const JointTrajectoryPoint & desired_state, const JointTrajectoryPoint & current_state,
-    const JointTrajectoryPoint & state_error);
+  void publish_state(const JointTrajectoryPoint& desired_state, const JointTrajectoryPoint& current_state,
+                     const JointTrajectoryPoint& state_error);
 
-  void read_state_from_state_interfaces(JointTrajectoryPoint & state);
+  void read_state_from_state_interfaces(JointTrajectoryPoint& state);
 
   /** Assign values from the command interfaces as state.
    * This is only possible if command AND state interfaces exist for the same type,
@@ -280,26 +265,22 @@ protected:
    * @param[out] state to be filled with values from command interfaces.
    * @return true if all interfaces exists and contain non-NaN values, false otherwise.
    */
-  bool read_state_from_command_interfaces(JointTrajectoryPoint & state);
-  bool read_commands_from_command_interfaces(JointTrajectoryPoint & commands);
+  bool read_state_from_command_interfaces(JointTrajectoryPoint& state);
+  bool read_commands_from_command_interfaces(JointTrajectoryPoint& commands);
 
-  void query_state_service(
-    const std::shared_ptr<control_msgs::srv::QueryTrajectoryState::Request> request,
-    std::shared_ptr<control_msgs::srv::QueryTrajectoryState::Response> response);
+  void query_state_service(const std::shared_ptr<control_msgs::srv::QueryTrajectoryState::Request> request,
+                           std::shared_ptr<control_msgs::srv::QueryTrajectoryState::Response> response);
 
 private:
   void update_pids();
 
   rclcpp::Time last_scaled_time_;
 
-  bool contains_interface_type(
-    const std::vector<std::string> & interface_type_list, const std::string & interface_type);
+  bool contains_interface_type(const std::vector<std::string>& interface_type_list, const std::string& interface_type);
 
   void init_hold_position_msg();
-  void resize_joint_trajectory_point(
-    trajectory_msgs::msg::JointTrajectoryPoint & point, size_t size);
-  void resize_joint_trajectory_point_command(
-    trajectory_msgs::msg::JointTrajectoryPoint & point, size_t size);
+  void resize_joint_trajectory_point(trajectory_msgs::msg::JointTrajectoryPoint& point, size_t size);
+  void resize_joint_trajectory_point_command(trajectory_msgs::msg::JointTrajectoryPoint& point, size_t size);
 };
 
 }  // namespace joint_trajectory_controller

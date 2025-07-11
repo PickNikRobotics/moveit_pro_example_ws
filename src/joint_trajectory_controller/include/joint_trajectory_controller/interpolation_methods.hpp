@@ -22,8 +22,7 @@
 
 namespace joint_trajectory_controller
 {
-static const rclcpp::Logger LOGGER =
-  rclcpp::get_logger("joint_trajectory_controller.interpolation_methods");
+static const rclcpp::Logger LOGGER = rclcpp::get_logger("joint_trajectory_controller.interpolation_methods");
 
 namespace interpolation_methods
 {
@@ -36,26 +35,22 @@ enum class InterpolationMethod
 const InterpolationMethod DEFAULT_INTERPOLATION = InterpolationMethod::VARIABLE_DEGREE_SPLINE;
 
 const std::unordered_map<InterpolationMethod, std::string> InterpolationMethodMap(
-  {{InterpolationMethod::NONE, "none"}, {InterpolationMethod::VARIABLE_DEGREE_SPLINE, "splines"}});
+    { { InterpolationMethod::NONE, "none" }, { InterpolationMethod::VARIABLE_DEGREE_SPLINE, "splines" } });
 
-[[nodiscard]] inline InterpolationMethod from_string(const std::string & interpolation_method)
+[[nodiscard]] inline InterpolationMethod from_string(const std::string& interpolation_method)
 {
   if (interpolation_method.compare(InterpolationMethodMap.at(InterpolationMethod::NONE)) == 0)
   {
     return InterpolationMethod::NONE;
   }
-  else if (
-    interpolation_method.compare(
-      InterpolationMethodMap.at(InterpolationMethod::VARIABLE_DEGREE_SPLINE)) == 0)
+  else if (interpolation_method.compare(InterpolationMethodMap.at(InterpolationMethod::VARIABLE_DEGREE_SPLINE)) == 0)
   {
     return InterpolationMethod::VARIABLE_DEGREE_SPLINE;
   }
   // Default
   else
   {
-    RCLCPP_INFO(
-      LOGGER,
-      "No interpolation method parameter was given. Using the default, VARIABLE_DEGREE_SPLINE.");
+    RCLCPP_INFO(LOGGER, "No interpolation method parameter was given. Using the default, VARIABLE_DEGREE_SPLINE.");
     return InterpolationMethod::VARIABLE_DEGREE_SPLINE;
   }
 }

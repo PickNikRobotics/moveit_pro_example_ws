@@ -61,19 +61,16 @@ protected:
   void SetUp()
   {
     TrajectoryControllerTest::SetUp();
-    goal_options_.result_callback =
-      std::bind(&TestTrajectoryActions::common_result_response, this, _1);
+    goal_options_.result_callback = std::bind(&TestTrajectoryActions::common_result_response, this, _1);
     goal_options_.feedback_callback = nullptr;
   }
 
-  void SetUpExecutor(
-    const std::vector<rclcpp::Parameter> & parameters = {},
-    bool separate_cmd_and_state_values = false, double kp = 0.0, double ff = 1.0)
+  void SetUpExecutor(const std::vector<rclcpp::Parameter>& parameters = {}, bool separate_cmd_and_state_values = false,
+                     double kp = 0.0, double ff = 1.0)
   {
     setup_executor_ = true;
 
-    SetUpAndActivateTrajectoryController(
-      executor_, parameters, separate_cmd_and_state_values, kp, ff);
+    SetUpAndActivateTrajectoryController(executor_, parameters, separate_cmd_and_state_values, kp, ff);
 
     SetUpActionClient();
 
@@ -86,19 +83,17 @@ protected:
   {
     setup_controller_hw_ = true;
 
-    controller_hw_thread_ = std::thread(
-      [&]()
+    controller_hw_thread_ = std::thread([&]() {
+      // controller hardware cycle update loop
+      auto clock = rclcpp::Clock(RCL_STEADY_TIME);
+      auto start_time = clock.now();
+      rclcpp::Duration wait = rclcpp::Duration::from_seconds(2.0);
+      auto end_time = start_time + wait;
+      while (clock.now() < end_time)
       {
-        // controller hardware cycle update loop
-        auto clock = rclcpp::Clock(RCL_STEADY_TIME);
-        auto start_time = clock.now();
-        rclcpp::Duration wait = rclcpp::Duration::from_seconds(2.0);
-        auto end_time = start_time + wait;
-        while (clock.now() < end_time)
-        {
-          traj_controller_->update(clock.now(), clock.now() - start_time);
-        }
-      });
+        traj_controller_->update(clock.now(), clock.now() - start_time);
+      }
+    });
 
     // sometimes doesn't receive calls when we don't sleep
     std::this_thread::sleep_for(std::chrono::milliseconds(300));
@@ -107,9 +102,8 @@ protected:
   void SetUpActionClient()
   {
     action_client_ = rclcpp_action::create_client<control_msgs::action::FollowJointTrajectory>(
-      node_->get_node_base_interface(), node_->get_node_graph_interface(),
-      node_->get_node_logging_interface(), node_->get_node_waitables_interface(),
-      controller_name_ + "/follow_joint_trajectory");
+        node_->get_node_base_interface(), node_->get_node_graph_interface(), node_->get_node_logging_interface(),
+        node_->get_node_waitables_interface(), controller_name_ + "/follow_joint_trajectory");
 
     bool response = action_client_->wait_for_action_server(std::chrono::seconds(1));
     if (!response)
@@ -118,7 +112,10 @@ protected:
     }
   }
 
-  static void TearDownTestCase() { rclcpp::shutdown(); }
+  static void TearDownTestCase()
+  {
+    rclcpp::shutdown();
+  }
 
   void TearDown()
   {
@@ -153,13 +150,12 @@ protected:
   using GoalHandle = rclcpp_action::ClientGoalHandle<FollowJointTrajectoryMsg>;
   using GoalOptions = rclcpp_action::Client<FollowJointTrajectoryMsg>::SendGoalOptions;
 
-  std::shared_future<typename GoalHandle::SharedPtr> sendActionGoal(
-    const std::vector<JointTrajectoryPoint> & points, double goal_time_tolerance,
-    const GoalOptions & opt,
-    const std::vector<control_msgs::msg::JointTolerance> path_tolerance =
-      std::vector<control_msgs::msg::JointTolerance>(),
-    const std::vector<control_msgs::msg::JointTolerance> goal_tolerance =
-      std::vector<control_msgs::msg::JointTolerance>())
+  std::shared_future<typename GoalHandle::SharedPtr>
+  sendActionGoal(const std::vector<JointTrajectoryPoint>& points, double goal_time_tolerance, const GoalOptions& opt,
+                 const std::vector<control_msgs::msg::JointTolerance> path_tolerance =
+                     std::vector<control_msgs::msg::JointTolerance>(),
+                 const std::vector<control_msgs::msg::JointTolerance> goal_tolerance =
+                     std::vector<control_msgs::msg::JointTolerance>())
   {
     control_msgs::action::FollowJointTrajectory_Goal goal_msg;
     goal_msg.goal_time_tolerance = rclcpp::Duration::from_seconds(goal_time_tolerance);
@@ -185,10 +181,9 @@ protected:
   GoalOptions goal_options_;
 
 public:
-  void common_result_response(const GoalHandle::WrappedResult & result)
+  void common_result_response(const GoalHandle::WrappedResult& result)
   {
-    RCLCPP_DEBUG(
-      node_->get_logger(), "common_result_response time: %f", rclcpp::Clock().now().seconds());
+    RCLCPP_DEBUG(node_->get_logger(), "common_result_response time: %f", rclcpp::Clock().now().seconds());
     common_resultcode_ = result.code;
     common_action_result_code_ = result.result->error_code;
     switch (result.code)
@@ -210,9 +205,8 @@ public:
 
 // From the tutorial: https://www.sandordargo.com/blog/2019/04/24/parameterized-testing-with-gtest
 class TestTrajectoryActionsTestParameterized
-: public TestTrajectoryActions,
-  public ::testing::WithParamInterface<
-    std::tuple<std::vector<std::string>, std::vector<std::string>>>
+  : public TestTrajectoryActions,
+    public ::testing::WithParamInterface<std::tuple<std::vector<std::string>, std::vector<std::string>>>
 {
 public:
   virtual void SetUp()
@@ -222,20 +216,22 @@ public:
     state_interface_types_ = std::get<1>(GetParam());
   }
 
-  static void TearDownTestCase() { TrajectoryControllerTest::TearDownTestCase(); }
+  static void TearDownTestCase()
+  {
+    TrajectoryControllerTest::TearDownTestCase();
+  }
 };
 
 TEST_P(TestTrajectoryActionsTestParameterized, test_success_single_point_sendgoal)
 {
   // deactivate velocity tolerance
-  std::vector<rclcpp::Parameter> params = {
-    rclcpp::Parameter("constraints.stopped_velocity_tolerance", 0.0)};
+  std::vector<rclcpp::Parameter> params = { rclcpp::Parameter("constraints.stopped_velocity_tolerance", 0.0) };
   SetUpExecutor(params, false, 1.0, 0.0);
   SetUpControllerHardware();
 
   std::shared_future<typename GoalHandle::SharedPtr> gh_future;
   // send goal
-  std::vector<double> point_positions{1.0, 2.0, 3.0};
+  std::vector<double> point_positions{ 1.0, 2.0, 3.0 };
   {
     std::vector<JointTrajectoryPoint> points;
     JointTrajectoryPoint point;
@@ -263,16 +259,15 @@ TEST_P(TestTrajectoryActionsTestParameterized, test_success_single_point_sendgoa
 TEST_P(TestTrajectoryActionsTestParameterized, test_success_single_point_with_velocity_sendgoal)
 {
   // deactivate velocity tolerance and allow velocity at trajectory end
-  std::vector<rclcpp::Parameter> params = {
-    rclcpp::Parameter("constraints.stopped_velocity_tolerance", 0.0),
-    rclcpp::Parameter("allow_nonzero_velocity_at_trajectory_end", true)};
+  std::vector<rclcpp::Parameter> params = { rclcpp::Parameter("constraints.stopped_velocity_tolerance", 0.0),
+                                            rclcpp::Parameter("allow_nonzero_velocity_at_trajectory_end", true) };
   SetUpExecutor(params, false, 1.0, 0.0);
   SetUpControllerHardware();
 
   std::shared_future<typename GoalHandle::SharedPtr> gh_future;
   // send goal
-  std::vector<double> point_positions{1.0, 2.0, 3.0};
-  std::vector<double> point_velocities{1.0, 1.0, 1.0};
+  std::vector<double> point_positions{ 1.0, 2.0, 3.0 };
+  std::vector<double> point_velocities{ 1.0, 1.0, 1.0 };
   {
     std::vector<JointTrajectoryPoint> points;
     JointTrajectoryPoint point;
@@ -301,21 +296,20 @@ TEST_P(TestTrajectoryActionsTestParameterized, test_success_single_point_with_ve
 TEST_P(TestTrajectoryActionsTestParameterized, test_success_multi_point_sendgoal)
 {
   // deactivate velocity tolerance
-  std::vector<rclcpp::Parameter> params = {
-    rclcpp::Parameter("constraints.stopped_velocity_tolerance", 0.0)};
-  SetUpExecutor({params}, false, 1.0, 0.0);
+  std::vector<rclcpp::Parameter> params = { rclcpp::Parameter("constraints.stopped_velocity_tolerance", 0.0) };
+  SetUpExecutor({ params }, false, 1.0, 0.0);
   SetUpControllerHardware();
 
   // add feedback
   bool feedback_recv = false;
-  goal_options_.feedback_callback =
-    [&](
-      rclcpp_action::ClientGoalHandle<FollowJointTrajectoryMsg>::SharedPtr,
-      const std::shared_ptr<const FollowJointTrajectoryMsg::Feedback>) { feedback_recv = true; };
+  goal_options_.feedback_callback = [&](rclcpp_action::ClientGoalHandle<FollowJointTrajectoryMsg>::SharedPtr,
+                                        const std::shared_ptr<const FollowJointTrajectoryMsg::Feedback>) {
+    feedback_recv = true;
+  };
 
   std::shared_future<typename GoalHandle::SharedPtr> gh_future;
   // send goal with multiple points
-  std::vector<std::vector<double>> points_positions{{{4.0, 5.0, 6.0}}, {{7.0, 8.0, 9.0}}};
+  std::vector<std::vector<double>> points_positions{ { { 4.0, 5.0, 6.0 } }, { { 7.0, 8.0, 9.0 } } };
   {
     std::vector<JointTrajectoryPoint> points;
     JointTrajectoryPoint point1;
@@ -347,23 +341,22 @@ TEST_P(TestTrajectoryActionsTestParameterized, test_success_multi_point_sendgoal
 TEST_P(TestTrajectoryActionsTestParameterized, test_success_multi_point_with_velocity_sendgoal)
 {
   // deactivate velocity tolerance and allow velocity at trajectory end
-  std::vector<rclcpp::Parameter> params = {
-    rclcpp::Parameter("constraints.stopped_velocity_tolerance", 0.0),
-    rclcpp::Parameter("allow_nonzero_velocity_at_trajectory_end", true)};
+  std::vector<rclcpp::Parameter> params = { rclcpp::Parameter("constraints.stopped_velocity_tolerance", 0.0),
+                                            rclcpp::Parameter("allow_nonzero_velocity_at_trajectory_end", true) };
   SetUpExecutor(params, false, 1.0, 0.0);
   SetUpControllerHardware();
 
   // add feedback
   bool feedback_recv = false;
-  goal_options_.feedback_callback =
-    [&](
-      rclcpp_action::ClientGoalHandle<FollowJointTrajectoryMsg>::SharedPtr,
-      const std::shared_ptr<const FollowJointTrajectoryMsg::Feedback>) { feedback_recv = true; };
+  goal_options_.feedback_callback = [&](rclcpp_action::ClientGoalHandle<FollowJointTrajectoryMsg>::SharedPtr,
+                                        const std::shared_ptr<const FollowJointTrajectoryMsg::Feedback>) {
+    feedback_recv = true;
+  };
 
   std::shared_future<typename GoalHandle::SharedPtr> gh_future;
   // send goal with multiple points
-  std::vector<std::vector<double>> points_positions{{{4.0, 5.0, 6.0}}, {{7.0, 8.0, 9.0}}};
-  std::vector<std::vector<double>> points_velocities{{{1.0, 1.0, 1.0}}, {{2.0, 2.0, 2.0}}};
+  std::vector<std::vector<double>> points_positions{ { { 4.0, 5.0, 6.0 } }, { { 7.0, 8.0, 9.0 } } };
+  std::vector<std::vector<double>> points_velocities{ { { 1.0, 1.0, 1.0 } }, { { 2.0, 2.0, 2.0 } } };
   {
     std::vector<JointTrajectoryPoint> points;
     JointTrajectoryPoint point1;
@@ -401,17 +394,16 @@ TEST_P(TestTrajectoryActionsTestParameterized, test_success_multi_point_with_vel
 TEST_F(TestTrajectoryActions, test_goal_tolerances_single_point_success)
 {
   // set tolerance parameters
-  std::vector<rclcpp::Parameter> params = {
-    rclcpp::Parameter("constraints.joint1.goal", 0.1),
-    rclcpp::Parameter("constraints.joint2.goal", 0.1),
-    rclcpp::Parameter("constraints.joint3.goal", 0.1)};
+  std::vector<rclcpp::Parameter> params = { rclcpp::Parameter("constraints.joint1.goal", 0.1),
+                                            rclcpp::Parameter("constraints.joint2.goal", 0.1),
+                                            rclcpp::Parameter("constraints.joint3.goal", 0.1) };
 
   SetUpExecutor(params);
   SetUpControllerHardware();
 
   std::shared_future<typename GoalHandle::SharedPtr> gh_future;
   // send goal
-  std::vector<std::vector<double>> points_positions{{{1.0, 2.0, 3.0}}};
+  std::vector<std::vector<double>> points_positions{ { { 1.0, 2.0, 3.0 } } };
   {
     std::vector<JointTrajectoryPoint> points;
     JointTrajectoryPoint point;
@@ -427,8 +419,7 @@ TEST_F(TestTrajectoryActions, test_goal_tolerances_single_point_success)
 
   EXPECT_TRUE(gh_future.get());
   EXPECT_EQ(rclcpp_action::ResultCode::SUCCEEDED, common_resultcode_);
-  EXPECT_EQ(
-    control_msgs::action::FollowJointTrajectory_Result::SUCCESSFUL, common_action_result_code_);
+  EXPECT_EQ(control_msgs::action::FollowJointTrajectory_Result::SUCCESSFUL, common_action_result_code_);
 
   // run an update
   updateControllerAsync(rclcpp::Duration::from_seconds(0.01));
@@ -445,24 +436,23 @@ TEST_F(TestTrajectoryActions, test_goal_tolerances_single_point_success)
 TEST_F(TestTrajectoryActions, test_goal_tolerances_multi_point_success)
 {
   // set tolerance parameters
-  std::vector<rclcpp::Parameter> params = {
-    rclcpp::Parameter("constraints.joint1.goal", 0.1),
-    rclcpp::Parameter("constraints.joint2.goal", 0.1),
-    rclcpp::Parameter("constraints.joint3.goal", 0.1)};
+  std::vector<rclcpp::Parameter> params = { rclcpp::Parameter("constraints.joint1.goal", 0.1),
+                                            rclcpp::Parameter("constraints.joint2.goal", 0.1),
+                                            rclcpp::Parameter("constraints.joint3.goal", 0.1) };
 
   SetUpExecutor(params);
   SetUpControllerHardware();
 
   // add feedback
   bool feedback_recv = false;
-  goal_options_.feedback_callback =
-    [&](
-      rclcpp_action::ClientGoalHandle<FollowJointTrajectoryMsg>::SharedPtr,
-      const std::shared_ptr<const FollowJointTrajectoryMsg::Feedback>) { feedback_recv = true; };
+  goal_options_.feedback_callback = [&](rclcpp_action::ClientGoalHandle<FollowJointTrajectoryMsg>::SharedPtr,
+                                        const std::shared_ptr<const FollowJointTrajectoryMsg::Feedback>) {
+    feedback_recv = true;
+  };
 
   std::shared_future<typename GoalHandle::SharedPtr> gh_future;
   // send goal with multiple points
-  std::vector<std::vector<double>> points_positions{{{4.0, 5.0, 6.0}}, {{7.0, 8.0, 9.0}}};
+  std::vector<std::vector<double>> points_positions{ { { 4.0, 5.0, 6.0 } }, { { 7.0, 8.0, 9.0 } } };
   {
     std::vector<JointTrajectoryPoint> points;
     JointTrajectoryPoint point1;
@@ -486,8 +476,7 @@ TEST_F(TestTrajectoryActions, test_goal_tolerances_multi_point_success)
   EXPECT_TRUE(feedback_recv);
   EXPECT_TRUE(gh_future.get());
   EXPECT_EQ(rclcpp_action::ResultCode::SUCCEEDED, common_resultcode_);
-  EXPECT_EQ(
-    control_msgs::action::FollowJointTrajectory_Result::SUCCESSFUL, common_action_result_code_);
+  EXPECT_EQ(control_msgs::action::FollowJointTrajectory_Result::SUCCESSFUL, common_action_result_code_);
 
   // run an update
   updateControllerAsync(rclcpp::Duration::from_seconds(0.01));
@@ -503,15 +492,14 @@ TEST_F(TestTrajectoryActions, test_goal_tolerances_multi_point_success)
 TEST_F(TestTrajectoryActions, test_tolerances_via_actions)
 {
   // set tolerance parameters
-  std::vector<rclcpp::Parameter> params = {
-    rclcpp::Parameter("constraints.joint1.goal", 0.1),
-    rclcpp::Parameter("constraints.joint2.goal", 0.1),
-    rclcpp::Parameter("constraints.joint3.goal", 0.1),
-    rclcpp::Parameter("constraints.goal_time", default_goal_time),
-    rclcpp::Parameter("constraints.stopped_velocity_tolerance", 0.1),
-    rclcpp::Parameter("constraints.joint1.trajectory", 0.1),
-    rclcpp::Parameter("constraints.joint2.trajectory", 0.1),
-    rclcpp::Parameter("constraints.joint3.trajectory", 0.1)};
+  std::vector<rclcpp::Parameter> params = { rclcpp::Parameter("constraints.joint1.goal", 0.1),
+                                            rclcpp::Parameter("constraints.joint2.goal", 0.1),
+                                            rclcpp::Parameter("constraints.joint3.goal", 0.1),
+                                            rclcpp::Parameter("constraints.goal_time", default_goal_time),
+                                            rclcpp::Parameter("constraints.stopped_velocity_tolerance", 0.1),
+                                            rclcpp::Parameter("constraints.joint1.trajectory", 0.1),
+                                            rclcpp::Parameter("constraints.joint2.trajectory", 0.1),
+                                            rclcpp::Parameter("constraints.joint3.trajectory", 0.1) };
 
   SetUpExecutor(params);
 
@@ -537,8 +525,7 @@ TEST_F(TestTrajectoryActions, test_tolerances_via_actions)
 
     EXPECT_TRUE(gh_future.get());
     EXPECT_EQ(rclcpp_action::ResultCode::SUCCEEDED, common_resultcode_);
-    EXPECT_EQ(
-      control_msgs::action::FollowJointTrajectory_Result::SUCCESSFUL, common_action_result_code_);
+    EXPECT_EQ(control_msgs::action::FollowJointTrajectory_Result::SUCCESSFUL, common_action_result_code_);
 
     auto active_tolerances = traj_controller_->get_active_tolerances();
     expectDefaultTolerances(active_tolerances);
@@ -595,8 +582,7 @@ TEST_F(TestTrajectoryActions, test_tolerances_via_actions)
 
     EXPECT_TRUE(gh_future.get());
     EXPECT_EQ(rclcpp_action::ResultCode::SUCCEEDED, common_resultcode_);
-    EXPECT_EQ(
-      control_msgs::action::FollowJointTrajectory_Result::SUCCESSFUL, common_action_result_code_);
+    EXPECT_EQ(control_msgs::action::FollowJointTrajectory_Result::SUCCESSFUL, common_action_result_code_);
 
     auto active_tolerances = traj_controller_->get_active_tolerances();
     EXPECT_DOUBLE_EQ(active_tolerances.goal_time_tolerance, 2.0);
@@ -646,8 +632,7 @@ TEST_F(TestTrajectoryActions, test_tolerances_via_actions)
 
     EXPECT_TRUE(gh_future.get());
     EXPECT_EQ(rclcpp_action::ResultCode::SUCCEEDED, common_resultcode_);
-    EXPECT_EQ(
-      control_msgs::action::FollowJointTrajectory_Result::SUCCESSFUL, common_action_result_code_);
+    EXPECT_EQ(control_msgs::action::FollowJointTrajectory_Result::SUCCESSFUL, common_action_result_code_);
 
     auto active_tolerances = traj_controller_->get_active_tolerances();
     expectDefaultTolerances(active_tolerances);
@@ -658,10 +643,9 @@ TEST_P(TestTrajectoryActionsTestParameterized, test_state_tolerances_fail)
 {
   // set joint tolerance parameters
   const double state_tol = 0.0001;
-  std::vector<rclcpp::Parameter> params = {
-    rclcpp::Parameter("constraints.joint1.trajectory", state_tol),
-    rclcpp::Parameter("constraints.joint2.trajectory", state_tol),
-    rclcpp::Parameter("constraints.joint3.trajectory", state_tol)};
+  std::vector<rclcpp::Parameter> params = { rclcpp::Parameter("constraints.joint1.trajectory", state_tol),
+                                            rclcpp::Parameter("constraints.joint2.trajectory", state_tol),
+                                            rclcpp::Parameter("constraints.joint3.trajectory", state_tol) };
 
   // separate command from states -> immediate state tolerance fail
   bool separate_cmd_and_state_values = true;
@@ -670,7 +654,7 @@ TEST_P(TestTrajectoryActionsTestParameterized, test_state_tolerances_fail)
 
   std::shared_future<typename GoalHandle::SharedPtr> gh_future;
   // send goal
-  std::vector<std::vector<double>> points_positions{{{4.0, 5.0, 6.0}}, {{7.0, 8.0, 9.0}}};
+  std::vector<std::vector<double>> points_positions{ { { 4.0, 5.0, 6.0 } }, { { 7.0, 8.0, 9.0 } } };
   {
     std::vector<JointTrajectoryPoint> points;
     JointTrajectoryPoint point1;
@@ -693,9 +677,7 @@ TEST_P(TestTrajectoryActionsTestParameterized, test_state_tolerances_fail)
 
   EXPECT_TRUE(gh_future.get());
   EXPECT_EQ(rclcpp_action::ResultCode::ABORTED, common_resultcode_);
-  EXPECT_EQ(
-    control_msgs::action::FollowJointTrajectory_Result::PATH_TOLERANCE_VIOLATED,
-    common_action_result_code_);
+  EXPECT_EQ(control_msgs::action::FollowJointTrajectory_Result::PATH_TOLERANCE_VIOLATED, common_action_result_code_);
 
   // run an update
   updateControllerAsync(rclcpp::Duration::from_seconds(0.01));
@@ -711,11 +693,10 @@ TEST_P(TestTrajectoryActionsTestParameterized, test_goal_tolerances_fail)
   const double goal_tol = 0.1;
   // set very small goal_time so that goal_time is violated
   const double goal_time = 0.000001;
-  std::vector<rclcpp::Parameter> params = {
-    rclcpp::Parameter("constraints.joint1.goal", goal_tol),
-    rclcpp::Parameter("constraints.joint2.goal", goal_tol),
-    rclcpp::Parameter("constraints.joint3.goal", goal_tol),
-    rclcpp::Parameter("constraints.goal_time", goal_time)};
+  std::vector<rclcpp::Parameter> params = { rclcpp::Parameter("constraints.joint1.goal", goal_tol),
+                                            rclcpp::Parameter("constraints.joint2.goal", goal_tol),
+                                            rclcpp::Parameter("constraints.joint3.goal", goal_tol),
+                                            rclcpp::Parameter("constraints.goal_time", goal_time) };
 
   // separate command from states -> goal won't never be reached
   bool separate_cmd_and_state_values = true;
@@ -741,9 +722,7 @@ TEST_P(TestTrajectoryActionsTestParameterized, test_goal_tolerances_fail)
 
   EXPECT_TRUE(gh_future.get());
   EXPECT_EQ(rclcpp_action::ResultCode::ABORTED, common_resultcode_);
-  EXPECT_EQ(
-    control_msgs::action::FollowJointTrajectory_Result::GOAL_TOLERANCE_VIOLATED,
-    common_action_result_code_);
+  EXPECT_EQ(control_msgs::action::FollowJointTrajectory_Result::GOAL_TOLERANCE_VIOLATED, common_action_result_code_);
 
   // run an update
   updateControllerAsync(rclcpp::Duration::from_seconds(0.01));
@@ -757,10 +736,9 @@ TEST_P(TestTrajectoryActionsTestParameterized, test_no_time_from_start_state_tol
 {
   // set joint tolerance parameters
   const double state_tol = 0.0001;
-  std::vector<rclcpp::Parameter> params = {
-    rclcpp::Parameter("constraints.joint1.trajectory", state_tol),
-    rclcpp::Parameter("constraints.joint2.trajectory", state_tol),
-    rclcpp::Parameter("constraints.joint3.trajectory", state_tol)};
+  std::vector<rclcpp::Parameter> params = { rclcpp::Parameter("constraints.joint1.trajectory", state_tol),
+                                            rclcpp::Parameter("constraints.joint2.trajectory", state_tol),
+                                            rclcpp::Parameter("constraints.joint3.trajectory", state_tol) };
 
   // separate command from states -> goal won't never be reached
   bool separate_cmd_and_state_values = true;
@@ -786,9 +764,7 @@ TEST_P(TestTrajectoryActionsTestParameterized, test_no_time_from_start_state_tol
 
   EXPECT_TRUE(gh_future.get());
   EXPECT_EQ(rclcpp_action::ResultCode::ABORTED, common_resultcode_);
-  EXPECT_EQ(
-    control_msgs::action::FollowJointTrajectory_Result::PATH_TOLERANCE_VIOLATED,
-    common_action_result_code_);
+  EXPECT_EQ(control_msgs::action::FollowJointTrajectory_Result::PATH_TOLERANCE_VIOLATED, common_action_result_code_);
 
   // run an update
   updateControllerAsync(rclcpp::Duration::from_seconds(0.01));
@@ -832,10 +808,9 @@ TEST_P(TestTrajectoryActionsTestParameterized, test_cancel_hold_position)
 
   EXPECT_TRUE(gh_future.get());
   EXPECT_EQ(rclcpp_action::ResultCode::CANCELED, common_resultcode_);
-  EXPECT_EQ(
-    control_msgs::action::FollowJointTrajectory_Result::SUCCESSFUL, common_action_result_code_);
+  EXPECT_EQ(control_msgs::action::FollowJointTrajectory_Result::SUCCESSFUL, common_action_result_code_);
 
-  std::vector<double> cancelled_position{joint_pos_[0], joint_pos_[1], joint_pos_[2]};
+  std::vector<double> cancelled_position{ joint_pos_[0], joint_pos_[1], joint_pos_[2] };
 
   // run an update
   updateControllerAsync(rclcpp::Duration::from_seconds(0.01));
@@ -847,9 +822,8 @@ TEST_P(TestTrajectoryActionsTestParameterized, test_cancel_hold_position)
 
 TEST_P(TestTrajectoryActionsTestParameterized, test_allow_nonzero_velocity_at_trajectory_end_true)
 {
-  std::vector<rclcpp::Parameter> params = {
-    rclcpp::Parameter("allow_nonzero_velocity_at_trajectory_end", true),
-    rclcpp::Parameter("constraints.stopped_velocity_tolerance", 0.0)};
+  std::vector<rclcpp::Parameter> params = { rclcpp::Parameter("allow_nonzero_velocity_at_trajectory_end", true),
+                                            rclcpp::Parameter("constraints.stopped_velocity_tolerance", 0.0) };
   SetUpExecutor(params);
   SetUpControllerHardware();
 
@@ -898,9 +872,8 @@ TEST_P(TestTrajectoryActionsTestParameterized, test_allow_nonzero_velocity_at_tr
 
 TEST_P(TestTrajectoryActionsTestParameterized, test_allow_nonzero_velocity_at_trajectory_end_false)
 {
-  std::vector<rclcpp::Parameter> params = {
-    rclcpp::Parameter("allow_nonzero_velocity_at_trajectory_end", false),
-    rclcpp::Parameter("constraints.stopped_velocity_tolerance", 0.0)};
+  std::vector<rclcpp::Parameter> params = { rclcpp::Parameter("allow_nonzero_velocity_at_trajectory_end", false),
+                                            rclcpp::Parameter("constraints.stopped_velocity_tolerance", 0.0) };
   SetUpExecutor(params);
   SetUpControllerHardware();
 
@@ -978,35 +951,32 @@ TEST_P(TestTrajectoryActionsTestParameterized, test_allow_nonzero_velocity_at_tr
 TEST_P(TestTrajectoryActionsTestParameterized, deactivate_controller_aborts_action)
 {
   // deactivate velocity tolerance
-  std::vector<rclcpp::Parameter> params = {
-    rclcpp::Parameter("constraints.stopped_velocity_tolerance", 0.0)};
+  std::vector<rclcpp::Parameter> params = { rclcpp::Parameter("constraints.stopped_velocity_tolerance", 0.0) };
   SetUpExecutor(params, false, 1.0, 0.0);
 
   // We use our own hardware thread here, as we want to make sure the controller is deactivated
-  auto controller_thread = std::thread(
-    [&]()
+  auto controller_thread = std::thread([&]() {
+    // controller hardware cycle update loop
+    auto clock = rclcpp::Clock(RCL_STEADY_TIME);
+    auto now_time = clock.now();
+    auto last_time = now_time;
+    rclcpp::Duration wait = rclcpp::Duration::from_seconds(0.5);
+    auto end_time = last_time + wait;
+    while (now_time < end_time)
     {
-      // controller hardware cycle update loop
-      auto clock = rclcpp::Clock(RCL_STEADY_TIME);
-      auto now_time = clock.now();
-      auto last_time = now_time;
-      rclcpp::Duration wait = rclcpp::Duration::from_seconds(0.5);
-      auto end_time = last_time + wait;
-      while (now_time < end_time)
-      {
-        now_time = now_time + rclcpp::Duration::from_seconds(0.01);
-        traj_controller_->update(now_time, now_time - last_time);
-        last_time = now_time;
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-      }
-      RCLCPP_INFO(node_->get_logger(), "Controller hardware thread finished");
-      traj_controller_->get_node()->deactivate();
-      std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    });
+      now_time = now_time + rclcpp::Duration::from_seconds(0.01);
+      traj_controller_->update(now_time, now_time - last_time);
+      last_time = now_time;
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    }
+    RCLCPP_INFO(node_->get_logger(), "Controller hardware thread finished");
+    traj_controller_->get_node()->deactivate();
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+  });
 
   std::shared_future<typename GoalHandle::SharedPtr> gh_future;
   // send goal
-  std::vector<double> point_positions{1.0, 2.0, 3.0};
+  std::vector<double> point_positions{ 1.0, 2.0, 3.0 };
   {
     std::vector<JointTrajectoryPoint> points;
     JointTrajectoryPoint point;
@@ -1061,45 +1031,37 @@ TEST_P(TestTrajectoryActionsTestParameterized, deactivate_controller_aborts_acti
 }
 
 // position controllers
-INSTANTIATE_TEST_SUITE_P(
-  PositionTrajectoryControllersActions, TestTrajectoryActionsTestParameterized,
-  ::testing::Values(
-    std::make_tuple(std::vector<std::string>({"position"}), std::vector<std::string>({"position"})),
-    std::make_tuple(
-      std::vector<std::string>({"position"}), std::vector<std::string>({"position", "velocity"})),
-    std::make_tuple(
-      std::vector<std::string>({"position"}),
-      std::vector<std::string>({"position", "velocity", "acceleration"}))));
+INSTANTIATE_TEST_SUITE_P(PositionTrajectoryControllersActions, TestTrajectoryActionsTestParameterized,
+                         ::testing::Values(std::make_tuple(std::vector<std::string>({ "position" }),
+                                                           std::vector<std::string>({ "position" })),
+                                           std::make_tuple(std::vector<std::string>({ "position" }),
+                                                           std::vector<std::string>({ "position", "velocity" })),
+                                           std::make_tuple(std::vector<std::string>({ "position" }),
+                                                           std::vector<std::string>({ "position", "velocity",
+                                                                                      "acceleration" }))));
 
 // position_velocity controllers
-INSTANTIATE_TEST_SUITE_P(
-  PositionVelocityTrajectoryControllersActions, TestTrajectoryActionsTestParameterized,
-  ::testing::Values(
-    std::make_tuple(
-      std::vector<std::string>({"position", "velocity"}), std::vector<std::string>({"position"})),
-    std::make_tuple(
-      std::vector<std::string>({"position", "velocity"}),
-      std::vector<std::string>({"position", "velocity"})),
-    std::make_tuple(
-      std::vector<std::string>({"position", "velocity"}),
-      std::vector<std::string>({"position", "velocity", "acceleration"}))));
+INSTANTIATE_TEST_SUITE_P(PositionVelocityTrajectoryControllersActions, TestTrajectoryActionsTestParameterized,
+                         ::testing::Values(std::make_tuple(std::vector<std::string>({ "position", "velocity" }),
+                                                           std::vector<std::string>({ "position" })),
+                                           std::make_tuple(std::vector<std::string>({ "position", "velocity" }),
+                                                           std::vector<std::string>({ "position", "velocity" })),
+                                           std::make_tuple(std::vector<std::string>({ "position", "velocity" }),
+                                                           std::vector<std::string>({ "position", "velocity",
+                                                                                      "acceleration" }))));
 
 // only velocity controller
-INSTANTIATE_TEST_SUITE_P(
-  OnlyVelocityTrajectoryControllersAction, TestTrajectoryActionsTestParameterized,
-  ::testing::Values(
-    std::make_tuple(
-      std::vector<std::string>({"velocity"}), std::vector<std::string>({"position", "velocity"})),
-    std::make_tuple(
-      std::vector<std::string>({"velocity"}),
-      std::vector<std::string>({"position", "velocity", "acceleration"}))));
+INSTANTIATE_TEST_SUITE_P(OnlyVelocityTrajectoryControllersAction, TestTrajectoryActionsTestParameterized,
+                         ::testing::Values(std::make_tuple(std::vector<std::string>({ "velocity" }),
+                                                           std::vector<std::string>({ "position", "velocity" })),
+                                           std::make_tuple(std::vector<std::string>({ "velocity" }),
+                                                           std::vector<std::string>({ "position", "velocity",
+                                                                                      "acceleration" }))));
 
 // only effort controller
-INSTANTIATE_TEST_SUITE_P(
-  OnlyEffortTrajectoryControllers, TestTrajectoryActionsTestParameterized,
-  ::testing::Values(
-    std::make_tuple(
-      std::vector<std::string>({"effort"}), std::vector<std::string>({"position", "velocity"})),
-    std::make_tuple(
-      std::vector<std::string>({"effort"}),
-      std::vector<std::string>({"position", "velocity", "acceleration"}))));
+INSTANTIATE_TEST_SUITE_P(OnlyEffortTrajectoryControllers, TestTrajectoryActionsTestParameterized,
+                         ::testing::Values(std::make_tuple(std::vector<std::string>({ "effort" }),
+                                                           std::vector<std::string>({ "position", "velocity" })),
+                                           std::make_tuple(std::vector<std::string>({ "effort" }),
+                                                           std::vector<std::string>({ "position", "velocity",
+                                                                                      "acceleration" }))));
