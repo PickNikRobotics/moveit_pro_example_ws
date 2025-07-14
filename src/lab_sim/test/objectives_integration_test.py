@@ -37,24 +37,47 @@ from moveit_pro_test_utils.objective_test_fixture import (
     run_objective,
 )
 
-cancel_objectives = {
-    "3 Waypoints Pick and Place",
-    "Cycle Between Waypoints",
-    "Grasp Planning",
-    "Grasp Pose Tuning With April Tag",
-    "Grasp Pose Using Yaml",
-    "Joint Diagnostic",
-    "Loop Detect AprilTag",
-    "Pick And Place Example",
-    "Pick April Tag Labeled Object With Approval",
-    "Place Object",
-    "Plan and Save Trajectory",
-    "Record and Replay Scanning Motion",
-    "Classical Pick and Place",
-    "ML Grasp Object from Text Prompt",
-}
+# Just want Playback Square Trajector, ML Auto Grasp Object from Text Prompt, Scan Scene, and Register CAD Part
+cancel_objectives = {}
 
 skip_objectives = {
+    "3 Waypoints Pick and Place",
+    "Add Point Cloud to Vector",
+    "Add Poses to MTC Task",
+    "Add Waypoints to MTC Task",
+    "Pick April Tag Labeled Object",
+    "Classical Pick and Place",
+    "Clear Previous Obstacles",
+    "Close Gripper",
+    "Constrained Pick and Place Subtree",
+    "Move Flasks to Burners",
+    "Create Pose Vector",
+    "Cycle Between Waypoints",
+    "Force Relaxation",
+    "Grasp Pose Tuning With April Tag",
+    "Grasp Pose Using Yaml",
+    "Load and Execute Joint Trajectory",
+    "Look at table",
+    "Loop Detect AprilTag",
+    # "ML Auto Grasp Object from Text Prompt", # This
+    "ML Grasp Object from Text Prompt",
+    "ML Segment Point Cloud from Text Prompt",
+    "Move Along Square",
+    "MPC Pose Tracking",
+    "MPC Pose Tracking With Point Cloud Avoidance",
+    "Open Gripper",
+    "Pick And Place Example",
+    "Pick April Tag Labeled Object With Approval",
+    "Pick Object",
+    "Plan and Save Trajectory",
+    # "Playback Square Trajectory", # This
+    "Push Button",
+    "Push Button With a Trajectory",
+    "Record and Replay Scanning Motion",
+    # "Register CAD Part", # This
+    # "_Scan Scene", # This
+    "Take scene camera snapshot",
+    "Take wrist camera snapshot",
     "Grasp Object from Text Prompt",  # https://github.com/PickNikRobotics/moveit_pro/issues/13236
     "Grasp Planning",
     "Joint Diagnostic",
