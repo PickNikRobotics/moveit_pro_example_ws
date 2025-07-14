@@ -91,4 +91,4 @@ def test_all_objectives(
     execute_objective_resource: ExecuteObjectiveResource,
 ):
     wait_for_gripper_action_server()
-    run_objective(objective_id, should_cancel, execute_objective_resource, 120)
+    run_objective(objective_id, should_cancel, execute_objective_resource, 120, 10, 20)
