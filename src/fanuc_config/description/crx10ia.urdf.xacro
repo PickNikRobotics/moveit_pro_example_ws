@@ -1,0 +1,37 @@
+<?xml version="1.0" ?>
+<robot name="crx10ia" xmlns:xacro="http://wiki.ros.org/xacro">
+
+  <xacro:arg name="robot_ip" default="192.168.1.100"/>
+  <xacro:arg name="rmi_port" default="16001"/>
+  <xacro:arg name="stream_motion_port" default="60015"/>
+  <xacro:arg name="io_configuration" default=""/>
+  <xacro:arg name="payload_schedule" default="1"/>
+
+  <xacro:include filename="$(find fanuc_crx_description)/urdf/crx10ia_macro.xacro"/>
+  <xacro:include filename="$(find fanuc_hardware_interface)/robot/fanuc_joint_control.xacro"/>
+
+  <link name="world"/>
+  <link name="end_effector"/>
+  <xacro:crx10ia parent="world" child="end_effector">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </xacro:crx10ia>
+
+
+  <ros2_control name="crx10ia" type="system">
+    <joint name="J1"/>
+    <joint name="J2"/>
+    <joint name="J3"/>
+    <joint name="J4"/>
+    <joint name="J5"/>
+    <joint name="J6"/>
+    <hardware>
+      <plugin>fanuc_robot_driver/FanucHardwareInterface</plugin>
+      <param name="robot_ip">$(arg robot_ip)</param>
+      <param name="rmi_port">$(arg rmi_port)</param>
+      <param name="stream_motion_port">$(arg stream_motion_port)</param>
+      <param name="io_configuration">$(arg io_configuration)</param>
+      <param name="payload_schedule">$(arg payload_schedule)</param>
+    </hardware>
+  </ros2_control>
+
+</robot>
