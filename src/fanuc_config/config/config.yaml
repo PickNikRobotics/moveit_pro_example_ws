@@ -33,16 +33,15 @@ hardware:
   robot_description:
     urdf:
       package: "fanuc_config"
-      path: "description/ur20.urdf"
+      path: "description/crx10ia.urdf.xacro"
     srdf:
       package: "fanuc_config"
-      path: "config/moveit/ur20.srdf"
+      path: "config/moveit/crx10ia.srdf"
     # Specify any additional parameters required for the URDF.
     # Many of these are specific to the descriptions packages, and can be customized as needed.
     # [Optional]
     urdf_params:
-        # Use "mock", "mujoco", or "real"
-      - hardware_interface: "mujoco"
+      - robot_ip: "192.168.1.100"
 
 # Sets ROS global params for launch.
 # [Optional]
@@ -97,7 +96,7 @@ moveit_params:
 ros2_control:
   config:
     package: "fanuc_config"
-    path: "config/control/ur20.ros2_control.yaml"
+    path: "config/control/ros2_control.yaml"
   # MoveIt Pro will load and activate these controllers at start up to ensure they are available.
   # If not specified, it is up to the user to ensure the appropriate controllers are active and available
   # for running the application.
@@ -108,9 +107,8 @@ ros2_control:
   # Load but do not start these controllers so they can be activated later if needed.
   # [Optional, default=[]]
   controllers_inactive_at_startup:
-    - "servo_controller"
     - "velocity_force_controller"
-
+    - "servo_controller"
 # Configuration for loading behaviors and objectives.
 # [Required]
 objectives:

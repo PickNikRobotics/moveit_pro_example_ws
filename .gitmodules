@@ -16,3 +16,9 @@
 [submodule "src/external_dependencies/ros2_kortex"]
 	path = src/external_dependencies/ros2_kortex
 	url = https://github.com/PickNikRobotics/ros2_kortex.git
+[submodule "src/external_dependencies/fanuc_driver-private"]
+	path = src/external_dependencies/fanuc_driver-private
+	url = git@github.com:robot-p01/fanuc_driver-private.git
+[submodule "src/external_dependencies/fanuc_description-private"]
+	path = src/external_dependencies/fanuc_description-private
+	url = git@github.com:robot-p01/fanuc_description-private.git
