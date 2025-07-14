@@ -11,8 +11,8 @@
   <xacro:include filename="$(find fanuc_hardware_interface)/robot/fanuc_joint_control.xacro"/>
 
   <link name="world"/>
-  <link name="end_effector"/>
-  <xacro:crx10ia parent="world" child="end_effector">
+  <link name="grasp_link"/>
+  <xacro:crx10ia parent="world" child="grasp_link">
     <origin xyz="0 0 0" rpy="0 0 0"/>
   </xacro:crx10ia>
 

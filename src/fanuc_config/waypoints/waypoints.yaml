@@ -1,0 +1,74 @@
+- description: ''
+  favorite: false
+  joint_group_names:
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - J1
+    - J2
+    - J3
+    - J4
+    - J5
+    - J6
+    position:
+    - 0
+    - 0
+    - 0
+    - 0
+    - -1.5707963267948966
+    - 0
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Home
+- description: ''
+  favorite: false
+  joint_group_names:
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - J1
+    - J2
+    - J3
+    - J4
+    - J5
+    - J6
+    position:
+    - 3.7844918614988473e-06
+    - 1.3540070791947846e-05
+    - 1.0643988666266522
+    - -8.179123169500716e-06
+    - -1.0308609221217246
+    - -1.2389843324801379e-05
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Up
