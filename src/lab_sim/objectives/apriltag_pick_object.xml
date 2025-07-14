@@ -69,13 +69,7 @@
         quaternion_xyzw="1;0;0;0"
         translation_xyz="0;0;0.01"
       />
-      <SubTree
-        ID="Pick from Pose"
-        _collapsed="true"
-        grasp_pose="{offset_pose}"
-        approach_distance="0.1"
-        retract_xyz="0;0;-0.1"
-      />
+      <SubTree ID="Pick from Pose" _collapsed="true" />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>

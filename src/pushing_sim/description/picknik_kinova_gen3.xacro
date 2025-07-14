@@ -583,7 +583,7 @@
         <plugin>picknik_mujoco_ros/MujocoSystem</plugin>
         <param name="mujoco_model">description/scene.xml</param>
         <param name="mujoco_model_package">pushing_sim</param>
-        <param name="render_publish_rate">5</param>
+        <param name="render_publish_rate">20</param>
         <param name="tf_publish_rate">60</param>
         <param name="mujoco_viewer">true</param>
       </hardware>
