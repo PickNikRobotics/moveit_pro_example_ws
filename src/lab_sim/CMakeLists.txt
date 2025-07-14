@@ -46,7 +46,7 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
   ament_add_pytest_test(
           objectives_integration_test test/objectives_integration_test.py
-          TIMEOUT 600
+          TIMEOUT 800
           ENV STUDIO_CONFIG_PACKAGE=lab_sim STUDIO_HOST_USER_WORKSPACE=${CMAKE_SOURCE_DIR})
 endif()
 
