@@ -32,7 +32,7 @@ hardware:
 # Configuration for loading behaviors and objectives.
 objectives:
   objective_library_paths:
-    custom_objectives:
+    sim_objectives:
       package_name: "space_satellite_sim_camera_cal"
       relative_path: "objectives"
   # Specify location of the waypoints file.
