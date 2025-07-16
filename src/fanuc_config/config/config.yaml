@@ -74,7 +74,7 @@ moveit_params:
     path: "config/moveit/joint_limits.yaml"
   servo_joint_limits:
     package: "fanuc_config"
-    path: "config/moveit/joint_limits.yaml"
+    path: "config/moveit/joint_limits_servo.yaml"
   pose_jog:
     package: "fanuc_config"
     path: "config/moveit/pose_jog.yaml"
