@@ -4,7 +4,7 @@
   <BehaviorTree
     ID="Calibrate Scene Camera"
     _description="Calibrate the scene camera from multiple waypoints using the DetectAprilTags behavior."
-    _favorite="false"
+    _favorite="true"
   >
     <SubTree
       ID="Calibrate Camera - Detect Tags"
