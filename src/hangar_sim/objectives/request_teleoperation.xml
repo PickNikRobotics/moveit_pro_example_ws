@@ -18,6 +18,7 @@
           current_teleop_mode="{teleop_mode}"
           planning_groups="{planning_groups}"
           controllers="{controllers}"
+          tip_links="{tip_links}"
         />
         <Decorator ID="KeepRunningUntilFailure">
           <Control ID="Sequence">
@@ -73,11 +74,29 @@
                       timeout_sec="-1"
                       pose="{target_pose}"
                     />
+                    <Decorator
+                      ID="ForEach"
+                      index="{index}"
+                      out="{planning_group}"
+                      vector_in="{planning_groups}"
+                    >
+                      <Action ID="AlwaysSuccess" />
+                    </Decorator>
+                    <Decorator
+                      ID="ForEach"
+                      index="{index}"
+                      out="{tip_link}"
+                      vector_in="{tip_links}"
+                    >
+                      <Action ID="AlwaysSuccess" />
+                    </Decorator>
                     <SubTree
                       ID="Move to Pose"
                       _collapsed="false"
                       target_pose="{target_pose}"
                       link_padding="0.0"
+                      planning_group_name="{planning_group}"
+                      ik_frame="{tip_link}"
                       controller_names="joint_trajectory_controller"
                     />
                     <Action
