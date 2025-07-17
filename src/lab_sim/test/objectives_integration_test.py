@@ -61,6 +61,7 @@ skip_objectives = {
     "Fuse Multiple Views",
     "ML Segment Image from Text Prompt",
     "ML Segment Point Cloud from Clicked Point",
+    "ML Segment Point Cloud from Text Prompt",
     "ML Auto Grasp Object from Clicked Point",  # Skipped because there is no primary ui to switch to in ci
     "Pick up Cube",
     "Place Object",
