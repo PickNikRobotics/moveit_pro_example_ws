@@ -15,16 +15,7 @@
         publish_rate="50"
       />
       <Control ID="Sequence" name="TopLevelSequence">
-      <Decorator ID="ForceSuccess">
-        <Action
-          ID="SwitchController"
-          activate_asap="true"
-          controller_switch_action_name="{controller_switch_action_name}"
-          strictness="2"
-          timeout="0.000000"
-          activate_controllers="{controller_names}"
-        />
-      </Decorator>
+        <Action ID="ActivateControllers" controller_names="{controller_name}" />
         <Action
           ID="LoadPoseStampedVectorFromYaml"
           output="{pose_stamped_msgs}"
@@ -73,7 +64,6 @@
         name="execute_follow_joint_trajectory_action_name"
         default="{execute_follow_joint_trajectory_action_name}"
       />
-      <inout_port name="controller_switch_action_name" default="{controller_switch_action_name}" />
       <inout_port name="file_path" default="{file_path}" />
       <inout_port name="planning_group_name" default="{planning_group_name}" />
       <inout_port name="tip_link" default="{tip_link}" />
