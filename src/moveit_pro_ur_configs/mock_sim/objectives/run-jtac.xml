@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="run-jtac">
+  <!--//////////-->
+  <BehaviorTree ID="run-jtac" _description="" _favorite="false">
+    <Decorator ID="KeepRunningUntilFailure">
+      <Control ID="Sequence" name="TopLevelSequence">
+        <SubTree
+          ID="Move to Waypoint"
+          _collapsed="true"
+          acceleration_scale_factor="1.0"
+          controller_names="joint_trajectory_controller"
+          joint_group_name="manipulator"
+          keep_orientation="false"
+          keep_orientation_tolerance="0.05"
+          link_padding="0.01"
+          seed="0"
+          velocity_scale_factor="1.0"
+          waypoint_name="Home"
+          controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        />
+        <Action
+          ID="RetrieveWaypoint"
+          waypoint_joint_state="{target_joint_state}"
+          waypoint_name="Forward Down"
+          joint_group_name="manipulator"
+        />
+        <Action
+          ID="SwitchController"
+          activate_controllers="joint_trajectory_admittance_controller"
+          activate_asap="true"
+          automatic_deactivation="true"
+          controller_list_action_name="/controller_manager/list_controllers"
+          controller_switch_action_name="/controller_manager/switch_controller"
+          strictness="1"
+          timeout="0.000000"
+          deactivate_controllers="joint_trajectory_controller"
+        />
+        <Action
+          ID="PlanToJointGoal"
+          joint_goal="{target_joint_state}"
+          link_padding="0.0"
+          acceleration_scale_factor="1.0"
+          velocity_scale_factor="1.0"
+          planning_group_name="manipulator"
+          seed="0"
+          joint_trajectory_msg="{joint_trajectory_msg}"
+          keep_orientation_link_names="grasp_link"
+          max_iterations="5000"
+          trajectory_sampling_rate="100"
+          keep_orientation="false"
+          keep_orientation_tolerance="0.1"
+        />
+        <Action
+          ID="SetAdmittanceParameters"
+          admittance_parameters_msg="{admittance_parameters_msg}"
+          config_file_name="test-parameters.yaml"
+        />
+        <Action
+          ID="ExecuteTrajectoryWithAdmittance"
+          absolute_force_torque_threshold="45;45;45;10;10;10"
+          admittance_parameters_msg="{admittance_parameters_msg}"
+          goal_duration_tolerance="-1.000000"
+          goal_position_tolerance="0.001000"
+          joint_trajectory_msg="{joint_trajectory_msg}"
+          path_position_tolerance="0.80000"
+          controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+        />
+      </Control>
+    </Decorator>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="run-jtac">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Basic Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

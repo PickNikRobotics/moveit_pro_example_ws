@@ -1,0 +1,53 @@
+SetAdmittanceParameters:
+  base_frame: "base_link"
+  controller_name: ""
+  end_effector_frame: "grasp_link"
+  control_frame: "grasp_link"
+  admittance:
+    selected_axes:
+      x: True
+      y: True
+      z: True
+      rx: True
+      ry: True
+      rz: True
+    mass_position:  # kg
+      x: 4.0
+      y: 4.0
+      z: 4.0
+      min: 0.001
+      max: 100.0
+    mass_rotation:  # kg*m^2
+      x: 4.0
+      y: 4.0
+      z: 4.0
+      min: 0.001
+      max: 100.0
+    stiffness_position:  # N/m
+      x: 80.0
+      y: 80.0
+      z: 80.0
+      min: 0.0
+      max: 1000.0
+    stiffness_rotation:  # N*m/rad
+      x: 80.0
+      y: 80.0
+      z: 80.0
+      min: 0.0
+      max: 1000.0
+    damping_ratio_position:  # unitless
+      x: 40.0
+      y: 40.0
+      z: 40.0
+      min: 0.0
+      max: 100.0
+    damping_ratio_rotation:  # unitless
+      x: 40.0
+      y: 40.0
+      z: 40.0
+      min: 0.0
+      max: 100.0
+    joint_damping:  # 1/s
+      value: 1.0
+      min: 0.0
+      max: 100.0
