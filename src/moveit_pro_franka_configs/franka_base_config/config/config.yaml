@@ -1,0 +1,59 @@
+###############################################################
+#
+#  This configures the robot to work with MoveIt Pro
+#
+###############################################################
+
+# Sets ROS global params for launch.
+# [Optional]
+ros_global_params:
+  # Whether or not to use simulated time.
+  # [Optional, default=False]
+  use_sim_time: False
+
+# Configuration files for MoveIt.
+# For more information, refer to https://moveit.picknik.ai/main/doc/how_to_guides/moveit_configuration/moveit_configuration_tutorial.html
+# [Required]
+moveit_params:
+  # Used by the Waypoint Manager to save joint states from this joint group.
+  joint_group_name: "manipulator"
+
+  ompl_planning:
+    package: "franka_base_config"
+    path: "config/moveit/ompl_planning.yaml"
+  stomp_planning:
+    package: "franka_base_config"
+    path: "config/moveit/stomp_planning.yaml"
+  kinematics:
+    package: "franka_base_config"
+    path: "config/moveit/pose_ik_distance.yaml"
+  servo:
+    package: "franka_base_config"
+    path: "config/moveit/servo.yaml"
+  sensors_3d:
+    package: "franka_base_config"
+    path: "config/moveit/sensors_3d.yaml"
+  servo_kinematics:
+    package: "franka_base_config"
+    path: "config/moveit/pose_ik_speed.yaml"
+  joint_limits:
+    package: "franka_base_config"
+    path: "config/moveit/joint_limits.yaml"
+  servo_joint_limits:
+    package: "franka_base_config"
+    path: "config/moveit/servo_joint_limits.yaml"
+  pose_jog:
+    package: "franka_base_config"
+    path: "config/moveit/pose_jog.yaml"
+
+  publish:
+    planning_scene: True
+    geometry_updates: True
+    state_updates: True
+    transforms_updates: True
+
+  trajectory_execution:
+    manage_controllers: True
+    allowed_execution_duration_scaling: 2.0
+    allowed_goal_duration_margin: 5.0
+    allowed_start_tolerance: 0.01
