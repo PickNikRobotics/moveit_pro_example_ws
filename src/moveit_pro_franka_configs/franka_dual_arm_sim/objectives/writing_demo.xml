@@ -6,7 +6,7 @@
     _description="Pick up a pen, draw a text on a flat surface, and place the pen back."
     _favorite="true"
   >
-    <Control ID="Sequence" name="TopLevelSequence">
+    <Control ID="Sequence">
       <SubTree
         ID="Move to Waypoint"
         _collapsed="true"
@@ -20,7 +20,6 @@
         seed="0"
         velocity_scale_factor="1.0"
         waypoint_name="Home"
-        name="Move both arms to home position"
       />
       <Action
         ID="CreateStampedPose"
@@ -37,24 +36,28 @@
         marker_size="0.100000"
         pose="{stamped_pose}"
       />
-      <SubTree
-        ID="Draw and Wipe"
-        _collapsed="true"
-        file_path="moveit_pro.yaml"
-        center="{stamped_pose}"
-      />
-      <SubTree
-        ID="Draw and Wipe"
-        _collapsed="true"
-        file_path="loves.yaml"
-        center="{stamped_pose}"
-      />
-      <SubTree
-        ID="Draw and Wipe"
-        _collapsed="true"
-        file_path="franka.yaml"
-        center="{stamped_pose}"
-      />
+      <Decorator ID="Repeat" num_cycles="-1">
+        <Control ID="Sequence" name="TopLevelSequence">
+          <SubTree
+            ID="Draw and Wipe"
+            _collapsed="true"
+            file_path="moveit_pro.yaml"
+            center="{stamped_pose}"
+          />
+          <SubTree
+            ID="Draw and Wipe"
+            _collapsed="true"
+            file_path="loves.yaml"
+            center="{stamped_pose}"
+          />
+          <SubTree
+            ID="Draw and Wipe"
+            _collapsed="true"
+            file_path="franka.yaml"
+            center="{stamped_pose}"
+          />
+        </Control>
+      </Decorator>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
