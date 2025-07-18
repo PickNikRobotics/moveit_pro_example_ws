@@ -21,7 +21,9 @@
 	url = https://github.com/frankarobotics/libfranka.git
 [submodule "src/external_dependencies/franka_config/franka_ros2"]
 	path = src/external_dependencies/franka_config/franka_ros2
-	url = https://github.com/frankarobotics/franka_ros2.git
+	url = https://github.com/sjahr/franka_ros2.git
+	branch = automatica_demo
 [submodule "src/external_dependencies/franka_config/franka_description"]
 	path = src/external_dependencies/franka_config/franka_description
-	url = https://github.com/frankarobotics/franka_description.git
+	url = https://github.com/sjahr/franka_description.git
+	branch = automatica_demo
