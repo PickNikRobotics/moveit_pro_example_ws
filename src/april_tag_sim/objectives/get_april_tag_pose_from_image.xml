@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Get AprilTag Pose from Image">
+  <BehaviorTree
+    ID="Get AprilTag Pose from Image"
+    _description="Takes an image snapshot from the wrist camera and attempts to detect an april tag for pose estimation."
+  >
+    <Control ID="Sequence">
+      <!--Get tag pose estimate in world frame-->
+      <Action
+        ID="DetectAprilTags"
+        image="{image}"
+        camera_info="{camera_info}"
+        detections="{detections}"
+        apriltag_family_name="36h11"
+        max_hamming="0"
+        n_threads="1"
+        quad_decimate="2.0"
+        quad_sigma="0.0"
+        refine_edges="true"
+        tag_size="0.04"
+      />
+      <Action
+        ID="GetDetectionPose"
+        detection_pose="{detection_pose}"
+        detections="{detections}"
+        target_id="-1"
+      />
+      <Action
+        ID="TransformPoseFrame"
+        input_pose="{detection_pose}"
+        output_pose="{detection_pose}"
+        target_frame_id="world"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Get AprilTag Pose from Image">
+      <MetadataFields>
+        <Metadata subcategory="Perception - 2D Image" />
+        <Metadata runnable="false" />
+      </MetadataFields>
+      <input_port name="camera_info" default="{camera_info}" />
+      <output_port name="detection_pose" default="{detection_pose}" />
+      <input_port name="image" default="{image}" />
+    </SubTree>
+  </TreeNodesModel>
+</root>
