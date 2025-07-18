@@ -59,6 +59,8 @@ skip_objectives = {
     "Grasp Planning",
     "Joint Diagnostic",
     "Fuse Multiple Views",
+    "MPC Pose Tracking",
+    "MPC Pose Tracking With Point Cloud Avoidance",
     "ML Segment Image from Text Prompt",
     "ML Segment Point Cloud from Clicked Point",
     "ML Segment Point Cloud from Text Prompt",
