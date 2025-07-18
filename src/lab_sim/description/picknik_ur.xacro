@@ -1195,7 +1195,7 @@
       <!-- The rate <rangefinder> data is published at -->
       <param name="lidar_publish_rate">10</param>
       <!-- Whether to launch the MuJoCo interactive viewer -->
-      <param name="mujoco_viewer">false</param>
+      <param name="mujoco_viewer">$(arg mujoco_viewer)</param>
     </hardware>
   </ros2_control>
 </robot>

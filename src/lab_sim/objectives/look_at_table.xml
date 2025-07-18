@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<root BTCPP_format="4" main_tree_to_execute="Look at table">
+<root BTCPP_format="4" main_tree_to_execute="Look at Table">
   <!--//////////-->
   <BehaviorTree
-    ID="Look at table"
+    ID="Look at Table"
     _description="Move the arm to a position that faces the table surface"
     _favorite="false"
   >
@@ -25,7 +25,7 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Look at table">
+    <SubTree ID="Look at Table">
       <MetadataFields>
         <Metadata subcategory="Application - Basic Examples" />
         <Metadata runnable="true" />
