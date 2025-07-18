@@ -7,7 +7,7 @@
   <BehaviorTree
     ID="Calibrate Servicer Camera - Tag TFs"
     _description="Calibrate the servicer camera from multiple waypoints using externally published detected AprilTag TF frames."
-    _favorite="false"
+    _favorite="true"
   >
     <SubTree
       ID="Calibrate Camera - Tag TFs"
