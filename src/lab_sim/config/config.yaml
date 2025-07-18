@@ -17,6 +17,7 @@ hardware:
       path: "config/moveit/picknik_ur.srdf"
     urdf_params:
       - mujoco_model: "description/scene.xml"
+      - mujoco_viewer: "false"
 
 moveit_params:
   servo:

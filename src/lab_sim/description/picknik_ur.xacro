@@ -1,6 +1,11 @@
 <?xml version="1.0" ?>
 <robot name="ur5e" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <!-- Use $() for xacro processing that must be done at runtime (roslaunch or CLI arguments, filepaths, etc)  -->
+  <!-- Use ${} for xacro processing that is not done at runtime (passing values between xacro files) -->
   <xacro:arg name="mujoco_model" default="description/scene.xml" />
+  <xacro:arg name="mujoco_viewer" default="false" />
+
   <material name="aluminum">
     <color rgba="0.5 0.5 0.5 1" />
   </material>
@@ -1195,7 +1200,7 @@
       <!-- The rate <rangefinder> data is published at -->
       <param name="lidar_publish_rate">10</param>
       <!-- Whether to launch the MuJoCo interactive viewer -->
-      <param name="mujoco_viewer">false</param>
+      <param name="mujoco_viewer">$(arg mujoco_viewer)</param>
     </hardware>
   </ros2_control>
 </robot>
