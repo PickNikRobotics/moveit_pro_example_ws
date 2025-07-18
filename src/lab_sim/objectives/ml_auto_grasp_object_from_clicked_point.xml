@@ -25,7 +25,7 @@
         waypoint3="Look at Objects - Left"
         name="Scan the scene for a good point cloud"
       />
-      <SubTree ID="Look at table" _collapsed="true" />
+      <SubTree ID="Look at Table" _collapsed="true" />
       <SubTree
         ID="Segment Image from Point Subtree"
         _collapsed="true"
