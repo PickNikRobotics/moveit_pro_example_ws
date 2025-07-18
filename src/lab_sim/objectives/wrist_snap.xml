@@ -1,7 +1,7 @@
-<root BTCPP_format="4" main_tree_to_execute="Take wrist camera snapshot">
+<root BTCPP_format="4" main_tree_to_execute="Take Wrist Camera Snapshot">
   <!--//////////-->
   <BehaviorTree
-    ID="Take wrist camera snapshot"
+    ID="Take Wrist Camera Snapshot"
     _description="Capture and visualise a pointcloud with the wrist camera"
     _favorite="false"
   >
@@ -16,7 +16,7 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Take wrist camera snapshot">
+    <SubTree ID="Take Wrist Camera Snapshot">
       <MetadataFields>
         <Metadata subcategory="Application - Basic Examples" />
       </MetadataFields>
