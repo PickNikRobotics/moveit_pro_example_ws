@@ -10,10 +10,10 @@
       <SubTree ID="Open Gripper" />
       <!--Be sure that no previous obstacle left in the scene interferes with planning.-->
       <SubTree ID="Clear Previous Obstacles" _collapsed="true" />
-      <!--Look at table, find an april tag.-->
-      <SubTree ID="Look at table" _collapsed="true" />
+      <!--Look at Table, find an april tag.-->
+      <SubTree ID="Look at Table" _collapsed="true" />
       <SubTree ID="Clear Previous Obstacles" _collapsed="true" />
-      <SubTree ID="Take wrist camera snapshot" _collapsed="true" />
+      <SubTree ID="Take Wrist Camera Snapshot" _collapsed="true" />
       <SubTree
         ID="Take Wrist Camera Image"
         _collapsed="true"
@@ -49,7 +49,7 @@
       />
       <!--Locate the april tag again more precisely.-->
       <SubTree ID="Clear Previous Obstacles" _collapsed="true" />
-      <SubTree ID="Take wrist camera snapshot" _collapsed="true" />
+      <SubTree ID="Take Wrist Camera Snapshot" _collapsed="true" />
       <SubTree
         ID="Take Wrist Camera Image"
         _collapsed="true"
