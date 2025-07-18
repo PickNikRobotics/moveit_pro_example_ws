@@ -1,7 +1,7 @@
-<root BTCPP_format="4" main_tree_to_execute="Take scene camera snapshot">
+<root BTCPP_format="4" main_tree_to_execute="Take Scene Camera Snapshot">
   <!--//////////-->
   <BehaviorTree
-    ID="Take scene camera snapshot"
+    ID="Take Scene Camera Snapshot"
     _description="Capture a point cloud snapshot of the scene camera and send it to the UI"
     _favorite="false"
   >
@@ -13,7 +13,7 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Take scene camera snapshot">
+    <SubTree ID="Take Scene Camera Snapshot">
       <MetadataFields>
         <Metadata subcategory="Application - Basic Examples" />
       </MetadataFields>
