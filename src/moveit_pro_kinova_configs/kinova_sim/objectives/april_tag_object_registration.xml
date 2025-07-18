@@ -4,7 +4,7 @@
   <BehaviorTree
     ID="April Tag Object Registration"
     _description="Estimate the pose of an object using ICP."
-    _favorite="true"
+    _favorite="false"
     _hardcoded="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">

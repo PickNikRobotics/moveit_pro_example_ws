@@ -4,7 +4,7 @@
   <BehaviorTree
     ID="Write PickNik"
     _description=""
-    _favorite="true"
+    _favorite="false"
     _hardcoded="false"
   >
     <Control ID="Sequence">
