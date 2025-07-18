@@ -7,7 +7,7 @@
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action ID="ClearSnapshot" />
-      <SubTree ID="Look at table" _collapsed="true" />
+      <SubTree ID="Look at Table" _collapsed="true" />
       <Action
         ID="CreateStampedPose"
         position_xyz="0.02;.75;0.58"
