@@ -4,7 +4,7 @@
     <Control ID="Sequence">
       <Action
         ID="InitializeMTCTask"
-        controller_names="/joint_trajectory_controller"
+        controller_names="joint_trajectory_controller"
         task="{mtc_task}"
         task_id="move_along_axis"
       />

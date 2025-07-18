@@ -9,7 +9,7 @@
       <Action
         ID="InitializeMTCTask"
         task_id="move_to_pose"
-        controller_names="/joint_trajectory_controller"
+        controller_names="joint_trajectory_controller"
         task="{move_to_pose_task}"
       />
       <Action ID="SetupMTCCurrentState" task="{move_to_pose_task}" />
