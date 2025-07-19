@@ -51,7 +51,7 @@ cancel_objectives = {
     "Plan and Save Trajectory",
     "Record and Replay Scanning Motion",
     "Classical Pick and Place",
-    "ML Auto Grasp Object from Text Prompt",
+    "ML Grasp Object from Text Prompt",
 }
 
 skip_objectives = {
