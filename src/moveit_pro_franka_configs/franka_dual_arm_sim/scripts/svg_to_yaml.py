@@ -83,7 +83,7 @@ def log(info):
 def extract_waypoints_from_paths(paths, density):
     all_waypoints = []
     # Clearance on transition strokes, i.e. from the end of one path to the beginning of another.
-    z_transition_clearance = 40.0  # mm
+    z_transition_clearance = 10.0  # mm
     # Iterate on each continuous path (letter/connected shape)
     for path in paths:
         points = path_to_points(path, density)
@@ -170,6 +170,7 @@ if __name__ == "__main__":
 
     svg_attributes = svg2paths(args.input_file)
     paths = svg_attributes[0]
+    paths.reverse()
     log(f"Found {len(paths)} paths")
 
     log("Extracting waypoints")
