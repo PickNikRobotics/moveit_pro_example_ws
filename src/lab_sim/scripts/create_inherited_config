@@ -1,0 +1,90 @@
+#!/usr/bin/env python3
+
+import os
+import sys
+from pathlib import Path
+
+def write_file(path, content):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(content)
+    print(f"Created: {path}")
+
+def main():
+    print("Create a new MoveIt Pro Robot Config in the current directory")
+    
+    # Check if package name was provided as command line argument
+    if len(sys.argv) > 1:
+        package = sys.argv[1].strip()
+        print(f"Using package name: {package}")
+    else:
+        package = input("Enter the name for the new robot config package (e.g., my_robot_config): ").strip()
+
+    if not package:
+        print("❌ Package name cannot be empty.")
+        return
+
+    base_path = Path.home() / "user_ws" / "src" / package
+    if base_path.exists():
+        print(f"❌ Package already exists at: {base_path}")
+        return
+
+    print(f"Creating config at: {base_path}")
+    print(f"")
+
+    # Create core files
+    write_file(base_path / "CMakeLists.txt", f"""\
+cmake_minimum_required(VERSION 3.10)
+project({package})
+
+find_package(ament_cmake REQUIRED)
+
+install(DIRECTORY config launch objectives
+  DESTINATION share/${{PROJECT_NAME}}
+)
+
+ament_package()
+""")
+
+    write_file(base_path / "package.xml", f"""\
+<?xml version="1.0"?>
+<package format="3">
+  <name>{package}</name>
+  <version>0.0.1</version>
+  <description>My blank robot config package</description>
+
+  <maintainer email="user@example.com">Your Name</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
+""")
+
+    write_file(base_path / "config" / "config.yaml", f"""\
+based_on_package: lab_sim
+
+objectives:
+  objective_library_paths:
+    example_objective:
+      package_name: "{package}"
+      relative_path: "objectives"
+""")
+
+    write_file(base_path / "launch" / "agent_bridge.launch.xml", """\
+<?xml version="1.0" encoding="UTF-8" ?>
+<launch>
+  <include file="$(find-pkg-share moveit_studio_agent)/launch/studio_agent_bridge.launch.xml"/>
+</launch>
+""")
+
+    # Create empty objectives folder
+    (base_path / "objectives").mkdir(parents=True, exist_ok=True)
+    print(f"Created empty folder: {base_path / 'objectives'}")
+
+    print("Blank robot config created successfully.")
+
+if __name__ == "__main__":
+    main()

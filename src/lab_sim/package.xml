@@ -31,7 +31,7 @@
   <exec_depend>ur_description</exec_depend>
   <exec_depend>ur_robot_driver</exec_depend>
   <exec_depend>velocity_force_controller</exec_depend>
-
+  <depend>python3-tk</depend>
   <test_depend>ament_lint_auto</test_depend>
 
   <test_depend>ament_clang_format</test_depend>
