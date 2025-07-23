@@ -20,6 +20,7 @@
   <TreeNodesModel>
     <SubTree ID="Re-Zero Force-Torque Sensors">
       <MetadataFields>
+        <Metadata runnable="false" />
         <Metadata subcategory="Motion - Execute" />
       </MetadataFields>
     </SubTree>
