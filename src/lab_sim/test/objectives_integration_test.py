@@ -59,9 +59,12 @@ skip_objectives = {
     "Grasp Planning",
     "Joint Diagnostic",
     "Fuse Multiple Views",
+    "MPC Pose Tracking",
+    "MPC Pose Tracking With Point Cloud Avoidance",
     "ML Segment Image from Text Prompt",
     "ML Segment Point Cloud from Clicked Point",
     "ML Auto Grasp Object from Clicked Point",  # Skipped because there is no primary ui to switch to in ci
+    "ML Auto Grasp Object from Text Prompt",
     "Pick up Cube",
     "Place Object",
     "Record Square Trajectory",
