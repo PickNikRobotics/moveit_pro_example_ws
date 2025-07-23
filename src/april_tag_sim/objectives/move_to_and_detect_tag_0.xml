@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Move To and Detect Tag 0">
+  <!--//////////-->
+  <BehaviorTree ID="Move To and Detect Tag 0" _description="">
+    <Control ID="Sequence">
+      <Action
+        ID="CreateStampedPose"
+        stamped_pose="{stamped_pose}"
+        reference_frame="{tag_name}"
+        orientation_xyzw="1;0;0;0"
+        position_xyz="0.;0.0;0.6"
+      />
+      <Action ID="ResetPoseStampedVector" vector="{pose_stamped_vector}" />
+      <Action
+        ID="AddPoseStampedToVector"
+        input="{stamped_pose}"
+        vector="{pose_stamped_vector}"
+      />
+      <Control ID="Fallback">
+        <Action
+          ID="PlanCartesianPath"
+          acceleration_scale_factor="1.000000"
+          blending_radius="0.020000"
+          debug_solution="{debug_solution}"
+          ik_cartesian_space_density="0.010000"
+          ik_joint_space_density="0.100000"
+          joint_trajectory_msg="{joint_trajectory_msg}"
+          path="{pose_stamped_vector}"
+          planning_group_name="manipulator"
+          position_only="false"
+          trajectory_sampling_rate="100"
+          velocity_scale_factor="1.000000"
+        />
+        <Action
+          ID="WaitForUserTrajectoryApproval"
+          cartesian_path_links="grasp_link"
+          solution="{debug_solution}"
+        />
+      </Control>
+      <Action
+        ID="ExecuteFollowJointTrajectory"
+        execute_follow_joint_trajectory_action_name="/joint_trajectory_controller/follow_joint_trajectory"
+        goal_duration_tolerance="-1.000000"
+        goal_position_tolerance="0.000000"
+        goal_time_tolerance="0.000000"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+        trajectory_remainder="{joint_trajectory_remainder}"
+      />
+      <Action
+        ID="GetCameraInfo"
+        message_out="{camera_info}"
+        timeout_sec="5.000000"
+        topic_name="/wrist_camera/camera_info"
+      />
+      <Action
+        ID="GetImage"
+        message_out="{image}"
+        timeout_sec="5.000000"
+        topic_name="/wrist_camera/color"
+      />
+      <Action
+        ID="DetectAprilTags"
+        image="{image}"
+        camera_info="{camera_info}"
+        detections="{detections}"
+        apriltag_family_name="36h11"
+        max_hamming="0"
+        n_threads="1"
+        quad_decimate="2.0"
+        quad_sigma="0.0"
+        refine_edges="true"
+        tag_size="{tag_size}"
+      />
+      <Action
+        ID="GetDetectionPose"
+        detection_pose="{detection_pose}"
+        detections="{detections}"
+        target_id="-1"
+      />
+      <Action
+        ID="TransformPoseFrame"
+        input_pose="{detection_pose}"
+        output_pose="{detection_pose}"
+        target_frame_id="grasp_link"
+      />
+      <Action
+        ID="VisualizePose"
+        marker_lifetime="0.000000"
+        marker_name="pose"
+        marker_size="0.100000"
+        pose="{detection_pose}"
+      />
+      <Action
+        ID="CreateStampedPose"
+        stamped_pose="{stamped_pose}"
+        reference_frame="{tag_name}"
+      />
+      <Action
+        ID="TransformPoseFrame"
+        input_pose="{stamped_pose}"
+        output_pose="{stamped_pose}"
+        target_frame_id="grasp_link"
+      />
+      <Action
+        ID="CalculatePoseOffset"
+        destination_pose="{detection_pose}"
+        source_pose="{stamped_pose}"
+        source_to_destination_pose="{pose_diff}"
+      />
+      <Action ID="Script" code="dir_path := '0degree_runs/'" />
+      <Action ID="Script" code="full_path := dir_path + tag_name" />
+      <Action
+        ID="SavePoseStampedToYaml"
+        message="{pose_diff}"
+        yaml_filename="{full_path}"
+        namespace="{run_counter}"
+        overwrite="false"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Move To and Detect Tag 0">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="AprilTag Detection Analysis - Subtrees" />
+      </MetadataFields>
+      <inout_port name="run_counter" default="{run_counter}" />
+      <inout_port name="tag_name" default="{tag_name}" />
+      <inout_port name="tag_size" default="{tag_size}" />
+    </SubTree>
+  </TreeNodesModel>
+</root>
