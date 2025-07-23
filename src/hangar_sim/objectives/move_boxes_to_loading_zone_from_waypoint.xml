@@ -208,7 +208,7 @@
                     />
                     <Action
                       ID="InitializeMTCTask"
-                      controller_names="/joint_trajectory_controller"
+                      controller_names="joint_trajectory_controller"
                       task="{task}"
                       task_id=""
                       trajectory_monitoring="false"
