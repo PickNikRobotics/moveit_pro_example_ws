@@ -71,7 +71,7 @@
         <Action
           ID="InitializeMTCTask"
           task_id="grasp"
-          controller_names="/joint_trajectory_controller;/robotiq_gripper_controller"
+          controller_names="joint_trajectory_controller;robotiq_gripper_controller"
           task="{mtc_task}"
           trajectory_monitoring="false"
         />
