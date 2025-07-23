@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+
+# Copyright 2025 PickNik Inc.
+# All rights reserved.
+#
+# Unauthorized copying of this code base via any medium is strictly prohibited.
+# Proprietary and confidential.
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
