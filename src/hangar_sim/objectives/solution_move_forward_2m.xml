@@ -24,7 +24,7 @@
       <SubTree
         ID="Move to a StampedPose"
         _collapsed="true"
-        controller_names="/joint_trajectory_controller"
+        controller_names="joint_trajectory_controller"
         target_pose="{stamped_pose}"
       />
     </Control>
