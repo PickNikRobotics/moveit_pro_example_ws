@@ -22,7 +22,7 @@
         link_padding="0.01"
         velocity_scale_factor="1.0"
       />
-      <SubTree ID="Take wrist camera snapshot" _collapsed="true" />
+      <SubTree ID="Take Wrist Camera Snapshot" _collapsed="true" />
       <!--Plan a path to move in straight line towards the button-->
       <Action
         ID="CreateStampedPose"
