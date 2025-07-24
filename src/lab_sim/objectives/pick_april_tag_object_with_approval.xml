@@ -10,9 +10,9 @@
     _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
-      <SubTree ID="Look at table" _collapsed="true" />
+      <SubTree ID="Look at Table" _collapsed="true" />
       <Action ID="ClearSnapshot" />
-      <SubTree ID="Take wrist camera snapshot" _collapsed="true" />
+      <SubTree ID="Take Wrist Camera Snapshot" _collapsed="true" />
       <Control ID="Sequence" name="Setup">
         <SubTree ID="Open Gripper" />
       </Control>
