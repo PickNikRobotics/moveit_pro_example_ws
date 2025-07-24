@@ -9,7 +9,7 @@
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
         ID="InitializeMTCTask"
-        controller_names="/joint_trajectory_controller;/robotiq_gripper_controller"
+        controller_names="joint_trajectory_controller;robotiq_gripper_controller"
         task="{mtc_task}"
         task_id="place_object"
         trajectory_monitoring="false"
