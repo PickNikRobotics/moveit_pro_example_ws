@@ -8,9 +8,9 @@
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree ID="Clear Snapshot" _collapsed="true" />
-      <SubTree ID="Look at table" _collapsed="false" />
+      <SubTree ID="Look at Table" _collapsed="false" />
       <!--Take a snapshot so we have a visualization of the cubes to use in grasp pose correction-->
-      <SubTree ID="Take wrist camera snapshot" _collapsed="true" />
+      <SubTree ID="Take Wrist Camera Snapshot" _collapsed="true" />
       <SubTree ID="Pick object" _collapsed="false" />
     </Control>
   </BehaviorTree>
