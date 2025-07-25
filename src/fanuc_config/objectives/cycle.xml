@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Cycle">
+  <!--//////////-->
+  <BehaviorTree ID="Cycle" _description="" _favorite="false">
+    <Decorator ID="RetryUntilSuccessful" num_attempts="10000">
+      <Control ID="Sequence" name="TopLevelSequence">
+        <SubTree
+          ID="Move to Waypoint"
+          _collapsed="true"
+          acceleration_scale_factor="1.0"
+          controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+          controller_names="joint_trajectory_controller"
+          joint_group_name="manipulator"
+          keep_orientation="false"
+          keep_orientation_tolerance="0.05"
+          link_padding="0.01"
+          seed="0"
+          velocity_scale_factor="1.0"
+          waypoint_name="Up"
+        />
+        <SubTree
+          ID="Move to Waypoint"
+          _collapsed="true"
+          acceleration_scale_factor="1.0"
+          controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+          controller_names="joint_trajectory_controller"
+          joint_group_name="manipulator"
+          keep_orientation="false"
+          keep_orientation_tolerance="0.05"
+          link_padding="0.01"
+          seed="0"
+          velocity_scale_factor="1.0"
+          waypoint_name="Home"
+        />
+        <Action ID="AlwaysFailure" />
+      </Control>
+    </Decorator>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Cycle">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Motion - Execute" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

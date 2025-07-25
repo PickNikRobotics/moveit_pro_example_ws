@@ -5,6 +5,7 @@ build:
   allow-overriding:
     - robotiq_description
     - ur_description
+    - joint_trajectory_controller
   mixin:
     # Enable ccache support
     - ccache
