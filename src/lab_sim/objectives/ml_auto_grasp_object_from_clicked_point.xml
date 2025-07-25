@@ -43,6 +43,7 @@
         message_out="{camera_info}"
         timeout_sec="5.000000"
         topic_name="/wrist_camera/camera_info"
+        publisher_timeout_sec="5.000000"
       />
       <Action
         ID="GetMasks3DFromMasks2D"
@@ -96,6 +97,7 @@
         name="Add y reflected poses"
         reflection_axis="0;1;0;0"
       />
+      <SubTree ID="Add Table to Planning Scene" _collapsed="true" />
       <Decorator
         ID="ForEachUntilSuccess"
         index="{index}"
@@ -126,6 +128,7 @@
           />
         </Control>
       </Decorator>
+      <SubTree ID="Reset Planning Scene" _collapsed="true" />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
