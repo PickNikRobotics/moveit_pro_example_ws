@@ -74,6 +74,7 @@
               mask_erosion="15"
               name="Get grasp pose for a pill bottle"
             />
+            <SubTree ID="Add Table to Planning Scene" _collapsed="true" />
             <SubTree
               ID="Pick from Pose"
               _collapsed="true"
@@ -105,6 +106,7 @@
               place_pose="{current_bottle_place_pose}"
               name="Place pill bottle on table"
             />
+            <SubTree ID="Reset Planning Scene" _collapsed="true" />
           </Control>
         </Decorator>
       </Decorator>
