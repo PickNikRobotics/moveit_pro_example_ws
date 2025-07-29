@@ -116,7 +116,7 @@
         controller_list_action_name="/controller_manager/list_controllers"
         controller_switch_action_name="/controller_manager/switch_controller"
         strictness="1"
-        timeout="0.000000"
+        timeout="-1.0"
       />
       <Control ID="Parallel" failure_count="2" success_count="1">
         <Action
