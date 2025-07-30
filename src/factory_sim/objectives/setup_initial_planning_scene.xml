@@ -13,11 +13,11 @@
         reference_frame="suction_gripper_holder_site"
       />
       <Action
-        ID="AddToolToScene"
-        relative_pose="{suction_tool_pose}"
+        ID="AddURDF"
+        urdf_pose="{suction_tool_pose}"
         package_name="factory_sim"
-        tool_urdf_file_path="description/suction_tool.urdf"
-        tool_name="suction_gripper"
+        urdf_file_path="description/suction_tool.urdf"
+        urdf_name="suction_gripper"
       />
       <Action
         ID="CreateStampedPose"
@@ -25,11 +25,11 @@
         reference_frame="inspection_tool_holder_site"
       />
       <Action
-        ID="AddToolToScene"
-        relative_pose="{inspection_tool_pose}"
+        ID="AddURDF"
+        urdf_pose="{inspection_tool_pose}"
         package_name="factory_sim"
-        tool_urdf_file_path="description/inspection_tool.urdf"
-        tool_name="inspector"
+        urdf_file_path="description/inspection_tool.urdf"
+        urdf_name="inspector"
       />
     </Control>
   </BehaviorTree>
