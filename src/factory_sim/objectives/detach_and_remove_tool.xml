@@ -7,9 +7,9 @@
   >
     <Control ID="Fallback">
       <Decorator ID="ForceFailure">
-        <Action ID="DetachTool" tool_name="{tool_name}" />
+        <Action ID="DetachURDF" urdf_name="{tool_name}" />
       </Decorator>
-      <Action ID="RemoveToolFromScene" tool_name="{tool_name}" />
+      <Action ID="RemoveURDFFromScene" urdf_name="{tool_name}" />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
