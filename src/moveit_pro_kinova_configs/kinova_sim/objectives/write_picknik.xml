@@ -8,10 +8,24 @@
     _hardcoded="false"
   >
     <Control ID="Sequence">
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        controller_names="joint_trajectory_controller"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        seed="0"
+        velocity_scale_factor="1.0"
+        waypoint_name="Home"
+      />
       <Action
         ID="CreateStampedPose"
         reference_frame="base_link"
-        position_xyz="0.4;0.3;0.09"
+        position_xyz="0.4;0.5;0.09"
         orientation_xyzw="0.7073883;-0.7068252;0.0000327;0.0000328"
         stamped_pose="{stamped_pose}"
       />
@@ -26,11 +40,25 @@
           <Action
             ID="SwitchController"
             activate_controllers="joint_trajectory_controller"
+            activate_asap="true"
+            automatic_deactivation="true"
+            controller_list_action_name="/controller_manager/list_controllers"
+            controller_switch_action_name="/controller_manager/switch_controller"
+            strictness="1"
+            timeout="0.000000"
           />
           <Action
             ID="LoadPoseStampedVectorFromYaml"
             file_path="write_picknik_waypoints.yaml"
             output="{pose_stamped_msgs}"
+          />
+          <Action
+            ID="VisualizePath"
+            marker_lifetime="0.000000"
+            marker_name="path"
+            path="{pose_stamped_msgs}"
+            pose_marker_size="0.100000"
+            show_poses="false"
           />
           <Control ID="Fallback">
             <Action
@@ -38,7 +66,7 @@
               path="{pose_stamped_msgs}"
               planning_group_name="manipulator"
               tip_links="grasp_link"
-              tip_offset="0.0;0.0;0.0;0.0;0.0;0.0"
+              tip_offset="0.0;0.0;0.01;0.0;0.0;0.0"
               position_only="false"
               blending_radius="0.001"
               velocity_scale_factor="0.5"
@@ -46,10 +74,13 @@
               trajectory_sampling_rate="100"
               joint_trajectory_msg="{joint_trajectory_msg}"
               debug_solution="{debug_solution}"
+              ik_cartesian_space_density="0.010000"
+              ik_joint_space_density="0.100000"
             />
             <Action
               ID="WaitForUserTrajectoryApproval"
               solution="{debug_solution}"
+              cartesian_path_links="grasp_link"
             />
           </Control>
           <Action
@@ -58,6 +89,8 @@
             joint_trajectory_msg="{joint_trajectory_msg}"
             goal_position_tolerance="0.000000"
             goal_time_tolerance="0.000000"
+            goal_duration_tolerance="-1.000000"
+            trajectory_remainder="{joint_trajectory_remainder}"
           />
         </Control>
       </Control>
