@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="ML Move Boxes to Loading Zone">
   <!--//////////-->
   <BehaviorTree
@@ -38,6 +38,7 @@
                 prompts="small boxes"
                 negative_prompts="gray;gray;rails"
                 erosion_size="2"
+                prompt="{prompt}"
               />
             </Control>
             <Action
