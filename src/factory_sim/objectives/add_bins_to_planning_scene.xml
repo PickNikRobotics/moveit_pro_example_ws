@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Add Bins to Planning Scene">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Add Bins to Planning Scene"
+    _description="Adds the tops of the parts bins to the planning scene to allow collision avoidance. Only the tops are added because parts that are using in planning start in a collision state as they rest on the bin walls and bottom."
+  >
+    <Control ID="Sequence">
+      <Action
+        ID="CreateStampedPose"
+        reference_frame="world"
+        stamped_pose="{world_frame}"
+        name="world frame"
+      />
+      <Action
+        ID="AddURDF"
+        urdf_name="bin_tops"
+        urdf_pose="{world_frame}"
+        package_name="factory_sim"
+        urdf_file_path="description/bin_tops.urdf"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Add Bins to Planning Scene">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Motion - Planning" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
