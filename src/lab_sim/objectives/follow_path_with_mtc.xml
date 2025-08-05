@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Follow Path with MTC">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Follow Path with MTC"
+    _description="An example of planning for a Cartesian path with MTC, including finding a suitable initial arm configuration."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <!--Set an initial frame where to start the task-->
+      <Action
+        ID="CreateStampedPose"
+        reference_frame="world"
+        stamped_pose="{initial_pose}"
+        position_xyz="1.5;0.5;0.8"
+        orientation_xyzw="0.0; 1.0; 0.0; 0.0"
+      />
+      <Action
+        ID="VisualizePose"
+        marker_lifetime="0.000000"
+        marker_name="initial_pose"
+        marker_size="0.100000"
+        pose="{initial_pose}"
+      />
+      <Control ID="Sequence">
+        <!--Define a path as a sequence of PoseStamped messages. Visualize it.-->
+        <Action
+          ID="CreateStampedPose"
+          reference_frame="world"
+          stamped_pose="{path_waypoint_1}"
+          position_xyz="1.25;0.7;0.5"
+          orientation_xyzw="0.0; 1.0; 0.0; 0.0"
+        />
+        <Action
+          ID="AddPoseStampedToVector"
+          input="{path_waypoint_1}"
+          vector="{path}"
+        />
+        <Action
+          ID="CreateStampedPose"
+          reference_frame="world"
+          stamped_pose="{path_waypoint_2}"
+          position_xyz="1.7;0.7;0.5"
+          orientation_xyzw="0.0; 1.0; 0.0; 0.0"
+        />
+        <Action
+          ID="AddPoseStampedToVector"
+          input="{path_waypoint_2}"
+          vector="{path}"
+        />
+        <Action
+          ID="VisualizePath"
+          marker_lifetime="0.000000"
+          marker_name="path"
+          path="{path}"
+          pose_marker_size="0.100000"
+          show_poses="true"
+        />
+      </Control>
+      <!--Define an MTC task to compute IK and move to the first waypoint, and execute the path from there.-->
+      <Action
+        ID="InitializeMTCTask"
+        task="{mtc_task}"
+        trajectory_monitoring="false"
+        controller_names="joint_trajectory_controller"
+        task_id="follow_path"
+      />
+      <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
+      <Action
+        ID="SetupMTCPlanToPose"
+        acceleration_scale_factor="1.000000"
+        ik_frame="grasp_link"
+        keep_orientation="false"
+        keep_orientation_link_names="grasp_link"
+        keep_orientation_tolerance="0.100000"
+        link_padding="0.01"
+        max_iterations="5000"
+        monitored_stage="current state"
+        planning_group_name="manipulator"
+        target_pose="{initial_pose}"
+        task="{mtc_task}"
+        trajectory_sampling_rate="100"
+        velocity_scale_factor="1.000000"
+      />
+      <Action
+        ID="SetupMTCPathIK"
+        acceleration_scale="1.000000"
+        ignore_environment_collisions="false"
+        ik_frame="grasp_link"
+        planning_group_name="manipulator"
+        task="{mtc_task}"
+        velocity_scale="1.000000"
+        path="{path}"
+      />
+      <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
+      <Action
+        ID="ExecuteMTCTask"
+        goal_duration_tolerance="-1.000000"
+        solution="{mtc_solution}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Follow Path with MTC">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Motion - Task Planning" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
