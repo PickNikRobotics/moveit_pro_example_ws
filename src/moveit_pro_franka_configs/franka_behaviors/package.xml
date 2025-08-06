@@ -15,7 +15,9 @@
 
   <depend>moveit_studio_behavior_interface</depend>
   <depend>franka_ros2</depend>
+  <depend>fmt</depend>
   <depend>moveit_studio_behavior</depend>
+  <depend>osqp_eigen</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_cmake_gtest</test_depend>

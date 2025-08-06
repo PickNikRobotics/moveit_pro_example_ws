@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>osqp_eigen</name>
+  <version>0.1.0</version>
+  <description>ROS wrapper package to pull in MuJoCo</description>
+  <maintainer email="paul.gesel@picknik.ai">Paul Gesel</maintainer>
+  <license>TODO</license>
+  <author>Paul Gesel</author>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <export>
+    <build_type>cmake</build_type>
+  </export>
+</package>
