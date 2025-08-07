@@ -13,7 +13,7 @@
       <SubTree
         ID="Move to Waypoint"
         waypoint_name="{pre_pick}"
-        joint_group_name="manipulator"
+        joint_group_name="arm"
         controller_names="joint_trajectory_controller"
         keep_orientation="true"
         keep_orientation_tolerance="0.2"
@@ -26,7 +26,7 @@
       <SubTree
         ID="Move to Waypoint"
         waypoint_name="{pick}"
-        joint_group_name="manipulator"
+        joint_group_name="arm"
         controller_names="joint_trajectory_controller"
         keep_orientation="true"
         keep_orientation_tolerance="0.2"
@@ -44,7 +44,7 @@
       <SubTree
         ID="Move to Waypoint"
         controller_names="joint_trajectory_controller"
-        joint_group_name="manipulator"
+        joint_group_name="arm"
         keep_orientation="true"
         keep_orientation_tolerance="0.2"
         _collapsed="true"
@@ -58,7 +58,7 @@
       <SubTree
         ID="Move to Waypoint"
         controller_names="joint_trajectory_controller"
-        joint_group_name="manipulator"
+        joint_group_name="arm"
         keep_orientation="true"
         keep_orientation_tolerance="0.2"
         _collapsed="true"
@@ -72,7 +72,7 @@
       <SubTree
         ID="Move to Waypoint"
         controller_names="joint_trajectory_controller"
-        joint_group_name="manipulator"
+        joint_group_name="arm"
         keep_orientation="true"
         keep_orientation_tolerance="0.2"
         _collapsed="true"
@@ -87,7 +87,7 @@
       <SubTree
         ID="Move to Waypoint"
         controller_names="joint_trajectory_controller"
-        joint_group_name="manipulator"
+        joint_group_name="arm"
         keep_orientation="true"
         keep_orientation_tolerance="0.2"
         _collapsed="true"

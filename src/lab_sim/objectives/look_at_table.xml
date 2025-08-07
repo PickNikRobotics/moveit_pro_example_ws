@@ -11,7 +11,7 @@
         ID="Move to Waypoint"
         _collapsed="true"
         waypoint_name="Look at Table"
-        joint_group_name="manipulator"
+        joint_group_name="arm"
         controller_names="joint_trajectory_controller"
         use_all_planners="false"
         acceleration_scale_factor="1.0"

@@ -11,7 +11,7 @@
         ID="Move to Waypoint"
         _collapsed="true"
         waypoint_name="Flask 1a - Pre Pick"
-        joint_group_name="manipulator"
+        joint_group_name="arm"
         controller_names="joint_trajectory_controller"
         velocity_scale_factor="1.0"
         acceleration_scale_factor="1.0"

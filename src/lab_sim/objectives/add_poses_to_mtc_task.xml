@@ -65,7 +65,7 @@
       />
       <input_port name="ik_frame" default="grasp_link" />
       <inout_port name="mtc_task" default="{mtc_task}" />
-      <input_port name="planning_group_name" default="manipulator" />
+      <input_port name="planning_group_name" default="arm" />
       <input_port name="target_poses" default="{target_poses}" />
     </SubTree>
   </TreeNodesModel>

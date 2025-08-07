@@ -11,7 +11,7 @@
       <SubTree
         ID="Move to Waypoint"
         waypoint_name="Look at Table"
-        joint_group_name="manipulator"
+        joint_group_name="arm"
         controller_names="joint_trajectory_controller"
       />
       <Action
@@ -27,7 +27,7 @@
             <SubTree
               ID="Move to Waypoint"
               waypoint_name="Pick Cube"
-              joint_group_name="manipulator"
+              joint_group_name="arm"
               controller_names="joint_trajectory_controller"
             />
             <Action
@@ -38,12 +38,12 @@
             <SubTree
               ID="Move to Waypoint"
               waypoint_name="Look at Table"
-              joint_group_name="manipulator"
+              joint_group_name="arm"
               controller_names="joint_trajectory_controller"
             />
             <SubTree
               ID="Move to Waypoint"
-              joint_group_name="manipulator"
+              joint_group_name="arm"
               controller_names="joint_trajectory_controller"
               waypoint_name="Place Cube"
             />
@@ -55,7 +55,7 @@
             <SubTree
               ID="Move to Waypoint"
               waypoint_name="Look at Table"
-              joint_group_name="manipulator"
+              joint_group_name="arm"
               controller_names="joint_trajectory_controller"
             />
           </Control>
@@ -64,7 +64,7 @@
             <SubTree
               ID="Move to Waypoint"
               waypoint_name="Place Cube"
-              joint_group_name="manipulator"
+              joint_group_name="arm"
               controller_names="joint_trajectory_controller"
             />
             <Action
@@ -75,13 +75,13 @@
             <SubTree
               ID="Move to Waypoint"
               waypoint_name="Look at Table"
-              joint_group_name="manipulator"
+              joint_group_name="arm"
               controller_names="joint_trajectory_controller"
             />
             <SubTree
               ID="Move to Waypoint"
               waypoint_name="Pick Cube"
-              joint_group_name="manipulator"
+              joint_group_name="arm"
               controller_names="joint_trajectory_controller"
             />
             <Action
@@ -92,7 +92,7 @@
             <SubTree
               ID="Move to Waypoint"
               waypoint_name="Look at Table"
-              joint_group_name="manipulator"
+              joint_group_name="arm"
               controller_names="joint_trajectory_controller"
             />
           </Control>
