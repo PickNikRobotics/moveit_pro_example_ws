@@ -4,7 +4,7 @@
   <BehaviorTree
     ID="Add Waypoints to MTC Task"
     _description="Retrieves waypoints and adds them to an MTC task for motion planning."
-    joint_group_name="manipulator"
+    joint_group_name="arm"
     mtc_task="{mtc_task}"
   >
     <Control ID="Sequence">
@@ -38,7 +38,7 @@
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Add Waypoints to MTC Task">
-      <input_port name="joint_group_name" default="manipulator" />
+      <input_port name="joint_group_name" default="arm" />
       <inout_port name="mtc_task" default="{mtc_task}" />
       <MetadataFields>
         <Metadata subcategory="Motion - Task Planning" />

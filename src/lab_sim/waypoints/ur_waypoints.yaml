@@ -3,7 +3,7 @@
   joint_group_names:
   - gripper
   - linear_actuator
-  - manipulator
+  - arm
   joint_state:
     effort: []
     header:
@@ -46,7 +46,7 @@
   joint_group_names:
   - gripper
   - linear_actuator
-  - manipulator
+  - arm
   joint_state:
     effort: []
     header:
@@ -89,7 +89,7 @@
   joint_group_names:
   - gripper
   - linear_actuator
-  - manipulator
+  - arm
   joint_state:
     effort: []
     header:
@@ -132,7 +132,7 @@
   joint_group_names:
   - gripper
   - linear_actuator
-  - manipulator
+  - arm
   joint_state:
     effort: []
     header:
@@ -175,7 +175,7 @@
   joint_group_names:
   - gripper
   - linear_actuator
-  - manipulator
+  - arm
   joint_state:
     effort: []
     header:
@@ -218,7 +218,7 @@
   joint_group_names:
   - gripper
   - linear_actuator
-  - manipulator
+  - arm
   joint_state:
     effort: []
     header:
@@ -261,7 +261,7 @@
   joint_group_names:
   - gripper
   - linear_actuator
-  - manipulator
+  - arm
   joint_state:
     effort: []
     header:
@@ -304,7 +304,7 @@
   joint_group_names:
   - gripper
   - linear_actuator
-  - manipulator
+  - arm
   joint_state:
     effort: []
     header:
@@ -347,7 +347,7 @@
   joint_group_names:
   - gripper
   - linear_actuator
-  - manipulator
+  - arm
   joint_state:
     effort: []
     header:
@@ -390,7 +390,7 @@
   joint_group_names:
   - gripper
   - linear_actuator
-  - manipulator
+  - arm
   joint_state:
     effort: []
     header:
@@ -433,7 +433,7 @@
   joint_group_names:
   - gripper
   - linear_actuator
-  - manipulator
+  - arm
   joint_state:
     effort: []
     header:
@@ -476,7 +476,7 @@
   joint_group_names:
   - gripper
   - linear_actuator
-  - manipulator
+  - arm
   joint_state:
     effort: []
     header:
@@ -519,7 +519,7 @@
   joint_group_names:
   - gripper
   - linear_actuator
-  - manipulator
+  - arm
   joint_state:
     effort: []
     header:
@@ -562,7 +562,7 @@
   joint_group_names:
   - gripper
   - linear_actuator
-  - manipulator
+  - arm
   joint_state:
     effort: []
     header:
@@ -605,7 +605,7 @@
   joint_group_names:
   - gripper
   - linear_actuator
-  - manipulator
+  - arm
   joint_state:
     effort: []
     header:
@@ -648,7 +648,7 @@
   joint_group_names:
   - gripper
   - linear_actuator
-  - manipulator
+  - arm
   joint_state:
     effort: []
     header:
@@ -691,7 +691,7 @@
   joint_group_names:
   - gripper
   - linear_actuator
-  - manipulator
+  - arm
   joint_state:
     effort: []
     header:
@@ -734,7 +734,7 @@
   joint_group_names:
   - gripper
   - linear_actuator
-  - manipulator
+  - arm
   joint_state:
     effort: []
     header:
@@ -777,7 +777,7 @@
   joint_group_names:
   - gripper
   - linear_actuator
-  - manipulator
+  - arm
   joint_state:
     effort: []
     header:
@@ -820,7 +820,7 @@
   joint_group_names:
   - gripper
   - linear_actuator
-  - manipulator
+  - arm
   joint_state:
     effort: []
     header:
@@ -863,7 +863,7 @@
   joint_group_names:
   - gripper
   - linear_actuator
-  - manipulator
+  - arm
   joint_state:
     effort: []
     header:
@@ -906,7 +906,7 @@
   joint_group_names:
   - gripper
   - linear_actuator
-  - manipulator
+  - arm
   joint_state:
     effort: []
     header:
@@ -949,7 +949,7 @@
   joint_group_names:
   - gripper
   - linear_actuator
-  - manipulator
+  - arm
   joint_state:
     effort: []
     header:
@@ -992,7 +992,7 @@
   joint_group_names:
   - gripper
   - linear_actuator
-  - manipulator
+  - arm
   joint_state:
     effort: []
     header:
@@ -1035,7 +1035,7 @@
   joint_group_names:
   - gripper
   - linear_actuator
-  - manipulator
+  - arm
   joint_state:
     effort: []
     header:
@@ -1078,7 +1078,7 @@
   joint_group_names:
   - gripper
   - linear_actuator
-  - manipulator
+  - arm
   joint_state:
     effort: []
     header:
@@ -1121,7 +1121,7 @@
   joint_group_names:
   - gripper
   - linear_actuator
-  - manipulator
+  - arm
   joint_state:
     effort: []
     header:
@@ -1164,7 +1164,7 @@
   joint_group_names:
   - gripper
   - linear_actuator
-  - manipulator
+  - arm
   joint_state:
     effort: []
     header:
@@ -1207,7 +1207,7 @@
   joint_group_names:
   - gripper
   - linear_actuator
-  - manipulator
+  - arm
   joint_state:
     effort: []
     header:

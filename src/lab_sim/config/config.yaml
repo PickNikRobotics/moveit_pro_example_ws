@@ -20,6 +20,10 @@ hardware:
       - mujoco_viewer: false
 
 moveit_params:
+  joint_group_name: "arm"
+  kinematics:
+    package: "lab_sim"
+    path: "config/moveit/pose_ik_distance.yaml"
   servo:
     package: "lab_sim"
     path: "config/moveit/ur_servo.yaml"
