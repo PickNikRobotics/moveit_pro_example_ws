@@ -18,7 +18,7 @@
         clipseg_model_path="models/clipseg.onnx"
         erosion_size="2"
         masks_visualization_topic="/masks_visualization"
-        model_package="lab_sim"
+        model_package="moveit_pro_clipseg"
         threshold="0.15"
         prompts="an object"
         image_topic_name="/wrist_camera/color"
