@@ -19,7 +19,7 @@
         erosion_size="2"
         masks_visualization_topic="/masks_visualization"
         model_package="moveit_pro_clipseg"
-        threshold="0.28"
+        threshold="0.15"
         prompts="an object"
         image_topic_name="/wrist_camera/color"
         masks2d="{masks2d}"
