@@ -13,6 +13,13 @@
         waypoint_name="View Satellite"
         joint_group_name="manipulator"
         controller_names="joint_trajectory_controller"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        seed="0"
+        velocity_scale_factor="1.0"
       />
       <Action ID="ClearSnapshot" />
       <SubTree ID="Open Gripper" _collapsed="true" />
@@ -221,6 +228,13 @@
         vector="{pose_stamped_vector}"
         input="{hole_object}"
       />
+      <Action
+        ID="VisualizePose"
+        marker_lifetime="0.000000"
+        marker_name="pose"
+        marker_size="0.100000"
+        pose="{hole_object}"
+      />
       <Control ID="Fallback">
         <Action
           ID="PlanCartesianPath"
@@ -234,13 +248,21 @@
           tip_links="grasp_link"
           planning_group_name="manipulator"
           path="{pose_stamped_vector}"
+          ik_cartesian_space_density="0.010000"
+          ik_joint_space_density="0.100000"
+          tip_offset="0;0;0.05;0;0;0"
         />
         <Action
           ID="WaitForUserTrajectoryApproval"
           solution="{debug_solution}"
+          cartesian_path_links="grasp_link"
         />
       </Control>
-      <Action ID="WaitForUserTrajectoryApproval" solution="{debug_solution}" />
+      <Action
+        ID="WaitForUserTrajectoryApproval"
+        solution="{debug_solution}"
+        cartesian_path_links="grasp_link"
+      />
       <Control ID="Fallback">
         <Action
           ID="ExecuteFollowJointTrajectory"
@@ -248,6 +270,8 @@
           execute_follow_joint_trajectory_action_name="/joint_trajectory_controller/follow_joint_trajectory"
           goal_time_tolerance="1.0"
           goal_position_tolerance="0.01"
+          goal_duration_tolerance="-1.000000"
+          trajectory_remainder="{joint_trajectory_remainder}"
         />
         <Action ID="AlwaysSuccess" />
       </Control>
