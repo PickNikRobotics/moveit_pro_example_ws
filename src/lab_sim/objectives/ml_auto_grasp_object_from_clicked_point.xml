@@ -34,7 +34,7 @@
         image_topic_name="/wrist_camera/color"
         masks_visualization_topic="/masks_visualization"
         masks2d="{masks2d}"
-        model_package="moveit_pro_clipseg"
+        model_package="lab_sim"
         pixel_coords="{pixel_coords}"
         decoder_model_path="models/decoder.onnx"
         name="Ask the user to pick an object"
@@ -79,7 +79,7 @@
         grasps="{grasps}"
         number_of_grasps_to_return="10"
         point_cloud="{point_cloud_fragment}"
-        model_package="moveit_pro_clipseg"
+        model_package="lab_sim"
         model_path="models/l2g.onnx"
       />
       <SubTree
