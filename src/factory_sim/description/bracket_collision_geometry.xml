@@ -1,0 +1,93 @@
+<mujoco model="bracket_collision_geometry">
+  <!-- 5 Box collision primitives -->
+  <!-- starting from the left (pointy end) -->
+  <!-- top cheek -->
+  <body name="bracket" pos="-0.42 0.5 0.35" euler="0.0 0.0 0.0">
+    <joint type="free" damping="0.0001" />
+    <geom
+      type="box"
+      size="0.0530875 0.025 0.00762"
+      pos="0.072240 -0.045944 0.00762"
+      euler="0 0 0.4593"
+      friction="0.1 0.1 0.1"
+      density="1000"
+      group="3"
+    />
+    <!-- bottom cheek -->
+    <geom
+      type="box"
+      size="0.0427435 0.025 0.00762"
+      pos="0.056576 -0.097904 0.00762"
+      euler="0 0 -0.7275"
+      friction="0.1 0.1 0.1"
+      density="1000"
+      group="3"
+    />
+    <!-- middle box -->
+    <geom
+      type="box"
+      size="0.057278 0.029 0.00762"
+      pos="0.126243 -0.070218 0.00762"
+      euler="0 0 0"
+      friction="0.1 0.1 0.1"
+      density="1000"
+      group="3"
+    />
+    <!-- top butt -->
+    <geom
+      type="box"
+      size="0.027879 0.025 0.00762"
+      pos="0.136622 -0.025 0.00762"
+      euler="0 0 0"
+      friction="0.1 0.1 0.1"
+      density="1000"
+      group="3"
+    />
+    <!-- bottom butt -->
+    <geom
+      type="box"
+      size="0.048879 0.025 0.00762"
+      pos="0.120751 -0.120 0.00762"
+      euler="0 0 0"
+      friction="0.1 0.1 0.1"
+      density="1000"
+      group="3"
+    />
+
+    <!-- 3 Cylinder collision primitives -->
+    <!-- size="radius half_length" and default axis along Z -->
+    <!-- pointy side -->
+    <geom
+      type="cylinder"
+      size="0.025 0.00762"
+      pos="0.024654 -0.069478 0.00762"
+      friction="0.1 0.1 0.1"
+      density="1000"
+      group="3"
+    />
+    <!-- butts side -->
+    <geom
+      type="cylinder"
+      size="0.025 0.00762"
+      pos="0.1645 -0.025 0.00762"
+      friction="0.1 0.1 0.1"
+      density="1000"
+      group="3"
+    />
+    <geom
+      type="cylinder"
+      size="0.025 0.00762"
+      pos="0.16963 -0.120 0.00762"
+      friction="0.1 0.1 0.1"
+      density="1000"
+      group="3"
+    />
+    <geom
+      contype="0"
+      conaffinity="0"
+      type="mesh"
+      mesh="bracket"
+      material="sheet_metal"
+    />
+  </body>
+</mujoco>
