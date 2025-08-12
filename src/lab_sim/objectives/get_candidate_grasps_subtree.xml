@@ -12,18 +12,21 @@
         topic_name="{camera_image_topic}"
         timeout_sec="5.000000"
         message_out="{image}"
+        publisher_timeout_sec="5.000000"
       />
       <Action
         ID="GetPointCloud"
         topic_name="{camera_points_topic}"
         timeout_sec="5.000000"
         message_out="{point_cloud}"
+        publisher_timeout_sec="5.000000"
       />
       <Action
         ID="GetCameraInfo"
         topic_name="{camera_info_topic}"
         message_out="{camera_info}"
         timeout_sec="5.000000"
+        publisher_timeout_sec="5.000000"
       />
       <Action
         ID="GetMasks2DFromTextQuery"
@@ -65,7 +68,7 @@
             pixel_coords="{center2d}"
             decoder_model_path="models/decoder.onnx"
             encoder_model_path="models/sam2_hiera_large_encoder.onnx"
-            model_package="moveit_pro_clipseg"
+            model_package="lab_sim"
           />
         </Control>
       </Decorator>
@@ -115,7 +118,7 @@
         grasps="{grasps}"
         number_of_grasps_to_return="10"
         point_cloud="{point_cloud_fragment}"
-        model_package="moveit_pro_clipseg"
+        model_package="lab_sim"
         model_path="models/l2g.onnx"
       />
     </Control>

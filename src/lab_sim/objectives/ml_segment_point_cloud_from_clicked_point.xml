@@ -18,7 +18,7 @@
         encoder_model_path="models/sam2_hiera_large_encoder.onnx"
         image_topic_name="/wrist_camera/color"
         masks_visualization_topic="/masks_visualization"
-        model_package="moveit_pro_clipseg"
+        model_package="lab_sim"
         points_topic_name="/wrist_camera/points"
       />
     </Control>
