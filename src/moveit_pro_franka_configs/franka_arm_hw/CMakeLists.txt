@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(franka_dual_arm_config_hw)
+project(franka_arm_hw)
 
 find_package(ament_cmake REQUIRED)
 
@@ -8,8 +8,8 @@ install(
     config
     description
     launch
-    waypoints
     objectives
+    waypoints
   DESTINATION
     share/${PROJECT_NAME}
 )
