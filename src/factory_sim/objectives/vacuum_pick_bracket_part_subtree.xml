@@ -23,14 +23,6 @@
         name="Create approach pose before straight pick"
       />
       <Action
-        ID="VisualizePose"
-        marker_lifetime="0.000000"
-        marker_name="approach_pose"
-        marker_size="0.100000"
-        pose="{approach_pose}"
-        marker_text="gripper approach pose"
-      />
-      <Action
         ID="InitializeMTCTask"
         task="{mtc_task}"
         trajectory_monitoring="false"

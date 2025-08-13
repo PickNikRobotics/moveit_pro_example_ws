@@ -3,7 +3,7 @@
   <!--//////////-->
   <BehaviorTree
     ID="Pick Brackets from Left Bin"
-    _description=""
+    _description="Picks brackets from the left bin, and drops them in the right bin."
     _favorite="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
@@ -175,10 +175,6 @@
     <SubTree ID="Pick Brackets from Left Bin">
       <MetadataFields>
         <Metadata subcategory="Application - Advanced Examples" />
-        <Metadata runnable="true" />
-      </MetadataFields>
-      <MetadataFields>
-        <Metadata subcategory="Perception - 3D Point Cloud" />
         <Metadata runnable="true" />
       </MetadataFields>
     </SubTree>
