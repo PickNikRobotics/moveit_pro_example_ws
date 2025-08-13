@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Visualize Bins and Jig Subtree">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Visualize Bins and Jig Subtree"
+    _description="Captures scene point cloud and crops out everything except the parts bins and jig and allows an additional point cloud to be displayed."
+  >
+    <Control ID="Sequence">
+      <Action
+        ID="GetPointCloud"
+        topic_name="/scene_camera/points"
+        message_out="{scene_point_cloud}"
+        timeout_sec="15.000000"
+        publisher_timeout_sec="5.000000"
+      />
+      <Action
+        ID="CreateStampedPose"
+        reference_frame="world"
+        stamped_pose="{bin_table_center}"
+        position_xyz="0;0.6;0.2"
+      />
+      <Action
+        ID="CreateStampedPose"
+        reference_frame="world"
+        stamped_pose="{jig_center}"
+        position_xyz="-0.4;-0.4;0.2"
+      />
+      <Action
+        ID="CropPointsInBox"
+        crop_box_centroid_pose="{bin_table_center}"
+        point_cloud="{scene_point_cloud}"
+        point_cloud_cropped="{bin_table_cloud}"
+        crop_box_size="1;0.7;0.5"
+      />
+      <Action
+        ID="CropPointsInBox"
+        crop_box_centroid_pose="{jig_center}"
+        point_cloud="{scene_point_cloud}"
+        point_cloud_cropped="{jig_cloud}"
+        crop_box_size="0.35;0.5;0.3"
+      />
+      <Action
+        ID="TransformPointCloudFrame"
+        input_cloud="{bin_table_cloud}"
+        output_cloud="{bin_table_cloud}"
+        target_frame="world"
+      />
+      <Action
+        ID="TransformPointCloudFrame"
+        input_cloud="{jig_cloud}"
+        output_cloud="{jig_cloud}"
+        target_frame="world"
+      />
+      <Action ID="ResetVector" vector="{bin_jig_cloud_vector}" />
+      <Action
+        ID="AddPointCloudToVector"
+        point_cloud="{bin_table_cloud}"
+        point_cloud_vector="{bin_jig_cloud_vector}"
+      />
+      <Action
+        ID="AddPointCloudToVector"
+        point_cloud="{jig_cloud}"
+        point_cloud_vector="{bin_jig_cloud_vector}"
+      />
+      <Decorator
+        ID="ForEach"
+        index="{index}"
+        out="{additional_cloud}"
+        vector_in="{additional_clouds}"
+      >
+        <Control ID="Sequence">
+          <Action
+            ID="TransformPointCloudFrame"
+            input_cloud="{additional_cloud}"
+            output_cloud="{additional_cloud}"
+            target_frame="world"
+          />
+          <Action
+            ID="AddPointCloudToVector"
+            point_cloud="{additional_cloud}"
+            point_cloud_vector="{bin_jig_cloud_vector}"
+          />
+        </Control>
+      </Decorator>
+      <Action
+        ID="MergePointClouds"
+        align_point_clouds="false"
+        grid_resolution_meters="0.010000"
+        icp_correspondence_distance="0.050000"
+        icp_max_iterations="20"
+        merged_cloud="{bin_jig_cloud}"
+        point_clouds="{bin_jig_cloud_vector}"
+      />
+      <Action ID="ClearSnapshot" />
+      <Action
+        ID="SendPointCloudToUI"
+        point_cloud="{bin_jig_cloud}"
+        pcd_topic="/pcd_pointcloud_captures"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Visualize Bins and Jig Subtree">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Perception - 3D Point Cloud" />
+      </MetadataFields>
+      <inout_port
+        name="additional_clouds"
+        default="{additional_clouds}"
+        type="std::vector&lt;sensor_msgs::msg::PointCloud2_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;sensor_msgs::msg::PointCloud2_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"
+      >
+        Additional point clouds to merge into the bin and jig scene to visualize
+        it in that context. Useful for showing registered point clouds.
+      </inout_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>

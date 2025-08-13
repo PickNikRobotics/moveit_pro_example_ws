@@ -254,40 +254,38 @@
       <geom type="box" size="0.2 0.1 0.005" material="wood" />
       <freejoint />
     </body>
-    <!-- x -0.05-0.025 -->
-    <!-- z 0.225+.05+.0001 -->
-    <body name="stud1" pos="-0.075 -0.4 0.2751">
-      <geom type="box" size="0.025 0.1 0.05" material="wood" />
-      <freejoint />
-    </body>
-    <!-- x -0.45+0.025 -->
-    <!-- z 0.225+.05+.0001 -->
-    <body name="stud2" pos="-0.425 -0.4 0.2751">
-      <geom type="box" size="0.025 0.1 0.05" material="wood" />
-      <freejoint />
-    </body>
 
-    <!-- Left stud jig -->
-    <!-- x -0.45-0.01-0.0001 -->
-    <!-- z 0.225+.025 -->
     <body name="jig1_1" pos="-0.4601 -0.4 0.25">
-      <geom type="cylinder" size="0.01 0.025" rgba="0.1 0.1 0.1 1" />
-    </body>
-    <!-- x -0.4+0.01+0.0001 -->
-    <body name="jig1_2" pos="-0.3899 -0.4 0.25">
-      <geom type="cylinder" size="0.01 0.025" rgba="0.1 0.1 0.1 1" />
-    </body>
-    <!-- y -0.5-0.01-0.0001 -->
-    <body name="jig1_3" pos="-0.425 -0.5101 0.25">
-      <geom type="cylinder" size="0.01 0.025" rgba="0.1 0.1 0.1 1" />
-    </body>
-    <!-- y -0.3+0.01+0.0001 -->
-    <body name="jig1_4" pos="-0.425 -0.2899 0.25">
-      <geom type="cylinder" size="0.01 0.025" rgba="0.1 0.1 0.1 1" />
+      <geom
+        type="ellipsoid"
+        size="0.005 0.005 0.035"
+        pos="0 0 -0.005"
+        rgba="1 0.6 0 1"
+      />
+      <geom
+        type="cylinder"
+        size="0.005 0.025"
+        pos="0 0 -0.030"
+        rgba="1. 0.6 0. 1"
+      />
+      <site name="jig_post1" />
     </body>
 
-    <!-- Right stud jig -->
-    <!-- TODO Decide if this would be useful -->
+    <body name="jig1_2" pos="-0.3951 -0.40283 0.25">
+      <geom
+        type="ellipsoid"
+        size="0.005 0.005 0.035"
+        pos="0 0 -0.005"
+        rgba="1 0.6 0 1"
+      />
+      <geom
+        type="cylinder"
+        size="0.005 0.025"
+        pos="0 0 -0.030"
+        rgba="1. 0.6 0. 1"
+      />
+      <site name="jig_post2" />
+    </body>
 
     <!--  -->
     <!-- REGISTER AND RASTERIZE SCENARIO -->
