@@ -6,20 +6,13 @@
     _description="Assuming the vacuum gripper is engaged with a bracket part, moves over the right bin and drops the part."
   >
     <Control ID="Sequence">
+      <!--The drop pose is at a 5 degree tilt so it doesn't drop straight into the bin or on top of another part. Simulator instabilities can cause parts to jump when dropped perfectly flat.-->
       <Action
         ID="CreateStampedPose"
         reference_frame="world"
         stamped_pose="{drop_pose}"
-        orientation_xyzw="0.707;0.707;0;0"
+        orientation_xyzw="-0.706; -0.706; -0.031; -0.031"
         position_xyz="0.23;0.54;0.65"
-      />
-      <Action
-        ID="VisualizePose"
-        marker_lifetime="0.000000"
-        marker_name="drop_pose"
-        marker_size="0.100000"
-        pose="{drop_pose}"
-        marker_text="bracket drop pose"
       />
       <Action
         ID="InitializeMTCTask"
@@ -27,6 +20,7 @@
         trajectory_monitoring="false"
         controller_names="joint_trajectory_controller"
         task_id="drop_task"
+        timeout="-1.000000"
       />
       <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
       <Action
