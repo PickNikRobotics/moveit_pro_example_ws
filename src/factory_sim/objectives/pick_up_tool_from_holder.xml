@@ -64,9 +64,9 @@
         timeout="10"
       />
       <Action
-        ID="AttachURDF"
+        ID="AttachTool"
         parent_link_name="tool0"
-        urdf_name="{tool_name}"
+        tool_name="{tool_name}"
         allowed_collision_links="link_5;link_6"
       />
       <SubTree ID="Retract" _collapsed="true" distance="0.35" />

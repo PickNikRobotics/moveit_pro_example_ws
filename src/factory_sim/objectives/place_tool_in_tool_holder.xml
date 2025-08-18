@@ -76,7 +76,7 @@
         gripper_command_action_name="/tool_attach_controller/gripper_cmd"
         timeout="10"
       />
-      <Action ID="DetachURDF" urdf_name="{tool_name}" />
+      <Action ID="DetachTool" tool_name="{tool_name}" />
       <SubTree ID="Retract" _collapsed="true" distance="0.35" />
     </Control>
   </BehaviorTree>
