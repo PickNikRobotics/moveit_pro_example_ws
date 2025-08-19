@@ -42,7 +42,7 @@
         ID="SetupMTCIgnoreCollisionsBetweenObjects"
         allow_collision="true"
         task="{mtc_task}"
-        object_names="link_5;link_g;suction_gripper"
+        object_names="link_5;link_6;suction_gripper"
       />
       <Action
         ID="SetupMTCPlanToPose"
