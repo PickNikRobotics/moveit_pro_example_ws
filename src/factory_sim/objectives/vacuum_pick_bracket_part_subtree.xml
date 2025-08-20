@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Vacuum Pick Bracket Part Subtree">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Vacuum Pick Bracket Part Subtree"
+    _description="Picks the bracket part using vacuum gripper.&#10;The pick and approach poses specific to the bracket part are hardcoded into this subtree."
+  >
+    <Control ID="Sequence" name="">
+      <SubTree ID="Activate Vacuum" _collapsed="true" />
+      <Action
+        ID="TransformPose"
+        input_pose="{bracket_part_pose}"
+        output_pose="{pick_pose}"
+        translation_xyz=".125;-0.07;0.01"
+        name="Create pick pose for the bracket part"
+      />
+      <Action
+        ID="TransformPose"
+        input_pose="{pick_pose}"
+        output_pose="{approach_pose}"
+        translation_xyz="0;0;0.15"
+        quaternion_xyzw="-0.0; -1.0; -0.0; -0.0"
+        name="Create approach pose before straight pick"
+      />
+      <Action
+        ID="VisualizePose"
+        marker_lifetime="0.000000"
+        marker_name="approach_pose"
+        marker_size="0.100000"
+        pose="{approach_pose}"
+        marker_text="gripper approach pose"
+      />
+      <Action
+        ID="InitializeMTCTask"
+        task="{mtc_task}"
+        trajectory_monitoring="false"
+        controller_names="joint_trajectory_controller"
+        task_id="pick_part"
+      />
+      <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
+      <Action
+        ID="SetupMTCIgnoreCollisionsBetweenObjects"
+        allow_collision="true"
+        task="{mtc_task}"
+        object_names="link_5;link_6;suction_gripper"
+      />
+      <Action
+        ID="SetupMTCPlanToPose"
+        acceleration_scale_factor="1.000000"
+        ik_frame="tool0"
+        keep_orientation="false"
+        keep_orientation_link_names="tool0"
+        keep_orientation_tolerance="0.100000"
+        link_padding="0.0100000"
+        max_iterations="5000"
+        monitored_stage="current state"
+        planning_group_name="manipulator"
+        target_pose="{approach_pose}"
+        task="{mtc_task}"
+        trajectory_sampling_rate="100"
+        velocity_scale_factor="1.000000"
+      />
+      <Action
+        ID="SetupMTCMoveAlongFrameAxis"
+        acceleration_scale="0.5"
+        axis_frame="tool0"
+        axis_x="0.000000"
+        axis_y="0.000000"
+        axis_z="1.000000"
+        hand_frame="tool0"
+        ignore_environment_collisions="false"
+        max_distance="0.055"
+        min_distance="0.055"
+        planning_group_name="manipulator"
+        task="{mtc_task}"
+        velocity_scale="1.000000"
+        name="This move is done to push the vacuum gripper into the part a little to get it to collide. This causes the mujoco weld to activate. An improvement would be to detect the force on the gripper and stop"
+      />
+      <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
+      <Action
+        ID="ExecuteMTCTask"
+        goal_duration_tolerance="-1.000000"
+        solution="{mtc_solution}"
+      />
+      <Action
+        ID="AddURDF"
+        urdf_name="single_bracket_part"
+        urdf_pose="{bracket_part_pose}"
+        package_name="factory_sim"
+        urdf_file_path="description/simple_bracket_collision_geometry.urdf"
+      />
+      <Action
+        ID="AttachURDF"
+        urdf_name="single_bracket_part"
+        allowed_collision_links="link_5;link_6"
+        parent_link_name="tool0"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Vacuum Pick Bracket Part Subtree">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Motion - Execute" />
+      </MetadataFields>
+      <inout_port
+        name="bracket_part_pose"
+        default="{bracket_part_pose}"
+        type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"
+      >
+        Origin pose of the bracket part urdf.
+      </inout_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>
