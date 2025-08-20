@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Vacuum Drop Bracket Part Subtree">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Vacuum Drop Bracket Part Subtree"
+    _description="Assuming the vacuum gripper is engaged with a bracket part, moves over the right bin and drops the part."
+  >
+    <Control ID="Sequence">
+      <Action
+        ID="CreateStampedPose"
+        reference_frame="world"
+        stamped_pose="{drop_pose}"
+        orientation_xyzw="0.707;0.707;0;0"
+        position_xyz="0.23;0.54;0.65"
+      />
+      <Action
+        ID="VisualizePose"
+        marker_lifetime="0.000000"
+        marker_name="drop_pose"
+        marker_size="0.100000"
+        pose="{drop_pose}"
+        marker_text="bracket drop pose"
+      />
+      <Action
+        ID="InitializeMTCTask"
+        task="{mtc_task}"
+        trajectory_monitoring="false"
+        controller_names="joint_trajectory_controller"
+        task_id="drop_task"
+      />
+      <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
+      <Action
+        ID="SetupMTCIgnoreCollisionsBetweenObjects"
+        allow_collision="true"
+        task="{mtc_task}"
+        object_names="link_5;link_6;suction_gripper"
+      />
+      <Action
+        ID="SetupMTCPlanToPose"
+        acceleration_scale_factor="0.5"
+        ik_frame="tool0"
+        keep_orientation="false"
+        keep_orientation_link_names="tool0"
+        keep_orientation_tolerance="0.100000"
+        link_padding="0.0100000"
+        max_iterations="5000"
+        monitored_stage="current state"
+        planning_group_name="manipulator"
+        target_pose="{drop_pose}"
+        task="{mtc_task}"
+        trajectory_sampling_rate="100"
+        velocity_scale_factor="1.000000"
+      />
+      <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
+      <Action
+        ID="ExecuteMTCTask"
+        goal_duration_tolerance="-1.000000"
+        solution="{mtc_solution}"
+      />
+      <SubTree ID="Deactivate Vacuum" _collapsed="true" />
+      <SubTree
+        ID="Detach and Remove Tool"
+        _collapsed="true"
+        tool_name="single_bracket_part"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Vacuum Drop Bracket Part Subtree">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Motion - Execute" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
