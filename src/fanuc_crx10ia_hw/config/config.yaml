@@ -32,10 +32,10 @@ hardware:
   # [Required]
   robot_description:
     urdf:
-      package: "fanuc_config"
+      package: "fanuc_crx10ia_hw"
       path: "description/crx10ia.urdf.xacro"
     srdf:
-      package: "fanuc_config"
+      package: "fanuc_crx10ia_hw"
       path: "config/moveit/crx10ia.srdf"
     # Specify any additional parameters required for the URDF.
     # Many of these are specific to the descriptions packages, and can be customized as needed.
@@ -58,25 +58,25 @@ moveit_params:
   joint_group_name: "manipulator"
 
   ompl_planning:
-    package: "fanuc_config"
+    package: "fanuc_crx10ia_hw"
     path: "config/moveit/ompl_planning.yaml"
   stomp_planning:
-    package: "fanuc_config"
+    package: "fanuc_crx10ia_hw"
     path: "config/moveit/stomp_planning.yaml"
   kinematics:
-    package: "fanuc_config"
+    package: "fanuc_crx10ia_hw"
     path: "config/moveit/pose_ik_distance.yaml"
   servo:
-    package: "fanuc_config"
+    package: "fanuc_crx10ia_hw"
     path: "config/moveit/servo.yaml"
   joint_limits:
-    package: "fanuc_config"
+    package: "fanuc_crx10ia_hw"
     path: "config/moveit/joint_limits.yaml"
   servo_joint_limits:
-    package: "fanuc_config"
+    package: "fanuc_crx10ia_hw"
     path: "config/moveit/joint_limits_servo.yaml"
   pose_jog:
-    package: "fanuc_config"
+    package: "fanuc_crx10ia_hw"
     path: "config/moveit/pose_jog.yaml"
 
   publish:
@@ -95,7 +95,7 @@ moveit_params:
 # [Required, if using ros2_control]
 ros2_control:
   config:
-    package: "fanuc_config"
+    package: "fanuc_crx10ia_hw"
     path: "config/control/ros2_control.yaml"
   # MoveIt Pro will load and activate these controllers at start up to ensure they are available.
   # If not specified, it is up to the user to ensure the appropriate controllers are active and available
@@ -135,11 +135,11 @@ objectives:
     perception_objectives:
       package_name: "moveit_pro_objectives"
       relative_path: "objectives/perception"
-    sim_objectives:
-      package_name: "fanuc_config"
+    hw_objectives:
+      package_name: "fanuc_crx10ia_hw"
       relative_path: "objectives"
   # Specify the location of the saved waypoints file.
   # [Required]
   waypoints_file:
-    package_name: "fanuc_config"
+    package_name: "fanuc_crx10ia_hw"
     relative_path: "waypoints/waypoints.yaml"

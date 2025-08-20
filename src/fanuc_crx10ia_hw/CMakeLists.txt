@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(fanuc_config)
+project(fanuc_crx10ia_hw)
 
 find_package(ament_cmake REQUIRED)
 

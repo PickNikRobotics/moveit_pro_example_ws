@@ -17,8 +17,17 @@
   </xacro:unless>
 
   <link name="world"/>
+
+  <link name="grasp_base"/>
   <link name="grasp_link"/>
-  <xacro:crx10ia parent="world" child="grasp_link">
+  <joint name="grasp_base-grasp_link" type="fixed">
+    <origin xyz="0 0 0" rpy="${radians(90)} 0 ${radians(90)}" />
+    <parent link="grasp_base" />
+    <child link="grasp_link" />
+  </joint>
+
+
+  <xacro:crx10ia parent="world" child="grasp_base">
     <origin xyz="0 0 0" rpy="0 0 0"/>
   </xacro:crx10ia>
 

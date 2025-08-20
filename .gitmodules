@@ -33,3 +33,7 @@
 [submodule "src/external_dependencies/fanuc_description"]
 	path = src/external_dependencies/fanuc_description
 	url = https://github.com/FANUC-CORPORATION/fanuc_description.git
+[submodule "src/external_dependencies/ros2_controllers"]
+	path = src/external_dependencies/ros2_controllers
+	url = git@github.com:ros-controls/ros2_controllers.git
+	branch = humble
