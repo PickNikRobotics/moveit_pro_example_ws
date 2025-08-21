@@ -28,7 +28,8 @@ joint_trajectory_controller:
     state_publish_rate: 100.0
     action_monitor_rate: 20.0
     allow_partial_joints_goal: false
-    allow_nonzero_velocity_at_trajectory_end: false  # Set to false to suppress deprecation warning
+    # Set to true because the goal we send when joint jogging sends the current velocity (which can be small values e.g. 2e-6). These small velocities are small enough that they get clipped for the actual end goal.
+    allow_nonzero_velocity_at_trajectory_end: true  
     constraints:
       stopped_velocity_tolerance: 0.0
       goal_time: 0.0
