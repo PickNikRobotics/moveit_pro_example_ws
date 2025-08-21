@@ -2,4 +2,4 @@
 
 ## Building Configuration Packages
 
-To build these configuration packages, you must remove the `COLCON_IGNORE` file from this directory and the `external_dependencies/franka_config` directory.
+To be able to use the hardware configuration packages, you must remove the `MOVEIT_PRO_IGNORE` file from these directories: `franka_arm_hw` and `franka_dual_arm_hw`.
