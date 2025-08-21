@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.22)
 project(franka_behaviors CXX)
 
 find_package(moveit_studio_common REQUIRED)
-find_package(franka_ros2 REQUIRED)
+find_package(franka_msgs REQUIRED)
 moveit_studio_package()
 
 set(THIS_PACKAGE_INCLUDE_DEPENDS moveit_studio_behavior moveit_studio_behavior_interface pluginlib 
