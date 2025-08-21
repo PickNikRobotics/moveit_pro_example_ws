@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(franka_mujoco_config)
+project(franka_dual_arm_hw)
 
 find_package(ament_cmake REQUIRED)
 
@@ -8,8 +8,8 @@ install(
     config
     description
     launch
-    objectives
     waypoints
+    objectives
   DESTINATION
     share/${PROJECT_NAME}
 )
