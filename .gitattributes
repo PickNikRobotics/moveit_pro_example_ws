@@ -11,7 +11,7 @@
 *.3ds filter=lfs diff=lfs merge=lfs -text
 *.blend filter=lfs diff=lfs merge=lfs -text
 # Add Git LFS support for large yaml files
-src/moveit_pro_franka_configs/franka_mujoco_config/objectives/moveitpro_loves_franka.yaml filter=lfs diff=lfs merge=lfs -text
+src/moveit_pro_franka_configs/franka_arm_sim/objectives/moveitpro_loves_franka.yaml filter=lfs diff=lfs merge=lfs -text
 src/moveit_pro_franka_configs/franka_dual_arm_sim/objectives/loves.yaml filter=lfs diff=lfs merge=lfs -text
 src/moveit_pro_franka_configs/franka_dual_arm_sim/objectives/moveit_pro.yaml filter=lfs diff=lfs merge=lfs -text
 src/moveit_pro_franka_configs/franka_dual_arm_sim/objectives/wipe.yaml filter=lfs diff=lfs merge=lfs -text
