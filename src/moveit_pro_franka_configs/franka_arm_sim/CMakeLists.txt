@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(franka_hw_config)
-
+project(franka_arm_sim)
 find_package(ament_cmake REQUIRED)
 
 install(

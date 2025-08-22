@@ -25,12 +25,12 @@ hardware:
   # Specify additional launch files for running the robot with real hardware.
   # [Optional, defaults to a blank launch file if not specified]
   robot_driver_persist_launch_file:
-    package: "franka_hw_config"
+    package: "franka_arm_hw"
     path: "launch/robot_drivers_to_persist.launch.py"
 
   robot_description:
     urdf:
-      package: "franka_hw_config"
+      package: "franka_arm_hw"
       path: "description/franka.urdf.xacro"
     srdf:
       package: "franka_base_config"
@@ -71,19 +71,19 @@ objectives:
       package_name: "moveit_pro_objectives"
       relative_path: "objectives/perception"
     custom_objectives:
-      package_name: "franka_hw_config"
+      package_name: "franka_arm_hw"
       relative_path: "objectives"
   # Specify the location of the saved waypoints file.
   # [Required]
   waypoints_file:
-    package_name: "franka_hw_config"
+    package_name: "franka_arm_hw"
     relative_path: "waypoints/waypoints.yaml"
 
 # Configuration for launching ros2_control processes.
 # [Required, if using ros2_control]
 ros2_control:
   config:
-    package: "franka_hw_config"
+    package: "franka_arm_hw"
     path: "config/control/franka_ros2_control.yaml"
   # MoveIt Pro will load and activate these controllers at start up to ensure they are available.
   # If not specified, it is up to the user to ensure the appropriate controllers are active and available
