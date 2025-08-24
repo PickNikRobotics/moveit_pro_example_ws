@@ -1,5 +1,5 @@
 <mujoco model="fr3">
-  <compiler angle="radian" meshdir="assets" />
+  <compiler angle="radian" />
 
   <option integrator="implicitfast" timestep="0.005" />
 
@@ -45,52 +45,52 @@
     <material name="button_red" rgba="0.520996 0.008023 0.013702 1" />
     <material name="button_blue" rgba="0.024157 0.445201 0.737911 1" />
 
-    <mesh file="link0_0.obj" />
-    <mesh file="link0_1.obj" />
-    <mesh file="link0_2.obj" />
-    <mesh file="link0_3.obj" />
-    <mesh file="link0_4.obj" />
-    <mesh file="link0_5.obj" />
-    <mesh file="link0_6.obj" />
-    <mesh file="link1.obj" />
-    <mesh file="link2.obj" />
-    <mesh file="link3_0.obj" />
-    <mesh file="link3_1.obj" />
-    <mesh file="link4_0.obj" />
-    <mesh file="link4_1.obj" />
-    <mesh file="link5_0.obj" />
-    <mesh file="link5_1.obj" />
-    <mesh file="link5_2.obj" />
-    <mesh file="link6_0.obj" />
-    <mesh file="link6_1.obj" />
-    <mesh file="link6_2.obj" />
-    <mesh file="link6_3.obj" />
-    <mesh file="link6_4.obj" />
-    <mesh file="link6_5.obj" />
-    <mesh file="link6_6.obj" />
-    <mesh file="link6_7.obj" />
-    <mesh file="link7_0.obj" />
-    <mesh file="link7_1.obj" />
-    <mesh file="link7_2.obj" />
-    <mesh file="link7_3.obj" />
+    <mesh file="assets/link0_0.obj" />
+    <mesh file="assets/link0_1.obj" />
+    <mesh file="assets/link0_2.obj" />
+    <mesh file="assets/link0_3.obj" />
+    <mesh file="assets/link0_4.obj" />
+    <mesh file="assets/link0_5.obj" />
+    <mesh file="assets/link0_6.obj" />
+    <mesh file="assets/link1.obj" />
+    <mesh file="assets/link2.obj" />
+    <mesh file="assets/link3_0.obj" />
+    <mesh file="assets/link3_1.obj" />
+    <mesh file="assets/link4_0.obj" />
+    <mesh file="assets/link4_1.obj" />
+    <mesh file="assets/link5_0.obj" />
+    <mesh file="assets/link5_1.obj" />
+    <mesh file="assets/link5_2.obj" />
+    <mesh file="assets/link6_0.obj" />
+    <mesh file="assets/link6_1.obj" />
+    <mesh file="assets/link6_2.obj" />
+    <mesh file="assets/link6_3.obj" />
+    <mesh file="assets/link6_4.obj" />
+    <mesh file="assets/link6_5.obj" />
+    <mesh file="assets/link6_6.obj" />
+    <mesh file="assets/link6_7.obj" />
+    <mesh file="assets/link7_0.obj" />
+    <mesh file="assets/link7_1.obj" />
+    <mesh file="assets/link7_2.obj" />
+    <mesh file="assets/link7_3.obj" />
 
-    <mesh name="link0_coll" file="link0.stl" />
-    <mesh name="link1_coll" file="link1.stl" />
-    <mesh name="link2_coll" file="link2.stl" />
-    <mesh name="link3_coll" file="link3.stl" />
-    <mesh name="link4_coll" file="link4.stl" />
-    <mesh name="link5_coll" file="link5.stl" />
-    <mesh name="link6_coll" file="link6.stl" />
-    <mesh name="link7_coll" file="link7.stl" />
-    <mesh name="hand_coll" file="hand.stl" />
+    <mesh name="link0_coll" file="assets/link0.stl" />
+    <mesh name="link1_coll" file="assets/link1.stl" />
+    <mesh name="link2_coll" file="assets/link2.stl" />
+    <mesh name="link3_coll" file="assets/link3.stl" />
+    <mesh name="link4_coll" file="assets/link4.stl" />
+    <mesh name="link5_coll" file="assets/link5.stl" />
+    <mesh name="link6_coll" file="assets/link6.stl" />
+    <mesh name="link7_coll" file="assets/link7.stl" />
+    <mesh name="hand_coll" file="assets/hand.stl" />
 
-    <mesh file="hand_0.obj" />
-    <mesh file="hand_1.obj" />
-    <mesh file="hand_2.obj" />
-    <mesh file="hand_3.obj" />
-    <mesh file="hand_4.obj" />
-    <mesh file="finger_0.obj" />
-    <mesh file="finger_1.obj" />
+    <mesh file="assets/hand_0.obj" />
+    <mesh file="assets/hand_1.obj" />
+    <mesh file="assets/hand_2.obj" />
+    <mesh file="assets/hand_3.obj" />
+    <mesh file="assets/hand_4.obj" />
+    <mesh file="assets/finger_0.obj" />
+    <mesh file="assets/finger_1.obj" />
   </asset>
 
   <worldbody>
@@ -413,12 +413,4 @@
       kv="100"
     />
   </actuator>
-
-  <keyframe>
-    <key
-      name="home"
-      qpos="0 -0.7854 0 -2.3562 0 1.5707 0.7853 0.035 0.035"
-      ctrl="0 -0.7854 0 -2.3562 0 1.5707 0.7853 0.035 0.035"
-    />
-  </keyframe>
 </mujoco>
