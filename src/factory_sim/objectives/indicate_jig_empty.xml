@@ -3,7 +3,7 @@
   <!--//////////-->
   <BehaviorTree
     ID="Indicate Jig Empty"
-    _description="Visualizes a mock stack light to show that the jig does  not have a bracket part."
+    _description="Visualizes a mock stack light to show that the jig does not have a bracket part."
   >
     <Control ID="Sequence">
       <Action
