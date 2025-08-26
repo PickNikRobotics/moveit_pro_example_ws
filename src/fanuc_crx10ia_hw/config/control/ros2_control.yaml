@@ -4,9 +4,9 @@ controller_manager:
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
     joint_trajectory_controller:
-      type: joint_trajectory_controller/JointTrajectoryController
+      type: fanuc_controllers/ScaledJointTrajectoryController
     servo_controller:
-      type: joint_trajectory_controller/JointTrajectoryController
+      type: fanuc_controllers/ScaledJointTrajectoryController
     velocity_force_controller:
       type: velocity_force_controller/VelocityForceController
     fanuc_gpio_controller:
