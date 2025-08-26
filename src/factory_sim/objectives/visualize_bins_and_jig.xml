@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Visualize Bins and Jig">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Visualize Bins and Jig"
+    _description="Captures scene point cloud and crops out everything except the parts bins and jig"
+  >
+    <Control ID="Sequence">
+      <Action ID="ResetVector" vector="{additional_clouds}" />
+      <SubTree
+        ID="Visualize Bins and Jig Subtree"
+        _collapsed="true"
+        additional_clouds="{additional_clouds}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Visualize Bins and Jig">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Perception - 3D Point Cloud" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
