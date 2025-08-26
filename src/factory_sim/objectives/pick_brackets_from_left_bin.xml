@@ -146,6 +146,7 @@
             ID="Vacuum Pick Bracket Part Subtree"
             _collapsed="true"
             bracket_part_pose="{registered_pose}"
+            part_name="single_bracket_part"
           />
           <SubTree ID="Vacuum Drop Bracket Part Subtree" _collapsed="true" />
         </Control>
