@@ -108,7 +108,7 @@
       <inout_port
         name="additional_clouds"
         default="{additional_clouds}"
-        type="std::vector&lt;sensor_msgs::msg::PointCloud2_&lt;std::allocator&lt;void&gt; &gt;, std::allocator&lt;sensor_msgs::msg::PointCloud2_&lt;std::allocator&lt;void&gt; &gt; &gt; &gt;"
+        type="std::vector&lt;sensor_msgs::msg::PointCloud2&gt;"
       >
         Additional point clouds to merge into the bin and jig scene to visualize
         it in that context. Useful for showing registered point clouds.
