@@ -13,8 +13,8 @@
 
   <build_depend>moveit_studio_common</build_depend>
 
+  <depend>franka_msgs</depend>
   <depend>moveit_studio_behavior_interface</depend>
-  <depend>franka_ros2</depend>
   <depend>moveit_studio_behavior</depend>
 
   <test_depend>ament_lint_auto</test_depend>
