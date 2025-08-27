@@ -1,12 +1,22 @@
 <mujoco model="fanuc scene">
   <compiler angle="radian" autolimits="true" />
-  <option integrator="implicit" />
+  <option integrator="implicitfast" timestep="0.01">
+    <flag multiccd="enable" override="enable" />
+  </option>
 
   <asset>
     <!-- Define textures and materials -->
     <texture name="wood" type="cube" file="assets/wood.png" />
     <material name="wood" texture="wood" texrepeat="1 1" />
     <mesh name="bowl" file="assets/bowl.stl" />
+
+    <texture name="sheet_metal" type="2d" file="assets/sheet_metal.png" />
+    <material name="sheet_metal" texture="sheet_metal" texrepeat="1 1" />
+    <mesh
+      name="bracket"
+      file="assets/bracket_sample1.stl"
+      scale="0.001 0.001 0.002"
+    />
 
     <texture
       type="skybox"
@@ -71,6 +81,20 @@
       xyaxes="-0.607 -0.795 0.000 -0.555 0.424 -0.715"
     />
 
+    <camera
+      name="bin_camera_left"
+      pos="-0.25 0.6 0.85"
+      fovy="58"
+      mode="fixed"
+      resolution="640 480"
+      xyaxes="0 -1 0 1 0 0"
+    />
+    <site
+      name="bin_camera_left_optical_frame"
+      pos="-0.25 0.6 0.85"
+      xyaxes="0 -1 0 -1 0 0"
+    />
+
     <body name="arm_pedestal" pos="0.0 0.0 0.15">
       <geom type="box" size="0.2 0.2 0.15" />
       <!-- Holder for tool 1 -->
@@ -110,8 +134,10 @@
         <!-- <origin xyz="${x_length/2} ${y_length/2} ${bottom_thickness/2}"/> -->
         <!-- <geom type="box" size="0.3048 0.1905 0.0025" pos="0 0 0.0025" rgba=".11 .51 .86 1"/> -->
         <geom
+          margin="0.005"
+          friction="2 0.1 0.1"
           type="box"
-          size="0.3048 0.1905 0.0025"
+          size="0.3048 0.1905 0.025"
           pos="0 0 0.0025"
           rgba=".11 .51 .86 1"
         />
@@ -120,6 +146,8 @@
         <!-- <origin xyz="${side_wall_thickness/2} ${(y_length-side_wall_thickness)/2} ${z_length/2}"/> -->
         <!-- <geom type="box" size="0.0125 0.190 0.09525" pos="0.3048-0.0125 0 0.0025+0.09525" rgba="1 .5 .5 1"/> -->
         <geom
+          margin="0.005"
+          friction="2 0.1 0.1"
           type="box"
           size="0.0125 0.1655 0.09525"
           pos="0.2923 0 0.09775"
@@ -130,6 +158,8 @@
         <!-- <origin xyz="${x_length - side_wall_thickness/2} ${y_length/2} ${z_length/2}"/> -->
         <!-- <geom type="box" size="0.0125 0.190 0.09525" pos="-0.3048+0.0125 0 0.0025+0.09525" rgba="1 .5 .5 1"/> -->
         <geom
+          margin="0.005"
+          friction="2 0.1 0.1"
           type="box"
           size="0.0125 0.1655 0.09525"
           pos="-0.2923 0 0.09775"
@@ -140,6 +170,8 @@
         <!-- <origin xyz="${x_length/2} ${side_wall_thickness/2} ${z_length/2}"/> -->
         <!-- <geom type="box" size="0.3048 0.0125 0.09525" pos="0 0.1905-0.0125 0.09775" rgba=".5 .5 .5 1"/> -->
         <geom
+          margin="0.005"
+          friction="2 0.1 0.1"
           type="box"
           size="0.3048 0.0125 0.09525"
           pos="0 0.178 0.09775"
@@ -149,6 +181,8 @@
         <!-- <box size="${x_length} ${side_wall_thickness} ${z_length}"/> -->
         <!-- <origin xyz="${x_length/2} ${y_length - side_wall_thickness/2} ${z_length/2}"/> -->
         <geom
+          margin="0.005"
+          friction="2 0.1 0.1"
           type="box"
           size="0.3048 0.0125 0.09525"
           pos="0 -0.178 0.09775"
@@ -158,30 +192,40 @@
 
       <body name="right_bin" pos="0.25 0 0.025" quat="0.707 0 0 0.707">
         <geom
+          margin="0.005"
+          friction="2 0.1 0.1"
           type="box"
-          size="0.3048 0.1905 0.0025"
+          size="0.3048 0.1905 0.025"
           pos="0 0 0.0025"
           rgba=".11 .51 .86 1"
         />
         <geom
+          margin="0.005"
+          friction="2 0.1 0.1"
           type="box"
           size="0.0125 0.1655 0.09525"
           pos="0.2923 0 0.09775"
           rgba=".11 .51 .86 1"
         />
         <geom
+          margin="0.005"
+          friction="2 0.1 0.1"
           type="box"
           size="0.0125 0.1655 0.09525"
           pos="-0.2923 0 0.09775"
           rgba=".11 .51 .86 1"
         />
         <geom
+          margin="0.005"
+          friction="2 0.1 0.1"
           type="box"
           size="0.3048 0.0125 0.09525"
           pos="0 0.178 0.09775"
           rgba=".11 .51 .86 1"
         />
         <geom
+          margin="0.005"
+          friction="2 0.1 0.1"
           type="box"
           size="0.3048 0.0125 0.09525"
           pos="0 -0.178 0.09775"
@@ -190,48 +234,13 @@
       </body>
     </body>
 
-    <!-- First layer of cubes -->
-    <!-- 3 6 2 -->
-    <replicate count="3" sep="-" offset=".07 0 0">
-      <replicate count="6" sep="-" offset="0 .07 0">
-        <replicate count="2" sep="-" offset="0 0 0.5">
-          <body name="sphere-0" pos="-0.35 0.4 0.5" euler="0.5 0.5 0.5">
-            <joint type="slide" axis="1 0 0" group="3" />
-            <joint type="slide" axis="0 1 0" group="3" />
-            <joint type="slide" axis="0 0 1" group="3" />
-            <geom
-              type="box"
-              size="0.025 0.025 0.025"
-              condim="1"
-              priority="1"
-              material="wood"
-            />
-          </body>
-        </replicate>
+    <!-- Bracket parts in left bin -->
+    <!-- 3 1 -->
+    <replicate count="3" sep="-" offset="0 0.06 0.05" euler="0.0 0.0 0.0">
+      <replicate count="1" sep="-" offset="0 0 .18" euler="0.0 0.0 0.0">
+        <include file="bracket_collision_geometry.xml" />
       </replicate>
     </replicate>
-
-    <!-- Second layer of cubes -->
-    <!-- 3 6 2 -->
-    <replicate count="3" sep="-" offset=".07 0 0">
-      <replicate count="6" sep="-" offset="0 .07 0">
-        <replicate count="2" sep="-" offset="0 0 0.5">
-          <body name="sphere-1" pos="-0.3 0.45 0.75" euler="-0.5 -0.5 -0.5">
-            <joint type="slide" axis="1 0 0" group="3" />
-            <joint type="slide" axis="0 1 0" group="3" />
-            <joint type="slide" axis="0 0 1" group="3" />
-            <geom
-              type="box"
-              size="0.025 0.025 0.025"
-              condim="1"
-              priority="1"
-              material="wood"
-            />
-          </body>
-        </replicate>
-      </replicate>
-    </replicate>
-
     <!--  -->
     <!-- ASSEMBLY SCENARIO -->
     <!--  -->
@@ -245,40 +254,38 @@
       <geom type="box" size="0.2 0.1 0.005" material="wood" />
       <freejoint />
     </body>
-    <!-- x -0.05-0.025 -->
-    <!-- z 0.225+.05+.0001 -->
-    <body name="stud1" pos="-0.075 -0.4 0.2751">
-      <geom type="box" size="0.025 0.1 0.05" material="wood" />
-      <freejoint />
-    </body>
-    <!-- x -0.45+0.025 -->
-    <!-- z 0.225+.05+.0001 -->
-    <body name="stud2" pos="-0.425 -0.4 0.2751">
-      <geom type="box" size="0.025 0.1 0.05" material="wood" />
-      <freejoint />
-    </body>
 
-    <!-- Left stud jig -->
-    <!-- x -0.45-0.01-0.0001 -->
-    <!-- z 0.225+.025 -->
     <body name="jig1_1" pos="-0.4601 -0.4 0.25">
-      <geom type="cylinder" size="0.01 0.025" rgba="0.1 0.1 0.1 1" />
-    </body>
-    <!-- x -0.4+0.01+0.0001 -->
-    <body name="jig1_2" pos="-0.3899 -0.4 0.25">
-      <geom type="cylinder" size="0.01 0.025" rgba="0.1 0.1 0.1 1" />
-    </body>
-    <!-- y -0.5-0.01-0.0001 -->
-    <body name="jig1_3" pos="-0.425 -0.5101 0.25">
-      <geom type="cylinder" size="0.01 0.025" rgba="0.1 0.1 0.1 1" />
-    </body>
-    <!-- y -0.3+0.01+0.0001 -->
-    <body name="jig1_4" pos="-0.425 -0.2899 0.25">
-      <geom type="cylinder" size="0.01 0.025" rgba="0.1 0.1 0.1 1" />
+      <geom
+        type="ellipsoid"
+        size="0.005 0.005 0.035"
+        pos="0 0 -0.005"
+        rgba="1 0.6 0 1"
+      />
+      <geom
+        type="cylinder"
+        size="0.005 0.025"
+        pos="0 0 -0.030"
+        rgba="1. 0.6 0. 1"
+      />
+      <site name="jig_post1" />
     </body>
 
-    <!-- Right stud jig -->
-    <!-- TODO Decide if this would be useful -->
+    <body name="jig1_2" pos="-0.3951 -0.40283 0.25">
+      <geom
+        type="ellipsoid"
+        size="0.005 0.005 0.035"
+        pos="0 0 -0.005"
+        rgba="1 0.6 0 1"
+      />
+      <geom
+        type="cylinder"
+        size="0.005 0.025"
+        pos="0 0 -0.030"
+        rgba="1. 0.6 0. 1"
+      />
+      <site name="jig_post2" />
+    </body>
 
     <!--  -->
     <!-- REGISTER AND RASTERIZE SCENARIO -->
@@ -390,7 +397,7 @@
       body1="tool0"
       body2="gripper_base"
       active="false"
-      torquescale="1"
+      torquescale="5"
     />
   </equality>
   <equality>
@@ -399,12 +406,10 @@
       body1="tool0"
       body2="inspection_tool_base"
       active="false"
-      torquescale="1"
+      torquescale="5"
     />
   </equality>
 
-  <!-- Add welds for suction gripping of cubes -->
+  <!-- Add welds for suction gripping of parts -->
   <include file="box-welds.xml" />
-
-  <!-- TODO Add welds for suction gripping of assembly parts -->
 </mujoco>
