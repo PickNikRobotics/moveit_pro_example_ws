@@ -99,7 +99,7 @@
           threshold="{threshold}"
           clipseg_model_path="models/clipseg.onnx"
           clip_model_path="models/clip.onnx"
-          model_package="lab_sim"
+          model_package="moveit_pro_clipseg"
           prompts="{prompts}"
           negative_prompts="{negative_prompts}"
           erosion_size="{erosion_size}"

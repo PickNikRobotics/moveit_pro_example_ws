@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Indicate Part Ready">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Indicate Part Ready"
+    _description="Visualizes mock stack light to show that there is a bracket part in the jig and it is ready to be picked."
+  >
+    <Control ID="Sequence">
+      <Action
+        ID="CreateStampedPose"
+        reference_frame="world"
+        stamped_pose="{signal_light_pose}"
+        position_xyz="-0.1;-1;0.2"
+        name="Locate bracket jig state indicator"
+      />
+      <Action
+        ID="VisualizeMesh"
+        marker_lifetime="0.000000"
+        mesh_path="package://factory_sim/objectives/signal_light_ready.dae"
+        mesh_pose="{signal_light_pose}"
+        name="Indicate there is no bracket in jig"
+      />
+      <Action
+        ID="CreateStampedPose"
+        reference_frame="world"
+        position_xyz="-0.1;-1;0.6"
+        stamped_pose="{jig_state_pose}"
+      />
+      <Action
+        ID="VisualizePose"
+        marker_lifetime="0.000000"
+        marker_name="jig_state"
+        marker_size="0.00100000"
+        pose="{jig_state_pose}"
+        marker_text="Part Ready"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Indicate Part Ready">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Jig State" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
