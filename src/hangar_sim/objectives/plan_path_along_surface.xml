@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Plan Path Along Surface">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Plan Path Along Surface"
+    _description="Plan and execute a path following a surface"
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        controller_names="joint_trajectory_controller"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.0"
+        seed="0"
+        velocity_scale_factor="1.0"
+        waypoint_name="Look at Plane"
+      />
+      <!--Get a point cloud and crop it to the area of interest-->
+      <Action
+        ID="GetPointCloud"
+        topic_name="/wrist_camera/points"
+        message_out="{point_cloud}"
+        publisher_timeout_sec="5.000000"
+        timeout_sec="5.000000"
+      />
+      <Action
+        ID="TransformPointCloudFrame"
+        input_cloud="{point_cloud}"
+        output_cloud="{point_cloud}"
+        target_frame="world"
+      />
+      <Action
+        ID="CreateStampedPose"
+        reference_frame="world"
+        stamped_pose="{roi_frame}"
+        position_xyz="0;12;1.7"
+      />
+      <Action
+        ID="CropPointsInBox"
+        crop_box_centroid_pose="{roi_frame}"
+        point_cloud="{point_cloud}"
+        point_cloud_cropped="{point_cloud}"
+        crop_box_size="5;15;0.2"
+      />
+      <!--Visualize the cropped point cloud-->
+      <Action
+        ID="SendPointCloudToUI"
+        pcd_topic="/pcd_pointcloud_captures"
+        point_cloud="{point_cloud}"
+      />
+      <!--Get the centroid of the cropped point cloud and use it to get a contour-->
+      <Action
+        ID="GetCentroidFromPointCloud"
+        output_pose="{centroid}"
+        point_cloud="{point_cloud}"
+      />
+      <Action
+        ID="VisualizePose"
+        marker_lifetime="0.000000"
+        marker_name="centroid"
+        marker_size="0.200000"
+        pose="{centroid}"
+      />
+      <Action
+        ID="GetContourFromPointCloudSlice"
+        contour_path="{contour_path}"
+        desired_pose_spacing="0.200000"
+        hull_alpha="-1.000000"
+        input_cloud="{point_cloud}"
+        slice_distance_from_plane="0.100000"
+        slice_plane="{centroid}"
+        contour_crop_angle_span="3.2"
+        contour_crop_angle_start="1.58"
+      />
+      <Action
+        ID="VisualizePath"
+        marker_lifetime="0.000000"
+        marker_name="path"
+        path="{contour_path}"
+        pose_marker_size="0.100000"
+        show_poses="true"
+      />
+      <!--Plan and execute a path following the contour at a small distance-->
+      <Action
+        ID="PlanCartesianPath"
+        acceleration_scale_factor="1.000000"
+        blending_radius="0.0050000"
+        ik_cartesian_space_density="0.010000"
+        ik_joint_space_density="0.100000"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+        path="{contour_path}"
+        planning_group_name="manipulator"
+        position_only="false"
+        trajectory_sampling_rate="100"
+        velocity_scale_factor="1.000000"
+        tip_offset="0;0;0.1;0;0;0"
+        debug_solution="{debug_solution}"
+      />
+      <Action
+        ID="ExecuteFollowJointTrajectory"
+        execute_follow_joint_trajectory_action_name="/joint_trajectory_controller/follow_joint_trajectory"
+        goal_duration_tolerance="-1.000000"
+        goal_position_tolerance="0.000000"
+        goal_time_tolerance="0.000000"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+        trajectory_remainder="{joint_trajectory_remainder}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Plan Path Along Surface">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Training Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
