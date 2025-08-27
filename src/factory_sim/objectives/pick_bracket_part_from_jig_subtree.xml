@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Pick Bracket Part from Jig Subtree"
+>
+  <!--//////////-->
+  <BehaviorTree
+    ID="Pick Bracket Part from Jig Subtree"
+    _description="Moves to jig approach pose and picks bracket part off of jig"
+  >
+    <Control ID="Sequence">
+      <Control ID="Sequence" name="Move to jig pick approach pose and pick">
+        <SubTree
+          ID="Move to Waypoint"
+          _collapsed="true"
+          acceleration_scale_factor="1.0"
+          controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+          controller_names="joint_trajectory_controller"
+          joint_group_name="manipulator"
+          keep_orientation="false"
+          keep_orientation_tolerance="0.05"
+          link_padding="0.01"
+          seed="0"
+          velocity_scale_factor="1.0"
+          waypoint_name="Jig Approach Pose"
+          name="Move to jig approach pose"
+        />
+        <SubTree ID="Activate Vacuum" _collapsed="true" />
+        <Action
+          ID="CreateStampedPose"
+          reference_frame="world"
+          stamped_pose="{bracket_on_jig}"
+          orientation_xyzw="0.000; 0.000; 1.000; 0.000"
+          position_xyz="-0.319; -0.483; 0.225"
+        />
+        <Action
+          ID="InitializeMTCTask"
+          controller_names="joint_trajectory_controller"
+          task_id="jig_approach"
+          task="{mtc_task}"
+          trajectory_monitoring="false"
+          timeout="-1.000000"
+        />
+        <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
+        <Action
+          ID="SetupMTCIgnoreCollisionsBetweenObjects"
+          allow_collision="true"
+          task="{mtc_task}"
+          object_names="link_5;link_6;suction_gripper"
+        />
+        <Action
+          ID="SetupMTCMoveAlongFrameAxis"
+          axis_frame="tool0"
+          axis_z="1"
+          max_distance="0.07"
+          min_distance="0.07"
+          hand_frame="tool0"
+          acceleration_scale="0.5"
+          axis_x="0.000000"
+          axis_y="0.000000"
+          ignore_environment_collisions="false"
+          planning_group_name="manipulator"
+          velocity_scale="0.5"
+          task="{mtc_task}"
+        />
+        <Action ID="PlanMTCTask" task="{mtc_task}" solution="{mtc_solution}" />
+        <Action
+          ID="ExecuteMTCTask"
+          goal_duration_tolerance="-1.000000"
+          solution="{mtc_solution}"
+        />
+        <Action
+          ID="AddURDF"
+          urdf_name="{part_name}"
+          urdf_pose="{bracket_on_jig}"
+          package_name="factory_sim"
+          urdf_file_path="description/simple_bracket_collision_geometry.urdf"
+        />
+        <Action
+          ID="AttachURDF"
+          urdf_name="{part_name}"
+          allowed_collision_links="link_5;link_6"
+          parent_link_name="tool0"
+        />
+      </Control>
+      <Control ID="Sequence" name="Retract straight off of jig ">
+        <Action
+          ID="InitializeMTCTask"
+          controller_names="joint_trajectory_controller"
+          task_id="jig_retract"
+          task="{mtc_task}"
+          trajectory_monitoring="false"
+          timeout="-1.000000"
+        />
+        <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
+        <Action
+          ID="SetupMTCIgnoreCollisionsBetweenObjects"
+          allow_collision="true"
+          task="{mtc_task}"
+          object_names="link_5;link_6;suction_gripper"
+        />
+        <Action
+          ID="SetupMTCMoveAlongFrameAxis"
+          axis_frame="tool0"
+          axis_z="-1"
+          max_distance="0.1"
+          min_distance="0.1"
+          hand_frame="tool0"
+          acceleration_scale="0.5"
+          axis_x="0.000000"
+          axis_y="0.000000"
+          ignore_environment_collisions="false"
+          planning_group_name="manipulator"
+          velocity_scale="0.5"
+          task="{mtc_task}"
+        />
+        <Action ID="PlanMTCTask" task="{mtc_task}" solution="{mtc_solution}" />
+        <Action
+          ID="ExecuteMTCTask"
+          goal_duration_tolerance="-1.000000"
+          solution="{mtc_solution}"
+        />
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Pick Bracket Part from Jig Subtree">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Motion - Execute" />
+      </MetadataFields>
+      <inout_port name="part_name" default="{part_name}" type="std::string">
+        Name to use for the part URDF attached to the suction gripper.
+      </inout_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>

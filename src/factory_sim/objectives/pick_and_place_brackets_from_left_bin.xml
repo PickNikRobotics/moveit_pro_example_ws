@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Pick and Place Brackets from Left Bin"
+>
+  <BehaviorTree
+    ID="Pick and Place Brackets from Left Bin"
+    _description="Picks brackets from the left bin, precisely places them on jig, then picks them again and drop in right bin."
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <!--Prepare the planning scene-->
+      <Action ID="ClearSnapshot" />
+      <SubTree ID="Reset Planning Scene" _collapsed="true" />
+      <SubTree ID="Setup Initial Planning Scene" _collapsed="true" />
+      <SubTree ID="Add Bins to Planning Scene" _collapsed="true" />
+      <SubTree ID="Visualize Bins and Jig" _collapsed="true" />
+      <!--Adding the stack light jig indicator is just to simulate for the user as if something was being done to the part on the jig-->
+      <SubTree ID="Indicate Jig Empty" _collapsed="true" />
+      <!--Pickup vacuum gripper-->
+      <SubTree ID="Automated Return Held Tool" _collapsed="true" />
+      <SubTree
+        ID="Automated Tool Changing Example Subtree"
+        _collapsed="true"
+        pickup_tool="suction_gripper"
+        tool_1_name="suction_gripper"
+        tool_1_pickup_site="suction_gripper_attach_site"
+        tool_1_return_site="suction_gripper_holder_site"
+        tool_2_name="inspector"
+        tool_2_pickup_site="inspection_tool_attach_site"
+        tool_2_return_site="inspection_tool_holder_site"
+        tool_names="suction_gripper;inspector"
+      />
+      <Decorator
+        ID="Repeat"
+        num_cycles="3"
+        name="Pick a fixed number of brackets"
+      >
+        <Control
+          ID="Sequence"
+          name="This is the main sequence of detecting and picking the bracket parts, putting them on the jig, and them putting them in the right bin"
+        >
+          <SubTree ID="Indicate Jig Empty" _collapsed="true" />
+          <SubTree
+            ID="Look for Bracket Part Subtree"
+            _collapsed="true"
+            registered_pose="{registered_pose}"
+          />
+          <SubTree
+            ID="Vacuum Pick Bracket Part Subtree"
+            _collapsed="true"
+            bracket_part_pose="{registered_pose}"
+            part_name="single_bracket_part"
+          />
+          <SubTree
+            ID="Drop Bracket Part on Jig Subtree"
+            _collapsed="true"
+            part_name="single_bracket_part"
+          />
+          <!--This jig apparatus and waiting is here just to motivate the use case and explain why the arm moves to a waiting pose, instead of dropping the part on the jig and then picking it right back up again-->
+          <SubTree
+            ID="Move to Waypoint"
+            _collapsed="true"
+            acceleration_scale_factor="1.0"
+            controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+            controller_names="joint_trajectory_controller"
+            joint_group_name="manipulator"
+            keep_orientation="false"
+            keep_orientation_tolerance="0.05"
+            link_padding="0.01"
+            seed="0"
+            velocity_scale_factor="1.0"
+            waypoint_name="Home"
+            name="Send arm to waiting pose"
+          />
+          <Action
+            ID="LogMessage"
+            log_level="info"
+            message="Waiting for a few seconds to simulate a operation being done to the bracket"
+          />
+          <SubTree ID="Visualize Bins and Jig" _collapsed="true" />
+          <SubTree ID="Indicate Jig Working" _collapsed="true" />
+          <Action ID="WaitForDuration" delay_duration="2" />
+          <SubTree ID="Indicate Part Ready" _collapsed="true" />
+          <SubTree
+            ID="Pick Bracket Part from Jig Subtree"
+            _collapsed="true"
+            part_name="single_bracket_part"
+          />
+          <SubTree ID="Indicate Jig Empty" _collapsed="true" />
+          <SubTree
+            ID="Drop Bracket Part in Right Bin Subtree"
+            _collapsed="true"
+            part_name="single_bracket_part"
+          />
+        </Control>
+      </Decorator>
+      <SubTree ID="Visualize Bins and Jig" _collapsed="true" />
+      <!--Stow vacuum gripper-->
+      <SubTree ID="Automated Return Held Tool" _collapsed="true" />
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        controller_names="joint_trajectory_controller"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        seed="0"
+        velocity_scale_factor="1.0"
+        waypoint_name="Home"
+      />
+      <!--Cleanup planning scene-->
+      <Action ID="ClearSnapshot" />
+      <SubTree ID="Reset Planning Scene" collapsed="true" _collapsed="true" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Pick and Place Brackets from Left Bin">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Advanced Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

@@ -12,18 +12,21 @@
         topic_name="{camera_image_topic}"
         timeout_sec="5.000000"
         message_out="{image}"
+        publisher_timeout_sec="5.000000"
       />
       <Action
         ID="GetPointCloud"
         topic_name="{camera_points_topic}"
         timeout_sec="5.000000"
         message_out="{point_cloud}"
+        publisher_timeout_sec="5.000000"
       />
       <Action
         ID="GetCameraInfo"
         topic_name="{camera_info_topic}"
         message_out="{camera_info}"
         timeout_sec="5.000000"
+        publisher_timeout_sec="5.000000"
       />
       <Action
         ID="GetMasks2DFromTextQuery"
@@ -33,7 +36,7 @@
         threshold="{mask_threshold}"
         clip_model_path="models/clip.onnx"
         clipseg_model_path="models/clipseg.onnx"
-        model_package="lab_sim"
+        model_package="moveit_pro_clipseg"
         erosion_size="{mask_erosion}"
       />
       <Action
