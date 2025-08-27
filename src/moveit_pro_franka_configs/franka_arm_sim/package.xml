@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <package format="3">
-  <name>franka_hw_config</name>
+  <name>franka_arm_sim</name>
   <version>7.4.0</version>
 
   <description>Base configuration package for the Franka arm.</description>
@@ -13,7 +13,7 @@
 
   <exec_depend>franka_base_config</exec_depend>
   <exec_depend>franka_description</exec_depend>
-  <exec_depend>franka_ros2</exec_depend>
+  <exec_depend>franka_msgs</exec_depend>
   <exec_depend>moveit_studio_agent</exec_depend>
   <exec_depend>moveit_studio_behavior</exec_depend>
 
