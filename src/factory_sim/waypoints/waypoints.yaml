@@ -74,6 +74,44 @@
     twist: []
     wrench: []
   name: Home
+- description: Place above the jig for the vacuum gripper to pick bracket part from
+  favorite: false
+  joint_group_names:
+  - gripper
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - joint_1
+    - joint_2
+    - joint_3
+    - joint_4
+    - joint_5
+    - joint_6
+    position:
+    - -2.3860408174682277
+    - 1.2290915574667607
+    - 0.25778042704232607
+    - 0.006612678521633422
+    - -0.5934666826780054
+    - 0.8246373592730819
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Jig Approach Pose
 - description: ''
   favorite: false
   joint_group_names:
@@ -340,3 +378,42 @@
     twist: []
     wrench: []
   name: View shelf
+- description: Place to move the arm when holding a bracket part before moving the
+    the jig and before dropping into the receiving parts bin to constrain arm movement
+  favorite: false
+  joint_group_names:
+  - gripper
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - joint_1
+    - joint_2
+    - joint_3
+    - joint_4
+    - joint_5
+    - joint_6
+    position:
+    - 0.5425773564287666
+    - 0.4470292126250444
+    - -0.5393956278252068
+    - 0.006590564619660082
+    - -0.5933153904234844
+    - 0.8246212036428854
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Intermediate Jig Pose
