@@ -1,7 +1,17 @@
 <mujoco model="fr3 scene">
+  <!-- Robot -->
   <include file="franka3.xml" />
 
-  <statistic center="0.2 0 0.4" extent=".8" />
+  <!-- Assets -->
+  <include file="assets/kitchen_assets/item_assets/oven_asset.xml" />
+  <include file="assets/kitchen_assets/item_assets/counters_asset.xml" />
+  <include file="assets/kitchen_assets/item_assets/backwall_asset.xml" />
+  <include file="assets/kitchen_assets/item_assets/slidecabinet_asset.xml" />
+  <include file="assets/kitchen_assets/item_assets/hingecabinet_asset.xml" />
+  <include file="assets/kitchen_assets/item_assets/microwave_asset.xml" />
+  <include file="assets/kitchen_assets/item_assets/kettle_asset.xml" />
+  <!--  
+  <statistic center="0.2 0 0.4" extent=".8" /> -->
 
   <visual>
     <headlight diffuse="0.6 0.6 0.6" ambient="0.3 0.3 0.3" specular="0 0 0" />
@@ -41,18 +51,55 @@
   <worldbody>
     <light pos="0 0 1.5" dir="0 0 -1" directional="true" />
     <geom name="floor" size="0 0 0.05" type="plane" material="groundplane" />
+    <!-- Scene Camera -->
     <site
       name="scene_camera_optical_frame"
-      pos="1.5 0.7 1.5"
-      euler="2.6 -0.8 -2.14"
+      pos="-2.633 -2.183 4.485"
+      xyaxes="0.622 -0.783 0.000 -0.477 -0.378 -0.793"
     />
-    <camera
-      name="scene_camera"
-      pos="1.5 0.7 1.5"
-      fovy="58"
-      mode="fixed"
+
+    <camera name="scene_camera"
+      fovy="48"
       resolution="640 480"
-      euler="-0.54 0.8 2.14"
-    />
+      pos="-2.633 -2.183 4.485"
+      xyaxes="0.622 -0.783 0.000 0.477 0.378 0.793"/>
+
+    <body name="desk" pos="0.8 0 0" euler="0 0 -1.5708">
+      <body name="counters1" pos="0 0 0">
+        <include file="assets/kitchen_assets/item_assets/counters_chain.xml" />
+      </body>
+      <body name="oven" pos="0 0 0">
+        <include file="assets/kitchen_assets/item_assets/oven_chain.xml" />
+      </body>
+      <body name="backwall" pos="0 0 0">
+        <include file="assets/kitchen_assets/item_assets/backwall_chain.xml" />
+      </body>
+      <body name="slidecabinet" pos="0.4 0.3 2.6">
+        <include
+          file="assets/kitchen_assets/item_assets/slidecabinet_chain.xml"
+        />
+      </body>
+      <body name="hingecabinet" pos="-0.504 0.28 2.6">
+        <include
+          file="assets/kitchen_assets/item_assets/hingecabinet_chain.xml"
+        />
+      </body>
+      <body name="microwave" pos="-0.750 -0.025 1.6" euler="0 0 0.3">
+        <include file="assets/kitchen_assets/item_assets/microwave_chain.xml" />
+      </body>
+    </body>
+
+    <body name="kettle" pos="0.1 0.7 1.6" euler="0 0 -3.14">
+      <freejoint name="kettle" />
+      <include file="assets/kitchen_assets/item_assets/kettle_chain.xml" />
+    </body>
   </worldbody>
+
+  <keyframe>
+    <key
+      name="home"
+      qpos="0 -0.7854 0 -2.3562 0 1.5707 0.7853 0.035 0.035 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.1 0.7 1.6 0 0 0 0"
+      ctrl="0 -0.7854 0 -2.3562 0 1.5707 0.7853 0.035 0.035"
+    />
+  </keyframe>
 </mujoco>

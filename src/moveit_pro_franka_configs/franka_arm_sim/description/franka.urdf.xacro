@@ -22,7 +22,8 @@
                       gazebo_effort="false"
                       no_prefix="false"
                       arm_prefix=""
-                      connected_to= "world">
+                      connected_to= "world"
+                      xyz="0 0 1.7">
   </xacro:franka_robot>
   
     <!-- This link aligns the axes of the grasp frame to our required convention for motion planning tasks. -->
@@ -117,6 +118,7 @@
         <param name="mujoco_model_package">franka_arm_sim</param>
         <param name="render_publish_rate">10</param>
         <param name="tf_publish_rate">60</param>
+        <param name="mujoco_viewer">$(arg mujoco_viewer)</param>
       </hardware>
     </ros2_control>
 </robot>
