@@ -29,7 +29,7 @@ joint_trajectory_controller:
     action_monitor_rate: 20.0
     allow_partial_joints_goal: false
     # Set to true because the goal we send when joint jogging sends the current velocity (which can be small values e.g. 2e-6). These small velocities are small enough that they get clipped for the actual end goal.
-    allow_nonzero_velocity_at_trajectory_end: true  
+    allow_nonzero_velocity_at_trajectory_end: true
     constraints:
       stopped_velocity_tolerance: 0.0
       goal_time: 0.0
@@ -136,5 +136,5 @@ velocity_force_controller:
 
 fanuc_gpio_controller:
   ros__parameters:
-    gpio_config_file_package: fanuc_hardware_interface
-    gpio_config_file_path: config/example_gpio_config.yaml
+    gpio_config_file_package: fanuc_crx10ia_hw
+    gpio_config_file_path: config/control/example_gpio_config.yaml

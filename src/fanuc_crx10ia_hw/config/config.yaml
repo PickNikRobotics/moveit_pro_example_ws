@@ -42,6 +42,7 @@ hardware:
     # [Optional]
     urdf_params:
       - robot_ip: "192.168.1.100"
+      - gpio_configuration: "$(find fanuc_crx10ia_hw)/config/control/example_gpio_config.yaml"
 
 # Sets ROS global params for launch.
 # [Optional]
@@ -104,6 +105,7 @@ ros2_control:
   controllers_active_at_startup:
     - "joint_state_broadcaster"
     - "joint_trajectory_controller"
+    - "fanuc_gpio_controller"
   # Load but do not start these controllers so they can be activated later if needed.
   # [Optional, default=[]]
   controllers_inactive_at_startup:
