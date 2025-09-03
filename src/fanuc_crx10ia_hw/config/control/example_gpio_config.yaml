@@ -1,0 +1,33 @@
+gpio_topic_config:
+  io_state:
+    - type: DI
+      start: 101
+      length: 12
+    - type: DO
+      start: 101
+      length: 12
+    - type: RI
+      start: 1
+      length: 2
+    - type: RO
+      start: 1
+      length: 2
+    - type: F
+      start: 1
+      length: 32
+  io_cmd:
+    - type: DO
+      start: 101
+      length: 12
+    - type: RO
+      start: 1
+      length: 2
+    - type: F
+      start: 1
+      length: 32
+  num_reg_state:
+    - start: 1
+      length: 3
+  num_reg_cmd:
+    - start: 3
+      length: 3
