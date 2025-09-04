@@ -41,6 +41,8 @@ hardware:
     # Many of these are specific to the descriptions packages, and can be customized as needed.
     # [Optional]
     urdf_params:
+      # If you'd like to use a different CRX model, enter it here!
+      # Possible names are xacro macros under package://fanuc_crx_description/urdf/.
       - robot_model: "crx10ia"
       - robot_ip: "192.168.1.100"
       - rmi_port: "16001"
