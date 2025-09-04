@@ -11,7 +11,7 @@
       <SubTree ID="Look at Table" _collapsed="true" />
       <Action
         ID="CreateStampedPose"
-        position_xyz="0.02;.75;0.58"
+        position_xyz="0.2;0.75;0.6"
         orientation_xyzw="0;0;0;1"
         stamped_pose="{stamped_pose}"
         name="Initial Guess"
@@ -87,6 +87,13 @@
         output_pose="{grasp_pose}"
         quaternion_xyzw="0.000; 1.000; 0.000; 0.000"
         name="Flip the pose so the z axis is facing downwards, which aligns with the pose a gripper can do. Otherwise the z axis faces upwards and prevents planning to that infeasible pose"
+      />
+      <Action
+        ID="VisualizePose"
+        marker_lifetime="0.000000"
+        marker_name="grasp_pose"
+        marker_size="0.100000"
+        pose="{grasp_pose}"
       />
     </Control>
   </BehaviorTree>
