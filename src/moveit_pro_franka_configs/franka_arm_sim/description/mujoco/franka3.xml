@@ -94,7 +94,7 @@
   </asset>
 
   <worldbody>
-    <body name="base" childclass="fr3" pos="0 0 1.7">
+    <body name="base" childclass="fr3" pos="0 0 0.9">
       <body name="fr3_link0">
         <geom mesh="link0_0" material="black" class="visual" />
         <geom mesh="link0_1" material="white" class="visual" />

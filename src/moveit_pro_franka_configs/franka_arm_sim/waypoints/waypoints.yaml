@@ -80,3 +80,46 @@
     twist: []
     wrench: []
   name: Out of the way
+- description: ''
+  favorite: false
+  joint_group_names:
+  - arm
+  - hand
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - fr3_joint1
+    - fr3_joint2
+    - fr3_joint3
+    - fr3_joint4
+    - fr3_joint5
+    - fr3_joint6
+    - fr3_joint7
+    - fr3_finger_joint1
+    position:
+    - 0
+    - -1.5708
+    - 1.5708
+    - -1.5708
+    - 0
+    - 1.5708
+    - -0.785398
+    - 0
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Ready

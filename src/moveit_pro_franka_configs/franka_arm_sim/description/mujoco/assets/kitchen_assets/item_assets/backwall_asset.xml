@@ -40,7 +40,7 @@
           condim="3"
           contype="0"
           group="4"
-          margin="0.001"
+          margin="0.0006"
           material="wall_collision_blue"
         />
       </default>

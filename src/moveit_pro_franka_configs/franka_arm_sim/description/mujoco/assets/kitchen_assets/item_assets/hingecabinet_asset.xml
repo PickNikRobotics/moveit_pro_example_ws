@@ -63,7 +63,7 @@
           condim="3"
           contype="0"
           group="4"
-          margin="0.001"
+          margin="0.0006"
           material="hinge_collision_blue"
           solimp=".8 .9 .01"
           solref=".02 1"

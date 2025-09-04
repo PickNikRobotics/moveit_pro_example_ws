@@ -34,7 +34,7 @@
           ID="CreateStampedPose"
           reference_frame="world"
           stamped_pose="{pose}"
-          position_xyz="1;0;1.7"
+          position_xyz="1.2;0;0.9"
         />
         <Action
           ID="CropPointsInBox"
@@ -52,7 +52,7 @@
           ID="CreateStampedPose"
           reference_frame="world"
           stamped_pose="{pose}"
-          position_xyz="0;1;1.7"
+          position_xyz="0;1.2;0.9"
         />
         <Action
           ID="CropPointsInBox"

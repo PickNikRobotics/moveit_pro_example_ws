@@ -2,11 +2,11 @@
   <compiler inertiafromgeom="auto" inertiagrouprange="4 4" angle="radian" />
 
   <asset>
-    <mesh file="../meshes/cabinetdrawer.stl" name="cabinetdrawer" />
-    <mesh file="../meshes/cabinethandle.stl" name="cabinethandle" />
-    <mesh file="../meshes/cabinetbase.stl" name="cabinetbase" />
-    <mesh file="../meshes/countertop.stl" name="countertop" />
-    <mesh file="../meshes/faucet.stl" name="faucet" />
+    <mesh file="../meshes/cabinetdrawer.stl" name="cabinetdrawer" scale="0.6 0.6 0.6" />
+    <mesh file="../meshes/cabinethandle.stl" name="cabinethandle" scale="0.6 0.6 0.6" />
+    <mesh file="../meshes/cabinetbase.stl" name="cabinetbase" scale="0.6 0.6 0.6" />
+    <mesh file="../meshes/countertop.stl" name="countertop" scale="0.6 0.6 0.6" />
+    <mesh file="../meshes/faucet.stl" name="faucet" scale="0.6 0.6 0.6" />
 
     <texture
       name="T_counter_metal"
@@ -76,7 +76,7 @@
           condim="3"
           contype="0"
           group="4"
-          margin="0.001"
+          margin="0.0006"
           material="counter_collision_blue"
         />
       </default>

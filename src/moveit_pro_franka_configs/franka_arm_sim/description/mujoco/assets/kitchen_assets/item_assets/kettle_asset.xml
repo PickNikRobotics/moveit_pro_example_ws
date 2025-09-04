@@ -2,8 +2,8 @@
   <compiler inertiafromgeom="auto" inertiagrouprange="4 4" angle="radian" />
 
   <asset>
-    <mesh file="../meshes/kettle.stl" name="kettle" />
-    <mesh file="../meshes/kettlehandle.stl" name="kettlehandle" />
+    <mesh file="../meshes/kettle.stl" name="kettle" scale="0.6 0.6 0.6" />
+    <mesh file="../meshes/kettlehandle.stl" name="kettlehandle" scale="0.6 0.6 0.6" />
 
     <texture
       name="T_kettle_metal"
@@ -67,7 +67,7 @@
           condim="4"
           contype="1"
           group="4"
-          margin="0.001"
+          margin="0.0006"
           material="kettle_collision_blue"
           solimp=".8 .9 .01"
           solref=".02 1"

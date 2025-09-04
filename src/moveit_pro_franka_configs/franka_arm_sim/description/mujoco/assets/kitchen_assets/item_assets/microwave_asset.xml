@@ -2,12 +2,12 @@
   <compiler inertiafromgeom="auto" inertiagrouprange="4 4" angle="radian" />
 
   <asset>
-    <mesh file="../meshes/micro.stl" name="micro" />
-    <mesh file="../meshes/microdoor.stl" name="microdoor" />
-    <mesh file="../meshes/microbutton.stl" name="microbutton" />
-    <mesh file="../meshes/microfeet.stl" name="microfeet" />
-    <mesh file="../meshes/microhandle.stl" name="microhandle" />
-    <mesh file="../meshes/microwindow.stl" name="microwindow" />
+    <mesh file="../meshes/micro.stl" name="micro" scale="0.6 0.6 0.6" />
+    <mesh file="../meshes/microdoor.stl" name="microdoor" scale="0.6 0.6 0.6" />
+    <mesh file="../meshes/microbutton.stl" name="microbutton" scale="0.6 0.6 0.6" />
+    <mesh file="../meshes/microfeet.stl" name="microfeet" scale="0.6 0.6 0.6" />
+    <mesh file="../meshes/microhandle.stl" name="microhandle" scale="0.6 0.6 0.6" />
+    <mesh file="../meshes/microwindow.stl" name="microwindow" scale="0.6 0.6 0.6" />
 
     <texture
       name="T_micro_metal"
@@ -62,7 +62,7 @@
           condim="3"
           contype="0"
           group="4"
-          margin="0.001"
+          margin="0.0006"
           material="micro_collision_blue"
           solimp=".8 .9 .01"
           solref=".02 1"

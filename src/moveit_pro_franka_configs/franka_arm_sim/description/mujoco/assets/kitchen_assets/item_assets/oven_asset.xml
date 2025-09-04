@@ -2,16 +2,16 @@
   <compiler inertiafromgeom="auto" inertiagrouprange="4 4" angle="radian" />
 
   <asset>
-    <mesh file="../meshes/hood.stl" name="hood" />
-    <mesh file="../meshes/lightswitch.stl" name="lightswitch" />
-    <mesh file="../meshes/lightswitchbase.stl" name="lightswitchbase" />
-    <mesh file="../meshes/knob.stl" name="knob" />
-    <mesh file="../meshes/stoverim.stl" name="stoverim" />
-    <mesh file="../meshes/burnerplate.stl" name="burnerplate" />
-    <mesh file="../meshes/ovenhandle.stl" name="ovenhandle" />
-    <mesh file="../meshes/oven.stl" name="oven" />
-    <mesh file="../meshes/oventop.stl" name="oventop" />
-    <mesh file="../meshes/ovenwindow.stl" name="ovenwindow" />
+    <mesh file="../meshes/hood.stl" name="hood" scale="0.6 0.6 0.6" />
+    <mesh file="../meshes/lightswitch.stl" name="lightswitch" scale="0.6 0.6 0.6" />
+    <mesh file="../meshes/lightswitchbase.stl" name="lightswitchbase" scale="0.6 0.6 0.6" />
+    <mesh file="../meshes/knob.stl" name="knob" scale="0.6 0.6 0.6" />
+    <mesh file="../meshes/stoverim.stl" name="stoverim" scale="0.6 0.6 0.6" />
+    <mesh file="../meshes/burnerplate.stl" name="burnerplate" scale="0.6 0.6 0.6" />
+    <mesh file="../meshes/ovenhandle.stl" name="ovenhandle" scale="0.6 0.6 0.6" />
+    <mesh file="../meshes/oven.stl" name="oven" scale="0.6 0.6 0.6" />
+    <mesh file="../meshes/oventop.stl" name="oventop" scale="0.6 0.6 0.6" />
+    <mesh file="../meshes/ovenwindow.stl" name="ovenwindow" scale="0.6 0.6 0.6" />
 
     <texture
       name="T_oven_wood"
@@ -92,7 +92,7 @@
           condim="3"
           contype="0"
           group="4"
-          margin="0.001"
+          margin="0.0006"
           material="oven_collision_blue"
           type="mesh"
         />
