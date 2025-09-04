@@ -37,3 +37,6 @@
 	path = src/external_dependencies/ros2_controllers
 	url = git@github.com:ros-controls/ros2_controllers.git
 	branch = humble
+[submodule "src/moveit_pro_clipseg"]
+	path = src/moveit_pro_clipseg
+	url = https://github.com/PickNikRobotics/moveit_pro_clipseg.git
