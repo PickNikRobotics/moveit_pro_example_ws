@@ -68,6 +68,7 @@ skip_objectives = {
     "Pick up Cube",
     "Place Object",
     "Record Square Trajectory",
+    "Stack Blocks with ICP",  # Skipped because there is no primary ui to switch to in ci
     "Teleoperate",
 }
 

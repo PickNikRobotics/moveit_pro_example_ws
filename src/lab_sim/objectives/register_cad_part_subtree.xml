@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Register CAD Part Subtree">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Register CAD Part Subtree"
+    _description="Load an STL from disk and use registration to align the pointcloud with a matching shape in the environment. Return the pose of the object in the world frame."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="ClearSnapshot" />
+      <SubTree ID="Look at Table" _collapsed="true" />
+      <Action
+        ID="CreateStampedPose"
+        position_xyz="0.2;0.75;0.6"
+        orientation_xyzw="0;0;0;1"
+        stamped_pose="{stamped_pose}"
+        name="Initial Guess"
+        reference_frame="world"
+      />
+      <SubTree
+        ID="Load Mesh as Red Point Cloud"
+        _collapsed="false"
+        output_cloud="{red_cloud}"
+        initial_pose="{stamped_pose}"
+        point_cloud="{red_cloud}"
+      />
+      <Action
+        ID="SendPointCloudToUI"
+        point_cloud="{red_cloud}"
+        pcd_topic="/pcd_pointcloud_captures"
+      />
+      <Action
+        ID="GetPointCloud"
+        topic_name="/wrist_camera/points"
+        message_out="{wrist_point_cloud}"
+        publisher_timeout_sec="5.000000"
+        timeout_sec="5.000000"
+      />
+      <Action
+        ID="TransformPointCloudFrame"
+        input_cloud="{wrist_point_cloud}"
+        output_cloud="{wrist_point_cloud}"
+        target_frame="world"
+      />
+      <Action
+        ID="SendPointCloudToUI"
+        point_cloud="{wrist_point_cloud}"
+        pcd_topic="/pcd_pointcloud_captures"
+      />
+      <Action
+        ID="RegisterPointClouds"
+        target_point_cloud="{wrist_point_cloud}"
+        base_point_cloud="{red_cloud}"
+        max_correspondence_distance="0.5"
+        max_iterations="100"
+        target_pose_in_base_frame="{target_pose}"
+      />
+      <SubTree
+        ID="Load Mesh as Green Point Cloud"
+        _collapsed="false"
+        output_cloud="{green_cloud}"
+        initial_pose="{stamped_pose}"
+        point_cloud="{green_cloud}"
+      />
+      <Action
+        ID="TransformPointCloud"
+        input_cloud="{green_cloud}"
+        transform_pose="{target_pose}"
+        output_cloud="{output_cloud_aligned}"
+      />
+      <Action
+        ID="SendPointCloudToUI"
+        point_cloud="{output_cloud_aligned}"
+        pcd_topic="/pcd_pointcloud_captures"
+      />
+      <!--Transform the output pose from RegisterPointClouds to be usable for grasp planning-->
+      <Action
+        ID="TransformPoseWithPose"
+        input_pose="{stamped_pose}"
+        output_pose="{grasp_pose}"
+        transform_pose="{target_pose}"
+        name="Take the transform_pose from RegisterPointClouds and apply it on top of the initial guess to put it in the world frame"
+      />
+      <Action
+        ID="TransformPose"
+        input_pose="{grasp_pose}"
+        output_pose="{grasp_pose}"
+        quaternion_xyzw="0.000; 1.000; 0.000; 0.000"
+        name="Flip the pose so the z axis is facing downwards, which aligns with the pose a gripper can do. Otherwise the z axis faces upwards and prevents planning to that infeasible pose"
+      />
+      <Action
+        ID="VisualizePose"
+        marker_lifetime="0.000000"
+        marker_name="grasp_pose"
+        marker_size="0.100000"
+        pose="{grasp_pose}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Register CAD Part Subtree">
+      <MetadataFields>
+        <Metadata subcategory="Perception - 3D Point Cloud" />
+        <Metadata runnable="false" />
+      </MetadataFields>
+      <inout_port name="grasp_pose" default="{grasp_pose}" />
+    </SubTree>
+  </TreeNodesModel>
+</root>
