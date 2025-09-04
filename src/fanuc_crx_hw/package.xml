@@ -1,9 +1,11 @@
 <?xml version="1.0" ?>
 <package format="3">
-  <name>fanuc_crx10ia_hw</name>
+  <name>fanuc_crx_hw</name>
   <version>8.6.0</version>
 
-  <description>Configuration package for Fanuc CRX10iA robot</description>
+  <description>
+    Configuration package for the FANUC CRX manipulator family.
+  </description>
 
   <maintainer email="support@picknik.ai">MoveIt Pro Maintainer</maintainer>
 

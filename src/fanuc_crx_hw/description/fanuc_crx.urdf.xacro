@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
-<robot name="crx10ia" xmlns:xacro="http://wiki.ros.org/xacro">
+<robot name="fanuc_crx" xmlns:xacro="http://wiki.ros.org/xacro">
 
+  <xacro:arg name="robot_model" default="$(arg robot_model)"/>
   <xacro:arg name="robot_ip" default="$(arg robot_ip)"/>
   <xacro:arg name="rmi_port" default="16001"/>
   <xacro:arg name="stream_motion_port" default="60015"/>
@@ -8,7 +9,7 @@
   <xacro:arg name="payload_schedule" default="1"/>
   <xacro:arg name="use_mock" default="false"/>
 
-  <xacro:include filename="$(find fanuc_crx_description)/urdf/crx10ia_urdf_macro.xacro"/>
+  <xacro:include filename="$(find fanuc_crx_description)/urdf/$(arg robot_model)_urdf_macro.xacro"/>
   <xacro:if value="$(arg use_mock)">
     <xacro:include filename="$(find fanuc_hardware_interface)/config/crx_mock_ros2_control_macro.xacro"/>
   </xacro:if>
@@ -27,9 +28,9 @@
   </joint>
 
 
-  <xacro:crx10ia parent="world" child="grasp_base">
+  <xacro:element xacro:name="xacro:$(arg robot_model)" parent="world" child="grasp_base">
     <origin xyz="0 0 0" rpy="0 0 0"/>
-  </xacro:crx10ia>
+  </xacro:element>
 
-  <xacro:crx_control name="crx10ia"/>
+  <xacro:crx_control name="$(arg robot_model)"/>
 </robot>
