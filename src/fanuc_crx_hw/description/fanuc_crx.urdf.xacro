@@ -1,0 +1,36 @@
+<?xml version="1.0" ?>
+<robot name="fanuc_crx" xmlns:xacro="http://wiki.ros.org/xacro">
+
+  <xacro:arg name="robot_model" default="$(arg robot_model)"/>
+  <xacro:arg name="robot_ip" default="$(arg robot_ip)"/>
+  <xacro:arg name="rmi_port" default="16001"/>
+  <xacro:arg name="stream_motion_port" default="60015"/>
+  <xacro:arg name="gpio_configuration" default="$(find fanuc_hardware_interface)/config/example_gpio_config.yaml"/>
+  <xacro:arg name="payload_schedule" default="1"/>
+  <xacro:arg name="use_mock" default="false"/>
+
+  <xacro:include filename="$(find fanuc_crx_description)/urdf/$(arg robot_model)_urdf_macro.xacro"/>
+  <xacro:if value="$(arg use_mock)">
+    <xacro:include filename="$(find fanuc_hardware_interface)/config/crx_mock_ros2_control_macro.xacro"/>
+  </xacro:if>
+  <xacro:unless value="$(arg use_mock)">
+    <xacro:include filename="$(find fanuc_hardware_interface)/config/crx_physical_ros2_control_macro.xacro"/>
+  </xacro:unless>
+
+  <link name="world"/>
+
+  <link name="grasp_base"/>
+  <link name="grasp_link"/>
+  <joint name="grasp_base-grasp_link" type="fixed">
+    <origin xyz="0 0 0" rpy="${radians(90)} 0 ${radians(90)}" />
+    <parent link="grasp_base" />
+    <child link="grasp_link" />
+  </joint>
+
+
+  <xacro:element xacro:name="xacro:$(arg robot_model)" parent="world" child="grasp_base">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </xacro:element>
+
+  <xacro:crx_control name="$(arg robot_model)"/>
+</robot>

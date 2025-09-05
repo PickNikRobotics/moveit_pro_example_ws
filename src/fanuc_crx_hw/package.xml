@@ -1,0 +1,37 @@
+<?xml version="1.0" ?>
+<package format="3">
+  <name>fanuc_crx_hw</name>
+  <version>8.6.0</version>
+
+  <description>
+    Configuration package for the FANUC CRX manipulator family.
+  </description>
+
+  <maintainer email="support@picknik.ai">MoveIt Pro Maintainer</maintainer>
+
+  <license>BSD-3-Clause</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>fanuc_controllers</depend>
+  <depend>fanuc_crx_description</depend>
+  <depend>fanuc_hardware_interface</depend>
+  <depend>fanuc_libs</depend>
+  <depend>fanuc_msgs</depend>
+
+  <exec_depend>moveit_studio_agent</exec_depend>
+  <exec_depend>moveit_studio_behavior</exec_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+
+  <test_depend>ament_clang_format</test_depend>
+  <test_depend>ament_clang_tidy</test_depend>
+  <test_depend>ament_cmake_copyright</test_depend>
+  <test_depend>ament_cmake_lint_cmake</test_depend>
+  <test_depend>picknik_ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

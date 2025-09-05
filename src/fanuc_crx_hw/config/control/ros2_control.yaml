@@ -1,0 +1,140 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 500  # Hz
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+    joint_trajectory_controller:
+      type: fanuc_controllers/ScaledJointTrajectoryController
+    servo_controller:
+      type: fanuc_controllers/ScaledJointTrajectoryController
+    velocity_force_controller:
+      type: velocity_force_controller/VelocityForceController
+    fanuc_gpio_controller:
+      type: fanuc_controllers/FanucGPIOController
+
+joint_trajectory_controller:
+  ros__parameters:
+    joints:
+      - J1
+      - J2
+      - J3
+      - J4
+      - J5
+      - J6
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+    state_publish_rate: 100.0
+    action_monitor_rate: 20.0
+    allow_partial_joints_goal: false
+    # Set to true because the goal we send when joint jogging sends the current velocity (which can be small values e.g. 2e-6). These small velocities are small enough that they get clipped for the actual end goal.
+    allow_nonzero_velocity_at_trajectory_end: true
+    constraints:
+      stopped_velocity_tolerance: 0.0
+      goal_time: 0.0
+      J1:
+        goal: 0.05
+        trajectory: 0.25
+      J2:
+        goal: 0.05
+        trajectory: 0.25
+      J3:
+        goal: 0.05
+        trajectory: 0.25
+      J4:
+        goal: 0.05
+        trajectory: 0.25
+      J5:
+        goal: 0.05
+        trajectory: 0.25
+      J6:
+        goal: 0.05
+        trajectory: 0.25
+
+servo_controller:
+  ros__parameters:
+    joints:
+      - J1
+      - J2
+      - J3
+      - J4
+      - J5
+      - J6
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+    state_publish_rate: 100.0
+    action_monitor_rate: 20.0
+    allow_partial_joints_goal: false
+    constraints:
+      stopped_velocity_tolerance: 0.0
+      goal_time: 0.0
+      J1:
+        goal: 0.05
+      J2:
+        goal: 0.05
+      J3:
+        goal: 0.05
+      J4:
+        goal: 0.05
+      J5:
+        goal: 0.05
+      J6:
+        goal: 0.05
+
+velocity_force_controller:
+  ros__parameters:
+    # Joint group to control.
+    planning_group_name: manipulator
+    # The tip link of the kinematic chain, i.e. the frame that will be controlled.
+    ee_frame: grasp_link
+    # The frame where the force / torque sensor reading is given.
+    # (Needs to exist in the kinematic chain).
+    sensor_frame: grasp_link
+    # Maximum joint-space velocities.
+    max_joint_velocity:
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+    # Maximum joint-space accelerations.
+    max_joint_acceleration:
+      - 2.0
+      - 2.0
+      - 2.0
+      - 2.0
+      - 2.0
+      - 2.0
+    # Maximum Cartesian-space velocities.
+    max_cartesian_velocity:
+      - 0.25
+      - 0.25
+      - 0.25
+      - 1.0
+      - 1.0
+      - 1.0
+    # Maximum Cartesian-space accelerations.
+    max_cartesian_acceleration:
+      - 2.0
+      - 2.0
+      - 2.0
+      - 4.0
+      - 4.0
+      - 4.0
+    # Rate in Hz at which the controller will publish the state.
+    state_publish_rate: 10
+    # Damping coefficient for the Jacobian damped least-squares inverse.
+    jacobian_damping: 0.005
+    # Timeout in seconds after which the controller will stop motion if no new commands are received.
+    command_timeout: 0.2
+    # Padding (in radians) to add to joint position limits as a safety margin.
+    joint_limit_position_tolerance: 0.02
+
+fanuc_gpio_controller:
+  ros__parameters:
+    gpio_config_file_package: fanuc_crx_hw
+    gpio_config_file_path: config/control/example_gpio_config.yaml

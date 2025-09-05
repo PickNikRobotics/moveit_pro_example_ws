@@ -1,0 +1,153 @@
+###############################################################
+#
+#  This configures the robot to work with MoveIt Pro
+#
+###############################################################
+
+# Baseline hardware configuration parameters for MoveIt Pro.
+# [Required]
+hardware:
+  # Set simulated to false if you are using this as a configuration for real hardware.
+  # This allows users to switch between mock and real hardware by changing a single parameter with config inheritance.
+  # [Required]
+  simulated: false
+  # If simulated is false, launch the following file:
+  # [Optional, defaults to a blank launch file if not specified]
+  robot_driver_persist_launch_file:
+    package: "moveit_studio_agent"
+    path: "launch/blank.launch.py"
+
+  # If the MoveIt Pro Agent should launch the ros2 controller node.
+  # [Optional, default=True]
+  launch_control_node: True
+
+  # If the MoveIt Pro Agent should launch the robot state publisher.
+  # This should be false if you are launching the robot state publisher as part of drivers.
+  # [Optional, default=True]
+  launch_robot_state_publisher: True
+
+
+  # Parameters used to configure the robot description through XACRO.
+  # A URDF and SRDF are both required.
+  # [Required]
+  robot_description:
+    urdf:
+      package: "fanuc_crx_hw"
+      path: "description/fanuc_crx.urdf.xacro"
+    srdf:
+      package: "fanuc_crx_hw"
+      path: "config/moveit/fanuc_crx.srdf"
+    # Specify any additional parameters required for the URDF.
+    # Many of these are specific to the descriptions packages, and can be customized as needed.
+    # [Optional]
+    urdf_params:
+      # If you'd like to use a different CRX model, enter it here!
+      # Possible names are xacro macros under package://fanuc_crx_description/urdf/.
+      - robot_model: "crx10ia"
+      - robot_ip: "192.168.1.100"
+      - rmi_port: "16001"
+      - stream_motion_port: "60015"
+      - gpio_configuration: "$(find fanuc_crx_hw)/config/control/example_gpio_config.yaml"
+      - use_mock: "false"
+
+# Sets ROS global params for launch.
+# [Optional]
+ros_global_params:
+  # Whether or not to use simulated time.
+  # [Optional, default=False]
+  use_sim_time: False
+
+# Configuration files for MoveIt.
+# For more information, refer to https://moveit.picknik.ai/main/doc/how_to_guides/moveit_configuration/moveit_configuration_tutorial.html
+# [Required]
+moveit_params:
+  # Used by the Waypoint Manager to save joint states from this joint group.
+  joint_group_name: "manipulator"
+
+  ompl_planning:
+    package: "fanuc_crx_hw"
+    path: "config/moveit/ompl_planning.yaml"
+  stomp_planning:
+    package: "fanuc_crx_hw"
+    path: "config/moveit/stomp_planning.yaml"
+  kinematics:
+    package: "fanuc_crx_hw"
+    path: "config/moveit/pose_ik_distance.yaml"
+  servo:
+    package: "fanuc_crx_hw"
+    path: "config/moveit/servo.yaml"
+  joint_limits:
+    package: "fanuc_crx_hw"
+    path: "config/moveit/joint_limits.yaml"
+  servo_joint_limits:
+    package: "fanuc_crx_hw"
+    path: "config/moveit/joint_limits_servo.yaml"
+  pose_jog:
+    package: "fanuc_crx_hw"
+    path: "config/moveit/pose_jog.yaml"
+
+  publish:
+    planning_scene: True
+    geometry_updates: True
+    state_updates: True
+    transforms_updates: True
+
+  trajectory_execution:
+    manage_controllers: True
+    allowed_execution_duration_scaling: 2.0
+    allowed_goal_duration_margin: 5.0
+    allowed_start_tolerance: 0.01
+
+# Configuration for launching ros2_control processes.
+# [Required, if using ros2_control]
+ros2_control:
+  config:
+    package: "fanuc_crx_hw"
+    path: "config/control/ros2_control.yaml"
+  # MoveIt Pro will load and activate these controllers at start up to ensure they are available.
+  # If not specified, it is up to the user to ensure the appropriate controllers are active and available
+  # for running the application.
+  # [Optional, default=[]]
+  controllers_active_at_startup:
+    - "joint_state_broadcaster"
+    - "joint_trajectory_controller"
+    - "fanuc_gpio_controller"
+  # Load but do not start these controllers so they can be activated later if needed.
+  # [Optional, default=[]]
+  controllers_inactive_at_startup:
+    - "velocity_force_controller"
+    - "servo_controller"
+# Configuration for loading behaviors and objectives.
+# [Required]
+objectives:
+  # List of plugins for loading custom behaviors.
+  # [Required]
+  behavior_loader_plugins:
+    # This plugin will load the core MoveIt Pro Behaviors.
+    # Add additional plugin loaders as needed.
+    core:
+      - "moveit_studio::behaviors::CoreBehaviorsLoader"
+      - "moveit_studio::behaviors::MTCCoreBehaviorsLoader"
+      - "moveit_studio::behaviors::ServoBehaviorsLoader"
+      - "moveit_studio::behaviors::VisionBehaviorsLoader"
+      - "moveit_studio::behaviors::ConverterBehaviorsLoader"
+  # Specify source folder for objectives
+  # [Required]
+  objective_library_paths:
+    core_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/core"
+    motion_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/motion"
+    perception_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/perception"
+    hw_objectives:
+      package_name: "fanuc_crx_hw"
+      relative_path: "objectives"
+  # Specify the location of the saved waypoints file.
+  # [Required]
+  waypoints_file:
+    package_name: "fanuc_crx_hw"
+    relative_path: "waypoints/waypoints.yaml"
