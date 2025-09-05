@@ -34,6 +34,7 @@ hardware:
     # [Optional]
     urdf_params:
       - mujoco_model: "description/mujoco/scene.xml"
+      - mujoco_viewer: true
     simulated_hardware_launch_file:
       package: "moveit_studio_agent"
       path: "launch/blank.launch.py"
