@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Test object attachment">
+  <!--//////////-->
+  <BehaviorTree ID="Test object attachment" _description="" _favorite="false">
+    <Control ID="Sequence">
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        controller_names="joint_trajectory_controller"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        seed="0"
+        velocity_scale_factor="1.0"
+        waypoint_name="Workspace Right"
+      />
+      <SubTree
+        ID="Add Collision Object to Planning Scene"
+        _collapsed="false"
+        dimensions="0.02;0.02;0.02"
+        object_id="{object_id}"
+        position_xyz="0;0.5;1"
+        graspable_collision_object="{graspable_collision_object}"
+      />
+      <SubTree
+        ID="Pick up Collision Object in Planning Scene"
+        _collapsed="true"
+        graspable_collision_object="{graspable_collision_object}"
+        link_name="grasp_link"
+      />
+      <SubTree
+        ID="Intelligently Move Objects in Scene"
+        _collapsed="false"
+        graspable_collision_object="{graspable_collision_object}"
+        link_name="grasp_link"
+      />
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        controller_names="joint_trajectory_controller"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        seed="0"
+        velocity_scale_factor="1.0"
+        waypoint_name="Look at Table"
+      />
+      <Control ID="Sequence" name="">
+        <Action
+          ID="LogMessage"
+          log_level="info"
+          message="Press resume to delete collision object"
+        />
+        <Action
+          ID="BreakpointSubscriber"
+          breakpoint_topic="/moveit_pro_breakpoint"
+        />
+        <Action
+          ID="GetCurrentPlanningScene"
+          planning_scene_msg="{planning_scene}"
+        />
+        <Action
+          ID="RemoveCollisionObjectFromPlanningScene"
+          apply_planning_scene_service="/apply_planning_scene"
+          object_id="{object_id}"
+          planning_scene_msg="{planning_scene}"
+        />
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Test object attachment">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Advanced Examples" />
+      </MetadataFields>
+      <inout_port name="link_name" default="grasp_link" />
+      <inout_port name="object_id" default="ObjectName" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

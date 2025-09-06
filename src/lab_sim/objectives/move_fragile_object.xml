@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Move Fragile Object">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Move Fragile Object"
+    _description="Using the Move Collision Objects Example subtree, set the created object name to &quot;FragileObject&quot; so that the Intelligent Move Collision Objects in Planning Scene subtree moves at half speed"
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree
+        ID="Move Collision Objects Example"
+        _collapsed="true"
+        link_name="grasp_link"
+        object_id="FragileObject"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Move Fragile Object">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Advanced Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

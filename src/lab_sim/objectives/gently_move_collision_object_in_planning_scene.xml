@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Gently Move Collision Object in Planning Scene"
+>
+  <!--//////////-->
+  <BehaviorTree
+    ID="Gently Move Collision Object in Planning Scene"
+    _description=""
+  >
+    <Control ID="Sequence" name="">
+      <Action
+        ID="LogMessage"
+        log_level="warn"
+        message="Fragile Object Detected"
+      />
+      <Action
+        ID="InitializeMTCTask"
+        task="{mtc_task}"
+        timeout="-1.000000"
+        trajectory_monitoring="false"
+        controller_names="joint_trajectory_controller"
+        task_id="move box"
+      />
+      <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
+      <Action
+        ID="SetupMTCMoveAlongFrameAxis"
+        acceleration_scale="0.5"
+        axis_frame="world"
+        axis_x="1.0"
+        axis_y="0.000000"
+        axis_z="0.0"
+        ignore_environment_collisions="false"
+        max_distance="1.0"
+        min_distance="0.5"
+        planning_group_name="manipulator"
+        task="{mtc_task}"
+        velocity_scale="0.5"
+        hand_frame="{link_name}"
+      />
+      <Action
+        ID="SetupMTCDetachObject"
+        frame_id="{link_name}"
+        object="{graspable_collision_object}"
+        task="{mtc_task}"
+      />
+      <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
+      <Action
+        ID="ExecuteMTCTask"
+        goal_duration_tolerance="-1.000000"
+        solution="{mtc_solution}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Gently Move Collision Object in Planning Scene">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Application - Advanced Examples" />
+      </MetadataFields>
+      <inout_port
+        name="graspable_collision_object"
+        default="{graspable_collision_object}"
+      />
+      <inout_port name="link_name" default="grasp_link" />
+    </SubTree>
+  </TreeNodesModel>
+</root>
