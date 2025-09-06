@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Add Collision Object to Planning Scene"
+>
+  <!--//////////-->
+  <BehaviorTree ID="Add Collision Object to Planning Scene">
+    <Control ID="Sequence" name="">
+      <Action
+        ID="GetCurrentPlanningScene"
+        planning_scene_msg="{planning_scene}"
+      />
+      <Action
+        ID="CreateStampedPose"
+        reference_frame="world"
+        stamped_pose="{stamped_pose}"
+        orientation_xyzw="0.000; 0.000; 0.000; 1.000"
+        position_xyz="{position_xyz}"
+      />
+      <Action
+        ID="CreateSolidPrimitiveBox"
+        dimensions="{dimensions}"
+        solid_primitive="{solid_primitive}"
+      />
+      <Action
+        ID="CreateCollisionObjectFromSolidPrimitive"
+        collision_object="{collision_object}"
+        object_id="{object_id}"
+        pose="{stamped_pose}"
+        solid_primitive="{solid_primitive}"
+      />
+      <Action
+        ID="GetElementOfVector"
+        element="{dx}"
+        index="0"
+        vector_in="{dimensions}"
+      />
+      <Action
+        ID="GetElementOfVector"
+        element="{dy}"
+        index="1"
+        vector_in="{dimensions}"
+      />
+      <Action
+        ID="GetElementOfVector"
+        element="{dz}"
+        index="2"
+        vector_in="{dimensions}"
+      />
+      <Action
+        ID="CreateGraspableObject"
+        cuboid_object="{cuboid_object}"
+        dx="{dx}"
+        dy="{dy}"
+        dz="{dz}"
+        generate_front_face="true"
+        generate_side_faces="true"
+        generate_top_face="true"
+        object_id="{object_id}"
+        pose="{stamped_pose}"
+      />
+      <Action
+        ID="UnpackGraspableObjectMessage"
+        grasp_info="{grasp_info}"
+        graspable_object="{cuboid_object}"
+        object="{override_me}"
+        object_color="{object_color}"
+      />
+      <Action
+        ID="CreateGraspableObjectMessage"
+        grasp_info="{grasp_info}"
+        graspable_object="{graspable_collision_object}"
+        object="{collision_object}"
+        object_color="{object_color}"
+      />
+      <Action
+        ID="ModifyObjectInPlanningScene"
+        apply_planning_scene_service="/apply_planning_scene"
+        object="{graspable_collision_object}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Add Collision Object to Planning Scene">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Application - Advanced Examples" />
+      </MetadataFields>
+      <inout_port
+        name="graspable_collision_object"
+        default="{graspable_collision_object}"
+      />
+      <inout_port name="dimensions" default="0.25;0.25;0.25" />
+      <inout_port name="object_id" default="ObjectName" />
+      <inout_port name="position_xyz" default="0;1.5;1" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

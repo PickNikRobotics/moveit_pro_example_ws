@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Intelligently Move Objects in Scene"
+>
+  <!--//////////-->
+  <BehaviorTree ID="Intelligently Move Objects in Scene">
+    <Control ID="Sequence" name="">
+      <Action
+        ID="GetCurrentPlanningScene"
+        planning_scene_msg="{planning_scene}"
+      />
+      <Control ID="IfThenElse">
+        <Action
+          ID="IsObjectAttachedTo"
+          planning_scene="{planning_scene}"
+          object_id="FragileObject"
+          link_name="{link_name}"
+        />
+        <SubTree
+          ID="Gently Move Collision Object in Planning Scene"
+          _collapsed="true"
+          graspable_collision_object="{graspable_collision_object}"
+          link_name="grasp_link"
+        />
+        <SubTree
+          ID="Move Collision Object in Planning Scene"
+          _collapsed="true"
+          graspable_collision_object="{graspable_collision_object}"
+          link_name="grasp_link"
+        />
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Intelligently Move Objects in Scene">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Application - Advanced Examples" />
+      </MetadataFields>
+      <inout_port
+        name="graspable_collision_object"
+        default="{graspable_collision_object}"
+      />
+      <inout_port name="link_name" default="grasp_link" />
+    </SubTree>
+  </TreeNodesModel>
+</root>
