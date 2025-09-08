@@ -47,9 +47,13 @@ objectives:
       - "moveit_studio::behaviors::ServoBehaviorsLoader"
       - "moveit_studio::behaviors::VisionBehaviorsLoader"
       - "moveit_studio::behaviors::ConverterBehaviorsLoader"
+      - "moveit_studio::behaviors::MujocoBehaviorsLoader"
   # Specify source folder for objectives
   # [Required]
   objective_library_paths:
+    mujoco_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/mujoco"
     sim_objectives:
       package_name: "lab_sim"
       relative_path: "objectives"
