@@ -13,11 +13,19 @@
         waypoint_name="Look at Table"
         joint_group_name="manipulator"
         controller_names="joint_trajectory_controller"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        seed="0"
+        velocity_scale_factor="1.0"
       />
       <Action
         ID="MoveGripperAction"
         gripper_command_action_name="/robotiq_gripper_controller/gripper_cmd"
         position="0"
+        timeout="10.000000"
       />
       <!--Run pick and place on loop-->
       <Decorator ID="KeepRunningUntilFailure">
@@ -29,34 +37,64 @@
               waypoint_name="Pick Cube"
               joint_group_name="manipulator"
               controller_names="joint_trajectory_controller"
+              acceleration_scale_factor="1.0"
+              controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+              keep_orientation="false"
+              keep_orientation_tolerance="0.05"
+              link_padding="0.01"
+              seed="0"
+              velocity_scale_factor="1.0"
             />
             <Action
               ID="MoveGripperAction"
               gripper_command_action_name="/robotiq_gripper_controller/gripper_cmd"
               position="0.7929"
+              timeout="10.000000"
             />
             <SubTree
               ID="Move to Waypoint"
               waypoint_name="Look at Table"
               joint_group_name="manipulator"
               controller_names="joint_trajectory_controller"
+              acceleration_scale_factor="1.0"
+              controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+              keep_orientation="false"
+              keep_orientation_tolerance="0.05"
+              link_padding="0.01"
+              seed="0"
+              velocity_scale_factor="1.0"
             />
             <SubTree
               ID="Move to Waypoint"
               joint_group_name="manipulator"
               controller_names="joint_trajectory_controller"
               waypoint_name="Place Cube"
+              acceleration_scale_factor="1.0"
+              controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+              keep_orientation="false"
+              keep_orientation_tolerance="0.05"
+              link_padding="0.01"
+              seed="0"
+              velocity_scale_factor="1.0"
             />
             <Action
               ID="MoveGripperAction"
               gripper_command_action_name="/robotiq_gripper_controller/gripper_cmd"
               position="0"
+              timeout="10.000000"
             />
             <SubTree
               ID="Move to Waypoint"
               waypoint_name="Look at Table"
               joint_group_name="manipulator"
               controller_names="joint_trajectory_controller"
+              acceleration_scale_factor="1.0"
+              controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+              keep_orientation="false"
+              keep_orientation_tolerance="0.05"
+              link_padding="0.01"
+              seed="0"
+              velocity_scale_factor="1.0"
             />
           </Control>
           <!--Pick object from where it was placed, put it down on the original location, and go back to center pose-->
@@ -66,34 +104,64 @@
               waypoint_name="Place Cube"
               joint_group_name="manipulator"
               controller_names="joint_trajectory_controller"
+              acceleration_scale_factor="1.0"
+              controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+              keep_orientation="false"
+              keep_orientation_tolerance="0.05"
+              link_padding="0.01"
+              seed="0"
+              velocity_scale_factor="1.0"
             />
             <Action
               ID="MoveGripperAction"
               gripper_command_action_name="/robotiq_gripper_controller/gripper_cmd"
               position="0.7929"
+              timeout="10.000000"
             />
             <SubTree
               ID="Move to Waypoint"
               waypoint_name="Look at Table"
               joint_group_name="manipulator"
               controller_names="joint_trajectory_controller"
+              acceleration_scale_factor="1.0"
+              controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+              keep_orientation="false"
+              keep_orientation_tolerance="0.05"
+              link_padding="0.01"
+              seed="0"
+              velocity_scale_factor="1.0"
             />
             <SubTree
               ID="Move to Waypoint"
               waypoint_name="Pick Cube"
               joint_group_name="manipulator"
               controller_names="joint_trajectory_controller"
+              acceleration_scale_factor="1.0"
+              controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+              keep_orientation="false"
+              keep_orientation_tolerance="0.05"
+              link_padding="0.01"
+              seed="0"
+              velocity_scale_factor="1.0"
             />
             <Action
               ID="MoveGripperAction"
               gripper_command_action_name="/robotiq_gripper_controller/gripper_cmd"
               position="0"
+              timeout="10.000000"
             />
             <SubTree
               ID="Move to Waypoint"
               waypoint_name="Look at Table"
               joint_group_name="manipulator"
               controller_names="joint_trajectory_controller"
+              acceleration_scale_factor="1.0"
+              controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+              keep_orientation="false"
+              keep_orientation_tolerance="0.05"
+              link_padding="0.01"
+              seed="0"
+              velocity_scale_factor="1.0"
             />
           </Control>
         </Control>
