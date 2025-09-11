@@ -64,7 +64,7 @@
       />
       <Action
         ID="CallTriggerService"
-        service_name="/joint_trajectory_admittance_controller/zero_fts"
+        service_name="/joint_trajectory_admittance_controller/zero_fts/tool0"
       />
       <Action
         ID="SetAdmittanceParameters"
