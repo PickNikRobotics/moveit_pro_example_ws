@@ -1,37 +1,83 @@
 <mujoco model="bracket_collision_geometry">
+  <!-- Using these properties to prevent trampoline behavior 
+  when the bracket lands flat on table or flat on another bracket part -->
+  <!-- condim="6" -->
+  <!-- friction="2.0 0.1 0.1" -->
+  <!-- margin="0.005" -->
+  <!-- solref="0.02 2.0" -->
+  <!-- solimp="0.95 0.999 0.01 0.5 2" -->
+  <!-- mass="0.5" -->
+  <!-- damping="0.0001" -->
+  <!-- which were experimentally checked. There may be a better way to do it. -->
+
   <!-- 5 Box collision primitives -->
   <!-- starting from the left (pointy end) -->
   <!-- top cheek -->
-  <body name="bracket" pos="-0.42 0.5 0.35" euler="0.0 0.0 0.0">
+  <body name="bracket" pos="-0.42 0.5 0.35" mass="0.5">
     <joint type="free" damping="0.0001" />
     <geom
       type="box"
       size="0.0530875 0.025 0.00762"
       pos="0.072240 -0.045944 0.00762"
       euler="0 0 0.4593"
-      friction="0.1 0.1 0.1"
-      density="1000"
       group="3"
+      condim="6"
+      friction="2.0 0.1 0.1"
+      margin="0.005"
+      solref="0.02 2.0"
+      solimp="0.95 0.999 0.01 0.5 2"
     />
     <!-- bottom cheek -->
     <geom
       type="box"
-      size="0.0427435 0.025 0.00762"
-      pos="0.056576 -0.097904 0.00762"
+      size="0.0422435 0.0218295 0.00762"
+      pos="0.054467 -0.100271 0.00762"
       euler="0 0 -0.7275"
-      friction="0.1 0.1 0.1"
-      density="1000"
       group="3"
+      condim="6"
+      friction="2.0 0.1 0.1"
+      margin="0.005"
+      solref="0.02 2.0"
+      solimp="0.95 0.999 0.01 0.5 2"
     />
-    <!-- middle box -->
+    <!-- middle upper box -->
     <geom
       type="box"
-      size="0.057278 0.029 0.00762"
-      pos="0.126243 -0.070218 0.00762"
+      size="0.01565 0.0145 0.00762"
+      pos="0.13365 -0.055718 0.00762"
       euler="0 0 0"
-      friction="0.1 0.1 0.1"
-      density="1000"
       group="3"
+      condim="6"
+      friction="2.0 0.1 0.1"
+      margin="0.005"
+      solref="0.02 2.0"
+      solimp="0.95 0.999 0.01 0.5 2"
+    />
+    <!-- middle lower box-->
+    <geom
+      type="box"
+      size="0.024469 0.010 0.00762"
+      pos="0.108831 -0.085 0.00762"
+      euler="0 0 0"
+      group="3"
+      condim="6"
+      friction="2.0 0.1 0.1"
+      margin="0.005"
+      solref="0.02 2.0"
+      solimp="0.95 0.999 0.01 0.5 2"
+    />
+    <!-- middle rear box -->
+    <geom
+      type="box"
+      size="0.017113 0.029 0.00762"
+      pos="0.166413 -0.070218 0.00762"
+      euler="0 0 0"
+      group="3"
+      condim="6"
+      friction="2.0 0.1 0.1"
+      margin="0.005"
+      solref="0.02 2.0"
+      solimp="0.95 0.999 0.01 0.5 2"
     />
     <!-- top butt -->
     <geom
@@ -39,9 +85,12 @@
       size="0.027879 0.025 0.00762"
       pos="0.136622 -0.025 0.00762"
       euler="0 0 0"
-      friction="0.1 0.1 0.1"
-      density="1000"
       group="3"
+      condim="6"
+      friction="2.0 0.1 0.1"
+      margin="0.005"
+      solref="0.02 2.0"
+      solimp="0.95 0.999 0.01 0.5 2"
     />
     <!-- bottom butt -->
     <geom
@@ -49,9 +98,12 @@
       size="0.048879 0.025 0.00762"
       pos="0.120751 -0.120 0.00762"
       euler="0 0 0"
-      friction="0.1 0.1 0.1"
-      density="1000"
       group="3"
+      condim="6"
+      friction="2.0 0.1 0.1"
+      margin="0.005"
+      solref="0.02 2.0"
+      solimp="0.95 0.999 0.01 0.5 2"
     />
 
     <!-- 3 Cylinder collision primitives -->
@@ -61,27 +113,434 @@
       type="cylinder"
       size="0.025 0.00762"
       pos="0.024654 -0.069478 0.00762"
-      friction="0.1 0.1 0.1"
-      density="1000"
       group="3"
+      condim="6"
+      friction="2.0 0.1 0.1"
+      margin="0.005"
+      solref="0.02 2.0"
+      solimp="0.95 0.999 0.01 0.5 2"
     />
     <!-- butts side -->
     <geom
       type="cylinder"
       size="0.025 0.00762"
       pos="0.1645 -0.025 0.00762"
-      friction="0.1 0.1 0.1"
-      density="1000"
       group="3"
+      condim="6"
+      friction="2.0 0.1 0.1"
+      margin="0.005"
+      solref="0.02 2.0"
+      solimp="0.95 0.999 0.01 0.5 2"
     />
     <geom
       type="cylinder"
       size="0.025 0.00762"
       pos="0.16963 -0.120 0.00762"
-      friction="0.1 0.1 0.1"
-      density="1000"
       group="3"
+      condim="6"
+      friction="2.0 0.1 0.1"
+      margin="0.005"
+      solref="0.02 2.0"
+      solimp="0.95 0.999 0.01 0.5 2"
     />
+
+    <!-- Holes in part used for placement, approximated by boxes -->
+    <!-- 10 boxes centered at C=(0.076362, -0.079826, 0)-->
+    <geom
+      type="box"
+      pos="0.076362 -0.066326 0.00762"
+      euler="0 0 0.00"
+      size=".0075 .0075 .007"
+      rgba="0 .8 0 1"
+      group="3"
+      condim="6"
+      friction="2.0 0.1 0.1"
+      margin="0.005"
+      solref="0.02 2.0"
+      solimp="0.95 0.999 0.01 0.5 2"
+    />
+    <geom
+      type="box"
+      pos="0.068518 -0.068839 0.00762"
+      euler="0 0 0.62"
+      size=".0075 .0075 .007"
+      rgba="0 .8 0 1"
+      group="3"
+      condim="6"
+      friction="2.0 0.1 0.1"
+      margin="0.005"
+      solref="0.02 2.0"
+      solimp="0.95 0.999 0.01 0.5 2"
+    />
+    <geom
+      type="box"
+      pos="0.063594 -0.075441 0.00762"
+      euler="0 0 1.24"
+      size=".0075 .0075 .007"
+      rgba="0 .8 0 1"
+      group="3"
+      condim="6"
+      friction="2.0 0.1 0.1"
+      margin="0.005"
+      solref="0.02 2.0"
+      solimp="0.95 0.999 0.01 0.5 2"
+    />
+    <geom
+      type="box"
+      pos="0.063423 -0.083676 0.00762"
+      euler="0 0 1.86"
+      size=".0075 .0075 .007"
+      rgba="0 .8 0 1"
+      group="3"
+      condim="6"
+      friction="2.0 0.1 0.1"
+      margin="0.005"
+      solref="0.02 2.0"
+      solimp="0.95 0.999 0.01 0.5 2"
+    />
+    <geom
+      type="box"
+      pos="0.068068 -0.090478 0.00762"
+      euler="0 0 2.48"
+      size=".0075 .0075 .007"
+      rgba="0 .8 0 1"
+      group="3"
+      condim="6"
+      friction="2.0 0.1 0.1"
+      margin="0.005"
+      solref="0.02 2.0"
+      solimp="0.95 0.999 0.01 0.5 2"
+    />
+    <geom
+      type="box"
+      pos="0.075801 -0.093314 0.00762"
+      euler="0 0 3.10"
+      size=".0075 .0075 .007"
+      rgba="0 .8 0 1"
+      group="3"
+      condim="6"
+      friction="2.0 0.1 0.1"
+      margin="0.005"
+      solref="0.02 2.0"
+      solimp="0.95 0.999 0.01 0.5 2"
+    />
+    <geom
+      type="box"
+      pos="0.083742 -0.091130 0.00762"
+      euler="0 0 3.72"
+      size=".0075 .0075 .007"
+      rgba="0 .8 0 1"
+      group="3"
+      condim="6"
+      friction="2.0 0.1 0.1"
+      margin="0.005"
+      solref="0.02 2.0"
+      solimp="0.95 0.999 0.01 0.5 2"
+    />
+    <geom
+      type="box"
+      pos="0.088937 -0.084738 0.00762"
+      euler="0 0 4.34"
+      size=".0075 .0075 .007"
+      rgba="0 .8 0 1"
+      group="3"
+      condim="6"
+      friction="2.0 0.1 0.1"
+      margin="0.005"
+      solref="0.02 2.0"
+      solimp="0.95 0.999 0.01 0.5 2"
+    />
+    <geom
+      type="box"
+      pos="0.089450 -0.076517 0.00762"
+      euler="0 0 4.96"
+      size=".0075 .0075 .007"
+      rgba="0 .8 0 1"
+      group="3"
+      condim="6"
+      friction="2.0 0.1 0.1"
+      margin="0.005"
+      solref="0.02 2.0"
+      solimp="0.95 0.999 0.01 0.5 2"
+    />
+    <geom
+      type="box"
+      pos="0.085092 -0.069528 0.00762"
+      euler="0 0 5.58"
+      size=".0075 .0075 .007"
+      rgba="0 .8 0 1"
+      group="3"
+      condim="6"
+      friction="2.0 0.1 0.1"
+      margin="0.005"
+      solref="0.02 2.0"
+      solimp="0.95 0.999 0.01 0.5 2"
+    />
+
+    <!-- 10 boxes centered at C=(0.110, -0.067, 0) -->
+    <geom
+      type="box"
+      pos="0.110000 -0.053500 0.00762"
+      euler="0 0 0.00"
+      size=".0075 .0075 .007"
+      rgba="0 .8 0 1"
+      group="3"
+      condim="6"
+      friction="2.0 0.1 0.1"
+      margin="0.005"
+      solref="0.02 2.0"
+      solimp="0.95 0.999 0.01 0.5 2"
+    />
+    <geom
+      type="box"
+      pos="0.102156 -0.056013 0.00762"
+      euler="0 0 0.62"
+      size=".0075 .0075 .007"
+      rgba="0 .8 0 1"
+      group="3"
+      condim="6"
+      friction="2.0 0.1 0.1"
+      margin="0.005"
+      solref="0.02 2.0"
+      solimp="0.95 0.999 0.01 0.5 2"
+    />
+    <geom
+      type="box"
+      pos="0.097232 -0.062615 0.00762"
+      euler="0 0 1.24"
+      size=".0075 .0075 .007"
+      rgba="0 .8 0 1"
+      group="3"
+      condim="6"
+      friction="2.0 0.1 0.1"
+      margin="0.005"
+      solref="0.02 2.0"
+      solimp="0.95 0.999 0.01 0.5 2"
+    />
+    <geom
+      type="box"
+      pos="0.097061 -0.070850 0.00762"
+      euler="0 0 1.86"
+      size=".0075 .0075 .007"
+      rgba="0 .8 0 1"
+      group="3"
+      condim="6"
+      friction="2.0 0.1 0.1"
+      margin="0.005"
+      solref="0.02 2.0"
+      solimp="0.95 0.999 0.01 0.5 2"
+    />
+    <geom
+      type="box"
+      pos="0.101706 -0.077652 0.00762"
+      euler="0 0 2.48"
+      size=".0075 .0075 .007"
+      rgba="0 .8 0 1"
+      group="3"
+      condim="6"
+      friction="2.0 0.1 0.1"
+      margin="0.005"
+      solref="0.02 2.0"
+      solimp="0.95 0.999 0.01 0.5 2"
+    />
+    <geom
+      type="box"
+      pos="0.109439 -0.080488 0.00762"
+      euler="0 0 3.10"
+      size=".0075 .0075 .007"
+      rgba="0 .8 0 1"
+      group="3"
+      condim="6"
+      friction="2.0 0.1 0.1"
+      margin="0.005"
+      solref="0.02 2.0"
+      solimp="0.95 0.999 0.01 0.5 2"
+    />
+    <geom
+      type="box"
+      pos="0.117380 -0.078304 0.00762"
+      euler="0 0 3.72"
+      size=".0075 .0075 .007"
+      rgba="0 .8 0 1"
+      group="3"
+      condim="6"
+      friction="2.0 0.1 0.1"
+      margin="0.005"
+      solref="0.02 2.0"
+      solimp="0.95 0.999 0.01 0.5 2"
+    />
+    <geom
+      type="box"
+      pos="0.122575 -0.071912 0.00762"
+      euler="0 0 4.34"
+      size=".0075 .0075 .007"
+      rgba="0 .8 0 1"
+      group="3"
+      condim="6"
+      friction="2.0 0.1 0.1"
+      margin="0.005"
+      solref="0.02 2.0"
+      solimp="0.95 0.999 0.01 0.5 2"
+    />
+    <geom
+      type="box"
+      pos="0.123088 -0.063691 0.00762"
+      euler="0 0 4.96"
+      size=".0075 .0075 .007"
+      rgba="0 .8 0 1"
+      group="3"
+      condim="6"
+      friction="2.0 0.1 0.1"
+      margin="0.005"
+      solref="0.02 2.0"
+      solimp="0.95 0.999 0.01 0.5 2"
+    />
+    <geom
+      type="box"
+      pos="0.118730 -0.056702 0.00762"
+      euler="0 0 5.58"
+      size=".0075 .0075 .007"
+      rgba="0 .8 0 1"
+      group="3"
+      condim="6"
+      friction="2.0 0.1 0.1"
+      margin="0.005"
+      solref="0.02 2.0"
+      solimp="0.95 0.999 0.01 0.5 2"
+    />
+
+    <!-- 10 boxes centered at C=(0.1413, -0.082661, 0) -->
+    <geom
+      type="box"
+      pos="0.141300 -0.069161 0.00762"
+      euler="0 0 0.00"
+      size=".0075 .0075 .007"
+      rgba="0 .8 0 1"
+      group="3"
+      condim="6"
+      friction="2.0 0.1 0.1"
+      margin="0.005"
+      solref="0.02 2.0"
+      solimp="0.95 0.999 0.01 0.5 2"
+    />
+    <geom
+      type="box"
+      pos="0.133456 -0.071674 0.00762"
+      euler="0 0 0.62"
+      size=".0075 .0075 .007"
+      rgba="0 .8 0 1"
+      group="3"
+      condim="6"
+      friction="2.0 0.1 0.1"
+      margin="0.005"
+      solref="0.02 2.0"
+      solimp="0.95 0.999 0.01 0.5 2"
+    />
+    <geom
+      type="box"
+      pos="0.128532 -0.078276 0.00762"
+      euler="0 0 1.24"
+      size=".0075 .0075 .007"
+      rgba="0 .8 0 1"
+      group="3"
+      condim="6"
+      friction="2.0 0.1 0.1"
+      margin="0.005"
+      solref="0.02 2.0"
+      solimp="0.95 0.999 0.01 0.5 2"
+    />
+    <geom
+      type="box"
+      pos="0.128361 -0.086511 0.00762"
+      euler="0 0 1.86"
+      size=".0075 .0075 .007"
+      rgba="0 .8 0 1"
+      group="3"
+      condim="6"
+      friction="2.0 0.1 0.1"
+      margin="0.005"
+      solref="0.02 2.0"
+      solimp="0.95 0.999 0.01 0.5 2"
+    />
+    <geom
+      type="box"
+      pos="0.133006 -0.093313 0.00762"
+      euler="0 0 2.48"
+      size=".0075 .0075 .007"
+      rgba="0 .8 0 1"
+      group="3"
+      condim="6"
+      friction="2.0 0.1 0.1"
+      margin="0.005"
+      solref="0.02 2.0"
+      solimp="0.95 0.999 0.01 0.5 2"
+    />
+    <geom
+      type="box"
+      pos="0.140739 -0.096149 0.00762"
+      euler="0 0 3.10"
+      size=".0075 .0075 .007"
+      rgba="0 .8 0 1"
+      group="3"
+      condim="6"
+      friction="2.0 0.1 0.1"
+      margin="0.005"
+      solref="0.02 2.0"
+      solimp="0.95 0.999 0.01 0.5 2"
+    />
+    <geom
+      type="box"
+      pos="0.148680 -0.093965 0.00762"
+      euler="0 0 3.72"
+      size=".0075 .0075 .007"
+      rgba="0 .8 0 1"
+      group="3"
+      condim="6"
+      friction="2.0 0.1 0.1"
+      margin="0.005"
+      solref="0.02 2.0"
+      solimp="0.95 0.999 0.01 0.5 2"
+    />
+    <geom
+      type="box"
+      pos="0.153875 -0.087573 0.00762"
+      euler="0 0 4.34"
+      size=".0075 .0075 .007"
+      rgba="0 .8 0 1"
+      group="3"
+      condim="6"
+      friction="2.0 0.1 0.1"
+      margin="0.005"
+      solref="0.02 2.0"
+      solimp="0.95 0.999 0.01 0.5 2"
+    />
+    <geom
+      type="box"
+      pos="0.154388 -0.079352 0.00762"
+      euler="0 0 4.96"
+      size=".0075 .0075 .007"
+      rgba="0 .8 0 1"
+      group="3"
+      condim="6"
+      friction="2.0 0.1 0.1"
+      margin="0.005"
+      solref="0.02 2.0"
+      solimp="0.95 0.999 0.01 0.5 2"
+    />
+    <geom
+      type="box"
+      pos="0.150030 -0.072363 0.00762"
+      euler="0 0 5.58"
+      size=".0075 .0075 .007"
+      rgba="0 .8 0 1"
+      group="3"
+      condim="6"
+      friction="2.0 0.1 0.1"
+      margin="0.005"
+      solref="0.02 2.0"
+      solimp="0.95 0.999 0.01 0.5 2"
+    />
+
     <geom
       contype="0"
       conaffinity="0"
@@ -89,5 +548,6 @@
       mesh="bracket"
       material="sheet_metal"
     />
+    <site name="bracket_part_pose" />
   </body>
 </mujoco>

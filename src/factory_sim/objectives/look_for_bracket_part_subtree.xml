@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Look for Bracket Part Subtree">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Look for Bracket Part Subtree"
+    _description="Look for the bracket part in the left bin and register it to the CAD of the part. Return the registered pose of&#10; the part for picking."
+  >
+    <Control
+      ID="Sequence"
+      name="Look for the bracket part in the left bin and register it to the CAD of the part. Return the registered pose of the part for picking."
+    >
+      <!--Get the bracket pointcloud from the CAD file and make a guess as to where it might be-->
+      <Action
+        ID="CreateStampedPose"
+        position_xyz="-0.35;0.8;0.4"
+        orientation_xyzw="0.000;0.000;0.0;1"
+        name="Initial guess for bracket pose, somewhere above left bin"
+        stamped_pose="{guess_pose}"
+        reference_frame="world"
+      />
+      <SubTree
+        ID="Load Bracket Part Pointcloud Subtree"
+        _collapsed="true"
+        color="0;0;255"
+        initial_pose="{guess_pose}"
+        bracket_part_cloud="{blue_bracket_part_cloud}"
+      />
+      <!--Poses are published using a marker called `pose_of_interest` so that the next marker replaces it and gives the user a less noisy visual indicator of what the robot is planning to do-->
+      <Action
+        ID="VisualizePose"
+        marker_lifetime="0.000000"
+        marker_name="pose_of_interest"
+        marker_size="0.100000"
+        pose="{guess_pose}"
+        marker_text="initial bracket pose estimate"
+      />
+      <Action
+        ID="SendPointCloudToUI"
+        point_cloud="{blue_bracket_part_cloud}"
+        pcd_topic="/pcd_pointcloud_captures"
+        name="Visualize initial bracket pose guess"
+      />
+      <!--Capture points of the left bin and crop out the bin to make it easier for ICP to match. Here is where another method of masking out non bracket points would happen-->
+      <Action
+        ID="GetPointCloud"
+        topic_name="/bin_camera_left/points"
+        message_out="{bin_camera_left_cloud}"
+        timeout_sec="5.000000"
+        publisher_timeout_sec="5.000000"
+        name="Capture left bin points"
+      />
+      <Action
+        ID="TransformPointCloudFrame"
+        input_cloud="{bin_camera_left_cloud}"
+        output_cloud="{bin_camera_left_cloud}"
+        target_frame="world"
+      />
+      <Control
+        ID="Sequence"
+        name="Crop out points belonging to the bin by making a box that approximates the bin internal volume"
+      >
+        <Action
+          ID="CreateStampedPose"
+          reference_frame="world"
+          stamped_pose="{centroid_pose}"
+          position_xyz="-0.25;0.6;0.4"
+        />
+        <Action
+          ID="CropPointsInBox"
+          crop_box_centroid_pose="{centroid_pose}"
+          point_cloud="{bin_camera_left_cloud}"
+          point_cloud_cropped="{cropped_bin_point_cloud}"
+          crop_box_size="0.32;0.55;0.28"
+        />
+      </Control>
+      <Action
+        ID="RegisterPointClouds"
+        target_point_cloud="{cropped_bin_point_cloud}"
+        base_point_cloud="{blue_bracket_part_cloud}"
+        max_iterations="100"
+        target_pose_in_base_frame="{registered_to_guess_pose}"
+        max_correspondence_distance="0.5"
+        name="Produce updated pose, relative to the initial guess pose"
+      />
+      <Action
+        ID="TransformPoseWithPose"
+        input_pose="{guess_pose}"
+        transform_pose="{registered_to_guess_pose}"
+        output_pose="{registered_pose}"
+        name="Because the pose produced by point cloud registration is relative to the guess pose, we need to add that on to get to the real pose in world frame"
+      />
+      <Action
+        ID="VisualizePose"
+        marker_lifetime="0.000000"
+        marker_name="pose_of_interest"
+        marker_size="0.100000"
+        pose="{registered_pose}"
+        marker_text="registered bracket pose"
+      />
+      <Control
+        ID="Sequence"
+        name="Visualize the registered bracket point cloud in scene"
+      >
+        <SubTree
+          ID="Load Bracket Part Pointcloud Subtree"
+          _collapsed="true"
+          color="0;255;0"
+          initial_pose="{registered_pose}"
+          bracket_part_cloud="{green_bracket_part_cloud}"
+        />
+        <Action ID="ResetVector" vector="{additional_clouds}" />
+        <Action
+          ID="AddPointCloudToVector"
+          point_cloud="{green_bracket_part_cloud}"
+          point_cloud_vector="{additional_clouds}"
+        />
+        <SubTree
+          ID="Visualize Bins and Jig Subtree"
+          _collapsed="true"
+          additional_clouds="{additional_clouds}"
+        />
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Look for Bracket Part Subtree">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Perception - 3D Point Cloud" />
+      </MetadataFields>
+      <inout_port
+        name="registered_pose"
+        default="{registered_pose}"
+        type="geometry_msgs::msg::PoseStamped"
+      />
+    </SubTree>
+  </TreeNodesModel>
+</root>
