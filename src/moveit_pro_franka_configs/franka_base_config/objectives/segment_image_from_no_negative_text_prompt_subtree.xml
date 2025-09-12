@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Segment Image from No Negative Text Prompt Subtree"
+>
+  <!--//////////-->
+  <BehaviorTree
+    ID="Segment Image from No Negative Text Prompt Subtree"
+    _description="Run text based segmentation and visualize the masks."
+    _favorite="true"
+  >
+    <Control ID="Sequence">
+      <Action
+        ID="GetImage"
+        timeout_sec="5.000000"
+        topic_name="{image_topic_name}"
+        message_out="{image}"
+      />
+      <Action
+        ID="GetMasks2DFromTextQuery"
+        image="{image}"
+        masks2d="{masks2d}"
+        clipseg_model_path="{clipseg_model_path}"
+        clip_model_path="{clip_model_path}"
+        model_package="{model_package}"
+        prompts="{prompts}"
+        erosion_size="{erosion_size}"
+        threshold="{threshold}"
+      />
+      <Action
+        ID="PublishMask2D"
+        image="{image}"
+        masks="{masks2d}"
+        masks_visualization_topic="{masks_visualization_topic}"
+        opacity="0.500000"
+        bounding_box_detection_class="{prompts}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Segment Image from No Negative Text Prompt Subtree">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Perception - ML" />
+      </MetadataFields>
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Perception - ML" />
+      </MetadataFields>
+      <input_port name="clip_model_path" default="{clip_model_path}" />
+      <input_port name="clipseg_model_path" default="{clipseg_model_path}" />
+      <input_port name="erosion_size" default="{erosion_size}" />
+      <input_port name="image_topic_name" default="{image_topic_name}" />
+      <input_port
+        name="masks_visualization_topic"
+        default="{masks_visualization_topic}"
+      />
+      <output_port name="masks2d" default="{masks2d}" />
+      <input_port name="model_package" default="{model_package}" />
+      <input_port name="prompts" default="{prompts}" />
+      <input_port name="threshold" default="{threshold}" />
+    </SubTree>
+  </TreeNodesModel>
+</root>
