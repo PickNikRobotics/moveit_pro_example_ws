@@ -1,0 +1,143 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 1000  # Hz
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+    joint_trajectory_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+    servo_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+    velocity_force_controller:
+      type: velocity_force_controller/VelocityForceController
+    franka_gripper_controller:
+      type: position_controllers/GripperActionController
+joint_trajectory_controller:
+  ros__parameters:
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
+    joints:
+      - fr3_joint1
+      - fr3_joint2
+      - fr3_joint3
+      - fr3_joint4
+      - fr3_joint5
+      - fr3_joint6
+      - fr3_joint7
+    gains:
+      fr3_joint1: { p: 600., d: 30., i: 0., i_clamp: 1. }
+      fr3_joint2: { p: 600., d: 30., i: 0., i_clamp: 1. }
+      fr3_joint3: { p: 600., d: 30., i: 0., i_clamp: 1. }
+      fr3_joint4: { p: 600., d: 30., i: 0., i_clamp: 1. }
+      fr3_joint5: { p: 250., d: 10., i: 0., i_clamp: 1. }
+      fr3_joint6: { p: 150., d: 10., i: 0., i_clamp: 1. }
+      fr3_joint7: { p: 50., d: 5., i: 0., i_clamp: 1. }
+
+franka_gripper_controller:
+  ros__parameters:
+    default: true
+    joint: fr3_finger_joint1
+    allow_stalling: true
+    stall_timeout: 0.1
+    goal_tolerance: 0.005
+
+servo_controller:
+  ros__parameters:
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
+    joints:
+      - fr3_joint1
+      - fr3_joint2
+      - fr3_joint3
+      - fr3_joint4
+      - fr3_joint5
+      - fr3_joint6
+      - fr3_joint7
+    gains:
+      fr3_joint1: { p: 600., d: 30., i: 0., i_clamp: 1. }
+      fr3_joint2: { p: 600., d: 30., i: 0., i_clamp: 1. }
+      fr3_joint3: { p: 600., d: 30., i: 0., i_clamp: 1. }
+      fr3_joint4: { p: 600., d: 30., i: 0., i_clamp: 1. }
+      fr3_joint5: { p: 250., d: 10., i: 0., i_clamp: 1. }
+      fr3_joint6: { p: 150., d: 10., i: 0., i_clamp: 1. }
+      fr3_joint7: { p: 50., d: 5., i: 0., i_clamp: 1. }
+
+velocity_force_controller:
+  ros__parameters:
+    # Joints that the controller will claim.
+    joints:
+      - fr3_joint1
+      - fr3_joint2
+      - fr3_joint3
+      - fr3_joint4
+      - fr3_joint5
+      - fr3_joint6
+      - fr3_joint7
+    # Base frame of the kinematic chain, for computation of arm kinematics.
+    base_frame: fr3_link0
+    # The tip link of the kinematic chain, i.e. the frame that will be controlled.
+    ee_frame: grasp_link
+    # The frame where the force / torque sensor reading is given.
+    # (Needs to exist in the kinematic chain).
+    sensor_frame: fr3_link8
+    # The force/torque ros2_control hardware interface name. If empty, the controller will run without admittance.
+    # ft_sensor_name: tcp_fts_sensor
+    # An optional deadband to apply to the force/torque signal. Set to 0.0 to disable.
+    ft_force_deadband: 2.0
+    ft_torque_deadband: 1.0
+    # Maximum joint-space velocities.
+    max_joint_velocity:
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+    # Maximum joint-space accelerations.
+    max_joint_acceleration:
+      - 2.0
+      - 2.0
+      - 2.0
+      - 2.0
+      - 2.0
+      - 2.0
+      - 2.0
+    # Maximum Cartesian-space velocities.
+    max_cartesian_velocity:
+      - 0.25
+      - 0.25
+      - 0.25
+      - 1.0
+      - 1.0
+      - 1.0
+    # Maximum Cartesian-space accelerations.
+    max_cartesian_acceleration:
+      - 2.0
+      - 2.0
+      - 2.0
+      - 4.0
+      - 4.0
+      - 4.0
+    # Additional optional parameters for reference (set to defaults):
+    # Cutoff frequency ratio for the FTS filter. Valid values range from 0 to 1, where 1 is the sampling frequency.
+    ft_cutoff_frequency_ratio: 1.0
+    # Rate in Hz at which the controller will publish the state.
+    state_publish_rate: 10
+    # Damping coefficient for the Jacobian damped least-squares inverse.
+    jacobian_damping: 0.002
+    # Timeout in seconds after which the controller will stop motion if no new commands are received.
+    command_timeout: 0.2
+    # Padding (in radians) to add to joint position limits as a safety margin.
+    joint_limit_position_tolerance: 0.02
+    # Joints that the controller will command. If not specified, if takes the same value as `joints`.
+    # This can be useful to implement layered control, where some joints may be controlled by a different controller
+    # downstream.
+    # command_joints: []
+    # The type of command interface to use. Supported values are "position" and "velocity".
+    command_interfaces: ["position"]
