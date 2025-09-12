@@ -1,0 +1,247 @@
+<mujocoinclude>
+  <body name="hingecab" childclass="hingecabinet">
+    <geom material="M_hinge_blue" size="0.024 0.18 0.12" type="box" />
+    <geom
+      material="M_hinge_blue"
+      pos="0.228 0 0"
+      size="0.012 0.18 0.12"
+      type="box"
+    />
+    <geom
+      material="M_hinge_blue"
+      pos="-0.228 0 0"
+      size="0.012 0.18 0.12"
+      type="box"
+    />
+    <geom
+      material="M_hinge_blue"
+      pos="-0.12 0 0.108"
+      size="0.096 0.18 0.012"
+      type="box"
+    />
+    <geom
+      material="M_hinge_blue"
+      pos="-0.12 0 -0.108"
+      size="0.096 0.18 0.012"
+      type="box"
+    />
+    <geom
+      material="M_hinge_blue"
+      pos="0.12 0 -0.108"
+      size="0.096 0.18 0.012"
+      type="box"
+    />
+    <geom
+      material="M_hinge_blue"
+      pos="0.12 0 0.108"
+      size="0.096 0.18 0.012"
+      type="box"
+    />
+    <geom
+      material="M_hinge_blue"
+      pos="-0.12 0.168 0"
+      size="0.096 0.012 0.096"
+      type="box"
+    />
+    <geom
+      material="M_hinge_blue"
+      pos="0.12 0.168 0"
+      size="0.096 0.012 0.096"
+      type="box"
+    />
+
+    <geom class="hinge_collision" size="0.024 0.18 0.12" type="box" mass=".3" />
+    <geom
+      class="hinge_collision"
+      pos="0.228 0 0"
+      size="0.012 0.18 0.12"
+      type="box"
+      mass=".2"
+    />
+    <geom
+      class="hinge_collision"
+      pos="-0.228 0 0"
+      size="0.012 0.18 0.12"
+      type="box"
+      mass=".2"
+    />
+    <geom
+      class="hinge_collision"
+      pos="-0.12 0 0.108"
+      size="0.096 0.18 0.012"
+      type="box"
+      mass=".2"
+    />
+    <geom
+      class="hinge_collision"
+      pos="-0.12 0 -0.108"
+      size="0.096 0.18 0.012"
+      type="box"
+      mass=".2"
+    />
+    <geom
+      class="hinge_collision"
+      pos="0.12 0 -0.108"
+      size="0.096 0.18 0.012"
+      type="box"
+      mass=".2"
+    />
+    <geom
+      class="hinge_collision"
+      pos="0.12 0 0.108"
+      size="0.096 0.18 0.012"
+      type="box"
+      mass=".2"
+    />
+    <geom
+      class="hinge_collision"
+      pos="-0.12 0.168 0"
+      size="0.096 0.012 0.096"
+      type="box"
+      mass=".2"
+    />
+    <geom
+      class="hinge_collision"
+      pos="0.12 0.168 0"
+      size="0.096 0.012 0.096"
+      type="box"
+      mass=".2"
+    />
+    <body name="hingeleftdoor" pos="-0.228 -0.192 0">
+      <joint axis="0 0 1" name="left_hinge_cabinet" range="-1.57 0" />
+      <geom
+        material="M_hinge_metal"
+        pos="0.1812 -0.0768 0"
+        size="0.0132 0.096"
+        type="cylinder"
+      />
+      <geom
+        material="M_hinge_metal"
+        pos="0.1812 -0.0366 0.0684"
+        euler="1.57 0 0"
+        size="0.0114 0.0318 0.012"
+        type="cylinder"
+      />
+      <geom
+        material="M_hinge_metal"
+        pos="0.1812 -0.0366 -0.0684"
+        euler="1.57 0 0"
+        size="0.0114 0.0318 0.012"
+        type="cylinder"
+      />
+      <geom
+        material="M_hinge_blue"
+        pos="0.1104 -0.009 0"
+        size="0.1158 0.018 0.12"
+        type="box"
+      />
+
+      <geom
+        class="hinge_collision"
+        pos="0.1104 -0.009 0"
+        size="0.1158 0.018 0.12"
+        type="box"
+        mass=".2"
+      />
+      <geom
+        class="hinge_collision"
+        pos="0.1812 -0.0768 0"
+        size="0.0132 0.096"
+        type="cylinder"
+        mass=".1"
+      />
+      <geom
+        class="hinge_collision"
+        pos="0.1812 -0.0366 0.0684"
+        euler="1.57 0 0"
+        size="0.0114 0.0318 0.012"
+        type="cylinder"
+        mass=".02"
+      />
+      <geom
+        class="hinge_collision"
+        pos="0.1812 -0.0366 -0.0684"
+        euler="1.57 0 0"
+        size="0.0114 0.0318 0.012"
+        type="cylinder"
+        mass=".02"
+      />
+      <site
+        type="sphere"
+        name="hinge_site1"
+        pos="0.1812 -0.0768 0"
+        size="0.006"
+        group="3"
+        rgba="1 0 0 1"
+      />
+    </body>
+    <body name="hingerightdoor" pos="0.228 -0.192 0">
+      <joint axis="0 0 1" name="right_hinge_cabinet" range="0 1.57" />
+      <geom
+        material="M_hinge_blue"
+        pos="-0.111 -0.009 0"
+        size="0.1158 0.018 0.12"
+        type="box"
+      />
+      <geom
+        material="M_hinge_metal"
+        pos="-0.1812 -0.0768 0"
+        size="0.0132 0.096"
+        type="cylinder"
+      />
+      <geom
+        material="M_hinge_metal"
+        pos="-0.1812 -0.0366 -0.0684"
+        euler="1.57 0 0"
+        size="0.0114 0.0318 0.012"
+        type="cylinder"
+      />
+      <geom
+        material="M_hinge_metal"
+        pos="-0.1812 -0.0366 0.0684"
+        euler="1.57 0 0"
+        size="0.0114 0.0318 0.012"
+        type="cylinder"
+      />
+
+      <geom
+        class="hinge_collision"
+        pos="-0.1812 -0.0768 0"
+        size="0.0132 0.096"
+        type="cylinder"
+        mass=".1"
+      />
+      <geom
+        class="hinge_collision"
+        pos="-0.1812 -0.0366 -0.0684"
+        euler="1.57 0 0"
+        size="0.0114 0.0318 0.012"
+        type="cylinder"
+        mass=".02"
+      />
+      <geom
+        class="hinge_collision"
+        pos="-0.1812 -0.0366 0.0684"
+        euler="1.57 0 0"
+        size="0.0114 0.0318 0.012"
+        type="cylinder"
+        mass=".02"
+      />
+      <geom
+        class="hinge_collision"
+        pos="-0.111 -0.009 0"
+        size="0.1158 0.018 0.12"
+        type="box"
+        mass=".2"
+      />
+      <site
+        type="sphere"
+        name="hinge_site2"
+        pos="-0.1812 -0.0768 0"
+        size="0.006"
+        group="3"
+        rgba="0 1 0 1"
+      />
+    </body>
+  </body>
+</mujocoinclude>

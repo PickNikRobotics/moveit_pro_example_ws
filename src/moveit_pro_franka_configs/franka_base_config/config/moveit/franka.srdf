@@ -1,23 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <robot name="franka">
+
   <!-- Planning groups -->
-  <group name="arm">
-    <chain base_link="fr3_link0" tip_link="fr3_link8"/>
-  </group>
-  <group name="hand">
-    <link name="fr3_hand"/>
+
+  <!-- All gripper links, excluding arm. -->
+  <group name="gripper">
+    <link name="fr3_hand_tcp"/> <!-- root of gripper -->
     <link name="fr3_leftfinger"/>
     <link name="fr3_rightfinger"/>
-    <link name="fr3_hand_tcp"/>
     <link name="grasp_link"/>
     <joint name="fr3_finger_joint1"/>
-    <passive_joint name="$fr3_finger_joint2"/>
+    <passive_joint name="fr3_finger_joint2"/>
   </group>
+
+  <!-- All robot links, including gripper. -->
   <group name="manipulator">
     <chain base_link="fr3_link0" tip_link="grasp_link"/>
   </group>
+
+  <!-- End effectors -->
+  <end_effector name="hand_tcp" parent_link="grasp_link" group="gripper" parent_group="manipulator"/>
+
   <!-- Arm group states -->
-  <group_state name="ready" group="arm">
+  <group_state name="ready" group="manipulator">
     <joint name="fr3_joint1" value="0"/>
     <joint name="fr3_joint2" value="-0.7853"/>
     <joint name="fr3_joint3" value="0"/>
@@ -26,16 +31,14 @@
     <joint name="fr3_joint6" value="1.5707"/>
     <joint name="fr3_joint7" value="0.7853"/>
   </group_state>
-  <group_state name="open" group="hand">
+  <group_state name="open" group="gripper">
     <joint name="fr3_finger_joint1" value="0.035"/>
     <joint name="fr3_finger_joint2" value="0.035"/>
   </group_state>
-  <group_state name="close" group="hand">
+  <group_state name="close" group="gripper">
     <joint name="fr3_finger_joint1" value="0"/>
     <joint name="fr3_finger_joint2" value="0"/>
   </group_state>
-  <!-- End effectors -->
-  <end_effector name="hand_tcp" parent_link="fr3_link8" group="hand" parent_group="arm"/>
 
   <!-- Arm collisions -->
   <virtual_joint name="virtual_joint" type="fixed" parent_frame="world" child_link="fr3_link0"/>
