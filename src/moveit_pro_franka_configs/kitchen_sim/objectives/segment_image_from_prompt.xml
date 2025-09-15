@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Segment Image from Prompt">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Segment Image from Prompt"
+    _description="Run an ML model to find all objects and visualize the masks with bounding boxes."
+    _favorite="true"
+  >
+    <Control ID="Sequence">
+      <Action
+        ID="GetImage"
+        message_out="{image}"
+        publisher_timeout_sec="5.000000"
+        timeout_sec="5.000000"
+        topic_name="/scene_camera/color"
+      />
+      <Action
+        ID="GetMasks2DFromTextQuery"
+        erosion_size="0"
+        image="{image}"
+        masks2d="{masks2d}"
+        prompts="a stove circular burner"
+        threshold="0.7"
+        clip_model_path="models/clip.onnx"
+        clipseg_model_path="models/clipseg.onnx"
+        model_package="moveit_pro_clipseg"
+      />
+      <Action
+        ID="PublishMask2D"
+        image="{image}"
+        masks="{masks2d}"
+        masks_visualization_topic="/masks_visualization"
+        opacity="0.500000"
+        bounding_box_labels="stove"
+      />
+      <Action
+        ID="SwitchUIPrimaryView"
+        primary_view_name="/masks_visualization"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Segment Image from Prompt">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - ML (GPU Recommended)" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

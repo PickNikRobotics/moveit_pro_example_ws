@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Segment Image from Point">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Segment Image from Point"
+    _description="Run an ML model to find an area around a clicked point and visualize the mask with bounding boxes."
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="GetImage"
+        message_out="{image}"
+        publisher_timeout_sec="5.000000"
+        timeout_sec="5.000000"
+        topic_name="/scene_camera/color"
+      />
+      <Action
+        ID="GetPointsFromUser"
+        pixel_coords="{pixel_coords}"
+        view_name="/scene_camera/color"
+      />
+      <Action
+        ID="GetMasks2DFromPointQuery"
+        image="{image}"
+        masks2d="{masks2d}"
+        pixel_coords="{pixel_coords}"
+        decoder_model_path="models/decoder.onnx"
+        encoder_model_path="models/sam2_hiera_large_encoder.onnx"
+        model_package="kitchen_sim"
+      />
+      <Action
+        ID="PublishMask2D"
+        image="{image}"
+        masks="{masks2d}"
+        masks_visualization_topic="/masks_visualization"
+        opacity="0.500000"
+        bounding_box_labels="detection"
+      />
+      <Action
+        ID="SwitchUIPrimaryView"
+        primary_view_name="/masks_visualization"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Segment Image from Point">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - ML (GPU Recommended)" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
