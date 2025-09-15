@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<root BTCPP_format="4" main_tree_to_execute="ML Grasp Object from Text Prompt">
+<root BTCPP_format="4" main_tree_to_execute="Pick 1 Pill Bottle">
   <!--//////////-->
   <BehaviorTree
-    ID="ML Grasp Object from Text Prompt"
+    ID="Pick 1 Pill Bottle"
     _description="Captures and segments objects from a point cloud based on a text prompt. Then grasps the first object returned from the segmentation."
     _favorite="true"
   >
@@ -124,7 +124,7 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="ML Grasp Object from Text Prompt">
+    <SubTree ID="Pick 1 Pill Bottle">
       <MetadataFields>
         <Metadata runnable="true" />
         <Metadata subcategory="Application - ML (GPU Recommended)" />
