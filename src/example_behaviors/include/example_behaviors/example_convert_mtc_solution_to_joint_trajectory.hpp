@@ -2,11 +2,11 @@
 
 #include <behaviortree_cpp/action_node.h>
 #include <behaviortree_cpp/bt_factory.h>
-#include <moveit/robot_model_loader/robot_model_loader.h>
 #include <spdlog/spdlog.h>
 #include <yaml-cpp/yaml.h>
 #include <Eigen/Core>
 #include <cartesian_planning/trajectory_utils.hpp>
+#include <moveit/robot_model_loader/robot_model_loader.hpp>
 #include <moveit_msgs/msg/robot_trajectory.hpp>
 #include <moveit_studio_behavior_interface/behavior_context.hpp>
 #include <moveit_studio_behavior_interface/check_for_error.hpp>
