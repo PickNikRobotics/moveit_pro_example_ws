@@ -15,6 +15,10 @@ controller_manager:
       type: velocity_force_controller/VelocityForceController
     right_velocity_force_controller:
       type: velocity_force_controller/VelocityForceController
+    left_gripper_controller:
+      type: position_controllers/GripperActionController
+    right_gripper_controller:
+      type: position_controllers/GripperActionController
 
 joint_trajectory_controller:
   ros__parameters:
@@ -38,6 +42,7 @@ joint_trajectory_controller:
       - right_fr3_joint5
       - right_fr3_joint6
       - right_fr3_joint7
+    allow_partial_joints_goal: true
     gains:
       left_fr3_joint1: { p: 600., d: 30., i: 0., i_clamp: 1. }
       left_fr3_joint2: { p: 600., d: 30., i: 0., i_clamp: 1. }
@@ -53,6 +58,22 @@ joint_trajectory_controller:
       right_fr3_joint5: { p: 250., d: 10., i: 0., i_clamp: 1. }
       right_fr3_joint6: { p: 150., d: 10., i: 0., i_clamp: 1. }
       right_fr3_joint7: { p: 50., d: 5., i: 0., i_clamp: 1. }
+
+left_gripper_controller:
+  ros__parameters:
+    default: true
+    joint: left_fr3_finger_joint1
+    allow_stalling: true
+    stall_timeout: 0.1
+    goal_tolerance: 0.005
+
+right_gripper_controller:
+  ros__parameters:
+    default: true
+    joint: right_fr3_finger_joint1
+    allow_stalling: true
+    stall_timeout: 0.1
+    goal_tolerance: 0.005
 
 left_joint_trajectory_controller:
   ros__parameters:
@@ -154,7 +175,7 @@ left_velocity_force_controller:
     # Base frame of the kinematic chain, for computation of arm kinematics.
     base_frame: left_fr3_link0
     # The tip link of the kinematic chain, i.e. the frame that will be controlled.
-    ee_frame: left_fr3_link8
+    ee_frame: left_grasp_link
     # The frame where the force / torque sensor reading is given.
     # (Needs to exist in the kinematic chain).
     sensor_frame: left_fr3_link8
@@ -229,7 +250,7 @@ right_velocity_force_controller:
     # Base frame of the kinematic chain, for computation of arm kinematics.
     base_frame: right_fr3_link0
     # The tip link of the kinematic chain, i.e. the frame that will be controlled.
-    ee_frame: right_fr3_link8
+    ee_frame: right_grasp_link
     # The frame where the force / torque sensor reading is given.
     # (Needs to exist in the kinematic chain).
     sensor_frame: right_fr3_link8

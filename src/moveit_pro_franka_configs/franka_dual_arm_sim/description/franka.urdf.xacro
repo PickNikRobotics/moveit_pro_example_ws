@@ -30,9 +30,11 @@
                       arm_prefix="right"
                       connected_to= "right_mount">
   </xacro:franka_robot>
+
+  <!-- This link aligns the axes of the grasp frame to our required convention for motion planning tasks. -->
   <link name="right_grasp_link" />
   <joint name="right_grasp_link_joint" type="fixed">
-     <parent link="right_fr3_link8"/>
+     <parent link="right_fr3_hand_tcp"/>
      <child link = "right_grasp_link"/>
      <origin xyz="0 0 0" rpy="0 0 -1.5708"/>
   </joint>
@@ -42,6 +44,7 @@
      <child link = "left_mount"/>
     <origin xyz="0.035 0.050681 0.356" rpy="-0.8936 -0.1746 -0.4636"/>
   </joint>
+
   <xacro:franka_robot arm_id="fr3"
                       joint_limits="${xacro.load_yaml('$(find franka_description)/robots/fr3/joint_limits.yaml')}"
                       inertials="${xacro.load_yaml('$(find franka_description)/robots/fr3/inertials.yaml')}"
@@ -61,10 +64,10 @@
                       connected_to= "left_mount">
   </xacro:franka_robot>
   
-    <!-- This link aligns the axes of the grasp frame to our required convention for motion planning tasks. -->
+   <!-- This link aligns the axes of the grasp frame to our required convention for motion planning tasks. -->
    <link name="left_grasp_link" />
    <joint name="left_grasp_link_joint" type="fixed">
-      <parent link="world"/>
+      <parent link="left_fr3_hand_tcp"/>
       <child link = "left_grasp_link"/>
       <origin xyz="0 0 0" rpy="0 0 -1.5708"/>
     </joint>
@@ -147,6 +150,17 @@
         <state_interface name="velocity"/>
         <state_interface name="effort"/>
       </joint>
+      <joint name="right_fr3_finger_joint1">
+        <command_interface name="position">
+          <param name="min">-0.0</param>
+          <param name="max">0.04</param>
+        </command_interface>
+        <state_interface name="position">
+          <param name="initial_value">0.035</param>
+        </state_interface>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+      </joint>
       <joint name="left_fr3_joint1">
         <command_interface name="position">
           <param name="min">-2.8973</param>
@@ -224,14 +238,25 @@
         <state_interface name="velocity"/>
         <state_interface name="effort"/>
       </joint>
+      <joint name="left_fr3_finger_joint1">
+        <command_interface name="position">
+          <param name="min">-0.0</param>
+          <param name="max">0.04</param>
+        </command_interface>
+        <state_interface name="position">
+          <param name="initial_value">0.035</param>
+        </state_interface>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+      </joint>
       <hardware>
         <plugin>picknik_mujoco_ros/MujocoSystem</plugin>
         <param name="mujoco_model">$(arg mujoco_model)</param>
         <param name="mujoco_model_package">franka_dual_arm_sim</param>
         <param name="render_publish_rate">10</param>
         <param name="tf_publish_rate">60</param>
-        <param name="mujoco_viewer">false</param>
         <param name="mujoco_keyframe">home</param>
+        <param name="mujoco_viewer">$(arg mujoco_viewer)</param>
       </hardware>
     </ros2_control>
 </robot>
