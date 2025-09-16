@@ -1,3 +1,4 @@
+#include <fmt/format.h>
 #include <future>
 #include <memory>
 #include <string>
