@@ -1,6 +1,6 @@
 - name: Left Home
   joint_group_names:
-    - left_arm
+    - left_manipulator
   joint_state:
     header:
       frame_id: world
@@ -13,7 +13,7 @@
     effort: []
 - name: Right Home
   joint_group_names:
-    - right_arm
+    - right_manipulator
   joint_state:
     header:
       frame_id: world

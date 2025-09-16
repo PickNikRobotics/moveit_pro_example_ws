@@ -33,6 +33,7 @@ hardware:
     # [Optional]
     urdf_params:
       - mujoco_model: "description/mujoco/scene.xml"
+      - mujoco_viewer: false
     simulated_hardware_launch_file:
       package: "moveit_studio_agent"
       path: "launch/blank.launch.py"
@@ -129,6 +130,8 @@ ros2_control:
   # for running the application.
   # [Optional, default=[]]
   controllers_active_at_startup:
+    - "left_gripper_controller"
+    - "right_gripper_controller"
     - "joint_state_broadcaster"
     - "joint_trajectory_controller"
   # Load but do not start these controllers so they can be activated later if needed.

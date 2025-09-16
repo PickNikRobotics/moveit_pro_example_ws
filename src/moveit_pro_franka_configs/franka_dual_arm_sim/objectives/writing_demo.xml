@@ -26,7 +26,7 @@
         reference_frame="world"
         stamped_pose="{stamped_pose}"
         orientation_xyzw="-0.7073883;0.7068252;0.0000327;0.0000328"
-        position_xyz="0.4;0.0;0.20"
+        position_xyz="0.4;0.0;0.02"
         name="Create center pose"
       />
       <Action
@@ -40,7 +40,7 @@
         <Control ID="Sequence" name="TopLevelSequence">
           <SubTree
             ID="Draw and Wipe"
-            _collapsed="true"
+            _collapsed="false"
             file_path="moveit_pro.yaml"
             center="{stamped_pose}"
           />

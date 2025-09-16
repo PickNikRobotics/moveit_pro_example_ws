@@ -57,14 +57,72 @@
   </worldbody>
 
   <keyframe>
+    <!-- Home position for FR3 robot with gripper
+       qpos: 
+         right_fr3_joint1
+         right_fr3_joint2
+         right_fr3_joint3
+         right_fr3_joint4
+         right_fr3_joint5
+         right_fr3_joint6
+         right_fr3_joint7
+         right_fr3_finger1
+         right_fr3_finger2
+         left_fr3_joint1
+         left_fr3_joint2
+         left_fr3_joint3
+         left_fr3_joint4
+         left_fr3_joint5
+         left_fr3_joint6
+         left_fr3_joint7
+         left_fr3_finger1
+         left_fr3_finger2
+       qvel:
+         right_fr3_joint1
+         right_fr3_joint2
+         right_fr3_joint3
+         right_fr3_joint4
+         right_fr3_joint5
+         right_fr3_joint6
+         right_fr3_joint7
+         right_fr3_finger1
+         right_fr3_finger2
+         left_fr3_joint1
+         left_fr3_joint2
+         left_fr3_joint3
+         left_fr3_joint4
+         left_fr3_joint5
+         left_fr3_joint6
+         left_fr3_joint7
+         left_fr3_finger1
+         left_fr3_finger2
+       ctrl: 
+         right_fr3_joint1
+         right_fr3_joint2
+         right_fr3_joint3
+         right_fr3_joint4
+         right_fr3_joint5
+         right_fr3_joint6
+         right_fr3_joint7
+         right_fr3_finger1 - We control only one finger.
+         left_fr3_joint1
+         left_fr3_joint2
+         left_fr3_joint3
+         left_fr3_joint4
+         left_fr3_joint5
+         left_fr3_joint6
+         left_fr3_joint7
+         left_fr3_finger1 - We control only one finger.
+
+    -->
     <key
       name="home"
       qpos="0 -0.7854 0 -2.3562 0 1.5707 0.7853 0 0
             0 -0.7854 0 -2.3562 0 1.5707 0.7853 0 0"
       qvel="0 0 0 0 0 0 0 0 0
             0 0 0 0 0 0 0 0 0"
-      ctrl="0 -0.7854 0 -2.3562 0 1.5707 0.7853 0 0
-            0 -0.7854 0 -2.3562 0 1.5707 0.7853 0 0"
+      ctrl="0 -0.7854 0 -2.3562 0 1.5707 0.7853 0
+            0 -0.7854 0 -2.3562 0 1.5707 0.7853 0"
     />
   </keyframe>
 </mujoco>

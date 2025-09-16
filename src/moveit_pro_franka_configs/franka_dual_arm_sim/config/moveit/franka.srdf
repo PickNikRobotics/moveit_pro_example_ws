@@ -1,47 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <robot name="franka">
   <!-- Planning groups -->
-  <!-- Right arm -->
-  <group name="right_arm">
-    <chain base_link="right_fr3_link0" tip_link="right_fr3_link8"/>
-  </group>
-  <group name="right_hand">
-    <link name="right_fr3_hand"/>
+
+  <!-- All right gripper links, excluding arm. -->
+  <group name="right_gripper">
+    <link name="right_fr3_hand_tcp"/>  <!-- root of gripper -->
     <link name="right_fr3_leftfinger"/>
     <link name="right_fr3_rightfinger"/>
-    <link name="right_fr3_hand_tcp"/>
-    <!--<link name="right_grasp_link"/>-->
+    <link name="right_grasp_link"/>
     <joint name="right_fr3_finger_joint1"/>
     <passive_joint name="right_fr3_finger_joint2"/>
   </group>
+
+  <!-- All right robot links, including gripper. -->
   <group name="right_manipulator">
-    <chain base_link="right_fr3_link0" tip_link="right_fr3_link8"/>
+    <chain base_link="right_fr3_link0" tip_link="right_grasp_link"/>
   </group>
-  <!-- Left arm -->
-  <group name="left_arm">
-    <chain base_link="left_fr3_link0" tip_link="left_fr3_link8"/>
-  </group>
-  <group name="left_hand">
-    <link name="left_fr3_hand"/>
+
+  <!-- Right end effectors -->
+  <end_effector name="right_hand_tcp" parent_link="right_grasp_link" group="right_gripper" parent_group="right_manipulator"/>
+
+  <!-- All left gripper links, excluding arm. -->
+  <group name="left_gripper">
+    <link name="left_fr3_hand_tcp"/>
     <link name="left_fr3_leftfinger"/>
     <link name="left_fr3_rightfinger"/>
-    <link name="left_fr3_hand_tcp"/>
-    <!--<link name="left_grasp_link"/>-->
+    <link name="left_grasp_link"/>
     <joint name="left_fr3_finger_joint1"/>
     <passive_joint name="left_fr3_finger_joint2"/>
   </group>
+  
+  <!-- All left robot links, including gripper. -->
   <group name="left_manipulator">
-    <chain base_link="left_fr3_link0" tip_link="left_fr3_link8"/>
+    <chain base_link="left_fr3_link0" tip_link="left_grasp_link"/>
   </group>
 
+  <!-- Left end effectors -->
+  <end_effector name="left_hand_tcp" parent_link="left_grasp_link" group="left_gripper" parent_group="left_manipulator"/>
+  
   <!-- Group containing both arms -->
   <group name="manipulator">
     <group name="left_manipulator"/>
     <group name="right_manipulator"/>
   </group>
-
-  <end_effector name="left_hand_tcp" parent_link="left_fr3_link8" group="left_hand" parent_group="left_arm"/>
-  <end_effector name="right_hand_tcp" parent_link="right_fr3_link8" group="right_hand" parent_group="right_arm"/>
 
   <!-- Arm collisions -->
   <virtual_joint name="right_virtual_joint" type="fixed" parent_frame="right_mount" child_link="right_fr3_link0"/>
