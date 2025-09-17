@@ -1,115 +1,23 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version='1.0' encoding='UTF-8'?>
 <root BTCPP_format="4" main_tree_to_execute="Count Boxes">
-  <BehaviorTree
-    ID="Count Boxes"
-    _description="Count the number of boxes in a given area."
-    _favorite="false"
-  >
+  <BehaviorTree ID="Count Boxes" _description="Count the number of boxes in a given area." _favorite="false">
     <Control ID="Sequence" name="TopLevelSequence">
-      <Action
-        ID="CreateStampedPose"
-        reference_frame="world"
-        stamped_pose="{crop_pose_centroid}"
-        position_xyz="-11;2.75;0"
-      />
-      <Action
-        ID="VisualizePose"
-        marker_lifetime="0.000000"
-        marker_name="crop_pose_centroid"
-        marker_size="1"
-        pose="{crop_pose_centroid}"
-      />
-      <Control ID="Fallback">
-        <Decorator ID="Repeat" num_cycles="5">
-          <Control ID="Sequence">
-            <Action
-              ID="GetPoseFromUser"
-              is_normal="true"
-              pose_prompt="Click point on UI"
-              user_pose="{user_pose}"
-              view_name="Visualization"
-            />
-            <Action ID="ResetVector" vector="{temp_vec}" />
-            <Action
-              ID="AddPoseStampedToVector"
-              input="{user_pose}"
-              vector="{temp_vec}"
-            />
-            <Action
-              ID="AdjustPoseWithIMarker"
-              adjusted_poses="{adjusted_poses}"
-              initial_poses="{temp_vec}"
-            />
-            <Decorator
-              ID="ForEach"
-              index="{index}"
-              out="{out}"
-              vector_in="{adjusted_poses}"
-            >
-              <Action
-                ID="AddPoseStampedToVector"
-                input="{out}"
-                vector="{path_initial}"
-              />
-            </Decorator>
-          </Control>
-        </Decorator>
-      </Control>
-      <Action
-        ID="VisualizePath"
-        marker_lifetime="0.000000"
-        marker_name="path_initial"
-        path="{path_initial}"
-        pose_marker_size="1"
-        show_poses="true"
-      />
-      <Action
-        ID="CropPosesInBox"
-        crop_box_centroid_pose="{crop_pose_centroid}"
-        poses="{path_initial}"
-        poses_cropped="{path_cropped}"
-        crop_box_size="7.5;7.5;1"
-      />
-      <Action
-        ID="VisualizePath"
-        marker_lifetime="0.000000"
-        marker_name="path_cropped"
-        path="{path_cropped}"
-        pose_marker_size="1"
-        show_poses="true"
-      />
-      <Action
-        ID="SwitchController"
-        activate_asap="true"
-        automatic_deactivation="true"
-        controller_list_action_name="/controller_manager/list_controllers"
-        controller_switch_action_name="/controller_manager/switch_controller"
-        strictness="1"
-        timeout="-1.000000"
-        activate_controllers="platform_velocity_controller_nav2"
-        deactivate_controllers="platform_velocity_controller"
-      />
-      <Action
-        ID="NavigateThroughPosesAction"
-        action_name="/navigate_through_poses"
-        behavior_tree_path="/opt/ros/humble/share/nav2_bt_navigator/behavior_trees/navigate_through_poses_w_replanning_and_recovery.xml"
-        current_pose="{current_pose}"
-        distance_remaining="{distance_remaining}"
-        estimated_time_remaining="{estimated_time_remaining}"
-        ignore_stamp_time="true"
-        navigation_time="{navigation_time}"
-        number_of_poses_remaining="{number_of_poses_remaining}"
-        number_of_recoveries="{number_of_recoveries}"
-        poses="{path_cropped}"
-        timeout_sec="-1.000000"
-      />
+      <SubTree ID="CreatePoseVectorFromDirectory" _collapsed="true" pose_vector="{pose_vector}"/>
+      <Action ID="CreateStampedPose" reference_frame="world" stamped_pose="{crop_pose_centroid}" position_xyz="-11;2.75;0"/>
+      <Action ID="VisualizePath" marker_lifetime="0.000000" marker_name="path_initial" path="{pose_vector}" pose_marker_size="1" show_poses="true"/>
+      <Action ID="CropPosesInBox" crop_box_centroid_pose="{crop_pose_centroid}" poses="{pose_vector}" poses_cropped="{path_cropped}" crop_box_size="12;12;1"/>
+      <Action ID="VisualizePath" marker_lifetime="0.000000" marker_name="path_cropped" path="{path_cropped}" pose_marker_size="1" show_poses="true"/>
+      <Action ID="SwitchController" activate_asap="true" automatic_deactivation="true" controller_list_action_name="/controller_manager/list_controllers" controller_switch_action_name="/controller_manager/switch_controller" strictness="1" timeout="-1.000000" activate_controllers="platform_velocity_controller_nav2" deactivate_controllers="platform_velocity_controller"/>
+      <Decorator ID="ForEach" index="{index}" out="{out}" vector_in="{path_cropped}">
+        <Action ID="NavigateToPoseAction" action_name="/navigate_to_pose" current_pose="{current_pose}" distance_remaining="{distance_remaining}" estimated_time_remaining="{estimated_time_remaining}" ignore_stamp_time="true" navigation_time="{navigation_time}" number_of_recoveries="{number_of_recoveries}" pose_stamped="{out}" timeout_sec="-1.000000" behavior_tree_path="/opt/ros/humble/share/nav2_bt_navigator/behavior_trees/navigate_to_pose_w_replanning_and_recovery.xml"/>
+      </Decorator>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Count Boxes">
       <MetadataFields>
-        <Metadata runnable="true" />
-        <Metadata subcategory="Application - Advanced Examples" />
+        <Metadata runnable="true"/>
+        <Metadata subcategory="Application - Advanced Examples"/>
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
