@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Inspector">
+  <BehaviorTree
+    ID="Inspector"
+    _description="Multi-view inspection routine: Captures images and point clouds from multiple viewpoints for 3D reconstruction or quality inspection"
+    _favorite="true"
+  >
+    <Control ID="Sequence">
+      <!--Initialize visualization and point cloud vector-->
+      <SubTree ID="Clear Snapshot" />
+      <Action ID="SwitchUIPrimaryView" primary_view_name="Visualization" />
+      <!--Initialize empty point cloud vector-->
+      <Action ID="Script" code="cloud_count := 0" />
+      <!--Create inspection viewpoints around target area-->
+      <Action
+        ID="CreateStampedPose"
+        orientation_xyzw="0;-1;0;0"
+        position_xyz="0.5;0.3;0.5"
+        stamped_pose="{pose1}"
+        reference_frame="world"
+      />
+      <Action
+        ID="AddPoseStampedToVector"
+        vector="{inspection_poses}"
+        input="{pose1}"
+      />
+      <Action
+        ID="CreateStampedPose"
+        orientation_xyzw="0;-1;0;0"
+        position_xyz="0.6;0.4;0.5"
+        stamped_pose="{pose2}"
+        reference_frame="world"
+      />
+      <Action
+        ID="AddPoseStampedToVector"
+        vector="{inspection_poses}"
+        input="{pose2}"
+      />
+      <Action
+        ID="CreateStampedPose"
+        orientation_xyzw="0;-1;0;0"
+        position_xyz="0.4;0.5;0.5"
+        stamped_pose="{pose3}"
+        reference_frame="world"
+      />
+      <Action
+        ID="AddPoseStampedToVector"
+        vector="{inspection_poses}"
+        input="{pose3}"
+      />
+      <!--Use ForEachUntilSuccess to find first reachable inspection point (but don't execute yet)-->
+      <Decorator
+        ID="ForEachUntilSuccess"
+        vector_in="{inspection_poses}"
+        out="{reachable_pose}"
+        index="{pose_index}"
+      >
+        <Control ID="Sequence">
+          <Action
+            ID="InitializeMTCTask"
+            controller_names="joint_trajectory_controller"
+            task="{mtc_task}"
+            task_id="reach_test"
+          />
+          <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
+          <Action
+            ID="SetupMTCPlanToPose"
+            planning_group_name="manipulator"
+            ik_frame="grasp_link"
+            target_pose="{reachable_pose}"
+            task="{mtc_task}"
+          />
+          <Action
+            ID="PlanMTCTask"
+            solution="{first_solution}"
+            task="{mtc_task}"
+          />
+        </Control>
+      </Decorator>
+      <!--Convert solution for trajectory analysis/logging-->
+      <Action
+        ID="ConvertMtcSolutionToJointTrajectory"
+        solution="{first_solution}"
+        joint_trajectory="{joint_traj}"
+      />
+      <!--Use ForEach to visit all inspection points and gather data-->
+      <Decorator
+        ID="ForEach"
+        vector_in="{inspection_poses}"
+        out="{current_pose}"
+        index="{capture_index}"
+      >
+        <Control ID="Sequence">
+          <!--Move to inspection point-->
+          <Action
+            ID="InitializeMTCTask"
+            controller_names="joint_trajectory_controller"
+            task="{move_task}"
+            task_id="inspect"
+          />
+          <Action ID="SetupMTCCurrentState" task="{move_task}" />
+          <Action
+            ID="SetupMTCPlanToPose"
+            planning_group_name="manipulator"
+            ik_frame="grasp_link"
+            target_pose="{current_pose}"
+            task="{move_task}"
+          />
+          <Action
+            ID="PlanMTCTask"
+            solution="{move_solution}"
+            task="{move_task}"
+          />
+          <Action ID="ExecuteMTCTask" solution="{move_solution}" />
+          <!--Visualize current inspection point-->
+          <Action
+            ID="VisualizePose"
+            marker_name="inspection_point"
+            pose="{current_pose}"
+            marker_lifetime="10.0"
+            marker_size="0.05"
+          />
+          <!--Capture and save inspection image-->
+          <Action
+            ID="GetImage"
+            topic_name="/wrist_camera/color"
+            message_out="{image}"
+            timeout_sec="5.0"
+          />
+          <Action
+            ID="SaveImageToFile"
+            image="{image}"
+            file_path="/tmp/inspection_image.png"
+          />
+          <!--Capture point cloud for 3D reconstruction-->
+          <Action ID="Script" code="cloud_count := cloud_count + 1" />
+          <Action
+            ID="GetPointCloud"
+            topic_name="/wrist_camera/points"
+            message_out="{current_cloud}"
+            timeout_sec="5.0"
+          />
+          <Action
+            ID="TransformPointCloudFrame"
+            input_cloud="{current_cloud}"
+            output_cloud="{transformed_cloud}"
+            target_frame="world"
+          />
+          <Action
+            ID="AddPointCloudToVector"
+            point_cloud="{transformed_cloud}"
+            point_cloud_vector="{point_cloud_vector}"
+          />
+          <!--Debug: publish individual cloud and current vector size-->
+          <Action
+            ID="SendPointCloudToUI"
+            point_cloud="{transformed_cloud}"
+            pcd_topic="/pcd_individual_capture"
+          />
+        </Control>
+      </Decorator>
+      <!--Merge all point clouds for complete 3D view-->
+      <Action
+        ID="MergePointClouds"
+        grid_resolution_meters="0.005"
+        merged_cloud="{merged_cloud}"
+        point_clouds="{point_cloud_vector}"
+        align_point_clouds="false"
+      />
+      <!--Publish merged point cloud to UI for visualization-->
+      <Action
+        ID="SendPointCloudToUI"
+        point_cloud="{merged_cloud}"
+        pcd_topic="/pcd_pointcloud_captures"
+      />
+      <!--Demonstrate SetupMTCFromSolution for repeatable inspection routine-->
+      <Action
+        ID="InitializeMTCTask"
+        controller_names="joint_trajectory_controller"
+        task="{replay_task}"
+        task_id="repeat_inspection"
+      />
+      <Action
+        ID="SetupMTCFromSolution"
+        task="{replay_task}"
+        solution="{first_solution}"
+      />
+      <Action
+        ID="PlanMTCTask"
+        solution="{replay_solution}"
+        task="{replay_task}"
+      />
+      <Action ID="ExecuteMTCTask" solution="{replay_solution}" />
+      <!--Return to home position-->
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Look at Table"
+        joint_group_name="manipulator"
+        controller_names="joint_trajectory_controller"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Inspector">
+      <MetadataFields>
+        <Metadata subcategory="Application - Basic Examples" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+      <!--Output ports-->
+      <output_port name="inspection_poses" default="{inspection_poses}" />
+      <output_port name="reachable_pose" default="{reachable_pose}" />
+      <output_port name="first_solution" default="{first_solution}" />
+      <output_port name="joint_traj" default="{joint_traj}" />
+      <output_port name="current_pose" default="{current_pose}" />
+      <output_port name="move_solution" default="{move_solution}" />
+      <output_port name="image" default="{image}" />
+      <output_port name="point_cloud_vector" default="{point_cloud_vector}" />
+      <output_port name="merged_cloud" default="{merged_cloud}" />
+      <output_port name="replay_solution" default="{replay_solution}" />
+      <output_port name="current_cloud" default="{current_cloud}" />
+      <output_port name="transformed_cloud" default="{transformed_cloud}" />
+    </SubTree>
+  </TreeNodesModel>
+</root>
