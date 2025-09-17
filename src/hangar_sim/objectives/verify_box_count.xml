@@ -3,7 +3,7 @@
   <!--//////////-->
   <BehaviorTree ID="Verify Box Count" _description="User verify the number of boxes" _favorite="false">
     <Control ID="Sequence" name="TopLevelSequence">
-      <Action ID="GetFilenamesFromDirectory" file_type=".png" result="{image_filename_vector}" directory_path="/home/henry/user_ws/src/wrist_camera_images"/>
+      <Action ID="GetFilenamesFromDirectory" file_type=".png" result="{image_filename_vector}" directory_path="/home/bilal/user_ws/src/wrist_camera_images"/>
       <Action ID="Script" code="inc:=0"/>
       <Decorator ID="ForEach" index="{index}" out="{out}" vector_in="{image_filename_vector}">
         <Control ID="Sequence">
@@ -25,7 +25,7 @@
           </Decorator>
         </Control>
       </Decorator>
-      <Action ID="LogMessage" log_level="error" message="{inc}"/>
+      <Action ID="LogMessage" log_level="info" message="{inc}"/>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
