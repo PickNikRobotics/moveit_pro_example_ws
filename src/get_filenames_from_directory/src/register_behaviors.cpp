@@ -1,6 +1,7 @@
 #include <behaviortree_cpp/bt_factory.h>
 #include <moveit_studio_behavior_interface/behavior_context.hpp>
 #include <moveit_studio_behavior_interface/shared_resources_node_loader.hpp>
+#include "get_filenames_from_directory/push_back_vector.hpp"
 
 #include <get_filenames_from_directory/get_filenames_from_directory.hpp>
 
@@ -16,6 +17,8 @@ public:
       [[maybe_unused]] const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources) override
   {
     moveit_studio::behaviors::registerBehavior<GetFilenamesFromDirectory>(factory, "GetFilenamesFromDirectory");
+    moveit_studio::behaviors::registerBehavior<moveit_studio::behaviors::PushBackVector>(factory, "PushBackVector",
+                                                                                         shared_resources);
   }
 };
 }  // namespace get_filenames_from_directory
