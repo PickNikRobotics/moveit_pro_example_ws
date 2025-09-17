@@ -134,6 +134,7 @@ objectives:
       - "moveit_studio::behaviors::ServoBehaviorsLoader"
       - "moveit_studio::behaviors::VisionBehaviorsLoader"
       - "moveit_studio::behaviors::ConverterBehaviorsLoader"
+      - "get_filenames_from_directory::GetFilenamesFromDirectoryBehaviorsLoader"
   # Specify source folder for objectives
   # [Required]
   objective_library_paths:
