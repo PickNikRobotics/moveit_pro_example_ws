@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="AddCollisionObjectToPlanningScene">
+  <!--//////////-->
+  <BehaviorTree
+    ID="AddCollisionObjectToPlanningScene"
+    _description="Adds a collision box to the planning scene  with the specified ID and pose."
+  >
+    <Control ID="Sequence">
+      <Action
+        ID="CreateGraspableObject"
+        cuboid_object="{cuboid_object}"
+        dx="0.100000"
+        dy="0.100000"
+        dz="0.100000"
+        generate_front_face="false"
+        generate_side_faces="false"
+        generate_top_face="false"
+        object_id="{object_id}"
+        pose="{pose}"
+      />
+      <Action
+        ID="UnpackGraspableObjectMessage"
+        grasp_info="{grasp_info}"
+        graspable_object="{cuboid_object}"
+        object="{object}"
+        object_color="{object_color}"
+      />
+      <Action
+        ID="CreateGraspableObjectMessage"
+        grasp_info="{grasp_info}"
+        graspable_object="{graspable_object}"
+        object="{collision_object}"
+        object_color="{object_color}"
+      />
+      <Action
+        ID="ModifyObjectInPlanningScene"
+        apply_planning_scene_service="/apply_planning_scene"
+        object="{graspable_object}"
+      />
+      <Action
+        ID="GetCurrentPlanningScene"
+        planning_scene_msg="{planning_scene}"
+      />
+      <Action
+        ID="IsCollisionObjectInPlanningScene"
+        planning_scene="{planning_scene}"
+        collision_object_name="{object_id}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="AddCollisionObjectToPlanningScene">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Perception - Planning Scene" />
+      </MetadataFields>
+      <inout_port name="collision_object" default="{collision_object}" />
+      <inout_port name="object_id" default="" type="std::string">
+        ID of collision object in the planning scene
+      </inout_port>
+      <inout_port
+        name="pose"
+        default="{stamped_pose}"
+        type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"
+      />
+    </SubTree>
+  </TreeNodesModel>
+</root>

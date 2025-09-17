@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="AddCollisionBoxInFrontOfEndEffector"
+>
+  <!--//////////-->
+  <BehaviorTree
+    ID="AddCollisionBoxInFrontOfEndEffector"
+    _description="Adds a collision box in front of the end effector with the specified ID, dimensions and offset."
+    _favorite="false"
+    name=""
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="CreateStampedPose"
+        reference_frame="grasp_link"
+        stamped_pose="{stamped_pose}"
+        position_xyz="{offset}"
+      />
+      <Action
+        ID="CreateSolidPrimitiveBox"
+        solid_primitive="{solid_primitive}"
+        dimensions="{dimensions}"
+      />
+      <Action
+        ID="CreateCollisionObjectFromSolidPrimitive"
+        collision_object="{collision_object}"
+        object_id="{object_id}"
+        pose="{stamped_pose}"
+        solid_primitive="{solid_primitive}"
+      />
+      <SubTree
+        ID="AddCollisionObjectToPlanningScene"
+        _collapsed="false"
+        collision_object="{collision_object}"
+        pose="{stamped_pose}"
+        object_id="{object_id}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="AddCollisionBoxInFrontOfEndEffector">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Perception - Planning Scene" />
+      </MetadataFields>
+      <inout_port
+        name="dimensions"
+        default="0.3;0.3;0.3"
+        type="std::vector&lt;double, std::allocator&lt;double&gt; &gt;"
+      />
+      <inout_port name="object_id" default="" type="std::string" />
+      <inout_port
+        name="offset"
+        default="0;0;0.1"
+        type="std::vector&lt;double, std::allocator&lt;double&gt; &gt;"
+      />
+    </SubTree>
+  </TreeNodesModel>
+</root>
