@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Simple Test">
+  <!--//////////-->
+  <BehaviorTree ID="Simple Test" _description="" _favorite="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <!--Reset vector to ensure it's empty-->
+      <Action ID="ResetVector" vector="{my_vector}" />
+      <!--Create first pose and insert at index 0-->
+      <Action
+        ID="CreateStampedPose"
+        position_xyz="0.5;0.0;0.5"
+        orientation_xyzw="0;0;0;1"
+        reference_frame="world"
+        stamped_pose="{pose1}"
+      />
+      <Action
+        ID="InsertInVector"
+        element="{pose1}"
+        index="0"
+        input_vector="{my_vector}"
+        output_vector="{my_vector}"
+      />
+      <!--Create second pose and insert at index 1-->
+      <Action
+        ID="CreateStampedPose"
+        position_xyz="0.6;0.1;0.5"
+        orientation_xyzw="0;0;0;1"
+        reference_frame="world"
+        stamped_pose="{pose2}"
+      />
+      <Action
+        ID="InsertInVector"
+        element="{pose2}"
+        index="1"
+        input_vector="{my_vector}"
+        output_vector="{my_vector}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Simple Test">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="_Dave Tests" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

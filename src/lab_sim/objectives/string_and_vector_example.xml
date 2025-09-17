@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="String and Vector Example">
+  <BehaviorTree
+    ID="String and Vector Example"
+    _description=""
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="ResetVector" vector="{my_vector}" name="Create the Vector" />
+      <Action
+        ID="ReadTextFileAsString"
+        string_file_contents="{string1}"
+        text_filename="example_file.txt"
+      />
+      <Action
+        ID="PublishString"
+        queue_size="1"
+        use_best_effort="false"
+        message="{string1}"
+        topic="/ai_safety_announcement"
+      />
+      <Action ID="LogMessage" message="{string1}" log_level="warn" />
+      <Control ID="Sequence" name="Test Some Vector Operations">
+        <Action
+          ID="InsertInVector"
+          element="{json:{&quot;__type&quot;:&quot;string&quot;,&quot;value&quot;:&quot;{string1}&quot;}"
+          index="0"
+          input_vector="{my_vector}"
+          output_vector="{my_vector}"
+        />
+        <SubTree
+          ID="ErrorCheckVectorSize"
+          _collapsed="true"
+          expected_vector_size="1"
+          vector="{my_vector}"
+        />
+        <Action
+          ID="RemoveFromVector"
+          index="0"
+          input_vector="{my_vector}"
+          output_vector="{my_vector}"
+        />
+        <SubTree
+          ID="ErrorCheckVectorSize"
+          _collapsed="true"
+          expected_vector_size="0"
+          vector="{my_vector}"
+        />
+      </Control>
+      <Control ID="Sequence" name="Item 1">
+        <Action ID="Script" code="string2 := 'Do not be evil'" />
+        <Action
+          ID="InsertInVector"
+          element="{json:{&quot;__type&quot;:&quot;string&quot;,&quot;value&quot;:&quot;{string2}&quot;}"
+          index="0"
+          input_vector="{my_vector}"
+          output_vector="{my_vector}"
+        />
+        <SubTree
+          ID="ErrorCheckVectorSize"
+          _collapsed="true"
+          expected_vector_size="1"
+          vector="{my_vector}"
+        />
+        <Action ID="LogMessage" message="{string2}" log_level="warn" />
+        <Action ID="Script" code="string3 := 'robots'" />
+        <Action
+          ID="ReplaceInVector"
+          element="{json:{&quot;__type&quot;:&quot;string&quot;,&quot;value&quot;:&quot;{string3}&quot;}"
+          index="0"
+          input_vector="{my_vector}"
+          output_vector="{my_vector}"
+        />
+        <SubTree
+          ID="ErrorCheckVectorSize"
+          _collapsed="true"
+          expected_vector_size="1"
+          vector="{my_vector}"
+        />
+        <Action ID="LogMessage" message="{string3}" log_level="warn" />
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="String and Vector Example">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="_Dave Tests" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
