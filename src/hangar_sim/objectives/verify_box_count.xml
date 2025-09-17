@@ -11,7 +11,7 @@
         ID="GetFilenamesFromDirectory"
         file_type=".png"
         result="{image_filename_vector}"
-        directory_path="/home/henry/user_ws/src/images"
+        directory_path="/home/henry/user_ws/src/wrist_camera_images"
       />
       <Action ID="Script" code="inc:=0" />
       <Decorator

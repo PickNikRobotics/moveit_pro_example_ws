@@ -16,6 +16,12 @@
         ID="SwitchController"
         activate_controllers="platform_velocity_controller_nav2"
         deactivate_controllers="velocity_force_controller;joint_trajectory_controller;platform_velocity_controller;servo_controller"
+        activate_asap="true"
+        automatic_deactivation="true"
+        controller_list_action_name="/controller_manager/list_controllers"
+        controller_switch_action_name="/controller_manager/switch_controller"
+        strictness="1"
+        timeout="-1.000000"
       />
       <Action
         ID="GetPoseFromUser"
@@ -25,28 +31,47 @@
         view_name="Visualization"
       />
       <Action
-        ID="ComputePathToPoseAction"
-        action_name="/compute_path_to_pose"
-        goal="{goal}"
-        ignore_stamp_time="true"
-        path="{path}"
-        planning_time="{planning_time}"
-        start="{start}"
-        timeout_sec="-1.000000"
-        use_start="false"
-        planner_id="GridBased"
+        ID="AddPoseStampedToVector"
+        input="{goal}"
+        vector="{pose_stamped_vector}"
       />
-      <Action ID="WaitForUserPathApproval" path="{path}" />
       <Action
-        ID="FollowPathAction"
-        action_name="/follow_path"
-        controller_id="FollowPath"
-        distance_to_goal="{distance_to_goal}"
-        goal_checker_id="general_goal_checker"
-        path="{path}"
-        speed="{speed}"
-        timeout_sec="-1.000000"
+        ID="AdjustPoseWithIMarker"
+        adjusted_poses="{final_poses}"
+        initial_poses="{pose_stamped_vector}"
       />
+      <Decorator
+        ID="ForEach"
+        index="{index}"
+        out="{out}"
+        vector_in="{final_poses}"
+      >
+        <Control ID="Sequence">
+          <Action
+            ID="ComputePathToPoseAction"
+            action_name="/compute_path_to_pose"
+            goal="{out}"
+            ignore_stamp_time="true"
+            path="{path}"
+            planning_time="{planning_time}"
+            start="{start}"
+            timeout_sec="-1.000000"
+            use_start="false"
+            planner_id="GridBased"
+          />
+          <Action ID="WaitForUserPathApproval" path="{path}" />
+          <Action
+            ID="FollowPathAction"
+            action_name="/follow_path"
+            controller_id="FollowPath"
+            distance_to_goal="{distance_to_goal}"
+            goal_checker_id="general_goal_checker"
+            path="{path}"
+            speed="{speed}"
+            timeout_sec="-1.000000"
+          />
+        </Control>
+      </Decorator>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>

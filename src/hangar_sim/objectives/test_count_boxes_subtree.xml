@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Test count boxes subtree">
+  <BehaviorTree
+    ID="Test count boxes subtree"
+    _description="Objective to test the count boxes subtree"
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree ID="Navigate to Clicked Point" _collapsed="true" />
+      <SubTree ID="Count boxes subtree" _collapsed="true" />
+      <Action ID="LogMessage" log_level="error" message="{box_count}" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Test count boxes subtree" />
+  </TreeNodesModel>
+</root>
