@@ -3,10 +3,15 @@
   <!--//////////-->
   <BehaviorTree
     ID="Demo Trajectory Stitching"
-    _description="Take a pointcloud snapshot of the scene with a depth camera"
+    _description="Demonstrated trajectory stitching using the JTAC: while the JTAC is executing a trajectory, send a new trajectory that can be stitched to the active trajectory."
     _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="LogMessage"
+        log_level="warn"
+        message="There will be an error when the stiching occurs and the first goal is aborted, this is expected."
+      />
       <SubTree
         ID="Move to Waypoint"
         _collapsed="true"
@@ -19,6 +24,7 @@
         keep_orientation_tolerance="0.05"
         link_padding="0.01"
         velocity_scale_factor="1.0"
+        seed="0"
       />
       <Action
         ID="GetCurrentPlanningScene"
@@ -105,6 +111,12 @@
       <Action
         ID="SwitchController"
         activate_controllers="joint_trajectory_admittance_controller"
+        activate_asap="true"
+        automatic_deactivation="true"
+        controller_list_action_name="/controller_manager/list_controllers"
+        controller_switch_action_name="/controller_manager/switch_controller"
+        strictness="1"
+        timeout="-1.0"
       />
       <Control ID="Parallel" failure_count="2" success_count="1">
         <Action

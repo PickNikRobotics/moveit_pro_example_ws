@@ -9,7 +9,7 @@
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
         ID="InitializeMTCTask"
-        controller_names="/joint_trajectory_controller;/robotiq_gripper_controller"
+        controller_names="joint_trajectory_controller;robotiq_gripper_controller"
         task="{mtc_task}"
         task_id="place_object"
         trajectory_monitoring="false"
@@ -37,6 +37,7 @@
         velocity_scale="1.000000"
         ignore_environment_collisions="false"
       />
+      <Action ID="ResetPoseStampedVector" vector="{place_pose_vector}" />
       <Action
         ID="AddPoseStampedToVector"
         input="{place_pose}"
@@ -66,6 +67,7 @@
         stamped_pose="{retract_pose}"
         position_xyz="{retract_xyz}"
       />
+      <Action ID="ResetPoseStampedVector" vector="{retract_path}" />
       <Action
         ID="AddPoseStampedToVector"
         input="{retract_pose}"

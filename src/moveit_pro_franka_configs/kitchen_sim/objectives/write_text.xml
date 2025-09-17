@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Write Text">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Write Text"
+    _description="Read a sequence of poses representing a text from a YAML file and draw the text on a flat surface using Cartesian planning."
+    _favorite="false"
+    _hardcoded="false"
+  >
+    <Control ID="Parallel" success_count="1" failure_count="1">
+      <Action
+        ID="PublishStaticFrame"
+        pose="{bottom_right_corner}"
+        child_frame_id="local"
+        publish_rate="50"
+      />
+      <Control ID="Sequence" name="TopLevelSequence">
+        <Action
+          ID="SwitchController"
+          activate_asap="true"
+          automatic_deactivation="true"
+          controller_list_action_name="/controller_manager/list_controllers"
+          controller_switch_action_name="/controller_manager/switch_controller"
+          strictness="1"
+          timeout="-1.000000"
+          activate_controllers="joint_trajectory_controller"
+        />
+        <Action
+          ID="LoadPoseStampedVectorFromYaml"
+          output="{pose_stamped_msgs}"
+          file_path="{file_path}"
+        />
+        <Control ID="Fallback">
+          <Action
+            ID="PlanCartesianPath"
+            path="{pose_stamped_msgs}"
+            planning_group_name="manipulator"
+            position_only="false"
+            blending_radius="0.000005"
+            velocity_scale_factor="0.1"
+            acceleration_scale_factor="0.05"
+            trajectory_sampling_rate="100"
+            joint_trajectory_msg="{joint_trajectory_msg}"
+            debug_solution="{debug_solution}"
+            ik_cartesian_space_density="0.01000"
+            ik_joint_space_density="0.050000"
+          />
+          <Action
+            ID="WaitForUserTrajectoryApproval"
+            solution="{debug_solution}"
+            cartesian_path_links="grasp_link"
+          />
+        </Control>
+        <Action
+          ID="VisualizePath"
+          marker_lifetime="0.000000"
+          path="{pose_stamped_msgs}"
+          marker_name="path"
+          pose_marker_size="0.100000"
+          show_poses="false"
+        />
+        <Action
+          ID="ExecuteFollowJointTrajectory"
+          execute_follow_joint_trajectory_action_name="/joint_trajectory_controller/follow_joint_trajectory"
+          joint_trajectory_msg="{joint_trajectory_msg}"
+          goal_position_tolerance="0.000000"
+          goal_time_tolerance="0.000000"
+          goal_duration_tolerance="-1.000000"
+          trajectory_remainder="{joint_trajectory_remainder}"
+        />
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Write Text">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Motion - Execute" />
+      </MetadataFields>
+      <inout_port name="bottom_right_corner" default="{stamped_pose}" />
+      <inout_port name="file_path" default="{file_path}" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

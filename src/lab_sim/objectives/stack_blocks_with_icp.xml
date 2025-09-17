@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Stack Blocks with ICP">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Stack Blocks with ICP"
+    _description="Solution to the advanced exercise in the ICP section of the Perception &amp; ML tutorial"
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree ID="Open Gripper" _collapsed="true" />
+      <SubTree ID="Look at Table" _collapsed="true" />
+      <SubTree ID="Clear Snapshot" _collapsed="true" />
+      <SubTree ID="Take Wrist Camera Snapshot" _collapsed="true" />
+      <SubTree
+        ID="Register CAD Part Subtree"
+        _collapsed="true"
+        grasp_pose="{grasp_pose}"
+      />
+      <SubTree
+        ID="Pick from Pose"
+        _collapsed="true"
+        approach_distance="0.1"
+        grasp_pose="{grasp_pose}"
+        retract_xyz="0;0;-0.1"
+      />
+      <SubTree ID="Look at Table" _collapsed="true" />
+      <SubTree ID="Place Object" _collapsed="true" />
+      <SubTree ID="Open Gripper" _collapsed="true" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Stack Blocks with ICP">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Training Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
