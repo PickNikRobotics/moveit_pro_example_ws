@@ -21,7 +21,7 @@
               <SubTree
                 ID="Move Boxes to Loading Zone Start from Waypoint"
                 waypoint_name="View Boxes"
-                _collapsed="true"
+                _collapsed="false"
                 threshold="0.25"
                 prompt="a small brown box"
                 negative_prompts="yellow ladder;"
