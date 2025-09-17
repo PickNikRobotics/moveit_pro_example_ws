@@ -43,7 +43,6 @@
         negative_prompts="grey"
         threshold="0.5"
       />
-      <!--CropPointsInSphere here, perhaps-->
       <Action
         ID="PublishMask2D"
         image="{wrist_camera_image}"
@@ -64,6 +63,13 @@
         publisher_timeout_sec="5.000000"
         timeout_sec="5.000000"
         topic_name="/wrist_camera/points"
+      />
+      <Action
+        ID="CreateStampedPose"
+        reference_frame="ridgeback_base_link"
+        stamped_pose="{robot_pose}"
+        orientation_xyzw="0;0;0;1"
+        position_xyz="0;0;0"
       />
       <Action
         ID="FindMaskedObjects"
