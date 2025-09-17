@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Take Scene Camera Snapshot">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Take Scene Camera Snapshot"
+    _description="Take a pointcloud snapshot of the scene with a depth camera"
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <!--Clear out old snapshot data-->
+      <Action ID="ClearSnapshot" />
+      <Action
+        ID="GetPointCloud"
+        topic_name="/scene_camera/points"
+        message_out="{point_cloud}"
+        publisher_timeout_sec="5.000000"
+        timeout_sec="10"
+      />
+      <Action
+        ID="SendPointCloudToUI"
+        pcd_topic="/pcd_pointcloud_captures"
+        point_cloud="{point_cloud}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Take Scene Camera Snapshot">
+      <MetadataFields>
+        <Metadata subcategory="Application - Basic Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

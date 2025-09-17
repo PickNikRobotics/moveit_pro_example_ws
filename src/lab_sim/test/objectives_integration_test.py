@@ -39,6 +39,7 @@ from moveit_pro_test_utils.objective_test_fixture import (
 
 cancel_objectives = {
     "3 Waypoints Pick and Place",
+    "Admittance Demo",
     "Cycle Between Waypoints",
     "Grasp Planning",
     "Grasp Pose Tuning With April Tag",
