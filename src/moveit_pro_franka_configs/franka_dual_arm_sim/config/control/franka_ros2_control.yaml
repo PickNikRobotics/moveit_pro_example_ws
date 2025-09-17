@@ -27,6 +27,7 @@ joint_trajectory_controller:
     state_interfaces:
       - position
       - velocity
+    allow_partial_joints_goal: true
     joints:
       - left_fr3_joint1
       - left_fr3_joint2
@@ -42,7 +43,6 @@ joint_trajectory_controller:
       - right_fr3_joint5
       - right_fr3_joint6
       - right_fr3_joint7
-    allow_partial_joints_goal: true
     gains:
       left_fr3_joint1: { p: 600., d: 30., i: 0., i_clamp: 1. }
       left_fr3_joint2: { p: 600., d: 30., i: 0., i_clamp: 1. }

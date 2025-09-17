@@ -1,0 +1,105 @@
+SetAdmittanceParameters:
+  admittance:
+    damping_ratio_position:
+      max: 1000
+      min: 0
+      x: 160
+      y: 160
+      z: 160
+    damping_ratio_rotation:
+      max: 1000
+      min: 0
+      x: 1
+      y: 1
+      z: 1
+    joint_damping:
+      max: 1000
+      min: 0
+      value: 1
+    mass_position:
+      max: 1000
+      min: 0.001
+      x: 4
+      y: 4
+      z: 4
+    mass_rotation:
+      max: 1000
+      min: 0.001
+      x: 1
+      y: 1
+      z: 1
+    selected_axes:
+      rx: true
+      ry: true
+      rz: true
+      x: true
+      y: true
+      z: true
+    stiffness_position:
+      max: 1000
+      min: 0
+      x: 40
+      y: 40
+      z: 40
+    stiffness_rotation:
+      max: 1000
+      min: 0
+      x: 1
+      y: 1
+      z: 1
+  base_frame: base_link
+  control_frame: grasp_link
+  controller_name: ''
+  end_effector_frame: grasp_link
+admittance:
+  damping_ratio_position:
+    max: 1000
+    min: 0
+    x: 160
+    y: 160
+    z: 80
+  damping_ratio_rotation:
+    max: 1000
+    min: 0
+    x: 1
+    y: 1
+    z: 1
+  joint_damping:
+    max: 1000
+    min: 0
+    value: 1
+  mass_position:
+    max: 1000
+    min: 0.001
+    x: 4
+    y: 4
+    z: 4
+  mass_rotation:
+    max: 1000
+    min: 0.001
+    x: 1
+    y: 1
+    z: 1
+  selected_axes:
+    rx: true
+    ry: true
+    rz: true
+    x: true
+    y: true
+    z: true
+  stiffness_position:
+    max: 1000
+    min: 0
+    x: 40
+    y: 40
+    z: 40
+  stiffness_rotation:
+    max: 1000
+    min: 0
+    x: 1
+    y: 1
+    z: 1
+base_frame: base_link
+control_frame: grasp_link
+controller_name: ''
+end_effector_frame: grasp_link
