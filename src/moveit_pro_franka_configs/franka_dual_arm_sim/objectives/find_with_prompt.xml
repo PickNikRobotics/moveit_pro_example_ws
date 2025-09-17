@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Find with prompt">
+  <!--//////////-->
+  <BehaviorTree ID="Find with prompt" _description="" _favorite="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree
+        ID="Segment Point Cloud from Text Prompt Subtree"
+        _collapsed="false"
+        camera_topic_name="/scene_camera/camera_info"
+        decoder_model_path="models/decoder.onnx"
+        encoder_model_path="models/sam2_hiera_large_encoder.onnx"
+        image_topic_name="/scene_camera/color"
+        masks_visualization_topic="/masks_visualization"
+        model_package="moveit_pro_clipseg"
+        points_topic_name="/scene_camera/points"
+        clip_model_path="models/clip.onnx"
+        clipseg_model_path="models/clipseg.onnx"
+        erosion_size="5"
+        prompts="{prompt}"
+        threshold="0.28"
+        masks3d="{masks3d}"
+        point_cloud="{point_cloud}"
+        point_cloud_vector="{point_cloud_vector}"
+      />
+      <Action
+        ID="GetElementOfVector"
+        index="0"
+        vector_in="{point_cloud_vector}"
+        element="{object_cloud}"
+      />
+      <Action
+        ID="GetCentroidFromPointCloud"
+        output_pose="{object_centroid}"
+        point_cloud="{object_cloud}"
+      />
+      <Action
+        ID="VisualizePose"
+        marker_lifetime="0.000000"
+        marker_name="pose"
+        marker_size="0.100000"
+        pose="{object_centroid}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Find with prompt">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Motion - Execute" />
+      </MetadataFields>
+      <inout_port name="object_centroid" default="{object_centroid}" />
+      <inout_port name="prompt" default="{prompt}" />
+    </SubTree>
+  </TreeNodesModel>
+</root>
