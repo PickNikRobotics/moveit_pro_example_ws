@@ -8,9 +8,15 @@
       <Action ID="CropPosesInBox" crop_box_centroid_pose="{crop_pose_centroid}" poses="{pose_vector}" poses_cropped="{path_cropped}" crop_box_size="12;12;1"/>
       <Action ID="VisualizePath" marker_lifetime="0.000000" marker_name="path_cropped" path="{path_cropped}" pose_marker_size="1" show_poses="true"/>
       <Action ID="SwitchController" activate_asap="true" automatic_deactivation="true" controller_list_action_name="/controller_manager/list_controllers" controller_switch_action_name="/controller_manager/switch_controller" strictness="1" timeout="-1.000000" activate_controllers="platform_velocity_controller_nav2" deactivate_controllers="platform_velocity_controller"/>
+      <Action ID="Script" code="total_box_count:=0"/>
       <Decorator ID="ForEach" index="{index}" out="{out}" vector_in="{path_cropped}">
-        <Action ID="NavigateToPoseAction" action_name="/navigate_to_pose" current_pose="{current_pose}" distance_remaining="{distance_remaining}" estimated_time_remaining="{estimated_time_remaining}" ignore_stamp_time="true" navigation_time="{navigation_time}" number_of_recoveries="{number_of_recoveries}" pose_stamped="{out}" timeout_sec="-1.000000" behavior_tree_path="/opt/ros/humble/share/nav2_bt_navigator/behavior_trees/navigate_to_pose_w_replanning_and_recovery.xml"/>
+        <Control ID="Sequence">
+          <Action ID="NavigateToPoseAction" action_name="/navigate_to_pose" current_pose="{current_pose}" distance_remaining="{distance_remaining}" estimated_time_remaining="{estimated_time_remaining}" ignore_stamp_time="true" navigation_time="{navigation_time}" number_of_recoveries="{number_of_recoveries}" pose_stamped="{out}" timeout_sec="-1.000000" behavior_tree_path="/opt/ros/humble/share/nav2_bt_navigator/behavior_trees/navigate_to_pose_w_replanning_and_recovery.xml"/>
+          <SubTree ID="Count boxes subtree" _collapsed="false" box_count="{box_count}"/>
+          <Action ID="Script" code="total_box_count+=box_count"/>
+        </Control>
       </Decorator>
+      <Action ID="LogMessage" log_level="info" message="{total_box_count}"/>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
