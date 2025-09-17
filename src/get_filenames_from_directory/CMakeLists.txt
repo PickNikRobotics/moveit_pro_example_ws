@@ -14,7 +14,8 @@ add_library(
   SHARED
   src/get_filenames_from_directory.cpp
   src/register_behaviors.cpp
-  src/push_back_vector.cpp)
+  src/push_back_vector.cpp
+  src/string_to_int.cpp)
 target_include_directories(
   get_filenames_from_directory
   PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
