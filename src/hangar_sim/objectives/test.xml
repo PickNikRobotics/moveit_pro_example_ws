@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Test">
+  <!--//////////-->
+  <BehaviorTree ID="Test" _description="" _favorite="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="GetFilenamesFromDirectory"
+        result="{result}"
+        directory_path="/home/henry/user_ws/src/poses"
+        file_type=".yaml"
+      />
+      <Decorator ID="ForEach" index="{index}" out="{out}" vector_in="{result}">
+        <Action ID="LogMessage" log_level="error" message="{out}" />
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Test">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Advanced Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
