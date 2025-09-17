@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<library path="get_filenames_from_directory">
+  <class
+    type="get_filenames_from_directory::GetFilenamesFromDirectoryBehaviorsLoader"
+    base_class_type="moveit_studio::behaviors::SharedResourcesNodeLoaderBase"
+  />
+</library>
