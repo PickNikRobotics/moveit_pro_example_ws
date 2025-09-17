@@ -37,6 +37,7 @@ from moveit_pro_test_utils.objective_test_fixture import (
     run_objective,
 )
 
+# Looping objectives to cancel partway through
 cancel_objectives = {
     "3 Waypoints Pick and Place",
     "Cycle Between Waypoints",
@@ -54,17 +55,18 @@ cancel_objectives = {
     "ML Grasp Object from Text Prompt",
 }
 
+# Objectives to skip entirely from integration testing
 skip_objectives = {
     "Grasp Object from Text Prompt",  # https://github.com/PickNikRobotics/moveit_pro/issues/13236
     "Grasp Planning",
     "Joint Diagnostic",
-    "Fuse Multiple Views",
+    "Scan Multiple Views",
     "MPC Pose Tracking",
     "MPC Pose Tracking With Point Cloud Avoidance",
-    "ML Segment Image from Text Prompt",
+    "ML Segment Image",
     "ML Segment Point Cloud from Clicked Point",
-    "ML Auto Grasp Object from Clicked Point",  # Skipped because there is no primary ui to switch to in ci
-    "ML Auto Grasp Object from Text Prompt",
+    "Pick All Pill Bottles",  # Skipped because there is no primary ui to switch to in ci
+    "Pick 1 Pill Bottle",
     "Pick up Cube",
     "Place Object",
     "Record Square Trajectory",
