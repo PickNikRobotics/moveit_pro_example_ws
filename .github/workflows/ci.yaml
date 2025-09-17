@@ -15,10 +15,15 @@ on:
 
 jobs:
   integration-test-in-studio-container:
-    uses: PickNikRobotics/moveit_pro_ci/.github/workflows/workspace_integration_test.yaml@v0.0.2
+    uses: PickNikRobotics/moveit_pro_ci/.github/workflows/workspace_integration_test.yaml@fix-artifact-upload
+    strategy:
+      fail-fast: false
+      matrix:
+        config_package: [lab_sim, hangar_sim, grinding_sim, factory_sim, space_satellite_sim, mock_sim]
     with:
       image_tag: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name }}
       colcon_test_args: "--executor sequential"
+      config_package: ${{ matrix.config_package }}
     secrets: inherit
 
   ensure-no-ssh-in-gitmodules:
