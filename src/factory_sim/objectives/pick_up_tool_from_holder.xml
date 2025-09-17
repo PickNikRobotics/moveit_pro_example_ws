@@ -7,6 +7,12 @@
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
+        ID="MoveGripperAction"
+        position="1"
+        gripper_command_action_name="/tool_attach_controller/gripper_cmd"
+        timeout="10"
+      />
+      <Action
         ID="CreateStampedPose"
         reference_frame="{tool_attach_site}"
         position_xyz="0;0;-0.1"
@@ -15,7 +21,7 @@
       <Action
         ID="InitializeMTCTask"
         task_id="pick_up_tool"
-        controller_names="/joint_trajectory_controller"
+        controller_names="joint_trajectory_controller"
         task="{mtc_task}"
         trajectory_monitoring="false"
       />
@@ -39,8 +45,8 @@
       <Action
         ID="SetupMTCMoveAlongFrameAxis"
         hand_frame="tool0"
-        max_distance="0.095"
-        min_distance="0.095"
+        max_distance="0.1"
+        min_distance="0.1"
         axis_frame="tool0"
         acceleration_scale="0.5"
         axis_x="0.000000"
@@ -58,15 +64,9 @@
         solution="{mtc_solution}"
       />
       <Action
-        ID="MoveGripperAction"
-        position="1"
-        gripper_command_action_name="/tool_attach_controller/gripper_cmd"
-        timeout="10"
-      />
-      <Action
-        ID="AttachTool"
+        ID="AttachURDF"
         parent_link_name="tool0"
-        tool_name="{tool_name}"
+        urdf_name="{tool_name}"
         allowed_collision_links="link_5;link_6"
       />
       <SubTree ID="Retract" _collapsed="true" distance="0.35" />

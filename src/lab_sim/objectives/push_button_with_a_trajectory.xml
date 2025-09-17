@@ -22,7 +22,7 @@
         link_padding="0.01"
         velocity_scale_factor="1.0"
       />
-      <SubTree ID="Take wrist camera snapshot" _collapsed="true" />
+      <SubTree ID="Take Wrist Camera Snapshot" _collapsed="true" />
       <!--Plan a path to move in straight line towards the button-->
       <Action
         ID="CreateStampedPose"
@@ -64,7 +64,7 @@
       />
       <Action
         ID="CallTriggerService"
-        service_name="/joint_trajectory_admittance_controller/zero_fts"
+        service_name="/joint_trajectory_admittance_controller/zero_fts/tool0"
       />
       <Action
         ID="SetAdmittanceParameters"

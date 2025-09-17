@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Add Table to Planning Scene">
+  <!--//////////-->
+  <BehaviorTree ID="Add Table to Planning Scene" _description="">
+    <Control ID="Sequence">
+      <Action
+        ID="GetCurrentPlanningScene"
+        planning_scene_msg="{planning_scene}"
+      />
+      <Action
+        ID="CreateStampedPose"
+        reference_frame="world"
+        stamped_pose="{table_pose}"
+        position_xyz="-0.076413; 0.97; 0.42;"
+      />
+      <Action
+        ID="CreateGraspableObject"
+        cuboid_object="{table_top}"
+        dx="2"
+        dy="1"
+        dz="0.100000"
+        generate_front_face="true"
+        generate_side_faces="true"
+        generate_top_face="true"
+        object_id="virtual_table_top"
+        pose="{table_pose}"
+      />
+      <Action
+        ID="AddVirtualObjectToPlanningScene"
+        apply_planning_scene_service="/apply_planning_scene"
+        object="{table_top}"
+        planning_scene_msg="{planning_scene}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Add Table to Planning Scene">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Perception - Planning Scene" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

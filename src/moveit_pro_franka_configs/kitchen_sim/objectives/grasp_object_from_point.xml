@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Grasp Object from Point">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Grasp Object from Point"
+    _description="Captures a point cloud and requests the user to click on one object in the image to be segmented. The point cloud is then filtered only to include the selected objects, and a grasp pose is generated."
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree ID="Take Scene Camera Snapshot" _collapsed="true" />
+      <Action
+        ID="GetImage"
+        message_out="{image}"
+        publisher_timeout_sec="5.000000"
+        timeout_sec="5.000000"
+        topic_name="/scene_camera/color"
+      />
+      <Action
+        ID="GetPointsFromUser"
+        pixel_coords="{pixel_coords}"
+        view_name="/scene_camera/color"
+      />
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        controller_names="joint_trajectory_controller"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        seed="0"
+        velocity_scale_factor="1.0"
+        waypoint_name="Ready"
+      />
+      <Action
+        ID="GetMasks2DFromPointQuery"
+        image="{image}"
+        masks2d="{masks2d}"
+        pixel_coords="{pixel_coords}"
+        decoder_model_path="models/decoder.onnx"
+        encoder_model_path="models/sam2_hiera_large_encoder.onnx"
+        model_package="kitchen_sim"
+      />
+      <Action
+        ID="PublishMask2D"
+        image="{image}"
+        masks="{masks2d}"
+        masks_visualization_topic="/masks_visualization"
+        opacity="0.500000"
+        bounding_box_labels="detection"
+      />
+      <Action
+        ID="SwitchUIPrimaryView"
+        primary_view_name="/masks_visualization"
+      />
+      <Action
+        ID="GetCameraInfo"
+        message_out="{camera_info}"
+        publisher_timeout_sec="5.000000"
+        timeout_sec="5.000000"
+        topic_name="/scene_camera/camera_info"
+      />
+      <Action
+        ID="GetPointCloud"
+        message_out="{point_cloud}"
+        publisher_timeout_sec="5.000000"
+        timeout_sec="5.000000"
+        topic_name="/scene_camera/points"
+      />
+      <Action
+        ID="GetMasks3DFromMasks2D"
+        camera_info="{camera_info}"
+        masks2d="{masks2d}"
+        masks3d="{masks3d}"
+        point_cloud="{point_cloud}"
+      />
+      <Decorator
+        ID="ForEach"
+        index="{index}"
+        out="{mask3d}"
+        vector_in="{masks3d}"
+      >
+        <Action
+          ID="GetPointCloudFromMask3D"
+          mask3d="{mask3d}"
+          point_cloud="{point_cloud}"
+          point_cloud_fragment="{point_cloud_fragment}"
+        />
+      </Decorator>
+      <Action
+        ID="GetCentroidFromPointCloud"
+        output_pose="{output_pose}"
+        point_cloud="{point_cloud_fragment}"
+      />
+      <Action
+        ID="VisualizePose"
+        marker_lifetime="0.000000"
+        marker_name="pose"
+        marker_size="0.100000"
+        pose="{output_pose}"
+      />
+      <SubTree
+        ID="Move to Pose"
+        _collapsed="true"
+        controller_names="joint_trajectory_controller;franka_gripper_controller"
+        ik_frame="grasp_link"
+        link_padding="0.01"
+        planning_group_name="manipulator"
+        require_user_approval="true"
+        target_pose="{output_pose}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Grasp Object from Point">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - ML (GPU Recommended)" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

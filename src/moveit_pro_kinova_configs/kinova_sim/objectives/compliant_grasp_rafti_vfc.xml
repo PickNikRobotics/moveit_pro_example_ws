@@ -165,7 +165,7 @@
           <Action
             ID="TransformPose"
             input_pose="{model_object}"
-            translation_xyz="0.0;0.0;0.3"
+            translation_xyz="0.0;0.0;0.28"
             quaternion_xyzw="-0.707107;0.707107;0.0;0.0"
             output_pose="{hole_object}"
           />
@@ -191,7 +191,7 @@
       <Action
         ID="InitializeMTCTask"
         task_id=""
-        controller_names="/joint_trajectory_controller;/robotiq_gripper_controller"
+        controller_names="joint_trajectory_controller;robotiq_gripper_controller"
         task="{mtc_task}"
         trajectory_monitoring="false"
       />
@@ -228,7 +228,7 @@
       <Action
         ID="InitializeMTCTask"
         task_id=""
-        controller_names="/joint_trajectory_controller;/robotiq_gripper_controller"
+        controller_names="joint_trajectory_controller;robotiq_gripper_controller"
         task="{mtc_task}"
         trajectory_monitoring="false"
       />
@@ -265,6 +265,12 @@
       <Action
         ID="SwitchController"
         activate_controllers="velocity_force_controller"
+        activate_asap="true"
+        automatic_deactivation="true"
+        controller_list_action_name="/controller_manager/list_controllers"
+        controller_switch_action_name="/controller_manager/switch_controller"
+        strictness="1"
+        timeout="-1.0"
       />
       <Action
         ID="CreateStampedTwist"
@@ -297,6 +303,12 @@
         <Action
           ID="SwitchController"
           activate_controllers="joint_trajectory_controller"
+          activate_asap="true"
+          automatic_deactivation="true"
+          controller_list_action_name="/controller_manager/list_controllers"
+          controller_switch_action_name="/controller_manager/switch_controller"
+          strictness="1"
+          timeout="-1.0"
         />
       </Decorator>
     </Control>

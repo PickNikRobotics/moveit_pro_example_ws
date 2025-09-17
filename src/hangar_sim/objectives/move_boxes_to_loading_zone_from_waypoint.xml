@@ -28,7 +28,7 @@
         _collapsed="true"
         acceleration_scale_factor="1.0"
         controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-        controller_names="joint_trajectory_controller"
+        controller_names="platform_velocity_controller;joint_trajectory_controller"
         joint_group_name="manipulator"
         keep_orientation="false"
         keep_orientation_tolerance="0.05"
@@ -45,6 +45,7 @@
           topic_name="/wrist_camera/points"
           timeout_sec="5.000000"
           message_out="{point_cloud}"
+          publisher_timeout_sec="5.000000"
         />
       </Decorator>
       <Action
@@ -81,12 +82,14 @@
         timeout_sec="5.000000"
         topic_name="/wrist_camera/color"
         message_out="{image}"
+        publisher_timeout_sec="5.000000"
       />
       <Action
         ID="GetCameraInfo"
         timeout_sec="5.000000"
         topic_name="/wrist_camera/camera_info"
         message_out="{camera_info}"
+        publisher_timeout_sec="5.000000"
       />
       <Control ID="Sequence">
         <Action
@@ -96,7 +99,7 @@
           threshold="{threshold}"
           clipseg_model_path="models/clipseg.onnx"
           clip_model_path="models/clip.onnx"
-          model_package="lab_sim"
+          model_package="moveit_pro_clipseg"
           prompts="{prompts}"
           negative_prompts="{negative_prompts}"
           erosion_size="{erosion_size}"
@@ -208,7 +211,7 @@
                     />
                     <Action
                       ID="InitializeMTCTask"
-                      controller_names="/joint_trajectory_controller"
+                      controller_names="joint_trajectory_controller"
                       task="{task}"
                       task_id=""
                       trajectory_monitoring="false"
