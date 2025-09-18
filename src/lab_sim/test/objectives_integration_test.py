@@ -65,7 +65,8 @@ skip_objectives = {
     "MPC Pose Tracking With Point Cloud Avoidance",
     "ML Segment Image",
     "ML Segment Point Cloud from Clicked Point",
-    "Pick All Pill Bottles",  # Skipped because there is no primary ui to switch to in ci
+    "ML Auto Grasp Object from Clicked Point",  # Skipped because there is no primary ui to switch to in ci
+    "Pick All Pill Bottles",
     "Pick 1 Pill Bottle",
     "Pick up Cube",
     "Place Object",
