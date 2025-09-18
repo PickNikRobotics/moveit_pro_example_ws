@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<root BTCPP_format="4" main_tree_to_execute="Fuse Multiple Views">
+<root BTCPP_format="4" main_tree_to_execute="Scan Multiple Views">
   <!--//////////-->
   <BehaviorTree
-    ID="Fuse Multiple Views"
+    ID="Scan Multiple Views"
     _description="Take multiple snapshots from the wrist camera and merge them into a single point cloud."
     _favorite="true"
   >
@@ -16,7 +16,7 @@
     />
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Fuse Multiple Views">
+    <SubTree ID="Scan Multiple Views">
       <MetadataFields>
         <Metadata subcategory="Perception - 3D Point Cloud" />
         <Metadata runnable="true" />
