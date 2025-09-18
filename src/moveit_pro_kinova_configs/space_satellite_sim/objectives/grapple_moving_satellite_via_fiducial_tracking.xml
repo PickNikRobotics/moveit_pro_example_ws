@@ -25,34 +25,6 @@
         velocity_scale_factor="1.0"
         waypoint_name="View Satellite"
       />
-      <SubTree
-        ID="Move to Waypoint"
-        _collapsed="true"
-        acceleration_scale_factor="1.0"
-        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-        controller_names="joint_trajectory_controller"
-        joint_group_name="manipulator"
-        keep_orientation="false"
-        keep_orientation_tolerance="0.05"
-        link_padding="0.01"
-        seed="0"
-        velocity_scale_factor="1.0"
-        waypoint_name="Home"
-      />
-      <SubTree
-        ID="Move to Waypoint"
-        _collapsed="true"
-        acceleration_scale_factor="1.0"
-        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-        controller_names="joint_trajectory_controller"
-        joint_group_name="manipulator"
-        keep_orientation="false"
-        keep_orientation_tolerance="0.05"
-        link_padding="0.01"
-        seed="0"
-        velocity_scale_factor="1.0"
-        waypoint_name="View Satellite"
-      />
       <Action
         ID="SwitchController"
         activate_controllers="velocity_force_controller"
@@ -168,6 +140,11 @@
               />
             </Control>
           </Decorator>
+          <Action
+            ID="LogMessage"
+            log_level="info"
+            message="'Waiting for operator approval'"
+          />
           <Action
             ID="BreakpointSubscriber"
             breakpoint_topic="/moveit_pro_breakpoint"
