@@ -67,7 +67,6 @@ skip_objectives = {
     "ML Segment Point Cloud from Clicked Point",
     "ML Auto Grasp Object from Clicked Point",  # Skipped because there is no primary ui to switch to in ci
     "Pick All Pill Bottles",
-    "Pick 1 Pill Bottle",
     "Pick up Cube",
     "Place Object",
     "Record Square Trajectory",
