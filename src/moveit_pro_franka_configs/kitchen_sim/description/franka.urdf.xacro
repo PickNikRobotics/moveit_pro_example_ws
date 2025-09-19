@@ -1,0 +1,174 @@
+<?xml version='1.0' encoding='utf-8'?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="franka">
+  <xacro:arg name="mujoco_model" default="description/mujoco/scene.xml" />
+  <xacro:arg name="ee_id" default="franka_hand" />
+  <xacro:arg name="rpy_ee" default="0 0 -0.785" />
+
+  <!-- Load Franka robot -->
+  <xacro:include filename="$(find franka_description)/robots/common/franka_robot.xacro"/>
+  <xacro:franka_robot arm_id="fr3"
+                      joint_limits="${xacro.load_yaml('$(find franka_description)/robots/fr3/joint_limits.yaml')}"
+                      inertials="${xacro.load_yaml('$(find franka_description)/robots/fr3/inertials.yaml')}"
+                      kinematics="${xacro.load_yaml('$(find franka_description)/robots/fr3/kinematics.yaml')}"
+                      dynamics="${xacro.load_yaml('$(find franka_description)/robots/fr3/dynamics.yaml')}"
+                      gazebo="false"
+                      hand="true"
+                      ee_id="$(arg ee_id)"
+                      with_sc="false"
+                      ros2_control="false"
+                      robot_ip=""
+                      use_fake_hardware="false"
+                      fake_sensor_commands="false"
+                      gazebo_effort="false"
+                      no_prefix="false"
+                      arm_prefix=""
+                      connected_to= "world"
+                      xyz="0 0 0.9">
+  </xacro:franka_robot>
+  
+  <!-- Pedestal the robot stands on -->
+  <link name="pedestal">
+    <!-- simple mass/inertia for a solid cylinder -->
+    <inertial>
+      <mass value="30.0"/> <!-- adjust as needed -->
+      <!-- Inertia for solid cylinder: Ixx=Iyy=(1/12)m(3r^2+h^2), Izz=(1/2)m r^2 -->
+      <!-- For r=0.2 m, h=0.9 m, m=30 kg: Ixx=Iyy≈2.325, Izz≈0.6 -->
+      <origin xyz="0 0 0.45"/> <!-- center of mass at half height -->
+      <inertia ixx="2.325" ixy="0.0" ixz="0.0"
+               iyy="2.325" iyz="0.0"
+               izz="0.6"/>
+    </inertial>
+
+    <visual>
+      <!-- place the cylinder so its base sits at z=0 and top at z=0.9 -->
+      <origin xyz="0 0 0.45"/>
+      <geometry>
+        <cylinder radius="0.2" length="0.9"/>
+      </geometry>
+      <material name="pedestal_grey">
+        <color rgba="0.7 0.7 0.7 1.0"/>
+      </material>
+    </visual>
+
+    <collision>
+      <origin xyz="0 0 0.45"/>
+      <geometry>
+        <cylinder radius="0.2" length="0.9"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- Fix pedestal to the world at the origin -->
+  <joint name="pedestal_to_world" type="fixed">
+    <parent link="world"/>
+    <child link="pedestal"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+    <!-- This link aligns the axes of the grasp frame to our required convention for motion planning tasks. -->
+   <link name="grasp_link" />
+   <joint name="grasp_link_joint" type="fixed">
+      <parent link="fr3_hand_tcp"/>
+      <child link = "grasp_link"/>
+      <origin xyz="0 0 0" rpy="0 0 -1.5708"/>
+    </joint>
+
+    <ros2_control name="franka_mujoco_simulation" type="system">
+      <joint name="fr3_joint1">
+        <command_interface name="position">
+          <param name="min">-2.8973</param>
+          <param name="max">2.8973</param>
+        </command_interface>
+        <state_interface name="position">
+          <param name="initial_value">0.0</param>
+        </state_interface>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+      </joint>
+      <joint name="fr3_joint2">
+        <command_interface name="position">
+          <param name="min">-1.7628</param>
+          <param name="max">1.7628</param>
+        </command_interface>
+        <state_interface name="position">
+          <param name="initial_value">-0.7854</param>
+        </state_interface>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+      </joint>
+      <joint name="fr3_joint3">
+        <command_interface name="position">
+          <param name="min">-2.8973</param>
+          <param name="max">2.8973</param>
+        </command_interface>
+        <state_interface name="position">
+          <param name="initial_value">0.0</param>
+        </state_interface>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+      </joint>
+      <joint name="fr3_joint4">
+        <command_interface name="position">
+          <param name="min">-3.0718</param>
+          <param name="max">-0.0698</param>
+        </command_interface>
+        <state_interface name="position">
+          <param name="initial_value">-2.3562</param>
+        </state_interface>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+      </joint>
+      <joint name="fr3_joint5">
+        <command_interface name="position">
+          <param name="min">-2.8973</param>
+          <param name="max">2.8973</param>
+        </command_interface>
+        <state_interface name="position">
+          <param name="initial_value">0.0</param>
+        </state_interface>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+      </joint>
+      <joint name="fr3_joint6">
+        <command_interface name="position">
+          <param name="min">-0.0175</param>
+          <param name="max">3.7525</param>
+        </command_interface>
+        <state_interface name="position">
+          <param name="initial_value">1.5707</param>
+        </state_interface>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+      </joint>
+      <joint name="fr3_joint7">
+        <command_interface name="position">
+          <param name="min">-2.8973</param>
+          <param name="max">2.8973</param>
+        </command_interface>
+        <state_interface name="position">
+          <param name="initial_value">0.7853</param>
+        </state_interface>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+      </joint>
+      <joint name="fr3_finger_joint1">
+        <command_interface name="position">
+          <param name="min">-0.0</param>
+          <param name="max">0.04</param>
+        </command_interface>
+        <state_interface name="position">
+          <param name="initial_value">0.035</param>
+        </state_interface>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+      </joint>
+      <hardware>
+        <plugin>picknik_mujoco_ros/MujocoSystem</plugin>
+        <param name="mujoco_model">$(arg mujoco_model)</param>
+        <param name="mujoco_model_package">kitchen_sim</param>
+        <param name="render_publish_rate">10</param>
+        <param name="tf_publish_rate">60</param>
+        <param name="mujoco_viewer">$(arg mujoco_viewer)</param>
+      </hardware>
+    </ros2_control>
+</robot>
