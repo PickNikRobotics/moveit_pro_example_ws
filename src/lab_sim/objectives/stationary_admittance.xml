@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<root BTCPP_format="4" main_tree_to_execute="Admittance Demo">
+<root BTCPP_format="4" main_tree_to_execute="Stationary Admittance">
   <!--//////////-->
   <BehaviorTree
-    ID="Admittance Demo"
-    _description="Reconfoobling the admitt-o-matron."
+    ID="Stationary Admittance"
+    _description="Puts the arm into Cartesian admittance mode"
     _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree
         ID="Move to Waypoint"
         _collapsed="true"
-        controller_names="/joint_trajectory_controller"
+        controller_names="joint_trajectory_controller"
         planner_interface="moveit_default"
         waypoint_name="Home"
         acceleration_scale_factor="1.0"
@@ -42,7 +42,7 @@
       </Decorator>
       <Action
         ID="SetAdmittanceParameters"
-        config_file_name="confooble.yaml"
+        config_file_name="stationary_admittance.yaml"
         admittance_parameters_msg="{admittance_parameters_msg}"
       />
       <Action
@@ -59,7 +59,12 @@
         ID="CreateStationaryTrajectory"
         joint_state="{joint_state}"
         joint_trajectory_msg="{joint_trajectory_msg}"
-        trajectory_duration="-1.0"
+        trajectory_duration="10"
+      />
+      <Action
+        ID="LogMessage"
+        log_level="info"
+        message="Running admittance mode for 10 seconds"
       />
       <Action
         ID="ExecuteTrajectoryWithAdmittance"
@@ -74,7 +79,7 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Admittance Demo">
+    <SubTree ID="Stationary Admittance">
       <MetadataFields>
         <Metadata runnable="true" />
         <Metadata subcategory="Application - Advanced Examples" />
