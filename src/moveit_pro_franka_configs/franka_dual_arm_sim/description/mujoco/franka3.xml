@@ -775,15 +775,8 @@
       class="fr3"
       name="left_fr3_finger_joint1"
       joint="left_fr3_finger_joint1"
-      kp="1000"
-      kv="100"
-    />
-    <position
-      class="fr3"
-      name="left_fr3_finger_joint2"
-      joint="left_fr3_finger_joint2"
-      kp="1000"
-      kv="100"
+      kp="5000"
+      kv="500"
     />
 
     <!-- Right arm -->
@@ -841,15 +834,24 @@
       class="fr3"
       name="right_fr3_finger_joint1"
       joint="right_fr3_finger_joint1"
-      kp="1000"
-      kv="100"
-    />
-    <position
-      class="fr3"
-      name="right_fr3_finger_joint2"
-      joint="right_fr3_finger_joint2"
-      kp="1000"
-      kv="100"
+      kp="5000"
+      kv="500"
     />
   </actuator>
+
+  <equality>
+    <joint
+      joint1="left_fr3_finger_joint1"
+      joint2="left_fr3_finger_joint2"
+      polycoef="0 1 0 0 0"
+    />
+  </equality>
+
+  <equality>
+    <joint
+      joint1="right_fr3_finger_joint1"
+      joint2="right_fr3_finger_joint2"
+      polycoef="0 1 0 0 0"
+    />
+  </equality>
 </mujoco>
