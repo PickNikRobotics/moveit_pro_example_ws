@@ -215,6 +215,7 @@
                       task="{task}"
                       task_id=""
                       trajectory_monitoring="false"
+                      timeout="-1.000000"
                     />
                     <Action ID="SetupMTCCurrentState" task="{task}" />
                     <Action
@@ -225,11 +226,18 @@
                       task="{task}"
                     />
                     <Action
-                      ID="SetupMTCConnectWithTrajectory"
-                      constraints="{constraints}"
-                      planner_interface="pro_rrt"
+                      ID="SetupMTCConnectWithProRRT"
+                      acceleration_scale_factor="1.000000"
+                      keep_orientation="false"
+                      keep_orientation_link_names="grasp_link"
+                      keep_orientation_tolerance="0.100000"
+                      link_padding="0.000000"
+                      max_iterations="5000"
                       planning_group_name="manipulator"
+                      seed="0"
                       task="{task}"
+                      trajectory_sampling_rate="100"
+                      velocity_scale_factor="1.000000"
                     />
                     <Action
                       ID="SetupMTCMoveAlongFrameAxis"
