@@ -13,14 +13,22 @@
         task="{mtc_task}"
         task_id="place_object"
         trajectory_monitoring="false"
+        timeout="-1.000000"
       />
       <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
       <Action
-        ID="SetupMTCConnectWithTrajectory"
-        planner_interface="pro_rrt"
+        ID="SetupMTCConnectWithProRRT"
+        acceleration_scale_factor="1.000000"
+        keep_orientation="false"
+        keep_orientation_link_names="grasp_link"
+        keep_orientation_tolerance="0.100000"
+        link_padding="0.000000"
+        max_iterations="5000"
         planning_group_name="manipulator"
+        seed="0"
         task="{mtc_task}"
-        constraints="{constraints}"
+        trajectory_sampling_rate="100"
+        velocity_scale_factor="1.000000"
       />
       <Action
         ID="SetupMTCMoveAlongFrameAxis"
@@ -53,6 +61,7 @@
         ID="Wait for Trajectory Approval if User Available"
         _collapsed="true"
         solution="{mtc_solution}"
+        cartesian_path_links="grasp_link"
       />
       <Action
         ID="ExecuteMTCTask"
@@ -93,6 +102,7 @@
         goal_position_tolerance="0.000000"
         goal_time_tolerance="0.000000"
         joint_trajectory_msg="{joint_trajectory_msg}"
+        trajectory_remainder="{joint_trajectory_remainder}"
       />
     </Control>
   </BehaviorTree>
@@ -102,7 +112,6 @@
         <Metadata subcategory="Application - Basic Examples" />
         <Metadata runnable="false" />
       </MetadataFields>
-
       <inout_port name="place_poses" default="{place_poses}" />
     </SubTree>
   </TreeNodesModel>
