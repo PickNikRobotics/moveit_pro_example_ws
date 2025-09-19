@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Stationary Admittance">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Stationary Admittance"
+    _description="Puts the arm into Cartesian admittance mode"
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        controller_names="joint_trajectory_controller"
+        planner_interface="moveit_default"
+        waypoint_name="Home"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        seed="0"
+        velocity_scale_factor="1.0"
+        joint_group_name="manipulator"
+      />
+      <Action
+        ID="SwitchController"
+        activate_asap="true"
+        automatic_deactivation="true"
+        controller_list_action_name="/controller_manager/list_controllers"
+        controller_switch_action_name="/controller_manager/switch_controller"
+        strictness="1"
+        timeout="-1.000000"
+        activate_controllers="joint_trajectory_admittance_controller"
+      />
+      <Decorator ID="Delay" delay_msec="2000">
+        <Action
+          ID="CallTriggerService"
+          response_timeout="3.000000"
+          service_name="/joint_trajectory_admittance_controller/zero_fts/tool0"
+          wait_for_server_available_timeout="3.000000"
+        />
+      </Decorator>
+      <Action
+        ID="SetAdmittanceParameters"
+        config_file_name="stationary_admittance.yaml"
+        admittance_parameters_msg="{admittance_parameters_msg}"
+      />
+      <Action
+        ID="GetCurrentPlanningScene"
+        planning_scene_msg="{planning_scene}"
+      />
+      <Action
+        ID="GetRobotJointState"
+        joint_state="{joint_state}"
+        planning_scene="{planning_scene}"
+        planning_group_name="manipulator"
+      />
+      <Action
+        ID="CreateStationaryTrajectory"
+        joint_state="{joint_state}"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+        trajectory_duration="10"
+      />
+      <Action
+        ID="LogMessage"
+        log_level="info"
+        message="Running admittance mode for 10 seconds"
+      />
+      <Action
+        ID="ExecuteTrajectoryWithAdmittance"
+        goal_position_tolerance="10;10;10;10;10;10;10;"
+        path_position_tolerance="10;10;10;10;10;10;10"
+        admittance_parameters_msg="{admittance_parameters_msg}"
+        absolute_force_torque_threshold="45;45;45;10;10;10"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+        goal_duration_tolerance="-1.000000"
+        controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Stationary Admittance">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Advanced Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

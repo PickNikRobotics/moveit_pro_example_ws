@@ -1,41 +1,173 @@
-- name: Left Home
+- description: ''
+  favorite: false
   joint_group_names:
     - left_manipulator
-  joint_state:
-    header:
-      frame_id: world
-      stamp:
-        sec: 0
-        nanosec: 0
-    name: [left_fr3_joint1, left_fr3_joint2, left_fr3_joint3, left_fr3_joint4, left_fr3_joint5, left_fr3_joint6, left_fr3_joint7]
-    position: [0, -0.7854, 0, -2.3562, 0, 1.5707, 0.7853]
-    velocity: []
-    effort: []
-- name: Right Home
-  joint_group_names:
     - right_manipulator
-  joint_state:
-    header:
-      frame_id: world
-      stamp:
-        sec: 0
-        nanosec: 0
-    name: [right_fr3_joint1, right_fr3_joint2, right_fr3_joint3, right_fr3_joint4, right_fr3_joint5, right_fr3_joint6, right_fr3_joint7]
-    position: [0, -0.7854, 0, -2.3562, 0, 1.5707, 0.7853]
-    velocity: []
-    effort: []
-- name: Home
-  joint_group_names:
     - manipulator
   joint_state:
+    effort: []
     header:
       frame_id: world
       stamp:
-        sec: 0
         nanosec: 0
-    name: [right_fr3_joint1, right_fr3_joint2, right_fr3_joint3, right_fr3_joint4, right_fr3_joint5, right_fr3_joint6, right_fr3_joint7,
-         left_fr3_joint1, left_fr3_joint2, left_fr3_joint3, left_fr3_joint4, left_fr3_joint5, left_fr3_joint6, left_fr3_joint7]
-    position: [0, -0.7854, 0, -2.3562, 0, 1.5707, 0.7853,
-           0, -0.7854, 0, -2.3562, 0, 1.5707, 0.7853]
+        sec: 0
+    name:
+    - right_fr3_joint1
+    - right_fr3_joint2
+    - right_fr3_joint3
+    - right_fr3_joint4
+    - right_fr3_joint5
+    - right_fr3_joint6
+    - right_fr3_joint7
+    - left_fr3_joint1
+    - left_fr3_joint2
+    - left_fr3_joint3
+    - left_fr3_joint4
+    - left_fr3_joint5
+    - left_fr3_joint6
+    - left_fr3_joint7
+    position:
+    - 0
+    - -0.7854
+    - 0
+    - -2.3562
+    - 0
+    - 1.5707
+    - 0.7853
+    - 0
+    - -0.7854
+    - 0
+    - -2.3562
+    - 0
+    - 1.5707
+    - 0.7853
     velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Home
+- description: ''
+  favorite: false
+  joint_group_names:
+    - left_manipulator
+    - right_manipulator
+    - manipulator
+  joint_state:
     effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - left_fr3_joint1
+    - left_fr3_joint2
+    - left_fr3_joint3
+    - left_fr3_joint4
+    - left_fr3_joint5
+    - left_fr3_joint6
+    - left_fr3_joint7
+    - left_fr3_finger_joint1
+    - right_fr3_joint1
+    - right_fr3_joint2
+    - right_fr3_joint3
+    - right_fr3_joint4
+    - right_fr3_joint5
+    - right_fr3_joint6
+    - right_fr3_joint7
+    - right_fr3_finger_joint1
+    position:
+    - 0.7631439836051002
+    - -1.7256971279852666
+    - 1.0600563247617216
+    - -2.389989603996341
+    - 1.5875756227741065
+    - 1.946673982728032
+    - 1.228841619420035
+    - -1.206526992588383e-06
+    - -0.0013177742221101801
+    - -0.78657302417956
+    - -0.011311296228273288
+    - -2.363709370359536
+    - -0.0017492815088556665
+    - 1.5691264546747385
+    - 0.7852388406584784
+    - 0.0001266099321349138
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Place Left
+- description: ''
+  favorite: false
+  joint_group_names:
+    - left_manipulator
+    - right_manipulator
+    - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - left_fr3_joint1
+    - left_fr3_joint2
+    - left_fr3_joint3
+    - left_fr3_joint4
+    - left_fr3_joint5
+    - left_fr3_joint6
+    - left_fr3_joint7
+    - left_fr3_finger_joint1
+    - right_fr3_joint1
+    - right_fr3_joint2
+    - right_fr3_joint3
+    - right_fr3_joint4
+    - right_fr3_joint5
+    - right_fr3_joint6
+    - right_fr3_joint7
+    - right_fr3_finger_joint1
+    position:
+    - 0.0007136559011727871
+    - -0.7866070922383005
+    - 0.0058260641539913584
+    - -2.3598693918370577
+    - 0.0004167706563591327
+    - 1.5698542053401963
+    - 0.7853530142146962
+    - -3.102443235020368e-05
+    - -0.9123206417362171
+    - -1.6248200992913444
+    - -0.8998577753262823
+    - -2.488156178512647
+    - -1.4102913730535007
+    - 2.102824648497987
+    - -0.896605178475249
+    - 3.0056037776778505e-07
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Place Right
