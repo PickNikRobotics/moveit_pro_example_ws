@@ -62,14 +62,22 @@
           controller_names="joint_trajectory_controller;robotiq_gripper_controller"
           task="{pick_object_task}"
           trajectory_monitoring="false"
+          timeout="-1.000000"
         />
         <Action ID="SetupMTCCurrentState" task="{pick_object_task}" />
         <Action
-          ID="SetupMTCConnectWithTrajectory"
-          constraints="{constraints}"
-          planner_interface="pro_rrt"
+          ID="SetupMTCConnectWithProRRT"
+          acceleration_scale_factor="1.000000"
+          keep_orientation="false"
+          keep_orientation_link_names="grasp_link"
+          keep_orientation_tolerance="0.100000"
+          link_padding="0.000000"
+          max_iterations="5000"
           planning_group_name="manipulator"
+          seed="0"
           task="{pick_object_task}"
+          trajectory_sampling_rate="100"
+          velocity_scale_factor="1.000000"
         />
         <Action
           ID="SetupMTCBatchPoseIK"
@@ -90,6 +98,7 @@
         <SubTree
           ID="Wait for Trajectory Approval if User Available"
           solution="{pick_object_solution}"
+          cartesian_path_links="grasp_link"
         />
         <Action
           ID="ExecuteMTCTask"
