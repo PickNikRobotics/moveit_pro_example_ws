@@ -1,9 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Playback Square Trajectory">
   <!--//////////-->
   <BehaviorTree
     ID="Playback Square Trajectory"
     _description="Loads and plays a JointTrajectory of the end-effector moving in a square trajectory."
-    _favorite="true"
+    _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
