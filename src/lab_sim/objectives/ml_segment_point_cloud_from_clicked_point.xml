@@ -7,7 +7,7 @@
   <BehaviorTree
     ID="ML Segment Point Cloud from Clicked Point"
     _description="Captures a point cloud and requests the user to click on three objects in the image to be segmented. The point cloud is then filtered to only include the selected objects."
-    _favorite="true"
+    _favorite="false"
   >
     <Control ID="Sequence">
       <SubTree
