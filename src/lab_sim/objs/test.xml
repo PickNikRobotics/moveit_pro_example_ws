@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="test">
+  <!--//////////-->
+  <BehaviorTree ID="test" _description="" _favorite="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="AlwaysSuccess" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="test">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="test" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

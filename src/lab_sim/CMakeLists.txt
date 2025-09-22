@@ -34,7 +34,7 @@ install(
     description
     launch
     models
-    objectives
+    objs
     waypoints
   DESTINATION
     share/${PROJECT_NAME}

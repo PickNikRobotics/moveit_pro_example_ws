@@ -1,7 +1,8 @@
-<root BTCPP_format="4" main_tree_to_execute="Joint Diagnostic">
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Joint Diagnostic hello world">
   <!--//////////-->
   <BehaviorTree
-    ID="Joint Diagnostic"
+    ID="Joint Diagnostic hello world"
     _description="Example of cycling through the min and max limits of a single joint, for hardware testing"
     _favorite="true"
   >
@@ -13,6 +14,12 @@
         joint_group_name="manipulator"
         controller_names="joint_trajectory_controller"
         link_padding="0.0"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        seed="0"
+        velocity_scale_factor="1.0"
       />
       <Decorator ID="KeepRunningUntilFailure">
         <Control ID="Sequence">
@@ -23,6 +30,12 @@
             joint_group_name="manipulator"
             controller_names="joint_trajectory_controller"
             link_padding="0.0"
+            acceleration_scale_factor="1.0"
+            controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+            keep_orientation="false"
+            keep_orientation_tolerance="0.05"
+            seed="0"
+            velocity_scale_factor="1.0"
           />
           <SubTree
             ID="Move to Waypoint"
@@ -30,15 +43,22 @@
             joint_group_name="manipulator"
             controller_names="joint_trajectory_controller"
             link_padding="0.0"
+            acceleration_scale_factor="1.0"
+            controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+            keep_orientation="false"
+            keep_orientation_tolerance="0.05"
+            seed="0"
+            velocity_scale_factor="1.0"
           />
         </Control>
       </Decorator>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Joint Diagnostic">
+    <SubTree ID="Joint Diagnostic hello world">
       <MetadataFields>
         <Metadata subcategory="Application - Basic Examples" />
+        <Metadata runnable="true" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
