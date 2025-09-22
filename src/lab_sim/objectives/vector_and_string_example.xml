@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Vector and String Example">
+  <BehaviorTree
+    ID="Vector and String Example"
+    _description="Showcases creating, inserting, replacing, and removing strings from a vector, as well as reading strings from file and publishing them to ROS."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="ResetVector" vector="{my_vector}" name="Create the Vector" />
+      <Control ID="Sequence" name="Test Some Vector Operations">
+        <Action
+          ID="Script"
+          code="string1 := 'Copy and run the following command in your &quot;moveit_pro shell&quot; terminal, then rerun this Objective to get the secret message.'"
+        />
+        <Action
+          ID="CreateStringMessage"
+          data="{string1}"
+          string="{string_msg_in}"
+        />
+        <Action
+          ID="InsertInVector"
+          element="{string_msg_in}"
+          index="0"
+          input_vector="{my_vector}"
+          output_vector="{my_vector}"
+        />
+        <SubTree
+          ID="ErrorCheckVectorSize"
+          _collapsed="true"
+          expected_vector_size="1"
+          vector="{my_vector}"
+        />
+        <Action
+          ID="GetElementOfVector"
+          element="{string_msg_out}"
+          index="0"
+          vector_in="{my_vector}"
+        />
+        <Action
+          ID="UnpackStringMessage"
+          data="{string}"
+          string="{string_msg_out}"
+        />
+        <Action
+          ID="LogMessage"
+          message="ros2 topic echo /secret_msg std_msgs/msg/String --qos-profile system_default"
+          log_level="info"
+        />
+        <Action ID="LogMessage" message="{string}" log_level="info" />
+      </Control>
+      <Control ID="Sequence" name="Test Some Vector Operations">
+        <Action
+          ID="RemoveFromVector"
+          index="0"
+          input_vector="{my_vector}"
+          output_vector="{my_vector}"
+        />
+        <SubTree
+          ID="ErrorCheckVectorSize"
+          _collapsed="true"
+          expected_vector_size="0"
+          vector="{my_vector}"
+        />
+      </Control>
+      <Control ID="Sequence" name="Test Some Vector Operations">
+        <Action
+          ID="ReadTextFileAsString"
+          string_file_contents="{string2}"
+          text_filename="example_file.txt"
+        />
+        <Action
+          ID="CreateStringMessage"
+          data="{string2}"
+          string="{string_msg_in}"
+        />
+        <Action
+          ID="InsertInVector"
+          element="{string_msg_in}"
+          index="0"
+          input_vector="{my_vector}"
+          output_vector="{my_vector}"
+        />
+        <Action
+          ID="GetElementOfVector"
+          element="{string_msg_out}"
+          index="0"
+          vector_in="{my_vector}"
+        />
+        <Action
+          ID="PublishString"
+          queue_size="10"
+          use_best_effort="false"
+          message="{string_msg_out}"
+          topic="/secret_msg"
+        />
+        <SubTree
+          ID="ErrorCheckVectorSize"
+          _collapsed="true"
+          expected_vector_size="1"
+          vector="{my_vector}"
+        />
+      </Control>
+      <Control ID="Sequence" name="Test Some Vector Operations">
+        <Action
+          ID="Script"
+          code="string3 := 'Make sure you have INFO alert types enables in order to see the messages.'"
+        />
+        <Action
+          ID="CreateStringMessage"
+          data="{string3}"
+          string="{string_msg_in}"
+        />
+        <Action
+          ID="ReplaceInVector"
+          element="{string_msg_in}"
+          index="0"
+          input_vector="{my_vector}"
+          output_vector="{my_vector}"
+        />
+        <Action
+          ID="GetElementOfVector"
+          element="{string_msg_out}"
+          index="0"
+          vector_in="{my_vector}"
+        />
+        <Action
+          ID="UnpackStringMessage"
+          data="{string}"
+          string="{string_msg_out}"
+        />
+        <SubTree
+          ID="ErrorCheckVectorSize"
+          _collapsed="true"
+          expected_vector_size="1"
+          vector="{my_vector}"
+        />
+        <Action ID="LogMessage" message="{string}" log_level="warn" />
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Vector and String Example">
+      <MetadataFields>
+        <Metadata subcategory="Vector Handling" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
