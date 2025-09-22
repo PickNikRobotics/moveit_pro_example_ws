@@ -52,7 +52,7 @@ objectives:
   objective_library_paths:
     sim_objectives:
       package_name: "lab_sim"
-      relative_path: "objectives"
+      relative_path: "objs"
   # Specify the location of the saved waypoints file.
   # [Required]
   waypoints_file:

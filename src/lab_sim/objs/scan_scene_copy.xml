@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Scan Scene copy">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Scan Scene copy"
+    _description="Move robot out of scene to enable full snapshot of scene."
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="ClearSnapshot" />
+      <Action
+        ID="RetrieveWaypoint"
+        waypoint_joint_state="{target_joint_state}"
+        waypoint_name="{waypoint_name}"
+        joint_group_name="{joint_group_name}"
+      />
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="false"
+        joint_group_name="manipulator"
+        controller_names="joint_trajectory_controller"
+        waypoint_name="Park Far Right"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        seed="0"
+        velocity_scale_factor="1.0"
+      />
+      <SubTree ID="Take Scene Camera Snapshot" _collapsed="true" />
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        joint_group_name="manipulator"
+        controller_names="joint_trajectory_controller"
+        waypoint_name="Look at Table"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        seed="0"
+        velocity_scale_factor="1.0"
+      />
+      <SubTree
+        ID="Move to Waypoint"
+        joint_group_name="manipulator"
+        controller_names="joint_trajectory_controller"
+        waypoint_name="Look at Table"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        seed="0"
+        velocity_scale_factor="1.0"
+        _collapsed="true"
+      />
+      <SubTree
+        ID="Move to Joint State"
+        velocity_scale_factor="{velocity_scale_factor}"
+        acceleration_scale_factor="{acceleration_scale_factor}"
+        link_padding="{link_padding}"
+        seed="{seed}"
+        keep_orientation_tolerance="{keep_orientation_tolerance}"
+        keep_orientation="{keep_orientation}"
+        target_joint_state="{target_joint_state}"
+        controller_names="{controller_names}"
+        joint_group_name="{joint_group_name}"
+        controller_action_server="{controller_action_server}"
+        _collapsed="true"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Scan Scene copy">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Basic Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
