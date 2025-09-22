@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="AddBottlesToPlanningScene">
+  <BehaviorTree
+    ID="AddBottlesToPlanningScene"
+    _description="Detects flasks using ML and adds them as collision objects to the planning scene"
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree ID="Clear Previous Obstacles" _collapsed="true" />
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        controller_names="joint_trajectory_controller"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        seed="0"
+        velocity_scale_factor="1.0"
+        waypoint_name="Look at Flasks"
+      />
+      <SubTree ID="Take Wrist Camera Snapshot" _collapsed="true" />
+      <SubTree
+        ID="Segment Image from Text Prompt Subtree"
+        _collapsed="true"
+        clip_model_path="models/clip.onnx"
+        clipseg_model_path="models/clipseg.onnx"
+        masks_visualization_topic="/masks_visualization"
+        masks2d="{masks2d}"
+        model_package="moveit_pro_clipseg"
+        prompts="conical flask"
+        threshold="0.15"
+        image_topic_name="/wrist_camera/color"
+        negative_prompts="box"
+        erosion_size="10"
+      />
+      <Action
+        ID="GetPointCloud"
+        message_out="{point_cloud}"
+        publisher_timeout_sec="5.000000"
+        timeout_sec="5.000000"
+        topic_name="/wrist_camera/points"
+      />
+      <Action
+        ID="GetCameraInfo"
+        message_out="{camera_info}"
+        publisher_timeout_sec="5.000000"
+        timeout_sec="5.000000"
+        topic_name="/wrist_camera/camera_info"
+      />
+      <Action
+        ID="FindMaskedObjects"
+        base_frame="grasp_link"
+        camera_info="{camera_info}"
+        detected_shapes="{detected_shapes}"
+        face_separation_threshold="0.010000"
+        masks2d="{masks2d}"
+        minimum_face_area="0.000625"
+        plane_inlier_threshold="0.010000"
+        point_cloud="{point_cloud}"
+      />
+      <Decorator
+        ID="ForEach"
+        index="{index}"
+        out="{out}"
+        vector_in="{detected_shapes}"
+      >
+        <Control ID="Sequence">
+          <Control ID="Sequence">
+            <Action
+              ID="UnpackGraspableObjectMessage"
+              grasp_info="{grasp_info}"
+              graspable_object="{out}"
+              object="{object}"
+              object_color="{object_color}"
+            />
+            <Action
+              ID="UnpackCollisionObjectMessage"
+              collision_object="{object}"
+              header="{header}"
+              id="{id}"
+              mesh_poses="{mesh_poses}"
+              meshes="{meshes}"
+              operation="{operation}"
+              plane_poses="{plane_poses}"
+              planes="{planes}"
+              pose="{pose}"
+              primitive_poses="{primitive_poses}"
+              primitives="{primitives}"
+              subframe_names="{subframe_names}"
+              subframe_poses="{subframe_poses}"
+              type="{type}"
+            />
+            <Action
+              ID="UnpackPoseMessage"
+              orientation="{orientation}"
+              pose="{pose}"
+              position="{position}"
+            />
+            <Action
+              ID="UnpackPointMessage"
+              point="{position}"
+              x="{x}"
+              y="{y}"
+              z="{z}"
+            />
+          </Control>
+          <Control ID="Sequence">
+            <Action ID="ResetVector" vector="{vector}" />
+            <Action
+              ID="InsertInVector"
+              index="0"
+              output_vector="{vector}"
+              element="{z}"
+              input_vector="{vector}"
+            />
+            <Action
+              ID="InsertInVector"
+              index="0"
+              output_vector="{vector}"
+              element="{y}"
+              input_vector="{vector}"
+            />
+            <Action
+              ID="InsertInVector"
+              index="0"
+              output_vector="{vector}"
+              element="{x}"
+              input_vector="{vector}"
+            />
+          </Control>
+          <Action ID="Script" code="object_id:='bottle'..index" />
+          <SubTree
+            ID="AddCollisionBoxInFrontOfEndEffector"
+            _collapsed="true"
+            dimensions="0.15;0.15;0.15"
+            offset="{vector}"
+            object_id="{object_id}"
+          />
+        </Control>
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="AddBottlesToPlanningScene">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Perception - Planning Scene" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
