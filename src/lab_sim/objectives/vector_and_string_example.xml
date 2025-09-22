@@ -10,7 +10,7 @@
       <Control ID="Sequence" name="Test Some Vector Operations">
         <Action
           ID="Script"
-          code="string1 := 'Copy and run the following command in your &quot;moveit_pro dev&quot; terminal, then rerun this Objective to get the secret message.'"
+          code="string1 := 'Copy and run the following command in your &quot;moveit_pro shell&quot; terminal, then rerun this Objective to get the secret message.'"
         />
         <Action
           ID="CreateStringMessage"
