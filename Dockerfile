@@ -67,7 +67,7 @@ RUN groupadd realtime && \
 # hadolint ignore=SC1091
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
-    --mount=type=bind,target=${USER_WS}/,source=. \
+    --mount=type=bind,target=${USER_WS}/src,source=./src \
     . /opt/overlay_ws/install/setup.sh && \
     apt-get update && \
     rosdep install -q -y \
