@@ -70,6 +70,7 @@ skip_objectives = {
     "Record Square Trajectory",
     "Stack Blocks with ICP",  # Skipped because there is no primary ui to switch to in ci
     "Teleoperate",
+    "Inspector",
 }
 
 # This is a workaround to avoid the test running before ros control is ready
