@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Find Green Block">
+  <!--//////////-->
+  <BehaviorTree ID="Find Green Block" _description="" _favorite="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree
+        ID="Find with prompt"
+        _collapsed="true"
+        prompt="a green block"
+        object_centroid="{object_centroid}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Find Green Block">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Perception - ML" />
+      </MetadataFields>
+      <inout_port name="object_centroid" default="{object_centroid}" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

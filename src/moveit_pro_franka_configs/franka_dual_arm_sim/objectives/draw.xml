@@ -50,6 +50,7 @@
           debug_solution="{debug_solution}"
           ik_cartesian_space_density="0.01000"
           ik_joint_space_density="0.050000"
+          tip_offset="0;0;0.005;0;0;0"
           planning_group_name="{planning_group_name}"
           tip_links="{tip_link}"
         />
