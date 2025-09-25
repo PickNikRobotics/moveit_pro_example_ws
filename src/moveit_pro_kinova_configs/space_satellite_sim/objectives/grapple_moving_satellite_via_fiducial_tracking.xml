@@ -10,7 +10,7 @@
     _favorite="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
-      <SubTree ID="Gripper Open" _collapsed="true" />
+      <SubTree ID="Open Gripper" _collapsed="true" />
       <SubTree
         ID="Move to Waypoint"
         _collapsed="true"
@@ -171,7 +171,7 @@
               />
             </Control>
           </Decorator>
-          <SubTree ID="Gripper Close" _collapsed="true" />
+          <SubTree ID="Close Gripper" _collapsed="true" />
         </Control>
       </Control>
     </Control>
