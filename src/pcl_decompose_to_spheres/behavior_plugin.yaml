@@ -1,0 +1,4 @@
+objectives:
+  behavior_loader_plugins:
+    pcl_decompose_to_spheres:
+      - "pcl_decompose_to_spheres::PclDecomposeToSpheresBehaviorsLoader"
