@@ -1,21 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<root BTCPP_format="4" main_tree_to_execute="Gripper Close">
+<root BTCPP_format="4" main_tree_to_execute="Open Gripper">
+  <!--//////////-->
   <BehaviorTree
-    ID="Gripper Close"
-    _description="Close the gripper"
+    ID="Open Gripper"
+    _description="Open the gripper"
     _favorite="true"
   >
     <Control ID="Sequence" name="root">
       <Action
         ID="MoveGripperAction"
         gripper_command_action_name="/robotiq_gripper_controller/gripper_cmd"
-        position="0.77"
+        position="0.05"
         timeout="10.000000"
       />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Gripper Close">
+    <SubTree ID="Open Gripper">
       <MetadataFields>
         <Metadata subcategory="Grasping" />
         <Metadata runnable="true" />
