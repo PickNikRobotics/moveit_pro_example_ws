@@ -12,6 +12,7 @@
 #include <pcl/filters/voxel_grid.h>
 #include <tf2_eigen/tf2_eigen.hpp>
 #include <Eigen/Geometry>
+#include <geometry_msgs/msg/pose_stamped.hpp>
 
 namespace
 {
@@ -24,7 +25,7 @@ inline constexpr auto kDescriptionPclDecomposeToSpheres= R"(
                 </p>
             )";
 constexpr auto kPortIDPointCloud = "point_cloud";
-constexpr auto kPortIdEndEffectorFrame= "grasp_link";
+constexpr auto kPortIDEndEffectorPose = "gripper_pose";
 constexpr auto kPortXYDistThreshold = "xy_thresh";
 constexpr auto kPortZDistThreshold = "z_thresh";
 constexpr auto kPortSphereRadius = "sphere_radius";
@@ -45,7 +46,7 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr PclDecomposeToSpheres::convertToPCL(const se
 // Helper: Filter points within XY and Z thresholds from gripper position
 pcl::PointCloud<pcl::PointXYZ>::Ptr PclDecomposeToSpheres::filterPoints(
     const pcl::PointCloud<pcl::PointXYZ>::Ptr& pcl_cloud,
-    const geometry_msgs::msg::Vector3& gripper_pos,
+    const geometry_msgs::msg::Point& gripper_pos,
     double xy_thresh, double z_thresh)
 {
   pcl::PointCloud<pcl::PointXYZ>::Ptr filtered(new pcl::PointCloud<pcl::PointXYZ>);
@@ -77,9 +78,9 @@ moveit_msgs::msg::CollisionObject PclDecomposeToSpheres::createSpheres(
   collision_object.id = "spheres";
   collision_object.operation = moveit_msgs::msg::CollisionObject::ADD;
 
-  if (filtered_cloud->points.empty())
-    return collision_object;
-
+ if (!filtered_cloud->points.empty())
+ {
+  //use kdtree and euclidean clustering to find clusters of points
   pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>);
   tree->setInputCloud(filtered_cloud);
 
@@ -104,6 +105,7 @@ moveit_msgs::msg::CollisionObject PclDecomposeToSpheres::createSpheres(
       cz += filtered_cloud->points[idx].z;
     }
     size_t n = indices.indices.size();
+    //compute the centroid of the cluster
     cx /= n; 
     cy /= n; 
     cz /= n;
@@ -122,18 +124,19 @@ moveit_msgs::msg::CollisionObject PclDecomposeToSpheres::createSpheres(
     collision_object.primitives.push_back(sphere);
     collision_object.primitive_poses.push_back(pose);
   }
+ }
   return collision_object;
 }
 
 
-// Helper: Transform PCL point cloud to target frame using TF2
-pcl::PointCloud<pcl::PointXYZ>::Ptr PclDecomposeToSpheres::transformCloudToFrame(
+// Helper: Transform PCL point cloud to target frame using TF2, returns tl::expected
+tl::expected<pcl::PointCloud<pcl::PointXYZ>::Ptr, std::string>
+PclDecomposeToSpheres::transformCloudToFrame(
     const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud,
     const std::string& source_frame,
     const std::string& target_frame,
     const rclcpp::Time& stamp,
-    const std::shared_ptr<tf2_ros::Buffer>& tf_buffer,
-    const std::string& node_name)
+    const std::shared_ptr<tf2_ros::Buffer>& tf_buffer)
 {
   if (source_frame == target_frame)
     return cloud;
@@ -147,11 +150,9 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr PclDecomposeToSpheres::transformCloudToFrame
   }
   catch (const tf2::TransformException& ex)
   {
-     shared_resources_->logger->publishFailureMessage(
-      node_name,
+    return tl::unexpected(
       std::string("Failed to lookup transform from '") + target_frame + "' to '" + source_frame + "': " + ex.what()
     );
-    return nullptr;
   }
 
   pcl::PointCloud<pcl::PointXYZ>::Ptr transformed(new pcl::PointCloud<pcl::PointXYZ>);
@@ -181,9 +182,8 @@ BT::PortsList PclDecomposeToSpheres::providedPorts()
   return BT::PortsList({
       BT::InputPort<sensor_msgs::msg::PointCloud2>(kPortIDPointCloud, "{point_cloud}",
                                  "Contains the sensor_msgs::msg::PointCloud2 input message representing current obstacles."),
-      BT::InputPort<std::string>(kPortIdEndEffectorFrame, "{grasp_link}",
-                                 "The TF frame of the tool, which is used as the reference frame for"
-                                 " distance thresholding."),
+      BT::InputPort<geometry_msgs::msg::PoseStamped>(kPortIDEndEffectorPose, "{gripper_pose}",
+                                 "The PoseStamped of the tool in the world frame, used as the reference for distance thresholding."),
       BT::InputPort<double>(kPortXYDistThreshold,"{xy_thresh}",
                             "Distance threshold in meters, specified for the range of positions "
                             "to convert to spheres within this ellipsoidal distances of the tool frame."),
@@ -208,7 +208,7 @@ BT::NodeStatus PclDecomposeToSpheres::tick()
 {
   const auto ports = moveit_studio::behaviors::getRequiredInputs(
     getInput<sensor_msgs::msg::PointCloud2>(kPortIDPointCloud),
-    getInput<std::string>(kPortIdEndEffectorFrame),
+    getInput<geometry_msgs::msg::PoseStamped>(kPortIDEndEffectorPose),
     getInput<double>(kPortXYDistThreshold), 
     getInput<double>(kPortZDistThreshold),
     getInput<double>(kPortSphereRadius)); 
@@ -220,7 +220,7 @@ BT::NodeStatus PclDecomposeToSpheres::tick()
     return BT::NodeStatus::FAILURE;
   }
 
-  const auto& [input_cloud_msg, tool_frame, xy_thresh, z_thresh, sphere_radius] = ports.value();
+  const auto& [input_cloud_msg, gripper_pose_msg, xy_thresh, z_thresh, sphere_radius] = ports.value();
 
   const std::string pcl_frame = input_cloud_msg.header.frame_id;
   if (pcl_frame.empty())
@@ -243,11 +243,15 @@ BT::NodeStatus PclDecomposeToSpheres::tick()
       name(),
       "Point cloud is not in the world frame. Attempting to transform to world frame."
     );
-    pcl_cloud = transformCloudToFrame(
+    auto result = transformCloudToFrame(
       pcl_cloud, pcl_frame, world_frame, input_cloud_msg.header.stamp,
-      shared_resources_->transform_buffer_ptr, name());
-    if (!pcl_cloud)
+      shared_resources_->transform_buffer_ptr);
+    if (!result)
+    {
+      shared_resources_->logger->publishFailureMessage(name(), result.error());
       return BT::NodeStatus::FAILURE;
+    }
+    pcl_cloud = result.value();
   }
 
   // --- Figure out leaf size based on thresholds and add a small margin ---
@@ -265,24 +269,19 @@ BT::NodeStatus PclDecomposeToSpheres::tick()
   pcl::PointCloud<pcl::PointXYZ>::Ptr downsampled_cloud(new pcl::PointCloud<pcl::PointXYZ>);
   voxel_filter.filter(*downsampled_cloud);
 
-  // ---find the transform of the gripper frame in the world frame----
-  geometry_msgs::msg::TransformStamped gripper_tf;
-  try
-  {
-    gripper_tf = shared_resources_->transform_buffer_ptr->lookupTransform(
-      world_frame, tool_frame, input_cloud_msg.header.stamp, rclcpp::Duration::from_seconds(0.5));
-  }
-  catch (const tf2::TransformException& ex)
+  // Check that the gripper pose is in the world frame
+  if (gripper_pose_msg.header.frame_id != world_frame)
   {
     shared_resources_->logger->publishFailureMessage(
       name(),
-      std::string("Failed to lookup transform from '") + world_frame + "' to '" + tool_frame + "': " + ex.what()
+      "Gripper pose is not in the world frame. Please provide a PoseStamped in the 'world' frame."
     );
     return BT::NodeStatus::FAILURE;
   }
 
-  const auto& gripper_pos = gripper_tf.transform.translation;
-  spdlog::info("Gripper position in world frame: x={}, y={}, z={}", gripper_pos.x, gripper_pos.y, gripper_pos.z);
+  // Use the gripper position directly from the PoseStamped message
+  const auto& gripper_pos = gripper_pose_msg.pose.position;
+  spdlog::info("Gripper position in world frame (from PoseStamped): x={}, y={}, z={}", gripper_pos.x, gripper_pos.y, gripper_pos.z);
 
   //grab the downsampled points within the threshold of the gripper
   auto filtered_cloud = filterPoints(downsampled_cloud, gripper_pos, xy_thresh_margin, z_thresh_margin);

@@ -2,14 +2,14 @@
 
 #include <behaviortree_cpp/action_node.h>
 #include <moveit_studio_behavior_interface/get_required_ports.hpp>
-
-// This header includes the SharedResourcesNode type
 #include <moveit_studio_behavior_interface/shared_resources_node.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 #include <geometry_msgs/msg/transform_stamped.hpp>
+#include <geometry_msgs/msg/pose_stamped.hpp>
 #include <moveit_msgs/msg/collision_object.hpp>
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
+#include <tl_expected/expected.hpp>
 
 namespace pcl_decompose_to_spheres
 {
@@ -70,7 +70,7 @@ private:
    */
   pcl::PointCloud<pcl::PointXYZ>::Ptr filterPoints(
       const pcl::PointCloud<pcl::PointXYZ>::Ptr& pcl_cloud,
-      const geometry_msgs::msg::Vector3& gripper_pos,
+      const geometry_msgs::msg::Point& gripper_pos,
       double xy_thresh, double z_thresh);
 
   // Helper: Cluster filtered points and create spheres
@@ -86,25 +86,22 @@ private:
       double sphere_radius,
       const std::string& frame_id);
 
- // Helper: Transform PCL point cloud to target frame using TF2
- /**
-  * @brief Transform a PCL PointCloud to a target frame using TF2.
-  * @param cloud The input PCL PointCloud.
-  * @param source_frame The source frame of the input PointCloud.
-  * @param target_frame The target frame to transform the PointCloud to.
-  * @param stamp The timestamp for the transform lookup.
-  * @param tf_buffer A shared pointer to a TF2 buffer for looking up transforms.
-  * @param node_name The name of the node, used for logging purposes.
-  * @return A pointer to the transformed PCL PointCloud, or nullptr if the transform
-  */
-  pcl::PointCloud<pcl::PointXYZ>::Ptr transformCloudToFrame(
+  // Helper: Transform PCL point cloud to target frame using TF2, returns tl::expected
+  /**
+   * @brief Transform a PCL PointCloud to a target frame using TF2.
+   * @param cloud The input PCL PointCloud.
+   * @param source_frame The source frame of the input PointCloud.
+   * @param target_frame The target frame to transform the PointCloud to.
+   * @param stamp The timestamp for the transform lookup.
+   * @param tf_buffer A shared pointer to a TF2 buffer for looking up transforms.
+   * @return A pointer to the transformed PCL PointCloud, or nullptr if the transform
+   */
+  tl::expected<pcl::PointCloud<pcl::PointXYZ>::Ptr, std::string> transformCloudToFrame(
       const pcl::PointCloud<pcl::PointXYZ>::Ptr& cloud,
       const std::string& source_frame,
       const std::string& target_frame,
       const rclcpp::Time& stamp,
-      const std::shared_ptr<tf2_ros::Buffer>& tf_buffer,
-      const std::string& node_name);
-
-};
+      const std::shared_ptr<tf2_ros::Buffer>& tf_buffer);
+};  // class PclDecomposeToSpheres
 
 }  // namespace pcl_decompose_to_spheres
