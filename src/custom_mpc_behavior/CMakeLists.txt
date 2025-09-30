@@ -4,10 +4,22 @@ project(custom_mpc_behavior CXX)
 find_package(moveit_pro_package REQUIRED)
 moveit_pro_package()
 
-set(THIS_PACKAGE_INCLUDE_DEPENDS moveit_studio_behavior_interface pluginlib)
+set(THIS_PACKAGE_INCLUDE_DEPENDS moveit_studio_behavior_interface pluginlib moveit_pro_mpc)
 foreach(package IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${package} REQUIRED)
 endforeach()
+
+add_library(
+  custom_mpc_residuals
+  SHARED
+  src/site_tracking.cpp)
+target_include_directories(
+  custom_mpc_residuals
+  PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>)
+target_link_libraries(custom_mpc_residuals moveit_pro_mpc::mpc_problem moveit_pro_mpc::mpc_residuals)
+ament_target_dependencies(custom_mpc_residuals
+                          ${THIS_PACKAGE_INCLUDE_DEPENDS})
 
 add_library(
   custom_mpc_behavior
@@ -18,12 +30,13 @@ target_include_directories(
   custom_mpc_behavior
   PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
          $<INSTALL_INTERFACE:include>)
+target_link_libraries(custom_mpc_behavior custom_mpc_residuals)
 ament_target_dependencies(custom_mpc_behavior
                           ${THIS_PACKAGE_INCLUDE_DEPENDS})
 
 # Install Libraries
 install(
-  TARGETS custom_mpc_behavior
+  TARGETS custom_mpc_behavior custom_mpc_residuals
   EXPORT custom_mpc_behaviorTargets
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
