@@ -1,0 +1,4 @@
+objectives:
+  behavior_loader_plugins:
+    custom_mpc_behavior:
+      - "custom_mpc_behavior::CustomMpcBehaviorBehaviorsLoader"
