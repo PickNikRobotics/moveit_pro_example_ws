@@ -1,11 +1,11 @@
 #pragma once
 
+#include "custom_mpc_behavior/site_tracking.hpp"
 #include "moveit_pro_mpc/residual_functions/cartesian_acceleration.hpp"
 #include "moveit_pro_mpc/residual_functions/cartesian_velocity.hpp"
 #include "moveit_pro_mpc/residual_functions/force_torque.hpp"
 #include "moveit_pro_mpc/residual_functions/joint_acceleration.hpp"
 #include "moveit_pro_mpc/residual_functions/joint_velocity.hpp"
-#include "moveit_pro_mpc/residual_functions/site_tracking.hpp"
 #include "moveit_studio_behavior_interface/mpc_behavior_base.hpp"
 
 namespace custom_mpc_behavior
@@ -48,7 +48,7 @@ public:
    */
   static auto getResiduals()
   {
-    return std::make_tuple(std::make_pair("site_tracking", moveit_pro_mpc::SiteTrackingResidualFunction()),
+    return std::make_tuple(std::make_pair("site_tracking", custom_mpc_behavior::SiteTrackingResidualFunction()),
                            std::make_pair("velocity", moveit_pro_mpc::VelocityResidualFunction()),
                            std::make_pair("acceleration", moveit_pro_mpc::AccelerationResidualFunction()),
                            std::make_pair("force_torque", moveit_pro_mpc::ForceTorqueResidualFunction()),
