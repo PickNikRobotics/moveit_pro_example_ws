@@ -1,39 +1,150 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Count boxes subtree">
-  <BehaviorTree ID="Count boxes subtree" _description="Counts the boxes visible in a scene" _favorite="false">
+  <BehaviorTree
+    ID="Count boxes subtree"
+    _description="Counts the boxes visible in a scene"
+    _favorite="false"
+  >
     <Control ID="Fallback">
       <Control ID="Sequence" name="TopLevelSequence">
-        <Action ID="GetSyncedImages" camera_info_1="{camera_info_1}" camera_info_1_topic_name="/wrist_camera/camera_info" camera_info_2="{camera_info_2}" camera_info_2_topic_name="/scene_camera/camera_info" image_1="{wrist_camera_image}" image_1_topic_name="/wrist_camera/color" image_2="{scene_camera_image}" image_2_topic_name="/scene_camera/color"/>
-        <Action ID="SaveImageToFile" file_path="/home/bilal/user_ws/src/wrist_camera_images" file_prefix="box" image="{wrist_camera_image}"/>
-        <Action ID="SaveImageToFile" file_path="/home/bilal/user_ws/src/scene_camera_images" file_prefix="box" image="{scene_camera_image}"/>
-        <SubTree ID="Segment Image from Text Prompt Subtree" _collapsed="true" clip_model_path="models/clip.onnx" clipseg_model_path="models/clipseg.onnx" erosion_size="0" image_topic_name="/wrist_camera/color" masks_visualization_topic="/masks_visualization" masks2d="{masks2d}" model_package="moveit_pro_clipseg" prompts="small boxes" negative_prompts="grey" threshold="0.4"/>
-        <Action ID="PublishMask2D" image="{wrist_camera_image}" masks="{masks2d}" masks_visualization_topic="/masks_visualization" opacity="0.500000" bounding_box_detection_class="box" _skipIf="true"/>
-        <Action ID="SwitchUIPrimaryView" primary_view_name="/masks_visualization" _skipIf="true"/>
-        <Action ID="GetPointCloud" message_out="{point_cloud}" publisher_timeout_sec="5.000000" timeout_sec="5.000000" topic_name="/wrist_camera/points"/>
-        <Action ID="CreateStampedPose" reference_frame="ridgeback_base_link" stamped_pose="{robot_pose}" orientation_xyzw="0;0;0;1" position_xyz="0;0;0"/>
-        <Action ID="FindMaskedObjects" base_frame="world" camera_info="{camera_info_1}" detected_shapes="{detected_shapes}" face_separation_threshold="0.010000" masks2d="{masks2d}" minimum_face_area="0.000625" plane_inlier_threshold="0.010000" point_cloud="{point_cloud}"/>
-        <Action ID="Script" code="box_count:=0"/>
-        <Decorator ID="ForEach" index="{index}" out="{out}" vector_in="{detected_shapes}">
+        <Action
+          ID="GetSyncedImages"
+          camera_info_1="{camera_info_1}"
+          camera_info_1_topic_name="/wrist_camera/camera_info"
+          camera_info_2="{camera_info_2}"
+          camera_info_2_topic_name="/scene_camera/camera_info"
+          image_1="{wrist_camera_image}"
+          image_1_topic_name="/wrist_camera/color"
+          image_2="{scene_camera_image}"
+          image_2_topic_name="/scene_camera/color"
+        />
+        <Action
+          ID="SaveImageToFile"
+          file_path="/home/henry/user_ws/src/wrist_camera_images"
+          file_prefix="box"
+          image="{wrist_camera_image}"
+        />
+        <Action
+          ID="SaveImageToFile"
+          file_path="/home/henry/user_ws/src/scene_camera_images"
+          file_prefix="box"
+          image="{scene_camera_image}"
+        />
+        <SubTree
+          ID="Segment Image from Text Prompt Subtree"
+          _collapsed="true"
+          clip_model_path="models/clip.onnx"
+          clipseg_model_path="models/clipseg.onnx"
+          erosion_size="0"
+          image_topic_name="/wrist_camera/color"
+          masks_visualization_topic="/masks_visualization"
+          masks2d="{masks2d}"
+          model_package="moveit_pro_clipseg"
+          prompts="small boxes"
+          negative_prompts="grey"
+          threshold="0.4"
+        />
+        <Action
+          ID="PublishMask2D"
+          image="{wrist_camera_image}"
+          masks="{masks2d}"
+          masks_visualization_topic="/masks_visualization"
+          opacity="0.500000"
+          bounding_box_detection_class="box"
+          _skipIf="true"
+        />
+        <Action
+          ID="SwitchUIPrimaryView"
+          primary_view_name="/masks_visualization"
+          _skipIf="true"
+        />
+        <Action
+          ID="GetPointCloud"
+          message_out="{point_cloud}"
+          publisher_timeout_sec="5.000000"
+          timeout_sec="5.000000"
+          topic_name="/wrist_camera/points"
+        />
+        <Action
+          ID="CreateStampedPose"
+          reference_frame="ridgeback_base_link"
+          stamped_pose="{robot_pose}"
+          orientation_xyzw="0;0;0;1"
+          position_xyz="0;0;0"
+        />
+        <Action
+          ID="FindMaskedObjects"
+          base_frame="world"
+          camera_info="{camera_info_1}"
+          detected_shapes="{detected_shapes}"
+          face_separation_threshold="0.010000"
+          masks2d="{masks2d}"
+          minimum_face_area="0.000625"
+          plane_inlier_threshold="0.010000"
+          point_cloud="{point_cloud}"
+        />
+        <Action ID="Script" code="box_count:=0" />
+        <Decorator
+          ID="ForEach"
+          index="{index}"
+          out="{out}"
+          vector_in="{detected_shapes}"
+        >
           <Control ID="Sequence">
             <Control ID="IfThenElse">
               <Control ID="Sequence">
-                <Action ID="ExtractGraspableObjectPose" graspable_object="{out}" pose="{pose_stamped}"/>
-                <Action ID="CreateGraspableObject" cuboid_object="{reference_cuboid}" dx="0.25" dy="0.25" dz="0.25" generate_front_face="true" generate_side_faces="true" generate_top_face="true" object_id="reference_cuboid" pose="{pose_stamped}"/>
-                <Action ID="CheckCuboidSimilarity" base_frame="world" distance_threshold="0.020000" input_cuboid="{out}" orientation_threshold="3.142" reference_cuboid="{reference_cuboid}"/>
+                <Action
+                  ID="ExtractGraspableObjectPose"
+                  graspable_object="{out}"
+                  pose="{pose_stamped}"
+                />
+                <Action
+                  ID="CreateGraspableObject"
+                  cuboid_object="{reference_cuboid}"
+                  dx="0.25"
+                  dy="0.25"
+                  dz="0.25"
+                  generate_front_face="true"
+                  generate_side_faces="true"
+                  generate_top_face="true"
+                  object_id="reference_cuboid"
+                  pose="{pose_stamped}"
+                />
+                <Action
+                  ID="CheckCuboidSimilarity"
+                  base_frame="world"
+                  distance_threshold="0.020000"
+                  input_cuboid="{out}"
+                  orientation_threshold="3.142"
+                  reference_cuboid="{reference_cuboid}"
+                />
               </Control>
-              <Action ID="Script" code="box_count+=1"/>
-              <Action ID="AlwaysSuccess" name="If the cuboid isn't similar, just don't count it"/>
+              <Action ID="Script" code="box_count+=1" />
+              <Action
+                ID="AlwaysSuccess"
+                name="If the cuboid isn't similar, just don't count it"
+              />
             </Control>
           </Control>
         </Decorator>
-        <Action ID="ResetPlanningSceneObjects" apply_planning_scene_service="/apply_planning_scene" name="CreateGraspableObject adds to the planning scene but we don't want that"/>
+        <Action
+          ID="ResetPlanningSceneObjects"
+          apply_planning_scene_service="/apply_planning_scene"
+          name="CreateGraspableObject adds to the planning scene but we don't want that"
+        />
       </Control>
-      <Action ID="Script" code="box_count:=0" name="This can happen if CLIPSeg doesn't find any boxes"/>
+      <Action
+        ID="Script"
+        code="box_count:=0"
+        name="This can happen if CLIPSeg doesn't find any boxes"
+      />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Count boxes subtree">
-      <inout_port name="box_count" default="{box_count}" type="int">Number of boxes</inout_port>
+      <inout_port name="box_count" default="{box_count}" type="int">
+        Number of boxes
+      </inout_port>
     </SubTree>
   </TreeNodesModel>
 </root>

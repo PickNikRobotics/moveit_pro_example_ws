@@ -1,4 +1,0 @@
-objectives:
-  behavior_loader_plugins:
-    get_filenames_from_directory:
-      - "get_filenames_from_directory::GetFilenamesFromDirectoryBehaviorsLoader"
