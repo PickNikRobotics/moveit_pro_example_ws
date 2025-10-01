@@ -1,38 +1,80 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Verify Box Count">
   <!--//////////-->
-  <BehaviorTree ID="Verify Box Count" _description="User verify the number of boxes" _favorite="false">
+  <BehaviorTree
+    ID="Verify Box Count"
+    _description="User verify the number of boxes"
+    _favorite="false"
+  >
     <Control ID="Sequence" name="TopLevelSequence">
-      <Action ID="GetFilenamesFromDirectory" file_type=".png" result="{image_filename_vector}" directory_path="/home/bilal/user_ws/src/wrist_camera_images"/>
-      <Action ID="Script" code="inc:=0"/>
-      <Decorator ID="ForEach" index="{index}" out="{out}" vector_in="{image_filename_vector}">
+      <Action
+        ID="GetFilenamesFromDirectory"
+        file_type=".png"
+        result="{image_filename_vector}"
+        directory_path="/home/henry/user_ws/src/wrist_camera_images"
+      />
+      <Action ID="Script" code="inc:=0" />
+      <Decorator
+        ID="ForEach"
+        index="{index}"
+        out="{out}"
+        vector_in="{image_filename_vector}"
+      >
         <Control ID="Sequence">
-          <Action ID="LoadImageFromFile" frame_id="world" image="{image}" file_path="{out}"/>
-          <Action ID="ResetVector" vector="{masks2d}"/>
-          <Action ID="SwitchUIPrimaryView" primary_view_name="/masks_visualization"/>
-          <Action ID="PublishMask2D" image="{image}" masks="{masks2d}" masks_visualization_topic="/masks_visualization" opacity="0.500000"/>
-          <Action ID="WaitForDuration" delay_duration="5.000000"/>
+          <Action
+            ID="LoadImageFromFile"
+            frame_id="world"
+            image="{image}"
+            file_path="{out}"
+          />
+          <Action ID="ResetVector" vector="{masks2d}" />
+          <Action
+            ID="SwitchUIPrimaryView"
+            primary_view_name="/masks_visualization"
+          />
+          <Action
+            ID="PublishMask2D"
+            image="{image}"
+            masks="{masks2d}"
+            masks_visualization_topic="/masks_visualization"
+            opacity="0.500000"
+          />
+          <Action ID="WaitForDuration" delay_duration="5.000000" />
           <Decorator ID="RetryUntilSuccessful" num_attempts="3">
             <Control ID="Sequence">
-              <Action ID="GetTextFromUser" text_output="{text_output}" prompts="Number of boxes in image" default_values="0"/>
-              <Decorator ID="ForEach" index="{index}" out="{out}" vector_in="{text_output}">
+              <Action
+                ID="GetTextFromUser"
+                text_output="{text_output}"
+                prompts="Number of boxes in image"
+                default_values="0"
+              />
+              <Decorator
+                ID="ForEach"
+                index="{index}"
+                out="{out}"
+                vector_in="{text_output}"
+              >
                 <Control ID="Sequence">
-                  <Action ID="StringToInt" result="{num_boxes}" string_to_convert="{out}"/>
-                  <Action ID="Script" code="inc+=num_boxes"/>
+                  <Action
+                    ID="StringToInt"
+                    result="{num_boxes}"
+                    string_to_convert="{out}"
+                  />
+                  <Action ID="Script" code="inc+=num_boxes" />
                 </Control>
               </Decorator>
             </Control>
           </Decorator>
         </Control>
       </Decorator>
-      <Action ID="LogMessage" log_level="info" message="{inc}"/>
+      <Action ID="LogMessage" log_level="info" message="{inc}" />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Verify Box Count">
       <MetadataFields>
-        <Metadata runnable="true"/>
-        <Metadata subcategory="Application - Advanced Examples"/>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Advanced Examples" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
