@@ -14,52 +14,24 @@
         file_path="{file_path}"
         controller_name="right_joint_trajectory_controller"
         execute_follow_joint_trajectory_action_name="/right_joint_trajectory_controller/follow_joint_trajectory"
-        planning_group_name="right_arm"
-        tip_link="right_fr3_link8"
+        planning_group_name="right_manipulator"
+        tip_link="right_grasp_link"
         center="{center}"
         name="Write a text"
       />
-      <SubTree
-        ID="Move to Waypoint"
-        _collapsed="true"
-        acceleration_scale_factor="1.0"
-        controller_action_server="/right_joint_trajectory_controller/follow_joint_trajectory"
-        controller_names="right_joint_trajectory_controller"
-        joint_group_name="right_arm"
-        keep_orientation="false"
-        keep_orientation_tolerance="0.05"
-        link_padding="0.01"
-        seed="0"
-        velocity_scale_factor="1.0"
-        waypoint_name="Right Home"
-        name="Move right arm to home position"
-      />
+      <SubTree ID="Move Right Home" _collapsed="true" />
       <SubTree
         ID="Draw"
         _collapsed="true"
         file_path="wipe_zig_zag.yaml"
         controller_name="left_joint_trajectory_controller"
         execute_follow_joint_trajectory_action_name="/left_joint_trajectory_controller/follow_joint_trajectory"
-        planning_group_name="left_arm"
-        tip_link="left_fr3_link8"
+        planning_group_name="left_manipulator"
+        tip_link="left_grasp_link"
         center="{center}"
         name="Wipe out the text"
       />
-      <SubTree
-        ID="Move to Waypoint"
-        _collapsed="true"
-        acceleration_scale_factor="1.0"
-        controller_action_server="/left_joint_trajectory_controller/follow_joint_trajectory"
-        controller_names="left_joint_trajectory_controller"
-        joint_group_name="left_arm"
-        keep_orientation="false"
-        keep_orientation_tolerance="0.05"
-        link_padding="0.01"
-        seed="0"
-        velocity_scale_factor="1.0"
-        waypoint_name="Left Home"
-        name="Move left arm to home position"
-      />
+      <SubTree ID="Move Left Home" _collapsed="true" />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>

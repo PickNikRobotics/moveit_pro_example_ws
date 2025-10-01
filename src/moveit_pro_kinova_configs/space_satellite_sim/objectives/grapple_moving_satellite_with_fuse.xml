@@ -11,9 +11,29 @@
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree ID="Open Gripper" _collapsed="true" />
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        controller_names="joint_trajectory_controller"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        seed="0"
+        velocity_scale_factor="1.0"
+        waypoint_name="View Tag"
+      />
       <Action
         ID="SwitchController"
         activate_controllers="velocity_force_controller"
+        activate_asap="true"
+        automatic_deactivation="true"
+        controller_list_action_name="/controller_manager/list_controllers"
+        controller_switch_action_name="/controller_manager/switch_controller"
+        strictness="1"
+        timeout="-1.000000"
       />
       <Action
         ID="CreateStampedPose"
@@ -38,6 +58,12 @@
         linear_velocity_xyz="0;0;0"
         stamped_twist="{desired_twist}"
         reference_frame="world"
+      />
+      <Action
+        ID="ResetMujocoKeyframe"
+        response_timeout="10.000000"
+        wait_for_server_available_timeout="3.000000"
+        keyframe_name="moving_target_satellite"
       />
       <Control ID="Parallel" failure_count="1" success_count="1">
         <Decorator ID="KeepRunningUntilFailure">
@@ -96,6 +122,7 @@
             link_padding="0.010000"
             planning_group_names="manipulator"
             stop_safety_factor="1.200000"
+            include_octomap="false"
           />
         </Decorator>
         <Control ID="Sequence" name="TopLevelSequence">
