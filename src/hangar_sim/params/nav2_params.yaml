@@ -176,7 +176,6 @@ controller_server:
       # inflation_cost_scaling_factor: 1.5
 
 
-
       debug_trajectory_details: false
       min_vel_x: -1.0
       min_vel_y: -1.0
