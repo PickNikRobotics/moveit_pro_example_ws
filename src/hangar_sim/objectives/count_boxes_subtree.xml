@@ -145,6 +145,10 @@
       <inout_port name="box_count" default="{box_count}" type="int">
         Number of boxes
       </inout_port>
+      <MetadataFields>
+        <Metadata runnable="False" />
+        <Metadata subcategory="Perception - ML" />
+      </MetadataFields>
     </SubTree>
   </TreeNodesModel>
 </root>
