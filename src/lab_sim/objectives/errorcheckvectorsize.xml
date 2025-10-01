@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="ErrorCheckVectorSize">
+  <!--//////////-->
+  <BehaviorTree
+    ID="ErrorCheckVectorSize"
+    _description="Assert that the input vector is the expected length, and if not show a UI error and return FAILURE"
+  >
+    <Control ID="Sequence">
+      <Action
+        ID="GetSizeOfVector"
+        vector_in="{vector}"
+        vector_size="{vector_size}"
+      />
+      <Decorator
+        ID="Precondition"
+        else="SUCCESS"
+        if="vector_size!=expected_vector_size"
+        name="Error Check "
+      >
+        <Control ID="Sequence">
+          <Action
+            ID="LogMessage"
+            log_level="error"
+            message="'Vector size is wrong'"
+          />
+          <Action ID="AlwaysFailure" />
+        </Control>
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="ErrorCheckVectorSize">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Vector Handling" />
+      </MetadataFields>
+      <inout_port name="expected_vector_size" default="1" type="int">
+        The size the vector should be
+      </inout_port>
+      <inout_port name="vector" default="{vector}">
+        The input vector that is to be checked for size.
+      </inout_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>

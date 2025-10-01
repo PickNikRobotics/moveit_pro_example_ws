@@ -15,7 +15,16 @@
         publish_rate="50"
       />
       <Control ID="Sequence" name="TopLevelSequence">
-        <Action ID="ActivateControllers" controller_names="{controller_name}" />
+        <Action
+          ID="SwitchController"
+          activate_asap="true"
+          automatic_deactivation="true"
+          controller_list_action_name="/controller_manager/list_controllers"
+          controller_switch_action_name="/controller_manager/switch_controller"
+          strictness="1"
+          timeout="-1.000000"
+          activate_controllers="{controller_name}"
+        />
         <Action
           ID="LoadPoseStampedVectorFromYaml"
           output="{pose_stamped_msgs}"
@@ -25,6 +34,9 @@
           ID="VisualizePath"
           marker_lifetime="0.000000"
           path="{pose_stamped_msgs}"
+          marker_name="path"
+          pose_marker_size="0.100000"
+          show_poses="false"
         />
         <Action
           ID="PlanCartesianPath"
@@ -38,6 +50,7 @@
           debug_solution="{debug_solution}"
           ik_cartesian_space_density="0.01000"
           ik_joint_space_density="0.050000"
+          tip_offset="0;0;0.005;0;0;0"
           planning_group_name="{planning_group_name}"
           tip_links="{tip_link}"
         />
@@ -48,6 +61,7 @@
           goal_position_tolerance="0.000000"
           goal_time_tolerance="0.000000"
           goal_duration_tolerance="-1.000000"
+          trajectory_remainder="{joint_trajectory_remainder}"
         />
       </Control>
     </Control>

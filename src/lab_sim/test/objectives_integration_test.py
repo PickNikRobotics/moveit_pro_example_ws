@@ -39,6 +39,7 @@ from moveit_pro_test_utils.objective_test_fixture import (
 
 cancel_objectives = {
     "3 Waypoints Pick and Place",
+    "Stationary Admittance",
     "Cycle Between Waypoints",
     "Grasp Planning",
     "Grasp Pose Tuning With April Tag",
@@ -70,6 +71,7 @@ skip_objectives = {
     "Record Square Trajectory",
     "Stack Blocks with ICP",  # Skipped because there is no primary ui to switch to in ci
     "Teleoperate",
+    "Inspector",
 }
 
 # This is a workaround to avoid the test running before ros control is ready
