@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Segment Point Cloud from Text Prompt Subtree"
+>
+  <!--//////////-->
+  <BehaviorTree
+    ID="Segment Point Cloud from Text Prompt Subtree"
+    _description="Captures a point cloud and requests the user to click an object in the image to be segmented. The point cloud is then filtered to only include the selected object."
+    _favorite="true"
+    camera_topic_name="/wrist_camera/camera_info"
+    decoder_model_path="models/decoder.onnx"
+    encoder_model_path="models/sam2_hiera_large_encoder.onnx"
+    image_topic_name="/wrist_camera/color"
+    masks_visualization_topic="/masks_visualization"
+    model_package="moveit_pro_clipseg"
+    points_topic_name="/wrist_camera/points"
+    clip_model_path="{clip_model_path}"
+    clipseg_model_path="{clipseg_model_path}"
+    erosion_size="{erosion_size}"
+    prompts="{prompts}"
+    threshold="{threshold}"
+    masks3d="{masks3d}"
+    point_cloud="{point_cloud}"
+  >
+    <Control ID="Sequence">
+      <Action ID="ClearSnapshot" />
+      <SubTree
+        ID="Segment Image from No Negative Text Prompt Subtree"
+        _collapsed="true"
+        clip_model_path="{clip_model_path}"
+        clipseg_model_path="{clipseg_model_path}"
+        erosion_size="{erosion_size}"
+        masks_visualization_topic="{masks_visualization_topic}"
+        model_package="{model_package}"
+        prompts="{prompts}"
+        threshold="{threshold}"
+        topic_name="{topic_name}"
+        image_topic_name="{image_topic_name}"
+        masks2d="{masks2d}"
+      />
+      <Action
+        ID="GetPointCloud"
+        topic_name="{points_topic_name}"
+        timeout_sec="10.000000"
+        message_out="{point_cloud}"
+      />
+      <Action
+        ID="GetCameraInfo"
+        topic_name="{camera_topic_name}"
+        message_out="{camera_info}"
+        timeout_sec="5.000000"
+      />
+      <Action
+        ID="GetMasks3DFromMasks2D"
+        camera_info="{camera_info}"
+        masks2d="{masks2d}"
+        point_cloud="{point_cloud}"
+        masks3d="{masks3d}"
+      />
+      <SubTree
+        ID="Create Point Cloud Vector From Masks"
+        _collapsed="false"
+        masks3d="{masks3d}"
+        point_cloud="{point_cloud}"
+        point_cloud_vector="{point_cloud_vector}"
+      />
+      <Decorator
+        ID="ForEach"
+        index="{index}"
+        out="{point_cloud_fragment}"
+        vector_in="{point_cloud_vector}"
+      >
+        <Action
+          ID="SendPointCloudToUI"
+          pcd_topic="/pcd_pointcloud_captures"
+          point_cloud="{point_cloud_fragment}"
+        />
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Segment Point Cloud from Text Prompt Subtree">
+      <input_port
+        name="camera_topic_name"
+        default="/wrist_camera/camera_info"
+      />
+      <input_port name="clip_model_path" default="{clip_model_path}" />
+      <input_port name="clipseg_model_path" default="{clipseg_model_path}" />
+      <input_port name="decoder_model_path" default="models/decoder.onnx" />
+      <input_port
+        name="encoder_model_path"
+        default="models/sam2_hiera_large_encoder.onnx"
+      />
+      <input_port name="erosion_size" default="{erosion_size}" />
+      <input_port name="image_topic_name" default="/wrist_camera/color" />
+      <input_port
+        name="masks_visualization_topic"
+        default="/masks_visualization"
+      />
+      <output_port name="masks3d" default="{masks3d}" />
+      <input_port name="model_package" default="lab_sim" />
+      <output_port name="point_cloud" default="{point_cloud}" />
+      <output_port name="point_cloud_vector" default="{point_cloud_vector}" />
+      <input_port name="points_topic_name" default="/wrist_camera/points" />
+      <input_port name="prompts" default="{prompts}" />
+      <input_port name="threshold" default="{threshold}" />
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Perception - ML" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

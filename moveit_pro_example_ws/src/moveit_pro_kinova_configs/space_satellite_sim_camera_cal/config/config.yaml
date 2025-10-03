@@ -1,0 +1,41 @@
+###############################################################
+#
+#  This configures the robot to work with MoveIt Pro
+#
+###############################################################
+
+# Extend the basic Kinova MuJoCo configuration
+based_on_package: "space_satellite_sim"
+
+# Baseline hardware configuration parameters for MoveIt Pro.
+# [Required]
+hardware:
+  # Parameters used to configure the robot description through XACRO.
+  # A URDF and SRDF are both required.
+  # [Required]
+  robot_description:
+    urdf:
+      package: "space_satellite_sim_camera_cal"
+      path: "description/space_satellite_sim.xacro"
+    srdf:
+      package: "space_satellite_sim"
+      # package: "space_satellite_sim_camera_cal"
+      path: "config/moveit/space_satellite_sim.srdf"
+    # Specify any additional parameters required for the URDF.
+    # Many of these are specific to the UR descriptions packages, and can be customized as needed.
+    # [Optional]
+    urdf_params:
+      - mujoco_model: "description/mujoco/scene.xml"
+      - mujoco_viewer: "false"
+
+
+# Configuration for loading behaviors and objectives.
+objectives:
+  objective_library_paths:
+    sim_objectives:
+      package_name: "space_satellite_sim_camera_cal"
+      relative_path: "objectives"
+  # Specify location of the waypoints file.
+  waypoints_file:
+    package_name: "space_satellite_sim_camera_cal"
+    relative_path: "waypoints/waypoints.yaml"

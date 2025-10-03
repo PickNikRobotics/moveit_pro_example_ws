@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Plan And Execute With Position Only"
+>
+  <!--//////////-->
+  <BehaviorTree
+    ID="Plan And Execute With Position Only"
+    _description="Cartesian plan to an approach pose then cartesian plan to a target pose with optional position only IK. With position only IK the solving constraints are largely decreasing by ignoring the orientation of the approach and target poses."
+  >
+    <Control ID="Sequence">
+      <Action ID="ResetPoseStampedVector" vector="{pose_stamped_vector}" />
+      <!--<Action
+        ID="TransformPose"
+        input_pose="{target_pose}"
+        output_pose="{approach_pose}"
+        quaternion_xyzw="0;0;0;1"
+        translation_xyz="0;0;-0.1"
+      />-->
+      <Action
+        ID="VisualizePose"
+        marker_name="approach_pose"
+        pose="{approach_pose}"
+        marker_lifetime="0.000000"
+        marker_size="0.100000"
+      />
+      <Action
+        ID="AddPoseStampedToVector"
+        input="{approach_pose}"
+        vector="{pose_stamped_vector}"
+      />
+      <Action
+        ID="VisualizePose"
+        marker_name="pose"
+        pose="{target_pose}"
+        marker_lifetime="0.000000"
+        marker_size="0.100000"
+      />
+      <Action
+        ID="AddPoseStampedToVector"
+        input="{target_pose}"
+        vector="{pose_stamped_vector}"
+      />
+      <Decorator
+        ID="ForceSuccess"
+        name="Do not terminate on planning failure or skipped execution"
+      >
+        <Control
+          ID="IfThenElse"
+          name="If we are able to plan a path, optionally execute it"
+        >
+          <Control ID="Sequence" name="Plan">
+            <Action
+              ID="PlanCartesianPath"
+              trajectory_sampling_rate="30"
+              debug_solution="{debug_solution}"
+              velocity_scale_factor="1.000000"
+              acceleration_scale_factor="1.000000"
+              blending_radius="0.020000"
+              position_only="{position_only_ik}"
+              joint_trajectory_msg="{joint_trajectory_msg}"
+              planning_group_name="{joint_group_name}"
+              path="{pose_stamped_vector}"
+              ik_cartesian_space_density="0.010000"
+              ik_joint_space_density="0.100000"
+              tip_link="{ik_frame}"
+            />
+          </Control>
+          <Control
+            ID="Sequence"
+            name="Optionally execute trajectory and return to start joint state"
+          >
+            <Action
+              ID="WaitForUserTrajectoryApproval"
+              solution="{debug_solution}"
+              cartesian_path_links="tool0"
+            />
+            <Decorator
+              ID="Precondition"
+              else="SUCCESS"
+              if="execute_trajectories == &quot;true&quot;"
+            >
+              <Control
+                ID="Sequence"
+                name="Optionally execute trajectory and return to start joint state"
+              >
+                <Action
+                  ID="ExecuteFollowJointTrajectory"
+                  execute_follow_joint_trajectory_action_name="{controller_action_server}"
+                  goal_duration_tolerance="-1.000000"
+                  goal_position_tolerance="0.000000"
+                  goal_time_tolerance="0.000000"
+                  joint_trajectory_msg="{joint_trajectory_msg}"
+                />
+                <SubTree
+                  ID="Move to Joint State"
+                  _collapsed="true"
+                  target_joint_state="{starting_joint_state}"
+                  acceleration_scale_factor="1.0"
+                  controller_action_server="{controller_action_server}"
+                  controller_names="{controller_names}"
+                  joint_group_name="{joint_group_name}"
+                  keep_orientation="false"
+                  keep_orientation_tolerance="0.05"
+                  link_padding="0.01"
+                  velocity_scale_factor="1.0"
+                />
+              </Control>
+            </Decorator>
+          </Control>
+          <Control
+            ID="IfThenElse"
+            name="Notify of planning failure and pause for inspection"
+          >
+            <Action
+              ID="LogMessage"
+              log_level="warn"
+              message="Pausing. Unable to plan to reachability pose. Press Resume when ready."
+            />
+            <Action
+              ID="BreakpointSubscriber"
+              breakpoint_topic="/moveit_pro_breakpoint"
+            />
+          </Control>
+        </Control>
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Plan And Execute With Position Only">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Motion - Execution" />
+      </MetadataFields>
+      <inout_port name="approach_pose" default="{approach_pose}" />
+      <inout_port
+        name="controller_action_server"
+        default="{controller_action_server}"
+      />
+      <inout_port name="controller_names" default="{controller_names}" />
+      <inout_port
+        name="execute_trajectories"
+        default="{execute_trajectories}"
+      />
+      <inout_port name="joint_group_name" default="{joint_group_name}" />
+      <inout_port name="position_only_ik" default="{position_only_ik}" />
+      <inout_port
+        name="starting_joint_state"
+        default="{starting_joint_state}"
+      />
+      <inout_port name="target_pose" default="{target_pose}" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

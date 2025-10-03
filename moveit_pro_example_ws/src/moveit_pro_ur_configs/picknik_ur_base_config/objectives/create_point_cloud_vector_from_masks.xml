@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Create Point Cloud Vector From Masks"
+>
+  <!--//////////-->
+  <BehaviorTree
+    ID="Create Point Cloud Vector From Masks"
+    _description="Create point cloud vector From masks"
+    _favorite="true"
+    masks3d="/wrist_camera/camera_info"
+    point_cloud="/wrist_camera/camera_info"
+  >
+    <Control ID="Sequence">
+      <Action ID="ResetPoseStampedVector" vector="{pose_stamped_vector}" />
+      <Decorator
+        ID="ForEach"
+        vector_in="{masks3d}"
+        out="{mask3d}"
+        index="{index}"
+      >
+        <Control ID="Sequence">
+          <Action
+            ID="GetPointCloudFromMask3D"
+            point_cloud="{point_cloud}"
+            mask3d="{mask3d}"
+            point_cloud_fragment="{point_cloud_fragment}"
+          />
+          <Action
+            ID="AddPointCloudToVector"
+            point_cloud="{point_cloud_fragment}"
+            point_cloud_vector="{point_cloud_vector}"
+          />
+        </Control>
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Create Point Cloud Vector From Masks">
+      <input_port name="masks3d" default="/wrist_camera/camera_info" />
+      <input_port name="point_cloud" default="/wrist_camera/camera_info" />
+      <output_port name="point_cloud_vector" default="{point_cloud_vector}" />
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Perception - ML" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

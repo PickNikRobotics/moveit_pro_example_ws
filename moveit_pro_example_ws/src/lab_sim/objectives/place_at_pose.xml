@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Place at Pose">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Place at Pose"
+    _description="Takes a place pose as input and places the object at that pose"
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="InitializeMTCTask"
+        controller_names="joint_trajectory_controller;robotiq_gripper_controller"
+        task="{mtc_task}"
+        task_id="place_object"
+        trajectory_monitoring="false"
+        timeout="-1.000000"
+      />
+      <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
+      <Action
+        ID="SetupMTCConnectWithProRRT"
+        acceleration_scale_factor="1.000000"
+        keep_orientation="false"
+        keep_orientation_link_names="grasp_link"
+        keep_orientation_tolerance="0.100000"
+        link_padding="0.000000"
+        max_iterations="5000"
+        planning_group_name="manipulator"
+        seed="0"
+        task="{mtc_task}"
+        trajectory_sampling_rate="100"
+        velocity_scale_factor="1.000000"
+      />
+      <Action
+        ID="SetupMTCMoveAlongFrameAxis"
+        acceleration_scale="1.000000"
+        axis_frame="grasp_link"
+        axis_x="0.000000"
+        axis_y="0.000000"
+        axis_z="1.000000"
+        hand_frame="grasp_link"
+        max_distance="{approach_distance}"
+        min_distance="{approach_distance}"
+        planning_group_name="manipulator"
+        task="{mtc_task}"
+        velocity_scale="1.000000"
+        ignore_environment_collisions="false"
+      />
+      <Action ID="ResetPoseStampedVector" vector="{place_pose_vector}" />
+      <Action
+        ID="AddPoseStampedToVector"
+        input="{place_pose}"
+        vector="{place_pose_vector}"
+      />
+      <Action
+        ID="SetupMTCBatchPoseIK"
+        end_effector_group="moveit_ee"
+        end_effector_link="grasp_link"
+        ik_group="manipulator"
+        ik_timeout_s="0.01"
+        max_ik_solutions="4"
+        monitored_stage="current state"
+        target_poses="{place_pose_vector}"
+        task="{mtc_task}"
+      />
+      <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
+      <Action
+        ID="ExecuteMTCTask"
+        goal_duration_tolerance="-1.000000"
+        solution="{mtc_solution}"
+      />
+      <SubTree ID="Open Gripper" _collapsed="true" />
+      <Action
+        ID="CreateStampedPose"
+        reference_frame="grasp_link"
+        stamped_pose="{retract_pose}"
+        position_xyz="{retract_xyz}"
+      />
+      <Action ID="ResetPoseStampedVector" vector="{retract_path}" />
+      <Action
+        ID="AddPoseStampedToVector"
+        input="{retract_pose}"
+        vector="{retract_path}"
+      />
+      <Action
+        ID="PlanCartesianPath"
+        acceleration_scale_factor="1.000000"
+        blending_radius="0.020000"
+        debug_solution="{debug_solution}"
+        ik_cartesian_space_density="0.010000"
+        ik_joint_space_density="0.100000"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+        path="{retract_path}"
+        planning_group_name="manipulator"
+        position_only="false"
+        tip_links="grasp_link"
+        trajectory_sampling_rate="100"
+        velocity_scale_factor="1.000000"
+      />
+      <Action
+        ID="ExecuteFollowJointTrajectory"
+        execute_follow_joint_trajectory_action_name="/joint_trajectory_controller/follow_joint_trajectory"
+        goal_duration_tolerance="-1.000000"
+        goal_position_tolerance="0.000000"
+        goal_time_tolerance="0.000000"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+        trajectory_remainder="{joint_trajectory_remainder}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Place at Pose">
+      <MetadataFields>
+        <Metadata subcategory="Application - Basic Examples" />
+        <Metadata runnable="false" />
+      </MetadataFields>
+      <inout_port name="approach_distance" default="0.1" />
+      <inout_port name="place_pose" default="{place_pose}" />
+      <inout_port name="retract_xyz" default="0;0;-0.1" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

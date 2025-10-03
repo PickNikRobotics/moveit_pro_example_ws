@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Take Snapshot">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Take Snapshot"
+    _description="Take a point cloud snapshot and add to collision scene"
+    _favorite="true"
+  >
+    <Control ID="Sequence">
+      <Action ID="SwitchUIPrimaryView" primary_view_name="Visualization" />
+      <Action
+        ID="GetPointCloud"
+        topic_name="/scene_camera/points"
+        message_out="{point_cloud}"
+        timeout_sec="15.000000"
+      />
+      <Action
+        ID="SendPointCloudToUI"
+        point_cloud="{point_cloud}"
+        pcd_topic="/pcd_pointcloud_captures"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Take Snapshot">
+      <MetadataFields>
+        <Metadata subcategory="Perception - 3D Point Cloud" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

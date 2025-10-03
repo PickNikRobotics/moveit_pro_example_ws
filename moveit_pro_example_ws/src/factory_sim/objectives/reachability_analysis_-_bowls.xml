@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Reachability Analysis - bowls">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Reachability Analysis - bowls"
+    _description="An example of performing reachability analysis for a object-normal task such as painting or sanding."
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="">
+      <Control ID="Sequence" name="Visualize what we are planning to">
+        <SubTree ID="Clear Snapshot" _collapsed="true" />
+        <SubTree ID="Take Snapshot" _collapsed="true" />
+      </Control>
+      <SubTree
+        ID="Reachability Analysis for mesh"
+        _collapsed="true"
+        approach_translation="0;0;-0.1"
+        position_only_ik="true"
+        ik_frame="tool0"
+        approach_distance="0.1"
+        end_effector_joint_group="fanuc_ee"
+        joint_group_name="manipulator"
+        controller_names="joint_trajectory_controller"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        starting_waypoint="View bowls"
+        mesh_link_name="convex_bowl"
+        execute_trajectories="true"
+        keep_orientation="true"
+        keep_orientation_tolerance="0.5"
+        keep_orientation_link_names="tool0"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Reachability Analysis - bowls">
+      <MetadataFields>
+        <Metadata subcategory="Reachability" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

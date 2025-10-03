@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Pick up Cube">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Pick up Cube"
+    _description="Pick up a cube from a manually defined location"
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree ID="Clear Snapshot" _collapsed="true" />
+      <SubTree ID="Look at Table" _collapsed="false" />
+      <!--Take a snapshot so we have a visualization of the cubes to use in grasp pose correction-->
+      <SubTree ID="Take Wrist Camera Snapshot" _collapsed="true" />
+      <SubTree ID="Pick object" _collapsed="false" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Pick up Cube">
+      <MetadataFields>
+        <Metadata subcategory="Application - Basic Examples" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

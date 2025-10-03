@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Inspect Convex Bowl">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Inspect Convex Bowl"
+    _description="Inspect the Convex bowl with the blue tool. If a tool is already attached, it will return it to the correct holder first."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree ID="Automated Return Held Tool" _collapsed="true" />
+      <SubTree ID="Reset Planning Scene" _collapsed="true" />
+      <SubTree ID="Setup Initial Planning Scene" _collapsed="true" />
+      <SubTree
+        ID="Pick Up Tool from Holder"
+        _collapsed="true"
+        tool_name="inspector"
+        tool_attach_site="inspection_tool_attach_site"
+      />
+      <Control ID="Sequence" name="TopLevelSequence">
+        <Action
+          ID="RetrieveWaypoint"
+          joint_group_name="manipulator"
+          waypoint_joint_state="{target_joint_state}"
+          waypoint_name="View Convex"
+        />
+        <Action
+          ID="UnpackRobotJointStateMessage"
+          joint_state="{joint_state}"
+          multi_dof_joint_state="{multi_dof_joint_state}"
+          robot_joint_state="{target_joint_state}"
+        />
+        <Action
+          ID="GetCurrentPlanningScene"
+          planning_scene_msg="{planning_scene}"
+        />
+        <Action
+          ID="ComputeLinkPoseForwardKinematics"
+          joint_state="{joint_state}"
+          link_name="tool0"
+          link_pose="{link_pose}"
+          planning_scene="{planning_scene}"
+        />
+        <Action
+          ID="TransformPose"
+          input_pose="{link_pose}"
+          output_pose="{inspection_pose}"
+          translation_xyz="0;0;0.1"
+        />
+        <Action
+          ID="VisualizePose"
+          marker_lifetime="0.000000"
+          marker_name="pose"
+          marker_size="0.100000"
+          pose="{inspection_pose}"
+        />
+      </Control>
+      <Control ID="Sequence">
+        <Action
+          ID="InitializeMTCTask"
+          task="{mtc_task}"
+          trajectory_monitoring="false"
+          controller_names="joint_trajectory_controller"
+        />
+        <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
+        <Action
+          ID="SetupMTCPlanToPose"
+          acceleration_scale_factor="0.5"
+          ik_frame="tool0"
+          keep_orientation="false"
+          keep_orientation_link_names="tool0"
+          keep_orientation_tolerance="0.100000"
+          link_padding="0.000000"
+          max_iterations="5000"
+          monitored_stage="current state"
+          planning_group_name="manipulator"
+          target_pose="{inspection_pose}"
+          task="{mtc_task}"
+          trajectory_sampling_rate="100"
+          velocity_scale_factor="0.5"
+        />
+        <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
+        <Action
+          ID="ExecuteMTCTask"
+          goal_duration_tolerance="-1.000000"
+          solution="{mtc_solution}"
+        />
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Inspect Convex Bowl">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Advanced Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

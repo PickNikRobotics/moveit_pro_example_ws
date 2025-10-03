@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Calibrate Servicer Camera">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Calibrate Servicer Camera"
+    _description="Calibrate the servicer camera from multiple waypoints using the DetectAprilTags behavior."
+    _favorite="true"
+  >
+    <SubTree
+      ID="Calibrate Camera - Detect Tags"
+      _collapsed="true"
+      camera_mounting_frame="servicer_camera_mount_link"
+      camera_optical_frame="servicer_camera_color_optical_frame"
+      mounting_pose_save_file="calibrated_servicer_cam_mount_pose.txt"
+      mounting_pose_parent_frame="world"
+      camera_image_topic="/servicer_camera/color"
+      camera_info_topic="/servicer_camera/camera_info"
+    />
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Calibrate Servicer Camera">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Perception - Camera Calibration" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

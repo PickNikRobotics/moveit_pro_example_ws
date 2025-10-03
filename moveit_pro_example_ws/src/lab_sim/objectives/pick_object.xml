@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Pick object">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Pick object"
+    _description="Opens the gripper, defines a target pose for the object and performs a motion for picking it."
+    _favorite="false"
+  >
+    <Control ID="Sequence">
+      <SubTree ID="Open Gripper" />
+      <Action ID="SwitchUIPrimaryView" primary_view_name="Visualization" />
+      <Action
+        ID="CreateStampedPose"
+        orientation_xyzw="0;1;0;0"
+        position_xyz="0.01;.75;0.515"
+        stamped_pose="{stamped_pose}"
+        reference_frame="world"
+      />
+      <Action
+        ID="VisualizePose"
+        marker_lifetime="0.000000"
+        marker_name="Object Pose"
+        marker_size="0.100000"
+        pose="{stamped_pose}"
+      />
+      <SubTree
+        ID="Pick from Pose"
+        _collapsed="true"
+        grasp_pose="{stamped_pose}"
+        approach_distance="0.1"
+        retract_xyz="0;0;-0.1"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Pick object">
+      <MetadataFields>
+        <Metadata subcategory="Motion - Execute" />
+        <Metadata runnable="false" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
