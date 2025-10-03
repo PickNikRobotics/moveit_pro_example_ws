@@ -17,42 +17,25 @@
         name="Caution about errors"
       />
       <SubTree ID="Open Gripper" _collapsed="true" />
+      <SubTree ID="Look at Table" _collapsed="false" />
       <SubTree
-        ID="Fuse Multiple Views Subtree"
-        _collapsed="true"
-        merged_cloud="{point_cloud}"
-        waypoint1="Look at Objects - Right"
-        waypoint2="Look at Objects - Top"
-        waypoint3="Look at Objects - Left"
-        name="Scan the scene for a good point cloud"
-      />
-      <SubTree ID="Look at Table" _collapsed="true" />
-      <SubTree
-        ID="Segment Image from Point Subtree"
-        _collapsed="true"
+        ID="Segment Point Cloud from Text Prompt Subtree"
+        _collapsed="false"
+        camera_topic_name="/wrist_camera/camera_info"
+        clip_model_path="models/clip.onnx"
+        clipseg_model_path="models/clipseg.onnx"
+        decoder_model_path="models/decoder.onnx"
         encoder_model_path="models/sam2_hiera_large_encoder.onnx"
+        erosion_size="2"
         image_topic_name="/wrist_camera/color"
         masks_visualization_topic="/masks_visualization"
-        masks2d="{masks2d}"
-        model_package="lab_sim"
-        pixel_coords="{pixel_coords}"
-        decoder_model_path="models/decoder.onnx"
-        name="Ask the user to pick an object"
-      />
-      <Action
-        ID="GetCameraInfo"
-        message_out="{camera_info}"
-        timeout_sec="5.000000"
-        topic_name="/wrist_camera/camera_info"
-        publisher_timeout_sec="5.000000"
-      />
-      <Action
-        ID="GetMasks3DFromMasks2D"
-        camera_info="{camera_info}"
-        masks2d="{masks2d}"
         masks3d="{masks3d}"
+        model_package="moveit_pro_clipseg"
         point_cloud="{point_cloud}"
-        name="Project the 2D mask to 3D"
+        point_cloud_vector="{point_cloud_vector}"
+        points_topic_name="/wrist_camera/points"
+        threshold="0.28"
+        prompts="an object"
       />
       <SubTree
         ID="Visualize Segmented Point Cloud"
@@ -84,7 +67,7 @@
       />
       <SubTree
         ID="Reflect Poses Subtree"
-        _collapsed="true"
+        _collapsed="false"
         input_poses="{grasps}"
         output_poses="{grasps_z_modified}"
         name="Add z reflected poses"
@@ -92,13 +75,13 @@
       />
       <SubTree
         ID="Reflect Poses Subtree"
-        _collapsed="true"
+        _collapsed="false"
         input_poses="{grasps_z_modified}"
         output_poses="{grasps_zy_modified}"
         name="Add y reflected poses"
         reflection_axis="0;1;0;0"
       />
-      <SubTree ID="Add Table to Planning Scene" _collapsed="true" />
+      <SubTree ID="Add Table to Planning Scene" _collapsed="false" />
       <Decorator
         ID="ForEachUntilSuccess"
         index="{index}"
