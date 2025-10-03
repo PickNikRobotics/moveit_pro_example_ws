@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Get Point Cloud Center Pose">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Get Point Cloud Center Pose"
+    _description="Take a Wrist Camera Snapshot and return the center pose of the point cloud"
+    _favorite="false"
+    input_pose="{stamped_pose}"
+    output_pose="{plane_pose}"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="GetPointCloud"
+        message_out="{point_cloud}"
+        timeout_sec="5.000000"
+        topic_name="/wrist_camera/points"
+      />
+      <Action
+        ID="CropPointsInBox"
+        crop_box_centroid_pose="{input_pose}"
+        point_cloud="{point_cloud}"
+        point_cloud_cropped="{point_cloud_cropped}"
+        crop_box_size="2;2;2"
+      />
+      <Action
+        ID="SendPointCloudToUI"
+        pcd_topic="/pcd_pointcloud_captures"
+        point_cloud="{point_cloud_cropped}"
+      />
+      <Action
+        ID="GetCentroidFromPointCloud"
+        output_pose="{output_pose}"
+        point_cloud="{point_cloud_cropped}"
+      />
+      <Action
+        ID="VisualizePose"
+        marker_lifetime="0.000000"
+        marker_size="1"
+        marker_name="center_pose"
+        pose="{output_pose}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Get Point Cloud Center Pose">
+      <inout_port name="input_pose" default="{stamped_pose}" />
+      <inout_port name="output_pose" default="{plane_pose}" />
+      <MetadataFields>
+        <Metadata subcategory="Training Examples" />
+        <Metadata runnable="false" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

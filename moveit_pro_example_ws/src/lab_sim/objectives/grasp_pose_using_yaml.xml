@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Grasp Pose Using Yaml">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Grasp Pose Using Yaml"
+    _description="Reads a YAML file for grasp pose offset and picks up an object that has an AprilTag marker."
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree ID="Open Gripper" />
+      <!--Be sure that no previous obstacle left in the scene interferes with planning.-->
+      <SubTree ID="Clear Previous Obstacles" _collapsed="true" />
+      <!--Look at Table, find an april tag.-->
+      <SubTree ID="Look at Table" _collapsed="true" />
+      <SubTree ID="Clear Previous Obstacles" _collapsed="true" />
+      <SubTree ID="Take Wrist Camera Snapshot" _collapsed="true" />
+      <SubTree
+        ID="Take Wrist Camera Image"
+        _collapsed="true"
+        wrist_camera_image="{wrist_camera_image}"
+        wrist_camera_info="{wrist_camera_info}"
+        wrist_camera_parameters="{wrist_camera_parameters}"
+      />
+      <SubTree
+        ID="Get AprilTag Pose from Image"
+        image="{wrist_camera_image}"
+        camera_info="{wrist_camera_info}"
+        parameters="{wrist_camera_parameters}"
+        _collapsed="true"
+        detection_pose="{detection_pose}"
+      />
+      <!--Move in for a closer look.-->
+      <Action
+        ID="TransformPose"
+        output_pose="{view_pose}"
+        input_pose="{detection_pose}"
+        quaternion_xyzw="1;0;0;0"
+        translation_xyz="0;0.1;0.15"
+      />
+      <SubTree
+        ID="Plan Move To Pose"
+        target_pose="{view_pose}"
+        move_to_pose_solution="{move_to_pose_solution}"
+      />
+      <Action
+        ID="ExecuteMTCTask"
+        solution="{move_to_pose_solution}"
+        goal_duration_tolerance="-1.000000"
+      />
+      <!--Locate the april tag again more precisely.-->
+      <SubTree ID="Clear Previous Obstacles" _collapsed="true" />
+      <SubTree ID="Take Wrist Camera Snapshot" _collapsed="true" />
+      <SubTree
+        ID="Take Wrist Camera Image"
+        _collapsed="true"
+        wrist_camera_image="{wrist_camera_image}"
+        wrist_camera_info="{wrist_camera_info}"
+        wrist_camera_parameters="{wrist_camera_parameters}"
+      />
+      <SubTree
+        ID="Get AprilTag Pose from Image"
+        image="{wrist_camera_image}"
+        camera_info="{wrist_camera_info}"
+        parameters="{wrist_camera_parameters}"
+        _collapsed="true"
+        detection_pose="{detection_pose}"
+      />
+      <!--Load the gripper offset from yaml and combine with detected pose.-->
+      <Action
+        ID="LoadPoseStampedFromYaml"
+        output="{relative_pose}"
+        file_path="relative_grasp_pose.yaml"
+      />
+      <Action
+        ID="TransformPoseWithPose"
+        input_pose="{relative_pose}"
+        output_pose="{offset_pose}"
+        transform_pose="{detection_pose}"
+      />
+      <Action
+        ID="VisualizePose"
+        marker_lifetime="0.000000"
+        marker_name="pose"
+        marker_size="0.100000"
+        pose="{offset_pose}"
+      />
+      <SubTree
+        ID="Pick from Pose"
+        _collapsed="true"
+        grasp_pose="{offset_pose}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Grasp Pose Using Yaml">
+      <MetadataFields>
+        <Metadata subcategory="Application - Advanced Examples" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="PlanAndExecuteWithPoseOrientation">
+  <!--//////////-->
+  <BehaviorTree
+    ID="PlanAndExecuteWithPoseOrientation"
+    _description="Free space plan to an approach pose then free space plan to a target pose with optional orientation constraints. With orientation constraints the gripper will maintain its orientation relative to the world vertical axis when moving from the approach to target pose."
+  >
+    <Control ID="Sequence" name="Plan to approach then target">
+      <Action
+        ID="SwitchController"
+        activate_controllers="{controller_names}"
+        activate_asap="true"
+        automatic_deactivation="true"
+        controller_list_action_name="/controller_manager/list_controllers"
+        controller_switch_action_name="/controller_manager/switch_controller"
+        strictness="1"
+        timeout="-1.000000"
+      />
+      <Action
+        ID="InitializeMTCTask"
+        controller_names="{controller_names}"
+        task="{mtc_task}"
+        task_id="move_to_pose"
+        trajectory_monitoring="false"
+        timeout="-1.000000"
+      />
+      <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
+      <Action
+        ID="SetupMTCPlanToPose"
+        acceleration_scale_factor="1.000000"
+        ik_frame="{ik_frame}"
+        keep_orientation="false"
+        link_padding="0.01"
+        max_iterations="50000"
+        monitored_stage="current state"
+        planning_group_name="{joint_group_name}"
+        target_pose="{approach_pose}"
+        trajectory_sampling_rate="100"
+        velocity_scale_factor="1.000000"
+        task="{mtc_task}"
+        keep_orientation_link_names="tool0"
+        keep_orientation_tolerance="0.100000"
+      />
+      <Action
+        ID="SetupMTCPlanToPose"
+        acceleration_scale_factor="1.000000"
+        ik_frame="{ik_frame}"
+        keep_orientation="{keep_orientation}"
+        link_padding="0.01"
+        max_iterations="50000"
+        monitored_stage="current state"
+        planning_group_name="{joint_group_name}"
+        target_pose="{target_pose}"
+        trajectory_sampling_rate="100"
+        velocity_scale_factor="1.000000"
+        task="{mtc_task}"
+        keep_orientation_tolerance="{keep_orientation_tolerance}"
+        keep_orientation_link_names="{keep_orientation_link_names}"
+      />
+      <Decorator
+        ID="ForceSuccess"
+        name="Do not terminate on planning failure or skipped execution"
+      >
+        <Control
+          ID="IfThenElse"
+          name="If we are able to plan a path, optionally execute it"
+        >
+          <Control ID="Sequence" name="Plan">
+            <Action
+              ID="PlanMTCTask"
+              task="{mtc_task}"
+              solution="{mtc_solution}"
+            />
+          </Control>
+          <Control
+            ID="Sequence"
+            name="Optionally execute trajectory and return to start joint state"
+          >
+            <Action
+              ID="WaitForUserTrajectoryApproval"
+              solution="{mtc_solution}"
+              cartesian_path_links="tool0"
+            />
+            <Decorator
+              ID="Precondition"
+              else="SUCCESS"
+              if="execute_trajectories == &quot;true&quot;"
+            >
+              <Control ID="Sequence">
+                <Action
+                  ID="ExecuteMTCTask"
+                  goal_duration_tolerance="-1.000000"
+                  solution="{mtc_solution}"
+                />
+                <SubTree
+                  ID="Move to Joint State"
+                  _collapsed="false"
+                  target_joint_state="{starting_joint_state}"
+                  acceleration_scale_factor="1.0"
+                  controller_action_server="{controller_action_server}"
+                  controller_names="{controller_names}"
+                  joint_group_name="{joint_group_name}"
+                  keep_orientation="false"
+                  keep_orientation_tolerance="0.05"
+                  link_padding="0.01"
+                  velocity_scale_factor="1.0"
+                  seed="0"
+                />
+              </Control>
+            </Decorator>
+          </Control>
+          <Control
+            ID="IfThenElse"
+            name="Notify of planning failure and pause for inspection"
+          >
+            <Action
+              ID="LogMessage"
+              log_level="warn"
+              message="Pausing. Unable to plan to reachability pose. Press Resume when ready."
+            />
+            <Action
+              ID="BreakpointSubscriber"
+              breakpoint_topic="/moveit_pro_breakpoint"
+            />
+          </Control>
+        </Control>
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="PlanAndExecuteWithPoseOrientation">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Motion - Execution" />
+      </MetadataFields>
+      <inout_port name="approach_pose" default="{approach_pose}" />
+      <inout_port
+        name="controller_action_server"
+        default="{controller_action_server}"
+      />
+      <inout_port name="controller_names" default="{controller_names}" />
+      <inout_port
+        name="execute_trajectories"
+        default="{execute_trajectories}"
+      />
+      <inout_port name="ik_frame" default="{ik_frame}" />
+      <inout_port name="joint_group_name" default="{joint_group_name}" />
+      <inout_port name="keep_orientation" default="{keep_orientation}" />
+      <inout_port
+        name="keep_orientation_link_names"
+        default="{keep_orientation_link_names}"
+      />
+      <inout_port
+        name="keep_orientation_tolerance"
+        default="{keep_orientation_tolerance}"
+      />
+      <inout_port
+        name="starting_joint_state"
+        default="{starting_joint_state}"
+      />
+      <inout_port name="target_pose" default="{target_pose}" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

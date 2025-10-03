@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Reachability Analysis for plane">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Reachability Analysis for plane"
+    column_spacing_translation="0;0.25;0"
+    num_45_deg_rotations="0"
+    num_columns="3"
+    num_rows="3"
+    pick_height_translation="0;0;-0.3"
+    reachability_origin_pose="{reachability_origin_pose}"
+    row_spacing_translation="0.35;0;0"
+    execute_trajectories="true"
+    _description="Given a grid of points, attempt to move to a vertical approach pose then move to the grid point."
+    pick_height="-0.3"
+    starting_waypoint="&quot;Initial Position&quot;"
+    controller_action_server="{controller_action_server}"
+    controller_name="{controller_name}"
+    planning_group_name="{planning_group_name}"
+    tip_link="{tip_link}"
+  >
+    <Control ID="Sequence">
+      <Control ID="Sequence" name="Move to starting waypoint">
+        <Action
+          ID="RetrieveWaypoint"
+          joint_group_name="{joint_group_name}"
+          waypoint_joint_state="{starting_joint_state}"
+          waypoint_name="{starting_waypoint}"
+        />
+        <SubTree
+          ID="Move to Joint State"
+          _collapsed="false"
+          target_joint_state="{starting_joint_state}"
+          acceleration_scale_factor="1.0"
+          controller_action_server="{controller_action_server}"
+          controller_names="{controller_names}"
+          joint_group_name="{joint_group_name}"
+          keep_orientation="false"
+          keep_orientation_tolerance="0.05"
+          link_padding="0.01"
+          velocity_scale_factor="1.0"
+        />
+      </Control>
+      <Control ID="Sequence" name="Visualize key poses">
+        <Action
+          ID="CreateStampedPose"
+          reference_frame="{ik_frame}"
+          stamped_pose="{tool_pose}"
+          orientation_xyzw="0;0;0;1"
+          position_xyz="0;0;0"
+        />
+        <Action
+          ID="VisualizePose"
+          marker_name="tool_pose"
+          pose="{tool_pose}"
+          marker_lifetime="0.000000"
+          marker_size="0.200000"
+        />
+        <Action
+          ID="TransformPose"
+          input_pose="{reachability_origin_pose}"
+          output_pose="{starting_pose}"
+          quaternion_xyzw="0.7071;0.7071;0;0.0004"
+          translation_xyz="0;0;0"
+          name="Orient pose to downward wrist frame"
+        />
+        <Action
+          ID="TransformPose"
+          input_pose="{reachability_origin_pose}"
+          output_pose="{starting_pose}"
+          quaternion_xyzw="0;0;0;1"
+          translation_xyz="0;0;0"
+          name="Orient pose to downward wrist frame"
+        />
+        <Action
+          ID="VisualizePose"
+          marker_name="starting_pose"
+          pose="{starting_pose}"
+          marker_lifetime="0.000000"
+          marker_size="0.200000"
+        />
+      </Control>
+      <Control ID="Sequence" name="Make vector of place poses to plan to">
+        <Action ID="ResetPoseStampedVector" vector="{target_poses}" />
+        <Action
+          ID="TransformPose"
+          input_pose="{starting_pose}"
+          output_pose="{y_incremental_pose}"
+          quaternion_xyzw="0;0;0;1"
+          translation_xyz="0;0;0"
+        />
+        <Action
+          ID="TransformPose"
+          input_pose="{starting_pose}"
+          output_pose="{x_incremental_pose}"
+          quaternion_xyzw="0;0;0;1"
+          translation_xyz="0;0;0"
+        />
+        <Decorator ID="Repeat" num_cycles="{num_columns}">
+          <Control ID="Sequence" name="column/y increments">
+            <Decorator ID="Repeat" num_cycles="{num_rows}">
+              <Control ID="Sequence" name="row/x increments and angle">
+                <Action
+                  ID="TransformPose"
+                  input_pose="{x_incremental_pose}"
+                  output_pose="{x_incremental_pose_rotated}"
+                  quaternion_xyzw="0;0;0;1"
+                  translation_xyz="0;0;0"
+                />
+                <Decorator ID="Repeat" num_cycles="{num_45_deg_rotations}">
+                  <Action
+                    ID="TransformPose"
+                    input_pose="{x_incremental_pose_rotated}"
+                    output_pose="{x_incremental_pose_rotated}"
+                    quaternion_xyzw="0; 0; 0.3826834; 0.9238795"
+                    translation_xyz="0;0;0"
+                  />
+                </Decorator>
+                <Action
+                  ID="AddPoseStampedToVector"
+                  input="{x_incremental_pose_rotated}"
+                  vector="{target_poses}"
+                />
+                <Action
+                  ID="TransformPose"
+                  input_pose="{x_incremental_pose}"
+                  output_pose="{x_incremental_pose}"
+                  quaternion_xyzw="0;0;0;1"
+                  translation_xyz="{row_spacing_translation}"
+                />
+              </Control>
+            </Decorator>
+            <Action
+              ID="TransformPose"
+              input_pose="{y_incremental_pose}"
+              output_pose="{y_incremental_pose}"
+              quaternion_xyzw="0;0;0;1"
+              translation_xyz="{column_spacing_translation}"
+            />
+            <Action
+              ID="TransformPose"
+              input_pose="{y_incremental_pose}"
+              output_pose="{x_incremental_pose}"
+              quaternion_xyzw="0;0;0;1"
+              translation_xyz="0;0;0"
+            />
+          </Control>
+        </Decorator>
+      </Control>
+      <Control ID="Sequence" name="Visualize vector of place poses">
+        <!--Use a script with a pose counter so we can give a unique name to each marker (allowing multiple poses to be visualized)-->
+        <Action ID="Script" code="pose_count := 0" />
+        <Decorator
+          ID="ForEach"
+          vector_in="{target_poses}"
+          out="{target_pose}"
+          index="{index}"
+        >
+          <Control ID="Sequence">
+            <!--Visualize and add each pose to the vector-->
+            <Action
+              ID="VisualizePose"
+              marker_name="{pose_count}"
+              pose="{target_pose}"
+              marker_lifetime="0.000000"
+              marker_size="0.100000"
+            />
+            <Action ID="Script" code="pose_count += 1" />
+          </Control>
+        </Decorator>
+      </Control>
+      <Control
+        ID="Sequence"
+        name="Plan to each place pose from an approach pose"
+      >
+        <Decorator
+          ID="ForEach"
+          vector_in="{target_poses}"
+          index="{index}"
+          out="{target_pose}"
+        >
+          <Control ID="Sequence">
+            <Control ID="Sequence" name="Visualize approach">
+              <Action
+                ID="TransformPose"
+                input_pose="{target_pose}"
+                output_pose="{approach_pose}"
+                quaternion_xyzw="0;0;0;1"
+                translation_xyz="{approach_translation}"
+              />
+              <Action
+                ID="VisualizePose"
+                marker_name="approach_pose"
+                pose="{approach_pose}"
+                marker_lifetime="0.000000"
+                marker_size="0.100000"
+              />
+            </Control>
+            <SubTree
+              ID="Plan And Execute With Orientation Samples"
+              _collapsed="true"
+              starting_joint_state="{starting_joint_state}"
+              approach_pose="{approach_pose}"
+              approach_distance="{approach_distance}"
+              target_pose="{target_pose}"
+              joint_group_name="{joint_group_name}"
+              controller_names="{controller_names}"
+              controller_action_server="{controller_action_server}"
+              execute_trajectories="{execute_trajectories}"
+              end_effector_joint_group="fanuc_ee"
+              ik_frame="{ik_frame}"
+            />
+          </Control>
+        </Decorator>
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Reachability Analysis for plane">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Reachability" />
+      </MetadataFields>
+
+      <inout_port name="approach_distance" default="{approach_distance}" />
+      <inout_port
+        name="approach_translation"
+        default="{approach_translation}"
+      />
+      <inout_port
+        name="column_spacing_translation"
+        default="{column_spacing_translation}"
+      />
+      <inout_port
+        name="controller_action_server"
+        default="{controller_action_server}"
+      />
+      <inout_port name="controller_names" default="{controller_names}" />
+      <inout_port
+        name="end_effector_joint_group"
+        default="{end_effector_joint_group}"
+      />
+      <inout_port
+        name="execute_trajectories"
+        default="{execute_trajectories}"
+      />
+      <inout_port name="ik_frame" default="{ik_frame}" />
+      <inout_port name="joint_group_name" default="{joint_group_name}" />
+      <inout_port name="keep_orientation" default="{keep_orientation}" />
+      <inout_port
+        name="keep_orientation_link_names"
+        default="{keep_orientation_link_names}"
+      />
+      <inout_port
+        name="keep_orientation_tolerance"
+        default="{keep_orientation_tolerance}"
+      />
+      <inout_port name="num_45_deg_rotations" default="0" />
+      <inout_port name="num_columns" default="{num_columns}" />
+      <inout_port name="num_rows" default="{num_rows}" />
+      <inout_port name="position_only_ik" default="{position_only_ik}" />
+      <inout_port
+        name="reachability_origin_pose"
+        default="{reachability_origin_pose}"
+      />
+      <inout_port
+        name="row_spacing_translation"
+        default="{row_spacing_translation}"
+      />
+      <inout_port name="starting_waypoint" default="{starting_waypoint}" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Take Scene Camera Snapshot">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Take Scene Camera Snapshot"
+    _description="Use the camera that is not fixed to the robot, to capture a point cloud"
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="ClearSnapshot" />
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        controller_names="joint_trajectory_controller"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        seed="0"
+        velocity_scale_factor="1.0"
+        waypoint_name="Out of the way"
+      />
+      <Action
+        ID="GetPointCloud"
+        message_out="{point_cloud}"
+        publisher_timeout_sec="5.000000"
+        timeout_sec="5.000000"
+        topic_name="/scene_camera/points"
+      />
+      <Control ID="Sequence">
+        <Action
+          ID="CreateStampedPose"
+          reference_frame="world"
+          stamped_pose="{pose}"
+          position_xyz="1.2;0;0.9"
+        />
+        <Action
+          ID="CropPointsInBox"
+          crop_box_centroid_pose="{pose}"
+          point_cloud="{point_cloud}"
+          point_cloud_cropped="{point_cloud_1}"
+          crop_box_size="2;5;5"
+        />
+        <Action
+          ID="AddPointCloudToVector"
+          point_cloud="{point_cloud_1}"
+          point_cloud_vector="{point_clouds}"
+        />
+        <Action
+          ID="CreateStampedPose"
+          reference_frame="world"
+          stamped_pose="{pose}"
+          position_xyz="0;1.2;0.9"
+        />
+        <Action
+          ID="CropPointsInBox"
+          crop_box_centroid_pose="{pose}"
+          point_cloud="{point_cloud}"
+          point_cloud_cropped="{point_cloud_2}"
+          crop_box_size="5;2;5"
+        />
+        <Action
+          ID="AddPointCloudToVector"
+          point_cloud="{point_cloud_2}"
+          point_cloud_vector="{point_clouds}"
+        />
+        <Action
+          ID="MergePointClouds"
+          align_point_clouds="false"
+          grid_resolution_meters="0.010000"
+          icp_correspondence_distance="0.050000"
+          icp_max_iterations="20"
+          merged_cloud="{point_cloud}"
+          point_clouds="{point_clouds}"
+        />
+      </Control>
+      <Action
+        ID="SendPointCloudToUI"
+        pcd_topic="/pcd_pointcloud_captures"
+        point_cloud="{point_cloud}"
+      />
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        controller_names="joint_trajectory_controller"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        seed="0"
+        velocity_scale_factor="1.0"
+        waypoint_name="Home"
+        joint_group_name="manipulator"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Take Scene Camera Snapshot">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Visualization" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

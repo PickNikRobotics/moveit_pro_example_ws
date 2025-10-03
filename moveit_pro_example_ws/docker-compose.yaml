@@ -1,0 +1,22 @@
+# Docker Compose file that will be merged with /opt/moveit_pro/docker-compose.yaml.
+# For more details on how merging works, see https://docs.docker.com/compose/how-tos/multiple-compose-files/merge/#merging-rules.
+
+# Services that are listed under `/opt/moveit_pro/docker-compose.yaml` are mirrored here for merging.
+# Feel free to remove services here that are unmodified.
+#
+services:
+
+  # The base image that all MoveIt Pro services extend off of. Builds the user workspace.
+  base: {}
+
+  # Starts the MoveIt Pro Agent and the Bridge between the Agent and the Web UI.
+  agent_bridge: {}
+
+  # Starts the robot drivers.
+  drivers: {}
+
+  # Starts the web UI frontend.
+  web_ui: {}
+
+  # Developer specific configuration when running `moveit_pro dev`.
+  dev: {}

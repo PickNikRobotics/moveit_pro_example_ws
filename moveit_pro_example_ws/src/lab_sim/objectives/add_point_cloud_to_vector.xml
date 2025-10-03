@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Add Point Cloud to Vector">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Add Point Cloud to Vector"
+    _description="Takes a point cloud from a topic and adds it to a vector of point clouds."
+  >
+    <Control ID="Sequence">
+      <Action
+        ID="GetPointCloud"
+        message_out="{point_cloud}"
+        timeout_sec="15.000000"
+        topic_name="{topic_name}"
+      />
+      <Action
+        ID="TransformPointCloudFrame"
+        input_cloud="{point_cloud}"
+        output_cloud="{point_cloud}"
+        target_frame="world"
+      />
+      <Action
+        ID="AddPointCloudToVector"
+        point_cloud="{point_cloud}"
+        point_cloud_vector="{point_cloud_vector}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Add Point Cloud to Vector">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Perception - 3D Point Cloud" />
+      </MetadataFields>
+      <inout_port name="point_cloud_vector" default="{point_cloud_vector}" />
+      <inout_port name="topic_name" default="{topic_name}" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

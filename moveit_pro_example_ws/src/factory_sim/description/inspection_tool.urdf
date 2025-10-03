@@ -1,0 +1,42 @@
+<?xml version="1.0" ?>
+<robot name="fanuc_tool_two" xmlns:xacro="http://wiki.ros.org/xacro">
+  <link name="inspection_tool_base">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0.02" />
+      <geometry>
+        <box size="0.06 0.06 0.04"/>
+      </geometry>
+      <material name="darkgrey">
+        <color rgba="0.1 0.1 0.1 1"/>
+      </material>
+    </visual>
+    <collision>
+        <origin rpy="0 0 0" xyz="0 0 0.02" />
+        <geometry>
+            <box size="0.06 0.06 0.04"/>
+        </geometry>
+        <material name="darkgrey"/>
+    </collision>
+  </link>
+  <link name="inspection_cylinder">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0.015" />
+      <geometry>
+        <box size="0.01 0.01 0.03"/>
+      </geometry>
+      <material name="darkgrey"/>
+    </visual>
+    <collision>
+        <origin rpy="0 0 0" xyz="0 0 0.015" />
+        <geometry>
+            <box size="0.01 0.01 0.03"/>
+        </geometry>
+        <material name="darkgrey"/>
+    </collision>
+  </link>
+  <joint name="base_joint" type="fixed">
+    <parent link="inspection_tool_base" />
+    <child link="inspection_cylinder" />
+    <origin rpy="0 0 0" xyz="0 0 0.04" />
+  </joint>
+</robot>

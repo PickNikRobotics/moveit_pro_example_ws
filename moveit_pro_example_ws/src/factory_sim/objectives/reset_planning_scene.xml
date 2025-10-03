@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Reset Planning Scene">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Reset Planning Scene"
+    _description="Resets the planning scene. Does not reset the simulation, so any held tools will still be attached."
+    _hardcoded="false"
+  >
+    <Control ID="Sequence">
+      <Action
+        ID="LogMessage"
+        log_level="warn"
+        message="There might be some warnings and errors when this Objective runs, as long as the Objective completes successfully, everything worked as intended."
+      />
+      <SubTree ID="Remove Tools from PlanningScene" _collapsed="false" />
+      <Action
+        ID="ResetPlanningSceneObjects"
+        apply_planning_scene_service="/apply_planning_scene"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Reset Planning Scene">
+      <MetadataFields>
+        <Metadata subcategory="Motion - Planning" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+      <MetadataFields>
+        <Metadata subcategory="Motion - Planning" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

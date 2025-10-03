@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Reachability Analysis - blocks">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Reachability Analysis - blocks"
+    _description="An example of performing reachability analysis for an overhead picking task."
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="">
+      <Control ID="Sequence" name="Add visualization from scene camera">
+        <SubTree ID="Clear Snapshot" _collapsed="true" />
+        <SubTree ID="Take Snapshot" _collapsed="true" />
+      </Control>
+      <Action
+        ID="CreateStampedPose"
+        reference_frame="world"
+        stamped_pose="{stamped_pose}"
+        orientation_xyzw="0.7071;0.7071;0;0.0004"
+        position_xyz="-0.35;0.4;0.288"
+        name="Pose to make a grid of reachability poses from"
+      />
+      <SubTree
+        ID="Reachability Analysis for plane"
+        _collapsed="true"
+        approach_translation="0;0;-0.1"
+        position_only_ik="true"
+        end_effector_joint_group="fanuc_ee"
+        joint_group_name="manipulator"
+        controller_names="joint_trajectory_controller"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        reachability_origin_pose="{stamped_pose}"
+        starting_waypoint="View blocks"
+        approach_distance="0.1"
+        column_spacing_translation="0;0.175;0"
+        execute_trajectories="true"
+        num_45_deg_rotations="0"
+        num_columns="2"
+        num_rows="2"
+        row_spacing_translation="0.3;0;0"
+        ik_frame="tool0"
+        keep_orientation="true"
+        keep_orientation_tolerance="0.5"
+        keep_orientation_link_names="tool0"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Reachability Analysis - blocks">
+      <MetadataFields>
+        <Metadata subcategory="Reachability" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

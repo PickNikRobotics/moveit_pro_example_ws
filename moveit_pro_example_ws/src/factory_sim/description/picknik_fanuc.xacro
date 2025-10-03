@@ -1,0 +1,116 @@
+<?xml version="1.0" ?>
+<robot name="fanuc_lrmate200id" xmlns:xacro="http://wiki.ros.org/xacro">
+  <xacro:arg
+    name="initial_positions_file"
+    default="$(find factory_sim)/config/initial_positions.yaml"
+  />
+  <xacro:arg name="hardware_interface" default="mock" />
+  <xacro:arg name="mujoco_model" default="description/scene.xml" />
+  <xacro:arg name="mujoco_viewer" default="false" />
+
+  <xacro:include
+    filename="$(find fanuc_lrmate200id_support)/urdf/lrmate200id_macro.xacro"
+  />
+  <xacro:include
+    filename="$(find factory_sim)/description/fanuc_lrmate200id.ros2_control.xacro"
+  />
+
+  <link name="world" />
+  <link name="arm_pedestal">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <box size="0.4 0.4 0.3" />
+      </geometry>
+    </visual>
+    <visual>
+      <origin rpy="0 0 0" xyz="0.23 0.05 0.1" />
+      <geometry>
+        <box size="0.12 0.02 0.02" />
+      </geometry>
+    </visual>
+    <visual>
+      <origin rpy="0 0 0" xyz="0.23 0.11 0.1" />
+      <geometry>
+        <box size="0.12 0.02 0.02" />
+      </geometry>
+    </visual>
+    <visual>
+      <origin rpy="0 0 0" xyz="0.23 -0.05 0.1" />
+      <geometry>
+        <box size="0.12 0.02 0.02" />
+      </geometry>
+    </visual>
+    <visual>
+      <origin rpy="0 0 0" xyz="0.23 -0.11 0.1" />
+      <geometry>
+        <box size="0.12 0.02 0.02" />
+      </geometry>
+    </visual>
+  </link>
+  <joint name="scene_joint" type="fixed">
+    <parent link="world" />
+    <child link="arm_pedestal" />
+    <origin rpy="0 0 0" xyz="0 0 0.15" />
+  </joint>
+  <joint name="base_joint" type="fixed">
+    <parent link="arm_pedestal" />
+    <child link="base_link" />
+    <origin rpy="0 0 0" xyz="0 0 0.15" />
+  </joint>
+
+  <link name="convex_bowl">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://picknik_accessories/mujoco_assets/assets/bowl_concave_hemisphere.stl"
+        />
+      </geometry>
+      <material name="invisible">
+        <color rgba="0 0 0 0" />
+      </material>
+    </visual>
+  </link>
+  <joint name="convex_bowl_joint" type="fixed">
+    <parent link="world" />
+    <child link="convex_bowl" />
+    <origin rpy="0 1.5707 0" xyz="0.65 0.2 0.9" />
+  </joint>
+
+  <link name="concave_bowl">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://picknik_accessories/mujoco_assets/assets/bowl_convex_hemisphere.stl"
+        />
+      </geometry>
+      <material name="invisible">
+        <color rgba="0 0 0 0" />
+      </material>
+    </visual>
+  </link>
+  <joint name="concave_bowl_joint" type="fixed">
+    <parent link="world" />
+    <child link="concave_bowl" />
+    <origin rpy="0 -1.5707 0" xyz="0.75 -0.2 0.9" />
+  </joint>
+
+  <xacro:fanuc_lrmate200id prefix="" />
+  <xacro:fanuc_lrmate200id_ros2_control
+    name="fanuc_robot"
+    initial_positions_file="$(arg initial_positions_file)"
+    hardware_interface="$(arg hardware_interface)"
+    mujoco_model="$(arg mujoco_model)"
+    mujoco_viewer="$(arg mujoco_viewer)"
+  />
+
+  <!-- Create a grasp link at the tool so we can inherit default teleop objectives -->
+  <link name="grasp_link" />
+  <joint name="grasp_link_joint" type="fixed">
+    <origin rpy="0 0 0" xyz="0.0 0.0 0.0" />
+    <parent link="tool0" />
+    <child link="grasp_link" />
+  </joint>
+</robot>

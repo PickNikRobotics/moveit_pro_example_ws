@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="ML Grasp Object from Text Prompt">
+  <!--//////////-->
+  <BehaviorTree
+    ID="ML Grasp Object from Text Prompt"
+    _description="Captures and segments objects from a point cloud based on a text prompt. Then grasps the first object returned from the segmentation."
+    _favorite="true"
+  >
+    <Control ID="Sequence">
+      <SubTree ID="Open Gripper" _collapsed="true" />
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        controller_names="joint_trajectory_controller"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_link_names="grasp_link"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        velocity_scale_factor="1.0"
+        waypoint_name="Above Pick Cube"
+        seed="0"
+      />
+      <SubTree
+        ID="Segment Point Cloud from Text Prompt Subtree"
+        _collapsed="false"
+        camera_topic_name="/wrist_camera/camera_info"
+        decoder_model_path="models/decoder.onnx"
+        encoder_model_path="models/sam2_hiera_large_encoder.onnx"
+        image_topic_name="/wrist_camera/color"
+        masks_visualization_topic="/masks_visualization"
+        model_package="moveit_pro_clipseg"
+        points_topic_name="/wrist_camera/points"
+        clip_model_path="models/clip.onnx"
+        clipseg_model_path="models/clipseg.onnx"
+        erosion_size="2"
+        prompts="an object"
+        threshold="0.28"
+        masks3d="{masks3d}"
+        point_cloud="{point_cloud}"
+        point_cloud_vector="{point_cloud_vector}"
+      />
+      <Decorator
+        ID="ForEach"
+        index="{index}"
+        out="{point_cloud_fragment}"
+        vector_in="{point_cloud_vector}"
+      >
+        <Control ID="Sequence">
+          <Action
+            ID="GetCentroidFromPointCloud"
+            output_pose="{centroid_pose}"
+            point_cloud="{point_cloud_fragment}"
+          />
+          <Action
+            ID="TransformPose"
+            input_pose="{centroid_pose}"
+            output_pose="{grasp_pose}"
+            quaternion_xyzw="0;0;1.0;0.0"
+          />
+          <Action
+            ID="AddPoseStampedToVector"
+            input="{grasp_pose}"
+            vector="{grasp_poses}"
+          />
+        </Control>
+      </Decorator>
+      <Control ID="Sequence">
+        <Action
+          ID="InitializeMTCTask"
+          task_id="grasp"
+          controller_names="joint_trajectory_controller;robotiq_gripper_controller"
+          task="{mtc_task}"
+          trajectory_monitoring="false"
+          timeout="-1.000000"
+        />
+        <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
+        <Action
+          ID="SetupMTCConnectWithProRRT"
+          acceleration_scale_factor="1.000000"
+          keep_orientation="false"
+          keep_orientation_link_names="grasp_link"
+          keep_orientation_tolerance="0.100000"
+          link_padding="0.000000"
+          max_iterations="5000"
+          planning_group_name="manipulator"
+          seed="0"
+          task="{mtc_task}"
+          trajectory_sampling_rate="100"
+          velocity_scale_factor="1.000000"
+        />
+        <Action
+          ID="SetupMTCBatchPoseIK"
+          end_effector_group="moveit_ee"
+          end_effector_link="grasp_link"
+          ik_group="manipulator"
+          ik_timeout_s="0.01"
+          max_ik_solutions="1"
+          monitored_stage="current state"
+          target_poses="{grasp_poses}"
+          task="{mtc_task}"
+        />
+        <Action
+          ID="PlanMTCTask"
+          solution="{grasp_solution}"
+          task="{mtc_task}"
+        />
+        <Action
+          ID="ExecuteMTCTask"
+          goal_duration_tolerance="-1.000000"
+          solution="{grasp_solution}"
+        />
+      </Control>
+      <SubTree ID="Close Gripper" _collapsed="true" />
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        controller_names="joint_trajectory_controller"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_link_names="grasp_link"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        velocity_scale_factor="1.0"
+        waypoint_name="Above Pick Cube"
+        seed="0"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="ML Grasp Object from Text Prompt">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - ML (GPU Recommended)" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Classical Pick and Place">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Classical Pick and Place"
+    _description="Pick and place using classical (non-ML) algorithms to identify cuboid objects."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        controller_names="joint_trajectory_controller"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        seed="0"
+        velocity_scale_factor="1.0"
+        waypoint_name="Look at Table"
+      />
+      <SubTree ID="Open Gripper" _collapsed="true" />
+      <Control ID="Sequence">
+        <SubTree ID="Clear Snapshot" _collapsed="true" />
+        <Action
+          ID="GetPointCloud"
+          message_out="{point_cloud}"
+          timeout_sec="5.000000"
+          topic_name="/wrist_camera/points"
+        />
+        <Action
+          ID="SendPointCloudToUI"
+          pcd_topic="/pcd_pointcloud_captures"
+          point_cloud="{point_cloud}"
+        />
+        <Action
+          ID="FindSingularCuboids"
+          base_frame="world"
+          cluster_distance_threshold="0.01"
+          crop_box_origin_xyz="0.0;0.6;0.0"
+          crop_box_size_xyz="0.3;0.3;0.8"
+          detected_shapes="{detected_shapes}"
+          plane_model_threshold="0.01"
+          point_cloud="{point_cloud}"
+        />
+        <Control ID="Fallback">
+          <Decorator
+            ID="ForEach"
+            index="{index}"
+            out="{shape}"
+            vector_in="{detected_shapes}"
+          >
+            <Control ID="Sequence">
+              <Action
+                ID="ExtractGraspableObjectPose"
+                graspable_object="{shape}"
+                pose="{shape_pose}"
+              />
+              <Action
+                ID="TransformPose"
+                input_pose="{shape_pose}"
+                output_pose="{shape_pose}"
+                quaternion_xyzw="1.0;0;0;0"
+              />
+              <Action
+                ID="VisualizePose"
+                marker_lifetime="0.000000"
+                marker_size="0.100000"
+                pose="{shape_pose}"
+                marker_name="Grasp Pose"
+              />
+              <SubTree
+                ID="Plan Move To Pose"
+                _collapsed="true"
+                move_to_pose_solution="{move_to_pose_solution}"
+                target_pose="{shape_pose}"
+              />
+              <Control ID="IfThenElse">
+                <Action
+                  ID="WaitForUserTrajectoryApproval"
+                  solution="{move_to_pose_solution}"
+                />
+                <Control ID="Sequence">
+                  <Action
+                    ID="ExecuteMTCTask"
+                    goal_duration_tolerance="-1.000000"
+                    solution="{move_to_pose_solution}"
+                  />
+                  <Action ID="AlwaysFailure" />
+                </Control>
+                <Action ID="AlwaysSuccess" />
+              </Control>
+            </Control>
+          </Decorator>
+          <Control ID="Sequence">
+            <SubTree ID="Close Gripper" _collapsed="true" />
+            <SubTree
+              ID="Move to Waypoint"
+              _collapsed="true"
+              acceleration_scale_factor="1.0"
+              controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+              controller_names="joint_trajectory_controller"
+              joint_group_name="manipulator"
+              keep_orientation="false"
+              keep_orientation_tolerance="0.05"
+              link_padding="0.01"
+              seed="0"
+              velocity_scale_factor="1.0"
+              waypoint_name="Look at Table"
+            />
+            <Action
+              ID="ExecuteMTCTask"
+              goal_duration_tolerance="-1.000000"
+              solution="{move_to_pose_solution}"
+            />
+            <SubTree ID="Open Gripper" _collapsed="true" />
+          </Control>
+        </Control>
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Classical Pick and Place">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Basic Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

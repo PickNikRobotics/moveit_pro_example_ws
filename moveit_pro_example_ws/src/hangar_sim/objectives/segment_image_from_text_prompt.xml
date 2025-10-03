@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Segment Image from Text Prompt">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Segment Image from Text Prompt"
+    _description="Run text based segmentation and visualize the masks."
+    _favorite="true"
+  >
+    <Control ID="Sequence">
+      <SubTree
+        ID="Segment Image from Text Prompt Subtree"
+        _collapsed="true"
+        clip_model_path="models/clip.onnx"
+        clipseg_model_path="models/clipseg.onnx"
+        erosion_size="0"
+        masks_visualization_topic="/masks_visualization"
+        model_package="moveit_pro_clipseg"
+        threshold="0.5"
+        image_topic_name="/wrist_camera/color"
+        prompts="small boxes"
+        negative_prompts="grey"
+        masks2d="{masks2d}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Segment Image from Text Prompt">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Perception - ML" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

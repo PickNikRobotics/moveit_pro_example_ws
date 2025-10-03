@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Segment Image from Point Subtree">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Segment Image from Point Subtree"
+    _description="Captures an image and segments it using three user provided prompt points."
+    _favorite="true"
+    decoder_model_path="models/decoder.onnx"
+    encoder_model_path="models/sam2_hiera_large_encoder.onnx"
+    image_topic_name="/wrist_camera/color"
+    masks_visualization_topic="/masks_visualization"
+    model_package="lab_sim"
+    masks2d="{masks2d}"
+    pixel_coords="{pixel_coords}"
+  >
+    <Control ID="Sequence">
+      <Action
+        ID="GetImage"
+        topic_name="{image_topic_name}"
+        timeout_sec="5.000000"
+        message_out="{image}"
+      />
+      <Action
+        ID="GetPointsFromUser"
+        point_prompts="Select the object to be segmented (1/3);Select another point on the object to be segmented (2/3);Select another point on the object to be segmented (3/3)"
+        point_names="Point1;Point2;Point3;"
+        view_name="{image_topic_name}"
+        pixel_coords="{pixel_coords}"
+      />
+      <Action
+        ID="GetMasks2DFromPointQuery"
+        image="{image}"
+        pixel_coords="{pixel_coords}"
+        masks2d="{masks2d}"
+        decoder_model_path="{decoder_model_path}"
+        encoder_model_path="{encoder_model_path}"
+        model_package="{model_package}"
+      />
+      <Action
+        ID="PublishMask2D"
+        image="{image}"
+        masks="{masks2d}"
+        masks_visualization_topic="{masks_visualization_topic}"
+      />
+      <Action ID="SwitchUIPrimaryView" primary_view_name="Visualization" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Segment Image from Point Subtree">
+      <input_port name="decoder_model_path" default="{decoder_model_path}" />
+      <input_port name="encoder_model_path" default="{encoder_model_path}" />
+      <input_port name="image_topic_name" default="{image_topic_name}" />
+      <input_port
+        name="masks_visualization_topic"
+        default="{masks_visualization_topic}"
+      />
+      <output_port name="masks2d" default="{masks2d}" />
+      <input_port name="model_package" default="{model_package}" />
+      <output_port name="pixel_coords" default="{pixel_coords}" />
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Perception - ML" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

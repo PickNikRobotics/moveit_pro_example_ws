@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Pick April Tag Labeled Object">
+  <!-- ////////// -->
+  <BehaviorTree
+    ID="Pick April Tag Labeled Object"
+    _description="Picks up an object that is at a known pose offset from an AprilTag marker."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Control ID="Sequence" name="Setup">
+        <SubTree ID="Open Gripper" />
+        <SubTree
+          ID="Move to Waypoint"
+          waypoint_name="Look at April Tag"
+          joint_group_name="manipulator"
+          controller_names="joint_trajectory_controller"
+        />
+      </Control>
+      <SubTree
+        ID="Sample April Tag"
+        num_samples="5"
+        tag_id="1"
+        apriltag_config="51mm_apriltag_detection_config.yaml"
+        max_distance="0.02"
+        max_rotation="0.2"
+        avg_pose="{tag_pose}"
+      />
+      <Action
+        ID="LoadPoseStampedFromYaml"
+        output="{relative_pose}"
+        file_path="apriltag1_grasp_offset.yaml"
+      />
+      <Control ID="Sequence" name="GraspObject">
+        <Action
+          ID="TransformPoseFrame"
+          input_pose="{tag_pose}"
+          target_frame_id="world"
+          output_pose="{tag_pose_world}"
+        />
+        <Action
+          ID="TransformPoseWithPose"
+          input_pose="{relative_pose}"
+          output_pose="{grasp_pose}"
+          transform_pose="{tag_pose_world}"
+        />
+        <SubTree ID="Pick Object" grasp_pose="{grasp_pose}" />
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Pick April Tag Labeled Object">
+      <MetadataFields>
+        <Metadata subcategory="Application - Basic Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Visualize Segmented Point Cloud">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Visualize Segmented Point Cloud"
+    _description="Publish segmented point cloud to the UI."
+    _favorite="true"
+    masks3d="/wrist_camera/camera_info"
+    point_cloud="/wrist_camera/camera_info"
+  >
+    <Control ID="Sequence">
+      <Decorator
+        ID="ForEach"
+        vector_in="{masks3d}"
+        out="{mask3d}"
+        index="{index}"
+      >
+        <Control ID="Sequence">
+          <Action
+            ID="GetPointCloudFromMask3D"
+            point_cloud="{point_cloud}"
+            mask3d="{mask3d}"
+            point_cloud_fragment="{point_cloud_fragment}"
+          />
+          <Action
+            ID="SendPointCloudToUI"
+            point_cloud="{point_cloud_fragment}"
+            pcd_topic="/pcd_pointcloud_captures"
+          />
+          <Action
+            ID="PublishPointCloud"
+            point_cloud="{point_cloud_fragment}"
+            point_cloud_topic="/my_point_cloud"
+          />
+        </Control>
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Visualize Segmented Point Cloud">
+      <input_port name="masks3d" default="{masks3d}" />
+      <input_port name="point_cloud" default="{point_cloud}" />
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Perception - ML" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

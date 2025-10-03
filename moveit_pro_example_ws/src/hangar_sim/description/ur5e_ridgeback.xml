@@ -1,0 +1,578 @@
+<mujoco model="ur5e_ridgeback">
+  <compiler angle="radian" meshdir="assets" autolimits="true" />
+
+  <option integrator="implicitfast" />
+
+  <default>
+    <default class="ur5e">
+      <material specular="0.5" shininess="0.25" />
+      <joint axis="0 1 0" range="-6.28319 6.28319" armature="0.1" />
+      <general
+        gaintype="fixed"
+        biastype="affine"
+        ctrlrange="-6.2831 6.2831"
+        gainprm="2000"
+        biasprm="0 -2000 -400"
+        forcerange="-50000 50000"
+      />
+      <default class="size3">
+        <default class="size3_limited">
+          <joint range="-3.1415 3.1415" />
+          <general ctrlrange="-3.1415 3.1415" />
+        </default>
+      </default>
+      <default class="visual">
+        <geom type="mesh" contype="0" conaffinity="0" group="2" />
+      </default>
+      <default class="collision">
+        <geom type="capsule" group="3" />
+        <default class="eef_collision">
+          <geom type="cylinder" />
+        </default>
+      </default>
+      <site size="0.001" rgba="0.5 0.5 0.5 0.3" group="4" />
+    </default>
+
+    <!-- robotiq 2f85 defaults -->
+    <default class="2f85">
+      <mesh scale="0.001 0.001 0.001" />
+      <general biastype="affine" />
+
+      <joint axis="1 0 0" />
+      <default class="knuckle_link">
+        <joint
+          range="0 0.8"
+          armature="0.005"
+          damping="0.1"
+          solimplimit="0.95 0.99 0.001"
+          solreflimit="0.005 1"
+        />
+      </default>
+      <default class="finger_tip_link">
+        <joint
+          range="-0.872664 0.872664"
+          armature="0.001"
+          pos="0 -0.018 0.0065"
+          solimplimit="0.95 0.99 0.001"
+          solreflimit="0.005 1"
+        />
+      </default>
+      <default class="inner_knuckle_link">
+        <joint
+          range="-0.29670597283 0.8"
+          armature="0.001"
+          stiffness="0.05"
+          springref="2.62"
+          damping="0.00125"
+        />
+      </default>
+      <default class="finger_link">
+        <joint
+          range="-1.57 0"
+          armature="0.001"
+          solimplimit="0.95 0.99 0.001"
+          solreflimit="0.005 1"
+        />
+      </default>
+
+      <default class="2f85_visual">
+        <geom type="mesh" contype="0" conaffinity="0" group="2" />
+      </default>
+      <default class="2f85_collision">
+        <geom type="mesh" group="3" condim="6" />
+        <default class="pad_box1">
+          <geom
+            mass="0"
+            type="box"
+            pos="0 -0.0026 0.028125"
+            size="0.011 0.004 0.009375"
+            friction="0.7"
+            solimp="0.95 0.99 0.001"
+            solref="0.004 1"
+            priority="1"
+            rgba="0.55 0.55 0.55 1"
+          />
+        </default>
+        <default class="pad_box2">
+          <geom
+            mass="0"
+            type="box"
+            pos="0 -0.0026 0.009375"
+            size="0.011 0.004 0.009375"
+            friction="0.6"
+            solimp="0.95 0.99 0.001"
+            solref="0.004 1"
+            priority="1"
+            rgba="0.45 0.45 0.45 1"
+          />
+        </default>
+      </default>
+    </default>
+    <default class="robot">
+      <material specular="0.5" shininess="0.25" />
+      <joint armature="0.1" damping="1" axis="0 0 1" range="-2.8973 2.8973" />
+      <general
+        dyntype="none"
+        biastype="affine"
+        ctrlrange="-3.14159 3.14159"
+        forcerange="-50000 50000"
+      />
+      <default class="limitedJoints">
+        <joint limited="true" />
+      </default>
+      <site size="0.001" rgba="0.5 0.5 0.5 0.3" group="4" />
+    </default>
+    <default class="rail">
+      <joint armature="0.1" damping="1" axis="0 0 1" range="-5.0 5.0" />
+      <general
+        dyntype="none"
+        biastype="affine"
+        ctrlrange="-5.0 5.0"
+        forcerange="-50000 50000"
+      />
+    </default>
+  </default>
+  <asset>
+    <material name="metal" rgba="0.58 0.58 0.58 1" />
+    <material name="silicone" rgba="0.1882 0.1882 0.1882 1" />
+    <material name="white" rgba="1.0 1.0 1.0 1" />
+    <material name="gray" rgba="0.4627 0.4627 0.4627 1" />
+    <material class="ur5e" name="black" rgba="0.033 0.033 0.033 1" />
+    <material class="ur5e" name="jointgray" rgba="0.278 0.278 0.278 1" />
+    <material class="ur5e" name="linkgray" rgba="0.82 0.82 0.82 1" />
+    <material class="ur5e" name="urblue" rgba="0.49 0.678 0.8 1" />
+    <material
+      name="dark metal"
+      rgba="0.04245108366012573 0.04245108366012573 0.04245108366012573 1.0"
+      reflectance="0.5"
+      metallic="0.0"
+    />
+    <material
+      name="plastic"
+      rgba="0.9433449506759644 0.9433449506759644 0.9433449506759644 1.0"
+      reflectance="0.5"
+      metallic="0.0"
+    />
+    <mesh name="base" file="base.stl" scale="0.001 0.001 0.001" />
+    <mesh name="base_platform" file="base_platform.stl" />
+    <mesh file="base_0.obj" />
+    <mesh file="base_1.obj" />
+    <mesh file="shoulder_0.obj" />
+    <mesh file="shoulder_1.obj" />
+    <mesh file="shoulder_2.obj" />
+    <mesh file="upperarm_0.obj" />
+    <mesh file="upperarm_1.obj" />
+    <mesh file="upperarm_2.obj" />
+    <mesh file="upperarm_3.obj" />
+    <mesh file="forearm_0.obj" />
+    <mesh file="forearm_1.obj" />
+    <mesh file="forearm_2.obj" />
+    <mesh file="forearm_3.obj" />
+    <mesh file="wrist1_0.obj" />
+    <mesh file="wrist1_1.obj" />
+    <mesh file="wrist1_2.obj" />
+    <mesh file="wrist2_0.obj" />
+    <mesh file="wrist2_1.obj" />
+    <mesh file="wrist2_2.obj" />
+    <mesh file="wrist3.obj" />
+    <!-- Ridgeback -->
+    <mesh name="chassis_link" file="ridgeback/body.stl" />
+    <mesh name="top_link" file="ridgeback/top.stl" />
+    <mesh name="summit_xls_omni_wheel_1" file="omni_wheel_1.stl" />
+    <mesh name="summit_xls_omni_wheel_2" file="omni_wheel_2.stl" />
+    <mesh name="ham_assem" file="HAM_Assem.stl" />
+    <mesh name="camera_adapter" file="camera_adapter.stl" />
+    <mesh name="vacuum_base" file="vacuum_base.obj" />
+    <mesh name="vacuum_base_top" file="vacuum_base_top.obj" />
+    <mesh name="vacuum_suction_cups" file="vacuum_suction_cups.obj" />
+    <mesh name="collision_vacuum_base" file="collision_vacuum_base.obj" />
+    <mesh
+      name="collision_vacuum_suction_cups"
+      file="collision_vacuum_suction_cups.obj"
+      scale="1.0 1.0 1.0"
+    />
+  </asset>
+
+  <worldbody>
+    <body name="base_platform_rotation" pos="0 0 0" euler="0 0 0">
+      <inertial mass="0.01" pos="0 0 0" diaginertia="0.001 0.001 0.001" />
+      <!--      <joint-->
+      <!--        type="free"-->
+      <!--        stiffness="0"-->
+      <!--        damping="0"-->
+      <!--        frictionloss="0"-->
+      <!--        armature="0"-->
+      <!--      />-->
+      <joint name="linear_x_joint" type="slide" axis="1 0 0" />
+      <joint name="linear_y_joint" type="slide" axis="0 1 0" />
+      <joint name="rotational_yaw_joint" type="hinge" axis="0 0 1" />
+      <body name="base_platform" pos="0 0 0" euler="0 0 0">
+        <body name="ridgeback_base_link">
+          <geom
+            name="chassis_link"
+            mesh="chassis_link"
+            material="black"
+            type="mesh"
+            contype="0"
+            conaffinity="0"
+            group="2"
+          />
+          <geom
+            name="riser_link"
+            size="0.2465 0.2465 0.0275"
+            pos="0 0 0.2475"
+            quat="0.92388 0 0 0.382683"
+            type="box"
+            rgba="0.4 0.4 0.4 1"
+          />
+          <geom
+            name="top_link"
+            mesh="top_link"
+            material="black"
+            type="mesh"
+            contype="0"
+            conaffinity="0"
+            group="2"
+          />
+          <body name="front_rocker_link" pos="0.319 0 0.05">
+            <inertial
+              pos="0 0 0"
+              quat="0.475329 0.523511 0.47531 0.523526"
+              mass="10.267"
+              diaginertia="0.432583 0.412817 0.0288"
+            />
+            <joint
+              name="front_rocker"
+              pos="0 0 0"
+              axis="1 0 0"
+              range="-0.08726 0.08726"
+            />
+            <body name="front_left_wheel_link" pos="0 0.2755 0.07">
+              <include file="front_left_wheel_link.xml" />
+            </body>
+            <body name="front_right_wheel_link" pos="0 -0.2755 0.07">
+              <include file="front_right_wheel_link.xml" />
+            </body>
+          </body>
+          <body name="rear_left_wheel_link" pos="-0.319 0.2755 0.12">
+            <include file="rear_left_wheel_link.xml" />
+          </body>
+          <body name="rear_right_wheel_link" pos="-0.319 -0.2755 0.12">
+            <include file="rear_right_wheel_link.xml" />
+          </body>
+          <body name="ham_assem" pos="0 0 0.278813" euler="1.5708 -1.57079 0">
+            <geom
+              name="ham_assem"
+              mesh="ham_assem"
+              type="mesh"
+              contype="0"
+              conaffinity="0"
+              group="2"
+            />
+            <geom
+              name="ham_assem_collision_1"
+              mass="0"
+              type="box"
+              pos="0 0.60358  0.148988"
+              size="0.395 0.01 0.307422"
+              group="3"
+            />
+            <geom
+              name="ham_assem_collision_2"
+              mass="0"
+              type="box"
+              pos="-0.26118 0.60358 -0.299002"
+              size="0.133638 0.01 0.140708"
+              group="3"
+            />
+            <geom
+              name="ham_assem_collision_3"
+              mass="0"
+              type="box"
+              pos="0.26118 0.60358 -0.299002"
+              size="0.133638 0.01 0.140708"
+              group="3"
+            />
+
+            <!-- UR5E -->
+            <body
+              name="base"
+              pos="0 0.51905 -0.278813"
+              euler="-1.5708 0 1.5708"
+              childclass="ur5e"
+            >
+              <inertial
+                mass="4.0"
+                pos="0 0 0"
+                diaginertia="0.00443333156 0.00443333156 0.0072"
+              />
+              <geom mesh="base_0" material="black" class="visual" />
+              <geom mesh="base_1" material="jointgray" class="visual" />
+              <body name="shoulder_link" gravcomp="1" pos="0 0 0.163">
+                <inertial
+                  mass="3.7"
+                  pos="0 0 0"
+                  diaginertia="0.0102675 0.0102675 0.00666"
+                />
+                <joint name="shoulder_pan_joint" class="size3" axis="0 0 1" />
+                <geom mesh="shoulder_0" material="urblue" class="visual" />
+                <geom mesh="shoulder_1" material="black" class="visual" />
+                <geom mesh="shoulder_2" material="jointgray" class="visual" />
+                <geom class="collision" size="0.06 0.06" pos="0 0 -0.04" />
+                <body
+                  name="upper_arm_link"
+                  gravcomp="1"
+                  pos="0 0.138 0"
+                  quat="1 0 1 0"
+                >
+                  <inertial
+                    mass="8.393"
+                    pos="0 0 0.2125"
+                    diaginertia="0.133886 0.133886 0.0151074"
+                  />
+                  <joint name="shoulder_lift_joint" class="size3" />
+                  <geom mesh="upperarm_0" material="linkgray" class="visual" />
+                  <geom mesh="upperarm_1" material="black" class="visual" />
+                  <geom mesh="upperarm_2" material="jointgray" class="visual" />
+                  <geom mesh="upperarm_3" material="urblue" class="visual" />
+                  <geom
+                    class="collision"
+                    pos="0 -0.04 0"
+                    quat="1 1 0 0"
+                    size="0.06 0.06"
+                  />
+                  <geom class="collision" size="0.05 0.2" pos="0 0 0.2" />
+                  <body name="forearm_link" gravcomp="1" pos="0 -0.131 0.425">
+                    <inertial
+                      mass="2.275"
+                      pos="0 0 0.196"
+                      diaginertia="0.0311796 0.0311796 0.004095"
+                    />
+                    <joint name="elbow_joint" class="size3_limited" />
+                    <geom mesh="forearm_0" material="urblue" class="visual" />
+                    <geom mesh="forearm_1" material="linkgray" class="visual" />
+                    <geom mesh="forearm_2" material="black" class="visual" />
+                    <geom
+                      mesh="forearm_3"
+                      material="jointgray"
+                      class="visual"
+                    />
+                    <geom
+                      class="collision"
+                      pos="0 0.08 0"
+                      quat="1 1 0 0"
+                      size="0.055 0.06"
+                    />
+                    <geom class="collision" size="0.038 0.19" pos="0 0 0.2" />
+                    <body
+                      name="wrist_1_link"
+                      gravcomp="1"
+                      pos="0 0 0.392"
+                      quat="1 0 1 0"
+                    >
+                      <inertial
+                        mass="1.219"
+                        pos="0 0.127 0"
+                        diaginertia="0.0025599 0.0025599 0.0021942"
+                      />
+                      <joint name="wrist_1_joint" class="size3" />
+                      <geom mesh="wrist1_0" material="black" class="visual" />
+                      <geom mesh="wrist1_1" material="urblue" class="visual" />
+                      <geom
+                        mesh="wrist1_2"
+                        material="jointgray"
+                        class="visual"
+                      />
+                      <geom
+                        class="collision"
+                        pos="0 0.05 0"
+                        quat="1 1 0 0"
+                        size="0.04 0.07"
+                      />
+                      <body name="wrist_2_link" gravcomp="1" pos="0 0.127 0">
+                        <inertial
+                          mass="1.219"
+                          pos="0 0 0.1"
+                          diaginertia="0.0025599 0.0025599 0.0021942"
+                        />
+                        <joint
+                          name="wrist_2_joint"
+                          axis="0 0 1"
+                          class="size3"
+                        />
+                        <geom mesh="wrist2_0" material="black" class="visual" />
+                        <geom
+                          mesh="wrist2_1"
+                          material="urblue"
+                          class="visual"
+                        />
+                        <geom
+                          mesh="wrist2_2"
+                          material="jointgray"
+                          class="visual"
+                        />
+                        <geom
+                          class="collision"
+                          size="0.04 0.06"
+                          pos="0 0 0.04"
+                        />
+                        <geom
+                          class="collision"
+                          pos="0 0.02 0.1"
+                          quat="1 1 0 0"
+                          size="0.04 0.04"
+                        />
+                        <body name="wrist_3_link" gravcomp="1" pos="0 0 0.1">
+                          <inertial
+                            mass="0.1889"
+                            pos="0 0.0771683 0"
+                            quat="1 0 0 1"
+                            diaginertia="0.000132134 9.90863e-05 9.90863e-05"
+                          />
+                          <joint name="wrist_3_joint" class="size3" />
+                          <geom
+                            material="linkgray"
+                            mesh="wrist3"
+                            class="visual"
+                          />
+                          <geom
+                            class="eef_collision"
+                            pos="0 0.08 0"
+                            quat="1 1 0 0"
+                            size="0.04 0.02"
+                          />
+                          <site
+                            name="attachment_site"
+                            pos="0 0.1 0"
+                            quat="-1 1 0 0"
+                          />
+                          <!-- Vacuum + end effector attachments -->
+                          <body>
+                            <!-- site for end effector's f/t sensor right at the base of the gripper -->
+                            <site
+                              name="tcp_fts_sensor"
+                              size="0.01"
+                              pos="0.001 0.1 0"
+                              quat="-1 1 0 0"
+                            />
+                            <body
+                              name="camera_adapter"
+                              gravcomp="1"
+                              pos="0.0 0.1 0"
+                              euler="-1.57 3.14 0"
+                            >
+                              <geom
+                                mesh="camera_adapter"
+                                material="linkgray"
+                                class="visual"
+                              />
+                            </body>
+                            <camera
+                              name="wrist_camera"
+                              pos="0.0 0.2 0.1"
+                              fovy="58"
+                              mode="fixed"
+                              resolution="1280 720"
+                              euler="1.57 0.0 0.0"
+                            />
+                            <site
+                              name="wrist_camera_optical_frame"
+                              pos="0.0 0.2 0.1"
+                              euler="-1.57 0 0"
+                            />
+                            <body
+                              gravcomp="1"
+                              pos="0.0 0.1 0"
+                              quat="0.5 -0.5 0.5 0.5"
+                            >
+                              <include file="vacuum.xml" />
+                            </body>
+                          </body>
+                        </body>
+                      </body>
+                    </body>
+                  </body>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <velocity
+      class="size3"
+      name="shoulder_pan_joint"
+      joint="shoulder_pan_joint"
+      kv="500"
+    />
+    <velocity
+      class="size3"
+      name="shoulder_lift_joint"
+      joint="shoulder_lift_joint"
+      kv="500"
+    />
+    <velocity
+      class="size3_limited"
+      name="elbow_joint"
+      joint="elbow_joint"
+      kv="500"
+    />
+    <velocity
+      class="size3"
+      name="wrist_1_joint"
+      joint="wrist_1_joint"
+      kv="500"
+    />
+    <velocity
+      class="size3"
+      name="wrist_2_joint"
+      joint="wrist_2_joint"
+      kv="500"
+    />
+    <velocity
+      class="size3"
+      name="wrist_3_joint"
+      joint="wrist_3_joint"
+      kv="500"
+    />
+  </actuator>
+
+  <contact>
+    <exclude body1="base_platform" body2="base" />
+  </contact>
+
+  <actuator>
+    <velocity
+      name="front_right_wheel"
+      joint="front_right_wheel"
+      ctrlrange="-15 15"
+      kv="50"
+    />
+    <velocity
+      name="front_left_wheel"
+      joint="front_left_wheel"
+      ctrlrange="-15 15"
+      kv="50"
+    />
+    <velocity
+      name="rear_right_wheel"
+      joint="rear_right_wheel"
+      ctrlrange="-15 15"
+      kv="50"
+    />
+    <velocity
+      name="rear_left_wheel"
+      joint="rear_left_wheel"
+      ctrlrange="-15 15"
+      kv="50"
+    />
+  </actuator>
+
+  <sensor>
+    <force site="tcp_fts_sensor" />
+    <torque site="tcp_fts_sensor" />
+  </sensor>
+</mujoco>

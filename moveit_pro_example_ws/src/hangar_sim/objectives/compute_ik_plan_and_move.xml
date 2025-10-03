@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Compute IK, Plan and Move">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Compute IK, Plan and Move"
+    _description="An example showing how to compute Inverse Kinematics (IK) on a pose, then plan a path to get to the solution found."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="CreateStampedPose"
+        reference_frame="grasp_link"
+        stamped_pose="{target_pose}"
+        position_xyz="0;0;0.3"
+      />
+      <Action
+        ID="AddPoseStampedToVector"
+        input="{target_pose}"
+        vector="{target_poses}"
+      />
+      <Action
+        ID="GetCurrentPlanningScene"
+        planning_scene_msg="{planning_scene}"
+      />
+      <Action
+        ID="ComputeInverseKinematics"
+        ik_timeout_s="0.05"
+        link_padding="0.01"
+        planning_group_name="manipulator"
+        planning_scene_msg="{planning_scene}"
+        target_poses="{target_poses}"
+        tip_links="grasp_link"
+        solution="{joint_space_solution}"
+      />
+      <Action
+        ID="PlanToJointGoal"
+        acceleration_scale_factor="1.000000"
+        joint_goal="{joint_space_solution}"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+        keep_orientation="false"
+        keep_orientation_link_names="grasp_link"
+        keep_orientation_tolerance="0.1"
+        link_padding="0.000000"
+        max_iterations="5000"
+        planning_group_name="manipulator"
+        seed="0"
+        trajectory_sampling_rate="100"
+        velocity_scale_factor="1.000000"
+      />
+      <Action
+        ID="SwitchController"
+        activate_asap="true"
+        automatic_deactivation="true"
+        controller_list_action_name="/controller_manager/list_controllers"
+        controller_switch_action_name="/controller_manager/switch_controller"
+        strictness="1"
+        timeout="-1.0"
+        activate_controllers="joint_trajectory_controller"
+      />
+      <Action
+        ID="ExecuteFollowJointTrajectory"
+        execute_follow_joint_trajectory_action_name="/joint_trajectory_controller/follow_joint_trajectory"
+        goal_duration_tolerance="-1.000000"
+        goal_position_tolerance="0.000000"
+        goal_time_tolerance="0.000000"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Compute IK, Plan and Move">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Training Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

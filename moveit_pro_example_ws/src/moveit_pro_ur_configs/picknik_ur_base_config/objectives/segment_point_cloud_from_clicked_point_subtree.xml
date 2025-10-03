@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Segment Point Cloud from Clicked Point Subtree"
+>
+  <!--//////////-->
+  <BehaviorTree
+    ID="Segment Point Cloud from Clicked Point Subtree"
+    _description="Captures a point cloud and requests the user to click an object in the image to be segmented. The point cloud is then filtered to only include the selected object."
+    _favorite="true"
+    camera_topic_name="{camera_topic_name}"
+    decoder_model_path="{decoder_model_path}"
+    encoder_model_path="{encoder_model_path}"
+    image_topic_name="{image_topic_name}"
+    masks_visualization_topic="{masks_visualization_topic}"
+    model_package="{model_package}"
+    points_topic_name="{points_topic_name}"
+  >
+    <Control ID="Sequence">
+      <Action ID="ClearSnapshot" />
+      <SubTree
+        ID="Segment Image from Point Subtree"
+        _collapsed="true"
+        decoder_model_path="{decoder_model_path}"
+        encoder_model_path="{encoder_model_path}"
+        image_topic="{image_topic_name}"
+        masks_visualization_topic="{masks_visualization_topic}"
+        model_package="{model_package}"
+        pixel_coords="{pixel_coords}"
+        masks2d="{masks2d}"
+        image_topic_name="{image_topic_name}"
+      />
+      <Action
+        ID="GetPointCloud"
+        topic_name="{points_topic_name}"
+        timeout_sec="5.000000"
+        message_out="{point_cloud}"
+      />
+      <Action
+        ID="GetCameraInfo"
+        topic_name="{camera_topic_name}"
+        message_out="{camera_info}"
+        timeout_sec="5.000000"
+      />
+      <Action
+        ID="GetMasks3DFromMasks2D"
+        camera_info="{camera_info}"
+        masks2d="{masks2d}"
+        point_cloud="{point_cloud}"
+        masks3d="{masks3d}"
+      />
+      <SubTree
+        ID="Visualize Segmented Point Cloud"
+        _collapsed="true"
+        masks3d="{masks3d}"
+        point_cloud="{point_cloud}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Segment Point Cloud from Clicked Point Subtree">
+      <input_port name="camera_topic_name" default="{camera_topic_name}" />
+      <input_port name="decoder_model_path" default="{decoder_model_path}" />
+      <input_port name="encoder_model_path" default="{encoder_model_path}" />
+      <input_port name="image_topic_name" default="{image_topic_name}" />
+      <input_port
+        name="masks_visualization_topic"
+        default="{masks_visualization_topic}"
+      />
+      <input_port name="model_package" default="{model_package}" />
+      <input_port name="points_topic_name" default="{points_topic_name}" />
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Perception - ML" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

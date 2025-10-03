@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Draw and Wipe">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Draw and Wipe"
+    _description="Read a trajectory from a YAML file, draw it on a flat surface using Cartesian planning and then wipe it out."
+    _favorite="false"
+    _hardcoded="false"
+  >
+    <Control ID="Sequence">
+      <SubTree
+        ID="Draw"
+        _collapsed="true"
+        file_path="{file_path}"
+        controller_name="right_joint_trajectory_controller"
+        execute_follow_joint_trajectory_action_name="/right_joint_trajectory_controller/follow_joint_trajectory"
+        planning_group_name="right_manipulator"
+        tip_link="right_grasp_link"
+        center="{center}"
+        name="Write a text"
+      />
+      <SubTree ID="Move Right Home" _collapsed="true" />
+      <SubTree
+        ID="Draw"
+        _collapsed="true"
+        file_path="wipe_zig_zag.yaml"
+        controller_name="left_joint_trajectory_controller"
+        execute_follow_joint_trajectory_action_name="/left_joint_trajectory_controller/follow_joint_trajectory"
+        planning_group_name="left_manipulator"
+        tip_link="left_grasp_link"
+        center="{center}"
+        name="Wipe out the text"
+      />
+      <SubTree ID="Move Left Home" _collapsed="true" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Draw and Wipe">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Motion - Execute" />
+      </MetadataFields>
+      <inout_port name="center" default="{center}" />
+      <inout_port name="file_path" default="{file_path}" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

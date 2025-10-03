@@ -1,0 +1,33 @@
+#
+#  This contains information for a unique instance of a robot.
+#
+
+# Name of the package to specialize
+based_on_package: "lab_sim"
+hardware:
+  # Parameters used to configure the robot description through XACRO.
+  # A URDF and SRDF are both required.
+  # [Required]
+  robot_description:
+    urdf:
+      package: "lab_sim"
+      path: "description/picknik_ur.xacro"
+    srdf:
+      package: "lab_sim"
+      path: "config/moveit/picknik_ur.srdf"
+    urdf_params:
+      - mujoco_model_package: "april_tag_sim"
+# Configuration for loading behaviors and objectives.
+# [Required]
+objectives:
+  # Specify source folder for objectives
+  # [Required]
+  objective_library_paths:
+    sim_objectives:
+      package_name: "april_tag_sim"
+      relative_path: "objectives"
+  # Specify the location of the saved waypoints file.
+  # [Required]
+  waypoints_file:
+    package_name: "april_tag_sim"
+    relative_path: "waypoints/ur_waypoints.yaml"

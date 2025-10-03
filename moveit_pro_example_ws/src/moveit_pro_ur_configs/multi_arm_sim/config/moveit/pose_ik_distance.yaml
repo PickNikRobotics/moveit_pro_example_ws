@@ -1,0 +1,20 @@
+first_manipulator:
+  kinematics_solver: pose_ik_plugin/PoseIKPlugin
+  target_tolerance: 0.001
+  solve_mode: "optimize_distance"
+  optimization_timeout: 0.005
+second_manipulator:
+  kinematics_solver: pose_ik_plugin/PoseIKPlugin
+  target_tolerance: 0.001
+  solve_mode: "optimize_distance"
+  optimization_timeout: 0.005
+third_manipulator:
+  kinematics_solver: pose_ik_plugin/PoseIKPlugin
+  target_tolerance: 0.001
+  solve_mode: "optimize_distance"
+  optimization_timeout: 0.005
+fourth_manipulator:
+  kinematics_solver: pose_ik_plugin/PoseIKPlugin
+  target_tolerance: 0.001
+  solve_mode: "optimize_distance"
+  optimization_timeout: 0.005

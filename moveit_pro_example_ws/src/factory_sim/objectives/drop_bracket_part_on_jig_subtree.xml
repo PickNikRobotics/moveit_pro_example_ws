@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Drop Bracket Part on Jig Subtree">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Drop Bracket Part on Jig Subtree"
+    _description="Drop bracket part on jig via an intermediate waypoint"
+  >
+    <Control
+      ID="Sequence"
+      name="Drop bracket part on jig via an intermediate waypoint"
+    >
+      <!--The drop pose is just above two tapered posts representing a tooling jib that match alignment holes in the bracket part. The part is then released and settles onto those jig posts.-->
+      <Action
+        ID="CreateStampedPose"
+        reference_frame="jig_post1"
+        stamped_pose="{drop_pose}"
+        orientation_xyzw="1.000; 0.000; 0.000; 0.000"
+        position_xyz="0.012;-0.01;0.16"
+      />
+      <Action
+        ID="VisualizePose"
+        marker_lifetime="0.000000"
+        marker_name="pose_of_interest"
+        marker_size="0.100000"
+        pose="{drop_pose}"
+        marker_text="jig drop pose"
+      />
+      <Action
+        ID="RetrieveWaypoint"
+        joint_group_name="manipulator"
+        waypoint_joint_state="{midpoint_move}"
+        waypoint_name="Intermediate Jig Pose"
+      />
+      <Action
+        ID="InitializeMTCTask"
+        task="{mtc_task}"
+        trajectory_monitoring="false"
+        controller_names="joint_trajectory_controller"
+        task_id="drop_task"
+        timeout="-1.000000"
+      />
+      <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
+      <!--The arm is moved to this intermediate waypoint to give a more predictable arm motion while avoiding the hanging bowls. Even with a collision object modeled the arm would still make large motions at times which influenced how well the part was aligned to the jig posts.-->
+      <Action
+        ID="SetupMTCPlanToJointState"
+        acceleration_scale_factor="1"
+        joint_state="{midpoint_move}"
+        keep_orientation="false"
+        keep_orientation_link_names="tool0"
+        keep_orientation_tolerance="0.300000"
+        link_padding="0.0100000"
+        max_iterations="5000"
+        planning_group_name="manipulator"
+        seed="0"
+        task="{mtc_task}"
+        trajectory_sampling_rate="100"
+        velocity_scale_factor="1.000000"
+      />
+      <Action
+        ID="SetupMTCPlanToPose"
+        acceleration_scale_factor="0.5"
+        ik_frame="tool0"
+        keep_orientation="false"
+        keep_orientation_link_names="tool0"
+        keep_orientation_tolerance="0.100000"
+        link_padding="0.0100000"
+        max_iterations="5000"
+        monitored_stage="current state"
+        planning_group_name="manipulator"
+        target_pose="{drop_pose}"
+        task="{mtc_task}"
+        trajectory_sampling_rate="100"
+        velocity_scale_factor="1.000000"
+      />
+      <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
+      <Action
+        ID="ExecuteMTCTask"
+        goal_duration_tolerance="-1.000000"
+        solution="{mtc_solution}"
+      />
+      <!--A short pause is added here because sometimes the robot arm was still moving a little when the part was released, leading to the part missing the jig alignment posts-->
+      <Action ID="WaitForDuration" delay_duration="0.5" />
+      <SubTree ID="Deactivate Vacuum" _collapsed="true" />
+      <SubTree
+        ID="Detach and Remove Tool"
+        _collapsed="true"
+        tool_name="{part_name}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Drop Bracket Part on Jig Subtree">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Motion - Execute" />
+      </MetadataFields>
+      <inout_port name="part_name" default="{part_name}" type="std::string">
+        Name of the URDF object representing part to detach at end of move
+      </inout_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>

@@ -1,0 +1,25 @@
+<mujoco model="fanuc_cube_welds">
+  <equality>
+    <weld
+      name="suction_cup_bracket-0-0"
+      body1="bracket-0-0"
+      body2="suction_tool_tip"
+      active="false"
+      torquescale="5"
+    />
+    <weld
+      name="suction_cup_bracket-0-1"
+      body1="bracket-0-1"
+      body2="suction_tool_tip"
+      active="false"
+      torquescale="5"
+    />
+    <weld
+      name="suction_cup_bracket-0-2"
+      body1="bracket-0-2"
+      body2="suction_tool_tip"
+      active="false"
+      torquescale="5"
+    />
+  </equality>
+</mujoco>

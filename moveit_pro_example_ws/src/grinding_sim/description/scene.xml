@@ -1,0 +1,406 @@
+<mujoco model="ur20 grinding scene">
+  <compiler angle="radian" autolimits="true" assetdir="grinding_sim_assets" />
+
+  <default>
+    <!-- Actuator & joint defaults -->
+    <joint axis="0 0 1" range="-6.28319 6.28319" armature="0.5" />
+    <position ctrlrange="-6.2831 6.2831" />
+    <default class="large_actuator">
+      <position kp="500000" kv="500" />
+    </default>
+    <default class="small_actuator">
+      <position kp="50000" kv="50" />
+    </default>
+    <default class="size4">
+      <joint damping="2000" />
+    </default>
+    <default class="size3">
+      <joint damping="150" />
+      <default class="size3_limited">
+        <joint range="-3.1415 3.1415" />
+      </default>
+    </default>
+    <default class="size2">
+      <joint damping="20" />
+    </default>
+    <!-- Geom defaults -->
+    <default class="visual">
+      <geom group="2" type="mesh" contype="0" conaffinity="0" />
+    </default>
+    <default class="collision">
+      <geom group="3" type="mesh" />
+    </default>
+  </default>
+
+  <asset>
+    <!-- Textures and materials -->
+    <material name="metal" rgba="0.58 0.58 0.58 1" />
+    <texture type="2d" name="UR20_DIFF_8bit_2K" file="UR20_DIFF_8bit_2K.png" />
+    <material
+      name="UR20_DIFF_8bit_2K_png"
+      texture="UR20_DIFF_8bit_2K"
+      specular="0.0"
+      shininess="0.25"
+    />
+    <!-- ur20 meshes -->
+    <mesh file="ur20/base/base.obj" />
+    <mesh file="ur20/shoulder/shoulder.obj" />
+    <mesh file="ur20/upperarm/upperarm_0.obj" />
+    <mesh file="ur20/upperarm/upperarm_1.obj" />
+    <mesh file="ur20/forearm/forearm.obj" />
+    <mesh file="ur20/wrist1/wrist1.obj" />
+    <mesh file="ur20/wrist2/wrist2.obj" />
+    <mesh file="ur20/wrist3/wrist3.obj" />
+    <!-- shop mesh -->
+    <mesh name="workcell" file="workcell.obj" />
+
+    <!-- Tool-Base geometries -->
+    <mesh file="tool_base/tool_base.obj" />
+    <mesh name="base_geometry_0" file="tool_base/geometry_0.stl" />
+    <mesh name="base_geometry_1" file="tool_base/geometry_1.stl" />
+    <mesh name="base_geometry_2" file="tool_base/geometry_2.stl" />
+    <mesh name="base_geometry_3" file="tool_base/geometry_3.stl" />
+    <mesh name="base_geometry_4" file="tool_base/geometry_4.stl" />
+    <mesh name="base_geometry_5" file="tool_base/geometry_5.stl" />
+    <mesh name="base_geometry_6" file="tool_base/geometry_6.stl" />
+    <mesh name="base_geometry_7" file="tool_base/geometry_7.stl" />
+
+    <!-- Tool-Tool geometries -->
+    <mesh file="tool0_tool/tool0_tool.obj" />
+    <mesh name="tool0_tool_1" file="tool0_tool/tool0_tool_1.obj" />
+    <mesh name="tool0_tool_2" file="tool0_tool/tool0_tool_2.obj" />
+    <mesh name="tool0_tool_3" file="tool0_tool/tool0_tool_3.obj" />
+    <mesh name="tool0_tool_4" file="tool0_tool/tool0_tool_4.obj" />
+    <mesh name="tool_geometry_0" file="tool0_tool/geometry_0.stl" />
+    <mesh name="tool_geometry_1" file="tool0_tool/geometry_1.stl" />
+    <mesh name="tool_geometry_2" file="tool0_tool/geometry_2.stl" />
+    <mesh name="tool_geometry_3" file="tool0_tool/geometry_3.stl" />
+    <mesh name="tool_geometry_4" file="tool0_tool/geometry_4.stl" />
+    <mesh name="tool_geometry_5" file="tool0_tool/geometry_5.stl" />
+    <mesh name="tool_geometry_6" file="tool0_tool/geometry_6.stl" />
+
+    <!-- Engine block part geometries -->
+    <mesh file="engine_block/engine_block.obj" />
+    <mesh name="engine_block_geometry_0" file="engine_block/geometry_0.stl" />
+    <mesh name="engine_block_geometry_1" file="engine_block/geometry_1.stl" />
+    <mesh name="engine_block_geometry_2" file="engine_block/geometry_2.stl" />
+    <mesh name="engine_block_geometry_3" file="engine_block/geometry_3.stl" />
+    <mesh name="engine_block_geometry_4" file="engine_block/geometry_4.stl" />
+    <mesh name="engine_block_geometry_5" file="engine_block/geometry_5.stl" />
+    <mesh name="engine_block_geometry_6" file="engine_block/geometry_6.stl" />
+  </asset>
+
+  <statistic center="0.3 0 0.4" extent="0.8" />
+
+  <visual>
+    <headlight diffuse="0.6 0.6 0.6" ambient="0.1 0.1 0.1" specular="0 0 0" />
+    <rgba haze="0.15 0.25 0.35 1" />
+    <global azimuth="120" elevation="-20" />
+  </visual>
+
+  <worldbody>
+    <light pos="0 0 1.5" dir="0 0 -1" directional="true" />
+    <!-- Define the workcell with the engine block part -->
+    <body name="workcell" pos="0 0 0">
+      <geom material="metal" mesh="workcell" class="visual" />
+      <!-- Floor -->
+      <!--<geom type="box" pos="0 -0.7 -0.05" size="1.385 1.4 0.01" class="collision"/>-->
+      <geom type="box" pos="0 -0.7 -0.05" size="1 1 0.01" class="collision" />
+      <!-- Table -->
+      <geom
+        type="box"
+        pos="0 -1.69 0.35"
+        size="0.55 0.34 0.370149"
+        class="collision"
+      />
+      <body name="engine_block" pos="0 -1.69 0.71" quat="0.707 0 0 0.707">
+        <site name="engine_block_pose" />
+        <geom material="metal" mesh="engine_block" class="visual" />
+        <geom mesh="engine_block_geometry_0" class="collision" />
+        <geom mesh="engine_block_geometry_1" class="collision" />
+        <geom mesh="engine_block_geometry_2" class="collision" />
+        <geom mesh="engine_block_geometry_3" class="collision" />
+        <geom mesh="engine_block_geometry_4" class="collision" />
+        <geom mesh="engine_block_geometry_5" class="collision" />
+        <geom mesh="engine_block_geometry_6" class="collision" />
+      </body>
+    </body>
+    <!-- Add a scene camera -->
+    <site
+      name="scene_camera_optical_frame"
+      pos="0.0 -2.56685 1.62333"
+      quat="-0.399763 0.916616 -0.001843 0.000804"
+    />
+    <camera
+      name="scene_camera"
+      pos="0.0 -2.56685 1.62333"
+      fovy="58"
+      mode="fixed"
+      resolution="640 480"
+      quat="0.916616 0.399763 -0.000804 -0.001843"
+    />
+
+    <!-- Define the robot -->
+    <body name="base_link" pos="0 0 0" quat="-1 0 0 0">
+      <inertial
+        pos="0 0 0"
+        quat="0 0 0 1"
+        mass="4.0"
+        diaginertia="0.0061063308908 0.0061063308908 0.01125"
+      />
+      <geom
+        quat="-1 0 0 0"
+        material="UR20_DIFF_8bit_2K_png"
+        mesh="base"
+        class="visual"
+      />
+      <geom quat="-1 0 0 0" mesh="base" class="collision" />
+      <body name="shoulder_link" pos="0 0 0.2363" quat="0 0 0 1">
+        <inertial
+          pos="0 -0.0062 -0.061"
+          quat="0.843524 0.480626 0.117639 -0.208871"
+          mass="16.343"
+          diaginertia="0.0887394 0.0883735 0.0720472"
+        />
+        <joint name="shoulder_pan_joint" class="size4" />
+        <geom
+          quat="0 0 0 1"
+          material="UR20_DIFF_8bit_2K_png"
+          mesh="shoulder"
+          class="visual"
+        />
+        <geom quat="0 0 0 1" mesh="shoulder" class="collision" />
+        <body name="upper_arm_link" quat="0.707107 0.707107 0 0">
+          <inertial
+            pos="-0.3394 0 0.2098"
+            quat="0.502566 0.497435 0.496798 0.503168"
+            mass="29.632"
+            diaginertia="4.6659 4.63539 0.146106"
+          />
+          <joint name="shoulder_lift_joint" class="size4" />
+          <geom
+            pos="0 0 0.26"
+            quat="0.5 0.5 -0.5 -0.5"
+            mesh="upperarm_0"
+            material="UR20_DIFF_8bit_2K_png"
+            class="visual"
+          />
+          <geom
+            pos="0 0 0.26"
+            quat="0.5 0.5 -0.5 -0.5"
+            mesh="upperarm_1"
+            material="UR20_DIFF_8bit_2K_png"
+            class="visual"
+          />
+          <geom
+            pos="0 0 0.26"
+            quat="0.5 0.5 -0.5 -0.5"
+            mesh="upperarm_0"
+            class="collision"
+          />
+          <geom
+            pos="0 0 0.26"
+            quat="0.5 0.5 -0.5 -0.5"
+            mesh="upperarm_1"
+            class="collision"
+          />
+          <body name="forearm_link" pos="-0.862 0 0">
+            <inertial
+              pos="-0.4053 0 0.0604"
+              quat="0.510462 0.48933 0.490588 0.509223"
+              mass="7.879"
+              diaginertia="0.75763 0.754423 0.0249668"
+            />
+            <joint name="elbow_joint" class="size3_limited" />
+            <geom
+              pos="0 0 0.043"
+              quat="0.5 0.5 -0.5 -0.5"
+              material="UR20_DIFF_8bit_2K_png"
+              mesh="forearm"
+              class="visual"
+            />
+            <geom
+              pos="0 0 0.043"
+              quat="0.5 0.5 -0.5 -0.5"
+              mesh="forearm"
+              class="collision"
+            />
+            <body name="wrist_1_link" pos="-0.7287 0 0.201">
+              <inertial
+                pos="0 -0.0393 -0.0026"
+                quat="0.989529 0.121355 0.0147064 -0.0767408"
+                mass="3.054"
+                diaginertia="0.00555247 0.00545771 0.00392982"
+              />
+              <joint name="wrist_1_joint" class="size2" />
+              <geom
+                pos="0 0 -0.0775"
+                quat="0.707107 0.707107 0 0"
+                material="UR20_DIFF_8bit_2K_png"
+                mesh="wrist1"
+                class="visual"
+              />
+              <geom
+                pos="0 0 -0.0775"
+                quat="0.707107 0.707107 0 0"
+                mesh="wrist1"
+                class="collision"
+              />
+              <body
+                name="wrist_2_link"
+                pos="0 -0.1593 -3.2673e-11"
+                quat="0.707107 0.707107 0 0"
+              >
+                <inertial
+                  pos="0 0.0379 -0.0024"
+                  quat="0.489074 -0.0502817 0.102168 0.864777"
+                  mass="3.126"
+                  diaginertia="0.00586894 0.00585713 0.00418393"
+                />
+                <joint name="wrist_2_joint" axis="0 0 1" class="size2" />
+                <geom
+                  pos="0 0 -0.0749"
+                  quat="1 0 0 0"
+                  material="UR20_DIFF_8bit_2K_png"
+                  mesh="wrist2"
+                  class="visual"
+                />
+                <geom
+                  pos="0 0 -0.0749"
+                  quat="1 0 0 0"
+                  mesh="wrist2"
+                  class="collision"
+                />
+                <body
+                  name="wrist_3_link"
+                  pos="0 0.1543 -3.16475e-11"
+                  quat="0.707107 -0.707107 0 0"
+                >
+                  <inertial
+                    pos="0 0 -0.0293"
+                    quat="0.5 0.5 -0.5 0.5"
+                    mass="0.926"
+                    diaginertia="0.00117 0.00092 0.00091"
+                  />
+                  <joint name="wrist_3_joint" class="size2" />
+                  <geom
+                    pos="0 0 -0.07"
+                    quat="0.707107 0.707107 0 0"
+                    material="UR20_DIFF_8bit_2K_png"
+                    mesh="wrist3"
+                    class="visual"
+                  />
+                  <geom
+                    pos="0 0 -0.07"
+                    quat="0.707107 0.707107 0 0"
+                    mesh="wrist3"
+                    class="collision"
+                  />
+                  <!-- Tool -->
+                  <body name="tool_base" pos="0 0 0" gravcomp="1">
+                    <geom
+                      mesh="tool_base"
+                      class="visual"
+                      rgba="0.429 0.429 0.3575 1"
+                    />
+                    <geom mesh="base_geometry_0" class="collision" />
+                    <geom mesh="base_geometry_1" class="collision" />
+                    <geom mesh="base_geometry_2" class="collision" />
+                    <geom mesh="base_geometry_3" class="collision" />
+                    <geom mesh="base_geometry_4" class="collision" />
+                    <geom mesh="base_geometry_5" class="collision" />
+                    <geom mesh="base_geometry_6" class="collision" />
+                    <geom mesh="base_geometry_7" class="collision" />
+                    <body name="tool_tool" pos="0 0 0" gravcomp="1">
+                      <joint
+                        name="tool_slide_joint"
+                        type="slide"
+                        axis="0 1 0"
+                        pos="0 0 0.1"
+                        range="-0.025 0.025"
+                      />
+                      <geom
+                        mesh="tool0_tool"
+                        class="visual"
+                        rgba="0.244 0.244 0.208 1"
+                      />
+                      <geom
+                        mesh="tool0_tool_1"
+                        class="visual"
+                        rgba="0.66 0.66 0.55 1"
+                      />
+                      <geom
+                        mesh="tool0_tool_2"
+                        class="visual"
+                        rgba="0.1 0.1 0.1 1"
+                      />
+                      <geom
+                        mesh="tool0_tool_3"
+                        class="visual"
+                        rgba="0.429 0.429 0.3575 1"
+                      />
+                      <geom mesh="tool0_tool_4" class="visual" />
+                      <geom mesh="tool_geometry_0" class="collision" />
+                      <geom mesh="tool_geometry_1" class="collision" />
+                      <geom mesh="tool_geometry_2" class="collision" />
+                      <geom mesh="tool_geometry_3" class="collision" />
+                      <geom mesh="tool_geometry_4" class="collision" />
+                      <geom mesh="tool_geometry_5" class="collision" />
+                      <geom mesh="tool_geometry_6" class="collision" />
+                    </body>
+                  </body>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <!-- Robot Actuators -->
+    <position
+      class="large_actuator"
+      name="shoulder_pan_joint"
+      joint="shoulder_pan_joint"
+    />
+    <position
+      class="large_actuator"
+      name="shoulder_lift_joint"
+      joint="shoulder_lift_joint"
+    />
+    <position class="large_actuator" name="elbow_joint" joint="elbow_joint" />
+    <position
+      class="small_actuator"
+      name="wrist_1_joint"
+      joint="wrist_1_joint"
+    />
+    <position
+      class="small_actuator"
+      name="wrist_2_joint"
+      joint="wrist_2_joint"
+    />
+    <position
+      class="small_actuator"
+      name="wrist_3_joint"
+      joint="wrist_3_joint"
+    />
+    <!-- Tool Actuator -->
+    <!-- gearing puts this force actuator in units of lbf -->
+    <general
+      name="tool_slide_joint"
+      joint="tool_slide_joint"
+      gear="4.44822"
+      ctrlrange="-150 150"
+    />
+  </actuator>
+
+  <keyframe>
+    <key
+      name="default"
+      qpos="1.57055 -0.999904 -1.80019 -2.45625 -1.57086 -3.14161 0.0256934"
+      ctrl="1.57055 -0.999904 -1.80019 -2.45625 -1.57086 -3.14161 115"
+    />
+  </keyframe>
+</mujoco>

@@ -1,0 +1,200 @@
+<mujoco model="fr3 scene">
+  <include file="franka3.xml" />
+
+  <statistic center="0.2 0.2 0.5" extent="1.8" />
+  <size nkey="1" />
+  <size nuser_jnt="0" />
+
+  <visual>
+    <global azimuth="120" elevation="-21" fovy="58" />
+    <headlight ambient="0.3 0.3 0.3" diffuse="0.6 0.6 0.6" specular="0 0 0" />
+    <rgba haze="0.15 0.25 0.35 1" />
+  </visual>
+
+  <asset>
+    <texture
+      type="skybox"
+      builtin="gradient"
+      rgb1="0.3 0.5 0.7"
+      rgb2="0 0 0"
+      width="512"
+      height="3072"
+    />
+    <texture
+      type="2d"
+      name="groundplane"
+      builtin="checker"
+      mark="edge"
+      rgb1="0.2 0.3 0.4"
+      rgb2="0.1 0.2 0.3"
+      markrgb="0.8 0.8 0.8"
+      width="300"
+      height="300"
+    />
+    <material
+      name="groundplane"
+      texture="groundplane"
+      texuniform="true"
+      texrepeat="5 5"
+      reflectance="0.2"
+    />
+  </asset>
+
+  <worldbody>
+    <light pos="0 0 1.5" dir="0 0 -1" directional="true" />
+    <geom name="floor" size="0 0 0.05" type="plane" material="groundplane" />
+    <site
+      name="scene_camera_optical_frame"
+      pos="0.7 0.0 0.65"
+      xyaxes="0 -1 0 -1 0 0"
+    />
+    <camera
+      name="scene_camera"
+      pos="0.7 0.0 0.65"
+      fovy="58"
+      mode="fixed"
+      resolution="640 480"
+      xyaxes="0 -1 0 1 0 0"
+    />
+    <geom
+      name="table_front"
+      type="box"
+      size="0.4 0.3 0.01"
+      pos="0.6 0 0.0"
+      rgba="0.6 0.6 0.6 1"
+    />
+    <geom
+      name="table_left"
+      type="box"
+      size="0.25 0.5 0.01"
+      pos="0 0.9 0.0"
+      rgba="0.3 0.7 0.3 1"
+    />
+    <geom
+      name="table_right"
+      type="box"
+      size="0.25 0.5 0.01"
+      pos="0 -0.9 0.0"
+      rgba="0.7 0.3 0.3 1"
+    />
+
+    <body name="block_green_1" pos="0.6 0 0.2">
+      <freejoint name="block_green_1" />
+      <geom type="box" size="0.025 0.025 0.025" rgba="0 0.8 0 1" />
+    </body>
+    <body name="block_green_2" pos="0.6 0.15 0.2">
+      <freejoint name="block_green_2" />
+      <geom type="box" size="0.025 0.025 0.025" rgba="0 0.8 0 1" />
+    </body>
+    <body name="block_green_3" pos="0.6 -0.15 0.2">
+      <freejoint name="block_green_3" />
+      <geom type="box" size="0.025 0.025 0.025" rgba="0 0.8 0 1" />
+    </body>
+
+    <body name="block_red_1" pos="0.7 0 0.2">
+      <freejoint name="block_red_1" />
+      <geom type="box" size="0.025 0.025 0.025" rgba="0.8 0 0 1" />
+    </body>
+    <body name="block_red_2" pos="0.7 0.15 0.2">
+      <freejoint name="block_red_2" />
+      <geom type="box" size="0.025 0.025 0.025" rgba="0.8 0 0 1" />
+    </body>
+    <body name="block_red_3" pos="0.7 -0.15 0.2">
+      <freejoint name="block_red_3" />
+      <geom type="box" size="0.025 0.025 0.025" rgba="0.8 0 0 1" />
+    </body>
+  </worldbody>
+
+  <keyframe>
+    <!-- Home position for FR3 robot with gripper
+       qpos: 
+         right_fr3_joint1
+         right_fr3_joint2
+         right_fr3_joint3
+         right_fr3_joint4
+         right_fr3_joint5
+         right_fr3_joint6
+         right_fr3_joint7
+         right_fr3_finger1
+         right_fr3_finger2
+         left_fr3_joint1
+         left_fr3_joint2
+         left_fr3_joint3
+         left_fr3_joint4
+         left_fr3_joint5
+         left_fr3_joint6
+         left_fr3_joint7
+         left_fr3_finger1
+         left_fr3_finger2
+         block_green_1 [x y z qw qx qy qz]
+         block_green_2 [x y z qw qx qy qz]
+         block_green_3 [x y z qw qx qy qz]
+         block_red_1 [x y z qw qx qy qz]
+         block_red_2 [x y z qw qx qy qz]
+         block_red_3 [x y z qw qx qy qz]
+       qvel:
+         right_fr3_joint1
+         right_fr3_joint2
+         right_fr3_joint3
+         right_fr3_joint4
+         right_fr3_joint5
+         right_fr3_joint6
+         right_fr3_joint7
+         right_fr3_finger1
+         right_fr3_finger2
+         left_fr3_joint1
+         left_fr3_joint2
+         left_fr3_joint3
+         left_fr3_joint4
+         left_fr3_joint5
+         left_fr3_joint6
+         left_fr3_joint7
+         left_fr3_finger1
+         left_fr3_finger2
+         block_green_1 [x y z r p y]
+         block_green_2 [x y z r p y]
+         block_green_3 [x y z r p y]
+         block_red_1 [x y z r p y]
+         block_red_2 [x y z r p y]
+         block_red_3 [x y z r p y]
+       ctrl: 
+         right_fr3_joint1
+         right_fr3_joint2
+         right_fr3_joint3
+         right_fr3_joint4
+         right_fr3_joint5
+         right_fr3_joint6
+         right_fr3_joint7
+         right_fr3_finger1 - We control only one finger.
+         left_fr3_joint1
+         left_fr3_joint2
+         left_fr3_joint3
+         left_fr3_joint4
+         left_fr3_joint5
+         left_fr3_joint6
+         left_fr3_joint7
+         left_fr3_finger1 - We control only one finger.
+    -->
+    <key
+      name="default"
+      qpos="0 -0.7854 0 -2.3562 0 1.5707 0.7853 0 0
+            0 -0.7854 0 -2.3562 0 1.5707 0.7853 0 0
+            0.6 0 0.2 1 0 0 0
+            0.6 0.15 0.2 1 0 0 0
+            0.6 -0.15 0.2 1 0 0 0
+            0.7 0 0.2 1 0 0 0
+            0.7 0.15 0.2 1 0 0 0
+            0.7 -0.15 0.2 1 0 0 0"
+      qvel="0 0 0 0 0 0 0 0 0
+            0 0 0 0 0 0 0 0 0
+            0 0 0 0 0 0
+            0 0 0 0 0 0
+            0 0 0 0 0 0
+            0 0 0 0 0 0
+            0 0 0 0 0 0
+            0 0 0 0 0 0"
+      ctrl="0 -0.7854 0 -2.3562 0 1.5707 0.7853 0
+            0 -0.7854 0 -2.3562 0 1.5707 0.7853 0"
+    />
+  </keyframe>
+</mujoco>

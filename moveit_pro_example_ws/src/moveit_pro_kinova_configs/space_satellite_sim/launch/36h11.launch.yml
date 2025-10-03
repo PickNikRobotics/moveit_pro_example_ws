@@ -1,0 +1,25 @@
+launch:
+  - arg:
+      name: device
+      default: "0"
+
+  - node_container:
+      pkg: rclcpp_components
+      exec: component_container
+      name: apriltag_container
+      namespace: ""
+      composable_node:
+        - pkg: apriltag_ros
+          plugin: AprilTagNode
+          name: apriltag
+          namespace: apriltag
+          remap:
+            - from: /apriltag/image_rect
+              to: /servicer_camera/color
+            - from: /apriltag/camera_info
+              to: /servicer_camera/camera_info
+          param:
+            - from: $(find-pkg-share space_satellite_sim)/launch/tags_36h11.yaml
+          extra_arg:
+            - name: use_intra_process_comms
+              value: "True"

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Find and Spray Plane">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Find and Spray Plane"
+    _description="Finds the plane then generates and executes a coverage path"
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        controller_names="joint_trajectory_controller"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.0"
+        velocity_scale_factor="1.0"
+        waypoint_name="Look at Plane"
+        keep_orientation_link_names="grasp_link"
+      />
+      <Action
+        ID="CreateStampedPose"
+        reference_frame="grasp_link"
+        stamped_pose="{stamped_pose}"
+        orientation_xyzw="0;0;0;1"
+        position_xyz="0;0;1"
+      />
+      <SubTree
+        ID="Get Point Cloud Center Pose"
+        _collapsed="true"
+        input_pose="{stamped_pose}"
+        output_pose="{center_pose}"
+      />
+      <Action
+        ID="TransformPose"
+        input_pose="{center_pose}"
+        output_pose="{start_pose}"
+        quaternion_xyzw="0;0;-0.707;0.707"
+        translation_xyz="-1;1;-0.1"
+      />
+      <Action
+        ID="GenerateCoveragePath"
+        vector_of_poses="{pose_stamped_vector}"
+        bottom_right_corner="{start_pose}"
+        stride_distance="0.5"
+        width="0.5"
+        height="5"
+      />
+      <Action
+        ID="VisualizePath"
+        marker_lifetime="0.000000"
+        path="{pose_stamped_vector}"
+      />
+      <Action
+        ID="PlanCartesianPath"
+        acceleration_scale_factor="1.000000"
+        blending_radius="0.020000"
+        debug_solution="{debug_solution}"
+        ik_cartesian_space_density="0.010000"
+        ik_joint_space_density="0.100000"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+        path="{pose_stamped_vector}"
+        planning_group_name="manipulator"
+        position_only="false"
+        tip_links="grasp_link"
+        trajectory_sampling_rate="100"
+        velocity_scale_factor="1.000000"
+      />
+      <Action ID="WaitForUserTrajectoryApproval" solution="{debug_solution}" />
+      <Action
+        ID="ExecuteFollowJointTrajectory"
+        execute_follow_joint_trajectory_action_name="/joint_trajectory_controller/follow_joint_trajectory"
+        goal_duration_tolerance="-1.000000"
+        goal_position_tolerance="0.000000"
+        goal_time_tolerance="0.000000"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Find and Spray Plane">
+      <MetadataFields>
+        <Metadata subcategory="Training Examples" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

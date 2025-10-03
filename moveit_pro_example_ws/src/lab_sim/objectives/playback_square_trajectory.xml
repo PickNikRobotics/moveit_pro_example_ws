@@ -1,0 +1,52 @@
+<root BTCPP_format="4" main_tree_to_execute="Playback Square Trajectory">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Playback Square Trajectory"
+    _description="Loads and plays a JointTrajectory of the end-effector moving in a square trajectory."
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="LoadJointTrajectoryFromYaml"
+        file_path="square_traj.yaml"
+        output="{joint_trajectory_msg}"
+      />
+      <Action
+        ID="GetTrajectoryStateAtTime"
+        from_start="true"
+        joint_state="{joint_state}"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+        time_from_reference="0.000000"
+      />
+      <SubTree
+        ID="Move to Joint State"
+        _collapsed="true"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        controller_names="joint_trajectory_controller"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        target_joint_state="{joint_state}"
+        velocity_scale_factor="1.0"
+      />
+      <Action
+        ID="ExecuteFollowJointTrajectory"
+        execute_follow_joint_trajectory_action_name="/joint_trajectory_controller/follow_joint_trajectory"
+        goal_duration_tolerance="-1.000000"
+        goal_position_tolerance="0.000000"
+        goal_time_tolerance="0.000000"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Playback Square Trajectory">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Basic Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
