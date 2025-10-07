@@ -41,7 +41,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     groupadd --gid $USER_GID ${USERNAME} && \
     useradd --uid $USER_UID --gid $USER_GID --shell /bin/bash --create-home ${USERNAME} && \
     apt-get update && \
-    apt-get install -q -y --no-install-recommends sudo && \
+    apt-get install -q -y --no-install-recommends sudo wget && \
     echo ${USERNAME} ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/${USERNAME} && \
     chmod 0440 /etc/sudoers.d/${USERNAME} && \
     cp -r /etc/skel/. /home/${USERNAME} && \
@@ -52,6 +52,28 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
       /home/${USERNAME}/.colcon \
       /home/${USERNAME}/.ros && \
     chown -R $USER_UID:$USER_GID /home/${USERNAME} /opt/overlay_ws/
+
+# Install onnx dependencies
+RUN wget -O onnxruntime_gpu-1.19.0-cp310-cp310-linux_aarch64.whl https://nvidia.box.com/shared/static/6l0u97rj80ifwkk8rqbzj1try89fk26z.whl -q --show-progress --progress=dot:giga && \
+    pip install onnxruntime_gpu-1.19.0-cp310-cp310-linux_aarch64.whl && \
+    rm onnxruntime_gpu-1.19.0-cp310-cp310-linux_aarch64.whl
+
+# jetson repo source
+COPY nvidia-l4t-apt-source.list /etc/apt/sources.list.d/nvidia-l4t-apt-source.list
+# apt update to add jetson repos, then install NVIDIA dependencies
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+      apt-get update && apt-get install -q -y --no-install-recommends \
+      libcudnn9-cuda-12 \
+      libcudnn9-dev-cuda-12 \
+      libcublas-12-6 \
+      cuda-cudart-12-6 \
+      libcurand-12-6 \
+      libcufft-12-6 \
+      libnvinfer10 \
+      libnvinfer-plugin10 \
+      libnvonnxparsers10 \
+      libtree
 
 # Add user to dialout group to enable communication with serial USB devices (gripper, FTS, ...)
 # Add user to video group to enable communication with cameras
