@@ -58,6 +58,9 @@ RUN wget -O onnxruntime_gpu-1.19.0-cp310-cp310-linux_aarch64.whl https://nvidia.
     pip install onnxruntime_gpu-1.19.0-cp310-cp310-linux_aarch64.whl && \
     rm onnxruntime_gpu-1.19.0-cp310-cp310-linux_aarch64.whl
 
+# Allow for ld to find the onnx runtime libraries.
+ENV LD_LIBRARY_PATH=/usr/local/lib/python3.10/dist-packages/onnxruntime/capi:$LD_LIBRARY_PATH
+
 # jetson repo source
 COPY nvidia-l4t-apt-source.list /etc/apt/sources.list.d/nvidia-l4t-apt-source.list
 # apt update to add jetson repos, then install NVIDIA dependencies
@@ -94,7 +97,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     apt-get update && \
     rosdep install -q -y \
       --from-paths src \
-      --ignore-src
+      --ignore-src \
+      --skip-keys 'ign_ros2_control ros_gz_sim ros_gz ignition-gazebo6'
 
 # Set up colcon defaults for the new user
 USER ${USERNAME}
