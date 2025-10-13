@@ -1,30 +1,16 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version='1.0' encoding='UTF-8'?>
 <root BTCPP_format="4" main_tree_to_execute="Segment Image from Point">
   <!--//////////-->
-  <BehaviorTree
-    ID="Segment Image from Point"
-    _description="Captures an image and segments it using the user provided prompt points."
-    _favorite="true"
-  >
+  <BehaviorTree ID="Segment Image from Point" _description="Captures an image and segments it using the user provided prompt points." _favorite="false">
     <Control ID="Sequence">
-      <SubTree
-        ID="Segment Image from Point Subtree"
-        _collapsed="true"
-        decoder_model_path="models/decoder.onnx"
-        encoder_model_path="models/sam2_hiera_large_encoder.onnx"
-        image_topic_name="/wrist_camera/color"
-        masks_visualization_topic="/masks_visualization"
-        model_package="lab_sim"
-        pixel_coords="{pixel_coords}"
-        masks2d="{masks2d}"
-      />
+      <SubTree ID="Segment Image from Point Subtree" _collapsed="true" decoder_model_path="models/decoder.onnx" encoder_model_path="models/sam2_hiera_large_encoder.onnx" image_topic_name="/wrist_camera/color" masks_visualization_topic="/masks_visualization" model_package="lab_sim" pixel_coords="{pixel_coords}" masks2d="{masks2d}"/>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Segment Image from Point">
       <MetadataFields>
-        <Metadata runnable="true" />
-        <Metadata subcategory="Perception - ML" />
+        <Metadata runnable="true"/>
+        <Metadata subcategory="Perception - ML"/>
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>

@@ -1,52 +1,17 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version='1.0' encoding='UTF-8'?>
 <root BTCPP_format="4" main_tree_to_execute="ML Move Boxes to Loading Zone">
   <!--//////////-->
-  <BehaviorTree
-    ID="ML Move Boxes to Loading Zone"
-    _description="Move all of the boxes into the loading zone using ML perception."
-    _favorite="true"
-  >
+  <BehaviorTree ID="ML Move Boxes to Loading Zone" _description="Move all of the boxes into the loading zone using ML perception." _favorite="false">
     <Control ID="Sequence">
-      <Action
-        ID="CreateStampedPose"
-        reference_frame="world"
-        stamped_pose="{place_pose}"
-        orientation_xyzw="0;1.0;0;0"
-        position_xyz="-4.5;8.4;0.5"
-      />
+      <Action ID="CreateStampedPose" reference_frame="world" stamped_pose="{place_pose}" orientation_xyzw="0;1.0;0;0" position_xyz="-4.5;8.4;0.5"/>
       <Decorator ID="RetryUntilSuccessful" num_attempts="1000">
         <Decorator ID="ForceFailure">
           <Control ID="Sequence">
             <Control ID="Fallback">
-              <SubTree
-                ID="Move Boxes to Loading Zone Start from Waypoint"
-                waypoint_name="View Boxes"
-                _collapsed="true"
-                threshold="0.25"
-                prompt="a small brown box"
-                negative_prompts="yellow ladder;"
-                prompts="small boxes"
-                place_pose="{place_pose}"
-                erosion_size="10"
-              />
-              <SubTree
-                ID="Move Boxes to Loading Zone Start from Waypoint"
-                waypoint_name="View Boxes 2"
-                place_pose="{place_pose}"
-                threshold="0.4"
-                _collapsed="true"
-                prompts="small boxes"
-                negative_prompts="gray;gray;rails"
-                erosion_size="2"
-                prompt="{prompt}"
-              />
+              <SubTree ID="Move Boxes to Loading Zone Start from Waypoint" waypoint_name="View Boxes" _collapsed="true" threshold="0.25" prompt="a small brown box" negative_prompts="yellow ladder;" prompts="small boxes" place_pose="{place_pose}" erosion_size="10"/>
+              <SubTree ID="Move Boxes to Loading Zone Start from Waypoint" waypoint_name="View Boxes 2" place_pose="{place_pose}" threshold="0.4" _collapsed="true" prompts="small boxes" negative_prompts="gray;gray;rails" erosion_size="2" prompt="{prompt}"/>
             </Control>
-            <Action
-              ID="TransformPose"
-              input_pose="{place_pose}"
-              output_pose="{place_pose}"
-              translation_xyz="0.4;0;0"
-            />
+            <Action ID="TransformPose" input_pose="{place_pose}" output_pose="{place_pose}" translation_xyz="0.4;0;0"/>
           </Control>
         </Decorator>
       </Decorator>
@@ -55,8 +20,8 @@
   <TreeNodesModel>
     <SubTree ID="ML Move Boxes to Loading Zone">
       <MetadataFields>
-        <Metadata runnable="true" />
-        <Metadata subcategory="Application - ML (GPU Recommended)" />
+        <Metadata runnable="true"/>
+        <Metadata subcategory="Application - ML (GPU Recommended)"/>
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
