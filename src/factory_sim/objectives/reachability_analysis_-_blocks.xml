@@ -7,6 +7,11 @@
     _favorite="true"
   >
     <Control ID="Sequence" name="">
+      <Action
+        ID="LogMessage"
+        log_level="info"
+        message="Some of the poses in this objective are unreachable, and planning will fail. A warning with instructions how to continue will appear here"
+      />
       <Control ID="Sequence" name="Add visualization from scene camera">
         <SubTree ID="Clear Snapshot" _collapsed="true" />
         <SubTree ID="Take Snapshot" _collapsed="true" />
