@@ -255,7 +255,7 @@
         <param name="mujoco_model_package">franka_dual_arm_sim</param>
         <param name="render_publish_rate">10</param>
         <param name="tf_publish_rate">60</param>
-        <param name="mujoco_keyframe">home</param>
+        <param name="mujoco_keyframe">default</param>
         <param name="mujoco_viewer">$(arg mujoco_viewer)</param>
       </hardware>
     </ros2_control>
