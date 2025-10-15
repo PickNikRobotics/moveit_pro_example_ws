@@ -4,7 +4,7 @@
   <BehaviorTree
     ID="Grasp Pose Using Yaml"
     _description="Reads a YAML file for grasp pose offset and picks up an object that has an AprilTag marker."
-    _favorite="true"
+    _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree ID="Open Gripper" />

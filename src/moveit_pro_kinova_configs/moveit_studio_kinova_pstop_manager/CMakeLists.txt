@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.22)
 project(moveit_studio_kinova_pstop_manager)
 
-find_package(moveit_studio_common REQUIRED)
-moveit_studio_package()
+find_package(moveit_pro_package REQUIRED)
+moveit_pro_package()
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "(GNU|Clang)")
   add_compile_options(-Wpedantic)
