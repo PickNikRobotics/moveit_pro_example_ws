@@ -1,22 +1,60 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Load and Execute Joint Trajectory">
   <!--//////////-->
-  <BehaviorTree ID="Load and Execute Joint Trajectory" _description="Load a trajectory that was saved as a YAML file" _favorite="false">
+  <BehaviorTree
+    ID="Load and Execute Joint Trajectory"
+    _description="Load a trajectory that was saved as a YAML file"
+    _favorite="false"
+  >
     <Control ID="Sequence" name="TopLevelSequence">
       <!--Make sure to move the robot to the same starting position as the saved trajectory starts, otherwise the joint_trajectory_controller will use joint interpolation to align the robot with the path-->
-      <SubTree ID="Move to Waypoint" _collapsed="true" waypoint_name="Workspace Right" joint_group_name="manipulator" controller_names="joint_trajectory_controller" acceleration_scale_factor="1.0" controller_action_server="/joint_trajectory_controller/follow_joint_trajectory" keep_orientation="false" keep_orientation_tolerance="0.05" link_padding="0.01" velocity_scale_factor="1.0"/>
-      <Action ID="LoadJointTrajectoryFromYaml" file_path="joint_trajectory.yaml" output="{joint_trajectory_msg}"/>
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        waypoint_name="Workspace Right"
+        joint_group_name="manipulator"
+        controller_names="joint_trajectory_controller"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        velocity_scale_factor="1.0"
+      />
+      <Action
+        ID="LoadJointTrajectoryFromYaml"
+        file_path="joint_trajectory.yaml"
+        output="{joint_trajectory_msg}"
+      />
       <!--Validate the loaded trajectory with the current planning scene to check for collisions before executing-->
-      <Action ID="GetCurrentPlanningScene" planning_scene_msg="{planning_scene}"/>
-      <Action ID="ValidateTrajectory" cartesian_space_step="0.020000" joint_space_step="0.100000" joint_trajectory_msg="{joint_trajectory_msg}" planning_group_name="manipulator" planning_scene_msg="{planning_scene}" debug_solution="{debug_solution}"/>
-      <Action ID="ExecuteFollowJointTrajectory" execute_follow_joint_trajectory_action_name="/joint_trajectory_controller/follow_joint_trajectory" goal_duration_tolerance="-1.000000" goal_position_tolerance="0.000000" goal_time_tolerance="0.000000" joint_trajectory_msg="{joint_trajectory_msg}"/>
+      <Action
+        ID="GetCurrentPlanningScene"
+        planning_scene_msg="{planning_scene}"
+      />
+      <Action
+        ID="ValidateTrajectory"
+        cartesian_space_step="0.020000"
+        joint_space_step="0.100000"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+        planning_group_name="manipulator"
+        planning_scene_msg="{planning_scene}"
+        debug_solution="{debug_solution}"
+      />
+      <Action
+        ID="ExecuteFollowJointTrajectory"
+        execute_follow_joint_trajectory_action_name="/joint_trajectory_controller/follow_joint_trajectory"
+        goal_duration_tolerance="-1.000000"
+        goal_position_tolerance="0.000000"
+        goal_time_tolerance="0.000000"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+      />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Load and Execute Joint Trajectory">
       <MetadataFields>
-        <Metadata subcategory="Application - Basic Examples"/>
-        <Metadata runnable="true"/>
+        <Metadata subcategory="Application - Basic Examples" />
+        <Metadata runnable="true" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
