@@ -119,6 +119,7 @@
             marker_lifetime="0.000000"
             mesh_path="package://lab_sim/objectives/gripper_token.dae"
             mesh_pose="{grasp_pose}"
+            mesh_name="mesh"
           />
           <SubTree
             ID="Pick from Pose With Approval"
