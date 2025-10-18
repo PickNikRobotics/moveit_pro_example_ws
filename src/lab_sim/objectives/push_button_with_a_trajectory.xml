@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Push Button With a Trajectory">
   <!--//////////-->
   <BehaviorTree
     ID="Push Button With a Trajectory"
     _description="An example for how to use the JTAC to execute a trajectory with compliance."
-    _favorite="true"
+    _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree ID="Close Gripper" _collapsed="true" />

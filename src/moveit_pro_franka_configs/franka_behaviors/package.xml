@@ -11,7 +11,7 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <build_depend>moveit_studio_common</build_depend>
+  <build_depend>moveit_pro_package</build_depend>
 
   <depend>franka_msgs</depend>
   <depend>moveit_studio_behavior_interface</depend>

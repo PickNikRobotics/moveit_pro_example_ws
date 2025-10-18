@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <root
   BTCPP_format="4"
-  main_tree_to_execute="Grapple Moving Satellite with Fuse"
+  main_tree_to_execute="Grapple Moving Satellite via Fiducial Tracking"
 >
   <!--//////////-->
   <BehaviorTree
-    ID="Grapple Moving Satellite with Fuse"
-    _description="Track and grapple satellite using Fuse state estimation of target April tags. Initiate satellite motion or reset position with Key 1 in the MuJoCo viewer."
+    ID="Grapple Moving Satellite via Fiducial Tracking"
+    _description="Track and grapple satellite using state estimation of target April tags. Initiate satellite motion or reset position with Key 1 in the MuJoCo viewer."
     _favorite="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
@@ -147,6 +147,15 @@
             </Control>
           </Decorator>
           <Action
+            ID="LogMessage"
+            log_level="info"
+            message="'Waiting for operator approval'"
+          />
+          <Action
+            ID="BreakpointSubscriber"
+            breakpoint_topic="/moveit_pro_breakpoint"
+          />
+          <Action
             ID="CreateStampedPose"
             reference_frame="world"
             stamped_pose="{target_pose_offset}"
@@ -174,7 +183,7 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Grapple Moving Satellite with Fuse">
+    <SubTree ID="Grapple Moving Satellite via Fiducial Tracking">
       <MetadataFields>
         <Metadata runnable="true" />
         <Metadata subcategory="Application - Advanced Examples" />

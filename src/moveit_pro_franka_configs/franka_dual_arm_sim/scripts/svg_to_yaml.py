@@ -124,7 +124,10 @@ def extract_waypoints_from_paths(paths, density):
         points = path_to_points(path, density)
         log(f"Path has {len(points)} waypoints")
         waypoints = [
-            list(a) for a in zip(points.real, points.imag, np.zeros(len(points.real)))
+            list(a)
+            for a in zip(
+                points.real, points.imag, np.zeros(len(points.real)), strict=True
+            )
         ]
         log(f"Subpath has {len(waypoints)} waypoints")
         # Add a pre-waypoint and post-waypoint with Z clearance for transitions between subpaths.

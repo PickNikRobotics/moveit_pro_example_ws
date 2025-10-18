@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<root BTCPP_format="4" main_tree_to_execute="ML Segment Image from Text Prompt">
+<root BTCPP_format="4" main_tree_to_execute="ML Segment Image">
   <!--//////////-->
   <BehaviorTree
-    ID="ML Segment Image from Text Prompt"
-    _description="Run an ML model to find all objects and visualize the masks with bounding boxes."
+    ID="ML Segment Image"
+    _description="Run an ML model to find all objects and visualize the masks with bounding boxes, from a text prompt."
     _favorite="true"
   >
     <Control ID="Sequence">
@@ -27,7 +27,7 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="ML Segment Image from Text Prompt">
+    <SubTree ID="ML Segment Image">
       <MetadataFields>
         <Metadata runnable="true" />
         <Metadata subcategory="Application - ML (GPU Recommended)" />
