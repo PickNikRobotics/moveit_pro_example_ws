@@ -69,6 +69,9 @@ moveit_params:
   pose_jog:
     package: "dual_arm_sim"
     path: "config/moveit/pose_jog.yaml"
+  joint_jog:
+    package: "franka_dual_arm_sim"
+    path: "config/moveit/joint_jog.yaml"
 
   publish:
     planning_scene: True
@@ -140,6 +143,8 @@ ros2_control:
     #- "joint_trajectory_admittance_controller"
     - "left_velocity_force_controller"
     - "right_velocity_force_controller"
+    - "left_joint_velocity_controller"
+    - "right_joint_velocity_controller"
     - "servo_controller"
     - "left_joint_trajectory_controller"
     - "right_joint_trajectory_controller"

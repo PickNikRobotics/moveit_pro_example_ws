@@ -18,6 +18,7 @@
           current_teleop_mode="{teleop_mode}"
           planning_groups="{planning_groups}"
           controllers="{controllers}"
+          skip_collision_checks="{skip_collision_checks}"
           tip_links="{tip_links}"
         />
         <Decorator ID="KeepRunningUntilFailure">
@@ -185,10 +186,42 @@
               </Decorator>
             </Control>
             <Control ID="Sequence" _while="teleop_mode == 1">
-              <Action
-                ID="TeleoperateJointJog"
-                controller_name="servo_controller"
-              />
+              <Decorator ID="Repeat" num_cycles="-1">
+                <Control ID="Sequence">
+                  <Action
+                    ID="SwitchController"
+                    activate_controllers="{controllers}"
+                    deactivate_controllers="platform_velocity_controller_nav2"
+                  />
+
+                  <Decorator ID="ForceSuccess">
+                    <Decorator ID="Repeat" num_cycles="-1">
+                      <Control
+                        ID="Parallel"
+                        success_count="1"
+                        failure_count="1"
+                      >
+                        <Decorator ID="KeepRunningUntilFailure">
+                          <Action
+                            ID="GetElementOfVector"
+                            vector_in="{controllers}"
+                            index="0"
+                            element="{first_controller}"
+                          />
+                        </Decorator>
+
+                        <Action
+                          ID="JointJog"
+                          controller_name="{first_controller}"
+                          link_padding="0.00000"
+                          stop_safety_factor="1.500000"
+                          skip_collision_checks="{skip_collision_checks}"
+                        />
+                      </Control>
+                    </Decorator>
+                  </Decorator>
+                </Control>
+              </Decorator>
             </Control>
           </Control>
         </Decorator>
