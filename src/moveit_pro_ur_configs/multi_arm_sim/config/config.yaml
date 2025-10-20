@@ -102,6 +102,9 @@ moveit_params:
   pose_jog:
     package: "multi_arm_sim"
     path: "config/moveit/pose_jog.yaml"
+  joint_jog:
+    package: "multi_arm_sim"
+    path: "config/moveit/joint_jog.yaml"
 
   publish:
     planning_scene: True
@@ -144,6 +147,10 @@ ros2_control:
     - "second_velocity_force_controller"
     - "third_velocity_force_controller"
     - "fourth_velocity_force_controller"
+    - "first_joint_velocity_controller"
+    - "second_joint_velocity_controller"
+    - "third_joint_velocity_controller"
+    - "fourth_joint_velocity_controller"
   # Any controllers here will not be spawned by MoveIt Pro.
   # [Optional, default=[]]
   controllers_not_managed: []
