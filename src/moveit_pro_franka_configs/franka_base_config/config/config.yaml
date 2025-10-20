@@ -42,6 +42,9 @@ moveit_params:
   pose_jog:
     package: "franka_base_config"
     path: "config/moveit/pose_jog.yaml"
+  joint_jog:
+    package: "franka_base_config"
+    path: "config/moveit/joint_jog.yaml"
 
   publish:
     planning_scene: True
