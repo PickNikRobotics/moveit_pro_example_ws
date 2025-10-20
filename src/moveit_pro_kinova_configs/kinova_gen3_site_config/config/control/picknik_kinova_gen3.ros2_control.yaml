@@ -14,6 +14,8 @@ controller_manager:
       type: joint_trajectory_controller/JointTrajectoryController
     velocity_force_controller:
       type: velocity_force_controller/VelocityForceController
+    joint_velocity_controller:
+      type: joint_velocity_controller/JointVelocityController
     fault_controller:
       type: picknik_reset_fault_controller/PicknikResetFaultController
 
@@ -155,3 +157,33 @@ velocity_force_controller:
       - 1.0
       - 1.0
       - 1.0
+
+joint_velocity_controller:
+  ros__parameters:
+    # Joint group to control.
+    planning_group_name: manipulator
+    # Maximum joint-space velocities.
+    max_joint_velocity:
+      - 0.7
+      - 0.7
+      - 0.7
+      - 0.7
+      - 0.6
+      - 0.6
+      - 0.6
+    # Maximum joint-space accelerations.
+    max_joint_acceleration:
+      - 2.6
+      - 2.6
+      - 2.6
+      - 2.6
+      - 5.0
+      - 5.0
+      - 5.0
+    command_interfaces: ["position"]
+    # Padding (in radians) to add to joint position limits as a safety margin.
+    joint_limit_position_tolerance: 0.02
+    # Timeout in seconds after which the controller will stop motion if no new commands are received.
+    command_timeout: 0.2
+    # Rate in Hz at which the controller will publish the state.
+    state_publish_rate: 20

@@ -52,6 +52,9 @@ moveit_params:
   pose_jog:
     package: "kinova_gen3_site_config"
     path: "config/moveit/pose_jog.yaml"
+  joint_jog:
+    package: "kinova_gen3_site_config"
+    path: "config/moveit/joint_jog.yaml"
 
   publish:
     planning_scene: True
@@ -90,3 +93,4 @@ ros2_control:
     - "joint_trajectory_controller"
     - "joint_trajectory_admittance_controller"
     - "velocity_force_controller"
+    - "joint_velocity_controller"
