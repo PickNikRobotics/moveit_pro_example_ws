@@ -80,6 +80,9 @@ moveit_params:
   pose_jog:
     package: "factory_sim"
     path: "config/moveit/pose_jog.yaml"
+  joint_jog:
+    package: "factory_sim"
+    path: "config/moveit/joint_jog.yaml"
   publish:
     planning_scene: True
     geometry_updates: True
@@ -112,6 +115,7 @@ ros2_control:
   controllers_inactive_at_startup:
     - "servo_controller"
     - "velocity_force_controller"
+    - "joint_velocity_controller"
   # Any controllers here will not be spawned by MoveIt Pro.
   # [Optional, default=[]]
   controllers_not_managed: []

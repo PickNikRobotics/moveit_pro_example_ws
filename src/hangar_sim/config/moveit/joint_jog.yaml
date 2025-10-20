@@ -1,0 +1,5 @@
+
+# Planning groups to use in JointJog, and their corresponding JVC controllers.
+# The number of elements in `planning_groups` and `controllers` must match.
+planning_groups: ['manipulator', 'arm_only']
+controllers: ['joint_velocity_controller', 'arm_only_joint_velocity_controller']

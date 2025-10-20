@@ -50,6 +50,9 @@ moveit_params:
   pose_jog:
     package: "hangar_sim"
     path: "config/moveit/pose_jog.yaml"
+  joint_jog:
+    package: "hangar_sim"
+    path: "config/moveit/joint_jog.yaml"
 
 
 # Configuration for loading behaviors and objectives.
@@ -103,3 +106,5 @@ ros2_control:
     - "platform_velocity_controller_nav2"
     - "velocity_force_controller"
     - "arm_only_velocity_force_controller"
+    - "joint_velocity_controller"
+    - "arm_only_joint_velocity_controller"
