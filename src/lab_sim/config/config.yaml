@@ -32,6 +32,9 @@ moveit_params:
   pose_jog:
     package: "lab_sim"
     path: "config/moveit/pose_jog.yaml"
+  sensors_3d:
+    package: "lab_sim"
+    path: "config/moveit/sensors_3d.yaml"
 
 # Configuration for loading behaviors and objectives.
 # [Required]
