@@ -61,6 +61,7 @@ hardware:
       - wrist_realsense: "true"
       - use_internal_bus_gripper_comm: "false"
       - mujoco_model: "description/mujoco/rafti_fingers_scene.xml"
+      - mujoco_viewer: false
 
 # Sets ROS global params for launch.
 # [Optional]
