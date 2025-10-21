@@ -1,10 +1,10 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Load and Execute Joint Trajectory">
   <!--//////////-->
   <BehaviorTree
     ID="Load and Execute Joint Trajectory"
     _description="Load a trajectory that was saved as a YAML file"
-    _favorite="true"
+    _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <!--Make sure to move the robot to the same starting position as the saved trajectory starts, otherwise the joint_trajectory_controller will use joint interpolation to align the robot with the path-->

@@ -20,6 +20,7 @@
         controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
         keep_orientation_tolerance="0.05"
         keep_orientation_link_names="grasp_link"
+        seed="0"
       />
       <SubTree ID="Open Gripper" />
       <SubTree
@@ -32,19 +33,20 @@
       />
       <SubTree
         ID="Constrained Pick and Place Subtree"
-        pre_pick="Flask 2a - Pre Pick"
-        pick="Flask 2b - Pick"
-        pre_place="Flask 2c - Pre Place"
-        place="Flask 2d - Place"
-        name="Flask 2"
-      />
-      <SubTree
-        ID="Constrained Pick and Place Subtree"
         pre_pick="Flask 3a - Pre Pick"
         pick="Flask 3b - Pick"
         pre_place="Flask 3c - Pre Place"
         place="Flask 3d - Place"
         name="Flask 3"
+      />
+      <SubTree
+        ID="Constrained Pick and Place Subtree"
+        pre_pick="Flask 2a - Pre Pick"
+        pick="Flask 2b - Pick"
+        pre_place="Flask 2c - Pre Place"
+        place="Flask 2d - Place"
+        name="Flask 2"
+        _collapsed="true"
       />
     </Control>
   </BehaviorTree>
