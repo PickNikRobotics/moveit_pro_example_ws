@@ -1,9 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Joint Diagnostic">
   <!--//////////-->
   <BehaviorTree
     ID="Joint Diagnostic"
     _description="Example of cycling through the min and max limits of a single joint, for hardware testing"
-    _favorite="true"
+    _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <!--Setup by moving home-->

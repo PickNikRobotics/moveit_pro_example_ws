@@ -601,7 +601,7 @@
     wrench: []
   name: Flask 3d - Place
 - description: ''
-  favorite: false
+  favorite: true
   joint_group_names:
   - gripper
   - linear_actuator
