@@ -200,7 +200,6 @@ controller_server:
         collision_cost: 1000000.0
         near_goal_distance: 1.0
       PathAlignCritic:
-      PathAlignCritic:
         enabled: true
         cost_power: 1
         cost_weight: 14.0
