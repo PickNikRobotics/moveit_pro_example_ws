@@ -10,7 +10,7 @@
         ID="CreatePoseVectorFromDirectory"
         _collapsed="true"
         pose_vector="{pose_vector}"
-        directory_path="/home/henry/user_ws/src/poses"
+        directory_path="/home/studio-user/user_ws/src/hangar_sim/poses"
       />
       <Action
         ID="CreateStampedPose"

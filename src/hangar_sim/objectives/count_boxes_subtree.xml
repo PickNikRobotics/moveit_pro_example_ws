@@ -20,13 +20,13 @@
         />
         <Action
           ID="SaveImageToFile"
-          file_path="/home/henry/user_ws/src/wrist_camera_images"
+          file_path="/home/studio-user/user_ws/src/hangar_sim/wrist_camera_images"
           file_prefix="box"
           image="{wrist_camera_image}"
         />
         <Action
           ID="SaveImageToFile"
-          file_path="/home/henry/user_ws/src/scene_camera_images"
+          file_path="/home/studio-user/user_ws/src/hangar_sim/scene_camera_images"
           file_prefix="box"
           image="{scene_camera_image}"
         />
