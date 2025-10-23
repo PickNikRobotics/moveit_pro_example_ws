@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <package format="3">
-  <name>franka_dual_arm_sim</name>
+  <name>dual_arm_sim</name>
   <version>7.4.0</version>
 
   <description>Base configuration package for the Franka arm.</description>

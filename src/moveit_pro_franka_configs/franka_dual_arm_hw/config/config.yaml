@@ -51,31 +51,31 @@ moveit_params:
   joint_group_name: "right_manipulator"
 
   ompl_planning:
-    package: "franka_dual_arm_sim"
+    package: "dual_arm_sim"
     path: "config/moveit/ompl_planning.yaml"
   stomp_planning:
-    package: "franka_dual_arm_sim"
+    package: "dual_arm_sim"
     path: "config/moveit/stomp_planning.yaml"
   kinematics:
-    package: "franka_dual_arm_sim"
+    package: "dual_arm_sim"
     path: "config/moveit/pose_ik_distance.yaml"
   servo:
-    package: "franka_dual_arm_sim"
+    package: "dual_arm_sim"
     path: "config/moveit/servo.yaml"
   sensors_3d:
-    package: "franka_dual_arm_sim"
+    package: "dual_arm_sim"
     path: "config/moveit/sensors_3d.yaml"
   servo_kinematics:
-    package: "franka_dual_arm_sim"
+    package: "dual_arm_sim"
     path: "config/moveit/pose_ik_speed.yaml"
   joint_limits:
-    package: "franka_dual_arm_sim"
+    package: "dual_arm_sim"
     path: "config/moveit/joint_limits.yaml"
   servo_joint_limits:
-    package: "franka_dual_arm_sim"
+    package: "dual_arm_sim"
     path: "config/moveit/servo_joint_limits.yaml"
   pose_jog:
-    package: "franka_dual_arm_sim"
+    package: "dual_arm_sim"
     path: "config/moveit/pose_jog.yaml"
 
   publish:
@@ -122,7 +122,7 @@ objectives:
   # Specify the location of the saved waypoints file.
   # [Required]
   #waypoints_file:
-  #  package_name: "franka_dual_arm_sim"
+  #  package_name: "dual_arm_sim"
   #  relative_path: "waypoints/waypoints.yaml"
 # Configuration for launching ros2_control processes.
 # [Required, if using ros2_control]
