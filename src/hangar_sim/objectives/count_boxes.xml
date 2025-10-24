@@ -33,11 +33,20 @@
         poses_cropped="{path_cropped}"
         crop_box_size="12;12;1"
       />
+      <SubTree
+        ID="Order Poses"
+        _collapsed="true"
+        centroid="{crop_pose_centroid}"
+        poses_in="{path_cropped}"
+        poses_ordered="{poses_ordered}"
+        x_extent="12"
+        y_extent="12"
+      />
       <Action
         ID="VisualizePath"
         marker_lifetime="0.000000"
-        marker_name="path_cropped"
-        path="{path_cropped}"
+        marker_name="poses_ordered"
+        path="{poses_ordered}"
         pose_marker_size="1"
         show_poses="true"
       />
@@ -57,7 +66,7 @@
         ID="ForEach"
         index="{index}"
         out="{out}"
-        vector_in="{path_cropped}"
+        vector_in="{poses_ordered}"
       >
         <Control ID="Sequence">
           <Action
