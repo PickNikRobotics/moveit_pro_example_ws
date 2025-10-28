@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Segment Image from Point Subtree">
   <!--//////////-->
   <BehaviorTree
@@ -19,7 +19,6 @@
         topic_name="{image_topic_name}"
         timeout_sec="5.000000"
         message_out="{image}"
-        publisher_timeout_sec="5.000000"
       />
       <Action
         ID="GetPointsFromUser"
@@ -42,30 +41,26 @@
         image="{image}"
         masks="{masks2d}"
         masks_visualization_topic="{masks_visualization_topic}"
-        opacity="0.500000"
       />
       <Action ID="SwitchUIPrimaryView" primary_view_name="Visualization" />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Segment Image from Point Subtree">
+      <input_port name="decoder_model_path" default="{decoder_model_path}" />
+      <input_port name="encoder_model_path" default="{encoder_model_path}" />
+      <input_port name="image_topic_name" default="{image_topic_name}" />
+      <input_port
+        name="masks_visualization_topic"
+        default="{masks_visualization_topic}"
+      />
+      <output_port name="masks2d" default="{masks2d}" />
+      <input_port name="model_package" default="{model_package}" />
+      <output_port name="pixel_coords" default="{pixel_coords}" />
       <MetadataFields>
         <Metadata runnable="false" />
         <Metadata subcategory="Perception - ML" />
       </MetadataFields>
-      <input_port name="decoder_model_path" default="models/decoder.onnx" />
-      <input_port
-        name="encoder_model_path"
-        default="models/sam2_hiera_large_encoder.onnx"
-      />
-      <input_port name="image_topic_name" default="/wrist_camera/color" />
-      <input_port
-        name="masks_visualization_topic"
-        default="/masks_visualization"
-      />
-      <output_port name="masks2d" default="{masks2d}" />
-      <input_port name="model_package" default="lab_sim" />
-      <output_port name="pixel_coords" default="{pixel_coords}" />
     </SubTree>
   </TreeNodesModel>
 </root>
