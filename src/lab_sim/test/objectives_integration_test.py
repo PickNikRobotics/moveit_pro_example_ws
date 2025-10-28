@@ -76,6 +76,7 @@ skip_objectives = {
     "Inspector",
 }
 
+
 # This is a workaround to avoid the test running before ros control is ready
 def wait_for_gripper_action_server(timeout: int = 180):
     node = rclpy.create_node("test_node")

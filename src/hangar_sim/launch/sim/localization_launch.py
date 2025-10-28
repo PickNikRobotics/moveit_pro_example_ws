@@ -39,6 +39,7 @@ from launch_ros.actions import Node
 from launch_ros.descriptions import ComposableNode, ParameterFile
 from nav2_common.launch import RewrittenYaml
 
+
 # This file is adapted from: https://github.com/ros-navigation/navigation2/blob/humble/nav2_bringup/launch/localization_launch.py
 def generate_launch_description():
     # Get the launch directory
