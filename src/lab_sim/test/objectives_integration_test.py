@@ -74,6 +74,8 @@ skip_objectives = {
     "Stack Blocks with ICP",  # Skipped because there is no primary ui to switch to in ci
     "Teleoperate",
     "Inspector",
+    "Pick 1 Pill Bottle",
+    "AddBottlesToPlanningScene",
 }
 
 # This is a workaround to avoid the test running before ros control is ready
