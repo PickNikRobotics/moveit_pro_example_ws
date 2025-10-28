@@ -215,6 +215,10 @@
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Order Poses">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Motion - Planning" />
+      </MetadataFields>
       <inout_port
         name="centroid"
         default="{centroid}"
