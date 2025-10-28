@@ -40,7 +40,7 @@
         timeout="-1.000000"
       />
       <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
-      <!--The arm is moved to this intermediate waypoint to give a more predicable arm motion while avoiding the hanging bowls. Even with a collision object modeled the arm would still make large motions at times which influenced how well the part was aligned to the jig posts.-->
+      <!--The arm is moved to this intermediate waypoint to give a more predictable arm motion while avoiding the hanging bowls. Even with a collision object modeled the arm would still make large motions at times which influenced how well the part was aligned to the jig posts.-->
       <Action
         ID="SetupMTCPlanToJointState"
         acceleration_scale_factor="1"
