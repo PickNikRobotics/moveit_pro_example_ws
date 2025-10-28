@@ -10,12 +10,6 @@
       <Action
         ID="SwitchController"
         activate_controllers="joint_trajectory_controller"
-        activate_asap="true"
-        automatic_deactivation="true"
-        controller_list_action_name="/controller_manager/list_controllers"
-        controller_switch_action_name="/controller_manager/switch_controller"
-        strictness="1"
-        timeout="-1.000000"
       />
       <Action
         ID="LoadPoseStampedVectorFromYaml"
@@ -64,9 +58,6 @@
             ID="VisualizePath"
             marker_lifetime="0.000000"
             path="{pose_stamped_msgs}"
-            marker_name="path"
-            pose_marker_size="0.100000"
-            show_poses="false"
           />
           <Action
             ID="ExecuteFollowJointTrajectory"
@@ -75,7 +66,6 @@
             goal_position_tolerance="0.000000"
             goal_time_tolerance="0.000000"
             joint_trajectory_msg="{joint_trajectory_msg}"
-            trajectory_remainder="{joint_trajectory_remainder}"
           />
         </Control>
       </Control>
