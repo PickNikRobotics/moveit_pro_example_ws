@@ -6,12 +6,15 @@
     _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
-      <Action ID="CreateFloat64Message" data="{x_extent}" float64="{x_msg}" />
-      <Action ID="UnpackFloat64Message" data="{x_extent}" float64="{x_msg}" />
-      <Action ID="CreateFloat64Message" data="{y_extent}" float64="{y_msg}" />
-      <Action ID="UnpackFloat64Message" data="{y_extent}" float64="{y_msg}" />
-      <Action ID="Script" code="poses_ordered:=poses_in" />
-      <Control ID="Sequence">
+      <Control
+        ID="Sequence"
+        name="Calculate the 4 corners of the region of interest"
+      >
+        <Action ID="CreateFloat64Message" data="{x_extent}" float64="{x_msg}" />
+        <Action ID="UnpackFloat64Message" data="{x_extent}" float64="{x_msg}" />
+        <Action ID="CreateFloat64Message" data="{y_extent}" float64="{y_msg}" />
+        <Action ID="UnpackFloat64Message" data="{y_extent}" float64="{y_msg}" />
+        <Action ID="Script" code="poses_ordered:=poses_in" />
         <Action
           ID="UnpackPoseStampedMessage"
           header="{header}"
@@ -35,6 +38,11 @@
         <Action ID="Script" code="right:=x+(x_extent/2)" />
         <Action ID="Script" code="top:=y+(y_extent/2)" />
         <Action ID="Script" code="bottom:=y-(y_extent/2)" />
+      </Control>
+      <Control
+        ID="Sequence"
+        name="Create a StampedPose for each of the region of interest's corners"
+      >
         <Control ID="Sequence">
           <Action
             ID="CreatePointMessage"
@@ -120,7 +128,10 @@
           />
         </Control>
       </Control>
-      <Control ID="Sequence">
+      <Control
+        ID="Sequence"
+        name="From our given set of poses, find one that is closes to each of our region if interest's conrners"
+      >
         <Decorator
           ID="ForEach"
           index="{index}"
