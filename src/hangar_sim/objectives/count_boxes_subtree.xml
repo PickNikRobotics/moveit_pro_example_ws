@@ -20,13 +20,13 @@
         />
         <Action
           ID="SaveImageToFile"
-          file_path="/home/studio-user/user_ws/src/hangar_sim/wrist_camera_images"
+          file_path="{wrist_camera_folder}"
           file_prefix="box"
           image="{wrist_camera_image}"
         />
         <Action
           ID="SaveImageToFile"
-          file_path="/home/studio-user/user_ws/src/hangar_sim/scene_camera_images"
+          file_path="{scene_camera_folder}"
           file_prefix="box"
           image="{scene_camera_image}"
         />
@@ -142,13 +142,27 @@
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Count boxes subtree">
-      <inout_port name="box_count" default="{box_count}" type="int">
-        Number of boxes
-      </inout_port>
       <MetadataFields>
         <Metadata runnable="False" />
         <Metadata subcategory="Perception - ML" />
       </MetadataFields>
+      <inout_port
+        name="scene_camera_folder"
+        default="/home/studio-user/user_ws/src/hangar_sim/scene_camera_images"
+        type="std::string"
+      >
+        Absolute path to a directory for saving scene camera pictures
+      </inout_port>
+      <inout_port
+        name="wrist_camera_folder"
+        default="/home/studio-user/user_ws/src/hangar_sim/wrist_camera_images"
+        type="std::string"
+      >
+        Absolute path to a directory for saving wrist camera pictures
+      </inout_port>
+      <inout_port name="box_count" default="{box_count}" type="int">
+        Number of boxes
+      </inout_port>
     </SubTree>
   </TreeNodesModel>
 </root>

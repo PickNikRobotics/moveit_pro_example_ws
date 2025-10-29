@@ -33,7 +33,7 @@
   <TreeNodesModel>
     <SubTree ID="CreatePoseVectorFromDirectory">
       <MetadataFields>
-        <Metadata runnable="true" />
+        <Metadata runnable="false" />
         <Metadata subcategory="Application - Advanced Examples" />
       </MetadataFields>
       <inout_port
