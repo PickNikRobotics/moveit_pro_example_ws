@@ -5,69 +5,19 @@
     ID="Verify Box Count"
     _description="User verify the number of boxes"
     _favorite="false"
+    name="Show images taken by the robot to a human for box count verification"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
-        ID="GetFilenamesFromDirectory"
-        file_type=".png"
-        result="{image_filename_vector}"
+        ID="LogMessage"
+        log_level="error"
+        message="Make sure to update the absolute path by replacing studio-user with your username, then you can delete this message"
+      />
+      <SubTree
+        ID="Verify Box Count Subtree"
+        _collapsed="true"
         directory_path="/home/studio-user/user_ws/src/hangar_sim/wrist_camera_images"
       />
-      <Action ID="Script" code="inc:=0" />
-      <Decorator
-        ID="ForEach"
-        index="{index}"
-        out="{out}"
-        vector_in="{image_filename_vector}"
-      >
-        <Control ID="Sequence">
-          <Action
-            ID="LoadImageFromFile"
-            frame_id="world"
-            image="{image}"
-            file_path="{out}"
-          />
-          <Action ID="ResetVector" vector="{masks2d}" />
-          <Action
-            ID="SwitchUIPrimaryView"
-            primary_view_name="/masks_visualization"
-          />
-          <Action
-            ID="PublishMask2D"
-            image="{image}"
-            masks="{masks2d}"
-            masks_visualization_topic="/masks_visualization"
-            opacity="0.500000"
-          />
-          <Action ID="WaitForDuration" delay_duration="5.000000" />
-          <Decorator ID="RetryUntilSuccessful" num_attempts="3">
-            <Control ID="Sequence">
-              <Action
-                ID="GetTextFromUser"
-                text_output="{text_output}"
-                prompts="Number of boxes in image"
-                default_values="0"
-              />
-              <Decorator
-                ID="ForEach"
-                index="{index}"
-                out="{out}"
-                vector_in="{text_output}"
-              >
-                <Control ID="Sequence">
-                  <Action
-                    ID="StringToInt"
-                    result="{num_boxes}"
-                    string_to_convert="{out}"
-                  />
-                  <Action ID="Script" code="inc+=num_boxes" />
-                </Control>
-              </Decorator>
-            </Control>
-          </Decorator>
-        </Control>
-      </Decorator>
-      <Action ID="LogMessage" log_level="info" message="{inc}" />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
