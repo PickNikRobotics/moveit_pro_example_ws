@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Count Boxes">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Count Boxes"
+    _description="Count the number of boxes in a given area."
+    _favorite="false"
+    name="Show images taken by the robot to a human for box count verification"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="LogMessage"
+        log_level="error"
+        message="Make sure to update the absolute path by replacing studio-user with your username, then you can delete this message"
+      />
+      <SubTree
+        ID="Count Boxes Objective"
+        _collapsed="true"
+        pose_path="/home/studio-user/user_ws/src/hangar_sim/poses"
+        scene_camera_folder="/home/studio-user/user_ws/src/hangar_sim/scene_camera_images"
+        wrist_camera_folder="/home/studio-user/user_ws/src/hangar_sim/wrist_camera_images"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Count Boxes">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Advanced Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

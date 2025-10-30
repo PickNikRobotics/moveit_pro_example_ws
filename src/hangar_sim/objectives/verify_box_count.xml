@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Verify Box Count">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Verify Box Count"
+    _description="User verify the number of boxes"
+    _favorite="false"
+    name="Show images taken by the robot to a human for box count verification"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="LogMessage"
+        log_level="error"
+        message="Make sure to update the absolute path by replacing studio-user with your username, then you can delete this message"
+      />
+      <SubTree
+        ID="Verify Box Count Subtree"
+        _collapsed="true"
+        directory_path="/home/studio-user/user_ws/src/hangar_sim/wrist_camera_images"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Verify Box Count">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Advanced Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
