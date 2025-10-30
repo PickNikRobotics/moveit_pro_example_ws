@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="CreatePoseVectorFromDirectory">
+  <BehaviorTree
+    ID="CreatePoseVectorFromDirectory"
+    _description=""
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="GetFilenamesFromDirectory"
+        result="{result}"
+        directory_path="{directory_path}"
+        file_type=".yaml"
+      />
+      <Action ID="ResetVector" vector="{pose_vector}" />
+      <Decorator ID="ForEach" index="{index}" out="{out}" vector_in="{result}">
+        <Control ID="Sequence">
+          <Action
+            ID="LoadPoseStampedFromYaml"
+            output="{pose_msg}"
+            file_path="{out}"
+          />
+          <Action
+            ID="PushBackVector"
+            input_vector="{pose_vector}"
+            output_vector="{pose_vector}"
+            element="{pose_msg}"
+          />
+        </Control>
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="CreatePoseVectorFromDirectory">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Application - Advanced Examples" />
+      </MetadataFields>
+      <inout_port
+        name="directory_path"
+        default="{directory_path}"
+        type="std::string"
+      />
+      <inout_port name="pose_vector" default="{pose_vector}" />
+    </SubTree>
+  </TreeNodesModel>
+</root>
