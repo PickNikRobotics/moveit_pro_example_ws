@@ -60,9 +60,6 @@ moveit_params:
   sensors_3d:
     package: "dual_arm_sim"
     path: "config/moveit/sensors_3d.yaml"
-  servo_kinematics:
-    package: "dual_arm_sim"
-    path: "config/moveit/pose_ik_speed.yaml"
   joint_limits:
     package: "dual_arm_sim"
     path: "config/moveit/joint_limits.yaml"
