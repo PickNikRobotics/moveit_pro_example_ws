@@ -46,7 +46,7 @@
         ID="SetupMTCMoveAlongFrameAxis"
         acceleration_scale="1.0"
         axis_frame="world"
-        axis_y="-1.00"
+        axis_y="-1.0"
         axis_z="0.0"
         hand_frame="tool0"
         ignore_environment_collisions="false"
