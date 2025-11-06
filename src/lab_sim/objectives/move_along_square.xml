@@ -1,5 +1,6 @@
+<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Move Along Square">
-  <!-- ////////// -->
+  <!--//////////-->
   <BehaviorTree ID="Move Along Square" _description="Move along a square path">
     <Control ID="Sequence">
       <Action
@@ -7,14 +8,16 @@
         controller_names="joint_trajectory_controller"
         task="{mtc_task}"
         task_id="move_along_axis"
+        timeout="-1.000000"
+        trajectory_monitoring="false"
       />
       <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
       <Action
         ID="SetupMTCMoveAlongFrameAxis"
         acceleration_scale="1.0"
         axis_frame="world"
-        axis_y="0.0"
-        axis_z="1.0"
+        axis_y="1.0"
+        axis_z="0.0"
         hand_frame="tool0"
         ignore_environment_collisions="false"
         max_distance="0.2"
@@ -43,8 +46,8 @@
         ID="SetupMTCMoveAlongFrameAxis"
         acceleration_scale="1.0"
         axis_frame="world"
-        axis_y="0.0"
-        axis_z="-1.0"
+        axis_y="-1.00"
+        axis_z="0.0"
         hand_frame="tool0"
         ignore_environment_collisions="false"
         max_distance="0.2"
