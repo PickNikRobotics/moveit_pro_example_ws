@@ -42,7 +42,7 @@
             response_timeout="3.000000"
             wait_for_server_available_timeout="3.000000"
           />
-          <SubTree ID="Move Along Square" _collapsed="false" />
+          <SubTree ID="Move Along Square" _collapsed="true" />
           <Action
             ID="CallTriggerService"
             service_name="/stop_recording_joint_trajectory"
