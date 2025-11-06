@@ -33,9 +33,6 @@ moveit_params:
   sensors_3d:
     package: "franka_base_config"
     path: "config/moveit/sensors_3d.yaml"
-  servo_kinematics:
-    package: "franka_base_config"
-    path: "config/moveit/pose_ik_speed.yaml"
   joint_limits:
     package: "franka_base_config"
     path: "config/moveit/joint_limits.yaml"
