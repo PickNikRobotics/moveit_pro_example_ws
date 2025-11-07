@@ -171,6 +171,9 @@ objectives:
     mujoco_objectives:
       package_name: "moveit_pro_objectives"
       relative_path: "objectives/mujoco"
+    visualization_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/visualization"
     sim_objectives:
       package_name: "kinova_sim"
       relative_path: "objectives"
