@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Reset Simulation">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Reset Simulation"
+    _description="Reset the MuJoCo simulation to the `default` keyframe (if specified in the mujoco model)."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="SwitchController"
+        activate_asap="true"
+        automatic_deactivation="true"
+        controller_list_action_name="/controller_manager/list_controllers"
+        controller_switch_action_name="/controller_manager/switch_controller"
+        strictness="1"
+        timeout="-1.000000"
+        deactivate_controllers="joint_trajectory_controller;servo_controller;velocity_force_controller;joint_trajectory_admittance_controller"
+      />
+      <Action
+        ID="ResetMujocoKeyframe"
+        response_timeout="10.000000"
+        wait_for_server_available_timeout="3.000000"
+        keyframe_name="default"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Reset Simulation">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="MuJoCo Simulation" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
