@@ -25,6 +25,17 @@
         pcd_topic="/pcd_pointcloud_captures"
         point_cloud="{point_cloud}"
       />
+      <Action
+        ID="LogMessage"
+        log_level="info"
+        message="Click Resume to reset the octomap and finish the Behavior"
+      />
+      <!--Clear the Octomap at the end to avoid interfering with other Behaviors-->
+      <Action
+        ID="BreakpointSubscriber"
+        breakpoint_topic="/moveit_pro_breakpoint"
+      />
+      <SubTree ID="Clear Snapshot" _collapsed="true" />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
