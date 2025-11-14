@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="MPC Pose Tracking">
   <!--//////////-->
-  <BehaviorTree ID="MPC Pose Tracking" _description="" _favorite="false">
+  <BehaviorTree
+    ID="MPC Pose Tracking"
+    _description="Uses Model Predictive Control (MPC) to track a target pose in real-time."
+    _favorite="false"
+  >
     <Control ID="Sequence" name="TopLevelSequence">
       <Control ID="Sequence">
         <SubTree
