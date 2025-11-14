@@ -77,6 +77,7 @@ skip_objectives = {
     "Pick 1 Pill Bottle",
     "AddBottlesToPlanningScene",
     "Interactive Marker Visualization",  # Server not available for GetTextFromUser
+    "Octomap Example",  # Requires user input to clear the octomap.
 }
 
 
