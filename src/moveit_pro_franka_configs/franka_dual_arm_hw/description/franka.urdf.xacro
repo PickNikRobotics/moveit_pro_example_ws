@@ -20,6 +20,7 @@
                       dynamics="${xacro.load_yaml('$(find franka_description)/robots/fr3/dynamics.yaml')}"
                       gazebo="false"
                       hand="true"
+                      tcp_xyz="0 0 0.1034"
                       ee_id="$(arg ee_id)"
                       with_sc="false"
                       ros2_control="false"
@@ -28,7 +29,7 @@
                       fake_sensor_commands="false"
                       gazebo_effort="false"
                       no_prefix="false"
-                      arm_prefix="right"
+                      arm_prefix="right_"
                       connected_to= "right_mount">
   </xacro:franka_robot>
   <link name="grasp_link" />
@@ -50,6 +51,7 @@
                       dynamics="${xacro.load_yaml('$(find franka_description)/robots/fr3/dynamics.yaml')}"
                       gazebo="false"
                       hand="true"
+                      tcp_xyz="0 0 0.1034"
                       ee_id="$(arg ee_id)"
                       with_sc="false"
                       ros2_control="false"
@@ -58,7 +60,7 @@
                       fake_sensor_commands="false"
                       gazebo_effort="false"
                       no_prefix="false"
-                      arm_prefix="left"
+                      arm_prefix="left_"
                       connected_to= "left_mount">
   </xacro:franka_robot>
   
