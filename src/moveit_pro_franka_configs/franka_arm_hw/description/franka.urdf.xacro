@@ -13,6 +13,7 @@
                       dynamics="${xacro.load_yaml('$(find franka_description)/robots/fr3/dynamics.yaml')}"
                       gazebo="false"
                       hand="true"
+                      tcp_xyz="0 0 0.1034"
                       ee_id="$(arg ee_id)"
                       with_sc="false"
                       ros2_control="true"

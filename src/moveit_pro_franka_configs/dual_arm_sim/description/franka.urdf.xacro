@@ -4,14 +4,28 @@
   <xacro:arg name="ee_id" default="franka_hand" />
   <xacro:arg name="rpy_ee" default="0 0 -0.785" />
 
+  <!-- Load Franka Duo Mount -->
+  <xacro:include filename="$(find franka_description)/robots/fr3_duo/fr3_duo_mount/fr3_duo_mount.xacro"/>
+  <xacro:property name="mount_kinematics" value="${xacro.load_yaml('$(find franka_description)/robots/fr3_duo/fr3_duo_mount/kinematics.yaml')}" />
+
   <!-- Load Franka robot -->
   <xacro:include filename="$(find franka_description)/robots/common/franka_robot.xacro"/>
+
   <link name="world" />
+
+  <xacro:mount name="fr3_duo" 
+               parent="world"
+               inertials="${xacro.load_yaml('$(find franka_description)/robots/fr3_duo/fr3_duo_mount/inertials.yaml')}">
+    <origin xyz="0.0 0.0 0.305115" rpy="0 0 0" />
+  </xacro:mount>
+
   <joint name="right_mount_joint" type="fixed">
-     <parent link="world"/>
+     <parent link="mount_link"/>
      <child link = "right_mount"/>
-    <origin xyz="0.035 -0.050681 0.356" rpy="0.8936 -0.1746 0.4636"/>
+     <origin xyz="${mount_kinematics['right']['kinematic']['x']} ${mount_kinematics['right']['kinematic']['y']} ${mount_kinematics['right']['kinematic']['z']}" 
+             rpy="${mount_kinematics['right']['kinematic']['roll']} ${mount_kinematics['right']['kinematic']['pitch']} ${mount_kinematics['right']['kinematic']['yaw']}"/>
   </joint>
+
   <xacro:franka_robot arm_id="fr3"
                       joint_limits="${xacro.load_yaml('$(find franka_description)/robots/fr3/joint_limits.yaml')}"
                       inertials="${xacro.load_yaml('$(find franka_description)/robots/fr3/inertials.yaml')}"
@@ -19,6 +33,7 @@
                       dynamics="${xacro.load_yaml('$(find franka_description)/robots/fr3/dynamics.yaml')}"
                       gazebo="false"
                       hand="true"
+                      tcp_xyz="0 0 0.1034"
                       ee_id="$(arg ee_id)"
                       with_sc="false"
                       ros2_control="false"
@@ -27,8 +42,8 @@
                       fake_sensor_commands="false"
                       gazebo_effort="false"
                       no_prefix="false"
-                      arm_prefix="right"
-                      connected_to= "right_mount">
+                      arm_prefix="right_"
+                      connected_to= "right_mount"> <!-- This also creates the link right_mount -->
   </xacro:franka_robot>
 
   <!-- This link aligns the axes of the grasp frame to our required convention for motion planning tasks. -->
@@ -40,9 +55,10 @@
   </joint>
 
   <joint name="left_mount_joint" type="fixed">
-     <parent link="world"/>
+     <parent link="mount_link"/>
      <child link = "left_mount"/>
-    <origin xyz="0.035 0.050681 0.356" rpy="-0.8936 -0.1746 -0.4636"/>
+     <origin xyz="${mount_kinematics['left']['kinematic']['x']} ${mount_kinematics['left']['kinematic']['y']} ${mount_kinematics['left']['kinematic']['z']}" 
+             rpy="${mount_kinematics['left']['kinematic']['roll']} ${mount_kinematics['left']['kinematic']['pitch']} ${mount_kinematics['left']['kinematic']['yaw']}"/>
   </joint>
 
   <xacro:franka_robot arm_id="fr3"
@@ -52,6 +68,7 @@
                       dynamics="${xacro.load_yaml('$(find franka_description)/robots/fr3/dynamics.yaml')}"
                       gazebo="false"
                       hand="true"
+                      tcp_xyz="0 0 0.1034"
                       ee_id="$(arg ee_id)"
                       with_sc="false"
                       ros2_control="false"
@@ -60,8 +77,8 @@
                       fake_sensor_commands="false"
                       gazebo_effort="false"
                       no_prefix="false"
-                      arm_prefix="left"
-                      connected_to= "left_mount">
+                      arm_prefix="left_"
+                      connected_to= "left_mount"> <!-- This also creates the link left_mount -->
   </xacro:franka_robot>
   
    <!-- This link aligns the axes of the grasp frame to our required convention for motion planning tasks. -->
