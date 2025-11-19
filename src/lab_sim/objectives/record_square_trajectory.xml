@@ -33,21 +33,27 @@
             keep_orientation_tolerance="0.05"
             link_padding="0.01"
             velocity_scale_factor="1.0"
-            waypoint_name="Flask 3a - Pre Pick"
+            waypoint_name="Look at Base"
+            seed="0"
           />
           <Action
             ID="CallTriggerService"
             service_name="/start_recording_joint_trajectory"
+            response_timeout="3.000000"
+            wait_for_server_available_timeout="3.000000"
           />
           <SubTree ID="Move Along Square" _collapsed="true" />
           <Action
             ID="CallTriggerService"
             service_name="/stop_recording_joint_trajectory"
+            response_timeout="3.000000"
+            wait_for_server_available_timeout="3.000000"
           />
           <Action
             ID="SaveJointTrajectoryToYaml"
             message="{joint_trajectory_msg}"
             yaml_filename="~/user_ws/src/lab_sim/objectives/square_traj"
+            overwrite="true"
           />
         </Control>
       </Control>

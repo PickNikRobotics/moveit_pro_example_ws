@@ -108,6 +108,9 @@ objectives:
     perception_objectives:
       package_name: "moveit_pro_objectives"
       relative_path: "objectives/perception"
+    visualization_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/visualization"
     custom_objectives:
       package_name: "dual_arm_sim"
       relative_path: "objectives"

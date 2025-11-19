@@ -137,6 +137,9 @@ objectives:
     perception_objectives:
       package_name: "moveit_pro_objectives"
       relative_path: "objectives/perception"
+    visualization_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/visualization"
     sim_objectives:
       package_name: "grinding_sim"
       relative_path: "objectives"
