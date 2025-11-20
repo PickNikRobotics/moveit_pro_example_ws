@@ -184,6 +184,9 @@ objectives:
     perception_objectives:
       package_name: "moveit_pro_objectives"
       relative_path: "objectives/perception"
+    visualization_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/visualization"
     simulation_objectives:
       package_name: "picknik_ur_base_config"
       relative_path: "objectives"
