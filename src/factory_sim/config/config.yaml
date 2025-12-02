@@ -133,6 +133,7 @@ objectives:
     # Add additional plugin loaders as needed.
     core:
       - "moveit_studio::behaviors::ConverterBehaviorsLoader"
+      - "moveit_studio::behaviors::TopicInterfaceBehaviorsLoader"
       - "moveit_studio::behaviors::CoreBehaviorsLoader"
       - "moveit_studio::behaviors::MTCCoreBehaviorsLoader"
       - "moveit_studio::behaviors::ServoBehaviorsLoader"

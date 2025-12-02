@@ -5,7 +5,7 @@ find_package(moveit_studio_common REQUIRED)
 find_package(example_interfaces REQUIRED)
 moveit_studio_package()
 
-set(THIS_PACKAGE_INCLUDE_DEPENDS cartesian_planning moveit_studio_behavior
+set(THIS_PACKAGE_INCLUDE_DEPENDS cartesian_planning geometry_msgs moveit_studio_behavior
   moveit_studio_behavior_interface pluginlib moveit_studio_vision
   moveit_studio_vision_msgs PCL pcl_conversions pcl_ros example_interfaces)
 foreach(package IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
@@ -18,6 +18,7 @@ add_library(
   src/example_add_two_ints_service_client.cpp
   src/example_convert_mtc_solution_to_joint_trajectory.cpp
   src/example_delayed_message.cpp
+  src/example_get_pose_stamped_from_topic.cpp
   src/example_get_string_from_topic.cpp
   src/example_fibonacci_action_client.cpp
   src/example_hello_world.cpp

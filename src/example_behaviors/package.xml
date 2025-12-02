@@ -15,6 +15,7 @@
 
   <depend>moveit_studio_behavior_interface</depend>
   <depend>example_interfaces</depend>
+  <depend>geometry_msgs</depend>
   <depend>perception_pcl</depend>
   <depend>moveit_ros_planning_interface</depend>
   <depend>moveit_studio_vision_msgs</depend>

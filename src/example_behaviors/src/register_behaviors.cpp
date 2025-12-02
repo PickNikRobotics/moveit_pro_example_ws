@@ -9,6 +9,7 @@
 #include <example_behaviors/example_create_string_msg.hpp>
 #include <example_behaviors/example_delayed_message.hpp>
 #include <example_behaviors/example_fibonacci_action_client.hpp>
+#include <example_behaviors/example_get_pose_stamped_from_topic.hpp>
 #include <example_behaviors/example_get_string_from_topic.hpp>
 #include <example_behaviors/example_hello_world.hpp>
 #include <example_behaviors/example_ndt_registration.hpp>
@@ -36,6 +37,9 @@ public:
                                                                         shared_resources);
     moveit_studio::behaviors::registerBehavior<ExampleGetStringFromTopic>(factory, "ExampleGetStringFromTopic",
                                                                           shared_resources);
+    moveit_studio::behaviors::registerBehavior<ExampleGetPoseStampedFromTopic>(factory,
+                                                                              "ExampleGetPoseStampedFromTopic",
+                                                                              shared_resources);
     moveit_studio::behaviors::registerBehavior<ExampleAddTwoIntsServiceClient>(
         factory, "ExampleAddTwoIntsServiceClient", shared_resources);
     moveit_studio::behaviors::registerBehavior<ExampleFibonacciActionClient>(factory, "ExampleFibonacciActionClient",
