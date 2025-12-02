@@ -54,6 +54,7 @@ objectives:
       - "moveit_studio::behaviors::ServoBehaviorsLoader"
       - "moveit_studio::behaviors::VisionBehaviorsLoader"
       - "moveit_studio::behaviors::ConverterBehaviorsLoader"
+      - "moveit_studio::behaviors::TopicInterfaceBehaviorsLoader"
       - "moveit_studio::behaviors::MujocoBehaviorsLoader"
   # Specify source folder for objectives
   # [Required]

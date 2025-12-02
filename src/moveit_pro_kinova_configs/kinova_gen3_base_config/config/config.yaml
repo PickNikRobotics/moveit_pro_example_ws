@@ -123,6 +123,7 @@ objectives:
       - "moveit_studio::behaviors::ServoBehaviorsLoader"
       - "moveit_studio::behaviors::VisionBehaviorsLoader"
       - "moveit_studio::behaviors::ConverterBehaviorsLoader"
+      - "moveit_studio::behaviors::TopicInterfaceBehaviorsLoader"
   objective_library_paths:
     core_objectives:
       package_name: "moveit_pro_objectives"
