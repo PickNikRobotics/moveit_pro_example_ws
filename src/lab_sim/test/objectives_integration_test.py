@@ -73,7 +73,7 @@ skip_objectives = {
     "Record Square Trajectory",
     "Stack Blocks with ICP",  # Skipped because there is no primary ui to switch to in ci
     "Teleoperate",
-    "Inspector",
+    "Stitch Multiple Point Clouds Together",
     "Pick 1 Pill Bottle",
     "AddBottlesToPlanningScene",
     "Interactive Marker Visualization",  # Server not available for GetTextFromUser

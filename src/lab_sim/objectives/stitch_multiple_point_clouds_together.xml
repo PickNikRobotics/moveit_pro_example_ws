@@ -1,9 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<root BTCPP_format="4" main_tree_to_execute="Inspector">
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Stitch Multiple Point Clouds Together"
+>
   <BehaviorTree
-    ID="Inspector"
+    ID="Stitch Multiple Point Clouds Together"
     _description="Multi-view inspection routine: Captures images and point clouds from multiple viewpoints for 3D reconstruction or quality inspection"
-    _favorite="true"
   >
     <Control ID="Sequence">
       <!--Initialize visualization and point cloud vector-->
@@ -201,7 +203,7 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Inspector">
+    <SubTree ID="Stitch Multiple Point Clouds Together">
       <MetadataFields>
         <Metadata subcategory="Application - Basic Examples" />
         <Metadata runnable="true" />
