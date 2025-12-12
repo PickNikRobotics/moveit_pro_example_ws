@@ -88,4 +88,3 @@ python3 scripts/enhance_behaviors_xml.py --xml scripts/behaviors.xml --workspace
 # 3. In PickNik website repo - Convert to JSON
 python scripts/update_behaviors_from_xml.py _data/behaviors_enhanced.xml
 ```
-
