@@ -18,7 +18,9 @@ from xml.etree import ElementTree as ET
 try:
     import yaml
 except ImportError:
-    print("Error: PyYAML is required. Install with: pip install pyyaml", file=sys.stderr)
+    print(
+        "Error: PyYAML is required. Install with: pip install pyyaml", file=sys.stderr
+    )
     sys.exit(1)
 
 
@@ -67,11 +69,13 @@ def discover_configs(workspace_path: Path) -> List[Dict[str, str]]:
                 name_elem = root_elem.find("name")
                 if name_elem is not None:
                     package_name = name_elem.text.strip()
-                    configs.append({
-                        "name": package_name,
-                        "path": root,
-                        "config_path": str(config_yaml),
-                    })
+                    configs.append(
+                        {
+                            "name": package_name,
+                            "path": root,
+                            "config_path": str(config_yaml),
+                        }
+                    )
             except Exception:
                 continue
 
@@ -136,7 +140,14 @@ def extract_behaviors_used_in_objectives(
 
         package_path = find_package_share_path(package_name, workspace_path)
         if not package_path:
-            install_path = workspace_path / "install" / package_name / "share" / package_name / relative_path
+            install_path = (
+                workspace_path
+                / "install"
+                / package_name
+                / "share"
+                / package_name
+                / relative_path
+            )
             if install_path.exists():
                 package_path = install_path.parent.parent.parent.parent / "src"
                 package_path = find_package_share_path(package_name, package_path)
@@ -170,13 +181,17 @@ def extract_behaviors_used_in_objectives(
                         behavior_id_lower = normalize_behavior_id(behavior_id)
                         if behavior_id_lower not in behavior_to_objectives:
                             behavior_to_objectives[behavior_id_lower] = []
-                        behavior_to_objectives[behavior_id_lower].append({
-                            "config": config_name,
-                            "objective_id": objective_id,
-                            "objective_file": str(objective_file.relative_to(workspace_path)),
-                            "usage_type": "SubTree",
-                            "source_type": "objective_usage",
-                        })
+                        behavior_to_objectives[behavior_id_lower].append(
+                            {
+                                "config": config_name,
+                                "objective_id": objective_id,
+                                "objective_file": str(
+                                    objective_file.relative_to(workspace_path)
+                                ),
+                                "usage_type": "SubTree",
+                                "source_type": "objective_usage",
+                            }
+                        )
 
                 # 2. Action nodes
                 for action in behavior_tree.findall(".//Action[@ID]"):
@@ -185,13 +200,17 @@ def extract_behaviors_used_in_objectives(
                         behavior_id_lower = normalize_behavior_id(behavior_id)
                         if behavior_id_lower not in behavior_to_objectives:
                             behavior_to_objectives[behavior_id_lower] = []
-                        behavior_to_objectives[behavior_id_lower].append({
-                            "config": config_name,
-                            "objective_id": objective_id,
-                            "objective_file": str(objective_file.relative_to(workspace_path)),
-                            "usage_type": "Action",
-                            "source_type": "objective_usage",
-                        })
+                        behavior_to_objectives[behavior_id_lower].append(
+                            {
+                                "config": config_name,
+                                "objective_id": objective_id,
+                                "objective_file": str(
+                                    objective_file.relative_to(workspace_path)
+                                ),
+                                "usage_type": "Action",
+                                "source_type": "objective_usage",
+                            }
+                        )
 
                 # 3. Control nodes
                 for control in behavior_tree.findall(".//Control[@ID]"):
@@ -200,13 +219,17 @@ def extract_behaviors_used_in_objectives(
                         behavior_id_lower = normalize_behavior_id(behavior_id)
                         if behavior_id_lower not in behavior_to_objectives:
                             behavior_to_objectives[behavior_id_lower] = []
-                        behavior_to_objectives[behavior_id_lower].append({
-                            "config": config_name,
-                            "objective_id": objective_id,
-                            "objective_file": str(objective_file.relative_to(workspace_path)),
-                            "usage_type": "Control",
-                            "source_type": "objective_usage",
-                        })
+                        behavior_to_objectives[behavior_id_lower].append(
+                            {
+                                "config": config_name,
+                                "objective_id": objective_id,
+                                "objective_file": str(
+                                    objective_file.relative_to(workspace_path)
+                                ),
+                                "usage_type": "Control",
+                                "source_type": "objective_usage",
+                            }
+                        )
 
                 # 4. Decorator nodes
                 for decorator in behavior_tree.findall(".//Decorator[@ID]"):
@@ -215,13 +238,17 @@ def extract_behaviors_used_in_objectives(
                         behavior_id_lower = normalize_behavior_id(behavior_id)
                         if behavior_id_lower not in behavior_to_objectives:
                             behavior_to_objectives[behavior_id_lower] = []
-                        behavior_to_objectives[behavior_id_lower].append({
-                            "config": config_name,
-                            "objective_id": objective_id,
-                            "objective_file": str(objective_file.relative_to(workspace_path)),
-                            "usage_type": "Decorator",
-                            "source_type": "objective_usage",
-                        })
+                        behavior_to_objectives[behavior_id_lower].append(
+                            {
+                                "config": config_name,
+                                "objective_id": objective_id,
+                                "objective_file": str(
+                                    objective_file.relative_to(workspace_path)
+                                ),
+                                "usage_type": "Decorator",
+                                "source_type": "objective_usage",
+                            }
+                        )
 
         except Exception as e:
             print(f"Warning: Failed to parse {objective_file}: {e}", file=sys.stderr)
@@ -231,22 +258,20 @@ def extract_behaviors_used_in_objectives(
 
 
 def enhance_behaviors_xml(
-    xml_path: Path,
-    workspace_path: Path,
-    output_path: Path = None
+    xml_path: Path, workspace_path: Path, output_path: Path = None
 ) -> None:
     """Enhance behaviors.xml with usage information."""
-    
+
     # Read existing XML
     print(f"Reading {xml_path}...", file=sys.stderr)
     tree = ET.parse(xml_path)
     root = tree.getroot()
-    
+
     tree_nodes_model = root.find("./TreeNodesModel")
     if tree_nodes_model is None:
         print("Error: No TreeNodesModel found in XML", file=sys.stderr)
         sys.exit(1)
-    
+
     # Create a map of behavior IDs to elements
     behavior_elements = {}
     for elem in tree_nodes_model:
@@ -254,82 +279,90 @@ def enhance_behaviors_xml(
         if behavior_id_attr:
             behavior_id = normalize_behavior_id(behavior_id_attr)
             behavior_elements[behavior_id] = elem
-    
+
     print(f"Found {len(behavior_elements)} behaviors in XML", file=sys.stderr)
-    
+
     # Discover configs and extract usage information
     print(f"Discovering configs in {workspace_path}...", file=sys.stderr)
     configs = discover_configs(workspace_path)
     print(f"Found {len(configs)} configs", file=sys.stderr)
-    
+
     # Collect all objective usages
     all_objective_usages: Dict[str, List[Dict]] = {}
-    
+
     # Process each config
     for config in configs:
         config_name = config["name"]
         config_path = Path(config["config_path"])
-        
+
         print(f"Processing config: {config_name}", file=sys.stderr)
-        
+
         try:
             config_data = parse_config_yaml(config_path)
-            objective_library_paths = config_data.get("objectives", {}).get("objective_library_paths", {})
-            
+            objective_library_paths = config_data.get("objectives", {}).get(
+                "objective_library_paths", {}
+            )
+
             # Extract which behaviors are used in which Objectives
             objective_usages = extract_behaviors_used_in_objectives(
                 objective_library_paths,
                 config_name,
                 workspace_path,
             )
-            
+
             # Merge into global map
             for behavior_id, usages in objective_usages.items():
                 if behavior_id not in all_objective_usages:
                     all_objective_usages[behavior_id] = []
                 all_objective_usages[behavior_id].extend(usages)
-            
-            print(f"  Found {len(objective_usages)} behaviors used in Objectives", file=sys.stderr)
-            
+
+            print(
+                f"  Found {len(objective_usages)} behaviors used in Objectives",
+                file=sys.stderr,
+            )
+
         except Exception as e:
             print(f"  Error processing {config_name}: {e}", file=sys.stderr)
             import traceback
+
             traceback.print_exc()
             continue
-    
+
     # Add UsedIn elements to each behavior element
     print("Adding usage information to XML...", file=sys.stderr)
     behaviors_with_usage = 0
-    
+
     for behavior_id, elem in behavior_elements.items():
         # Remove existing UsedIn elements if any
         for used_in in elem.findall(".//UsedIn"):
             elem.remove(used_in)
-        
+
         # Add new UsedIn elements
         if behavior_id in all_objective_usages:
             usages = all_objective_usages[behavior_id]
             used_in_container = ET.SubElement(elem, "UsedIn")
-            
+
             for usage in usages:
                 usage_elem = ET.SubElement(used_in_container, "Usage")
                 usage_elem.set("config", usage["config"])
                 usage_elem.set("objective_id", usage["objective_id"])
                 usage_elem.set("objective_file", usage["objective_file"])
                 usage_elem.set("usage_type", usage["usage_type"])
-            
+
             behaviors_with_usage += 1
-    
-    print(f"Added usage information to {behaviors_with_usage} behaviors", file=sys.stderr)
-    
+
+    print(
+        f"Added usage information to {behaviors_with_usage} behaviors", file=sys.stderr
+    )
+
     # Write enhanced XML
     output_file = output_path or xml_path
     print(f"Writing enhanced XML to {output_file}...", file=sys.stderr)
-    
+
     # Pretty print XML (indent)
     ET.indent(tree, space="  ")
     tree.write(output_file, encoding="utf-8", xml_declaration=True)
-    
+
     print(f"Done! Enhanced {len(behavior_elements)} behaviors.", file=sys.stderr)
     print(f"Total behaviors with usage: {behaviors_with_usage}", file=sys.stderr)
 
@@ -365,7 +398,9 @@ def main():
 
     workspace_path = Path(args.workspace).resolve()
     if not workspace_path.exists():
-        print(f"Error: Workspace path does not exist: {workspace_path}", file=sys.stderr)
+        print(
+            f"Error: Workspace path does not exist: {workspace_path}", file=sys.stderr
+        )
         sys.exit(1)
 
     output_path = Path(args.output).resolve() if args.output else None
