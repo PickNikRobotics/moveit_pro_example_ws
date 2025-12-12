@@ -1,0 +1,438 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="3 Waypoints Pick and Place copy">
+  <!--//////////-->
+  <BehaviorTree
+    ID="3 Waypoints Pick and Place copy"
+    _description="Basic example of repeatedly grabbing a small (invisible) object, placing it at desired destination, and then moving back to a home position"
+    _favorite="true"
+  >
+    <Control ID="Sequence">
+      <SubTree ID="Reset Planning Scene" _collapsed="true" />
+      <!--Setup the environment to its "home" configuration - move to center and open gripper-->
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Look at Table"
+        joint_group_name="manipulator"
+        controller_names="joint_trajectory_controller"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        seed="0"
+        velocity_scale_factor="1.0"
+        _collapsed="true"
+      />
+      <Action
+        ID="MoveGripperAction"
+        gripper_command_action_name="/robotiq_gripper_controller/gripper_cmd"
+        position="0"
+        timeout="10.000000"
+      />
+      <!--Run pick and place on loop-->
+      <SubTree ID="Add Table to Planning Scene" _collapsed="true" />
+      <Control ID="Sequence">
+        <Action
+          ID="CreateStampedPose"
+          reference_frame="world"
+          stamped_pose="{object_pose}"
+          position_xyz="-0.2;0.75;0.48"
+        />
+        <Action
+          ID="CreateGraspableObject"
+          cuboid_object="{cuboid_object1}"
+          dx="0.025000"
+          dy="0.025000"
+          dz="0.025000"
+          generate_front_face="true"
+          generate_side_faces="true"
+          generate_top_face="true"
+          object_id="cuboid_object1"
+          pose="{object_pose}"
+        />
+        <Action
+          ID="CreateStampedPose"
+          reference_frame="world"
+          stamped_pose="{object_pose}"
+          position_xyz="0.0;0.75;0.48"
+        />
+        <Action
+          ID="CreateGraspableObject"
+          cuboid_object="{cuboid_object2}"
+          dx="0.025000"
+          dy="0.025000"
+          dz="0.025000"
+          generate_front_face="true"
+          generate_side_faces="true"
+          generate_top_face="true"
+          object_id="cuboid_object2"
+          pose="{object_pose}"
+        />
+        <Action
+          ID="CreateStampedPose"
+          reference_frame="world"
+          stamped_pose="{object_pose}"
+          position_xyz="0.2;0.75;0.48"
+        />
+        <Action
+          ID="CreateGraspableObject"
+          cuboid_object="{cuboid_object3}"
+          dx="0.025000"
+          dy="0.025000"
+          dz="0.025000"
+          generate_front_face="true"
+          generate_side_faces="true"
+          generate_top_face="true"
+          object_id="cuboid_object3"
+          pose="{object_pose}"
+        />
+        <Action
+          ID="ModifyObjectInPlanningScene"
+          apply_planning_scene_service="/apply_planning_scene"
+          object="{cuboid_object1}"
+        />
+        <Action
+          ID="ModifyObjectInPlanningScene"
+          apply_planning_scene_service="/apply_planning_scene"
+          object="{cuboid_object2}"
+        />
+        <Action
+          ID="ModifyObjectInPlanningScene"
+          apply_planning_scene_service="/apply_planning_scene"
+          object="{cuboid_object3}"
+        />
+      </Control>
+      <Action
+        ID="CreateStampedPose"
+        reference_frame="grasp_link"
+        stamped_pose="{ee_to_tcp_tf}"
+        position_xyz="0;0;0"
+      />
+      <Action
+        ID="GenerateCuboidGraspPoses"
+        ee_to_tcp_tf="{ee_to_tcp_tf}"
+        end_effector_group_name="gripper"
+        generate_x_axis_grasps="true"
+        generate_y_axis_grasps="true"
+        generate_z_axis_grasps="false"
+        grasp_poses="{grasp_poses}"
+        max_grasp_width="0.1"
+        samples_per_quadrant="3"
+        target_object="{cuboid_object2}"
+      />
+      <Action
+        ID="SolveIKQueries"
+        check_collisions="true"
+        ik_query_results="{ik_query_results}"
+        joint_group_name="manipulator"
+        timeout="0.010000"
+        target_poses="{grasp_poses}"
+      />
+      <Action ID="ResetPoseStampedVector" vector="{ik_queries}" />
+      <Decorator
+        ID="ForEach"
+        index="{index}"
+        out="{out}"
+        vector_in="{ik_query_results}"
+      >
+        <Control ID="Fallback">
+          <Decorator ID="Precondition" else="FAILURE" if="out==1">
+            <Control ID="Sequence">
+              <Action
+                ID="GetElementOfVector"
+                element="{element}"
+                index="{index}"
+                vector_in="{grasp_poses}"
+              />
+              <Action
+                ID="TransformPose"
+                input_pose="{element}"
+                output_pose="{transformed_pose}"
+                translation_xyz="0.0;0.0;-0.1"
+              />
+              <Action
+                ID="AddPoseStampedToVector"
+                input="{transformed_pose}"
+                vector="{ik_queries}"
+              />
+            </Control>
+          </Decorator>
+          <Action ID="AlwaysSuccess" />
+        </Control>
+      </Decorator>
+      <Control ID="Sequence">
+        <Action
+          ID="InitializeMTCTask"
+          task="{mtc_task}"
+          timeout="-1.000000"
+          trajectory_monitoring="false"
+          controller_names="joint_trajectory_controller"
+        />
+        <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
+        <Action
+          ID="SetupMTCConnectWithProRRT"
+          acceleration_scale_factor="1.000000"
+          keep_orientation="false"
+          keep_orientation_link_names="grasp_link"
+          keep_orientation_tolerance="0.100000"
+          link_padding="0.000000"
+          max_iterations="5000"
+          planning_group_name="manipulator"
+          seed="0"
+          task="{mtc_task}"
+          trajectory_sampling_rate="100"
+          velocity_scale_factor="1.000000"
+        />
+        <Action
+          ID="SetupMTCBatchPoseIK"
+          end_effector_group="moveit_ee"
+          end_effector_link="grasp_link"
+          ik_group="manipulator"
+          ik_timeout_s="0.01"
+          max_ik_solutions="1"
+          target_poses="{ik_queries}"
+          task="{mtc_task}"
+          monitored_stage="current state"
+        />
+        <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
+        <Action
+          ID="WaitForUserTrajectoryApproval"
+          cartesian_path_links="grasp_link"
+          solution="{mtc_solution}"
+        />
+        <Action
+          ID="ExecuteMTCTask"
+          goal_duration_tolerance="-1.000000"
+          solution="{mtc_solution}"
+        />
+      </Control>
+      <Control ID="Sequence">
+        <Action
+          ID="InitializeMTCTask"
+          task="{mtc_task}"
+          timeout="-1.000000"
+          trajectory_monitoring="false"
+          controller_names="joint_trajectory_controller"
+        />
+        <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
+        <Action
+          ID="SetupMTCUpdateObjectCollisionRule"
+          allow_collision="true"
+          object="{cuboid_object2}"
+          object_or_group_name="manipulator"
+          task="{mtc_task}"
+        />
+        <Action
+          ID="SetupMTCMoveAlongFrameAxis"
+          acceleration_scale="1.000000"
+          axis_frame="world"
+          axis_x="0.000000"
+          axis_y="0.000000"
+          axis_z="-1.0"
+          hand_frame="grasp_link"
+          ignore_environment_collisions="false"
+          max_distance="0.08"
+          min_distance="0.08"
+          planning_group_name="manipulator"
+          task="{mtc_task}"
+          velocity_scale="1.000000"
+        />
+        <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
+        <Action
+          ID="ExecuteMTCTask"
+          goal_duration_tolerance="-1.000000"
+          solution="{mtc_solution}"
+        />
+        <SubTree ID="Close Gripper" _collapsed="true" />
+        <Action
+          ID="InitializeMTCTask"
+          task="{mtc_task}"
+          timeout="-1.000000"
+          trajectory_monitoring="false"
+          controller_names="joint_trajectory_controller"
+        />
+        <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
+        <Action
+          ID="SetupMTCAttachObject"
+          frame_id="grasp_link"
+          object="{cuboid_object2}"
+          task="{mtc_task}"
+        />
+        <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
+        <Action
+          ID="ExecuteMTCTask"
+          goal_duration_tolerance="-1.000000"
+          solution="{mtc_solution}"
+        />
+        <Action
+          ID="GetCurrentPlanningScene"
+          planning_scene_msg="{planning_scene}"
+        />
+        <Action
+          ID="IsObjectAttachedTo"
+          link_name="grasp_link"
+          object_id="cuboid_object2"
+          planning_scene="{planning_scene}"
+        />
+      </Control>
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        controller_names="joint_trajectory_controller"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        seed="0"
+        velocity_scale_factor="1.0"
+        waypoint_name="Above Place Cube"
+      />
+      <SubTree
+        ID="Move to Waypoint"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        controller_names="joint_trajectory_controller"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        seed="0"
+        velocity_scale_factor="1.0"
+        waypoint_name="Place Cube"
+      />
+      <Control ID="Sequence">
+        <SubTree ID="Open Gripper" _collapsed="true" />
+        <Action
+          ID="InitializeMTCTask"
+          task="{mtc_task}"
+          timeout="-1.000000"
+          trajectory_monitoring="false"
+          controller_names="joint_trajectory_controller"
+        />
+        <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
+        <Action
+          ID="SetupMTCDetachObject"
+          frame_id="grasp_link"
+          object="{cuboid_object2}"
+          task="{mtc_task}"
+        />
+        <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
+        <Action
+          ID="ExecuteMTCTask"
+          goal_duration_tolerance="-1.000000"
+          solution="{mtc_solution}"
+        />
+      </Control>
+      <SubTree
+        ID="Move to Waypoint"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        controller_names="joint_trajectory_controller"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        seed="0"
+        velocity_scale_factor="1.0"
+        waypoint_name="Above Place Cube"
+      />
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        controller_names="joint_trajectory_controller"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        seed="0"
+        velocity_scale_factor="1.0"
+        waypoint_name="Place Cube"
+      />
+      <Control ID="Sequence">
+        <SubTree ID="Close Gripper" _collapsed="true" />
+        <Action
+          ID="InitializeMTCTask"
+          task="{mtc_task}"
+          timeout="-1.000000"
+          trajectory_monitoring="false"
+          controller_names="joint_trajectory_controller"
+        />
+        <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
+        <Action
+          ID="SetupMTCAttachObject"
+          frame_id="grasp_link"
+          object="{cuboid_object2}"
+          task="{mtc_task}"
+        />
+        <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
+        <Action
+          ID="ExecuteMTCTask"
+          goal_duration_tolerance="-1.000000"
+          solution="{mtc_solution}"
+        />
+      </Control>
+      <SubTree
+        ID="Move to Waypoint"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        controller_names="joint_trajectory_controller"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        seed="0"
+        velocity_scale_factor="1.0"
+        waypoint_name="Above Pick Cube"
+      />
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        controller_names="joint_trajectory_controller"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        seed="0"
+        velocity_scale_factor="1.0"
+        waypoint_name="Pick Cube 1"
+      />
+      <Control ID="Sequence">
+        <SubTree ID="Open Gripper" />
+        <Action
+          ID="InitializeMTCTask"
+          task="{mtc_task}"
+          timeout="-1.000000"
+          trajectory_monitoring="false"
+          controller_names="joint_trajectory_controller"
+        />
+        <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
+        <Action
+          ID="SetupMTCDetachObject"
+          frame_id="grasp_link"
+          object="{cuboid_object2}"
+          task="{mtc_task}"
+        />
+        <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
+        <Action
+          ID="ExecuteMTCTask"
+          goal_duration_tolerance="-1.000000"
+          solution="{mtc_solution}"
+        />
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="3 Waypoints Pick and Place copy">
+      <MetadataFields>
+        <Metadata subcategory="Application - Basic Examples" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
