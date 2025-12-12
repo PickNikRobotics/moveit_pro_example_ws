@@ -1053,6 +1053,49 @@
     - wrist_2_joint
     - wrist_3_joint
     position:
+    - 0.05255644806618719
+    - 0.33024038850596116
+    - -0.07869853393847114
+    - -0.5609071530903846
+    - 1.0703063944689077
+    - -2.080143019608372
+    - -1.5707910531919407
+    - -0.07879128552744336
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Pick Cube 1
+- description: ''
+  favorite: false
+  joint_group_names:
+  - gripper
+  - linear_actuator
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - linear_rail_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
     - 0.06656710453529632
     - -0.026311129005491703
     - 0.391188076851874
