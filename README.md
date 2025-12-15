@@ -66,4 +66,4 @@ From the top level, you can execute:
 ## Scripts
 
 Utility scripts for maintaining the PickNik website are located in the `scripts/` directory.
-See [scripts/README_SCRIPTS.md](scripts/README_SCRIPTS.md) for documentation.
+See [scripts/README.md](scripts/README.md) for documentation.
