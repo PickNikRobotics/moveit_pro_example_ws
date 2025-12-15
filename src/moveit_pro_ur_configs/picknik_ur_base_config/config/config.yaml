@@ -91,12 +91,6 @@ moveit_params:
   # Used by the Waypoint Manager to save joint states from this joint group.
   joint_group_name: "manipulator"
 
-  ompl_planning:
-    package: "picknik_ur_base_config"
-    path: "config/moveit/ompl_planning.yaml"
-  stomp_planning:
-    package: "picknik_ur_base_config"
-    path: "config/moveit/stomp_planning.yaml"
   kinematics:
     package: "picknik_ur_base_config"
     path: "config/moveit/pose_ik_distance.yaml"
