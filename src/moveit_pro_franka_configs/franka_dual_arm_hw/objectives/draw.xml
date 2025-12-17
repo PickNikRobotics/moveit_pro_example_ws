@@ -42,12 +42,9 @@
           tip_links="{tip_link}"
         />
         <Action
-          ID="ExecuteFollowJointTrajectory"
-          execute_follow_joint_trajectory_action_name="{execute_follow_joint_trajectory_action_name}"
-          joint_trajectory_msg="{joint_trajectory_msg}"
-          goal_position_tolerance="0.000000"
-          goal_time_tolerance="0.000000"
-          goal_duration_tolerance="-1.000000"
+          ID="ExecuteTrajectory"
+          execution_pipeline="follow_joint_trajectory_action"
+          controller_action_name="{execute_follow_joint_trajectory_action_name}"
         />
       </Control>
     </Control>

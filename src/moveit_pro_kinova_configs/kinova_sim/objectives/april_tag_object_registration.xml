@@ -265,13 +265,9 @@
       />
       <Control ID="Fallback">
         <Action
-          ID="ExecuteFollowJointTrajectory"
-          joint_trajectory_msg="{joint_trajectory_msg}"
-          execute_follow_joint_trajectory_action_name="/joint_trajectory_controller/follow_joint_trajectory"
-          goal_time_tolerance="1.0"
-          goal_position_tolerance="0.01"
-          goal_duration_tolerance="-1.000000"
-          trajectory_remainder="{joint_trajectory_remainder}"
+          ID="ExecuteTrajectory"
+          execution_pipeline="follow_joint_trajectory_action"
+          controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
         />
         <Action ID="AlwaysSuccess" />
       </Control>
