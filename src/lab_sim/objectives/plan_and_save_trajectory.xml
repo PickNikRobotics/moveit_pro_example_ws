@@ -3,7 +3,7 @@
   <!--//////////-->
   <BehaviorTree
     ID="Plan and Save Trajectory"
-    _description="Use a series of waypoints to plan and MTC task, convert the solution to a Joint Trajectory message, and save it to disk in YAML format"
+    _description="Use a series of waypoints to generate a motion plan, convert the solution to a Joint Trajectory message, and save it to disk in YAML format"
     _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
