@@ -95,12 +95,9 @@
       <!--Wait for user to approve the grinding path and then execute it-->
       <Action ID="WaitForUserTrajectoryApproval" solution="{debug_solution}" />
       <Action
-        ID="ExecuteFollowJointTrajectory"
-        execute_follow_joint_trajectory_action_name="/joint_trajectory_controller/follow_joint_trajectory"
-        goal_duration_tolerance="-1.000000"
-        goal_position_tolerance="0.000000"
-        goal_time_tolerance="0.000000"
-        joint_trajectory_msg="{joint_trajectory_msg}"
+        ID="ExecuteTrajectory"
+        execution_pipeline="follow_joint_trajectory_action"
+        controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
       />
       <!--Move away from the part after completing the grinding path-->
       <SubTree
