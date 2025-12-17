@@ -17,8 +17,9 @@
         planning_group_name="{joint_group_name}"
       />
       <Action
-        ID="ExecuteFollowJointTrajectory"
-        execute_follow_joint_trajectory_action_name="{controller_action_server}"
+        ID="ExecuteTrajectory"
+        execution_pipeline="follow_joint_trajectory_action"
+        controller_action_name="{controller_action_server}"
       />
     </Control>
   </BehaviorTree>
