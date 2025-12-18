@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Automask Camera Iterate Masks">
+  <BehaviorTree
+    ID="Automask Camera Iterate Masks"
+    _description="Runs automask on bin camera image and visualizes each mask individually using breakpoints. Useful for tuning mask parameters."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="GetImage" topic_name="/bin_camera_left/color" />
+      <Action
+        ID="GetMasks2DAutomask"
+        grid_size="11"
+        image="{image}"
+        mask_count="{mask_count}"
+        masks2d="{masks2d}"
+        score_threshold="0.800000"
+        decoder_model_path="models/sam2.1_decoder.onnx"
+        encoder_model_path="models/sam2.1_hiera_l_image_encoder.onnx"
+        prompt_encoder_model_path="models/sam2.1_prompt_encoder.onnx"
+        nms_threshold="0.3"
+        model_package="factory_sim"
+        min_component_area="2000"
+      />
+      <Decorator
+        ID="ForEach"
+        index="{index}"
+        out="{mask}"
+        vector_in="{masks2d}"
+      >
+        <Control ID="Sequence">
+          <Action ID="Script" code="mask_label:=&quot;mask &quot;..index" />
+          <SubTree ID="CreateVector" _collapsed="true" vector="{one_mask}" />
+          <SubTree
+            ID="AddToVector"
+            _collapsed="false"
+            element="{mask}"
+            input_vector="{one_mask}"
+            output_vector="{one_mask}"
+          />
+          <Action
+            ID="PublishMask2D"
+            masks="{one_mask}"
+            masks_visualization_topic="/masks_visualization"
+            image="{image}"
+            opacity="0.500000"
+            bounding_box_labels="{mask_label}"
+          />
+          <Action
+            ID="BreakpointSubscriber"
+            breakpoint_topic="/moveit_pro_breakpoint"
+          />
+        </Control>
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Automask Camera Iterate Masks">
+      <MetadataFields>
+        <Metadata
+          description="Takes pictures from two different perspectives and runs automask on each using a loop"
+        />
+        <Metadata runnable="true" />
+        <Metadata subcategory="Perception - ML" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
