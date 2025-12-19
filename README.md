@@ -62,3 +62,8 @@ From the top level, you can execute:
 ```bash
 ./sync_subtrees.sh
 ```
+
+## Scripts
+
+Utility scripts for maintaining the PickNik website are located in the `scripts/` directory.
+See [scripts/README.md](scripts/README.md) for documentation.
