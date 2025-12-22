@@ -4,7 +4,7 @@
   <BehaviorTree
     ID="Segment Image from Point"
     _description="Captures an image and segments it using the user provided prompt points."
-    _favorite="true"
+    _favorite="false"
   >
     <Control ID="Sequence">
       <SubTree

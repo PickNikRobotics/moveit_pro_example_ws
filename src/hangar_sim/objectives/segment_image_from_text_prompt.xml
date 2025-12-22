@@ -4,7 +4,7 @@
   <BehaviorTree
     ID="Segment Image from Text Prompt"
     _description="Run text based segmentation and visualize the masks."
-    _favorite="true"
+    _favorite="false"
   >
     <Control ID="Sequence">
       <SubTree
