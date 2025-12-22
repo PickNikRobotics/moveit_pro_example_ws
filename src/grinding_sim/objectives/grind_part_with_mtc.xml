@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Grind part with MTC">
+  <!--//////////-->
+  <BehaviorTree ID="Grind part with MTC" _description="" _favorite="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="ClearSnapshot" />
+      <!--View workspace and register part-->
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        controller_names="joint_trajectory_controller"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        velocity_scale_factor="1.0"
+        waypoint_name="Retract"
+        name="View Workspace"
+        seed="0"
+      />
+      <SubTree
+        ID="Register Machined Part"
+        _collapsed="true"
+        registered_pose="{registered_pose}"
+      />
+      <SubTree ID="Take Snapshot" _collapsed="true" />
+      <!--Publish frame of registered part so we can plan in reference to it-->
+      <Control ID="Fallback">
+        <Decorator ID="Timeout" msec="500">
+          <Action
+            ID="PublishStaticFrame"
+            pose="{registered_pose}"
+            publish_rate="50"
+            child_frame_id="registered_pose"
+          />
+        </Decorator>
+        <Action ID="AlwaysSuccess" />
+      </Control>
+      <!--Move the tool to a pose near the part-->
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        controller_names="joint_trajectory_controller"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        velocity_scale_factor="1.0"
+        waypoint_name="Pre Grind"
+        seed="0"
+      />
+      <!--Load grinding poses-->
+      <Action
+        ID="LoadPoseStampedVectorFromYaml"
+        output="{grinding_poses}"
+        file_path="grinding_poses.yaml"
+      />
+      <!--Visualize grinding poses-->
+      <Action ID="Script" code="pose_count := 0" />
+      <Decorator
+        ID="ForEach"
+        vector_in="{grinding_poses}"
+        out="{target_pose}"
+        index="{index}"
+      >
+        <Control ID="Sequence">
+          <Action
+            ID="VisualizePose"
+            marker_name="{pose_count}"
+            pose="{target_pose}"
+            marker_lifetime="0.000000"
+            marker_size="0.100000"
+          />
+          <Action ID="Script" code="pose_count += 1" />
+        </Control>
+      </Decorator>
+      <!--Setup an MTC task from the current robot state-->
+      <Action
+        ID="InitializeMTCTask"
+        task="{mtc_task}"
+        timeout="-1.000000"
+        trajectory_monitoring="false"
+      />
+      <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
+      <!-- Pass each of the grinding poses to the MTC task, and plan cartesian motions between them -->
+      <Action
+        ID="SetupMTCPathIK"
+        acceleration_scale_factor="0.75"
+        blending_radius="0.020000"
+        ignore_environment_collisions="false"
+        ik_cartesian_space_density="0.010000"
+        ik_joint_space_density="0.100000"
+        max_optimizer_iterations="1"
+        path="{grinding_poses}"
+        planning_group_name="manipulator"
+        position_only="true"
+        task="{mtc_task}"
+        trajectory_sampling_rate="100"
+        velocity_scale_factor="0.1"
+        tip_links="grasp_link"
+      />
+      <!--Wait for user to approve the grinding path and then execute it-->
+      <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
+      <Action
+        ID="WaitForUserTrajectoryApproval"
+        solution="{mtc_solution}"
+        cartesian_path_links="grasp_link"
+      />
+      <Action
+        ID="SwitchController"
+        activate_asap="true"
+        automatic_deactivation="true"
+        controller_list_action_name="/controller_manager/list_controllers"
+        controller_switch_action_name="/controller_manager/switch_controller"
+        strictness="1"
+        timeout="-1.000000"
+        activate_controllers="{controller_name}"
+      />
+      <Action
+        ID="ExecuteMTCSolution"
+        admittance_parameters_msg="{admittance_parameters_msg}"
+        apply_planning_scene_service="/apply_planning_scene"
+        apply_start_scene="false"
+        controller_action_name="{controller_action_name}"
+        execution_pipeline="{controller_type}"
+        goal_duration_tolerance="-1.000000"
+        goal_position_tolerance="0.01"
+        path_position_tolerance="0.05"
+        solution="{mtc_solution}"
+      />
+      <!--Move away from the part after completing the grinding path-->
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        controller_names="joint_trajectory_controller"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        velocity_scale_factor="1.0"
+        waypoint_name="Approach"
+        seed="0"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Grind part with MTC">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Application - Grinding" />
+      </MetadataFields>
+      <inout_port
+        name="controller_action_name"
+        default="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+        type="std::string"
+      >
+        the topic to send the follow joint trajectory action
+      </inout_port>
+      <inout_port
+        name="controller_name"
+        default="joint_trajectory_admittance_controller"
+        type="std::vector&lt;std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;, std::allocator&lt;std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt; &gt; &gt;"
+      >
+        the name of the controller to activate for motion
+      </inout_port>
+      <inout_port name="controller_type" default="jtac" type="std::string">
+        The type of trajectory controller to use
+      </inout_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>
