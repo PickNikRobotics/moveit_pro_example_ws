@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Grind Machined Part with JTC">
+  <BehaviorTree
+    ID="Grind Machined Part with JTC"
+    _description=""
+    _favorite="true"
+  >
+    <SubTree
+      ID="Grind part with MTC"
+      _collapsed="false"
+      controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
+      controller_name="joint_trajectory_controller"
+      controller_type="jtc"
+    />
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Grind Machined Part with JTC">
+      <MetadataFields>
+        <Metadata subcategory="Application - Grinding" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
