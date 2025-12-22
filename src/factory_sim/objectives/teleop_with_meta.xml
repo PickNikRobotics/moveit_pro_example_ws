@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root BTCPP_format="4" main_tree_to_execute="Teleop with Meta">
+  <!--//////////-->
+  <BehaviorTree ID="Teleop with Meta" _description="Use the Meta Quest 3 to teleop the robot. " _favorite="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="GetEmpty" empty_topic_name="/right_grip_button_event"/>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Teleop with Meta">
+      <MetadataFields>
+        <Metadata runnable="true"/>
+        <Metadata subcategory="User Input"/>
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
