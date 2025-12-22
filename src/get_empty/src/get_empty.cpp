@@ -67,7 +67,6 @@ BT::NodeStatus GetEmpty::onStart()
 
 BT::NodeStatus GetEmpty::onRunning()
 {
-  // Update output ports
   uint64_t count;
   {
     std::shared_lock lock(empty_mutex_);
@@ -76,6 +75,17 @@ BT::NodeStatus GetEmpty::onRunning()
 
   setOutput("message_received", count > 0);
   setOutput("message_count", count);
+
+  if (count > 0)
+  {
+    // Stop listening once condition is satisfied
+    empty_subscriber_.reset();
+
+    shared_resources_->logger->publishInfoMessage(
+        name(), "Empty message received — exiting behavior successfully.");
+
+    return BT::NodeStatus::SUCCESS;
+  }
 
   return BT::NodeStatus::RUNNING;
 }
