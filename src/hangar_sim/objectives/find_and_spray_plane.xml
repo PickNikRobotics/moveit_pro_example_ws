@@ -4,7 +4,7 @@
   <BehaviorTree
     ID="Find and Spray Plane"
     _description="Finds the plane then generates and executes a coverage path"
-    _favorite="false"
+    _favorite="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree

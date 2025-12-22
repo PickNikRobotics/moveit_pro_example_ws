@@ -4,7 +4,7 @@
   <BehaviorTree
     ID="Plan Path Along Surface"
     _description="Plan and execute a path following a surface"
-    _favorite="false"
+    _favorite="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree
