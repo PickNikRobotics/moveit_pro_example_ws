@@ -1,0 +1,34 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root BTCPP_format="4" main_tree_to_execute="Teleop with Meta">
+  <!--Teleop with Meta Quest Controller-->
+  <!--Captures controller and EE poses at clutch time, computes transform between Quest and EE frames-->
+  <BehaviorTree ID="Teleop with Meta">
+    <Control ID="Sequence">
+      <!--Phase 1: Wait for clutch press while continuously getting controller odom-->
+      <Control ID="Parallel" success_count="1" failure_count="1">
+        <!--GetOdom continuously updates controller pose on blackboard-->
+        <Action ID="GetOdom" odometry_topic_name="/right_controller_odom" odometry_pose="{controller_clutch_pose}"/>
+        <!--GetEmpty waits for grip button press - when received, Parallel succeeds-->
+        <Action ID="GetEmpty" empty_topic_name="/right_grip_button_event" message_received="{clutch_pressed}"/>
+      </Control>
+      <!--Phase 2: Get End Effector pose in world frame-->
+      <Action ID="GetLatestTransform" source_frame_id="world" target_frame_id="grasp_link" transform="{ee_transform}"/>
+      <Action ID="ConvertTransformStampedToPoseStamped" transform_stamped="{ee_transform}" pose_stamped="{ee_pose_world}"/>
+      <!--Phase 3: Restamp controller pose to world frame so CalculatePoseOffset won't do TF lookup-->
+      <!--Unpack the controller pose to get raw Pose (strips frame_id)-->
+      <Action ID="UnpackPoseStampedMessage" pose_stamped="{controller_clutch_pose}" pose="{controller_pose_raw}" header="{controller_header_orig}"/>
+      <!--Create a header with "world" frame_id (same as EE pose)-->
+      <Action ID="CreateTimeMessage" sec="0" nanosec="0" time="{zero_time}"/>
+      <Action ID="CreateHeaderMessage" frame_id="world" stamp="{zero_time}" header="{world_header}"/>
+      <!--Repack controller pose with world frame_id-->
+      <Action ID="CreatePoseStampedMessage" pose="{controller_pose_raw}" header="{world_header}" pose_stamped="{controller_pose_in_world}"/>
+      <!--Phase 4: Calculate the transform from Quest controller frame to EE frame-->
+      <!--This gives us: quest_to_ee_transform = ee_pose - controller_pose-->
+      <!--i.e., the offset we need to apply to controller poses to get EE target poses-->
+      <Action ID="CalculatePoseOffset" source_pose="{controller_pose_in_world}" destination_pose="{ee_pose_world}" source_to_destination_pose="{quest_to_ee_transform}"/>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Teleop with Meta"/>
+  </TreeNodesModel>
+</root>
