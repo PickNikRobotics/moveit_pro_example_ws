@@ -14,7 +14,7 @@
     negative_prompts="{negative_prompts}"
     prompts="{prompts}"
     erosion_size="0"
-    _favorite="true"
+    _favorite="false"
   >
     <Control ID="Sequence">
       <Action
