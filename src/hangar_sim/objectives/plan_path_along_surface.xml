@@ -103,13 +103,9 @@
         debug_solution="{debug_solution}"
       />
       <Action
-        ID="ExecuteFollowJointTrajectory"
-        execute_follow_joint_trajectory_action_name="/joint_trajectory_controller/follow_joint_trajectory"
-        goal_duration_tolerance="-1.000000"
-        goal_position_tolerance="0.000000"
-        goal_time_tolerance="0.000000"
-        joint_trajectory_msg="{joint_trajectory_msg}"
-        trajectory_remainder="{joint_trajectory_remainder}"
+        ID="ExecuteTrajectory"
+        execution_pipeline="follow_joint_trajectory_action"
+        controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
       />
     </Control>
   </BehaviorTree>
