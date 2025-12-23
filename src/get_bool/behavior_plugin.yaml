@@ -1,0 +1,4 @@
+objectives:
+  behavior_loader_plugins:
+    get_bool:
+      - "get_bool::GetBoolBehaviorsLoader"
