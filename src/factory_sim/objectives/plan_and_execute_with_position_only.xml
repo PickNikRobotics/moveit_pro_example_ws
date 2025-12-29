@@ -85,12 +85,9 @@
                 name="Optionally execute trajectory and return to start joint state"
               >
                 <Action
-                  ID="ExecuteFollowJointTrajectory"
-                  execute_follow_joint_trajectory_action_name="{controller_action_server}"
-                  goal_duration_tolerance="-1.000000"
-                  goal_position_tolerance="0.000000"
-                  goal_time_tolerance="0.000000"
-                  joint_trajectory_msg="{joint_trajectory_msg}"
+                  ID="ExecuteTrajectory"
+                  execution_pipeline="follow_joint_trajectory_action"
+                  controller_action_name="{controller_action_server}"
                 />
                 <SubTree
                   ID="Move to Joint State"
