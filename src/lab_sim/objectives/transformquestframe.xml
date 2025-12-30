@@ -2,25 +2,35 @@
 <root BTCPP_format="4" main_tree_to_execute="TransformQuestFrame">
   <BehaviorTree ID="TransformQuestFrame" _description="Listens to grasp topic from controller. When controller grasp is toggled, we save the controller odom position and use that to republish those messages to the controller in the end effector frame " _favorite="false">
     <Control ID="Sequence" name="TopLevelSequence">
-      <!-- Wait for grip button press while capturing controller odom -->
+      <!--Wait for grip button press while capturing controller odom-->
       <Control ID="Parallel" failure_count="1" success_count="1">
         <Action ID="GetOdom" odometry_pose="{controller_clutched_pose}" odometry_topic_name="/right_controller_odom" subscribed_odometry="{subscribed_odometry}"/>
         <Action ID="GetEmpty" empty_topic_name="/right_grip_button_event"/>
       </Control>
-      <!-- Get the EE pose at clutch moment -->
+      <!--Get the EE pose at clutch moment-->
       <Action ID="GetLatestTransform" source_frame_id="world" target_frame_id="grasp_link" transform="{ee_transform}"/>
       <Action ID="ConvertTransformStampedToPoseStamped" transform_stamped="{ee_transform}" pose_stamped="{ee_clutched_pose}"/>
-      <!-- Normalize controller pose to world frame for consistent math -->
-      <Action ID="UnpackPoseStampedMessage" header="{controller_header}" pose="{controller_pose_raw}" pose_stamped="{controller_clutched_pose}"/>
-      <Action ID="CreateTimeMessage" time="{save_time}" nanosec="0" sec="0"/>
-      <Action ID="CreateHeaderMessage" frame_id="world" header="{world_header}" stamp="{save_time}"/>
-      <Action ID="CreatePoseStampedMessage" header="{world_header}" pose="{controller_pose_raw}" pose_stamped="{controller_clutched_pose_world}"/>
+      <!--Extract pose data from both poses (ignoring frame_ids)-->
+      <Action ID="UnpackPoseStampedMessage" pose_stamped="{ee_clutched_pose}" header="{ee_header}" pose="{ee_pose}"/>
+      <Action ID="UnpackPoseStampedMessage" pose_stamped="{controller_clutched_pose}" header="{controller_header}" pose="{controller_pose}"/>
+      <!--Create a common dummy header so both poses appear to be in the same frame-->
+      <!--This bypasses TF lookup in CalculatePoseOffset since frames match-->
+      <Action ID="CreateHeaderMessage" frame_id="offset_calc_frame" header="{common_header}"/>
+      <!--Recreate both poses with the same frame_id-->
+      <Action ID="CreatePoseStampedMessage" pose="{ee_pose}" header="{common_header}" pose_stamped="{ee_pose_common_frame}"/>
+      <Action ID="CreatePoseStampedMessage" pose="{controller_pose}" header="{common_header}" pose_stamped="{controller_pose_common_frame}"/>
+      <!--Now CalculatePoseOffset won't need TF since both poses have same frame_id-->
+      <!--Computes: offset = ee_pose^-1 * controller_pose (transform from EE to controller)-->
+      <Action ID="CalculatePoseOffset" source_pose="{ee_pose_common_frame}" destination_pose="{controller_pose_common_frame}" source_to_destination_pose="{ee_to_controller_offset}"/>
+      <!--Repackage with the correct output frame (grasp_link/world for use with TransformOdomWithPose)-->
+      <Action ID="UnpackPoseStampedMessage" pose_stamped="{ee_to_controller_offset}" header="{offset_header}" pose="{offset_pose}"/>
+      <Action ID="CreateHeaderMessage" frame_id="grasp_link" header="{grasp_link_header}"/>
+      <Action ID="CreatePoseStampedMessage" pose="{offset_pose}" header="{grasp_link_header}" pose_stamped="{ee_to_controller_pose}"/>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="TransformQuestFrame">
-      <output_port name="controller_clutched_pose_world" default="{controller_clutched_pose_world}"/>
-      <output_port name="ee_clutched_pose" default="{ee_clutched_pose}"/>
+      <output_port name="transform_pose" default="{ee_to_controller_pose}" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
     </SubTree>
   </TreeNodesModel>
 </root>
