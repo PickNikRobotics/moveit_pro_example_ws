@@ -1,0 +1,4 @@
+objectives:
+  behavior_loader_plugins:
+    get_odom_instance:
+      - "get_odom_instance::GetOdomInstanceBehaviorsLoader"
