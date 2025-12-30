@@ -1,0 +1,4 @@
+objectives:
+  behavior_loader_plugins:
+    transform_odom_with_pose:
+      - "transform_odom_with_pose::TransformOdomWithPoseBehaviorsLoader"

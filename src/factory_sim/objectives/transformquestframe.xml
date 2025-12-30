@@ -14,15 +14,12 @@
       <Action ID="CreatePoseStampedMessage" header="{world_header}" pose="{controller_pose_raw}" pose_stamped="{transformed_controller_pose}"/>
       <Action ID="CalculatePoseOffset" destination_pose="{ee_pose_world}" source_pose="{transformed_controller_pose}" source_to_destination_pose="{quest_to_ee_pose}"/>
       <Action ID="UnpackPoseStampedMessage" header="{header}" pose_stamped="{quest_to_ee_pose}" pose="{extracted_pose}"/>
-      <Action ID="CreatePoseStampedMessage" pose="{extracted_pose}" header="{world_header}" pose_stamped="{new_ee_pose}"/>
-      <Action ID="ConvertPoseStampedToTransformStamped" child_frame_id="world" pose_stamped="{new_ee_pose}" transform_stamped="{transform_stamped}"/>
-      <Action ID="ConvertTransformStampedToOdom" odometry="{transformed_odometry}" transform_stamped="{transform_stamped}"/>
+      <Action ID="CreatePoseStampedMessage" pose="{extracted_pose}" header="{world_header}" pose_stamped="{quest_ee_transform}"/>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="TransformQuestFrame">
-      <inout_port name="transform_stamped" default="{transform_stamped}"/>
-      <inout_port name="transformed_odometry" default="{transformed_odometry}" type="nav_msgs::msg::Odometry_&lt;std::allocator&lt;void&gt; &gt;"/>
+      <inout_port name="quest_ee_transform" default="{new_ee_pose}"/>
     </SubTree>
   </TreeNodesModel>
 </root>
