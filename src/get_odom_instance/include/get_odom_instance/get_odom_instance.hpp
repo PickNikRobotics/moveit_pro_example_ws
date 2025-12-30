@@ -49,6 +49,8 @@ private:
 
   /** @brief Latest received odometry message, if any. */
   std::optional<nav_msgs::msg::Odometry> current_odometry_;
+
+  std::string odom_topic_name_; 
 };
 
 }  // namespace get_odom_instance
