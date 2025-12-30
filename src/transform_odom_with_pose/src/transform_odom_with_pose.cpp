@@ -72,21 +72,21 @@ BT::NodeStatus TransformOdomWithPose::tick()
   // --- Convert PoseStamped → TransformStamped ------------------------
   geometry_msgs::msg::TransformStamped transform;
   transform.header = transform_pose.header;
-  shared_resources_->logger->publishInfoMessage(
-    name(),
-    fmt::format(
-        "Transform header: frame_id='{}', stamp={}.{}",
-        transform_pose.header.frame_id,
-        transform_pose.header.stamp.sec,
-        transform_pose.header.stamp.nanosec));
+  // shared_resources_->logger->publishInfoMessage(
+  //   name(),
+  //   fmt::format(
+  //       "Transform header: frame_id='{}', stamp={}.{}",
+  //       transform_pose.header.frame_id,
+  //       transform_pose.header.stamp.sec,
+  //       transform_pose.header.stamp.nanosec));
 
   transform.child_frame_id = odom_in.header.frame_id;
   
-  shared_resources_->logger->publishInfoMessage(
-    name(),
-    fmt::format(
-        "Input odometry frame_id: '{}'",
-        odom_in.header.frame_id));
+  // shared_resources_->logger->publishInfoMessage(
+  //   name(),
+  //   fmt::format(
+  //       "Input odometry frame_id: '{}'",
+  //       odom_in.header.frame_id));
 
   transform.transform.translation.x = transform_pose.pose.position.x;
   transform.transform.translation.y = transform_pose.pose.position.y;
@@ -139,33 +139,33 @@ BT::NodeStatus TransformOdomWithPose::tick()
 
   odom_out.twist.covariance = odom_in.twist.covariance;
 
-  shared_resources_->logger->publishInfoMessage(
-    name(),
-    fmt::format("Odom out frame_id: '{}'", odom_out.header.frame_id));
+  // shared_resources_->logger->publishInfoMessage(
+  //   name(),
+  //   fmt::format("Odom out frame_id: '{}'", odom_out.header.frame_id));
   
-  shared_resources_->logger->publishInfoMessage(
-  name(),
-  fmt::format("Odom out child_frame_id: '{}'", odom_out.child_frame_id));
+  // shared_resources_->logger->publishInfoMessage(
+  // name(),
+  // fmt::format("Odom out child_frame_id: '{}'", odom_out.child_frame_id));
 
-  shared_resources_->logger->publishInfoMessage(
-      name(),
-      fmt::format(
-          "Odom out stamp: {}.{}",
-          odom_out.header.stamp.sec,
-          odom_out.header.stamp.nanosec));
+  // shared_resources_->logger->publishInfoMessage(
+  //     name(),
+  //     fmt::format(
+  //         "Odom out stamp: {}.{}",
+  //         odom_out.header.stamp.sec,
+  //         odom_out.header.stamp.nanosec));
 
-  shared_resources_->logger->publishInfoMessage(
-      name(),
-      fmt::format(
-          "Odom out pose: position=({:.3f}, {:.3f}, {:.3f}), "
-          "orientation=({:.3f}, {:.3f}, {:.3f}, {:.3f})",
-          odom_out.pose.pose.position.x,
-          odom_out.pose.pose.position.y,
-          odom_out.pose.pose.position.z,
-          odom_out.pose.pose.orientation.x,
-          odom_out.pose.pose.orientation.y,
-          odom_out.pose.pose.orientation.z,
-          odom_out.pose.pose.orientation.w));
+  // shared_resources_->logger->publishInfoMessage(
+  //     name(),
+  //     fmt::format(
+  //         "Odom out pose: position=({:.3f}, {:.3f}, {:.3f}), "
+  //         "orientation=({:.3f}, {:.3f}, {:.3f}, {:.3f})",
+  //         odom_out.pose.pose.position.x,
+  //         odom_out.pose.pose.position.y,
+  //         odom_out.pose.pose.position.z,
+  //         odom_out.pose.pose.orientation.x,
+  //         odom_out.pose.pose.orientation.y,
+  //         odom_out.pose.pose.orientation.z,
+  //         odom_out.pose.pose.orientation.w));
 
   // --- Output --------------------------------------------------------
   setOutput("odom_out", odom_out);

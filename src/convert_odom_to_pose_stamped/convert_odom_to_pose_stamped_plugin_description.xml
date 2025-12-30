@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<library path="convert_odom_to_pose_stamped">
+  <class
+    type="convert_odom_to_pose_stamped::ConvertOdomToPoseStampedBehaviorsLoader"
+    base_class_type="moveit_studio::behaviors::SharedResourcesNodeLoaderBase"
+  />
+</library>

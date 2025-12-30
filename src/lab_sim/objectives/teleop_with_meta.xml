@@ -1,0 +1,39 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root BTCPP_format="4" main_tree_to_execute="Teleop With Meta">
+  <BehaviorTree ID="Teleop With Meta" _description="Listens to grasp topic from controller. When controller grasp is toggled, we save the controller odom position and use that to republish those messages to the controller in the end effector frame " _favorite="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <!--One-time setup: Wait for grasp button and compute transform offset-->
+      <SubTree ID="TransformQuestFrame" _collapsed="true" controller_clutched_pose_world="{controller_clutched_pose_world}" ee_clutched_pose="{ee_clutched_pose}"/>
+      <Action ID="PublishPose" message="{ee_clutched_pose}" topic_name="quest_to_ee_pose_transform"/>
+      <!--Continuous operation: Transform and publish odom while tracking-->
+      <Control ID="Parallel" success_count="-1" failure_count="1">
+        <Decorator ID="KeepRunningUntilFailure">
+          <Control ID="Parallel">
+            <Action ID="GetEmpty" empty_topic_name="right_grip_button_event" message_count="{message_count}"/>
+            <SubTree ID="TransformQuestFrame" _collapsed="true" controller_clutched_pose_world="{controller_clutched_pose_world}" ee_clutched_pose="{ee_clutched_pose}"/>
+            <Action ID="PublishPose" topic_name="quest_to_ee_pose_transform" message="{ee_clutched_pose}"/>
+          </Control>
+        </Decorator>
+        <Action ID="GetBool" bool_topic_name="right_grip_button_state" subscribed_bool="{subscribed_bool}"/>
+        <Decorator ID="Delay" delay_msec="100">
+          <Decorator ID="KeepRunningUntilFailure">
+            <Decorator ID="Precondition" else="RUNNING" if="subscribed_bool">
+              <Control ID="Sequence">
+                <Action ID="GetOdomInstance" odom_topic_name="right_controller_odom"/>
+                <!--Apply saved transform offset to current odometry-->
+                <Action ID="TransformOdomWithPose" odom_in="{subscribed_odom_instance}" odom_out="{transformed_odometry}" transform_pose="{ee_clutched_pose}"/>
+                <!--Publish transformed odometry for Track Moving Frame to follow-->
+                <Action ID="PublishOdom" message="{transformed_odometry}" topic_name="transformed_controller_odom"/>
+                <Action ID="ConvertOdomToPoseStamped" odometry="{transformed_odometry}"/>
+                <Action ID="VisualizePose" marker_name="pose" pose="{pose_stamped}"/>
+              </Control>
+            </Decorator>
+          </Decorator>
+        </Decorator>
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Teleop With Meta"/>
+  </TreeNodesModel>
+</root>

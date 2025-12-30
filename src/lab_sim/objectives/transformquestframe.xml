@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root BTCPP_format="4" main_tree_to_execute="TransformQuestFrame">
+  <BehaviorTree ID="TransformQuestFrame" _description="Listens to grasp topic from controller. When controller grasp is toggled, we save the controller odom position and use that to republish those messages to the controller in the end effector frame " _favorite="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <!-- Wait for grip button press while capturing controller odom -->
+      <Control ID="Parallel" failure_count="1" success_count="1">
+        <Action ID="GetOdom" odometry_pose="{controller_clutched_pose}" odometry_topic_name="/right_controller_odom" subscribed_odometry="{subscribed_odometry}"/>
+        <Action ID="GetEmpty" empty_topic_name="/right_grip_button_event"/>
+      </Control>
+      <!-- Get the EE pose at clutch moment -->
+      <Action ID="GetLatestTransform" source_frame_id="world" target_frame_id="grasp_link" transform="{ee_transform}"/>
+      <Action ID="ConvertTransformStampedToPoseStamped" transform_stamped="{ee_transform}" pose_stamped="{ee_clutched_pose}"/>
+      <!-- Normalize controller pose to world frame for consistent math -->
+      <Action ID="UnpackPoseStampedMessage" header="{controller_header}" pose="{controller_pose_raw}" pose_stamped="{controller_clutched_pose}"/>
+      <Action ID="CreateTimeMessage" time="{save_time}" nanosec="0" sec="0"/>
+      <Action ID="CreateHeaderMessage" frame_id="world" header="{world_header}" stamp="{save_time}"/>
+      <Action ID="CreatePoseStampedMessage" header="{world_header}" pose="{controller_pose_raw}" pose_stamped="{controller_clutched_pose_world}"/>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="TransformQuestFrame">
+      <output_port name="controller_clutched_pose_world" default="{controller_clutched_pose_world}"/>
+      <output_port name="ee_clutched_pose" default="{ee_clutched_pose}"/>
+    </SubTree>
+  </TreeNodesModel>
+</root>

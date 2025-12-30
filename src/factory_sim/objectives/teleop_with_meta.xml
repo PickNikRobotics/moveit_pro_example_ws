@@ -2,29 +2,43 @@
 <root BTCPP_format="4" main_tree_to_execute="Teleop With Meta">
   <BehaviorTree ID="Teleop With Meta" _description="Listens to grasp topic from controller. When controller grasp is toggled, we save the controller odom position and use that to republish those messages to the controller in the end effector frame " _favorite="false">
     <Control ID="Sequence" name="TopLevelSequence">
+      <!--Init bool for right grip button state-->
+      <Action ID="SetBlackboard" value="false" output_key="subscribed_bool"/>
       <!--One-time setup: Wait for grasp button and compute transform offset-->
       <SubTree ID="TransformQuestFrame" _collapsed="true" quest_ee_transform="{new_ee_pose}"/>
       <!--Continuous operation: Transform and publish odom while tracking-->
       <Control ID="Parallel" success_count="-1" failure_count="1">
         <Decorator ID="KeepRunningUntilFailure">
-          <Control ID="Parallel">
+          <Control ID="Parallel" success_count="-1">
             <Action ID="GetEmpty" empty_topic_name="right_grip_button_event" message_count="{message_count}"/>
-            <SubTree ID="TransformQuestFrame" _collapsed="false" quest_ee_transform="{new_ee_pose}"/>
+            <Control ID="Sequence">
+              <Action ID="LogMessage" log_level="info" message="Trigger was pulled ... recomputing transform."/>
+              <SubTree ID="TransformQuestFrame" _collapsed="true" quest_ee_transform="{new_ee_pose}"/>
+              <Action ID="VisualizePose" marker_name="new_ee_pose" pose="{new_ee_pose}"/>
+            </Control>
           </Control>
         </Decorator>
+        <!--Odom transform loop: Wait for each odom message, transform it, and publish at input rate-->
         <Decorator ID="KeepRunningUntilFailure">
-          <Control ID="Sequence">
-            <Action ID="GetOdomInstance" odom_topic_name="right_controller_odom"/>
-            <!--Apply saved transform offset to current odometry-->
-            <Action ID="TransformOdomWithPose" odom_in="{subscribed_odom_instance}" odom_out="{transformed_odometry}" transform_pose="{new_ee_pose}"/>
-            <!--Publish transformed odometry for Track Moving Frame to follow-->
-            <Action ID="PublishOdom" message="{transformed_odometry}" topic_name="transformed_controller_odom"/>
+          <Control ID="Parallel" success_count="-1">
+            <!--Only republish the odom message if the grip is depressed.-->
+            <Action ID="GetBool" bool_topic_name="right_grip_button_state" subscribed_bool="{subscribed_bool}"/>
+            <Decorator ID="Precondition" else="RUNNING" if="subscribed_bool">
+              <Control ID="Sequence">
+                <!--Wait to receive an odom message, then republish the transfomed odom at the same rate-->
+                <Action ID="GetOdomInstance" odom_topic_name="right_controller_odom" subscribed_odom_instance="{subscribed_odom_instance}"/>
+                <Action ID="TransformOdomWithPose" odom_in="{subscribed_odom_instance}" odom_out="{transformed_odometry}" transform_pose="{new_ee_pose}"/>
+                <Action ID="PublishOdom" message="{transformed_odometry}" topic_name="transformed_controller_odom"/>
+                <Action ID="ConvertOdomToPoseStamped" odometry="{transformed_odometry}" pose_stamped="{viz_transformed_pose}"/>
+                <Action ID="VisualizePose" pose="{viz_transformed_pose}" marker_text="trans_controller_pose"/>
+              </Control>
+            </Decorator>
           </Control>
         </Decorator>
       </Control>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    
+    <SubTree ID="Teleop With Meta"/>
   </TreeNodesModel>
 </root>

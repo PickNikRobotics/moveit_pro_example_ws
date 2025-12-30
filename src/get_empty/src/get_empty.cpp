@@ -59,8 +59,8 @@ BT::NodeStatus GetEmpty::onStart()
         message_count_++;
       });
 
-  shared_resources_->logger->publishInfoMessage(
-      name(), fmt::format("Subscribed to empty topic: {}", empty_topic_name));
+  // shared_resources_->logger->publishInfoMessage(
+  //     name(), fmt::format("Subscribed to empty topic: {}", empty_topic_name));
 
   return BT::NodeStatus::RUNNING;
 }
@@ -81,8 +81,8 @@ BT::NodeStatus GetEmpty::onRunning()
     // Stop listening once condition is satisfied
     empty_subscriber_.reset();
 
-    shared_resources_->logger->publishInfoMessage(
-        name(), "Empty message received — exiting behavior successfully.");
+    // shared_resources_->logger->publishInfoMessage(
+    //     name(), "Empty message received — exiting behavior successfully.");
 
     return BT::NodeStatus::SUCCESS;
   }

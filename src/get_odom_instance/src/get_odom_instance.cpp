@@ -20,6 +20,15 @@ GetOdomInstance::GetOdomInstance(
   : moveit_studio::behaviors::SharedResourcesNode<BT::StatefulActionNode>(
         name, config, shared_resources)
 {
+  odom_subscriber_ =
+      shared_resources_->node->create_subscription<nav_msgs::msg::Odometry>(
+          "odom",  // temporary default; overridden in onStart if needed
+          rclcpp::SystemDefaultsQoS(),
+          [this](const nav_msgs::msg::Odometry::SharedPtr msg)
+          {
+            std::unique_lock<std::shared_mutex> lock(odom_mutex_);
+            current_odometry_ = *msg;
+          });
 }
 
 BT::PortsList GetOdomInstance::providedPorts()
@@ -52,30 +61,29 @@ BT::NodeStatus GetOdomInstance::onStart()
       moveit_studio::behaviors::getRequiredInputs(
           getInput<std::string>(kPortIdOdomTopicName));
 
-  if (!ports.has_value())
+  if (!ports)
   {
     shared_resources_->logger->publishFailureMessage(
-        name(),
-        fmt::format("Failed to get required input port: {}", ports.error()));
+        name(), ports.error());
     return BT::NodeStatus::FAILURE;
   }
 
   const auto& [odom_topic_name] = ports.value();
 
+  // Recreate subscriber only if topic changed
+  if (!odom_subscriber_ || odom_topic_name != odom_topic_name_)
   {
-    std::unique_lock<std::shared_mutex> lock(odom_mutex_);
-    current_odometry_.reset();
+    odom_topic_name_ = odom_topic_name;
+    odom_subscriber_ =
+        shared_resources_->node->create_subscription<nav_msgs::msg::Odometry>(
+            odom_topic_name_,
+            rclcpp::SystemDefaultsQoS(),
+            [this](const nav_msgs::msg::Odometry::SharedPtr msg)
+            {
+              std::unique_lock<std::shared_mutex> lock(odom_mutex_);
+              current_odometry_ = *msg;
+            });
   }
-
-  odom_subscriber_ =
-      shared_resources_->node->create_subscription<nav_msgs::msg::Odometry>(
-          odom_topic_name,
-          rclcpp::SystemDefaultsQoS(),
-          [this](const nav_msgs::msg::Odometry::SharedPtr msg)
-          {
-            std::unique_lock<std::shared_mutex> lock(odom_mutex_);
-            current_odometry_ = *msg;
-          });
 
   return BT::NodeStatus::RUNNING;
 }
@@ -94,6 +102,10 @@ BT::NodeStatus GetOdomInstance::onRunning()
   }
 
   setOutput(kPortIdOdomValue, *odom_copy);
+
+  // Stop listening — snapshot behavior
+  odom_subscriber_.reset();
+
   return BT::NodeStatus::SUCCESS;
 }
 
