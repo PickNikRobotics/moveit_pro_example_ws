@@ -1,37 +1,49 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <root BTCPP_format="4" main_tree_to_execute="Teleop With Meta">
   <BehaviorTree ID="Teleop With Meta" _description="Listens to grasp topic from controller. When controller grasp is toggled, we save the controller odom position and use that to republish those messages to the controller in the end effector frame " _favorite="false">
-    <Control ID="Sequence" name="TopLevelSequence">
-      <!--One-time setup: Wait for grasp button and compute transform offset-->
-      <SubTree ID="TransformQuestFrame" _collapsed="true" controller_clutched_pose_world="{controller_clutched_pose_world}" ee_clutched_pose="{ee_clutched_pose}"/>
-      <Action ID="PublishPose" message="{ee_clutched_pose}" topic_name="quest_to_ee_pose_transform"/>
-      <!--Continuous operation: Transform and publish odom while tracking-->
-      <Control ID="Parallel" success_count="-1" failure_count="1">
-        <Decorator ID="KeepRunningUntilFailure">
-          <Control ID="Parallel">
-            <Action ID="GetEmpty" empty_topic_name="right_grip_button_event" message_count="{message_count}"/>
-            <SubTree ID="TransformQuestFrame" _collapsed="true" controller_clutched_pose_world="{controller_clutched_pose_world}" ee_clutched_pose="{ee_clutched_pose}"/>
-            <Action ID="PublishPose" topic_name="quest_to_ee_pose_transform" message="{ee_clutched_pose}"/>
-          </Control>
-        </Decorator>
-        <Action ID="GetBool" bool_topic_name="right_grip_button_state" subscribed_bool="{subscribed_bool}"/>
-        <Decorator ID="Delay" delay_msec="100">
-          <Decorator ID="KeepRunningUntilFailure">
-            <Decorator ID="Precondition" else="RUNNING" if="subscribed_bool">
-              <Control ID="Sequence">
-                <Action ID="GetOdomInstance" odom_topic_name="right_controller_odom"/>
-                <!--Apply saved transform offset to current odometry-->
-                <Action ID="TransformOdomWithPose" odom_in="{subscribed_odom_instance}" odom_out="{transformed_odometry}" transform_pose="{ee_clutched_pose}"/>
-                <!--Publish transformed odometry for Track Moving Frame to follow-->
-                <Action ID="PublishOdom" message="{transformed_odometry}" topic_name="transformed_controller_odom"/>
-                <Action ID="ConvertOdomToPoseStamped" odometry="{transformed_odometry}"/>
-                <Action ID="VisualizePose" marker_name="pose" pose="{pose_stamped}"/>
-              </Control>
+    <Decorator ID="KeepRunningUntilFailure">
+      <Control ID="Sequence" name="TopLevelSequence">
+        <!--Step 1: Wait for grip button press while capturing controller pose (in native controller frame) as zero point-->
+        <!--This captures the EE pose ONCE at the moment the clutch is pressed-->
+        <Control ID="Parallel" failure_count="1" success_count="1">
+          <Action ID="GetOdom" odometry_pose="{raw_controller_pose}" odometry_topic_name="right_controller_odom"/>
+          <Action ID="GetEmpty" empty_topic_name="right_grip_button_event" message_received="{message_received}"/>
+        </Control>
+        <Action ID="GetLatestTransform" source_frame_id="grasp_link" target_frame_id="world" transform="{ee_transform}"/>
+        <Action ID="ConvertTransformStampedToPoseStamped" transform_stamped="{ee_transform}" pose_stamped="{ee_pose}"/>
+        <Action ID="UnpackPoseStampedMessage" pose_stamped="{raw_controller_pose}" header="{quest_header}" pose="{controller_pose}"/>
+        <Action ID="CreateTimeMessage" sec="1" nanosec="1" time="{dummy_stamp}"/>
+        <Action ID="CreateHeaderMessage" frame_id="world" stamp="{dummy_stamp}" header="{dummy_header}"/>
+        <Action ID="CreatePoseStampedMessage" pose_stamped="{controller_common_frame}" pose="{controller_pose}" header="{dummy_header}"/>
+        <Action ID="VisualizePose" marker_name="viz_ee_pose" pose="{ee_pose}" marker_text="EE"/>
+        <Action ID="VisualizePose" marker_name="viz_controller_pose" pose="{controller_common_frame}" marker_text="RCP"/>
+        <Action ID="CalculatePoseOffset" destination_pose="{ee_pose}" source_to_destination_pose="{controller_to_EE_pose}" source_pose="{controller_common_frame}"/>
+        <!--Step 2: While grip is held, continuously transform and publish using the captured offset-->
+        <Control ID="Parallel" success_count="-1" failure_count="1">
+          <!--Monitor grip button state - will fail the parallel when grip is released-->
+          <Action ID="GetBool" bool_topic_name="right_grip_button_state" subscribed_bool="{subscribed_bool}"/>
+          <!--Continuous transform loop-->
+          <Decorator ID="Delay" delay_msec="100">
+            <Decorator ID="KeepRunningUntilFailure">
+              <Decorator ID="Precondition" else="SUCCESS" if="subscribed_bool == true">
+                <Control ID="Sequence">
+                  <!--Get current controller odom (in native controller frame - same as zero point)-->
+                  <Action ID="GetOdomInstance" odom_topic_name="right_controller_odom" subscribed_odom_instance="{current_controller_odom}"/>
+                  <Action ID="ConvertOdomToPoseStamped" pose_stamped="{tmp_controller_pose_stamped}" odometry="{current_controller_odom}"/>
+                  <Action ID="UnpackPoseStampedMessage" header="{header}" pose="{inst_pose}" pose_stamped="{tmp_controller_pose_stamped}"/>
+                  <Action ID="CreateTimeMessage" sec="1" nanosec="1" time="{inst_time}"/>
+                  <Action ID="CreateHeaderMessage" stamp="{inst_time}" frame_id="world" header="{inst_header}"/>
+                  <Action ID="CreatePoseStampedMessage" header="{inst_header}" pose="{inst_pose}" pose_stamped="{inst_controller_pose_common}"/>
+                  <Action ID="TransformPoseWithPose" input_pose="{controller_to_EE_pose}" transform_pose="{inst_controller_pose_common}" output_pose="{transformed_pose}"/>
+                  <Action ID="VisualizePose" marker_name="trans_pose" pose="{transformed_pose}" marker_text="TP"/>
+                </Control>
+              </Decorator>
             </Decorator>
           </Decorator>
-        </Decorator>
+        </Control>
+        <!--Step 3: Grip released - parallel failed, sequence will restart from waiting for grip press-->
       </Control>
-    </Control>
+    </Decorator>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Teleop With Meta"/>
