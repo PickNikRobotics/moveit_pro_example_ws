@@ -1,0 +1,4 @@
+objectives:
+  behavior_loader_plugins:
+    convert_pose_stamped_to_odom:
+      - "convert_pose_stamped_to_odom::ConvertPoseStampedToOdomBehaviorsLoader"
