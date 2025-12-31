@@ -7,6 +7,9 @@
 #include "spdlog/spdlog.h"
 #include <fmt/format.h> 
 
+#include <tf2/LinearMath/Transform.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
+
 namespace transform_odom_with_pose
 {
 
@@ -23,7 +26,11 @@ BT::PortsList TransformOdomWithPose::providedPorts()
     BT::InputPort<nav_msgs::msg::Odometry>(
         "odom_in", "Input odometry message"),
     BT::InputPort<geometry_msgs::msg::PoseStamped>(
-        "transform_pose", "PoseStamped defining the transform between frames"),
+        "ee_pose_at_grip", "EE pose in world frame at grip time"),
+    BT::InputPort<geometry_msgs::msg::PoseStamped>(
+        "controller_pose_at_grip", "Controller pose in world frame at grip time"),  // NEW
+    BT::InputPort<std::string>(
+        "destination_child_frame", "The child frame you want the transformed odom message to have"),
     BT::OutputPort<nav_msgs::msg::Odometry>(
         "odom_out", "Transformed odometry message")
   };
@@ -40,71 +47,58 @@ BT::KeyValueVector TransformOdomWithPose::metadata()
 
 BT::NodeStatus TransformOdomWithPose::tick()
 {
-  // --- Get inputs ----------------------------------------------------
   auto odom_in_res = getInput<nav_msgs::msg::Odometry>("odom_in");
-  auto pose_res    = getInput<geometry_msgs::msg::PoseStamped>("transform_pose");
+  auto ee_pose_res = getInput<geometry_msgs::msg::PoseStamped>("ee_pose_at_grip");
+  auto controller_pose_res = getInput<geometry_msgs::msg::PoseStamped>("controller_pose_at_grip");
+  auto child_frame_res = getInput<std::string>("destination_child_frame");
 
-  if (!odom_in_res && !pose_res)
+  if (!odom_in_res || !ee_pose_res || !controller_pose_res || !child_frame_res)
   {
     shared_resources_->logger->publishFailureMessage(
-        name(), "Missing both required inputs: odom_in or transform_pose! ");
+        name(), "Missing required input(s)!");
     return BT::NodeStatus::FAILURE;
-  }
-
-
-  if (!odom_in_res || !pose_res)
-  {
-    if (!odom_in_res){
-      shared_resources_->logger->publishFailureMessage(
-        name(), "Missing required input: odom_in!");
-    return BT::NodeStatus::FAILURE;
-    }
-    if (!pose_res){
-      shared_resources_->logger->publishFailureMessage(
-        name(), "Missing required input: transform_pose!");
-    return BT::NodeStatus::FAILURE;
-    }
   }
 
   const auto& odom_in = odom_in_res.value();
-  const auto& transform_pose = pose_res.value();
+  const auto& ee_pose_at_grip = ee_pose_res.value();
+  const auto& controller_pose_at_grip = controller_pose_res.value();
+  const auto& child_frame_id = child_frame_res.value();
 
-  // --- Convert PoseStamped → TransformStamped ------------------------
-  geometry_msgs::msg::TransformStamped transform;
-  transform.header = transform_pose.header;
-  // shared_resources_->logger->publishInfoMessage(
-  //   name(),
-  //   fmt::format(
-  //       "Transform header: frame_id='{}', stamp={}.{}",
-  //       transform_pose.header.frame_id,
-  //       transform_pose.header.stamp.sec,
-  //       transform_pose.header.stamp.nanosec));
+  // --- Get poses at grip time (both in world frame) -------------------
+  tf2::Transform T_world_controller_grip;
+  tf2::fromMsg(controller_pose_at_grip.pose, T_world_controller_grip);
 
-  transform.child_frame_id = odom_in.header.frame_id;
-  
-  // shared_resources_->logger->publishInfoMessage(
-  //   name(),
-  //   fmt::format(
-  //       "Input odometry frame_id: '{}'",
-  //       odom_in.header.frame_id));
+  tf2::Transform T_world_ee_grip;
+  tf2::fromMsg(ee_pose_at_grip.pose, T_world_ee_grip);
 
-  transform.transform.translation.x = transform_pose.pose.position.x;
-  transform.transform.translation.y = transform_pose.pose.position.y;
-  transform.transform.translation.z = transform_pose.pose.position.z;
-  transform.transform.rotation      = transform_pose.pose.orientation;
+  // --- Compute the fixed offset from controller to EE -----------------
+  // T_controller_ee = T_world_controller^(-1) * T_world_ee
+  tf2::Transform T_controller_ee = T_world_controller_grip.inverse() * T_world_ee_grip;
 
-  // --- Transform pose ------------------------------------------------
-  geometry_msgs::msg::PoseStamped pose_in;
-  pose_in.header = odom_in.header;
-  pose_in.pose   = odom_in.pose.pose;
+  // --- Get current controller pose from odometry ----------------------
+  tf2::Transform T_world_controller_now;
+  tf2::fromMsg(odom_in.pose.pose, T_world_controller_now);
 
-  geometry_msgs::msg::PoseStamped pose_out;
-  tf2::doTransform(pose_in, pose_out, transform);
+  // --- Apply offset to get current EE pose ----------------------------
+  tf2::Transform T_world_ee_now = T_world_controller_now * T_controller_ee;
 
-  // --- Transform twist (rotation only) -------------------------------
-  tf2::Quaternion q;
-  tf2::fromMsg(transform.transform.rotation, q);
-  tf2::Matrix3x3 R(q);
+  // --- Assemble output odometry ---------------------------------------
+  nav_msgs::msg::Odometry odom_out;
+  odom_out.header.stamp = odom_in.header.stamp;
+  odom_out.header.frame_id = ee_pose_at_grip.header.frame_id;  // world
+  odom_out.child_frame_id = child_frame_id;
+
+  geometry_msgs::msg::Pose ee_pose_msg;
+  ee_pose_msg.position.x = T_world_ee_now.getOrigin().x();
+  ee_pose_msg.position.y = T_world_ee_now.getOrigin().y();
+  ee_pose_msg.position.z = T_world_ee_now.getOrigin().z();
+  ee_pose_msg.orientation = tf2::toMsg(T_world_ee_now.getRotation());
+
+  odom_out.pose.pose = ee_pose_msg;
+  odom_out.pose.covariance = odom_in.pose.covariance;
+
+  // --- Rotate twist into EE frame -------------------------------------
+  tf2::Matrix3x3 R(T_controller_ee.getRotation());
 
   tf2::Vector3 lin_in(
       odom_in.twist.twist.linear.x,
@@ -119,59 +113,18 @@ BT::NodeStatus TransformOdomWithPose::tick()
   tf2::Vector3 lin_out = R * lin_in;
   tf2::Vector3 ang_out = R * ang_in;
 
-  // --- Assemble output odometry --------------------------------------
-  nav_msgs::msg::Odometry odom_out;
-  odom_out.header.stamp    = odom_in.header.stamp;
-  odom_out.header.frame_id = transform.header.frame_id;
-  odom_out.child_frame_id  = odom_in.child_frame_id;
-  
-  odom_out.pose.pose = pose_out.pose;
-
-  odom_out.pose.covariance = odom_in.pose.covariance;
-
-  odom_out.twist.twist.linear.x  = lin_out.x();
-  odom_out.twist.twist.linear.y  = lin_out.y();
-  odom_out.twist.twist.linear.z  = lin_out.z();
-
+  odom_out.twist.twist.linear.x = lin_out.x();
+  odom_out.twist.twist.linear.y = lin_out.y();
+  odom_out.twist.twist.linear.z = lin_out.z();
   odom_out.twist.twist.angular.x = ang_out.x();
   odom_out.twist.twist.angular.y = ang_out.y();
   odom_out.twist.twist.angular.z = ang_out.z();
-
   odom_out.twist.covariance = odom_in.twist.covariance;
 
-  // shared_resources_->logger->publishInfoMessage(
-  //   name(),
-  //   fmt::format("Odom out frame_id: '{}'", odom_out.header.frame_id));
-  
-  // shared_resources_->logger->publishInfoMessage(
-  // name(),
-  // fmt::format("Odom out child_frame_id: '{}'", odom_out.child_frame_id));
-
-  // shared_resources_->logger->publishInfoMessage(
-  //     name(),
-  //     fmt::format(
-  //         "Odom out stamp: {}.{}",
-  //         odom_out.header.stamp.sec,
-  //         odom_out.header.stamp.nanosec));
-
-  // shared_resources_->logger->publishInfoMessage(
-  //     name(),
-  //     fmt::format(
-  //         "Odom out pose: position=({:.3f}, {:.3f}, {:.3f}), "
-  //         "orientation=({:.3f}, {:.3f}, {:.3f}, {:.3f})",
-  //         odom_out.pose.pose.position.x,
-  //         odom_out.pose.pose.position.y,
-  //         odom_out.pose.pose.position.z,
-  //         odom_out.pose.pose.orientation.x,
-  //         odom_out.pose.pose.orientation.y,
-  //         odom_out.pose.pose.orientation.z,
-  //         odom_out.pose.pose.orientation.w));
-
-  // --- Output --------------------------------------------------------
   setOutput("odom_out", odom_out);
 
   shared_resources_->logger->publishInfoMessage(
-      name(), "Successfully transformed odometry.");
+      name(), "Successfully transformed odometry using pose transform.");
 
   return BT::NodeStatus::SUCCESS;
 }

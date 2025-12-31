@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <root BTCPP_format="4" main_tree_to_execute="Teleop With Meta">
-  <BehaviorTree ID="Teleop With Meta" _description="Listens to grasp topic from controller. When controller grasp is toggled, we save the controller odom position and use that to republish those messages to the controller in the end effector frame " _favorite="false">
+  <BehaviorTree ID="Teleop With Meta" _description="Listens to grasp topic from controller. When controller grasp is toggled, we save the controller odom position and use that to republish those messages to the controller in the end effector frame " _favorite="true">
     <Decorator ID="KeepRunningUntilFailure">
       <Control ID="Sequence" name="TopLevelSequence">
         <!--Step 1: Wait for grip button press while capturing controller pose (in native controller frame) as zero point-->
@@ -19,13 +19,39 @@
         <Action ID="VisualizePose" marker_name="viz_controller_pose" pose="{controller_common_frame}" marker_text="RCP"/>
         <Action ID="CalculatePoseOffset" destination_pose="{ee_pose}" source_to_destination_pose="{controller_to_EE_pose}" source_pose="{controller_common_frame}"/>
         <!--Step 2: While grip is held, continuously transform and publish using the captured offset-->
+        <Action ID="SetBlackboard" value="false" output_key="subscribed_bool"/>
+        <!--Initialize previous grip state for rising edge detection (true so first iteration doesn't trigger)-->
+        <Action ID="Script" code="prev_grip_state := true"/>
         <Control ID="Parallel" success_count="-1" failure_count="1">
           <!--Monitor grip button state - will fail the parallel when grip is released-->
           <Action ID="GetBool" bool_topic_name="right_grip_button_state" subscribed_bool="{subscribed_bool}"/>
           <!--Continuous transform loop-->
-          <Decorator ID="Delay" delay_msec="100">
-            <Decorator ID="KeepRunningUntilFailure">
-              <Decorator ID="Precondition" else="SUCCESS" if="subscribed_bool == true">
+          <Decorator ID="KeepRunningUntilFailure">
+            <Control ID="Sequence">
+              <!--Rising edge detection: recompute pose offset when grip goes false->true-->
+              <Decorator ID="Precondition" else="SUCCESS" if="!prev_grip_state &amp;&amp; subscribed_bool">
+                <Control ID="Sequence">
+                  <!--Recapture EE pose-->
+                  <Action ID="GetLatestTransform" source_frame_id="grasp_link" target_frame_id="world" transform="{ee_transform}"/>
+                  <Action ID="ConvertTransformStampedToPoseStamped" transform_stamped="{ee_transform}" pose_stamped="{ee_pose}"/>
+                  <!--Recapture controller pose-->
+                  <Action ID="GetOdomInstance" odom_topic_name="right_controller_odom" subscribed_odom_instance="{current_controller_odom}"/>
+                  <Action ID="ConvertOdomToPoseStamped" pose_stamped="{tmp_controller_pose_stamped}" odometry="{current_controller_odom}"/>
+                  <Action ID="UnpackPoseStampedMessage" header="{header}" pose="{inst_pose}" pose_stamped="{tmp_controller_pose_stamped}"/>
+                  <Action ID="CreateTimeMessage" sec="1" nanosec="1" time="{inst_time}"/>
+                  <Action ID="CreateHeaderMessage" stamp="{inst_time}" frame_id="world" header="{inst_header}"/>
+                  <Action ID="CreatePoseStampedMessage" header="{inst_header}" pose="{inst_pose}" pose_stamped="{controller_common_frame}"/>
+                  <!--Recompute the pose offset-->
+                  <Action ID="LogMessage" message="Recompute the pose offset"/>
+                  <Action ID="VisualizePose" marker_name="viz_ee_pose" pose="{ee_pose}" marker_text="EE"/>
+                  <Action ID="VisualizePose" marker_name="viz_controller_pose" pose="{controller_common_frame}" marker_text="RCP"/>
+                  <Action ID="CalculatePoseOffset" destination_pose="{ee_pose}" source_to_destination_pose="{controller_to_EE_pose}" source_pose="{controller_common_frame}"/>
+                </Control>
+              </Decorator>
+              <!--IMPORTANT: Update prev_grip_state OUTSIDE of subscribed_bool check so it updates even when grip is released-->
+              <Action ID="Script" code="prev_grip_state := subscribed_bool"/>
+              <!--Only do transform work when grip is held-->
+              <Decorator ID="Precondition" else="SUCCESS" if="subscribed_bool">
                 <Control ID="Sequence">
                   <!--Get current controller odom (in native controller frame - same as zero point)-->
                   <Action ID="GetOdomInstance" odom_topic_name="right_controller_odom" subscribed_odom_instance="{current_controller_odom}"/>
@@ -34,11 +60,14 @@
                   <Action ID="CreateTimeMessage" sec="1" nanosec="1" time="{inst_time}"/>
                   <Action ID="CreateHeaderMessage" stamp="{inst_time}" frame_id="world" header="{inst_header}"/>
                   <Action ID="CreatePoseStampedMessage" header="{inst_header}" pose="{inst_pose}" pose_stamped="{inst_controller_pose_common}"/>
+                  <Action ID="VisualizePose" marker_name="viz_controller_pose" pose="{inst_controller_pose_common}" marker_text="ICP"/>
                   <Action ID="TransformPoseWithPose" input_pose="{controller_to_EE_pose}" transform_pose="{inst_controller_pose_common}" output_pose="{transformed_pose}"/>
                   <Action ID="VisualizePose" marker_name="trans_pose" pose="{transformed_pose}" marker_text="TP"/>
                 </Control>
               </Decorator>
-            </Decorator>
+              <!--Small delay between iterations to control update rate-->
+              <Action ID="Sleep" msec="50"/>
+            </Control>
           </Decorator>
         </Control>
         <!--Step 3: Grip released - parallel failed, sequence will restart from waiting for grip press-->
