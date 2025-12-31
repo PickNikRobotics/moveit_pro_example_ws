@@ -5,21 +5,10 @@
       <Control ID="Sequence" name="TopLevelSequence">
         <!--Step 1: Wait for grip button press while capturing controller pose (in native controller frame) as zero point-->
         <!--This captures the EE pose ONCE at the moment the clutch is pressed-->
-        <Control ID="Parallel" failure_count="1" success_count="1">
-          <Action ID="GetOdom" odometry_pose="{raw_controller_pose}" odometry_topic_name="right_controller_odom"/>
-          <Action ID="GetEmpty" empty_topic_name="right_grip_button_event" message_received="{message_received}"/>
-        </Control>
-        <Action ID="GetLatestTransform" source_frame_id="grasp_link" target_frame_id="world" transform="{ee_transform}"/>
-        <Action ID="ConvertTransformStampedToPoseStamped" transform_stamped="{ee_transform}" pose_stamped="{ee_pose}"/>
-        <Action ID="UnpackPoseStampedMessage" pose_stamped="{raw_controller_pose}" header="{quest_header}" pose="{controller_pose}"/>
-        <Action ID="CreateTimeMessage" sec="1" nanosec="1" time="{dummy_stamp}"/>
-        <Action ID="CreateHeaderMessage" frame_id="world" stamp="{dummy_stamp}" header="{dummy_header}"/>
-        <Action ID="CreatePoseStampedMessage" pose_stamped="{controller_common_frame}" pose="{controller_pose}" header="{dummy_header}"/>
-        <Action ID="VisualizePose" marker_name="viz_ee_pose" pose="{ee_pose}" marker_text="EE"/>
-        <Action ID="VisualizePose" marker_name="viz_controller_pose" pose="{controller_common_frame}" marker_text="RCP"/>
-        <Action ID="CalculatePoseOffset" destination_pose="{ee_pose}" source_to_destination_pose="{controller_to_EE_pose}" source_pose="{controller_common_frame}"/>
+        <SubTree ID="TransformQuestFrame" _collapsed="true"/>
         <!--Step 2: While grip is held, continuously transform and publish using the captured offset-->
         <Action ID="SetBlackboard" value="false" output_key="subscribed_bool"/>
+        <Action ID="SetBlackboard" output_key="transformed_odom_received" value="false"/>
         <!--Initialize previous grip state for rising edge detection (true so first iteration doesn't trigger)-->
         <Action ID="Script" code="prev_grip_state := true"/>
         <Control ID="Parallel" success_count="-1" failure_count="1">
@@ -31,38 +20,50 @@
               <!--Rising edge detection: recompute pose offset when grip goes false->true-->
               <Decorator ID="Precondition" else="SUCCESS" if="!prev_grip_state &amp;&amp; subscribed_bool">
                 <Control ID="Sequence">
-                  <!--Recapture EE pose-->
                   <Action ID="GetLatestTransform" source_frame_id="grasp_link" target_frame_id="world" transform="{ee_transform}"/>
-                  <Action ID="ConvertTransformStampedToPoseStamped" transform_stamped="{ee_transform}" pose_stamped="{ee_pose}"/>
-                  <!--Recapture controller pose-->
+                  <Action ID="ConvertTransformStampedToPoseStamped" pose_stamped="{ee_pose_stamped}" transform_stamped="{ee_transform}"/>
+                  <!--Remove the rotation from the EE transform-->
+                  <Action ID="UnpackPoseStampedMessage" pose_stamped="{ee_pose_stamped}" pose="{ee_pose}" header="{ee_header}"/>
+                  <Action ID="UnpackPoseMessage" pose="{ee_pose}" orientation="{ee_orientation}" position="{ee_position}"/>
+                  <!--Rebuild the EE pose sans rotation as pose stamped message-->
+                  <Action ID="CreateQuaternionMessage" quaternion="{identity_rotation}" w="1.0" x="0.0" y="0.0" z="0.0"/>
+                  <Action ID="CreatePoseMessage" orientation="{identity_rotation}" pose="{ee_pose_sans_rotation}" position="{ee_position}"/>
+                  <Action ID="CreatePoseStampedMessage" header="{ee_header}" pose="{ee_pose_sans_rotation}" pose_stamped="{ee_pose_stamped_sans_rotation}"/>
+                  <!--Unpack the controller odometry topic to get it into a common frame-->
                   <Action ID="GetOdomInstance" odom_topic_name="right_controller_odom" subscribed_odom_instance="{current_controller_odom}"/>
-                  <Action ID="ConvertOdomToPoseStamped" pose_stamped="{tmp_controller_pose_stamped}" odometry="{current_controller_odom}"/>
-                  <Action ID="UnpackPoseStampedMessage" header="{header}" pose="{inst_pose}" pose_stamped="{tmp_controller_pose_stamped}"/>
-                  <Action ID="CreateTimeMessage" sec="1" nanosec="1" time="{inst_time}"/>
-                  <Action ID="CreateHeaderMessage" stamp="{inst_time}" frame_id="world" header="{inst_header}"/>
-                  <Action ID="CreatePoseStampedMessage" header="{inst_header}" pose="{inst_pose}" pose_stamped="{controller_common_frame}"/>
-                  <!--Recompute the pose offset-->
-                  <Action ID="LogMessage" message="Recompute the pose offset"/>
-                  <Action ID="VisualizePose" marker_name="viz_ee_pose" pose="{ee_pose}" marker_text="EE"/>
-                  <Action ID="VisualizePose" marker_name="viz_controller_pose" pose="{controller_common_frame}" marker_text="RCP"/>
-                  <Action ID="CalculatePoseOffset" destination_pose="{ee_pose}" source_to_destination_pose="{controller_to_EE_pose}" source_pose="{controller_common_frame}"/>
+                  <Action ID="ConvertOdomToPoseStamped" odometry="{current_controller_odom}" pose_stamped="{tmp_controller_pose}"/>
+                  <Action ID="UnpackPoseStampedMessage" pose="{inst_pose}" pose_stamped="{tmp_controller_pose}"/>
+                  <Action ID="CreateTimeMessage" nanosec="1" sec="1" time="{inst_time}"/>
+                  <Action ID="CreateHeaderMessage" frame_id="world" header="{inst_header}" stamp="{inst_time}"/>
+                  <Action ID="CreatePoseStampedMessage" header="{inst_header}" pose="{inst_pose}" pose_stamped="{inst_controller_common}"/>
+                  <Action ID="LogMessage" message="Recomputing transform between controller and end effector."/>
+                  <Action ID="CalculatePoseOffset" destination_pose="{ee_pose_stamped_sans_rotation}" source_pose="{inst_controller_common}" source_to_destination_pose="{controller_to_EE_pose}"/>
                 </Control>
               </Decorator>
-              <!--IMPORTANT: Update prev_grip_state OUTSIDE of subscribed_bool check so it updates even when grip is released-->
               <Action ID="Script" code="prev_grip_state := subscribed_bool"/>
               <!--Only do transform work when grip is held-->
               <Decorator ID="Precondition" else="SUCCESS" if="subscribed_bool">
-                <Control ID="Sequence">
-                  <!--Get current controller odom (in native controller frame - same as zero point)-->
-                  <Action ID="GetOdomInstance" odom_topic_name="right_controller_odom" subscribed_odom_instance="{current_controller_odom}"/>
-                  <Action ID="ConvertOdomToPoseStamped" pose_stamped="{tmp_controller_pose_stamped}" odometry="{current_controller_odom}"/>
-                  <Action ID="UnpackPoseStampedMessage" header="{header}" pose="{inst_pose}" pose_stamped="{tmp_controller_pose_stamped}"/>
-                  <Action ID="CreateTimeMessage" sec="1" nanosec="1" time="{inst_time}"/>
-                  <Action ID="CreateHeaderMessage" stamp="{inst_time}" frame_id="world" header="{inst_header}"/>
-                  <Action ID="CreatePoseStampedMessage" header="{inst_header}" pose="{inst_pose}" pose_stamped="{inst_controller_pose_common}"/>
-                  <Action ID="VisualizePose" marker_name="viz_controller_pose" pose="{inst_controller_pose_common}" marker_text="ICP"/>
-                  <Action ID="TransformPoseWithPose" input_pose="{controller_to_EE_pose}" transform_pose="{inst_controller_pose_common}" output_pose="{transformed_pose}"/>
-                  <Action ID="VisualizePose" marker_name="trans_pose" pose="{transformed_pose}" marker_text="TP"/>
+                <Control ID="Parallel" failure_count="1" success_count="-1">
+                  <!--Continuously publish transformed odom while grip is held-->
+                  <Decorator ID="KeepRunningUntilFailure">
+                    <Control ID="Sequence">
+                      <!--Get current controller odom (in native controller frame - same as zero point)-->
+                      <Action ID="GetOdomInstance" odom_topic_name="right_controller_odom" subscribed_odom_instance="{current_controller_odom}"/>
+                      <Action ID="ConvertOdomToPoseStamped" pose_stamped="{tmp_controller_pose_stamped}" odometry="{current_controller_odom}"/>
+                      <Action ID="UnpackPoseStampedMessage" header="{header}" pose="{inst_pose}" pose_stamped="{tmp_controller_pose_stamped}"/>
+                      <Action ID="CreateTimeMessage" sec="1" nanosec="1" time="{inst_time}"/>
+                      <Action ID="CreateHeaderMessage" stamp="{inst_time}" frame_id="world" header="{inst_header}"/>
+                      <Action ID="CreatePoseStampedMessage" header="{inst_header}" pose="{inst_pose}" pose_stamped="{inst_controller_pose_common}"/>
+                      <Action ID="TransformPoseWithPose" input_pose="{controller_to_EE_pose}" transform_pose="{inst_controller_pose_common}" output_pose="{transformed_pose}"/>
+                      <Action ID="VisualizePose" marker_name="trans_pose" pose="{transformed_pose}" marker_text="TP"/>
+                      <Action ID="ConvertPoseStampedToOdom" child_frame="child_frame" odom="{transformed_odom}" pose_stamped="{transformed_pose}"/>
+                      <Action ID="PublishOdom" message="{transformed_odom}" topic_name="transformed_odom"/>
+                      <Action ID="SetBlackboard" value="true" output_key="transformed_odom_received"/>
+                      <!--Small delay between publish iterations-->
+                      <Action ID="Sleep" msec="20"/>
+                    </Control>
+                  </Decorator>
+                  <SubTree ID="Track Moving Frame" _collapsed="true" odometry_topic_name="transformed_odom" proportional_gain_linear="2.0"/>
                 </Control>
               </Decorator>
               <!--Small delay between iterations to control update rate-->
