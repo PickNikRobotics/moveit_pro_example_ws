@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version='1.0' encoding='UTF-8'?>
 <root BTCPP_format="4" main_tree_to_execute="Automask from Camera">
   <BehaviorTree
     ID="Automask from Camera"
@@ -40,11 +40,9 @@
   <TreeNodesModel>
     <SubTree ID="Automask from Camera">
       <MetadataFields>
-        <Metadata
-          description="Takes pictures from two different perspectives and runs automask on each using a loop"
-        />
-        <Metadata runnable="true" />
-        <Metadata subcategory="Perception - ML" />
+        <Metadata description="Takes pictures from two different perspectives and runs automask on each using a loop"/>
+        <Metadata runnable="true"/>
+        <Metadata subcategory="Perception - ML"/>
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
