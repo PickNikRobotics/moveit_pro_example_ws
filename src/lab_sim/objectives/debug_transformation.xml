@@ -4,7 +4,7 @@
     <Control ID="Parallel" _collapsed="false">
       <Action ID="GetOdom" odometry_pose="{odometry_pose}" odometry_topic_name="right_controller_odom"/>
       <Control ID="Sequence" _collapsed="false">
-        <SubTree ID="TransformQuestFrame" _collapsed="false" raw_controller_pose="{ee_pose}" raw_ee_pose="{controller_pose}"/>
+        <SubTree ID="TransformQuestFrame" _collapsed="false"/>
         <Action ID="GetOdomInstance" odom_topic_name="right_controller_odom"/>
         <Action ID="TransformOdomWithPose" destination_child_frame="grasp_link" odom_out="{transformed_odometry}" transform_pose="{transform_pose}" odom_in="{subscribed_odometry}"/>
         <Action ID="ConvertOdomToPoseStamped" odometry="{transformed_odometry}" pose_stamped="{stamped_pose}"/>
