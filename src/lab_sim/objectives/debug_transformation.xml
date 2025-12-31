@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root BTCPP_format="4" main_tree_to_execute="Debug Transformation">
+  <BehaviorTree ID="Debug Transformation" _description="" _favorite="true">
+    <Control ID="Parallel" _collapsed="false">
+      <Action ID="GetOdom" odometry_pose="{odometry_pose}" odometry_topic_name="right_controller_odom"/>
+      <Control ID="Sequence" _collapsed="false">
+        <SubTree ID="TransformQuestFrame" _collapsed="false" raw_controller_pose="{ee_pose}" raw_ee_pose="{controller_pose}"/>
+        <Action ID="GetOdomInstance" odom_topic_name="right_controller_odom"/>
+        <Action ID="TransformOdomWithPose" destination_child_frame="grasp_link" odom_out="{transformed_odometry}" transform_pose="{transform_pose}" odom_in="{subscribed_odometry}"/>
+        <Action ID="ConvertOdomToPoseStamped" odometry="{transformed_odometry}" pose_stamped="{stamped_pose}"/>
+        <Action ID="VisualizePose" marker_text="TP" marker_name="trans_pose"/>
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Debug Transformation"/>
+  </TreeNodesModel>
+</root>

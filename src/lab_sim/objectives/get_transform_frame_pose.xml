@@ -1,38 +1,20 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version='1.0' encoding='UTF-8'?>
 <root BTCPP_format="4" main_tree_to_execute="Get Transform Frame Pose">
   <!--//////////-->
-  <BehaviorTree
-    ID="Get Transform Frame Pose"
-    _description="Returns the pose of the requested frame in the world frame."
-    _favorite="false"
-    name="Returns the pose of the requested frame in the world frame"
-  >
+  <BehaviorTree ID="Get Transform Frame Pose" _description="Returns the pose of the requested frame in the world frame." _favorite="false" name="Returns the pose of the requested frame in the world frame">
     <Control ID="Sequence" name="TopLevelSequence">
-      <Action
-        ID="CreateStampedPose"
-        reference_frame="{requested_frame}"
-        stamped_pose="{identity_pose}"
-        name="Make an identity pose to be transformed"
-        orientation_xyzw="0.; 0.; 0.; 1."
-        position_xyz="0.;0.;0."
-      />
-      <Action
-        ID="TransformPoseFrame"
-        input_pose="{identity_pose}"
-        output_pose="{requested_pose}"
-        target_frame_id="world"
-        name="Use identity pose to get requested pose"
-      />
+      <Action ID="CreateStampedPose" reference_frame="{requested_frame}" stamped_pose="{identity_pose}" name="Make an identity pose to be transformed" orientation_xyzw="0.; 0.; 0.; 1." position_xyz="0.;0.;0."/>
+      <Action ID="TransformPoseFrame" input_pose="{identity_pose}" output_pose="{requested_pose}" target_frame_id="world" name="Use identity pose to get requested pose"/>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Get Transform Frame Pose">
-      <inout_port name="requested_frame" default="" />
-      <inout_port name="requested_pose" default="" />
       <MetadataFields>
-        <Metadata subcategory="Pose Handling" />
-        <Metadata runnable="false" />
+        <Metadata subcategory="Pose Handling"/>
+        <Metadata runnable="false"/>
       </MetadataFields>
+      <inout_port name="requested_frame" default=""/>
+      <inout_port name="requested_pose" default=""/>
     </SubTree>
   </TreeNodesModel>
 </root>
