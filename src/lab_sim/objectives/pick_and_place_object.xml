@@ -149,6 +149,26 @@
         cuboid_object="{graspable_object}"
         cuboid_object_id="{id}"
       />
+      <Control ID="Sequence">
+        <Action
+          ID="GetLatestTransform"
+          source_frame_id="grasp_link"
+          target_frame_id="world"
+          transform="{transform}"
+        />
+        <Action
+          ID="ConvertTransformStampedToPoseStamped"
+          pose_stamped="{pick_pose}"
+          transform_stamped="{transform}"
+        />
+        <Action
+          ID="VisualizePose"
+          marker_lifetime="0.000000"
+          marker_name="pick_pose"
+          marker_size="0.200000"
+          pose="{pick_pose}"
+        />
+      </Control>
       <SubTree
         ID="Move to Waypoint"
         _collapsed="true"
@@ -228,6 +248,7 @@
       <SubTree
         ID="Plan and Execute generated grasp poses"
         cuboid_object="{graspable_object}"
+        _collapsed="true"
       />
       <SubTree
         ID="Move along axis and pick cube"
@@ -235,34 +256,46 @@
         cuboid_object="{graspable_object}"
         cuboid_object_id="{id}"
       />
-      <SubTree
-        ID="Move to Waypoint"
-        acceleration_scale_factor="1.0"
-        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-        controller_names="joint_trajectory_controller"
-        joint_group_name="manipulator"
-        keep_orientation="false"
-        keep_orientation_tolerance="0.05"
-        link_padding="0.01"
-        seed="0"
-        velocity_scale_factor="1.0"
-        waypoint_name="Above Pick Cube"
-      />
-      <SubTree
-        ID="Move to Waypoint"
-        _collapsed="true"
-        acceleration_scale_factor="1.0"
-        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-        controller_names="joint_trajectory_controller"
-        joint_group_name="manipulator"
-        keep_orientation="false"
-        keep_orientation_tolerance="0.05"
-        link_padding="0.01"
-        seed="0"
-        velocity_scale_factor="1.0"
-        waypoint_name="Pick Cube 1"
-      />
       <Control ID="Sequence">
+        <Action
+          ID="TransformPose"
+          input_pose="{pick_pose}"
+          output_pose="{pick_pose_with_offset}"
+          translation_xyz="0;0;-0.05"
+        />
+        <Action ID="ResetPoseStampedVector" vector="{pick_pose_vector}" />
+        <Action
+          ID="AddPoseStampedToVector"
+          input="{pick_pose_with_offset}"
+          vector="{pick_pose_vector}"
+        />
+        <Action
+          ID="AddPoseStampedToVector"
+          input="{pick_pose}"
+          vector="{pick_pose_vector}"
+        />
+        <Action
+          ID="InitializeMTCTask"
+          task="{mtc_task}"
+          timeout="-1.000000"
+          trajectory_monitoring="false"
+          controller_names="joint_trajectory_controller"
+        />
+        <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
+        <Action
+          ID="SetupMTCCartesianSequence"
+          ik_frame="grasp_link"
+          monitored_stage="current state"
+          planning_group_name="manipulator"
+          pose_stamped_vector="{pick_pose_vector}"
+          task="{mtc_task}"
+        />
+        <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
+        <Action
+          ID="ExecuteMTCTask"
+          goal_duration_tolerance="-1.000000"
+          solution="{mtc_solution}"
+        />
         <SubTree ID="Open Gripper" />
         <Action
           ID="InitializeMTCTask"
