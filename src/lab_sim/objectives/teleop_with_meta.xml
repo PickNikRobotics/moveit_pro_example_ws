@@ -70,23 +70,42 @@
                   <Action ID="Script" code="flipped_y := -trans_y"/>
                   <Action ID="CreatePointMessage" point="{flipped_position}" x="{trans_x}" z="{trans_z}" y="{trans_y}"/>
                   <!--Use identity quaternion (no rotation) - will fix this later-->
-                  <Action ID="CreateQuaternionMessage" quaternion="{flipped_quaternion}" x="0" y="0" z="0" w="1"/>
-                  <Action ID="CreatePoseMessage" pose="{flipped_trans_pose}" orientation="{flipped_quaternion}" position="{flipped_position}"/>
+                  <Action ID="CreateQuaternionMessage" quaternion="{flipped_quaternion}" x="0" y="0" z="-1" w="1"/>
+                  <Action ID="CreatePoseMessage" pose="{flipped_trans_pose}" orientation="{trans_orientation}" position="{flipped_position}"/>
                   <!--Create header with explicit frame_id for the odom message-->
                   <Action ID="CreateTimeMessage" sec="0" nanosec="0" time="{odom_time}"/>
                   <Action ID="CreateHeaderMessage" stamp="{odom_time}" frame_id="world" header="{odom_header}"/>
                   <Action ID="CreatePoseStampedMessage" header="{odom_header}" pose_stamped="{flipped_trans_pose_stamped}" pose="{flipped_trans_pose}"/>
                   <Action ID="VisualizePose" marker_name="flipped_trans_pose" pose="{flipped_trans_pose_stamped}" marker_text="FP" marker_lifetime="0.000000"/>
-                  <!--Publish transformed odom for Track Moving Frame to consume-->
-                  <Action ID="ConvertPoseStampedToOdom" child_frame="grasp_link" odom="{transformed_odom}" pose_stamped="{flipped_trans_pose_stamped}"/>
-                  <Action ID="PublishOdom" message="{transformed_odom}" topic_name="transformed_odom"/>
-                  <!--Set flag that we have published odom (as boolean)-->
-                  <Action ID="Script" code="transformed_odom_received := true"/>
+                  <!--=== COLLISION CHECK: Verify pose is safe before publishing ===-->
+                  <!--Create a vector with just this pose for SolveIKQueries-->
+                  <Action ID="ResetPoseStampedVector" vector="{ik_check_poses}"/>
+                  <Action ID="AddPoseStampedToVector" input="{flipped_trans_pose_stamped}" vector="{ik_check_poses}"/>
+                  <!--Check if pose is reachable AND collision-free-->
+                  <Action ID="SolveIKQueries" target_poses="{ik_check_poses}" check_collisions="true" timeout="0.02" joint_group_name="manipulator" ik_query_results="{ik_results}"/>
+                  <!--Get the result (first element of the results vector)-->
+                  <Action ID="GetElementOfVector" vector_in="{ik_results}" index="0" element="{pose_is_safe}"/>
+                  <!--Only publish odom and set flag if pose is collision-free-->
+                  <Decorator ID="Precondition" if="pose_is_safe" else="SUCCESS">
+                    <Control ID="Sequence">
+                      <!--Publish transformed odom for Track Moving Frame to consume-->
+                      <Action ID="ConvertPoseStampedToOdom" child_frame="grasp_link" odom="{transformed_odom}" pose_stamped="{flipped_trans_pose_stamped}"/>
+                      <Action ID="PublishOdom" message="{transformed_odom}" topic_name="transformed_odom"/>
+                      <!--Set flag that we have published odom (as boolean)-->
+                      <Action ID="Script" code="transformed_odom_received := true"/>
+                    </Control>
+                  </Decorator>
+                  <!--=== END COLLISION CHECK ===-->
                 </Control>
               </Decorator>
             </Control>
           </Decorator>
           <!--Track the moving frame - subscribes to transformed_odom topic DIRECTLY-->
+          <Decorator ID="KeepRunningUntilFailure">
+            <Decorator ID="Precondition" else="SUCCESS" if="prev_grip_state &amp;&amp; !current_grip &amp;&amp; transformed_odom_received">
+              <SubTree ID="Track Moving Frame" odometry_topic_name="transformed_odom" proportional_gain_linear="2.0"/>
+            </Decorator>
+          </Decorator>
           <!--The subtree has its own GetOdom that reads from the topic specified by odometry_topic_name-->
           <Decorator ID="KeepRunningUntilFailure">
             <Control ID="Sequence">
