@@ -115,6 +115,7 @@
           ID="WaitForUserTrajectoryApproval"
           cartesian_path_links="grasp_link"
           solution="{mtc_solution}"
+          _skipIf="true"
         />
         <Action
           ID="ExecuteMTCTask"
