@@ -28,23 +28,20 @@
                   <!--Get current EE pose-->
                   <Action ID="GetLatestTransform" source_frame_id="grasp_link" target_frame_id="world" transform="{ee_transform}"/>
                   <Action ID="ConvertTransformStampedToPoseStamped" pose_stamped="{ee_pose_stamped}" transform_stamped="{ee_transform}"/>
-                  <!--Extract just the position (no rotation)-->
+                  <!--Extract EE position-->
                   <Action ID="UnpackPoseStampedMessage" pose_stamped="{ee_pose_stamped}" pose="{ee_pose}" header="{ee_header}"/>
                   <Action ID="UnpackPoseMessage" pose="{ee_pose}" orientation="{ee_orientation}" position="{ee_position}"/>
-                  <!--Rebuild EE pose with identity rotation (position only)-->
-                  <Action ID="CreateQuaternionMessage" quaternion="{identity_rotation}" w="1.0" x="0.0" y="0.0" z="0.0"/>
-                  <Action ID="CreatePoseMessage" orientation="{identity_rotation}" pose="{ee_pose_sans_rotation}" position="{ee_position}"/>
-                  <Action ID="CreatePoseStampedMessage" header="{ee_header}" pose="{ee_pose_sans_rotation}" pose_stamped="{ee_pose_stamped_sans_rotation}"/>
-                  <!--Get current controller pose in common frame-->
+                  <Action ID="UnpackPointMessage" point="{ee_position}" x="{ee_x}" y="{ee_y}" z="{ee_z}"/>
+                  <!--Get current controller pose-->
                   <Action ID="GetOdomInstance" odom_topic_name="right_controller_odom" subscribed_odom_instance="{current_controller_odom}"/>
                   <Action ID="ConvertOdomToPoseStamped" odometry="{current_controller_odom}" pose_stamped="{tmp_controller_pose}"/>
                   <Action ID="UnpackPoseStampedMessage" pose="{inst_pose}" pose_stamped="{tmp_controller_pose}"/>
-                  <Action ID="CreateTimeMessage" nanosec="1" sec="1" time="{inst_time}"/>
-                  <Action ID="CreateHeaderMessage" frame_id="world" header="{inst_header}" stamp="{inst_time}"/>
-                  <Action ID="CreatePoseStampedMessage" header="{inst_header}" pose="{inst_pose}" pose_stamped="{inst_controller_common}"/>
-                  <!--Calculate offset from controller to EE position-->
-                  <Action ID="CalculatePoseOffset" destination_pose="{ee_pose_stamped_sans_rotation}" source_pose="{inst_controller_common}" source_to_destination_pose="{controller_to_EE_pose}"/>
-                  <Action ID="LogMessage" message="Offset calculated and stored"/>
+                  <Action ID="UnpackPoseMessage" pose="{inst_pose}" orientation="{inst_orientation}" position="{inst_position}"/>
+                  <Action ID="UnpackPointMessage" point="{inst_position}" x="{ctrl_init_x}" y="{ctrl_init_y}" z="{ctrl_init_z}"/>
+                  <!--Calculate POSITION OFFSET ONLY: EE position - Controller position-->
+                  <!--This is the translation we need to add to controller position to get EE position-->
+                  <Action ID="Script" code="offset_x := ee_x - ctrl_init_x; offset_y := ee_y - ctrl_init_y; offset_z := ee_z - ctrl_init_z"/>
+                  <Action ID="LogMessage" message="Position offset calculated and stored (rotation will pass through directly)"/>
                 </Control>
               </Decorator>
               <!--Update previous grip state AFTER the check-->
@@ -56,31 +53,26 @@
                   <Action ID="GetOdomInstance" odom_topic_name="right_controller_odom" subscribed_odom_instance="{current_controller_odom}"/>
                   <Action ID="ConvertOdomToPoseStamped" pose_stamped="{tmp_controller_pose_stamped}" odometry="{current_controller_odom}"/>
                   <Action ID="UnpackPoseStampedMessage" header="{header}" pose="{inst_pose}" pose_stamped="{tmp_controller_pose_stamped}"/>
-                  <Action ID="CreateTimeMessage" sec="1" nanosec="1" time="{inst_time}"/>
-                  <Action ID="CreateHeaderMessage" stamp="{inst_time}" frame_id="world" header="{inst_header}"/>
-                  <Action ID="CreatePoseStampedMessage" header="{inst_header}" pose="{inst_pose}" pose_stamped="{inst_controller_pose_common}"/>
-                  <!--Transform controller pose by the offset to get target in EE frame-->
-                  <Action ID="TransformPoseWithPose" input_pose="{controller_to_EE_pose}" transform_pose="{inst_controller_pose_common}" output_pose="{transformed_pose_stamped}"/>
-                  <Action ID="VisualizePose" marker_name="trans_pose" pose="{transformed_pose_stamped}" marker_text="TP" _skipIf="true"/>
-                  <!--Unpack pose to fix inverted X axis-->
-                  <Action ID="UnpackPoseStampedMessage" pose_stamped="{transformed_pose_stamped}" pose="{trans_pose}" header="{trans_header}"/>
-                  <Action ID="UnpackPoseMessage" orientation="{trans_orientation}" pose="{trans_pose}" position="{trans_position}"/>
-                  <!--Unpack position, negate X, rebuild-->
-                  <Action ID="UnpackPointMessage" point="{trans_position}" x="{trans_x}" y="{trans_y}" z="{trans_z}"/>
-                  <Action ID="Script" code="flipped_y := -trans_y"/>
-                  <Action ID="CreatePointMessage" point="{flipped_position}" x="{trans_x}" z="{trans_z}" y="{trans_y}"/>
-                  <!--Use identity quaternion (no rotation) - will fix this later-->
-                  <Action ID="CreateQuaternionMessage" quaternion="{flipped_quaternion}" x="0" y="0" z="-1" w="1"/>
-                  <Action ID="CreatePoseMessage" pose="{flipped_trans_pose}" orientation="{trans_orientation}" position="{flipped_position}"/>
-                  <!--Create header with explicit frame_id for the odom message-->
+                  <!--Extract controller position and rotation-->
+                  <Action ID="UnpackPoseMessage" pose="{inst_pose}" orientation="{ctrl_orientation}" position="{ctrl_position}"/>
+                  <Action ID="UnpackPointMessage" point="{ctrl_position}" x="{ctrl_x}" y="{ctrl_y}" z="{ctrl_z}"/>
+                  <!--Apply position offset: new_position = controller_position + offset-->
+                  <Action ID="Script" code="trans_x := ctrl_x + offset_x; trans_y := ctrl_y + offset_y; trans_z := ctrl_z + offset_z"/>
+                  <!--Build transformed position-->
+                  <Action ID="CreatePointMessage" point="{trans_position}" x="{trans_x}" y="{trans_y}" z="{trans_z}"/>
+                  <!--Build pose with: offset position + controller rotation (pass-through)-->
+                  <Action ID="CreatePoseMessage" pose="{trans_pose}" orientation="{ctrl_orientation}" position="{trans_position}"/>
+                  <!--Create header-->
                   <Action ID="CreateTimeMessage" sec="0" nanosec="0" time="{odom_time}"/>
                   <Action ID="CreateHeaderMessage" stamp="{odom_time}" frame_id="world" header="{odom_header}"/>
-                  <Action ID="CreatePoseStampedMessage" header="{odom_header}" pose_stamped="{flipped_trans_pose_stamped}" pose="{flipped_trans_pose}"/>
-                  <Action ID="VisualizePose" marker_name="flipped_trans_pose" pose="{flipped_trans_pose_stamped}" marker_text="FP" marker_lifetime="0.000000"/>
+                  <Action ID="CreatePoseStampedMessage" header="{odom_header}" pose_stamped="{transformed_pose_stamped}" pose="{trans_pose}"/>
+                  <Action ID="VisualizePose" marker_name="trans_pose" pose="{transformed_pose_stamped}" marker_text="TP" _skipIf="true"/>
+                  <!--Visualize the final pose-->
+                  <Action ID="VisualizePose" marker_name="flipped_trans_pose" pose="{transformed_pose_stamped}" marker_text="FP" marker_lifetime="0.000000"/>
                   <!--=== COLLISION CHECK: Verify pose is safe before publishing ===-->
                   <!--Create a vector with just this pose for SolveIKQueries-->
                   <Action ID="ResetPoseStampedVector" vector="{ik_check_poses}"/>
-                  <Action ID="AddPoseStampedToVector" input="{flipped_trans_pose_stamped}" vector="{ik_check_poses}"/>
+                  <Action ID="AddPoseStampedToVector" input="{transformed_pose_stamped}" vector="{ik_check_poses}"/>
                   <!--Check if pose is reachable AND collision-free-->
                   <Action ID="SolveIKQueries" target_poses="{ik_check_poses}" check_collisions="true" timeout="0.02" joint_group_name="manipulator" ik_query_results="{ik_results}"/>
                   <!--Get the result (first element of the results vector)-->
@@ -89,34 +81,48 @@
                   <Decorator ID="Precondition" if="pose_is_safe" else="SUCCESS">
                     <Control ID="Sequence">
                       <!--Publish transformed odom for Track Moving Frame to consume-->
-                      <Action ID="ConvertPoseStampedToOdom" child_frame="grasp_link" odom="{transformed_odom}" pose_stamped="{flipped_trans_pose_stamped}"/>
+                      <Action ID="ConvertPoseStampedToOdom" child_frame="grasp_link" odom="{transformed_odom}" pose_stamped="{transformed_pose_stamped}"/>
                       <Action ID="PublishOdom" message="{transformed_odom}" topic_name="transformed_odom"/>
                       <!--Set flag that we have published odom (as boolean)-->
                       <Action ID="Script" code="transformed_odom_received := true"/>
+                      <!--Save the last safe odom message to republish when clutch is released-->
+                      <Action ID="Script" code="last_safe_odom_msg := transformed_odom"/>
                     </Control>
                   </Decorator>
-                  <!--=== END COLLISION CHECK ===-->
+                </Control>
+              </Decorator>
+              <!--DEBUG: Log current state after each loop iteration-->
+              <Action ID="LogMessage" message="[DEBUG] Main loop: checking grip states..."/>
+            </Control>
+          </Decorator>
+          <!--Track the moving frame when clutch is released - republish last safe pose to prevent droop-->
+          <Decorator ID="KeepRunningUntilFailure">
+            <Control ID="Sequence">
+              <Action ID="Sleep" msec="50"/>
+              <!--DEBUG: Log that we're checking the anti-droop condition-->
+              <Action ID="LogMessage" message="[DEBUG] Anti-droop branch: checking falling edge..."/>
+              <Decorator ID="Precondition" else="SUCCESS" if="prev_grip_state &amp;&amp; !current_grip &amp;&amp; transformed_odom_received">
+                <Control ID="Sequence">
+                  <Action ID="LogMessage" message="[DEBUG] FALLING EDGE DETECTED - Grip released, publishing last safe odom!"/>
+                  <Action ID="PublishOdom" message="{last_safe_odom_msg}" topic_name="last_odom_msg"/>
+                  <Action ID="LogMessage" message="Publishing to last_odom_msg to avoid droopage!"/>
+                  <SubTree ID="Track Moving Frame" odometry_topic_name="last_odom_msg" proportional_gain_linear="2.0" proportional_gain_angular="2.0"/>
                 </Control>
               </Decorator>
             </Control>
           </Decorator>
-          <!--Track the moving frame - subscribes to transformed_odom topic DIRECTLY-->
-          <Decorator ID="KeepRunningUntilFailure">
-            <Decorator ID="Precondition" else="SUCCESS" if="prev_grip_state &amp;&amp; !current_grip &amp;&amp; transformed_odom_received">
-              <SubTree ID="Track Moving Frame" odometry_topic_name="transformed_odom" proportional_gain_linear="2.0"/>
-            </Decorator>
-          </Decorator>
-          <!--The subtree has its own GetOdom that reads from the topic specified by odometry_topic_name-->
+          <!--This is to avoid drooping after releasing the clutch. Republish last safe message on loop until the user presses the clutch again.-->
           <Decorator ID="KeepRunningUntilFailure">
             <Control ID="Sequence">
               <!--Small delay to sync with main loop updates-->
               <Action ID="Sleep" msec="50"/>
+              <!--DEBUG: Log the current grip and odom state-->
+              <Action ID="LogMessage" message="[DEBUG] Track branch: checking grip held condition..."/>
               <!--Only track when we have data AND grip is currently held-->
               <Decorator ID="Precondition" if="transformed_odom_received &amp;&amp; current_grip" else="SUCCESS">
                 <Control ID="Sequence">
-                  <Action ID="LogMessage" message="Tracking moving frame..."/>
-                  <!--Pass the actual topic name "transformed_odom" - the subtree subscribes internally-->
-                  <SubTree ID="Track Moving Frame" _collapsed="true" odometry_topic_name="transformed_odom" proportional_gain_linear="2.0"/>
+                  <Action ID="LogMessage" message="[DEBUG] TRACKING - Grip held and odom received, calling Track Moving Frame"/>
+                  <SubTree ID="Track Moving Frame" _collapsed="true" proportional_gain_linear="2.0" odometry_topic_name="transformed_odom"/>
                 </Control>
               </Decorator>
             </Control>
