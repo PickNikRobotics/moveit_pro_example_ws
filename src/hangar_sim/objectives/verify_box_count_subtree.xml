@@ -79,7 +79,7 @@
       </MetadataFields>
       <inout_port
         name="directory_path"
-        default="/home/studio-user/user_ws/src/hangar_sim/wrist_camera_images"
+        default="/home/moveit-pro-user/user_ws/src/hangar_sim/wrist_camera_images"
         type="std::string"
       >
         Absolute path to wrist camera images
