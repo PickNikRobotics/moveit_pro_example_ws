@@ -23,13 +23,14 @@
       <Action ID="CreateHeaderMessage" frame_id="world" header="{dummy_header}" stamp="{dummy_stamp}"/>
       <!--Reconstruct controller pose message in the common frame (so that CalculatePoseOffset works)-->
       <Action ID="CreatePoseStampedMessage" header="{dummy_header}" pose="{controller_pose}" pose_stamped="{controller_common_frame}"/>
-      <Action ID="CalculatePoseOffset" destination_pose="{ee_pose_stamped_sans_rotation}" source_pose="{controller_common_frame}" source_to_destination_pose="{controller_to_ee_pose_transform}"/>
+      <Action ID="CalculatePoseOffset" destination_pose="{ee_pose_stamped_sans_rotation}" source_pose="{controller_common_frame}" source_to_destination_pose="{transform_pose}"/>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="TransformQuestFrame">
       <inout_port name="button_topic" default="right_grip_button_event" type="std::string"/>
       <inout_port name="controller_odometry_topic" default="right_controller_odom" type="std::string"/>
+      <inout_port name="transform_pose" default="{transform_pose}" type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"/>
     </SubTree>
   </TreeNodesModel>
 </root>

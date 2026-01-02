@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root BTCPP_format="4" main_tree_to_execute="Republish Pose Stamped in World Frame">
+  <!--//////////-->
+  <BehaviorTree ID="Republish Pose Stamped in World Frame" _description="Strips a pose stamped message, reconstructs new pose stamped in the world frame " _favorite="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="UnpackPoseStampedMessage" pose_stamped="{inbound_pose_stamped}" pose="{pose}"/>
+      <Action ID="CreateTimeMessage" nanosec="1" sec="1" time="{dummy_time}"/>
+      <Action ID="CreateHeaderMessage" frame_id="world" header="{dummy_header}" stamp="{dummy_time}"/>
+      <Action ID="CreatePoseStampedMessage" header="{dummy_header}" pose_stamped="{world_pose_stamped}"/>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Republish Pose Stamped in World Frame">
+      <MetadataFields>
+        <Metadata runnable="true"/>
+        <Metadata subcategory="Uncategorized"/>
+      </MetadataFields>
+      <inout_port name="inbound_pose_stamped" default="{inbound_pose_stamped}" type="geometry_msgs::msg::PoseStamped"/>
+      <inout_port name="world_pose_stamped" default="{world_pose_stamped}" type="geometry_msgs::msg::PoseStamped"/>
+    </SubTree>
+  </TreeNodesModel>
+</root>
