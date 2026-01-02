@@ -1,0 +1,44 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root BTCPP_format="4" main_tree_to_execute="Track Moving Frame using Odom Instance">
+  <!--//////////-->
+  <BehaviorTree ID="Track Moving Frame using Odom Instance" _description="Moves the end-effector to a target pose specified by an odometry message input, then exits when the target is reached." _favorite="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <!--Setup: Create wrench and switch controller-->
+      <Action ID="CreateStampedWrench" reference_frame="world" stamped_wrench="{stamped_wrench}"/>
+      <Action ID="SwitchController" activate_asap="true" automatic_deactivation="true" controller_list_action_name="/controller_manager/list_controllers" controller_switch_action_name="/controller_manager/switch_controller" strictness="1" timeout="1000.0" activate_controllers="{velocity_force_controller_name}"/>
+      <Action ID="CreateStampedPose" reference_frame="{default_ik_frame}" stamped_pose="{target_pose_offset}"/>
+      <!--Convert input odometry to pose for visualization-->
+      <Action ID="ConvertOdomToPoseStamped" odometry="{target_odometry}" pose_stamped="{odometry_pose}"/>
+      <Action ID="VisualizePose" marker_lifetime="0.000000" marker_name="target_pose" marker_size="0.100000" pose="{odometry_pose}"/>
+      <!--Control loop: compute velocity, publish, check if reached target-->
+      <Decorator ID="KeepRunningUntilFailure">
+        <Control ID="Sequence">
+          <!--Compute velocity to align with target-->
+          <Action ID="ComputeVelocityToAlignWithTarget" end_effector_frame="{default_ik_frame}" output_control_velocity="{control_velocity}" output_pose_error="{pose_error}" proportional_gain_linear="{proportional_gain_linear}" target_motion_state="{target_odometry}" target_pose_offset="{target_pose_offset}" proportional_gain_angular="{proportional_gain_angular}"/>
+          <!--Publish velocity command-->
+          <Action ID="PublishVelocityForceCommand" force_controlled_axes="0;0;0;0;0;0" publish_rate="10" twist_stamped="{control_velocity}" velocity_controlled_axes="1;1;1;1;1;1" velocity_force_controller_command_topic="{velocity_force_controller_command_topic}" wrench_gain="0.0" wrench_stamped="{stamped_wrench}"/>
+          <!--Check if we've reached the target - if yes, this fails and exits the loop-->
+          <Decorator ID="Inverter">
+            <Action ID="IsPoseNearIdentity" pose="{pose_error}" position_tolerance="{position_tolerance}" rotation_tolerance="{rotation_tolerance}"/>
+          </Decorator>
+        </Control>
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Track Moving Frame using Odom Instance">
+      <MetadataFields>
+        <Metadata subcategory="Motion - Execute"/>
+        <Metadata runnable="false"/>
+      </MetadataFields>
+      <input_port name="default_ik_frame" default="grasp_link"/>
+      <input_port name="position_tolerance" default="0.01"/>
+      <input_port name="proportional_gain_angular" default="2.0"/>
+      <input_port name="proportional_gain_linear" default="2.0"/>
+      <input_port name="rotation_tolerance" default="0.1"/>
+      <input_port name="target_odometry" default="{target_odometry}"/>
+      <input_port name="velocity_force_controller_command_topic" default="/velocity_force_controller/command"/>
+      <input_port name="velocity_force_controller_name" default="velocity_force_controller"/>
+    </SubTree>
+  </TreeNodesModel>
+</root>
