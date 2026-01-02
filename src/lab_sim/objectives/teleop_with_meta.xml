@@ -5,26 +5,26 @@
       <Control ID="Sequence" name="TopLevelSequence">
         <!--Step 1: Wait for grip button press while capturing controller pose (in native controller frame) as zero point-->
         <!--This captures the EE pose ONCE at the moment the clutch is pressed-->
-        <SubTree ID="TransformQuestFrame" _collapsed="true" button_topic="right_grip_button_event"/>
+        <SubTree ID="TransformQuestFrame" _collapsed="false" button_topic="right_grip_button_event"/>
         <Action ID="Script" code="current_grip := false"/>
         <!--Step 2: While grip is held, continuously transform and publish using the captured offset-->
         <Action ID="SetBlackboard" value="false" output_key="subscribed_bool"/>
-        <!--Initialize previous grip state and odom received flag as booleans-->
-        <Action ID="Script" code="prev_grip_state := false; transformed_odom_received := false"/>
+        <!--Initialize previous grip state, odom received flag, and session_started flag as booleans-->
+        <Action ID="Script" code="prev_grip_state := false; transformed_odom_received := false; session_started := false"/>
         <Control ID="Parallel" success_count="-1" failure_count="1">
           <!--Monitor grip button state continuously-->
           <Action ID="GetBool" bool_topic_name="right_grip_button_state" subscribed_bool="{subscribed_bool}"/>
-          <!--Main control loop-->
+          <!--Main control loop: handles grip reading, rising edge detection, and state updates-->
           <Decorator ID="KeepRunningUntilFailure">
             <Control ID="Sequence">
-              <!--Small delay to let GetBool update-->
-              <Action ID="Sleep" msec="50"/>
               <!--Store current grip state in a temp variable for comparison-->
               <Action ID="Script" code="current_grip := subscribed_bool"/>
-              <!--Rising edge detection: when grip goes false->true, snap to EE position-->
+              <!--Rising edge detection: when grip goes false->true, snap to EE position and calculate offsets-->
               <Decorator ID="Precondition" else="SUCCESS" if="!prev_grip_state &amp;&amp; current_grip">
                 <Control ID="Sequence" _collapsed="true">
                   <Action ID="LogMessage" message="Grip pressed - snapping to end effector position"/>
+                  <!--Mark session as started - this persists until objective restarts-->
+                  <Action ID="Script" code="session_started := true"/>
                   <!--Get current EE pose-->
                   <Action ID="GetLatestTransform" source_frame_id="grasp_link" target_frame_id="world" transform="{ee_transform}"/>
                   <Action ID="ConvertTransformStampedToPoseStamped" pose_stamped="{ee_pose_stamped}" transform_stamped="{ee_transform}"/>
@@ -44,9 +44,14 @@
                   <Action ID="LogMessage" message="Position offset calculated and stored (rotation will pass through directly)"/>
                 </Control>
               </Decorator>
-              <!--Update previous grip state AFTER the check-->
+              <!--Update previous grip state AFTER the rising edge check-->
               <Action ID="Script" code="prev_grip_state := current_grip"/>
-              <!--Only transform and track when grip is held-->
+            </Control>
+          </Decorator>
+          <!--Republish loop: Transform and publish controller odom while grip is held-->
+          <Decorator ID="KeepRunningUntilFailure">
+            <Control ID="Sequence">
+              <!--Only transform and publish when grip is held-->
               <Decorator ID="Precondition" else="SUCCESS" if="current_grip">
                 <Control ID="Sequence">
                   <!--Get current controller odom-->
@@ -91,39 +96,34 @@
                   </Decorator>
                 </Control>
               </Decorator>
-              <!--DEBUG: Log current state after each loop iteration-->
-              <Action ID="LogMessage" message="[DEBUG] Main loop: checking grip states..."/>
             </Control>
           </Decorator>
-          <!--Track the moving frame when clutch is released - republish last safe pose to prevent droop-->
+          <!--Last safe odom publishing loop: Continuously publishes last_safe_odom_msg while grip is released-->
+          <!--This runs in parallel with the tracking loop so Track Moving Frame has continuous messages-->
           <Decorator ID="KeepRunningUntilFailure">
             <Control ID="Sequence">
-              <Action ID="Sleep" msec="50"/>
-              <!--DEBUG: Log that we're checking the anti-droop condition-->
-              <Action ID="LogMessage" message="[DEBUG] Anti-droop branch: checking falling edge..."/>
-              <Decorator ID="Precondition" else="SUCCESS" if="prev_grip_state &amp;&amp; !current_grip &amp;&amp; transformed_odom_received">
-                <Control ID="Sequence">
-                  <Action ID="LogMessage" message="[DEBUG] FALLING EDGE DETECTED - Grip released, publishing last safe odom!"/>
-                  <Action ID="PublishOdom" message="{last_safe_odom_msg}" topic_name="last_odom_msg"/>
-                  <Action ID="LogMessage" message="Publishing to last_odom_msg to avoid droopage!"/>
-                  <SubTree ID="Track Moving Frame" odometry_topic_name="last_odom_msg" proportional_gain_linear="2.0" proportional_gain_angular="2.0"/>
-                </Control>
+              <Action ID="Sleep" msec="5"/>
+              <Decorator ID="Precondition" if="!current_grip &amp;&amp; session_started &amp;&amp; transformed_odom_received" else="SUCCESS">
+                <Action ID="PublishOdom" message="{last_safe_odom_msg}" topic_name="last_safe_target"/>
               </Decorator>
             </Control>
           </Decorator>
-          <!--This is to avoid drooping after releasing the clutch. Republish last safe message on loop until the user presses the clutch again.-->
+          <!--Tracking loop: Track to last safe position while grip is released-->
+          <!--Uses Precondition with else=SUCCESS so it doesn't cause failures-->
           <Decorator ID="KeepRunningUntilFailure">
             <Control ID="Sequence">
-              <!--Small delay to sync with main loop updates-->
-              <Action ID="Sleep" msec="50"/>
-              <!--DEBUG: Log the current grip and odom state-->
-              <Action ID="LogMessage" message="[DEBUG] Track branch: checking grip held condition..."/>
-              <!--Only track when we have data AND grip is currently held-->
-              <Decorator ID="Precondition" if="transformed_odom_received &amp;&amp; current_grip" else="SUCCESS">
-                <Control ID="Sequence">
-                  <Action ID="LogMessage" message="[DEBUG] TRACKING - Grip held and odom received, calling Track Moving Frame"/>
-                  <SubTree ID="Track Moving Frame" _collapsed="true" proportional_gain_linear="2.0" odometry_topic_name="transformed_odom"/>
-                </Control>
+              <Action ID="Sleep" msec="10"/>
+              <Decorator ID="Precondition" if="!current_grip &amp;&amp; session_started &amp;&amp; transformed_odom_received" else="SUCCESS">
+                <SubTree ID="Track Moving Frame" odometry_topic_name="last_safe_target" proportional_gain_linear="2.0" proportional_gain_angular="2.0"/>
+              </Decorator>
+            </Control>
+          </Decorator>
+          <!--Active tracking while grip is held - follows the live transformed odom-->
+          <Decorator ID="KeepRunningUntilFailure">
+            <Control ID="Sequence">
+              <Action ID="Sleep" msec="10"/>
+              <Decorator ID="Precondition" if="current_grip &amp;&amp; session_started" else="SUCCESS">
+                <SubTree ID="Track Moving Frame" _collapsed="true" proportional_gain_linear="2.0" odometry_topic_name="transformed_odom"/>
               </Decorator>
             </Control>
           </Decorator>
