@@ -5,54 +5,65 @@
       <Control ID="Sequence" name="TopLevelSequence">
         <!--Step 1: Wait for grip button press while capturing controller pose (in native controller frame) as zero point-->
         <!--This captures the EE pose ONCE at the moment the clutch is pressed-->
-        <SubTree ID="TransformQuestFrame" _collapsed="false" button_topic="right_grip_button_event"/>
-        <Action ID="Script" code="current_grip := false"/>
-        <!--Step 2: While grip is held, continuously transform and publish using the captured offset-->
+        <SubTree ID="TransformQuestFrame" _collapsed="true" button_topic="right_grip_button_event"/>
+        <!--Initialize all state variables - use separate boolean for tracking readiness-->
+        <Action ID="Script" code="current_grip := false; prev_grip_state := false; offset_calculated := false; odom_ready := false"/>
+        <!--Initialize offset values to prevent "variable not found" error-->
+        <Action ID="Script" code="offset_x := 0.0; offset_y := 0.0; offset_z := 0.0"/>
         <Action ID="SetBlackboard" value="false" output_key="subscribed_bool"/>
-        <!--Initialize previous grip state, odom received flag, and session_started flag as booleans-->
-        <Action ID="Script" code="prev_grip_state := false; transformed_odom_received := false; session_started := false"/>
+        <!--Initialize transformed_odom with current EE pose-->
+        <Action ID="GetLatestTransform" source_frame_id="grasp_link" target_frame_id="world" transform="{init_ee_transform}"/>
+        <Action ID="ConvertTransformStampedToPoseStamped" pose_stamped="{init_ee_pose_stamped}" transform_stamped="{init_ee_transform}"/>
+        <Action ID="ConvertPoseStampedToOdom" child_frame="grasp_link" odom="{transformed_odom}" pose_stamped="{init_ee_pose_stamped}"/>
+        <!--Setup for velocity control - done BEFORE the parallel block-->
+        <Action ID="CreateStampedWrench" reference_frame="world" stamped_wrench="{stamped_wrench}"/>
+        <Action ID="SwitchController" activate_asap="true" automatic_deactivation="true" controller_list_action_name="/controller_manager/list_controllers" controller_switch_action_name="/controller_manager/switch_controller" strictness="1" timeout="1000.0" activate_controllers="velocity_force_controller"/>
+        <Action ID="CreateStampedPose" reference_frame="grasp_link" stamped_pose="{target_pose_offset}"/>
         <Control ID="Parallel" success_count="-1" failure_count="1">
-          <!--Monitor grip button state continuously-->
+          <!--Branch 1: Monitor grip button state continuously-->
           <Action ID="GetBool" bool_topic_name="right_grip_button_state" subscribed_bool="{subscribed_bool}"/>
-          <!--Main control loop: handles grip reading, rising edge detection, and state updates-->
+          <!--Branch 2: Rising Edge Detection - updates rising_edge when grip goes false->true-->
+          <SubTree ID="Rising Edge Detection" bool_topic="right_grip_button_state" current_state="{edge_current_state}" rising_edge="{grip_rising_edge}"/>
+          <!--Branch 3: Main control loop - calculates offset and publishes transformed poses-->
           <Decorator ID="KeepRunningUntilFailure">
             <Control ID="Sequence">
-              <!--Store current grip state in a temp variable for comparison-->
+              <!--Small delay to let GetBool and Rising Edge Detection update-->
+              <Action ID="WaitForDuration" delay_duration="0.05"/>
+              <!--Store current grip state-->
               <Action ID="Script" code="current_grip := subscribed_bool"/>
-              <!--Rising edge detection: when grip goes false->true, snap to EE position and calculate offsets-->
-              <Decorator ID="Precondition" else="SUCCESS" if="!prev_grip_state &amp;&amp; current_grip">
+              <!--Rising edge detection: when grip_rising_edge is true, snap to EE position-->
+              <Decorator ID="Precondition" else="SUCCESS" if="grip_rising_edge">
                 <Control ID="Sequence" _collapsed="true">
-                  <Action ID="LogMessage" message="Grip pressed - snapping to end effector position"/>
-                  <!--Mark session as started - this persists until objective restarts-->
-                  <Action ID="Script" code="session_started := true"/>
-                  <!--Get current EE pose-->
+                  <Action ID="LogMessage" message="Rising edge detected - snapping to end effector position"/>
+                  <!--Get current EE pose FIRST (this is what we want to align to)-->
                   <Action ID="GetLatestTransform" source_frame_id="grasp_link" target_frame_id="world" transform="{ee_transform}"/>
                   <Action ID="ConvertTransformStampedToPoseStamped" pose_stamped="{ee_pose_stamped}" transform_stamped="{ee_transform}"/>
-                  <!--Extract EE position-->
+                  <!--Extract EE position and orientation-->
                   <Action ID="UnpackPoseStampedMessage" pose_stamped="{ee_pose_stamped}" pose="{ee_pose}" header="{ee_header}"/>
                   <Action ID="UnpackPoseMessage" pose="{ee_pose}" orientation="{ee_orientation}" position="{ee_position}"/>
                   <Action ID="UnpackPointMessage" point="{ee_position}" x="{ee_x}" y="{ee_y}" z="{ee_z}"/>
-                  <!--Get current controller pose-->
+                  <!--Get current controller pose at this exact moment-->
                   <Action ID="GetOdomInstance" odom_topic_name="right_controller_odom" subscribed_odom_instance="{current_controller_odom}"/>
                   <Action ID="ConvertOdomToPoseStamped" odometry="{current_controller_odom}" pose_stamped="{tmp_controller_pose}"/>
                   <Action ID="UnpackPoseStampedMessage" pose="{inst_pose}" pose_stamped="{tmp_controller_pose}"/>
                   <Action ID="UnpackPoseMessage" pose="{inst_pose}" orientation="{inst_orientation}" position="{inst_position}"/>
                   <Action ID="UnpackPointMessage" point="{inst_position}" x="{ctrl_init_x}" y="{ctrl_init_y}" z="{ctrl_init_z}"/>
-                  <!--Calculate POSITION OFFSET ONLY: EE position - Controller position-->
+                  <!--Calculate POSITION OFFSET: EE position - Controller position-->
                   <!--This is the translation we need to add to controller position to get EE position-->
                   <Action ID="Script" code="offset_x := ee_x - ctrl_init_x; offset_y := ee_y - ctrl_init_y; offset_z := ee_z - ctrl_init_z"/>
-                  <Action ID="LogMessage" message="Position offset calculated and stored (rotation will pass through directly)"/>
+                  <!--Mark offset as calculated-->
+                  <Action ID="Script" code="offset_calculated := true"/>
+                  <!--Update transformed_odom blackboard variable with current EE pose-->
+                  <Action ID="ConvertPoseStampedToOdom" child_frame="grasp_link" odom="{transformed_odom}" pose_stamped="{ee_pose_stamped}"/>
+                  <!--Mark odom as ready (separate from the odom variable itself!)-->
+                  <Action ID="Script" code="odom_ready := true"/>
+                  <Action ID="LogMessage" message="Position offset calculated and stored (rotation passes through directly)"/>
                 </Control>
               </Decorator>
-              <!--Update previous grip state AFTER the rising edge check-->
+              <!--Update previous grip state AFTER the checks-->
               <Action ID="Script" code="prev_grip_state := current_grip"/>
-            </Control>
-          </Decorator>
-          <!--Republish loop: Transform and publish controller odom while grip is held-->
-          <Decorator ID="KeepRunningUntilFailure">
-            <Control ID="Sequence">
-              <!--Only transform and publish when grip is held-->
-              <Decorator ID="Precondition" else="SUCCESS" if="current_grip">
+              <!--Only transform when grip is held AND offset has been calculated-->
+              <Decorator ID="Precondition" else="SUCCESS" if="current_grip &amp;&amp; offset_calculated">
                 <Control ID="Sequence">
                   <!--Get current controller odom-->
                   <Action ID="GetOdomInstance" odom_topic_name="right_controller_odom" subscribed_odom_instance="{current_controller_odom}"/>
@@ -71,64 +82,43 @@
                   <Action ID="CreateTimeMessage" sec="0" nanosec="0" time="{odom_time}"/>
                   <Action ID="CreateHeaderMessage" stamp="{odom_time}" frame_id="world" header="{odom_header}"/>
                   <Action ID="CreatePoseStampedMessage" header="{odom_header}" pose_stamped="{transformed_pose_stamped}" pose="{trans_pose}"/>
-                  <Action ID="VisualizePose" marker_name="trans_pose" pose="{transformed_pose_stamped}" marker_text="TP" _skipIf="true"/>
-                  <!--Visualize the final pose-->
-                  <Action ID="VisualizePose" marker_name="flipped_trans_pose" pose="{transformed_pose_stamped}" marker_text="FP" marker_lifetime="0.000000"/>
-                  <!--=== COLLISION CHECK: Verify pose is safe before publishing ===-->
-                  <!--Create a vector with just this pose for SolveIKQueries-->
+                  <!--=== COLLISION CHECK: Verify pose is safe before updating ===-->
                   <Action ID="ResetPoseStampedVector" vector="{ik_check_poses}"/>
                   <Action ID="AddPoseStampedToVector" input="{transformed_pose_stamped}" vector="{ik_check_poses}"/>
-                  <!--Check if pose is reachable AND collision-free-->
                   <Action ID="SolveIKQueries" target_poses="{ik_check_poses}" check_collisions="true" timeout="0.02" joint_group_name="manipulator" ik_query_results="{ik_results}"/>
-                  <!--Get the result (first element of the results vector)-->
                   <Action ID="GetElementOfVector" vector_in="{ik_results}" index="0" element="{pose_is_safe}"/>
-                  <!--Only publish odom and set flag if pose is collision-free-->
+                  <!--Only update blackboard odom if pose is collision-free-->
                   <Decorator ID="Precondition" if="pose_is_safe" else="SUCCESS">
                     <Control ID="Sequence">
-                      <!--Publish transformed odom for Track Moving Frame to consume-->
+                      <!--Visualize only safe poses-->
+                      <Action ID="VisualizePose" marker_name="safe_target_pose" pose="{transformed_pose_stamped}" marker_text="FP" marker_lifetime="0.000000"/>
+                      <!--Update blackboard variable (NOT publishing to topic)-->
                       <Action ID="ConvertPoseStampedToOdom" child_frame="grasp_link" odom="{transformed_odom}" pose_stamped="{transformed_pose_stamped}"/>
-                      <Action ID="PublishOdom" message="{transformed_odom}" topic_name="transformed_odom"/>
-                      <!--Set flag that we have published odom (as boolean)-->
-                      <Action ID="Script" code="transformed_odom_received := true"/>
-                      <!--Save the last safe odom message to republish when clutch is released-->
-                      <Action ID="Script" code="last_safe_odom_msg := transformed_odom"/>
+                      <Action ID="PublishOdom" message="{transformed_odom}" topic_name="tracking_odom"/>
+                      <Action ID="PublishPose" message="{transformed_pose_stamped}" topic_name="tracking_pose"/>
                     </Control>
                   </Decorator>
                 </Control>
               </Decorator>
             </Control>
           </Decorator>
-          <!--Last safe odom publishing loop: Continuously publishes last_safe_odom_msg while grip is released-->
-          <!--This runs in parallel with the tracking loop so Track Moving Frame has continuous messages-->
+          <!--Branch 4: Velocity control loop - reads transformed_odom FRESH each iteration-->
           <Decorator ID="KeepRunningUntilFailure">
             <Control ID="Sequence">
-              <Action ID="Sleep" msec="5"/>
-              <Decorator ID="Precondition" if="!current_grip &amp;&amp; session_started &amp;&amp; transformed_odom_received" else="SUCCESS">
-                <Action ID="PublishOdom" message="{last_safe_odom_msg}" topic_name="last_safe_target"/>
+              <!--Only run velocity control when odom_ready is true AND grip is held-->
+              <Decorator ID="Precondition" else="SUCCESS" if="odom_ready &amp;&amp; edge_current_state">
+                <Control ID="Sequence">
+                  <!--Compute velocity to track the target odometry-->
+                  <Action ID="ComputeVelocityToAlignWithTarget" proportional_gain_linear="2.0" proportional_gain_angular="2.0" end_effector_frame="grasp_link" target_pose_offset="{target_pose_offset}" target_motion_state="{transformed_odom}" output_control_velocity="{control_velocity}" output_pose_error="{pose_error}"/>
+                  <!--Publish velocity command to the controller-->
+                  <Action ID="PublishVelocityForceCommand" twist_stamped="{control_velocity}" wrench_stamped="{stamped_wrench}" wrench_gain="0.0" force_controlled_axes="0;0;0;0;0;0" velocity_controlled_axes="1;1;1;1;1;1" publish_rate="100"/>
+                </Control>
               </Decorator>
-            </Control>
-          </Decorator>
-          <!--Tracking loop: Track to last safe position while grip is released-->
-          <!--Uses Precondition with else=SUCCESS so it doesn't cause failures-->
-          <Decorator ID="KeepRunningUntilFailure">
-            <Control ID="Sequence">
-              <Action ID="Sleep" msec="10"/>
-              <Decorator ID="Precondition" if="!current_grip &amp;&amp; session_started &amp;&amp; transformed_odom_received" else="SUCCESS">
-                <SubTree ID="Track Moving Frame" odometry_topic_name="last_safe_target" proportional_gain_linear="2.0" proportional_gain_angular="2.0"/>
-              </Decorator>
-            </Control>
-          </Decorator>
-          <!--Active tracking while grip is held - follows the live transformed odom-->
-          <Decorator ID="KeepRunningUntilFailure">
-            <Control ID="Sequence">
-              <Action ID="Sleep" msec="10"/>
-              <Decorator ID="Precondition" if="current_grip &amp;&amp; session_started" else="SUCCESS">
-                <SubTree ID="Track Moving Frame" _collapsed="true" proportional_gain_linear="2.0" odometry_topic_name="transformed_odom"/>
-              </Decorator>
+              <!--Small delay to prevent tight spinning when conditions not met-->
+              <Action ID="WaitForDuration" delay_duration="0.01"/>
             </Control>
           </Decorator>
         </Control>
-        <!--Step 3: Grip released - parallel failed, sequence will restart from waiting for grip press-->
       </Control>
     </Decorator>
   </BehaviorTree>

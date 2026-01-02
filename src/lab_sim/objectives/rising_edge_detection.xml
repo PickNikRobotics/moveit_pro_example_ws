@@ -1,0 +1,41 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root BTCPP_format="4" main_tree_to_execute="Rising Edge Detection">
+  <!--//////////-->
+  <BehaviorTree ID="Rising Edge Detection" _description="Listens to a boolean topic and updates a bool rising edge (rising_edge is true: when prev state is false and current state is true, false otherwise) " _favorite="false">
+    <!--Initialize prev_state to false before starting-->
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="Script" name="InitializePrevState" code="prev_state := false; current_state := false; rising_edge := false"/>
+      <!--Run GetBool in parallel with the edge detection logic-->
+      <Control ID="Parallel" name="ContinuousMonitor" success_count="1" failure_count="1">
+        <!--GetBool runs forever, continuously updating current_state-->
+        <Action ID="GetBool" name="GetCurrentState" bool_topic_name="right_grip_button_state" subscribed_bool="{current_state}"/>
+        <!--Loop forever: calculate rising_edge and update prev_state-->
+        <Decorator ID="KeepRunningUntilFailure" name="ProcessLoop">
+          <Control ID="Sequence" name="EdgeDetectionLogic">
+            <!--Small delay to rate-limit the processing loop and allow GetBool to update-->
+            <Action ID="WaitForDuration" name="RateLimitDelay" delay_duration="0.1"/>
+            <!--Calculate rising_edge = current_state AND (NOT prev_state)-->
+            <Action ID="Script" name="CalculateRisingEdge" code="rising_edge := current_state &amp;&amp; !prev_state"/>
+            <!--If rising_edge is true, hold it true for a bit before continuing-->
+            <Decorator ID="Precondition" name="HoldRisingEdge" if="rising_edge == true" else="SUCCESS">
+              <Action ID="WaitForDuration" name="HoldDuration" delay_duration="0.5"/>
+            </Decorator>
+            <!--Update prev_state = current_state for next iteration-->
+            <Action ID="Script" name="UpdatePrevState" code="prev_state := current_state"/>
+          </Control>
+        </Decorator>
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Rising Edge Detection">
+      <MetadataFields>
+        <Metadata runnable="true"/>
+        <Metadata subcategory="Uncategorized"/>
+      </MetadataFields>
+      <inout_port name="bool_topic" default="bool_topic" type="std::string"/>
+      <inout_port name="current_state" default="{current_state}" type="std::bool"/>
+      <inout_port name="rising_edge" default="{rising_edge}" type="std::bool"/>
+    </SubTree>
+  </TreeNodesModel>
+</root>
