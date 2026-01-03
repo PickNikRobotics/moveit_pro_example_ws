@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root BTCPP_format="4" main_tree_to_execute="Test Track Moving Frame">
+  <BehaviorTree ID="Test Track Moving Frame" _description="" _favorite="false">
+    <Control ID="Sequence">
+      <SubTree ID="Look at Table" _collapsed="true"/>
+      <!--Initialize current_state before the Parallel starts so Precondition has a value to read-->
+      <Action ID="Script" name="InitializeCurrentState" code="current_state := false"/>
+      <Control ID="Parallel" success_count="-1" failure_count="1">
+        <Decorator ID="Precondition" if="current_state" else="RUNNING">
+          <SubTree ID="Track Moving Frame" _collapsed="true" odometry_topic_name="tracking_odom" proportional_gain_angular="2.0"/>
+        </Decorator>
+        <SubTree ID="Rising Edge Detection" _collapsed="true" bool_topic="right_grip_button_state"/>
+        <Control ID="Sequence">
+          <Action ID="GetOdomInstance" odom_topic_name="tracking_odom"/>
+          <Action ID="ConvertOdomToPoseStamped" odometry="{subscribed_odom_instance}"/>
+          <Action ID="VisualizePose" pose="{pose_stamped}"/>
+        </Control>
+        <Action ID="GetOdom" odometry_topic_name="tracking_odom"/>
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Test Track Moving Frame"/>
+  </TreeNodesModel>
+</root>
