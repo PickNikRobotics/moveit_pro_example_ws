@@ -171,7 +171,7 @@
             >
               <Action
                 ID="LogMessage"
-                log_level="warn"
+                log_level="info"
                 message="Pausing. Unable to plan to reachability pose. Press Resume when ready."
               />
               <Action
