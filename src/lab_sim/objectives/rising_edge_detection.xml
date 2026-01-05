@@ -8,7 +8,7 @@
       <!--Run GetBool in parallel with the edge detection logic-->
       <Control ID="Parallel" name="ContinuousMonitor" success_count="1" failure_count="1">
         <!--GetBool runs forever, continuously updating current_state-->
-        <Action ID="GetBool" name="GetCurrentState" bool_topic_name="right_grip_button_state" subscribed_bool="{current_state}"/>
+        <Action ID="GetBool" name="GetCurrentState" bool_topic_name="{bool_topic}" subscribed_bool="{current_state}"/>
         <!--Loop forever: calculate rising_edge and update prev_state-->
         <Decorator ID="KeepRunningUntilFailure" name="ProcessLoop">
           <Control ID="Sequence" name="EdgeDetectionLogic">
