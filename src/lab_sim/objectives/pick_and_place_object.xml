@@ -165,7 +165,7 @@
           ID="VisualizePose"
           marker_lifetime="0.000000"
           marker_name="pick_pose"
-          marker_size="0.200000"
+          marker_size="0.0500000"
           pose="{pick_pose}"
         />
       </Control>
@@ -273,6 +273,11 @@
           ID="AddPoseStampedToVector"
           input="{pick_pose}"
           vector="{pick_pose_vector}"
+        />
+        <Action
+          ID="VisualizePose"
+          pose="{pick_pose_with_offset}"
+          marker_name="pick_pose_with_offset"
         />
         <Action
           ID="InitializeMTCTask"
