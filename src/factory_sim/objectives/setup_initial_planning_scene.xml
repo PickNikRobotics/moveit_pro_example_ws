@@ -4,7 +4,7 @@
   <BehaviorTree
     ID="Setup Initial Planning Scene"
     _description="Sets the tools at their initial pose in the Planning Scene"
-    _favorite="true"
+    _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action

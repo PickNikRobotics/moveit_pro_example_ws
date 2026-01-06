@@ -4,7 +4,7 @@
   <BehaviorTree
     ID="Pick Brackets from Left Bin"
     _description="Picks brackets from the left bin, and drops them in the right bin."
-    _favorite="true"
+    _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <!--Prepare the planning scene-->
