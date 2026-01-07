@@ -110,9 +110,9 @@
           />
           <!--Finally, execute the trajectory on the actual robot-->
           <Action
-            ID="ExecuteFollowJointTrajectory"
-            execute_follow_joint_trajectory_action_name="/joint_trajectory_controller/follow_joint_trajectory"
-            joint_trajectory_msg="{joint_trajectory_msg}"
+            ID="ExecuteTrajectory"
+            execution_pipeline="follow_joint_trajectory_action"
+            controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
           />
         </Control>
       </Decorator>
