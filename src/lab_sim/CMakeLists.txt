@@ -47,7 +47,7 @@ if(BUILD_TESTING)
   ament_add_pytest_test(
           objectives_integration_test test/objectives_integration_test.py
           TIMEOUT 600
-          ENV STUDIO_CONFIG_PACKAGE=lab_sim STUDIO_HOST_USER_WORKSPACE=${CMAKE_SOURCE_DIR})
+          ENV MOVEIT_CONFIG_PACKAGE=lab_sim MOVEIT_HOST_USER_WORKSPACE=${CMAKE_SOURCE_DIR})
 endif()
 
 ament_package()
