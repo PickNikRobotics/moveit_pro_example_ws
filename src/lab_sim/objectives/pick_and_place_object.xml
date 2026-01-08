@@ -206,7 +206,7 @@
           target_object="{graspable_object}"
         />
         <SubTree
-          ID="Plan and Execute vector of poses"
+          ID="Evaluate Pose Vector and Execute"
           _collapsed="true"
           vector_of_poses="{grasp_poses}"
         />
@@ -320,7 +320,7 @@
           target_object="{graspable_object}"
         />
         <SubTree
-          ID="Plan and Execute vector of poses"
+          ID="Evaluate Pose Vector and Execute"
           vector_of_poses="{grasp_poses}"
         />
       </Control>

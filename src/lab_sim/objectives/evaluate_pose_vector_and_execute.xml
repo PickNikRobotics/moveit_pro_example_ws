@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<root BTCPP_format="4" main_tree_to_execute="Plan and Execute vector of poses">
+<root BTCPP_format="4" main_tree_to_execute="Evaluate Pose Vector and Execute">
   <!--//////////-->
   <BehaviorTree
-    ID="Plan and Execute vector of poses"
+    ID="Evaluate Pose Vector and Execute"
     _description="Plans and executes a vector of poses after filtering for failure Cartesian poses"
     _favorite="true"
   >
@@ -73,7 +73,7 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Plan and Execute vector of poses">
+    <SubTree ID="Evaluate Pose Vector and Execute">
       <MetadataFields>
         <Metadata subcategory="Application - Basic Examples" />
         <Metadata runnable="true" />
