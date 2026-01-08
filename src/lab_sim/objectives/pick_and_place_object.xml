@@ -137,7 +137,7 @@
           pixel_coords="{pixel_coords}"
           view_name="/wrist_camera/color"
           point_names="object"
-          point_prompts="Click on object"
+          point_prompts="Click on any one cuboid"
         />
         <Action
           ID="GetPointCloud"
