@@ -2,7 +2,7 @@
 <root BTCPP_format="4" main_tree_to_execute="Pick and Place Object">
   <BehaviorTree
     ID="Pick and Place Object"
-    _description="Basic example picking an object using grasp poses calculation and place it at a fixed location"
+    _description="Basic example picking an object using user input and grasp poses calculation and place it at a fixed location"
     _favorite="true"
   >
     <Control ID="Sequence">
@@ -399,6 +399,11 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Pick and Place Object" />
+    <SubTree ID="Pick and Place Object">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Basic Examples" />
+      </MetadataFields>
+    </SubTree>
   </TreeNodesModel>
 </root>
