@@ -106,21 +106,21 @@
       </MetadataFields>
       <inout_port
         name="wrist_camera_folder"
-        default="/home/studio-user/user_ws/src/hangar_sim/wrist_camera_images"
+        default="/home/moveit-pro-user/user_ws/src/hangar_sim/wrist_camera_images"
         type="std::string"
       >
         Absolute path to a directory for saving wrist camera pictures
       </inout_port>
       <inout_port
         name="scene_camera_folder"
-        default="/home/studio-user/user_ws/src/hangar_sim/scene_camera_images"
+        default="/home/moveit-pro-user/user_ws/src/hangar_sim/scene_camera_images"
         type="std::string"
       >
         Absolute path to a directory for saving scene camera pictures
       </inout_port>
       <inout_port
         name="pose_path"
-        default="/home/studio-user/user_ws/src/hangar_sim/poses"
+        default="/home/moveit-pro-user/user_ws/src/hangar_sim/poses"
         type="std::string"
       >
         Absolute path to a directory of pose YAML files
