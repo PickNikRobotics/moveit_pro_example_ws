@@ -1,11 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<root BTCPP_format="4" main_tree_to_execute="Move along axis and pick cube">
+<root BTCPP_format="4" main_tree_to_execute="Move along axis and pick object">
   <BehaviorTree
-    ID="Move along axis and pick cube"
-    _description=""
+    ID="Move along axis and pick object"
+    _description="Move down along world axis and pick up object"
     _favorite="true"
   >
     <Control ID="Sequence">
+      <Control ID="Sequence">
+        <Action ID="UnpackGraspableObjectMessage" object="{collision_object}" />
+        <Action
+          ID="UnpackCollisionObjectMessage"
+          collision_object="{collision_object}"
+          id="{graspable_object_id}"
+        />
+      </Control>
       <Action
         ID="InitializeMTCTask"
         task="{mtc_task}"
@@ -17,7 +25,7 @@
       <Action
         ID="SetupMTCUpdateObjectCollisionRule"
         allow_collision="true"
-        object="{cuboid_object}"
+        object="{graspable_object}"
         object_or_group_name="manipulator"
         task="{mtc_task}"
       />
@@ -48,14 +56,14 @@
         ID="AddToVector"
         input_vector="{collision_vector}"
         output_vector="{collision_vector}"
-        element="virtual_table_top"
+        element="{object_supporting_surface_id}"
       />
       <SubTree
         ID="AddToVector"
         _collapsed="true"
         input_vector="{collision_vector}"
         output_vector="{collision_vector}"
-        element="{cuboid_object_id}"
+        element="{graspable_object_id}"
       />
       <Action
         ID="InitializeMTCTask"
@@ -72,7 +80,7 @@
       <Action
         ID="SetupMTCAttachObject"
         frame_id="grasp_link"
-        object="{cuboid_object}"
+        object="{graspable_object}"
         task="{mtc_task}"
       />
       <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
@@ -88,15 +96,25 @@
       <Action
         ID="IsObjectAttachedTo"
         link_name="grasp_link"
-        object_id="{cuboid_object_id}"
+        object_id="{graspable_object_id}"
         planning_scene="{planning_scene}"
       />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Move along axis and pick cube">
-      <inout_port name="cuboid_object" default="{cuboid_object}" />
-      <inout_port name="cuboid_object_id" default="{cuboid_object_id}" />
+    <SubTree ID="Move along axis and pick object">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Basic Examples" />
+      </MetadataFields>
+      <inout_port name="graspable_object" default="{graspable_object}" />
+      <inout_port
+        name="object_supporting_surface_id"
+        default="{object_supporting_surface_id}"
+      >
+        Object id of the surface on which the graspable object is
+        placed. Primary purpose is to disable collisions.
+      </inout_port>
     </SubTree>
   </TreeNodesModel>
 </root>
