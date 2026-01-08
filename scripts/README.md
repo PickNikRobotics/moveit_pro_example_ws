@@ -7,13 +7,12 @@ These steps allow you to get the updated behaviors.xml, which should happen ever
 
 ```bash
 # In moveitpro repo when your REST API is running, get the generated XML data
-# Save it to scripts/ directory in moveit_pro_example_ws workspace
-curl -X GET http://localhost:3200/behaviors/data > scripts/behaviors_raw.xml
+curl -X GET http://localhost:3200/behaviors/data > behaviors_raw.xml
 ```
 
 ### enrich_behaviors_with_usage.py
 
-Enhances `behaviors_raw.xml` with usage information (`<UsedIn>` elements) showing which Objectives use each behavior.
+Enhances `behaviors_raw.xml` with usage information (Metadata fields with `used_in` attribute) showing which Objectives use each behavior.
 
 **Run this script in `moveit_pro_example_ws` workspace.**
 
@@ -36,11 +35,12 @@ python3 scripts/enrich_behaviors_with_usage.py --xml scripts/behaviors_raw.xml -
 - Discovers all robot configs in the workspace
 - Extracts which Objectives use which behaviors by parsing Objective XML files
 - Preserves all existing XML data (ports, metadata, etc.)
-- Adds `<UsedIn>` elements to each behavior in the XML showing:
+- Adds `Metadata` elements with `used_in` attribute to each behavior's `MetadataFields` showing:
   - Which configs use the behavior
   - Which Objectives use the behavior
   - The file path of each Objective
   - The usage type (Action, Control, Decorator, SubTree)
+- The `used_in` attribute contains a JSON array of usage objects
 - Outputs enhanced XML file ready for conversion to JSON
 
 #### Requirements
@@ -73,7 +73,7 @@ python scripts/update_behaviors_from_xml.py /path/to/behaviors_with_usage.xml
 
 - Extracts port information (input, output, input/output) from XML Action and SubTree elements
 - Extracts metadata (subcategory, description, deprecated status)
-- Extracts `used_in` information from `<UsedIn>` elements (if present)
+- Extracts `used_in` information from `Metadata` elements with `used_in` attribute (if present)
 - Updates existing behaviors in JSON or adds new ones
 - Preserves existing data like links and other fields
 - Updates the export date

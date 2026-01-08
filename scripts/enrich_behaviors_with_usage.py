@@ -2,13 +2,14 @@
 """
 Enhance behaviors.xml with usage information from Objectives.
 
-This script reads behaviors.xml (from REST API) and adds <UsedIn> elements
-showing which Objectives use each behavior.
+This script reads behaviors.xml (from REST API) and adds Metadata fields
+with used_in information showing which Objectives use each behavior.
 
 Run this script in moveit_pro_example_ws workspace.
 """
 
 import argparse
+import json
 import os
 import sys
 from pathlib import Path
@@ -328,26 +329,29 @@ def enhance_behaviors_xml(
             traceback.print_exc()
             continue
 
-    # Add UsedIn elements to each behavior element
+    # Add used_in Metadata to each behavior element
     print("Adding usage information to XML...", file=sys.stderr)
     behaviors_with_usage = 0
 
     for behavior_id, elem in behavior_elements.items():
-        # Remove existing UsedIn elements if any
-        for used_in in elem.findall(".//UsedIn"):
-            elem.remove(used_in)
+        # Remove existing used_in Metadata if any
+        metadata_fields = elem.find(".//MetadataFields")
+        if metadata_fields is not None:
+            for metadata in metadata_fields.findall(".//Metadata[@used_in]"):
+                metadata_fields.remove(metadata)
+        else:
+            # Create MetadataFields if it doesn't exist
+            metadata_fields = ET.SubElement(elem, "MetadataFields")
 
-        # Add new UsedIn elements
+        # Add new used_in Metadata
         if behavior_id in all_objective_usages:
             usages = all_objective_usages[behavior_id]
-            used_in_container = ET.SubElement(elem, "UsedIn")
+            # Serialize usages to JSON string
+            used_in_json = json.dumps(usages, ensure_ascii=False)
 
-            for usage in usages:
-                usage_elem = ET.SubElement(used_in_container, "Usage")
-                usage_elem.set("config", usage["config"])
-                usage_elem.set("objective_id", usage["objective_id"])
-                usage_elem.set("objective_file", usage["objective_file"])
-                usage_elem.set("usage_type", usage["usage_type"])
+            # Add Metadata element with used_in attribute
+            used_in_metadata = ET.SubElement(metadata_fields, "Metadata")
+            used_in_metadata.set("used_in", used_in_json)
 
             behaviors_with_usage += 1
 
