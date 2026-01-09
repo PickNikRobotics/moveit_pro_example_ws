@@ -7,7 +7,7 @@
   <BehaviorTree
     ID="MPC Pose Tracking With Point Cloud Avoidance"
     _description="Uses Model Predictive Control (MPC) to track a target pose while avoiding obstacles represented by a point cloud."
-    _favorite="false"
+    _favorite="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree ID="Clear Snapshot" _collapsed="true" />
@@ -67,7 +67,7 @@
         ID="CreateStampedPose"
         reference_frame="pinch"
         stamped_pose="{stamped_pose}"
-        position_xyz="0;0;0.1"
+        position_xyz="0;0.3;0.1"
       />
       <Action
         ID="TransformPoseFrame"
@@ -88,7 +88,7 @@
         stamped_twist="{stamped_twist}"
       />
       <Control ID="Fallback">
-        <Decorator ID="Timeout" msec="5000">
+        <Decorator ID="Timeout" msec="7000">
           <Control ID="Sequence">
             <Action
               ID="MPCPointCloudClearance"
@@ -118,11 +118,11 @@
               mujoco_model="description/simple_scene.xml"
               mujoco_model_package="lab_sim"
               point_cloud="{point_cloud}"
-              point_cloud_clearance="1.0"
+              point_cloud_clearance="1.1"
               safe_distance="0.25"
-              site_tracking="1.0"
               target_pose="{stamped_pose}"
               target_twist="{stamped_twist}"
+              site_tracking="0.45"
             />
           </Control>
         </Decorator>
