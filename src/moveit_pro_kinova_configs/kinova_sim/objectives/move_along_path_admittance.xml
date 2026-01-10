@@ -101,9 +101,11 @@
             config_file_name="jtac_parameters.yaml"
           />
           <Action
-            ID="ExecuteTrajectoryWithAdmittance"
+            ID="ExecuteTrajectory"
             path_position_tolerance="2.0"
             goal_position_tolerance="0.1000"
+            execution_pipeline="jtac"
+            admittance_parameters_msg="{admittance_parameters_msg}"
             controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory"
           />
         </Control>
