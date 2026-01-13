@@ -20,7 +20,7 @@ jobs:
       image_tag: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name }}
       colcon_test_args: "--executor sequential"
     secrets:
-      moveit_license_key: ${{ secrets.MOVEIT_LICENSE_KEY }}
+      moveit_license_key: ${{ secrets.STUDIO_CI_LICENSE_KEY }}
 
   ensure-no-ssh-in-gitmodules:
     name: Ensure no SSH URLs in .gitmodules
