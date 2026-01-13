@@ -1,0 +1,4 @@
+objectives:
+  behavior_loader_plugins:
+    print_mtc_solution:
+      - "print_mtc_solution::PrintMtcSolutionBehaviorsLoader"
