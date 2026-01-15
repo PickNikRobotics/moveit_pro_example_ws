@@ -95,7 +95,6 @@ ros2_control:
   controllers_inactive_at_startup:
     #- "joint_trajectory_admittance_controller"
     - "velocity_force_controller"
-    - "servo_controller"
   # Any controllers here will not be spawned by MoveIt Pro.
   # [Optional, default=[]]
   controllers_not_managed: []

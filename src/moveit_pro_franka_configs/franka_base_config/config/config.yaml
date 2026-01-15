@@ -18,27 +18,18 @@ moveit_params:
   # Used by the Waypoint Manager to save joint states from this joint group.
   joint_group_name: "manipulator"
 
-  ompl_planning:
-    package: "franka_base_config"
-    path: "config/moveit/ompl_planning.yaml"
   stomp_planning:
     package: "franka_base_config"
     path: "config/moveit/stomp_planning.yaml"
   kinematics:
     package: "franka_base_config"
     path: "config/moveit/pose_ik_distance.yaml"
-  servo:
-    package: "franka_base_config"
-    path: "config/moveit/servo.yaml"
   sensors_3d:
     package: "franka_base_config"
     path: "config/moveit/sensors_3d.yaml"
   joint_limits:
     package: "franka_base_config"
     path: "config/moveit/joint_limits.yaml"
-  servo_joint_limits:
-    package: "franka_base_config"
-    path: "config/moveit/servo_joint_limits.yaml"
   pose_jog:
     package: "franka_base_config"
     path: "config/moveit/pose_jog.yaml"

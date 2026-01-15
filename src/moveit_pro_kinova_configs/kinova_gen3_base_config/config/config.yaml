@@ -65,27 +65,18 @@ hardware:
 moveit_params:
   joint_group_name: "manipulator"
 
-  ompl_planning:
-    package: "kinova_gen3_base_config"
-    path: "config/moveit/ompl_planning.yaml"
   stomp_planning:
     package: "kinova_gen3_base_config"
     path: "config/moveit/stomp_planning.yaml"
   kinematics:
     package: "kinova_gen3_base_config"
     path: "config/moveit/pose_ik_distance.yaml"
-  servo:
-    package: "kinova_gen3_base_config"
-    path: "config/moveit/kinova_gen3_servo.yaml"
   sensors_3d:
     package: "kinova_gen3_base_config"
     path: "config/moveit/sensors_3d.yaml"
   joint_limits:
     package: "kinova_gen3_base_config"
     path: "config/moveit/joint_limits.yaml"
-  servo_joint_limits:
-    package: "kinova_gen3_base_config"
-    path: "config/moveit/servo_joint_limits.yaml"
 
   publish:
     planning_scene: True
@@ -108,7 +99,6 @@ ros2_control:
   controllers_active_at_startup:
     - "robotiq_gripper_controller"
     - "joint_state_broadcaster"
-    - "servo_controller"
     - "fault_controller"
   controllers_inactive_at_startup:
     - "joint_trajectory_controller"

@@ -12,11 +12,6 @@ hardware:
       package: "mock_sim"
       path: "config/moveit/picknik_ur_machine_tending.srdf"
 
-moveit_params:
-  servo:
-    package: "mock_sim"
-    path: "config/moveit/ur_servo.yaml"
-
 objectives:
   waypoints_file:
     package_name: "mock_sim"
@@ -39,7 +34,6 @@ ros2_control:
   controllers_active_at_startup:
     - "robotiq_gripper_controller"
     - "joint_state_broadcaster"
-    - "servo_controller"
     - "io_and_status_controller"
     - "robotiq_activation_controller"
   # Load but do not start these controllers so they can be activated later if needed.
