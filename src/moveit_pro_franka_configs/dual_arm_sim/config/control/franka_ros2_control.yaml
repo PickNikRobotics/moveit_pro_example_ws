@@ -9,8 +9,6 @@ controller_manager:
       type: joint_trajectory_controller/JointTrajectoryController
     right_joint_trajectory_controller:
       type: joint_trajectory_controller/JointTrajectoryController
-    servo_controller:
-      type: joint_trajectory_controller/JointTrajectoryController
     left_velocity_force_controller:
       type: velocity_force_controller/VelocityForceController
     right_velocity_force_controller:
@@ -119,44 +117,6 @@ right_joint_trajectory_controller:
       - right_fr3_joint6
       - right_fr3_joint7
     gains:
-      right_fr3_joint1: { p: 600., d: 30., i: 0., i_clamp: 1. }
-      right_fr3_joint2: { p: 600., d: 30., i: 0., i_clamp: 1. }
-      right_fr3_joint3: { p: 600., d: 30., i: 0., i_clamp: 1. }
-      right_fr3_joint4: { p: 600., d: 30., i: 0., i_clamp: 1. }
-      right_fr3_joint5: { p: 250., d: 10., i: 0., i_clamp: 1. }
-      right_fr3_joint6: { p: 150., d: 10., i: 0., i_clamp: 1. }
-      right_fr3_joint7: { p: 50., d: 5., i: 0., i_clamp: 1. }
-
-servo_controller:
-  ros__parameters:
-    command_interfaces:
-      - position
-    state_interfaces:
-      - position
-      - velocity
-    joints:
-      - left_fr3_joint1
-      - left_fr3_joint2
-      - left_fr3_joint3
-      - left_fr3_joint4
-      - left_fr3_joint5
-      - left_fr3_joint6
-      - left_fr3_joint7
-      - right_fr3_joint1
-      - right_fr3_joint2
-      - right_fr3_joint3
-      - right_fr3_joint4
-      - right_fr3_joint5
-      - right_fr3_joint6
-      - right_fr3_joint7
-    gains:
-      left_fr3_joint1: { p: 600., d: 30., i: 0., i_clamp: 1. }
-      left_fr3_joint2: { p: 600., d: 30., i: 0., i_clamp: 1. }
-      left_fr3_joint3: { p: 600., d: 30., i: 0., i_clamp: 1. }
-      left_fr3_joint4: { p: 600., d: 30., i: 0., i_clamp: 1. }
-      left_fr3_joint5: { p: 250., d: 10., i: 0., i_clamp: 1. }
-      left_fr3_joint6: { p: 150., d: 10., i: 0., i_clamp: 1. }
-      left_fr3_joint7: { p: 50., d: 5., i: 0., i_clamp: 1. }
       right_fr3_joint1: { p: 600., d: 30., i: 0., i_clamp: 1. }
       right_fr3_joint2: { p: 600., d: 30., i: 0., i_clamp: 1. }
       right_fr3_joint3: { p: 600., d: 30., i: 0., i_clamp: 1. }
