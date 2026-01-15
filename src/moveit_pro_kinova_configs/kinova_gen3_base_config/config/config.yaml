@@ -65,9 +65,6 @@ hardware:
 moveit_params:
   joint_group_name: "manipulator"
 
-  stomp_planning:
-    package: "kinova_gen3_base_config"
-    path: "config/moveit/stomp_planning.yaml"
   kinematics:
     package: "kinova_gen3_base_config"
     path: "config/moveit/pose_ik_distance.yaml"
