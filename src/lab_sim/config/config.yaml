@@ -20,15 +20,9 @@ hardware:
       - mujoco_viewer: false
 
 moveit_params:
-  servo:
-    package: "lab_sim"
-    path: "config/moveit/ur_servo.yaml"
   joint_limits:
     package: "lab_sim"
     path: "config/moveit/joint_limits.yaml"
-  servo_joint_limits:
-    package: "lab_sim"
-    path: "config/moveit/hard_joint_limits.yaml"
   pose_jog:
     package: "lab_sim"
     path: "config/moveit/pose_jog.yaml"
@@ -88,7 +82,6 @@ ros2_control:
     - "joint_trajectory_controller"
   # Load but do not start these controllers so they can be activated later if needed.
   controllers_inactive_at_startup:
-    - "servo_controller"
     - "joint_trajectory_admittance_controller"
     - "velocity_force_controller"
     - "joint_velocity_controller"

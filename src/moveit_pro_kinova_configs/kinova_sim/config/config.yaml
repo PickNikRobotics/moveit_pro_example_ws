@@ -77,27 +77,18 @@ moveit_params:
   # Used by the Waypoint Manager to save joint states from this joint group.
   joint_group_name: "manipulator"
 
-  ompl_planning:
-    package: "kinova_sim"
-    path: "config/moveit/ompl_planning.yaml"
   stomp_planning:
     package: "kinova_sim"
     path: "config/moveit/stomp_planning.yaml"
   kinematics:
     package: "kinova_sim"
     path: "config/moveit/pose_ik_distance.yaml"
-  servo:
-    package: "kinova_sim"
-    path: "config/moveit/kinova_gen3_servo.yaml"
   sensors_3d:
     package: "kinova_sim"
     path: "config/moveit/sensors_3d.yaml"
   joint_limits:
     package: "kinova_sim"
     path: "config/moveit/joint_limits.yaml"
-  servo_joint_limits:
-    package: "kinova_sim"
-    path: "config/moveit/servo_joint_limits.yaml"
   pose_jog:
     package: "kinova_sim"
     path: "config/moveit/pose_jog.yaml"
@@ -131,7 +122,6 @@ ros2_control:
     - "force_torque_sensor_broadcaster"
     - "robotiq_gripper_controller"
     - "joint_state_broadcaster"
-    - "servo_controller"
   # Load but do not start these controllers so they can be activated later if needed.
   controllers_inactive_at_startup:
     - "joint_trajectory_controller"

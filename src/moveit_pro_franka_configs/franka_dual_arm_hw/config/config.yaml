@@ -50,30 +50,18 @@ moveit_params:
   # Used by the Waypoint Manager to save joint states from this joint group.
   joint_group_name: "right_manipulator"
 
-  ompl_planning:
-    package: "dual_arm_sim"
-    path: "config/moveit/ompl_planning.yaml"
   stomp_planning:
     package: "dual_arm_sim"
     path: "config/moveit/stomp_planning.yaml"
   kinematics:
     package: "dual_arm_sim"
     path: "config/moveit/pose_ik_distance.yaml"
-  servo:
-    package: "dual_arm_sim"
-    path: "config/moveit/servo.yaml"
   sensors_3d:
     package: "dual_arm_sim"
     path: "config/moveit/sensors_3d.yaml"
-  servo_kinematics:
-    package: "dual_arm_sim"
-    path: "config/moveit/pose_ik_speed.yaml"
   joint_limits:
     package: "dual_arm_sim"
     path: "config/moveit/joint_limits.yaml"
-  servo_joint_limits:
-    package: "dual_arm_sim"
-    path: "config/moveit/servo_joint_limits.yaml"
   pose_jog:
     package: "dual_arm_sim"
     path: "config/moveit/pose_jog.yaml"
@@ -148,7 +136,6 @@ ros2_control:
     #- "joint_trajectory_admittance_controller"
     - "left_velocity_force_controller"
     - "right_velocity_force_controller"
-    - "servo_controller"
   # Any controllers here will not be spawned by MoveIt Pro.
   # [Optional, default=[]]
   controllers_not_managed: []
