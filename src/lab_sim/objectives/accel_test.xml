@@ -1,0 +1,26 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root BTCPP_format="4" main_tree_to_execute="AccelTestObjective">
+  <BehaviorTree ID="AccelTestObjective" _description="" _favorite="true">
+    <Control ID="Sequence">
+      <Action ID="GetCurrentPlanningScene" planning_scene_msg="{planning_scene}"/>
+      <Action ID="RetrieveWaypoint" joint_group_name="manipulator" waypoint_joint_state="{robot_joint_state}" waypoint_name="Home"/>
+      <Action ID="UnpackRobotJointStateMessage" joint_state="{target_joint_state}" multi_dof_joint_state="{multi_dof_joint_state}" robot_joint_state="{robot_joint_state}"/>
+      <Action ID="InitializeMTCTask" task="{mtc_task_to_park_pose}" timeout="-1.000000" trajectory_monitoring="false" controller_names="joint_trajectory_controller"/>
+      <Action ID="SetupMTCFixedJointState" joint_state_msg="{target_joint_state}" planning_scene_msg="{planning_scene}" task="{mtc_task_to_park_pose}"/>
+      <Action ID="CreateStampedPose" reference_frame="grasp_link" position_xyz="0.2; 0.2; 0.5" orientation_xyzw="-0.1227878; 0.6963642; 0.1227878; 0.6963642"/>
+      <Action ID="VisualizePose" pose="{pose_stamped}"/>
+      <Action ID="BreakpointSubscriber"/>
+      <Action ID="SetupMTCPlanToPose" acceleration_scale_factor="1.000000" ik_frame="grasp_link" keep_orientation="false" keep_orientation_link_names="grasp_link" keep_orientation_tolerance="0.100000" link_padding="0.001" max_iterations="5000" monitored_stage="fixed state" planning_group_name="manipulator" target_pose="{pose_stamped}" task="{mtc_task_to_park_pose}" trajectory_sampling_rate="100" velocity_scale_factor="1.000000"/>
+      <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task_to_park_pose}"/>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="AccelTestObjective">
+      <MetadataFields>
+        <Metadata subcategory="Application - Basic Examples"/>
+        <Metadata runnable="true"/>
+        <Metadata description="Test high acceleration behavior."/>
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
