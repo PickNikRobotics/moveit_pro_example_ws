@@ -58,9 +58,6 @@ moveit_params:
   # Used by the Waypoint Manager to save joint states from this joint group.
   joint_group_name: "manipulator"
 
-  stomp_planning:
-    package: "grinding_sim"
-    path: "config/moveit/stomp_planning.yaml"
   kinematics:
     package: "grinding_sim"
     path: "config/moveit/pose_ik_distance.yaml"
