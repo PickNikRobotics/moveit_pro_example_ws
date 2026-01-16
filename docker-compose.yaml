@@ -13,10 +13,16 @@ services:
   agent_bridge: {}
 
   # Starts the robot drivers.
-  drivers: {}
+  drivers:
+    volumes:
+      # Allow access to host hardware e.g. RealSense cameras
+      - /dev:/dev
 
   # Starts the web UI frontend.
   web_ui: {}
 
   # Developer specific configuration when running `moveit_pro dev`.
-  dev: {}
+  dev:
+    volumes:
+      # Allow access to host hardware e.g. RealSense cameras
+      - /dev:/dev
