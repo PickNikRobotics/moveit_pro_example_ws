@@ -6,7 +6,7 @@
 
 namespace
 {
-inline constexpr auto kDescriptionGraspAction = R"(TODO)";
+inline constexpr auto kDescriptionGraspAction = R"(Open and close the Franka onboard 2 finger gripper.)";
 constexpr auto PortIDActionName = "action_name";
 constexpr auto kPortIDTimeout = "timeout";
 constexpr auto kPortIDWidth = "width";
