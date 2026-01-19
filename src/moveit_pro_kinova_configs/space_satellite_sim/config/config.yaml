@@ -41,7 +41,6 @@ ros2_control:
     - "force_torque_sensor_broadcaster"
     - "robotiq_gripper_controller"
     - "joint_state_broadcaster"
-    - "servo_controller"
   # Load but do not start these controllers so they can be activated later if needed.
   controllers_inactive_at_startup:
     - "joint_trajectory_controller"

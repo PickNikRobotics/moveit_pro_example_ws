@@ -94,18 +94,12 @@ moveit_params:
   kinematics:
     package: "picknik_ur_base_config"
     path: "config/moveit/pose_ik_distance.yaml"
-  servo:
-    package: "picknik_ur_base_config"
-    path: "config/moveit/ur_servo.yaml"
   sensors_3d:
     package: "picknik_ur_base_config"
     path: "config/moveit/sensors_3d.yaml"
   joint_limits:
     package: "picknik_ur_base_config"
     path: "config/moveit/joint_limits.yaml"
-  servo_joint_limits:
-    package: "picknik_ur_base_config"
-    path: "config/moveit/hard_joint_limits.yaml"
   pose_jog:
     package: "picknik_ur_base_config"
     path: "config/moveit/pose_jog.yaml"
@@ -139,7 +133,6 @@ ros2_control:
     - "force_torque_sensor_broadcaster"
     - "robotiq_gripper_controller"
     - "joint_state_broadcaster"
-    - "servo_controller"
     - "io_and_status_controller"
     - "robotiq_activation_controller"
   # Load but do not start these controllers so they can be activated later if needed.

@@ -5,8 +5,6 @@ controller_manager:
       type: joint_state_broadcaster/JointStateBroadcaster
     joint_trajectory_controller:
       type: joint_trajectory_controller/JointTrajectoryController
-    servo_controller:
-      type: joint_trajectory_controller/JointTrajectoryController
     franka_robot_state_broadcaster:
       type: franka_robot_state_broadcaster/FrankaRobotStateBroadcaster
     velocity_force_controller:
