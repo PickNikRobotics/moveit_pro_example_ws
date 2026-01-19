@@ -15,7 +15,7 @@
       <Action
         ID="SwitchController"
         activate_controllers="platform_velocity_controller_nav2"
-        deactivate_controllers="velocity_force_controller;joint_trajectory_controller;platform_velocity_controller;servo_controller"
+        deactivate_controllers="velocity_force_controller;joint_trajectory_controller;platform_velocity_controller"
       />
       <Action
         ID="GetPoseFromUser"

@@ -29,24 +29,15 @@ hardware:
     path: "launch/sim/robot_drivers_to_persist_sim.launch.py"
 
 moveit_params:
-  servo:
-    package: "hangar_sim"
-    path: "config/moveit/ur_servo.yaml"
   joint_limits:
     package: "hangar_sim"
     path: "config/moveit/joint_limits.yaml"
-  servo_joint_limits:
-    package: "hangar_sim"
-    path: "config/moveit/hard_joint_limits.yaml"
   kinematics:
     package: "hangar_sim"
     path: "config/moveit/pose_ik_distance.yaml"
   sensors_3d:
     package: "hangar_sim"
     path: "config/moveit/sensors_3d.yaml"
-  ompl_planning:
-    package: "hangar_sim"
-    path: "config/moveit/ompl_planning.yaml"
   pose_jog:
     package: "hangar_sim"
     path: "config/moveit/pose_jog.yaml"
@@ -102,7 +93,6 @@ ros2_control:
   # Load but do not start these controllers so they can be activated later if needed.
   controllers_inactive_at_startup:
     - "joint_trajectory_controller"
-    - "servo_controller"
     - "platform_velocity_controller_nav2"
     - "velocity_force_controller"
     - "arm_only_velocity_force_controller"
