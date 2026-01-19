@@ -5,8 +5,6 @@ controller_manager:
       type: joint_state_broadcaster/JointStateBroadcaster
     joint_trajectory_controller:
       type: joint_trajectory_controller/JointTrajectoryController
-    servo_controller:
-      type: joint_trajectory_controller/JointTrajectoryController
     force_torque_sensor_broadcaster:
       type: force_torque_sensor_broadcaster/ForceTorqueSensorBroadcaster
     platform_velocity_controller:
@@ -208,95 +206,6 @@ joint_trajectory_controller:
     state_publish_rate: 100.0
     action_monitor_rate: 20.0
     allow_partial_joints_goal: true
-    open_loop_control: false # this is closed loop
-    gains:
-      shoulder_pan_joint:
-        p: 10.0
-        ff_velocity_scale: 1.0
-      shoulder_lift_joint:
-        p: 10.0
-        ff_velocity_scale: 1.0
-      elbow_joint:
-        p: 10.0
-        ff_velocity_scale: 1.0
-      wrist_1_joint:
-        p: 10.0
-        ff_velocity_scale: 1.0
-      wrist_2_joint:
-        p: 10.0
-        ff_velocity_scale: 1.0
-      wrist_3_joint:
-        p: 10.0
-        ff_velocity_scale: 1.0
-      linear_x_joint:
-        p: 2.0
-        ff_velocity_scale: 1.0
-      linear_y_joint:
-        p: 2.0
-        ff_velocity_scale: 1.0
-      rotational_yaw_joint:
-        p: 2.0
-        ff_velocity_scale: 1.0
-    constraints:
-      stopped_velocity_tolerance: 0.0
-      goal_time: 0.0
-      shoulder_pan_joint:
-        goal: 0.05
-      shoulder_lift_joint:
-        goal: 0.05
-      elbow_joint:
-        goal: 0.05
-      wrist_1_joint:
-        goal: 0.05
-      wrist_2_joint:
-        goal: 0.05
-      wrist_3_joint:
-        goal: 0.05
-      linear_x_joint:
-        goal: 0.05
-      linear_y_joint:
-        goal: 0.05
-      rotational_yaw_joint:
-        goal: 0.05
-
-    acceleration_limits:
-      shoulder_pan_joint: 10.0
-      shoulder_lift_joint: 10.0
-      elbow_joint: 10.0
-      wrist_1_joint: 10.0
-      wrist_2_joint: 10.0
-      wrist_3_joint: 10.0
-
-servo_controller:
-  ros__parameters:
-    joints:
-      - shoulder_pan_joint
-      - shoulder_lift_joint
-      - elbow_joint
-      - wrist_1_joint
-      - wrist_2_joint
-      - wrist_3_joint
-      - linear_x_joint
-      - linear_y_joint
-      - rotational_yaw_joint
-    command_interfaces:
-      - velocity
-    state_interfaces:
-      - position
-      - velocity
-    command_joints:
-      - shoulder_pan_joint
-      - shoulder_lift_joint
-      - elbow_joint
-      - wrist_1_joint
-      - wrist_2_joint
-      - wrist_3_joint
-      - platform_velocity_controller/linear_x_joint
-      - platform_velocity_controller/linear_y_joint
-      - platform_velocity_controller/rotational_yaw_joint
-    state_publish_rate: 100.0
-    action_monitor_rate: 20.0
-    allow_partial_joints_goal: false
     open_loop_control: false # this is closed loop
     gains:
       shoulder_pan_joint:

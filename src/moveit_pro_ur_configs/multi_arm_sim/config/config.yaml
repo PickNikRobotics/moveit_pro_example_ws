@@ -81,18 +81,9 @@ moveit_params:
   # Used by the Waypoint Manager to save joint states from this joint group.
   joint_group_name: "first_manipulator"
 
-  ompl_planning:
-    package: "multi_arm_sim"
-    path: "config/moveit/ompl_planning.yaml"
-  stomp_planning:
-    package: "picknik_ur_base_config"
-    path: "config/moveit/stomp_planning.yaml"
   kinematics:
     package: "multi_arm_sim"
     path: "config/moveit/pose_ik_distance.yaml"
-  servo:
-    package: "multi_arm_sim"
-    path: "config/moveit/multi_ur_servo.yaml"
   sensors_3d:
     package: "picknik_ur_base_config"
     path: "config/moveit/sensors_3d.yaml"
@@ -141,7 +132,6 @@ ros2_control:
   # Load but do not start these controllers so they can be activated later if needed.
   # [Optional, default=[]]
   controllers_inactive_at_startup:
-    - "servo_controller"
     - "joint_trajectory_controller"
     - "first_velocity_force_controller"
     - "second_velocity_force_controller"
