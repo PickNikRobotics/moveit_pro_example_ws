@@ -1,7 +1,7 @@
 #include <example_behaviors/example_get_string_from_topic.hpp>
 
 // Include the template implementation for GetMessageFromTopicBehaviorBase<T>.
-#include <moveit_studio_behavior_interface/impl/get_message_from_topic_impl.hpp>
+#include <moveit_pro_behavior_interface/impl/get_message_from_topic_impl.hpp>
 
 namespace example_behaviors
 {

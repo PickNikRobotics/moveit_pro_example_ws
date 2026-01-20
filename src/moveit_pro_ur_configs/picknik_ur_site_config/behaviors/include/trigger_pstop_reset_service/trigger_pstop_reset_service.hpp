@@ -1,6 +1,6 @@
 #pragma once
 
-#include <moveit_studio_behavior_interface/service_client_behavior_base.hpp>
+#include <moveit_pro_behavior_interface/service_client_behavior_base.hpp>
 #include <std_srvs/srv/trigger.hpp>
 
 namespace trigger_pstop_reset_service

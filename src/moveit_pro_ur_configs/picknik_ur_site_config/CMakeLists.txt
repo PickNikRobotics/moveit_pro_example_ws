@@ -3,7 +3,7 @@ project(picknik_ur_site_config)
 
 find_package(ament_cmake REQUIRED)
 find_package(moveit_pro_package REQUIRED)
-find_package(moveit_studio_behavior_interface REQUIRED)
+find_package(moveit_pro_behavior_interface REQUIRED)
 moveit_pro_package()
 
 # add custom behaviors
@@ -30,6 +30,6 @@ endif()
 # plugin loaders that load the behavior base class library from the
 # moveit_studio_behavior package.
 pluginlib_export_plugin_description_file(
-        moveit_studio_behavior_interface behaviors/trigger_pstop_reset_service_plugin_description.xml)
+        moveit_pro_behavior_interface behaviors/trigger_pstop_reset_service_plugin_description.xml)
 
 ament_package()

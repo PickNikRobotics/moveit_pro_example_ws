@@ -1,7 +1,7 @@
 #pragma once
 
 #include <example_interfaces/action/fibonacci.hpp>
-#include <moveit_studio_behavior_interface/action_client_behavior_base.hpp>
+#include <moveit_pro_behavior_interface/action_client_behavior_base.hpp>
 
 using moveit_studio::behaviors::ActionClientBehaviorBase;
 using moveit_studio::behaviors::BehaviorContext;

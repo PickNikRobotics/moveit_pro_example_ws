@@ -4,9 +4,9 @@
 #include <memory>
 #include <string>
 
+#include <moveit_pro_behavior_interface/async_behavior_base.hpp>
 #include <moveit_pro_ml/onnx_sam2.hpp>
 #include <moveit_pro_ml/onnx_sam2_types.hpp>
-#include <moveit_studio_behavior_interface/async_behavior_base.hpp>
 #include <moveit_studio_vision_msgs/msg/mask2_d.hpp>
 #include <sensor_msgs/msg/image.hpp>
 #include <tl_expected/expected.hpp>
