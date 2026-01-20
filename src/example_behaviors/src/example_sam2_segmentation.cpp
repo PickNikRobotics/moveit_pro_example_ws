@@ -6,9 +6,9 @@
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <example_behaviors/example_sam2_segmentation.hpp>
 #include <geometry_msgs/msg/point_stamped.hpp>
+#include <moveit_pro_behavior_interface/async_behavior_base.hpp>
+#include <moveit_pro_behavior_interface/get_required_ports.hpp>
 #include <moveit_pro_ml/onnx_sam2.hpp>
-#include <moveit_studio_behavior_interface/async_behavior_base.hpp>
-#include <moveit_studio_behavior_interface/get_required_ports.hpp>
 #include <moveit_studio_vision_msgs/msg/mask2_d.hpp>
 #include <sensor_msgs/msg/image.hpp>
 #include <tl_expected/expected.hpp>

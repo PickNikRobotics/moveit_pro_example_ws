@@ -6,7 +6,7 @@ find_package(example_interfaces REQUIRED)
 moveit_studio_package()
 
 set(THIS_PACKAGE_INCLUDE_DEPENDS cartesian_planning moveit_studio_behavior
-  moveit_studio_behavior_interface pluginlib moveit_studio_vision
+  moveit_pro_behavior_interface pluginlib moveit_studio_vision
   moveit_studio_vision_msgs PCL pcl_conversions pcl_ros example_interfaces)
 foreach(package IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${package} REQUIRED)
@@ -56,7 +56,7 @@ endif()
 # plugin loaders that load the behavior base class library from the
 # moveit_studio_behavior package.
 pluginlib_export_plugin_description_file(
-  moveit_studio_behavior_interface example_behaviors_plugin_description.xml)
+  moveit_pro_behavior_interface example_behaviors_plugin_description.xml)
 
 ament_export_targets(example_behaviorsTargets HAS_LIBRARY_TARGET)
 ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS})

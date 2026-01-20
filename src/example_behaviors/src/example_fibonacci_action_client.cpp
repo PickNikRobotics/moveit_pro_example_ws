@@ -1,7 +1,7 @@
 #include <example_behaviors/example_fibonacci_action_client.hpp>
 
 // Include the template implementation for ActionClientBehaviorBase<T>.
-#include <moveit_studio_behavior_interface/impl/action_client_behavior_base_impl.hpp>
+#include <moveit_pro_behavior_interface/impl/action_client_behavior_base_impl.hpp>
 
 namespace example_behaviors
 {

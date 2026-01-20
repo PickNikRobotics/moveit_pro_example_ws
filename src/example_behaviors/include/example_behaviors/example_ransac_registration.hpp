@@ -3,8 +3,8 @@
 #include <behaviortree_cpp/action_node.h>
 
 // This header includes the SharedResourcesNode type
-#include <moveit_studio_behavior_interface/async_behavior_base.hpp>
-#include <moveit_studio_behavior_interface/shared_resources_node.hpp>
+#include <moveit_pro_behavior_interface/async_behavior_base.hpp>
+#include <moveit_pro_behavior_interface/shared_resources_node.hpp>
 
 namespace example_behaviors
 {
