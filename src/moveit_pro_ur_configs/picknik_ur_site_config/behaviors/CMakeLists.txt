@@ -1,5 +1,5 @@
 set(THIS_PACKAGE_INCLUDE_DEPENDS
-  moveit_studio_behavior_interface
+  moveit_pro_behavior_interface
   pluginlib
   std_srvs
   )

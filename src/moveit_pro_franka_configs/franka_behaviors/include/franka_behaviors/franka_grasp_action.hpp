@@ -8,8 +8,8 @@
 
 #include <franka_msgs/action/grasp.hpp>
 #include <franka_msgs/action/move.hpp>
-#include <moveit_studio_behavior_interface/action_client_behavior_base.hpp>
-#include <moveit_studio_behavior_interface/shared_resources_node.hpp>
+#include <moveit_pro_behavior_interface/action_client_behavior_base.hpp>
+#include <moveit_pro_behavior_interface/shared_resources_node.hpp>
 
 namespace franka_behaviors
 {

@@ -1,8 +1,8 @@
 #include "franka_behaviors/franka_grasp_action.hpp"
 
-#include <moveit_studio_behavior_interface/get_required_ports.hpp>
-#include <moveit_studio_behavior_interface/impl/action_client_behavior_base_impl.hpp>
-#include <moveit_studio_behavior_interface/metadata_fields.hpp>
+#include <moveit_pro_behavior_interface/get_required_ports.hpp>
+#include <moveit_pro_behavior_interface/impl/action_client_behavior_base_impl.hpp>
+#include <moveit_pro_behavior_interface/metadata_fields.hpp>
 
 namespace
 {
