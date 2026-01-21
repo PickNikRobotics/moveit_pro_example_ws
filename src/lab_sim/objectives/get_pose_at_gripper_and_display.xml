@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="GetPoseAtGripperandDisplay">
+  <!--//////////-->
+  <BehaviorTree
+    ID="GetPoseAtGripperandDisplay"
+    _description="Create a pose at the gripper, transform it, and display it."
+  >
+    <Control ID="Sequence">
+      <Action
+        ID="CreateStampedPose"
+        position_xyz="0; 0; 0"
+        stamped_pose="{stamped_pose}"
+        reference_frame="pinch"
+      />
+      <Action ID="TransformPoseFrame" input_pose="{stamped_pose}" />
+      <Action ID="VisualizePose" pose="{output_pose}" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="GetPoseAtGripperandDisplay">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Pose Handling" />
+      </MetadataFields>
+      <inout_port
+        name="output_pose"
+        default="{output_pose}"
+        type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"
+      />
+    </SubTree>
+  </TreeNodesModel>
+</root>
