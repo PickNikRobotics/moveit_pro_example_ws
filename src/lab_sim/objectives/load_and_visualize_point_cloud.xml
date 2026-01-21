@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="LoadAndVisualizePointCloud">
+  <!--//////////-->
+  <BehaviorTree
+    ID="LoadAndVisualizePointCloud"
+    _description="Load point cloud from file, transform it using the input pose, and send it to the UI."
+  >
+    <Control ID="Sequence" _collapsed="false">
+      <Action
+        ID="LoadPointCloudFromFile"
+        package_name="lab_sim"
+        file_path="description/assets/cube_0_5.stl"
+        color="0;0;255"
+      />
+      <Action
+        ID="TransformPointCloudFrame"
+        input_cloud="{point_cloud}"
+        output_cloud="{world_cloud}"
+      />
+      <Action
+        ID="TransformPointCloud"
+        transform_pose="{input_pose}"
+        output_cloud="{transform_cloud}"
+        input_cloud="{world_cloud}"
+      />
+      <Action
+        ID="SendPointCloudToUI"
+        pcd_topic="/pcd_pointcloud_captures"
+        point_cloud="{transform_cloud}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="LoadAndVisualizePointCloud">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Perception - 3D Point Cloud" />
+      </MetadataFields>
+      <inout_port
+        name="input_pose"
+        default="{stamped_pose}"
+        type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"
+      />
+      <inout_port
+        name="transform_cloud"
+        default="{output_cloud}"
+        type="sensor_msgs::msg::PointCloud2_&lt;std::allocator&lt;void&gt; &gt;"
+      />
+    </SubTree>
+  </TreeNodesModel>
+</root>

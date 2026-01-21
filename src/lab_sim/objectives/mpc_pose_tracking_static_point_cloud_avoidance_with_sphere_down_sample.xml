@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="MPC Pose Tracking Static Point Cloud Avoidance with Sphere Down Sample"
+>
+  <BehaviorTree
+    ID="MPC Pose Tracking Static Point Cloud Avoidance with Sphere Down Sample"
+    _description="Example of end effector avoiding a point cloud that is down-sampled with spheres and statically placed in the environment."
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree ID="Clear Snapshot" _collapsed="true" />
+      <SubTree ID="Move to Waypoint" _collapsed="true" waypoint_name="Home" />
+      <Action
+        ID="CreateStampedPose"
+        position_xyz="0.0;0.5;0.8"
+        stamped_pose="{stamped_pose}"
+        reference_frame="world"
+      />
+      <Action ID="VisualizePose" />
+      <SubTree
+        ID="LoadAndVisualizePointCloud"
+        _collapsed="false"
+        input_pose="{stamped_pose}"
+        transform_cloud="{output_cloud}"
+      />
+      <SubTree
+        ID="ComputeLinkPoseFromWaypoint"
+        _collapsed="false"
+        link_pose="{link_pose}"
+      />
+      <Action
+        ID="VisualizePose"
+        marker_lifetime="0.000000"
+        marker_name="target_pose"
+        marker_size="0.100000"
+        pose="{link_pose}"
+      />
+      <SubTree
+        ID="GetPoseAtGripperandDisplay"
+        _collapsed="false"
+        output_pose="{gripper_pose}"
+      />
+      <Action
+        ID="VisualizePose"
+        marker_lifetime="0.000000"
+        marker_name="sphere_pose"
+        marker_size="0.100000"
+        pose="{gripper_pose}"
+      />
+      <Action
+        ID="CreateCollisionSpheresAtClosestPoints"
+        closest_point_count="300"
+        collision_object="{collision_object}"
+        filter_cylinder_height="3.0"
+        filter_cylinder_radius="3.0"
+        point_cloud="{output_cloud}"
+        reference_pose="{gripper_pose}"
+        sphere_radius="0.1"
+        debug_output_markers="true"
+        marker_scale_xyz="{marker_scale_xyz2}"
+        marker_poses="{marker_poses2}"
+      />
+      <Action
+        ID="PublishMarkers"
+        marker_type="sphere"
+        marker_namespace="obstacles2"
+        marker_scale_xyz="{marker_scale_xyz2}"
+        marker_poses="{marker_poses2}"
+      />
+      <Action
+        ID="CreateStampedTwist"
+        reference_frame="world"
+        stamped_twist="{stamped_twist}"
+      />
+      <Control ID="Fallback">
+        <Decorator ID="Timeout" msec="40000">
+          <Control ID="Sequence">
+            <Action
+              ID="MPCSphereClearance"
+              differentiable="0"
+              follow_joint_trajectory_topic="/joint_trajectory_controller/follow_joint_trajectory"
+              gradient_num_trajectory="32"
+              gradient_spline_points="1.000000"
+              horizon="0.1"
+              planning_group="manipulator"
+              sampling_control_width="0.015000"
+              sampling_exploration="0.050000"
+              sampling_sample_width="0.010000"
+              sampling_spline_points="10.000000"
+              set_ctrl_command_to_current_state="true"
+              timestep="0.010000"
+              total_return="{total_return}"
+              cartesian_acceleration="100"
+              cartesian_acceleration_body="tool_changer"
+              cartesian_velocity="100"
+              cartesian_velocity_body="tool_changer"
+              collision_sphere_object="{collision_object}"
+              gripper_site_name="pinch"
+              max_cartesian_acceleration_goal="500"
+              max_cartesian_velocity_goal="0.5"
+              mujoco_model="description/simple_scene.xml"
+              mujoco_model_package="lab_sim"
+              safe_distance="0.25"
+              sphere_clearance="1.0"
+              target_pose="{link_pose}"
+              target_twist="{stamped_twist}"
+              warmup_iterations="256"
+              timeout="300"
+              site_tracking="0.2"
+              link_sites="attachment_site"
+            />
+          </Control>
+        </Decorator>
+        <Action ID="AlwaysSuccess" />
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree
+      ID="MPC Pose Tracking Static Point Cloud Avoidance with Sphere Down Sample"
+    >
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - MPC Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
