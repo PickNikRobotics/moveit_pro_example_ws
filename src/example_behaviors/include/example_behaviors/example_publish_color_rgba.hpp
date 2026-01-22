@@ -2,8 +2,8 @@
 
 #include <behaviortree_cpp/action_node.h>
 #include <behaviortree_cpp/bt_factory.h>
-#include <moveit_studio_behavior_interface/behavior_context.hpp>
-#include <moveit_studio_behavior_interface/shared_resources_node.hpp>
+#include <moveit_pro_behavior_interface/behavior_context.hpp>
+#include <moveit_pro_behavior_interface/shared_resources_node.hpp>
 #include <rclcpp/publisher.hpp>
 #include <std_msgs/msg/color_rgba.hpp>
 
