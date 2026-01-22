@@ -3,10 +3,10 @@
 #pragma once
 
 #include <behaviortree_cpp/action_node.h>
-#include <moveit_studio_behavior_interface/async_behavior_base.hpp>
-#include <moveit_studio_behavior_interface/behavior_context.hpp>
-#include <moveit_studio_behavior_interface/check_for_error.hpp>
-#include <moveit_studio_behavior_interface/shared_resources_node.hpp>
+#include <moveit_pro_behavior_interface/async_behavior_base.hpp>
+#include <moveit_pro_behavior_interface/behavior_context.hpp>
+#include <moveit_pro_behavior_interface/check_for_error.hpp>
+#include <moveit_pro_behavior_interface/shared_resources_node.hpp>
 
 namespace example_behaviors
 {

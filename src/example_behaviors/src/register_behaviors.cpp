@@ -1,7 +1,7 @@
 #include <behaviortree_cpp/bt_factory.h>
-#include <moveit_studio_behavior_interface/behavior_context.hpp>
-#include <moveit_studio_behavior_interface/json_serialization.hpp>
-#include <moveit_studio_behavior_interface/shared_resources_node_loader.hpp>
+#include <moveit_pro_behavior_interface/behavior_context.hpp>
+#include <moveit_pro_behavior_interface/json_serialization.hpp>
+#include <moveit_pro_behavior_interface/shared_resources_node_loader.hpp>
 #include <std_msgs/msg/string.hpp>
 
 #include <example_behaviors/example_add_two_ints_service_client.hpp>

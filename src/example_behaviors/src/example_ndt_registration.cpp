@@ -10,8 +10,8 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <example_behaviors/example_ndt_registration.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
-#include <moveit_studio_behavior_interface/async_behavior_base.hpp>
-#include <moveit_studio_behavior_interface/check_for_error.hpp>
+#include <moveit_pro_behavior_interface/async_behavior_base.hpp>
+#include <moveit_pro_behavior_interface/check_for_error.hpp>
 #include <moveit_studio_vision/common/get_all_indices.hpp>
 #include <moveit_studio_vision/common/select_point_indices.hpp>
 #include <moveit_studio_vision/pointcloud/point_cloud_tools.hpp>

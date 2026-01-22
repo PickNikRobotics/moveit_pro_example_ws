@@ -1,4 +1,4 @@
-#include <moveit_studio_behavior_interface/check_for_error.hpp>
+#include <moveit_pro_behavior_interface/check_for_error.hpp>
 #include <trigger_pstop_reset_service/trigger_pstop_reset_service.hpp>
 
 namespace
