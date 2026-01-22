@@ -1,7 +1,7 @@
 #pragma once
 
 #include <example_interfaces/srv/add_two_ints.hpp>
-#include <moveit_studio_behavior_interface/service_client_behavior_base.hpp>
+#include <moveit_pro_behavior_interface/service_client_behavior_base.hpp>
 
 using moveit_studio::behaviors::BehaviorContext;
 using moveit_studio::behaviors::ServiceClientBehaviorBase;

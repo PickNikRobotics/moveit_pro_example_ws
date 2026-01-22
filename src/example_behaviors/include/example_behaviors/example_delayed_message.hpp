@@ -3,11 +3,11 @@
 #include <behaviortree_cpp/action_node.h>
 
 // This header includes the SharedResourcesNode type
-#include <moveit_studio_behavior_interface/shared_resources_node.hpp>
+#include <moveit_pro_behavior_interface/shared_resources_node.hpp>
 
 #include <moveit_msgs/msg/move_it_error_codes.hpp>
 
-#include <moveit_studio_behavior_interface/check_for_error.hpp>
+#include <moveit_pro_behavior_interface/check_for_error.hpp>
 
 namespace example_behaviors
 {
