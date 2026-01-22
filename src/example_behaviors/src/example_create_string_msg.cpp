@@ -1,6 +1,6 @@
 #include <example_behaviors/example_create_string_msg.hpp>
 
-#include <moveit_studio_behavior_interface/check_for_error.hpp>
+#include <moveit_pro_behavior_interface/check_for_error.hpp>
 #include <std_msgs/msg/string.hpp>
 
 namespace example_behaviors

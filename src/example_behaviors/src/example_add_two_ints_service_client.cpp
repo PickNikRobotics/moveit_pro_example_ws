@@ -1,7 +1,7 @@
 #include <example_behaviors/example_add_two_ints_service_client.hpp>
 
 // Include the template implementation for GetMessageFromTopicBehaviorBase<T>.
-#include <moveit_studio_behavior_interface/impl/service_client_behavior_base_impl.hpp>
+#include <moveit_pro_behavior_interface/impl/service_client_behavior_base_impl.hpp>
 namespace example_behaviors
 {
 ExampleAddTwoIntsServiceClient::ExampleAddTwoIntsServiceClient(
