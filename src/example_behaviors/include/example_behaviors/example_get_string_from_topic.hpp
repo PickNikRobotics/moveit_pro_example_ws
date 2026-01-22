@@ -1,6 +1,6 @@
 #pragma once
 
-#include <moveit_studio_behavior_interface/get_message_from_topic.hpp>
+#include <moveit_pro_behavior_interface/get_message_from_topic.hpp>
 #include <std_msgs/msg/string.hpp>
 
 using moveit_studio::behaviors::BehaviorContext;

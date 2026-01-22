@@ -8,9 +8,9 @@
 #include <cartesian_planning/trajectory_utils.hpp>
 #include <moveit/robot_model_loader/robot_model_loader.hpp>
 #include <moveit_msgs/msg/robot_trajectory.hpp>
-#include <moveit_studio_behavior_interface/behavior_context.hpp>
-#include <moveit_studio_behavior_interface/check_for_error.hpp>
-#include <moveit_studio_behavior_interface/shared_resources_node.hpp>
+#include <moveit_pro_behavior_interface/behavior_context.hpp>
+#include <moveit_pro_behavior_interface/check_for_error.hpp>
+#include <moveit_pro_behavior_interface/shared_resources_node.hpp>
 #include <moveit_task_constructor_msgs/msg/solution.hpp>
 #include <trajectory_msgs/msg/joint_trajectory.hpp>
 
