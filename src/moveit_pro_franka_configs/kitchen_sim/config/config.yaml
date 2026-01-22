@@ -50,7 +50,6 @@ objectives:
     core:
       - "moveit_studio::behaviors::CoreBehaviorsLoader"
       - "moveit_studio::behaviors::MTCCoreBehaviorsLoader"
-      - "moveit_studio::behaviors::ServoBehaviorsLoader"
       - "moveit_studio::behaviors::VisionBehaviorsLoader"
       - "moveit_studio::behaviors::ConverterBehaviorsLoader"
   # Specify source folder for objectives
