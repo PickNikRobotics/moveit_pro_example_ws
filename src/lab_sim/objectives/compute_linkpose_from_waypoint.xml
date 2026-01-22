@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="ComputeLinkPoseFromWaypoint">
+  <!--//////////-->
+  <BehaviorTree ID="ComputeLinkPoseFromWaypoint">
+    <Control ID="Sequence" _collapsed="false">
+      <Action
+        ID="RetrieveWaypoint"
+        joint_group_name="manipulator"
+        waypoint_joint_state="{target_joint_state}"
+        waypoint_name="Above Pick Cube"
+      />
+      <Action
+        ID="UnpackRobotJointStateMessage"
+        joint_state="{joint_state}"
+        multi_dof_joint_state="{multi_dof_joint_state}"
+        robot_joint_state="{target_joint_state}"
+      />
+      <Action
+        ID="GetCurrentPlanningScene"
+        planning_scene_msg="{planning_scene}"
+      />
+      <Action
+        ID="ComputeLinkPoseForwardKinematics"
+        joint_state="{joint_state}"
+        link_name="grasp_link"
+        link_pose="{link_pose}"
+        planning_scene="{planning_scene}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="ComputeLinkPoseFromWaypoint">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Application - Basic Examples" />
+        <Metadata
+          description="This objective retrieves a named waypoint, unpacks the joint state, gets the current planning scene, and computes the pose of a specified link using forward kinematics. The resulting pose is output as a geometry_msgs::msg::PoseStamped."
+        />
+      </MetadataFields>
+      <inout_port
+        name="link_pose"
+        default="{link_pose}"
+        type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"
+      />
+    </SubTree>
+  </TreeNodesModel>
+</root>
