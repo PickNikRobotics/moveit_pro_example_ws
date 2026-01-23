@@ -5,7 +5,7 @@ find_package(moveit_studio_common REQUIRED)
 find_package(example_interfaces REQUIRED)
 moveit_studio_package()
 
-set(THIS_PACKAGE_INCLUDE_DEPENDS cartesian_planning moveit_studio_behavior
+set(THIS_PACKAGE_INCLUDE_DEPENDS cartesian_planning moveit_pro_behavior
   moveit_pro_behavior_interface pluginlib moveit_studio_vision
   moveit_studio_vision_msgs PCL pcl_conversions pcl_ros example_interfaces)
 foreach(package IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
@@ -54,7 +54,7 @@ endif()
 
 # Export the behavior plugins defined in this package so they are available to
 # plugin loaders that load the behavior base class library from the
-# moveit_studio_behavior package.
+# moveit_pro_behavior package.
 pluginlib_export_plugin_description_file(
   moveit_pro_behavior_interface example_behaviors_plugin_description.xml)
 

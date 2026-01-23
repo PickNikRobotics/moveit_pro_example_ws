@@ -28,7 +28,7 @@ endif()
 
 # Export the behavior plugins defined in this package so they are available to
 # plugin loaders that load the behavior base class library from the
-# moveit_studio_behavior package.
+# moveit_pro_behavior package.
 pluginlib_export_plugin_description_file(
         moveit_pro_behavior_interface behaviors/trigger_pstop_reset_service_plugin_description.xml)
 
