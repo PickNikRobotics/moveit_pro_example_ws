@@ -47,7 +47,6 @@ SetAdmittanceParameters:
       x: 1
       y: 1
       z: 1
-  base_frame: base_link
   control_frame: grasp_link
   controller_name: ''
   end_effector_frame: grasp_link
@@ -99,7 +98,6 @@ admittance:
     x: 1
     y: 1
     z: 1
-base_frame: base_link
 control_frame: grasp_link
 controller_name: ''
 end_effector_frame: grasp_link
