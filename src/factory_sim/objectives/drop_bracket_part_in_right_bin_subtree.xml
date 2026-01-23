@@ -78,10 +78,10 @@
         acceleration_scale_factor="0.5"
       />
       <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
-      <Action
-        ID="ExecuteMTCTask"
-        goal_duration_tolerance="-1.000000"
+      <SubTree
+        ID="Execute MTC Solution (JTC)"
         solution="{mtc_solution}"
+        goal_duration_tolerance="-1.0"
       />
       <SubTree ID="Deactivate Vacuum" _collapsed="true" />
       <SubTree

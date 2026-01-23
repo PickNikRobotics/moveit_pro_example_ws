@@ -7,13 +7,13 @@
     <Decorator ID="KeepRunningUntilFailure">
       <Control ID="Sequence">
         <SubTree
-          ID="Move to Waypoint"
+          ID="Move to Waypoint (JTC)"
           waypoint_name="Above Pick Cube"
           joint_group_name="manipulator"
           controller_names="joint_trajectory_controller"
         />
         <SubTree
-          ID="Move to Waypoint"
+          ID="Move to Waypoint (JTC)"
           waypoint_name="Look at Table"
           joint_group_name="manipulator"
           controller_names="joint_trajectory_controller"

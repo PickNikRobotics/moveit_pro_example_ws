@@ -11,7 +11,7 @@
     <Control ID="Sequence">
       <SubTree ID="Clear Snapshot" _collapsed="true" />
       <SubTree
-        ID="Move to Waypoint"
+        ID="Move to Waypoint (JTC)"
         _collapsed="true"
         waypoint_name="Home"
         joint_group_name="manipulator"

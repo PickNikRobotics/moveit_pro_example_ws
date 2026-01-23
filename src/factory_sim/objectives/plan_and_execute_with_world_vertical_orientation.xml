@@ -87,10 +87,12 @@
               if="execute_trajectories == &quot;true&quot;"
             >
               <Control ID="Sequence">
-                <Action
-                  ID="ExecuteMTCTask"
-                  goal_duration_tolerance="-1.000000"
+                <SubTree
+                  ID="Execute MTC Solution (JTC)"
+                  controller_names="{controller_names}"
                   solution="{mtc_solution}"
+                  controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
+                  goal_duration_tolerance="-1.0"
                 />
                 <SubTree
                   ID="Move to Joint State"
@@ -105,6 +107,7 @@
                   link_padding="0.01"
                   velocity_scale_factor="1.0"
                   seed="0"
+                  execution_pipeline="jtc"
                 />
               </Control>
             </Decorator>

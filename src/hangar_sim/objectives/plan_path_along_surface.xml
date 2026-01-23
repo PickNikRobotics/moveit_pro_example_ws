@@ -8,10 +8,9 @@
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree
-        ID="Move to Waypoint"
+        ID="Move to Waypoint (JTC)"
         _collapsed="true"
         acceleration_scale_factor="1.0"
-        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
         controller_names="joint_trajectory_controller"
         joint_group_name="manipulator"
         keep_orientation="false"
@@ -104,7 +103,7 @@
       />
       <Action
         ID="ExecuteTrajectory"
-        execution_pipeline="follow_joint_trajectory_action"
+        execution_pipeline="jtc"
         controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
       />
     </Control>

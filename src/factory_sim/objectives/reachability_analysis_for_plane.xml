@@ -39,6 +39,7 @@
           keep_orientation_tolerance="0.05"
           link_padding="0.01"
           velocity_scale_factor="1.0"
+          execution_pipeline="jtc"
         />
       </Control>
       <Control ID="Sequence" name="Visualize key poses">

@@ -7,6 +7,10 @@
   >
     <Control ID="Sequence">
       <Action
+        ID="SwitchController"
+        activate_controllers="joint_trajectory_controller"
+      />
+      <Action
         ID="InitializeMTCTask"
         task_id="move_to_pose"
         controller_names="joint_trajectory_controller"
@@ -35,8 +39,10 @@
         task="{move_to_pose_task}"
       />
       <Action
-        ID="ExecuteMTCTask"
+        ID="ExecuteMTCSolution"
         solution="{move_to_pose_solution}"
+        execution_pipeline="jtc"
+        controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
         goal_duration_tolerance="-1.000000"
       />
     </Control>

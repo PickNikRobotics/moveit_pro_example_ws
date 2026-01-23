@@ -73,10 +73,10 @@
         axis_x="-1.0"
       />
       <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
-      <Action
-        ID="ExecuteMTCTask"
-        goal_duration_tolerance="-1.000000"
+      <SubTree
+        ID="Execute MTC Solution (JTC)"
         solution="{mtc_solution}"
+        goal_duration_tolerance="-1.0"
       />
     </Control>
   </BehaviorTree>

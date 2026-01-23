@@ -75,7 +75,7 @@
         <Control ID="Sequence">
           <!--Move to starting position, before planning and executing Cartesian path-->
           <SubTree
-            ID="Move to Waypoint"
+            ID="Move to Waypoint (JTC)"
             waypoint_name="Look at Right Table"
             joint_group_name="manipulator"
             controller_names="joint_trajectory_controller"
@@ -111,7 +111,7 @@
           <!--Finally, execute the trajectory on the actual robot-->
           <Action
             ID="ExecuteTrajectory"
-            execution_pipeline="follow_joint_trajectory_action"
+            execution_pipeline="jtc"
             controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
           />
         </Control>

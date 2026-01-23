@@ -113,7 +113,11 @@
             solution="{move_solution}"
             task="{move_task}"
           />
-          <Action ID="ExecuteMTCTask" solution="{move_solution}" />
+          <SubTree
+            ID="Execute MTC Solution (JTC)"
+            solution="{move_solution}"
+            goal_duration_tolerance="-1.0"
+          />
           <!--Visualize current inspection point-->
           <Action
             ID="VisualizePose"
@@ -192,10 +196,14 @@
         solution="{replay_solution}"
         task="{replay_task}"
       />
-      <Action ID="ExecuteMTCTask" solution="{replay_solution}" />
+      <SubTree
+        ID="Execute MTC Solution (JTC)"
+        solution="{replay_solution}"
+        goal_duration_tolerance="-1.0"
+      />
       <!--Return to home position-->
       <SubTree
-        ID="Move to Waypoint"
+        ID="Move to Waypoint (JTC)"
         waypoint_name="Look at Table"
         joint_group_name="manipulator"
         controller_names="joint_trajectory_controller"

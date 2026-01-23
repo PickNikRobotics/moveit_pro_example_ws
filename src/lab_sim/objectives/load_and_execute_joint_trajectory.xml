@@ -9,7 +9,7 @@
     <Control ID="Sequence" name="TopLevelSequence">
       <!--Make sure to move the robot to the same starting position as the saved trajectory starts, otherwise the joint_trajectory_controller will use joint interpolation to align the robot with the path-->
       <SubTree
-        ID="Move to Waypoint"
+        ID="Move to Waypoint (JTC)"
         _collapsed="true"
         waypoint_name="Workspace Right"
         joint_group_name="manipulator"
@@ -42,7 +42,7 @@
       />
       <Action
         ID="ExecuteTrajectory"
-        execution_pipeline="follow_joint_trajectory_action"
+        execution_pipeline="jtc"
         controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
       />
     </Control>
