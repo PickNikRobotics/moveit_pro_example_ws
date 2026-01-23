@@ -15,7 +15,7 @@
   <exec_depend>franka_description</exec_depend>
   <exec_depend>franka_msgs</exec_depend>
   <exec_depend>moveit_studio_agent</exec_depend>
-  <exec_depend>moveit_studio_behavior</exec_depend>
+  <exec_depend>moveit_pro_behavior</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
 
