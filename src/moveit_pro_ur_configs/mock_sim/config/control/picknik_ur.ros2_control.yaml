@@ -30,6 +30,7 @@ robotiq_gripper_controller:
 
 joint_trajectory_admittance_controller:
   ros__parameters:
+    planning_group_name: manipulator
     sensor_frame: tool0
     ee_frame: grasp_link
     # Joint accelerations chosen to match MoveIt configs.
