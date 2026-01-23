@@ -127,7 +127,7 @@
             ID="GetImage"
             topic_name="/wrist_camera/color"
             message_out="{image}"
-            timeout_sec="5.0"
+            message_timeout_sec="5.0"
           />
           <Action
             ID="SaveImageToFile"
@@ -140,7 +140,7 @@
             ID="GetPointCloud"
             topic_name="/wrist_camera/points"
             message_out="{current_cloud}"
-            timeout_sec="5.0"
+            message_timeout_sec="5.0"
           />
           <Action
             ID="TransformPointCloudFrame"

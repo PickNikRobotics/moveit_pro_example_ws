@@ -12,7 +12,7 @@
     <Control ID="Sequence">
       <Action
         ID="GetImage"
-        timeout_sec="5.000000"
+        message_timeout_sec="5.000000"
         topic_name="{image_topic_name}"
         message_out="{image}"
       />

@@ -42,7 +42,7 @@
       <Action
         ID="GetCameraInfo"
         message_out="{camera_info}"
-        timeout_sec="5.000000"
+        message_timeout_sec="5.000000"
         topic_name="/wrist_camera/camera_info"
         publisher_timeout_sec="5.000000"
       />

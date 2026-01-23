@@ -28,7 +28,7 @@
       <Action
         ID="GetPointCloud"
         message_out="{point_cloud}"
-        timeout_sec="5.000000"
+        message_timeout_sec="5.000000"
         topic_name="/wrist_camera/points"
       />
       <Action
