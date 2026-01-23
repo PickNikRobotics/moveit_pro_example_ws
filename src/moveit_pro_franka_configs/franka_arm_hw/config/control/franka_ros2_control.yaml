@@ -48,17 +48,6 @@ joint_trajectory_controller:
 
 velocity_force_controller:
   ros__parameters:
-    # Joints that the controller will claim.
-    joints:
-      - fr3_joint1
-      - fr3_joint2
-      - fr3_joint3
-      - fr3_joint4
-      - fr3_joint5
-      - fr3_joint6
-      - fr3_joint7
-    # Base frame of the kinematic chain, for computation of arm kinematics.
-    base_frame: fr3_link0
     # The tip link of the kinematic chain, i.e. the frame that will be controlled.
     ee_frame: grasp_link
     # The frame where the force / torque sensor reading is given.

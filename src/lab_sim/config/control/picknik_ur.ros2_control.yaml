@@ -169,16 +169,6 @@ force_torque_sensor_broadcaster:
 
 joint_trajectory_admittance_controller:
   ros__parameters:
-    joints:
-      - linear_rail_joint
-      - shoulder_pan_joint
-      - shoulder_lift_joint
-      - elbow_joint
-      - wrist_1_joint
-      - wrist_2_joint
-      - wrist_3_joint
-    # Specifies the base link of the kinematic chain. Must exist in the robot description.
-    base_frame: base_link
     # Specifies the frame/link name of the force torque sensor. Must exist in the robot description.
     sensor_frame: tool0
     # Specifies the frame/link name of the end-effector frame. Must exist in the robot description.
