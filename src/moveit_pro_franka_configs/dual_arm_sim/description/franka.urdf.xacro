@@ -26,7 +26,7 @@
              rpy="${mount_kinematics['right']['kinematic']['roll']} ${mount_kinematics['right']['kinematic']['pitch']} ${mount_kinematics['right']['kinematic']['yaw']}"/>
   </joint>
 
-  <xacro:franka_robot arm_id="fr3"
+  <xacro:franka_robot robot_type="fr3"
                       joint_limits="${xacro.load_yaml('$(find franka_description)/robots/fr3/joint_limits.yaml')}"
                       inertials="${xacro.load_yaml('$(find franka_description)/robots/fr3/inertials.yaml')}"
                       kinematics="${xacro.load_yaml('$(find franka_description)/robots/fr3/kinematics.yaml')}"
@@ -61,7 +61,7 @@
              rpy="${mount_kinematics['left']['kinematic']['roll']} ${mount_kinematics['left']['kinematic']['pitch']} ${mount_kinematics['left']['kinematic']['yaw']}"/>
   </joint>
 
-  <xacro:franka_robot arm_id="fr3"
+  <xacro:franka_robot robot_type="fr3"
                       joint_limits="${xacro.load_yaml('$(find franka_description)/robots/fr3/joint_limits.yaml')}"
                       inertials="${xacro.load_yaml('$(find franka_description)/robots/fr3/inertials.yaml')}"
                       kinematics="${xacro.load_yaml('$(find franka_description)/robots/fr3/kinematics.yaml')}"
