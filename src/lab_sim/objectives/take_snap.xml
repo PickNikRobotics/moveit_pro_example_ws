@@ -14,7 +14,7 @@
         topic_name="/scene_camera/points"
         message_out="{point_cloud}"
         publisher_timeout_sec="5.000000"
-        timeout_sec="10"
+        message_timeout_sec="10"
       />
       <Action
         ID="SendPointCloudToUI"

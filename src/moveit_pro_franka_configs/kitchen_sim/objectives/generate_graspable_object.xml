@@ -13,7 +13,7 @@
         ID="GetImage"
         message_out="{image}"
         publisher_timeout_sec="5.000000"
-        timeout_sec="5.000000"
+        message_timeout_sec="5.000000"
         topic_name="/scene_camera/color"
       />
       <Action
@@ -60,14 +60,14 @@
         ID="GetCameraInfo"
         message_out="{camera_info}"
         publisher_timeout_sec="5.000000"
-        timeout_sec="5.000000"
+        message_timeout_sec="5.000000"
         topic_name="/scene_camera/camera_info"
       />
       <Action
         ID="GetPointCloud"
         message_out="{point_cloud}"
         publisher_timeout_sec="5.000000"
-        timeout_sec="5.000000"
+        message_timeout_sec="5.000000"
         topic_name="/scene_camera/points"
       />
       <Action
