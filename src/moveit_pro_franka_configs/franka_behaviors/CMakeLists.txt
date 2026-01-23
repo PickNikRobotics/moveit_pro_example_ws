@@ -5,7 +5,7 @@ find_package(moveit_pro_package REQUIRED)
 find_package(franka_msgs REQUIRED)
 moveit_pro_package()
 
-set(THIS_PACKAGE_INCLUDE_DEPENDS moveit_studio_behavior moveit_pro_behavior_interface pluginlib 
+set(THIS_PACKAGE_INCLUDE_DEPENDS moveit_pro_behavior moveit_pro_behavior_interface pluginlib 
 franka_msgs)
 foreach(package IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${package} REQUIRED)
@@ -41,7 +41,7 @@ endif()
 
 # Export the behavior plugins defined in this package so they are available to
 # plugin loaders that load the behavior base class library from the
-# moveit_studio_behavior package.
+# moveit_pro_behavior package.
 pluginlib_export_plugin_description_file(
   moveit_pro_behavior_interface franka_behaviors_plugin_description.xml)
 
