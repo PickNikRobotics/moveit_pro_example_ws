@@ -53,6 +53,7 @@ force_torque_sensor_broadcaster:
 
 joint_trajectory_admittance_controller:
   ros__parameters:
+    planning_group_name: manipulator
     sensor_frame: fts_link
     ee_frame: grasp_link
     ft_sensor_name: fts

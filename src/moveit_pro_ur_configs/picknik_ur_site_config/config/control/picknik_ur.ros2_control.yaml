@@ -47,6 +47,7 @@ robotiq_activation_controller:
 
 joint_trajectory_admittance_controller:
   ros__parameters:
+    planning_group_name: manipulator
     sensor_frame: tool0
     ee_frame: grasp_link
     ft_sensor_name: tcp_fts_sensor

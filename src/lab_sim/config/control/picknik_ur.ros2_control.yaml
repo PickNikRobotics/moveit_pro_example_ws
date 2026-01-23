@@ -114,6 +114,7 @@ force_torque_sensor_broadcaster:
 
 joint_trajectory_admittance_controller:
   ros__parameters:
+    planning_group_name: manipulator
     # Specifies the frame/link name of the force torque sensor. Must exist in the robot description.
     sensor_frame: tool0
     # Specifies the frame/link name of the end-effector frame. Must exist in the robot description.
