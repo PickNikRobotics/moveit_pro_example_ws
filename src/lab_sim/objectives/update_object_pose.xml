@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Update Object Pose">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Update Object Pose"
+    _description="Update the pose of the graspable object"
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="GetCurrentPlanningScene"
+        planning_scene_msg="{planning_scene}"
+      />
+      <Action
+        ID="RemoveCollisionObjectFromPlanningScene"
+        apply_planning_scene_service="/apply_planning_scene"
+        object_id="{object_string_identifier}"
+        planning_scene_msg="{planning_scene}"
+      />
+      <Action
+        ID="CreateGraspableObject"
+        cuboid_object="{graspable_object}"
+        dx="0.025000"
+        dy="0.025000"
+        dz="0.025000"
+        generate_front_face="true"
+        generate_side_faces="true"
+        generate_top_face="true"
+        object_id="{object_string_identifier}"
+        pose="{new_pose}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Update Object Pose">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Basic Examples" />
+      </MetadataFields>
+      <inout_port name="graspable_object" default="{graspable_object}" />
+      <inout_port name="new_pose" default="{new_pose}" />
+      <inout_port
+        name="object_string_identifier"
+        default="{object_string_identifier}"
+      />
+    </SubTree>
+  </TreeNodesModel>
+</root>

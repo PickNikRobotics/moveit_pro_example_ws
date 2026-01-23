@@ -1,0 +1,409 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Pick and Place Object">
+  <BehaviorTree
+    ID="Pick and Place Object"
+    _description="Basic example picking an object using user input and grasp poses calculation and place it at a fixed location"
+    _favorite="true"
+  >
+    <Control ID="Sequence">
+      <SubTree ID="Reset Planning Scene" _collapsed="true" />
+      <!--Setup the environment to its "home" configuration - move to center and open gripper-->
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Look at Table"
+        joint_group_name="manipulator"
+        controller_names="joint_trajectory_controller"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        seed="0"
+        velocity_scale_factor="1.0"
+        _collapsed="true"
+      />
+      <Action
+        ID="MoveGripperAction"
+        gripper_command_action_name="/robotiq_gripper_controller/gripper_cmd"
+        position="0"
+        timeout="10.000000"
+      />
+      <!--Run pick and place on loop-->
+      <Action
+        ID="CreateStampedPose"
+        reference_frame="world"
+        stamped_pose="{place_pose}"
+        position_xyz="0.01353;0.59134;0.48"
+      />
+      <SubTree ID="Add Table to Planning Scene" _collapsed="true" />
+      <Control ID="Sequence">
+        <SubTree
+          ID="CreateVector"
+          _collapsed="true"
+          vector="{graspable_objects}"
+        />
+        <Action
+          ID="CreateStampedPose"
+          reference_frame="world"
+          stamped_pose="{object_pose}"
+          position_xyz="-0.2;0.75;0.48"
+        />
+        <Action
+          ID="CreateGraspableObject"
+          cuboid_object="{cuboid_object1}"
+          dx="0.025000"
+          dy="0.025000"
+          dz="0.025000"
+          generate_front_face="true"
+          generate_side_faces="true"
+          generate_top_face="true"
+          object_id="cuboid_object1"
+          pose="{object_pose}"
+        />
+        <Action
+          ID="CreateStampedPose"
+          reference_frame="world"
+          stamped_pose="{object_pose}"
+          position_xyz="0.0;0.75;0.48"
+        />
+        <Action
+          ID="CreateGraspableObject"
+          cuboid_object="{cuboid_object2}"
+          dx="0.025000"
+          dy="0.025000"
+          dz="0.025000"
+          generate_front_face="true"
+          generate_side_faces="true"
+          generate_top_face="true"
+          object_id="cuboid_object2"
+          pose="{object_pose}"
+        />
+        <Action
+          ID="CreateStampedPose"
+          reference_frame="world"
+          stamped_pose="{object_pose}"
+          position_xyz="0.2;0.75;0.48"
+        />
+        <Action
+          ID="CreateGraspableObject"
+          cuboid_object="{cuboid_object3}"
+          dx="0.025000"
+          dy="0.025000"
+          dz="0.025000"
+          generate_front_face="true"
+          generate_side_faces="true"
+          generate_top_face="true"
+          object_id="cuboid_object3"
+          pose="{object_pose}"
+        />
+        <Action
+          ID="ModifyObjectInPlanningScene"
+          apply_planning_scene_service="/apply_planning_scene"
+          object="{cuboid_object1}"
+        />
+        <Action
+          ID="ModifyObjectInPlanningScene"
+          apply_planning_scene_service="/apply_planning_scene"
+          object="{cuboid_object2}"
+        />
+        <Action
+          ID="ModifyObjectInPlanningScene"
+          apply_planning_scene_service="/apply_planning_scene"
+          object="{cuboid_object3}"
+        />
+        <SubTree
+          ID="AddToVector"
+          element="{cuboid_object1}"
+          input_vector="{graspable_objects}"
+          output_vector="{graspable_objects}"
+        />
+        <SubTree
+          ID="AddToVector"
+          _collapsed="true"
+          element="{cuboid_object2}"
+          input_vector="{graspable_objects}"
+          output_vector="{graspable_objects}"
+        />
+        <SubTree
+          ID="AddToVector"
+          element="{cuboid_object3}"
+          input_vector="{graspable_objects}"
+          output_vector="{graspable_objects}"
+        />
+      </Control>
+      <Control ID="Sequence">
+        <Action
+          ID="GetPointsFromUser"
+          pixel_coords="{pixel_coords}"
+          view_name="/wrist_camera/color"
+          point_names="object"
+          point_prompts="Click on any one cuboid"
+        />
+        <Action
+          ID="GetPointCloud"
+          message_out="{point_cloud}"
+          publisher_timeout_sec="5.000000"
+          timeout_sec="5.000000"
+          topic_name="/wrist_camera/points"
+        />
+        <Action
+          ID="GetPoseFromPixelCoords"
+          downsample_fraction="0.100000"
+          neighbor_radius="0.100000"
+          output_poses="{output_poses}"
+          pixel_coords="{pixel_coords}"
+          point_cloud="{point_cloud}"
+        />
+        <Action
+          ID="GetElementOfVector"
+          vector_in="{output_poses}"
+          element="{clicked_point_pose}"
+          index="0"
+        />
+        <Action
+          ID="GetClosestObjectToPose"
+          closest_object="{graspable_object}"
+          distance_threshold="0.100000"
+          objects="{graspable_objects}"
+          pose="{clicked_point_pose}"
+        />
+        <Action
+          ID="UnpackGraspableObjectMessage"
+          grasp_info="{grasp_info}"
+          graspable_object="{graspable_object}"
+          object="{object}"
+          object_color="{object_color}"
+        />
+        <Action
+          ID="UnpackCollisionObjectMessage"
+          collision_object="{object}"
+          header="{header}"
+          id="{id}"
+          mesh_poses="{mesh_poses}"
+          meshes="{meshes}"
+          operation="{operation}"
+          plane_poses="{plane_poses}"
+          planes="{planes}"
+          pose="{pose}"
+          primitive_poses="{primitive_poses}"
+          primitives="{primitives}"
+          subframe_names="{subframe_names}"
+          subframe_poses="{subframe_poses}"
+          type="{type}"
+        />
+      </Control>
+      <Control ID="Sequence">
+        <Action
+          ID="CreateStampedPose"
+          stamped_pose="{ee_to_tcp}"
+          position_xyz="0;0;0"
+          reference_frame="grasp_link"
+        />
+        <Action
+          ID="GenerateCuboidGraspPoses"
+          ee_to_tcp_tf="{ee_to_tcp}"
+          grasp_poses="{grasp_poses}"
+          target_object="{graspable_object}"
+        />
+        <SubTree
+          ID="Evaluate Pose Vector and Execute"
+          _collapsed="true"
+          vector_of_poses="{grasp_poses}"
+        />
+      </Control>
+      <SubTree
+        ID="Move along axis and pick object"
+        _collapsed="true"
+        object_supporting_surface_id="virtual_table_top"
+      />
+      <Control ID="Sequence">
+        <Action
+          ID="GetLatestTransform"
+          source_frame_id="grasp_link"
+          target_frame_id="world"
+          transform="{transform}"
+        />
+        <Action
+          ID="ConvertTransformStampedToPoseStamped"
+          pose_stamped="{pick_pose}"
+          transform_stamped="{transform}"
+        />
+        <Action
+          ID="VisualizePose"
+          marker_lifetime="0.000000"
+          marker_name="pick_pose"
+          marker_size="0.0500000"
+          pose="{pick_pose}"
+        />
+      </Control>
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        controller_names="joint_trajectory_controller"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        seed="0"
+        velocity_scale_factor="1.0"
+        waypoint_name="Above Place Cube"
+      />
+      <SubTree
+        ID="Move to Waypoint"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        controller_names="joint_trajectory_controller"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        seed="0"
+        velocity_scale_factor="1.0"
+        waypoint_name="Place Cube"
+        _collapsed="true"
+      />
+      <Control ID="Sequence">
+        <SubTree ID="Open Gripper" _collapsed="true" />
+        <Action
+          ID="InitializeMTCTask"
+          task="{mtc_task}"
+          timeout="-1.000000"
+          trajectory_monitoring="false"
+          controller_names="joint_trajectory_controller"
+        />
+        <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
+        <Action
+          ID="SetupMTCDetachObject"
+          frame_id="grasp_link"
+          object="{graspable_object}"
+          task="{mtc_task}"
+        />
+        <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
+        <Action
+          ID="ExecuteMTCTask"
+          goal_duration_tolerance="-1.000000"
+          solution="{mtc_solution}"
+        />
+      </Control>
+      <SubTree
+        ID="Move to Waypoint"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        controller_names="joint_trajectory_controller"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        seed="0"
+        velocity_scale_factor="1.0"
+        waypoint_name="Above Place Cube"
+      />
+      <SubTree
+        ID="Update Object Pose"
+        _collapsed="true"
+        graspable_object="{graspable_object}"
+        new_pose="{place_pose}"
+        object_string_identifier="{id}"
+      />
+      <Action
+        ID="ModifyObjectInPlanningScene"
+        apply_planning_scene_service="/apply_planning_scene"
+        object="{graspable_object}"
+      />
+      <Control ID="Sequence">
+        <Action
+          ID="GenerateCuboidGraspPoses"
+          ee_to_tcp_tf="{ee_to_tcp}"
+          grasp_poses="{grasp_poses}"
+          target_object="{graspable_object}"
+        />
+        <SubTree
+          ID="Evaluate Pose Vector and Execute"
+          vector_of_poses="{grasp_poses}"
+        />
+      </Control>
+      <SubTree
+        ID="Move along axis and pick object"
+        _collapsed="true"
+        object_supporting_surface_id="virtual_table_top"
+      />
+      <Control ID="Sequence">
+        <Action
+          ID="TransformPose"
+          input_pose="{pick_pose}"
+          output_pose="{pick_pose_with_offset}"
+          translation_xyz="0;0;-0.05"
+        />
+        <Action ID="ResetPoseStampedVector" vector="{pick_pose_vector}" />
+        <Action
+          ID="AddPoseStampedToVector"
+          input="{pick_pose_with_offset}"
+          vector="{pick_pose_vector}"
+        />
+        <Action
+          ID="AddPoseStampedToVector"
+          input="{pick_pose}"
+          vector="{pick_pose_vector}"
+        />
+        <Action
+          ID="VisualizePose"
+          pose="{pick_pose_with_offset}"
+          marker_name="pick_pose_with_offset"
+        />
+        <Action
+          ID="InitializeMTCTask"
+          task="{mtc_task}"
+          timeout="-1.000000"
+          trajectory_monitoring="false"
+          controller_names="joint_trajectory_controller"
+        />
+        <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
+        <Action
+          ID="SetupMTCCartesianSequence"
+          ik_frame="grasp_link"
+          monitored_stage="current state"
+          planning_group_name="manipulator"
+          pose_stamped_vector="{pick_pose_vector}"
+          task="{mtc_task}"
+        />
+        <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
+        <Action
+          ID="ExecuteMTCTask"
+          goal_duration_tolerance="-1.000000"
+          solution="{mtc_solution}"
+        />
+        <SubTree ID="Open Gripper" />
+        <Action
+          ID="InitializeMTCTask"
+          task="{mtc_task}"
+          timeout="-1.000000"
+          trajectory_monitoring="false"
+          controller_names="joint_trajectory_controller"
+        />
+        <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
+        <Action
+          ID="SetupMTCDetachObject"
+          frame_id="grasp_link"
+          object="{graspable_object}"
+          task="{mtc_task}"
+        />
+        <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
+        <Action
+          ID="ExecuteMTCTask"
+          goal_duration_tolerance="-1.000000"
+          solution="{mtc_solution}"
+        />
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Pick and Place Object">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Basic Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
