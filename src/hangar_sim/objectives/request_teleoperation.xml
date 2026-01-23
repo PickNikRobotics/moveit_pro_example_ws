@@ -45,6 +45,8 @@
                       _collapsed="false"
                       target_joint_state="{target_joint_state}"
                       controller_names="joint_trajectory_controller"
+                      controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+                      execution_pipeline="jtc"
                     />
                     <Action
                       ID="PublishEmpty"
@@ -92,13 +94,12 @@
                       <Action ID="AlwaysSuccess" />
                     </Decorator>
                     <SubTree
-                      ID="Move to Pose"
+                      ID="Move to Pose (JTC)"
                       _collapsed="false"
                       target_pose="{target_pose}"
                       link_padding="0.0"
                       planning_group_name="{planning_group}"
                       ik_frame="{tip_link}"
-                      controller_names="joint_trajectory_controller"
                       require_user_approval="true"
                     />
                     <Action
@@ -144,6 +145,7 @@
                       link_padding="0.0"
                       velocity_scale_factor="1.0"
                       seed="0"
+                      execution_pipeline="jtc"
                     />
                     <Action
                       ID="PublishEmpty"

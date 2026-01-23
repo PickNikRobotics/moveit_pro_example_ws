@@ -24,7 +24,7 @@
         gripper_command_action_name="/vacuum_gripper/gripper_cmd"
       />
       <SubTree
-        ID="Move to Waypoint"
+        ID="Move to Waypoint (JTC)"
         _collapsed="true"
         acceleration_scale_factor="1.0"
         controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
@@ -272,10 +272,10 @@
                           solution="{solution}"
                           task="{task}"
                         />
-                        <Action
-                          ID="ExecuteMTCTask"
-                          goal_duration_tolerance="-1.000000"
+                        <SubTree
+                          ID="Execute MTC Solution (JTC)"
                           solution="{solution}"
+                          goal_duration_tolerance="-1.0"
                         />
                       </Control>
                       <Control ID="Sequence" name="TopLevelSequence">

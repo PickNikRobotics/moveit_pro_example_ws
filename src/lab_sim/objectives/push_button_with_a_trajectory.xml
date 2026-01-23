@@ -9,7 +9,7 @@
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree ID="Close Gripper" _collapsed="true" />
       <SubTree
-        ID="Move to Waypoint"
+        ID="Move to Waypoint (JTC)"
         _collapsed="true"
         waypoint_name="VFC Start"
         joint_group_name="manipulator"

@@ -8,7 +8,7 @@
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree
-        ID="Move to Waypoint"
+        ID="Move to Waypoint (JTC)"
         _collapsed="true"
         controller_names="joint_trajectory_controller"
         planner_interface="moveit_default"

@@ -8,7 +8,7 @@
   >
     <Control ID="Sequence">
       <SubTree
-        ID="Move to Waypoint"
+        ID="Move to Waypoint (JTC)"
         _collapsed="true"
         waypoint_name="Flask 1a - Pre Pick"
         joint_group_name="manipulator"

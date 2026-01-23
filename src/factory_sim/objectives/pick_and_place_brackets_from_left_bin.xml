@@ -59,7 +59,7 @@
           />
           <!--This jig apparatus and waiting is here just to motivate the use case and explain why the arm moves to a waiting pose, instead of dropping the part on the jig and then picking it right back up again-->
           <SubTree
-            ID="Move to Waypoint"
+            ID="Move to Waypoint (JTC)"
             _collapsed="true"
             acceleration_scale_factor="1.0"
             controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
@@ -99,7 +99,7 @@
       <!--Stow vacuum gripper-->
       <SubTree ID="Automated Return Held Tool" _collapsed="true" />
       <SubTree
-        ID="Move to Waypoint"
+        ID="Move to Waypoint (JTC)"
         _collapsed="true"
         acceleration_scale_factor="1.0"
         controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"

@@ -71,9 +71,15 @@
                 task="{mtc_task}"
               />
               <Action
-                ID="ExecuteMTCTask"
+                ID="SwitchController"
+                activate_controllers="joint_trajectory_controller"
+              />
+              <Action
+                ID="ExecuteMTCSolution"
                 goal_duration_tolerance="-1.000000"
                 solution="{mtc_solution}"
+                execution_pipeline="jtc"
+                controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
               />
               <Action ID="WaitForDuration" delay_duration="1.0" />
               <SubTree ID="Close Right Gripper" _collapsed="true" />
@@ -127,14 +133,14 @@
                 solution="{mtc_solution}"
                 task="{mtc_task}"
               />
-              <Action
-                ID="ExecuteMTCTask"
-                goal_duration_tolerance="-1.000000"
+              <SubTree
+                ID="Execute MTC Solution (JTC)"
                 solution="{mtc_solution}"
+                goal_duration_tolerance="-1.0"
               />
               <SubTree ID="Open Right Gripper" _collapsed="true" />
               <SubTree
-                ID="Move to Waypoint"
+                ID="Move to Waypoint (JTC)"
                 _collapsed="true"
                 acceleration_scale_factor="1.0"
                 controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
@@ -210,10 +216,10 @@
                 solution="{mtc_solution}"
                 task="{mtc_task}"
               />
-              <Action
-                ID="ExecuteMTCTask"
-                goal_duration_tolerance="-1.000000"
+              <SubTree
+                ID="Execute MTC Solution (JTC)"
                 solution="{mtc_solution}"
+                goal_duration_tolerance="-1.0"
               />
               <Action ID="WaitForDuration" delay_duration="1.0" />
               <SubTree ID="Close Left Gripper" _collapsed="true" />
@@ -267,14 +273,14 @@
                 solution="{mtc_solution}"
                 task="{mtc_task}"
               />
-              <Action
-                ID="ExecuteMTCTask"
-                goal_duration_tolerance="-1.000000"
+              <SubTree
+                ID="Execute MTC Solution (JTC)"
                 solution="{mtc_solution}"
+                goal_duration_tolerance="-1.0"
               />
               <SubTree ID="Open Left Gripper" _collapsed="true" />
               <SubTree
-                ID="Move to Waypoint"
+                ID="Move to Waypoint (JTC)"
                 _collapsed="true"
                 acceleration_scale_factor="1.0"
                 controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"

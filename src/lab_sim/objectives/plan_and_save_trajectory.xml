@@ -9,7 +9,7 @@
     <Control ID="Sequence" name="TopLevelSequence">
       <!--Before we plan we want to make sure we are at a known position, so when we execute the plan it can be done from the same position-->
       <SubTree
-        ID="Move to Waypoint"
+        ID="Move to Waypoint (JTC)"
         _collapsed="true"
         waypoint_name="Workspace Right"
         joint_group_name="manipulator"

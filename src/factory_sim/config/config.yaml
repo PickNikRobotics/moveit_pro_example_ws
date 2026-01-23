@@ -94,13 +94,14 @@ ros2_control:
   # for running the application.
   # [Optional, default=[]]
   controllers_active_at_startup:
-    - "joint_trajectory_controller"
+    - "joint_trajectory_admittance_controller"
     - "joint_state_broadcaster"
     - "tool_attach_controller"
     - "suction_cup_controller"
   # Load but do not start these controllers so they can be activated later if needed.
   # [Optional, default=[]]
   controllers_inactive_at_startup:
+    - "joint_trajectory_controller"
     - "velocity_force_controller"
     - "joint_velocity_controller"
   # Any controllers here will not be spawned by MoveIt Pro.

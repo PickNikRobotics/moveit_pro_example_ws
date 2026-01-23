@@ -18,6 +18,7 @@
         _collapsed="false"
         controller_names="joint_trajectory_controller"
         target_joint_state="{target_joint_state}"
+        execution_pipeline="jtc"
       />
     </Control>
   </BehaviorTree>
