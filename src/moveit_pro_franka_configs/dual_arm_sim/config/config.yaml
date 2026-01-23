@@ -58,7 +58,7 @@ moveit_params:
     package: "dual_arm_sim"
     path: "config/moveit/pose_jog.yaml"
   joint_jog:
-    package: "franka_dual_arm_sim"
+    package: "dual_arm_sim"
     path: "config/moveit/joint_jog.yaml"
 
   publish:
