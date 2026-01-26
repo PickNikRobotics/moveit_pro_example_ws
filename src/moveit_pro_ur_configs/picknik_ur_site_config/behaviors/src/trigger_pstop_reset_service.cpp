@@ -11,7 +11,7 @@ namespace trigger_pstop_reset_service
 {
 TriggerPStopResetService::TriggerPStopResetService(
     const std::string& name, const BT::NodeConfiguration& config,
-    const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources)
+    const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources)
   : ServiceClientBehaviorBase<PStopService>(name, config, shared_resources)
 {
 }
@@ -21,7 +21,7 @@ tl::expected<std::string, std::string> TriggerPStopResetService::getServiceName(
   // Get service name from the input port.
   const auto service_name = getInput<std::string>(kPortServiceName);
   // Check that the port has a value on it, if not, return an error.
-  if (const auto error = moveit_studio::behaviors::maybe_error(service_name))
+  if (const auto error = moveit_pro::behaviors::maybe_error(service_name))
   {
     return tl::make_unexpected("Failed to get required value from input data port: " + error.value());
   }

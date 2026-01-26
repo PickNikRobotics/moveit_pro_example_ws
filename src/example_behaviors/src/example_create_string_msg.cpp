@@ -7,8 +7,8 @@ namespace example_behaviors
 {
 ExampleCreateStringMsg::ExampleCreateStringMsg(
     const std::string& name, const BT::NodeConfiguration& config,
-    const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources)
-  : moveit_studio::behaviors::SharedResourcesNode<BT::SyncActionNode>(name, config, shared_resources)
+    const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources)
+  : moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>(name, config, shared_resources)
 {
 }
 
@@ -31,7 +31,7 @@ BT::NodeStatus ExampleCreateStringMsg::tick()
   const auto expected_string = getInput<std::string>("string");
 
   // The maybe_error function returns a std::optional with an error message if the port was set incorrectly
-  if (const auto error = moveit_studio::behaviors::maybe_error(expected_string); error)
+  if (const auto error = moveit_pro::behaviors::maybe_error(expected_string); error)
   {
     // If the port was set incorrectly, we will log an error message to the UI and the node will return FAILURE
     shared_resources_->logger->publishFailureMessage(name(), "Failed to get required values from input data ports." +

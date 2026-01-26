@@ -45,8 +45,8 @@ getFilteredPointCloudFromMessage(const sensor_msgs::msg::PointCloud2& cloud_msg)
 
 ExampleNDTRegistration::ExampleNDTRegistration(
     const std::string& name, const BT::NodeConfiguration& config,
-    const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources)
-  : moveit_studio::behaviors::AsyncBehaviorBase(name, config, shared_resources)
+    const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources)
+  : moveit_pro::behaviors::AsyncBehaviorBase(name, config, shared_resources)
 {
 }
 
@@ -86,7 +86,7 @@ tl::expected<bool, std::string> ExampleNDTRegistration::doWork()
   const auto step_size = getInput<double>("step_size");
   const auto resolution = getInput<double>("resolution");
 
-  if (const auto error = moveit_studio::behaviors::maybe_error(
+  if (const auto error = moveit_pro::behaviors::maybe_error(
           base_point_cloud_msg, target_point_cloud_msg, max_iterations, transformation_epsilon, step_size, resolution);
       error)
   {

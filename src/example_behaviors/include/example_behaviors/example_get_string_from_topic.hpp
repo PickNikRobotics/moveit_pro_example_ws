@@ -3,8 +3,8 @@
 #include <moveit_pro_behavior_interface/get_message_from_topic.hpp>
 #include <std_msgs/msg/string.hpp>
 
-using moveit_studio::behaviors::BehaviorContext;
-using moveit_studio::behaviors::GetMessageFromTopicBehaviorBase;
+using moveit_pro::behaviors::BehaviorContext;
+using moveit_pro::behaviors::GetMessageFromTopicBehaviorBase;
 
 namespace example_behaviors
 {

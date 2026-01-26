@@ -7,7 +7,7 @@ namespace example_behaviors
 {
 ExampleFibonacciActionClient::ExampleFibonacciActionClient(
     const std::string& name, const BT::NodeConfiguration& config,
-    const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources)
+    const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources)
   : ActionClientBehaviorBase<Fibonacci>(name, config, shared_resources)
 {
 }
@@ -36,7 +36,7 @@ BT::KeyValueVector ExampleFibonacciActionClient::metadata()
 tl::expected<std::string, std::string> ExampleFibonacciActionClient::getActionName()
 {
   const auto action_name = getInput<std::string>("action_name");
-  if (const auto error = moveit_studio::behaviors::maybe_error(action_name))
+  if (const auto error = moveit_pro::behaviors::maybe_error(action_name))
   {
     return tl::make_unexpected("Failed to get required value from input data port: " + error.value());
   }
@@ -47,7 +47,7 @@ tl::expected<Fibonacci::Goal, std::string> ExampleFibonacciActionClient::createG
 {
   const auto order = getInput<std::size_t>("order");
 
-  if (const auto error = moveit_studio::behaviors::maybe_error(order))
+  if (const auto error = moveit_pro::behaviors::maybe_error(order))
   {
     return tl::make_unexpected("Failed to get required value from input data port: " + error.value());
   }

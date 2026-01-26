@@ -22,8 +22,8 @@ namespace example_behaviors
 {
 ExampleSetupMTCWaveHand::ExampleSetupMTCWaveHand(
     const std::string& name, const BT::NodeConfiguration& config,
-    const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources)
-  : moveit_studio::behaviors::AsyncBehaviorBase(name, config, shared_resources)
+    const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources)
+  : moveit_pro::behaviors::AsyncBehaviorBase(name, config, shared_resources)
 {
 }
 
@@ -46,7 +46,7 @@ tl::expected<bool, std::string> ExampleSetupMTCWaveHand::doWork()
   const auto task = getInput<moveit::task_constructor::TaskPtr>(kPortIDTask);
 
   // Check that all required input data ports were set
-  if (const auto error = moveit_studio::behaviors::maybe_error(task); error)
+  if (const auto error = moveit_pro::behaviors::maybe_error(task); error)
   {
     RCLCPP_ERROR_STREAM(kLogger, "Failed to get required values from input data ports:\n" << error.value());
     // Task setup cannot succeed if we failed to retrieve the MTC task shared_ptr from the "task" port, so we return false.
