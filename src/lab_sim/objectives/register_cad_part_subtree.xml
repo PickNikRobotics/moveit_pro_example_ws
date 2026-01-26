@@ -34,7 +34,7 @@
         topic_name="/wrist_camera/points"
         message_out="{wrist_point_cloud}"
         publisher_timeout_sec="5.000000"
-        timeout_sec="5.000000"
+        message_timeout_sec="5.000000"
       />
       <Action
         ID="TransformPointCloudFrame"

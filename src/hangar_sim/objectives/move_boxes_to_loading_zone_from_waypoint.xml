@@ -43,7 +43,7 @@
         <Action
           ID="GetPointCloud"
           topic_name="/wrist_camera/points"
-          timeout_sec="5.000000"
+          message_timeout_sec="5.000000"
           message_out="{point_cloud}"
           publisher_timeout_sec="5.000000"
         />
@@ -79,14 +79,14 @@
       />
       <Action
         ID="GetImage"
-        timeout_sec="5.000000"
+        message_timeout_sec="5.000000"
         topic_name="/wrist_camera/color"
         message_out="{image}"
         publisher_timeout_sec="5.000000"
       />
       <Action
         ID="GetCameraInfo"
-        timeout_sec="5.000000"
+        message_timeout_sec="5.000000"
         topic_name="/wrist_camera/camera_info"
         message_out="{camera_info}"
         publisher_timeout_sec="5.000000"
