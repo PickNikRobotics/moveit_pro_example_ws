@@ -45,7 +45,7 @@
         ID="GetPointCloud"
         topic_name="/bin_camera_left/points"
         message_out="{bin_camera_left_cloud}"
-        timeout_sec="5.000000"
+        message_timeout_sec="5.000000"
         publisher_timeout_sec="5.000000"
         name="Capture left bin points"
       />

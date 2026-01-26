@@ -12,7 +12,7 @@
         ID="GetPointCloud"
         topic_name="/wrist_mounted_camera/depth/color/points"
         message_out="{point_cloud}"
-        timeout_sec="15.000000"
+        message_timeout_sec="15.000000"
       />
       <Action
         ID="UpdatePlanningSceneService"

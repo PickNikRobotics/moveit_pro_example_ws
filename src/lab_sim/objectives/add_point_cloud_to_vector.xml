@@ -9,7 +9,7 @@
       <Action
         ID="GetPointCloud"
         message_out="{point_cloud}"
-        timeout_sec="15.000000"
+        message_timeout_sec="15.000000"
         topic_name="{topic_name}"
       />
       <Action
