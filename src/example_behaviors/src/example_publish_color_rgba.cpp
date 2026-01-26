@@ -4,8 +4,8 @@ namespace example_behaviors
 {
 ExamplePublishColorRGBA::ExamplePublishColorRGBA(
     const std::string& name, const BT::NodeConfiguration& config,
-    const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources)
-  : moveit_studio::behaviors::SharedResourcesNode<BT::SyncActionNode>(name, config, shared_resources)
+    const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources)
+  : moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>(name, config, shared_resources)
   , publisher_{ shared_resources_->node->create_publisher<std_msgs::msg::ColorRGBA>("/my_topic", rclcpp::QoS(1)) }
 {
 }

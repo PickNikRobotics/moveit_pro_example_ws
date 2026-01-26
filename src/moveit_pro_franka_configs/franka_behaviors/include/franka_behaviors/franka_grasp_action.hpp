@@ -28,7 +28,7 @@ using Grasp = franka_msgs::action::Grasp;
  * | speed                       | Input     | double      |
  * | force                       | Input     | double      |
  */
-class GraspAction final : public moveit_studio::behaviors::ActionClientBehaviorBase<Grasp>
+class GraspAction final : public moveit_pro::behaviors::ActionClientBehaviorBase<Grasp>
 {
 public:
   /**
@@ -38,10 +38,10 @@ public:
    * @param config Node configuration. Only used here because the BehaviorTree.CPP expects constructor signature with
    * name and config first before custom constructor parameters.
    * @param shared_resources Provides access to common resources such as the node handle and failure logger that are
-   * shared between all the behaviors that inherit from moveit_studio::behaviors::SharedResourcesNode.
+   * shared between all the behaviors that inherit from moveit_pro::behaviors::SharedResourcesNode.
    */
   GraspAction(const std::string& name, const BT::NodeConfiguration& config,
-              const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources);
+              const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources);
 
   /**
    * @brief Custom tree nodes that have input and/or output ports must define them in this static function.

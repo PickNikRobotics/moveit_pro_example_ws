@@ -29,4 +29,4 @@ BT::KeyValueVector ExampleGetStringFromTopic::metadata()
 }  // namespace example_behaviors
 
 // Template specialization of GetMessageFromTopicBehaviorBase<T> for the String message type
-template class moveit_studio::behaviors::GetMessageFromTopicBehaviorBase<std_msgs::msg::String>;
+template class moveit_pro::behaviors::GetMessageFromTopicBehaviorBase<std_msgs::msg::String>;

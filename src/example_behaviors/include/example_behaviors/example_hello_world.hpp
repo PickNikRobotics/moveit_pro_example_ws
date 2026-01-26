@@ -10,7 +10,7 @@ namespace example_behaviors
 /**
  * @brief The ExampleHelloWorld Behavior uses FailureLoggerROS to log a "Hello World" message and will always return SUCCESS
  */
-class ExampleHelloWorld : public moveit_studio::behaviors::SharedResourcesNode<BT::SyncActionNode>
+class ExampleHelloWorld : public moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>
 {
 public:
   /**
@@ -26,7 +26,7 @@ public:
    * the initialize() function is called, so these classes should not be used within the constructor.
    */
   ExampleHelloWorld(const std::string& name, const BT::NodeConfiguration& config,
-                    const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources);
+                    const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources);
 
   /**
    * @brief Implementation of the required providedPorts() function for the hello_world Behavior.

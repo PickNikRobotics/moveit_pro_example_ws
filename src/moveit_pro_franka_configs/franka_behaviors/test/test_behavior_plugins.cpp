@@ -11,11 +11,11 @@
  */
 TEST(BehaviorTests, test_load_behavior_plugins)
 {
-  pluginlib::ClassLoader<moveit_studio::behaviors::SharedResourcesNodeLoaderBase> class_loader(
-      "moveit_pro_behavior_interface", "moveit_studio::behaviors::SharedResourcesNodeLoaderBase");
+  pluginlib::ClassLoader<moveit_pro::behaviors::SharedResourcesNodeLoaderBase> class_loader(
+      "moveit_pro_behavior_interface", "moveit_pro::behaviors::SharedResourcesNodeLoaderBase");
 
   auto node = std::make_shared<rclcpp::Node>("test_node");
-  auto shared_resources = std::make_shared<moveit_studio::behaviors::BehaviorContext>(node);
+  auto shared_resources = std::make_shared<moveit_pro::behaviors::BehaviorContext>(node);
 
   BT::BehaviorTreeFactory factory;
   {

@@ -19,8 +19,8 @@ constexpr auto kPortIDOuterEpsilon = "outer_epsilon";
 namespace franka_behaviors
 {
 GraspAction::GraspAction(const std::string& name, const BT::NodeConfiguration& config,
-                         const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources)
-  : moveit_studio::behaviors::ActionClientBehaviorBase<Grasp>(name, config, shared_resources)
+                         const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources)
+  : moveit_pro::behaviors::ActionClientBehaviorBase<Grasp>(name, config, shared_resources)
 {
 }
 
@@ -37,13 +37,13 @@ BT::PortsList GraspAction::providedPorts()
 
 BT::KeyValueVector GraspAction::metadata()
 {
-  return { { moveit_studio::behaviors::kSubcategoryMetadataKey, "Grasping" },
-           { moveit_studio::behaviors::kDescriptionMetadataKey, kDescriptionGraspAction } };
+  return { { moveit_pro::behaviors::kSubcategoryMetadataKey, "Grasping" },
+           { moveit_pro::behaviors::kDescriptionMetadataKey, kDescriptionGraspAction } };
 }
 
 tl::expected<std::string, std::string> GraspAction::getActionName()
 {
-  const auto ports = moveit_studio::behaviors::getRequiredInputs(getInput<std::string>(PortIDActionName));
+  const auto ports = moveit_pro::behaviors::getRequiredInputs(getInput<std::string>(PortIDActionName));
   if (!ports.has_value())
   {
     return tl::make_unexpected("Failed to retrieve required Grasp action namespace from input data port: " +
@@ -58,7 +58,7 @@ tl::expected<std::string, std::string> GraspAction::getActionName()
 
 tl::expected<std::chrono::duration<double>, std::string> GraspAction::getResultTimeout()
 {
-  const auto ports = moveit_studio::behaviors::getRequiredInputs(getInput<double>(kPortIDTimeout));
+  const auto ports = moveit_pro::behaviors::getRequiredInputs(getInput<double>(kPortIDTimeout));
 
   if (!ports.has_value())
   {
@@ -71,9 +71,9 @@ tl::expected<std::chrono::duration<double>, std::string> GraspAction::getResultT
 tl::expected<Grasp::Goal, std::string> GraspAction::createGoal()
 {
   const auto ports =
-      moveit_studio::behaviors::getRequiredInputs(getInput<double>(kPortIDWidth), getInput<double>(kPortIDSpeed),
-                                                  getInput<double>(kPortIDForce), getInput<double>(kPortIDInnerEpsilon),
-                                                  getInput<double>(kPortIDOuterEpsilon));
+      moveit_pro::behaviors::getRequiredInputs(getInput<double>(kPortIDWidth), getInput<double>(kPortIDSpeed),
+                                               getInput<double>(kPortIDForce), getInput<double>(kPortIDInnerEpsilon),
+                                               getInput<double>(kPortIDOuterEpsilon));
 
   if (!ports.has_value())
   {
@@ -93,4 +93,4 @@ tl::expected<Grasp::Goal, std::string> GraspAction::createGoal()
 }  // namespace franka_behaviors
 
 // This specializes ActionClientBehaviorBase for Grasp actions
-template class moveit_studio::behaviors::ActionClientBehaviorBase<franka_behaviors::Grasp>;
+template class moveit_pro::behaviors::ActionClientBehaviorBase<franka_behaviors::Grasp>;

@@ -45,8 +45,8 @@ getFilteredPointCloudFromMessage(const sensor_msgs::msg::PointCloud2& cloud_msg)
 
 ExampleRANSACRegistration::ExampleRANSACRegistration(
     const std::string& name, const BT::NodeConfiguration& config,
-    const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources)
-  : moveit_studio::behaviors::AsyncBehaviorBase(name, config, shared_resources)
+    const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources)
+  : moveit_pro::behaviors::AsyncBehaviorBase(name, config, shared_resources)
 {
 }
 
@@ -91,9 +91,9 @@ tl::expected<bool, std::string> ExampleRANSACRegistration::doWork()
   const auto k_search = getInput<int>("k_search");
   const auto feature_radius = getInput<double>("feature_radius");
 
-  if (const auto error = moveit_studio::behaviors::maybe_error(base_point_cloud_msg, target_point_cloud_msg,
-                                                               max_iterations, transformation_epsilon, inlier_threshold,
-                                                               uniform_sampling_radius, k_search, feature_radius);
+  if (const auto error = moveit_pro::behaviors::maybe_error(base_point_cloud_msg, target_point_cloud_msg,
+                                                            max_iterations, transformation_epsilon, inlier_threshold,
+                                                            uniform_sampling_radius, k_search, feature_radius);
       error)
   {
     RCLCPP_ERROR(rclcpp::get_logger("Logger"), "Failed to get required value from input data port: %s",
