@@ -13,8 +13,6 @@ controller_manager:
       type: joint_trajectory_admittance_controller/JointTrajectoryAdmittanceController
     velocity_force_controller:
       type: velocity_force_controller/VelocityForceController
-    joint_velocity_controller:
-      type: joint_velocity_controller/JointVelocityController
 
 
 joint_state_broadcaster:
@@ -216,33 +214,3 @@ velocity_force_controller:
     # command_joints: []
     # The type of command interface to use. Supported values are "position" and "velocity".
     command_interfaces: ["position"]
-
-joint_velocity_controller:
-  ros__parameters:
-    # Joint group to control.
-    planning_group_name: manipulator
-    # Maximum joint-space velocities.
-    max_joint_velocity:
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-      - 1.0
-    # Maximum joint-space accelerations.
-    max_joint_acceleration:
-      - 2.0
-      - 2.0
-      - 2.0
-      - 2.0
-      - 2.0
-      - 2.0
-      - 2.0
-    command_interfaces: ["position"]
-    # Padding (in radians) to add to joint position limits as a safety margin.
-    joint_limit_position_tolerance: 0.02
-    # Timeout in seconds after which the controller will stop motion if no new commands are received.
-    command_timeout: 0.2
-    # Rate in Hz at which the controller will publish the state.
-    state_publish_rate: 20
