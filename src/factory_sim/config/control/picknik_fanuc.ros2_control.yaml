@@ -105,7 +105,7 @@ joint_trajectory_admittance_controller:
     # provide the gravity vector in the base frame.
     gravity_vector: [0.0, 0.0, -9.8]
     # Default maximum joint-space deviation accepted along the trajectory, if not specified in the goal message.
-    default_path_tolerance: 0.1
+    default_path_tolerance: 0.5
     # Default maximum joint-space deviation accepted at the trajectory end-point, if not specified in the goal message.
     default_goal_tolerance: 0.05
     # Default maximum absolute force torque readings allowed from the force torque sensor along each Cartesian space
