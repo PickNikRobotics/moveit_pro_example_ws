@@ -11,11 +11,10 @@
     <Control ID="Sequence">
       <SubTree ID="Clear Snapshot" _collapsed="true" />
       <SubTree
-        ID="Move to Waypoint (JTC)"
+        ID="Move to Waypoint"
         _collapsed="true"
         waypoint_name="Home"
         joint_group_name="manipulator"
-        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
       />
       <SubTree ID="Create PCL Poses Vector" _collapsed="false" />
       <SubTree
@@ -66,6 +65,10 @@
           <Control ID="Fallback">
             <Decorator ID="Timeout" msec="5000">
               <Control ID="Sequence">
+                <Action
+                  ID="SwitchController"
+                  activate_controllers="joint_trajectory_controller"
+                />
                 <Action
                   ID="MPCSphereClearance"
                   differentiable="0"

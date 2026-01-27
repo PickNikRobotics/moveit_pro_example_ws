@@ -9,17 +9,10 @@
     <Control ID="Sequence" name="TopLevelSequence">
       <!--Before we plan we want to make sure we are at a known position, so when we execute the plan it can be done from the same position-->
       <SubTree
-        ID="Move to Waypoint (JTC)"
+        ID="Move to Waypoint"
         _collapsed="true"
         waypoint_name="Workspace Right"
         joint_group_name="manipulator"
-        controller_names="joint_trajectory_controller"
-        acceleration_scale_factor="1.0"
-        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-        keep_orientation="false"
-        keep_orientation_tolerance="0.05"
-        link_padding="0.01"
-        velocity_scale_factor="1.0"
       />
       <!--Create a vector of poses we want to move through-->
       <SubTree

@@ -9,19 +9,11 @@
     <Control ID="Sequence">
       <SubTree ID="Open Gripper" _collapsed="true" />
       <SubTree
-        ID="Move to Waypoint (JTC)"
+        ID="Move to Waypoint"
         _collapsed="true"
-        acceleration_scale_factor="1.0"
-        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-        controller_names="joint_trajectory_controller"
         joint_group_name="manipulator"
-        keep_orientation="false"
         keep_orientation_link_names="grasp_link"
-        keep_orientation_tolerance="0.05"
-        link_padding="0.01"
-        velocity_scale_factor="1.0"
         waypoint_name="Above Pick Cube"
-        seed="0"
       />
       <SubTree
         ID="Segment Point Cloud from Text Prompt Subtree"
@@ -71,7 +63,7 @@
         <Action
           ID="InitializeMTCTask"
           task_id="grasp"
-          controller_names="joint_trajectory_controller;robotiq_gripper_controller"
+          controller_names="joint_trajectory_admittance_controller;robotiq_gripper_controller"
           task="{mtc_task}"
           trajectory_monitoring="false"
           timeout="-1.000000"
@@ -80,13 +72,11 @@
         <Action
           ID="SetupMTCConnectWithProRRT"
           acceleration_scale_factor="1.000000"
-          keep_orientation="false"
           keep_orientation_link_names="grasp_link"
           keep_orientation_tolerance="0.100000"
           link_padding="0.000000"
           max_iterations="5000"
           planning_group_name="manipulator"
-          seed="0"
           task="{mtc_task}"
           trajectory_sampling_rate="100"
           velocity_scale_factor="1.000000"
@@ -107,27 +97,15 @@
           solution="{grasp_solution}"
           task="{mtc_task}"
         />
-        <SubTree
-          ID="Execute MTC Solution (JTC)"
-          solution="{grasp_solution}"
-          goal_duration_tolerance="-1.0"
-        />
+        <SubTree ID="Execute MTC Solution" solution="{grasp_solution}" />
       </Control>
       <SubTree ID="Close Gripper" _collapsed="true" />
       <SubTree
-        ID="Move to Waypoint (JTC)"
+        ID="Move to Waypoint"
         _collapsed="true"
-        acceleration_scale_factor="1.0"
-        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-        controller_names="joint_trajectory_controller"
         joint_group_name="manipulator"
-        keep_orientation="false"
         keep_orientation_link_names="grasp_link"
-        keep_orientation_tolerance="0.05"
-        link_padding="0.01"
-        velocity_scale_factor="1.0"
         waypoint_name="Above Pick Cube"
-        seed="0"
       />
     </Control>
   </BehaviorTree>

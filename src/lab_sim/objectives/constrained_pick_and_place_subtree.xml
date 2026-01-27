@@ -11,29 +11,19 @@
     <Control ID="Sequence">
       <!--Move to pick location-->
       <SubTree
-        ID="Move to Waypoint (JTC)"
+        ID="Move to Waypoint"
         waypoint_name="{pre_pick}"
         joint_group_name="manipulator"
-        controller_names="joint_trajectory_controller"
         keep_orientation="true"
         keep_orientation_tolerance="0.2"
-        acceleration_scale_factor="1.0"
-        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-        link_padding="0.01"
-        velocity_scale_factor="1.0"
         keep_orientation_link_names="grasp_link"
       />
       <SubTree
-        ID="Move to Waypoint (JTC)"
+        ID="Move to Waypoint"
         waypoint_name="{pick}"
         joint_group_name="manipulator"
-        controller_names="joint_trajectory_controller"
         keep_orientation="true"
         keep_orientation_tolerance="0.2"
-        acceleration_scale_factor="1.0"
-        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-        link_padding="0.01"
-        velocity_scale_factor="1.0"
         keep_orientation_link_names="grasp_link"
       />
       <!--We force success as the gripper closes, since we are commanding a position it will never reach (fingers fully closed)-->
@@ -42,60 +32,40 @@
       </Decorator>
       <!--Move to place (drop) location-->
       <SubTree
-        ID="Move to Waypoint (JTC)"
-        controller_names="joint_trajectory_controller"
+        ID="Move to Waypoint"
         joint_group_name="manipulator"
         keep_orientation="true"
         keep_orientation_tolerance="0.2"
         _collapsed="true"
         waypoint_name="{pre_pick}"
-        acceleration_scale_factor="1.0"
-        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-        link_padding="0.01"
-        velocity_scale_factor="1.0"
         keep_orientation_link_names="grasp_link"
       />
       <SubTree
-        ID="Move to Waypoint (JTC)"
-        controller_names="joint_trajectory_controller"
+        ID="Move to Waypoint"
         joint_group_name="manipulator"
         keep_orientation="true"
         keep_orientation_tolerance="0.2"
         _collapsed="true"
         waypoint_name="{pre_place}"
-        acceleration_scale_factor="1.0"
-        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-        link_padding="0.01"
-        velocity_scale_factor="1.0"
         keep_orientation_link_names="grasp_link"
       />
       <SubTree
-        ID="Move to Waypoint (JTC)"
-        controller_names="joint_trajectory_controller"
+        ID="Move to Waypoint"
         joint_group_name="manipulator"
         keep_orientation="true"
         keep_orientation_tolerance="0.2"
         _collapsed="true"
         waypoint_name="{place}"
-        acceleration_scale_factor="1.0"
-        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-        link_padding="0.01"
-        velocity_scale_factor="1.0"
         keep_orientation_link_names="grasp_link"
       />
       <SubTree ID="Open Gripper" />
       <SubTree
-        ID="Move to Waypoint (JTC)"
-        controller_names="joint_trajectory_controller"
+        ID="Move to Waypoint"
         joint_group_name="manipulator"
         keep_orientation="true"
         keep_orientation_tolerance="0.2"
         _collapsed="true"
         waypoint_name="{pre_place}"
-        acceleration_scale_factor="1.0"
-        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-        link_padding="0.01"
-        velocity_scale_factor="1.0"
         keep_orientation_link_names="grasp_link"
       />
     </Control>
