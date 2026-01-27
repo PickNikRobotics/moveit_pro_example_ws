@@ -10,7 +10,7 @@
       <SubTree ID="Clear Snapshot" _collapsed="true" />
       <Action ID="SwitchUIPrimaryView" primary_view_name="Visualization" />
       <SubTree
-        ID="Move to Waypoint"
+        ID="Move to Waypoint (JTC)"
         _collapsed="true"
         acceleration_scale_factor="1.0"
         controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
@@ -30,7 +30,7 @@
         topic_name="/wrist_camera/points"
       />
       <SubTree
-        ID="Move to Waypoint"
+        ID="Move to Waypoint (JTC)"
         _collapsed="true"
         acceleration_scale_factor="1.0"
         controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
@@ -50,7 +50,7 @@
         topic_name="/wrist_camera/points"
       />
       <SubTree
-        ID="Move to Waypoint"
+        ID="Move to Waypoint (JTC)"
         _collapsed="true"
         acceleration_scale_factor="1.0"
         controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"

@@ -8,7 +8,7 @@
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree
-        ID="Move to Waypoint"
+        ID="Move to Waypoint (JTC)"
         _collapsed="true"
         controller_names="joint_trajectory_controller"
         planner_interface="moveit_default"
@@ -67,9 +67,10 @@
         message="Running admittance mode for 10 seconds"
       />
       <Action
-        ID="ExecuteTrajectoryWithAdmittance"
+        ID="ExecuteTrajectory"
         goal_position_tolerance="10;10;10;10;10;10;10;"
         path_position_tolerance="10;10;10;10;10;10;10"
+        execution_pipeline="jtac"
         admittance_parameters_msg="{admittance_parameters_msg}"
         absolute_force_torque_threshold="45;45;45;10;10;10"
         joint_trajectory_msg="{joint_trajectory_msg}"

@@ -9,7 +9,7 @@
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree ID="Close Gripper" _collapsed="true" />
       <SubTree
-        ID="Move to Waypoint"
+        ID="Move to Waypoint (JTC)"
         _collapsed="true"
         waypoint_name="VFC Start"
         joint_group_name="manipulator"
@@ -72,7 +72,8 @@
         config_file_name="push_button_admittance_params.yaml"
       />
       <Action
-        ID="ExecuteTrajectoryWithAdmittance"
+        ID="ExecuteTrajectory"
+        execution_pipeline="jtac"
         absolute_force_torque_threshold="1000;1000;1000;1000;1000;1000"
         admittance_parameters_msg="{admittance_parameters_msg}"
         controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory"

@@ -48,10 +48,10 @@
         target_pose="{view_pose}"
         move_to_pose_solution="{move_to_pose_solution}"
       />
-      <Action
-        ID="ExecuteMTCTask"
+      <SubTree
+        ID="Execute MTC Solution (JTC)"
         solution="{move_to_pose_solution}"
-        goal_duration_tolerance="-1.000000"
+        goal_duration_tolerance="-1.0"
       />
       <Action
         ID="GetImage"

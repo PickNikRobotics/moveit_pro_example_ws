@@ -11,7 +11,7 @@
     <Control ID="Sequence">
       <Control ID="Sequence" name="Move to jig pick approach pose and pick">
         <SubTree
-          ID="Move to Waypoint"
+          ID="Move to Waypoint (JTC)"
           _collapsed="true"
           acceleration_scale_factor="1.0"
           controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
@@ -64,10 +64,10 @@
           task="{mtc_task}"
         />
         <Action ID="PlanMTCTask" task="{mtc_task}" solution="{mtc_solution}" />
-        <Action
-          ID="ExecuteMTCTask"
-          goal_duration_tolerance="-1.000000"
+        <SubTree
+          ID="Execute MTC Solution (JTC)"
           solution="{mtc_solution}"
+          goal_duration_tolerance="-1.0"
         />
         <Action
           ID="AddURDF"
@@ -115,10 +115,10 @@
           task="{mtc_task}"
         />
         <Action ID="PlanMTCTask" task="{mtc_task}" solution="{mtc_solution}" />
-        <Action
-          ID="ExecuteMTCTask"
-          goal_duration_tolerance="-1.000000"
+        <SubTree
+          ID="Execute MTC Solution (JTC)"
           solution="{mtc_solution}"
+          goal_duration_tolerance="-1.0"
         />
       </Control>
     </Control>

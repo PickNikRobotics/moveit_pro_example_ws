@@ -95,10 +95,11 @@ ros2_control:
   # [Optional, default=[]]
   controllers_active_at_startup:
     - "joint_state_broadcaster"
-    - "joint_trajectory_controller"
+    - "joint_trajectory_admittance_controller"
   # Load but do not start these controllers so they can be activated later if needed.
   # [Optional, default=[]]
   controllers_inactive_at_startup:
+    - "joint_trajectory_controller"
     - "velocity_force_controller"
     - "joint_velocity_controller"
 

@@ -31,10 +31,11 @@
         link_padding="0.01"
         target_joint_state="{joint_state}"
         velocity_scale_factor="1.0"
+        execution_pipeline="jtc"
       />
       <Action
         ID="ExecuteTrajectory"
-        execution_pipeline="follow_joint_trajectory_action"
+        execution_pipeline="jtc"
         controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
       />
     </Control>

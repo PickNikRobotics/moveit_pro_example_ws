@@ -42,9 +42,10 @@
         solution="{return_to_initial_waypoint_solution}"
         task="{retreat_task}"
       />
-      <Action
-        ID="ExecuteMTCTask"
+      <SubTree
+        ID="Execute MTC Solution (JTC)"
         solution="{return_to_initial_waypoint_solution}"
+        goal_duration_tolerance="-1.0"
       />
     </Control>
   </BehaviorTree>

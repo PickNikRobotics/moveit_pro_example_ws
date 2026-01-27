@@ -4,7 +4,7 @@
   <BehaviorTree ID="Multi-tip Pose IK Example" _description="" _favorite="true">
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree
-        ID="Move to Waypoint"
+        ID="Move to Waypoint (JTC)"
         _collapsed="true"
         acceleration_scale_factor="1.0"
         controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
@@ -101,6 +101,7 @@
         target_joint_state="{solution}"
         velocity_scale_factor="1.0"
         seed="0"
+        execution_pipeline="jtc"
       />
     </Control>
   </BehaviorTree>

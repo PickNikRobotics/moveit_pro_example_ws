@@ -11,7 +11,7 @@
     <Control ID="Sequence">
       <!--Move to pick location-->
       <SubTree
-        ID="Move to Waypoint"
+        ID="Move to Waypoint (JTC)"
         waypoint_name="{pre_pick}"
         joint_group_name="manipulator"
         controller_names="joint_trajectory_controller"
@@ -24,7 +24,7 @@
         keep_orientation_link_names="grasp_link"
       />
       <SubTree
-        ID="Move to Waypoint"
+        ID="Move to Waypoint (JTC)"
         waypoint_name="{pick}"
         joint_group_name="manipulator"
         controller_names="joint_trajectory_controller"
@@ -42,7 +42,7 @@
       </Decorator>
       <!--Move to place (drop) location-->
       <SubTree
-        ID="Move to Waypoint"
+        ID="Move to Waypoint (JTC)"
         controller_names="joint_trajectory_controller"
         joint_group_name="manipulator"
         keep_orientation="true"
@@ -56,7 +56,7 @@
         keep_orientation_link_names="grasp_link"
       />
       <SubTree
-        ID="Move to Waypoint"
+        ID="Move to Waypoint (JTC)"
         controller_names="joint_trajectory_controller"
         joint_group_name="manipulator"
         keep_orientation="true"
@@ -70,7 +70,7 @@
         keep_orientation_link_names="grasp_link"
       />
       <SubTree
-        ID="Move to Waypoint"
+        ID="Move to Waypoint (JTC)"
         controller_names="joint_trajectory_controller"
         joint_group_name="manipulator"
         keep_orientation="true"
@@ -85,7 +85,7 @@
       />
       <SubTree ID="Open Gripper" />
       <SubTree
-        ID="Move to Waypoint"
+        ID="Move to Waypoint (JTC)"
         controller_names="joint_trajectory_controller"
         joint_group_name="manipulator"
         keep_orientation="true"

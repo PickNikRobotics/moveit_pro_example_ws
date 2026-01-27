@@ -9,7 +9,7 @@
     <Control ID="Sequence">
       <!--Setup the environment to its "home" configuration - move to center and open gripper-->
       <SubTree
-        ID="Move to Waypoint"
+        ID="Move to Waypoint (JTC)"
         waypoint_name="Look at Table"
         joint_group_name="manipulator"
         controller_names="joint_trajectory_controller"
@@ -33,7 +33,7 @@
           <!--Pick object from original location, put it down at a different part of the table, and go back to center pose-->
           <Control ID="Sequence">
             <SubTree
-              ID="Move to Waypoint"
+              ID="Move to Waypoint (JTC)"
               waypoint_name="Pick Cube"
               joint_group_name="manipulator"
               controller_names="joint_trajectory_controller"
@@ -52,7 +52,7 @@
               timeout="10.000000"
             />
             <SubTree
-              ID="Move to Waypoint"
+              ID="Move to Waypoint (JTC)"
               waypoint_name="Look at Table"
               joint_group_name="manipulator"
               controller_names="joint_trajectory_controller"
@@ -65,7 +65,7 @@
               velocity_scale_factor="1.0"
             />
             <SubTree
-              ID="Move to Waypoint"
+              ID="Move to Waypoint (JTC)"
               joint_group_name="manipulator"
               controller_names="joint_trajectory_controller"
               waypoint_name="Place Cube"
@@ -84,7 +84,7 @@
               timeout="10.000000"
             />
             <SubTree
-              ID="Move to Waypoint"
+              ID="Move to Waypoint (JTC)"
               waypoint_name="Look at Table"
               joint_group_name="manipulator"
               controller_names="joint_trajectory_controller"
@@ -100,7 +100,7 @@
           <!--Pick object from where it was placed, put it down on the original location, and go back to center pose-->
           <Control ID="Sequence">
             <SubTree
-              ID="Move to Waypoint"
+              ID="Move to Waypoint (JTC)"
               waypoint_name="Place Cube"
               joint_group_name="manipulator"
               controller_names="joint_trajectory_controller"
@@ -119,7 +119,7 @@
               timeout="10.000000"
             />
             <SubTree
-              ID="Move to Waypoint"
+              ID="Move to Waypoint (JTC)"
               waypoint_name="Look at Table"
               joint_group_name="manipulator"
               controller_names="joint_trajectory_controller"
@@ -132,7 +132,7 @@
               velocity_scale_factor="1.0"
             />
             <SubTree
-              ID="Move to Waypoint"
+              ID="Move to Waypoint (JTC)"
               waypoint_name="Pick Cube"
               joint_group_name="manipulator"
               controller_names="joint_trajectory_controller"
@@ -151,7 +151,7 @@
               timeout="10.000000"
             />
             <SubTree
-              ID="Move to Waypoint"
+              ID="Move to Waypoint (JTC)"
               waypoint_name="Look at Table"
               joint_group_name="manipulator"
               controller_names="joint_trajectory_controller"

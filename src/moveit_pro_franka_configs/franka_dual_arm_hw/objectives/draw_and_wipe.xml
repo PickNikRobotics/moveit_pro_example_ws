@@ -20,7 +20,7 @@
         name="Write a text"
       />
       <SubTree
-        ID="Move to Waypoint"
+        ID="Move to Waypoint (JTC)"
         _collapsed="true"
         acceleration_scale_factor="1.0"
         controller_action_server="/right_joint_trajectory_controller/follow_joint_trajectory"
@@ -46,7 +46,7 @@
         name="Wipe out the text"
       />
       <SubTree
-        ID="Move to Waypoint"
+        ID="Move to Waypoint (JTC)"
         _collapsed="true"
         acceleration_scale_factor="1.0"
         controller_action_server="/left_joint_trajectory_controller/follow_joint_trajectory"

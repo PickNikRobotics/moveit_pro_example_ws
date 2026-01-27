@@ -2,39 +2,39 @@
 
 # For beginners, we downscale velocity and acceleration limits.
 # You can always specify higher scaling factors (<= 1.0) in your motion requests.  # Increase the values below to 1.0 to always move at maximum speed.
-default_velocity_scaling_factor: 0.1
-default_acceleration_scaling_factor: 0.1
+default_velocity_scaling_factor: 1.0
+default_acceleration_scaling_factor: 1.0
 
 # Specific joint properties can be changed with the keys [max_position, min_position, max_velocity, max_acceleration]
 # Joint limits can be turned off with [has_velocity_limits, has_acceleration_limits]
 joint_limits:
   joint_1:
     has_velocity_limits: true
-    max_velocity: 7.8539816339744828
+    max_velocity: 2.0
     has_acceleration_limits: true
-    max_acceleration: 10.0
+    max_acceleration: 5.0
   joint_2:
     has_velocity_limits: true
-    max_velocity: 6.6322511575784526
+    max_velocity: 2.0
     has_acceleration_limits: true
-    max_acceleration: 10.0
+    max_acceleration: 5.0
   joint_3:
     has_velocity_limits: true
-    max_velocity: 9.0757121103705138
+    max_velocity: 2.0
     has_acceleration_limits: true
-    max_acceleration: 10.0
+    max_acceleration: 5.0
   joint_4:
     has_velocity_limits: true
-    max_velocity: 9.5993108859688121
+    max_velocity: 2.0
     has_acceleration_limits: true
-    max_acceleration: 10.0
+    max_acceleration: 5.0
   joint_5:
     has_velocity_limits: true
-    max_velocity: 9.5120444233690957
+    max_velocity: 2.0
     has_acceleration_limits: true
-    max_acceleration: 10.0
+    max_acceleration: 5.0
   joint_6:
     has_velocity_limits: true
-    max_velocity: 17.453292519943297
+    max_velocity: 2.0
     has_acceleration_limits: true
-    max_acceleration: 10.0
+    max_acceleration: 5.0

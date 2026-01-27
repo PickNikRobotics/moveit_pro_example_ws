@@ -70,10 +70,10 @@
         name="This move is done to push the vacuum gripper into the part a little to get it to collide. This causes the mujoco weld to activate. An improvement would be to detect the force on the gripper and stop"
       />
       <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
-      <Action
-        ID="ExecuteMTCTask"
-        goal_duration_tolerance="-1.000000"
+      <SubTree
+        ID="Execute MTC Solution (JTC)"
         solution="{mtc_solution}"
+        goal_duration_tolerance="-1.0"
       />
       <Action
         ID="AddURDF"

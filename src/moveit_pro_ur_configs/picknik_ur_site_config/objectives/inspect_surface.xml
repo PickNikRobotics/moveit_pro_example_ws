@@ -60,7 +60,11 @@
         ID="Wait for Trajectory Approval if User Available"
         solution="{move_to_pose_solution}"
       />
-      <Action ID="ExecuteMTCTask" solution="{move_to_pose_solution}" />
+      <SubTree
+        ID="Execute MTC Solution (JTC)"
+        solution="{move_to_pose_solution}"
+        goal_duration_tolerance="-1.0"
+      />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
