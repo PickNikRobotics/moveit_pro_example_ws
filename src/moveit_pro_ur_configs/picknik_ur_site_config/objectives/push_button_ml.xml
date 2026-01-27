@@ -8,7 +8,7 @@
     <Control ID="Sequence">
       <SubTree ID="Re-Zero Force-Torque Sensors" _collapsed="true" />
       <SubTree
-        ID="Move to Waypoint"
+        ID="Move to Waypoint (JTC)"
         waypoint_name="Hinge View"
         joint_group_name="manipulator"
         controller_names="joint_trajectory_controller"
@@ -152,14 +152,22 @@
           ID="WaitForUserTrajectoryApproval"
           solution="{full_push_along_axis_solution}"
         />
-        <Action ID="ExecuteMTCTask" solution="{move_to_approach_solution}" />
+        <SubTree
+          ID="Execute MTC Solution (JTC)"
+          solution="{move_to_approach_solution}"
+          goal_duration_tolerance="-1.0"
+        />
         <Action
           ID="SaveCurrentState"
           saved_robot_state="{pre_approach_robot_state}"
         />
         <Control ID="Parallel" success_count="1" failure_count="1">
           <SubTree ID="Force Exceeds Threshold" />
-          <Action ID="ExecuteMTCTask" solution="{push_solution}" />
+          <SubTree
+            ID="Execute MTC Solution (JTC)"
+            solution="{push_solution}"
+            goal_duration_tolerance="-1.0"
+          />
         </Control>
       </Control>
       <SubTree

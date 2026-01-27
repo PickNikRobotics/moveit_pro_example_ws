@@ -6,7 +6,7 @@
 
   <!-- Load Franka robot -->
   <xacro:include filename="$(find franka_description)/robots/common/franka_robot.xacro"/>
-  <xacro:franka_robot arm_id="fr3"
+  <xacro:franka_robot robot_type="fr3"
                       joint_limits="${xacro.load_yaml('$(find franka_description)/robots/fr3/joint_limits.yaml')}"
                       inertials="${xacro.load_yaml('$(find franka_description)/robots/fr3/inertials.yaml')}"
                       kinematics="${xacro.load_yaml('$(find franka_description)/robots/fr3/kinematics.yaml')}"

@@ -39,10 +39,12 @@
           ID="Wait for Trajectory Approval if User Available"
           solution="{move_to_pose_solution}"
         />
-        <Action
-          ID="ExecuteMTCTask"
+        <SubTree
+          ID="Execute MTC Solution (JTC)"
+          controller_names="{controller_names}"
           solution="{move_to_pose_solution}"
-          goal_duration_tolerance="-1.000000"
+          controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
+          goal_duration_tolerance="-1.0"
         />
         <Action
           ID="PublishEmpty"

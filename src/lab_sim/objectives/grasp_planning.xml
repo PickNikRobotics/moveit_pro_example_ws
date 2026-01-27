@@ -100,10 +100,10 @@
           solution="{pick_object_solution}"
           cartesian_path_links="grasp_link"
         />
-        <Action
-          ID="ExecuteMTCTask"
+        <SubTree
+          ID="Execute MTC Solution (JTC)"
           solution="{pick_object_solution}"
-          goal_duration_tolerance="-1.000000"
+          goal_duration_tolerance="-1.0"
         />
       </Control>
     </Control>

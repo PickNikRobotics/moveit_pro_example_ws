@@ -9,7 +9,7 @@
     <Control ID="Sequence" name="TopLevelSequence">
       <Action ID="ClearSnapshot" />
       <SubTree
-        ID="Move to Waypoint"
+        ID="Move to Waypoint (JTC)"
         _collapsed="true"
         joint_group_name="manipulator"
         controller_names="joint_trajectory_controller"
@@ -24,7 +24,7 @@
       />
       <SubTree ID="Take Scene Camera Snapshot" _collapsed="true" />
       <SubTree
-        ID="Move to Waypoint"
+        ID="Move to Waypoint (JTC)"
         _collapsed="true"
         joint_group_name="manipulator"
         controller_names="joint_trajectory_controller"

@@ -9,7 +9,7 @@
     <Control ID="Sequence" name="TopLevelSequence">
       <Action ID="ClearSnapshot" />
       <SubTree
-        ID="Move to Waypoint"
+        ID="Move to Waypoint (JTC)"
         _collapsed="true"
         acceleration_scale_factor="1.0"
         controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
@@ -82,7 +82,7 @@
         point_cloud="{point_cloud}"
       />
       <SubTree
-        ID="Move to Waypoint"
+        ID="Move to Waypoint (JTC)"
         _collapsed="true"
         acceleration_scale_factor="1.0"
         controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"

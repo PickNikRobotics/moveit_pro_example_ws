@@ -11,7 +11,7 @@
       <Action ID="ClearSnapshot" />
       <SubTree ID="Open Gripper" _collapsed="true" />
       <SubTree
-        ID="Move to Waypoint"
+        ID="Move to Waypoint (JTC)"
         waypoint_name="View Satellite"
         joint_group_name="manipulator"
         controller_names="joint_trajectory_controller"
@@ -213,10 +213,10 @@
         velocity_scale_factor="1.000000"
       />
       <Action ID="PlanMTCTask" task="{mtc_task}" solution="{mtc_solution}" />
-      <Action
-        ID="ExecuteMTCTask"
+      <SubTree
+        ID="Execute MTC Solution (JTC)"
         solution="{mtc_solution}"
-        goal_duration_tolerance="-1.000000"
+        goal_duration_tolerance="-1.0"
       />
       <Action
         ID="TransformPose"
@@ -257,10 +257,10 @@
       />
       <Action ID="PlanMTCTask" task="{mtc_task}" solution="{mtc_solution}" />
       <SubTree ID="Re-Zero Force-Torque Sensors" _collapsed="true" />
-      <Action
-        ID="ExecuteMTCTask"
+      <SubTree
+        ID="Execute MTC Solution (JTC)"
         solution="{mtc_solution}"
-        goal_duration_tolerance="-1.000000"
+        goal_duration_tolerance="-1.0"
       />
       <Action
         ID="SwitchController"

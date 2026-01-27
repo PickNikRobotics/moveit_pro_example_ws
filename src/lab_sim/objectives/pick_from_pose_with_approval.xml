@@ -69,10 +69,10 @@
         solution="{mtc_solution}"
         cartesian_path_links="grasp_link"
       />
-      <Action
-        ID="ExecuteMTCTask"
-        goal_duration_tolerance="-1.000000"
+      <SubTree
+        ID="Execute MTC Solution (JTC)"
         solution="{mtc_solution}"
+        goal_duration_tolerance="-1.0"
       />
       <SubTree ID="Close Gripper" _collapsed="true" />
       <Action
@@ -104,7 +104,7 @@
       />
       <Action
         ID="ExecuteTrajectory"
-        execution_pipeline="follow_joint_trajectory_action"
+        execution_pipeline="jtc"
         controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
       />
     </Control>

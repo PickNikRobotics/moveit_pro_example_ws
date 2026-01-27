@@ -21,7 +21,7 @@
         view_name="/scene_camera/color"
       />
       <SubTree
-        ID="Move to Waypoint"
+        ID="Move to Waypoint (JTC)"
         _collapsed="true"
         acceleration_scale_factor="1.0"
         controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
@@ -102,12 +102,9 @@
         pose="{output_pose}"
       />
       <SubTree
-        ID="Move to Pose"
+        ID="Move to Pose (JTC)"
         _collapsed="true"
         controller_names="joint_trajectory_controller;franka_gripper_controller"
-        ik_frame="grasp_link"
-        link_padding="0.01"
-        planning_group_name="manipulator"
         require_user_approval="true"
         target_pose="{output_pose}"
       />
