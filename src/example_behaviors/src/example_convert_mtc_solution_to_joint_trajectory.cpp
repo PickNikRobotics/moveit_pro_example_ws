@@ -17,8 +17,8 @@ namespace example_behaviors
 {
 ExampleConvertMtcSolutionToJointTrajectory::ExampleConvertMtcSolutionToJointTrajectory(
     const std::string& name, const BT::NodeConfiguration& config,
-    const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources)
-  : moveit_studio::behaviors::SharedResourcesNode<BT::SyncActionNode>(name, config, shared_resources)
+    const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources)
+  : moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>(name, config, shared_resources)
 {
 }
 
@@ -46,7 +46,7 @@ BT::KeyValueVector ExampleConvertMtcSolutionToJointTrajectory::metadata()
 
 BT::NodeStatus ExampleConvertMtcSolutionToJointTrajectory::tick()
 {
-  using namespace moveit_studio::behaviors;
+  using namespace moveit_pro::behaviors;
 
   // Load data from the behavior input ports.
   const auto solution = getInput<moveit_task_constructor_msgs::msg::Solution>(kPortIDSolution);

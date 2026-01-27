@@ -2,6 +2,6 @@
 <library path="example_behaviors">
   <class
     type="example_behaviors::ExampleBehaviorsLoader"
-    base_class_type="moveit_studio::behaviors::SharedResourcesNodeLoaderBase"
+    base_class_type="moveit_pro::behaviors::SharedResourcesNodeLoaderBase"
   />
 </library>

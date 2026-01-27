@@ -8,15 +8,15 @@
 
 namespace franka_behaviors
 {
-class FrankaBehaviorsLoader : public moveit_studio::behaviors::SharedResourcesNodeLoaderBase
+class FrankaBehaviorsLoader : public moveit_pro::behaviors::SharedResourcesNodeLoaderBase
 {
 public:
   void registerBehaviors(BT::BehaviorTreeFactory& factory,
-                         const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources) override
+                         const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources) override
   {
-    moveit_studio::behaviors::registerBehavior<GraspAction>(factory, "FrankaGraspAction", shared_resources);
+    moveit_pro::behaviors::registerBehavior<GraspAction>(factory, "FrankaGraspAction", shared_resources);
   }
 };
 }  // namespace franka_behaviors
 
-PLUGINLIB_EXPORT_CLASS(franka_behaviors::FrankaBehaviorsLoader, moveit_studio::behaviors::SharedResourcesNodeLoaderBase);
+PLUGINLIB_EXPORT_CLASS(franka_behaviors::FrankaBehaviorsLoader, moveit_pro::behaviors::SharedResourcesNodeLoaderBase);

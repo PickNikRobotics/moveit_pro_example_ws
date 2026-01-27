@@ -30,12 +30,12 @@ namespace example_behaviors
  * | joint_trajectory  | Output        | trajectory_msgs::msg::JointTrajectory                   |
  */
 class ExampleConvertMtcSolutionToJointTrajectory final
-  : public moveit_studio::behaviors::SharedResourcesNode<BT::SyncActionNode>
+  : public moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>
 {
 public:
   ExampleConvertMtcSolutionToJointTrajectory(
       const std::string& name, const BT::NodeConfiguration& config,
-      const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources);
+      const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources);
 
   static BT::PortsList providedPorts();
 

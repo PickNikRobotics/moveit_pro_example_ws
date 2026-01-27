@@ -6,7 +6,7 @@ namespace example_behaviors
 {
 ExampleAddTwoIntsServiceClient::ExampleAddTwoIntsServiceClient(
     const std::string& name, const BT::NodeConfiguration& config,
-    const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources)
+    const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources)
   : ServiceClientBehaviorBase<example_interfaces::srv::AddTwoInts>(name, config, shared_resources)
 {
 }
@@ -31,7 +31,7 @@ BT::KeyValueVector ExampleAddTwoIntsServiceClient::metadata()
 tl::expected<std::string, std::string> ExampleAddTwoIntsServiceClient::getServiceName()
 {
   const auto service_name = getInput<std::string>("service_name");
-  if (const auto error = moveit_studio::behaviors::maybe_error(service_name))
+  if (const auto error = moveit_pro::behaviors::maybe_error(service_name))
   {
     return tl::make_unexpected("Failed to get required value from input data port: " + error.value());
   }
@@ -42,7 +42,7 @@ tl::expected<AddTwoInts::Request, std::string> ExampleAddTwoIntsServiceClient::c
 {
   const auto a = getInput<int>("addend1");
   const auto b = getInput<int>("addend2");
-  if (const auto error = moveit_studio::behaviors::maybe_error(a, b))
+  if (const auto error = moveit_pro::behaviors::maybe_error(a, b))
   {
     return tl::make_unexpected("Failed to get required value from input data port: " + error.value());
   }

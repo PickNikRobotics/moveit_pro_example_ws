@@ -3,8 +3,8 @@
 #include <example_interfaces/srv/add_two_ints.hpp>
 #include <moveit_pro_behavior_interface/service_client_behavior_base.hpp>
 
-using moveit_studio::behaviors::BehaviorContext;
-using moveit_studio::behaviors::ServiceClientBehaviorBase;
+using moveit_pro::behaviors::BehaviorContext;
+using moveit_pro::behaviors::ServiceClientBehaviorBase;
 using AddTwoInts = example_interfaces::srv::AddTwoInts;
 
 namespace example_behaviors

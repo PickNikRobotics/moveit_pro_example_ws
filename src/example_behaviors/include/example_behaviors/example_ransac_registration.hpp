@@ -11,7 +11,7 @@ namespace example_behaviors
 /**
  * @brief TODO(...)
  */
-class ExampleRANSACRegistration : public moveit_studio::behaviors::AsyncBehaviorBase
+class ExampleRANSACRegistration : public moveit_pro::behaviors::AsyncBehaviorBase
 {
 public:
   /**
@@ -27,7 +27,7 @@ public:
    * the initialize() function is called, so these classes should not be used within the constructor.
    */
   ExampleRANSACRegistration(const std::string& name, const BT::NodeConfiguration& config,
-                            const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources);
+                            const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources);
 
   /**
    * @brief Implementation of the required providedPorts() function for the Behavior.
