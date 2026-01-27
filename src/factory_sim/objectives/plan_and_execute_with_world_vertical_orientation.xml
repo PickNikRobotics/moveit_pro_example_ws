@@ -88,26 +88,17 @@
             >
               <Control ID="Sequence">
                 <SubTree
-                  ID="Execute MTC Solution (JTC)"
+                  ID="Execute MTC Solution"
                   controller_names="{controller_names}"
                   solution="{mtc_solution}"
-                  controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
-                  goal_duration_tolerance="-1.0"
                 />
                 <SubTree
                   ID="Move to Joint State"
                   _collapsed="false"
                   target_joint_state="{starting_joint_state}"
-                  acceleration_scale_factor="1.0"
                   controller_action_server="{controller_action_server}"
                   controller_names="{controller_names}"
                   joint_group_name="{joint_group_name}"
-                  keep_orientation="false"
-                  keep_orientation_tolerance="0.05"
-                  link_padding="0.01"
-                  velocity_scale_factor="1.0"
-                  seed="0"
-                  execution_pipeline="jtc"
                 />
               </Control>
             </Decorator>

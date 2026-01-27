@@ -8,11 +8,11 @@
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree
-        ID="Move to Waypoint (JTC)"
+        ID="Move to Waypoint"
         _collapsed="true"
         acceleration_scale_factor="1.0"
-        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-        controller_names="joint_trajectory_controller"
+        controller_action_server="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+        controller_names="joint_trajectory_admittance_controller"
         joint_group_name="manipulator"
         keep_orientation="false"
         keep_orientation_tolerance="0.05"
@@ -76,7 +76,7 @@
       <Action
         ID="GetContourFromPointCloudSlice"
         contour_path="{contour_path}"
-        desired_pose_spacing="0.020000"
+        max_pose_spacing="0.020000"
         hull_alpha="-1.000000"
         input_cloud="{point_cloud}"
         slice_distance_from_plane="0.100000"
@@ -115,7 +115,7 @@
           ID="InitializeMTCTask"
           task="{mtc_task}"
           trajectory_monitoring="false"
-          controller_names="joint_trajectory_controller"
+          controller_names="joint_trajectory_admittance_controller"
           task_id="planning_task"
           timeout="-1.000000"
         />
@@ -162,7 +162,7 @@
         />
         <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
         <SubTree
-          ID="Execute MTC Solution (JTC)"
+          ID="Execute MTC Solution"
           solution="{mtc_solution}"
           goal_duration_tolerance="-1.0"
         />
