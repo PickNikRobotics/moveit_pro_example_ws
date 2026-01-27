@@ -15,7 +15,7 @@ namespace example_behaviors
  * @brief ExampleDelayedMessage will use FailureLoggerROS to log a "Hello World" message after the duration specified on
  * the input port
  */
-class ExampleDelayedMessage : public moveit_studio::behaviors::SharedResourcesNode<BT::StatefulActionNode>
+class ExampleDelayedMessage : public moveit_pro::behaviors::SharedResourcesNode<BT::StatefulActionNode>
 {
 private:
   std::chrono::time_point<std::chrono::steady_clock> start_time_;
@@ -35,7 +35,7 @@ public:
    * the initialize() function is called, so these classes should not be used within the constructor.
    */
   ExampleDelayedMessage(const std::string& name, const BT::NodeConfiguration& config,
-                        const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources);
+                        const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources);
 
   /**
    * @brief Implementation of the required providedPorts() function for the delayed_message Behavior.

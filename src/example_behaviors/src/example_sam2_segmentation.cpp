@@ -62,8 +62,8 @@ void set_ros_mask_from_onnx_mask(const moveit_pro_ml::ONNXImage& onnx_image, sen
 
 ExampleSAM2Segmentation::ExampleSAM2Segmentation(
     const std::string& name, const BT::NodeConfiguration& config,
-    const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources)
-  : moveit_studio::behaviors::AsyncBehaviorBase(name, config, shared_resources)
+    const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources)
+  : moveit_pro::behaviors::AsyncBehaviorBase(name, config, shared_resources)
 {
   const std::filesystem::path package_path = ament_index_cpp::get_package_share_directory("example_behaviors");
   const std::filesystem::path encoder_onnx_file = package_path / "models" / "sam2_hiera_large_encoder.onnx";
@@ -87,8 +87,8 @@ BT::PortsList ExampleSAM2Segmentation::providedPorts()
 tl::expected<bool, std::string> ExampleSAM2Segmentation::doWork()
 {
   const auto ports =
-      moveit_studio::behaviors::getRequiredInputs(getInput<sensor_msgs::msg::Image>(kPortImage),
-                                                  getInput<std::vector<geometry_msgs::msg::PointStamped>>(kPortPoint));
+      moveit_pro::behaviors::getRequiredInputs(getInput<sensor_msgs::msg::Image>(kPortImage),
+                                               getInput<std::vector<geometry_msgs::msg::PointStamped>>(kPortPoint));
 
   // Check that all required input data ports were set.
   if (!ports.has_value())

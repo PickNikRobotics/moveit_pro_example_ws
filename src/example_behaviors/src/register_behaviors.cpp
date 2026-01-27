@@ -21,40 +21,36 @@
 
 namespace example_behaviors
 {
-class ExampleBehaviorsLoader : public moveit_studio::behaviors::SharedResourcesNodeLoaderBase
+class ExampleBehaviorsLoader : public moveit_pro::behaviors::SharedResourcesNodeLoaderBase
 {
 public:
   void registerBehaviors(BT::BehaviorTreeFactory& factory,
-                         const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources) override
+                         const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources) override
   {
-    moveit_studio::behaviors::registerBehavior<ExampleHelloWorld>(factory, "ExampleHelloWorld", shared_resources);
-    moveit_studio::behaviors::registerBehavior<ExampleConvertMtcSolutionToJointTrajectory>(
+    moveit_pro::behaviors::registerBehavior<ExampleHelloWorld>(factory, "ExampleHelloWorld", shared_resources);
+    moveit_pro::behaviors::registerBehavior<ExampleConvertMtcSolutionToJointTrajectory>(
         factory, "ExampleConvertMtcSolutionToJointTrajectory", shared_resources);
-    moveit_studio::behaviors::registerBehavior<ExampleDelayedMessage>(factory, "ExampleDelayedMessage",
-                                                                      shared_resources);
-    moveit_studio::behaviors::registerBehavior<ExampleSetupMTCWaveHand>(factory, "ExampleSetupMTCWaveHand",
-                                                                        shared_resources);
-    moveit_studio::behaviors::registerBehavior<ExampleGetStringFromTopic>(factory, "ExampleGetStringFromTopic",
-                                                                          shared_resources);
-    moveit_studio::behaviors::registerBehavior<ExampleAddTwoIntsServiceClient>(
-        factory, "ExampleAddTwoIntsServiceClient", shared_resources);
-    moveit_studio::behaviors::registerBehavior<ExampleFibonacciActionClient>(factory, "ExampleFibonacciActionClient",
-                                                                             shared_resources);
-    moveit_studio::behaviors::registerBehavior<ExamplePublishColorRGBA>(factory, "ExamplePublishColorRGBA",
-                                                                        shared_resources);
-    moveit_studio::behaviors::registerBehavior<ExampleNDTRegistration>(factory, "ExampleNDTRegistration",
+    moveit_pro::behaviors::registerBehavior<ExampleDelayedMessage>(factory, "ExampleDelayedMessage", shared_resources);
+    moveit_pro::behaviors::registerBehavior<ExampleSetupMTCWaveHand>(factory, "ExampleSetupMTCWaveHand",
+                                                                     shared_resources);
+    moveit_pro::behaviors::registerBehavior<ExampleGetStringFromTopic>(factory, "ExampleGetStringFromTopic",
                                                                        shared_resources);
-    moveit_studio::behaviors::registerBehavior<ExampleRANSACRegistration>(factory, "ExampleRANSACRegistration",
+    moveit_pro::behaviors::registerBehavior<ExampleAddTwoIntsServiceClient>(factory, "ExampleAddTwoIntsServiceClient",
+                                                                            shared_resources);
+    moveit_pro::behaviors::registerBehavior<ExampleFibonacciActionClient>(factory, "ExampleFibonacciActionClient",
                                                                           shared_resources);
-    moveit_studio::behaviors::registerBehavior<ExampleSAM2Segmentation>(factory, "ExampleSAM2Segmentation",
-                                                                        shared_resources);
-    moveit_studio::behaviors::registerBehavior<ExampleCreateStringMsg>(factory, "ExampleCreateStringMsg",
+    moveit_pro::behaviors::registerBehavior<ExamplePublishColorRGBA>(factory, "ExamplePublishColorRGBA",
+                                                                     shared_resources);
+    moveit_pro::behaviors::registerBehavior<ExampleNDTRegistration>(factory, "ExampleNDTRegistration", shared_resources);
+    moveit_pro::behaviors::registerBehavior<ExampleRANSACRegistration>(factory, "ExampleRANSACRegistration",
                                                                        shared_resources);
+    moveit_pro::behaviors::registerBehavior<ExampleSAM2Segmentation>(factory, "ExampleSAM2Segmentation",
+                                                                     shared_resources);
+    moveit_pro::behaviors::registerBehavior<ExampleCreateStringMsg>(factory, "ExampleCreateStringMsg", shared_resources);
     // Register ROS messages for blackboard viewer.
     register_ros_msg<std_msgs::msg::String>();
   }
 };
 }  // namespace example_behaviors
 
-PLUGINLIB_EXPORT_CLASS(example_behaviors::ExampleBehaviorsLoader,
-                       moveit_studio::behaviors::SharedResourcesNodeLoaderBase);
+PLUGINLIB_EXPORT_CLASS(example_behaviors::ExampleBehaviorsLoader, moveit_pro::behaviors::SharedResourcesNodeLoaderBase);

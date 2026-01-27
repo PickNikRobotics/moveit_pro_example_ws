@@ -3,8 +3,8 @@
 #include <example_interfaces/action/fibonacci.hpp>
 #include <moveit_pro_behavior_interface/action_client_behavior_base.hpp>
 
-using moveit_studio::behaviors::ActionClientBehaviorBase;
-using moveit_studio::behaviors::BehaviorContext;
+using moveit_pro::behaviors::ActionClientBehaviorBase;
+using moveit_pro::behaviors::BehaviorContext;
 using Fibonacci = example_interfaces::action::Fibonacci;
 
 namespace example_behaviors

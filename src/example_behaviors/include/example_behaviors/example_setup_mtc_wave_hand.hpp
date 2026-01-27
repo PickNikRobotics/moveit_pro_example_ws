@@ -24,7 +24,7 @@ namespace example_behaviors
  * if the process completed successfully or was canceled,
  * or an error message if the process failed unexpectedly.
  */
-class ExampleSetupMTCWaveHand final : public moveit_studio::behaviors::AsyncBehaviorBase
+class ExampleSetupMTCWaveHand final : public moveit_pro::behaviors::AsyncBehaviorBase
 {
 public:
   /**
@@ -39,7 +39,7 @@ public:
    * behavior tree factory when this Behavior is created within a new behavior tree.
    */
   ExampleSetupMTCWaveHand(const std::string& name, const BT::NodeConfiguration& config,
-                          const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources);
+                          const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources);
 
   /**
    * @brief Implementation of the required providedPorts() function for the ExampleSetupMTCWaveHand Behavior.
