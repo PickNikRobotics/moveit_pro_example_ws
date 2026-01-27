@@ -8,19 +8,11 @@
   >
     <Control ID="Sequence">
       <SubTree
-        ID="Move to Waypoint (JTC)"
+        ID="Move to Waypoint"
         _collapsed="true"
         waypoint_name="Flask 1a - Pre Pick"
         joint_group_name="manipulator"
-        controller_names="joint_trajectory_controller"
-        velocity_scale_factor="1.0"
-        acceleration_scale_factor="1.0"
-        link_padding="0.01"
-        keep_orientation="false"
-        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-        keep_orientation_tolerance="0.05"
         keep_orientation_link_names="grasp_link"
-        seed="0"
       />
       <SubTree ID="Open Gripper" />
       <SubTree

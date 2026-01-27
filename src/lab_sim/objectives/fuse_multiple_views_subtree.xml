@@ -10,17 +10,9 @@
       <SubTree ID="Clear Snapshot" _collapsed="true" />
       <Action ID="SwitchUIPrimaryView" primary_view_name="Visualization" />
       <SubTree
-        ID="Move to Waypoint (JTC)"
+        ID="Move to Waypoint"
         _collapsed="true"
-        acceleration_scale_factor="1.0"
-        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-        controller_names="joint_trajectory_controller"
         joint_group_name="manipulator"
-        keep_orientation="false"
-        keep_orientation_tolerance="0.05"
-        link_padding="0.01"
-        seed="0"
-        velocity_scale_factor="1.0"
         waypoint_name="{waypoint1}"
       />
       <SubTree
@@ -30,17 +22,9 @@
         topic_name="/wrist_camera/points"
       />
       <SubTree
-        ID="Move to Waypoint (JTC)"
+        ID="Move to Waypoint"
         _collapsed="true"
-        acceleration_scale_factor="1.0"
-        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-        controller_names="joint_trajectory_controller"
         joint_group_name="manipulator"
-        keep_orientation="false"
-        keep_orientation_tolerance="0.05"
-        link_padding="0.01"
-        seed="0"
-        velocity_scale_factor="1.0"
         waypoint_name="{waypoint2}"
       />
       <SubTree
@@ -50,17 +34,9 @@
         topic_name="/wrist_camera/points"
       />
       <SubTree
-        ID="Move to Waypoint (JTC)"
+        ID="Move to Waypoint"
         _collapsed="true"
-        acceleration_scale_factor="1.0"
-        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-        controller_names="joint_trajectory_controller"
         joint_group_name="manipulator"
-        keep_orientation="false"
-        keep_orientation_tolerance="0.05"
-        link_padding="0.01"
-        seed="0"
-        velocity_scale_factor="1.0"
         waypoint_name="{waypoint3}"
       />
       <SubTree

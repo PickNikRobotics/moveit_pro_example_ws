@@ -9,17 +9,9 @@
     <Control ID="Sequence">
       <!--Setup the environment to its "home" configuration - move to center and open gripper-->
       <SubTree
-        ID="Move to Waypoint (JTC)"
+        ID="Move to Waypoint"
         waypoint_name="Look at Table"
         joint_group_name="manipulator"
-        controller_names="joint_trajectory_controller"
-        acceleration_scale_factor="1.0"
-        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-        keep_orientation="false"
-        keep_orientation_tolerance="0.05"
-        link_padding="0.01"
-        seed="0"
-        velocity_scale_factor="1.0"
       />
       <Action
         ID="MoveGripperAction"
@@ -33,17 +25,9 @@
           <!--Pick object from original location, put it down at a different part of the table, and go back to center pose-->
           <Control ID="Sequence">
             <SubTree
-              ID="Move to Waypoint (JTC)"
+              ID="Move to Waypoint"
               waypoint_name="Pick Cube"
               joint_group_name="manipulator"
-              controller_names="joint_trajectory_controller"
-              acceleration_scale_factor="1.0"
-              controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-              keep_orientation="false"
-              keep_orientation_tolerance="0.05"
-              link_padding="0.01"
-              seed="0"
-              velocity_scale_factor="1.0"
             />
             <Action
               ID="MoveGripperAction"
@@ -52,30 +36,14 @@
               timeout="10.000000"
             />
             <SubTree
-              ID="Move to Waypoint (JTC)"
+              ID="Move to Waypoint"
               waypoint_name="Look at Table"
               joint_group_name="manipulator"
-              controller_names="joint_trajectory_controller"
-              acceleration_scale_factor="1.0"
-              controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-              keep_orientation="false"
-              keep_orientation_tolerance="0.05"
-              link_padding="0.01"
-              seed="0"
-              velocity_scale_factor="1.0"
             />
             <SubTree
-              ID="Move to Waypoint (JTC)"
+              ID="Move to Waypoint"
               joint_group_name="manipulator"
-              controller_names="joint_trajectory_controller"
               waypoint_name="Place Cube"
-              acceleration_scale_factor="1.0"
-              controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-              keep_orientation="false"
-              keep_orientation_tolerance="0.05"
-              link_padding="0.01"
-              seed="0"
-              velocity_scale_factor="1.0"
             />
             <Action
               ID="MoveGripperAction"
@@ -84,33 +52,17 @@
               timeout="10.000000"
             />
             <SubTree
-              ID="Move to Waypoint (JTC)"
+              ID="Move to Waypoint"
               waypoint_name="Look at Table"
               joint_group_name="manipulator"
-              controller_names="joint_trajectory_controller"
-              acceleration_scale_factor="1.0"
-              controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-              keep_orientation="false"
-              keep_orientation_tolerance="0.05"
-              link_padding="0.01"
-              seed="0"
-              velocity_scale_factor="1.0"
             />
           </Control>
           <!--Pick object from where it was placed, put it down on the original location, and go back to center pose-->
           <Control ID="Sequence">
             <SubTree
-              ID="Move to Waypoint (JTC)"
+              ID="Move to Waypoint"
               waypoint_name="Place Cube"
               joint_group_name="manipulator"
-              controller_names="joint_trajectory_controller"
-              acceleration_scale_factor="1.0"
-              controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-              keep_orientation="false"
-              keep_orientation_tolerance="0.05"
-              link_padding="0.01"
-              seed="0"
-              velocity_scale_factor="1.0"
             />
             <Action
               ID="MoveGripperAction"
@@ -119,30 +71,14 @@
               timeout="10.000000"
             />
             <SubTree
-              ID="Move to Waypoint (JTC)"
+              ID="Move to Waypoint"
               waypoint_name="Look at Table"
               joint_group_name="manipulator"
-              controller_names="joint_trajectory_controller"
-              acceleration_scale_factor="1.0"
-              controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-              keep_orientation="false"
-              keep_orientation_tolerance="0.05"
-              link_padding="0.01"
-              seed="0"
-              velocity_scale_factor="1.0"
             />
             <SubTree
-              ID="Move to Waypoint (JTC)"
+              ID="Move to Waypoint"
               waypoint_name="Pick Cube"
               joint_group_name="manipulator"
-              controller_names="joint_trajectory_controller"
-              acceleration_scale_factor="1.0"
-              controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-              keep_orientation="false"
-              keep_orientation_tolerance="0.05"
-              link_padding="0.01"
-              seed="0"
-              velocity_scale_factor="1.0"
             />
             <Action
               ID="MoveGripperAction"
@@ -151,17 +87,9 @@
               timeout="10.000000"
             />
             <SubTree
-              ID="Move to Waypoint (JTC)"
+              ID="Move to Waypoint"
               waypoint_name="Look at Table"
               joint_group_name="manipulator"
-              controller_names="joint_trajectory_controller"
-              acceleration_scale_factor="1.0"
-              controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-              keep_orientation="false"
-              keep_orientation_tolerance="0.05"
-              link_padding="0.01"
-              seed="0"
-              velocity_scale_factor="1.0"
             />
           </Control>
         </Control>
