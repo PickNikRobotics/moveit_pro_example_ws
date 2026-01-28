@@ -10,10 +10,9 @@
       <Control ID="Sequence" name="Setup">
         <SubTree ID="Open Gripper" />
         <SubTree
-          ID="Move to Waypoint (JTC)"
+          ID="Move to Waypoint"
           waypoint_name="Look at April Tag"
           joint_group_name="manipulator"
-          controller_names="joint_trajectory_controller"
         />
       </Control>
       <SubTree

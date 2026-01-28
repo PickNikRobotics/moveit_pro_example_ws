@@ -9,7 +9,6 @@
       <Action
         ID="InitializeMTCTask"
         task_id="inspect_surface"
-        controller_names="joint_trajectory_controller"
         task="{move_to_pose_task}"
       />
       <Action ID="SetupMTCCurrentState" task="{move_to_pose_task}" />
@@ -61,7 +60,7 @@
         solution="{move_to_pose_solution}"
       />
       <SubTree
-        ID="Execute MTC Solution (JTC)"
+        ID="Execute MTC Solution"
         solution="{move_to_pose_solution}"
         goal_duration_tolerance="-1.0"
       />
