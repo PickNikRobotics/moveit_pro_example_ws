@@ -8,34 +8,20 @@
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree
-        ID="Move to Waypoint (JTC)"
+        ID="Move to Waypoint"
         _collapsed="true"
         acceleration_scale_factor="0.1"
-        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-        controller_names="joint_trajectory_controller"
-        joint_group_name="manipulator"
-        keep_orientation="false"
-        keep_orientation_tolerance="0.05"
-        link_padding="0.01"
         velocity_scale_factor="0.1"
         waypoint_name="Home"
         name="Move To Pen Location"
-        seed="0"
       />
       <SubTree
-        ID="Move to Waypoint (JTC)"
+        ID="Move to Waypoint"
         _collapsed="true"
         acceleration_scale_factor="0.1"
-        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-        controller_names="joint_trajectory_controller"
-        joint_group_name="manipulator"
-        keep_orientation="false"
-        keep_orientation_tolerance="0.05"
-        link_padding="0.01"
         velocity_scale_factor="0.1"
         waypoint_name="Home"
         name="Move To Home Pose"
-        seed="0"
       />
       <Control ID="Sequence">
         <Action
@@ -65,33 +51,19 @@
         />
       </Control>
       <SubTree
-        ID="Move to Waypoint (JTC)"
+        ID="Move to Waypoint"
         _collapsed="true"
         acceleration_scale_factor="0.1"
-        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-        controller_names="joint_trajectory_controller"
-        joint_group_name="manipulator"
-        keep_orientation="false"
-        keep_orientation_tolerance="0.05"
-        link_padding="0.01"
         velocity_scale_factor="0.1"
         waypoint_name="Home"
-        seed="0"
       />
       <SubTree
-        ID="Move to Waypoint (JTC)"
+        ID="Move to Waypoint"
         _collapsed="true"
         acceleration_scale_factor="0.1"
-        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-        controller_names="joint_trajectory_controller"
-        joint_group_name="manipulator"
-        keep_orientation="false"
-        keep_orientation_tolerance="0.05"
-        link_padding="0.01"
         velocity_scale_factor="0.1"
         waypoint_name="Home"
         name="Move To Pen Holder"
-        seed="0"
       />
     </Control>
   </BehaviorTree>
