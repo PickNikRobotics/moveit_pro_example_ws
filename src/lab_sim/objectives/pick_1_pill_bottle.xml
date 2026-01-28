@@ -28,7 +28,7 @@
         clip_model_path="models/clip.onnx"
         clipseg_model_path="models/clipseg.onnx"
         erosion_size="2"
-        prompts="an object"
+        prompts="a cylindrical object with a dark gray and silver metallic body, featuring a circular blue cap on top"
         threshold="0.28"
         masks3d="{masks3d}"
         point_cloud="{point_cloud}"
