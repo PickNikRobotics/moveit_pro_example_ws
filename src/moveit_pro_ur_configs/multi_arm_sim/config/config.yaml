@@ -121,18 +121,11 @@ ros2_control:
   # [Optional, default=[]]
   controllers_active_at_startup:
     - "joint_state_broadcaster"
-    - "first_io_and_status_controller"
-    - "second_io_and_status_controller"
-    - "third_io_and_status_controller"
-    - "fourth_io_and_status_controller"
-    - "first_robotiq_gripper_controller"
-    - "second_robotiq_gripper_controller"
-    - "third_robotiq_gripper_controller"
-    - "fourth_robotiq_gripper_controller"
   # Load but do not start these controllers so they can be activated later if needed.
   # [Optional, default=[]]
   controllers_inactive_at_startup:
     - "joint_trajectory_controller"
+    - "joint_trajectory_admittance_controller"
     - "first_velocity_force_controller"
     - "second_velocity_force_controller"
     - "third_velocity_force_controller"
@@ -141,6 +134,14 @@ ros2_control:
     - "second_joint_velocity_controller"
     - "third_joint_velocity_controller"
     - "fourth_joint_velocity_controller"
+    - "first_io_and_status_controller"
+    - "second_io_and_status_controller"
+    - "third_io_and_status_controller"
+    - "fourth_io_and_status_controller"
+    - "first_robotiq_gripper_controller"
+    - "second_robotiq_gripper_controller"
+    - "third_robotiq_gripper_controller"
+    - "fourth_robotiq_gripper_controller"
   # Any controllers here will not be spawned by MoveIt Pro.
   # [Optional, default=[]]
   controllers_not_managed: []
