@@ -9,7 +9,7 @@
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
         ID="InitializeMTCTask"
-        controller_names="joint_trajectory_controller;robotiq_gripper_controller"
+        controller_names="joint_trajectory_admittance_controller;robotiq_gripper_controller"
         task="{mtc_task}"
         task_id="pick_object"
         trajectory_monitoring="false"
@@ -69,11 +69,7 @@
         solution="{mtc_solution}"
         cartesian_path_links="grasp_link"
       />
-      <SubTree
-        ID="Execute MTC Solution (JTC)"
-        solution="{mtc_solution}"
-        goal_duration_tolerance="-1.0"
-      />
+      <SubTree ID="Execute MTC Solution" solution="{mtc_solution}" />
       <SubTree ID="Close Gripper" _collapsed="true" />
       <Action
         ID="CreateStampedPose"
@@ -102,11 +98,7 @@
         trajectory_sampling_rate="100"
         velocity_scale_factor="1.000000"
       />
-      <Action
-        ID="ExecuteTrajectory"
-        execution_pipeline="jtc"
-        controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
-      />
+      <Action ID="ExecuteTrajectory" />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>

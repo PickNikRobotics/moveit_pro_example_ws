@@ -9,13 +9,13 @@
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree ID="Close Gripper" _collapsed="true" />
       <SubTree
-        ID="Move to Waypoint (JTC)"
+        ID="Move to Waypoint"
         _collapsed="true"
         waypoint_name="VFC Start"
         joint_group_name="manipulator"
-        controller_names="joint_trajectory_controller"
+        controller_names="joint_trajectory_admittance_controller"
         acceleration_scale_factor="1.0"
-        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        controller_action_server="/joint_trajectory_admittance_controller/follow_joint_trajectory"
         keep_orientation="false"
         keep_orientation_link_names="grasp_link"
         keep_orientation_tolerance="0.05"
@@ -73,11 +73,8 @@
       />
       <Action
         ID="ExecuteTrajectory"
-        execution_pipeline="jtac"
         absolute_force_torque_threshold="1000;1000;1000;1000;1000;1000"
         admittance_parameters_msg="{admittance_parameters_msg}"
-        controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory"
-        goal_duration_tolerance="-1.000000"
         goal_position_tolerance="0.001000"
         joint_trajectory_msg="{joint_trajectory_msg}"
         path_position_tolerance="0.20000"

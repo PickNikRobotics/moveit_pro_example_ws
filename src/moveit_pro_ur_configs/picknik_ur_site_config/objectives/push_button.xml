@@ -12,7 +12,6 @@
         <Action
           ID="InitializeMTCTask"
           task_id="push_button"
-          controller_names="joint_trajectory_controller"
           task="{push_button_task}"
         />
         <Action ID="SetupMTCCurrentState" task="{push_button_task}" />
@@ -101,7 +100,7 @@
           solution="{full_push_button_solution}"
         />
         <SubTree
-          ID="Execute MTC Solution (JTC)"
+          ID="Execute MTC Solution"
           solution="{move_to_approach_solution}"
           goal_duration_tolerance="-1.0"
         />
@@ -112,7 +111,7 @@
         <Control ID="Parallel" success_count="1" failure_count="1">
           <SubTree ID="Force Exceeds Threshold" />
           <SubTree
-            ID="Execute MTC Solution (JTC)"
+            ID="Execute MTC Solution"
             solution="{push_solution}"
             goal_duration_tolerance="-1.0"
           />

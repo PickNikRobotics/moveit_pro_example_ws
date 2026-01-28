@@ -37,11 +37,7 @@
         trajectory_sampling_rate="100"
         velocity_scale_factor="1.000000"
       />
-      <Action
-        ID="ExecuteTrajectory"
-        execution_pipeline="jtc"
-        controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
-      />
+      <Action ID="ExecuteTrajectory" />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>

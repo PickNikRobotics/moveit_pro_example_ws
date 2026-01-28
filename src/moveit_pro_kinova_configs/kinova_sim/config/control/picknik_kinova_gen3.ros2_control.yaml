@@ -3,8 +3,6 @@ controller_manager:
     update_rate: 1000  # Hz
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
-    joint_trajectory_controller:
-      type: joint_trajectory_controller/JointTrajectoryController
     joint_trajectory_admittance_controller:
       type: joint_trajectory_admittance_controller/JointTrajectoryAdmittanceController
     twist_controller:
@@ -20,42 +18,6 @@ controller_manager:
       type: velocity_force_controller/VelocityForceController
     joint_velocity_controller:
       type: joint_velocity_controller/JointVelocityController
-
-joint_trajectory_controller:
-  ros__parameters:
-    joints:
-      - joint_1
-      - joint_2
-      - joint_3
-      - joint_4
-      - joint_5
-      - joint_6
-      - joint_7
-    command_interfaces:
-      - position
-    state_interfaces:
-      - position
-      - velocity
-    state_publish_rate: 100.0
-    action_monitor_rate: 20.0
-    allow_partial_joints_goal: false
-    constraints:
-      stopped_velocity_tolerance: 0.0
-      goal_time: 10.0
-      joint_1:
-        goal: 0.05
-      joint_2:
-        goal: 0.05
-      joint_3:
-        goal: 0.05
-      joint_4:
-        goal: 0.05
-      joint_5:
-        goal: 0.05
-      joint_6:
-        goal: 0.05
-      joint_7:
-        goal: 0.05
 
 twist_controller:
   ros__parameters:
@@ -103,6 +65,7 @@ joint_trajectory_admittance_controller:
     sensor_frame: fts_link
     ee_frame: grasp_link
     ft_sensor_name: fts
+    default_path_tolerance: 0.5
     stop_accelerations: [3.0, 3.0, 3.0, 3.0, 5.0, 5.0, 5.0]
 
 

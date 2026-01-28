@@ -10,34 +10,20 @@
     <Decorator ID="KeepRunningUntilFailure">
       <Control ID="Sequence">
         <SubTree
-          ID="Move to Waypoint (JTC)"
+          ID="Move to Waypoint"
           _collapsed="true"
           joint_group_name="manipulator"
-          controller_names="joint_trajectory_controller"
-          velocity_scale_factor="1.0"
-          acceleration_scale_factor="1.0"
           link_padding="0.0"
-          keep_orientation_tolerance="0.05"
-          keep_orientation="false"
           waypoint_name="Home"
           target_joint_state="{target_joint_state}"
-          controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-          seed="0"
         />
         <SubTree
-          ID="Move to Waypoint (JTC)"
+          ID="Move to Waypoint"
           _collapsed="true"
           joint_group_name="manipulator"
-          controller_names="joint_trajectory_controller"
-          velocity_scale_factor="1.0"
-          acceleration_scale_factor="1.0"
           link_padding="0.0"
-          keep_orientation_tolerance="0.05"
-          keep_orientation="false"
           waypoint_name="Flip"
           target_joint_state="{target_joint_state}"
-          controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-          seed="0"
         />
       </Control>
     </Decorator>

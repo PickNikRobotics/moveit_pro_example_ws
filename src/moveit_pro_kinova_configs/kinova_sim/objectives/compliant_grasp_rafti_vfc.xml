@@ -10,19 +10,7 @@
     <Control ID="Sequence" name="TopLevelSequence">
       <Action ID="ClearSnapshot" />
       <SubTree ID="Open Gripper" _collapsed="true" />
-      <SubTree
-        ID="Move to Waypoint (JTC)"
-        waypoint_name="View Satellite"
-        joint_group_name="manipulator"
-        controller_names="joint_trajectory_controller"
-        acceleration_scale_factor="1.0"
-        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-        keep_orientation="false"
-        keep_orientation_tolerance="0.05"
-        link_padding="0.01"
-        seed="0"
-        velocity_scale_factor="1.0"
-      />
+      <SubTree ID="Move to Waypoint" waypoint_name="View Satellite" />
       <SubTree ID="Take Snapshot" _collapsed="false" />
       <SubTree
         ID="Sample April Tag"
@@ -191,7 +179,7 @@
       <Action
         ID="InitializeMTCTask"
         task_id=""
-        controller_names="joint_trajectory_controller;robotiq_gripper_controller"
+        controller_names="joint_trajectory_admittance_controller;robotiq_gripper_controller"
         task="{mtc_task}"
         trajectory_monitoring="false"
       />
@@ -214,7 +202,7 @@
       />
       <Action ID="PlanMTCTask" task="{mtc_task}" solution="{mtc_solution}" />
       <SubTree
-        ID="Execute MTC Solution (JTC)"
+        ID="Execute MTC Solution"
         solution="{mtc_solution}"
         goal_duration_tolerance="-1.0"
       />
@@ -228,7 +216,7 @@
       <Action
         ID="InitializeMTCTask"
         task_id=""
-        controller_names="joint_trajectory_controller;robotiq_gripper_controller"
+        controller_names="joint_trajectory_admittance_controller;robotiq_gripper_controller"
         task="{mtc_task}"
         trajectory_monitoring="false"
       />
@@ -258,7 +246,7 @@
       <Action ID="PlanMTCTask" task="{mtc_task}" solution="{mtc_solution}" />
       <SubTree ID="Re-Zero Force-Torque Sensors" _collapsed="true" />
       <SubTree
-        ID="Execute MTC Solution (JTC)"
+        ID="Execute MTC Solution"
         solution="{mtc_solution}"
         goal_duration_tolerance="-1.0"
       />
@@ -302,7 +290,7 @@
       <Decorator ID="Delay" delay_msec="1000">
         <Action
           ID="SwitchController"
-          activate_controllers="joint_trajectory_controller"
+          activate_controllers="joint_trajectory_admittance_controller"
           activate_asap="true"
           automatic_deactivation="true"
           controller_list_action_name="/controller_manager/list_controllers"

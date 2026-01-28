@@ -59,7 +59,7 @@
         <Action
           ID="InitializeMTCTask"
           task_id="pick_object"
-          controller_names="joint_trajectory_controller;robotiq_gripper_controller"
+          controller_names="joint_trajectory_admittance_controller;robotiq_gripper_controller"
           task="{pick_object_task}"
           trajectory_monitoring="false"
           timeout="-1.000000"
@@ -100,11 +100,7 @@
           solution="{pick_object_solution}"
           cartesian_path_links="grasp_link"
         />
-        <SubTree
-          ID="Execute MTC Solution (JTC)"
-          solution="{pick_object_solution}"
-          goal_duration_tolerance="-1.0"
-        />
+        <SubTree ID="Execute MTC Solution" solution="{pick_object_solution}" />
       </Control>
     </Control>
   </BehaviorTree>

@@ -56,7 +56,6 @@
         />
         <Action
           ID="ExecuteTrajectory"
-          execution_pipeline="jtc"
           controller_action_name="{execute_follow_joint_trajectory_action_name}"
         />
       </Control>

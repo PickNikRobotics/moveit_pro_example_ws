@@ -8,17 +8,11 @@
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree
-        ID="Move to Waypoint (JTC)"
+        ID="Move to Waypoint"
         _collapsed="true"
-        acceleration_scale_factor="1.0"
-        controller_action_server="/left_joint_trajectory_controller/follow_joint_trajectory"
-        controller_names="left_joint_trajectory_controller"
+        controller_action_server="/left_joint_trajectory_admittance_controller/follow_joint_trajectory"
+        controller_names="left_joint_trajectory_admittance_controller"
         joint_group_name="left_manipulator"
-        keep_orientation="false"
-        keep_orientation_tolerance="0.05"
-        link_padding="0.01"
-        seed="0"
-        velocity_scale_factor="1.0"
         waypoint_name="Home"
       />
     </Control>

@@ -8,19 +8,7 @@
     _hardcoded="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
-      <SubTree
-        ID="Move to Waypoint (JTC)"
-        waypoint_name="View Satellite"
-        joint_group_name="manipulator"
-        controller_names="joint_trajectory_controller"
-        acceleration_scale_factor="1.0"
-        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-        keep_orientation="false"
-        keep_orientation_tolerance="0.05"
-        link_padding="0.01"
-        seed="0"
-        velocity_scale_factor="1.0"
-      />
+      <SubTree ID="Move to Waypoint" waypoint_name="View Satellite" />
       <Action ID="ClearSnapshot" />
       <SubTree ID="Open Gripper" _collapsed="true" />
       <SubTree ID="Take Snapshot" _collapsed="true" />
@@ -264,11 +252,7 @@
         cartesian_path_links="grasp_link"
       />
       <Control ID="Fallback">
-        <Action
-          ID="ExecuteTrajectory"
-          execution_pipeline="jtc"
-          controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
-        />
+        <Action ID="ExecuteTrajectory" />
         <Action ID="AlwaysSuccess" />
       </Control>
       <SubTree ID="Close Gripper" _collapsed="true" />

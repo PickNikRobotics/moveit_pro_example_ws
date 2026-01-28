@@ -61,7 +61,7 @@
             task_id="move_to_pose"
             task="{move_to_pose_task}"
             trajectory_monitoring="false"
-            controller_names="/joint_trajectory_controller"
+            controller_names="/joint_trajectory_admittance_controller"
           />
           <Action ID="SetupMTCCurrentState" task="{move_to_pose_task}" />
           <Action

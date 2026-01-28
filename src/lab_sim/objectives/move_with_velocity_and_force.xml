@@ -9,11 +9,10 @@
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree ID="Close Gripper" _collapsed="true" />
       <SubTree
-        ID="Move to Waypoint (JTC)"
+        ID="Move to Waypoint"
         _collapsed="true"
         waypoint_name="VFC Start"
         joint_group_name="manipulator"
-        controller_names="joint_trajectory_controller"
       />
       <Action
         ID="SwitchController"
@@ -72,10 +71,9 @@
         tip_link="grasp_link"
       />
       <SubTree
-        ID="Move to Waypoint (JTC)"
+        ID="Move to Waypoint"
         _collapsed="true"
         joint_group_name="manipulator"
-        controller_names="joint_trajectory_controller"
         waypoint_name="Look at Table"
       />
     </Control>

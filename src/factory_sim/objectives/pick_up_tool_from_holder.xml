@@ -21,7 +21,7 @@
       <Action
         ID="InitializeMTCTask"
         task_id="pick_up_tool"
-        controller_names="joint_trajectory_controller"
+        controller_names="joint_trajectory_admittance_controller"
         task="{mtc_task}"
         trajectory_monitoring="false"
       />
@@ -59,7 +59,7 @@
       />
       <Action ID="PlanMTCTask" task="{mtc_task}" solution="{mtc_solution}" />
       <SubTree
-        ID="Execute MTC Solution (JTC)"
+        ID="Execute MTC Solution"
         solution="{mtc_solution}"
         goal_duration_tolerance="-1.0"
       />

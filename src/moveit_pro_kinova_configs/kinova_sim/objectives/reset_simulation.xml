@@ -15,7 +15,7 @@
         controller_switch_action_name="/controller_manager/switch_controller"
         strictness="1"
         timeout="-1.000000"
-        deactivate_controllers="joint_trajectory_controller;velocity_force_controller;joint_trajectory_admittance_controller"
+        deactivate_controllers="joint_trajectory_admittance_controller;velocity_force_controller;joint_trajectory_admittance_controller"
       />
       <Action
         ID="ResetMujocoKeyframe"
