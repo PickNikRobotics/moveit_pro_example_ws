@@ -33,6 +33,7 @@ franka_gripper_controller:
 
 velocity_force_controller:
   ros__parameters:
+    planning_group_name: manipulator
     # The tip link of the kinematic chain, i.e. the frame that will be controlled.
     ee_frame: grasp_link
     # The frame where the force / torque sensor reading is given.
