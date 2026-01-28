@@ -103,6 +103,7 @@ joint_trajectory_admittance_controller:
     sensor_frame: fts_link
     ee_frame: grasp_link
     ft_sensor_name: fts
+    default_path_tolerance: 0.5
     stop_accelerations: [3.0, 3.0, 3.0, 3.0, 5.0, 5.0, 5.0]
 
 
