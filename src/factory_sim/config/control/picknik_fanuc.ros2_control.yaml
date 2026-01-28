@@ -3,8 +3,6 @@ controller_manager:
     update_rate: 600  # Hz
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
-    joint_trajectory_controller:
-      type: joint_trajectory_controller/JointTrajectoryController
     joint_trajectory_admittance_controller:
       type: joint_trajectory_admittance_controller/JointTrajectoryAdmittanceController
     # A controller to enable/disable the tool attachment interface at the robot flange.
@@ -47,21 +45,6 @@ joint_state_broadcaster:
       - joint_5
       - joint_6
     interfaces:
-      - position
-      - velocity
-
-joint_trajectory_controller:
-  ros__parameters:
-    joints:
-      - joint_1
-      - joint_2
-      - joint_3
-      - joint_4
-      - joint_5
-      - joint_6
-    command_interfaces:
-      - position
-    state_interfaces:
       - position
       - velocity
 

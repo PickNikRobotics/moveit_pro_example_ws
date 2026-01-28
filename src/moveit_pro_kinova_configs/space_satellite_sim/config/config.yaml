@@ -43,7 +43,6 @@ ros2_control:
     - "joint_state_broadcaster"
   # Load but do not start these controllers so they can be activated later if needed.
   controllers_inactive_at_startup:
-    - "joint_trajectory_controller"
     - "joint_trajectory_admittance_controller"
     - "velocity_force_controller"
 
