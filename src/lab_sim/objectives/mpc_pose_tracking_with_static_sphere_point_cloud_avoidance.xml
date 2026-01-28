@@ -100,6 +100,10 @@
         <Decorator ID="Timeout" msec="40000">
           <Control ID="Sequence">
             <Action
+              ID="SwitchController"
+              activate_controllers="joint_trajectory_controller"
+            />
+            <Action
               ID="MPCSphereClearance"
               differentiable="0"
               follow_joint_trajectory_topic="/joint_trajectory_controller/follow_joint_trajectory"

@@ -10,7 +10,7 @@
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
         ID="SwitchController"
-        activate_controllers="joint_trajectory_controller"
+        activate_controllers="joint_trajectory_admittance_controller"
       />
       <Decorator ID="Repeat" num_cycles="10">
         <Control ID="Sequence">
@@ -21,7 +21,7 @@
             joint_group_name="manipulator"
           />
           <Action ID="PlanToJointGoal" joint_goal="{grasp_left}" />
-          <Action ID="ExecuteTrajectory" execution_pipeline="jtc" />
+          <Action ID="ExecuteTrajectory" />
           <Action
             ID="RetrieveWaypoint"
             waypoint_joint_state="{grasp_right}"
@@ -29,7 +29,7 @@
             waypoint_name="Grasp Right"
           />
           <Action ID="PlanToJointGoal" joint_goal="{grasp_right}" />
-          <Action ID="ExecuteTrajectory" execution_pipeline="jtc" />
+          <Action ID="ExecuteTrajectory" />
         </Control>
       </Decorator>
     </Control>

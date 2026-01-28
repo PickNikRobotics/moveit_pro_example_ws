@@ -7,19 +7,12 @@
     _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
-      <!--Make sure to move the robot to the same starting position as the saved trajectory starts, otherwise the joint_trajectory_controller will use joint interpolation to align the robot with the path-->
+      <!--Make sure to move the robot to the same starting position as the saved trajectory starts, otherwise the joint_trajectory_admittance_controller will use joint interpolation to align the robot with the path-->
       <SubTree
-        ID="Move to Waypoint (JTC)"
+        ID="Move to Waypoint"
         _collapsed="true"
         waypoint_name="Workspace Right"
         joint_group_name="manipulator"
-        controller_names="joint_trajectory_controller"
-        acceleration_scale_factor="1.0"
-        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-        keep_orientation="false"
-        keep_orientation_tolerance="0.05"
-        link_padding="0.01"
-        velocity_scale_factor="1.0"
       />
       <Action
         ID="LoadJointTrajectoryFromYaml"
@@ -40,11 +33,7 @@
         planning_scene_msg="{planning_scene}"
         debug_solution="{debug_solution}"
       />
-      <Action
-        ID="ExecuteTrajectory"
-        execution_pipeline="jtc"
-        controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
-      />
+      <Action ID="ExecuteTrajectory" />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>

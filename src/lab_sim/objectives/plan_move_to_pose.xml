@@ -9,7 +9,7 @@
       <Action
         ID="InitializeMTCTask"
         task_id="move_to_pose"
-        controller_names="joint_trajectory_controller;robotiq_gripper_controller"
+        controller_names="joint_trajectory_admittance_controller;robotiq_gripper_controller"
         task="{move_to_pose_task}"
       />
       <Action ID="SetupMTCCurrentState" task="{move_to_pose_task}" />

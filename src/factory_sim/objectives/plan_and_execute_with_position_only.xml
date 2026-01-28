@@ -84,24 +84,14 @@
                 ID="Sequence"
                 name="Optionally execute trajectory and return to start joint state"
               >
-                <Action
-                  ID="ExecuteTrajectory"
-                  execution_pipeline="jtc"
-                  controller_action_name="{controller_action_server}"
-                />
+                <Action ID="ExecuteTrajectory" />
                 <SubTree
                   ID="Move to Joint State"
                   _collapsed="true"
                   target_joint_state="{starting_joint_state}"
-                  acceleration_scale_factor="1.0"
                   controller_action_server="{controller_action_server}"
                   controller_names="{controller_names}"
                   joint_group_name="{joint_group_name}"
-                  keep_orientation="false"
-                  keep_orientation_tolerance="0.05"
-                  link_padding="0.01"
-                  velocity_scale_factor="1.0"
-                  execution_pipeline="jtc"
                 />
               </Control>
             </Decorator>

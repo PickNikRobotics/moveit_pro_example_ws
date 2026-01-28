@@ -60,7 +60,7 @@
         <Control ID="Sequence">
           <Action
             ID="InitializeMTCTask"
-            controller_names="joint_trajectory_controller"
+            controller_names="joint_trajectory_admittance_controller"
             task="{mtc_task}"
             task_id="reach_test"
           />
@@ -96,7 +96,7 @@
           <!--Move to inspection point-->
           <Action
             ID="InitializeMTCTask"
-            controller_names="joint_trajectory_controller"
+            controller_names="joint_trajectory_admittance_controller"
             task="{move_task}"
             task_id="inspect"
           />
@@ -113,11 +113,7 @@
             solution="{move_solution}"
             task="{move_task}"
           />
-          <SubTree
-            ID="Execute MTC Solution (JTC)"
-            solution="{move_solution}"
-            goal_duration_tolerance="-1.0"
-          />
+          <SubTree ID="Execute MTC Solution" solution="{move_solution}" />
           <!--Visualize current inspection point-->
           <Action
             ID="VisualizePose"
@@ -182,7 +178,7 @@
       <!--Demonstrate SetupMTCFromSolution for repeatable inspection routine-->
       <Action
         ID="InitializeMTCTask"
-        controller_names="joint_trajectory_controller"
+        controller_names="joint_trajectory_admittance_controller"
         task="{replay_task}"
         task_id="repeat_inspection"
       />
@@ -196,17 +192,12 @@
         solution="{replay_solution}"
         task="{replay_task}"
       />
-      <SubTree
-        ID="Execute MTC Solution (JTC)"
-        solution="{replay_solution}"
-        goal_duration_tolerance="-1.0"
-      />
+      <SubTree ID="Execute MTC Solution" solution="{replay_solution}" />
       <!--Return to home position-->
       <SubTree
-        ID="Move to Waypoint (JTC)"
+        ID="Move to Waypoint"
         waypoint_name="Look at Table"
         joint_group_name="manipulator"
-        controller_names="joint_trajectory_controller"
       />
     </Control>
   </BehaviorTree>

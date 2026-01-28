@@ -42,11 +42,7 @@
         target_pose="{view_pose}"
         move_to_pose_solution="{move_to_pose_solution}"
       />
-      <SubTree
-        ID="Execute MTC Solution (JTC)"
-        solution="{move_to_pose_solution}"
-        goal_duration_tolerance="-1.0"
-      />
+      <SubTree ID="Execute MTC Solution" solution="{move_to_pose_solution}" />
       <!--Locate the april tag again more precisely.-->
       <SubTree ID="Clear Previous Obstacles" _collapsed="true" />
       <SubTree ID="Take Wrist Camera Snapshot" _collapsed="true" />

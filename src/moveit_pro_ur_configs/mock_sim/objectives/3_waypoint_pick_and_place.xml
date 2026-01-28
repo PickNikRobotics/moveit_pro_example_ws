@@ -11,10 +11,9 @@
       <Action ID="ClearSnapshot" />
       <!--Setup the environment to its "home" configuration - move to center and open gripper-->
       <SubTree
-        ID="Move to Waypoint (JTC)"
+        ID="Move to Waypoint"
         waypoint_name="Look at Machine"
         joint_group_name="manipulator"
-        controller_names="joint_trajectory_controller"
       />
       <Action
         ID="MoveGripperAction"
@@ -27,10 +26,9 @@
           <!--Pick object from left, put it down at the CNC machine, and go back to center pose-->
           <Control ID="Sequence">
             <SubTree
-              ID="Move to Waypoint (JTC)"
+              ID="Move to Waypoint"
               waypoint_name="Grasp Left"
               joint_group_name="manipulator"
-              controller_names="joint_trajectory_controller"
             />
             <Action
               ID="MoveGripperAction"
@@ -38,16 +36,14 @@
               position="0.7929"
             />
             <SubTree
-              ID="Move to Waypoint (JTC)"
+              ID="Move to Waypoint"
               waypoint_name="Look at Machine"
               joint_group_name="manipulator"
-              controller_names="joint_trajectory_controller"
             />
             <SubTree
-              ID="Move to Waypoint (JTC)"
+              ID="Move to Waypoint"
               waypoint_name="Grasp Machine"
               joint_group_name="manipulator"
-              controller_names="joint_trajectory_controller"
             />
             <Action
               ID="MoveGripperAction"
@@ -55,19 +51,17 @@
               position="0"
             />
             <SubTree
-              ID="Move to Waypoint (JTC)"
+              ID="Move to Waypoint"
               waypoint_name="Look at Machine"
               joint_group_name="manipulator"
-              controller_names="joint_trajectory_controller"
             />
           </Control>
           <!--Pick object from the CNC machine, put it down on the right, and go back to center pose-->
           <Control ID="Sequence">
             <SubTree
-              ID="Move to Waypoint (JTC)"
+              ID="Move to Waypoint"
               waypoint_name="Grasp Machine"
               joint_group_name="manipulator"
-              controller_names="joint_trajectory_controller"
             />
             <Action
               ID="MoveGripperAction"
@@ -75,16 +69,14 @@
               position="0.7929"
             />
             <SubTree
-              ID="Move to Waypoint (JTC)"
+              ID="Move to Waypoint"
               waypoint_name="Look at Machine"
               joint_group_name="manipulator"
-              controller_names="joint_trajectory_controller"
             />
             <SubTree
-              ID="Move to Waypoint (JTC)"
+              ID="Move to Waypoint"
               waypoint_name="Grasp Left"
               joint_group_name="manipulator"
-              controller_names="joint_trajectory_controller"
             />
             <Action
               ID="MoveGripperAction"
@@ -92,10 +84,9 @@
               position="0"
             />
             <SubTree
-              ID="Move to Waypoint (JTC)"
+              ID="Move to Waypoint"
               waypoint_name="Look at Machine"
               joint_group_name="manipulator"
-              controller_names="joint_trajectory_controller"
             />
           </Control>
         </Control>

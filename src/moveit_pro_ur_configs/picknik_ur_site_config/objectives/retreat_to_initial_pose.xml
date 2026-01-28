@@ -5,7 +5,6 @@
       <Action
         ID="InitializeMTCTask"
         task_id="close_cabinet_door_retreat"
-        controller_names="joint_trajectory_controller"
         task="{retreat_task}"
       />
       <Action ID="SetupMTCCurrentState" task="{retreat_task}" />
@@ -43,7 +42,7 @@
         task="{retreat_task}"
       />
       <SubTree
-        ID="Execute MTC Solution (JTC)"
+        ID="Execute MTC Solution"
         solution="{return_to_initial_waypoint_solution}"
         goal_duration_tolerance="-1.0"
       />

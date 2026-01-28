@@ -30,7 +30,7 @@
                 task="{mtc_task}"
                 timeout="-1.000000"
                 trajectory_monitoring="false"
-                controller_names="joint_trajectory_controller"
+                controller_names="right_joint_trajectory_admittance_controller"
                 task_id="right_grasp_task"
               />
               <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
@@ -38,7 +38,6 @@
                 ID="SetupMTCPlanToPose"
                 acceleration_scale_factor="1.000000"
                 ik_frame="right_fr3_hand_tcp"
-                keep_orientation="false"
                 keep_orientation_link_names="right_fr3_hand_tcp"
                 keep_orientation_tolerance="0.100000"
                 link_padding="0.000000"
@@ -70,16 +69,11 @@
                 solution="{mtc_solution}"
                 task="{mtc_task}"
               />
-              <Action
-                ID="SwitchController"
-                activate_controllers="joint_trajectory_controller"
-              />
-              <Action
-                ID="ExecuteMTCSolution"
-                goal_duration_tolerance="-1.000000"
+              <SubTree
+                ID="Execute MTC Solution"
+                controller_names="right_joint_trajectory_admittance_controller"
+                controller_action_name="/right_joint_trajectory_admittance_controller/follow_joint_trajectory"
                 solution="{mtc_solution}"
-                execution_pipeline="jtc"
-                controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
               />
               <Action ID="WaitForDuration" delay_duration="1.0" />
               <SubTree ID="Close Right Gripper" _collapsed="true" />
@@ -88,7 +82,7 @@
                 task="{mtc_task}"
                 timeout="-1.000000"
                 trajectory_monitoring="false"
-                controller_names="joint_trajectory_controller"
+                controller_names="right_joint_trajectory_admittance_controller"
                 task_id="right_place_task"
               />
               <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
@@ -117,13 +111,11 @@
                 ID="SetupMTCPlanToJointState"
                 acceleration_scale_factor="1.000000"
                 joint_state="{target_joint_state}"
-                keep_orientation="false"
                 keep_orientation_link_names="grasp_link"
                 keep_orientation_tolerance="0.100000"
                 link_padding="0.000000"
                 max_iterations="5000"
-                planning_group_name="manipulator"
-                seed="0"
+                planning_group_name="right_manipulator"
                 task="{mtc_task}"
                 trajectory_sampling_rate="100"
                 velocity_scale_factor="1.000000"
@@ -134,23 +126,18 @@
                 task="{mtc_task}"
               />
               <SubTree
-                ID="Execute MTC Solution (JTC)"
+                ID="Execute MTC Solution"
+                controller_names="right_joint_trajectory_admittance_controller"
+                controller_action_name="/right_joint_trajectory_admittance_controller/follow_joint_trajectory"
                 solution="{mtc_solution}"
-                goal_duration_tolerance="-1.0"
               />
               <SubTree ID="Open Right Gripper" _collapsed="true" />
               <SubTree
-                ID="Move to Waypoint (JTC)"
+                ID="Move to Waypoint"
                 _collapsed="true"
-                acceleration_scale_factor="1.0"
-                controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-                controller_names="joint_trajectory_controller"
+                controller_action_server="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+                controller_names="joint_trajectory_admittance_controller"
                 joint_group_name="manipulator"
-                keep_orientation="false"
-                keep_orientation_tolerance="0.05"
-                link_padding="0.01"
-                seed="0"
-                velocity_scale_factor="1.0"
                 waypoint_name="Home"
               />
             </Control>
@@ -176,7 +163,7 @@
                 task="{mtc_task}"
                 timeout="-1.000000"
                 trajectory_monitoring="false"
-                controller_names="joint_trajectory_controller"
+                controller_names="left_joint_trajectory_admittance_controller"
                 task_id="left_grasp_task"
               />
               <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
@@ -184,7 +171,6 @@
                 ID="SetupMTCPlanToPose"
                 acceleration_scale_factor="1.000000"
                 ik_frame="left_fr3_hand_tcp"
-                keep_orientation="false"
                 keep_orientation_link_names="left_fr3_hand_tcp"
                 keep_orientation_tolerance="0.100000"
                 link_padding="0.000000"
@@ -217,9 +203,10 @@
                 task="{mtc_task}"
               />
               <SubTree
-                ID="Execute MTC Solution (JTC)"
+                ID="Execute MTC Solution"
                 solution="{mtc_solution}"
-                goal_duration_tolerance="-1.0"
+                controller_names="left_joint_trajectory_admittance_controller"
+                controller_action_name="/left_joint_trajectory_admittance_controller/follow_joint_trajectory"
               />
               <Action ID="WaitForDuration" delay_duration="1.0" />
               <SubTree ID="Close Left Gripper" _collapsed="true" />
@@ -228,7 +215,7 @@
                 task="{mtc_task}"
                 timeout="-1.000000"
                 trajectory_monitoring="false"
-                controller_names="joint_trajectory_controller"
+                controller_names="left_joint_trajectory_admittance_controller"
                 task_id="left_place_task"
               />
               <Action
@@ -257,13 +244,11 @@
                 ID="SetupMTCPlanToJointState"
                 acceleration_scale_factor="1.000000"
                 joint_state="{target_joint_state}"
-                keep_orientation="false"
                 keep_orientation_link_names="grasp_link"
                 keep_orientation_tolerance="0.100000"
                 link_padding="0.000000"
                 max_iterations="5000"
-                planning_group_name="manipulator"
-                seed="0"
+                planning_group_name="left_manipulator"
                 task="{mtc_task}"
                 trajectory_sampling_rate="100"
                 velocity_scale_factor="1.000000"
@@ -274,23 +259,18 @@
                 task="{mtc_task}"
               />
               <SubTree
-                ID="Execute MTC Solution (JTC)"
+                ID="Execute MTC Solution"
                 solution="{mtc_solution}"
-                goal_duration_tolerance="-1.0"
+                controller_names="left_joint_trajectory_admittance_controller"
+                controller_action_name="/left_joint_trajectory_admittance_controller/follow_joint_trajectory"
               />
               <SubTree ID="Open Left Gripper" _collapsed="true" />
               <SubTree
-                ID="Move to Waypoint (JTC)"
+                ID="Move to Waypoint"
                 _collapsed="true"
-                acceleration_scale_factor="1.0"
-                controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-                controller_names="joint_trajectory_controller"
+                controller_action_server="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+                controller_names="joint_trajectory_admittance_controller"
                 joint_group_name="manipulator"
-                keep_orientation="false"
-                keep_orientation_tolerance="0.05"
-                link_padding="0.01"
-                seed="0"
-                velocity_scale_factor="1.0"
                 waypoint_name="Home"
               />
             </Control>

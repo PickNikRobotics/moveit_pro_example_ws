@@ -6,16 +6,11 @@
       <Action ID="ClearSnapshot" />
       <!--View workspace and register part-->
       <SubTree
-        ID="Move to Waypoint (JTC)"
+        ID="Move to Waypoint"
         _collapsed="true"
-        acceleration_scale_factor="1.0"
-        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-        controller_names="joint_trajectory_controller"
+        controller_action_server="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+        controller_names="joint_trajectory_admittance_controller"
         joint_group_name="manipulator"
-        keep_orientation="false"
-        keep_orientation_tolerance="0.05"
-        link_padding="0.01"
-        velocity_scale_factor="1.0"
         waypoint_name="Retract"
         name="View Workspace"
       />
@@ -39,16 +34,11 @@
       </Control>
       <!--Move the tool to a pose near the part-->
       <SubTree
-        ID="Move to Waypoint (JTC)"
+        ID="Move to Waypoint"
         _collapsed="true"
-        acceleration_scale_factor="1.0"
-        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-        controller_names="joint_trajectory_controller"
+        controller_action_server="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+        controller_names="joint_trajectory_admittance_controller"
         joint_group_name="manipulator"
-        keep_orientation="false"
-        keep_orientation_tolerance="0.05"
-        link_padding="0.01"
-        velocity_scale_factor="1.0"
         waypoint_name="Pre Grind"
       />
       <!--Load grinding poses-->
@@ -94,23 +84,14 @@
       />
       <!--Wait for user to approve the grinding path and then execute it-->
       <Action ID="WaitForUserTrajectoryApproval" solution="{debug_solution}" />
-      <Action
-        ID="ExecuteTrajectory"
-        execution_pipeline="jtc"
-        controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
-      />
+      <Action ID="ExecuteTrajectory" />
       <!--Move away from the part after completing the grinding path-->
       <SubTree
-        ID="Move to Waypoint (JTC)"
+        ID="Move to Waypoint"
         _collapsed="true"
-        acceleration_scale_factor="1.0"
-        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-        controller_names="joint_trajectory_controller"
+        controller_action_server="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+        controller_names="joint_trajectory_admittance_controller"
         joint_group_name="manipulator"
-        keep_orientation="false"
-        keep_orientation_tolerance="0.05"
-        link_padding="0.01"
-        velocity_scale_factor="1.0"
         waypoint_name="Approach"
       />
     </Control>

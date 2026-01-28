@@ -23,7 +23,7 @@
           controller_switch_action_name="/controller_manager/switch_controller"
           strictness="1"
           timeout="-1.000000"
-          activate_controllers="joint_trajectory_controller"
+          activate_controllers="joint_trajectory_admittance_controller"
         />
         <Action
           ID="LoadPoseStampedVectorFromYaml"
@@ -59,11 +59,7 @@
           pose_marker_size="0.100000"
           show_poses="false"
         />
-        <Action
-          ID="ExecuteTrajectory"
-          execution_pipeline="jtc"
-          controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
-        />
+        <Action ID="ExecuteTrajectory" />
       </Control>
     </Control>
   </BehaviorTree>

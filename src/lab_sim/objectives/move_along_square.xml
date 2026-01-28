@@ -5,7 +5,7 @@
     <Control ID="Sequence">
       <Action
         ID="InitializeMTCTask"
-        controller_names="joint_trajectory_controller"
+        controller_names="joint_trajectory_admittance_controller"
         task="{mtc_task}"
         task_id="move_along_axis"
         timeout="-1.000000"
@@ -73,11 +73,7 @@
         axis_x="-1.0"
       />
       <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
-      <SubTree
-        ID="Execute MTC Solution (JTC)"
-        solution="{mtc_solution}"
-        goal_duration_tolerance="-1.0"
-      />
+      <SubTree ID="Execute MTC Solution" solution="{mtc_solution}" />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
