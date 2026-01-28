@@ -114,6 +114,7 @@ right_joint_trajectory_admittance_controller:
 
 left_velocity_force_controller:
   ros__parameters:
+    planning_group_name: left_manipulator
     # The tip link of the kinematic chain, i.e. the frame that will be controlled.
     ee_frame: left_grasp_link
     # The frame where the force / torque sensor reading is given.
@@ -178,6 +179,7 @@ left_velocity_force_controller:
 
 right_velocity_force_controller:
   ros__parameters:
+    planning_group_name: right_manipulator
     # The tip link of the kinematic chain, i.e. the frame that will be controlled.
     ee_frame: right_grasp_link
     # The frame where the force / torque sensor reading is given.

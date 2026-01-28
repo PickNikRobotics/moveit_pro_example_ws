@@ -47,6 +47,7 @@ franka_robot_state_broadcaster:
 
 velocity_force_controller:
   ros__parameters:
+    planning_group_name: left_manipulator
     # The tip link of the kinematic chain, i.e. the frame that will be controlled.
     ee_frame: left_fr3_link8
     # The frame where the force / torque sensor reading is given.
