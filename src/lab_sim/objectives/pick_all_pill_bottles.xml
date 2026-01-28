@@ -9,7 +9,7 @@
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
         ID="LogMessage"
-        log_level="warn"
+        log_level="info"
         message="There might be some warnings and errors when this Objective runs, as long as the Objective completes successfully, everything worked as intended."
         name="Caution about errors"
       />
