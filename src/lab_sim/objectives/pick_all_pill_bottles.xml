@@ -58,7 +58,7 @@
               camera_points_topic="/wrist_camera/points"
               planning_group="manipulator"
               output_grasp="{output_grasp}"
-              object_prompt="a pill bottle"
+              object_prompt="a cylindrical object with a dark gray and silver metallic body, featuring a circular blue cap on top"
               mask_threshold=".15"
               mask_erosion="15"
               name="Get grasp pose for a pill bottle"
