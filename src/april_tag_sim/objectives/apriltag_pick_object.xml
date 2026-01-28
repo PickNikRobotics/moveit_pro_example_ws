@@ -45,7 +45,7 @@
         move_to_pose_solution="{move_to_pose_solution}"
       />
       <SubTree
-        ID="Execute MTC Solution (JTC)"
+        ID="Execute MTC Solution"
         solution="{move_to_pose_solution}"
         goal_duration_tolerance="-1.0"
       />
