@@ -1,6 +1,6 @@
 controller_manager:
   ros__parameters:
-    update_rate: 600  # Hz
+    update_rate: 100  # Hz
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
     first_io_and_status_controller:
@@ -13,6 +13,8 @@ controller_manager:
       type: ur_controllers/GPIOController
     joint_trajectory_controller:
       type: joint_trajectory_controller/JointTrajectoryController
+    joint_trajectory_admittance_controller:
+      type: joint_trajectory_admittance_controller/JointTrajectoryAdmittanceController
     first_robotiq_gripper_controller:
       type: position_controllers/GripperActionController
     second_robotiq_gripper_controller:
@@ -165,6 +167,17 @@ joint_trajectory_controller:
         goal: 0.05
       fourth_wrist_3_joint:
         goal: 0.05
+
+joint_trajectory_admittance_controller:
+  ros__parameters:
+    planning_group_name: manipulator
+    # Specifies the frame/link name of the end-effector frame. Must exist in the robot description.
+    ee_frame: first_grasp_link
+    sensor_frame: first_grasp_link
+    # Joint accelerations to use for immediate stops (e.g. when cancelling a running trajectory).
+    stop_accelerations: [30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0]
+    # Default maximum joint-space deviation accepted along the trajectory, if not specified in the goal message.
+    default_path_tolerance: 0.5
 
 first_robotiq_gripper_controller:
   ros__parameters:
