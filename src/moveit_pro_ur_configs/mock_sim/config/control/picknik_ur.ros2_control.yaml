@@ -15,6 +15,8 @@ controller_manager:
       type: joint_trajectory_admittance_controller/JointTrajectoryAdmittanceController
     velocity_force_controller:
       type: velocity_force_controller/VelocityForceController
+    joint_velocity_controller:
+      type: joint_velocity_controller/JointVelocityController
 
 io_and_status_controller:
   ros__parameters:
@@ -59,6 +61,14 @@ joint_trajectory_controller:
         goal: 0.05
       wrist_3_joint:
         goal: 0.05
+
+robotiq_gripper_controller:
+  ros__parameters:
+    default: true
+    joint: robotiq_85_left_knuckle_joint
+    allow_stalling: true
+    stall_timeout: 0.05
+    goal_tolerance: 0.02
 
 joint_trajectory_admittance_controller:
   ros__parameters:
@@ -116,3 +126,31 @@ velocity_force_controller:
       - 40.0
       - 40.0
       - 40.0
+
+joint_velocity_controller:
+  ros__parameters:
+    # Joint group to control.
+    planning_group_name: manipulator
+    # Maximum joint-space velocities.
+    max_joint_velocity:
+      - 0.524
+      - 0.524
+      - 0.524
+      - 1.047
+      - 1.047
+      - 1.047
+    # Maximum joint-space accelerations.
+    max_joint_acceleration:
+      - 52.4
+      - 52.4
+      - 52.4
+      - 52.4
+      - 52.4
+      - 52.4
+    command_interfaces: ["position"]
+    # Padding (in radians) to add to joint position limits as a safety margin.
+    joint_limit_position_tolerance: 0.02
+    # Timeout in seconds after which the controller will stop motion if no new commands are received.
+    command_timeout: 0.2
+    # Rate in Hz at which the controller will publish the state.
+    state_publish_rate: 20
