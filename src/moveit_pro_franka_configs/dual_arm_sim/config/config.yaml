@@ -123,7 +123,7 @@ ros2_control:
     - "left_gripper_controller"
     - "right_gripper_controller"
     - "joint_state_broadcaster"
-    - "joint_trajectory_controller"
+    - "joint_trajectory_admittance_controller"
   # Load but do not start these controllers so they can be activated later if needed.
   # [Optional, default=[]]
   controllers_inactive_at_startup:
@@ -134,6 +134,9 @@ ros2_control:
     - "right_joint_velocity_controller"
     - "left_joint_trajectory_controller"
     - "right_joint_trajectory_controller"
+    - "joint_trajectory_controller"
+    - "left_joint_trajectory_admittance_controller"
+    - "right_joint_trajectory_admittance_controller"
   # Any controllers here will not be spawned by MoveIt Pro.
   # [Optional, default=[]]
   controllers_not_managed: []
