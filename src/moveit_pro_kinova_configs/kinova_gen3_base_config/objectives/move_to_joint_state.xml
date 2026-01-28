@@ -18,7 +18,6 @@
       />
       <Action
         ID="ExecuteTrajectory"
-        execution_pipeline="jtc"
         controller_action_name="{controller_action_server}"
       />
     </Control>
@@ -34,11 +33,11 @@
       <input_port name="acceleration_scale_factor" default="1.0" />
       <input_port
         name="controller_names"
-        default="joint_trajectory_controller"
+        default="joint_trajectory_admittance_controller"
       />
       <input_port
         name="controller_action_server"
-        default="/joint_trajectory_controller/follow_joint_trajectory"
+        default="/joint_trajectory_admittance_controller/follow_joint_trajectory"
       />
       <MetadataFields>
         <Metadata subcategory="Motion - Execute" />

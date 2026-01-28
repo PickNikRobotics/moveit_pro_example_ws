@@ -9,22 +9,14 @@
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree
-        ID="Move to Waypoint (JTC)"
+        ID="Move to Waypoint"
         _collapsed="false"
-        acceleration_scale_factor="1.0"
-        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-        controller_names="joint_trajectory_controller"
-        joint_group_name="manipulator"
-        keep_orientation="false"
-        keep_orientation_tolerance="0.05"
-        link_padding="0.01"
-        velocity_scale_factor="1.0"
         waypoint_name="View Satellite"
       />
       <Control ID="Sequence">
         <Action
           ID="SwitchController"
-          activate_controllers="joint_trajectory_controller"
+          activate_controllers="joint_trajectory_admittance_controller"
         />
         <Action
           ID="CreateStampedPose"
@@ -106,11 +98,7 @@
             cartesian_space_step="0.02"
             debug_solution="{debug_solution}"
           />
-          <Action
-            ID="ExecuteTrajectory"
-            execution_pipeline="jtc"
-            controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
-          />
+          <Action ID="ExecuteTrajectory" />
         </Control>
       </Decorator>
     </Control>

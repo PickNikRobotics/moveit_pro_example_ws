@@ -11,7 +11,7 @@
       <Control ID="Sequence">
         <Action
           ID="SwitchController"
-          activate_controllers="joint_trajectory_controller"
+          activate_controllers="joint_trajectory_admittance_controller"
         />
         <Action
           ID="CreateStampedPose"
@@ -91,11 +91,7 @@
             cartesian_space_step="0.02"
             debug_solution="{debug_solution}"
           />
-          <Action
-            ID="ExecuteTrajectory"
-            execution_pipeline="jtc"
-            controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
-          />
+          <Action ID="ExecuteTrajectory" />
         </Control>
       </Decorator>
     </Control>

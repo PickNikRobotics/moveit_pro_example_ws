@@ -12,20 +12,7 @@
         log_level="warn"
         message="There will be an error when the stiching occurs and the first goal is aborted, this is expected."
       />
-      <SubTree
-        ID="Move to Waypoint (JTC)"
-        _collapsed="true"
-        joint_group_name="manipulator"
-        controller_names="joint_trajectory_controller"
-        waypoint_name="Home"
-        acceleration_scale_factor="1.0"
-        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-        keep_orientation="false"
-        keep_orientation_tolerance="0.05"
-        link_padding="0.01"
-        velocity_scale_factor="1.0"
-        seed="0"
-      />
+      <SubTree ID="Move to Waypoint" _collapsed="true" waypoint_name="Home" />
       <Action
         ID="GetCurrentPlanningScene"
         planning_scene_msg="{planning_scene}"
