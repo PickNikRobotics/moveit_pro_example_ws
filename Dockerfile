@@ -6,7 +6,7 @@
 #
 
 # Specify the MoveIt Pro release to build on top of.
-ARG MOVEIT_PRO_BASE_IMAGE=picknikciuser/moveit-studio:${MOVEIT_DOCKER_TAG:-main}
+ARG MOVEIT_PRO_BASE_IMAGE=picknikciuser/moveit-studio:${MOVEIT_DOCKER_TAG:-main}-${MOVEIT_ROS_DISTRO:-humble}
 ARG USERNAME=moveit-pro-user
 ARG USER_UID=1000
 ARG USER_GID=1000
