@@ -48,16 +48,8 @@ joint_trajectory_controller:
 
 joint_trajectory_admittance_controller:
   ros__parameters:
-    joints:
-      - fr3_joint1
-      - fr3_joint2
-      - fr3_joint3
-      - fr3_joint4
-      - fr3_joint5
-      - fr3_joint6
-      - fr3_joint7
-    # Specifies the base link of the kinematic chain. Must exist in the robot description.
-    base_frame: fr3_link0
+    # Joint group to control.
+    planning_group_name: manipulator
     # Specifies the frame/link name of the force torque sensor. Must exist in the robot description.
     sensor_frame: fr3_link8
     # Specifies the frame/link name of the end-effector frame. Must exist in the robot description.
@@ -96,17 +88,7 @@ joint_trajectory_admittance_controller:
 
 velocity_force_controller:
   ros__parameters:
-    # Joints that the controller will claim.
-    joints:
-      - fr3_joint1
-      - fr3_joint2
-      - fr3_joint3
-      - fr3_joint4
-      - fr3_joint5
-      - fr3_joint6
-      - fr3_joint7
-    # Base frame of the kinematic chain, for computation of arm kinematics.
-    base_frame: fr3_link0
+    planning_group_name: manipulator
     # The tip link of the kinematic chain, i.e. the frame that will be controlled.
     ee_frame: grasp_link
     # The frame where the force / torque sensor reading is given.
