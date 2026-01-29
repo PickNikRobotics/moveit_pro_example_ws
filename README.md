@@ -11,6 +11,7 @@ Since the [picknik_accessories](https://github.com/PickNikRobotics/picknik_acces
 Please ensure you have the submodule up to date using:
 ```bash
 git submodule update --recursive --init
+git submodule foreach --recursive git lfs pull
 ```
 
 ## Working with Git Subtrees
