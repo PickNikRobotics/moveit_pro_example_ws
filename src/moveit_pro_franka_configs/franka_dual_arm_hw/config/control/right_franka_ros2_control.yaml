@@ -47,17 +47,7 @@ franka_robot_state_broadcaster:
 
 velocity_force_controller:
   ros__parameters:
-    # Joints that the controller will claim.
-    joints:
-      - right_fr3_joint1
-      - right_fr3_joint2
-      - right_fr3_joint3
-      - right_fr3_joint4
-      - right_fr3_joint5
-      - right_fr3_joint6
-      - right_fr3_joint7
-    # Base frame of the kinematic chain, for computation of arm kinematics.
-    base_frame: right_fr3_link0
+    planning_group_name: right_manipulator
     # The tip link of the kinematic chain, i.e. the frame that will be controlled.
     ee_frame: right_fr3_link8
     # The frame where the force / torque sensor reading is given.
