@@ -1,5 +1,4 @@
 SetAdmittanceParameters:
-  base_frame: "base_link"
   controller_name: ""
   end_effector_frame: "grasp_link"
   control_frame: "grasp_link"

@@ -47,7 +47,6 @@ SetAdmittanceParameters:
       x: 80
       y: 80
       z: 80
-  base_frame: base_link
   control_frame: grasp_link
   controller_name: ''
   end_effector_frame: grasp_link
