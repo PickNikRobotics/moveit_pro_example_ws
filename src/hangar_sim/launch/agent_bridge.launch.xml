@@ -3,10 +3,5 @@
   <include
     file="$(find-pkg-share moveit_studio_agent)/launch/studio_agent_bridge.launch.xml"
   />
-  <!--  <node-->
-  <!--    pkg="hangar_sim"-->
-  <!--    exec="odometry_joint_state_publisher.py"-->
-  <!--    name="odometry_joint_state_publisher"-->
-  <!--    output="both"-->
-  <!--  />-->
+  <include file="$(find-pkg-share hangar_sim)/launch/fuse.launch.py" />
 </launch>
