@@ -1,0 +1,69 @@
+# Mobile base localization configuration using fuse
+# Using 3D odometry model for wheel odometry-based pose estimation
+state_estimator:
+  ros__parameters:
+    # Fixed-lag smoother configuration
+    optimization_frequency: 20.0
+    transaction_timeout: 0.01
+    lag_duration: 0.5
+
+    # Motion model for mobile base (3D omnidirectional)
+    motion_models:
+      mobile_base_motion:
+        type: fuse_models::Omnidirectional3D
+
+    mobile_base_motion:
+      # Process noise for state variables
+      # Order: x, y, z, roll, pitch, yaw, vx, vy, vz, vroll, vpitch, vyaw, ax, ay, az
+      process_noise_diagonal: [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 1.0, 1.0, 1.0]
+
+    sensor_models:
+      initial_localization_sensor:
+        type: fuse_models::Omnidirectional3DIgnition
+        motion_models: [mobile_base_motion]
+        ignition: true
+      wheel_odom_sensor:
+        type: fuse_models::Odometry3D
+        motion_models: [mobile_base_motion]
+
+    initial_localization_sensor:
+      publish_on_startup: true
+      # Order: x, y, z, roll, pitch, yaw, vx, vy, vz, vroll, vpitch, vyaw, ax, ay, az
+      initial_state: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+      initial_sigma: [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
+
+    wheel_odom_sensor:
+      # Using /odom_reliable from QoS relay (bridges BEST_EFFORT to RELIABLE)
+      topic: /odom_reliable
+      queue_size: 10
+      # 2D position from wheels (no z)
+      position_dimensions: ['x', 'y']
+      # Heading only
+      orientation_dimensions: ['yaw']
+      # Forward velocity
+      linear_velocity_dimensions: ['x']
+      # Turn rate
+      angular_velocity_dimensions: ['yaw']
+      # Use relative constraints (pose changes rather than absolute poses)
+      differential: true
+      # Covariances - use large values for unused dimensions
+      # Order: x, y, z, roll, pitch, yaw
+      pose_covariance_diagonal: [0.05, 0.05, 1e9, 1e9, 1e9, 0.05]
+      # Order: vx, vy, vz, vroll, vpitch, vyaw
+      twist_covariance_diagonal: [0.05, 1e9, 1e9, 1e9, 1e9, 0.05]
+
+    # Publish filtered odometry
+    publishers:
+      filtered_publisher:
+        type: fuse_models::Odometry3DPublisher
+
+    filtered_publisher:
+      topic: 'odom_filtered'
+      base_link_frame_id: 'base_footprint'
+      base_link_output_frame_id: 'base_footprint'
+      odom_frame_id: 'odom'
+      map_frame_id: 'map'
+      world_frame_id: 'odom'
+      publish_tf: true
+      publish_frequency: 10.0
+      predict_to_current_time: true
