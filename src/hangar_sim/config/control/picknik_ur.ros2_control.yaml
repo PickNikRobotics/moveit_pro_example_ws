@@ -11,6 +11,8 @@ controller_manager:
       type: clearpath_mecanum_drive_controller/MecanumDriveController
     platform_velocity_controller_nav2:
       type: clearpath_mecanum_drive_controller/MecanumDriveController
+    imu_sensor_broadcaster:
+      type: imu_sensor_broadcaster/IMUSensorBroadcaster
     vacuum_gripper:
       type: position_controllers/GripperActionController
     velocity_force_controller:
@@ -276,6 +278,11 @@ force_torque_sensor_broadcaster:
       - torque.y
       - torque.z
     frame_id: tool0
+
+imu_sensor_broadcaster:
+  ros__parameters:
+    sensor_name: imu_site
+    frame_id: imu_link
 
 
 velocity_force_controller:
