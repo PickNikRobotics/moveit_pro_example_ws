@@ -48,7 +48,7 @@
         <Decorator ID="Delay" delay_msec="100">
           <Decorator ID="ForceSuccess">
             <Decorator ID="Timeout" msec="15000">
-              <Control ID="Parallel" success_count="1">
+              <Control ID="Parallel" success_count="2">
                 <Decorator ID="KeepRunningUntilFailure">
                   <Decorator ID="Delay" delay_msec="10">
                     <Control ID="Sequence">
