@@ -284,18 +284,6 @@ def generate_launch_description():
         output="log",
     )
 
-    # Fuse state estimator for mobile base localization
-    hangar_sim_pkg = FindPackageShare("hangar_sim")
-    fuse_state_estimator = Node(
-        package="fuse_optimizers",
-        executable="fixed_lag_smoother_node",
-        name="state_estimator",
-        parameters=[
-            PathJoinSubstitution([hangar_sim_pkg, "config", "fuse", "fuse.yaml"])
-        ],
-        output="screen",
-    )
-
     # Create the launch description and populate
     ld = LaunchDescription()
 
@@ -326,6 +314,18 @@ def generate_launch_description():
     ld.add_action(static_tf_map_to_odom)
     ld.add_action(odom_to_joint_state_repub)
     ld.add_action(odom_qos_relay)
+
+    # Fuse state estimator for mobile base localization
+    hangar_sim_pkg = FindPackageShare("hangar_sim")
+    fuse_state_estimator = Node(
+        package="fuse_optimizers",
+        executable="fixed_lag_smoother_node",
+        name="state_estimator",
+        parameters=[
+            PathJoinSubstitution([hangar_sim_pkg, "config", "fuse", "fuse.yaml"])
+        ],
+        output="screen",
+    )
     ld.add_action(fuse_state_estimator)
 
     return ld
