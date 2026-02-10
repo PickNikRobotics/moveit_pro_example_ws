@@ -35,17 +35,8 @@ from launch_ros.actions import Node
 from launch.substitutions import ThisLaunchFileDir
 from launch.launch_description_sources import AnyLaunchDescriptionSource
 
-from moveit_studio_utils_py.launch_common import empty_gen
-from moveit_studio_utils_py.system_config import (
-    SystemConfigParser,
-)
-
 
 def generate_launch_description():
-    system_config_parser = SystemConfigParser()
-    hardware_config = system_config_parser.get_hardware_config()
-    controller_config = system_config_parser.get_ros2_control_config()
-
     declare_robot_ip = DeclareLaunchArgument(
         "robot_ip", description="IP address of the robot"
     )
@@ -60,23 +51,6 @@ def generate_launch_description():
         parameters=[{"robot_ip": robot_ip}],
     )
 
-    protective_stop_manager_node = Node(
-        package="moveit_studio_ur_pstop_manager",
-        executable="protective_stop_manager_node",
-        name="protective_stop_manager_node",
-        output="both",
-        parameters=[
-            {
-                "controllers_default_active": controller_config.get(
-                    "controllers_active_at_startup", empty_gen()
-                ),
-                "controllers_default_not_active": controller_config.get(
-                    "controllers_inactive_at_startup", empty_gen()
-                ),
-            }
-        ],
-    )
-
     tool_comms_launch = IncludeLaunchDescription(
         AnyLaunchDescriptionSource([ThisLaunchFileDir(), "/ur_tool_comms.launch.xml"]),
         launch_arguments={
@@ -88,7 +62,6 @@ def generate_launch_description():
 
     nodes_to_launch = [
         dashboard_client_node,
-        protective_stop_manager_node,
         tool_comms_launch,
     ]
 
