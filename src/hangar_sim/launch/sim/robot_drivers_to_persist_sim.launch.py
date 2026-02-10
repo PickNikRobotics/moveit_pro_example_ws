@@ -250,14 +250,6 @@ def generate_launch_description():
         }.items(),
     )
 
-    # Mock the UR Dashboard Client
-    mock_dashboard_client = Node(
-        package="moveit_studio_ur_pstop_manager",
-        executable="mock_ur_dashboard_client_node",
-        name="dashboard_client",
-        output="both",
-    )
-
     # Static TF between mjWorld and map frame
     static_tf_world_to_map = Node(
         package="tf2_ros",
@@ -329,8 +321,6 @@ def generate_launch_description():
     # ld.add_action(declare_rviz_config_file_cmd)
     # ld.add_action(declare_use_rviz_cmd)
     # ld.add_action(rviz_cmd)
-
-    ld.add_action(mock_dashboard_client)
 
     ld.add_action(static_tf_world_to_map)
     ld.add_action(static_tf_map_to_odom)
