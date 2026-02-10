@@ -282,7 +282,10 @@ def generate_launch_description():
         output="log",
     )
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 5c3330bb (adding IMU fuse plugin to hangar_sim)
     # Create the launch description and populate
     ld = LaunchDescription()
 
