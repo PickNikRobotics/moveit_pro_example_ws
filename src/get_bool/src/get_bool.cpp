@@ -8,8 +8,8 @@
 
 #include "fmt/format.h"
 
-#include "moveit_studio_behavior_interface/get_required_ports.hpp"
-#include "moveit_studio_behavior_interface/metadata_fields.hpp"
+#include "moveit_pro_behavior_interface/get_required_ports.hpp"
+#include "moveit_pro_behavior_interface/metadata_fields.hpp"
 
 namespace get_bool
 {
@@ -19,8 +19,8 @@ constexpr auto kPortIdBoolTopicName = "bool_topic_name";
 constexpr auto kPortIdBoolValue = "subscribed_bool";
 
 GetBool::GetBool(const std::string& name, const BT::NodeConfiguration& config,
-                 const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources)
-  : moveit_studio::behaviors::SharedResourcesNode<BT::StatefulActionNode>(name, config, shared_resources)
+                 const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources)
+  : moveit_pro::behaviors::SharedResourcesNode<BT::StatefulActionNode>(name, config, shared_resources)
 {
 }
 
@@ -34,14 +34,14 @@ BT::PortsList GetBool::providedPorts()
 
 BT::KeyValueVector GetBool::metadata()
 {
-  return { { moveit_studio::behaviors::kSubcategoryMetadataKey, "User Created Behaviors" },
-           { moveit_studio::behaviors::kDescriptionMetadataKey,
+  return { { moveit_pro::behaviors::kSubcategoryMetadataKey, "User Created Behaviors" },
+           { moveit_pro::behaviors::kDescriptionMetadataKey,
              "Subscribe to a bool message and store it on the blackboard." } };
 }
 
 BT::NodeStatus GetBool::onStart()
 {
-  const auto ports = moveit_studio::behaviors::getRequiredInputs(getInput<std::string>(kPortIdBoolTopicName));
+  const auto ports = moveit_pro::behaviors::getRequiredInputs(getInput<std::string>(kPortIdBoolTopicName));
 
   if (!ports.has_value())
   {

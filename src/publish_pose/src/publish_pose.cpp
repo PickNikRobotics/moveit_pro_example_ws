@@ -1,6 +1,6 @@
 #include <publish_pose/publish_pose.hpp>
 
-#include <moveit_studio_behavior_interface/metadata_fields.hpp>
+#include <moveit_pro_behavior_interface/metadata_fields.hpp>
 
 #include <spdlog/spdlog.h>
 
@@ -10,8 +10,8 @@ namespace publish_pose
 PublishPose::PublishPose(
     const std::string& name,
     const BT::NodeConfiguration& config,
-    const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources)
-  : moveit_studio::behaviors::SharedResourcesNode<BT::SyncActionNode>(
+    const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources)
+  : moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>(
         name, config, shared_resources)
 {
 }
@@ -37,8 +37,8 @@ BT::PortsList PublishPose::providedPorts()
 BT::KeyValueVector PublishPose::metadata()
 {
   return {
-      { moveit_studio::behaviors::kSubcategoryMetadataKey, "ROS Messaging" },
-      { moveit_studio::behaviors::kDescriptionMetadataKey,
+      { moveit_pro::behaviors::kSubcategoryMetadataKey, "ROS Messaging" },
+      { moveit_pro::behaviors::kDescriptionMetadataKey,
         "Publish a geometry_msgs::msg::PoseStamped message to a ROS 2 topic." }
   };
 }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<library path="publish_pose">
+<library path="get_empty">
   <class
-    type="publish_pose::PublishPoseBehaviorsLoader"
+    type="get_empty::GetEmptyBehaviorsLoader"
     base_class_type="moveit_pro::behaviors::SharedResourcesNodeLoaderBase"
   />
 </library>

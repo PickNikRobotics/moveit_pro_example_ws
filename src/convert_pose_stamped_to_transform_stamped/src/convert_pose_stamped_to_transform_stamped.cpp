@@ -10,7 +10,7 @@
 #include <behaviortree_cpp/tree_node.h>
 
 #include "spdlog/spdlog.h"
-#include "moveit_studio_behavior_interface/get_required_ports.hpp"
+#include "moveit_pro_behavior_interface/get_required_ports.hpp"
 
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/transform_stamped.hpp>
@@ -27,8 +27,8 @@ namespace convert_pose_stamped_to_transform_stamped
 
 ConvertPoseStampedToTransformStamped::ConvertPoseStampedToTransformStamped(
     const std::string& name, const BT::NodeConfiguration& config,
-    const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources)
-  : moveit_studio::behaviors::SharedResourcesNode<BT::SyncActionNode>(name, config, shared_resources)
+    const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources)
+  : moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>(name, config, shared_resources)
 {
 }
 
@@ -52,7 +52,7 @@ BT::KeyValueVector ConvertPoseStampedToTransformStamped::metadata()
 
 BT::NodeStatus ConvertPoseStampedToTransformStamped::tick()
 {
-  const auto ports = moveit_studio::behaviors::getRequiredInputs(
+  const auto ports = moveit_pro::behaviors::getRequiredInputs(
       getInput<geometry_msgs::msg::PoseStamped>(kPortIDPoseStamped),
       getInput<std::string>(kPortIDChildFrameId));
 

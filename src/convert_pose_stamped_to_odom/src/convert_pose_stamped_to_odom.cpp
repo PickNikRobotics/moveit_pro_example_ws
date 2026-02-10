@@ -47,7 +47,7 @@ BT::KeyValueVector ConvertPoseStampedToOdom::metadata()
 BT::NodeStatus ConvertPoseStampedToOdom::tick()
 {
   // Required input
-  const auto ports = moveit_studio::behaviors::getRequiredInputs(
+  const auto ports = moveit_pro::behaviors::getRequiredInputs(
       getInput<geometry_msgs::msg::PoseStamped>(kPortIDPoseStamped));
 
   if (!ports.has_value())

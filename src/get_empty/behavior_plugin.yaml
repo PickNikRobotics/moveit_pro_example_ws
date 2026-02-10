@@ -1,0 +1,4 @@
+objectives:
+  behavior_loader_plugins:
+    get_empty:
+      - "get_empty::GetEmptyBehaviorsLoader"

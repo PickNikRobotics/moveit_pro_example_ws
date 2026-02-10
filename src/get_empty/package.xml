@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <package format="3">
-  <name>transform_odom_with_pose</name>
+  <name>get_empty</name>
   <version>0.0.0</version>
-  <description>Transforms odometry messages with a transform defined by a pose stamped message in a different frame.</description>
+  <description>Wait for an empty message to be published on a specified ROS topic and copy it to an output data port.</description>
 
   <maintainer email="support@picknik.ai">
     MoveIt Pro User

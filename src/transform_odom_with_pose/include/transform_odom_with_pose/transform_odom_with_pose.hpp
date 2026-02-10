@@ -1,8 +1,8 @@
 #pragma once
 
 #include <behaviortree_cpp/action_node.h>
-#include <moveit_studio_behavior_interface/get_required_ports.hpp>
-#include <moveit_studio_behavior_interface/shared_resources_node.hpp>
+#include <moveit_pro_behavior_interface/get_required_ports.hpp>
+#include <moveit_pro_behavior_interface/shared_resources_node.hpp>
 
 #include <nav_msgs/msg/odometry.hpp>
 #include <geometry_msgs/msg/pose_stamped.hpp>
@@ -23,7 +23,7 @@ namespace transform_odom_with_pose
  * frame transformations (e.g., logging, frame alignment, or data conditioning).
  */
 class TransformOdomWithPose
-  : public moveit_studio::behaviors::SharedResourcesNode<BT::SyncActionNode>
+  : public moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>
 {
 public:
   /**
@@ -40,7 +40,7 @@ public:
   TransformOdomWithPose(
       const std::string& name,
       const BT::NodeConfiguration& config,
-      const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources);
+      const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources);
 
   /**
    * @brief Define the input and output ports for this Behavior.

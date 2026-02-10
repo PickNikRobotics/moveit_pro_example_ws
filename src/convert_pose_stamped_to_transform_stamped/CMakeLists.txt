@@ -4,7 +4,7 @@ project(convert_pose_stamped_to_transform_stamped CXX)
 find_package(moveit_pro_package REQUIRED)
 moveit_pro_package()
 
-set(THIS_PACKAGE_INCLUDE_DEPENDS moveit_studio_behavior_interface pluginlib)
+set(THIS_PACKAGE_INCLUDE_DEPENDS moveit_pro_behavior_interface pluginlib)
 foreach(package IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${package} REQUIRED)
 endforeach()
@@ -39,7 +39,7 @@ endif()
 # plugin loaders that load the behavior base class library from the
 # moveit_studio_behavior package.
 pluginlib_export_plugin_description_file(
-  moveit_studio_behavior_interface convert_pose_stamped_to_transform_stamped_plugin_description.xml)
+  moveit_pro_behavior_interface convert_pose_stamped_to_transform_stamped_plugin_description.xml)
 
 ament_export_targets(convert_pose_stamped_to_transform_stampedTargets HAS_LIBRARY_TARGET)
 ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS})

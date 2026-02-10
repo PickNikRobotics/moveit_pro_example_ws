@@ -1,10 +1,10 @@
 #pragma once
 
 #include <behaviortree_cpp/action_node.h>
-#include <moveit_studio_behavior_interface/get_required_ports.hpp>
+#include <moveit_pro_behavior_interface/get_required_ports.hpp>
 
 // This header includes the SharedResourcesNode type
-#include <moveit_studio_behavior_interface/shared_resources_node.hpp>
+#include <moveit_pro_behavior_interface/shared_resources_node.hpp>
 
 
 #include <geometry_msgs/msg/pose_stamped.hpp>
@@ -14,7 +14,7 @@ namespace publish_pose
 /**
  * @brief TODO(...)
  */
-class PublishPose : public moveit_studio::behaviors::SharedResourcesNode<BT::SyncActionNode>
+class PublishPose : public moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>
 {
 public:
   /**
@@ -26,7 +26,7 @@ public:
    */
   PublishPose(const std::string& name, 
               const BT::NodeConfiguration& config, 
-              const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources);
+              const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources);
 
   
   /**

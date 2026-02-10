@@ -7,8 +7,8 @@
 #include <nav_msgs/msg/odometry.hpp>
 
 #include <behaviortree_cpp/action_node.h>
-#include <moveit_studio_behavior_interface/get_required_ports.hpp>
-#include <moveit_studio_behavior_interface/shared_resources_node.hpp>
+#include <moveit_pro_behavior_interface/get_required_ports.hpp>
+#include <moveit_pro_behavior_interface/shared_resources_node.hpp>
 
 namespace get_odom_instance
 {
@@ -18,12 +18,12 @@ namespace get_odom_instance
  * The behavior exits successfully after the first message is received.
  */
 class GetOdomInstance
-  : public moveit_studio::behaviors::SharedResourcesNode<BT::StatefulActionNode>
+  : public moveit_pro::behaviors::SharedResourcesNode<BT::StatefulActionNode>
 {
 public:
   GetOdomInstance(const std::string& name,
                   const BT::NodeConfiguration& config,
-                  const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources);
+                  const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources);
 
   static BT::PortsList providedPorts();
   static BT::KeyValueVector metadata();

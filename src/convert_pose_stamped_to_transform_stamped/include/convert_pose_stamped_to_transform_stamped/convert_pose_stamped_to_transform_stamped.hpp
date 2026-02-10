@@ -1,17 +1,17 @@
 #pragma once
 
 #include <behaviortree_cpp/action_node.h>
-#include <moveit_studio_behavior_interface/get_required_ports.hpp>
+#include <moveit_pro_behavior_interface/get_required_ports.hpp>
 
 // This header includes the SharedResourcesNode type
-#include <moveit_studio_behavior_interface/shared_resources_node.hpp>
+#include <moveit_pro_behavior_interface/shared_resources_node.hpp>
 
 namespace convert_pose_stamped_to_transform_stamped
 {
 /**
  * @brief Converts a geometry_msgs::msg::PoseStamped message into a geometry_msgs::msg::TransformStamped message.
  */
-class ConvertPoseStampedToTransformStamped : public moveit_studio::behaviors::SharedResourcesNode<BT::SyncActionNode>
+class ConvertPoseStampedToTransformStamped : public moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>
 {
 public:
   /**
@@ -21,7 +21,7 @@ public:
    * @param shared_resources A shared_ptr to a BehaviorContext that is shared among all SharedResourcesNode Behaviors in the behavior tree. This BehaviorContext is owned by the Studio Agent's ObjectiveServerNode.
    * @details An important limitation is that the members of the base Behavior class are not instantiated until after the initialize() function is called, so these classes should not be used within the constructor.
    */
-  ConvertPoseStampedToTransformStamped(const std::string& name, const BT::NodeConfiguration& config, const std::shared_ptr<moveit_studio::behaviors::BehaviorContext>& shared_resources);
+  ConvertPoseStampedToTransformStamped(const std::string& name, const BT::NodeConfiguration& config, const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources);
 
   /**
    * @brief Implementation of the required providedPorts() function for the convert_pose_stamped_to_transform_stamped Behavior.
