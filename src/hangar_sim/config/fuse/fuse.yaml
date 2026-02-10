@@ -25,6 +25,9 @@ state_estimator:
       wheel_odom_sensor:
         type: fuse_models::Odometry3D
         motion_models: [mobile_base_motion]
+      imu_sensor:
+        type: fuse_models::Imu3D
+        motion_models: [mobile_base_motion]
 
     initial_localization_sensor:
       publish_on_startup: true
@@ -52,6 +55,21 @@ state_estimator:
       # Order: vx, vy, vz, vroll, vpitch, vyaw
       twist_covariance_diagonal: [0.05, 1e9, 1e9, 1e9, 1e9, 0.05]
 
+    imu_sensor:
+      topic: /imu_sensor_broadcaster/imu
+      # Orientation from IMU
+      orientation_dimensions: ['roll', 'pitch', 'yaw']
+      # Angular velocity from gyroscope
+      angular_velocity_dimensions: ['roll', 'pitch', 'yaw']
+      # Linear acceleration from accelerometer
+      linear_acceleration_dimensions: ['x', 'y', 'z']
+      # Transform accelerations into base frame
+      acceleration_target_frame: 'ridgeback_base_link'
+      twist_target_frame: 'ridgeback_base_link'
+      # Remove gravity from acceleration measurements
+      remove_gravitational_acceleration: true
+      queue_size: 10
+
     # Publish filtered odometry
     publishers:
       filtered_publisher:
@@ -59,8 +77,8 @@ state_estimator:
 
     filtered_publisher:
       topic: 'odom_filtered'
-      base_link_frame_id: 'base_footprint'
-      base_link_output_frame_id: 'base_footprint'
+      base_link_frame_id: 'ridgeback_base_link'
+      base_link_output_frame_id: 'ridgeback_base_link'
       odom_frame_id: 'odom'
       map_frame_id: 'map'
       world_frame_id: 'odom'
