@@ -5,7 +5,7 @@ state_estimator:
     # Fixed-lag smoother configuration
     optimization_frequency: 20.0
     transaction_timeout: 0.01
-    lag_duration: 0.5
+    lag_duration: 1.0
 
     # Motion model for mobile base (3D omnidirectional)
     motion_models:
@@ -15,7 +15,8 @@ state_estimator:
     mobile_base_motion:
       # Process noise for state variables
       # Order: x, y, z, roll, pitch, yaw, vx, vy, vz, vroll, vpitch, vyaw, ax, ay, az
-      process_noise_diagonal: [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 1.0, 1.0, 1.0]
+      #        Ground robot: z, roll, pitch tightly constrained
+      process_noise_diagonal: [0.005, 0.005, 0.0001, 0.0001, 0.0001, 0.005, 0.005, 0.005, 0.0001, 0.0001, 0.0001, 0.005, 0.05, 0.05, 0.001]
 
     sensor_models:
       initial_localization_sensor:
@@ -25,32 +26,54 @@ state_estimator:
       wheel_odom_sensor:
         type: fuse_models::Odometry3D
         motion_models: [mobile_base_motion]
+      imu_sensor:
+        type: fuse_models::Imu3D
+        motion_models: [mobile_base_motion]
 
     initial_localization_sensor:
       publish_on_startup: true
       # Order: x, y, z, roll, pitch, yaw, vx, vy, vz, vroll, vpitch, vyaw, ax, ay, az
       initial_state: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-      initial_sigma: [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
+      # Order: x, y, z, roll, pitch, yaw, vx, vy, vz, vroll, vpitch, vyaw, ax, ay, az
+      #        Moderate x,y,yaw sigma: some initial position uncertainty
+      #        Tight z,roll,pitch: ground robot constraints
+      initial_sigma: [1.0, 1.0, 0.01, 0.01, 0.01, 0.5, 0.1, 0.1, 0.01, 0.01, 0.01, 0.1, 0.1, 0.1, 0.01]
 
     wheel_odom_sensor:
       # Using /odom_reliable from QoS relay (bridges BEST_EFFORT to RELIABLE)
       topic: /odom_reliable
       queue_size: 10
-      # 2D position from wheels (no z)
-      position_dimensions: ['x', 'y']
+      # Position from wheels (z=0 from odom_zero_z anchors the ground plane)
+      position_dimensions: ['x', 'y', 'z']
       # Heading only
       orientation_dimensions: ['yaw']
       # Forward velocity
       linear_velocity_dimensions: ['x']
       # Turn rate
       angular_velocity_dimensions: ['yaw']
-      # Use relative constraints (pose changes rather than absolute poses)
+      # Use relative constraints (physically correct - wheel odom errors are correlated)
       differential: true
       # Covariances - use large values for unused dimensions
       # Order: x, y, z, roll, pitch, yaw
-      pose_covariance_diagonal: [0.05, 0.05, 1e9, 1e9, 1e9, 0.05]
+      pose_covariance_diagonal: [0.01, 0.01, 0.0001, 1e9, 1e9, 0.01]
       # Order: vx, vy, vz, vroll, vpitch, vyaw
-      twist_covariance_diagonal: [0.05, 1e9, 1e9, 1e9, 1e9, 0.05]
+      twist_covariance_diagonal: [0.01, 1e9, 1e9, 1e9, 1e9, 0.01]
+
+    imu_sensor:
+      topic: /imu_sensor_broadcaster/imu
+      # Orientation: all axes, but in differential mode to avoid
+      # frame mismatch (MuJoCo framequat is in world frame, not odom frame).
+      # Differential uses orientation *changes* between readings, so no
+      # absolute reference frame is needed.
+      orientation_dimensions: ['roll', 'pitch', 'yaw']
+      differential: true
+      # Angular velocity from gyroscope
+      angular_velocity_dimensions: ['roll', 'pitch', 'yaw']
+      # No linear acceleration - accelerometer biases double-integrate
+      # into position drift. For a ground robot with wheel odom providing
+      # position, the accelerometer is a net negative for accuracy.
+      twist_target_frame: 'ridgeback_base_link'
+      queue_size: 10
 
     # Publish filtered odometry
     publishers:
@@ -59,8 +82,8 @@ state_estimator:
 
     filtered_publisher:
       topic: 'odom_filtered'
-      base_link_frame_id: 'base_footprint'
-      base_link_output_frame_id: 'base_footprint'
+      base_link_frame_id: 'ridgeback_base_link'
+      base_link_output_frame_id: 'ridgeback_base_link'
       odom_frame_id: 'odom'
       map_frame_id: 'map'
       world_frame_id: 'odom'
