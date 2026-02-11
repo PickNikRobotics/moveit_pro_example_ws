@@ -16,10 +16,6 @@
 [submodule "src/external_dependencies/ros2_kortex"]
 	path = src/external_dependencies/ros2_kortex
 	url = https://github.com/PickNikRobotics/ros2_kortex.git
-[submodule "src/external_dependencies/franka_config/franka_ros2"]
-	path = src/external_dependencies/franka_config/franka_ros2
-	url = https://github.com/PickNikRobotics/franka_ros2.git
-	branch = humble-fixes
 [submodule "src/external_dependencies/franka_config/franka_description"]
 	path = src/external_dependencies/franka_config/franka_description
 	url = https://github.com/frankarobotics/franka_description.git
