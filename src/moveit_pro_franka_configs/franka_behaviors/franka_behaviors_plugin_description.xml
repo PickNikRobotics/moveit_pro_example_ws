@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<library path="franka_behaviors">
-  <class
-    type="franka_behaviors::FrankaBehaviorsLoader"
-    base_class_type="moveit_pro::behaviors::SharedResourcesNodeLoaderBase"
-  />
-</library>
