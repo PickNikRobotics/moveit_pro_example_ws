@@ -18,3 +18,7 @@ src/moveit_pro_franka_configs/dual_arm_sim/objectives/wipe.yaml filter=lfs diff=
 src/moveit_pro_franka_configs/franka_dual_arm_hw/objectives/loves.yaml filter=lfs diff=lfs merge=lfs -text
 src/moveit_pro_franka_configs/franka_dual_arm_hw/objectives/moveit_pro.yaml filter=lfs diff=lfs merge=lfs -text
 src/moveit_pro_franka_configs/franka_dual_arm_hw/objectives/wipe.yaml filter=lfs diff=lfs merge=lfs -text
+*.gtlf filter=lfs diff=lfs merge=lfs -text
+*.png filter=lfs diff=lfs merge=lfs -text
+*.jpg filter=lfs diff=lfs merge=lfs -text
+*.jpeg filter=lfs diff=lfs merge=lfs -text
