@@ -1,105 +1,85 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <root BTCPP_format="4" main_tree_to_execute="Teleop With Meta via Pose v6">
-  <BehaviorTree ID="Teleop With Meta via Pose v6" _description="" _favorite="false">
+  <BehaviorTree ID="Teleop With Meta via Pose v6" _description="Add clutch-in behavior" _favorite="false">
     <Control ID="Sequence" name="TopLevelSequence">
-      <Control ID="Sequence">
-        <!--Get exact grasp_link pose (position + rotation)-->
+      <!--Initial Setup-->
+      <Control ID="Sequence" name="InitialSetup">
+        <!--Initialize target_pose to current end effector (but tracking won't start until clutch)-->
         <Action ID="CreateStampedPose" reference_frame="grasp_link" stamped_pose="{initial_grasp_pose}" name="Get current pose of grasp_link"/>
         <Action ID="TransformPoseFrame" input_pose="{initial_grasp_pose}" output_pose="{initial_grasp_pose}" target_frame_id="world"/>
+        <Action ID="TransformPoseFrame" input_pose="{initial_grasp_pose}" output_pose="{target_pose}" target_frame_id="world"/>
         <Action ID="VisualizePose" pose="{initial_grasp_pose}" marker_name="initial grasp pose" marker_size="0.100000" marker_text="i_g"/>
-        <!--Store initial controller pose-->
-        <Action ID="GetOdomInstance" odom_topic_name="/right_controller_odom" subscribed_odom_instance="{odometry}" name="Store initial pose of controller upon grip event"/>
+        <!--Get initial controller pose in WORLD frame-->
+        <Action ID="GetOdomInstance" odom_topic_name="/right_controller_odom" subscribed_odom_instance="{odometry}" name="Get initial controller pose"/>
         <Action ID="ConvertOdomToPoseStamped" pose_stamped="{initial_controller_pose}" odometry="{odometry}"/>
+        <Action ID="TransformPoseFrame" input_pose="{initial_controller_pose}" output_pose="{initial_controller_pose}" target_frame_id="world"/>
         <Action ID="VisualizePose" pose="{initial_controller_pose}" marker_name="initial controller pose" marker_text="i_c"/>
-        <Action ID="TransformPoseFrame" input_pose="{initial_controller_pose}" output_pose="{initial_controller_pose}" target_frame_id="quest"/>
       </Control>
       <Action ID="SwitchController" activate_controllers="velocity_force_controller"/>
       <Control ID="Sequence" name="Initial values">
         <Action ID="CreateStampedWrench"/>
         <Action ID="CreateStampedTwist" reference_frame="world"/>
+        <!--Initialize grip state tracking AND tracking_enabled flag-->
+        <Action ID="Script" code="prev_grip := false; current_grip := false; rising_edge_detected := false; tracking_enabled := false"/>
       </Control>
-      <!--Initialize grip state tracking-->
-      <Action ID="Script" code="current_grip := false; pose_is_safe := true"/>
-      <Action ID="SetBlackboard" value="false" output_key="subscribed_bool"/>
-      <Control ID="Parallel" failure_count="1" success_count="4">
-        <!--Branch 1: Monitor grip button state continuously-->
-        <Action ID="GetBool" bool_topic_name="right_grip_button_state" subscribed_bool="{subscribed_bool}"/>
-        <!--Branch 2: Rising Edge Detection - keep running forever to detect multiple edges-->
+      <!--Main Control Loop: Parallel with publisher-->
+      <Control ID="Parallel" failure_count="1" success_count="2">
+        <!--Branch 1: Main loop - poll button, detect edges, compute target-->
         <Decorator ID="KeepRunningUntilFailure">
-          <SubTree ID="Rising Edge Detection" bool_topic="right_grip_button_state" current_state="{edge_current_state}" rising_edge="{grip_rising_edge}"/>
-        </Decorator>
-        <!--Branch 3: Main control loop-->
-        <Decorator ID="KeepRunningUntilFailure">
-          <Control ID="Sequence" name="Compute the pose offset from initial_controller to current_controller and apply it to initial_grasp">
-            <!--Store current grip state-->
-            <Action ID="Script" code="current_grip := subscribed_bool"/>
-            <!--Rising edge detection: when grip_rising_edge is true, snap to exact end effector pose-->
-            <Decorator ID="Precondition" else="SUCCESS" if="grip_rising_edge">
-              <Control ID="Sequence" name="Re-align frames on grip button press (snap to exact EE pose)">
-                <Action ID="LogMessage" message="Rising edge detected - snapping to exact end effector pose"/>
-                <!--Get exact grasp_link pose (position + rotation)-->
-                <Action ID="CreateStampedPose" reference_frame="grasp_link" stamped_pose="{initial_grasp_pose}" name="Get current pose of grasp_link"/>
+          <Control ID="Sequence" name="MainControlLoop">
+            <!--Poll the grip button state-->
+            <Action ID="GetBoolInstance" bool_topic_name="/right_grip_button_state" subscribed_bool_instance="{grip_bool_msg}"/>
+            <Action ID="UnpackBoolMessage" bool="{grip_bool_msg}" data="{current_grip}"/>
+            <!--Rising edge detection: rising_edge = current AND NOT prev-->
+            <Action ID="Script" code="rising_edge_detected := current_grip &amp;&amp; !prev_grip"/>
+            <!--On rising edge: snap to end effector pose (clutch-in behavior)-->
+            <Decorator ID="Precondition" else="SUCCESS" if="rising_edge_detected">
+              <Control ID="Sequence" name="SnapToEndEffectorOnClutchIn">
+                <Action ID="LogMessage" message="Clutch-in: Snapping target to end effector pose"/>
+                <!--Enable tracking on first clutch press-->
+                <Action ID="Script" code="tracking_enabled := true"/>
+                <!--SNAP: Get current end effector pose and set it as the initial grasp pose-->
+                <Action ID="CreateStampedPose" reference_frame="grasp_link" stamped_pose="{initial_grasp_pose}" name="Snap to current end effector pose"/>
                 <Action ID="TransformPoseFrame" input_pose="{initial_grasp_pose}" output_pose="{initial_grasp_pose}" target_frame_id="world"/>
+                <!--Set target_pose immediately to the snapped pose-->
+                <Action ID="TransformPoseFrame" input_pose="{initial_grasp_pose}" output_pose="{target_pose}" target_frame_id="world"/>
                 <Action ID="VisualizePose" pose="{initial_grasp_pose}" marker_name="initial grasp pose" marker_size="0.100000" marker_text="i_g"/>
-                <!--Re-capture initial controller pose (for offset calculation)-->
-                <Action ID="GetOdomInstance" odom_topic_name="/right_controller_odom" subscribed_odom_instance="{odometry}" name="Re-store initial pose of controller"/>
+                <!--Capture current controller pose as the new reference in WORLD frame-->
+                <Action ID="GetOdomInstance" odom_topic_name="/right_controller_odom" subscribed_odom_instance="{odometry}" name="Capture controller pose at clutch-in"/>
                 <Action ID="ConvertOdomToPoseStamped" pose_stamped="{initial_controller_pose}" odometry="{odometry}"/>
+                <Action ID="TransformPoseFrame" input_pose="{initial_controller_pose}" output_pose="{initial_controller_pose}" target_frame_id="world"/>
                 <Action ID="VisualizePose" pose="{initial_controller_pose}" marker_name="initial controller pose" marker_text="i_c"/>
-                <Action ID="TransformPoseFrame" input_pose="{initial_controller_pose}" output_pose="{initial_controller_pose}" target_frame_id="quest"/>
               </Control>
             </Decorator>
-            <!--Only compute and publish when grip is held-->
-            <Decorator ID="Precondition" else="SUCCESS" if="current_grip">
-              <Control ID="Sequence" name="Compute and publish target when clutch is depressed">
+            <!--Compute target pose when grip is held (not on rising edge, already handled)-->
+            <Decorator ID="Precondition" else="SUCCESS" if="current_grip &amp;&amp; !rising_edge_detected">
+              <Control ID="Sequence" name="ComputeTargetWhenClutchHeld">
+                <!--Get current controller pose in WORLD frame-->
                 <Action ID="GetOdomInstance" odom_topic_name="/right_controller_odom" subscribed_odom_instance="{odometry}"/>
                 <Action ID="ConvertOdomToPoseStamped" pose_stamped="{controller_pose}" odometry="{odometry}"/>
-                <Action ID="CalculatePoseOffset" destination_pose="{controller_pose}" source_pose="{initial_controller_pose}" source_to_destination_pose="{pose_transform}"/>
-                <Control ID="Sequence" name="I don't remember having to do this unpacking-repacking nonsense the first time I wrote this, but this seems to do the trick.">
-                  <Action ID="UnpackPoseStampedMessage" pose_stamped="{pose_transform}"/>
-                  <Action ID="UnpackPoseMessage" position="{point}" orientation="{quaternion}"/>
-                  <Control ID="Sequence">
-                    <Action ID="UnpackPointMessage" x="{x}"/>
-                    <Action ID="ResetVector" vector="{vec_position}"/>
-                    <Action ID="InsertInVector" index="0" input_vector="{vec_position}" output_vector="{vec_position}" element="{x}"/>
-                    <Action ID="InsertInVector" index="1" input_vector="{vec_position}" output_vector="{vec_position}" element="{y}"/>
-                    <Action ID="InsertInVector" index="2" input_vector="{vec_position}" output_vector="{vec_position}" element="{z}"/>
-                    <Action ID="UnpackQuaternionMessage" w="{qw}" x="{qx}" y="{qy}" z="{qz}"/>
-                    <Action ID="ResetVector" vector="{vec_quaternion}"/>
-                    <Action ID="InsertInVector" output_vector="{vec_quaternion}" input_vector="{vec_quaternion}" index="0" element="{qx}"/>
-                    <Action ID="InsertInVector" output_vector="{vec_quaternion}" input_vector="{vec_quaternion}" index="1" element="{qy}"/>
-                    <Action ID="InsertInVector" output_vector="{vec_quaternion}" input_vector="{vec_quaternion}" index="2" element="{qz}"/>
-                    <Action ID="InsertInVector" output_vector="{vec_quaternion}" input_vector="{vec_quaternion}" index="3" element="{qw}"/>
-                  </Control>
-                </Control>
-                <Action ID="TransformPose" quaternion_xyzw="{vec_quaternion}" translation_xyz="{vec_position}" input_pose="{initial_grasp_pose}" output_pose="{target_pose}"/>
+                <Action ID="TransformPoseFrame" input_pose="{controller_pose}" output_pose="{controller_pose}" target_frame_id="world"/>
+                <!--Calculate offset from initial to current controller pose (BOTH in world frame now)-->
+                <Action ID="CalculatePoseOffset" destination_pose="{controller_pose}" source_pose="{initial_controller_pose}" source_to_destination_pose="{pose_delta}"/>
+                <!--Apply the delta transform to the initial grasp pose (ALL in world frame now)-->
+                <Action ID="TransformPoseWithPose" transform_pose="{pose_delta}" input_pose="{initial_grasp_pose}" output_pose="{target_pose}"/>
                 <Action ID="VisualizePose" pose="{target_pose}" marker_text="target" marker_size="0.1" marker_name="target"/>
                 <Action ID="VisualizePose" pose="{controller_pose}" marker_name="controller" marker_text="controller"/>
-                <!--=== COLLISION CHECK: Verify pose is safe before sending velocity commands ===-->
-                <Action ID="ResetPoseStampedVector" vector="{ik_check_poses}"/>
-                <Action ID="AddPoseStampedToVector" input="{target_pose}" vector="{ik_check_poses}"/>
-                <Action ID="SolveIKQueries" target_poses="{ik_check_poses}" check_collisions="true" timeout="0.02" joint_group_name="manipulator" ik_query_results="{ik_results}"/>
-                <Action ID="GetElementOfVector" vector_in="{ik_results}" index="0" element="{pose_is_safe}"/>
-                <!--Log warning if pose is unsafe, otherwise update velocity commands-->
-                <Control ID="Fallback">
-                  <!--Try: if pose is safe, compute and send velocity commands-->
-                  <Decorator ID="Precondition" if="pose_is_safe" else="FAILURE">
-                    <Control ID="Sequence">
-                      <Action ID="ConvertPoseStampedToOdom" odom="{target_odom}" pose_stamped="{target_pose}"/>
-                      <Action ID="CreateStampedPose" stamped_pose="{target_pose_offset}"/>
-                      <Action ID="ComputeVelocityToAlignWithTarget" target_motion_state="{target_odom}" target_pose_offset="{target_pose_offset}" output_control_velocity="{stamped_twist}" proportional_gain_angular=".5" proportional_gain_linear=".4"/>
-                      <Action ID="CreateStampedWrench" reference_frame="grasp_link"/>
-                    </Control>
-                  </Decorator>
-                  <!--Fallback: pose is unsafe, log warning and continue-->
-                  <Control ID="Sequence">
-                    <Action ID="LogMessage" message="WARNING: Ignoring Unsafe Target Odom" log_level="warn"/>
-                  </Control>
-                </Control>
               </Control>
             </Decorator>
+            <!--Only track target_pose AFTER first clutch press (tracking_enabled = true)-->
+            <Decorator ID="Precondition" else="SUCCESS" if="tracking_enabled">
+              <Control ID="Sequence" name="ComputeVelocityToTrackTarget">
+                <Action ID="ConvertPoseStampedToOdom" odom="{target_odom}" pose_stamped="{target_pose}"/>
+                <Action ID="CreateStampedPose" stamped_pose="{target_pose_offset}"/>
+                <Action ID="ComputeVelocityToAlignWithTarget" target_motion_state="{target_odom}" target_pose_offset="{target_pose_offset}" output_control_velocity="{stamped_twist}" proportional_gain_angular=".5" proportional_gain_linear=".4"/>
+                <Action ID="CreateStampedWrench" reference_frame="grasp_link"/>
+              </Control>
+            </Decorator>
+            <!--Update prev_grip for next iteration's edge detection-->
+            <Action ID="Script" code="prev_grip := current_grip"/>
           </Control>
         </Decorator>
-        <!--Branch 4: Continuously publish velocity commands-->
+        <!--Branch 2: Continuously publish velocity commands-->
         <Action ID="PublishVelocityForceCommand" twist_stamped="{stamped_twist}" wrench_stamped="{stamped_wrench}" velocity_controlled_axes="1;1;1;1;1;1" publish_rate="10"/>
       </Control>
     </Control>

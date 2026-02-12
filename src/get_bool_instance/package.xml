@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<package format="3">
+  <name>get_bool_instance</name>
+  <version>0.0.0</version>
+  <description>Subscribes to a single boolean message and publishes it to the blackboard. The behavior exits successfully after the first message on the topic is received. </description>
+
+  <maintainer email="support@picknik.ai">
+    MoveIt Pro User
+  </maintainer>
+  <author email="support@picknik.ai">
+    MoveIt Pro User
+  </author>
+
+  <license>TODO</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <build_depend>moveit_pro_package</build_depend>
+
+  <depend>moveit_pro_behavior_interface</depend>
+  <depend>std_msgs</depend>
+
+  <test_depend>ament_cmake_ros</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_cmake_gtest</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+  <buildtool_depend>python3-colcon-common-extensions</buildtool_depend>
+</package>

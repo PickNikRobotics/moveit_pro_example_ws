@@ -1,0 +1,69 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root BTCPP_format="4" main_tree_to_execute="Teleop With Meta via Pose - Fix Frame Orientation">
+  <BehaviorTree ID="Teleop With Meta via Pose - Fix Frame Orientation" _description="" _favorite="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Control ID="Sequence">
+        <Action ID="GetEmpty" empty_topic_name="/right_grip_button_event" _skipIf="true" name="I am skipping this event because I start the bag file at 15sec due to the large pose &quot;jump&quot; shortly after the grip event, which means I miss this event."/>
+        <Action ID="LogMessage" message="grip event"/>
+        <Action ID="CreateStampedPose" reference_frame="grasp_link" stamped_pose="{initial_grasp_pose}" name="Store initial pose of grasp_link upon grip event"/>
+        <Action ID="TransformPoseFrame" input_pose="{initial_grasp_pose}" output_pose="{initial_grasp_pose}" target_frame_id="world"/>
+        <Action ID="VisualizePose" pose="{initial_grasp_pose}" marker_name="initial grasp pose" marker_size="0.100000" marker_text="i_g"/>
+        <Action ID="GetOdomInstance" odom_topic_name="/right_controller_odom" subscribed_odom_instance="{odometry}" name="Store initial pose of controller upon grip event"/>
+        <Action ID="ConvertOdomToPoseStamped" pose_stamped="{initial_controller_pose}" odometry="{odometry}"/>
+        <Action ID="VisualizePose" pose="{initial_controller_pose}" marker_name="initial controller pose" marker_text="i_c"/>
+        <Action ID="TransformPoseFrame" input_pose="{initial_controller_pose}" output_pose="{initial_controller_pose}" target_frame_id="quest"/>
+      </Control>
+      <Action ID="SwitchController" activate_controllers="velocity_force_controller"/>
+      <Control ID="Sequence" name="Initial values">
+        <Action ID="CreateStampedWrench"/>
+        <Action ID="CreateStampedTwist" reference_frame="world"/>
+      </Control>
+      <Control ID="Parallel" failure_count="2" success_count="2">
+        <Decorator ID="KeepRunningUntilFailure">
+          <Control ID="Sequence" name="Compute the pose offset from initial_controller to current_controller and apply it to initial_grasp">
+            <Action ID="GetOdomInstance" odom_topic_name="/right_controller_odom" subscribed_odom_instance="{odometry}"/>
+            <Action ID="ConvertOdomToPoseStamped" pose_stamped="{controller_pose}" odometry="{odometry}"/>
+            <Action ID="CalculatePoseOffset" destination_pose="{controller_pose}" source_pose="{initial_controller_pose}" source_to_destination_pose="{pose_transform}"/>
+            <Control ID="Sequence" name="I don't remember having to do this unpacking-repacking nonsense the first time I wrote this, but this seems to do the trick.">
+              <Action ID="UnpackPoseStampedMessage" pose_stamped="{pose_transform}"/>
+              <Action ID="UnpackPoseMessage" position="{point}" orientation="{quaternion}"/>
+              <Control ID="Sequence">
+                <Action ID="UnpackPointMessage" x="{x}"/>
+                <Action ID="ResetVector" vector="{vec_position}"/>
+                <Action ID="InsertInVector" index="0" input_vector="{vec_position}" output_vector="{vec_position}" element="{x}"/>
+                <Action ID="InsertInVector" index="1" input_vector="{vec_position}" output_vector="{vec_position}" element="{y}"/>
+                <Action ID="InsertInVector" index="2" input_vector="{vec_position}" output_vector="{vec_position}" element="{z}"/>
+                <Action ID="UnpackQuaternionMessage" w="{qw}" x="{qx}" y="{qy}" z="{qz}"/>
+                <Action ID="ResetVector" vector="{vec_quaternion}"/>
+                <Action ID="InsertInVector" output_vector="{vec_quaternion}" input_vector="{vec_quaternion}" index="0" element="{qx}"/>
+                <Action ID="InsertInVector" output_vector="{vec_quaternion}" input_vector="{vec_quaternion}" index="1" element="{qy}"/>
+                <Action ID="InsertInVector" output_vector="{vec_quaternion}" input_vector="{vec_quaternion}" index="2" element="{qz}"/>
+                <Action ID="InsertInVector" output_vector="{vec_quaternion}" input_vector="{vec_quaternion}" index="3" element="{qw}"/>
+              </Control>
+            </Control>
+            <Action ID="TransformPose" quaternion_xyzw="{vec_quaternion}" translation_xyz="{vec_position}" input_pose="{initial_grasp_pose}" output_pose="{target_pose}"/>
+            <Action ID="VisualizePose" pose="{target_pose}" marker_text="target" marker_size="0.1" marker_name="target"/>
+            <Action ID="VisualizePose" pose="{controller_pose}" marker_name="controller" marker_text="controller"/>
+            <Control ID="Sequence">
+              <Action ID="ConvertPoseStampedToOdom" odom="{target_odom}" pose_stamped="{target_pose}"/>
+              <Action ID="CreateStampedPose" stamped_pose="{target_pose_offset}"/>
+              <Action ID="ComputeVelocityToAlignWithTarget" target_motion_state="{target_odom}" target_pose_offset="{target_pose_offset}" output_control_velocity="{stamped_twist}" proportional_gain_angular=".5" proportional_gain_linear=".4"/>
+              <Action ID="CreateStampedWrench" reference_frame="grasp_link"/>
+            </Control>
+          </Control>
+        </Decorator>
+        <Decorator ID="ForceSuccess">
+          <Action ID="PublishVelocityForceCommand" twist_stamped="{stamped_twist}" wrench_stamped="{stamped_wrench}" velocity_controlled_axes="1;1;1;1;1;1" publish_rate="10"/>
+        </Decorator>
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Teleop With Meta via Pose - Fix Frame Orientation">
+      <MetadataFields>
+        <Metadata runnable="true"/>
+        <Metadata subcategory="User Input"/>
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
