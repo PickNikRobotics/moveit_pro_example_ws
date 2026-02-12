@@ -69,7 +69,7 @@
       <Action
         ID="GetContourFromPointCloudSlice"
         contour_path="{contour_path}"
-        desired_pose_spacing="0.200000"
+        max_pose_spacing="0.200000"
         hull_alpha="-1.000000"
         input_cloud="{point_cloud}"
         slice_distance_from_plane="0.100000"
