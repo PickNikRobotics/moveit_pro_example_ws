@@ -6,19 +6,20 @@
     _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
-      <Control ID="Sequence">
-        <Action
-          ID="GetEmpty"
-          empty_topic_name="/right_grip_button_event"
-          _skipIf="true"
-          name="I am skipping this event because I start the bag file at 15sec due to the large pose &quot;jump&quot; shortly after the grip event, which means I miss this event."
-        />
-        <Action ID="LogMessage" message="grip event" />
+      <Action
+        ID="GetEmpty"
+        empty_topic_name="/right_grip_button_event"
+        _skipIf="true"
+        name="I am skipping this event because I start the bag file at 15sec due to the large pose &quot;jump&quot; shortly after the grip event, which means I miss this event."
+      />
+      <Action ID="LogMessage" message="grip event" />
+      <Control ID="Sequence" name="Store transform">
         <Action
           ID="CreateStampedPose"
-          reference_frame="grasp_link"
           stamped_pose="{initial_grasp_pose}"
           name="Store initial pose of grasp_link upon grip event"
+          reference_frame="grasp_link"
+          orientation_xyzw="0;0;0;1"
         />
         <Action
           ID="TransformPoseFrame"
@@ -61,7 +62,7 @@
         ID="SwitchController"
         activate_controllers="velocity_force_controller"
       />
-      <Control ID="Sequence" name="Initial values">
+      <Control ID="Sequence" name="Set up initial zero twist command">
         <Action ID="CreateStampedWrench" />
         <Action ID="CreateStampedTwist" reference_frame="world" />
       </Control>
@@ -91,76 +92,7 @@
               ID="Sequence"
               name="I don't remember having to do this unpacking-repacking nonsense the first time I wrote this, but this seems to do the trick."
             >
-              <Action
-                ID="UnpackPoseStampedMessage"
-                pose_stamped="{pose_transform}"
-              />
-              <Action
-                ID="UnpackPoseMessage"
-                position="{point}"
-                orientation="{quaternion}"
-              />
-              <Control ID="Sequence">
-                <Action ID="UnpackPointMessage" x="{x}" />
-                <Action ID="ResetVector" vector="{vec_position}" />
-                <Action
-                  ID="InsertInVector"
-                  index="0"
-                  input_vector="{vec_position}"
-                  output_vector="{vec_position}"
-                  element="{x}"
-                />
-                <Action
-                  ID="InsertInVector"
-                  index="1"
-                  input_vector="{vec_position}"
-                  output_vector="{vec_position}"
-                  element="{y}"
-                />
-                <Action
-                  ID="InsertInVector"
-                  index="2"
-                  input_vector="{vec_position}"
-                  output_vector="{vec_position}"
-                  element="{z}"
-                />
-                <Action
-                  ID="UnpackQuaternionMessage"
-                  w="{qw}"
-                  x="{qx}"
-                  y="{qy}"
-                  z="{qz}"
-                />
-                <Action ID="ResetVector" vector="{vec_quaternion}" />
-                <Action
-                  ID="InsertInVector"
-                  output_vector="{vec_quaternion}"
-                  input_vector="{vec_quaternion}"
-                  index="0"
-                  element="{qx}"
-                />
-                <Action
-                  ID="InsertInVector"
-                  output_vector="{vec_quaternion}"
-                  input_vector="{vec_quaternion}"
-                  index="1"
-                  element="{qy}"
-                />
-                <Action
-                  ID="InsertInVector"
-                  output_vector="{vec_quaternion}"
-                  input_vector="{vec_quaternion}"
-                  index="2"
-                  element="{qz}"
-                />
-                <Action
-                  ID="InsertInVector"
-                  output_vector="{vec_quaternion}"
-                  input_vector="{vec_quaternion}"
-                  index="3"
-                  element="{qw}"
-                />
-              </Control>
+              <SubTree ID="ConvertPoseStampedToVectors" _collapsed="true" />
             </Control>
             <Action
               ID="TransformPose"
@@ -168,6 +100,7 @@
               translation_xyz="{vec_position}"
               input_pose="{initial_grasp_pose}"
               output_pose="{target_pose}"
+              name=""
             />
             <Action
               ID="VisualizePose"
@@ -182,11 +115,12 @@
               marker_name="controller"
               marker_text="controller"
             />
-            <Control ID="Sequence">
+            <Control ID="Sequence" name="Update Wrench with new target pose">
               <Action
                 ID="ConvertPoseStampedToOdom"
                 odom="{target_odom}"
                 pose_stamped="{target_pose}"
+                child_frame="child_frame"
               />
               <Action
                 ID="CreateStampedPose"
@@ -204,24 +138,17 @@
             </Control>
           </Control>
         </Decorator>
-        <Decorator ID="ForceSuccess">
-          <Action
-            ID="PublishVelocityForceCommand"
-            twist_stamped="{stamped_twist}"
-            wrench_stamped="{stamped_wrench}"
-            velocity_controlled_axes="1;1;1;1;1;1"
-            publish_rate="10"
-          />
-        </Decorator>
+        <Action
+          ID="PublishVelocityForceCommand"
+          twist_stamped="{stamped_twist}"
+          wrench_stamped="{stamped_wrench}"
+          velocity_controlled_axes="1;1;1;1;1;1"
+          publish_rate="10"
+        />
       </Control>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Teleop With Meta via Pose v5">
-      <MetadataFields>
-        <Metadata runnable="true" />
-        <Metadata subcategory="User Input" />
-      </MetadataFields>
-    </SubTree>
+    <SubTree ID="Teleop With Meta via Pose v5" />
   </TreeNodesModel>
 </root>
