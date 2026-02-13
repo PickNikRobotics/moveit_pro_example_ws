@@ -260,6 +260,15 @@
           <body name="rear_right_wheel_link" pos="-0.319 -0.2755 0.12">
             <include file="rear_right_wheel_link.xml" />
           </body>
+          <!-- IMU: position from ridgeback.urdf.xacro imu_joint, relative to chassis_link -->
+          <body name="imu_link" pos="0.2085 -0.2902 0.1681">
+            <inertial
+              mass="0.001"
+              pos="0 0 0"
+              diaginertia="1e-09 1e-09 1e-09"
+            />
+            <site name="imu_site" pos="0 0 0" size="0.01" rgba="0 1 0 1" />
+          </body>
           <body name="ham_assem" pos="0 0 0.278813" euler="1.5708 -1.57079 0">
             <geom
               name="ham_assem"
@@ -574,5 +583,8 @@
   <sensor>
     <force site="tcp_fts_sensor" />
     <torque site="tcp_fts_sensor" />
+    <framequat objtype="site" objname="imu_site" />
+    <gyro site="imu_site" />
+    <accelerometer site="imu_site" />
   </sensor>
 </mujoco>
