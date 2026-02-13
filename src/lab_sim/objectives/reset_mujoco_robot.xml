@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Reset MuJoco Robot">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Reset MuJoco Robot"
+    _description="Set the joint state of the robot in the MuJoCo simulation."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="ListControllers"
+        type="command"
+        controller_list="{command_controllers}"
+        state="active"
+      />
+      <Action
+        ID="SwitchController"
+        deactivate_controllers="{command_controllers}"
+      />
+      <Action
+        ID="CreateJointState"
+        joint_names="linear_rail_joint;shoulder_pan_joint;shoulder_lift_joint;elbow_joint;wrist_1_joint;wrist_2_joint;wrist_3_joint"
+        positions="0.0;0.0;-1.57;0.0;0.0;0.0;0.0"
+      />
+      <Decorator ID="ForceSuccess">
+        <Action ID="SetMujocoState" />
+      </Decorator>
+      <Action
+        ID="SwitchController"
+        activate_controllers="{command_controllers}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Reset MuJoco Robot">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="MuJoCo Simulation" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
