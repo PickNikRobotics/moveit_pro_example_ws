@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root BTCPP_format="4" main_tree_to_execute="Store Initial Controller Pose">
+  <BehaviorTree ID="Store Initial Controller Pose" _description="When you clutch-in, need to save the initial controller position" _favorite="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="CreateStampedPose" name="get current pose of grasp_link" reference_frame="{reference_frame}" stamped_pose="{grasp_link_pose}"/>
+      <Action ID="TransformPoseFrame" target_frame_id="{target_frame_id}" input_pose="{grasp_link_pose}" output_pose="{grasp_link_pose}"/>
+      <Action ID="GetOdomInstance" name="get controller odom for rotation reference" subscribed_odom_instance="{odometry}" odom_topic_name="{odom_topic}"/>
+      <Action ID="ConvertOdomToPoseStamped" odometry="{odometry}" pose_stamped="{controller_initial_position}"/>
+      <Action ID="TransformPoseFrame" target_frame_id="{target_frame_id}" output_pose="{controller_initial_position}" input_pose="{controller_initial_position}"/>
+      <!--Extract position from grasp_link-->
+      <Action ID="UnpackPoseStampedMessage" header="{grasp_header}" pose="{grasp_pose_raw}" pose_stamped="{grasp_link_pose}"/>
+      <Action ID="UnpackPoseMessage" orientation="{grasp_orientation_untransformed}" pose="{grasp_pose_raw}" position="{grasp_position}"/>
+      <!--Extract rotation from controller-->
+      <Action ID="UnpackPoseStampedMessage" header="{controller_header_untransformed}" pose="{controller_pose_raw}" pose_stamped="{controller_initial_position}"/>
+      <Action ID="UnpackPoseMessage" orientation="{controller_orientation}" pose="{controller_pose_raw}" position="{controller_position}"/>
+      <!--Combine: grasp_link position and controller rotation-->
+      <Action ID="CreatePoseMessage" orientation="{controller_orientation}" pose="{combined_pose}" position="{grasp_position}"/>
+      <Action ID="CreatePoseStampedMessage" header="{grasp_header}" pose="{combined_pose}" pose_stamped="{initial_grasp_pose}"/>
+      <Action ID="VisualizePose" marker_name="initial grasp pose" marker_text="i_g" pose="{initial_grasp_pose}"/>
+      <!--Store initial controller pose (in quest frame as before)-->
+      <Action ID="GetOdomInstance" name="Store initial pose of controller on grip event " odom_topic_name="{odom_topic}"/>
+      <Action ID="ConvertOdomToPoseStamped" pose_stamped="{initial_controller_pose}"/>
+      <Action ID="VisualizePose" marker_name="initial controller pose " marker_text="i_c"/>
+      <Action ID="TransformPoseFrame" input_pose="{initial_controller_pose}" output_pose="{initial_controller_pose_transformed}" target_frame_id="{transformed_frame_id}"/>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    
+  </TreeNodesModel>
+</root>

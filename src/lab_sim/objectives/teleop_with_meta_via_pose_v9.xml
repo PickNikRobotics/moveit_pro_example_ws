@@ -2,31 +2,8 @@
 <root BTCPP_format="4" main_tree_to_execute="Teleop With Meta via Pose v9">
   <BehaviorTree ID="Teleop With Meta via Pose v9" _description="In this one I'm breaking stuff into sub-trees for readability bc I can't debug this " _favorite="false">
     <Control ID="Sequence" name="TopLevelSequence">
-      <Control ID="Sequence">
-        <!--Get grasp_link position-->
-        <Action ID="CreateStampedPose" reference_frame="grasp_link" stamped_pose="{grasp_link_pose}" name="Get current pose of grasp_link"/>
-        <Action ID="TransformPoseFrame" input_pose="{grasp_link_pose}" output_pose="{grasp_link_pose}" target_frame_id="world"/>
-        <!--Get controller pose for rotation reference-->
-        <Action ID="GetOdomInstance" odom_topic_name="/right_controller_odom" subscribed_odom_instance="{odometry}" name="Get controller odom for rotation reference"/>
-        <Action ID="ConvertOdomToPoseStamped" pose_stamped="{controller_initial_pose}" odometry="{odometry}"/>
-        <Action ID="TransformPoseFrame" input_pose="{controller_initial_pose}" output_pose="{controller_initial_pose}" target_frame_id="world"/>
-        <!--Extract position from grasp_link-->
-        <Action ID="UnpackPoseStampedMessage" pose_stamped="{grasp_link_pose}" pose="{grasp_pose_raw}" header="{grasp_header}"/>
-        <Action ID="UnpackPoseMessage" pose="{grasp_pose_raw}" position="{grasp_position}" orientation="{grasp_orientation_unused}"/>
-        <!--Extract rotation from controller-->
-        <Action ID="UnpackPoseStampedMessage" pose_stamped="{controller_initial_pose}" pose="{controller_pose_raw}" header="{controller_header_unused}"/>
-        <Action ID="UnpackPoseMessage" pose="{controller_pose_raw}" position="{controller_position_unused}" orientation="{controller_orientation}"/>
-        <!--Combine: grasp_link position + controller rotation-->
-        <Action ID="CreatePoseMessage" position="{grasp_position}" orientation="{controller_orientation}" pose="{combined_pose}"/>
-        <Action ID="CreatePoseStampedMessage" pose="{combined_pose}" header="{grasp_header}" pose_stamped="{initial_grasp_pose}"/>
-        <Action ID="VisualizePose" pose="{initial_grasp_pose}" marker_name="initial grasp pose" marker_size="0.100000" marker_text="i_g"/>
-        <!--Store initial controller pose (in quest frame as before)-->
-        <Action ID="GetOdomInstance" odom_topic_name="/right_controller_odom" subscribed_odom_instance="{odometry}" name="Store initial pose of controller upon grip event"/>
-        <Action ID="ConvertOdomToPoseStamped" pose_stamped="{initial_controller_pose}" odometry="{odometry}"/>
-        <Action ID="VisualizePose" pose="{initial_controller_pose}" marker_name="initial controller pose" marker_text="i_c"/>
-        <Action ID="TransformPoseFrame" input_pose="{initial_controller_pose}" output_pose="{initial_controller_pose}" target_frame_id="quest"/>
-      </Control>
-      <Action ID="SwitchController" activate_controllers="velocity_force_controller"/>
+      <SubTree ID="Store Initial Controller Pose" _collapsed="true"/>
+      <Action ID="SwitchController" activate_controllers="velocity_force_controller" activate_asap="true"/>
       <Control ID="Sequence" name="Initial values">
         <Action ID="CreateStampedWrench"/>
         <Action ID="CreateStampedTwist" reference_frame="world"/>
@@ -50,30 +27,9 @@
             <Action ID="Script" code="current_grip := subscribed_bool"/>
             <!--Rising edge detection: when grip_rising_edge is true, re-align frames (position only snap)-->
             <Decorator ID="Precondition" else="SUCCESS" if="grip_rising_edge">
-              <Control ID="Sequence" name="Re-align frames on grip button press (position-only snap)">
-                <Action ID="LogMessage" message="Rising edge detected - re-aligning frames (position snap only)"/>
-                <!--Get grasp_link position (robot's current position)-->
-                <Action ID="CreateStampedPose" reference_frame="grasp_link" stamped_pose="{grasp_link_pose}" name="Get current pose of grasp_link"/>
-                <Action ID="TransformPoseFrame" input_pose="{grasp_link_pose}" output_pose="{grasp_link_pose}" target_frame_id="world"/>
-                <!--Get controller pose for rotation reference-->
-                <Action ID="GetOdomInstance" odom_topic_name="/right_controller_odom" subscribed_odom_instance="{odometry}" name="Get controller odom for rotation reference"/>
-                <Action ID="ConvertOdomToPoseStamped" pose_stamped="{controller_initial_pose}" odometry="{odometry}"/>
-                <Action ID="TransformPoseFrame" input_pose="{controller_initial_pose}" output_pose="{controller_initial_pose}" target_frame_id="world"/>
-                <!--Extract position from grasp_link-->
-                <Action ID="UnpackPoseStampedMessage" pose_stamped="{grasp_link_pose}" pose="{grasp_pose_raw}" header="{grasp_header}"/>
-                <Action ID="UnpackPoseMessage" pose="{grasp_pose_raw}" position="{grasp_position}" orientation="{grasp_orientation_unused}"/>
-                <!--Extract rotation from controller-->
-                <Action ID="UnpackPoseStampedMessage" pose_stamped="{controller_initial_pose}" pose="{controller_pose_raw}" header="{controller_header_unused}"/>
-                <Action ID="UnpackPoseMessage" pose="{controller_pose_raw}" position="{controller_position_unused}" orientation="{controller_orientation}"/>
-                <!--Combine: grasp_link position + controller rotation = initial_grasp_pose-->
-                <Action ID="CreatePoseMessage" position="{grasp_position}" orientation="{controller_orientation}" pose="{combined_pose}"/>
-                <Action ID="CreatePoseStampedMessage" pose="{combined_pose}" header="{grasp_header}" pose_stamped="{initial_grasp_pose}"/>
-                <Action ID="VisualizePose" pose="{initial_grasp_pose}" marker_name="initial grasp pose" marker_size="0.100000" marker_text="i_g"/>
-                <!--Re-capture initial controller pose (for offset calculation)-->
-                <Action ID="GetOdomInstance" odom_topic_name="/right_controller_odom" subscribed_odom_instance="{odometry}" name="Re-store initial pose of controller"/>
-                <Action ID="ConvertOdomToPoseStamped" pose_stamped="{initial_controller_pose}" odometry="{odometry}"/>
-                <Action ID="VisualizePose" pose="{initial_controller_pose}" marker_name="initial controller pose" marker_text="i_c"/>
-                <Action ID="TransformPoseFrame" input_pose="{initial_controller_pose}" output_pose="{initial_controller_pose}" target_frame_id="quest"/>
+              <Control ID="Sequence">
+                <Action ID="LogMessage" message="Rising edge detected. Storing Initial Controller position"/>
+                <SubTree ID="Store Initial Controller Pose" _collapsed="true"/>
               </Control>
             </Decorator>
             <!--Only compute and publish when grip is held-->
@@ -118,11 +74,6 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Teleop With Meta via Pose v9">
-      <MetadataFields>
-        <Metadata runnable="true"/>
-        <Metadata subcategory="User Input"/>
-      </MetadataFields>
-    </SubTree>
+    <SubTree ID="Teleop With Meta via Pose v9"/>
   </TreeNodesModel>
 </root>

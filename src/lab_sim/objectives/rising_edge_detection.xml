@@ -18,7 +18,7 @@
             <Action ID="Script" name="CalculateRisingEdge" code="rising_edge := current_state &amp;&amp; !prev_state"/>
             <!--If rising_edge is true, hold it true for a bit before continuing-->
             <Decorator ID="Precondition" name="HoldRisingEdge" if="rising_edge == true" else="SUCCESS">
-              <Action ID="WaitForDuration" name="HoldDuration" delay_duration="0.5"/>
+              <Action ID="WaitForDuration" name="HoldDuration" delay_duration="0.25"/>
             </Decorator>
             <!--Update prev_state = current_state for next iteration-->
             <Action ID="Script" name="UpdatePrevState" code="prev_state := current_state"/>
