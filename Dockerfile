@@ -27,12 +27,6 @@ ARG USER_GID
 ARG USER_WS=/home/${USERNAME}/user_ws
 ENV USER_WS=${USER_WS}
 
-# Set real time limits
-# Ensure the directory exists
-RUN mkdir -p /etc/security
-# Copy the custom limits configuration into the container
-COPY src/moveit_pro_franka_configs/franka_arm_hw/config/rt_limits.conf /etc/security/limits.conf
-
 # Also mkdir with user permission directories which will be mounted later to avoid docker creating them as root
 WORKDIR $USER_WS
 # hadolint ignore=DL3008
