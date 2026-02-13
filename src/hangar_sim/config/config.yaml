@@ -86,6 +86,7 @@ ros2_control:
   # [Optional, default=[]]
   controllers_active_at_startup:
     - "force_torque_sensor_broadcaster"
+    - "imu_sensor_broadcaster"
     - "joint_state_broadcaster"
     - "platform_velocity_controller"
     - "vacuum_gripper"
