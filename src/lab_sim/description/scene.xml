@@ -9,8 +9,39 @@
   <option integrator="implicitfast" />
 
   <asset>
-    <mesh name="cube" file="assets/Cube.stl" />
+    <!-- Laptop keyboard texture (dark checker pattern) -->
+    <texture
+      name="keyboard_tex"
+      type="2d"
+      builtin="checker"
+      rgb1="0.03 0.03 0.03"
+      rgb2="0.08 0.08 0.08"
+      width="256"
+      height="256"
+    />
+    <material
+      name="keyboard_mat"
+      texture="keyboard_tex"
+      texrepeat="10 6"
+      specular="0.2"
+      shininess="0.3"
+    />
+    <!-- Laptop screen texture (dark IDE-like gradient) -->
+    <texture
+      name="screen_tex"
+      type="2d"
+      builtin="gradient"
+      rgb1="0.05 0.12 0.18"
+      rgb2="0.02 0.06 0.10"
+      width="256"
+      height="256"
+    />
+    <material name="screen_mat" texture="screen_tex" emission="0.4" />
   </asset>
+
+  <visual>
+    <global offwidth="640" offheight="480" />
+  </visual>
 
   <worldbody>
     <light pos="0 0 1.5" dir="0 0 -1" directional="true" />
@@ -44,28 +75,601 @@
     />
     <!-- lab desk -->
     <include file="lab_desk/desk.xml" />
-    <!-- Define the block with AprilTags on each face -->
-    <body name="block1" pos="0.2 0.75 0.575">
-      <freejoint name="block1" />
+    <!-- Black desk lamp sitting on table -->
+    <body name="desk_lamp" pos="-1.4 0.75 0.474" euler="0 0 -1.5708">
+      <!-- Weighted circular base -->
       <geom
-        type="box"
-        size="0.025 0.025 0.025"
-        rgba="1 1 1 1"
-        material="apriltag_material1"
+        name="lamp_base"
+        type="cylinder"
+        size="0.065 0.006"
+        rgba="0.05 0.05 0.05 1"
+      />
+      <!-- Vertical stem -->
+      <geom
+        name="lamp_stem"
+        type="cylinder"
+        size="0.006 0.1"
+        pos="0 0 0.106"
+        rgba="0.05 0.05 0.05 1"
+      />
+      <!-- Angled arm -->
+      <geom
+        name="lamp_arm"
+        type="capsule"
+        size="0.005 0.1"
+        pos="0.05 0 0.29"
+        euler="0 0.55 0"
+        rgba="0.05 0.05 0.05 1"
+      />
+      <!-- Cone shade -->
+      <geom
+        name="lamp_shade"
+        type="cylinder"
+        size="0.055 0.035"
+        pos="0.09 0 0.37"
+        euler="0 0.55 0"
+        rgba="0.05 0.05 0.05 1"
       />
     </body>
-    <body name="block2" pos="0.0 0.75 0.575">
-      <freejoint name="block2" />
-      <geom class="visual" mesh="cube" pos="0 0 -0.03" />
-      <geom class="collision" type="box" size="0.025 0.025 0.025" pos="0 0 0" />
-    </body>
-    <body name="block3" pos="-0.2 0.75 0.575">
-      <freejoint name="block3" />
+    <!-- Modern laptop (all black) -->
+    <body name="laptop" pos="-0.6 0.75 0.474" euler="0 0 0.2618">
+      <!-- Base / keyboard deck -->
       <geom
+        name="laptop_base"
         type="box"
-        size="0.025 0.025 0.025"
-        rgba="1 1 1 1"
-        material="apriltag_material2"
+        size="0.15 0.10 0.005"
+        pos="0 0 0.005"
+        material="keyboard_mat"
+      />
+      <!-- Screen - tilted back ~20 degrees past vertical -->
+      <geom
+        name="laptop_screen"
+        type="box"
+        size="0.15 0.003 0.10"
+        pos="0 0.134 0.104"
+        euler="-0.35 0 0"
+        material="screen_mat"
+      />
+      <!-- Black bezel around screen -->
+      <geom
+        name="laptop_bezel"
+        type="box"
+        size="0.155 0.004 0.105"
+        pos="0 0.133 0.104"
+        euler="-0.35 0 0"
+        rgba="0.03 0.03 0.03 1"
+      />
+    </body>
+    <!-- Fake potted plant (right of stirrer) -->
+    <body name="fake_plant" pos="1.0 0.76 0.474">
+      <!-- Pot -->
+      <geom
+        name="plant_pot"
+        type="cylinder"
+        size="0.03 0.03"
+        pos="0 0 0.03"
+        rgba="0.08 0.08 0.08 1"
+      />
+      <geom
+        name="plant_pot_rim"
+        type="cylinder"
+        size="0.033 0.004"
+        pos="0 0 0.056"
+        rgba="0.08 0.08 0.08 1"
+      />
+      <!-- Thin stem -->
+      <geom
+        name="plant_stem"
+        type="cylinder"
+        size="0.004 0.06"
+        pos="0 0 0.12"
+        rgba="0.3 0.25 0.15 1"
+        contype="0"
+        conaffinity="0"
+      />
+      <!-- Large foliage puff -->
+      <geom
+        name="plant_foliage_1"
+        type="sphere"
+        size="0.06"
+        pos="0 0 0.2"
+        rgba="0.15 0.45 0.15 1"
+        contype="0"
+        conaffinity="0"
+      />
+      <geom
+        name="plant_foliage_2"
+        type="sphere"
+        size="0.045"
+        pos="0.035 0.02 0.22"
+        rgba="0.2 0.5 0.18 1"
+        contype="0"
+        conaffinity="0"
+      />
+      <geom
+        name="plant_foliage_3"
+        type="sphere"
+        size="0.04"
+        pos="-0.03 0.025 0.23"
+        rgba="0.12 0.42 0.12 1"
+        contype="0"
+        conaffinity="0"
+      />
+      <geom
+        name="plant_foliage_4"
+        type="sphere"
+        size="0.04"
+        pos="0.01 -0.035 0.22"
+        rgba="0.18 0.48 0.15 1"
+        contype="0"
+        conaffinity="0"
+      />
+      <geom
+        name="plant_foliage_5"
+        type="sphere"
+        size="0.035"
+        pos="-0.02 -0.02 0.25"
+        rgba="0.16 0.46 0.14 1"
+        contype="0"
+        conaffinity="0"
+      />
+    </body>
+    <!-- Bronze alligator statue (top shelf) -->
+    <body name="alligator_statue" pos="-0.5 1.08 1.365">
+      <!-- Trophy base - dark wood with gold nameplate -->
+      <geom
+        name="gator_base"
+        type="box"
+        size="0.09 0.045 0.012"
+        pos="-0.01 0 -0.030"
+        rgba="0.12 0.06 0.02 1"
+      />
+      <geom
+        name="gator_base_top"
+        type="box"
+        size="0.08 0.04 0.003"
+        pos="-0.01 0 -0.015"
+        rgba="0.15 0.08 0.03 1"
+      />
+      <geom
+        name="gator_nameplate"
+        type="box"
+        size="0.03 0.001 0.008"
+        pos="-0.01 -0.041 -0.030"
+        rgba="0.75 0.65 0.25 1"
+      />
+      <!-- Body - three segments for organic shape -->
+      <geom
+        name="gator_body_front"
+        type="capsule"
+        size="0.013 0.02"
+        pos="0.02 0 0"
+        euler="0 1.5708 0"
+        rgba="0.45 0.38 0.22 1"
+      />
+      <geom
+        name="gator_body_mid"
+        type="capsule"
+        size="0.014 0.025"
+        pos="-0.015 0 0.001"
+        euler="0 1.5708 0"
+        rgba="0.43 0.36 0.20 1"
+      />
+      <geom
+        name="gator_body_rear"
+        type="capsule"
+        size="0.012 0.02"
+        pos="-0.045 0 0"
+        euler="0 1.5708 0"
+        rgba="0.45 0.38 0.22 1"
+      />
+      <!-- Head - wider, flatter -->
+      <geom
+        name="gator_head"
+        type="box"
+        size="0.022 0.012 0.007"
+        pos="0.06 0 -0.001"
+        rgba="0.45 0.38 0.22 1"
+      />
+      <!-- Upper jaw -->
+      <geom
+        name="gator_upper_jaw"
+        type="box"
+        size="0.02 0.008 0.004"
+        pos="0.09 0 0.001"
+        rgba="0.45 0.38 0.22 1"
+      />
+      <!-- Lower jaw -->
+      <geom
+        name="gator_lower_jaw"
+        type="box"
+        size="0.018 0.007 0.003"
+        pos="0.088 0 -0.005"
+        rgba="0.42 0.35 0.20 1"
+      />
+      <!-- Snout tip -->
+      <geom
+        name="gator_snout"
+        type="capsule"
+        size="0.005 0.008"
+        pos="0.108 0 -0.001"
+        euler="0 1.5708 0"
+        rgba="0.45 0.38 0.22 1"
+      />
+      <!-- Eye ridges -->
+      <geom
+        name="gator_eye_l"
+        type="sphere"
+        size="0.004"
+        pos="0.055 0.01 0.007"
+        rgba="0.35 0.28 0.15 1"
+      />
+      <geom
+        name="gator_eye_r"
+        type="sphere"
+        size="0.004"
+        pos="0.055 -0.01 0.007"
+        rgba="0.35 0.28 0.15 1"
+      />
+      <!-- Dorsal ridges -->
+      <geom
+        name="gator_ridge_1"
+        type="sphere"
+        size="0.004"
+        pos="0.03 0 0.013"
+        rgba="0.40 0.33 0.18 1"
+      />
+      <geom
+        name="gator_ridge_2"
+        type="sphere"
+        size="0.004"
+        pos="0.01 0 0.014"
+        rgba="0.40 0.33 0.18 1"
+      />
+      <geom
+        name="gator_ridge_3"
+        type="sphere"
+        size="0.004"
+        pos="-0.01 0 0.014"
+        rgba="0.40 0.33 0.18 1"
+      />
+      <geom
+        name="gator_ridge_4"
+        type="sphere"
+        size="0.003"
+        pos="-0.03 0 0.012"
+        rgba="0.40 0.33 0.18 1"
+      />
+      <geom
+        name="gator_ridge_5"
+        type="sphere"
+        size="0.003"
+        pos="-0.045 0 0.011"
+        rgba="0.40 0.33 0.18 1"
+      />
+      <!-- Tail - three tapering segments with slight curve -->
+      <geom
+        name="gator_tail_1"
+        type="capsule"
+        size="0.009 0.02"
+        pos="-0.08 0 0.002"
+        euler="0 1.6 0"
+        rgba="0.45 0.38 0.22 1"
+      />
+      <geom
+        name="gator_tail_2"
+        type="capsule"
+        size="0.006 0.02"
+        pos="-0.115 0 0.006"
+        euler="0 1.7 0.1"
+        rgba="0.45 0.38 0.22 1"
+      />
+      <geom
+        name="gator_tail_3"
+        type="capsule"
+        size="0.003 0.015"
+        pos="-0.145 0.005 0.009"
+        euler="0 1.75 0.2"
+        rgba="0.45 0.38 0.22 1"
+      />
+      <!-- Front legs with feet -->
+      <geom
+        name="gator_leg_fl"
+        type="capsule"
+        size="0.005 0.01"
+        pos="0.025 0.018 -0.008"
+        euler="0.5 0 0.2"
+        rgba="0.45 0.38 0.22 1"
+      />
+      <geom
+        name="gator_foot_fl"
+        type="box"
+        size="0.006 0.005 0.002"
+        pos="0.025 0.028 -0.016"
+        rgba="0.45 0.38 0.22 1"
+      />
+      <geom
+        name="gator_leg_fr"
+        type="capsule"
+        size="0.005 0.01"
+        pos="0.025 -0.018 -0.008"
+        euler="-0.5 0 -0.2"
+        rgba="0.45 0.38 0.22 1"
+      />
+      <geom
+        name="gator_foot_fr"
+        type="box"
+        size="0.006 0.005 0.002"
+        pos="0.025 -0.028 -0.016"
+        rgba="0.45 0.38 0.22 1"
+      />
+      <!-- Rear legs with feet (slightly larger) -->
+      <geom
+        name="gator_leg_bl"
+        type="capsule"
+        size="0.005 0.012"
+        pos="-0.04 0.018 -0.008"
+        euler="0.5 0 0.2"
+        rgba="0.45 0.38 0.22 1"
+      />
+      <geom
+        name="gator_foot_bl"
+        type="box"
+        size="0.007 0.005 0.002"
+        pos="-0.04 0.030 -0.018"
+        rgba="0.45 0.38 0.22 1"
+      />
+      <geom
+        name="gator_leg_br"
+        type="capsule"
+        size="0.005 0.012"
+        pos="-0.04 -0.018 -0.008"
+        euler="-0.5 0 -0.2"
+        rgba="0.45 0.38 0.22 1"
+      />
+      <geom
+        name="gator_foot_br"
+        type="box"
+        size="0.007 0.005 0.002"
+        pos="-0.04 -0.030 -0.018"
+        rgba="0.45 0.38 0.22 1"
+      />
+    </body>
+    <!-- Test tube rack (static) -->
+    <body name="test_tube_rack" pos="0.3 0.75 0.474">
+      <!-- Base plate -->
+      <geom
+        name="rack_base"
+        type="box"
+        size="0.065 0.025 0.003"
+        pos="0 0 0.003"
+        rgba="0.6 0.6 0.65 1"
+      />
+      <!-- Front wall -->
+      <geom
+        name="rack_front"
+        type="box"
+        size="0.065 0.003 0.035"
+        pos="0 -0.022 0.041"
+        rgba="0.6 0.6 0.65 1"
+      />
+      <!-- Back wall -->
+      <geom
+        name="rack_back"
+        type="box"
+        size="0.065 0.003 0.035"
+        pos="0 0.022 0.041"
+        rgba="0.6 0.6 0.65 1"
+      />
+      <!-- Left end -->
+      <geom
+        name="rack_left"
+        type="box"
+        size="0.003 0.025 0.035"
+        pos="-0.062 0 0.041"
+        rgba="0.6 0.6 0.65 1"
+      />
+      <!-- Right end -->
+      <geom
+        name="rack_right"
+        type="box"
+        size="0.003 0.025 0.035"
+        pos="0.062 0 0.041"
+        rgba="0.6 0.6 0.65 1"
+      />
+    </body>
+    <!-- Test tubes with colored liquids (manipulable) -->
+    <body name="tube_red" pos="0.25 0.75 0.532">
+      <freejoint name="tube_red" />
+      <geom
+        name="tube_red_glass"
+        type="capsule"
+        size="0.0065 0.045"
+        rgba="0.85 0.88 0.9 0.3"
+        mass="0.01"
+      />
+      <geom
+        name="tube_red_liquid"
+        type="capsule"
+        size="0.005 0.03"
+        pos="0 0 -0.008"
+        rgba="0.9 0.1 0.1 0.85"
+        contype="0"
+        conaffinity="0"
+        mass="0.03"
+      />
+    </body>
+    <body name="tube_blue" pos="0.27 0.75 0.532">
+      <freejoint name="tube_blue" />
+      <geom
+        name="tube_blue_glass"
+        type="capsule"
+        size="0.0065 0.045"
+        rgba="0.85 0.88 0.9 0.3"
+        mass="0.01"
+      />
+      <geom
+        name="tube_blue_liquid"
+        type="capsule"
+        size="0.005 0.03"
+        pos="0 0 -0.008"
+        rgba="0.1 0.2 0.9 0.85"
+        contype="0"
+        conaffinity="0"
+        mass="0.03"
+      />
+    </body>
+    <body name="tube_green" pos="0.29 0.75 0.532">
+      <freejoint name="tube_green" />
+      <geom
+        name="tube_green_glass"
+        type="capsule"
+        size="0.0065 0.045"
+        rgba="0.85 0.88 0.9 0.3"
+        mass="0.01"
+      />
+      <geom
+        name="tube_green_liquid"
+        type="capsule"
+        size="0.005 0.03"
+        pos="0 0 -0.008"
+        rgba="0.1 0.8 0.2 0.85"
+        contype="0"
+        conaffinity="0"
+        mass="0.03"
+      />
+    </body>
+    <body name="tube_yellow" pos="0.31 0.75 0.532">
+      <freejoint name="tube_yellow" />
+      <geom
+        name="tube_yellow_glass"
+        type="capsule"
+        size="0.0065 0.045"
+        rgba="0.85 0.88 0.9 0.3"
+        mass="0.01"
+      />
+      <geom
+        name="tube_yellow_liquid"
+        type="capsule"
+        size="0.005 0.03"
+        pos="0 0 -0.008"
+        rgba="0.95 0.9 0.1 0.85"
+        contype="0"
+        conaffinity="0"
+        mass="0.03"
+      />
+    </body>
+    <body name="tube_purple" pos="0.33 0.75 0.532">
+      <freejoint name="tube_purple" />
+      <geom
+        name="tube_purple_glass"
+        type="capsule"
+        size="0.0065 0.045"
+        rgba="0.85 0.88 0.9 0.3"
+        mass="0.01"
+      />
+      <geom
+        name="tube_purple_liquid"
+        type="capsule"
+        size="0.005 0.03"
+        pos="0 0 -0.008"
+        rgba="0.6 0.1 0.8 0.85"
+        contype="0"
+        conaffinity="0"
+        mass="0.03"
+      />
+    </body>
+    <body name="tube_orange" pos="0.35 0.75 0.532">
+      <freejoint name="tube_orange" />
+      <geom
+        name="tube_orange_glass"
+        type="capsule"
+        size="0.0065 0.045"
+        rgba="0.85 0.88 0.9 0.3"
+        mass="0.01"
+      />
+      <geom
+        name="tube_orange_liquid"
+        type="capsule"
+        size="0.005 0.03"
+        pos="0 0 -0.008"
+        rgba="0.95 0.5 0.05 0.85"
+        contype="0"
+        conaffinity="0"
+        mass="0.03"
+      />
+    </body>
+    <!-- Medicine bottles (manipulable) -->
+    <body name="bottle_white" pos="-0.1 0.70 0.519">
+      <freejoint name="bottle_white" />
+      <geom
+        name="bottle_white_body"
+        type="cylinder"
+        size="0.025 0.045"
+        rgba="0.92 0.92 0.92 1"
+        mass="0.08"
+      />
+      <geom
+        name="bottle_white_cap"
+        type="cylinder"
+        size="0.026 0.008"
+        pos="0 0 0.053"
+        rgba="0.1 0.5 0.1 1"
+        mass="0.02"
+      />
+    </body>
+    <body name="bottle_amber" pos="-0.03 0.70 0.519">
+      <freejoint name="bottle_amber" />
+      <geom
+        name="bottle_amber_body"
+        type="cylinder"
+        size="0.025 0.045"
+        rgba="0.55 0.33 0.08 0.75"
+        mass="0.08"
+      />
+      <geom
+        name="bottle_amber_cap"
+        type="cylinder"
+        size="0.026 0.008"
+        pos="0 0 0.053"
+        rgba="0.9 0.9 0.9 1"
+        mass="0.02"
+      />
+    </body>
+    <body name="bottle_blue" pos="-0.1 0.80 0.519">
+      <freejoint name="bottle_blue" />
+      <geom
+        name="bottle_blue_body"
+        type="cylinder"
+        size="0.025 0.045"
+        rgba="0.15 0.25 0.65 0.85"
+        mass="0.08"
+      />
+      <geom
+        name="bottle_blue_cap"
+        type="cylinder"
+        size="0.026 0.008"
+        pos="0 0 0.053"
+        rgba="0.9 0.9 0.9 1"
+        mass="0.02"
+      />
+    </body>
+    <body name="bottle_green" pos="-0.03 0.80 0.519">
+      <freejoint name="bottle_green" />
+      <geom
+        name="bottle_green_body"
+        type="cylinder"
+        size="0.025 0.045"
+        rgba="0.15 0.5 0.25 0.85"
+        mass="0.08"
+      />
+      <geom
+        name="bottle_green_cap"
+        type="cylinder"
+        size="0.026 0.008"
+        pos="0 0 0.053"
+        rgba="0.8 0.1 0.1 1"
+        mass="0.02"
       />
     </body>
     <include file="ur5e/ur5e_linear_rail.xml" />
@@ -74,8 +678,8 @@
   <keyframe>
     <key
       name="default"
-      qpos="-1.168 0.776711 0.469754 1 5.72696e-06 -4.26533e-08 -9.38821e-05 -1.34591 1.07777 0.902167 1 -2.70778e-08 7.60222e-07 -8.18971e-05 -1.1503 1.07777 0.902163 -0.873311 -1.32611e-06 -2.31428e-06 -0.487163 -0.871046 0.729603 0.473006 -0.839083 -3.76738e-06 -5.23752e-06 -0.544003 -0.699998 0.85 0.472753 -0.759699 6.25044e-07 1.49157e-06 -0.650275 -0.5 0.69 0.472779 -0.75966 -8.69884e-06 3.09906e-06 -0.65032 -0.360001 0.609999 0.472778 -0.759663 -6.29279e-06 3.61581e-06 -0.650317 -0.299999 0.7 0.472779 -0.75966 -5.34077e-06 1.33814e-06 -0.65032 -3.70361e-09 0.9 0.47375 -0.839072 -1.82055e-05 -5.31435e-05 0.544021 -0.1 0.85 0.47375 0.283662 4.83891e-05 2.85336e-05 -0.958924 0.0952783 0.840677 0.47375 -0.852936 4.00776e-05 -3.93632e-05 -0.522015 0.2 0.75 0.498669 1 3.49711e-17 2.9976e-18 1.51884e-30 1.73912e-05 0.749992 0.498669 1 0.00016562 0.000360588 4.6626e-11 -0.2 0.75 0.498669 1 2.94315e-17 -7.92697e-18 -4.14434e-30 1.56909e-06 -3.71262e-07 -1.88491 1.10086 -1.25647 -1.57075 -3.63345e-07 0.0525545 0.000140183 0.0525603 -0.050625 0.0525545 0.000140184 0.0525567 -0.0506181"
-      qvel="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
+      qpos="-1.168 0.776711 0.469754 1 5.72696e-06 -4.26533e-08 -9.38821e-05 -1.34591 1.07777 0.902167 1 -2.70778e-08 7.60222e-07 -8.18971e-05 -1.1503 1.07777 0.902163 -0.873311 -1.32611e-06 -2.31428e-06 -0.487163 -0.871046 0.729603 0.473006 -0.839083 -3.76738e-06 -5.23752e-06 -0.544003 0.3 0.85 0.472753 1 0 0 0 -0.5 0.69 0.472779 -0.75966 -8.69884e-06 3.09906e-06 -0.65032 -0.360001 0.609999 0.472778 -0.759663 -6.29279e-06 3.61581e-06 -0.650317 -0.299999 0.7 0.472779 -0.75966 -5.34077e-06 1.33814e-06 -0.65032 -3.70361e-09 0.9 0.47375 -0.839072 -1.82055e-05 -5.31435e-05 0.544021 -0.1 0.85 0.47375 0.283662 4.83891e-05 2.85336e-05 -0.958924 0.0952783 0.840677 0.47375 -0.852936 4.00776e-05 -3.93632e-05 -0.522015 0.25 0.75 0.532 1 0 0 0 0.27 0.75 0.532 1 0 0 0 0.29 0.75 0.532 1 0 0 0 0.31 0.75 0.532 1 0 0 0 0.33 0.75 0.532 1 0 0 0 0.35 0.75 0.532 1 0 0 0 -0.1 0.70 0.519 1 0 0 0 -0.03 0.70 0.519 1 0 0 0 -0.1 0.80 0.519 1 0 0 0 -0.03 0.80 0.519 1 0 0 0 1.56909e-06 -3.71262e-07 -1.88491 1.10086 -1.25647 -1.57075 -3.63345e-07 0.0525545 0.000140183 0.0525603 -0.050625 0.0525545 0.000140184 0.0525567 -0.0506181"
+      qvel="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
       ctrl="0 -1.8849 1.0997 -1.2566 -1.57075 0 0 0"
     />
   </keyframe>
