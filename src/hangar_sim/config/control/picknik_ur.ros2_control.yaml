@@ -282,12 +282,12 @@ force_torque_sensor_broadcaster:
 imu_sensor_broadcaster:
   ros__parameters:
     sensor_name: imu_site
-    frame_id: imu_link
+    frame_id: ridgeback_base_link
     # Static covariance values (row-major 3x3 matrices)
     # Orientation covariance (rad^2)
     static_covariance_orientation: [0.001, 0.0, 0.0, 0.0, 0.001, 0.0, 0.0, 0.0, 0.001]
     # Angular velocity covariance (rad/s)^2
-    static_covariance_angular_velocity: [0.001, 0.0, 0.0, 0.0, 0.001, 0.0, 0.0, 0.0, 0.001]
+    static_covariance_angular_velocity: [100.0, 0.0, 0.0, 0.0, 100.0, 0.0, 0.0, 0.0, 100.0]
     # Linear acceleration covariance (m/s^2)^2
     static_covariance_linear_acceleration: [0.01, 0.0, 0.0, 0.0, 0.01, 0.0, 0.0, 0.0, 0.01]
 
