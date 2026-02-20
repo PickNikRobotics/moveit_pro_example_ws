@@ -23,3 +23,7 @@
 [submodule "src/moveit_pro_clipseg"]
 	path = src/moveit_pro_clipseg
 	url = https://github.com/PickNikRobotics/moveit_pro_clipseg.git
+[submodule "src/external_dependencies/phoebe_ws"]
+	path = src/external_dependencies/phoebe_ws
+	url = https://github.com/PickNikRobotics/phoebe_ws.git
+	branch = dualtip_ml_objectives
