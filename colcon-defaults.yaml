@@ -29,6 +29,11 @@ build:
     - franka_ros2
     - franka_semantic_components
     - integration_launch_testing
+    # phoebe_ws: skip hardware package and unused packages
+    - phoebe_hw
+    - phoebe_bridgeback_description
+    - clearpath_generator_common
+    - ewellix_examples
 test:
   event-handlers:
     - console_direct+
@@ -46,3 +51,8 @@ test:
     - franka_ros2
     - franka_semantic_components
     - integration_launch_testing
+    # phoebe_ws: skip hardware package and unused packages
+    - phoebe_hw
+    - phoebe_bridgeback_description
+    - clearpath_generator_common
+    - ewellix_examples

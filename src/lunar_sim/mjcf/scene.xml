@@ -1,0 +1,91 @@
+<mujoco model="lunar sim scene">
+  <default>
+    <default class="visual">
+      <geom
+        type="mesh"
+        contype="0"
+        conaffinity="0"
+        group="2"
+        rgba="0.75294 0.75294 0.75294 1"
+      />
+    </default>
+    <default class="collision">
+      <geom type="mesh" group="3" />
+    </default>
+  </default>
+
+  <!-- Robot model and scene objects copied from phoebe_sim at build time -->
+  <include file="dual_arm_robot.xml" />
+  <include file="trainer.xml" />
+  <include file="bottle.xml" />
+  <include file="rack.xml" />
+
+  <statistic center="0.3 0 0.4" extent="0.8" />
+
+  <visual>
+    <headlight diffuse="0.4 0.4 0.4" ambient="0.05 0.05 0.05" specular="0 0 0" />
+    <rgba haze="0.05 0.05 0.05 1" />
+    <global azimuth="120" elevation="-20" offwidth="1280" offheight="720" />
+  </visual>
+
+  <asset>
+    <!-- Dark space skybox -->
+    <texture
+      type="skybox"
+      builtin="gradient"
+      rgb1="0.02 0.02 0.05"
+      rgb2="0 0 0"
+      width="512"
+      height="3072"
+    />
+    <!-- Lunar surface texture -->
+    <texture
+      type="2d"
+      name="lunar_ground"
+      builtin="flat"
+      rgb1="0.55 0.55 0.50"
+      rgb2="0.45 0.45 0.40"
+      width="512"
+      height="512"
+    />
+    <material
+      name="lunar_ground"
+      texture="lunar_ground"
+      texuniform="true"
+      texrepeat="8 8"
+      reflectance="0.05"
+    />
+  </asset>
+
+  <worldbody>
+    <!-- Reduced lighting to simulate lunar conditions -->
+    <light pos="5 -5 10" dir="-0.5 0.5 -1" directional="true" diffuse="0.9 0.9 0.85" />
+
+    <!-- Lunar ground plane -->
+    <geom
+      name="floor"
+      pos="0 0 0"
+      size="0 0 0.05"
+      type="plane"
+      material="lunar_ground"
+    />
+
+    <!-- Scene Camera -->
+    <site
+      name="scene_camera_optical_frame"
+      pos="0 -6 3"
+      quat="0.574 -0.819 0.0 0.0"
+    />
+    <camera
+      name="scene_camera"
+      pos="0 -6 3"
+      quat="-0.819 -0.574 0.0 0.0"
+      fovy="45"
+      mode="fixed"
+      resolution="1280 720"
+    />
+
+    <!-- TODO: Add lunar terrain features / obstacles for SLAM -->
+    <!-- TODO: Add localization landmarks / background geometry -->
+  </worldbody>
+</mujoco>
