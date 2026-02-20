@@ -7,22 +7,32 @@
 services:
 
   # The base image that all MoveIt Pro services extend off of. Builds the user workspace.
-  base: {}
+  base: 
+    environment:
+      - RCUTILS_COLORIZED_OUTPUT=1
 
   # Starts the MoveIt Pro Agent and the Bridge between the Agent and the Web UI.
-  agent_bridge: {}
+  agent_bridge:
+    environment:
+      - RCUTILS_COLORIZED_OUTPUT=1
 
   # Starts the robot drivers.
   drivers:
+    environment:
+      - RCUTILS_COLORIZED_OUTPUT=1
     volumes:
       # Allow access to host hardware e.g. RealSense cameras
       - /dev:/dev
 
   # Starts the web UI frontend.
-  web_ui: {}
+  web_ui: 
+    environment:
+      - RCUTILS_COLORIZED_OUTPUT=1
 
   # Developer specific configuration when running `moveit_pro dev`.
   dev:
+    environment:
+      - RCUTILS_COLORIZED_OUTPUT=1
     volumes:
       # Allow access to host hardware e.g. RealSense cameras
       - /dev:/dev
