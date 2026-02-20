@@ -654,7 +654,8 @@
   <!-- Positive Z points out of the gripper -->
   <link name="grasp_link" />
   <joint name="grasp_link_joint" type="fixed">
-    <parent link="robotiq_85_base_link" />
+    <!-- <parent link="robotiq_85_base_link" /> -->
+    <parent link="gripper_mount_link" />
     <child link="grasp_link" />
     <origin rpy="0.0 0.0 3.141592653589793" xyz="0.0 0.0 0.134" />
   </joint>
