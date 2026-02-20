@@ -12,6 +12,7 @@
 
   <buildtool_depend>ament_cmake_ros</buildtool_depend>
   <build_depend>moveit_pro_package</build_depend>
+  <buildtool_depend>ros_environment</buildtool_depend>
 
   <depend>controller_manager_msgs</depend>
   <depend>moveit_studio_agent_msgs</depend>

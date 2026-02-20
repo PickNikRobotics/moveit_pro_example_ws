@@ -38,12 +38,12 @@ ProtectiveStopManager::ProtectiveStopManager(const rclcpp::NodeOptions& options)
   , fault_status_timer_(create_wall_timer(kFaultStatusPeriod, [this] { this->publishFaultStatus(); }))
   , in_fault_(false)
   , last_fault_status_update_(0, 0, this->now().get_clock_type())
-  , fault_ctrl_sub_(
-        create_subscription<example_interfaces::msg::Bool>(kFaultTopic, rclcpp::QoS(1),
-                                                           [&](const example_interfaces::msg::Bool::SharedPtr msg) {
-                                                             in_fault_ = msg->data;
-                                                             last_fault_status_update_ = this->now();
-                                                           }))
+  , fault_ctrl_sub_(create_subscription<example_interfaces::msg::Bool>(
+        kFaultTopic, rclcpp::QoS(1),
+        [&](const example_interfaces::msg::Bool::ConstSharedPtr msg) {
+          in_fault_ = msg->data;
+          last_fault_status_update_ = this->now();
+        }))
   , fault_reset_client_(create_client<example_interfaces::srv::Trigger>(kResetFault, rmw_qos_profile_services_default,
                                                                         reentrant_callback_group_))
 {
@@ -80,7 +80,11 @@ void ProtectiveStopManager::recoverFromProtectiveStop(const std_srvs::srv::Trigg
     return;
   }
   auto deactivate_all_controllers_request = std::make_shared<SwitchController::Request>();
+#ifdef ROS_DISTRO_JAZZY
+  deactivate_all_controllers_request->deactivate_controllers = all_controller_names;
+#else
   deactivate_all_controllers_request->stop_controllers = all_controller_names;
+#endif
   // Use BEST_EFFORT strictness because some controllers may already be inactive, and attempting to stop them while
   // using STRICT strictness would introduce an unnecessary error.
   deactivate_all_controllers_request->strictness = SwitchController::Request::BEST_EFFORT;
@@ -109,7 +113,11 @@ void ProtectiveStopManager::recoverFromProtectiveStop(const std_srvs::srv::Trigg
   // This resets the state of the robot controllers to match the state it was in at startup.
   RCLCPP_INFO_STREAM(kLogger, "Reactivating default controllers...");
   auto activate_default_controllers_request = std::make_shared<SwitchController::Request>();
+#ifdef ROS_DISTRO_JAZZY
+  activate_default_controllers_request->activate_controllers = active_controller_names;
+#else
   activate_default_controllers_request->start_controllers = active_controller_names;
+#endif
   // BEST_EFFORT is good enough to put the system back into an operational state without throwing unnecessary errors.
   activate_default_controllers_request->strictness = SwitchController::Request::BEST_EFFORT;
   auto activate_default_controllers_future =

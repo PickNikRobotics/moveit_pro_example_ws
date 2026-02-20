@@ -40,6 +40,7 @@
 #include <hardware_interface/types/lifecycle_state_names.hpp>
 
 #include <lifecycle_msgs/msg/state.hpp>
+#include <rclcpp/rclcpp.hpp>
 #include <rclcpp_lifecycle/state.hpp>
 
 #include <ros2_control_test_assets/components_urdfs.hpp>
@@ -75,7 +76,12 @@ TEST(TestRobotiqGripperHardwareInterface, load_urdf)
        )";
 
   auto urdf = ros2_control_test_assets::urdf_head + urdf_control_ + ros2_control_test_assets::urdf_tail;
+#ifdef ROS_DISTRO_JAZZY
+  hardware_interface::ResourceManager rm(urdf, std::make_shared<rclcpp::Clock>(RCL_ROS_TIME),
+                                         rclcpp::get_logger("test_robotiq_gripper_hardware_interface"));
+#else
   hardware_interface::ResourceManager rm(urdf);
+#endif
 
   // Check interfaces
   EXPECT_EQ(1u, rm.system_components_size());

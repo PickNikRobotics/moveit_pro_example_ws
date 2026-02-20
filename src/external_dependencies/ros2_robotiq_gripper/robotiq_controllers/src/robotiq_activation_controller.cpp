@@ -28,6 +28,8 @@
 
 #include "robotiq_controllers/robotiq_activation_controller.hpp"
 
+#include <tuple>
+
 namespace robotiq_controllers
 {
 controller_interface::InterfaceConfiguration RobotiqActivationController::command_interface_configuration() const
@@ -105,6 +107,16 @@ rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn Roboti
 bool RobotiqActivationController::reactivateGripper(std_srvs::srv::Trigger::Request::SharedPtr /*req*/,
                                                     std_srvs::srv::Trigger::Response::SharedPtr resp)
 {
+#ifdef ROS_DISTRO_JAZZY
+  std::ignore = command_interfaces_[REACTIVATE_GRIPPER_RESPONSE].set_value(ASYNC_WAITING);
+  std::ignore = command_interfaces_[REACTIVATE_GRIPPER_CMD].set_value(1.0);
+
+  while (command_interfaces_[REACTIVATE_GRIPPER_RESPONSE].get_optional<double>().value() == ASYNC_WAITING)
+  {
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+  }
+  resp->success = command_interfaces_[REACTIVATE_GRIPPER_RESPONSE].get_optional<double>().value();
+#else
   command_interfaces_[REACTIVATE_GRIPPER_RESPONSE].set_value(ASYNC_WAITING);
   command_interfaces_[REACTIVATE_GRIPPER_CMD].set_value(1.0);
 
@@ -113,6 +125,7 @@ bool RobotiqActivationController::reactivateGripper(std_srvs::srv::Trigger::Requ
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
   }
   resp->success = command_interfaces_[REACTIVATE_GRIPPER_RESPONSE].get_value();
+#endif
 
   return resp->success;
 }

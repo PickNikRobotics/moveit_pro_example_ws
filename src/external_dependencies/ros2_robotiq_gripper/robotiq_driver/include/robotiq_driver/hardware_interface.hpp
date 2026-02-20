@@ -76,8 +76,13 @@ public:
    * @returns CallbackReturn::SUCCESS if required data are provided and can be
    * parsed or CallbackReturn::ERROR if any error happens or data are missing.
    */
+#ifdef ROS_DISTRO_JAZZY
+  ROBOTIQ_DRIVER_PUBLIC
+  CallbackReturn on_init(const hardware_interface::HardwareComponentInterfaceParams& params) override;
+#else
   ROBOTIQ_DRIVER_PUBLIC
   CallbackReturn on_init(const hardware_interface::HardwareInfo& info) override;
+#endif
 
   /**
    * Connect to the hardware.

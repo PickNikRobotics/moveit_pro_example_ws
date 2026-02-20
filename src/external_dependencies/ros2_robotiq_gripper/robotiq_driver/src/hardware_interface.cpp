@@ -72,6 +72,16 @@ RobotiqGripperHardwareInterface::RobotiqGripperHardwareInterface(std::unique_ptr
 {
 }
 
+#ifdef ROS_DISTRO_JAZZY
+hardware_interface::CallbackReturn RobotiqGripperHardwareInterface::on_init(const hardware_interface::HardwareComponentInterfaceParams& params)
+{
+  RCLCPP_DEBUG(kLogger, "on_init");
+
+  if (hardware_interface::SystemInterface::on_init(params) != CallbackReturn::SUCCESS)
+  {
+    return CallbackReturn::ERROR;
+  }
+#else
 hardware_interface::CallbackReturn RobotiqGripperHardwareInterface::on_init(const hardware_interface::HardwareInfo& info)
 {
   RCLCPP_DEBUG(kLogger, "on_init");
@@ -80,6 +90,7 @@ hardware_interface::CallbackReturn RobotiqGripperHardwareInterface::on_init(cons
   {
     return CallbackReturn::ERROR;
   }
+#endif
 
   // Read parameters.
   gripper_closed_pos_ = stod(info_.hardware_parameters["gripper_closed_position"]);
