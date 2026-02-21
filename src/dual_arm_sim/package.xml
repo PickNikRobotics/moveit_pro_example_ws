@@ -13,18 +13,16 @@
 
   <exec_depend>franka_base_config</exec_depend>
   <exec_depend>franka_description</exec_depend>
-  <exec_depend>franka_msgs</exec_depend>
-  <exec_depend>moveit_studio_agent</exec_depend>
   <exec_depend>moveit_pro_behavior</exec_depend>
-
-  <test_depend>ament_lint_auto</test_depend>
+  <exec_depend>moveit_studio_agent</exec_depend>
 
   <test_depend>ament_clang_format</test_depend>
   <test_depend>ament_clang_tidy</test_depend>
   <test_depend>ament_cmake_copyright</test_depend>
   <test_depend>ament_cmake_lint_cmake</test_depend>
-  <test_depend>picknik_ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>picknik_ament_copyright</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
