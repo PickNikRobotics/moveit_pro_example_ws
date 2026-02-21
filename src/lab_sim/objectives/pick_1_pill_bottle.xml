@@ -1,119 +1,52 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version='1.0' encoding='UTF-8'?>
 <root BTCPP_format="4" main_tree_to_execute="Pick 1 Pill Bottle">
   <!--//////////-->
-  <BehaviorTree
-    ID="Pick 1 Pill Bottle"
-    _description="Captures and segments objects from a point cloud based on a text prompt. Then grasps the first object returned from the segmentation."
-    _favorite="true"
-  >
+  <BehaviorTree ID="Pick 1 Pill Bottle" _description="Captures and segments objects from a point cloud based on a text prompt. Then grasps the first object returned from the segmentation." _favorite="true">
     <Control ID="Sequence">
-      <SubTree ID="Open Gripper" _collapsed="true" />
-      <SubTree
-        ID="Move to Waypoint"
-        _collapsed="true"
-        joint_group_name="manipulator"
-        keep_orientation_link_names="grasp_link"
-        waypoint_name="Above Pick Cube"
-      />
-      <SubTree
-        ID="Segment Point Cloud from Text Prompt Subtree"
-        _collapsed="false"
-        camera_topic_name="/wrist_camera/camera_info"
-        decoder_model_path="models/decoder.onnx"
-        encoder_model_path="models/sam2_hiera_large_encoder.onnx"
-        image_topic_name="/wrist_camera/color"
-        masks_visualization_topic="/masks_visualization"
-        model_package="moveit_pro_clipseg"
-        points_topic_name="/wrist_camera/points"
-        clip_model_path="models/clip.onnx"
-        clipseg_model_path="models/clipseg.onnx"
-        erosion_size="2"
-        prompts="a cylindrical object with a dark gray and silver metallic body, featuring a circular blue cap on top"
-        threshold="0.28"
-        masks3d="{masks3d}"
-        point_cloud="{point_cloud}"
-        point_cloud_vector="{point_cloud_vector}"
-      />
-      <Decorator
-        ID="ForEach"
-        index="{index}"
-        out="{point_cloud_fragment}"
-        vector_in="{point_cloud_vector}"
-      >
+      <!-- Open the gripper and move to the starting position -->
+      <SubTree ID="Open Gripper" _collapsed="true"/>
+      <SubTree ID="Move to Waypoint" _collapsed="true" joint_group_name="manipulator" keep_orientation_link_names="grasp_link" waypoint_name="Home" name="Move to start position"/>
+
+      <!-- Switch the UI to show ML segmentation results -->
+      <Action ID="SwitchUIPrimaryView" primary_view_name="/masks_visualization"/>
+
+      <!-- Use ML vision pipeline to segment the point cloud and identify pill bottles -->
+      <SubTree ID="Segment Point Cloud from Text Prompt Subtree" _collapsed="false" camera_topic_name="/wrist_camera/camera_info" decoder_model_path="models/decoder.onnx" encoder_model_path="models/sam2_hiera_large_encoder.onnx" image_topic_name="/wrist_camera/color" masks_visualization_topic="/masks_visualization" model_package="moveit_pro_clipseg" points_topic_name="/wrist_camera/points" clip_model_path="models/clip.onnx" clipseg_model_path="models/clipseg.onnx" erosion_size="2" prompts="a cylindrical object with a dark gray and silver metallic body, featuring a circular blue cap on top" threshold="0.28" masks3d="{masks3d}" point_cloud="{point_cloud}" point_cloud_vector="{point_cloud_vector}"/>
+
+      <!-- Compute the centroid and grasp pose for each detected object -->
+      <Decorator ID="ForEach" index="{index}" out="{point_cloud_fragment}" vector_in="{point_cloud_vector}">
         <Control ID="Sequence">
-          <Action
-            ID="GetCentroidFromPointCloud"
-            output_pose="{centroid_pose}"
-            point_cloud="{point_cloud_fragment}"
-          />
-          <Action
-            ID="TransformPose"
-            input_pose="{centroid_pose}"
-            output_pose="{grasp_pose}"
-            quaternion_xyzw="0;0;1.0;0.0"
-          />
-          <Action
-            ID="AddPoseStampedToVector"
-            input="{grasp_pose}"
-            vector="{grasp_poses}"
-          />
+          <Action ID="GetCentroidFromPointCloud" output_pose="{centroid_pose}" point_cloud="{point_cloud_fragment}"/>
+          <Action ID="TransformPose" input_pose="{centroid_pose}" output_pose="{grasp_pose}" quaternion_xyzw="0;0;1.0;0.0"/>
+          <Action ID="AddPoseStampedToVector" input="{grasp_pose}" vector="{grasp_poses}"/>
         </Control>
       </Decorator>
+
+      <!-- Log how many objects the ML model detected -->
+      <Action ID="GetSizeOfVector" vector_in="{point_cloud_vector}" vector_size="{num_detected}"/>
+      <Action ID="Script" code="detect_msg := 'ML model detected ' .. num_detected .. ' object(s)'"/>
+      <Action ID="LogMessage" message="{detect_msg}" log_level="info"/>
+
+      <!-- Plan and execute a grasp using MTC (MoveIt Task Constructor) -->
       <Control ID="Sequence">
-        <Action
-          ID="InitializeMTCTask"
-          task_id="grasp"
-          controller_names="joint_trajectory_admittance_controller;robotiq_gripper_controller"
-          task="{mtc_task}"
-          trajectory_monitoring="false"
-          timeout="-1.000000"
-        />
-        <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
-        <Action
-          ID="SetupMTCConnectWithProRRT"
-          acceleration_scale_factor="1.000000"
-          keep_orientation_link_names="grasp_link"
-          keep_orientation_tolerance="0.100000"
-          link_padding="0.000000"
-          max_iterations="5000"
-          planning_group_name="manipulator"
-          task="{mtc_task}"
-          trajectory_sampling_rate="100"
-          velocity_scale_factor="1.000000"
-        />
-        <Action
-          ID="SetupMTCBatchPoseIK"
-          end_effector_group="moveit_ee"
-          end_effector_link="grasp_link"
-          ik_group="manipulator"
-          ik_timeout_s="0.01"
-          max_ik_solutions="1"
-          monitored_stage="current state"
-          target_poses="{grasp_poses}"
-          task="{mtc_task}"
-        />
-        <Action
-          ID="PlanMTCTask"
-          solution="{grasp_solution}"
-          task="{mtc_task}"
-        />
-        <SubTree ID="Execute MTC Solution" solution="{grasp_solution}" />
+        <Action ID="InitializeMTCTask" task_id="grasp" controller_names="joint_trajectory_admittance_controller;robotiq_gripper_controller" task="{mtc_task}" trajectory_monitoring="false" timeout="-1.000000"/>
+        <Action ID="SetupMTCCurrentState" task="{mtc_task}"/>
+        <Action ID="SetupMTCConnectWithProRRT" acceleration_scale_factor="1.000000" keep_orientation_link_names="grasp_link" keep_orientation_tolerance="0.100000" link_padding="0.000000" max_iterations="5000" planning_group_name="manipulator" task="{mtc_task}" trajectory_sampling_rate="100" velocity_scale_factor="1.000000"/>
+        <Action ID="SetupMTCBatchPoseIK" end_effector_group="moveit_ee" end_effector_link="grasp_link" ik_group="manipulator" ik_timeout_s="0.01" max_ik_solutions="1" monitored_stage="current state" target_poses="{grasp_poses}" task="{mtc_task}"/>
+        <Action ID="PlanMTCTask" solution="{grasp_solution}" task="{mtc_task}"/>
+        <SubTree ID="Execute MTC Solution" solution="{grasp_solution}"/>
       </Control>
-      <SubTree ID="Close Gripper" _collapsed="true" />
-      <SubTree
-        ID="Move to Waypoint"
-        _collapsed="true"
-        joint_group_name="manipulator"
-        keep_orientation_link_names="grasp_link"
-        waypoint_name="Above Pick Cube"
-      />
+
+      <!-- Close the gripper and retreat to the home position -->
+      <SubTree ID="Close Gripper" _collapsed="true"/>
+      <SubTree ID="Move to Waypoint" _collapsed="true" joint_group_name="manipulator" keep_orientation_link_names="grasp_link" waypoint_name="Above Pick Cube"/>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Pick 1 Pill Bottle">
       <MetadataFields>
-        <Metadata runnable="true" />
-        <Metadata subcategory="Application - ML (GPU Recommended)" />
+        <Metadata runnable="true"/>
+        <Metadata subcategory="Application - ML (GPU Recommended)"/>
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>

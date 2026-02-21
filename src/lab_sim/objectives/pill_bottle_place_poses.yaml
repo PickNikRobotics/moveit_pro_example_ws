@@ -1,3 +1,7 @@
+# Placement poses for the "Pick All Pill Bottles" objective.
+# Each entry defines a target pose (in the world frame) where a pill bottle
+# will be placed in the tray. The number of poses determines how many bottles
+# the objective will try to pick. Edit this file to add or rearrange tray slots.
 ---
 header:
   stamp:
