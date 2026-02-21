@@ -4,7 +4,7 @@
   <BehaviorTree
     ID="Visualize Segmented Point Cloud"
     _description="Publish segmented point cloud to the UI."
-    _favorite="true"
+    _favorite="false"
     masks3d="/wrist_camera/camera_info"
     point_cloud="/wrist_camera/camera_info"
   >

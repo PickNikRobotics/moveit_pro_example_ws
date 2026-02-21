@@ -7,7 +7,7 @@
   <BehaviorTree
     ID="Get Grasp from Text Prompt Subtree"
     _description="Identifies an object and returns a collision free grasp pose."
-    _favorite="true"
+    _favorite="false"
   >
     <Control ID="Sequence">
       <SubTree

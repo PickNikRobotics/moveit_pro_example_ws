@@ -4,7 +4,7 @@
   <BehaviorTree
     ID="Segment Image from Point Subtree"
     _description="Captures an image and segments it using three user provided prompt points."
-    _favorite="true"
+    _favorite="false"
     decoder_model_path="models/decoder.onnx"
     encoder_model_path="models/sam2_hiera_large_encoder.onnx"
     image_topic_name="/wrist_camera/color"
