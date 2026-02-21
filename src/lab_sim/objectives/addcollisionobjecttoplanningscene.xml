@@ -4,6 +4,7 @@
   <BehaviorTree
     ID="AddCollisionObjectToPlanningScene"
     _description="Adds a collision box to the planning scene  with the specified ID and pose."
+    _favorite="false"
   >
     <Control ID="Sequence">
       <Action

@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Add Table to Planning Scene">
   <!--//////////-->
-  <BehaviorTree ID="Add Table to Planning Scene" _description="">
+  <BehaviorTree
+    ID="Add Table to Planning Scene"
+    _description=""
+    _favorite="false"
+  >
     <Control ID="Sequence">
       <Action
         ID="GetCurrentPlanningScene"

@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Move Along Square">
   <!--//////////-->
-  <BehaviorTree ID="Move Along Square" _description="Move along a square path">
+  <BehaviorTree
+    ID="Move Along Square"
+    _description="Move along a square path"
+    _favorite="false"
+  >
     <Control ID="Sequence">
       <Action
         ID="InitializeMTCTask"

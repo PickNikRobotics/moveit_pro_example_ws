@@ -7,6 +7,7 @@
   <BehaviorTree
     ID="Constrained Pick and Place Subtree"
     _description="Takes in waypoints to run a constrained pick and place operation."
+    _favorite="false"
   >
     <Control ID="Sequence">
       <!--Move to pick location-->

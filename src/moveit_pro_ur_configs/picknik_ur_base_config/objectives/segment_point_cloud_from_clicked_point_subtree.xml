@@ -7,7 +7,7 @@
   <BehaviorTree
     ID="Segment Point Cloud from Clicked Point Subtree"
     _description="Captures a point cloud and requests the user to click an object in the image to be segmented. The point cloud is then filtered to only include the selected object."
-    _favorite="true"
+    _favorite="false"
     camera_topic_name="{camera_topic_name}"
     decoder_model_path="{decoder_model_path}"
     encoder_model_path="{encoder_model_path}"

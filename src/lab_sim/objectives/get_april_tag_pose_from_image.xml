@@ -3,6 +3,7 @@
   <BehaviorTree
     ID="Get AprilTag Pose from Image"
     _description="Takes an image snapshot from the wrist camera and attempts to detect an april tag for pose estimation."
+    _favorite="false"
   >
     <Control ID="Sequence">
       <!--Get tag pose estimate in world frame-->

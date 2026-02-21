@@ -6,7 +6,7 @@
   <BehaviorTree
     ID="MPC Pose Tracking Dynamic Point Cloud Avoidance with Sphere Down Sample"
     _description="Example of end effector avoiding a moving point cloud that is down-sampled with spheres."
-    _favorite="true"
+    _favorite="false"
   >
     <Control ID="Sequence">
       <SubTree ID="Clear Snapshot" _collapsed="true" />

@@ -6,6 +6,7 @@
   <BehaviorTree
     ID="Stitch Multiple Point Clouds Together"
     _description="Multi-view inspection routine: Captures images and point clouds from multiple viewpoints for 3D reconstruction or quality inspection"
+    _favorite="false"
   >
     <Control ID="Sequence">
       <!--Initialize visualization and point cloud vector-->

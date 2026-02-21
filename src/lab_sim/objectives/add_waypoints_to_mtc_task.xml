@@ -6,6 +6,7 @@
     _description="Retrieves waypoints and adds them to an MTC task for motion planning."
     joint_group_name="manipulator"
     mtc_task="{mtc_task}"
+    _favorite="false"
   >
     <Control ID="Sequence">
       <Action

@@ -5,6 +5,7 @@
     ID="Fuse Multiple Views Subtree"
     name="Moves to the three waypoints and returns the merged point cloud from those locations."
     _description="Moves to three different waypoints, captures point clouds, returns the merged point cloud."
+    _favorite="false"
   >
     <Control ID="Sequence">
       <SubTree ID="Clear Snapshot" _collapsed="true" />

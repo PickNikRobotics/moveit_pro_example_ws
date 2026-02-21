@@ -7,7 +7,7 @@
   <BehaviorTree
     ID="MPC Pose Tracking With Point Cloud Avoidance"
     _description="Uses Model Predictive Control (MPC) to track a target pose while avoiding obstacles represented by a point cloud."
-    _favorite="true"
+    _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree ID="Clear Snapshot" _collapsed="true" />

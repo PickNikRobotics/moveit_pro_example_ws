@@ -7,7 +7,7 @@
   <BehaviorTree
     ID="Create Point Cloud Vector From Masks"
     _description="Create point cloud vector From masks"
-    _favorite="true"
+    _favorite="false"
     masks3d="/wrist_camera/camera_info"
     point_cloud="/wrist_camera/camera_info"
   >

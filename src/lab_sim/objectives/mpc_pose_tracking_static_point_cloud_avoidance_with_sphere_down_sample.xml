@@ -6,7 +6,7 @@
   <BehaviorTree
     ID="MPC Pose Tracking Static Point Cloud Avoidance with Sphere Down Sample"
     _description="Example of end effector avoiding a point cloud that is down-sampled with spheres and statically placed in the environment."
-    _favorite="true"
+    _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree ID="Clear Snapshot" _collapsed="true" />

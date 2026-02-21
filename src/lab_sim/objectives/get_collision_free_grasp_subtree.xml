@@ -4,6 +4,7 @@
   <BehaviorTree
     ID="Get Collision Free Grasp Subtree"
     _description="Takes a set of grasp poses and returns the first collision free pose."
+    _favorite="false"
   >
     <Decorator
       ID="ForEachUntilSuccess"

@@ -4,6 +4,7 @@
   <BehaviorTree
     ID="Clear Previous Obstacles"
     _description="Clear previous scene obstacles"
+    _favorite="false"
   >
     <Control ID="Sequence" name="Setup">
       <Action ID="ClearSnapshot" />
