@@ -35,3 +35,40 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: PickNikRobotics/moveit_pro_lint@v0.0.1
+
+  validate_objective_favorites:
+    name: Validate Objective favorite metadata
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - name: Check no non-runnable Objectives are favorited
+        run: |
+          errors=0
+          while IFS= read -r -d '' file; do
+            if grep -q 'runnable="false"' "$file" && grep -q '_favorite="true"' "$file"; then
+              echo "::error file=${file}::Non-runnable Objective must not be favorited: ${file}"
+              errors=$((errors + 1))
+            fi
+          done < <(find src -name '*.xml' -path '*/objectives/*' -print0)
+          if [ "$errors" -gt 0 ]; then
+            echo ""
+            echo "Found $errors Objective(s) that are both non-runnable and favorited."
+            echo "Objectives with <Metadata runnable=\"false\"/> must have _favorite=\"false\"."
+            exit 1
+          fi
+      - name: Check favorite count does not exceed 8 per config package
+        run: |
+          MAX_FAVORITES=8
+          errors=0
+          for pkg_dir in src/*/objectives/; do
+            pkg_name=$(echo "$pkg_dir" | cut -d'/' -f2)
+            count=$(grep -rl '_favorite="true"' --include='*.xml' "$pkg_dir" 2>/dev/null | wc -l | tr -d ' ')
+            if [ "$count" -gt "$MAX_FAVORITES" ]; then
+              echo "::error::${pkg_name} has ${count} favorited Objectives (max ${MAX_FAVORITES}) — if everything is favorited, nothing is favorited."
+              grep -rl '_favorite="true"' --include='*.xml' "$pkg_dir"
+              errors=$((errors + 1))
+            fi
+          done
+          if [ "$errors" -gt 0 ]; then
+            exit 1
+          fi
