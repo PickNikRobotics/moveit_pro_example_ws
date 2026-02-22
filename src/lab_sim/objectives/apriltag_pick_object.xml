@@ -1,85 +1,50 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version='1.0' encoding='UTF-8'?>
 <root BTCPP_format="4" main_tree_to_execute="Pick April Tag Labeled Object">
-  <!--//////////-->
-  <BehaviorTree
-    ID="Pick April Tag Labeled Object"
-    _description="Picks up an object that has an AprilTag marker."
-    _favorite="true"
-  >
-    <Control ID="Sequence" name="TopLevelSequence">
-      <SubTree ID="Look at Table" _collapsed="true" />
-      <Action ID="ClearSnapshot" />
-      <SubTree ID="Take Wrist Camera Snapshot" _collapsed="true" />
-      <Control ID="Sequence" name="Setup">
-        <SubTree ID="Open Gripper" />
+  <BehaviorTree ID="Pick April Tag Labeled Object" _description="Picks up an object that has an AprilTag marker." _favorite="true">
+    <Decorator ID="KeepRunningUntilFailure">
+      <Control ID="Sequence" name="TopLevelSequence">
+        <Control ID="Sequence" name="Detect AprilTag">
+          <!--Ensure gripper is open before scanning-->
+          <SubTree ID="Open Gripper"/>
+          <!--Move to a top-down view of the table-->
+          <SubTree ID="Look at Table" _collapsed="true"/>
+          <!--Capture a fresh wrist camera image-->
+          <Action ID="ClearSnapshot"/>
+          <Action ID="GetCameraInfo" topic_name="/wrist_camera/camera_info" message_out="{camera_info}" message_timeout_sec="5.000000" publisher_timeout_sec="5.000000"/>
+          <Action ID="GetImage" topic_name="/wrist_camera/color" message_out="{image}" message_timeout_sec="5.000000"/>
+          <SubTree ID="Take Wrist Camera Snapshot" _collapsed="true"/>
+          <!--Detect AprilTag and compute a pre-grasp viewpoint offset above it-->
+          <SubTree ID="Get AprilTag Pose from Image" image="{image}" camera_info="{camera_info}" _collapsed="false" detection_pose="{detection_pose}"/>
+          <Action ID="TransformPose" output_pose="{view_pose}" input_pose="{detection_pose}" quaternion_xyzw="1.0;0.0;0.0;0.0" translation_xyz="0;0.1;0.3"/>
+          <Action ID="VisualizePose" pose="{view_pose}" marker_size="0.1" marker_lifetime="0" marker_name="apriltag_view_pose" marker_text="Pre-Grasp"/>
+          <!--Pause for operator review of the pre-grasp pose-->
+          <Action ID="BreakpointSubscriber"/>
+        </Control>
+        <Control ID="Sequence" name="Refine Pose and Pick">
+          <!--Move to the pre-grasp viewpoint above the detected tag-->
+          <SubTree ID="Plan Move To Pose" target_pose="{view_pose}" move_to_pose_solution="{move_to_pose_solution}"/>
+          <SubTree ID="Execute MTC Solution" solution="{move_to_pose_solution}"/>
+          <!--Re-detect the tag from closer range for a more accurate pose-->
+          <Action ID="GetImage" topic_name="/wrist_camera/color" message_out="{image}" message_timeout_sec="5.000000"/>
+          <SubTree ID="Get AprilTag Pose from Image" image="{image}" camera_info="{camera_info}" _collapsed="true" detection_pose="{detection_pose}"/>
+          <!--Apply a small Z offset to position the grasp just above the tag surface-->
+          <Action ID="TransformPose" output_pose="{offset_pose}" input_pose="{detection_pose}" quaternion_xyzw="1;0;0;0" translation_xyz="0;0;0.05"/>
+          <Action ID="VisualizePose" pose="{offset_pose}" marker_size="0.1" marker_lifetime="0" marker_name="apriltag_view_pose" marker_text="Pick Pose"/>
+          <!--Pause for operator review of the refined grasp pose-->
+          <Action ID="BreakpointSubscriber"/>
+          <!--Execute the pick-->
+          <SubTree ID="Pick from Pose" _collapsed="false" grasp_pose="{offset_pose}" approach_distance="0.1" retract_xyz="0;0;-0.2"/>
+        </Control>
+        <Control ID="Sequence" name="Place Object">
+          <!--Carry the object to the far-right drop-off position-->
+          <SubTree ID="Move to Waypoint" _collapsed="true" joint_group_name="manipulator" waypoint_name="Predrop Bottles Right"/>
+          <!--Release the object-->
+          <SubTree ID="Open Gripper"/>
+        </Control>
       </Control>
-      <Action
-        ID="GetCameraInfo"
-        topic_name="/wrist_camera/camera_info"
-        message_out="{camera_info}"
-        message_timeout_sec="5.000000"
-      />
-      <Action
-        ID="GetImage"
-        topic_name="/wrist_camera/color"
-        message_out="{image}"
-        message_timeout_sec="5.000000"
-      />
-      <SubTree
-        ID="Get AprilTag Pose from Image"
-        image="{image}"
-        camera_info="{camera_info}"
-        _collapsed="true"
-        detection_pose="{detection_pose}"
-      />
-      <Action
-        ID="TransformPose"
-        output_pose="{view_pose}"
-        input_pose="{detection_pose}"
-        quaternion_xyzw="1.0;0.0;0.0;0.0"
-        translation_xyz="0;0.1;0.15"
-      />
-      <SubTree
-        ID="Plan Move To Pose"
-        target_pose="{view_pose}"
-        move_to_pose_solution="{move_to_pose_solution}"
-      />
-      <SubTree ID="Execute MTC Solution" solution="{move_to_pose_solution}" />
-      <Action
-        ID="GetImage"
-        topic_name="/wrist_camera/color"
-        message_out="{image}"
-        message_timeout_sec="5.000000"
-      />
-      <SubTree
-        ID="Get AprilTag Pose from Image"
-        image="{image}"
-        camera_info="{camera_info}"
-        _collapsed="true"
-        detection_pose="{detection_pose}"
-      />
-      <Action
-        ID="TransformPose"
-        output_pose="{offset_pose}"
-        input_pose="{detection_pose}"
-        quaternion_xyzw="1;0;0;0"
-        translation_xyz="0;0;0.01"
-      />
-      <SubTree
-        ID="Pick from Pose"
-        _collapsed="true"
-        grasp_pose="{offset_pose}"
-        approach_distance="0.1"
-        retract_xyz="0;0;-0.1"
-      />
-    </Control>
+    </Decorator>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Pick April Tag Labeled Object">
-      <MetadataFields>
-        <Metadata subcategory="Application - Advanced Examples" />
-        <Metadata runnable="true" />
-      </MetadataFields>
-    </SubTree>
+    <SubTree ID="Pick April Tag Labeled Object"/>
   </TreeNodesModel>
 </root>
