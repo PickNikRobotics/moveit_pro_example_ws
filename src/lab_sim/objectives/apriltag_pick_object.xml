@@ -1,11 +1,11 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<root BTCPP_format="4" main_tree_to_execute="Pick April Tag Labeled Object">
-  <BehaviorTree ID="Pick April Tag Labeled Object" _description="Picks up an object that has an AprilTag marker." _favorite="true">
+<root BTCPP_format="4" main_tree_to_execute="Pick All Bottles with AprilTags">
+  <BehaviorTree ID="Pick All Bottles with AprilTags" _description="Detects AprilTags on medicine bottles, picks them up, and places them at a drop-off location. Loops until no more tags are found." _favorite="true">
     <Decorator ID="KeepRunningUntilFailure">
-      <Control ID="Sequence" name="TopLevelSequence">
-        <Control ID="Sequence" name="Detect AprilTag">
+      <Control ID="Sequence" name="TopLevelSequence" _collapsed="true">
+        <Control ID="Sequence" name="Detect AprilTag" _collapsed="true">
           <!--Ensure gripper is open before scanning-->
-          <SubTree ID="Open Gripper"/>
+          <SubTree ID="Open Gripper" _collapsed="true"/>
           <!--Move to a top-down view of the table-->
           <SubTree ID="Look at Table" _collapsed="true"/>
           <!--Capture a fresh wrist camera image-->
@@ -14,37 +14,65 @@
           <Action ID="GetImage" topic_name="/wrist_camera/color" message_out="{image}" message_timeout_sec="5.000000"/>
           <SubTree ID="Take Wrist Camera Snapshot" _collapsed="true"/>
           <!--Detect AprilTag and compute a pre-grasp viewpoint offset above it-->
-          <SubTree ID="Get AprilTag Pose from Image" image="{image}" camera_info="{camera_info}" _collapsed="false" detection_pose="{detection_pose}"/>
+          <Action ID="DetectAprilTags" image="{image}" camera_info="{camera_info}" detections="{detections}" apriltag_family_name="36h11" max_hamming="0" n_threads="1" quad_decimate="2.0" quad_sigma="0.0" refine_edges="true" tag_size="0.04"/>
+          <Action ID="GetCenterMostAprilTag" detection_pose="{detection_pose}" detections="{detections}" camera_info="{camera_info}"/>
+          <Action ID="TransformPoseFrame" input_pose="{detection_pose}" output_pose="{detection_pose}" target_frame_id="world"/>
           <Action ID="TransformPose" output_pose="{view_pose}" input_pose="{detection_pose}" quaternion_xyzw="1.0;0.0;0.0;0.0" translation_xyz="0;0.1;0.3"/>
           <Action ID="VisualizePose" pose="{view_pose}" marker_size="0.1" marker_lifetime="0" marker_name="apriltag_view_pose" marker_text="Pre-Grasp"/>
           <!--Pause for operator review of the pre-grasp pose-->
+          <SubTree ID="Take Wrist Camera Snapshot" _collapsed="true"/>
           <Action ID="BreakpointSubscriber"/>
         </Control>
-        <Control ID="Sequence" name="Refine Pose and Pick">
+        <Control ID="Sequence" name="Refine Pose" _collapsed="true">
           <!--Move to the pre-grasp viewpoint above the detected tag-->
-          <SubTree ID="Plan Move To Pose" target_pose="{view_pose}" move_to_pose_solution="{move_to_pose_solution}"/>
-          <SubTree ID="Execute MTC Solution" solution="{move_to_pose_solution}"/>
+          <SubTree ID="Plan Move To Pose" target_pose="{view_pose}" move_to_pose_solution="{move_to_pose_solution}" _collapsed="true"/>
+          <SubTree ID="Execute MTC Solution" solution="{move_to_pose_solution}" _collapsed="true"/>
           <!--Re-detect the tag from closer range for a more accurate pose-->
           <Action ID="GetImage" topic_name="/wrist_camera/color" message_out="{image}" message_timeout_sec="5.000000"/>
-          <SubTree ID="Get AprilTag Pose from Image" image="{image}" camera_info="{camera_info}" _collapsed="true" detection_pose="{detection_pose}"/>
+          <Action ID="DetectAprilTags" image="{image}" camera_info="{camera_info}" detections="{detections}" apriltag_family_name="36h11" max_hamming="0" n_threads="1" quad_decimate="2.0" quad_sigma="0.0" refine_edges="true" tag_size="0.04"/>
+          <Action ID="GetCenterMostAprilTag" detection_pose="{detection_pose}" detections="{detections}" camera_info="{camera_info}"/>
+          <Action ID="TransformPoseFrame" input_pose="{detection_pose}" output_pose="{detection_pose}" target_frame_id="world"/>
           <!--Apply a small Z offset to position the grasp just above the tag surface-->
           <Action ID="TransformPose" output_pose="{offset_pose}" input_pose="{detection_pose}" quaternion_xyzw="1;0;0;0" translation_xyz="0;0;0.05"/>
           <Action ID="VisualizePose" pose="{offset_pose}" marker_size="0.1" marker_lifetime="0" marker_name="apriltag_view_pose" marker_text="Pick Pose"/>
           <!--Pause for operator review of the refined grasp pose-->
           <Action ID="BreakpointSubscriber"/>
-          <!--Execute the pick-->
-          <SubTree ID="Pick from Pose" _collapsed="false" grasp_pose="{offset_pose}" approach_distance="0.1" retract_xyz="0;0;-0.2"/>
         </Control>
-        <Control ID="Sequence" name="Place Object">
+        <Control ID="Sequence" name="Pick from Pose" _collapsed="true">
+          <!--Initialize MTC pick task-->
+          <Action ID="InitializeMTCTask" controller_names="joint_trajectory_admittance_controller;robotiq_gripper_controller" task="{mtc_task}" task_id="pick_object" trajectory_monitoring="false" timeout="-1.000000"/>
+          <Action ID="SetupMTCCurrentState" task="{mtc_task}"/>
+          <Action ID="SetupMTCConnectWithProRRT" acceleration_scale_factor="1.000000" keep_orientation="false" keep_orientation_link_names="grasp_link" keep_orientation_tolerance="0.100000" link_padding="0.000000" max_iterations="5000" planning_group_name="manipulator" seed="0" task="{mtc_task}" trajectory_sampling_rate="100" velocity_scale_factor="1.000000"/>
+          <!--Approach along grasp_link Z axis-->
+          <Action ID="SetupMTCMoveAlongFrameAxis" acceleration_scale="1.000000" axis_frame="grasp_link" axis_x="0.000000" axis_y="0.000000" axis_z="1.000000" hand_frame="grasp_link" max_distance="0.1" min_distance="0.1" planning_group_name="manipulator" task="{mtc_task}" velocity_scale="1.000000" ignore_environment_collisions="false"/>
+          <!--Solve IK for the grasp pose-->
+          <Action ID="ResetPoseStampedVector" vector="{grasp_pose_vector}"/>
+          <Action ID="AddPoseStampedToVector" input="{offset_pose}" vector="{grasp_pose_vector}"/>
+          <Action ID="SetupMTCBatchPoseIK" end_effector_group="moveit_ee" end_effector_link="grasp_link" ik_group="manipulator" ik_timeout_s="0.01" max_ik_solutions="4" monitored_stage="current state" target_poses="{grasp_pose_vector}" task="{mtc_task}"/>
+          <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}"/>
+          <SubTree ID="Execute MTC Solution" solution="{mtc_solution}" _collapsed="true"/>
+          <!--Close gripper to grasp the object-->
+          <Action ID="BreakpointSubscriber"/>
+          <SubTree ID="Close Gripper" _collapsed="true"/>
+        </Control>
+        <Control ID="Sequence" name="Retract" _collapsed="true">
+          <!--Retract away from the grasp-->
+          <Action ID="CreateStampedPose" reference_frame="grasp_link" stamped_pose="{retract_pose}" position_xyz="0;0;-0.15"/>
+          <Action ID="ResetPoseStampedVector" vector="{retract_path}"/>
+          <Action ID="AddPoseStampedToVector" input="{retract_pose}" vector="{retract_path}"/>
+          <Action ID="PlanCartesianPath" acceleration_scale_factor="1.000000" blending_radius="0.020000" debug_solution="{debug_solution}" ik_cartesian_space_density="0.010000" ik_joint_space_density="0.100000" joint_trajectory_msg="{joint_trajectory_msg}" path="{retract_path}" planning_group_name="manipulator" position_only="false" tip_links="grasp_link" trajectory_sampling_rate="100" velocity_scale_factor="1.000000"/>
+          <Action ID="ExecuteTrajectory"/>
+        </Control>
+        <Control ID="Sequence" name="Place Object" _collapsed="true">
           <!--Carry the object to the far-right drop-off position-->
           <SubTree ID="Move to Waypoint" _collapsed="true" joint_group_name="manipulator" waypoint_name="Predrop Bottles Right"/>
           <!--Release the object-->
-          <SubTree ID="Open Gripper"/>
+          <SubTree ID="Open Gripper" _collapsed="true"/>
         </Control>
       </Control>
     </Decorator>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Pick April Tag Labeled Object"/>
+    <SubTree ID="Pick All Bottles with AprilTags"/>
   </TreeNodesModel>
 </root>
