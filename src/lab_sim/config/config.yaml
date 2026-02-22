@@ -17,7 +17,7 @@ hardware:
       path: "config/moveit/picknik_ur.srdf"
     urdf_params:
       - mujoco_model: "description/scene.xml"
-      - mujoco_viewer: false
+      - mujoco_viewer: true
 
 moveit_params:
   joint_limits:

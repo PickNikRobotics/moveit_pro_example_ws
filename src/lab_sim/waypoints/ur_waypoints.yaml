@@ -944,6 +944,49 @@
     twist: []
     wrench: []
   name: Look at Table
+- description: ''
+  favorite: false
+  joint_group_names:
+  - gripper
+  - linear_actuator
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - linear_rail_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
+    - 0.05255644806618723
+    - 0.5122898747729586
+    - -0.50056400918939
+    - -1.751689750495592
+    - 2.10142915416009
+    - -2.2698802070168753
+    - -1.389061941026332
+    - -0.47401853804676464
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Look at Table from Side
 - description: Move out of view of scene camera
   favorite: false
   joint_group_names:
