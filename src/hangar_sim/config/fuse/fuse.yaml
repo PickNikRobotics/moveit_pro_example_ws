@@ -17,8 +17,10 @@ state_estimator:
       # Order: x, y, z, roll, pitch, yaw, vx, vy, vz, vroll, vpitch, vyaw, ax, ay, az
       # Ground robot: z, roll, pitch (and their velocities) should be small
       # since the robot stays on the ground plane and level.
-      #process_noise_diagonal: [0.25, 0.25, 0.001, 0.001, 0.001, 0.25, 0.1, 0.1, 0.001, 0.001, 0.001, 0.1, 0.001, 0.001, 0.001] 
-      process_noise_diagonal: [2.0, 2.0, 0.1, 0.1, 0.1, 2.0, 2.0, 1.0, 0.1, 0.1, 0.1, 0.001, 0.01, 0.01, 0.001]
+      #trying this with the actual wheel odom 
+      process_noise_diagonal: [0.25, 0.25, 0.001, 0.001, 0.001, 0.25, 0.1, 0.1, 0.001, 0.001, 0.001, 0.1, 0.001, 0.001, 0.001] 
+      #this one works with the ground truth odom 
+      #process_noise_diagonal: [2.0, 2.0, 0.1, 0.1, 0.1, 2.0, 2.0, 1.0, 0.1, 0.1, 0.1, 0.001, 0.01, 0.01, 0.001]
 
     sensor_models:
       initial_localization_sensor:
@@ -38,17 +40,27 @@ state_estimator:
       initial_state: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
       initial_sigma: [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
 
-    # Wheel odometry — absolute mode
-    # Odom frame is the reference frame by definition, so absolute is correct.
+    # Wheel odometry — differential mode
+    # Using differential mode because platform_velocity_controller/odom is
+    # wheel-integrated odometry that drifts over time. Differential mode fuses
+    # only the relative change between consecutive messages, preventing
+    # accumulated drift from corrupting the estimate.
     wheel_odom_sensor:
-      topic: /odom_reliable
+      topic: /platform_velocity_controller/odom
       queue_size: 10
+      pose_loss:
+        type: fuse_loss::HuberLoss
+        a: 1.0
+      linear_velocity_loss:
+        type: fuse_loss::HuberLoss
+        a: 1.0
       position_dimensions: ['x', 'y', 'z']
       orientation_dimensions: ['yaw']
       linear_velocity_dimensions: ['x']
       angular_velocity_dimensions: ['yaw']
-      differential: false
-      # Uses covariance from the odom message directly (no override)
+      differential: true
+      independent: false
+      use_twist_covariance: true
 
     # IMU sensor
     # - Roll/pitch orientation from gravity vector (absolute, keeps robot level)
