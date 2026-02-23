@@ -17,7 +17,8 @@ state_estimator:
       # Order: x, y, z, roll, pitch, yaw, vx, vy, vz, vroll, vpitch, vyaw, ax, ay, az
       # Ground robot: z, roll, pitch (and their velocities) should be small
       # since the robot stays on the ground plane and level.
-      process_noise_diagonal: [0.25, 0.25, 0.001, 0.001, 0.001, 0.25, 0.1, 0.1, 0.001, 0.001, 0.001, 0.1, 0.001, 0.001, 0.001]
+      #process_noise_diagonal: [0.25, 0.25, 0.001, 0.001, 0.001, 0.25, 0.1, 0.1, 0.001, 0.001, 0.001, 0.1, 0.001, 0.001, 0.001] 
+      process_noise_diagonal: [2.0, 2.0, 0.1, 0.1, 0.1, 2.0, 2.0, 1.0, 0.1, 0.1, 0.1, 0.001, 0.01, 0.01, 0.001]
 
     sensor_models:
       initial_localization_sensor:
@@ -47,10 +48,7 @@ state_estimator:
       linear_velocity_dimensions: ['x']
       angular_velocity_dimensions: ['yaw']
       differential: false
-      # Order: x, y, z, roll, pitch, yaw
-      pose_covariance_diagonal: [0.5, 0.5, 0.01, 1e9, 1e9, 0.05]
-      # Order: vx, vy, vz, vroll, vpitch, vyaw
-      twist_covariance_diagonal: [0.05, 1e9, 1e9, 1e9, 1e9, 0.05]
+      # Uses covariance from the odom message directly (no override)
 
     # IMU sensor
     # - Roll/pitch orientation from gravity vector (absolute, keeps robot level)
@@ -72,8 +70,8 @@ state_estimator:
 
     filtered_publisher:
       topic: 'odom_filtered'
-      base_link_frame_id: 'base_footprint'
-      base_link_output_frame_id: 'base_footprint'
+      base_link_frame_id: 'ridgeback_base_link'
+      base_link_output_frame_id: 'ridgeback_base_link'
       odom_frame_id: 'odom'
       map_frame_id: 'map'
       world_frame_id: 'odom'

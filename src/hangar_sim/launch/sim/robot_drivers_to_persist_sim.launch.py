@@ -268,14 +268,6 @@ def generate_launch_description():
         arguments=["0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "map", "odom"],
     )
 
-    # Publish odometry as joint state messages
-    odom_to_joint_state_repub = Node(
-        package="hangar_sim",
-        executable="odometry_joint_state_publisher.py",
-        name="odometry_joint_state_publisher",
-        output="log",
-    )
-
     # QoS relay to bridge BEST_EFFORT odom to RELIABLE for fuse
     odom_qos_relay = Node(
         package="hangar_sim",
@@ -312,7 +304,6 @@ def generate_launch_description():
 
     ld.add_action(static_tf_world_to_map)
     ld.add_action(static_tf_map_to_odom)
-    ld.add_action(odom_to_joint_state_repub)
     ld.add_action(odom_qos_relay)
 
     # Fuse state estimator for mobile base localization
