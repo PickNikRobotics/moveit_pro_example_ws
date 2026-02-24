@@ -28,12 +28,13 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-"""Relay node to bridge BEST_EFFORT odometry to RELIABLE QoS for fuse."""
+"""Relay node to bridge BEST_EFFORT sensor topics to RELIABLE QoS for fuse."""
 
 import rclpy
 from rclpy.node import Node
 
 from nav_msgs.msg import Odometry
+from sensor_msgs.msg import Imu
 
 from rclpy.qos import (
     QoSProfile,
@@ -43,11 +44,11 @@ from rclpy.qos import (
 )
 
 
-class OdomQoSRelay(Node):
-    """Relay node that subscribes to odometry with BEST_EFFORT and republishes with RELIABLE QoS."""
+class SensorQoSRelay(Node):
+    """Relay node that subscribes to sensor topics with BEST_EFFORT and republishes with RELIABLE QoS."""
 
     def __init__(self):
-        super().__init__("odom_qos_relay")
+        super().__init__("sensor_qos_relay")
 
         # Subscribe with BEST_EFFORT to match mujoco_system publisher
         qos_sub = QoSProfile(
@@ -65,18 +66,30 @@ class OdomQoSRelay(Node):
             depth=10,
         )
 
-        self.sub = self.create_subscription(
+        # Odometry relay
+        self.odom_sub = self.create_subscription(
             Odometry, "/odom", self.odom_callback, qos_sub
         )
-        self.pub = self.create_publisher(Odometry, "/odom_reliable", qos_pub)
+        self.odom_pub = self.create_publisher(Odometry, "/odom_reliable", qos_pub)
+
+        # IMU relay
+        self.imu_sub = self.create_subscription(
+            Imu, "/imu_sensor_broadcaster/imu", self.imu_callback, qos_sub
+        )
+        self.imu_pub = self.create_publisher(
+            Imu, "/imu_sensor_broadcaster/imu_reliable", qos_pub
+        )
 
     def odom_callback(self, msg):
-        self.pub.publish(msg)
+        self.odom_pub.publish(msg)
+
+    def imu_callback(self, msg):
+        self.imu_pub.publish(msg)
 
 
 def main(args=None):
     rclpy.init(args=args)
-    node = OdomQoSRelay()
+    node = SensorQoSRelay()
     rclpy.spin(node)
     node.destroy_node()
     rclpy.shutdown()

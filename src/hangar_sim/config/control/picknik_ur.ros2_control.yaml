@@ -287,9 +287,9 @@ imu_sensor_broadcaster:
     # Orientation covariance (rad^2)
     static_covariance_orientation: [0.001, 0.0, 0.0, 0.0, 0.001, 0.0, 0.0, 0.0, 0.001]
     # Angular velocity covariance (rad/s)^2
-    static_covariance_angular_velocity: [100.0, 0.0, 0.0, 0.0, 100.0, 0.0, 0.0, 0.0, 100.0]
+    static_covariance_angular_velocity: [0.01, 0.0, 0.0, 0.0, 0.01, 0.0, 0.0, 0.0, 0.01]
     # Linear acceleration covariance (m/s^2)^2
-    static_covariance_linear_acceleration: [0.01, 0.0, 0.0, 0.0, 0.01, 0.0, 0.0, 0.0, 0.01]
+    static_covariance_linear_acceleration: [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
 
 
 velocity_force_controller:

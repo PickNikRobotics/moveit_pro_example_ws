@@ -268,11 +268,11 @@ def generate_launch_description():
         arguments=["0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "map", "odom"],
     )
 
-    # QoS relay to bridge BEST_EFFORT odom to RELIABLE for fuse
-    odom_qos_relay = Node(
+    # QoS relay to bridge BEST_EFFORT odom and IMU to RELIABLE for fuse
+    sensor_qos_relay = Node(
         package="hangar_sim",
         executable="odom_qos_relay.py",
-        name="odom_qos_relay",
+        name="sensor_qos_relay",
         output="log",
     )
 
@@ -304,7 +304,7 @@ def generate_launch_description():
 
     ld.add_action(static_tf_world_to_map)
     ld.add_action(static_tf_map_to_odom)
-    ld.add_action(odom_qos_relay)
+    ld.add_action(sensor_qos_relay)
 
     # Fuse state estimator for mobile base localization
     hangar_sim_pkg = FindPackageShare("hangar_sim")
