@@ -26,4 +26,4 @@
 [submodule "src/external_dependencies/phoebe_ws"]
 	path = src/external_dependencies/phoebe_ws
 	url = https://github.com/PickNikRobotics/phoebe_ws.git
-	branch = dualtip_ml_objectives
+	branch = main

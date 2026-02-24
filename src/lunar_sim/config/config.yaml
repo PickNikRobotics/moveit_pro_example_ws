@@ -11,3 +11,8 @@ hardware:
     urdf_params:
       - mujoco_model_package: lunar_sim
       - mujoco_model: mjcf/scene.xml
+
+moveit_params:
+  joint_jog:
+    package: "lunar_sim"
+    path: "config/moveit/joint_jog.yaml"
