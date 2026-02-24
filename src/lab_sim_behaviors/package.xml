@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<package format="3">
+  <name>lab_sim_behaviors</name>
+  <version>6.5.0</version>
+  <description>Lab sim specific behavior plugins for MoveIt Pro</description>
+
+  <maintainer email="support@picknik.ai">MoveIt Pro Maintainer</maintainer>
+  <author email="support@picknik.ai">MoveIt Pro Maintainer</author>
+
+  <license>BSD-3-Clause</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <build_depend>moveit_studio_common</build_depend>
+
+  <depend>moveit_pro_behavior</depend>
+  <depend>moveit_pro_behavior_interface</depend>
+  <depend>moveit_studio_vision</depend>
+  <depend>moveit_studio_vision_msgs</depend>
+  <depend>pluginlib</depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_cmake_gtest</test_depend>
+  <test_depend>ament_clang_format</test_depend>
+  <test_depend>ament_clang_tidy</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

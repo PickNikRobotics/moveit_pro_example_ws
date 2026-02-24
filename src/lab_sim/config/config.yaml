@@ -48,6 +48,8 @@ objectives:
       - "moveit_pro::behaviors::VisionBehaviorsLoader"
       - "moveit_pro::behaviors::ConverterBehaviorsLoader"
       - "moveit_pro::behaviors::MujocoBehaviorsLoader"
+    lab_sim:
+      - "lab_sim_behaviors::LabSimBehaviorsLoader"
   # Specify source folder for objectives
   # [Required]
   objective_library_paths:
