@@ -4,6 +4,7 @@
   <BehaviorTree
     ID="Plan Move To Pose"
     _description="Plan an MTC task, but do not execute it"
+    _favorite="false"
   >
     <Control ID="Sequence">
       <Action

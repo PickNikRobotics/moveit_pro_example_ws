@@ -4,6 +4,7 @@
   <BehaviorTree
     ID="LoadAndVisualizePointCloud"
     _description="Load point cloud from file, transform it using the input pose, and send it to the UI."
+    _favorite="false"
   >
     <Control ID="Sequence" _collapsed="false">
       <Action

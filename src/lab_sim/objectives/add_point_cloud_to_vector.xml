@@ -4,6 +4,7 @@
   <BehaviorTree
     ID="Add Point Cloud to Vector"
     _description="Takes a point cloud from a topic and adds it to a vector of point clouds."
+    _favorite="false"
   >
     <Control ID="Sequence">
       <Action

@@ -4,7 +4,7 @@
   <BehaviorTree
     ID="ML Segment Image"
     _description="Run an ML model to find all objects and visualize the masks with bounding boxes, from a text prompt."
-    _favorite="true"
+    _favorite="false"
   >
     <Control ID="Sequence">
       <Action

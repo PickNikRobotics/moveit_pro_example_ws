@@ -4,7 +4,7 @@
   <BehaviorTree
     ID="ML Segment Point Cloud"
     _description="Captures a point cloud and segments out all possible objects from a text prompt"
-    _favorite="true"
+    _favorite="false"
   >
     <Control ID="Sequence">
       <SubTree

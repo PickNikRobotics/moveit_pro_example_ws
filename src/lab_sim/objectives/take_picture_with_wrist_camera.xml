@@ -4,6 +4,7 @@
   <BehaviorTree
     ID="Take Wrist Camera Image"
     _description="Loads wrist camera parameters and records color image."
+    _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action

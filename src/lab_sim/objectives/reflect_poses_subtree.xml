@@ -5,6 +5,7 @@
     ID="Reflect Poses Subtree"
     name=""
     _description="Takes a set of poses, transforms each pose around an axis, and returns the combined set."
+    _favorite="false"
   >
     <Control ID="Sequence">
       <Action ID="ResetPoseStampedVector" vector="{output_poses}" />

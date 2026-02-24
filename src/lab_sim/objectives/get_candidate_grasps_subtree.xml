@@ -4,6 +4,7 @@
   <BehaviorTree
     ID="Get Candidate Grasps Subtree"
     _description="Infer grasp poses from camera image."
+    _favorite="false"
   >
     <Control ID="Sequence">
       <Action ID="ClearSnapshot" />

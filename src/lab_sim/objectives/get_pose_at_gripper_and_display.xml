@@ -4,6 +4,7 @@
   <BehaviorTree
     ID="GetPoseAtGripperandDisplay"
     _description="Create a pose at the gripper, transform it, and display it."
+    _favorite="false"
   >
     <Control ID="Sequence">
       <Action

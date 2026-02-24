@@ -4,6 +4,7 @@
   <BehaviorTree
     ID="ErrorCheckVectorSize"
     _description="Assert that the input vector is the expected length, and if not show a UI error and return FAILURE"
+    _favorite="false"
   >
     <Control ID="Sequence">
       <Action
