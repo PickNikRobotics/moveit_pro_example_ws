@@ -1,49 +1,62 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <root BTCPP_format="4" main_tree_to_execute="Visualize Quest Transform">
+  <!---->
   <BehaviorTree ID="Visualize Quest Transform">
     <Control ID="Sequence">
-      <SubTree ID="Transform Quest Frame" _autoremap="true" _collapsed="false" initial_controller_pose="{controller_pose_at_calibration}"/>
-      <!--Convert transform to pose for easier manipulation-->
-      <Action ID="LogMessage" message="Made it past Transform Quest Frame :)"/>
-      <!--Transform the initial controller pose to world frame (for delta calculation)-->
-      <Action ID="TransformPoseFrame" input_pose="{controller_pose_at_calibration}" output_pose="{controller_pose_at_calibration_world}" target_frame_id="world"/>
-      <!--Transform ITP to world frame before using it-->
+      <!--Get initial transform from Quest controller to robot end effector-->
+      <SubTree ID="Transform Quest Frame" _autoremap="true"/>
+      <!--Transform ITP (initial transformed pose) to world frame-->
       <Action ID="TransformPoseFrame" input_pose="{transformed_controller_pose}" output_pose="{transformed_controller_pose_world}" target_frame_id="world"/>
       <!--Unpack ITP to get position and header-->
       <Action ID="UnpackPoseStampedMessage" pose_stamped="{transformed_controller_pose_world}" pose="{itp_pose}" header="{itp_header}"/>
       <Action ID="UnpackPoseMessage" pose="{itp_pose}" position="{itp_position}" orientation="{itp_orientation}"/>
-      <!--Unpack ITP position to x, y, z for later addition-->
+      <!--Unpack ITP position to individual components for later addition-->
       <Action ID="UnpackPointMessage" point="{itp_position}" x="{itp_x}" y="{itp_y}" z="{itp_z}"/>
-      <!--Create identity quaternion (no rotation)-->
+      <!--Create identity quaternion (no rotation: x=0, y=0, z=0, w=1)-->
       <Action ID="CreateQuaternionMessage" x="0.0" y="0.0" z="0.0" w="1.0" quaternion="{identity_quaternion}"/>
-      <!--Create new pose with ITP position but no rotation-->
+      <!--Create new pose with ITP position but identity rotation-->
       <Action ID="CreatePoseMessage" position="{itp_position}" orientation="{identity_quaternion}" pose="{itp_pose_no_rotation}"/>
       <Action ID="CreatePoseStampedMessage" pose="{itp_pose_no_rotation}" header="{itp_header}" pose_stamped="{itp_no_rotation}"/>
-      <!--Visualize ITP before the loop-->
-      <Action ID="VisualizePose" marker_size="0.05" pose="{itp_no_rotation}" marker_text="ITP" marker_name="initial_transformed_pose"/>
+      <!--Visualize ITP before entering loop-->
+      <Action ID="VisualizePose" pose="{itp_no_rotation}" marker_name="ITP" marker_text="ITP" marker_size="0.05" _skipIf="true"/>
+      <!--Transform initial controller pose to world frame for delta calculation-->
+      <Action ID="TransformPoseFrame" input_pose="{controller_pose_at_calibration}" output_pose="{controller_pose_at_calibration_world}" target_frame_id="world"/>
+      <!--Continuously get controller pose and visualize transformed result-->
       <Decorator ID="KeepRunningUntilFailure">
         <Control ID="Sequence">
-          <!--Get current controller pose-->
+          <!--Get single odom instance and convert to PoseStamped-->
           <Action ID="GetOdomInstance" odom_topic_name="right_controller_odom" subscribed_odom_instance="{odometry}"/>
           <Action ID="ConvertOdomToPoseStamped" odometry="{odometry}" pose_stamped="{current_controller_pose}"/>
-          <Action ID="VisualizePose" marker_size="0.05" pose="{current_controller_pose}" marker_text="RC" marker_name="raw_controller_pose"/>
           <!--Transform current controller pose to world frame-->
           <Action ID="TransformPoseFrame" input_pose="{current_controller_pose}" output_pose="{current_controller_pose_world}" target_frame_id="world"/>
-          <!--Calculate how much the controller has moved since calibration (both in world frame now)-->
+          <!--Calculate movement delta in world frame-->
           <Action ID="CalculatePoseOffset" source_pose="{controller_pose_at_calibration_world}" destination_pose="{current_controller_pose_world}" source_to_destination_pose="{controller_movement_delta_world}"/>
-          <!--Unpack the delta to get translation and rotation separately-->
+          <!--Unpack delta to get translation and rotation separately-->
           <Action ID="UnpackPoseStampedMessage" pose_stamped="{controller_movement_delta_world}" pose="{delta_pose}" header="{delta_header}"/>
           <Action ID="UnpackPoseMessage" pose="{delta_pose}" position="{delta_position}" orientation="{delta_orientation}"/>
           <Action ID="UnpackPointMessage" point="{delta_position}" x="{delta_x}" y="{delta_y}" z="{delta_z}"/>
-          <!--Add delta translation to ITP position using Script math (no rotation applied!)-->
-          <Action ID="Script" code="target_x := itp_x + delta_x; target_y := itp_y + delta_y; target_z := itp_z + delta_z"/>
+          <Action ID="UnpackQuaternionMessage" quaternion="{delta_orientation}" x="{delta_qx}" y="{delta_qy}" z="{delta_qz}" w="{delta_qw}"/>
+          <!--=== AXIS REMAPPING ===-->
+          <!--Translation remapping: Swap/negate axes as needed-->
+          <!--Current: controller forward->sideways, so swap x and y-->
+          <!--Adjust signs (-) as needed to fix direction-->
+          <Action ID="Script" code="remapped_x := delta_y; remapped_y := delta_x; remapped_z := delta_z"/>
+          <!--Rotation remapping: Swap quaternion components to fix pitch/roll swap-->
+          <!--qx=roll, qy=pitch, qz=yaw-->
+          <!--To flip pitch direction: negate both the pitch component AND qw-->
+          <Action ID="Script" code="remapped_qx := delta_qy; remapped_qy := delta_qx; remapped_qz := -delta_qz; remapped_qw := -delta_qw"/>
+          <!--=== END AXIS REMAPPING ===-->
+          <!--Add remapped delta translation to ITP position-->
+          <Action ID="Script" code="target_x := itp_x + remapped_x; target_y := itp_y + remapped_y; target_z := itp_z + remapped_z"/>
           <!--Create target position from added values-->
           <Action ID="CreatePointMessage" x="{target_x}" y="{target_y}" z="{target_z}" point="{target_position}"/>
-          <!--Build final pose: translated position + delta rotation-->
-          <Action ID="CreatePoseMessage" position="{target_position}" orientation="{delta_orientation}" pose="{target_pose}"/>
+          <!--Create remapped quaternion-->
+          <Action ID="CreateQuaternionMessage" x="{remapped_qx}" y="{remapped_qy}" z="{remapped_qz}" w="{remapped_qw}" quaternion="{target_orientation}"/>
+          <!--Build final pose: translated position + remapped rotation-->
+          <Action ID="CreatePoseMessage" position="{target_position}" orientation="{target_orientation}" pose="{target_pose}"/>
           <Action ID="CreatePoseStampedMessage" pose="{target_pose}" header="{itp_header}" pose_stamped="{target_controller_pose}"/>
-          <!--Visualize the result - should track relative controller movement applied to ITP-->
-          <Action ID="VisualizePose" marker_size="0.05" pose="{target_controller_pose}" marker_text="TC" marker_name="transformed_controller_pose"/>
+          <!--Visualize the target controller pose-->
+          <Action ID="VisualizePose" pose="{target_controller_pose}" marker_name="TC" marker_text="TC" marker_size="0.05"/>
         </Control>
       </Decorator>
     </Control>
