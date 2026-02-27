@@ -64,18 +64,25 @@ joint_trajectory_controller:
       stopped_velocity_tolerance: 0.0
       goal_time: 0.0
       linear_rail_joint:
+        trajectory: 0.5
         goal: 0.05
       shoulder_pan_joint:
+        trajectory: 0.5
         goal: 0.05
       shoulder_lift_joint:
+        trajectory: 0.5
         goal: 0.05
       elbow_joint:
+        trajectory: 0.5
         goal: 0.05
       wrist_1_joint:
+        trajectory: 0.5
         goal: 0.05
       wrist_2_joint:
+        trajectory: 0.5
         goal: 0.05
       wrist_3_joint:
+        trajectory: 0.5
         goal: 0.05
     acceleration_limits:
       linear_rail_joint: 10.0
@@ -91,8 +98,8 @@ robotiq_gripper_controller:
     default: true
     joint: robotiq_85_left_knuckle_joint
     allow_stalling: true
-    stall_timeout: 0.05
-    goal_tolerance: 0.02
+    stall_timeout: 0.3
+    goal_tolerance: 0.3
 
 force_torque_sensor_broadcaster:
   ros__parameters:
