@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<root BTCPP_format="4" main_tree_to_execute="Stack Blocks with ICP">
+<root BTCPP_format="4" main_tree_to_execute="Stack Objects with ICP">
   <!--//////////-->
   <BehaviorTree
-    ID="Stack Blocks with ICP"
+    ID="Stack Objects with ICP"
     _description="Solution to the advanced exercise in the ICP section of the Perception &amp; ML tutorial"
     _favorite="false"
   >
@@ -29,7 +29,7 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Stack Blocks with ICP">
+    <SubTree ID="Stack Objects with ICP">
       <MetadataFields>
         <Metadata runnable="true" />
         <Metadata subcategory="Training Examples" />

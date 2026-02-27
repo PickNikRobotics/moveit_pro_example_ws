@@ -97,7 +97,7 @@
   <TreeNodesModel>
     <SubTree ID="Place at Pose with Approval">
       <MetadataFields>
-        <Metadata subcategory="Application - Basic Examples" />
+        <Metadata subcategory="Manipulation" />
         <Metadata runnable="false" />
       </MetadataFields>
       <inout_port name="place_poses" default="{place_poses}" />

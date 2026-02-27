@@ -25,20 +25,21 @@
         ID="PlanMTCTask"
         solution="{move_to_pose_solution}"
         task="{move_to_pose_task}"
+        max_solutions="4"
       />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Plan Move To Pose">
-      <input_port name="target_pose" default="{target_pose}" />
-      <output_port
-        name="move_to_pose_solution"
-        default="{move_to_pose_solution}"
-      />
       <MetadataFields>
         <Metadata subcategory="Motion - Planning" />
         <Metadata runnable="false" />
       </MetadataFields>
+      <output_port
+        name="move_to_pose_solution"
+        default="{move_to_pose_solution}"
+      />
+      <input_port name="target_pose" default="{target_pose}" />
     </SubTree>
   </TreeNodesModel>
 </root>

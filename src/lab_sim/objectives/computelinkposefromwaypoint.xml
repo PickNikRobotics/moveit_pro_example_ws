@@ -1,13 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="ComputeLinkPoseFromWaypoint">
   <!--//////////-->
-  <BehaviorTree ID="ComputeLinkPoseFromWaypoint" _favorite="false">
+  <BehaviorTree
+    ID="ComputeLinkPoseFromWaypoint"
+    _favorite="false"
+    _description=""
+  >
     <Control ID="Sequence" _collapsed="false">
       <Action
         ID="RetrieveWaypoint"
         joint_group_name="manipulator"
         waypoint_joint_state="{target_joint_state}"
-        waypoint_name="Above Pick Cube"
+        waypoint_name="Above Pick Object"
       />
       <Action
         ID="UnpackRobotJointStateMessage"
@@ -32,7 +36,7 @@
     <SubTree ID="ComputeLinkPoseFromWaypoint">
       <MetadataFields>
         <Metadata runnable="false" />
-        <Metadata subcategory="Application - Basic Examples" />
+        <Metadata subcategory="Manipulation" />
         <Metadata
           description="This objective retrieves a named waypoint, unpacks the joint state, gets the current planning scene, and computes the pose of a specified link using forward kinematics. The resulting pose is output as a geometry_msgs::msg::PoseStamped."
         />

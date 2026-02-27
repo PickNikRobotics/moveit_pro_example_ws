@@ -83,7 +83,7 @@
   <TreeNodesModel>
     <SubTree ID="Move Along Square">
       <MetadataFields>
-        <Metadata runnable="false" />
+        <Metadata runnable="true" />
         <Metadata subcategory="Application - Basic Examples" />
       </MetadataFields>
     </SubTree>

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<root BTCPP_format="4" main_tree_to_execute="Pick 1 Pill Bottle">
+<root BTCPP_format="4" main_tree_to_execute="Pick 1 Pill Bottle with ML">
   <!--//////////-->
   <BehaviorTree
-    ID="Pick 1 Pill Bottle"
+    ID="Pick 1 Pill Bottle with ML"
     _description="Captures and segments objects from a point cloud based on a text prompt. Then grasps the first object returned from the segmentation."
-    _favorite="true"
+    _favorite="false"
   >
     <Control ID="Sequence">
       <SubTree ID="Open Gripper" _collapsed="true" />
@@ -13,7 +13,7 @@
         _collapsed="true"
         joint_group_name="manipulator"
         keep_orientation_link_names="grasp_link"
-        waypoint_name="Above Pick Cube"
+        waypoint_name="Look at Table"
       />
       <SubTree
         ID="Segment Point Cloud from Text Prompt Subtree"
@@ -28,7 +28,7 @@
         clip_model_path="models/clip.onnx"
         clipseg_model_path="models/clipseg.onnx"
         erosion_size="2"
-        prompts="a cylindrical object with a dark gray and silver metallic body, featuring a circular blue cap on top"
+        prompts="a cylindrical object"
         threshold="0.28"
         masks3d="{masks3d}"
         point_cloud="{point_cloud}"
@@ -105,12 +105,12 @@
         _collapsed="true"
         joint_group_name="manipulator"
         keep_orientation_link_names="grasp_link"
-        waypoint_name="Above Pick Cube"
+        waypoint_name="Look at Table"
       />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Pick 1 Pill Bottle">
+    <SubTree ID="Pick 1 Pill Bottle with ML">
       <MetadataFields>
         <Metadata runnable="true" />
         <Metadata subcategory="Application - ML (GPU Recommended)" />
