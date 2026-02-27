@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="ML Find Objects on Table">
+  <BehaviorTree
+    ID="ML Find Objects on Table"
+    _description="Uses SAM3 text prompting to find &quot;an object&quot; on the table and show their masks and probabilities."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree ID="Look at Table" _collapsed="true" />
+      <SubTree ID="Take Wrist Camera Image" _collapsed="false" />
+      <Action
+        ID="GetMasks2DFromExemplar"
+        model_package="lab_sim"
+        encoder_model_path="models/sam3_vision_encoder.onnx"
+        decoder_model_path="models/sam3_decoder.onnx"
+        geometry_encoder_model_path="models/sam3_geometry_encoder.onnx"
+        text_encoder_model_path="models/sam3_text_encoder.onnx"
+        confidence_threshold="0.5"
+        confidence_scores_str="{confidence_scores_str}"
+        target_image="{wrist_camera_image}"
+        text_prompt="an object"
+        confidence_scores="{confidence_scores}"
+      />
+      <Action
+        ID="PublishMask2D"
+        bounding_box_labels="{confidence_scores_str}"
+        image="{wrist_camera_image}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="ML Find Objects on Table">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - ML (GPU Recommended)" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

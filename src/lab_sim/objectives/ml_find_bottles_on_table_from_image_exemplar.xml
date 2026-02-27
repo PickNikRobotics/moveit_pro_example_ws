@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="ML Find Bottles on Table from Image Exemplar"
+>
+  <BehaviorTree
+    ID="ML Find Bottles on Table from Image Exemplar"
+    _description="Uses the image exemplar feature of SAM3 to find and segment the square bottles on the table. Publishes masks on masks_visualization topic and exemplar with bounding box on bboxes_visualization for introspection. Combine image exemplar with text prompt to improve performance."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree ID="CreateVector" _collapsed="true" vector="{exemplar_parts}" />
+      <Action
+        ID="LoadImageFromFile"
+        file_path="~/user_ws/src/lab_sim/objectives/square_bottle1.png"
+        image="{square_bottle_exemplar}"
+      />
+      <Action
+        ID="CreateBoundingBoxFromOffset"
+        exemplar_image="{square_bottle_exemplar}"
+        bounding_boxes="{exemplar_bboxes}"
+        padding_percent="0.07"
+      />
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        waypoint_name="Look at Bottles Left"
+        velocity_scale_factor="1.0"
+      />
+      <SubTree ID="Take Wrist Camera Image" _collapsed="true" />
+      <Action
+        ID="GetMasks2DFromExemplar"
+        model_package="lab_sim"
+        encoder_model_path="models/sam3_vision_encoder.onnx"
+        decoder_model_path="models/sam3_decoder.onnx"
+        geometry_encoder_model_path="models/sam3_geometry_encoder.onnx"
+        text_encoder_model_path="models/sam3_text_encoder.onnx"
+        confidence_threshold="0.45"
+        confidence_scores_str="{confidence_scores_str}"
+        target_image="{wrist_camera_image}"
+        confidence_scores="{confidence_scores}"
+        exemplar_bboxes="{exemplar_bboxes}"
+        exemplar_image="{square_bottle_exemplar}"
+      />
+      <Action
+        ID="SwitchUIPrimaryView"
+        primary_view_name="/masks_visualization"
+      />
+      <Action
+        ID="PublishMask2D"
+        bounding_box_labels="{confidence_scores_str}"
+        image="{wrist_camera_image}"
+      />
+      <Action
+        ID="PublishBoundingBoxes2D"
+        image="{square_bottle_exemplar}"
+        bounding_boxes="{exemplar_bboxes}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="ML Find Bottles on Table from Image Exemplar">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - ML (GPU Recommended)" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
