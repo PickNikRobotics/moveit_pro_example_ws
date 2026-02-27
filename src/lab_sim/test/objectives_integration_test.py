@@ -40,44 +40,38 @@ from moveit_pro_test_utils.objective_test_fixture import (
 # Looping objectives to cancel partway through
 cancel_objectives = {
     "3 Waypoints Pick and Place",
-    "Stationary Admittance",
+    "Classical Pick and Place",
     "Cycle Between Waypoints",
-    "Grasp Planning",
+    "Get AprilTag Pose from Image",
     "Grasp Pose Tuning With April Tag",
     "Grasp Pose Using Yaml",
-    "Joint Diagnostic",
-    "Loop Detect AprilTag",
-    "Pick And Place Example",
     "Pick April Tag Labeled Object With Approval",
-    "Place Object",
     "Plan and Save Trajectory",
     "Record and Replay Scanning Motion",
-    "Classical Pick and Place",
-    "ML Grasp Object from Text Prompt",
+    "Stationary Admittance",
 }
 
 # Objectives to skip entirely from integration testing
 skip_objectives = {
-    "Grasp Object from Text Prompt",  # https://github.com/PickNikRobotics/moveit_pro/issues/13236
+    "AddBottlesToPlanningScene",
+    "Get Grasp from Text Prompt Subtree",  # https://github.com/PickNikRobotics/moveit_pro/issues/13236
     "Grasp Planning",
     "Joint Diagnostic",
-    "Scan Multiple Views",
-    "MPC Pose Tracking",
-    "MPC Pose Tracking With Point Cloud Avoidance",
+    "ML Auto Grasp Object from Clicked Point",  # Skipped because there is no primary ui to switch to in ci
     "ML Segment Image",
     "ML Segment Point Cloud from Clicked Point",
-    "ML Auto Grasp Object from Clicked Point",  # Skipped because there is no primary ui to switch to in ci
+    "MPC Pose Tracking",
+    "MPC Pose Tracking With Point Cloud Avoidance",
+    "Octomap Example",  # Requires user input to clear the octomap.
+    "Pick 1 Pill Bottle with ML",
+    "Pick All Bottles with AprilTags",
     "Pick All Pill Bottles",
-    "Pick up Cube",
+    "Pick up Object",
     "Place Object",
     "Record Square Trajectory",
-    "Stack Blocks with ICP",  # Skipped because there is no primary ui to switch to in ci
-    "Teleoperate",
+    "Scan Scene - Multiple Point Clouds",
+    "Stack Objects with ICP",  # Skipped because there is no primary ui to switch to in ci
     "Stitch Multiple Point Clouds Together",
-    "Pick 1 Pill Bottle",
-    "AddBottlesToPlanningScene",
-    "Marker Visualization Example",  # Server not available for GetTextFromUser
-    "Octomap Example",  # Requires user input to clear the octomap.
 }
 
 
@@ -104,4 +98,13 @@ def test_all_objectives(
     execute_objective_resource: ExecuteObjectiveResource,
 ):
     wait_for_gripper_action_server()
-    run_objective(objective_id, should_cancel, execute_objective_resource)
+    try:
+        run_objective(objective_id, should_cancel, execute_objective_resource)
+    except AssertionError as e:
+        mode = "cancel" if should_cancel else "execute"
+        pytest.fail(f"Objective '{objective_id}' failed to {mode}: {e}")
+    except Exception as e:
+        mode = "cancel" if should_cancel else "execute"
+        pytest.fail(
+            f"Objective '{objective_id}' hit an unexpected error during {mode}: {type(e).__name__}: {e}"
+        )

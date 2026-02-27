@@ -11,19 +11,32 @@
       <SubTree ID="Look at Table" _collapsed="true" />
       <Action
         ID="CreateStampedPose"
+        reference_frame="world"
         position_xyz="0.02;.75;0.58"
         orientation_xyzw="0;0;0;1"
         stamped_pose="{stamped_pose}"
         name="Initial Guess"
       />
-      <SubTree
-        ID="Load Mesh as Red Point Cloud"
-        _collapsed="false"
-        output_cloud="{red_cloud}"
-        initial_pose="{stamped_pose}"
+      <Action
+        ID="LoadPointCloudFromFile"
+        color="255;0;0"
+        package_name="lab_sim"
+        file_path="description/assets/Cube.stl"
         point_cloud="{red_cloud}"
       />
+      <Action
+        ID="TransformPointCloudFrame"
+        input_cloud="{red_cloud}"
+        output_cloud="{red_cloud}"
+      />
+      <Action
+        ID="TransformPointCloud"
+        input_cloud="{red_cloud}"
+        transform_pose="{stamped_pose}"
+        output_cloud="{red_cloud}"
+      />
       <Action ID="SendPointCloudToUI" point_cloud="{red_cloud}" />
+      <Action ID="BreakpointSubscriber" />
       <Action
         ID="GetPointCloud"
         topic_name="/wrist_camera/points"
@@ -42,12 +55,23 @@
         max_correspondence_distance="0.5"
         max_iterations="100"
       />
-      <SubTree
-        ID="Load Mesh as Green Point Cloud"
-        _collapsed="false"
-        output_cloud="{green_cloud}"
-        initial_pose="{stamped_pose}"
+      <Action
+        ID="LoadPointCloudFromFile"
+        color="0;255;0"
+        package_name="lab_sim"
+        file_path="description/assets/Cube.stl"
         point_cloud="{green_cloud}"
+      />
+      <Action
+        ID="TransformPointCloudFrame"
+        input_cloud="{green_cloud}"
+        output_cloud="{green_cloud}"
+      />
+      <Action
+        ID="TransformPointCloud"
+        input_cloud="{green_cloud}"
+        transform_pose="{stamped_pose}"
+        output_cloud="{green_cloud}"
       />
       <Action
         ID="TransformPointCloud"

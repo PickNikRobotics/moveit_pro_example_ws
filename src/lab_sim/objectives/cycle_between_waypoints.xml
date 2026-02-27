@@ -9,7 +9,7 @@
       <Control ID="Sequence">
         <SubTree
           ID="Move to Waypoint"
-          waypoint_name="Above Pick Cube"
+          waypoint_name="Above Pick Object"
           joint_group_name="manipulator"
         />
         <SubTree

@@ -10,7 +10,7 @@
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree ID="Clear Snapshot" _collapsed="true" />
-      <SubTree ID="_Scan Scene" _collapsed="true" />
+      <SubTree ID="Scan Scene - Multiple Point Clouds" _collapsed="true" />
       <Action
         ID="GetPointCloud"
         message_out="{point_cloud}"
