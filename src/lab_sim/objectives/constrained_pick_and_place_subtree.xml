@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <root
   BTCPP_format="4"
   main_tree_to_execute="Constrained Pick and Place Subtree"
@@ -6,81 +6,276 @@
   <!--//////////-->
   <BehaviorTree
     ID="Constrained Pick and Place Subtree"
-    _description="Takes in waypoints to run a constrained pick and place operation."
+    _description="Takes in pick and place waypoints, auto-computes pre-positions using forward kinematics with a height offset, and uses force-controlled lowering for placement."
     _favorite="false"
   >
-    <Control ID="Sequence">
-      <!--Move to pick location-->
-      <SubTree
-        ID="Move to Waypoint"
-        waypoint_name="{pre_pick}"
-        joint_group_name="manipulator"
-        keep_orientation="true"
-        keep_orientation_tolerance="0.2"
-        keep_orientation_link_names="grasp_link"
-      />
-      <SubTree
-        ID="Move to Waypoint"
-        waypoint_name="{pick}"
-        joint_group_name="manipulator"
-        keep_orientation="true"
-        keep_orientation_tolerance="0.2"
-        keep_orientation_link_names="grasp_link"
-      />
-      <!--We force success as the gripper closes, since we are commanding a position it will never reach (fingers fully closed)-->
-      <Decorator ID="ForceSuccess">
-        <SubTree ID="Close Gripper" />
-      </Decorator>
-      <!--Move to place (drop) location-->
-      <SubTree
-        ID="Move to Waypoint"
-        joint_group_name="manipulator"
-        keep_orientation="true"
-        keep_orientation_tolerance="0.2"
-        _collapsed="true"
-        waypoint_name="{pre_pick}"
-        keep_orientation_link_names="grasp_link"
-      />
-      <SubTree
-        ID="Move to Waypoint"
-        joint_group_name="manipulator"
-        keep_orientation="true"
-        keep_orientation_tolerance="0.2"
-        _collapsed="true"
-        waypoint_name="{pre_place}"
-        keep_orientation_link_names="grasp_link"
-      />
-      <SubTree
-        ID="Move to Waypoint"
-        joint_group_name="manipulator"
-        keep_orientation="true"
-        keep_orientation_tolerance="0.2"
-        _collapsed="true"
-        waypoint_name="{place}"
-        keep_orientation_link_names="grasp_link"
-      />
-      <SubTree ID="Open Gripper" />
-      <SubTree
-        ID="Move to Waypoint"
-        joint_group_name="manipulator"
-        keep_orientation="true"
-        keep_orientation_tolerance="0.2"
-        _collapsed="true"
-        waypoint_name="{pre_place}"
-        keep_orientation_link_names="grasp_link"
-      />
+    <Control ID="Sequence" name="Main Sequence">
+      <!--Compute pre-pick and pre-place poses from waypoint FK + height offset (0.305m = 12 inches)-->
+      <Control ID="Sequence" name="Compute Pre-Positions">
+        <Action
+          ID="GetCurrentPlanningScene"
+          planning_scene_msg="{planning_scene}"
+        />
+        <!--Compute pre-pick pose: FK from pick waypoint, then offset upward-->
+        <Action
+          ID="RetrieveWaypoint"
+          joint_group_name="manipulator"
+          waypoint_joint_state="{pick_joint_state}"
+          waypoint_name="{pick}"
+        />
+        <Action
+          ID="UnpackRobotJointStateMessage"
+          joint_state="{pick_joint_state_msg}"
+          multi_dof_joint_state="{pick_multi_dof}"
+          robot_joint_state="{pick_joint_state}"
+        />
+        <Action
+          ID="ComputeLinkPoseForwardKinematics"
+          joint_state="{pick_joint_state_msg}"
+          link_name="grasp_link"
+          link_pose="{pick_link_pose}"
+          planning_scene="{planning_scene}"
+        />
+        <Action
+          ID="TransformPose"
+          input_pose="{pick_link_pose}"
+          output_pose="{pre_pick_pose}"
+          quaternion_xyzw="0;0;0;1"
+          translation_xyz="0;0;-0.305"
+          visualize_pose="true"
+          marker_text="Pre-Pick"
+        />
+        <!--Compute pre-place pose: FK from place waypoint, then offset upward-->
+        <Action
+          ID="RetrieveWaypoint"
+          joint_group_name="manipulator"
+          waypoint_joint_state="{place_joint_state}"
+          waypoint_name="{place}"
+        />
+        <Action
+          ID="UnpackRobotJointStateMessage"
+          joint_state="{place_joint_state_msg}"
+          multi_dof_joint_state="{place_multi_dof}"
+          robot_joint_state="{place_joint_state}"
+        />
+        <Action
+          ID="ComputeLinkPoseForwardKinematics"
+          joint_state="{place_joint_state_msg}"
+          link_name="grasp_link"
+          link_pose="{place_link_pose}"
+          planning_scene="{planning_scene}"
+        />
+        <Action
+          ID="TransformPose"
+          input_pose="{place_link_pose}"
+          output_pose="{pre_place_pose}"
+          quaternion_xyzw="0;0;0;1"
+          translation_xyz="0;0;-0.305"
+          marker_text="Pre-Place"
+          visualize_pose="true"
+        />
+      </Control>
+      <!--Move to pre-pick, then lower to pick using constrained motion-->
+      <Control ID="Sequence">
+        <Control ID="Sequence" name="Pick">
+          <Action
+            ID="InitializeMTCTask"
+            task_id="move_to_pre_pick"
+            controller_names="joint_trajectory_admittance_controller;robotiq_gripper_controller"
+            task="{pre_pick_task}"
+          />
+          <Action ID="SetupMTCCurrentState" task="{pre_pick_task}" />
+          <Action
+            ID="SetupMTCPlanToPose"
+            ik_frame="grasp_link"
+            planning_group_name="manipulator"
+            target_pose="{pre_pick_pose}"
+            task="{pre_pick_task}"
+          />
+          <Action
+            ID="PlanMTCTask"
+            solution="{pre_pick_solution}"
+            task="{pre_pick_task}"
+            max_solutions="1"
+          />
+          <SubTree ID="Execute MTC Solution" solution="{pre_pick_solution}" />
+          <SubTree
+            ID="Move to Waypoint"
+            waypoint_name="{pick}"
+            joint_group_name="manipulator"
+            keep_orientation="true"
+            keep_orientation_tolerance="0.2"
+            keep_orientation_link_names="grasp_link"
+          />
+          <!--ForceSuccess because the gripper closes to a position it will never reach (fingers fully closed)-->
+          <SubTree ID="Close Gripper" />
+        </Control>
+      </Control>
+      <!--Retract upward after grasping (Cartesian path, 0.305m = 12 inches)-->
+      <Control ID="Sequence" name="Pick Retract">
+        <Action
+          ID="CreateStampedPose"
+          reference_frame="grasp_link"
+          stamped_pose="{pick_retract_pose}"
+          position_xyz="0;0;-0.305"
+        />
+        <Action ID="ResetPoseStampedVector" vector="{pick_retract_path}" />
+        <Action
+          ID="AddPoseStampedToVector"
+          input="{pick_retract_pose}"
+          vector="{pick_retract_path}"
+        />
+        <Action
+          ID="PlanCartesianPath"
+          acceleration_scale_factor="1.000000"
+          blending_radius="0.020000"
+          debug_solution="{debug_solution}"
+          ik_cartesian_space_density="0.010000"
+          ik_joint_space_density="0.100000"
+          joint_trajectory_msg="{joint_trajectory_msg}"
+          path="{pick_retract_path}"
+          planning_group_name="manipulator"
+          position_only="true"
+          tip_links="grasp_link"
+          trajectory_sampling_rate="100"
+          velocity_scale_factor="1.000000"
+        />
+        <Action ID="ExecuteTrajectory" />
+      </Control>
+      <!--Move to pre-place position-->
+      <Control ID="Sequence">
+        <Control ID="Sequence" name="Move to Pre-Place">
+          <Action
+            ID="InitializeMTCTask"
+            task_id="move_to_pre_place"
+            controller_names="joint_trajectory_admittance_controller;robotiq_gripper_controller"
+            task="{pre_place_task}"
+          />
+          <Action ID="SetupMTCCurrentState" task="{pre_place_task}" />
+          <Action
+            ID="SetupMTCPlanToPose"
+            ik_frame="grasp_link"
+            planning_group_name="manipulator"
+            target_pose="{pre_place_pose}"
+            task="{pre_place_task}"
+          />
+          <Action
+            ID="PlanMTCTask"
+            solution="{pre_place_solution}"
+            task="{pre_place_task}"
+            max_solutions="1"
+          />
+          <SubTree ID="Execute MTC Solution" solution="{pre_place_solution}" />
+        </Control>
+      </Control>
+      <!--Force-controlled lower until contact (force threshold: 20N)-->
+      <Control ID="Sequence" name="Force-Controlled Place">
+        <Action
+          ID="SwitchController"
+          activate_controllers="velocity_force_controller"
+        />
+        <Action
+          ID="CallTriggerService"
+          service_name="/velocity_force_controller/zero_fts"
+        />
+        <Action
+          ID="CreateStampedWrench"
+          stamped_wrench="{desired_wrench}"
+          reference_frame="grasp_link"
+          torque_xyz="0;0;0"
+          force_xyz="0;0;0"
+        />
+        <Action
+          ID="CreateStampedTwist"
+          reference_frame="grasp_link"
+          stamped_twist="{desired_twist}"
+          angular_velocity_xyz="0;0;0"
+          linear_velocity_xyz="0.0;0;0.05"
+        />
+        <Action
+          ID="CreateStampedPose"
+          reference_frame="grasp_link"
+          stamped_pose="{initial_pose}"
+        />
+        <Action
+          ID="TransformPoseFrame"
+          output_pose="{initial_pose}"
+          input_pose="{initial_pose}"
+        />
+        <Control ID="Parallel" failure_count="1" success_count="1">
+          <Action
+            ID="ForceExceedsThreshold"
+            minimum_consecutive_wrench_values="5"
+            wrench_frame_name="tool0"
+            hand_frame_name="grasp_link"
+            force_threshold="100"
+          />
+          <Action
+            ID="PublishVelocityForceCommand"
+            force_controlled_axes="0;0;0;0;0;0"
+            wrench_gain="0.01"
+            velocity_controlled_axes="0;0;1;0;0;0"
+            publish_rate="50"
+            twist_stamped="{desired_twist}"
+            wrench_stamped="{desired_wrench}"
+          />
+        </Control>
+        <SubTree
+          ID="Force Relaxation"
+          _collapsed="true"
+          wrench_gain="0.01"
+          relaxation_time_ms="500"
+          tip_link="grasp_link"
+        />
+        <Action
+          ID="SwitchController"
+          activate_controllers="joint_trajectory_admittance_controller"
+        />
+      </Control>
+      <!--Release and retract upward-->
+      <Control ID="Sequence">
+        <Control ID="Sequence" name="Release and Retract">
+          <SubTree ID="Open Gripper" />
+          <Action
+            ID="CreateStampedPose"
+            reference_frame="grasp_link"
+            stamped_pose="{place_retract_pose}"
+            position_xyz="0;0;-0.08"
+          />
+          <Action ID="ResetPoseStampedVector" vector="{place_retract_path}" />
+          <Action
+            ID="AddPoseStampedToVector"
+            input="{place_retract_pose}"
+            vector="{place_retract_path}"
+          />
+          <Action
+            ID="PlanCartesianPath"
+            acceleration_scale_factor="1.000000"
+            blending_radius="0.020000"
+            debug_solution="{debug_solution}"
+            ik_cartesian_space_density="0.010000"
+            ik_joint_space_density="0.100000"
+            joint_trajectory_msg="{joint_trajectory_msg}"
+            path="{place_retract_path}"
+            planning_group_name="manipulator"
+            position_only="true"
+            tip_links="grasp_link"
+            trajectory_sampling_rate="100"
+            velocity_scale_factor="1.000000"
+          />
+          <Action ID="ExecuteTrajectory" />
+        </Control>
+      </Control>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Constrained Pick and Place Subtree">
-      <inout_port name="pick" default="" />
-      <inout_port name="place" default="" />
-      <inout_port name="pre_pick" default="" />
-      <inout_port name="pre_place" default="" />
       <MetadataFields>
         <Metadata runnable="false" />
         <Metadata subcategory="Motion - Execute" />
       </MetadataFields>
+      <input_port name="pick" default="" />
+      <input_port name="place" default="" />
     </SubTree>
   </TreeNodesModel>
 </root>
