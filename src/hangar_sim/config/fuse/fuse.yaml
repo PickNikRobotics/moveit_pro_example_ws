@@ -1,5 +1,5 @@
 # Mobile base localization configuration using fuse
-# Using 3D odometry model for wheel odometry-based pose estimation
+# Ground vehicle state estimation: wheel odometry + IMU
 state_estimator:
   ros__parameters:
     # Fixed-lag smoother configuration
@@ -15,7 +15,10 @@ state_estimator:
     mobile_base_motion:
       # Process noise for state variables
       # Order: x, y, z, roll, pitch, yaw, vx, vy, vz, vroll, vpitch, vyaw, ax, ay, az
-      process_noise_diagonal: [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 1.0, 1.0, 1.0]
+      # z, roll, pitch and their derivatives are near-zero for a ground robot.
+      #process_noise_diagonal: [0.25, 0.25, 0.00001, 0.00001, 0.00001, 0.25
+      #   -, 0.1, 0.1, 0.00001, 0.00001, 0.0001, 0.1, 0.0001, 0.0001, 0.00001]
+      process_noise_diagonal: [1.0, 1.0, 0.0001, 0.0001, 0.0001, 0.5, 0.5, 0.5, 0.0001, 0.0001, 0.0001, 0.25, 0.00001, 0.00001, 0.00001]
 
     sensor_models:
       initial_localization_sensor:
@@ -25,32 +28,48 @@ state_estimator:
       wheel_odom_sensor:
         type: fuse_models::Odometry3D
         motion_models: [mobile_base_motion]
+      imu_sensor:
+        type: fuse_models::Imu3D
+        motion_models: [mobile_base_motion]
 
     initial_localization_sensor:
       publish_on_startup: true
       # Order: x, y, z, roll, pitch, yaw, vx, vy, vz, vroll, vpitch, vyaw, ax, ay, az
       initial_state: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-      initial_sigma: [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
+      # Order: x, y, z, roll, pitch, yaw, vx, vy, vz, vroll, vpitch, vyaw, ax, ay, az
+      # z and its derivatives start with very tight sigma — ground robot stays on the plane.
+      initial_sigma: [0.1, 0.1, 0.001, 0.01, 0.01, 0.1, 0.1, 0.1, 0.001, 0.01, 0.01, 0.1, 0.001, 0.001, 0.001]
 
+    # Wheel odometry — provides translation (x, y) and yaw
+    # Using differential mode because platform_velocity_controller/odom is
+    # wheel-integrated odometry that drifts over time. Differential mode fuses
+    # only the relative change between consecutive messages, preventing
+    # accumulated drift from corrupting the estimate.
     wheel_odom_sensor:
-      # Using /odom_reliable from QoS relay (bridges BEST_EFFORT to RELIABLE)
-      topic: /odom_reliable
+      topic: /platform_velocity_controller/odom
       queue_size: 10
-      # 2D position from wheels (no z)
-      position_dimensions: ['x', 'y']
-      # Heading only
+      pose_loss:
+        type: fuse_loss::HuberLoss
+        a: 1.0
+      linear_velocity_loss:
+        type: fuse_loss::HuberLoss
+        a: 1.0
+      position_dimensions: ['x', 'y', 'z']
       orientation_dimensions: ['yaw']
-      # Forward velocity
-      linear_velocity_dimensions: ['x']
-      # Turn rate
+      linear_velocity_dimensions: ['x', 'y']
       angular_velocity_dimensions: ['yaw']
-      # Use relative constraints (pose changes rather than absolute poses)
       differential: true
-      # Covariances - use large values for unused dimensions
-      # Order: x, y, z, roll, pitch, yaw
-      pose_covariance_diagonal: [0.05, 0.05, 1e9, 1e9, 1e9, 0.05]
-      # Order: vx, vy, vz, vroll, vpitch, vyaw
-      twist_covariance_diagonal: [0.05, 1e9, 1e9, 1e9, 1e9, 0.05]
+      independent: false
+      use_twist_covariance: true
+
+    # IMU sensor — provides orientation and yaw rate
+    # - Roll/pitch/yaw orientation (absolute, covariance 0.001 vs wheel odom 0.5)
+    # - Yaw angular velocity from gyroscope
+    imu_sensor:
+      topic: /imu_sensor_broadcaster/imu_reliable
+      orientation_dimensions: ['roll', 'pitch', 'yaw']
+      angular_velocity_dimensions: ['yaw']
+      queue_size: 10
 
     # Publish filtered odometry
     publishers:
@@ -59,8 +78,8 @@ state_estimator:
 
     filtered_publisher:
       topic: 'odom_filtered'
-      base_link_frame_id: 'base_footprint'
-      base_link_output_frame_id: 'base_footprint'
+      base_link_frame_id: 'ridgeback_base_link'
+      base_link_output_frame_id: 'ridgeback_base_link'
       odom_frame_id: 'odom'
       map_frame_id: 'map'
       world_frame_id: 'odom'
