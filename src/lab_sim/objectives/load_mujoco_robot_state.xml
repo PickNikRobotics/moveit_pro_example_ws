@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<root BTCPP_format="4" main_tree_to_execute="Reset MuJoCo Robot">
+<root BTCPP_format="4" main_tree_to_execute="Load MuJoCo Robot State">
   <!--//////////-->
   <BehaviorTree
-    ID="Reset MuJoCo Robot"
-    _description="Set the joint state of the robot in the MuJoCo simulation."
+    ID="Load MuJoCo Robot State"
+    _description="Load the Robot State from file and update the Robot State in the MuJoCo simulation."
     _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
@@ -18,9 +18,9 @@
         deactivate_controllers="{command_controllers}"
       />
       <Action
-        ID="CreateJointState"
-        joint_names="linear_rail_joint;shoulder_pan_joint;shoulder_lift_joint;elbow_joint;wrist_1_joint;wrist_2_joint;wrist_3_joint"
-        positions="0.0;0.0;-1.57;0.0;0.0;0.0;0.0"
+        ID="LoadRobotJointStateFromYaml"
+        output="{joint_state_msg}"
+        file_path="robot_joint_state.yaml"
       />
       <Decorator ID="ForceSuccess">
         <Action ID="SetMujocoState" />
@@ -32,7 +32,7 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Reset MuJoCo Robot">
+    <SubTree ID="Load MuJoCo Robot State">
       <MetadataFields>
         <Metadata runnable="true" />
         <Metadata subcategory="MuJoCo Simulation" />
