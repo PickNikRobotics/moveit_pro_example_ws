@@ -1,0 +1,13 @@
+#
+#  Lunar simulation configuration.
+#  Inherits from phoebe_sim and overrides the MuJoCo scene
+#  with a lunar environment.
+#
+
+based_on_package: "phoebe_sim"
+
+hardware:
+  robot_description:
+    urdf_params:
+      - mujoco_model_package: lunar_sim
+      - mujoco_model: mjcf/scene.xml

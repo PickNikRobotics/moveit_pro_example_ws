@@ -29,6 +29,9 @@ build:
     - franka_ros2
     - franka_semantic_components
     - integration_launch_testing
+    # phoebe_ws: skip hardware packages
+    - phoebe_hw
+    - phoebe_bridgeback_description
 test:
   event-handlers:
     - console_direct+
@@ -46,3 +49,6 @@ test:
     - franka_ros2
     - franka_semantic_components
     - integration_launch_testing
+    # phoebe_ws: skip hardware packages
+    - phoebe_hw
+    - phoebe_bridgeback_description
