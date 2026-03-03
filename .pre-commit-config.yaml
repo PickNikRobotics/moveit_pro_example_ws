@@ -88,3 +88,18 @@ repos:
           - "prettier@3.1.0"
           - "@prettier/plugin-xml@3.3.1"
         files: \.(xml)$
+
+  - repo: local
+    hooks:
+      - id: check-objective-favorites
+        name: Validate Objective favorites
+        entry: ./scripts/check_objective_favorites.sh
+        language: system
+        pass_filenames: false
+        files: \.(xml)$
+      - id: check-mujoco-viewer
+        name: Ensure mujoco_viewer is disabled
+        entry: ./scripts/check_mujoco_viewer.sh
+        language: system
+        pass_filenames: false
+        files: config\.yaml$
