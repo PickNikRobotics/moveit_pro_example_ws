@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <package format="3">
   <name>lunar_sim</name>
-  <version>6.5.0</version>
+  <version>9.1.0</version>
 
   <description>
     MuJoCo simulation configuration package for the dual-arm mobile robot
