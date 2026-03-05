@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<root BTCPP_format="4" main_tree_to_execute="show grasp_link">
+<root BTCPP_format="4" main_tree_to_execute="Visualize Grasp Link">
   <!--//////////-->
-  <BehaviorTree ID="show grasp_link" _description="" _favorite="false">
+  <BehaviorTree ID="Visualize Grasp Link" _description="" _favorite="false">
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree
         ID="Get Transform Frame Pose"
@@ -26,7 +26,7 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="show grasp_link">
+    <SubTree ID="Visualize Grasp Link">
       <MetadataFields>
         <Metadata runnable="true" />
         <Metadata subcategory="Application - Advanced Examples" />
