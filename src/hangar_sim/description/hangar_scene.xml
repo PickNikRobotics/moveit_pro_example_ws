@@ -14,17 +14,16 @@
   </visual>
 
   <worldbody>
-    <!-- Scene Camera -->
-    <site
+<site
       name="scene_camera_optical_frame"
       pos="-14.4207 -4.39686 9.04094"
-      quat="0.415847 -0.883719 0.194298 -0.09143"
+      quat="0 0.7071 -0.7071 0"
     />
     <camera
       name="scene_camera"
       pos="-14.4207 -4.39686 9.04094"
-      quat="0.883719 0.415847 -0.09143 -0.194298"
-      fovy="45"
+      quat="0.7071 0 0 -0.7071"
+      fovy="75"
       mode="fixed"
       resolution="1280 720"
     />

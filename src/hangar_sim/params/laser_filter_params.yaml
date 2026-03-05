@@ -1,0 +1,17 @@
+# Angular bounds filter for the dual SICK TIM571 lidars.
+#
+# Both lidars (lidar_front_ROS and lidar_rear_ROS) publish to /scan.
+# Each covers -135 deg to +135 deg. Beams from +/-93 deg to +/-135 deg
+# point backward past the chassis edges and produce self-hits.
+#
+# This filter keeps only beams within +/-93 deg (-1.6231 to 1.6231 rad),
+# removing the self-hitting beams at the edges. Combined, both lidars
+# give 360 deg coverage.
+laser_angular_filter:
+  ros__parameters:
+    filter1:
+      name: angular_bounds
+      type: laser_filters/LaserScanAngularBoundsFilter
+      params:
+        lower_angle: -1.6231
+        upper_angle: 1.6231
