@@ -3,6 +3,8 @@
 
   <option integrator="implicitfast" />
 
+  <size nuser_sensor="6"/>
+
   <default>
     <default class="ur5e">
       <material specular="0.5" shininess="0.25" />
@@ -208,6 +210,15 @@
       <joint name="rotational_yaw_joint" type="hinge" axis="0 0 1" />
       <body name="base_platform" pos="0 0 0" euler="0 0 0">
         <body name="ridgeback_base_link">
+          <!-- 270 deg planar lidar for local costmap obstacle detection.
+               Mounted at x=0.3 (front of robot, under arm riser), z=0.15.
+               euler="0 0 0.0523599": each of 90 replicas rotated 3 deg CCW around Z.
+               quat rotates the beam axis to point at -135 deg from +X for the first beam.
+               This sweeps from -135 deg (back-right) to +135 deg (back-left), with the
+               rear sector (-135 to +135 through 180) as the gap. -->
+          <replicate count="45" sep="-" offset="0 0 0" euler="0 0 0.1047198">
+            <site name="lidar" size="0.01" pos="0.3 0 0.15" quat="0.2706 -0.6533 0.2706 0.6533"/>
+          </replicate>
           <geom
             name="chassis_link"
             mesh="chassis_link"
@@ -586,5 +597,6 @@
     <framequat objtype="site" objname="imu_site" />
     <gyro site="imu_site" />
     <accelerometer site="imu_site" />
+    <rangefinder site="lidar" user="0.05 -2.35619 2.35619 0.1047198 0.1 10.0"/>
   </sensor>
 </mujoco>
