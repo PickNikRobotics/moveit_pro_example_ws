@@ -1,0 +1,108 @@
+<mujoco model="lunar sim scene">
+  <default>
+    <default class="visual">
+      <geom
+        type="mesh"
+        contype="0"
+        conaffinity="0"
+        group="2"
+        rgba="0.75294 0.75294 0.75294 1"
+      />
+    </default>
+    <default class="collision">
+      <geom type="mesh" group="3" />
+    </default>
+  </default>
+
+  <!-- Robot model and scene objects copied from phoebe_sim at build time -->
+  <include file="dual_arm_robot.xml" />
+  <include file="trainer.xml" />
+  <include file="bottle.xml" />
+  <include file="rack.xml" />
+
+  <statistic center="0.3 0 0.4" extent="0.8" />
+
+  <visual>
+    <headlight
+      diffuse="0.4 0.4 0.4"
+      ambient="0.05 0.05 0.05"
+      specular="0 0 0"
+    />
+    <rgba haze="0.05 0.05 0.05 1" />
+    <global azimuth="120" elevation="-20" offwidth="1280" offheight="720" />
+  </visual>
+
+  <asset>
+    <!-- Dark space skybox -->
+    <texture
+      type="skybox"
+      builtin="gradient"
+      rgb1="0.02 0.02 0.05"
+      rgb2="0 0 0"
+      width="512"
+      height="3072"
+    />
+    <!-- Lunar surface texture -->
+    <texture
+      type="2d"
+      name="lunar_ground"
+      builtin="flat"
+      rgb1="0.55 0.55 0.50"
+      rgb2="0.45 0.45 0.40"
+      width="512"
+      height="512"
+    />
+    <material
+      name="lunar_ground"
+      texture="lunar_ground"
+      texuniform="true"
+      texrepeat="8 8"
+      reflectance="0.05"
+    />
+  </asset>
+
+  <worldbody>
+    <!-- Reduced lighting to simulate lunar conditions -->
+    <light
+      pos="5 -5 10"
+      dir="-0.5 0.5 -1"
+      directional="true"
+      diffuse="0.9 0.9 0.85"
+    />
+
+    <!-- Lunar ground plane -->
+    <geom
+      name="floor"
+      pos="0 0 0"
+      size="0 0 0.05"
+      type="plane"
+      material="lunar_ground"
+    />
+
+    <!-- Scene Camera -->
+    <site
+      name="scene_camera_optical_frame"
+      pos="0 -6 3"
+      quat="0.574 -0.819 0.0 0.0"
+    />
+    <camera
+      name="scene_camera"
+      pos="0 -6 3"
+      quat="-0.819 -0.574 0.0 0.0"
+      fovy="45"
+      mode="fixed"
+      resolution="1280 720"
+    />
+
+    <!-- TODO: Add lunar terrain features / obstacles for SLAM -->
+    <!-- TODO: Add localization landmarks / background geometry -->
+  </worldbody>
+
+  <keyframe>
+    <key
+      name="default"
+      qpos="-0.0179017 -0.000168559 -0.00166702 -0.000122586 0.133016 -4.40571e-06 -4.40572e-06 -4.40567e-06 -4.40558e-06 -4.40546e-06 -4.40536e-06 -4.40529e-06 -4.40527e-06 -4.40532e-06 -0.372456 -0.372443 -4.40564e-06 0.120719 -4.40583e-06 -4.40586e-06 -4.40594e-06 -4.40603e-06 -4.40612e-06 -4.40617e-06 -4.40618e-06 -4.40614e-06 -0.354364 -0.353462 -4.40589e-06 -4.40584e-06 -0.18787 2.7445e-06 2.74443e-06 2.74434e-06 2.74424e-06 2.74416e-06 2.74412e-06 2.74413e-06 2.74419e-06 0.0529009 0.0515506 2.74447e-06 2.74451e-06 -0.187835 2.75294e-06 2.75296e-06 2.75302e-06 2.75312e-06 2.75322e-06 2.7533e-06 2.75334e-06 2.75333e-06 2.75327e-06 0.0494534 0.0473793 2.75299e-06 0.000322537 0.000322537 -0.12303 -1.34587 2.37015 -2.62416 -0.878626 5.51997 0.0706531 0.000483281 0.0714409 -0.0697039 0.0706662 0.00049505 0.0714797 -0.0697722 7.65363e-06 7.65363e-06 0.000129952 -1.06272e-05 -7.18498e-07 1.33922e-05 -9.07898e-06 1.08646e-07 0.174028 0.000941687 0.181755 -0.194664 0.174047 0.000960041 0.181791 -0.194722 -0.000639948 3.0283 2.02607 1.57006 0.005 0.144149 0.0065625 2.15603 0.765354 -0.00253565 -0.00282772 0.0106707 0.699769 2.24796e-06 0.564994 0.999925 1.04043e-05 -0.000338637 0.0122824"
+      ctrl="-0.0126 -0.0124 -0.0115 -0.0135 0 0 -0.123 -1.35 2.37 -2.62 -0.879 5.52 0 0 0 0 0 0 0.0423 0.112"
+    />
+  </keyframe>
+</mujoco>
