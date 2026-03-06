@@ -5,14 +5,14 @@
     _description="Close the gripper"
     _favorite="false"
   >
-    <Control ID="Sequence" name="root">
+    <Decorator ID="ForceSuccess">
       <Action
         ID="MoveGripperAction"
         gripper_command_action_name="/robotiq_gripper_controller/gripper_cmd"
         position="0.7929"
         timeout="15.000000"
       />
-    </Control>
+    </Decorator>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Close Gripper">

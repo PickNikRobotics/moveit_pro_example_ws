@@ -40,7 +40,7 @@
     transforms: []
     twist: []
     wrench: []
-  name: Above Pick Cube
+  name: Above Pick Object
 - description: ''
   favorite: false
   joint_group_names:
