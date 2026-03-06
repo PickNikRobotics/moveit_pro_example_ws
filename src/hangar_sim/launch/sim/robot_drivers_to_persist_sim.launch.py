@@ -268,32 +268,12 @@ def generate_launch_description():
         arguments=["0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "map", "odom"],
     )
 
-    # Publish odometry as joint state messages
-    odom_to_joint_state_repub = Node(
-        package="hangar_sim",
-        executable="odometry_joint_state_publisher.py",
-        name="odometry_joint_state_publisher",
-        output="log",
-    )
-
-    # QoS relay to bridge BEST_EFFORT odom to RELIABLE for fuse
-    odom_qos_relay = Node(
+    # QoS relay to bridge BEST_EFFORT odom and IMU to RELIABLE for fuse
+    sensor_qos_relay = Node(
         package="hangar_sim",
         executable="odom_qos_relay.py",
-        name="odom_qos_relay",
+        name="sensor_qos_relay",
         output="log",
-    )
-
-    # Fuse state estimator for mobile base localization
-    hangar_sim_pkg = FindPackageShare("hangar_sim")
-    fuse_state_estimator = Node(
-        package="fuse_optimizers",
-        executable="fixed_lag_smoother_node",
-        name="state_estimator",
-        parameters=[
-            PathJoinSubstitution([hangar_sim_pkg, "config", "fuse", "fuse.yaml"])
-        ],
-        output="screen",
     )
 
     # Create the launch description and populate
@@ -324,8 +304,19 @@ def generate_launch_description():
 
     ld.add_action(static_tf_world_to_map)
     ld.add_action(static_tf_map_to_odom)
-    ld.add_action(odom_to_joint_state_repub)
-    ld.add_action(odom_qos_relay)
+    ld.add_action(sensor_qos_relay)
+
+    # Fuse state estimator for mobile base localization
+    hangar_sim_pkg = FindPackageShare("hangar_sim")
+    fuse_state_estimator = Node(
+        package="fuse_optimizers",
+        executable="fixed_lag_smoother_node",
+        name="state_estimator",
+        parameters=[
+            PathJoinSubstitution([hangar_sim_pkg, "config", "fuse", "fuse.yaml"])
+        ],
+        output="screen",
+    )
     ld.add_action(fuse_state_estimator)
 
     return ld
