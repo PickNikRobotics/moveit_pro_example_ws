@@ -25,7 +25,7 @@
         hand_frame="tool0"
         ignore_environment_collisions="false"
         max_distance="0.2"
-        min_distance="0.2"
+        min_distance="0.18"
         planning_group_name="manipulator"
         task="{mtc_task}"
         velocity_scale="1.0"
@@ -40,7 +40,7 @@
         hand_frame="tool0"
         ignore_environment_collisions="false"
         max_distance="0.2"
-        min_distance="0.2"
+        min_distance="0.18"
         planning_group_name="manipulator"
         task="{mtc_task}"
         velocity_scale="1.0"
@@ -55,7 +55,7 @@
         hand_frame="tool0"
         ignore_environment_collisions="false"
         max_distance="0.2"
-        min_distance="0.2"
+        min_distance="0.18"
         planning_group_name="manipulator"
         task="{mtc_task}"
         velocity_scale="1.0"
@@ -70,20 +70,25 @@
         hand_frame="tool0"
         ignore_environment_collisions="false"
         max_distance="0.2"
-        min_distance="0.2"
+        min_distance="0.18"
         planning_group_name="manipulator"
         task="{mtc_task}"
         velocity_scale="1.0"
         axis_x="-1.0"
       />
-      <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
+      <Action
+        ID="PlanMTCTask"
+        max_solutions="1"
+        solution="{mtc_solution}"
+        task="{mtc_task}"
+      />
       <SubTree ID="Execute MTC Solution" solution="{mtc_solution}" />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Move Along Square">
       <MetadataFields>
-        <Metadata runnable="false" />
+        <Metadata runnable="true" />
         <Metadata subcategory="Application - Basic Examples" />
       </MetadataFields>
     </SubTree>
