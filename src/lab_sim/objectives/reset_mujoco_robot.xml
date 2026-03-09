@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<root BTCPP_format="4" main_tree_to_execute="Reset MuJoco Robot">
+<root BTCPP_format="4" main_tree_to_execute="Reset MuJoCo Robot">
   <!--//////////-->
   <BehaviorTree
-    ID="Reset MuJoco Robot"
+    ID="Reset MuJoCo Robot"
     _description="Set the joint state of the robot in the MuJoCo simulation."
     _favorite="false"
   >
@@ -32,7 +32,7 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Reset MuJoco Robot">
+    <SubTree ID="Reset MuJoCo Robot">
       <MetadataFields>
         <Metadata runnable="true" />
         <Metadata subcategory="MuJoCo Simulation" />
