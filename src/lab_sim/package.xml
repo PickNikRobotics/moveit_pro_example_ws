@@ -28,6 +28,7 @@
   <exec_depend>robotiq_description</exec_depend>
   <exec_depend>ur_description</exec_depend>
   <exec_depend>velocity_force_controller</exec_depend>
+  <exec_depend>lab_sim_behaviors</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
 
