@@ -92,6 +92,7 @@ robotiq_gripper_controller:
     joint: robotiq_85_left_knuckle_joint
     allow_stalling: true
     stall_timeout: 0.05
+    stall_velocity_threshold: 0.004
     goal_tolerance: 0.02
 
 force_torque_sensor_broadcaster:
