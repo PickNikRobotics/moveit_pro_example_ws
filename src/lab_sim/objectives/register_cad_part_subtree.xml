@@ -61,7 +61,7 @@
         ID="RegisterPointClouds"
         target_point_cloud="{wrist_point_cloud}"
         base_point_cloud="{red_cloud}"
-        max_correspondence_distance="0.5"
+        max_correspondence_distance="1.0"
         max_iterations="100"
         target_pose_in_base_frame="{target_pose}"
       />
