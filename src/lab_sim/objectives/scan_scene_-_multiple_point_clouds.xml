@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Scan Scene - Multiple Point Clouds"
+>
+  <!--//////////-->
+  <BehaviorTree
+    ID="Scan Scene - Multiple Point Clouds"
+    _description="Take multiple snapshots from the wrist camera at 3 positions (center, left, right) using Cartesian offsets and merge them into a single point cloud."
+    _favorite="true"
+  >
+    <Control ID="Sequence">
+      <!--Clear previous data-->
+      <SubTree ID="Clear Snapshot" _collapsed="true" />
+      <Action ID="SwitchUIPrimaryView" primary_view_name="Visualization" />
+      <!--Move to center scan position and capture-->
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        joint_group_name="manipulator"
+        waypoint_name="Look at Table"
+      />
+      <SubTree
+        ID="Add Point Cloud to Vector"
+        _collapsed="true"
+        point_cloud_vector="{point_cloud_vector}"
+        topic_name="/wrist_camera/points"
+      />
+      <!--Cartesian move right from center and capture-->
+      <Action ID="ResetPoseStampedVector" vector="{cartesian_path}" />
+      <Action
+        ID="CreateStampedPose"
+        reference_frame="grasp_link"
+        stamped_pose="{offset_pose}"
+        position_xyz="0.80;0;0"
+      />
+      <Action
+        ID="AddPoseStampedToVector"
+        input="{offset_pose}"
+        vector="{cartesian_path}"
+      />
+      <Action
+        ID="PlanCartesianPath"
+        acceleration_scale_factor="1.000000"
+        blending_radius="0.020000"
+        debug_solution="{debug_solution}"
+        ik_cartesian_space_density="0.010000"
+        ik_joint_space_density="0.100000"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+        path="{cartesian_path}"
+        planning_group_name="manipulator"
+        position_only="false"
+        tip_links="grasp_link"
+        trajectory_sampling_rate="100"
+        velocity_scale_factor="1.000000"
+      />
+      <Action ID="ExecuteTrajectory" />
+      <SubTree
+        ID="Add Point Cloud to Vector"
+        _collapsed="true"
+        point_cloud_vector="{point_cloud_vector}"
+        topic_name="/wrist_camera/points"
+      />
+      <!--Cartesian move from right directly to left and capture-->
+      <Action ID="ResetPoseStampedVector" vector="{cartesian_path}" />
+      <Action
+        ID="CreateStampedPose"
+        reference_frame="grasp_link"
+        stamped_pose="{offset_pose}"
+        position_xyz="-1.60;0;0"
+      />
+      <Action
+        ID="AddPoseStampedToVector"
+        input="{offset_pose}"
+        vector="{cartesian_path}"
+      />
+      <Action
+        ID="PlanCartesianPath"
+        acceleration_scale_factor="1.000000"
+        blending_radius="0.020000"
+        debug_solution="{debug_solution}"
+        ik_cartesian_space_density="0.010000"
+        ik_joint_space_density="0.100000"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+        path="{cartesian_path}"
+        planning_group_name="manipulator"
+        position_only="false"
+        tip_links="grasp_link"
+        trajectory_sampling_rate="100"
+        velocity_scale_factor="1.000000"
+      />
+      <Action ID="ExecuteTrajectory" />
+      <SubTree
+        ID="Add Point Cloud to Vector"
+        _collapsed="true"
+        point_cloud_vector="{point_cloud_vector}"
+        topic_name="/wrist_camera/points"
+      />
+      <!--Merge all point clouds and display-->
+      <Action
+        ID="MergePointClouds"
+        grid_resolution_meters="0.010000"
+        merged_cloud="{merged_cloud}"
+        point_clouds="{point_cloud_vector}"
+      />
+      <Action
+        ID="SendPointCloudToUI"
+        point_cloud="{merged_cloud}"
+        pcd_topic="/pcd_pointcloud_captures"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Scan Scene - Multiple Point Clouds">
+      <MetadataFields>
+        <Metadata subcategory="Perception - 3D Point Cloud" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

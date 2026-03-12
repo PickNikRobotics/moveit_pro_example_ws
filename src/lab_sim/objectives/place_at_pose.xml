@@ -98,7 +98,7 @@
   <TreeNodesModel>
     <SubTree ID="Place at Pose">
       <MetadataFields>
-        <Metadata subcategory="Application - Basic Examples" />
+        <Metadata subcategory="Manipulation" />
         <Metadata runnable="false" />
       </MetadataFields>
       <inout_port name="approach_distance" default="0.1" />

@@ -9,7 +9,7 @@
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree ID="Clear Snapshot" _collapsed="true" />
       <SubTree ID="Look at Table" _collapsed="true" />
-      <!--Take a snapshot so we have a visualization of the cubes to use in grasp pose correction-->
+      <!--Take a snapshot so we have a visualization of the objects to use in grasp pose correction-->
       <SubTree ID="Take Wrist Camera Snapshot" _collapsed="true" />
       <SubTree ID="Open Gripper" _collapsed="true" />
       <Action ID="SwitchUIPrimaryView" primary_view_name="Visualization" />
