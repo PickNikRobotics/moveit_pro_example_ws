@@ -19,6 +19,7 @@
   <exec_depend>moveit_ros_perception</exec_depend>
   <exec_depend>moveit_studio_agent</exec_depend>
   <exec_depend>moveit_pro_behavior</exec_depend>
+  <exec_depend>laser_filters</exec_depend>
   <exec_depend>nav2_bringup</exec_depend>
   <exec_depend>picknik_accessories</exec_depend>
   <exec_depend>picknik_mujoco_ros</exec_depend>

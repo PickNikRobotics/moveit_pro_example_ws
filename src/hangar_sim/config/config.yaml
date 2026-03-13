@@ -20,6 +20,7 @@ hardware:
           package: "hangar_sim"
           path: "config/moveit/joint_limits.yaml"
       - mujoco_model: "description/hangar_scene.xml"
+      - mujoco_viewer: "false"
 
   # Specify any additional launch files for running the robot in simulation mode.
   # Used when hardware.simulated is True.

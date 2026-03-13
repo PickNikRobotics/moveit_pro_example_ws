@@ -25,6 +25,7 @@ pluginlib_export_plugin_description_file(
 install(PROGRAMS
   script/odometry_joint_state_publisher.py
   script/odom_qos_relay.py
+  script/scan_mirror_fix.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
