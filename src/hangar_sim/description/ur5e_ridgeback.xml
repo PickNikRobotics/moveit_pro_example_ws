@@ -194,7 +194,7 @@
   </asset>
 
   <worldbody>
-    <body name="base_platform_rotation" pos="0 0 0" euler="0 0 0">
+    <body name="base_platform_rotation" pos="0 0 -0.048" euler="0 0 0">
       <inertial mass="0.01" pos="0 0 0" diaginertia="0.001 0.001 0.001" />
       <!--      <joint-->
       <!--        type="free"-->
@@ -203,9 +203,9 @@
       <!--        frictionloss="0"-->
       <!--        armature="0"-->
       <!--      />-->
-      <joint name="linear_x_joint" type="slide" axis="1 0 0" />
-      <joint name="linear_y_joint" type="slide" axis="0 1 0" />
-      <joint name="rotational_yaw_joint" type="hinge" axis="0 0 1" />
+      <joint name="linear_x_joint" type="slide" axis="1 0 0" damping="5" />
+      <joint name="linear_y_joint" type="slide" axis="0 1 0" damping="5" />
+      <joint name="rotational_yaw_joint" type="hinge" axis="0 0 1" damping="5" />
       <body name="base_platform" pos="0 0 0" euler="0 0 0">
         <body name="ridgeback_base_link">
           <geom
@@ -224,6 +224,8 @@
             quat="0.92388 0 0 0.382683"
             type="box"
             rgba="0.4 0.4 0.4 1"
+            contype="0"
+            conaffinity="0"
           />
           <geom
             name="top_link"
@@ -245,7 +247,9 @@
               name="front_rocker"
               pos="0 0 0"
               axis="1 0 0"
-              range="-0.08726 0.08726"
+              range="-0.001 0.001"
+              stiffness="10000"
+              damping="500"
             />
             <body name="front_left_wheel_link" pos="0 0.2755 0.07">
               <include file="front_left_wheel_link.xml" />
