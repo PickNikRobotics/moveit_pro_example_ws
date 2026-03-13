@@ -44,8 +44,8 @@ platform_velocity_controller:
     rear_right_wheel_command_joint_name: "rear_right_wheel"
     rear_left_wheel_command_joint_name: "rear_left_wheel"
 
-    kinematics.wheels_radius: 0.05
-    kinematics.sum_of_robot_center_projection_on_X_Y_axis: 0.4704
+    kinematics.wheels_radius: 0.0759
+    kinematics.sum_of_robot_center_projection_on_X_Y_axis: 0.59
     wheel_separation_multiplier: 1.0
     wheel_radius_multiplier: 1.0
 
@@ -105,8 +105,8 @@ platform_velocity_controller_nav2:
     rear_right_wheel_command_joint_name: "rear_right_wheel"
     rear_left_wheel_command_joint_name: "rear_left_wheel"
 
-    kinematics.wheels_radius: 0.05
-    kinematics.sum_of_robot_center_projection_on_X_Y_axis: 0.4704
+    kinematics.wheels_radius: 0.0759
+    kinematics.sum_of_robot_center_projection_on_X_Y_axis: 0.59
     wheel_separation_multiplier: 1.0
     wheel_radius_multiplier: 1.0
 
@@ -287,9 +287,9 @@ imu_sensor_broadcaster:
     # Orientation covariance (rad^2)
     static_covariance_orientation: [0.001, 0.0, 0.0, 0.0, 0.001, 0.0, 0.0, 0.0, 0.001]
     # Angular velocity covariance (rad/s)^2
-    static_covariance_angular_velocity: [100.0, 0.0, 0.0, 0.0, 100.0, 0.0, 0.0, 0.0, 100.0]
+    static_covariance_angular_velocity: [0.01, 0.0, 0.0, 0.0, 0.01, 0.0, 0.0, 0.0, 0.01]
     # Linear acceleration covariance (m/s^2)^2
-    static_covariance_linear_acceleration: [0.01, 0.0, 0.0, 0.0, 0.01, 0.0, 0.0, 0.0, 0.01]
+    static_covariance_linear_acceleration: [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
 
 
 velocity_force_controller:

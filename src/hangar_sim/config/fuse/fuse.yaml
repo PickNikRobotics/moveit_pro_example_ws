@@ -15,12 +15,10 @@ state_estimator:
     mobile_base_motion:
       # Process noise for state variables
       # Order: x, y, z, roll, pitch, yaw, vx, vy, vz, vroll, vpitch, vyaw, ax, ay, az
-      # Ground robot: z, roll, pitch (and their velocities) should be small
-      # since the robot stays on the ground plane and level.
-      #trying this with the actual wheel odom 
-      process_noise_diagonal: [0.25, 0.25, 0.001, 0.001, 0.001, 0.25, 0.1, 0.1, 0.001, 0.001, 0.001, 0.1, 0.001, 0.001, 0.001] 
-      #this one works with the ground truth odom 
-      #process_noise_diagonal: [2.0, 2.0, 0.1, 0.1, 0.1, 2.0, 2.0, 1.0, 0.1, 0.1, 0.1, 0.001, 0.01, 0.01, 0.001]
+      # z, roll, pitch and their derivatives are near-zero for a ground robot.
+      #process_noise_diagonal: [0.25, 0.25, 0.00001, 0.00001, 0.00001, 0.25
+      #   -, 0.1, 0.1, 0.00001, 0.00001, 0.0001, 0.1, 0.0001, 0.0001, 0.00001]
+      process_noise_diagonal: [1.0, 1.0, 0.0001, 0.0001, 0.0001, 0.5, 0.5, 0.5, 0.0001, 0.0001, 0.0001, 0.25, 0.00001, 0.00001, 0.00001]
 
     sensor_models:
       initial_localization_sensor:
@@ -38,9 +36,11 @@ state_estimator:
       publish_on_startup: true
       # Order: x, y, z, roll, pitch, yaw, vx, vy, vz, vroll, vpitch, vyaw, ax, ay, az
       initial_state: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-      initial_sigma: [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
+      # Order: x, y, z, roll, pitch, yaw, vx, vy, vz, vroll, vpitch, vyaw, ax, ay, az
+      # z and its derivatives start with very tight sigma — ground robot stays on the plane.
+      initial_sigma: [0.1, 0.1, 0.001, 0.01, 0.01, 0.1, 0.1, 0.1, 0.001, 0.01, 0.01, 0.1, 0.001, 0.001, 0.001]
 
-    # Wheel odometry — differential mode
+    # Wheel odometry — provides translation (x, y) and yaw
     # Using differential mode because platform_velocity_controller/odom is
     # wheel-integrated odometry that drifts over time. Differential mode fuses
     # only the relative change between consecutive messages, preventing
@@ -56,24 +56,20 @@ state_estimator:
         a: 1.0
       position_dimensions: ['x', 'y', 'z']
       orientation_dimensions: ['yaw']
-      linear_velocity_dimensions: ['x']
+      linear_velocity_dimensions: ['x', 'y']
       angular_velocity_dimensions: ['yaw']
       differential: true
       independent: false
       use_twist_covariance: true
 
-    # IMU sensor
-    # - Roll/pitch orientation from gravity vector (absolute, keeps robot level)
+    # IMU sensor — provides orientation and yaw rate
+    # - Roll/pitch/yaw orientation (absolute, covariance 0.001 vs wheel odom 0.5)
     # - Yaw angular velocity from gyroscope
-    # - Z linear acceleration (gravity-compensated, constrains vertical dynamics)
     imu_sensor:
-      topic: /imu_sensor_broadcaster/imu
-      orientation_dimensions: ['roll', 'pitch']
+      topic: /imu_sensor_broadcaster/imu_reliable
+      orientation_dimensions: ['roll', 'pitch', 'yaw']
       angular_velocity_dimensions: ['yaw']
-      linear_acceleration_dimensions: ['z']
-      remove_gravitational_acceleration: true
       queue_size: 10
-      throttle_period: 0.1
 
     # Publish filtered odometry
     publishers:
