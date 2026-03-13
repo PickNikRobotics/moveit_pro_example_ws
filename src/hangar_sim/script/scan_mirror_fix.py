@@ -19,7 +19,12 @@ then places back at phi.
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import LaserScan
-from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSDurabilityPolicy, QoSHistoryPolicy
+from rclpy.qos import (
+    QoSProfile,
+    QoSReliabilityPolicy,
+    QoSDurabilityPolicy,
+    QoSHistoryPolicy,
+)
 
 
 BEST_EFFORT_QOS = QoSProfile(
@@ -33,7 +38,9 @@ BEST_EFFORT_QOS = QoSProfile(
 class ScanMirrorFix(Node):
     def __init__(self):
         super().__init__("scan_mirror_fix")
-        self.sub = self.create_subscription(LaserScan, "/scan", self.callback, BEST_EFFORT_QOS)
+        self.sub = self.create_subscription(
+            LaserScan, "/scan", self.callback, BEST_EFFORT_QOS
+        )
         self.pub = self.create_publisher(LaserScan, "/scan_mirrored", BEST_EFFORT_QOS)
 
     def callback(self, msg):

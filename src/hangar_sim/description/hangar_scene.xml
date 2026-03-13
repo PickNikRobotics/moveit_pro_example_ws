@@ -14,7 +14,7 @@
   </visual>
 
   <worldbody>
-<site
+    <site
       name="scene_camera_optical_frame"
       pos="-14.4207 -4.39686 9.04094"
       quat="0 0.7071 -0.7071 0"

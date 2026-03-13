@@ -211,7 +211,7 @@
       <body name="base_platform" pos="0 0 0" euler="0 0 0">
         <body name="ridgeback_base_link">
           <!-- Front SICK TIM571: mounted at x=+0.45m (front bumper), z=0.15m.
-               31 beams × 9 deg = 270 deg FOV, sweeping CCW from beam-0 at -135 deg.
+               91 beams x 3 deg = 270 deg FOV, sweeping CCW from beam-0 at -135 deg.
                quat="0.6533 0.2706 -0.6533 0.2706": beam-0 +Z fires at -135 deg from +X. -->
           <body name="lidar_front_mount" pos="0.45 0 0.15">
             <inertial
@@ -219,7 +219,7 @@
               pos="0 0 0"
               diaginertia="0.0001 0.0001 0.0001"
             />
-            <replicate count="31" sep="-" offset="0 0 0" euler="0 0 0.15708">
+            <replicate count="91" sep="-" offset="0 0 0" euler="0 0 0.05236">
               <site
                 name="lidar_front"
                 size="0.01"
@@ -252,7 +252,7 @@
           </body>
 
           <!-- Rear SICK TIM571: mounted at x=-0.45m (rear bumper), z=0.15m.
-               31 beams × 9 deg = 270 deg FOV, sweeping CCW from beam-0 at +45 deg.
+               91 beams x 3 deg = 270 deg FOV, sweeping CCW from beam-0 at +45 deg.
                quat="0.2706 -0.6533 -0.2706 -0.6533": beam-0 +Z fires at +45 deg from +X. -->
           <body name="lidar_rear_mount" pos="-0.45 0 0.15">
             <inertial
@@ -260,7 +260,7 @@
               pos="0 0 0"
               diaginertia="0.0001 0.0001 0.0001"
             />
-            <replicate count="31" sep="-" offset="0 0 0" euler="0 0 0.15708">
+            <replicate count="91" sep="-" offset="0 0 0" euler="0 0 0.05236">
               <site
                 name="lidar_rear"
                 size="0.01"
@@ -669,15 +669,15 @@
     <framequat objtype="site" objname="imu_site" />
     <gyro site="imu_site" />
     <accelerometer site="imu_site" />
-    <!-- Front TIM571: 270 deg FOV, 9 deg resolution (31 beams), 0.05-25m range -->
+    <!-- Front TIM571: 270 deg FOV, 3 deg resolution (91 beams), 0.05-25m range -->
     <rangefinder
       site="lidar_front"
-      user="0.05 -2.35619 2.35619 0.15708 0.05 25.0"
+      user="0.05 -2.35619 2.35619 0.05236 0.05 25.0"
     />
     <!-- Rear TIM571: same specs, mounted facing backward for 360 deg coverage -->
     <rangefinder
       site="lidar_rear"
-      user="0.05 -2.35619 2.35619 0.15708 0.05 25.0"
+      user="0.05 -2.35619 2.35619 0.05236 0.05 25.0"
     />
   </sensor>
 </mujoco>

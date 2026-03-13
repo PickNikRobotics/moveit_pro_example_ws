@@ -64,6 +64,9 @@ skip_objectives = {
     "Scan Multiple Views",
     "MPC Pose Tracking",
     "MPC Pose Tracking With Point Cloud Avoidance",
+    "MPC Pose Tracking With Static Sphere Point Cloud Avoidance",
+    "MPC Pose Tracking Static Point Cloud Avoidance with Sphere Down Sample",
+    "MPC Pose Tracking Dynamic Point Cloud Avoidance with Sphere Down Sample",
     "ML Find Bottles on Table from Image Exemplar",  # Skipped because it looks for a file on a home path
     "ML Segment Bottles from File",  # Skipped because it looks for a file on a home path
     "ML Segment Image",
@@ -73,7 +76,7 @@ skip_objectives = {
     "Pick up Cube",
     "Place Object",
     "Record Square Trajectory",
-    "Stack Blocks with ICP",  # Skipped because there is no primary ui to switch to in ci
+    "Stack Objects with ICP",  # Skipped because there is no primary ui to switch to in ci
     "Teleoperate",
     "Stitch Multiple Point Clouds Together",
     "Pick 1 Pill Bottle",
