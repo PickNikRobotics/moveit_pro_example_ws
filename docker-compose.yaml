@@ -10,13 +10,28 @@ services:
   base: {}
 
   # Starts the MoveIt Pro Agent and the Bridge between the Agent and the Web UI.
-  agent_bridge: {}
+  agent_bridge:
+    devices:
+      - /dev/kfd:/dev/kfd
+      - /dev/dri:/dev/dri
+    group_add:
+      - video
+      - render
+    environment:
+      # Set to 1 to disable CPU fallback and get verbose GPU EP error messages
+      - MOVEIT_PRO_ML_GPU_DIAGNOSTICS=${MOVEIT_PRO_ML_GPU_DIAGNOSTICS:-0}
 
   # Starts the robot drivers.
   drivers:
     volumes:
       # Allow access to host hardware e.g. RealSense cameras
       - /dev:/dev
+    devices:
+      - /dev/kfd:/dev/kfd
+      - /dev/dri:/dev/dri
+    group_add:
+      - video
+      - render
 
   # Starts the web UI frontend.
   web_ui: {}
@@ -26,3 +41,11 @@ services:
     volumes:
       # Allow access to host hardware e.g. RealSense cameras
       - /dev:/dev
+    devices:
+      - /dev/kfd:/dev/kfd
+      - /dev/dri:/dev/dri
+    group_add:
+      - video
+      - render
+    environment:
+      - MOVEIT_PRO_ML_GPU_DIAGNOSTICS=${MOVEIT_PRO_ML_GPU_DIAGNOSTICS:-0}
