@@ -24,7 +24,7 @@
       />
       <Decorator ID="ForEach" vector_in="{target_poses}" out="{stamped_pose}">
         <Control ID="Sequence">
-          <Action ID="VisualizePose" />
+          <Action ID="VisualizePose" pose="{stamped_pose}" />
           <Action ID="BreakpointSubscriber" _skipIf="true" />
           <SubTree
             ID="LoadAndVisualizePointCloud"
