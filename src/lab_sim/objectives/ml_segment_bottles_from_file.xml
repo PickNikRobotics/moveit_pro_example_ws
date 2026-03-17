@@ -8,7 +8,8 @@
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
         ID="LoadImageFromFile"
-        file_path="~/user_ws/src/lab_sim/objectives/real_lab1.png"
+        file_path="objectives/real_lab1.png"
+        package_name="lab_sim"
       />
       <Action
         ID="GetMasks2DFromExemplar"
