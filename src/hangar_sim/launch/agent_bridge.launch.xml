@@ -3,5 +3,4 @@
   <include
     file="$(find-pkg-share moveit_studio_agent)/launch/studio_agent_bridge.launch.xml"
   />
-  <include file="$(find-pkg-share hangar_sim)/launch/fuse.launch.py" />
 </launch>
