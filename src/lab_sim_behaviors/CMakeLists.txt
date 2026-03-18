@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.22)
 project(lab_sim_behaviors CXX)
 
-find_package(moveit_studio_common REQUIRED)
-moveit_studio_package()
+find_package(moveit_pro_package REQUIRED)
+moveit_pro_package()
 
 set(THIS_PACKAGE_INCLUDE_DEPENDS
   moveit_pro_behavior
