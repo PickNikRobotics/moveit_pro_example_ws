@@ -284,8 +284,25 @@ def generate_launch_description():
         output="log",
     )
 
-    # Fuse state estimator for mobile base localization
     hangar_sim_pkg = FindPackageShare("hangar_sim")
+
+    # Angular bounds filter: clips chassis self-hitting beams (±93° to ±135°),
+    # publishes clean scan to /scan_filtered for Nav2 costmap.
+    laser_filter_node = Node(
+        package="laser_filters",
+        executable="scan_to_scan_filter_chain",
+        name="laser_angular_filter",
+        parameters=[
+            PathJoinSubstitution(
+                [hangar_sim_pkg, "params", "laser_filter_params.yaml"]
+            ),
+            {"use_sim_time": use_sim_time},
+            {"qos_overrides./scan.subscription.reliability": "best_effort"},
+        ],
+        output="log",
+    )
+
+    # Fuse state estimator for mobile base localization
     fuse_state_estimator = Node(
         package="fuse_optimizers",
         executable="fixed_lag_smoother_node",
@@ -326,6 +343,7 @@ def generate_launch_description():
     ld.add_action(static_tf_map_to_odom)
     ld.add_action(odom_to_joint_state_repub)
     ld.add_action(odom_qos_relay)
+    ld.add_action(laser_filter_node)
     ld.add_action(fuse_state_estimator)
 
     return ld
