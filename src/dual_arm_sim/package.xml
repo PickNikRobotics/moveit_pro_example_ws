@@ -20,8 +20,10 @@
   <test_depend>ament_clang_tidy</test_depend>
   <test_depend>ament_cmake_copyright</test_depend>
   <test_depend>ament_cmake_lint_cmake</test_depend>
+  <test_depend>ament_cmake_pytest</test_depend>
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_lint_auto</test_depend>
+  <test_depend>moveit_pro_test_utils</test_depend>
   <test_depend>picknik_ament_copyright</test_depend>
 
   <export>

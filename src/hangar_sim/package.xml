@@ -29,7 +29,9 @@
   <exec_depend>ur_description</exec_depend>
   <exec_depend>velocity_force_controller</exec_depend>
 
+  <test_depend>ament_cmake_pytest</test_depend>
   <test_depend>ament_lint_auto</test_depend>
+  <test_depend>moveit_pro_test_utils</test_depend>
 
   <test_depend>ament_clang_format</test_depend>
   <test_depend>ament_clang_tidy</test_depend>
