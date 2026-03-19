@@ -27,6 +27,9 @@
   <exec_depend>robotiq_description</exec_depend>
   <exec_depend>velocity_force_controller</exec_depend>
 
+  <test_depend>ament_cmake_pytest</test_depend>
+  <test_depend>moveit_pro_test_utils</test_depend>
+
   <export>
     <build_type>ament_cmake</build_type>
   </export>

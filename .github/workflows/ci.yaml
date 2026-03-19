@@ -14,10 +14,37 @@ on:
     - cron: "0 */6 * * 1-5"
 
 jobs:
+  # Lint and non-integration tests for all packages
   integration-test-in-studio-container:
     uses: PickNikRobotics/moveit_pro_ci/.github/workflows/workspace_integration_test.yaml@v0.0.6
     with:
       image_tag: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name }}
+      colcon_test_args: "--executor sequential"
+    secrets:
+      moveit_license_key: ${{ secrets.STUDIO_CI_LICENSE_KEY }}
+
+  # Per-config objective integration tests (run in parallel via matrix)
+  objective-integration-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        config_package:
+          - lab_sim
+          - kitchen_sim
+          - april_tag_sim
+          - grinding_sim
+          - dual_arm_sim
+          - factory_sim
+          - hangar_sim
+          - kinova_sim
+          - space_satellite_sim
+          - space_satellite_sim_camera_cal
+          - mock_sim
+          - multi_arm_sim
+    uses: PickNikRobotics/moveit_pro_ci/.github/workflows/workspace_integration_test.yaml@v0.0.6
+    with:
+      image_tag: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name }}
+      config_package: ${{ matrix.config_package }}
       colcon_test_args: "--executor sequential"
     secrets:
       moveit_license_key: ${{ secrets.STUDIO_CI_LICENSE_KEY }}
