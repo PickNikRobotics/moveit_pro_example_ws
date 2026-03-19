@@ -1,0 +1,20 @@
+# Angular bounds filter for the dual SICK TIM571 lidars.
+#
+# Both lidars publish to /scan with angle_min=0 and angle_max=4.7124 (270 deg sweep).
+# The lidar _ROS frame X axis points at beam-0, so scan angle alpha maps to robot frame
+# angle (alpha + frame_yaw):
+#   front lidar frame yaw = -135 deg: robot angle = scan_angle - 135 deg
+#   rear  lidar frame yaw =  +45 deg: robot angle = scan_angle + 45 deg
+#
+# Chassis self-hits occur when |robot_frame_angle| > 90 deg, i.e. beams looking more
+# than 90 deg backward. This maps to scan angles 0-45 deg and 225-270 deg for both lidars.
+# Keeping scan angles 45-225 deg (0.7854 to 3.9270 rad) eliminates all self-hits and
+# gives each lidar a clean 180 deg arc; combined they cover 360 deg.
+laser_angular_filter:
+  ros__parameters:
+    filter1:
+      name: angular_bounds
+      type: laser_filters/LaserScanAngularBoundsFilter
+      params:
+        lower_angle: 0.7854
+        upper_angle: 3.9270

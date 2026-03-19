@@ -3,6 +3,8 @@
 
   <option integrator="implicitfast" />
 
+  <size nuser_sensor="6" />
+
   <default>
     <default class="ur5e">
       <material specular="0.5" shininess="0.25" />
@@ -208,6 +210,92 @@
       <joint name="rotational_yaw_joint" type="hinge" axis="0 0 1" />
       <body name="base_platform" pos="0 0 0" euler="0 0 0">
         <body name="ridgeback_base_link">
+          <!-- Front SICK TIM571: mounted at x=+0.45m (front bumper), z=0.15m.
+               91 beams x 3 deg = 270 deg FOV, sweeping CCW from beam-0 at -135 deg in robot frame.
+               Quat rule: site Z axis = beam-0 firing direction. Site X axis must point in world -Z
+               so the plugin's Rot(-90,Y) produces a Z-up _ROS frame.
+               Formula: R_base = Rot_Z(phi) * Rot_Y(+90 deg), where phi = beam-0 robot-frame angle.
+               Front: phi=-135 deg -> R_base = Rot_Z(-135)*Rot_Y(90) -> quat=(0.2706,0.6533,0.2706,-0.6533).
+               angle_min=0 in rangefinder user params so the plugin sets _ROS frame X = beam-0 direction. -->
+          <body name="lidar_front_mount" pos="0.45 0 0.15">
+            <inertial
+              mass="0.25"
+              pos="0 0 0"
+              diaginertia="0.0001 0.0001 0.0001"
+            />
+            <replicate count="91" sep="-" offset="0 0 0" euler="0 0 0.05236">
+              <site
+                name="lidar_front"
+                size="0.01"
+                pos="0 0 0"
+                quat="0.2706 0.6533 0.2706 -0.6533"
+              />
+            </replicate>
+            <!-- TIM571 body: dark cylinder, visual-only -->
+            <geom
+              name="lidar_front_body"
+              type="cylinder"
+              size="0.030 0.042"
+              pos="0 0 0"
+              rgba="0.2 0.2 0.2 1"
+              contype="0"
+              conaffinity="0"
+              group="2"
+            />
+            <!-- Scan plane: cyan disk showing sweep area -->
+            <geom
+              name="lidar_front_scan_plane"
+              type="cylinder"
+              size="0.30 0.002"
+              pos="0 0 0"
+              rgba="0 1 1 0.3"
+              contype="0"
+              conaffinity="0"
+              group="2"
+            />
+          </body>
+
+          <!-- Rear SICK TIM571: mounted at x=-0.45m (rear bumper), z=0.15m.
+               91 beams x 3 deg = 270 deg FOV, sweeping CCW from beam-0 at +45 deg in robot frame.
+               Rear: phi=+45 deg -> R_base = Rot_Z(45)*Rot_Y(90) -> quat=(0.6533,-0.2706,0.6533,0.2706).
+               angle_min=0 in rangefinder user params so the plugin sets _ROS frame X = beam-0 direction. -->
+          <body name="lidar_rear_mount" pos="-0.45 0 0.15">
+            <inertial
+              mass="0.25"
+              pos="0 0 0"
+              diaginertia="0.0001 0.0001 0.0001"
+            />
+            <replicate count="91" sep="-" offset="0 0 0" euler="0 0 0.05236">
+              <site
+                name="lidar_rear"
+                size="0.01"
+                pos="0 0 0"
+                quat="0.6533 -0.2706 0.6533 0.2706"
+              />
+            </replicate>
+            <!-- TIM571 body: dark cylinder, visual-only -->
+            <geom
+              name="lidar_rear_body"
+              type="cylinder"
+              size="0.030 0.042"
+              pos="0 0 0"
+              rgba="0.2 0.2 0.2 1"
+              contype="0"
+              conaffinity="0"
+              group="2"
+            />
+            <!-- Scan plane: magenta disk showing sweep area -->
+            <geom
+              name="lidar_rear_scan_plane"
+              type="cylinder"
+              size="0.30 0.002"
+              pos="0 0 0"
+              rgba="1 0 1 0.3"
+              contype="0"
+              conaffinity="0"
+              group="2"
+            />
+          </body>
           <geom
             name="chassis_link"
             mesh="chassis_link"
@@ -586,5 +674,12 @@
     <framequat objtype="site" objname="imu_site" />
     <gyro site="imu_site" />
     <accelerometer site="imu_site" />
+    <!-- Front TIM571: 270 deg FOV, 3 deg resolution (91 beams), 0.05-25m range.
+         angle_min=0 so the _ROS frame X axis points at beam-0 (per plugin convention).
+         The sweep is 0 to 4.7124 rad (270 deg) in the sensor frame, which maps to
+         beam-0 at -135 deg and beam-90 at +135 deg in the robot frame. -->
+    <rangefinder site="lidar_front" user="0.05 0.0 4.7124 0.05236 0.05 25.0" />
+    <!-- Rear TIM571: same convention — angle_min=0, frame X points at beam-0 (+45 deg robot frame). -->
+    <rangefinder site="lidar_rear" user="0.05 0.0 4.7124 0.05236 0.05 25.0" />
   </sensor>
 </mujoco>
