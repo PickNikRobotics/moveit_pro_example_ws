@@ -50,6 +50,7 @@
     use_internal_bus_gripper_comm="$(arg use_internal_bus_gripper_comm)"
     use_fake_hardware="$(arg use_fake_hardware)"
     fake_sensor_commands="$(arg fake_sensor_commands)"
+    gripper="$(arg robotiq_gripper)"
     gripper_joint_name="$(arg gripper_joint_name)"
     gripper_max_velocity="$(arg gripper_max_velocity)"
     gripper_max_force="$(arg gripper_max_force)"
