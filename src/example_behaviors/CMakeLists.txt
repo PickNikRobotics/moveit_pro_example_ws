@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.22)
 project(example_behaviors CXX)
 
-find_package(moveit_studio_common REQUIRED)
+find_package(moveit_pro_package REQUIRED)
 find_package(example_interfaces REQUIRED)
-moveit_studio_package()
+moveit_pro_package()
 
 set(THIS_PACKAGE_INCLUDE_DEPENDS cartesian_planning moveit_pro_behavior
   moveit_pro_behavior_interface pluginlib moveit_studio_vision
