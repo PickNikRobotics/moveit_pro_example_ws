@@ -18,7 +18,7 @@
       <Action
         ID="CreateStampedPose"
         orientation_xyzw="0;-1;0;0"
-        position_xyz="0.5;0.3;0.5"
+        position_xyz="0.5;0.1;0.5"
         stamped_pose="{pose1}"
         reference_frame="world"
       />
@@ -30,7 +30,7 @@
       <Action
         ID="CreateStampedPose"
         orientation_xyzw="0;-1;0;0"
-        position_xyz="0.6;0.4;0.5"
+        position_xyz="0.6;0.2;0.5"
         stamped_pose="{pose2}"
         reference_frame="world"
       />
@@ -42,7 +42,7 @@
       <Action
         ID="CreateStampedPose"
         orientation_xyzw="0;-1;0;0"
-        position_xyz="0.4;0.5;0.5"
+        position_xyz="0.4;0.3;0.5"
         stamped_pose="{pose3}"
         reference_frame="world"
       />
@@ -209,17 +209,17 @@
         <Metadata runnable="true" />
       </MetadataFields>
       <!--Output ports-->
-      <output_port name="inspection_poses" default="{inspection_poses}" />
-      <output_port name="reachable_pose" default="{reachable_pose}" />
-      <output_port name="first_solution" default="{first_solution}" />
-      <output_port name="joint_traj" default="{joint_traj}" />
-      <output_port name="current_pose" default="{current_pose}" />
-      <output_port name="move_solution" default="{move_solution}" />
-      <output_port name="image" default="{image}" />
-      <output_port name="point_cloud_vector" default="{point_cloud_vector}" />
-      <output_port name="merged_cloud" default="{merged_cloud}" />
-      <output_port name="replay_solution" default="{replay_solution}" />
       <output_port name="current_cloud" default="{current_cloud}" />
+      <output_port name="current_pose" default="{current_pose}" />
+      <output_port name="first_solution" default="{first_solution}" />
+      <output_port name="image" default="{image}" />
+      <output_port name="inspection_poses" default="{inspection_poses}" />
+      <output_port name="joint_traj" default="{joint_traj}" />
+      <output_port name="merged_cloud" default="{merged_cloud}" />
+      <output_port name="move_solution" default="{move_solution}" />
+      <output_port name="point_cloud_vector" default="{point_cloud_vector}" />
+      <output_port name="reachable_pose" default="{reachable_pose}" />
+      <output_port name="replay_solution" default="{replay_solution}" />
       <output_port name="transformed_cloud" default="{transformed_cloud}" />
     </SubTree>
   </TreeNodesModel>
