@@ -43,7 +43,7 @@
         <joint name="robotiq_85_right_knuckle_joint" value="-0.7929"/>
     </group_state>
     <!--END EFFECTOR: Purpose: Represent information about an end effector.-->
-    <end_effector name="moveit_ee" parent_link="gripper_attachment_link" group="gripper"/>
+    <end_effector name="moveit_ee" parent_link="grasp_link" group="gripper"/>
     <!--VIRTUAL JOINT: Purpose: this element defines a virtual joint between a robot link and an external frame of reference (considered fixed with respect to the robot)-->
     <virtual_joint name="fixed_base" type="fixed" parent_frame="world" child_link="base_link"/>
     <!--PASSIVE JOINT: Purpose: this element is used to mark joints that are not actuated-->
