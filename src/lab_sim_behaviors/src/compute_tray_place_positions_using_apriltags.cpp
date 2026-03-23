@@ -7,13 +7,13 @@
 #include <cmath>
 #include <vector>
 
-#include <cv_bridge/cv_bridge.h>
 #include <fmt/format.h>
 #include <Eigen/Geometry>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <lab_sim_behaviors/compute_tray_place_positions_using_apriltags.hpp>
 #include <moveit_pro_behavior_interface/get_required_ports.hpp>
 #include <moveit_pro_behavior_interface/metadata_fields.hpp>
+#include <moveit_studio_vision/cv_bridge.hpp>
 #include <moveit_studio_vision/image_utils.hpp>
 #include <moveit_studio_vision_msgs/msg/object_detection_array.hpp>
 #include <opencv2/opencv.hpp>
