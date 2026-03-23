@@ -114,7 +114,7 @@
     <site
       name="scene_camera_optical_frame"
       pos="1.8 -0.495 1.0"
-      xyaxes="0.586 0.810 0.000 -0.186 0.135 0.973"
+      xyaxes="0.586 0.810 0.000 0.186 -0.135 -0.973"
     />
     <camera
       name="scene_camera"
@@ -123,7 +123,7 @@
       mode="fixed"
       resolution="640 480"
       xyaxes="0.586 0.810 0.000 -0.186 0.135 0.973"
-      user="1"
+      user="0"
     />
     <!-- lab desk -->
     <include file="lab_desk/desk.xml" />

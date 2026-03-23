@@ -729,6 +729,49 @@
     twist: []
     wrench: []
   name: Park Far Right
+- description: ''
+  favorite: false
+  joint_group_names:
+  - gripper
+  - linear_actuator
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - linear_rail_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
+    - 0.7684105789223642
+    - 0.03463677679065625
+    - 0.3822704394086136
+    - -0.8309305843034361
+    - 1.0446811438476495
+    - -1.759429041466107
+    - -1.5599967460954534
+    - 0.3889991676916786
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Pose Tracking
 - description: Location for the robot to go to before placing bottle.
   favorite: false
   joint_group_names:
