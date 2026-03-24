@@ -242,17 +242,6 @@
               conaffinity="0"
               group="2"
             />
-            <!-- Scan plane: cyan disk showing sweep area -->
-            <geom
-              name="lidar_front_scan_plane"
-              type="cylinder"
-              size="0.30 0.002"
-              pos="0 0 0"
-              rgba="0 1 1 0.3"
-              contype="0"
-              conaffinity="0"
-              group="2"
-            />
           </body>
 
           <!-- Rear SICK TIM571: mounted at x=-0.45m (rear bumper), z=0.15m.
@@ -280,17 +269,6 @@
               size="0.030 0.042"
               pos="0 0 0"
               rgba="0.2 0.2 0.2 1"
-              contype="0"
-              conaffinity="0"
-              group="2"
-            />
-            <!-- Scan plane: magenta disk showing sweep area -->
-            <geom
-              name="lidar_rear_scan_plane"
-              type="cylinder"
-              size="0.30 0.002"
-              pos="0 0 0"
-              rgba="1 0 1 0.3"
               contype="0"
               conaffinity="0"
               group="2"
