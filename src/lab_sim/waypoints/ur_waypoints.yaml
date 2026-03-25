@@ -666,6 +666,49 @@
     - wrist_2_joint
     - wrist_3_joint
     position:
+    - 0.00827733297728264
+    - 2.125051301807404
+    - 2.7960034380753444e-06
+    - -1.8849000062679748
+    - 1.099699995584049
+    - -1.2566000009639628
+    - -1.570748280486004
+    - -1.524120074486428e-08
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Left Side
+- description: ''
+  favorite: false
+  joint_group_names:
+  - gripper
+  - linear_actuator
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - linear_rail_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
     - 0.0125324474858072
     - -2.869335412055937e-07
     - 1.570785841301689
@@ -944,6 +987,49 @@
     twist: []
     wrench: []
   name: Look at Table
+- description: ''
+  favorite: false
+  joint_group_names:
+  - gripper
+  - linear_actuator
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - linear_rail_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
+    - 0.008277332977285343
+    - 0.3530020329337604
+    - 6.292442774784103e-10
+    - -1.8849000056650813
+    - 1.0996999957535454
+    - -1.256600000967197
+    - -1.5707500000001409
+    - -2.1933839341411528e-13
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Middle
 - description: Move out of view of scene camera
   favorite: false
   joint_group_names:
@@ -1116,6 +1202,49 @@
     twist: []
     wrench: []
   name: Predrop Bottles Right
+- description: ''
+  favorite: false
+  joint_group_names:
+  - gripper
+  - linear_actuator
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - linear_rail_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
+    - 0.008277332977279561
+    - -1.069323721467412
+    - 6.292442774997537e-10
+    - -1.884900005665084
+    - 1.099699995753543
+    - -1.2566000009671943
+    - -1.5707500000001433
+    - -2.1933835358302775e-13
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Right Side
 - description: ''
   favorite: false
   joint_group_names:
