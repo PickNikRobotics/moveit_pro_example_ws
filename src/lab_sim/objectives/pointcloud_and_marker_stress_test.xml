@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Pointcloud and Marker Stress Test">
+  <BehaviorTree
+    ID="Pointcloud and Marker Stress Test"
+    _description="Repeatedly scans the scene from three viewpoints, merges the point clouds, and publishes interpolated pose markers between the left and right waypoints."
+    _favorite="true"
+  >
+    <Decorator ID="Repeat" num_cycles="1000">
+      <Control ID="Sequence">
+        <!--=== Right side: move, capture, send ===-->
+        <SubTree
+          ID="Move to Waypoint"
+          _collapsed="true"
+          waypoint_name="Right Side"
+          joint_group_name="manipulator"
+        />
+        <Action
+          ID="GetPointCloud"
+          topic_name="/wrist_camera/points"
+          message_out="{right_cloud}"
+          message_timeout_sec="5.0"
+        />
+        <Action
+          ID="TransformPointCloudFrame"
+          input_cloud="{right_cloud}"
+          output_cloud="{right_cloud_world}"
+          target_frame="world"
+        />
+        <Action
+          ID="SendPointCloudToUI"
+          point_cloud="{right_cloud_world}"
+          pcd_topic="/pcd_pointcloud_captures"
+          name="Send right location pointcloud"
+        />
+        <!--=== Middle: move, capture, send ===-->
+        <SubTree
+          ID="Move to Waypoint"
+          _collapsed="true"
+          waypoint_name="Middle"
+          joint_group_name="manipulator"
+        />
+        <Action
+          ID="GetPointCloud"
+          topic_name="/wrist_camera/points"
+          message_out="{middle_cloud}"
+          message_timeout_sec="5.0"
+        />
+        <Action
+          ID="TransformPointCloudFrame"
+          input_cloud="{middle_cloud}"
+          output_cloud="{middle_cloud_world}"
+          target_frame="world"
+        />
+        <Action
+          ID="SendPointCloudToUI"
+          point_cloud="{middle_cloud_world}"
+          pcd_topic="/pcd_pointcloud_captures"
+          name="Send middle scene pointcloud"
+        />
+        <!--=== Left side: move, capture, send ===-->
+        <SubTree
+          ID="Move to Waypoint"
+          _collapsed="true"
+          waypoint_name="Left Side"
+          joint_group_name="manipulator"
+        />
+        <Action
+          ID="GetPointCloud"
+          topic_name="/wrist_camera/points"
+          message_out="{left_cloud}"
+          message_timeout_sec="5.0"
+        />
+        <Action
+          ID="TransformPointCloudFrame"
+          input_cloud="{left_cloud}"
+          output_cloud="{left_cloud_world}"
+          target_frame="world"
+        />
+        <Action
+          ID="SendPointCloudToUI"
+          point_cloud="{left_cloud_world}"
+          pcd_topic="/pcd_pointcloud_captures"
+          name="Send left scene pointcloud"
+        />
+        <!--=== Merge all 3 point clouds ===-->
+        <Action
+          ID="AddPointCloudToVector"
+          point_cloud="{right_cloud_world}"
+          point_cloud_vector="{scan_cloud_vector}"
+        />
+        <Action
+          ID="AddPointCloudToVector"
+          point_cloud="{middle_cloud_world}"
+          point_cloud_vector="{scan_cloud_vector}"
+        />
+        <Action
+          ID="AddPointCloudToVector"
+          point_cloud="{left_cloud_world}"
+          point_cloud_vector="{scan_cloud_vector}"
+        />
+        <Action
+          ID="MergePointClouds"
+          point_clouds="{scan_cloud_vector}"
+          grid_resolution_meters="0.005"
+          merged_cloud="{merged_cloud}"
+          align_point_clouds="false"
+        />
+        <Action ID="ClearSnapshot" />
+        <Decorator ID="Delay" delay_msec="500">
+          <Action
+            ID="SendPointCloudToUI"
+            point_cloud="{merged_cloud}"
+            pcd_topic="/pcd_pointcloud_captures"
+            name="Send merged pointcloud"
+          />
+        </Decorator>
+        <!--=== Publish 100 interpolated pose markers between left and right waypoints ===-->
+        <!--Create the starting pose (at the right waypoint position) -->
+        <!--TODO: Adjust start position and step delta to match your Right Side and Left Side waypoints-->
+        <Action
+          ID="CreateStampedPose"
+          reference_frame="world"
+          position_xyz="0.5;-0.4;0.4"
+          orientation_xyzw="0;0;0;1"
+          stamped_pose="{current_marker_pose}"
+        />
+        <!--Step delta: total displacement / 99 steps, applied each iteration-->
+        <Action
+          ID="CreateStampedPose"
+          reference_frame="world"
+          position_xyz="0.0;0.00808;0.0"
+          orientation_xyzw="0;0;0;1"
+          stamped_pose="{marker_step_delta}"
+        />
+        <Action ID="ResetPoseStampedVector" vector="{marker_poses}" />
+        <!--Generate 100 evenly-spaced poses by repeatedly shifting by the delta-->
+        <Decorator ID="Repeat" num_cycles="100">
+          <Control ID="Sequence">
+            <Action
+              ID="AddPoseStampedToVector"
+              vector="{marker_poses}"
+              input="{current_marker_pose}"
+            />
+            <Action
+              ID="TransformPoseWithPose"
+              input_pose="{current_marker_pose}"
+              transform_pose="{marker_step_delta}"
+              output_pose="{current_marker_pose}"
+            />
+          </Control>
+        </Decorator>
+        <!--Publish all markers at once-->
+        <Action
+          ID="PublishMarkers"
+          marker_type="sphere"
+          marker_namespace="scan_interpolation"
+          marker_poses="{marker_poses}"
+        />
+        <!--Clear the UI snapshot at the end of each loop-->
+        <Decorator ID="Delay" delay_msec="500">
+          <Action ID="ClearSnapshot" />
+        </Decorator>
+      </Control>
+    </Decorator>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Pointcloud and Marker Stress Test">
+      <MetadataFields>
+        <Metadata subcategory="Application - Basic Examples" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
