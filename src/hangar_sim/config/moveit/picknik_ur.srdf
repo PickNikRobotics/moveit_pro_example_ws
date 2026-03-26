@@ -361,6 +361,74 @@
     <disable_collisions link1="collision_Cube_002" link2="collision_supports_015" reason="Never"/>
     <disable_collisions link1="collision_Cube_002" link2="collision_vacuum_base" reason="Never"/>
     <disable_collisions link1="collision_Cube_002" link2="collision_vacuum_suction_cups" reason="Never"/>
+    <disable_collisions link1="collision_Cube" link2="collision_Cube_002.001" reason="Never"/>
+    <disable_collisions link1="collision_Cube_001" link2="collision_Cube_002.001" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002" link2="collision_Cube_002.001" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_Cube_004" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_Cube_005" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_Cube_006" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_Cube_007" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_Cube_008" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_Cube_009" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_Cube_010" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_Cube_011" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_Cube_012" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_Cube_013" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_Cube_014" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_Cube_015" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_Plane" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_Plane_001" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_Plane_002" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_Plane_003" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_Plane_004" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_Plane_005" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_Plane_006" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_Plane_007" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_Plane_008" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_Plane_009" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_Plane_010" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_Plane_011" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_Plane_012" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_SM_Box_A7_73" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_SM_Box_A8" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_SM_Box_C7_77" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_SM_Floor_376" reason="Adjacent"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_SM_Pillar2_001" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_SM_Pillar3_001" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_SM_Pillar4_001" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_SM_Pillar5_001" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_SM_Pillar6_001" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_SM_Pillar7_001" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_SM_Pillar8_001" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_SM_Pillar_10_001" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_SM_Room_426_001" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_SM_Room_426_002" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_SM_Room_426_003" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_SM_Room_426_004" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_SM_WallBack_396_001" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_SM_WallBack_396_002" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_SM_WallFront_382_001" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_SM_WallFront_382_002" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_SM_WallSide16_002" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_SM_WallSide4_001" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_supports" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_supports_001" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_supports_002" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_supports_003" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_supports_004" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_supports_005" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_supports_006" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_supports_007" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_supports_008" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_supports_009" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_supports_010" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_supports_011" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_supports_012" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_supports_013" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_supports_014" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_supports_015" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_vacuum_base" reason="Never"/>
+    <disable_collisions link1="collision_Cube_002.001" link2="collision_vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_Cube_004" link2="collision_Cube_005" reason="Never"/>
     <disable_collisions link1="collision_Cube_004" link2="collision_Cube_006" reason="Never"/>
     <disable_collisions link1="collision_Cube_004" link2="collision_Cube_007" reason="Never"/>
