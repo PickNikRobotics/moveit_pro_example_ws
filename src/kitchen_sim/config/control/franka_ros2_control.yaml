@@ -21,7 +21,7 @@ joint_trajectory_admittance_controller:
     # Joint accelerations to use for immediate stops (e.g. when cancelling a running trajectory).
     stop_accelerations: [30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0]
     # Default maximum joint-space deviation accepted along the trajectory, if not specified in the goal message.
-    default_path_tolerance: 0.5
+    default_path_tolerance: 0.6
 
 franka_gripper_controller:
   ros__parameters:
