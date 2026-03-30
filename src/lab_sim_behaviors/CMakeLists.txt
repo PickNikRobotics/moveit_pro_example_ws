@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(lab_sim_behaviors CXX)
+project(lab_sim_behaviors)
 
 find_package(moveit_pro_package REQUIRED)
 moveit_pro_package()

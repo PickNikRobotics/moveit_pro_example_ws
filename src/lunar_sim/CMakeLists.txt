@@ -7,6 +7,7 @@ find_package(phoebe_sim REQUIRED)
 install(
   DIRECTORY
     config
+    launch
     mjcf
   DESTINATION
     share/${PROJECT_NAME}

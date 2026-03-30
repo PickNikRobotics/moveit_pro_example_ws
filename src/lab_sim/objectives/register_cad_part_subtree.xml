@@ -33,6 +33,7 @@
         ID="TransformPointCloud"
         input_cloud="{red_cloud}"
         transform_pose="{stamped_pose}"
+        output_cloud="{red_cloud}"
       />
       <Action
         ID="SendPointCloudToUI"
@@ -81,6 +82,7 @@
         ID="TransformPointCloud"
         input_cloud="{green_cloud}"
         transform_pose="{stamped_pose}"
+        output_cloud="{green_cloud}"
       />
       <Action
         ID="TransformPointCloud"
