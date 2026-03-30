@@ -2517,14 +2517,14 @@
       />
     </body>
     <body
-      name="collision_Cube_002.001"
+      name="collision_Cube_002_001"
       pos="-11.812490463256836 2.936809539794922 0.800389289855957"
       quat="4.371138828673793e-08 0.0 0.0 -1.0"
     >
       <geom
         class="collision"
         type="mesh"
-        name="collision_Cube_002.001 geom"
+        name="collision_Cube_002_001 geom"
         mesh="collision_Cube_002.001"
       />
       <body
@@ -2969,7 +2969,7 @@
     <mesh name="SM_DoorSingle2" file="hangar_mesh/SM_DoorSingle2.obj" />
     <mesh name="SM_AccessStand_441" file="hangar_mesh/SM_AccessStand_441.obj" />
     <mesh
-      name="collision_Cube_002.001"
+      name="collision_Cube_002_001"
       file="hangar_mesh/collision_Cube_002.001.obj"
     />
     <mesh
