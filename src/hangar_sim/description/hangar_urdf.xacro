@@ -157,7 +157,7 @@
         </geometry>
       </collision>
     </link>
-    <link name="collision_Cube_002.001">
+    <link name="collision_Cube_002_001">
       <collision>
         <origin rpy="0.0 0.0 0.0" xyz="-11.812490463256836 -22.871850967407228 1.300389289855957"/>
         <geometry>
@@ -661,9 +661,9 @@
       <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
 
     </joint>
-    <joint name="collision_SM_Floor_376_collision_Cube_002.001_joint" type="fixed">
+    <joint name="collision_SM_Floor_376_collision_Cube_002_001_joint" type="fixed">
       <parent link="collision_SM_Floor_376"/>
-      <child link="collision_Cube_002.001"/>
+      <child link="collision_Cube_002_001"/>
       <origin rpy="0.0 0.0 0.0" xyz="0.0 25.80866050720215 -0.5"/>
 
     </joint>
