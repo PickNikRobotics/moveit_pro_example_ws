@@ -32,6 +32,7 @@ hardware:
     # Many of these are specific to the UR descriptions packages, and can be customized as needed.
     # [Optional]
     urdf_params:
+      - mujoco_keyframe: "default"
       - mujoco_model: "description/mujoco/scene.xml"
       - mujoco_viewer: false
     simulated_hardware_launch_file:
@@ -86,6 +87,7 @@ objectives:
       - "moveit_pro::behaviors::MTCCoreBehaviorsLoader"
       - "moveit_pro::behaviors::VisionBehaviorsLoader"
       - "moveit_pro::behaviors::ConverterBehaviorsLoader"
+      - "moveit_pro::behaviors::MujocoBehaviorsLoader"
   # Specify source folder for objectives
   # [Required]
   objective_library_paths:
@@ -101,6 +103,9 @@ objectives:
     visualization_objectives:
       package_name: "moveit_pro_objectives"
       relative_path: "objectives/visualization"
+    mujoco_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/mujoco"
     custom_objectives:
       package_name: "dual_arm_sim"
       relative_path: "objectives"

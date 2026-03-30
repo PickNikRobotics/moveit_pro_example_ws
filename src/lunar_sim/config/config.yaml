@@ -9,5 +9,15 @@ based_on_package: "phoebe_sim"
 hardware:
   robot_description:
     urdf_params:
+      - mujoco_keyframe: "default"
       - mujoco_model_package: lunar_sim
       - mujoco_model: mjcf/scene.xml
+
+objectives:
+  behavior_loader_plugins:
+    core:
+      - "moveit_pro::behaviors::MujocoBehaviorsLoader"
+  objective_library_paths:
+    mujoco_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/mujoco"

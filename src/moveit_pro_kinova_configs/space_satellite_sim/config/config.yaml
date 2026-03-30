@@ -51,6 +51,9 @@ ros2_control:
 objectives:
   # Specify source folder for objectives
   # [Required]
+  behavior_loader_plugins:
+    core:
+      - "moveit_pro::behaviors::MujocoBehaviorsLoader"
   objective_library_paths:
     core_objectives:
       package_name: "moveit_pro_objectives"
@@ -61,6 +64,9 @@ objectives:
     perception_objectives:
       package_name: "moveit_pro_objectives"
       relative_path: "objectives/perception"
+    mujoco_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/mujoco"
     sim_objectives:
       package_name: "space_satellite_sim"
       relative_path: "objectives"

@@ -43,6 +43,7 @@ hardware:
     # Many of these are specific to the UR descriptions packages, and can be customized as needed.
     # [Optional]
     urdf_params:
+      - mujoco_keyframe: "default"
       - name: "multi_arm_ur"
       - prefix: ""
       - use_fake_hardware: "true"
@@ -162,6 +163,7 @@ objectives:
       - "moveit_pro::behaviors::MTCCoreBehaviorsLoader"
       - "moveit_pro::behaviors::VisionBehaviorsLoader"
       - "moveit_pro::behaviors::ConverterBehaviorsLoader"
+      - "moveit_pro::behaviors::MujocoBehaviorsLoader"
   # Specify source folder for objectives
   # [Required]
   objective_library_paths:
@@ -174,6 +176,9 @@ objectives:
     perception_objectives:
       package_name: "moveit_pro_objectives"
       relative_path: "objectives/perception"
+    mujoco_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/mujoco"
     sim_objectives:
       package_name: "multi_arm_sim"
       relative_path: "objectives"

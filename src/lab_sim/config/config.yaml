@@ -16,6 +16,7 @@ hardware:
       package: "lab_sim"
       path: "config/moveit/picknik_ur.srdf"
     urdf_params:
+      - mujoco_keyframe: "default"
       - mujoco_model: "description/scene.xml"
       - mujoco_viewer: false
 
