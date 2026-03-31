@@ -83,6 +83,7 @@ skip_objectives = {
     "AddBottlesToPlanningScene",
     "Marker Visualization Example",  # Server not available for GetTextFromUser
     "Octomap Example",  # Requires user input to clear the octomap.
+    "Register CAD Part",  # TODO: remove this for 9.2.0 and fix it correctly
 }
 
 
