@@ -2525,7 +2525,7 @@
         class="collision"
         type="mesh"
         name="collision_Cube_002_001 geom"
-        mesh="collision_Cube_002.001"
+        mesh="collision_Cube_002_001"
       />
       <body
         name="SM_AccessStand_441.001"
