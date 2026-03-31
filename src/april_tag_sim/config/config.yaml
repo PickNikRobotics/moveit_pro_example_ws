@@ -23,6 +23,9 @@ objectives:
   # Specify source folder for objectives
   # [Required]
   objective_library_paths:
+    mujoco_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/mujoco"
     sim_objectives:
       package_name: "april_tag_sim"
       relative_path: "objectives"
