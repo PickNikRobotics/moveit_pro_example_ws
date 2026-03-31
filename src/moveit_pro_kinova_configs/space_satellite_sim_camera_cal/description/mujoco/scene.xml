@@ -222,4 +222,24 @@
       ctrlrange="-100 100"
     />
   </actuator>
+
+  <keyframe>
+    <!-- qpos: servicer_platform [x, y, z, roll, pitch, yaw], arm [joint_1..joint_7, robotiq_85_right_knuckle_joint], gripper [7 joints] -->
+    <!-- qvel: same layout -->
+    <!-- ctrl: arm [joint_1..joint_7, robotiq_85_right_knuckle_joint], servicer_platform [x, y, z, roll, pitch, yaw] -->
+    <key
+      name="default"
+      qpos="
+        0 0 0 0 0 0
+        0 2.09 0 -2.66 0 2.14 1.57 0
+        0 0 0 0 0 0 0"
+      qvel="
+        0 0 0 0 0 0
+        0 0 0 0 0 0 0 0
+        0 0 0 0 0 0 0"
+      ctrl="
+        0 2.09 0 -2.66 0 2.14 1.57 0
+        0 0 0 0 0 0"
+    />
+  </keyframe>
 </mujoco>

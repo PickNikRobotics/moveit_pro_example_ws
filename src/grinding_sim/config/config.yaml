@@ -41,7 +41,8 @@ hardware:
     # Many of these are specific to the descriptions packages, and can be customized as needed.
     # [Optional]
     urdf_params:
-        # Use "mock", "mujoco", or "real"
+      - mujoco_keyframe: "default"
+      # Use "mock", "mujoco", or "real"
       - hardware_interface: "mujoco"
 
 # Sets ROS global params for launch.
@@ -115,6 +116,7 @@ objectives:
       - "moveit_pro::behaviors::MTCCoreBehaviorsLoader"
       - "moveit_pro::behaviors::VisionBehaviorsLoader"
       - "moveit_pro::behaviors::ConverterBehaviorsLoader"
+      - "moveit_pro::behaviors::MujocoBehaviorsLoader"
   # Specify source folder for objectives
   # [Required]
   objective_library_paths:
@@ -130,6 +132,9 @@ objectives:
     visualization_objectives:
       package_name: "moveit_pro_objectives"
       relative_path: "objectives/visualization"
+    mujoco_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/mujoco"
     sim_objectives:
       package_name: "grinding_sim"
       relative_path: "objectives"

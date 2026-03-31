@@ -51,6 +51,7 @@ hardware:
     # Many of these are specific to the UR descriptions packages, and can be customized as needed.
     # [Optional]
     urdf_params:
+      - mujoco_keyframe: "default"
       - arm: "gen3"
       - dof: "7"
       - vision: "false"

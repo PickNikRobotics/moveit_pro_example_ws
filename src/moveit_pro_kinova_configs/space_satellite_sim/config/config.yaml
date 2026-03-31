@@ -61,6 +61,9 @@ objectives:
     perception_objectives:
       package_name: "moveit_pro_objectives"
       relative_path: "objectives/perception"
+    mujoco_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/mujoco"
     sim_objectives:
       package_name: "space_satellite_sim"
       relative_path: "objectives"
