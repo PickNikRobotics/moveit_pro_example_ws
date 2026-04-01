@@ -15,18 +15,20 @@
       />
       <SubTree ID="Take Wrist Camera Snapshot" _collapsed="true" />
       <SubTree
-        ID="Segment Image from Text Prompt Subtree"
+        ID="SAM3 Segment Image Subtree"
         _collapsed="true"
-        clip_model_path="models/clip.onnx"
-        clipseg_model_path="models/clipseg.onnx"
+        model_package="lab_sim"
+        encoder_model_path="models/sam3_vision_encoder.onnx"
+        decoder_model_path="models/sam3_decoder.onnx"
+        geometry_encoder_model_path="models/sam3_geometry_encoder.onnx"
+        text_encoder_model_path="models/sam3_text_encoder.onnx"
+        confidence_threshold="0.5"
         masks_visualization_topic="/masks_visualization"
-        masks2d="{masks2d}"
-        model_package="moveit_pro_clipseg"
-        prompts="conical flask"
-        threshold="0.15"
+        text_prompt="glass conical flask"
         image_topic_name="/wrist_camera/color"
-        negative_prompts="box"
-        erosion_size="10"
+        masks2d="{masks2d}"
+        confidence_scores="{confidence_scores}"
+        confidence_scores_str="{confidence_scores_str}"
       />
       <Action
         ID="GetPointCloud"

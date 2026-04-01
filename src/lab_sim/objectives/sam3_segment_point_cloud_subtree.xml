@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="SAM3 Segment Point Cloud Subtree">
+  <!--//////////-->
+  <BehaviorTree
+    ID="SAM3 Segment Point Cloud Subtree"
+    _description="Captures a point cloud and segments objects using SAM3 text prompting."
+    _favorite="false"
+  >
+    <Control ID="Sequence">
+      <Action ID="ClearSnapshot" />
+      <SubTree
+        ID="SAM3 Segment Image Subtree"
+        _collapsed="true"
+        image_topic_name="{image_topic_name}"
+        text_prompt="{text_prompt}"
+        model_package="{model_package}"
+        encoder_model_path="{encoder_model_path}"
+        decoder_model_path="{decoder_model_path}"
+        geometry_encoder_model_path="{geometry_encoder_model_path}"
+        text_encoder_model_path="{text_encoder_model_path}"
+        confidence_threshold="{confidence_threshold}"
+        masks_visualization_topic="{masks_visualization_topic}"
+        masks2d="{masks2d}"
+        confidence_scores="{confidence_scores}"
+        confidence_scores_str="{confidence_scores_str}"
+        mask_count="{mask_count}"
+      />
+      <Action
+        ID="GetPointCloud"
+        topic_name="{points_topic_name}"
+        message_timeout_sec="10.000000"
+        message_out="{point_cloud}"
+      />
+      <Action
+        ID="GetCameraInfo"
+        topic_name="{camera_topic_name}"
+        message_out="{camera_info}"
+        message_timeout_sec="5.000000"
+      />
+      <Action
+        ID="GetMasks3DFromMasks2D"
+        camera_info="{camera_info}"
+        masks2d="{masks2d}"
+        point_cloud="{point_cloud}"
+        masks3d="{masks3d}"
+      />
+      <SubTree
+        ID="Create Point Cloud Vector From Masks"
+        _collapsed="false"
+        masks3d="{masks3d}"
+        point_cloud="{point_cloud}"
+        point_cloud_vector="{point_cloud_vector}"
+      />
+      <Decorator
+        ID="ForEach"
+        index="{index}"
+        out="{point_cloud_fragment}"
+        vector_in="{point_cloud_vector}"
+      >
+        <Action
+          ID="SendPointCloudToUI"
+          pcd_topic="/pcd_pointcloud_captures"
+          point_cloud="{point_cloud_fragment}"
+        />
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="SAM3 Segment Point Cloud Subtree">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Perception - ML" />
+      </MetadataFields>
+      <input_port name="image_topic_name" />
+      <input_port name="text_prompt" />
+      <input_port name="model_package" />
+      <input_port name="encoder_model_path" />
+      <input_port name="decoder_model_path" />
+      <input_port name="geometry_encoder_model_path" />
+      <input_port name="text_encoder_model_path" />
+      <input_port name="confidence_threshold" />
+      <input_port name="masks_visualization_topic" />
+      <input_port name="points_topic_name" />
+      <input_port name="camera_topic_name" />
+      <output_port name="masks2d" default="{masks2d}" />
+      <output_port name="masks3d" default="{masks3d}" />
+      <output_port name="point_cloud" default="{point_cloud}" />
+      <output_port name="point_cloud_vector" default="{point_cloud_vector}" />
+      <output_port name="confidence_scores" default="{confidence_scores}" />
+      <output_port
+        name="confidence_scores_str"
+        default="{confidence_scores_str}"
+      />
+      <output_port name="mask_count" default="{mask_count}" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

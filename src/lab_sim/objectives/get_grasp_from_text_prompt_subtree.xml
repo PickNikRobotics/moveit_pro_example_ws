@@ -16,10 +16,9 @@
         camera_image_topic="{camera_image_topic}"
         camera_info_topic="{camera_info_topic}"
         camera_points_topic="{camera_points_topic}"
-        object_prompt="{object_prompt}"
+        text_prompt="{text_prompt}"
         grasps="{grasps}"
-        mask_erosion="{mask_erosion}"
-        mask_threshold="{mask_threshold}"
+        confidence_threshold="{confidence_threshold}"
         name="Infer grasp poses from wrist camera"
       />
       <SubTree
@@ -48,11 +47,13 @@
       <inout_port name="camera_image_topic" default="{camera_image_topic}" />
       <inout_port name="camera_info_topic" default="{camera_info_topic}" />
       <inout_port name="camera_points_topic" default="{camera_points_topic}" />
-      <inout_port name="mask_erosion" default="{mask_erosion}" />
-      <inout_port name="mask_threshold" default="{mask_threshold}" />
-      <inout_port name="object_prompt" default="{object_prompt}" />
+      <inout_port
+        name="confidence_threshold"
+        default="{confidence_threshold}"
+      />
       <inout_port name="output_grasp" default="{output_grasp}" />
       <inout_port name="planning_group" default="{planning_group}" />
+      <inout_port name="text_prompt" default="{text_prompt}" />
     </SubTree>
   </TreeNodesModel>
 </root>

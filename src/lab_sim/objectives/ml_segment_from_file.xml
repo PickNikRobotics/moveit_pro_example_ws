@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<root BTCPP_format="4" main_tree_to_execute="ML Segment Bottles from File">
+<root BTCPP_format="4" main_tree_to_execute="ML Segment from File">
   <BehaviorTree
-    ID="ML Segment Bottles from File"
-    _description="Loads image of lab from file and uses SAM3 to find bottles. Useful when you want to file tune or experiment is exemplars before testing in robot scene."
+    ID="ML Segment from File"
+    _description="Loads image from file and uses SAM3 to find requested object. Useful when you want to file tune or experiment is exemplars before testing in robot scene."
     _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
         ID="LoadImageFromFile"
-        file_path="~/user_ws/src/lab_sim/objectives/real_lab1.png"
+        file_path="~/user_ws/src/lab_sim/objectives/iss1.png"
       />
       <Action
         ID="GetMasks2DFromExemplar"
@@ -20,7 +20,7 @@
         confidence_threshold="0.5"
         confidence_scores_str="{confidence_scores_str}"
         target_image="{image}"
-        text_prompt="bottles"
+        text_prompt="white cargo bag"
         mask_count="{mask_count}"
         masks2d="{masks2d}"
       />
@@ -31,7 +31,7 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="ML Segment Bottles from File">
+    <SubTree ID="ML Segment from File">
       <MetadataFields>
         <Metadata runnable="true" />
         <Metadata subcategory="Application - ML (GPU Recommended)" />
