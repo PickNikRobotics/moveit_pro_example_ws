@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Place Object">
-  <!--//////////-->
   <BehaviorTree
     ID="Place Object"
     _description="Place an object in the gripper at a manually specified location"
@@ -12,7 +11,7 @@
         <Action
           ID="CreateStampedPose"
           orientation_xyzw="0;1;0;0"
-          position_xyz="0.01;.75;0.5.15"
+          position_xyz="-0.15905; 0.51283; 0.55"
           stamped_pose="{stamped_pose}"
           reference_frame="world"
         />
@@ -32,8 +31,8 @@
   <TreeNodesModel>
     <SubTree ID="Place Object">
       <MetadataFields>
-        <Metadata subcategory="Application - Basic Examples" />
         <Metadata runnable="true" />
+        <Metadata subcategory="Manipulation" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Register CAD Part Subtree">
-  <!--//////////-->
   <BehaviorTree
     ID="Register CAD Part Subtree"
     _description="Load an STL from disk and use registration to align the pointcloud with a matching shape in the environment. Return the pose of the object in the world frame."
@@ -11,7 +10,7 @@
       <SubTree ID="Look at Table" _collapsed="true" />
       <Action
         ID="CreateStampedPose"
-        position_xyz="0.2;0.75;0.6"
+        position_xyz="-0.15;.5;0.7"
         orientation_xyzw="0;0;0;1"
         stamped_pose="{stamped_pose}"
         name="Initial Guess"
@@ -21,7 +20,7 @@
         ID="LoadPointCloudFromFile"
         color="255;0;0"
         package_name="lab_sim"
-        file_path="description/assets/Cube.stl"
+        file_path="description/assets/bottle.stl"
         point_cloud="{red_cloud}"
       />
       <Action
@@ -35,17 +34,13 @@
         transform_pose="{stamped_pose}"
         output_cloud="{red_cloud}"
       />
-      <Action
-        ID="SendPointCloudToUI"
-        point_cloud="{red_cloud}"
-        pcd_topic="/pcd_pointcloud_captures"
-      />
-      <Action
-        ID="GetPointCloud"
-        topic_name="/wrist_camera/points"
-        message_out="{wrist_point_cloud}"
-        publisher_timeout_sec="5.000000"
-        message_timeout_sec="5.000000"
+      <SubTree
+        ID="Fuse Multiple Views Subtree"
+        _collapsed="true"
+        merged_cloud="{wrist_point_cloud}"
+        waypoint1="Look at Objects - Right"
+        waypoint2="Look at Objects - Top"
+        waypoint3="Look at Objects - Left"
       />
       <Action
         ID="TransformPointCloudFrame"
@@ -56,6 +51,11 @@
       <Action
         ID="SendPointCloudToUI"
         point_cloud="{wrist_point_cloud}"
+        pcd_topic="/pcd_pointcloud_captures"
+      />
+      <Action
+        ID="SendPointCloudToUI"
+        point_cloud="{red_cloud}"
         pcd_topic="/pcd_pointcloud_captures"
       />
       <Action
@@ -70,7 +70,7 @@
         ID="LoadPointCloudFromFile"
         color="0;255;0"
         package_name="lab_sim"
-        file_path="description/assets/Cube.stl"
+        file_path="description/assets/bottle.stl"
         point_cloud="{green_cloud}"
       />
       <Action

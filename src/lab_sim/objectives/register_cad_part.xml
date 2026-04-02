@@ -1,6 +1,5 @@
-<?xml version="1.0" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Register CAD Part">
-  <!--//////////-->
   <BehaviorTree
     ID="Register CAD Part"
     _description="Load an STL from disk and use registration to align the pointcloud with a matching shape in the environment"
@@ -12,7 +11,7 @@
       <Action
         ID="CreateStampedPose"
         reference_frame="world"
-        position_xyz="0.02;.75;0.58"
+        position_xyz="-1.0;.5;0.7"
         orientation_xyzw="0;0;0;1"
         stamped_pose="{stamped_pose}"
         name="Initial Guess"
@@ -21,7 +20,7 @@
         ID="LoadPointCloudFromFile"
         color="255;0;0"
         package_name="lab_sim"
-        file_path="description/assets/Cube.stl"
+        file_path="description/assets/microscope.stl"
         point_cloud="{red_cloud}"
       />
       <Action
@@ -36,11 +35,12 @@
         output_cloud="{red_cloud}"
       />
       <Action ID="SendPointCloudToUI" point_cloud="{red_cloud}" />
-      <Action
-        ID="GetPointCloud"
-        topic_name="/wrist_camera/points"
-        message_out="{wrist_point_cloud}"
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        waypoint_name="Look at Microscope"
       />
+      <Action ID="GetPointCloud" message_out="{wrist_point_cloud}" />
       <Action
         ID="TransformPointCloudFrame"
         input_cloud="{wrist_point_cloud}"
@@ -58,7 +58,7 @@
         ID="LoadPointCloudFromFile"
         color="0;255;0"
         package_name="lab_sim"
-        file_path="description/assets/Cube.stl"
+        file_path="description/assets/microscope.stl"
         point_cloud="{green_cloud}"
       />
       <Action
@@ -84,7 +84,8 @@
   <TreeNodesModel>
     <SubTree ID="Register CAD Part">
       <MetadataFields>
-        <Metadata subcategory="Application - Advanced Examples" />
+        <Metadata runnable="true" />
+        <Metadata subcategory="Perception - 3D Point Cloud" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>

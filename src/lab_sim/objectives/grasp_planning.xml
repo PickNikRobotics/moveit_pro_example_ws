@@ -18,7 +18,7 @@
         <Action
           ID="CreateStampedPose"
           orientation_xyzw="0;1;0;0"
-          position_xyz="0.01;.75;0.515"
+          position_xyz="-0.04;.575;0.58"
           stamped_pose="{grasp_candidate_1}"
           reference_frame="world"
         />
@@ -37,7 +37,7 @@
         <Action
           ID="CreateStampedPose"
           orientation_xyzw="0;0.9848078;0.1736482;0"
-          position_xyz="0.01;.75;0.515"
+          position_xyz="-0.04;.575;0.58"
           stamped_pose="{grasp_candidate_2}"
           reference_frame="world"
         />
