@@ -40,7 +40,12 @@
         _collapsed="true"
         waypoint_name="Look at Microscope"
       />
-      <Action ID="GetPointCloud" message_out="{wrist_point_cloud}" />
+      <Action
+        ID="GetPointCloud"
+        message_out="{wrist_point_cloud}"
+        message_timeout_sec="10.0"
+        publisher_timeout_sec="10.0"
+      />
       <Action
         ID="TransformPointCloudFrame"
         input_cloud="{wrist_point_cloud}"
