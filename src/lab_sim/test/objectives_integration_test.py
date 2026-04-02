@@ -49,6 +49,7 @@ cancel_objectives = {
     "Plan and Save Trajectory",
     "Record and Replay Scanning Motion",
     "Stationary Admittance",
+    "Teleoperate",
 }
 
 # Objectives to skip entirely from integration testing
