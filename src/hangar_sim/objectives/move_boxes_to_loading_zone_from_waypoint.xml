@@ -60,14 +60,14 @@
         output_cloud="{point_cloud}"
       />
       <Action
-        ID="CreateStampedPose"
+        ID="CreatePoseStamped"
         reference_frame="world"
-        stamped_pose="{stamped_pose}"
+        pose_stamped="{pose_stamped}"
         position_xyz="0;0;2.05"
       />
       <Action
         ID="CropPointsInBox"
-        crop_box_centroid_pose="{stamped_pose}"
+        crop_box_centroid_pose="{pose_stamped}"
         point_cloud="{point_cloud}"
         point_cloud_cropped="{point_cloud_cropped}"
         crop_box_size="40;40;4"
@@ -186,9 +186,9 @@
                 >
                   <Control ID="Sequence">
                     <Action
-                      ID="CreateStampedPose"
+                      ID="CreatePoseStamped"
                       reference_frame="world"
-                      stamped_pose="{ee_to_tcp}"
+                      pose_stamped="{ee_to_tcp}"
                       position_xyz="0;0;0"
                       orientation_xyzw="0;0;0;1"
                     />

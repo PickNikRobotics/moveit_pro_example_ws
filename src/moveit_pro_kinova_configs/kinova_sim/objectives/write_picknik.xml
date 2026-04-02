@@ -10,16 +10,16 @@
     <Control ID="Sequence">
       <SubTree ID="Move to Waypoint" _collapsed="true" waypoint_name="Home" />
       <Action
-        ID="CreateStampedPose"
+        ID="CreatePoseStamped"
         reference_frame="base_link"
         position_xyz="0.4;0.5;0.09"
         orientation_xyzw="0.7073883;-0.7068252;0.0000327;0.0000328"
-        stamped_pose="{stamped_pose}"
+        pose_stamped="{pose_stamped}"
       />
       <Control ID="Parallel" success_count="1" failure_count="1">
         <Action
           ID="PublishStaticFrame"
-          pose="{stamped_pose}"
+          pose="{pose_stamped}"
           child_frame_id="local"
           publish_rate="50"
         />

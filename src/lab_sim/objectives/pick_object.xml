@@ -10,10 +10,10 @@
       <SubTree ID="Open Gripper" />
       <Action ID="SwitchUIPrimaryView" primary_view_name="Visualization" />
       <Action
-        ID="CreateStampedPose"
+        ID="CreatePoseStamped"
         orientation_xyzw="0;1;0;0"
         position_xyz="-0.04;.58;0.57"
-        stamped_pose="{stamped_pose}"
+        pose_stamped="{pose_stamped}"
         reference_frame="world"
       />
       <Action
@@ -21,12 +21,12 @@
         marker_lifetime="0.000000"
         marker_name="Object Pose"
         marker_size="0.100000"
-        pose="{stamped_pose}"
+        pose="{pose_stamped}"
       />
       <SubTree
         ID="Pick from Pose"
         _collapsed="true"
-        grasp_pose="{stamped_pose}"
+        grasp_pose="{pose_stamped}"
         approach_distance="0.1"
         retract_xyz="0;0;-0.1"
       />

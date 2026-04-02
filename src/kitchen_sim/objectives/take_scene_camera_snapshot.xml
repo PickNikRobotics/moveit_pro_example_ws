@@ -22,9 +22,9 @@
       />
       <Control ID="Sequence">
         <Action
-          ID="CreateStampedPose"
+          ID="CreatePoseStamped"
           reference_frame="world"
-          stamped_pose="{pose}"
+          pose_stamped="{pose}"
           position_xyz="1.2;0;0.9"
         />
         <Action
@@ -40,9 +40,9 @@
           point_cloud_vector="{point_clouds}"
         />
         <Action
-          ID="CreateStampedPose"
+          ID="CreatePoseStamped"
           reference_frame="world"
-          stamped_pose="{pose}"
+          pose_stamped="{pose}"
           position_xyz="0;1.2;0.9"
         />
         <Action

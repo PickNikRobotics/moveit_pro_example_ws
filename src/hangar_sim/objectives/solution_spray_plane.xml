@@ -18,9 +18,9 @@
         keep_orientation_link_names="grasp_link"
       />
       <Action
-        ID="CreateStampedPose"
+        ID="CreatePoseStamped"
         reference_frame="grasp_link"
-        stamped_pose="{stamped_pose}"
+        pose_stamped="{pose_stamped}"
         orientation_xyzw="0;0;.707;.707"
         position_xyz="1;-0.5;1"
       />
@@ -29,12 +29,12 @@
         marker_lifetime="0.000000"
         marker_name="pose"
         marker_size="0.100000"
-        pose="{stamped_pose}"
+        pose="{pose_stamped}"
       />
       <Action
         ID="GenerateCoveragePath"
         vector_of_poses="{pose_stamped_vector}"
-        bottom_right_corner="{stamped_pose}"
+        bottom_right_corner="{pose_stamped}"
         stride_distance="0.5"
         width="0.6"
         height="5"

@@ -11,63 +11,63 @@
       <!--First manually create an example Cartesian reference trajectory to then feed into the planner-->
       <Control ID="Sequence">
         <Action
-          ID="CreateStampedPose"
+          ID="CreatePoseStamped"
           reference_frame="base_link"
           position_xyz="-0.4;0.4;-0.0"
           orientation_xyzw="0.0;1.0;0.0;0.0"
-          stamped_pose="{stamped_pose}"
+          pose_stamped="{pose_stamped}"
         />
         <Action
           ID="AddPoseStampedToVector"
-          input="{stamped_pose}"
+          input="{pose_stamped}"
           vector="{pose_stamped_vector}"
         />
         <Action
-          ID="CreateStampedPose"
+          ID="CreatePoseStamped"
           reference_frame="base_link"
           position_xyz="0.4;0.4;-0.0"
           orientation_xyzw="0.0;1.0;0.0;0.0"
-          stamped_pose="{stamped_pose}"
+          pose_stamped="{pose_stamped}"
         />
         <Action
           ID="AddPoseStampedToVector"
-          input="{stamped_pose}"
+          input="{pose_stamped}"
           vector="{pose_stamped_vector}"
         />
         <Action
-          ID="CreateStampedPose"
+          ID="CreatePoseStamped"
           reference_frame="base_link"
           position_xyz="0.4;0.8;0.0"
           orientation_xyzw="0.0;1.0;0.0;0.0"
-          stamped_pose="{stamped_pose}"
+          pose_stamped="{pose_stamped}"
         />
         <Action
           ID="AddPoseStampedToVector"
-          input="{stamped_pose}"
+          input="{pose_stamped}"
           vector="{pose_stamped_vector}"
         />
         <Action
-          ID="CreateStampedPose"
+          ID="CreatePoseStamped"
           reference_frame="base_link"
           position_xyz="-0.4;0.8;0.0"
           orientation_xyzw="0.0;1.0;0.0;0.0"
-          stamped_pose="{stamped_pose}"
+          pose_stamped="{pose_stamped}"
         />
         <Action
           ID="AddPoseStampedToVector"
-          input="{stamped_pose}"
+          input="{pose_stamped}"
           vector="{pose_stamped_vector}"
         />
         <Action
-          ID="CreateStampedPose"
+          ID="CreatePoseStamped"
           reference_frame="base_link"
           position_xyz="-0.4;0.4;-0.0"
           orientation_xyzw="0.0;1.0;0.0;0.0"
-          stamped_pose="{stamped_pose}"
+          pose_stamped="{pose_stamped}"
         />
         <Action
           ID="AddPoseStampedToVector"
-          input="{stamped_pose}"
+          input="{pose_stamped}"
           vector="{pose_stamped_vector}"
         />
       </Control>

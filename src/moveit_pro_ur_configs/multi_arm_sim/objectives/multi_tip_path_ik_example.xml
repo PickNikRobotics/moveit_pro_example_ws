@@ -10,56 +10,56 @@
       <SubTree ID="Multi-tip Pose IK Example" _collapsed="true" />
       <Control ID="Sequence">
         <Action
-          ID="CreateStampedPose"
+          ID="CreatePoseStamped"
           reference_frame="third_grasp_link"
-          stamped_pose="{stamped_pose}"
+          pose_stamped="{pose_stamped}"
         />
         <Action
           ID="AddPoseStampedToVector"
-          input="{stamped_pose}"
+          input="{pose_stamped}"
           vector="{pose_stamped_vector}"
         />
         <Action
-          ID="CreateStampedPose"
+          ID="CreatePoseStamped"
           reference_frame="third_grasp_link"
-          stamped_pose="{stamped_pose}"
+          pose_stamped="{pose_stamped}"
           position_xyz="0.2;0.0;0"
         />
         <Action
           ID="AddPoseStampedToVector"
-          input="{stamped_pose}"
+          input="{pose_stamped}"
           vector="{pose_stamped_vector}"
         />
         <Action
-          ID="CreateStampedPose"
+          ID="CreatePoseStamped"
           reference_frame="third_grasp_link"
-          stamped_pose="{stamped_pose}"
+          pose_stamped="{pose_stamped}"
           position_xyz="0.2;0.0;-0.1"
         />
         <Action
           ID="AddPoseStampedToVector"
-          input="{stamped_pose}"
+          input="{pose_stamped}"
           vector="{pose_stamped_vector}"
         />
         <Action
-          ID="CreateStampedPose"
+          ID="CreatePoseStamped"
           reference_frame="third_grasp_link"
-          stamped_pose="{stamped_pose}"
+          pose_stamped="{pose_stamped}"
           position_xyz="0.0;0.0;-0.1"
         />
         <Action
           ID="AddPoseStampedToVector"
-          input="{stamped_pose}"
+          input="{pose_stamped}"
           vector="{pose_stamped_vector}"
         />
         <Action
-          ID="CreateStampedPose"
+          ID="CreatePoseStamped"
           reference_frame="third_grasp_link"
-          stamped_pose="{stamped_pose}"
+          pose_stamped="{pose_stamped}"
         />
         <Action
           ID="AddPoseStampedToVector"
-          input="{stamped_pose}"
+          input="{pose_stamped}"
           vector="{pose_stamped_vector}"
         />
       </Control>

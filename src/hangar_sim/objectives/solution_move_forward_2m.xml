@@ -8,9 +8,9 @@
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
-        ID="CreateStampedPose"
+        ID="CreatePoseStamped"
         reference_frame="grasp_link"
-        stamped_pose="{stamped_pose}"
+        pose_stamped="{pose_stamped}"
         orientation_xyzw="0;0;0;1"
         position_xyz="0;0;2"
       />
@@ -19,13 +19,13 @@
         marker_lifetime="0.000000"
         marker_name="pose"
         marker_size="0.100000"
-        pose="{stamped_pose}"
+        pose="{pose_stamped}"
       />
       <SubTree
         ID="Move to a StampedPose"
         _collapsed="true"
         controller_names="joint_trajectory_controller"
-        target_pose="{stamped_pose}"
+        target_pose="{pose_stamped}"
       />
     </Control>
   </BehaviorTree>

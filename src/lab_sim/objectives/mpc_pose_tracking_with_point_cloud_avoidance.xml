@@ -24,14 +24,14 @@
         topic_name="/wrist_camera/points"
       />
       <Action
-        ID="CreateStampedPose"
+        ID="CreatePoseStamped"
         reference_frame="base_link"
-        stamped_pose="{stamped_pose}"
+        pose_stamped="{pose_stamped}"
         position_xyz="0.0;0.2;0.0"
       />
       <Action
         ID="CropPointsInBox"
-        crop_box_centroid_pose="{stamped_pose}"
+        crop_box_centroid_pose="{pose_stamped}"
         point_cloud="{point_cloud}"
         point_cloud_cropped="{point_cloud}"
         crop_box_size="0.2;0.2;0.2"
@@ -48,15 +48,15 @@
         waypoint_name="Home"
       />
       <Action
-        ID="CreateStampedPose"
+        ID="CreatePoseStamped"
         reference_frame="pinch"
-        stamped_pose="{stamped_pose}"
+        pose_stamped="{pose_stamped}"
         position_xyz="0;0.3;0.1"
       />
       <Action
         ID="TransformPoseFrame"
-        input_pose="{stamped_pose}"
-        output_pose="{stamped_pose}"
+        input_pose="{pose_stamped}"
+        output_pose="{pose_stamped}"
         target_frame_id="world"
       />
       <Action
@@ -64,12 +64,12 @@
         marker_lifetime="0.000000"
         marker_name="pose"
         marker_size="0.100000"
-        pose="{stamped_pose}"
+        pose="{pose_stamped}"
       />
       <Action
-        ID="CreateStampedTwist"
+        ID="CreateTwistStamped"
         reference_frame="world"
-        stamped_twist="{stamped_twist}"
+        twist_stamped="{twist_stamped}"
       />
       <Control ID="Fallback">
         <Decorator ID="Timeout" msec="7000">
@@ -108,8 +108,8 @@
               point_cloud="{point_cloud}"
               point_cloud_clearance="1.1"
               safe_distance="0.25"
-              target_pose="{stamped_pose}"
-              target_twist="{stamped_twist}"
+              target_pose="{pose_stamped}"
+              target_twist="{twist_stamped}"
               site_tracking="0.45"
             />
           </Control>

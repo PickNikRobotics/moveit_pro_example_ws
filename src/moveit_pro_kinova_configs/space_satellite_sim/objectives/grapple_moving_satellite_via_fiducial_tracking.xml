@@ -27,27 +27,27 @@
         timeout="-1.000000"
       />
       <Action
-        ID="CreateStampedPose"
-        stamped_pose="{target_pose_offset}"
+        ID="CreatePoseStamped"
+        pose_stamped="{target_pose_offset}"
         orientation_xyzw="-0.7071068;0.7071068;0;0"
         position_xyz="0.0;0.0;0.2"
         reference_frame="world"
         name="target pose offset"
       />
       <Action
-        ID="CreateStampedWrench"
+        ID="CreateWrenchStamped"
         torque_xyz="0.0;0.0;0.0"
         force_xyz="0.0;0.0;0.0"
-        stamped_wrench="{desired_wrench}"
+        wrench_stamped="{desired_wrench}"
         name="Always 0, not using Force"
         reference_frame="world"
       />
       <Action
-        ID="CreateStampedTwist"
+        ID="CreateTwistStamped"
         name="Init 0 Pose (until FF-VFC outputs)"
         angular_velocity_xyz="0;0;0"
         linear_velocity_xyz="0;0;0"
-        stamped_twist="{desired_twist}"
+        twist_stamped="{desired_twist}"
         reference_frame="world"
       />
       <Action
@@ -147,9 +147,9 @@
             breakpoint_topic="/moveit_pro_breakpoint"
           />
           <Action
-            ID="CreateStampedPose"
+            ID="CreatePoseStamped"
             reference_frame="world"
-            stamped_pose="{target_pose_offset}"
+            pose_stamped="{target_pose_offset}"
             orientation_xyzw="-0.7071068;0.7071068;0;0"
             position_xyz="0;0;0.085"
           />

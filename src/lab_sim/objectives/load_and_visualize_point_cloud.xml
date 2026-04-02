@@ -39,7 +39,7 @@
       </MetadataFields>
       <inout_port
         name="input_pose"
-        default="{stamped_pose}"
+        default="{pose_stamped}"
         type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"
       />
       <inout_port

@@ -7,9 +7,9 @@
   >
     <Control ID="Sequence">
       <Action
-        ID="CreateStampedPose"
+        ID="CreatePoseStamped"
         reference_frame="world"
-        stamped_pose="{signal_light_pose}"
+        pose_stamped="{signal_light_pose}"
         position_xyz="-0.1;-1;0.2"
         name="Locate bracket jig state indicator"
       />
@@ -21,10 +21,10 @@
         name="Indicate there is no bracket in jig"
       />
       <Action
-        ID="CreateStampedPose"
+        ID="CreatePoseStamped"
         reference_frame="world"
         position_xyz="-0.1;-1;0.6"
-        stamped_pose="{jig_state_pose}"
+        pose_stamped="{jig_state_pose}"
       />
       <Action
         ID="VisualizePose"

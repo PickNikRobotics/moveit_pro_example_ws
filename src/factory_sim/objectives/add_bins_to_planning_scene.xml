@@ -7,9 +7,9 @@
   >
     <Control ID="Sequence">
       <Action
-        ID="CreateStampedPose"
+        ID="CreatePoseStamped"
         reference_frame="world"
-        stamped_pose="{world_frame}"
+        pose_stamped="{world_frame}"
         name="world frame"
       />
       <Action

@@ -7,13 +7,13 @@
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
-        ID="CreateStampedPose"
+        ID="CreatePoseStamped"
         reference_frame="{pose_frame}"
-        stamped_pose="{stamped_pose}"
+        pose_stamped="{pose_stamped}"
       />
       <Action
         ID="TransformPoseFrame"
-        input_pose="{stamped_pose}"
+        input_pose="{pose_stamped}"
         output_pose="{tf_pose}"
         target_frame_id="{reference_frame}"
       />

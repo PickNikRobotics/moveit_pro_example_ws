@@ -73,8 +73,8 @@
         target_frame_id="{camera_optical_frame}"
       />
       <Action
-        ID="CreateStampedPose"
-        stamped_pose="{current_mounting_pose}"
+        ID="CreatePoseStamped"
+        pose_stamped="{current_mounting_pose}"
         name="camera current_mounting_pose"
         reference_frame="{camera_mounting_frame}"
       />

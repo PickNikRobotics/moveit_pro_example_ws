@@ -9,15 +9,15 @@
       <Control ID="Sequence">
         <Action ID="SwitchUIPrimaryView" primary_view_name="Visualization" />
         <Action
-          ID="CreateStampedPose"
+          ID="CreatePoseStamped"
           orientation_xyzw="0;1;0;0"
           position_xyz="-0.15905; 0.51283; 0.55"
-          stamped_pose="{stamped_pose}"
+          pose_stamped="{pose_stamped}"
           reference_frame="world"
         />
         <Action
           ID="AddPoseStampedToVector"
-          input="{stamped_pose}"
+          input="{pose_stamped}"
           vector="{place_poses}"
         />
       </Control>

@@ -38,9 +38,9 @@
       </Control>
       <Control ID="Sequence" name="Visualize key poses">
         <Action
-          ID="CreateStampedPose"
+          ID="CreatePoseStamped"
           reference_frame="{ik_frame}"
-          stamped_pose="{tool_pose}"
+          pose_stamped="{tool_pose}"
           orientation_xyzw="0;0;0;1"
           position_xyz="0;0;0"
         />

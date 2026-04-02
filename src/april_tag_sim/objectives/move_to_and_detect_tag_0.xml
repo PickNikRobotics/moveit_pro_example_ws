@@ -4,8 +4,8 @@
   <BehaviorTree ID="Move To and Detect Tag 0" _description="">
     <Control ID="Sequence">
       <Action
-        ID="CreateStampedPose"
-        stamped_pose="{stamped_pose}"
+        ID="CreatePoseStamped"
+        pose_stamped="{pose_stamped}"
         reference_frame="{tag_name}"
         orientation_xyzw="1;0;0;0"
         position_xyz="0.;0.0;0.6"
@@ -13,7 +13,7 @@
       <Action ID="ResetPoseStampedVector" vector="{pose_stamped_vector}" />
       <Action
         ID="AddPoseStampedToVector"
-        input="{stamped_pose}"
+        input="{pose_stamped}"
         vector="{pose_stamped_vector}"
       />
       <Control ID="Fallback">
@@ -83,20 +83,20 @@
         pose="{detection_pose}"
       />
       <Action
-        ID="CreateStampedPose"
-        stamped_pose="{stamped_pose}"
+        ID="CreatePoseStamped"
+        pose_stamped="{pose_stamped}"
         reference_frame="{tag_name}"
       />
       <Action
         ID="TransformPoseFrame"
-        input_pose="{stamped_pose}"
-        output_pose="{stamped_pose}"
+        input_pose="{pose_stamped}"
+        output_pose="{pose_stamped}"
         target_frame_id="grasp_link"
       />
       <Action
         ID="CalculatePoseOffset"
         destination_pose="{detection_pose}"
-        source_pose="{stamped_pose}"
+        source_pose="{pose_stamped}"
         source_to_destination_pose="{pose_diff}"
       />
       <Action ID="Script" code="dir_path := '0degree_runs/'" />

@@ -92,9 +92,9 @@
         marker_poses="{marker_poses2}"
       />
       <Action
-        ID="CreateStampedTwist"
+        ID="CreateTwistStamped"
         reference_frame="world"
-        stamped_twist="{stamped_twist}"
+        twist_stamped="{twist_stamped}"
       />
       <Control ID="Fallback">
         <Decorator ID="Timeout" msec="40000">
@@ -133,7 +133,7 @@
               sphere_clearance="1.0"
               site_tracking="1.0"
               target_pose="{link_pose}"
-              target_twist="{stamped_twist}"
+              target_twist="{twist_stamped}"
               warmup_iterations="256"
               timeout="300"
             />

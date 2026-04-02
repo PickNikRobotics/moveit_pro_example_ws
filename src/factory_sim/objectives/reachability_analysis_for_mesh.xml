@@ -32,9 +32,9 @@
       </Control>
       <Control ID="Sequence" name="Make vector of place poses to plan to">
         <Action
-          ID="CreateStampedPose"
+          ID="CreatePoseStamped"
           reference_frame="tool0"
-          stamped_pose="{tool_pose}"
+          pose_stamped="{tool_pose}"
           orientation_xyzw="0;0;0;1"
           position_xyz="0;0;0"
         />

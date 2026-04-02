@@ -27,9 +27,9 @@
         />
         <SubTree ID="Activate Vacuum" _collapsed="true" />
         <Action
-          ID="CreateStampedPose"
+          ID="CreatePoseStamped"
           reference_frame="world"
-          stamped_pose="{bracket_on_jig}"
+          pose_stamped="{bracket_on_jig}"
           orientation_xyzw="0.000; 0.000; 1.000; 0.000"
           position_xyz="-0.319; -0.483; 0.225"
         />

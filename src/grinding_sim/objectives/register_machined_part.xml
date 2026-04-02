@@ -10,11 +10,11 @@
     <Control ID="Sequence" name="TopLevelSequence">
       <Action ID="ClearSnapshot" />
       <Action
-        ID="CreateStampedPose"
+        ID="CreatePoseStamped"
         position_xyz="0.2;-1.5;0.710"
         orientation_xyzw="0.000;0.000;0.3827;0.9239"
         name="Initial Guess"
-        stamped_pose="{guess_pose}"
+        pose_stamped="{guess_pose}"
         reference_frame="world"
       />
       <SubTree
@@ -36,9 +36,9 @@
         message_timeout_sec="5.000000"
       />
       <Action
-        ID="CreateStampedPose"
+        ID="CreatePoseStamped"
         reference_frame="world"
-        stamped_pose="{centroid_pose}"
+        pose_stamped="{centroid_pose}"
         position_xyz="0;-1.69;1.0"
       />
       <Action

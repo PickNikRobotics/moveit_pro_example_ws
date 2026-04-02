@@ -19,51 +19,51 @@
           activate_controllers="joint_trajectory_admittance_controller"
         />
         <Action
-          ID="CreateStampedPose"
+          ID="CreatePoseStamped"
           reference_frame="base_link"
           position_xyz="0.3;0.1;0.5"
           orientation_xyzw="0.707;0.707;0.0;.0.0"
-          stamped_pose="{stamped_pose}"
+          pose_stamped="{pose_stamped}"
         />
         <Action
           ID="AddPoseStampedToVector"
-          input="{stamped_pose}"
+          input="{pose_stamped}"
           vector="{pose_stamped_vector}"
         />
         <Action
-          ID="CreateStampedPose"
+          ID="CreatePoseStamped"
           reference_frame="base_link"
           position_xyz="0.5;0.1;0.5"
           orientation_xyzw="0.707;0.707;0.0;.0.0"
-          stamped_pose="{stamped_pose}"
+          pose_stamped="{pose_stamped}"
         />
         <Action
           ID="AddPoseStampedToVector"
-          input="{stamped_pose}"
+          input="{pose_stamped}"
           vector="{pose_stamped_vector}"
         />
         <Action
-          ID="CreateStampedPose"
+          ID="CreatePoseStamped"
           reference_frame="base_link"
           position_xyz="0.5;-0.1;0.5"
           orientation_xyzw="0.707;0.707;0.0;.0.0"
-          stamped_pose="{stamped_pose}"
+          pose_stamped="{pose_stamped}"
         />
         <Action
           ID="AddPoseStampedToVector"
-          input="{stamped_pose}"
+          input="{pose_stamped}"
           vector="{pose_stamped_vector}"
         />
         <Action
-          ID="CreateStampedPose"
+          ID="CreatePoseStamped"
           reference_frame="base_link"
           position_xyz="0.3;-0.1;0.5"
           orientation_xyzw="0.707;0.707;0.0;.0.0"
-          stamped_pose="{stamped_pose}"
+          pose_stamped="{pose_stamped}"
         />
         <Action
           ID="AddPoseStampedToVector"
-          input="{stamped_pose}"
+          input="{pose_stamped}"
           vector="{pose_stamped_vector}"
         />
       </Control>

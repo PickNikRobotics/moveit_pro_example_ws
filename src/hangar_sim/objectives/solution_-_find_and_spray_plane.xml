@@ -22,16 +22,16 @@
         keep_orientation_link_names="grasp_link"
       />
       <Action
-        ID="CreateStampedPose"
+        ID="CreatePoseStamped"
         reference_frame="grasp_link"
-        stamped_pose="{stamped_pose}"
+        pose_stamped="{pose_stamped}"
         orientation_xyzw="0;0;0;1"
         position_xyz="0;0;1"
       />
       <SubTree
         ID="Get Point Cloud Center Pose"
         _collapsed="true"
-        input_pose="{stamped_pose}"
+        input_pose="{pose_stamped}"
         output_pose="{center_pose}"
       />
       <Action

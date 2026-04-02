@@ -7,10 +7,10 @@
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
-        ID="CreateStampedPose"
+        ID="CreatePoseStamped"
         reference_frame="{tool_return_site}"
         position_xyz="0;0;-0.15"
-        stamped_pose="{approach_pose}"
+        pose_stamped="{approach_pose}"
       />
       <Action
         ID="InitializeMTCTask"

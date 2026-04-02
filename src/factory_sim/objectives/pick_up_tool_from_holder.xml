@@ -13,10 +13,10 @@
         timeout="10"
       />
       <Action
-        ID="CreateStampedPose"
+        ID="CreatePoseStamped"
         reference_frame="{tool_attach_site}"
         position_xyz="0;0;-0.1"
-        stamped_pose="{approach_pose}"
+        pose_stamped="{approach_pose}"
       />
       <Action
         ID="InitializeMTCTask"

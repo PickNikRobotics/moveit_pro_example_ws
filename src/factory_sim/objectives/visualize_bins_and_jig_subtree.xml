@@ -14,15 +14,15 @@
         publisher_timeout_sec="5.000000"
       />
       <Action
-        ID="CreateStampedPose"
+        ID="CreatePoseStamped"
         reference_frame="world"
-        stamped_pose="{bin_table_center}"
+        pose_stamped="{bin_table_center}"
         position_xyz="0;0.6;0.2"
       />
       <Action
-        ID="CreateStampedPose"
+        ID="CreatePoseStamped"
         reference_frame="world"
-        stamped_pose="{jig_center}"
+        pose_stamped="{jig_center}"
         position_xyz="-0.4;-0.4;0.2"
       />
       <Action

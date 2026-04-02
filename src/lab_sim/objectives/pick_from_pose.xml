@@ -66,9 +66,9 @@
       <SubTree ID="Execute MTC Solution" solution="{mtc_solution}" />
       <SubTree ID="Close Gripper" _collapsed="true" />
       <Action
-        ID="CreateStampedPose"
+        ID="CreatePoseStamped"
         reference_frame="grasp_link"
-        stamped_pose="{retract_pose}"
+        pose_stamped="{retract_pose}"
         position_xyz="{retract_xyz}"
       />
       <Action ID="ResetPoseStampedVector" vector="{retract_path}" />

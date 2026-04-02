@@ -5,9 +5,9 @@
     <Control ID="Sequence" name="TopLevelSequence">
       <!-- Create a pose at the grasp_link by creating in the grasp_link frame without transforming it -->
       <Action
-        ID="CreateStampedPose"
+        ID="CreatePoseStamped"
         reference_frame="grasp_link"
-        stamped_pose="{tool_pose_tool_frame}"
+        pose_stamped="{tool_pose_tool_frame}"
       />
       <!-- Transform the pose to the world frame before saving -->
       <Action

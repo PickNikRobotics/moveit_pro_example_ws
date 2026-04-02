@@ -11,9 +11,9 @@
     >
       <!--The drop pose is just above two tapered posts representing a tooling jib that match alignment holes in the bracket part. The part is then released and settles onto those jig posts.-->
       <Action
-        ID="CreateStampedPose"
+        ID="CreatePoseStamped"
         reference_frame="jig_post1"
-        stamped_pose="{drop_pose}"
+        pose_stamped="{drop_pose}"
         orientation_xyzw="1.000; 0.000; 0.000; 0.000"
         position_xyz="0.012;-0.01;0.16"
       />
