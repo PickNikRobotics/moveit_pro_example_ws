@@ -37,26 +37,25 @@ platform_velocity_controller:
     interface_name: velocity
     command_joint_names: ["front_left_wheel", "rear_left_wheel", "rear_right_wheel", "front_right_wheel"]
     reference_joint_names: ["linear_x_joint", "linear_y_joint", "rotational_yaw_joint"]
-    body_frame_control: false
-    body_frame_yaw_joint: "rotational_yaw_joint"
+    body_frame_control: true
     front_left_wheel_command_joint_name: "front_left_wheel"
     front_right_wheel_command_joint_name: "front_right_wheel"
     rear_right_wheel_command_joint_name: "rear_right_wheel"
     rear_left_wheel_command_joint_name: "rear_left_wheel"
 
-    kinematics.wheels_radius: 0.05
-    kinematics.sum_of_robot_center_projection_on_X_Y_axis: 0.4704
+    kinematics.wheels_radius: 0.0666
+    kinematics.sum_of_robot_center_projection_on_X_Y_axis: 0.59
     wheel_separation_multiplier: 1.0
     wheel_radius_multiplier: 1.0
 
     publish_rate: 50.0
-    reference_timeout: 0.1
+    reference_timeout: 0.5
     use_stamped_vel: False
 
-    pose_covariance_diagonal: [0.001, 0.001, 1000000.0, 1000000.0, 1000000.0, 0.03]
-    twist_covariance_diagonal: [0.001, 0.001, 0.001, 1000000.0, 1000000.0, 0.03]
+    pose_covariance_diagonal: [0.1, 0.1, 1000000.0, 1000000.0, 1000000.0, 0.5]
+    twist_covariance_diagonal: [0.1, 0.1, 0.1, 1000000.0, 1000000.0, 0.5]
 
-    cmd_vel_timeout: 0.5
+    cmd_vel_timeout: 5.0
 
     base_frame_id: "ridgeback_base_link"
     odom_frame_id: "odom"
@@ -105,19 +104,19 @@ platform_velocity_controller_nav2:
     rear_right_wheel_command_joint_name: "rear_right_wheel"
     rear_left_wheel_command_joint_name: "rear_left_wheel"
 
-    kinematics.wheels_radius: 0.05
-    kinematics.sum_of_robot_center_projection_on_X_Y_axis: 0.4704
+    kinematics.wheels_radius: 0.0666
+    kinematics.sum_of_robot_center_projection_on_X_Y_axis: 0.59
     wheel_separation_multiplier: 1.0
     wheel_radius_multiplier: 1.0
 
     publish_rate: 50.0
-    reference_timeout: 0.1
+    reference_timeout: 0.5
     use_stamped_vel: False
 
     pose_covariance_diagonal: [0.001, 0.001, 1000000.0, 1000000.0, 1000000.0, 0.03]
     twist_covariance_diagonal: [0.001, 0.001, 0.001, 1000000.0, 1000000.0, 0.03]
 
-    cmd_vel_timeout: 0.5
+    cmd_vel_timeout: 5.0
 
     base_frame_id: "ridgeback_base_link"
     odom_frame_id: "odom"
@@ -239,7 +238,7 @@ joint_trajectory_controller:
         ff_velocity_scale: 1.0
     constraints:
       stopped_velocity_tolerance: 0.0
-      goal_time: 0.0
+      goal_time: 5.0
       shoulder_pan_joint:
         goal: 0.05
       shoulder_lift_joint:
@@ -253,11 +252,11 @@ joint_trajectory_controller:
       wrist_3_joint:
         goal: 0.05
       linear_x_joint:
-        goal: 0.05
+        goal: 0.1
       linear_y_joint:
-        goal: 0.05
+        goal: 0.1
       rotational_yaw_joint:
-        goal: 0.05
+        goal: 0.1
 
     acceleration_limits:
       shoulder_pan_joint: 10.0
@@ -282,7 +281,14 @@ force_torque_sensor_broadcaster:
 imu_sensor_broadcaster:
   ros__parameters:
     sensor_name: imu_site
-    frame_id: imu_link
+    frame_id: ridgeback_base_link
+    # Static covariance values (row-major 3x3 matrices)
+    # Orientation covariance (rad^2)
+    static_covariance_orientation: [0.001, 0.0, 0.0, 0.0, 0.001, 0.0, 0.0, 0.0, 0.001]
+    # Angular velocity covariance (rad/s)^2
+    static_covariance_angular_velocity: [0.01, 0.0, 0.0, 0.0, 0.01, 0.0, 0.0, 0.0, 0.01]
+    # Linear acceleration covariance (m/s^2)^2
+    static_covariance_linear_acceleration: [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]
 
 
 velocity_force_controller:
