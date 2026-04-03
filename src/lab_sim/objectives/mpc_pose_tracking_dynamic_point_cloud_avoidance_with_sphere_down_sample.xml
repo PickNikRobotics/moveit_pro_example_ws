@@ -22,14 +22,14 @@
         _collapsed="false"
         link_pose="{link_pose}"
       />
-      <Decorator ID="ForEach" vector_in="{target_poses}" out="{stamped_pose}">
+      <Decorator ID="ForEach" vector_in="{target_poses}" out="{pose_stamped}">
         <Control ID="Sequence">
           <Action ID="VisualizePose" />
           <Action ID="BreakpointSubscriber" _skipIf="true" />
           <SubTree
             ID="LoadAndVisualizePointCloud"
             _collapsed="false"
-            input_pose="{stamped_pose}"
+            input_pose="{pose_stamped}"
             transform_cloud="{output_cloud}"
           />
           <SubTree
