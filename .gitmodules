@@ -27,3 +27,9 @@
 	path = src/external_dependencies/phoebe_ws
 	url = https://github.com/PickNikRobotics/phoebe_ws.git
 	branch = for-example-ws-no-dups
+[submodule "src/moveit_pro_sam3"]
+	path = src/moveit_pro_sam3
+	url = https://github.com/PickNikRobotics/moveit_pro_sam3.git
+[submodule "src/moveit_pro_sam2"]
+	path = src/moveit_pro_sam2
+	url = https://github.com/PickNikRobotics/moveit_pro_sam2.git

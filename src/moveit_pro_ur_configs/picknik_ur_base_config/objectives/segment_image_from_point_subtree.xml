@@ -1,15 +1,15 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Segment Image from Point Subtree">
   <!--//////////-->
   <BehaviorTree
     ID="Segment Image from Point Subtree"
     _description="Captures an image and segments it using three user provided prompt points."
     _favorite="false"
-    decoder_model_path="models/decoder.onnx"
+    decoder_model_path="models/sam2_decoder.onnx"
     encoder_model_path="models/sam2_hiera_large_encoder.onnx"
     image_topic_name="/wrist_camera/color"
     masks_visualization_topic="/masks_visualization"
-    model_package="lab_sim"
+    model_package="moveit_pro_sam2"
     masks2d="{masks2d}"
     pixel_coords="{pixel_coords}"
   >
@@ -47,20 +47,26 @@
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Segment Image from Point Subtree">
-      <input_port name="decoder_model_path" default="{decoder_model_path}" />
-      <input_port name="encoder_model_path" default="{encoder_model_path}" />
-      <input_port name="image_topic_name" default="{image_topic_name}" />
-      <input_port
-        name="masks_visualization_topic"
-        default="{masks_visualization_topic}"
-      />
-      <output_port name="masks2d" default="{masks2d}" />
-      <input_port name="model_package" default="{model_package}" />
-      <output_port name="pixel_coords" default="{pixel_coords}" />
       <MetadataFields>
         <Metadata runnable="false" />
         <Metadata subcategory="Perception - ML" />
       </MetadataFields>
+      <input_port
+        name="decoder_model_path"
+        default="models/sam2_decoder.onnx"
+      />
+      <input_port
+        name="encoder_model_path"
+        default="models/sam2_hiera_large_encoder.onnx"
+      />
+      <input_port name="image_topic_name" default="/wrist_camera/color" />
+      <input_port
+        name="masks_visualization_topic"
+        default="/masks_visualization"
+      />
+      <output_port name="masks2d" default="{masks2d}" />
+      <input_port name="model_package" default="moveit_pro_sam2" />
+      <output_port name="pixel_coords" default="{pixel_coords}" />
     </SubTree>
   </TreeNodesModel>
 </root>

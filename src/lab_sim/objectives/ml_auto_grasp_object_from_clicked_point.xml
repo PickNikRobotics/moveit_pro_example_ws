@@ -34,9 +34,9 @@
         image_topic_name="/wrist_camera/color"
         masks_visualization_topic="/masks_visualization"
         masks2d="{masks2d}"
-        model_package="lab_sim"
+        model_package="moveit_pro_sam2"
         pixel_coords="{pixel_coords}"
-        decoder_model_path="models/decoder.onnx"
+        decoder_model_path="models/sam2_decoder.onnx"
         name="Ask the user to pick an object"
       />
       <Action

@@ -9,8 +9,6 @@
     _description="Captures a point cloud and requests the user to click an object in the image to be segmented. The point cloud is then filtered to only include the selected object."
     _favorite="false"
     camera_topic_name="/wrist_camera/camera_info"
-    decoder_model_path="models/decoder.onnx"
-    encoder_model_path="models/sam2_hiera_large_encoder.onnx"
     image_topic_name="/wrist_camera/color"
     masks_visualization_topic="/masks_visualization"
     model_package="moveit_pro_clipseg"
@@ -87,11 +85,6 @@
       />
       <input_port name="clip_model_path" default="{clip_model_path}" />
       <input_port name="clipseg_model_path" default="{clipseg_model_path}" />
-      <input_port name="decoder_model_path" default="models/decoder.onnx" />
-      <input_port
-        name="encoder_model_path"
-        default="models/sam2_hiera_large_encoder.onnx"
-      />
       <input_port name="erosion_size" default="{erosion_size}" />
       <input_port name="image_topic_name" default="/wrist_camera/color" />
       <input_port
