@@ -10,7 +10,7 @@
       <!--Setup the environment to its "home" configuration - move to center and open gripper-->
       <SubTree
         ID="Move to Waypoint"
-        waypoint_name="Look at Table"
+        waypoint_name="3 Waypoint Mid Point"
         joint_group_name="manipulator"
       />
       <Action
@@ -26,7 +26,7 @@
           <Control ID="Sequence">
             <SubTree
               ID="Move to Waypoint"
-              waypoint_name="Pick Cube"
+              waypoint_name="3 Waypoint Pick Pose"
               joint_group_name="manipulator"
             />
             <Action
@@ -37,13 +37,13 @@
             />
             <SubTree
               ID="Move to Waypoint"
-              waypoint_name="Look at Table"
+              waypoint_name="3 Waypoint Mid Point"
               joint_group_name="manipulator"
             />
             <SubTree
               ID="Move to Waypoint"
               joint_group_name="manipulator"
-              waypoint_name="Place Cube"
+              waypoint_name="3 Waypoint Place Pose"
             />
             <Action
               ID="MoveGripperAction"
@@ -53,7 +53,7 @@
             />
             <SubTree
               ID="Move to Waypoint"
-              waypoint_name="Look at Table"
+              waypoint_name="3 Waypoint Mid Point"
               joint_group_name="manipulator"
             />
           </Control>
@@ -61,7 +61,7 @@
           <Control ID="Sequence">
             <SubTree
               ID="Move to Waypoint"
-              waypoint_name="Place Cube"
+              waypoint_name="3 Waypoint Place Pose"
               joint_group_name="manipulator"
             />
             <Action
@@ -72,12 +72,12 @@
             />
             <SubTree
               ID="Move to Waypoint"
-              waypoint_name="Look at Table"
+              waypoint_name="3 Waypoint Mid Point"
               joint_group_name="manipulator"
             />
             <SubTree
               ID="Move to Waypoint"
-              waypoint_name="Pick Cube"
+              waypoint_name="3 Waypoint Pick Pose"
               joint_group_name="manipulator"
             />
             <Action
@@ -88,7 +88,7 @@
             />
             <SubTree
               ID="Move to Waypoint"
-              waypoint_name="Look at Table"
+              waypoint_name="3 Waypoint Mid Point"
               joint_group_name="manipulator"
             />
           </Control>

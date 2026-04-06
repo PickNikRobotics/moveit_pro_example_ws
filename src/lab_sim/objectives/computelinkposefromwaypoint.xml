@@ -11,7 +11,7 @@
         ID="RetrieveWaypoint"
         joint_group_name="manipulator"
         waypoint_joint_state="{target_joint_state}"
-        waypoint_name="Above Pick Object"
+        waypoint_name="MPC Pose Tracking"
       />
       <Action
         ID="UnpackRobotJointStateMessage"

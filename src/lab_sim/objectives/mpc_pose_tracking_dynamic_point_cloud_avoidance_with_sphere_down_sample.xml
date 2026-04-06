@@ -16,15 +16,15 @@
         waypoint_name="Home"
         joint_group_name="manipulator"
       />
-      <SubTree ID="Create PCL Poses Vector" _collapsed="false" />
+      <SubTree ID="Create PCL Poses Vector" _collapsed="true" />
       <SubTree
         ID="ComputeLinkPoseFromWaypoint"
-        _collapsed="false"
+        _collapsed="true"
         link_pose="{link_pose}"
       />
       <Decorator ID="ForEach" vector_in="{target_poses}" out="{stamped_pose}">
         <Control ID="Sequence">
-          <Action ID="VisualizePose" />
+          <Action ID="VisualizePose" pose="{stamped_pose}" />
           <Action ID="BreakpointSubscriber" _skipIf="true" />
           <SubTree
             ID="LoadAndVisualizePointCloud"

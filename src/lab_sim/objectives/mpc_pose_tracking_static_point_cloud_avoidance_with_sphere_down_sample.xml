@@ -17,16 +17,16 @@
         stamped_pose="{stamped_pose}"
         reference_frame="world"
       />
-      <Action ID="VisualizePose" />
+      <Action ID="VisualizePose" pose="{stamped_pose}" />
       <SubTree
         ID="LoadAndVisualizePointCloud"
-        _collapsed="false"
+        _collapsed="true"
         input_pose="{stamped_pose}"
         transform_cloud="{output_cloud}"
       />
       <SubTree
         ID="ComputeLinkPoseFromWaypoint"
-        _collapsed="false"
+        _collapsed="true"
         link_pose="{link_pose}"
       />
       <Action
@@ -38,7 +38,7 @@
       />
       <SubTree
         ID="GetPoseAtGripperandDisplay"
-        _collapsed="false"
+        _collapsed="true"
         output_pose="{gripper_pose}"
       />
       <Action

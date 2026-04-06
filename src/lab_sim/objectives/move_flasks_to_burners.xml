@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Move Flasks to Burners">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Move Flasks to Burners"
+    _description="Example of picking and placing objects with orientation constraints and force-controlled placement"
+    _favorite="true"
+  >
+    <Control ID="Sequence">
+      <SubTree ID="Open Gripper" />
+      <SubTree
+        ID="Constrained Pick and Place Subtree"
+        pick="Flask 1 - Pick"
+        place="Flask 1 - Place"
+        name="Flask 1"
+      />
+      <SubTree
+        ID="Constrained Pick and Place Subtree"
+        pick="Flask 2 - Pick"
+        place="Flask 2 - Place"
+        name="Flask 2"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Move Flasks to Burners">
+      <MetadataFields>
+        <Metadata subcategory="Application - Advanced Examples" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
