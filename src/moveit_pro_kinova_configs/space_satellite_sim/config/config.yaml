@@ -30,22 +30,6 @@ hardware:
       - mujoco_model: "description/mujoco/scene.xml"
       - mujoco_viewer: "false"
 
-# Configuration for launching ros2_control processes.
-# [Required, if using ros2_control]
-ros2_control:
-  # MoveIt Pro will load and activate these controllers at start up to ensure they are available.
-  # If not specified, it is up to the user to ensure the appropriate controllers are active and available
-  # for running the application.
-  # [Optional, default=[]]
-  controllers_active_at_startup:
-    - "force_torque_sensor_broadcaster"
-    - "robotiq_gripper_controller"
-    - "joint_state_broadcaster"
-  # Load but do not start these controllers so they can be activated later if needed.
-  controllers_inactive_at_startup:
-    - "joint_trajectory_admittance_controller"
-    - "velocity_force_controller"
-
 # Configuration for loading behaviors and objectives.
 # [Required]
 objectives:
