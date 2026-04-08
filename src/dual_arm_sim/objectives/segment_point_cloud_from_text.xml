@@ -75,6 +75,7 @@
           ID="SendPointCloudToUI"
           pcd_topic="/pcd_pointcloud_captures"
           point_cloud="{point_cloud_fragment}"
+          use_latest_transform="{use_latest_transform}"
         />
       </Decorator>
     </Control>
@@ -105,6 +106,7 @@
       <input_port name="points_topic_name" default="/wrist_camera/points" />
       <input_port name="prompts" default="{prompts}" />
       <input_port name="threshold" default="{threshold}" />
+      <input_port name="use_latest_transform" default="false" />
       <MetadataFields>
         <Metadata runnable="false" />
         <Metadata subcategory="Perception - ML" />

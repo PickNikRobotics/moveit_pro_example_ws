@@ -21,6 +21,7 @@
         masks3d="{masks3d}"
         point_cloud="{point_cloud}"
         point_cloud_vector="{point_cloud_vector}"
+        use_latest_transform="true"
       />
       <Action
         ID="GetElementOfVector"
