@@ -60,7 +60,6 @@ skip_objectives = {
     "Joint Diagnostic",
     "ML Auto Grasp Object from Clicked Point",  # Skipped because there is no primary ui to switch to in ci
     "ML Find Bottles on Table from Image Exemplar",  # Skipped because it looks for a file on a home path
-    "ML Segment Bottles from File",  # Skipped because it looks for a file on a home path
     "ML Segment Image",
     "ML Segment Point Cloud from Clicked Point",
     "MPC Pose Tracking",
