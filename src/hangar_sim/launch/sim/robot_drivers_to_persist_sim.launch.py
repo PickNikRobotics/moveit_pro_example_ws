@@ -180,6 +180,12 @@ def generate_launch_description():
         "use_rviz", default_value="True", description="Whether to start RVIZ"
     )
 
+    declare_use_fuse_cmd = DeclareLaunchArgument(
+        "use_fuse",
+        default_value="false",
+        description="Whether to launch the fuse state estimator",
+    )
+
     # Specify the actions
     bringup_cmd_group = GroupAction(
         [
@@ -268,19 +274,11 @@ def generate_launch_description():
         arguments=["0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "map", "odom"],
     )
 
-    # Publish odometry as joint state messages
-    odom_to_joint_state_repub = Node(
-        package="hangar_sim",
-        executable="odometry_joint_state_publisher.py",
-        name="odometry_joint_state_publisher",
-        output="log",
-    )
-
-    # QoS relay to bridge BEST_EFFORT odom to RELIABLE for fuse
-    odom_qos_relay = Node(
+    # QoS relay to bridge BEST_EFFORT odom and IMU to RELIABLE for fuse
+    sensor_qos_relay = Node(
         package="hangar_sim",
         executable="odom_qos_relay.py",
-        name="odom_qos_relay",
+        name="sensor_qos_relay",
         output="log",
     )
 
@@ -311,6 +309,7 @@ def generate_launch_description():
             PathJoinSubstitution([hangar_sim_pkg, "config", "fuse", "fuse.yaml"])
         ],
         output="screen",
+        condition=IfCondition(LaunchConfiguration("use_fuse")),
     )
 
     # Create the launch description and populate
@@ -330,6 +329,7 @@ def generate_launch_description():
     ld.add_action(declare_use_composition_cmd)
     ld.add_action(declare_use_respawn_cmd)
     ld.add_action(declare_log_level_cmd)
+    ld.add_action(declare_use_fuse_cmd)
 
     # Add the actions to launch all of the navigation nodes
     ld.add_action(bringup_cmd_group)
@@ -341,8 +341,7 @@ def generate_launch_description():
 
     ld.add_action(static_tf_world_to_map)
     ld.add_action(static_tf_map_to_odom)
-    ld.add_action(odom_to_joint_state_repub)
-    ld.add_action(odom_qos_relay)
+    ld.add_action(sensor_qos_relay)
     ld.add_action(laser_filter_node)
     ld.add_action(fuse_state_estimator)
 

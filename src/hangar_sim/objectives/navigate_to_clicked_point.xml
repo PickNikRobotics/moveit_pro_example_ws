@@ -47,6 +47,10 @@
         speed="{speed}"
         timeout_sec="-1.000000"
       />
+      <Action
+        ID="SwitchController"
+        activate_controllers="joint_trajectory_controller"
+      />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
