@@ -1205,4 +1205,8 @@
       <param name="mujoco_viewer">$(arg mujoco_viewer)</param>
     </hardware>
   </ros2_control>
+
+  <!-- Xacro invocation with incorrect params -->
+  <xacro:include filename="$(find hangar_sim)/description/vacuum_urdf.xacro"/>
+  <xacro:vacuum_urdf invalid_param="nonsense"/>
 </robot>
