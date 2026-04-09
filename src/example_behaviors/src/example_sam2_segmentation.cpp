@@ -65,9 +65,9 @@ ExampleSAM2Segmentation::ExampleSAM2Segmentation(
     const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources)
   : moveit_pro::behaviors::AsyncBehaviorBase(name, config, shared_resources)
 {
-  const std::filesystem::path package_path = ament_index_cpp::get_package_share_directory("example_behaviors");
+  const std::filesystem::path package_path = ament_index_cpp::get_package_share_directory("moveit_pro_sam2");
   const std::filesystem::path encoder_onnx_file = package_path / "models" / "sam2_hiera_large_encoder.onnx";
-  const std::filesystem::path decoder_onnx_file = package_path / "models" / "decoder.onnx";
+  const std::filesystem::path decoder_onnx_file = package_path / "models" / "sam2_decoder.onnx";
   sam2_ = std::make_unique<moveit_pro_ml::SAM2>(encoder_onnx_file, decoder_onnx_file);
 }
 
