@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Move Boxes Looping">
+  <BehaviorTree
+    ID="Move Boxes Looping"
+    _description="For testing purposes"
+    _favorite="false"
+  >
+    <Control
+      name="TopLevelSequence"
+      _collapsed="false"
+      _skipIf="false"
+      ID="Sequence"
+    >
+      <Decorator
+        ID="KeepRunningUntilFailure"
+        name="KeepRunningUntilFailure"
+        _collapsed="false"
+        _skipIf="false"
+      >
+        <Control
+          ID="Sequence"
+          name="LoopSequence"
+          _collapsed="false"
+          _skipIf="false"
+        >
+          <SubTree
+            ID="ML Move Boxes to Loading Zone"
+            name="ML Move Boxes to Loading Zone"
+            _collapsed="false"
+            _external="false"
+            _skipIf="false"
+          />
+          <SubTree
+            ID="Reset MuJoCo Sim"
+            name="Reset MuJoCo Sim"
+            _collapsed="false"
+            _external="false"
+            _skipIf="false"
+          />
+        </Control>
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Move Boxes Looping">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - ML (GPU Recommended)" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
