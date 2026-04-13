@@ -14,14 +14,14 @@
       <Action
         ID="CreateStampedPose"
         position_xyz="0.0;0.5;0.8"
-        stamped_pose="{stamped_pose}"
+        stamped_pose="{pose_stamped}"
         reference_frame="world"
       />
       <Action ID="VisualizePose" pose="{stamped_pose}" />
       <SubTree
         ID="LoadAndVisualizePointCloud"
-        _collapsed="true"
-        input_pose="{stamped_pose}"
+        _collapsed="false"
+        input_pose="{pose_stamped}"
         transform_cloud="{output_cloud}"
       />
       <SubTree
