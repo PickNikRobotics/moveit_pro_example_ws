@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="ML Segment Image Loop">
+  <BehaviorTree
+    ID="ML Segment Image Loop"
+    _description="for looping the ML Segment Image objective"
+    _favorite="false"
+  >
+    <Control
+      name="TopLevelSequence"
+      _collapsed="false"
+      _skipIf="false"
+      ID="Sequence"
+    >
+      <Decorator
+        ID="KeepRunningUntilFailure"
+        name="KeepRunningUntilFailure"
+        _collapsed="false"
+        _skipIf="false"
+      >
+        <SubTree
+          ID="ML Segment Image"
+          name="ML Segment Image"
+          _collapsed="false"
+          _external="false"
+          _skipIf="false"
+        />
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="ML Segment Image Loop">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - ML (GPU Recommended)" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
