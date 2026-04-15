@@ -37,7 +37,8 @@ platform_velocity_controller:
     interface_name: velocity
     command_joint_names: ["front_left_wheel", "rear_left_wheel", "rear_right_wheel", "front_right_wheel"]
     reference_joint_names: ["linear_x_joint", "linear_y_joint", "rotational_yaw_joint"]
-    body_frame_control: true
+    body_frame_control: false
+    body_frame_yaw_joint: "rotational_yaw_joint"
     front_left_wheel_command_joint_name: "front_left_wheel"
     front_right_wheel_command_joint_name: "front_right_wheel"
     rear_right_wheel_command_joint_name: "rear_right_wheel"
@@ -238,7 +239,7 @@ joint_trajectory_controller:
         ff_velocity_scale: 1.0
     constraints:
       stopped_velocity_tolerance: 0.0
-      goal_time: 5.0
+      goal_time: 0.0
       shoulder_pan_joint:
         goal: 0.05
       shoulder_lift_joint:
