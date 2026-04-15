@@ -241,8 +241,8 @@ local_costmap:
       robot_base_frame: ridgeback_base_link
       use_sim_time: True
       rolling_window: true
-      width: 10
-      height: 10
+      width: 5
+      height: 5
       resolution: 0.05
       footprint: "[[0.45, 0.375], [0.45, -0.375], [-0.45, -0.375], [-0.45, 0.375]]"
       footprint_padding: 0.025
@@ -254,16 +254,29 @@ local_costmap:
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
         enabled: True
-        observation_sources: scan
-        scan:
-          topic: /scan_filtered
+        observation_sources: scan_front scan_rear
+        scan_front:
+          topic: /scan_front_filtered
           max_obstacle_height: 2.0
           clearing: True
           marking: True
           data_type: "LaserScan"
-          raytrace_max_range: 10.0
+          raytrace_max_range: 4.5
           raytrace_min_range: 0.0
-          obstacle_max_range: 8.0
+          obstacle_max_range: 3.5
+          inf_is_valid: false
+          qos_overriding_options:
+            policy_kinds: [reliability]
+            reliability: best_effort
+        scan_rear:
+          topic: /scan_rear_filtered
+          max_obstacle_height: 2.0
+          clearing: True
+          marking: True
+          data_type: "LaserScan"
+          raytrace_max_range: 4.5
+          raytrace_min_range: 0.0
+          obstacle_max_range: 3.5
           inf_is_valid: false
           qos_overriding_options:
             policy_kinds: [reliability]
@@ -290,16 +303,30 @@ global_costmap:
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
         enabled: True
-        observation_sources: scan
-        scan:
-          topic: /scan_filtered
+        observation_sources: scan_front scan_rear
+        scan_front:
+          topic: /scan_front_filtered
           max_obstacle_height: 2.0
           clearing: True
           marking: True
           data_type: "LaserScan"
-          raytrace_max_range: 3.0
+          raytrace_max_range: 10.0
           raytrace_min_range: 0.0
-          obstacle_max_range: 2.5
+          obstacle_max_range: 8.0
+          obstacle_min_range: 0.0
+          inf_is_valid: false
+          qos_overriding_options:
+            policy_kinds: [reliability]
+            reliability: best_effort
+        scan_rear:
+          topic: /scan_rear_filtered
+          max_obstacle_height: 2.0
+          clearing: True
+          marking: True
+          data_type: "LaserScan"
+          raytrace_max_range: 10.0
+          raytrace_min_range: 0.0
+          obstacle_max_range: 8.0
           obstacle_min_range: 0.0
           inf_is_valid: false
           qos_overriding_options:

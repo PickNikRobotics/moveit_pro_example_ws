@@ -284,16 +284,40 @@ def generate_launch_description():
 
     hangar_sim_pkg = FindPackageShare("hangar_sim")
 
-    # Angular bounds filter: clips chassis self-hitting beams (±93° to ±135°),
-    # publishes clean scan to /scan_filtered for Nav2 costmap.
-    laser_filter_node = Node(
+    # Angular bounds filter: clips chassis self-hitting beams (±93° to ±135°).
+    # One filter instance per lidar; each publishes its filtered scan to
+    # /scan_{front,rear}_filtered for Nav2 to consume as an independent
+    # obstacle observation source.
+    laser_filter_params = PathJoinSubstitution(
+        [hangar_sim_pkg, "params", "laser_filter_params.yaml"]
+    )
+
+    laser_filter_front_node = Node(
         package="laser_filters",
         executable="scan_to_scan_filter_chain",
-        name="laser_angular_filter",
+        name="laser_angular_filter_front",
+        remappings=[
+            ("scan", "/scan_front"),
+            ("scan_filtered", "/scan_front_filtered"),
+        ],
         parameters=[
-            PathJoinSubstitution(
-                [hangar_sim_pkg, "params", "laser_filter_params.yaml"]
-            ),
+            laser_filter_params,
+            {"use_sim_time": use_sim_time},
+            {"qos_overrides./scan.subscription.reliability": "best_effort"},
+        ],
+        output="log",
+    )
+
+    laser_filter_rear_node = Node(
+        package="laser_filters",
+        executable="scan_to_scan_filter_chain",
+        name="laser_angular_filter_rear",
+        remappings=[
+            ("scan", "/scan_rear"),
+            ("scan_filtered", "/scan_rear_filtered"),
+        ],
+        parameters=[
+            laser_filter_params,
             {"use_sim_time": use_sim_time},
             {"qos_overrides./scan.subscription.reliability": "best_effort"},
         ],
@@ -342,7 +366,8 @@ def generate_launch_description():
     ld.add_action(static_tf_world_to_map)
     ld.add_action(static_tf_map_to_odom)
     ld.add_action(sensor_qos_relay)
-    ld.add_action(laser_filter_node)
+    ld.add_action(laser_filter_front_node)
+    ld.add_action(laser_filter_rear_node)
     ld.add_action(fuse_state_estimator)
 
     return ld
