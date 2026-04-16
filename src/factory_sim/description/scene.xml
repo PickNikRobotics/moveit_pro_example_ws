@@ -417,19 +417,13 @@
     <!-- qpos layout: -->
     <!-- robot [joint_1..joint_6] (6) -->
     <!-- shelf freejoint [x y z qw qx qy qz] (7) -->
-    <!-- bracket-0 freejoint (7), bracket-1 freejoint (7), bracket-2 freejoint (7) -->
-    <!-- suction_tool (gripper_base) freejoint (7) -->
-    <!-- inspection_tool freejoint (7) -->
+    <!-- Bracket and tool body positions are set via body pos attributes -->
+    <!-- and replicate offsets, not via keyframe qpos. -->
     <key
       name="default"
       qpos="
         0 0 0 0 0 0
-        0.25 -0.4 0.2301 1 0 0 0
-        -0.42 0.5 0.35 1 0 0 0
-        -0.42 0.56 0.40 1 0 0 0
-        -0.42 0.62 0.45 1 0 0 0
-        0.25 0.08 0.3 0 1 0 0
-        0.25 -0.08 0.3 0 1 0 0"
+        0.25 -0.4 0.2301 1 0 0 0"
       ctrl="0 0 0 0 0 0"
     />
   </keyframe>
