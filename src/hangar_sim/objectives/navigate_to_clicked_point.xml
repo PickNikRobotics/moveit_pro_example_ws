@@ -20,7 +20,7 @@
       <Action
         ID="GetPoseFromUser"
         is_normal="true"
-        pose_prompt="Click point on UI"
+        pose_prompt="Choose a goal waypoint by clicking in the 3D Visualization pane"
         user_pose="{goal}"
         view_name="Visualization"
       />
