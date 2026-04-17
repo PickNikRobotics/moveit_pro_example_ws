@@ -15,7 +15,7 @@ on:
 
 jobs:
   integration-test-in-studio-container:
-    uses: PickNikRobotics/moveit_pro_ci/.github/workflows/workspace_integration_test.yaml@v0.0.7
+    uses: PickNikRobotics/moveit_pro_ci/.github/workflows/workspace_integration_test.yaml@depot-test-tag
     with:
       image_tag: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name }}
       colcon_test_args: "--executor sequential"
@@ -24,14 +24,14 @@ jobs:
 
   ensure-no-ssh-in-gitmodules:
     name: Ensure no SSH URLs in .gitmodules
-    runs-on: ubuntu-22.04
+    runs-on: depot-ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Check .gitmodules file for Git-over-SSH URLs
         run: "! grep 'git@' .gitmodules"
 
   validate_objectives:
-    runs-on: ubuntu-22.04
+    runs-on: depot-ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
-      - uses: PickNikRobotics/moveit_pro_lint@v0.0.1
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: PickNikRobotics/moveit_pro_lint@2a5892685ec9e40b0275a948882e9198df965b5e # v0.0.1
