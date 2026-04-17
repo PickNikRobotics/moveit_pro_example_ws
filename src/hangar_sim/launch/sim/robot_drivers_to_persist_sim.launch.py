@@ -256,22 +256,27 @@ def generate_launch_description():
         }.items(),
     )
 
-    # Static TF between mjWorld and map frame
+    # Static TF between mj_world and map frame — anchors the nav2 map frame to the MuJoCo
+    # simulation world.
     static_tf_world_to_map = Node(
         package="tf2_ros",
         executable="static_transform_publisher",
-        name="static_transform_publisher",
+        name="static_tf_world_to_map",
         output="log",
         arguments=["0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "mj_world", "map"],
     )
 
-    # Static TF between map and odom frame
-    static_tf_map_to_odom = Node(
+    # Static TF connecting MoveIt's planning root ('world') to the simulation root ('mj_world').
+    # The UI (pose-utils.ts) hardcodes 'world' as the reference frame for all user-clicked poses,
+    # so this link is required for nav2 goals to be transformable to 'map', and lets MoveIt
+    # locate the base link via 'world → mj_world → base_platform → ridgeback_base_link'
+    # instead of relying on virtual joint states (which are not published in sim).
+    static_tf_mj_world_to_world = Node(
         package="tf2_ros",
         executable="static_transform_publisher",
-        name="static_transform_publisher",
+        name="static_tf_mj_world_to_world",
         output="log",
-        arguments=["0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "map", "odom"],
+        arguments=["0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "mj_world", "world"],
     )
 
     # QoS relay to bridge BEST_EFFORT odom and IMU to RELIABLE for fuse
@@ -364,7 +369,7 @@ def generate_launch_description():
     # ld.add_action(rviz_cmd)
 
     ld.add_action(static_tf_world_to_map)
-    ld.add_action(static_tf_map_to_odom)
+    ld.add_action(static_tf_mj_world_to_world)
     ld.add_action(sensor_qos_relay)
     ld.add_action(laser_filter_front_node)
     ld.add_action(laser_filter_rear_node)

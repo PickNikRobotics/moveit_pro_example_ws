@@ -22,7 +22,10 @@
           <param name="lidar_publish_rate">10</param>
           <param name="publish_odom">true</param>
           <param name="odom_child_frame">ridgeback_base_link</param>
+          <param name="odom_rate">150</param>
           <param name="odom_zero_z">true</param>
+          <param name="odom_frame">odom</param>
+          <param name="publish_mj_world_tf">false</param>
           <param name="mujoco_viewer">${mujoco_viewer}</param>
           <param name="mujoco_keyframe">default</param>
       </hardware>
