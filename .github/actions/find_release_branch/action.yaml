@@ -1,0 +1,42 @@
+name: 'Find Release Branch'
+description: 'Find the highest v<major>.<minor> branch in the repository.'
+outputs:
+  branch:
+    description: 'The release branch name (e.g. v9.5).'
+    value: ${{ steps.find_branch.outputs.branch }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Find highest release branch
+      id: find_branch
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+      with:
+        script: |
+          const owner = context.repo.owner;
+          const repo = context.repo.repo;
+
+          const branchPattern = /^v(\d+)\.(\d+)$/;
+          const branches = await github.paginate(github.rest.repos.listBranches, {
+            owner,
+            repo,
+            per_page: 100,
+          });
+
+          const versionBranches = branches
+            .map(b => b.name)
+            .filter(name => branchPattern.test(name))
+            .sort((a, b) => {
+              const [, aMajor, aMinor] = a.match(branchPattern).map(Number);
+              const [, bMajor, bMinor] = b.match(branchPattern).map(Number);
+              return bMajor - aMajor || bMinor - aMinor;
+            });
+
+          if (versionBranches.length === 0) {
+            core.setFailed('No branch matching v<major>.<minor> found.');
+            return;
+          }
+
+          const branch = versionBranches[0];
+          core.info(`Found release branch: ${branch}`);
+          core.setOutput('branch', branch);
