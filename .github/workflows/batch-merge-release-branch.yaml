@@ -1,0 +1,49 @@
+name: Batch Merge Release Branch
+
+on:
+  workflow_dispatch:
+
+  schedule:
+    - cron: '0 5 * * 1-5' # Run before every weekday at 05:00 UTC
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  batch-merge-release-branch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 0
+          lfs: false
+
+      - name: Get current release branch
+        id: get_current_release_branch
+        uses: ./.github/actions/find_release_branch
+
+      - name: Merge release branch into main
+        id: merge
+        env:
+          RELEASE_BRANCH: ${{ steps.get_current_release_branch.outputs.branch }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+          RAND_SUFFIX=$RANDOM
+          git checkout -b merge-$RELEASE_BRANCH-main-$RAND_SUFFIX
+          git fetch origin $RELEASE_BRANCH
+          if git merge origin/$RELEASE_BRANCH --no-edit; then
+            echo "# Merge succeeded without conflicts" >> $GITHUB_STEP_SUMMARY
+            PR_BODY="Ready for merge!"
+          else
+            echo "# Merge failed with conflicts" >> $GITHUB_STEP_SUMMARY
+            git add -A
+            git commit -m "Merge $RELEASE_BRANCH into main (with conflicts)"
+            PR_BODY="⚠️Merge failed with conflicts! Please pull this branch and manually resolve the conflict by resetting this branch and re-merging."
+          fi
+          git push origin merge-$RELEASE_BRANCH-main-$RAND_SUFFIX
+          gh pr create --title "Merge ${{ steps.get_current_release_branch.outputs.branch }} into main" --body "$PR_BODY" --base main --head merge-$RELEASE_BRANCH-main-$RAND_SUFFIX --draft --reviewer shaur-k,JWhitleyWork,dsobek
