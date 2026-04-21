@@ -3,6 +3,16 @@
   <xacro:macro name="picknik_ur_mujoco_ros2_control" params="mujoco_model mujoco_viewer:=false">
 
     <ros2_control name="ur_mujoco_control" type="system">
+      <!-- Per-LiDAR topic routing. Sensor names match the MJCF site-name prefix
+           (the portion before the '-' in replicated rangefinder site names).
+           Each LiDAR publishes to its own topic so Nav2's obstacle layer can
+           treat them as independent observation sources. -->
+      <sensor name="lidar_front">
+        <param name="topic">/scan_front</param>
+      </sensor>
+      <sensor name="lidar_rear">
+        <param name="topic">/scan_rear</param>
+      </sensor>
       <hardware>
           <plugin>picknik_mujoco_ros/MujocoSystem</plugin>
           <param name="mujoco_model">${mujoco_model}</param>

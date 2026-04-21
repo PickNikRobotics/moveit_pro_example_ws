@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Navigate to Clicked Point with Replanning"
+>
+  <!--//////////-->
+  <BehaviorTree
+    ID="Navigate to Clicked Point with Replanning"
+    _description="Navigate to a point clicked by the user in the UI. This Objective will repeatedly replan the path as new obstacles appear on the local costmap."
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="CreateStampedPose"
+        reference_frame="base_link"
+        stamped_pose="{start}"
+      />
+      <Action
+        ID="SwitchController"
+        activate_controllers="platform_velocity_controller_nav2"
+        deactivate_controllers="velocity_force_controller;joint_trajectory_controller;platform_velocity_controller"
+      />
+      <Action
+        ID="GetPoseFromUser"
+        is_normal="true"
+        pose_prompt="Click point on UI"
+        user_pose="{goal}"
+        view_name="Visualization"
+      />
+      <Action
+        ID="NavigateToPoseAction"
+        action_name="/navigate_to_pose"
+        behavior_tree_path="/opt/ros/humble/share/nav2_bt_navigator/behavior_trees/navigate_to_pose_w_replanning_and_recovery.xml"
+        pose_stamped="{goal}"
+      />
+      <Action
+        ID="SwitchController"
+        activate_controllers="joint_trajectory_controller"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Navigate to Clicked Point with Replanning">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Navigation" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
