@@ -1,61 +1,31 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Pick April Tag Labeled Object">
-  <!--//////////-->
   <BehaviorTree
     ID="Pick April Tag Labeled Object"
     _description="Picks up an object that has an AprilTag marker."
     _favorite="true"
   >
-    <Control ID="Sequence" name="TopLevelSequence">
+    <Control ID="Sequence" name="TopLevelSequence" _collapsed="false">
+      <SubTree ID="Open Gripper" _collapsed="true" />
+      <SubTree
+        ID="Clear Previous Obstacles"
+        name="Clear Previous Obstacles"
+        _collapsed="true"
+      />
       <SubTree ID="Look at Table" _collapsed="true" />
-      <Action ID="ClearSnapshot" />
       <SubTree ID="Take Wrist Camera Snapshot" _collapsed="true" />
-      <Control ID="Sequence" name="Setup">
-        <SubTree ID="Open Gripper" />
-      </Control>
-      <Action
-        ID="GetCameraInfo"
-        topic_name="/wrist_camera/camera_info"
-        message_out="{camera_info}"
-        message_timeout_sec="5.000000"
-      />
-      <Action
-        ID="GetImage"
-        topic_name="/wrist_camera/color"
-        message_out="{image}"
-        message_timeout_sec="5.000000"
+      <SubTree
+        ID="Take Wrist Camera Image"
+        name="Take Wrist Camera Image"
+        _collapsed="true"
+        wrist_camera_image="{image}"
+        wrist_camera_info="{camera_info}"
       />
       <SubTree
         ID="Get AprilTag Pose from Image"
+        _collapsed="true"
         image="{image}"
         camera_info="{camera_info}"
-        _collapsed="true"
-        detection_pose="{detection_pose}"
-      />
-      <Action
-        ID="TransformPose"
-        output_pose="{view_pose}"
-        input_pose="{detection_pose}"
-        quaternion_xyzw="1.0;0.0;0.0;0.0"
-        translation_xyz="0;0.1;0.15"
-      />
-      <SubTree
-        ID="Plan Move To Pose"
-        target_pose="{view_pose}"
-        move_to_pose_solution="{move_to_pose_solution}"
-      />
-      <SubTree ID="Execute MTC Solution" solution="{move_to_pose_solution}" />
-      <Action
-        ID="GetImage"
-        topic_name="/wrist_camera/color"
-        message_out="{image}"
-        message_timeout_sec="5.000000"
-      />
-      <SubTree
-        ID="Get AprilTag Pose from Image"
-        image="{image}"
-        camera_info="{camera_info}"
-        _collapsed="true"
         detection_pose="{detection_pose}"
       />
       <Action
@@ -63,7 +33,20 @@
         output_pose="{offset_pose}"
         input_pose="{detection_pose}"
         quaternion_xyzw="1;0;0;0"
-        translation_xyz="0;0;0.01"
+        translation_xyz="0;0;-.015"
+        marker_lifetime="0.000000"
+        marker_size="0.100000"
+        marker_text=""
+        visualize_pose="false"
+      />
+      <Action
+        ID="VisualizePose"
+        name="VisualizePose"
+        marker_text="Grasp Pose"
+        marker_name="grasp_pose"
+        marker_lifetime="0.000000"
+        marker_size="0.100000"
+        pose="{offset_pose}"
       />
       <SubTree
         ID="Pick from Pose"
@@ -77,8 +60,8 @@
   <TreeNodesModel>
     <SubTree ID="Pick April Tag Labeled Object">
       <MetadataFields>
-        <Metadata subcategory="Application - Advanced Examples" />
         <Metadata runnable="true" />
+        <Metadata subcategory="Application - Advanced Examples" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
