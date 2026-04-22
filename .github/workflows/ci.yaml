@@ -15,10 +15,11 @@ on:
 
 jobs:
   integration-test-in-studio-container:
-    uses: PickNikRobotics/moveit_pro_ci/.github/workflows/workspace_integration_test.yaml@v0.0.7
+    uses: PickNikRobotics/moveit_pro_ci/.github/workflows/workspace_integration_test.yaml@3f31b78a7190f3b23d3fdc651fca15632a11a457 # v0.0.7
     with:
       image_tag: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name }}
       colcon_test_args: "--executor sequential"
+      runner: "picknik-16-amd64"
     secrets:
       moveit_license_key: ${{ secrets.STUDIO_CI_LICENSE_KEY }}
 
@@ -26,12 +27,12 @@ jobs:
     name: Ensure no SSH URLs in .gitmodules
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Check .gitmodules file for Git-over-SSH URLs
         run: "! grep 'git@' .gitmodules"
 
   validate_objectives:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: PickNikRobotics/moveit_pro_lint@v0.0.1
