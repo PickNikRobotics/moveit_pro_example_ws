@@ -35,7 +35,7 @@
         decoder_model_path="models/sam3_decoder.onnx"
         geometry_encoder_model_path="models/sam3_geometry_encoder.onnx"
         text_encoder_model_path="models/sam3_text_encoder.onnx"
-        confidence_threshold="0.45"
+        confidence_threshold="0.6"
         confidence_scores_str="{confidence_scores_str}"
         target_image="{wrist_camera_image}"
         confidence_scores="{confidence_scores}"
