@@ -1,0 +1,4 @@
+objectives:
+  behavior_loader_plugins:
+    convert_pose_stamped_to_transform_stamped:
+      - "convert_pose_stamped_to_transform_stamped::ConvertPoseStampedToTransformStampedBehaviorsLoader"
