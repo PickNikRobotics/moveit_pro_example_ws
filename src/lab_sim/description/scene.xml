@@ -6,7 +6,18 @@
 
   <compiler angle="radian" autolimits="true" />
 
-  <option integrator="implicitfast" impratio="10" noslip_iterations="3" />
+  <!-- timestep=0.005 matches dual_arm_sim. MuJoCo 3.6.0 contact/constraint
+       solving is slower than 3.2.7, so the previous default 0.002 s (500 Hz)
+       caused mj_step to exceed its wall-time budget on CI hardware, emitting
+       "Mujoco model timestep not running in realtime" and producing path
+       tolerance violations in Pick April Tag Labeled Object and Push Button
+       With a Trajectory. -->
+  <option
+    integrator="implicitfast"
+    impratio="10"
+    noslip_iterations="3"
+    timestep="0.005"
+  />
 
   <!-- nuser_cam=1 enables per-camera user params: 0=RGB+Depth, 1=RGB-only, 2=3D-lidar -->
   <!-- memory: arena size for contacts/constraints. MuJoCo 3.3+ stopped growing the arena
