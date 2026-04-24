@@ -9,7 +9,10 @@
   <option integrator="implicitfast" impratio="10" noslip_iterations="3" />
 
   <!-- nuser_cam=1 enables per-camera user params: 0=RGB+Depth, 1=RGB-only, 2=3D-lidar -->
-  <size nuser_cam="1" />
+  <!-- memory: arena size for contacts/constraints. MuJoCo 3.3+ stopped growing the arena
+       dynamically; the default heuristic here yields ~15MB and overflows during grasping
+       (emitting mjWARN_CNSTRFULL and dropping constraints), which destabilises picks. -->
+  <size nuser_cam="1" memory="64M" />
 
   <asset>
     <!-- Laptop keyboard texture (dark checker pattern) -->
