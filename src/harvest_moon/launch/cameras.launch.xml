@@ -20,6 +20,13 @@
                                                                                                    
     <!-- ZED X camera -->
     <include file="$(find-pkg-share zed_wrapper)/launch/zed_camera.launch.py">
+      <!-- node_name is explicitly set because the Basler includes above
+           set node_name=pylon_ros2_camera_node, and ROS 2 XML launch leaks
+           <arg> values from one <include> to subsequent siblings. Without
+           this override, the ZED node would also be named
+           pylon_ros2_camera_node, putting all ZED topics under
+           /zed_x/pylon_ros2_camera_node/... instead of /zed_x/zed_node/... -->
+      <arg name="node_name" value="zed_node" />
       <arg name="camera_name" value="zed_x" />
       <arg name="camera_model" value="zedx" />
       <arg name="serial_number" value="47845360" />
@@ -29,5 +36,5 @@
       <arg name="publish_map_tf" value="false" />
       <arg name="ros_params_override_path"
            value="$(find-pkg-share harvest_moon)/config/zed_x_overrides.yaml" />
-    </include>    
+    </include>
   </launch>

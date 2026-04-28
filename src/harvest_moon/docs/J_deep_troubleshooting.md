@@ -197,9 +197,9 @@ def make_relay(out_filter, dt_s):
 # Production offsets (DIV=3, 5 Hz Basler):
 #   Cam 1: -0.040 s   (subtract 40 ms from Basler stamp)
 #   Cam 2: -0.035 s   (slightly less for Cam 2 — measure for your rig)
-self.create_subscription(Image, '/basler_cam_1/image_raw',
+self.create_subscription(Image, '/basler_cam_1/pylon_ros2_camera_node/image_raw',
                          make_relay(c1_filter, -0.040), 30)
-self.create_subscription(Image, '/basler_cam_2/image_raw',
+self.create_subscription(Image, '/basler_cam_2/pylon_ros2_camera_node/image_raw',
                          make_relay(c2_filter, -0.035), 30)
 
 zed_filter = message_filters.Subscriber(self, Image,

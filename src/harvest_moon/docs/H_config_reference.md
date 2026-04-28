@@ -160,7 +160,7 @@ breaks the strobe-overlap design.
 `exposure_time` is in microseconds. Production = 200 µs — short enough
 that the strobe-overlapping ZED frame is visibly brighter than the
 ambient-only frames between strobe pulses. See
-[B. Operations & Tuning §1.2](B_operations.md).
+[B. Operations & Tuning §1.3](B_operations.md).
 
 ```yaml
 depth:
@@ -177,10 +177,11 @@ TensorRT errors.
 
 When depth is enabled, the wrapper also publishes
 `/zed_x/zed_node/point_cloud/cloud_registered`,
-`/zed_x/zed_node/confidence/confidence_image`, and
-`/zed_x/zed_node/disparity/disparity_image`. These streams contribute
-~900 MB/s of bag-write rate at 15 Hz; see
-[B. Operations & Tuning §6](B_operations.md) for managing storage.
+`/zed_x/zed_node/confidence/confidence_map`, and
+`/zed_x/zed_node/disparity/disparity_image`. At native HD1200, these
+plus the rect_color streams contribute ~440 MB/s of bag-write rate;
+see [B. Operations & Tuning §6](B_operations.md) for managing storage,
+and [§1.2](B_operations.md) for the resolution/rate trade-off.
 
 ```yaml
 object_detection:
@@ -207,8 +208,12 @@ The production camera bring-up. Side-loaded from
 <arg name="startup_user_set" value="UserSet1" />
 ```
 
-- `camera_id` becomes the topic namespace: `/basler_cam_1/image_raw`,
-  `/basler_cam_1/camera_info`, etc. Also disambiguates which Basler
+- `camera_id` becomes the camera-side topic namespace, and `node_name`
+  becomes a sub-namespace, so topics are at
+  `/basler_cam_1/pylon_ros2_camera_node/image_raw`,
+  `/basler_cam_1/pylon_ros2_camera_node/camera_info`, etc. (The
+  pylon ROS wrapper always inserts `node_name` into the topic prefix.)
+  `camera_id` also disambiguates which Basler
   this node opens (matched against `device_user_id`).
 - `mtu_size: 1500` is the production-stable value. Setting `9000`
   (jumbo frames) does work for raw GigE bandwidth but is unstable on

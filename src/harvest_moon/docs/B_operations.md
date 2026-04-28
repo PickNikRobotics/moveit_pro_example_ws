@@ -79,7 +79,32 @@ want them different.
 
 After change: rebuild `harvest_moon`, relaunch `moveit_pro run`.
 
-### 1.2 ZED exposure
+### 1.2 ZED resolution vs publish rate (load-bearing trade-off)
+
+The ZED is configured for native HD1200 (1920×1200) image publishing
+via `general.pub_resolution: 'NATIVE'` in `zed_x_overrides.yaml`. This
+gives the highest possible image quality, but the wrapper's depth
+processing at full resolution can't sustain 15 Hz on this Jetson —
+visual + depth streams drop to ~10 Hz under load. Pointcloud + odom +
+pose stay near 14 Hz.
+
+**To trade quality for rate**, three options:
+
+1. **Drop to HD1080** (1920×1080, 4% fewer rows): set
+   `general.grab_resolution: 'HD1080'` in `zed_x_overrides.yaml`. May
+   restore 15 Hz, near-identical quality.
+2. **Use 2× downscale**: change `pub_resolution: 'CUSTOM'` and add
+   `pub_downscale_factor: 2.0`. Publishes at 960×600, comfortably 15 Hz.
+3. **Lower the grab rate to match published rate**: set
+   `general.grab_frame_rate: 10` and update the Teensy `BASLER_DIV`
+   correspondingly. Keeps everything at the same lower rate — useful
+   if downstream needs synchronized cadence across all streams.
+
+**Production default = option 1 (NATIVE @ ~10 Hz)** because
+data-collection and model-building usually prefer image quality over
+rate.
+
+### 1.3 ZED exposure
 
 **File:** `~/user_ws/src/harvest_moon/config/zed_x_overrides.yaml`
 
@@ -158,8 +183,8 @@ trigger rate, otherwise the wrapper either runs ahead of the trigger
 
 In the moveit_pro shell:
 ```
-ros2 topic hz /basler_cam_1/image_raw
-ros2 topic hz /basler_cam_2/image_raw
+ros2 topic hz /basler_cam_1/pylon_ros2_camera_node/image_raw
+ros2 topic hz /basler_cam_2/pylon_ros2_camera_node/image_raw
 ```
 
 Both should print very close to your target frame rate with low std dev. If
@@ -212,7 +237,7 @@ moveit_pro shell:
 ```
 rviz2
 ```
-Add an `Image` display for `/basler_cam_1/image_raw`, twist the focus ring
+Add an `Image` display for `/basler_cam_1/pylon_ros2_camera_node/image_raw`, twist the focus ring
 on Cam 1, repeat for Cam 2. The 5 Hz ROS preview is slower to react than
 Pylon Viewer's 15 Hz native preview, so this is fine for verification but
 slow for active focus tuning.
@@ -287,30 +312,78 @@ intensity-vs-voltage curve.
 
 ## §6. Storage management
 
-`record_dataset.py` writes bags to `~/user_ws/datasets/`, which maps to
-the host's `~/moveit_pro/moveit_pro_example_ws/datasets/`. At default
-settings (full ZED depth + pointcloud + IMU + dual-Basler), each
-session writes **~1.2 GB/s ≈ 4.3 TB/hour**. Plan disk and take length
-accordingly.
+`record_dataset.py` writes bags to `/nvme/datasets/` by default — the
+NVMe scratch volume (~822 GB free on the prototype Jetson). The eMMC
+root partition (15 GB free) is too small and too slow for native-HD1200
+ZED streams.
 
-Approximate per-stream contributions at 15 Hz (Basler at 5 Hz):
+> **For field deployment, the customer is most likely going to use an
+> external SSD instead.** The path needs to be changed by whoever sets
+> up the system on each new host: bind-mount the SSD into the moveit_pro
+> container via `docker-compose.yaml` and point the recorder at the
+> in-container path with `--outdir` (or by editing `DEFAULT_OUTDIR` in
+> `record_dataset.py`). See [G. Software Setup §8.1](G_software_setup.md)
+> for the step-by-step.
 
-| Stream                       | Rate         |
-|------------------------------|--------------|
-| 2× Basler `image_raw`        | ~30 MB/s     |
-| 2× ZED `image_rect_color`    | ~280 MB/s    |
-| ZED `depth_registered`       | ~138 MB/s    |
-| ZED `point_cloud`            | ~555 MB/s    |
-| ZED `confidence`             | ~138 MB/s    |
-| ZED `disparity`              | ~75 MB/s     |
-| ZED IMU + camera_info + TF   | tiny         |
-| **Total**                    | **~1.2 GB/s** |
+At default settings (full ZED depth + pointcloud at native HD1200 +
+dual-Basler), each session writes **~470 MB/s ≈ 1.7 TB/hour**. Plan
+disk and take length accordingly.
+
+Approximate per-stream contributions, measured 2026-04-28:
+
+| Stream                                    | Effective rate | Bandwidth   |
+|-------------------------------------------|----------------|-------------|
+| 2× Basler `image_raw` (5 Hz)              | 5 Hz           | ~30 MB/s    |
+| 2× ZED `image_rect_color` (HD1200 RGB8)   | ~10 Hz         | ~140 MB/s   |
+| ZED `depth_registered` (float32 HD1200)   | ~10 Hz         | ~90 MB/s    |
+| ZED `disparity` (float32 HD1200)          | ~8 Hz          | ~75 MB/s    |
+| ZED `confidence_map` (float32 HD1200)     | ~10 Hz         | ~90 MB/s    |
+| ZED `point_cloud/cloud_registered`        | ~14 Hz         | ~100 MB/s   |
+| ZED IMU streams + odom/pose + TF + small  | mixed          | ~5 MB/s     |
+| **Total**                                 |                | **~470 MB/s** |
+
+**Why ZED visual streams are at ~10 Hz:** the wrapper is configured for
+native HD1200 (`pub_resolution: 'NATIVE'` in `zed_x_overrides.yaml`) for
+maximum image quality. Depth processing at full resolution can't sustain
+15 Hz on this Jetson. Pointcloud + odom + pose still hit ~14 Hz because
+they're produced at a different stage of the pipeline. To trade quality
+for rate, see §7 below.
+
+### 6.0 Cache drops at shutdown (known behavior)
+
+The recorder consistently reports a small number of in-flight messages
+"lost" at shutdown — typically 1–2% of the total, concentrated on the
+highest-rate topics (`/tf`, IMU streams). Example:
+
+```
+[WARN] [...] [rosbag2_cpp]: Cache buffers lost messages per topic:
+    /zed_x/zed_node/imu/data: 14
+    /tf: 66
+    ...
+Total lost: 123
+```
+
+This is **rosbag2's cache flush behavior at stop**, not a disk-speed
+issue. When the recorder receives Ctrl+C or the duration timer fires,
+the writer drains its in-memory cache and may lose messages still in
+flight. NVMe is not the bottleneck — the same drop count happens on
+both the eMMC and the NVMe. For continuous recording the cache stays in
+steady state and no messages are lost mid-take.
+
+**Mitigation if drops are unacceptable:** rosbag2 has a
+`max_cache_size` parameter (default ~100 MB per topic depending on
+version). It can be increased via the `--max-cache-size` flag when
+invoking `ros2 bag record` directly, but `record_dataset.py` doesn't
+plumb it through today — would need a small script change to expose it.
+
+For typical model-building use, ~1% loss at the very end of a take is
+not material. Document it and move on.
 
 ### 6.1 Check disk space
 
 From the moveit_pro shell:
 ```
-df -h ~/user_ws/datasets/
+df -h /nvme/datasets/
 ```
 Or on the host:
 ```
@@ -320,43 +393,48 @@ df -h /home/picknik/moveit_pro/moveit_pro_example_ws/datasets/
 ### 6.2 Clean up old sessions
 
 ```
-ls ~/user_ws/datasets/                          # see what's there
-rm -rf ~/user_ws/datasets/<session_dir>          # delete one
-rm -rf ~/user_ws/datasets/smoke_*                # delete all smoke tests
+ls /nvme/datasets/                          # see what's there
+rm -rf /nvme/datasets/<session_dir>          # delete one
+rm -rf /nvme/datasets/smoke_*                # delete all smoke tests
 ```
 
 ### 6.3 Reduce write rate for long takes
 
 Several options, listed by impact:
 
-1. **Drop ZED `point_cloud`** from the recorder (saves ~555 MB/s). The
+1. **Drop ZED `point_cloud`** from the recorder (saves ~100 MB/s). The
    pointcloud is fully reconstructible from `depth_registered` +
    `camera_info` (with caveats — see [J. Deep Troubleshooting §2](J_deep_troubleshooting.md)
    on ZED's pointcloud filtering vs depth).
-2. **Drop ZED `confidence` and `disparity`** (saves ~213 MB/s). Both
+2. **Drop ZED `confidence` and `disparity`** (saves ~165 MB/s). Both
    are derivable from depth and the rectified pair.
-3. **Drop ZED `rect_color`** (saves ~280 MB/s) if downstream just needs
+3. **Drop ZED `rect_color`** (saves ~140 MB/s) if downstream just needs
    depth + Basler.
-4. **Disable depth entirely** by setting `depth_mode: 'NONE'` in
-   `zed_x_overrides.yaml` (saves ~900 MB/s). Drops the system back to
+4. **Drop ZED resolution to 960×600** by setting
+   `general.pub_resolution: 'CUSTOM'` and `pub_downscale_factor: 2.0`
+   in `zed_x_overrides.yaml` (saves ~75% on every ZED image-side stream).
+5. **Disable depth entirely** by setting `depth_mode: 'NONE'` in
+   `zed_x_overrides.yaml` (saves ~355 MB/s). Drops the system back to
    the rect-color-only configuration. Use this for takes where only
    the Basler streams matter.
-5. Use explicit `--topics` to record a custom subset, e.g.:
+6. Use explicit `--topics` to record a custom subset, e.g.:
    ```
    python3 record_dataset.py --label slim --topics \
-       /basler_cam_1/image_raw /basler_cam_1/camera_info \
-       /basler_cam_2/image_raw /basler_cam_2/camera_info \
+       /basler_cam_1/pylon_ros2_camera_node/image_raw \
+       /basler_cam_1/pylon_ros2_camera_node/camera_info \
+       /basler_cam_2/pylon_ros2_camera_node/image_raw \
+       /basler_cam_2/pylon_ros2_camera_node/camera_info \
        /zed_x/zed_node/depth/depth_registered \
        /zed_x/zed_node/depth/camera_info \
        /tf /tf_static
    ```
-6. **Compress** with zstd:
+7. **Compress** with zstd:
    ```
    python3 record_dataset.py --label compressed --compress
    ```
    Modest savings on raw image data (high entropy), big savings on TF
    and camera_info topics. CPU cost is moderate.
-7. **Time-limit** captures and rotate manually:
+8. **Time-limit** captures and rotate manually:
    ```
    python3 record_dataset.py --label batch_001 --duration 60
    python3 record_dataset.py --label batch_002 --duration 60
@@ -365,12 +443,10 @@ Several options, listed by impact:
 
 ### 6.4 Move bags off the Jetson
 
-Bags live on the host filesystem under
-`~/moveit_pro/moveit_pro_example_ws/datasets/`. Use any normal copy tool
+Bags live on the host filesystem under `/nvme/datasets/`. Use any normal copy tool
 from a host shell:
 ```
-rsync -avh ~/moveit_pro/moveit_pro_example_ws/datasets/<session>/ \
-    user@somewhere:/path/
+rsync -avh /nvme/datasets/<session>/ user@somewhere:/path/
 ```
 
 ---

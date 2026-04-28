@@ -15,7 +15,7 @@ publishing. Stop with Ctrl+C, or pass --duration N for a timed capture.
 Examples:
     python3 record_dataset.py --label barn_morning_run1
     python3 record_dataset.py --label calibration --duration 30
-    python3 record_dataset.py --label custom --topics /basler_cam_1/image_raw /tf
+    python3 record_dataset.py --label custom --topics /basler_cam_1/pylon_ros2_camera_node/image_raw /tf
 """
 
 import argparse
@@ -32,10 +32,10 @@ from pathlib import Path
 
 DEFAULT_TOPICS = [
     # Basler streams
-    "/basler_cam_1/image_raw",
-    "/basler_cam_1/camera_info",
-    "/basler_cam_2/image_raw",
-    "/basler_cam_2/camera_info",
+    "/basler_cam_1/pylon_ros2_camera_node/image_raw",
+    "/basler_cam_1/pylon_ros2_camera_node/camera_info",
+    "/basler_cam_2/pylon_ros2_camera_node/image_raw",
+    "/basler_cam_2/pylon_ros2_camera_node/camera_info",
     # ZED rectified stereo pair
     "/zed_x/zed_node/left/image_rect_color",
     "/zed_x/zed_node/left/camera_info",
@@ -45,17 +45,28 @@ DEFAULT_TOPICS = [
     "/zed_x/zed_node/depth/depth_registered",
     "/zed_x/zed_node/depth/camera_info",
     "/zed_x/zed_node/point_cloud/cloud_registered",
-    "/zed_x/zed_node/confidence/confidence_image",
+    "/zed_x/zed_node/confidence/confidence_map",
     "/zed_x/zed_node/disparity/disparity_image",
     # ZED IMU
     "/zed_x/zed_node/imu/data",
     "/zed_x/zed_node/imu/data_raw",
+    "/zed_x/zed_node/temperature/imu",
+    "/zed_x/zed_node/left_cam_imu_transform",
+    # ZED positional tracking
+    "/zed_x/zed_node/odom",
+    "/zed_x/zed_node/pose",
+    # ZED depth metadata
+    "/zed_x/zed_node/depth/depth_info",
     # Frame tree
     "/tf",
     "/tf_static",
 ]
 
-DEFAULT_OUTDIR = Path.home() / "user_ws" / "datasets"
+# Default to the NVMe scratch on this Jetson — the eMMC root only has
+# ~15 GB free and can't keep up with native-HD1200 ZED streams. The
+# customer rebuild may have a different storage layout; override with
+# --outdir if so.
+DEFAULT_OUTDIR = Path("/nvme/datasets")
 
 
 def list_active_topics():

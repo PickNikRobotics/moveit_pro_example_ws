@@ -61,9 +61,9 @@ This reads `MOVEIT_CONFIG_PACKAGE=lab_sim` from `~/moveit_pro/.env` and
 launches `lab_sim`, which side-loads `harvest_moon/cameras.launch.xml` and
 brings up:
 
-- Basler camera 1 (serial 25233972) → topic `/basler_cam_1/image_raw`
-- Basler camera 2 (serial 25435376) → topic `/basler_cam_2/image_raw`
-- ZED X (serial 47845360) → topics under `/zed_x/zed_node/...`
+- Basler camera 1 (serial 25233972) → topics under `/basler_cam_1/pylon_ros2_camera_node/`
+- Basler camera 2 (serial 25435376) → topics under `/basler_cam_2/pylon_ros2_camera_node/`
+- ZED X (serial 47845360) → topics under `/zed_x/zed_node/`
 
 It takes 30–60 seconds to fully come up. Watch the terminal for "Camera ready"
 or equivalent messages from each wrapper. **First-launch failures are most
@@ -76,17 +76,26 @@ start)](C_field_troubleshooting.md).
 
 Open a second terminal and check publish rates. **Expected steady-state:**
 
-| Topic                             | Expected rate |
-|-----------------------------------|---------------|
-| `/basler_cam_1/image_raw`         | 5 Hz          |
-| `/basler_cam_2/image_raw`         | 5 Hz          |
-| `/zed_x/zed_node/left/image_*`    | 15 Hz         |
+| Topic                                                       | Expected rate |
+|-------------------------------------------------------------|----------------|
+| `/basler_cam_1/pylon_ros2_camera_node/image_raw`            | 5 Hz           |
+| `/basler_cam_2/pylon_ros2_camera_node/image_raw`            | 5 Hz           |
+| `/zed_x/zed_node/left/image_rect_color`                     | ~10 Hz         |
+| `/zed_x/zed_node/point_cloud/cloud_registered`              | ~14 Hz         |
+| `/zed_x/zed_node/imu/data`                                  | ~100 Hz        |
+
+> Why ZED visual streams are at ~10 Hz (not 15): we run the ZED at native
+> HD1200 resolution for best image quality, and the wrapper's depth
+> processing can't sustain 15 Hz at full resolution on this Jetson. The
+> SDK-internal grab is still 15 Hz; ROS-published image and depth streams
+> drop to ~10 Hz under load. Pointcloud / odom / pose still hit ~14 Hz
+> because they're produced at a different stage in the pipeline.
 
 ```
-moveit_pro shell                          # enter the running container
-ros2 topic hz /basler_cam_1/image_raw     # should print ~5 Hz, low std dev
-ros2 topic hz /basler_cam_2/image_raw     # should print ~5 Hz, low std dev
-ros2 topic hz /zed_x/zed_node/left/image_rect_color   # should print ~15 Hz
+moveit_pro shell                                              # enter the running container
+ros2 topic hz /basler_cam_1/pylon_ros2_camera_node/image_raw  # should print ~5 Hz, low std dev
+ros2 topic hz /basler_cam_2/pylon_ros2_camera_node/image_raw  # should print ~5 Hz, low std dev
+ros2 topic hz /zed_x/zed_node/left/image_rect_color           # should print ~10 Hz
 ```
 
 `Ctrl+C` to exit each `topic hz`. If a topic prints nothing or wildly varying
@@ -98,8 +107,9 @@ For a visual check, launch RViz from the same shell:
 rviz2
 ```
 
-Add an `Image` display for `/basler_cam_1/image_raw`, then add a second
-`Image` display for `/basler_cam_2/image_raw`. Both should show live feed;
+Add an `Image` display for `/basler_cam_1/pylon_ros2_camera_node/image_raw`,
+then add a second `Image` display for
+`/basler_cam_2/pylon_ros2_camera_node/image_raw`. Both should show live feed;
 in the field with the strobe driving the lighting, frames should look
 uniformly lit.
 
@@ -117,7 +127,7 @@ Where `<session_label>` is a short identifier with no spaces or slashes
 (e.g. `field_run_001`, `barn_morning_take2`). The script:
 
 - Pre-flight checks that all expected topics are publishing (warns if not).
-- Creates `~/user_ws/datasets/<label>_<timestamp>/` with a `bag/` rosbag2
+- Creates `/nvme/datasets/<label>_<timestamp>/` with a `bag/` rosbag2
   directory and a `session.json` metadata file.
 - Prints periodic size readouts every 5 seconds.
 - Stops cleanly on `Ctrl+C`.
@@ -127,16 +137,39 @@ Useful flags:
 - `--duration N` — auto-stop after N seconds (good for fixed-length captures).
 - `--compress` — zstd compression (smaller bag, more CPU; useful for long
   takes if disk is tight).
+- `--outdir PATH` — override the default output dir (e.g. an external SSD).
 - `--topics ...` — override the default topic list (see script `--help`).
 
-The `~/user_ws/datasets/` path inside the container maps to
-`~/moveit_pro/moveit_pro_example_ws/datasets/` on the Jetson host, so bags
-persist across container restarts and are accessible from outside the
-container.
+`/nvme/datasets/` is the prototype's NVMe scratch volume (~822 GB free).
+The path is bind-mounted into the moveit_pro container via
+`docker-compose.yaml`, so bags persist across container restarts and
+are also accessible from the host outside the container.
 
-> **Storage note:** at default settings (full ZED depth + pointcloud),
-> expect ~1.2 GB/s write rate. A 10-minute take is ~720 GB. If disk
-> fills up, see
+> **Recording to an external SSD:** the field deployment will likely use
+> an external SSD instead of the internal NVMe scratch. The recorder
+> doesn't write to arbitrary host paths automatically — the path has to
+> be bind-mounted into the moveit_pro container first. Setup steps:
+>
+> 1. Plug in the SSD; identify its host mount path (e.g.
+>    `/media/picknik/MY_SSD`).
+> 2. Edit `~/moveit_pro/moveit_pro_example_ws/docker-compose.yaml`:
+>    add a volume mount `- /media/picknik/MY_SSD:/ssd` (or a path of
+>    your choosing) under the `agent_bridge`, `drivers`, and `dev`
+>    services.
+> 3. Restart `moveit_pro` (Ctrl+C then re-run `moveit_pro run`) so the
+>    new mount applies.
+> 4. Create the dataset directory: `mkdir -p /media/picknik/MY_SSD/datasets`
+>    (host-side; chown to your user if needed).
+> 5. At every recording call, pass the in-container path:
+>    `python3 record_dataset.py --label foo --outdir /ssd/datasets`.
+>
+> Alternatively, edit `DEFAULT_OUTDIR` in `record_dataset.py` to point
+> at `/ssd/datasets` so the operator doesn't have to remember the flag.
+> See [G. Software Setup §8.1](G_software_setup.md) for more.
+
+> **Storage note:** at default settings (full ZED depth + pointcloud at
+> native HD1200), expect ~470 MB/s write rate. A 10-minute take is
+> ~280 GB; a 30-minute take is ~840 GB. If disk fills up, see
 > [B. Operations & Tuning Playbook §6 (Managing storage)](B_operations.md).
 
 ---

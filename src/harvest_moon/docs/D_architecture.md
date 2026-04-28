@@ -158,13 +158,13 @@ The whole sequence takes ~17 ms (the pulse width) and repeats every
                               │  moveit_pro Docker container          │
                               │  ROS 2 (Humble or compatible)         │
                               │                                       │
-                              │   pylon_ros2_camera_wrapper ×2 ──► /basler_cam_1/image_raw
-                              │                              ──► /basler_cam_2/image_raw
-                              │                              ──► /basler_cam_*/camera_info
+                              │   pylon_ros2_camera_wrapper ×2 ──► /basler_cam_1/pylon_ros2_camera_node/image_raw
+                              │                              ──► /basler_cam_2/pylon_ros2_camera_node/image_raw
+                              │                              ──► /basler_cam_*/pylon_ros2_camera_node/camera_info
                               │                                       │
                               │   zed_wrapper                ──► /zed_x/zed_node/...
                               │                                       │
-                              │   record_dataset.py ──► ros2 bag record ──► ~/user_ws/datasets/
+                              │   record_dataset.py ──► ros2 bag record ──► /nvme/datasets/
                               └───────────────────────────────────────┘
 ```
 

@@ -29,19 +29,19 @@ First-time test plan for `record_dataset.py`. Run this with the system fully up
 
 4. Confirm the session contents:
    ```
-   ls ~/user_ws/datasets/smoke_*/
+   ls /nvme/datasets/smoke_*/
    ```
    Should show `bag/` directory + `session.json`.
 
 5. Inspect the bag:
    ```
-   ros2 bag info ~/user_ws/datasets/smoke_*/bag
+   ros2 bag info /nvme/datasets/smoke_*/bag
    ```
    Should list every topic from `DEFAULT_TOPICS` with non-zero message counts.
 
 6. Inspect the session metadata:
    ```
-   cat ~/user_ws/datasets/smoke_*/session.json
+   cat /nvme/datasets/smoke_*/session.json
    ```
    Should show label, timestamp, topics, duration_s, size_mb.
 
@@ -56,10 +56,10 @@ First-time test plan for `record_dataset.py`. Run this with the system fully up
   pre-flight check will warn if any are missing. Likely candidates if
   any are wrong: the depth/pointcloud/confidence/disparity/IMU topic
   names. ZED wrapper conventions vary by version — note any warnings.
-- **Storage rate**: at full default settings, expect **~1.2 GB/s**. A
-  10-second smoke test should produce ~12 GB. If much smaller, some
-  ZED stream isn't publishing. If much larger, something's recording
-  more than expected.
+- **Storage rate**: at full default settings (NATIVE HD1200), expect
+  **~470 MB/s**. A 10-second smoke test should produce ~4.5 GB. If
+  much smaller, some ZED stream isn't publishing. If much larger,
+  something's recording more than expected.
 - **Did the Jetson keep up?** With ZED depth + pointcloud at 15 Hz,
   CPU could saturate. Check `ros2 topic hz /zed_x/zed_node/point_cloud/cloud_registered`
   during the run — should be near 15 Hz. If lower, drop the ZED to
@@ -80,10 +80,10 @@ list if names differ.
 
 ## Cleanup after smoke test
 
-Smoke test bags are now ~12 GB for a 10-second run (full ZED depth +
-pointcloud). Delete after confirming things work:
+Smoke test bags are ~4.5 GB for a 10-second run (full ZED depth +
+pointcloud at native HD1200). Delete after confirming things work:
 ```
-rm -rf ~/user_ws/datasets/smoke_*
+rm -rf /nvme/datasets/smoke_*
 ```
 
 ## After the smoke test

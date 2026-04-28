@@ -403,6 +403,71 @@ source install/setup.bash
 After the build completes, the configs are installed at
 `~/user_ws/install/harvest_moon/share/harvest_moon/config/`.
 
+### 8.1 Bind-mount the dataset storage volume
+
+The recorder writes bags to its `--outdir` path (default
+`/nvme/datasets/`). For the container to see this path, the host
+filesystem location has to be bind-mounted into all camera-relevant
+services in `docker-compose.yaml`.
+
+#### Prototype (writes to internal NVMe at `/nvme`)
+
+The shipped `docker-compose.yaml` adds this line under `volumes:` in
+the `agent_bridge`, `drivers`, and `dev` services:
+
+```yaml
+- /nvme:/nvme
+```
+
+Plus the dataset dir creation:
+```
+sudo mkdir -p /nvme/datasets
+sudo chown $USER:$USER /nvme/datasets
+```
+
+#### Field deployment (writes to external SSD)
+
+**This is what the customer's deployment is most likely to use.** The
+external SSD's host mount path differs per system — typically Linux
+auto-mounts to `/media/<user>/<volume_label>` when the drive is
+plugged in. Steps:
+
+1. Plug in the SSD. Run `lsblk` and `df -h` to confirm where it
+   mounted (e.g. `/media/picknik/FIELD_SSD` or `/mnt/ssd`).
+
+2. Edit `~/moveit_pro/moveit_pro_example_ws/docker-compose.yaml` —
+   replace (or add alongside) the `/nvme:/nvme` line with a mount
+   pointing at your SSD. Pick whatever in-container name is
+   memorable, e.g.:
+
+   ```yaml
+   - /media/picknik/FIELD_SSD:/ssd
+   ```
+
+   Add this under `volumes:` in **all three** services that need
+   recording access: `agent_bridge`, `drivers`, and `dev`.
+
+3. Create the dataset directory on the host:
+   ```
+   mkdir -p /media/picknik/FIELD_SSD/datasets
+   ```
+
+4. Either:
+   - Pass `--outdir /ssd/datasets` (the in-container path) to every
+     `record_dataset.py` invocation, or
+   - Edit `DEFAULT_OUTDIR` in
+     `~/user_ws/src/harvest_moon/scripts/record_dataset.py` to
+     `Path("/ssd/datasets")` so it's the new default.
+
+5. Restart `moveit_pro` so the new bind mount applies.
+
+> **Important:** the `/nvme:/nvme` mount in the shipped
+> `docker-compose.yaml` is harmless on the customer's system as long
+> as the customer's host has a `/nvme` directory (or it's just unused).
+> If the customer's host doesn't have `/nvme`, Docker will refuse to
+> start the container — either remove that line or `mkdir /nvme` on
+> the host as a no-op stub.
+
 ---
 
 ## §9. First launch and verify
@@ -417,9 +482,9 @@ Wait ~30 seconds for everything to come up. In a second terminal:
 
 ```
 moveit_pro shell
-ros2 topic hz /basler_cam_1/image_raw      # should show ~5 Hz
-ros2 topic hz /basler_cam_2/image_raw      # should show ~5 Hz
-ros2 topic hz /zed_x/zed_node/left/image_rect_color   # should show ~15 Hz
+ros2 topic hz /basler_cam_1/pylon_ros2_camera_node/image_raw   # should show ~5 Hz
+ros2 topic hz /basler_cam_2/pylon_ros2_camera_node/image_raw   # should show ~5 Hz
+ros2 topic hz /zed_x/zed_node/left/image_rect_color            # should show ~10 Hz
 ```
 
 If everything is publishing at the expected rates, the system is set up
