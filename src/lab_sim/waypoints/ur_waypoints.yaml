@@ -901,6 +901,49 @@
     twist: []
     wrench: []
   name: Predrop Bottles Right
+- description: Location for the robot to go look at the tray.
+  favorite: false
+  joint_group_names:
+  - gripper
+  - linear_actuator
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - linear_rail_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
+    - 0.05510852026866443
+    - -0.7189055036814227
+    - 0.19457050986833238
+    - -2.087568874212717
+    - 1.7974325760598713
+    - -1.6887096601663198
+    - -1.627206520781829
+    - 0.19188249774293678
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Look at Tray
 - description: ''
   favorite: false
   joint_group_names:
