@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Fit Bottle Model Subtree">
+  <BehaviorTree
+    ID="Fit Bottle Model Subtree"
+    _description="Fit a bottle STL model to a masked point cloud via ICP and return a grasp pose at the top of the bottle body."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <!--Load the bottle STL as a point cloud and place it at the
+           initial guess pose. Sent to the UI in red so the operator
+           can see where ICP starts from.-->
+      <Control
+        ID="Sequence"
+        name="Build initial-guess model cloud"
+        _collapsed="true"
+      >
+        <Action
+          ID="LoadPointCloudFromFile"
+          color="255;0;0"
+          package_name="picknik_accessories"
+          file_path="mujoco_assets/assets/bottle.stl"
+          point_cloud="{model_cloud}"
+          scale="1.000000"
+          random_seed="{random_seed}"
+          frame_id="world"
+          num_sampled_points="10000"
+        />
+        <Action
+          ID="TransformPointCloudFrame"
+          input_cloud="{model_cloud}"
+          output_cloud="{model_cloud}"
+          target_frame="world"
+        />
+        <Action
+          ID="TransformPointCloud"
+          input_cloud="{model_cloud}"
+          transform_pose="{initial_guess_pose}"
+          output_cloud="{model_cloud}"
+        />
+        <Action
+          ID="SendPointCloudToUI"
+          point_cloud="{model_cloud}"
+          pcd_topic="/pcd_pointcloud_captures"
+          use_latest_transform="false"
+        />
+      </Control>
+      <!--Run ICP between the placed model cloud and the segmented
+           target cloud, then compose the ICP delta on top of the
+           initial guess to get the bottle pose in world frame.-->
+      <Control
+        ID="Sequence"
+        name="ICP fit and compose bottle pose"
+        _collapsed="true"
+      >
+        <Action
+          ID="RegisterPointClouds"
+          base_point_cloud="{model_cloud}"
+          target_point_cloud="{masked_cloud_world}"
+          max_correspondence_distance="0.1"
+          max_iterations="100"
+          target_pose_in_base_frame="{icp_target_pose}"
+        />
+        <Action
+          ID="TransformPoseWithPose"
+          name="Compose ICP delta on top of the initial guess to get the bottle pose in world frame"
+          input_pose="{initial_guess_pose}"
+          transform_pose="{icp_target_pose}"
+          output_pose="{bottle_in_world}"
+        />
+      </Control>
+      <!--Reload the STL as a fresh cloud, transform it by the fitted
+           bottle pose, and send both the masked target cloud and the
+           aligned model cloud to the UI so the operator can inspect
+           the fit quality (green model overlaid on segmented target).-->
+      <Control
+        ID="Sequence"
+        name="Render aligned model alongside masked cloud"
+        _collapsed="true"
+      >
+        <Action
+          ID="LoadPointCloudFromFile"
+          color="0;255;0"
+          package_name="picknik_accessories"
+          file_path="mujoco_assets/assets/bottle.stl"
+          point_cloud="{aligned_cloud}"
+          scale="1.000000"
+          random_seed="{random_seed}"
+          frame_id="world"
+          num_sampled_points="10000"
+        />
+        <Action
+          ID="TransformPointCloud"
+          input_cloud="{aligned_cloud}"
+          transform_pose="{bottle_in_world}"
+          output_cloud="{aligned_cloud}"
+        />
+        <Action ID="ClearSnapshot" name="ClearSnapshot" />
+        <Action
+          ID="SendPointCloudToUI"
+          point_cloud="{masked_cloud_world}"
+          pcd_topic="/pcd_pointcloud_captures"
+          use_latest_transform="false"
+        />
+        <Action
+          ID="SendPointCloudToUI"
+          point_cloud="{aligned_cloud}"
+          pcd_topic="/pcd_pointcloud_captures"
+          use_latest_transform="false"
+        />
+      </Control>
+      <!--Lift the fitted pose from the STL origin (bottle base) to
+           the base of the cap, then flip the orientation so the
+           gripper approach axis points world-down.-->
+      <Control ID="Sequence" name="Compute grasp pose" _collapsed="true">
+        <Action
+          ID="TransformPose"
+          name="Shift from bottle base (STL origin) up to the base of the cap (matches mujoco desk.xml geometry)"
+          input_pose="{bottle_in_world}"
+          translation_xyz="0;0;0.057"
+          quaternion_xyzw="0;0;0;1"
+          output_pose="{grasp_point_pose}"
+          marker_lifetime="0.000000"
+          marker_size="0.100000"
+          marker_text=""
+          visualize_pose="false"
+        />
+        <Action
+          ID="TransformPose"
+          name="Rotate 180 about local x so the gripper approach axis faces world-down"
+          input_pose="{grasp_point_pose}"
+          translation_xyz="0;0;0"
+          quaternion_xyzw="0;1;0;0"
+          output_pose="{grasp_pose}"
+          marker_lifetime="0.000000"
+          marker_size="0.100000"
+          marker_text=""
+          visualize_pose="false"
+        />
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Fit Bottle Model Subtree">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Perception - 3D Point Cloud" />
+      </MetadataFields>
+      <inout_port name="masked_cloud_world" default="{masked_cloud_world}" />
+      <inout_port name="initial_guess_pose" default="{initial_guess_pose}" />
+      <inout_port name="grasp_pose" default="{grasp_pose}" />
+    </SubTree>
+  </TreeNodesModel>
+</root>
