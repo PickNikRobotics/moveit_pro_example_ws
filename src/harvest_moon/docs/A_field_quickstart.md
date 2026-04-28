@@ -134,8 +134,9 @@ The `~/user_ws/datasets/` path inside the container maps to
 persist across container restarts and are accessible from outside the
 container.
 
-> **Storage note:** at default settings, expect ~250 MB/s write rate. A
-> 10-minute take is ~150 GB. If disk fills up, see
+> **Storage note:** at default settings (full ZED depth + pointcloud),
+> expect ~1.2 GB/s write rate. A 10-minute take is ~720 GB. If disk
+> fills up, see
 > [B. Operations & Tuning Playbook §6 (Managing storage)](B_operations.md).
 
 ---

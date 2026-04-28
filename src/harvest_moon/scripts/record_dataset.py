@@ -31,14 +31,26 @@ from pathlib import Path
 
 
 DEFAULT_TOPICS = [
+    # Basler streams
     "/basler_cam_1/image_raw",
     "/basler_cam_1/camera_info",
     "/basler_cam_2/image_raw",
     "/basler_cam_2/camera_info",
+    # ZED rectified stereo pair
     "/zed_x/zed_node/left/image_rect_color",
     "/zed_x/zed_node/left/camera_info",
     "/zed_x/zed_node/right/image_rect_color",
     "/zed_x/zed_node/right/camera_info",
+    # ZED depth + derived
+    "/zed_x/zed_node/depth/depth_registered",
+    "/zed_x/zed_node/depth/camera_info",
+    "/zed_x/zed_node/point_cloud/cloud_registered",
+    "/zed_x/zed_node/confidence/confidence_image",
+    "/zed_x/zed_node/disparity/disparity_image",
+    # ZED IMU
+    "/zed_x/zed_node/imu/data",
+    "/zed_x/zed_node/imu/data_raw",
+    # Frame tree
     "/tf",
     "/tf_static",
 ]

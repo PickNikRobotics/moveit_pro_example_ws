@@ -289,7 +289,22 @@ intensity-vs-voltage curve.
 
 `record_dataset.py` writes bags to `~/user_ws/datasets/`, which maps to
 the host's `~/moveit_pro/moveit_pro_example_ws/datasets/`. At default
-settings each session writes ~250 MB/s.
+settings (full ZED depth + pointcloud + IMU + dual-Basler), each
+session writes **~1.2 GB/s ≈ 4.3 TB/hour**. Plan disk and take length
+accordingly.
+
+Approximate per-stream contributions at 15 Hz (Basler at 5 Hz):
+
+| Stream                       | Rate         |
+|------------------------------|--------------|
+| 2× Basler `image_raw`        | ~30 MB/s     |
+| 2× ZED `image_rect_color`    | ~280 MB/s    |
+| ZED `depth_registered`       | ~138 MB/s    |
+| ZED `point_cloud`            | ~555 MB/s    |
+| ZED `confidence`             | ~138 MB/s    |
+| ZED `disparity`              | ~75 MB/s     |
+| ZED IMU + camera_info + TF   | tiny         |
+| **Total**                    | **~1.2 GB/s** |
 
 ### 6.1 Check disk space
 
@@ -312,23 +327,36 @@ rm -rf ~/user_ws/datasets/smoke_*                # delete all smoke tests
 
 ### 6.3 Reduce write rate for long takes
 
-Three options, listed by impact:
+Several options, listed by impact:
 
-1. **Drop ZED rect_color** from the recorder. The bulk of the bandwidth is
-   the two ZED rectified streams. Run with explicit `--topics`:
+1. **Drop ZED `point_cloud`** from the recorder (saves ~555 MB/s). The
+   pointcloud is fully reconstructible from `depth_registered` +
+   `camera_info` (with caveats — see [J. Deep Troubleshooting §2](J_deep_troubleshooting.md)
+   on ZED's pointcloud filtering vs depth).
+2. **Drop ZED `confidence` and `disparity`** (saves ~213 MB/s). Both
+   are derivable from depth and the rectified pair.
+3. **Drop ZED `rect_color`** (saves ~280 MB/s) if downstream just needs
+   depth + Basler.
+4. **Disable depth entirely** by setting `depth_mode: 'NONE'` in
+   `zed_x_overrides.yaml` (saves ~900 MB/s). Drops the system back to
+   the rect-color-only configuration. Use this for takes where only
+   the Basler streams matter.
+5. Use explicit `--topics` to record a custom subset, e.g.:
    ```
    python3 record_dataset.py --label slim --topics \
        /basler_cam_1/image_raw /basler_cam_1/camera_info \
        /basler_cam_2/image_raw /basler_cam_2/camera_info \
+       /zed_x/zed_node/depth/depth_registered \
+       /zed_x/zed_node/depth/camera_info \
        /tf /tf_static
    ```
-2. **Compress** with zstd:
+6. **Compress** with zstd:
    ```
    python3 record_dataset.py --label compressed --compress
    ```
-   Modest savings on raw image data (high entropy), big savings on TF and
-   camera_info topics. CPU cost is moderate.
-3. **Time-limit** captures and rotate manually:
+   Modest savings on raw image data (high entropy), big savings on TF
+   and camera_info topics. CPU cost is moderate.
+7. **Time-limit** captures and rotate manually:
    ```
    python3 record_dataset.py --label batch_001 --duration 60
    python3 record_dataset.py --label batch_002 --duration 60

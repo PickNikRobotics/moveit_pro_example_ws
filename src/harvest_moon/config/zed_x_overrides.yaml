@@ -10,7 +10,15 @@
             auto_exposure_gain: false
             exposure_time: 200   # µs; small enough that strobe contribution dominates
         depth:
-            depth_mode: 'NONE'
+            # ULTRA = highest-fidelity classical stereo depth (no TensorRT
+            # models needed, unlike the NEURAL_* modes). Enables the
+            # /depth/depth_registered, /point_cloud/cloud_registered,
+            # /confidence/confidence_image, and /disparity/disparity_image
+            # topics. Set to 'NONE' to disable depth entirely (saves ~250
+            # MB/s of bag bandwidth and CPU; needed if the container's ZED
+            # SDK is missing the TensorRT models AND a NEURAL_* mode was
+            # previously selected).
+            depth_mode: 'ULTRA'
         object_detection:
             od_enabled: false
         body_tracking:

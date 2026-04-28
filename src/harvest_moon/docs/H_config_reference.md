@@ -164,12 +164,23 @@ ambient-only frames between strobe pulses. See
 
 ```yaml
 depth:
-    depth_mode: 'NONE'
+    depth_mode: 'ULTRA'
 ```
-**Required.** The moveit_pro container's ZED SDK install lacks the
-TensorRT models needed to run depth modes. If left at the default
-(`NEURAL` or similar), the ZED node fails to start with TensorRT
-errors. Setting to `'NONE'` skips depth and just publishes color.
+Production = `ULTRA` (highest-fidelity classical stereo, no TensorRT
+needed). Other valid options: `'PERFORMANCE'` (fastest, lowest
+accuracy), `'QUALITY'` (middle ground), `'NONE'` (depth disabled).
+
+**Do NOT use `'NEURAL'`, `'NEURAL_LIGHT'`, or `'NEURAL_PLUS'`.** These
+modes require TensorRT models the moveit_pro container's ZED SDK
+install does not include — the ZED node will fail to start with
+TensorRT errors.
+
+When depth is enabled, the wrapper also publishes
+`/zed_x/zed_node/point_cloud/cloud_registered`,
+`/zed_x/zed_node/confidence/confidence_image`, and
+`/zed_x/zed_node/disparity/disparity_image`. These streams contribute
+~900 MB/s of bag-write rate at 15 Hz; see
+[B. Operations & Tuning §6](B_operations.md) for managing storage.
 
 ```yaml
 object_detection:
@@ -372,7 +383,7 @@ A short list of "if you change this, things break in non-obvious ways":
 | `basler_cam_*.yaml` `grab_strategy: 1`             | Reverting to 0 reintroduces seconds-stale-frame buffering   |
 | `basler_cam_*.yaml` `exposure_auto: false`         | Auto exposure breaks strobe sync                            |
 | `zed_x_overrides.yaml` `auto_exposure_gain: false` | Same as above for ZED                                       |
-| `zed_x_overrides.yaml` `depth_mode: 'NONE'`        | Container's ZED SDK can't run depth (TensorRT models missing)|
+| `zed_x_overrides.yaml` `depth_mode` set to `NEURAL*` | Container's ZED SDK can't run NEURAL modes (TensorRT models missing). `ULTRA`/`QUALITY`/`PERFORMANCE`/`NONE` all work.|
 | Basler `ChunkModeActive` (in UserSet1)             | Wrapper uses chunk timestamp in camera-clock domain — breaks ROS time sync |
 | `zed_x_daemon.service` `sync_mode=2`               | Reverting to 0 makes ZED master, breaks Teensy-as-master architecture |
 | `cameras.launch.xml` `mtu_size: 1500`              | Setting 9000 (jumbo) is unstable on container path          |

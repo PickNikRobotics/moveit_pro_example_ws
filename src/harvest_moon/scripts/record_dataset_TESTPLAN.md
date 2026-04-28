@@ -47,19 +47,52 @@ First-time test plan for `record_dataset.py`. Run this with the system fully up
 
 ## Things to verify and report back
 
-- **Are all default topics actually publishing?** If the pre-flight check
-  warns about missing topics, note which ones — most likely the ZED ones
-  need their names corrected (e.g. `image_rect_color` may not be the right
-  topic name for the wrapper config we're running).
-- **Storage rate**: at default settings, expect ~240–300 MB/s. The 10-second
-  smoke test should produce ~2.5–3 GB. If much smaller or much larger,
-  something's off (topics missing, or recording more than expected).
-- **Clean shutdown**: re-run without `--duration`, let it run a few seconds,
-  hit Ctrl+C. It should print "stopping cleanly" and exit within ~15 s.
+- **Did the ZED node come up cleanly?** This run uses
+  `depth_mode: 'ULTRA'` (changed from `'NONE'`). Watch the ZED launch
+  log for any TensorRT or model-loading errors — `ULTRA` should NOT
+  need TensorRT, but if something's off the ZED node will fail at
+  startup.
+- **Are all default topics actually publishing?** The recorder
+  pre-flight check will warn if any are missing. Likely candidates if
+  any are wrong: the depth/pointcloud/confidence/disparity/IMU topic
+  names. ZED wrapper conventions vary by version — note any warnings.
+- **Storage rate**: at full default settings, expect **~1.2 GB/s**. A
+  10-second smoke test should produce ~12 GB. If much smaller, some
+  ZED stream isn't publishing. If much larger, something's recording
+  more than expected.
+- **Did the Jetson keep up?** With ZED depth + pointcloud at 15 Hz,
+  CPU could saturate. Check `ros2 topic hz /zed_x/zed_node/point_cloud/cloud_registered`
+  during the run — should be near 15 Hz. If lower, drop the ZED to
+  `depth_mode: 'QUALITY'` or `'PERFORMANCE'`.
+- **Clean shutdown**: re-run without `--duration`, let it run a few
+  seconds, hit Ctrl+C. It should print "stopping cleanly" and exit
+  within ~15 s.
+
+## If a topic warning fires for a ZED topic
+
+The exact ZED topic names depend on `zed_wrapper` version. To list
+what's actually publishing:
+```
+ros2 topic list | grep zed
+```
+Compare against `DEFAULT_TOPICS` in `record_dataset.py`. Update the
+list if names differ.
 
 ## Cleanup after smoke test
 
-Smoke test bags are large — delete after confirming things work:
+Smoke test bags are now ~12 GB for a 10-second run (full ZED depth +
+pointcloud). Delete after confirming things work:
 ```
 rm -rf ~/user_ws/datasets/smoke_*
 ```
+
+## After the smoke test
+
+Before relaunching, remember to **rebuild** the workspace so the YAML
+change takes effect:
+```
+cd ~/user_ws
+colcon build --packages-select harvest_moon
+source install/setup.bash
+```
+Then `moveit_pro run` to start with the new ZED config.
