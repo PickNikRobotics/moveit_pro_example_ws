@@ -70,12 +70,3 @@ The scripts referenced throughout these docs live in
 | `triple_sync_test.py`   | Standalone 3-camera sync test (no ROS)         | B §4          |
 | `provision_basler.py` and friends | One-shot diagnostic / setup tools     | various       |
 
----
-
-## What's not here
-
-There is no "Field Hardening Notes" doc. The customer's integrator is
-the right person to design the ruggedized field rebuild — these docs
-describe the prototype's state and rationale, not how to harden it. If
-the integrator has questions about specific design decisions, the
-"why" answers in D §5 and H §8 cover most of the load-bearing choices.
