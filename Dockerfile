@@ -65,6 +65,19 @@ RUN groupadd realtime && \
 # You can also add any necessary apt-get install, pip install, etc. commands at this point.
 # NOTE: The /opt/overlay_ws folder contains MoveIt Pro binary packages and the source file.
 # hadolint ignore=SC1091
+
+# Install camera driver dependencies                                                             
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \                                      
+    apt-get update && \
+    apt-get install -q -y --no-install-recommends \
+        ros-humble-nmea-msgs \
+        ros-humble-geographic-msgs \
+        ros-humble-robot-localization \
+        ros-humble-point-cloud-transport \
+        libturbojpeg \
+        v4l-utils
+
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     --mount=type=bind,target=${USER_WS}/src,source=./src \

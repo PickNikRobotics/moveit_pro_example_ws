@@ -1,0 +1,6 @@
+
+objectives:
+  objective_library_paths:
+    example_objective:
+      package_name: "harvest_moon"
+      relative_path: "objectives"

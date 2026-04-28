@@ -7,22 +7,94 @@
 services:
 
   # The base image that all MoveIt Pro services extend off of. Builds the user workspace.
-  base: {}
-
+  base:                                                                                          
+    volumes:                                                                                     
+      - /opt/pylon:/opt/pylon:ro
+      - /usr/local/zed:/usr/local/zed:ro                                                         
+      - /usr/local/cuda:/usr/local/cuda:ro
+      - /tmp/argus_socket:/tmp/argus_socket                                                      
+    environment:                                                                                 
+      - PYLON_ROOT=/opt/pylon
+      - LD_LIBRARY_PATH=/opt/pylon/lib:/usr/local/zed/lib:/usr/local/cuda/lib64:${LD_LIBRARY_PATH:-}
+  
   # Starts the MoveIt Pro Agent and the Bridge between the Agent and the Web UI.
-  agent_bridge: {}
+  agent_bridge:
+    privileged: true
+    ipc: host
+    network_mode: host
+    volumes:
+      - /dev:/dev
+      # Mount Basler Pylon SDK from host
+      - /opt/pylon:/opt/pylon:ro
+      # Mount ZED SDK from host
+      - /usr/local/zed:/usr/local/zed:ro
+      - /usr/local/cuda:/usr/local/cuda:ro
+      # Mount full /tmp so nvargus + ZED X daemon sockets survive host-side daemon restarts
+      - /tmp:/tmp
+      # Mount dbus system bus socket for ZED X daemon discovery
+      - /run/dbus:/run/dbus
+      # ZED SDK reads this file to locate the ZED X daemon
+      - /etc/systemd/system/zed_x_daemon.service:/etc/systemd/system/zed_x_daemon.service:ro
+      # NVIDIA SciIPC shared memory buffers (used by ZED X daemon ↔ SDK)
+      - /dev/shm:/dev/shm
+    environment:
+      # Pylon SDK
+      - PYLON_ROOT=/opt/pylon
+      # Library paths for both SDKs
+      - LD_LIBRARY_PATH=/opt/pylon/lib:/usr/local/zed/lib:/usr/local/cuda/lib64:${LD_LIBRARY_PATH:-}
 
   # Starts the robot drivers.
   drivers:
+    privileged: true
+    ipc: host
+    network_mode: host
     volumes:
-      # Allow access to host hardware e.g. RealSense cameras
+      # Allow access to host hardware e.g. RealSense cameras and ZED Link capture card
       - /dev:/dev
-
+      # Mount Basler Pylon SDK from host
+      - /opt/pylon:/opt/pylon:ro
+      # Mount ZED SDK from host
+      - /usr/local/zed:/usr/local/zed:ro
+      - /usr/local/cuda:/usr/local/cuda:ro
+      # Mount full /tmp so nvargus + ZED X daemon sockets survive host-side daemon restarts
+      - /tmp:/tmp
+      # Mount dbus system bus socket for ZED X daemon discovery
+      - /run/dbus:/run/dbus
+      # ZED SDK reads this file to locate the ZED X daemon
+      - /etc/systemd/system/zed_x_daemon.service:/etc/systemd/system/zed_x_daemon.service:ro
+      # NVIDIA SciIPC shared memory buffers (used by ZED X daemon ↔ SDK)
+      - /dev/shm:/dev/shm
+    environment:
+      # Pylon SDK
+      - PYLON_ROOT=/opt/pylon
+      # Library paths for both SDKs
+      - LD_LIBRARY_PATH=/opt/pylon/lib:/usr/local/zed/lib:/usr/local/cuda/lib64:${LD_LIBRARY_PATH:-}
   # Starts the web UI frontend.
   web_ui: {}
 
   # Developer specific configuration when running `moveit_pro dev`.
   dev:
+    privileged: true
+    ipc: host
+    network_mode: host
     volumes:
-      # Allow access to host hardware e.g. RealSense cameras
+      # Allow access to host hardware e.g. RealSense cameras and ZED Link capture card
       - /dev:/dev
+      # Mount Basler Pylon SDK from host
+      - /opt/pylon:/opt/pylon:ro
+      # Mount ZED SDK from host
+      - /usr/local/zed:/usr/local/zed:ro
+      - /usr/local/cuda:/usr/local/cuda:ro
+      # Mount full /tmp so nvargus + ZED X daemon sockets survive host-side daemon restarts
+      - /tmp:/tmp
+      # Mount dbus system bus socket for ZED X daemon discovery
+      - /run/dbus:/run/dbus
+      # ZED SDK reads this file to locate the ZED X daemon
+      - /etc/systemd/system/zed_x_daemon.service:/etc/systemd/system/zed_x_daemon.service:ro
+      # NVIDIA SciIPC shared memory buffers (used by ZED X daemon ↔ SDK)
+      - /dev/shm:/dev/shm
+    environment:
+      # Pylon SDK
+      - PYLON_ROOT=/opt/pylon
+      # Library paths for both SDKs
+      - LD_LIBRARY_PATH=/opt/pylon/lib:/usr/local/zed/lib:/usr/local/cuda/lib64:${LD_LIBRARY_PATH:-}

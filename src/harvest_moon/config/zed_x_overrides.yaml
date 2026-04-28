@@ -1,0 +1,18 @@
+/**:
+    ros__parameters:
+        general:
+            grab_frame_rate: 15
+        video:
+            # Disable auto-exposure and use a short fixed exposure so the LHI-DO
+            # strobe (which fires for ~500 µs during each Basler exposure) is
+            # the dominant light source in ZED frames. With auto-exposure on,
+            # the wrapper picks a long exposure that washes out the strobe.
+            auto_exposure_gain: false
+            exposure_time: 200   # µs; small enough that strobe contribution dominates
+        depth:
+            depth_mode: 'NONE'
+        object_detection:
+            od_enabled: false
+        body_tracking:
+            bt_enabled: false
+

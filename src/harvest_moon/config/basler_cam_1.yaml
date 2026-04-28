@@ -1,0 +1,27 @@
+/**:
+  ros__parameters:
+    # Identity
+    camera_frame: basler_cam_1
+    device_user_id: "25233972"
+
+    # Publish rate. Matches the Basler trigger rate from the Teensy (5 Hz —
+    # ZED at 15 Hz, Basler every 3rd ZED tick due to GigE bandwidth limit).
+    frame_rate: 5.0
+
+    # Bayer-mosaic output; demosaic happens downstream in image_proc.
+    image_encoding: "bayer_rggb8"
+
+    # Drop stale frames in pylon's internal buffer; only the latest is delivered.
+    # Without this, a startup buffer accumulation causes the wrapper to publish
+    # frames seconds behind real time (with current-time stamps — looks fine in
+    # timestamps but content is stale).
+    # 0 = OneByOne (FIFO, default), 1 = LatestImageOnly, 2 = LatestImages
+    grab_strategy: 1
+
+    # Image intensity controls (field-tunable).
+    # The camera's trigger/line/pixel-format config lives in UserSet1
+    # (see provision_basler.py). Values below are applied on top of UserSet1
+    # at launch.
+    exposure: 500.0             # microseconds, fixed; must be <= trigger period
+    exposure_auto: false        # fixed exposure required for sync with strobe
+    gain_auto: false            # fixed gain — adjust `gain` if image is too dark

@@ -1,0 +1,22 @@
+diff --git a/pylon_ros2_camera_component/include/internal/pylon_ros2_camera_impl.hpp b/pylon_ros2_camera_component/include/internal/pylon_ros2_camera_impl.hpp
+index e25c5f1..886c1df 100644
+--- a/pylon_ros2_camera_component/include/internal/pylon_ros2_camera_impl.hpp
++++ b/pylon_ros2_camera_component/include/internal/pylon_ros2_camera_impl.hpp
+@@ -476,4 +476,3 @@ protected:
+ #include "internal/impl/pylon_ros2_camera_dart.hpp"
+ #include "internal/impl/pylon_ros2_camera_gige.hpp"
+ #include "internal/impl/pylon_ros2_camera_gige_ace2.hpp"
+-#include "internal/impl/pylon_ros2_camera_blaze.hpp"
+diff --git a/pylon_ros2_camera_component/src/pylon_ros2_camera.cpp b/pylon_ros2_camera_component/src/pylon_ros2_camera.cpp
+index 6637032..f2ca816 100644
+--- a/pylon_ros2_camera_component/src/pylon_ros2_camera.cpp
++++ b/pylon_ros2_camera_component/src/pylon_ros2_camera.cpp
+@@ -170,7 +170,7 @@ std::unique_ptr<PylonROS2Camera> createFromDevice(PYLON_CAM_TYPE cam_type, Pylon
+         case DART:
+             return std::make_unique<PylonROS2DARTCamera>(device);
+         case BLAZE:
+-            return std::make_unique<PylonROS2BlazeCamera>(device);
++            return nullptr;
+         case UNKNOWN:
+         default:
+             return nullptr;

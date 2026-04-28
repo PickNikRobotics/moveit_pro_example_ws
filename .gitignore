@@ -2,3 +2,21 @@ build/
 install/
 log/
 .vscode/
+
+# Python bytecode caches
+__pycache__/
+*.pyc
+
+# Runtime logs and debug captures
+*.log
+vision_debug/
+
+# Stray local binaries / wheels that shouldn't be tracked
+*.whl
+libturbojpeg-*.so*
+
+# External ROS packages cloned into src/ for local builds.
+# Local fixes are preserved in /patches - see patches/README.md.
+src/pylon-ros-camera/
+src/zed-ros2-interfaces/
+src/zed-ros2-wrapper/

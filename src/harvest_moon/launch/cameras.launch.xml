@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>                                                          
+  <launch>                                                                                         
+    <!-- Basler camera 1 -->
+    <include file="$(find-pkg-share pylon_ros2_camera_wrapper)/launch/pylon_ros2_camera.launch.py">
+      <arg name="node_name" value="pylon_ros2_camera_node" />                                      
+      <arg name="camera_id" value="basler_cam_1" />
+      <arg name="config_file" value="$(find-pkg-share harvest_moon)/config/basler_cam_1.yaml" />   
+      <arg name="mtu_size" value="1500" />    
+      <arg name="startup_user_set" value="UserSet1" />                                                     
+    </include>
+                                                                                                   
+    <!-- Basler camera 2 -->
+    <include file="$(find-pkg-share pylon_ros2_camera_wrapper)/launch/pylon_ros2_camera.launch.py">
+      <arg name="node_name" value="pylon_ros2_camera_node" />                                      
+      <arg name="camera_id" value="basler_cam_2" />
+      <arg name="config_file" value="$(find-pkg-share harvest_moon)/config/basler_cam_2.yaml" />   
+      <arg name="mtu_size" value="1500" />
+      <arg name="startup_user_set" value="UserSet1" />
+    </include>                                                                                     
+                                                                                                   
+    <!-- ZED X camera -->
+    <include file="$(find-pkg-share zed_wrapper)/launch/zed_camera.launch.py">
+      <arg name="camera_name" value="zed_x" />
+      <arg name="camera_model" value="zedx" />
+      <arg name="serial_number" value="47845360" />
+      <arg name="camera_id" value="-1" />
+      <arg name="publish_urdf" value="true" />
+      <arg name="publish_tf" value="true" />
+      <arg name="publish_map_tf" value="false" />
+      <arg name="ros_params_override_path"
+           value="$(find-pkg-share harvest_moon)/config/zed_x_overrides.yaml" />
+    </include>    
+  </launch>
