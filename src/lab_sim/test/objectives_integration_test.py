@@ -55,7 +55,6 @@ cancel_objectives = {
 # Objectives to skip entirely from integration testing
 skip_objectives = {
     "AddBottlesToPlanningScene",
-    "Get Grasp from Text Prompt Subtree",  # https://github.com/PickNikRobotics/moveit_pro/issues/13236
     "Grasp Planning",
     "Joint Diagnostic",
     "ML Auto Grasp Object from Clicked Point",  # Skipped because there is no primary ui to switch to in ci
