@@ -8,12 +8,12 @@
   >
     <Control ID="Sequence">
       <Action
-        ID="CreateStampedPose"
+        ID="CreatePoseStamped"
         position_xyz="0; 0; 0"
-        stamped_pose="{stamped_pose}"
+        pose_stamped="{pose_stamped}"
         reference_frame="pinch"
       />
-      <Action ID="TransformPoseFrame" input_pose="{stamped_pose}" />
+      <Action ID="TransformPoseFrame" input_pose="{pose_stamped}" />
       <Action ID="VisualizePose" pose="{output_pose}" />
     </Control>
   </BehaviorTree>

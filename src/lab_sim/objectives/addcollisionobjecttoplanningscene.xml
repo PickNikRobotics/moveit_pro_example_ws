@@ -61,7 +61,7 @@
       </inout_port>
       <inout_port
         name="pose"
-        default="{stamped_pose}"
+        default="{pose_stamped}"
         type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"
       />
     </SubTree>

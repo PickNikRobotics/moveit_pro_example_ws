@@ -17,9 +17,9 @@
         <SubTree ID="Take Snapshot" _collapsed="true" />
       </Control>
       <Action
-        ID="CreateStampedPose"
+        ID="CreatePoseStamped"
         reference_frame="world"
-        stamped_pose="{stamped_pose}"
+        pose_stamped="{pose_stamped}"
         orientation_xyzw="0.7071;0.7071;0;0.0004"
         position_xyz="-0.35;0.4;0.288"
         name="Pose to make a grid of reachability poses from"
@@ -33,7 +33,7 @@
         joint_group_name="manipulator"
         controller_names="joint_trajectory_admittance_controller"
         controller_action_server="/joint_trajectory_admittance_controller/follow_joint_trajectory"
-        reachability_origin_pose="{stamped_pose}"
+        reachability_origin_pose="{pose_stamped}"
         starting_waypoint="View blocks"
         approach_distance="0.1"
         column_spacing_translation="0;0.175;0"

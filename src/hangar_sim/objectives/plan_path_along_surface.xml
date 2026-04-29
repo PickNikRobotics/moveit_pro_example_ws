@@ -35,9 +35,9 @@
         target_frame="world"
       />
       <Action
-        ID="CreateStampedPose"
+        ID="CreatePoseStamped"
         reference_frame="world"
-        stamped_pose="{roi_frame}"
+        pose_stamped="{roi_frame}"
         position_xyz="0;12;1.7"
       />
       <Action

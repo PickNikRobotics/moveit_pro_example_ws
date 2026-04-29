@@ -8,9 +8,9 @@
   >
     <Control ID="Sequence">
       <Action
-        ID="CreateStampedPose"
+        ID="CreatePoseStamped"
         reference_frame="world"
-        stamped_pose="{place_pose}"
+        pose_stamped="{place_pose}"
         orientation_xyzw="0;1.0;0;0"
         position_xyz="-4.5;8.4;0.5"
       />

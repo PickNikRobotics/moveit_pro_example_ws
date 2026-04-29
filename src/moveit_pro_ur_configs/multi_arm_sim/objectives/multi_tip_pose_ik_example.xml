@@ -11,9 +11,9 @@
       />
       <!--Create the target poses into a vector-->
       <Action
-        ID="CreateStampedPose"
+        ID="CreatePoseStamped"
         reference_frame="world"
-        stamped_pose="{target}"
+        pose_stamped="{target}"
         position_xyz="-0.4;0.2;0.2"
         orientation_xyzw="0.7071068;-0.7071068;0;0"
       />

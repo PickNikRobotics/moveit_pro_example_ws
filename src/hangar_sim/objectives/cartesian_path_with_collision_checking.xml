@@ -24,9 +24,9 @@
         keep_orientation_link_names="grasp_link"
       />
       <Action
-        ID="CreateStampedPose"
+        ID="CreatePoseStamped"
         reference_frame="grasp_link"
-        stamped_pose="{stamped_pose}"
+        pose_stamped="{pose_stamped}"
         orientation_xyzw="0;0;0;1"
         position_xyz="0;0;5"
       />
@@ -35,11 +35,11 @@
         marker_lifetime="0.000000"
         marker_name="pose"
         marker_size="0.100000"
-        pose="{stamped_pose}"
+        pose="{pose_stamped}"
       />
       <Action
         ID="AddPoseStampedToVector"
-        input="{stamped_pose}"
+        input="{pose_stamped}"
         vector="{pose_stamped_vector}"
       />
       <Action

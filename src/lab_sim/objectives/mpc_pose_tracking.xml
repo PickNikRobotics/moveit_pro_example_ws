@@ -15,33 +15,33 @@
           waypoint_name="Pose Tracking"
         />
         <Action
-          ID="CreateStampedPose"
+          ID="CreatePoseStamped"
           reference_frame="pinch"
-          stamped_pose="{stamped_pose}"
+          pose_stamped="{pose_stamped}"
           position_xyz="0.2;0.2;0.0"
           orientation_xyzw="0;0;1;1"
         />
         <Action
           ID="TransformPoseFrame"
-          input_pose="{stamped_pose}"
-          output_pose="{stamped_pose_linear}"
+          input_pose="{pose_stamped}"
+          output_pose="{pose_stamped_linear}"
           target_frame_id="world"
         />
         <Action
-          ID="CreateStampedPose"
+          ID="CreatePoseStamped"
           reference_frame="world"
-          stamped_pose="{stamped_pose_rotation}"
+          pose_stamped="{pose_stamped_rotation}"
         />
         <Action
           ID="TransformPoseWithPose"
-          input_pose="{stamped_pose_rotation}"
-          output_pose="{stamped_pose}"
-          transform_pose="{stamped_pose_rotation}"
+          input_pose="{pose_stamped_rotation}"
+          output_pose="{pose_stamped}"
+          transform_pose="{pose_stamped_rotation}"
         />
         <Action
-          ID="CreateStampedTwist"
+          ID="CreateTwistStamped"
           reference_frame="world"
-          stamped_twist="{stamped_twist}"
+          twist_stamped="{twist_stamped}"
           linear_velocity_xyz="-0.1;0.0;0.1"
           angular_velocity_xyz="0;0;0.3"
         />
@@ -54,21 +54,21 @@
                     <Control ID="Sequence">
                       <Action
                         ID="TransformPose"
-                        input_pose="{stamped_pose_linear}"
-                        output_pose="{stamped_pose_linear}"
+                        input_pose="{pose_stamped_linear}"
+                        output_pose="{pose_stamped_linear}"
                         translation_xyz="0.001;0.0;-0.0003"
                       />
                       <Action
                         ID="TransformPose"
-                        input_pose="{stamped_pose_rotation}"
-                        output_pose="{stamped_pose_rotation}"
+                        input_pose="{pose_stamped_rotation}"
+                        output_pose="{pose_stamped_rotation}"
                         quaternion_xyzw="0;0;-0.004;.999"
                       />
                       <Action
                         ID="TransformPoseWithPose"
-                        input_pose="{stamped_pose_rotation}"
-                        output_pose="{stamped_pose}"
-                        transform_pose="{stamped_pose_linear}"
+                        input_pose="{pose_stamped_rotation}"
+                        output_pose="{pose_stamped}"
+                        transform_pose="{pose_stamped_linear}"
                       />
                     </Control>
                   </Decorator>
@@ -81,12 +81,12 @@
                         marker_lifetime="0.000000"
                         marker_name="target"
                         marker_size="0.100000"
-                        pose="{stamped_pose}"
+                        pose="{pose_stamped}"
                       />
                       <Action
-                        ID="CreateStampedPose"
+                        ID="CreatePoseStamped"
                         reference_frame="pinch"
-                        stamped_pose="{current_pinch}"
+                        pose_stamped="{current_pinch}"
                       />
                       <Action
                         ID="TransformPoseFrame"
@@ -139,8 +139,8 @@
                   velocity="0.000000"
                   follow_joint_trajectory_topic="/joint_trajectory_controller/follow_joint_trajectory"
                   set_ctrl_command_to_current_state="true"
-                  target_pose="{stamped_pose}"
-                  target_twist="{stamped_twist}"
+                  target_pose="{pose_stamped}"
+                  target_twist="{twist_stamped}"
                 />
               </Control>
             </Decorator>

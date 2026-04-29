@@ -13,8 +13,8 @@
         file_path="picknik.yaml"
       />
       <Action
-        ID="CreateStampedPose"
-        stamped_pose="{stamped_pose}"
+        ID="CreatePoseStamped"
+        pose_stamped="{pose_stamped}"
         orientation_xyzw="0;0;1;0"
         position_xyz="0;0;0.5"
         reference_frame="grasp_link"
@@ -24,13 +24,13 @@
         marker_lifetime="0.000000"
         marker_name="pose"
         marker_size="0.100000"
-        pose="{stamped_pose}"
+        pose="{pose_stamped}"
       />
       <Control ID="Parallel" failure_count="1" success_count="1">
         <Action
           ID="PublishStaticFrame"
           child_frame_id="local"
-          pose="{stamped_pose}"
+          pose="{pose_stamped}"
           publish_rate="50"
         />
         <Control ID="Sequence" name="TopLevelSequence">

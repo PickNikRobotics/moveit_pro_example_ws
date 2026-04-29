@@ -67,7 +67,7 @@
         <Metadata runnable="false" />
         <Metadata subcategory="Motion - Execute" />
       </MetadataFields>
-      <inout_port name="center" default="{stamped_pose}" />
+      <inout_port name="center" default="{pose_stamped}" />
       <inout_port name="controller_name" default="{controller_names}" />
       <inout_port
         name="execute_follow_joint_trajectory_action_name"

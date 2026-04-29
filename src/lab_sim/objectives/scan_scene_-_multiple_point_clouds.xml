@@ -29,9 +29,9 @@
       <!--Cartesian move right from center and capture-->
       <Action ID="ResetPoseStampedVector" vector="{cartesian_path}" />
       <Action
-        ID="CreateStampedPose"
+        ID="CreatePoseStamped"
         reference_frame="grasp_link"
-        stamped_pose="{offset_pose}"
+        pose_stamped="{offset_pose}"
         position_xyz="0.80;0;0"
       />
       <Action
@@ -64,9 +64,9 @@
       <!--Cartesian move from right directly to left and capture-->
       <Action ID="ResetPoseStampedVector" vector="{cartesian_path}" />
       <Action
-        ID="CreateStampedPose"
+        ID="CreatePoseStamped"
         reference_frame="grasp_link"
-        stamped_pose="{offset_pose}"
+        pose_stamped="{offset_pose}"
         position_xyz="-1.60;0;0"
       />
       <Action

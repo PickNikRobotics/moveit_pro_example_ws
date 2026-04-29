@@ -8,8 +8,8 @@
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
-        ID="CreateStampedTwist"
-        stamped_twist="{desired_twist}"
+        ID="CreateTwistStamped"
+        twist_stamped="{desired_twist}"
         angular_velocity_xyz="0.0;0.0;0.0"
         linear_velocity_xyz="0.0;0.0;0.0"
       />
@@ -18,10 +18,10 @@
         activate_controllers="velocity_force_controller"
       />
       <Action
-        ID="CreateStampedWrench"
+        ID="CreateWrenchStamped"
         torque_xyz="0.0;0.0;0.0"
         force_xyz="0.0;0.0;0.0"
-        stamped_wrench="{desired_wrench}"
+        wrench_stamped="{desired_wrench}"
       />
       <Decorator ID="KeepRunningUntilFailure">
         <Action

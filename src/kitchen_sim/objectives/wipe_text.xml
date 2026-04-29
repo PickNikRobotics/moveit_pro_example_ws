@@ -46,7 +46,7 @@
         <Metadata runnable="false" />
         <Metadata subcategory="Motion - Execute" />
       </MetadataFields>
-      <inout_port name="bottom_right_corner" default="{stamped_pose}" />
+      <inout_port name="bottom_right_corner" default="{pose_stamped}" />
     </SubTree>
   </TreeNodesModel>
 </root>

@@ -8,9 +8,9 @@
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
-        ID="CreateStampedPose"
+        ID="CreatePoseStamped"
         reference_frame="grasp_link"
-        stamped_pose="{target_pose}"
+        pose_stamped="{target_pose}"
         position_xyz="0;0;0.3"
       />
       <Action

@@ -9,9 +9,9 @@
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
-        ID="CreateStampedPose"
+        ID="CreatePoseStamped"
         reference_frame="{requested_frame}"
-        stamped_pose="{identity_pose}"
+        pose_stamped="{identity_pose}"
         name="Make an identity pose to be transformed"
         orientation_xyzw="0.; 0.; 0.; 1."
         position_xyz="0.;0.;0."

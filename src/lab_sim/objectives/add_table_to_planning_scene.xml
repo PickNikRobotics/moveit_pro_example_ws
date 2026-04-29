@@ -12,9 +12,9 @@
         planning_scene_msg="{planning_scene}"
       />
       <Action
-        ID="CreateStampedPose"
+        ID="CreatePoseStamped"
         reference_frame="world"
-        stamped_pose="{table_pose}"
+        pose_stamped="{table_pose}"
         position_xyz="-0.076413; 0.97; 0.42;"
       />
       <Action

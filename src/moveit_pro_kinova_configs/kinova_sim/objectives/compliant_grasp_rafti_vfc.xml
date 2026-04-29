@@ -43,11 +43,11 @@
               input_pose="{tag_pose_world}"
               translation_xyz="0.104533 ;-0.104463;-0.132927"
               quaternion_xyzw="0.0;0.0;1.0;0.0"
-              output_pose="{object_stamped_pose_estimate}"
+              output_pose="{object_pose_stamped_estimate}"
             />
             <Action
               ID="PublishStaticFrame"
-              pose="{object_stamped_pose_estimate}"
+              pose="{object_pose_stamped_estimate}"
               child_frame_id="object_frame"
               publish_rate="5"
             />
@@ -69,7 +69,7 @@
             <Decorator ID="Timeout" msec="1000">
               <Action
                 ID="PublishStaticFrame"
-                pose="{object_stamped_pose_estimate}"
+                pose="{object_pose_stamped_estimate}"
                 child_frame_id="object_frame"
                 publish_rate="5"
               />
@@ -115,7 +115,7 @@
             <Decorator ID="Timeout" msec="100">
               <Action
                 ID="PublishStaticFrame"
-                pose="{object_stamped_pose_estimate}"
+                pose="{object_pose_stamped_estimate}"
                 child_frame_id="object_frame"
                 publish_rate="5"
               />
@@ -129,7 +129,7 @@
           />
           <Action
             ID="TransformPoseWithPose"
-            input_pose="{object_stamped_pose_estimate}"
+            input_pose="{object_pose_stamped_estimate}"
             transform_pose="{model_to_real_pose}"
             output_pose="{model_world}"
           />
@@ -261,17 +261,17 @@
         timeout="-1.0"
       />
       <Action
-        ID="CreateStampedTwist"
+        ID="CreateTwistStamped"
         angular_velocity_xyz="0.0;0.0;0.0"
         linear_velocity_xyz="0.0;0.0;0.0"
-        stamped_twist="{desired_twist}"
+        twist_stamped="{desired_twist}"
         reference_frame="world"
       />
       <Action
-        ID="CreateStampedWrench"
+        ID="CreateWrenchStamped"
         torque_xyz="0.0;0.0;0.0"
         force_xyz="0.0;0.0;0.0"
-        stamped_wrench="{desired_wrench}"
+        wrench_stamped="{desired_wrench}"
         reference_frame="world"
       />
       <Control ID="Parallel" success_count="1" failure_count="1">

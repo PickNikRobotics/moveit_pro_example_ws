@@ -12,16 +12,16 @@
       <SubTree ID="Clear Snapshot" _collapsed="true" />
       <SubTree ID="Move to Waypoint" _collapsed="true" waypoint_name="Home" />
       <Action
-        ID="CreateStampedPose"
+        ID="CreatePoseStamped"
         position_xyz="0.0;0.5;0.8"
-        stamped_pose="{stamped_pose}"
+        pose_stamped="{pose_stamped}"
         reference_frame="world"
       />
       <Action ID="VisualizePose" pose="{stamped_pose}" />
       <SubTree
         ID="LoadAndVisualizePointCloud"
         _collapsed="true"
-        input_pose="{stamped_pose}"
+        input_pose="{pose_stamped}"
         transform_cloud="{output_cloud}"
       />
       <SubTree
@@ -69,9 +69,9 @@
         marker_poses="{marker_poses2}"
       />
       <Action
-        ID="CreateStampedTwist"
+        ID="CreateTwistStamped"
         reference_frame="world"
-        stamped_twist="{stamped_twist}"
+        twist_stamped="{twist_stamped}"
       />
       <Control ID="Fallback">
         <Decorator ID="Timeout" msec="40000">
@@ -108,7 +108,7 @@
               safe_distance="0.25"
               sphere_clearance="1.0"
               target_pose="{link_pose}"
-              target_twist="{stamped_twist}"
+              target_twist="{twist_stamped}"
               warmup_iterations="256"
               timeout="300"
               site_tracking="0.2"

@@ -74,7 +74,7 @@
         name="controller_names"
         default="/joint_trajectory_controller"
       />
-      <input_port name="target_pose" default="{stamped_pose}" />
+      <input_port name="target_pose" default="{pose_stamped}" />
     </SubTree>
   </TreeNodesModel>
 </root>

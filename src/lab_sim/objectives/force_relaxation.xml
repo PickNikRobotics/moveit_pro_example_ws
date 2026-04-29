@@ -8,14 +8,14 @@
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
-        ID="CreateStampedTwist"
+        ID="CreateTwistStamped"
         reference_frame="{tip_link}"
-        stamped_twist="{zero_twist}"
+        twist_stamped="{zero_twist}"
       />
       <Action
-        ID="CreateStampedWrench"
+        ID="CreateWrenchStamped"
         reference_frame="{tip_link}"
-        stamped_wrench="{zero_wrench}"
+        wrench_stamped="{zero_wrench}"
       />
       <Decorator ID="ForceSuccess">
         <Decorator ID="Timeout" msec="{relaxation_time_ms}">

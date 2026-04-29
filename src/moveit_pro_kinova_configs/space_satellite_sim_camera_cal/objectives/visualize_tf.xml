@@ -5,21 +5,21 @@
     <Control ID="Sequence">
       <Decorator ID="Repeat" num_cycles="10">
         <Action
-          ID="CreateStampedPose"
+          ID="CreatePoseStamped"
           reference_frame="{tf_frame_name}"
-          stamped_pose="{stamped_pose}"
+          pose_stamped="{pose_stamped}"
         />
       </Decorator>
       <Action
         ID="TransformPoseFrame"
-        input_pose="{stamped_pose}"
-        output_pose="{stamped_pose}"
+        input_pose="{pose_stamped}"
+        output_pose="{pose_stamped}"
         target_frame_id="world"
       />
       <Action
         ID="VisualizePose"
         name=""
-        pose="{stamped_pose}"
+        pose="{pose_stamped}"
         marker_lifetime="{marker_lifetime}"
         marker_name="{marker_name}"
         marker_size="{marker_size}"

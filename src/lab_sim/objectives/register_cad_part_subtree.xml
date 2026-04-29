@@ -9,10 +9,10 @@
       <Action ID="ClearSnapshot" />
       <SubTree ID="Look at Table" _collapsed="true" />
       <Action
-        ID="CreateStampedPose"
+        ID="CreatePoseStamped"
         position_xyz="-0.15;.5;0.7"
         orientation_xyzw="0;0;0;1"
-        stamped_pose="{stamped_pose}"
+        pose_stamped="{pose_stamped}"
         name="Initial Guess"
         reference_frame="world"
       />
@@ -31,7 +31,7 @@
       <Action
         ID="TransformPointCloud"
         input_cloud="{red_cloud}"
-        transform_pose="{stamped_pose}"
+        transform_pose="{pose_stamped}"
         output_cloud="{red_cloud}"
       />
       <SubTree
@@ -81,7 +81,7 @@
       <Action
         ID="TransformPointCloud"
         input_cloud="{green_cloud}"
-        transform_pose="{stamped_pose}"
+        transform_pose="{pose_stamped}"
         output_cloud="{green_cloud}"
       />
       <Action
@@ -98,7 +98,7 @@
       <!--Transform the output pose from RegisterPointClouds to be usable for grasp planning-->
       <Action
         ID="TransformPoseWithPose"
-        input_pose="{stamped_pose}"
+        input_pose="{pose_stamped}"
         output_pose="{grasp_pose}"
         transform_pose="{target_pose}"
         name="Take the transform_pose from RegisterPointClouds and apply it on top of the initial guess to put it in the world frame"

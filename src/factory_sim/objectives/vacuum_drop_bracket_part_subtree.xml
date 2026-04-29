@@ -8,9 +8,9 @@
     <Control ID="Sequence">
       <!--The drop pose is at a 5 degree tilt so it doesn't drop straight into the bin or on top of another part. Simulator instabilities can cause parts to jump when dropped perfectly flat.-->
       <Action
-        ID="CreateStampedPose"
+        ID="CreatePoseStamped"
         reference_frame="world"
-        stamped_pose="{drop_pose}"
+        pose_stamped="{drop_pose}"
         orientation_xyzw="-0.706; -0.706; -0.031; -0.031"
         position_xyz="0.23;0.54;0.65"
       />

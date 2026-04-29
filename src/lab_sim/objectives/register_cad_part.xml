@@ -9,11 +9,11 @@
       <Action ID="ClearSnapshot" />
       <SubTree ID="Look at Table" _collapsed="true" />
       <Action
-        ID="CreateStampedPose"
+        ID="CreatePoseStamped"
         reference_frame="world"
         position_xyz="-1.0;.5;0.7"
         orientation_xyzw="0;0;0;1"
-        stamped_pose="{stamped_pose}"
+        pose_stamped="{pose_stamped}"
         name="Initial Guess"
       />
       <Action
@@ -31,7 +31,7 @@
       <Action
         ID="TransformPointCloud"
         input_cloud="{red_cloud}"
-        transform_pose="{stamped_pose}"
+        transform_pose="{pose_stamped}"
         output_cloud="{red_cloud}"
       />
       <Action ID="SendPointCloudToUI" point_cloud="{red_cloud}" />
@@ -74,7 +74,7 @@
       <Action
         ID="TransformPointCloud"
         input_cloud="{green_cloud}"
-        transform_pose="{stamped_pose}"
+        transform_pose="{pose_stamped}"
         output_cloud="{green_cloud}"
       />
       <Action

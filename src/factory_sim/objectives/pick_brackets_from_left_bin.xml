@@ -39,11 +39,11 @@
             <!--Get the bracket pointcloud from the CAD file and make a guess as to where it might be-->
             <Action ID="ClearSnapshot" />
             <Action
-              ID="CreateStampedPose"
+              ID="CreatePoseStamped"
               position_xyz="-0.35;0.8;0.4"
               orientation_xyzw="0.000;0.000;0.0;1"
               name="Initial guess for bracket pose, somewhere above left bin"
-              stamped_pose="{guess_pose}"
+              pose_stamped="{guess_pose}"
               reference_frame="world"
             />
             <SubTree
@@ -87,9 +87,9 @@
               name="Crop out points belonging to the bin by making a box that approximates the bin internal volume"
             >
               <Action
-                ID="CreateStampedPose"
+                ID="CreatePoseStamped"
                 reference_frame="world"
-                stamped_pose="{centroid_pose}"
+                pose_stamped="{centroid_pose}"
                 position_xyz="-0.25;0.6;0.4"
               />
               <Action

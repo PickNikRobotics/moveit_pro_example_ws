@@ -8,8 +8,8 @@
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
-        ID="CreateStampedPose"
-        stamped_pose="{suction_tool_pose}"
+        ID="CreatePoseStamped"
+        pose_stamped="{suction_tool_pose}"
         reference_frame="suction_gripper_holder_site"
       />
       <Action
@@ -20,8 +20,8 @@
         urdf_name="suction_gripper"
       />
       <Action
-        ID="CreateStampedPose"
-        stamped_pose="{inspection_tool_pose}"
+        ID="CreatePoseStamped"
+        pose_stamped="{inspection_tool_pose}"
         reference_frame="inspection_tool_holder_site"
       />
       <Action

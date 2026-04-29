@@ -8,9 +8,9 @@
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
-        ID="CreateStampedPose"
+        ID="CreatePoseStamped"
         reference_frame="base_link"
-        stamped_pose="{start}"
+        pose_stamped="{start}"
       />
       <Action
         ID="SwitchController"

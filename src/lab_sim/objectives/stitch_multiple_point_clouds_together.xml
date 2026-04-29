@@ -16,10 +16,10 @@
       <Action ID="Script" code="cloud_count := 0" />
       <!--Create inspection viewpoints around target area-->
       <Action
-        ID="CreateStampedPose"
+        ID="CreatePoseStamped"
         orientation_xyzw="0;-1;0;0"
         position_xyz="0.0;0.5;0.8"
-        stamped_pose="{pose1}"
+        pose_stamped="{pose1}"
         reference_frame="world"
       />
       <Action
@@ -28,10 +28,10 @@
         input="{pose1}"
       />
       <Action
-        ID="CreateStampedPose"
+        ID="CreatePoseStamped"
         orientation_xyzw="0;-1;0;0"
         position_xyz="0.3;0.4;0.8"
-        stamped_pose="{pose2}"
+        pose_stamped="{pose2}"
         reference_frame="world"
       />
       <Action
@@ -40,10 +40,10 @@
         input="{pose2}"
       />
       <Action
-        ID="CreateStampedPose"
+        ID="CreatePoseStamped"
         orientation_xyzw="0;-1;0;0"
         position_xyz="0.6;0.5;0.8"
-        stamped_pose="{pose3}"
+        pose_stamped="{pose3}"
         reference_frame="world"
       />
       <Action

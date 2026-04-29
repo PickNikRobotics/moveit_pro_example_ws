@@ -23,23 +23,23 @@
         service_name="/velocity_force_controller/zero_fts"
       />
       <Action
-        ID="CreateStampedWrench"
-        stamped_wrench="{desired_wrench}"
+        ID="CreateWrenchStamped"
+        wrench_stamped="{desired_wrench}"
         reference_frame="grasp_link"
         torque_xyz="0;0;0"
         force_xyz="0;0;0"
       />
       <Action
-        ID="CreateStampedTwist"
+        ID="CreateTwistStamped"
         reference_frame="grasp_link"
-        stamped_twist="{desired_twist}"
+        twist_stamped="{desired_twist}"
         angular_velocity_xyz="0;0;0"
         linear_velocity_xyz="0.0;0;0.05"
       />
       <Action
-        ID="CreateStampedPose"
+        ID="CreatePoseStamped"
         reference_frame="grasp_link"
-        stamped_pose="{initial_pose}"
+        pose_stamped="{initial_pose}"
       />
       <Action
         ID="TransformPoseFrame"
