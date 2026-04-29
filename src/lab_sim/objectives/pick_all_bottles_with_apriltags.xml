@@ -5,7 +5,7 @@
     _description="Detects AprilTags on medicine bottles, picks them up, and places them in a tray. Loops until no more tags are found."
     _favorite="true"
   >
-    <Control ID="Sequence">
+    <Control ID="Sequence" _collapsed="false">
       <!--Add collision wall at the back of the table to prevent the arm from hitting the shelf-->
       <Action
         ID="GetCurrentPlanningScene"
@@ -16,6 +16,7 @@
         reference_frame="world"
         stamped_pose="{back_wall_pose}"
         position_xyz="0.15; 0.83; 0.85"
+        orientation_xyzw="0.000000;0.000000;0.000000;1.000000"
       />
       <Action
         ID="CreateGraspableObject"
@@ -35,33 +36,33 @@
         object="{back_wall_object}"
         planning_scene_msg="{planning_scene}"
       />
-      <Action
-        ID="SwitchUIPrimaryView"
-        primary_view_name="/apriltag_detections"
-      />
       <Control
         ID="Sequence"
         name="Compute Tray Place Positions"
-        _collapsed="true"
+        _collapsed="false"
       >
         <SubTree ID="Open Gripper" _collapsed="true" />
         <SubTree
           ID="Move to Waypoint"
-          waypoint_name="Predrop Bottles Right"
           _collapsed="true"
+          waypoint_name="Look at Tray"
+          acceleration_scale_factor="1.0"
+          controller_action_server="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+          controller_names="joint_trajectory_admittance_controller"
+          execution_pipeline="jtac"
+          joint_group_name="manipulator"
+          keep_orientation="false"
+          keep_orientation_tolerance="0.05"
+          link_padding="0.01"
+          seed="0"
+          velocity_scale_factor="1.0"
         />
-        <Action
-          ID="GetCameraInfo"
-          topic_name="/wrist_camera/camera_info"
-          message_out="{camera_info}"
-          message_timeout_sec="5.0"
-          publisher_timeout_sec="5.0"
-        />
-        <Action
-          ID="GetImage"
-          topic_name="/wrist_camera/color"
-          message_out="{tray_image}"
-          message_timeout_sec="5.0"
+        <SubTree
+          ID="Take Wrist Camera Image"
+          name="Take Wrist Camera Image"
+          _collapsed="true"
+          wrist_camera_image="{tray_image}"
+          wrist_camera_info="{camera_info}"
         />
         <Action
           ID="DetectAprilTags"
@@ -74,7 +75,7 @@
           quad_decimate="2.0"
           quad_sigma="0.0"
           refine_edges="true"
-          tag_size="0.08"
+          tag_size="0.064"
         />
         <Action
           ID="ComputeTrayPlacePositionsUsingAprilTags"
@@ -89,16 +90,18 @@
           tag_to_tray_center="0.125"
           bottle_diameter="0.04"
           place_positions="{place_positions}"
+          visualization_topic="/apriltag_detections"
         />
         <!--Visualize coordinate frames at every place location-->
         <Action ID="Script" code="place_marker_count := 0" />
         <Decorator
           ID="ForEach"
+          _collapsed="false"
           vector_in="{place_positions}"
           out="{place_viz_pose}"
           index="{place_viz_index}"
         >
-          <Control ID="Sequence">
+          <Control ID="Sequence" _collapsed="false">
             <Action
               ID="VisualizePose"
               pose="{place_viz_pose}"
@@ -111,281 +114,64 @@
           </Control>
         </Decorator>
       </Control>
-      <Control ID="Sequence">
+      <Action
+        ID="SwitchUIPrimaryView"
+        primary_view_name="/apriltag_detections"
+      />
+      <Control ID="Sequence" _collapsed="false">
         <SubTree ID="Clear Snapshot" _collapsed="true" />
-        <SubTree ID="Take Wrist Camera Snapshot" _collapsed="true" />
         <SubTree ID="Look at Table" _collapsed="true" />
         <SubTree ID="Take Wrist Camera Snapshot" _collapsed="true" />
       </Control>
       <!--Warm up velocity_force_controller so the first placement is not a cold start-->
-      <Control ID="Sequence">
+      <Control ID="Sequence" _collapsed="false">
         <Action
           ID="SwitchController"
           activate_controllers="velocity_force_controller"
+          controller_switch_action_name="/controller_manager/switch_controller"
+          timeout="-1.000000"
+          activate_asap="true"
+          strictness="1"
+          controller_list_action_name="/controller_manager/list_controllers"
+          automatic_deactivation="true"
+          automatic_activation="true"
+          deactivate_controllers=""
         />
         <Action
           ID="CallTriggerService"
           service_name="/velocity_force_controller/zero_fts"
+          response_timeout="3.000000"
+          wait_for_server_available_timeout="3.000000"
         />
         <Action
           ID="SwitchController"
           activate_controllers="joint_trajectory_admittance_controller"
+          controller_switch_action_name="/controller_manager/switch_controller"
+          timeout="-1.000000"
+          activate_asap="true"
+          strictness="1"
+          controller_list_action_name="/controller_manager/list_controllers"
+          automatic_deactivation="true"
+          automatic_activation="true"
+          deactivate_controllers=""
         />
       </Control>
-      <Decorator ID="ForceSuccess">
-        <Decorator ID="KeepRunningUntilFailure">
-          <Control ID="Sequence" name="TopLevelSequence" _collapsed="true">
-            <Control ID="Sequence" name="Detect AprilTag" _collapsed="true">
-              <SubTree ID="Look at Table" _collapsed="true" />
-              <SubTree ID="Open Gripper" _collapsed="false" />
-              <Action
-                ID="GetCameraInfo"
-                topic_name="/wrist_camera/camera_info"
-                message_out="{camera_info}"
-                message_timeout_sec="5.000000"
-                publisher_timeout_sec="5.000000"
-              />
-              <Action
-                ID="GetImage"
-                topic_name="/wrist_camera/color"
-                message_out="{image}"
-                message_timeout_sec="5.000000"
-              />
-              <!--Detect AprilTag and compute a pre-grasp viewpoint offset above it-->
-              <Action
-                ID="DetectAprilTags"
-                image="{image}"
-                camera_info="{camera_info}"
-                detections="{detections}"
-                apriltag_family_name="36h11"
-                max_hamming="0"
-                n_threads="1"
-                quad_decimate="2.0"
-                quad_sigma="0.0"
-                refine_edges="true"
-                tag_size="0.036"
-              />
-              <Action
-                ID="GetCenterMostAprilTag"
-                detection_pose="{detection_pose}"
-                detections="{detections}"
-                camera_info="{camera_info}"
-                image="{image}"
-                tag_size="0.036"
-              />
-              <Action
-                ID="TransformPoseFrame"
-                input_pose="{detection_pose}"
-                output_pose="{detection_pose}"
-                target_frame_id="world"
-              />
-              <Action
-                ID="TransformPose"
-                output_pose="{view_pose}"
-                input_pose="{detection_pose}"
-                quaternion_xyzw="1;0;0;0"
-                translation_xyz="0.0;0.0;0.3"
-                visualize_pose="true"
-                marker_size="0.1"
-                marker_lifetime="0"
-                marker_text="Pre-Grasp"
-              />
-            </Control>
-            <Control ID="Sequence" name="Refine Pose" _collapsed="true">
-              <Control ID="Sequence">
-                <!--Move to the pre-grasp viewpoint above the detected tag-->
-                <SubTree
-                  ID="Plan Move To Pose"
-                  target_pose="{view_pose}"
-                  move_to_pose_solution="{move_to_pose_solution}"
-                  _collapsed="true"
-                />
-                <SubTree
-                  ID="Execute MTC Solution"
-                  solution="{move_to_pose_solution}"
-                  _collapsed="true"
-                />
-                <!--Re-detect the tag from closer range for a more accurate pose-->
-                <Action
-                  ID="GetImage"
-                  topic_name="/wrist_camera/color"
-                  message_out="{image}"
-                  message_timeout_sec="5.000000"
-                />
-                <Action
-                  ID="DetectAprilTags"
-                  image="{image}"
-                  camera_info="{camera_info}"
-                  detections="{detections}"
-                  apriltag_family_name="36h11"
-                  max_hamming="0"
-                  n_threads="1"
-                  quad_decimate="2.0"
-                  quad_sigma="0.0"
-                  refine_edges="true"
-                  tag_size="0.036"
-                />
-                <Action
-                  ID="GetCenterMostAprilTag"
-                  detection_pose="{detection_pose}"
-                  detections="{detections}"
-                  camera_info="{camera_info}"
-                  image="{image}"
-                  tag_size="0.036"
-                />
-                <Action
-                  ID="TransformPoseFrame"
-                  input_pose="{detection_pose}"
-                  output_pose="{detection_pose}"
-                  target_frame_id="world"
-                />
-                <Action
-                  ID="VisualizePose"
-                  pose="{detection_pose}"
-                  marker_size="0.05"
-                  marker_lifetime="0"
-                  marker_name="detection_raw"
-                  marker_text="Detection Raw"
-                />
-                <!--Override tag orientation with a fixed downward grasp and offset Z to the bottle body-->
-                <Action
-                  ID="OverridePoseOrientation"
-                  input_pose="{detection_pose}"
-                  output_pose="{offset_pose}"
-                  orientation_xyzw="1;0;0;0"
-                />
-                <Action
-                  ID="TransformPose"
-                  input_pose="{offset_pose}"
-                  output_pose="{offset_pose}"
-                  translation_xyz="0;0;-0.03"
-                />
-                <!--Calibration offset: tune translation_xyz to correct systematic XY error after table move. Local X = World +X, Local Y = World -Y (orientation is 180° around X).-->
-                <Action
-                  ID="TransformPose"
-                  input_pose="{offset_pose}"
-                  output_pose="{offset_pose}"
-                  quaternion_xyzw="0.000; 0.000; 1.000; 0.000"
-                  translation_xyz="0;0;0"
-                />
-                <Action
-                  ID="VisualizeLine"
-                  start_pose="{detection_pose}"
-                  end_pose="{offset_pose}"
-                  line_thickness="0.005"
-                  marker_lifetime="0"
-                />
-                <Action
-                  ID="VisualizeLine"
-                  start_pose="{view_pose}"
-                  end_pose="{offset_pose}"
-                  line_thickness="0.005"
-                  marker_lifetime="0"
-                />
-              </Control>
-            </Control>
-            <Control ID="Sequence" name="Pick from Pose" _collapsed="true">
-              <Control ID="Sequence">
-                <Control ID="Sequence">
-                  <!--Initialize MTC pick task-->
-                  <Action
-                    ID="InitializeMTCTask"
-                    controller_names="joint_trajectory_admittance_controller;robotiq_gripper_controller"
-                    task="{mtc_task}"
-                    task_id="pick_object"
-                    trajectory_monitoring="false"
-                    timeout="-1.000000"
-                  />
-                  <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
-                  <Action
-                    ID="SetupMTCConnectWithProRRT"
-                    acceleration_scale_factor="1.000000"
-                    keep_orientation="false"
-                    keep_orientation_link_names="grasp_link"
-                    keep_orientation_tolerance="0.100000"
-                    link_padding="0.000000"
-                    max_iterations="20000"
-                    planning_group_name="manipulator"
-                    seed="0"
-                    task="{mtc_task}"
-                    trajectory_sampling_rate="100"
-                    velocity_scale_factor="1.000000"
-                  />
-                  <!--Approach along grasp_link Z axis-->
-                  <Action
-                    ID="SetupMTCMoveAlongFrameAxis"
-                    acceleration_scale="1.000000"
-                    axis_frame="grasp_link"
-                    axis_x="0.000000"
-                    axis_y="0.000000"
-                    axis_z="1.000000"
-                    hand_frame="grasp_link"
-                    max_distance="0.1"
-                    min_distance="0.1"
-                    planning_group_name="manipulator"
-                    task="{mtc_task}"
-                    velocity_scale="1.000000"
-                    ignore_environment_collisions="false"
-                  />
-                  <!--Solve IK for the grasp pose-->
-                  <Action
-                    ID="ResetPoseStampedVector"
-                    vector="{grasp_pose_vector}"
-                  />
-                  <Action
-                    ID="AddPoseStampedToVector"
-                    input="{offset_pose}"
-                    vector="{grasp_pose_vector}"
-                  />
-                  <Action
-                    ID="SetupMTCBatchPoseIK"
-                    end_effector_group="moveit_ee"
-                    end_effector_link="grasp_link"
-                    ik_group="manipulator"
-                    ik_timeout_s="0.1"
-                    max_ik_solutions="16"
-                    monitored_stage="current state"
-                    target_poses="{grasp_pose_vector}"
-                    task="{mtc_task}"
-                  />
-                  <Action
-                    ID="VisualizePose"
-                    pose="{offset_pose}"
-                    marker_size="0.05"
-                    marker_lifetime="0"
-                    marker_name="grasp_target"
-                    marker_text="Grasp Target"
-                  />
-                  <Action ID="BreakpointSubscriber" _skipIf="true" />
-                  <Action
-                    ID="PlanMTCTask"
-                    solution="{mtc_solution}"
-                    task="{mtc_task}"
-                    max_solutions="4"
-                  />
-                  <SubTree
-                    ID="Execute MTC Solution"
-                    solution="{mtc_solution}"
-                    _collapsed="true"
-                  />
-                  <Decorator ID="ForceSuccess">
-                    <Action
-                      ID="MoveGripperAction"
-                      gripper_command_action_name="/robotiq_gripper_controller/gripper_cmd"
-                      position="0.58"
-                      timeout="15.0"
-                    />
-                  </Decorator>
-                </Control>
-              </Control>
-            </Control>
-            <Control ID="Sequence" name="Retract" _collapsed="true">
+      <Decorator ID="ForceSuccess" _collapsed="false">
+        <Decorator ID="KeepRunningUntilFailure" _collapsed="false">
+          <Control ID="Sequence" name="TopLevelSequence" _collapsed="false">
+            <SubTree
+              ID="Pick April Tag Labeled Object"
+              name="Pick April Tag Labeled Object"
+              _collapsed="true"
+            />
+            <Control ID="Sequence" name="Retract" _collapsed="false">
               <!--Retract away from the grasp-->
               <Action
                 ID="CreateStampedPose"
                 reference_frame="grasp_link"
                 stamped_pose="{retract_pose}"
                 position_xyz="0;0;-0.25"
+                orientation_xyzw="0.000000;0.000000;0.000000;1.000000"
               />
               <Action ID="ResetPoseStampedVector" vector="{retract_path}" />
               <Action
@@ -407,10 +193,19 @@
                 tip_links="grasp_link"
                 trajectory_sampling_rate="100"
                 velocity_scale_factor="1.000000"
+                max_optimizer_iterations="1"
+                tip_offset="0.000000;0.000000;0.000000;0.000000;0.000000;0.000000"
               />
-              <Action ID="ExecuteTrajectory" />
+              <Action
+                ID="ExecuteTrajectory"
+                goal_duration_tolerance="-1.000000"
+                joint_trajectory_msg="{joint_trajectory_msg}"
+                controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+                execution_pipeline="jtac"
+                absolute_force_torque_threshold=""
+              />
             </Control>
-            <Control ID="Sequence" name="Place in Tray" _collapsed="true">
+            <Control ID="Sequence" name="Place in Tray" _collapsed="false">
               <!--Pop the next place pose from the front of the computed positions vector-->
               <Action
                 ID="GetElementOfVector"
@@ -428,28 +223,57 @@
                 translation_xyz="0;0;-0.4"
                 visualize_pose="true"
                 marker_text="Pre-Place Pose"
+                marker_lifetime="0.000000"
+                marker_size="0.100000"
               />
               <!--Move to the pre-place hover position above the tray-->
+              <Action
+                ID="VisualizePose"
+                name="VisualizePose"
+                marker_text="pre-place"
+                marker_name="pre-place"
+                marker_lifetime="0.000000"
+                marker_size="0.100000"
+                pose="{pre_place_pose}"
+              />
               <SubTree
                 ID="Plan Move To Pose"
+                _collapsed="true"
                 target_pose="{pre_place_pose}"
                 move_to_pose_solution="{place_solution}"
-                _collapsed="true"
               />
               <SubTree
                 ID="Execute MTC Solution"
-                solution="{place_solution}"
                 _collapsed="true"
+                solution="{place_solution}"
+                controller_names="joint_trajectory_admittance_controller"
+                execution_pipeline="jtac"
+                controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+                goal_position_tolerance="{goal_position_tolerance}"
+                path_position_tolerance="{path_position_tolerance}"
+                absolute_force_torque_threshold="{absolute_force_torque_threshold}"
+                goal_duration_tolerance="-1.0"
+                admittance_parameters_msg="{admittance_parameters_msg}"
               />
               <!--Lower until contact: flattened from lab_sim Push Button (velocity/force controller)-->
-              <Control ID="Sequence">
+              <Control ID="Sequence" _collapsed="false">
                 <Action
                   ID="SwitchController"
                   activate_controllers="velocity_force_controller"
+                  controller_switch_action_name="/controller_manager/switch_controller"
+                  timeout="-1.000000"
+                  activate_asap="true"
+                  strictness="1"
+                  controller_list_action_name="/controller_manager/list_controllers"
+                  automatic_deactivation="true"
+                  automatic_activation="true"
+                  deactivate_controllers=""
                 />
                 <Action
                   ID="CallTriggerService"
                   service_name="/velocity_force_controller/zero_fts"
+                  response_timeout="3.000000"
+                  wait_for_server_available_timeout="3.000000"
                 />
                 <Action
                   ID="CreateStampedWrench"
@@ -469,19 +293,28 @@
                   ID="CreateStampedPose"
                   reference_frame="grasp_link"
                   stamped_pose="{initial_pose}"
+                  orientation_xyzw="0.000000;0.000000;0.000000;1.000000"
+                  position_xyz="0.000000;0.000000;0.000000"
                 />
                 <Action
                   ID="TransformPoseFrame"
                   output_pose="{initial_pose}"
                   input_pose="{initial_pose}"
+                  target_frame_id="world"
                 />
-                <Control ID="Parallel" failure_count="1" success_count="1">
+                <Control
+                  ID="Parallel"
+                  _collapsed="false"
+                  failure_count="1"
+                  success_count="1"
+                >
                   <Action
                     ID="ForceExceedsThreshold"
                     minimum_consecutive_wrench_values="5"
                     wrench_frame_name="tool0"
                     hand_frame_name="grasp_link"
                     force_threshold="30"
+                    wrench_topic_name="/force_torque_sensor_broadcaster/wrench"
                   />
                   <Action
                     ID="PublishVelocityForceCommand"
@@ -491,6 +324,7 @@
                     publish_rate="50"
                     twist_stamped="{desired_twist}"
                     wrench_stamped="{desired_wrench}"
+                    velocity_force_controller_command_topic="/velocity_force_controller/command"
                   />
                 </Control>
                 <SubTree
@@ -503,13 +337,25 @@
                 <Action
                   ID="SwitchController"
                   activate_controllers="joint_trajectory_admittance_controller"
+                  controller_switch_action_name="/controller_manager/switch_controller"
+                  timeout="-1.000000"
+                  activate_asap="true"
+                  strictness="1"
+                  controller_list_action_name="/controller_manager/list_controllers"
+                  automatic_deactivation="true"
+                  automatic_activation="true"
+                  deactivate_controllers=""
                 />
               </Control>
             </Control>
-            <Control ID="Sequence" name="Release and Retract" _collapsed="true">
-              <Control ID="Sequence">
-                <Control ID="Sequence">
-                  <Control ID="Sequence">
+            <Control
+              ID="Sequence"
+              name="Release and Retract"
+              _collapsed="false"
+            >
+              <Control ID="Sequence" _collapsed="false">
+                <Control ID="Sequence" _collapsed="false">
+                  <Control ID="Sequence" _collapsed="false">
                     <!--Release the bottle-->
                     <SubTree ID="Open Gripper" _collapsed="true" />
                     <!--Retract upward after releasing the bottle-->
@@ -518,6 +364,7 @@
                       reference_frame="grasp_link"
                       stamped_pose="{place_retract_pose}"
                       position_xyz="0;0;-0.08"
+                      orientation_xyzw="0.000000;0.000000;0.000000;1.000000"
                     />
                     <Action
                       ID="ResetPoseStampedVector"
@@ -542,8 +389,16 @@
                       tip_links="grasp_link"
                       trajectory_sampling_rate="100"
                       velocity_scale_factor="1.000000"
+                      max_optimizer_iterations="1"
+                      tip_offset="0.000000;0.000000;0.000000;0.000000;0.000000;0.000000"
                     />
-                    <Action ID="ExecuteTrajectory" />
+                    <Action
+                      ID="ExecuteTrajectory"
+                      goal_duration_tolerance="-1.000000"
+                      joint_trajectory_msg="{joint_trajectory_msg}"
+                      controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+                      execution_pipeline="jtac"
+                    />
                     <!--Remove the used pose so the next iteration gets a fresh position-->
                     <Action
                       ID="RemoveFromVector"
