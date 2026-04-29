@@ -34,6 +34,7 @@ from moveit_pro_test_utils.objective_test_fixture import (
     ExecuteObjectiveResource,
     execute_objective_resource as execute_objective_resource,
     get_objective_pytest_params,
+    reset_simulation_before_test as reset_simulation_before_test,
     run_objective,
 )
 
