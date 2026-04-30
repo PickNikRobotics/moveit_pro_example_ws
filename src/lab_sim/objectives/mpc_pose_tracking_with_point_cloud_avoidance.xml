@@ -41,17 +41,11 @@
         pcd_topic="/pcd_pointcloud_captures"
         point_cloud="{point_cloud}"
       />
-      <SubTree
-        ID="Move to Waypoint"
-        _collapsed="true"
-        joint_group_name="manipulator"
-        waypoint_name="Home"
-      />
       <Action
         ID="CreateStampedPose"
         reference_frame="pinch"
         stamped_pose="{stamped_pose}"
-        position_xyz="0;0.3;0.1"
+        position_xyz="0;-0.5;0.1"
       />
       <Action
         ID="TransformPoseFrame"

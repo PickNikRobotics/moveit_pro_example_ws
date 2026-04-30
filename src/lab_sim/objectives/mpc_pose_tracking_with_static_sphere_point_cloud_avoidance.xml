@@ -97,7 +97,7 @@
         stamped_twist="{stamped_twist}"
       />
       <Control ID="Fallback">
-        <Decorator ID="Timeout" msec="40000">
+        <Decorator ID="Timeout" msec="20000">
           <Control ID="Sequence">
             <Action
               ID="SwitchController"
