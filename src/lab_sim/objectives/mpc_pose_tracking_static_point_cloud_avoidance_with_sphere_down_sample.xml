@@ -17,7 +17,7 @@
         pose_stamped="{pose_stamped}"
         reference_frame="world"
       />
-      <Action ID="VisualizePose" pose="{stamped_pose}" />
+      <Action ID="VisualizePose" pose="{pose_stamped}" />
       <SubTree
         ID="LoadAndVisualizePointCloud"
         _collapsed="true"
