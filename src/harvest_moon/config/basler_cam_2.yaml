@@ -4,9 +4,9 @@
     camera_frame: basler_cam_2
     device_user_id: "25435376"
 
-    # Publish rate. Matches the Basler trigger rate from the Teensy (5 Hz —
-    # ZED at 15 Hz, Basler every 3rd ZED tick due to GigE bandwidth limit).
-    frame_rate: 5.0
+    # DIAGNOSTIC — temporarily 15.0 to test ros_sync_test.py at 15 Hz Basler.
+    # Production: 5.0 (with Teensy BASLER_DIV=3).
+    frame_rate: 15.0
 
     # Bayer-mosaic output; demosaic happens downstream in image_proc.
     image_encoding: "bayer_rggb8"

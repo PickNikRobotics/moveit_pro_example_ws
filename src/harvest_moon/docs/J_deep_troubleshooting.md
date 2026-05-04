@@ -49,12 +49,24 @@ The full debug log lives in the project memory file
 | MTU 9000 (jumbo frames) on Jetson `eno1`                  | Required for 15 Hz to even approach success           |
 | Manual sysctl: `rmem_max=32MB`, `netdev_max_backlog=5000`, `rp_filter=0` | Necessary alongside jumbo frames |
 | NIC RX/TX ring buffer at 4096 (already max)               | No change needed                                       |
+| **MTU 9000 + tuned sysctls + 15 Hz dual-Basler in container** (2026-04-30) | **Still asymmetric drops** (Cam1 ~6 Hz, Cam2 ~7 Hz). Better than default but not 15 Hz. |
+| **Same as above + ZED `depth_mode: 'NONE'`** (CPU diagnostic, 2026-04-30) | Modest improvement only (Cam1 ~7 Hz, Cam2 ~10 Hz). Not 15 Hz. CPU isn't the only bottleneck. |
+| **Wrapper-only at 15 Hz, no rosbag recording** (2026-04-30) | **Still drops to lower rates.** Confirms the recorder is NOT the bottleneck — the pylon ROS wrapper + ROS publish pipeline + container scheduling is. |
+| **Single-process pypylon in container, no ROS publish** (2026-04-30) | **Steady-state ~7.2 Hz dual-cam, perfectly symmetric** (cam1 ≈ cam2). Initial 13 Hz decays to 7 Hz over 10 s. **Container itself has a hard rate ceiling deeper than the wrapper architecture.** The two-process wrapper IS responsible for the asymmetric drops we saw earlier, but the underlying rate ceiling is in the container's kernel-network-stack handling of GigE Vision at HD1200. |
 
 After all of the above, **on the host outside the container**:
 - 200/200 frames at 14.94 Hz, zero BlockID drops, zero packet loss.
 
 In the **moveit_pro container**:
-- ~11–14 Hz with stalls, asymmetric between Cam 1 and Cam 2.
+- 5 Hz dual-Basler: rock solid (production state).
+- 7.5 Hz dual-Basler: ~95% delivery, slight asymmetric drops at startup.
+- 15 Hz dual-Basler: ~30-50% delivery, persistent asymmetric drops, even with
+  jumbo frames + sysctls + depth disabled.
+- **Single-process pypylon at 15 Hz (no ROS, no wrapper)**: steady ~7.2 Hz
+  dual-cam. Symmetric. The container itself caps sustained throughput
+  regardless of the application architecture. **No software fix from inside
+  the container will recover 15 Hz** — would need pypylon running on host
+  bridging to ROS, OR a deeper-buffered switch.
 
 ### 1.3 The host vs container gap
 
@@ -63,7 +75,22 @@ on the host (using `pypylon` directly, no ROS, no container). It worked
 flawlessly at 15 Hz. The same hardware path failed when accessed via
 the moveit_pro container's `pylon_ros2_camera_wrapper`.
 
-That narrows the cause to one of:
+That narrows the cause to one of (in rough priority — verified
+empirically that the recorder is NOT the bottleneck on 2026-04-30):
+
+0. **Two-process wrapper architecture.** The pylon ROS wrapper runs as
+   one process per camera (two `pylon_ros2_camera_wrapper` instances).
+   On host, `triple_sync_test.py` is **one process** opening both
+   cameras via pypylon, with the Pylon SDK managing threads and shared
+   resources internally. Two separate processes contend for CPU and
+   the kernel's network stack much more than one. Most likely
+   contributor.
+
+0a. **ROS message-pipeline overhead.** Wrapper does Pylon-SDK-grab →
+    memcpy → sensor_msgs/Image → DDS serialize → DDS publish per
+    frame. Pypylon-on-host hands you a numpy array with no copies, no
+    serialization, no DDS. At HD1200 BayerRG8 ≈ 3 MB × 15 Hz × 2
+    cameras = 90 MB/s of throughput before any consumer touches it.
 
 1. **Network namespace isolation.** The container may have its own
    network namespace where the host-applied sysctls don't reach.
@@ -243,3 +270,57 @@ downstream filter that expects ROS time.
 
 The provisioning script (`harvest_moon/scripts/provision_basler.py`)
 explicitly sets `ChunkModeActive = false` for this reason.
+
+---
+
+## §3. Strobed-vs-ambient ZED frame separation (post-hoc, by brightness)
+
+**Why this matters:** at 5 Hz Basler / 15 Hz ZED, only every 3rd ZED
+frame coincides with a strobe pulse. After the wrapper drops ~33% at
+NATIVE/ULTRA, ~3-5 Hz of the published ZED frames are strobe-illuminated
+and the rest are ambient. Downstream consumers often want only the
+strobed frames (consistent illumination, useful for matching with the
+Basler frames). Identifying which is which by stamp alone is
+unreliable — the wrapper-side stamp jitter blurs the strobe-cycle
+relationship (verified empirically: same-trigger Cam1↔Cam2 stamps can
+differ by 40-130 ms, larger than the gap between strobe cycles).
+
+**The robust approach: filter by brightness.** Strobed ZED frames are
+measurably brighter than ambient ones. The `bag_extract.py` script does
+this automatically:
+
+- Walks the bag, computes mean brightness of every frame on every
+  image topic.
+- For ZED topics, applies **Otsu's method** to find the natural
+  threshold between the bimodal "strobed" and "ambient" clusters.
+- Sorts files into the topic dir (above-threshold = strobed) and a
+  `low/` subfolder (below-threshold = ambient).
+- Skips Otsu sorting on Basler topics (their distribution is unimodal
+  since every Basler frame is strobed; the Otsu split would be noise).
+
+Practical workflow for the customer:
+
+```
+python3 ~/user_ws/src/harvest_moon/scripts/bag_extract.py --bag /mnt/ssd/datasets/<session>/bag
+```
+
+Per-topic histograms are also generated (`<topic>_histogram.png` and a
+combined `histograms_all.png`) for visual confirmation that the modes
+are clean.
+
+### 3.1 When brightness-filtering is unreliable
+
+The bimodal separation depends on the strobe-vs-ambient brightness
+contrast. **In bright office indoor or full sunlight outdoor**, the
+ambient illumination is high enough that the strobe contributes only a
+small fractional bump (e.g., 118 vs 124 mean brightness in office). The
+two modes are still distinguishable but the margin is thin and Otsu
+may pick a noisy threshold.
+
+**In dim ambient** (lab, dusk, indoor with lights off, shaded outdoor)
+the contrast is much higher (strobed frames at ~120, ambient at ~30+),
+and Otsu thresholding works very cleanly.
+
+For the customer's deployment, the filtering quality depends entirely
+on lighting conditions at the collection site. Recording the histogram
+images alongside the dataset gives downstream the data to verify.

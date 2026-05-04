@@ -17,7 +17,7 @@ For wiring of these parts, see
 | Item                 | Model / Vendor                              | Qty | Notes                                       |
 |----------------------|----------------------------------------------|-----|---------------------------------------------|
 | Compute platform     | NVIDIA Jetson Orin AGX 64 GB Developer Kit  | 1   | Includes 64 GB module on dev-kit carrier    |
-| Storage              | 1 TB NVMe SSD                               | 1   | **[FIELD]** — exact model not recorded      |
+| Storage              | 1 TB NVMe SSD                               | 1   |      |
 | GMSL2 capture card   | StereoLabs ZED Link Quad (PCIe)             | 1   | Mounts in Jetson dev-kit M.2/PCIe slot      |
 
 ---
@@ -29,7 +29,7 @@ For wiring of these parts, see
 | Stereo camera       | StereoLabs ZED X                            | 1   | Serial **47845360**                                  |
 | Stereo cable        | StereoLabs GMSL2 cable, 5 m                 | 1   | Connects ZED X ↔ ZED Link Quad                       |
 | Area camera         | Basler acA2040-35gc                         | 2   | Serials **25233972**, **25435376** (= `device_user_id`) |
-| Basler lens         | C-mount lens                                | 2   | **[FIELD]** — record focal length, aperture, vendor  |
+| Basler lens         | C-mount lens                                | 2   |  |
 
 > The convention `device_user_id = camera serial number` is set during
 > first-time provisioning via `harvest_moon/scripts/provision_basler.py`. See
@@ -42,7 +42,7 @@ For wiring of these parts, see
 | Item             | Model / Vendor                              | Qty | Notes                                       |
 |------------------|----------------------------------------------|-----|---------------------------------------------|
 | Strobed LED bar  | Smart Vision Lights LHI-DO 600 mm           | 2   | Built-in driver, NPN-triggered              |
-| Light cable      | M12 5-pin to flying leads                   | 2   | **[FIELD]** — length and vendor             |
+| Light cable      | M12 5-pin to flying leads                   | 2   | Yellow cable that ships with LHI-DO lights. Can be shortened to any length necessary (shorter is better for signal conditioning)            |
 
 LHI-DO datasheet path on the Jetson: `~/LHI-DO_Datasheet.pdf`.
 
@@ -53,8 +53,8 @@ LHI-DO datasheet path on the Jetson: `~/LHI-DO_Datasheet.pdf`.
 | Item                    | Model / Vendor                       | Qty | Notes                                          |
 |-------------------------|---------------------------------------|-----|------------------------------------------------|
 | GigE PoE+ switch        | TrendNet TI-PG80B                    | 1   | 24 V DC input, 8-port PoE+, DIN rail mount     |
-| Cat6 patch cable        | **[FIELD]** length(s)                 | 2   | Camera ↔ switch (one per camera)               |
-| Cat5e patch cable       | **[FIELD]** length                    | 1   | Switch uplink ↔ Jetson `eno1`                  |
+| Ethernet cable (Cat6 or better)       | Whatever length necessary (shorter is better) | 2   | Camera ↔ switch (one per camera)               |
+| Ethernet cable (Cat6 or better)       | Whatever length necessary (shorter is better)                    | 1   | Switch uplink ↔ Jetson `eno1`                  |
 
 Network IP plan: cameras on `192.168.5.0/24`, Jetson `eno1` at
 `192.168.5.2`, cameras at `192.168.5.3` and `192.168.5.4`. Set via
@@ -67,10 +67,9 @@ Network IP plan: cameras on `192.168.5.0/24`, Jetson `eno1` at
 
 | Item                     | Model / Vendor                              | Qty | Notes                                    |
 |--------------------------|----------------------------------------------|-----|------------------------------------------|
-| 24 V DC PSU              | 24 V / 500 W DIN-rail supply                | 1   | **[FIELD]** — exact model not recorded   |
-| 24 V → 12 V DC-DC        | DIN-rail DC-DC converter                    | 1   | **[FIELD]** — Jetson + ZED Link rail     |
-| DIN rail                 | Standard 35 mm DIN                          | —   | **[FIELD]** — length depends on enclosure |
-| DIN-rail terminal blocks | Phoenix or equivalent, 24 V + GND distribution | several | **[FIELD]**                              |
+| 24 V DC PSU              | 24 V / 500 W DIN-rail supply                | 1   | Powers lights, 12V converter (below), TrendNet switch   |
+| 24 V → 12 V DC-DC        | DIN-rail DC-DC converter                    | 1   | Powers ZED capture card     |
+
 
 Loads on the 24 V rail (sums to under 100 W in production):
 
@@ -78,14 +77,11 @@ Loads on the 24 V rail (sums to under 100 W in production):
 |---------------------------|------------------|
 | TrendNet TI-PG80B + PoE   | ~10 W idle, +PoE |
 | 2× LHI-DO 600 mm          | ~46 W avg per light at full power (0.97 A/300 mm × 2 segments × 24 V); strobed duty cycle drops this dramatically |
-| 12 V DC-DC → Jetson       | up to 60 W       |
 | ZED Link Quad             | small            |
 
-**Common ground bus:** 24 V PSU negative is tied to: ZED J17 Pin 2,
-both Baslers' Pin 5 (Gray, opto GND), both lights' Blue (GND), and the
-12 V DC-DC output GND. Establishing this common ground is critical for
-the opto-isolated trigger paths to work — see
-[F. Hardware Build Guide](F_hardware_build.md).
+**The Jetson is powered by a plugged in power source for the benchtop setup. Unknown what will power the Jetson via USB-C or barrel connector in the field.**
+
+**Common ground bus:** 24 V PSU negative is tied to: ZED J17 Pin 2, both Baslers' Pin 5 (Gray, opto GND), both lights' Blue (GND), and the 12 V DC-DC output GND. Establishing this common ground is critical for the opto-isolated trigger paths to work — see [F. Hardware Build Guide](F_hardware_build.md).
 
 ---
 
@@ -94,22 +90,29 @@ the opto-isolated trigger paths to work — see
 | Item                  | Model / Vendor                              | Qty | Notes                                       |
 |-----------------------|----------------------------------------------|-----|---------------------------------------------|
 | Microcontroller       | PJRC Teensy 4.0                             | 1   | USB-powered from Jetson                     |
-| USB cable             | Type-A → micro-USB                          | 1   | **[FIELD]** — length                        |
-| NPN transistor        | 2N3904 (TO-92)                              | 1   | Drives both Baslers' opto inputs in parallel |
-| Base resistor         | 560 Ω, ¼ W                                  | 1   | Limits Teensy GPIO drive current            |
-| Perf board / proto    | **[FIELD]**                                 | 1   | Mounts the transistor + resistor cleanly    |
-| Project enclosure     | **[FIELD]**                                 | 1   | Optional — currently bare on bench          |
+| USB cable             | Type-A → micro-USB                          | 1   | Any length necessary. **Note: Teensy can also be powered by direct 5V and not USB.**                       |
+| NPN transistor        | 2N3904 (TO-92)                              | 1   | Single transistor; collector tied to both Baslers' Pink (Pin 2) |
+| 560 Ω resistor, ¼ W   | 560 Ω, ¼ W                                  | 3   | 1 base resistor (Teensy Pin 12 → base) + 2 pull-ups (5 V → each Basler Pink) |
+| Breadboard    |  | 1   | Recommend that this is ruggedized with a custom PCB    |
 
 Driver circuit (text form; schematic in
-[F. Hardware Build Guide](F_hardware_build.md)):
+[F. Hardware Build Guide §7.1](F_hardware_build.md)):
+- 5 V (Teensy 5V pin) ──[ 560 Ω ]──► Basler 1 Pin 2 (Pink)
+- 5 V (Teensy 5V pin) ──[ 560 Ω ]──► Basler 2 Pin 2 (Pink)
+- Both Basler Pinks tied together at the 2N3904 collector
 - Teensy Pin 12 ──[ 560 Ω ]──► 2N3904 base
 - 2N3904 emitter ──► common GND bus
-- 2N3904 collector ──► both Baslers' Pin 2 (Pink) tied together
 - Camera Pin 5 (Gray) on each Basler ──► common GND bus
 
-When Teensy Pin 12 goes HIGH, the transistor saturates, sinking ~6 mA
-through both opto-LEDs in series with the Baslers' internal current
-limit, well above the 5 mA minimum spec on Line 1.
+When Teensy Pin 12 is LOW, the transistor is off and both Pinks float
+HIGH at ~5 V via their pull-ups (no current through the opto LEDs →
+no trigger). When Teensy Pin 12 goes HIGH, the transistor saturates,
+pulling the collector node LOW; current then flows through each pull-up
+and through each Basler's opto LED to GND, ~(5 − 1.7) / 560 ≈ 5.9 mA
+per camera — above the 5 mA Line 1 minimum. The opto-isolator inverts
+this signal internally, so the external Pink falling edge becomes an
+internal rising edge that the Basler triggers on (`TriggerActivation =
+RisingEdge`).
 
 ---
 
@@ -118,7 +121,7 @@ limit, well above the 5 mA minimum spec on Line 1.
 | Item                            | Model / Vendor                              | Qty | Notes                                  |
 |---------------------------------|----------------------------------------------|-----|----------------------------------------|
 | Basler I/O cable                | Hirose HR10A-7P-6S to flying leads          | 2   | Mates with Basler HR10A-7R-6PB I/O port |
-| Heat-shrink, ferrules, etc.     | **[FIELD]**                                 | —   | For terminating ground bus and signals |
+
 
 **Basler I/O cable color code** (Basler "Power-IO HRS 6p/open" standard):
 
@@ -181,7 +184,6 @@ development:
 | Item                          | Purpose                                          |
 |-------------------------------|--------------------------------------------------|
 | Multimeter                    | Verifying 24 V rail, GND continuity              |
-| Oscilloscope / logic analyzer | Verifying trigger pulses, sync timing            |
-| Wire labels / cable ID tags   | Sanity                                           |
-| **[FIELD]** Project enclosure | If the customer wants the prototype fully boxed  |
+| Oscilloscope / logic analyzer | Verifying trigger pulses, sync timing. The Analog Discovery is a very handy portable ossciloscope in the field.           |
+                                     
 

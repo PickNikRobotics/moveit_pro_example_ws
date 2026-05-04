@@ -312,18 +312,18 @@ intensity-vs-voltage curve.
 
 ## §6. Storage management
 
-`record_dataset.py` writes bags to `/nvme/datasets/` by default — the
-NVMe scratch volume (~822 GB free on the prototype Jetson). The eMMC
-root partition (15 GB free) is too small and too slow for native-HD1200
-ZED streams.
+`record_dataset.py` writes bags to `/mnt/ssd/datasets/` by default —
+the external 4 TB SanDisk Extreme Pro V2 SSD mounted via `/etc/fstab`
+and bind-mounted into the moveit_pro container. Sustained write
+capacity measured at 750 MB/s, ~3.4 TB usable. At the default
+recording rate (~400 MB/s) that's ~2.4 hours of continuous recording.
 
-> **For field deployment, the customer is most likely going to use an
-> external SSD instead.** The path needs to be changed by whoever sets
-> up the system on each new host: bind-mount the SSD into the moveit_pro
-> container via `docker-compose.yaml` and point the recorder at the
-> in-container path with `--outdir` (or by editing `DEFAULT_OUTDIR` in
-> `record_dataset.py`). See [G. Software Setup §8.1](G_software_setup.md)
-> for the step-by-step.
+The internal NVMe scratch (`/nvme/datasets/`) is also available as a
+fallback for short tests when the SSD isn't connected. Override with
+`--outdir /nvme/datasets` to use it.
+
+The eMMC root partition (15 GB free) is too small and too slow for
+native-HD1200 ZED streams — never use it for recording.
 
 At default settings (full ZED depth + pointcloud at native HD1200 +
 dual-Basler), each session writes **~470 MB/s ≈ 1.7 TB/hour**. Plan
@@ -349,10 +349,11 @@ maximum image quality. Depth processing at full resolution can't sustain
 they're produced at a different stage of the pipeline. To trade quality
 for rate, see §7 below.
 
-### 6.0 Cache drops at shutdown (known behavior)
+### 6.0 Cache drops at shutdown (NVMe / slower disks only)
 
-The recorder consistently reports a small number of in-flight messages
-"lost" at shutdown — typically 1–2% of the total, concentrated on the
+When recording to the internal NVMe scratch (`/nvme/datasets/`), the
+recorder reports a small number of in-flight messages "lost" at
+shutdown — typically 1–2% of the total, concentrated on the
 highest-rate topics (`/tf`, IMU streams). Example:
 
 ```
@@ -362,6 +363,13 @@ highest-rate topics (`/tf`, IMU streams). Example:
     ...
 Total lost: 123
 ```
+
+**This warning has not appeared since switching to the external SSD**
+(verified 2026-04-30). The faster sustained-write speed (750 MB/s SSD
+vs ~470 MB/s effective on the NVMe at this workload) lets rosbag2's
+cache fully flush before the writer closes. **If you see this warning
+in production, it indicates the storage is at or near its sustained
+write capacity** — consider compression or topic-list reduction.
 
 This is **rosbag2's cache flush behavior at stop**, not a disk-speed
 issue. When the recorder receives Ctrl+C or the duration timer fires,
@@ -383,7 +391,7 @@ not material. Document it and move on.
 
 From the moveit_pro shell:
 ```
-df -h /nvme/datasets/
+df -h /mnt/ssd/datasets/
 ```
 Or on the host:
 ```
@@ -393,9 +401,9 @@ df -h /home/picknik/moveit_pro/moveit_pro_example_ws/datasets/
 ### 6.2 Clean up old sessions
 
 ```
-ls /nvme/datasets/                          # see what's there
-rm -rf /nvme/datasets/<session_dir>          # delete one
-rm -rf /nvme/datasets/smoke_*                # delete all smoke tests
+ls /mnt/ssd/datasets/                       # see what's there
+rm -rf /mnt/ssd/datasets/<session_dir>       # delete one
+rm -rf /mnt/ssd/datasets/smoke_*             # delete all smoke tests
 ```
 
 ### 6.3 Reduce write rate for long takes
@@ -443,15 +451,60 @@ Several options, listed by impact:
 
 ### 6.4 Move bags off the Jetson
 
-Bags live on the host filesystem under `/nvme/datasets/`. Use any normal copy tool
+Bags live on the host filesystem under `/mnt/ssd/datasets/`. Use any normal copy tool
 from a host shell:
 ```
-rsync -avh /nvme/datasets/<session>/ user@somewhere:/path/
+rsync -avh /mnt/ssd/datasets/<session>/ user@somewhere:/path/
 ```
 
 ---
 
-## §7. Disabling a camera temporarily
+## §7. Post-recording extraction (bag → JPEGs)
+
+After a recording session, `bag_extract.py` walks the bag and dumps
+image frames per-topic with mean brightness in the filename. **It also
+auto-sorts ZED frames by brightness** (Otsu's method), separating
+strobe-illuminated frames from ambient ones into the topic dir vs a
+`low/` subfolder.
+
+```
+python3 ~/user_ws/src/harvest_moon/scripts/bag_extract.py --bag /mnt/ssd/datasets/<session>/bag
+```
+
+Output (alongside the bag):
+```
+/mnt/ssd/datasets/<session>/extract/
+├── basler_cam_1_pylon_ros2_camera_node_image_raw/
+│   └── frame_NNNN_bBBB.jpg          (all frames — every Basler is strobed)
+├── basler_cam_2_pylon_ros2_camera_node_image_raw/
+│   └── frame_NNNN_bBBB.jpg          (all frames)
+├── zed_x_zed_node_left_image_rect_color/
+│   ├── frame_NNNN_bBBB.jpg          (strobed — kept at top)
+│   └── low/
+│       └── frame_NNNN_bBBB.jpg      (ambient — moved here)
+├── zed_x_zed_node_right_image_rect_color/    (same structure)
+└── histograms_all.png                (per-topic brightness distribution)
+```
+
+Filename: `frame_<arrival_index>_b<mean_brightness>.jpg`. Brightness
+in the filename lets you skim a directory listing and immediately see
+which frames are strobed vs ambient.
+
+**Useful flags:**
+- `--no-auto-sort` — disable the strobed/ambient split (everything stays
+  flat in the topic dir).
+- `--threshold N` — manual brightness threshold instead of Otsu.
+- `--every N` — keep every Nth frame (skip the rest).
+- `--max N` — cap per-topic count.
+- `--height N` — change saved JPEG height (default 600 px; 0 = native).
+
+For the rationale on why brightness-based filtering is more robust than
+stamp-based pairing for strobed-vs-ambient identification, see
+[J. Deep Troubleshooting §3](J_deep_troubleshooting.md).
+
+---
+
+## §8. Disabling a camera temporarily
 
 If one Basler is misbehaving and you want to record with just the other
 one, edit `cameras.launch.xml`:
@@ -475,7 +528,7 @@ not launched in ROS just sits idle.
 
 ---
 
-## §8. Reverting after experiments
+## §9. Reverting after experiments
 
 If a tuning experiment leaves the system in a state that's worse than
 where you started, the production-known-good values are:
@@ -488,11 +541,16 @@ where you started, the production-known-good values are:
 | Basler `exposure`                                   | `500.0`                  | `basler_cam_*.yaml`                           |
 | Basler `exposure_auto`, `gain_auto`                 | `false`                  | `basler_cam_*.yaml`                           |
 | Basler `grab_strategy`                              | `1` (LatestImageOnly)    | `basler_cam_*.yaml`                           |
-| Launch `mtu_size`                                   | `1500`                   | `harvest_moon/launch/cameras.launch.xml`      |
+| Launch `mtu_size`                                   | `9000` (jumbo)           | `harvest_moon/launch/cameras.launch.xml`      |
+| Jetson `eno1` MTU                                   | `9000` (jumbo)           | `sudo ip link set eno1 mtu 9000`              |
+| Recorder `DEFAULT_OUTDIR`                           | `/mnt/ssd/datasets`      | `record_dataset.py`                           |
+| External SSD mount                                  | `/mnt/ssd` (auto via `fstab`) | `/etc/fstab`                              |
 | ZED `grab_frame_rate`                               | `15`                     | `zed_x_overrides.yaml`                        |
+| ZED `pub_resolution`                                | `'NATIVE'`               | `zed_x_overrides.yaml`                        |
 | ZED `exposure_time`                                 | `200`                    | `zed_x_overrides.yaml`                        |
 | ZED `auto_exposure_gain`                            | `false`                  | `zed_x_overrides.yaml`                        |
-| ZED `depth_mode`                                    | `'NONE'`                 | `zed_x_overrides.yaml`                        |
+| ZED `depth_mode`                                    | `'ULTRA'`                | `zed_x_overrides.yaml`                        |
+| ZED `point_cloud_freq`                              | `15.0`                   | `zed_x_overrides.yaml`                        |
 | ZED daemon `sync_mode`                              | `2` (slave)              | `/etc/systemd/system/zed_x_daemon.service`    |
 | `MOVEIT_CONFIG_PACKAGE`                             | `lab_sim`                | `~/moveit_pro/.env`                           |
 

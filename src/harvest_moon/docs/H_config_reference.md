@@ -204,7 +204,7 @@ The production camera bring-up. Side-loaded from
 <arg name="node_name" value="pylon_ros2_camera_node" />
 <arg name="camera_id" value="basler_cam_1" />
 <arg name="config_file" value="$(find-pkg-share harvest_moon)/config/basler_cam_1.yaml" />
-<arg name="mtu_size" value="1500" />
+<arg name="mtu_size" value="9000" />
 <arg name="startup_user_set" value="UserSet1" />
 ```
 
@@ -215,10 +215,12 @@ The production camera bring-up. Side-loaded from
   pylon ROS wrapper always inserts `node_name` into the topic prefix.)
   `camera_id` also disambiguates which Basler
   this node opens (matched against `device_user_id`).
-- `mtu_size: 1500` is the production-stable value. Setting `9000`
-  (jumbo frames) does work for raw GigE bandwidth but is unstable on
-  the moveit_pro container path — see
-  [J. Deep Troubleshooting](J_deep_troubleshooting.md).
+- `mtu_size: 9000` enables jumbo frames between cameras, switch, and
+  Jetson NIC. Not strictly needed at 5 Hz dual-Basler (the path fits
+  comfortably at MTU 1500), but kept as bandwidth headroom for the
+  customer's deployment. Requires `eno1` MTU 9000 on the Jetson NIC
+  AND switch jumbo support — both are present on the prototype rig.
+  Customer's rebuild can revert to `1500` if jumbo isn't desired.
 - `startup_user_set: UserSet1` tells the wrapper to load the
   pre-provisioned UserSet1 at camera open, applying our trigger
   config before the YAML overrides kick in.
@@ -391,6 +393,6 @@ A short list of "if you change this, things break in non-obvious ways":
 | `zed_x_overrides.yaml` `depth_mode` set to `NEURAL*` | Container's ZED SDK can't run NEURAL modes (TensorRT models missing). `ULTRA`/`QUALITY`/`PERFORMANCE`/`NONE` all work.|
 | Basler `ChunkModeActive` (in UserSet1)             | Wrapper uses chunk timestamp in camera-clock domain — breaks ROS time sync |
 | `zed_x_daemon.service` `sync_mode=2`               | Reverting to 0 makes ZED master, breaks Teensy-as-master architecture |
-| `cameras.launch.xml` `mtu_size: 1500`              | Setting 9000 (jumbo) is unstable on container path          |
+| `cameras.launch.xml` `mtu_size`                    | 9000 (jumbo) is now production. Reverting to 1500 also works at 5 Hz Basler — both fit the bandwidth budget. Don't mix MTU values across launch + Jetson NIC + switch. |
 | `cameras.launch.xml` ZED `camera_id: -1`           | Without this, `camera_id` from Basler args leaks to ZED     |
 | `.env` `MOVEIT_CONFIG_PACKAGE=lab_sim`             | Setting to `harvest_moon` directly fails (stub config)      |

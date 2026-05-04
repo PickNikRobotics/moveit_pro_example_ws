@@ -5,7 +5,7 @@
       <arg name="node_name" value="pylon_ros2_camera_node" />                                      
       <arg name="camera_id" value="basler_cam_1" />
       <arg name="config_file" value="$(find-pkg-share harvest_moon)/config/basler_cam_1.yaml" />   
-      <arg name="mtu_size" value="1500" />    
+      <arg name="mtu_size" value="9000" />    
       <arg name="startup_user_set" value="UserSet1" />                                                     
     </include>
                                                                                                    
@@ -14,7 +14,7 @@
       <arg name="node_name" value="pylon_ros2_camera_node" />                                      
       <arg name="camera_id" value="basler_cam_2" />
       <arg name="config_file" value="$(find-pkg-share harvest_moon)/config/basler_cam_2.yaml" />   
-      <arg name="mtu_size" value="1500" />
+      <arg name="mtu_size" value="9000" />
       <arg name="startup_user_set" value="UserSet1" />
     </include>                                                                                     
                                                                                                    

@@ -7,28 +7,11 @@ Before starting:
 - Get all parts assembled per [E. Bill of Materials](E_bom.md).
 - Read [D. System Architecture Overview](D_architecture.md) for context.
 - Have a multimeter on hand for the power and ground checks.
-
 ---
 
 ## §1. Bench / DIN-rail layout
 
-The prototype mounts the switch, PSU, and DC-DC converter on a single
-length of 35 mm DIN rail. The Jetson sits on its dev-kit feet next to the
-rail, the cameras and lights are positioned wherever the application
-requires, and the Teensy lives in a small perfboard enclosure (or bare
-on the bench during dev).
-
-Suggested left-to-right order on the rail:
-```
-[ 24 V PSU ] [ 24V→12V DC-DC ] [ TrendNet PoE switch ] [ terminal blocks ]
-```
-
-Reasoning: power sources on the left feed loads to the right via terminal
-blocks. Keeps wire runs short and signal/power separation clean.
-
-> **[FIELD]** Exact rail length depends on the customer's enclosure
-> footprint. Allow ~10 cm headroom past the rightmost component for
-> service.
+The prototype mounts the switch, PSU, and DC-DC converter in a vertical stack. The Jetson sits on its dev-kit feet next to the stack, the cameras and lights are positioned wherever the application requires, and the Teensy lives in a small breadboard.
 
 ---
 
@@ -36,15 +19,15 @@ blocks. Keeps wire runs short and signal/power separation clean.
 
 ### 2.1 Mount and wire the 24 V PSU
 
-1. Mount the PSU on the DIN rail at the left.
-2. Wire mains in (per the PSU's terminal labels — typically L / N / PE).
-3. With nothing else connected, power up. Verify 24 V (±0.5 V) at the
-   PSU's `V+` / `V−` output terminals with a multimeter. Power down.
+The 24V power supply provides power to a number of components:
+
+1. The strobe lights
+2. The TrendNet switch
+3. The 12 V PSU
 
 ### 2.2 Establish the common ground bus
 
-Add a multi-tap GND terminal block on the DIN rail. Wire the PSU's `V−`
-into it. Every GND in this system terminates here:
+Every GND in this system is required to terminates on a common ground:
 
 - PSU `V−` (24 V negative)
 - 12 V DC-DC output GND
@@ -55,29 +38,16 @@ into it. Every GND in this system terminates here:
 - LHI-DO 2 Blue wire
 - Trigger box GND (Teensy GND, transistor emitter)
 
-> **Why one bus matters:** the opto-isolated trigger circuits *float*
-> until both sides share a return path. Without a common GND, the
-> Baslers' opto inputs may read as triggered when not, and may miss real
-> triggers. The "everything tied to one bus" rule eliminates ambiguity.
+> **Why one bus matters:** the opto-isolated trigger circuits *float* until both sides share a return path. Without a common GND, the Baslers' opto inputs may read as triggered when not, and may miss real triggers. The "everything tied to one bus" rule eliminates ambiguity.
 
-### 2.3 Mount and wire the 12 V DC-DC converter
+### 2.3 12 V PSU converter
 
-1. Mount on the DIN rail next to the PSU.
-2. Input: 24 V from the PSU (`V+` and `V−` to the DC-DC's input terminals).
-3. Output: 12 V to a separate output terminal block, plus GND tied to the
-   common GND bus.
-4. Power up; verify 12 V (±0.3 V) at the output terminal with a multimeter.
+The 12 V power supply is powered by the 24 V power supply. The 12 V power supply supplies power to the ZED capture card on the Jetson.
 
 ### 2.4 Power the Jetson
 
 The prototype powers the Jetson Orin AGX via **USB-C** from a
-multi-output power adapter (separate from the 24 V rail). The Jetson
-ships with a USB-C PD power input.
-
-> **[FIELD]** This is the prototype's bench arrangement. For the
-> ruggedized field rebuild, the customer's integrator will decide
-> whether to keep USB-C PD (and source a DIN-rail PD supply) or
-> migrate to a different input.
+multi-output power adapter (separate from the 24 V rail). The Jetsonships with a USB-C PD power input. When integrating into the field, careful consideration needs to be given to how this system is powered. A steady power source at the correct voltage and power rating is essential for reliable operation.
 
 ---
 
@@ -85,17 +55,13 @@ ships with a USB-C PD power input.
 
 ### 3.1 Mount and wire the TrendNet TI-PG80B
 
-1. Mount on the DIN rail.
-2. Wire 24 V (`V+`) and GND (`V−`) from the PSU's output and the common
-   GND bus.
-3. Power up; the `PWR1` LED should turn solid green.
+The TrendNet switch is powered by the 24 V power supply. When correctly powered, the `PWR1` LED should turn solid green
 
 ### 3.2 Cable the cameras and Jetson
 
-1. Cat6 from Basler 1 Ethernet port → any unused PoE port on the switch.
-2. Cat6 from Basler 2 Ethernet port → another unused PoE port.
-3. Cat5e from the switch's uplink port (or any spare port) → Jetson
-   `eno1`.
+1. Cat6 (or better) from Basler 1 Ethernet port → any unused PoE port on the switch. The solid orange light on the port indicates that the PoE is active.
+2. Cat6 (or better) from Basler 2 Ethernet port → another unused PoE port. The solid orange light on the port indicates that the PoE is active.
+3. Cat6 (or better) from the switch's uplink port (or any spare port) → Jetson `eno1`.
 
 Camera ports should show solid green + solid orange (link + PoE) once
 Cat6 is plugged in. Jetson port shows solid green.
@@ -118,21 +84,15 @@ The Jetson's `eno1` IP and camera IPs are configured in
 
 ### 4.2 Connect the ZED X
 
-The ZED Link Quad has two GMSL2 camera ports, silkscreened **J1** and
-**J2** on the PCB. The trigger pin on J17 depends on which port the
-camera is in: J1 → Pin 16, J2 → Pin 13.
+The ZED Link Quad has two GMSL2 camera ports, silkscreened **J1** and **J2** on the PCB. The trigger pin on J17 depends on which port the camera is in: J1 → Pin 16, J2 → Pin 13.
 
-1. Plug one end of the 5 m GMSL2 cable into the **J1** port (matches
-   the prototype's wiring; the J17 trigger jumper goes to Pin 16).
+1. Plug one end of the 5 m GMSL2 cable into the **J1** port (matches the prototype's wiring; the J17 trigger jumper goes to Pin 16).
 2. Plug the other end into the ZED X.
-3. Power up the 24 V rail (which the ZED Link draws from). The ZED X
-   should be detectable by the SDK.
+3. Power up the 12 V PSU (which the ZED Link draws from). The ZED X should be detectable by the SDK.
 
 ### 4.3 Wire the J17 trigger header
 
-The ZED Link Quad's J17 header carries trigger I/O. With the ZED X on
-J1, the trigger signal lives on **J17 Pin 16** (input when ZED is in
-slave mode, output when ZED is in master mode — we run slave).
+The ZED Link Quad's J17 header carries trigger I/O. With the ZED X on J1, the trigger signal lives on **J17 Pin 16** (input when ZED is in slave mode, output when ZED is in master mode — we run slave).
 
 | ZED J17 pin | Function          | Connect to                            |
 |-------------|--------------------|---------------------------------------|
@@ -167,8 +127,7 @@ each camera:
 | Gray   | 5          | Common GND bus                                   |
 | White  | 6          | unconnected                                      |
 
-Do this twice — once per camera. Both Pinks land on the same node
-(transistor collector); each Yellow goes to **its own** strobe.
+Do this twice — once per camera. Each Pink lands on its transistor collector node; each Yellow goes to **its own** strobe.
 
 ---
 
@@ -176,11 +135,7 @@ Do this twice — once per camera. Both Pinks land on the same node
 
 ### 6.1 Mount the strobes
 
-Aim each strobe so it illuminates one Basler's field of view. The
-prototype uses one strobe per camera; if your scene allows a single
-strobe to cover both cameras, you can wire both Yellow Line 2 outputs to
-one strobe's NPN trigger — but the prototype's per-camera-per-strobe
-setup is cleaner.
+Aim each strobe so it illuminates one Basler's field of view. The prototype uses one strobe per camera; if your scene allows a single strobe to cover both cameras, you can wire both Yellow Line 2 outputs to one strobe's NPN trigger — but the prototype's per-camera-per-strobe setup is cleaner.
 
 ### 6.2 Wire each strobe
 
@@ -215,39 +170,61 @@ moving on.
 
 ### 7.1 Build the NPN driver circuit
 
+**One 2N3904 transistor** with a single base resistor and two pull-up
+resistors (3 × 560 Ω total). The transistor's collector is tied to both
+Baslers' Pink (Pin 2) lines, which are normally pulled HIGH to 5 V by
+the pull-ups. When the transistor saturates, it pulls both Pinks LOW
+simultaneously, which both opto-isolators see as a triggering edge.
+
 Schematic (text form):
 
 ```
-         Teensy Pin 12 ──[ 560 Ω ]──┬── 2N3904 base
-                                     │
-                                     │
-    Both Baslers'                    │
-    Pin 2 (Pink) ──────────────────► 2N3904 collector
-                                     │
-                                     │
-    Common GND bus ─────────────────► 2N3904 emitter
+        5 V (Teensy 5V pin)
+         │     │
+       [560Ω][560Ω]      <- pull-ups (one per camera)
+         │     │
+         ▼     ▼
+   ┌── Basler 1 Pin 2 (Pink)
+   │
+   ├── Basler 2 Pin 2 (Pink)
+   │
+   ├── 2N3904 collector
+   │
+   ▼
+   2N3904 emitter ──► Common GND bus
+
+  Teensy Pin 12 ──[ 560 Ω ]──► 2N3904 base
 ```
 
 Solder onto a small perfboard. Keep leads short. The 2N3904 is a TO-92
-package; orient per its flat side / pin numbering.
+package; orient per its flat side / pin numbering. The 5 V can be
+sourced from the Teensy's 5V pin (USB-powered).
 
-> **Why a transistor:** The Teensy GPIO is 3.3 V at low drive strength.
-> Each Basler opto input requires ≥5 mA at HIGH; two in parallel is
-> 10 mA. The transistor switches the larger current through the opto
-> LEDs without loading the Teensy directly.
+> **Why this topology:** the Basler's Line 1 input is opto-isolated.
+> Current through the external opto LED (driven via the 560 Ω pull-up
+> when the transistor pulls Pink LOW) lights the internal LED, which
+> the camera's logic sees as a rising edge after the opto's internal
+> inversion. So Teensy Pin 12 going HIGH → transistor saturates →
+> external Pink falls → internal logic rises → camera triggers
+> (`TriggerActivation = RisingEdge`).
+>
+> Current through each opto LED when transistor is saturated is
+> approximately (5 V − 1.7 V opto drop) / 560 Ω ≈ 5.9 mA, comfortably
+> above the 5 mA Line 1 minimum spec.
 
 ### 7.2 Wire the Teensy
 
-| Teensy pin | Wire to                               |
-|------------|----------------------------------------|
-| Pin 2      | ZED Link J17 **Pin 16** (trigger)      |
-| Pin 12     | NPN base via 560 Ω resistor            |
-| Pin 13     | (no external wire — onboard LED)       |
-| GND        | Common GND bus + NPN emitter           |
-| 5V (or VIN)| (no external wire — USB-powered)       |
+| Teensy pin | Wire to                                                |
+|------------|---------------------------------------------------------|
+| Pin 2      | ZED Link J17 **Pin 16** (trigger)                       |
+| Pin 12     | 2N3904 base via 560 Ω resistor                          |
+| Pin 13     | (no external wire — onboard LED)                        |
+| GND        | Common GND bus + 2N3904 emitter                         |
+| 5V         | Both pull-up 560 Ω resistors (one to each Basler Pink)  |
 
-The Teensy is powered via USB from the Jetson; no external power
-connection is needed.
+The Teensy is powered via USB from the Jetson, and its 5V pin sources
+the pull-ups for the opto inputs — no external power supply needed
+for the trigger box.
 
 ### 7.3 Optional: enclose the trigger box
 
@@ -276,8 +253,8 @@ back).
 With 24 V rail OFF and Jetson OFF:
 
 - Continuity from PSU `V−` to: ZED J17 Pin 2, Basler 1 Pin 5, Basler 2
-  Pin 5, both Light Blues, Teensy GND, NPN emitter. **All should ring
-  through.**
+  Pin 5, both Light Blues, Teensy GND, 2N3904 emitter. **All should
+  ring through.**
 - No continuity between PSU `V+` and any GND tap. (Confirms no shorts.)
 
 ### 8.2 Power-up voltage check (24 V on, Jetson and Teensy still off)

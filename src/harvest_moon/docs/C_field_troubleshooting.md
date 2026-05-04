@@ -291,11 +291,11 @@ If the topic names need updating, edit `DEFAULT_TOPICS` in
 
 ### 6.2 Disk fills up mid-recording
 
-At default settings the recorder writes ~470 MB/s (≈1.7 TB/hour) to
-`/nvme/datasets/`. If the session disk fills:
+At default settings the recorder writes ~400 MB/s (≈1.4 TB/hour) to
+`/mnt/ssd/datasets/` (the external 4 TB SSD). If the session disk fills:
 
 - Stop recording (`Ctrl+C`).
-- Move or delete prior bags from `/nvme/datasets/`.
+- Move or delete prior bags from `/mnt/ssd/datasets/`.
 - For long takes, use `--compress` (zstd), drop ZED rect_color from
   `--topics`, or run timed captures with `--duration N`.
 

@@ -1,6 +1,14 @@
 /**:
     ros__parameters:
         general:
+            # MUST be a SDK-supported native rate at this resolution
+            # (HD1200: 15, 30, 60). Setting an unsupported value (e.g. 5
+            # or 10) makes the SDK reject startup and the ZED node fails
+            # to launch.
+            # In slave mode the Teensy trigger period dictates actual
+            # capture rate regardless of this value. Production: Teensy
+            # fires at 5 Hz (200 ms period), and the SDK keeps up fine
+            # with 5 Hz captures even though it's configured for 15 Hz.
             grab_frame_rate: 15
             # Publish at the camera's native grab resolution (HD1200,
             # 1920×1200 for ZED X). Default is 'CUSTOM' with a 2× downscale

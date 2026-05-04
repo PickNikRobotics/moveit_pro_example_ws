@@ -29,19 +29,19 @@ First-time test plan for `record_dataset.py`. Run this with the system fully up
 
 4. Confirm the session contents:
    ```
-   ls /nvme/datasets/smoke_*/
+   ls /mnt/ssd/datasets/smoke_*/
    ```
    Should show `bag/` directory + `session.json`.
 
 5. Inspect the bag:
    ```
-   ros2 bag info /nvme/datasets/smoke_*/bag
+   ros2 bag info /mnt/ssd/datasets/smoke_*/bag
    ```
    Should list every topic from `DEFAULT_TOPICS` with non-zero message counts.
 
 6. Inspect the session metadata:
    ```
-   cat /nvme/datasets/smoke_*/session.json
+   cat /mnt/ssd/datasets/smoke_*/session.json
    ```
    Should show label, timestamp, topics, duration_s, size_mb.
 
@@ -83,7 +83,7 @@ list if names differ.
 Smoke test bags are ~4.5 GB for a 10-second run (full ZED depth +
 pointcloud at native HD1200). Delete after confirming things work:
 ```
-rm -rf /nvme/datasets/smoke_*
+rm -rf /mnt/ssd/datasets/smoke_*
 ```
 
 ## After the smoke test

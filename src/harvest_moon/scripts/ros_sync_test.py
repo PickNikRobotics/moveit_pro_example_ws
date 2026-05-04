@@ -27,7 +27,7 @@ from PIL import Image as PILImage, ImageDraw
 
 CAM1_TOPIC = '/basler_cam_1/pylon_ros2_camera_node/image_raw'
 CAM2_TOPIC = '/basler_cam_2/pylon_ros2_camera_node/image_raw'
-ZED_TOPIC  = '/zed_x/pylon_ros2_camera_node/stereo_raw/image_raw_color'
+ZED_TOPIC  = '/zed_x/zed_node/stereo_raw/image_raw_color'
 
 COMPOSITE_HEIGHT = 540
 BANNER_H = 30

@@ -196,10 +196,17 @@ Should show both Baslers at `192.168.5.3` and `192.168.5.4`. Power-cycle
 the cameras (briefly unplug PoE Cat6) and re-run the check — they
 should come back at the same IPs, confirming persistence.
 
-> **Host-side network tuning is NOT required at production settings**
-> (MTU 1500, 5 Hz dual-Basler). The Linux defaults work. Tuning is only
-> needed for the 15 Hz / jumbo-frame experiments — see
-> [J. Deep Troubleshooting](J_deep_troubleshooting.md) if relevant.
+> **Host-side network tuning for jumbo frames** (production default):
+> ```
+> sudo ip link set eno1 mtu 9000
+> sudo sysctl -w net.core.rmem_max=33554432 net.ipv4.conf.eno1.rp_filter=0
+> ```
+> These match the `mtu_size: 9000` in `cameras.launch.xml`. Jumbo frames
+> aren't strictly required at 5 Hz dual-Basler (MTU 1500 also fits the
+> bandwidth budget) but provide headroom and consistency with the
+> deployed config. For the customer's rebuild, decide whether to keep
+> jumbo (requires switch jumbo support) or revert all four settings to
+> defaults — see [J. Deep Troubleshooting](J_deep_troubleshooting.md).
 
 ---
 
@@ -403,70 +410,94 @@ source install/setup.bash
 After the build completes, the configs are installed at
 `~/user_ws/install/harvest_moon/share/harvest_moon/config/`.
 
-### 8.1 Bind-mount the dataset storage volume
+### 8.1 Set up the dataset storage volume
 
 The recorder writes bags to its `--outdir` path (default
-`/nvme/datasets/`). For the container to see this path, the host
+`/mnt/ssd/datasets/`). For the container to see this path, the host
 filesystem location has to be bind-mounted into all camera-relevant
 services in `docker-compose.yaml`.
 
-#### Prototype (writes to internal NVMe at `/nvme`)
+#### Production: external SSD at `/mnt/ssd`
 
-The shipped `docker-compose.yaml` adds this line under `volumes:` in
-the `agent_bridge`, `drivers`, and `dev` services:
+The prototype uses a SanDisk Extreme Pro V2 4 TB portable SSD
+connected to a USB 3.2 Gen 2 (10 Gbps) USB-C port. Sustained write
+measured at 750 MB/s, ~3.4 TB usable, formatted ext4.
+
+**One-time setup steps:**
+
+1. Plug the SSD into a 10 Gbps USB-C port (verify with `lsusb -t` —
+   look for a `Mass Storage` device on the `10000M` root hub).
+
+2. Identify the device path with `lsblk` (typically `/dev/sda1`).
+
+3. **Reformat as ext4** (factory default is exFAT, which is slow for
+   sustained large-block writes — DESTROYS any existing data):
+   ```
+   sudo umount /dev/sda1 2>/dev/null
+   sudo mkfs.ext4 -L FIELD_SSD /dev/sda1
+   ```
+
+4. Mount manually first to verify:
+   ```
+   sudo mkdir -p /mnt/ssd
+   sudo mount /dev/sda1 /mnt/ssd
+   sudo chown $USER:$USER /mnt/ssd
+   mkdir -p /mnt/ssd/datasets
+   ```
+
+5. **Verify sustained write speed** (target ≥ 600 MB/s for 1.3×
+   headroom over the ~400 MB/s recording rate):
+   ```
+   dd if=/dev/zero of=/mnt/ssd/test.bin bs=4M count=2048 oflag=direct conv=fdatasync
+   rm /mnt/ssd/test.bin
+   ```
+
+6. **Add to `/etc/fstab`** so it auto-mounts at every boot. First get
+   the UUID:
+   ```
+   sudo blkid /dev/sda1
+   ```
+   Then add a line to `/etc/fstab`:
+   ```
+   UUID=<uuid-here>  /mnt/ssd  ext4  defaults,noatime,nofail  0  2
+   ```
+   `noatime` skips access-time writes; `nofail` prevents boot failure
+   if the SSD is disconnected.
+
+7. Verify the fstab entry without rebooting:
+   ```
+   sudo umount /mnt/ssd
+   sudo mount -a
+   df -h /mnt/ssd
+   ```
+
+#### Bind-mount into the moveit_pro container
+
+`docker-compose.yaml` (in `moveit_pro_example_ws/`) has these volume
+lines under `agent_bridge`, `drivers`, and `dev`:
 
 ```yaml
-- /nvme:/nvme
+- /nvme:/nvme         # internal NVMe scratch (fallback)
+- /mnt/ssd:/mnt/ssd   # external production SSD
 ```
 
-Plus the dataset dir creation:
-```
-sudo mkdir -p /nvme/datasets
-sudo chown $USER:$USER /nvme/datasets
-```
+After editing `docker-compose.yaml`, restart `moveit_pro` so the new
+mount applies (the running container needs to be re-created, not
+just the agent restarted).
 
-#### Field deployment (writes to external SSD)
+#### NVMe scratch fallback
 
-**This is what the customer's deployment is most likely to use.** The
-external SSD's host mount path differs per system — typically Linux
-auto-mounts to `/media/<user>/<volume_label>` when the drive is
-plugged in. Steps:
+The Jetson's internal NVMe (mounted at `/nvme`, 1 TB) remains
+bind-mounted as a fallback for when the external SSD isn't connected
+(e.g., bench tests). Use `--outdir /nvme/datasets` on the recorder to
+write there instead. Keep both bind mounts in `docker-compose.yaml`
+for flexibility.
 
-1. Plug in the SSD. Run `lsblk` and `df -h` to confirm where it
-   mounted (e.g. `/media/picknik/FIELD_SSD` or `/mnt/ssd`).
-
-2. Edit `~/moveit_pro/moveit_pro_example_ws/docker-compose.yaml` —
-   replace (or add alongside) the `/nvme:/nvme` line with a mount
-   pointing at your SSD. Pick whatever in-container name is
-   memorable, e.g.:
-
-   ```yaml
-   - /media/picknik/FIELD_SSD:/ssd
-   ```
-
-   Add this under `volumes:` in **all three** services that need
-   recording access: `agent_bridge`, `drivers`, and `dev`.
-
-3. Create the dataset directory on the host:
-   ```
-   mkdir -p /media/picknik/FIELD_SSD/datasets
-   ```
-
-4. Either:
-   - Pass `--outdir /ssd/datasets` (the in-container path) to every
-     `record_dataset.py` invocation, or
-   - Edit `DEFAULT_OUTDIR` in
-     `~/user_ws/src/harvest_moon/scripts/record_dataset.py` to
-     `Path("/ssd/datasets")` so it's the new default.
-
-5. Restart `moveit_pro` so the new bind mount applies.
-
-> **Important:** the `/nvme:/nvme` mount in the shipped
-> `docker-compose.yaml` is harmless on the customer's system as long
-> as the customer's host has a `/nvme` directory (or it's just unused).
-> If the customer's host doesn't have `/nvme`, Docker will refuse to
-> start the container — either remove that line or `mkdir /nvme` on
-> the host as a no-op stub.
+> **For the customer's rebuild on a different machine**, replicate the
+> SSD steps above with their drive. If their machine doesn't have a
+> directory at `/nvme`, either `mkdir /nvme` on their host as a stub
+> or remove the `- /nvme:/nvme` line from `docker-compose.yaml`
+> (otherwise Docker will refuse to start the container).
 
 ---
 

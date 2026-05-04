@@ -127,7 +127,7 @@ Where `<session_label>` is a short identifier with no spaces or slashes
 (e.g. `field_run_001`, `barn_morning_take2`). The script:
 
 - Pre-flight checks that all expected topics are publishing (warns if not).
-- Creates `/nvme/datasets/<label>_<timestamp>/` with a `bag/` rosbag2
+- Creates `/mnt/ssd/datasets/<label>_<timestamp>/` with a `bag/` rosbag2
   directory and a `session.json` metadata file.
 - Prints periodic size readouts every 5 seconds.
 - Stops cleanly on `Ctrl+C`.
@@ -137,35 +137,22 @@ Useful flags:
 - `--duration N` — auto-stop after N seconds (good for fixed-length captures).
 - `--compress` — zstd compression (smaller bag, more CPU; useful for long
   takes if disk is tight).
-- `--outdir PATH` — override the default output dir (e.g. an external SSD).
+- `--outdir PATH` — override the default output dir (e.g. fall back to the
+  internal NVMe scratch at `/nvme/datasets/`).
 - `--topics ...` — override the default topic list (see script `--help`).
 
-`/nvme/datasets/` is the prototype's NVMe scratch volume (~822 GB free).
-The path is bind-mounted into the moveit_pro container via
-`docker-compose.yaml`, so bags persist across container restarts and
-are also accessible from the host outside the container.
+`/mnt/ssd/datasets/` is the external 4 TB SanDisk Extreme Pro V2 SSD
+mounted via `/etc/fstab` and bind-mounted into the moveit_pro container
+via `docker-compose.yaml`. Sustained write speed measured at 750 MB/s,
+~3.4 TB usable. At default recording rate (~400 MB/s) that's roughly
+2.4 hours of continuous recording before fill.
 
-> **Recording to an external SSD:** the field deployment will likely use
-> an external SSD instead of the internal NVMe scratch. The recorder
-> doesn't write to arbitrary host paths automatically — the path has to
-> be bind-mounted into the moveit_pro container first. Setup steps:
->
-> 1. Plug in the SSD; identify its host mount path (e.g.
->    `/media/picknik/MY_SSD`).
-> 2. Edit `~/moveit_pro/moveit_pro_example_ws/docker-compose.yaml`:
->    add a volume mount `- /media/picknik/MY_SSD:/ssd` (or a path of
->    your choosing) under the `agent_bridge`, `drivers`, and `dev`
->    services.
-> 3. Restart `moveit_pro` (Ctrl+C then re-run `moveit_pro run`) so the
->    new mount applies.
-> 4. Create the dataset directory: `mkdir -p /media/picknik/MY_SSD/datasets`
->    (host-side; chown to your user if needed).
-> 5. At every recording call, pass the in-container path:
->    `python3 record_dataset.py --label foo --outdir /ssd/datasets`.
->
-> Alternatively, edit `DEFAULT_OUTDIR` in `record_dataset.py` to point
-> at `/ssd/datasets` so the operator doesn't have to remember the flag.
-> See [G. Software Setup §8.1](G_software_setup.md) for more.
+> **The external SSD is the production storage.** Already set up on
+> the prototype (mounted at `/mnt/ssd` via `/etc/fstab`, bind-mounted
+> into the container via `docker-compose.yaml`, and the recorder's
+> `DEFAULT_OUTDIR` points there). For the customer's rebuild on a
+> different system, see [G. Software Setup §8.1](G_software_setup.md)
+> for the same steps applied to their SSD.
 
 > **Storage note:** at default settings (full ZED depth + pointcloud at
 > native HD1200), expect ~470 MB/s write rate. A 10-minute take is

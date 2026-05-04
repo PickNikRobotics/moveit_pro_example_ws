@@ -26,6 +26,8 @@ services:
       - /dev:/dev
       # NVMe scratch for dataset recording (~822 GB free)
       - /nvme:/nvme
+      # External SSD for production data recording (~3.4 TB)
+      - /mnt/ssd:/mnt/ssd
       # Mount Basler Pylon SDK from host
       - /opt/pylon:/opt/pylon:ro
       # Mount ZED SDK from host
@@ -55,6 +57,8 @@ services:
       - /dev:/dev
       # NVMe scratch for dataset recording (~822 GB free)
       - /nvme:/nvme
+      # External SSD for production data recording (~3.4 TB)
+      - /mnt/ssd:/mnt/ssd
       # Mount Basler Pylon SDK from host
       - /opt/pylon:/opt/pylon:ro
       # Mount ZED SDK from host
@@ -86,6 +90,8 @@ services:
       - /dev:/dev
       # NVMe scratch for dataset recording (~822 GB free)
       - /nvme:/nvme
+      # External SSD for production data recording (~3.4 TB)
+      - /mnt/ssd:/mnt/ssd
       # Mount Basler Pylon SDK from host
       - /opt/pylon:/opt/pylon:ro
       # Mount ZED SDK from host

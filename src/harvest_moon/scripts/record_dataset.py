@@ -62,11 +62,12 @@ DEFAULT_TOPICS = [
     "/tf_static",
 ]
 
-# Default to the NVMe scratch on this Jetson — the eMMC root only has
-# ~15 GB free and can't keep up with native-HD1200 ZED streams. The
-# customer rebuild may have a different storage layout; override with
-# --outdir if so.
-DEFAULT_OUTDIR = Path("/nvme/datasets")
+# Default to the external SSD mount — the production deployment writes
+# rosbags to a 4 TB SanDisk Extreme Pro V2 mounted at /mnt/ssd (set up
+# in /etc/fstab). Override with --outdir if the customer's rebuild uses
+# a different storage layout. /nvme/datasets/ is a fallback for short
+# tests when the SSD isn't connected.
+DEFAULT_OUTDIR = Path("/mnt/ssd/datasets")
 
 
 def list_active_topics():
