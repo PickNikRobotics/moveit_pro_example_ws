@@ -75,7 +75,7 @@
     <parent link="world" />
     <child link="virtual_rail_link_1" />
     <origin xyz="0 0 0" rpy="0 0 0" />
-    <limit effort="1000.0" lower="-20.0" upper="20.0" velocity="0.175" acceleration="10.0"/>
+    <limit effort="1000.0" lower="-25.0" upper="25.0" velocity="0.175" acceleration="10.0"/>
     <dynamics damping="20.0" friction="500.0" />
   </joint>
 
