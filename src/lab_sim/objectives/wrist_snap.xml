@@ -11,7 +11,8 @@
       <Action
         ID="GetPointCloud"
         topic_name="/wrist_camera/points"
-        message_timeout_sec="15"
+        publisher_timeout_sec="10"
+        message_timeout_sec="30"
       />
       <Action ID="SendPointCloudToUI" />
     </Control>
