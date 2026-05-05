@@ -56,7 +56,7 @@
         filter_cylinder_radius="3.0"
         point_cloud="{output_cloud}"
         reference_pose="{gripper_pose}"
-        sphere_radius="0.1"
+        sphere_radius="0.05"
         debug_output_markers="true"
         marker_scale_xyz="{marker_scale_xyz2}"
         marker_poses="{marker_poses2}"
@@ -74,7 +74,7 @@
         stamped_twist="{stamped_twist}"
       />
       <Control ID="Fallback">
-        <Decorator ID="Timeout" msec="40000">
+        <Decorator ID="Timeout" msec="20000">
           <Control ID="Sequence">
             <Action
               ID="SwitchController"
@@ -111,7 +111,7 @@
               target_twist="{stamped_twist}"
               warmup_iterations="256"
               timeout="300"
-              site_tracking="0.2"
+              site_tracking="1.0"
               link_sites="attachment_site"
             />
           </Control>
