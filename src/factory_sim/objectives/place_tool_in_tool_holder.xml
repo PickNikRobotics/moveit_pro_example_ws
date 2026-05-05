@@ -77,7 +77,12 @@
         timeout="10"
       />
       <Action ID="DetachURDF" urdf_name="{tool_name}" />
-      <SubTree ID="Retract" _collapsed="true" distance="0.35" />
+      <SubTree
+        ID="Retract"
+        _collapsed="true"
+        distance="0.35"
+        ignore_environment_collisions="true"
+      />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
