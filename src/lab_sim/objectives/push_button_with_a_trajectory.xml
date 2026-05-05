@@ -77,7 +77,7 @@
         admittance_parameters_msg="{admittance_parameters_msg}"
         goal_position_tolerance="0.001000"
         joint_trajectory_msg="{joint_trajectory_msg}"
-        path_position_tolerance="0.20000"
+        path_position_tolerance="0.25000"
       />
     </Control>
   </BehaviorTree>
