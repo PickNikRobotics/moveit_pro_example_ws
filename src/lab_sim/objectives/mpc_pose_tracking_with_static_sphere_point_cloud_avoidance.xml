@@ -14,9 +14,9 @@
       <Action
         ID="GetPointCloud"
         message_out="{point_cloud}"
-        message_timeout_sec="5.000000"
+        message_timeout_sec="30.000000"
         topic_name="/wrist_camera/points"
-        publisher_timeout_sec="5.000000"
+        publisher_timeout_sec="10.000000"
       />
       <Action
         ID="GetCentroidFromPointCloud"
@@ -97,7 +97,7 @@
         twist_stamped="{twist_stamped}"
       />
       <Control ID="Fallback">
-        <Decorator ID="Timeout" msec="40000">
+        <Decorator ID="Timeout" msec="20000">
           <Control ID="Sequence">
             <Action
               ID="SwitchController"

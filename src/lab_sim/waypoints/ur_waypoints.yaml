@@ -752,14 +752,14 @@
     - wrist_2_joint
     - wrist_3_joint
     position:
-    - 0.013384299003678032
-    - 0.166019314519922
-    - 0.15757550190047065
-    - -1.345468374557612
-    - 1.4445329342541495
-    - -1.6491569813676528
-    - -1.566378390573665
-    - 0.15622741523103717
+    - 0.013132984607380237
+    - 0.7283457023607672
+    - -0.607049274782388
+    - -1.553577274717131
+    - 1.9012935905478687
+    - -2.118652699041754
+    - -1.4346383126951168
+    - 0.6779689115617319
     velocity: []
   multi_dof_joint_state:
     header:
@@ -1116,3 +1116,89 @@
     twist: []
     wrench: []
   name: Wrist 2 Min
+- description: ''
+  favorite: false
+  joint_group_names:
+  - gripper
+  - linear_actuator
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - linear_rail_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
+    - 0.4304390605935317
+    - -0.4378567680480089
+    - -0.32506040849446244
+    - -1.3786813884060156
+    - 1.5681700648384158
+    - -1.961524554294909
+    - -1.720721876348498
+    - 0.16537484166715177
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Above Tray Place Simple
+- description: ''
+  favorite: false
+  joint_group_names:
+  - gripper
+  - linear_actuator
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - linear_rail_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
+    - 0.4293739997326402
+    - -0.4053106793283895
+    - -0.3946348859742542
+    - -0.9263280141317556
+    - 1.4578660059546231
+    - -1.8691029152454264
+    - -1.675182968077337
+    - 0.16331769984549638
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Tray Place Simple
