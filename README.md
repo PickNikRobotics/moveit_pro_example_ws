@@ -1,70 +1,83 @@
 # MoveIt Pro Example Workspace
 
-This is fork of the [MoveIt Pro Empty Workspace](https://github.com/PickNikRobotics/moveit_pro_empty_ws).
-This workspace contains reference materials for using MoveIt Pro, including:
-- [Example base UR5e configuration](src/moveit_pro_ur_configs/picknik_ur_base_config)
-- [A physics based simulation environment with a robot on a linear rail](src/lab_sim)
-- [Mobile manipulation configuration](src/hangar_sim)
-- [Example behaviors](src/example_behaviors)
+This workspace contains reference materials for using MoveIt Pro, including example robot configurations, simulated environments, and reusable behaviors.
 
-Since the [picknik_accessories](https://github.com/PickNikRobotics/picknik_accessories) package uses git LFS, [it cannot be added as a subtree](https://github.com/git-lfs/git-lfs/issues/854).
-Please ensure you have the submodule up to date using:
+## Cloning
+
+This repository uses git submodules. Clone with:
+```bash
+git clone --recurse-submodules <repo-url>
+```
+
+If you already cloned without submodules, initialize them with:
 ```bash
 git submodule update --recursive --init
+```
+
+Several submodules (notably `picknik_accessories`) use git LFS. After updating submodules, pull LFS objects:
+```bash
 git submodule foreach --recursive git lfs pull
 ```
 
-## Working with Git Subtrees
-
-This repository was created through the combination of multiple repositories using git subtree.
-If you have no interest in manually pulling or pushing upstream changes, you can ignore the following section and treat this repository as a single repository.
-
-### Repository Structure
-
-
-The structure of this repository is as follows:
+## Repository Structure
 
 <pre>
 .
-├── <a href="README.md">README.md</a>
+├── README.md
+├── Dockerfile
+├── docker-compose.yaml
+├── colcon-defaults.yaml
+├── scripts/                          # Behaviors Hub maintenance scripts
 └── src
-    ├── <a href="https://github.com/PickNikRobotics/example_behaviors">example_behaviors</a>
-    ├── <a href="https://github.com/PickNikRobotics/lab_sim">lab_sim</a>
-    ├── <a href="https://github.com/PickNikRobotics/moveit_pro_ur_configs">moveit_pro_ur_configs</a>
+    ├── example_behaviors             # Reusable example C++ behaviors
+    ├── lab_sim_behaviors             # Behaviors specific to lab_sim
+    │
+    ├── april_tag_sim                 # AprilTag detection sim
+    ├── dual_arm_sim                  # Dual-arm manipulation sim
+    ├── factory_sim                   # Factory environment sim
+    ├── grinding_sim                  # Grinding/finishing sim
+    ├── hangar_sim                    # Mobile manipulation in a hangar
+    ├── kitchen_sim                   # Kitchen environment sim
+    ├── lab_sim                       # UR5e on linear rail in a lab
+    ├── lunar_sim                     # Lunar surface sim
+    │
+    ├── moveit_pro_ur_configs         # Universal Robots configurations
     │   ├── picknik_ur_base_config
+    │   ├── picknik_ur_site_config
     │   ├── mock_sim
-    │   ├── multi_arm_sim
-    │   ├── picknik_ur_sim_config
-    │   └── picknik_ur_site_config
-    ├── <a href="https://github.com/PickNikRobotics/moveit_pro_kinova_configs">moveit_pro_kinova_configs</a>
+    │   └── multi_arm_sim
+    ├── moveit_pro_kinova_configs     # Kinova Gen3 configurations
     │   ├── kinova_gen3_base_config
+    │   ├── kinova_gen3_site_config
     │   ├── kinova_sim
-    │   └── moveit_studio_kinova_pstop_manager
-    ├── <a href="https://github.com/PickNikRobotics/moveit_pro_mobile_manipulation">moveit_pro_mobile_manipulation</a>
-    │   ├── mobile_manipulation_config
-    │   └── picknik_ur_mobile_config
-    ├── <a href="https://github.com/PickNikRobotics/fanuc_sim">fanuc_sim</a>
-    ├── <a href="https://github.com/PickNikRobotics/picknik_accessories">picknik_accessories</a> (submodule)
+    │   ├── moveit_studio_kinova_pstop_manager
+    │   ├── space_satellite_sim
+    │   └── space_satellite_sim_camera_cal
+    ├── moveit_pro_franka_configs     # Franka configurations
+    │   └── franka_base_config
+    │
+    ├── moveit_pro_clipseg            # CLIPSeg perception (submodule)
+    ├── moveit_pro_sam2               # SAM2 perception (submodule)
+    ├── moveit_pro_sam3               # SAM3 perception (submodule)
+    ├── picknik_accessories           # Shared meshes, URDFs, MuJoCo assets (submodule, LFS)
+    │
     └── external_dependencies
-        ├── <a href="https://github.com/sjahr/ridgeback/tree/ros2">ridgeback</a>
-        ├── <a href="https://github.com/PickNikRobotics/ros2_robotiq_gripper">ros2_robotiq_gripper</a>
-        └── <a href="https://github.com/tylerjw/serial/tree/ros2">serial</a>
+        ├── clearpath_mecanum_drive_controller   (submodule)
+        ├── fanuc                                (submodule)
+        ├── franka_config/franka_description     (submodule)
+        ├── phoebe_ws                            (submodule)
+        ├── ros2_kortex                          (submodule)
+        ├── ros2_kortex_vision                   (submodule)
+        ├── ur_description                       (submodule)
+        ├── ridgeback
+        ├── ros2_robotiq_gripper
+        └── serial
 </pre>
 
-This repository contains a **copy** of the git repositories that were added as subtrees.
-File changes and commits are treated as if they happen only in this repository.
-If you update the contents of a subtree, you can merge the latest `main` branch of [lab_sim](https://github.com/PickNikRobotics/lab_sim) using the following command:
+## Updating Submodules
+
+To pull the latest commits for all submodules:
 ```bash
-git subtree pull --prefix src/lab_sim https://github.com/PickNikRobotics/lab_sim main --squash
+git submodule update --remote --recursive
+git submodule foreach --recursive git lfs pull
 ```
-
-To pull the upstream changes to all subtrees and submodules, a convenience script is provided.
-From the top level, you can execute:
-```bash
-./sync_subtrees.sh
-```
-
-## Scripts
-
-Utility scripts for maintaining the PickNik website are located in the `scripts/` directory.
-See [scripts/README.md](scripts/README.md) for documentation.
