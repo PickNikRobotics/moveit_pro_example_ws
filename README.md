@@ -14,7 +14,7 @@ If you already cloned without submodules, initialize them with:
 git submodule update --recursive --init
 ```
 
-Several submodules (notably `picknik_accessories`) use git LFS. After updating submodules, pull LFS objects:
+Several submodules (notably `picknik_accessories`) use git LFS. Install [git-lfs](https://git-lfs.com/) first (e.g., `sudo apt install git-lfs && git lfs install`); without it the commands below fail with `git: 'lfs' is not a git command`. After updating submodules, pull LFS objects:
 ```bash
 git submodule foreach --recursive git lfs pull
 ```
@@ -27,7 +27,7 @@ git submodule foreach --recursive git lfs pull
 ├── Dockerfile
 ├── docker-compose.yaml
 ├── colcon-defaults.yaml
-├── scripts/                          # Behaviors Hub maintenance scripts
+├── scripts/                          # Workspace validation checks (MuJoCo viewer, Objective favorites)
 └── src
     ├── example_behaviors             # Reusable example C++ behaviors
     ├── lab_sim_behaviors             # Behaviors specific to lab_sim
