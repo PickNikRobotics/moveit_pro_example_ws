@@ -96,6 +96,7 @@ ros2_control:
   controllers_active_at_startup:
     - "joint_trajectory_admittance_controller"
     - "joint_state_broadcaster"
+    - "force_torque_sensor_broadcaster"
     - "tool_attach_controller"
     - "suction_cup_controller"
   # Load but do not start these controllers so they can be activated later if needed.

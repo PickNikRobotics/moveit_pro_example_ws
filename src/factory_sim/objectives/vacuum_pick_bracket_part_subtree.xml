@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Vacuum Pick Bracket Part Subtree">
-  <!--//////////-->
   <BehaviorTree
     ID="Vacuum Pick Bracket Part Subtree"
-    _description="Picks the bracket part using vacuum gripper.&#10;The pick and approach poses specific to the bracket part are hardcoded into this subtree."
+    _description="Picks the bracket part using vacuum gripper.&#10;Approaches via MTC, then descends with admittance-based move-to-touch so the suction cup seats on the bracket under force feedback (instead of an open-loop push)."
   >
     <Control ID="Sequence" name="">
       <SubTree ID="Activate Vacuum" _collapsed="true" />
@@ -20,14 +19,17 @@
         output_pose="{approach_pose}"
         translation_xyz="0;0;0.15"
         quaternion_xyzw="-0.0; -1.0; -0.0; -0.0"
-        name="Create approach pose before straight pick"
+        name="Create approach pose above bracket"
       />
+      <!-- MTC: plan and execute the long approach to a hover pose above the
+           bracket. No admittance for this phase — JTAC tracks the trajectory
+           rigidly. -->
       <Action
         ID="InitializeMTCTask"
         task="{mtc_task}"
         trajectory_monitoring="false"
         controller_names="joint_trajectory_admittance_controller"
-        task_id="pick_part"
+        task_id="approach_part"
         timeout="-1.000000"
       />
       <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
@@ -53,27 +55,75 @@
         trajectory_sampling_rate="100"
         velocity_scale_factor="1.000000"
       />
-      <Action
-        ID="SetupMTCMoveAlongFrameAxis"
-        acceleration_scale="0.5"
-        axis_frame="tool0"
-        axis_x="0.000000"
-        axis_y="0.000000"
-        axis_z="1.000000"
-        hand_frame="tool0"
-        ignore_environment_collisions="false"
-        max_distance="0.055"
-        min_distance="0.055"
-        planning_group_name="manipulator"
-        task="{mtc_task}"
-        velocity_scale="1.000000"
-        name="This move is done to push the vacuum gripper into the part a little to get it to collide. This causes the mujoco weld to activate. An improvement would be to detect the force on the gripper and stop"
-      />
       <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
       <SubTree
         ID="Execute MTC Solution"
         solution="{mtc_solution}"
         goal_duration_tolerance="-1.0"
+      />
+      <!-- Move-to-touch: descend along grasp_link +Z under admittance until
+           the suction cup contacts the bracket. The 7 cm overshoot guarantees
+           contact within the planned path; admittance back-drives the
+           trajectory once the FT sensor reads the contact reaction. -->
+      <Action
+        ID="CreateStampedPose"
+        reference_frame="grasp_link"
+        stamped_pose="{touch_target_pose}"
+        position_xyz="0;0;0.07"
+        name="Touch target: 7 cm below current cup pose along grasp_link Z"
+      />
+      <Action
+        ID="VisualizePose"
+        marker_lifetime="0.000000"
+        marker_name="touch_target"
+        marker_size="0.050000"
+        pose="{touch_target_pose}"
+      />
+      <Action
+        ID="AddPoseStampedToVector"
+        input="{touch_target_pose}"
+        vector="{touch_path}"
+      />
+      <Action
+        ID="PlanCartesianPath"
+        acceleration_scale_factor="0.200000"
+        blending_radius="0.020000"
+        debug_solution="{touch_debug_solution}"
+        ik_cartesian_space_density="0.010000"
+        ik_joint_space_density="0.100000"
+        joint_trajectory_msg="{touch_trajectory_msg}"
+        path="{touch_path}"
+        planning_group_name="manipulator"
+        position_only="true"
+        tip_links="grasp_link"
+        trajectory_sampling_rate="100"
+        velocity_scale_factor="0.100000"
+      />
+      <Action
+        ID="CallTriggerService"
+        service_name="/joint_trajectory_admittance_controller/zero_fts/tool0"
+        name="Tare wrist FTS so admittance reads zero at the start"
+      />
+      <Action
+        ID="SetAdmittanceParameters"
+        admittance_parameters_msg="{admittance_parameters_msg}"
+        config_file_name="vacuum_touch_admittance_params.yaml"
+        name="Enable z-only admittance for the touch"
+      />
+      <Action
+        ID="ExecuteTrajectory"
+        absolute_force_torque_threshold="1000;1000;1000;1000;1000;1000"
+        admittance_parameters_msg="{admittance_parameters_msg}"
+        goal_position_tolerance="0.100000"
+        joint_trajectory_msg="{touch_trajectory_msg}"
+        path_position_tolerance="0.250000"
+        name="Descend with admittance — back-drives on contact"
+      />
+      <Action
+        ID="SetAdmittanceParameters"
+        admittance_parameters_msg="{admittance_parameters_msg}"
+        config_file_name="vacuum_touch_admittance_disable.yaml"
+        name="Restore plain JTAC tracking (admittance off) for downstream motions"
       />
       <Action
         ID="AddURDF"

@@ -1,0 +1,54 @@
+SetAdmittanceParameters:
+  controller_name: ""
+  end_effector_frame: "grasp_link"
+  control_frame: "grasp_link"
+  admittance:
+    # All axes off — restores plain trajectory tracking after the touch so
+    # downstream MTC motions in the subtree run without admittance offsets.
+    selected_axes:
+      x: False
+      y: False
+      z: False
+      rx: False
+      ry: False
+      rz: False
+    mass_position:
+      x: 0.1
+      y: 0.1
+      z: 0.1
+      min: 0.001
+      max: 100.0
+    mass_rotation:
+      x: 0.1
+      y: 0.1
+      z: 0.1
+      min: 0.001
+      max: 100.0
+    stiffness_position:
+      x: 180.0
+      y: 180.0
+      z: 180.0
+      min: 0.0
+      max: 1000.0
+    stiffness_rotation:
+      x: 180.0
+      y: 180.0
+      z: 180.0
+      min: 0.0
+      max: 1000.0
+    damping_ratio_position:
+      x: 100.0
+      y: 100.0
+      z: 100.0
+      min: 0.0
+      max: 100.0
+    damping_ratio_rotation:
+      x: 100.0
+      y: 100.0
+      z: 100.0
+      min: 0.0
+      max: 100.0
+    joint_damping:
+      value: 1.0
+      min: 0.0
+      max: 100.0
