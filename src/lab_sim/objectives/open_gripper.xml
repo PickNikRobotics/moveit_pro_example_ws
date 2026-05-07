@@ -11,7 +11,7 @@
         ID="MoveGripperAction"
         gripper_command_action_name="/robotiq_gripper_controller/gripper_cmd"
         position="0.05"
-        timeout="15.000000"
+        timeout="30.000000"
       />
     </Decorator>
   </BehaviorTree>
