@@ -4,6 +4,8 @@
     <flag multiccd="enable" override="enable" />
   </option>
 
+  <size memory="64M" />
+
   <asset>
     <!-- Define textures and materials -->
     <texture name="wood" type="cube" file="assets/wood.png" />
@@ -234,13 +236,17 @@
       </body>
     </body>
 
-    <!-- Bracket parts in left bin -->
-    <!-- 3 1 -->
-    <replicate count="3" sep="-" offset="0 0.06 0.05" euler="0.0 0.0 0.0">
-      <replicate count="1" sep="-" offset="0 0 .18" euler="0.0 0.0 0.0">
-        <include file="bracket_collision_geometry.xml" />
-      </replicate>
-    </replicate>
+    <!-- Bracket parts in left bin.
+         Three explicit bodies instead of <replicate count="3">: with replicate +
+         <keyframe>, MuJoCo 3.2.7 silently corrupts the first replica's freejoint
+         qpos to (0,0,0,1,0,0,0) on key load, dropping bracket-0-0 under the
+         pedestal on "Reset MuJoCo Sim". MuJoCo 3.3.5 surfaces the same bug as
+         "Keyframe 'default' has invalid qpos size, got 48, should be 13".
+         Explicit bodies preserve every keyframe row, so all three brackets reset
+         in their bin. Refs PickNikRobotics/moveit_pro#18180. -->
+    <include file="bracket_collision_geometry_0.xml" />
+    <include file="bracket_collision_geometry_1.xml" />
+    <include file="bracket_collision_geometry_2.xml" />
     <!--  -->
     <!-- ASSEMBLY SCENARIO -->
     <!--  -->
@@ -414,20 +420,20 @@
   <include file="box-welds.xml" />
 
   <keyframe>
-    <!-- qpos layout: -->
+    <!-- qpos layout, in compile order: -->
     <!-- robot [joint_1..joint_6] (6) -->
-    <!-- shelf freejoint [x y z qw qx qy qz] (7) -->
-    <!-- bracket-0 freejoint (7), bracket-1 freejoint (7), bracket-2 freejoint (7) -->
+    <!-- bracket-0 freejoint [x y z qw qx qy qz] (7), bracket-1 (7), bracket-2 (7) -->
+    <!-- shelf freejoint (7) -->
     <!-- suction_tool (gripper_base) freejoint (7) -->
     <!-- inspection_tool freejoint (7) -->
     <key
       name="default"
       qpos="
         0 0 0 0 0 0
-        0.25 -0.4 0.2301 1 0 0 0
         -0.42 0.5 0.35 1 0 0 0
         -0.42 0.56 0.40 1 0 0 0
         -0.42 0.62 0.45 1 0 0 0
+        0.25 -0.4 0.2301 1 0 0 0
         0.25 0.08 0.3 0 1 0 0
         0.25 -0.08 0.3 0 1 0 0"
       ctrl="0 0 0 0 0 0"
