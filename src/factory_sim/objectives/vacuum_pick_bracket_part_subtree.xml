@@ -65,12 +65,12 @@
            the suction cup contacts the bracket. The 7 cm overshoot guarantees
            contact within the planned path; admittance back-drives the
            trajectory once the FT sensor reads the contact reaction. -->
+      <!-- Touch target: 7 cm below the current cup pose along grasp_link +Z. -->
       <Action
         ID="CreateStampedPose"
         reference_frame="grasp_link"
         stamped_pose="{touch_target_pose}"
         position_xyz="0;0;0.07"
-        name="Touch target: 7 cm below current cup pose along grasp_link Z"
       />
       <Action
         ID="VisualizePose"
@@ -78,6 +78,15 @@
         marker_name="touch_target"
         marker_size="0.050000"
         pose="{touch_target_pose}"
+      />
+      <!-- Clear the path vector — this subtree runs once per Repeat iteration
+           in the parent BT, and AddPoseStampedToVector appends. Without the
+           reset, iteration N+ sends a path with stale waypoints to
+           PlanCartesianPath, which rejects it ("waypoint closer than
+           2*blending_radius to neighbors"). -->
+      <Action
+        ID="ResetPoseStampedVector"
+        vector="{touch_path}"
       />
       <Action
         ID="AddPoseStampedToVector"
@@ -99,17 +108,22 @@
         trajectory_sampling_rate="100"
         velocity_scale_factor="0.100000"
       />
+      <!-- Tare the wrist FTS so admittance reads zero at the start of the descent. -->
       <Action
         ID="CallTriggerService"
         service_name="/joint_trajectory_admittance_controller/zero_fts/tool0"
-        name="Tare wrist FTS so admittance reads zero at the start"
       />
+      <!-- Enable z-only admittance for the touch.
+           NOTE: SetAdmittanceParameters reads BT XML attributes as parameter
+           overrides, so do not add a `name=` attribute here — it would be
+           interpreted as a missing parameter name and abort. -->
       <Action
         ID="SetAdmittanceParameters"
         admittance_parameters_msg="{admittance_parameters_msg}"
         config_file_name="vacuum_touch_admittance_params.yaml"
-        name="Enable z-only admittance for the touch"
       />
+      <!-- Descend with admittance enabled — back-drives the trajectory once
+           the FTS reads contact reaction. -->
       <Action
         ID="ExecuteTrajectory"
         absolute_force_torque_threshold="1000;1000;1000;1000;1000;1000"
@@ -117,13 +131,12 @@
         goal_position_tolerance="0.100000"
         joint_trajectory_msg="{touch_trajectory_msg}"
         path_position_tolerance="0.250000"
-        name="Descend with admittance — back-drives on contact"
       />
+      <!-- Restore plain JTAC tracking before downstream MTC motions. -->
       <Action
         ID="SetAdmittanceParameters"
         admittance_parameters_msg="{admittance_parameters_msg}"
         config_file_name="vacuum_touch_admittance_disable.yaml"
-        name="Restore plain JTAC tracking (admittance off) for downstream motions"
       />
       <Action
         ID="AddURDF"
