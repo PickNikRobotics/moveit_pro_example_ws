@@ -26,23 +26,28 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
+# Non-composable launch mode is not supported — hangar_sim always uses use_composition:=True.
+
 import os
 
 from ament_index_python.packages import get_package_share_directory
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, GroupAction, SetEnvironmentVariable
+from launch.actions import (
+    DeclareLaunchArgument,
+    ExecuteProcess,
+    OpaqueFunction,
+    SetEnvironmentVariable,
+    TimerAction,
+)
 from launch.conditions import IfCondition
 from launch.substitutions import LaunchConfiguration, PythonExpression
 from launch_ros.actions import LoadComposableNodes
-from launch_ros.actions import Node
 from launch_ros.descriptions import ComposableNode, ParameterFile
 from nav2_common.launch import RewrittenYaml
 
 
-# This file is adapted from: https://github.com/ros-navigation/navigation2/blob/humble/nav2_bringup/launch/localization_launch.py
 def generate_launch_description():
-    # Get the launch directory
     bringup_dir = get_package_share_directory("nav2_bringup")
 
     namespace = LaunchConfiguration("namespace")
@@ -50,23 +55,13 @@ def generate_launch_description():
     use_sim_time = LaunchConfiguration("use_sim_time")
     autostart = LaunchConfiguration("autostart")
     params_file = LaunchConfiguration("params_file")
-    use_composition = LaunchConfiguration("use_composition")
     container_name = LaunchConfiguration("container_name")
     container_name_full = (namespace, "/", container_name)
-    use_respawn = LaunchConfiguration("use_respawn")
     log_level = LaunchConfiguration("log_level")
+    localization = LaunchConfiguration("localization")
 
-    lifecycle_nodes = ["map_server"]
-
-    # Map fully qualified names to relative ones so the node's namespace can be prepended.
-    # In case of the transforms (tf), currently, there doesn't seem to be a better alternative
-    # https://github.com/ros/geometry2/issues/32
-    # https://github.com/ros/robot_state_publisher/pull/30
-    # TODO(orduno) Substitute with `PushNodeRemapping`
-    #              https://github.com/ros2/launch_ros/issues/56
     remappings = [("/tf", "tf"), ("/tf_static", "tf_static")]
 
-    # Create our own temporary YAML files that include substitutions
     param_substitutions = {"use_sim_time": use_sim_time, "yaml_filename": map_yaml_file}
 
     configured_params = ParameterFile(
@@ -83,95 +78,57 @@ def generate_launch_description():
         "RCUTILS_LOGGING_BUFFERED_STREAM", "1"
     )
 
-    declare_namespace_cmd = DeclareLaunchArgument(
-        "namespace", default_value="", description="Top-level namespace"
-    )
+    def check_map_exists(context):
+        if context.perform_substitution(localization) != "True":
+            return []
+        map_file = context.perform_substitution(map_yaml_file)
+        if not os.path.exists(map_file):
+            raise RuntimeError(
+                f"Map file not found: {map_file}\n"
+                "Run SLAM first (slam:=True) to build a map, or provide a map path via map:=<path>."
+            )
+        return []
 
-    declare_map_yaml_cmd = DeclareLaunchArgument(
-        "map", description="Full path to map yaml file to load"
-    )
+    map_check = OpaqueFunction(function=check_map_exists)
 
-    declare_use_sim_time_cmd = DeclareLaunchArgument(
-        "use_sim_time",
-        default_value="false",
-        description="Use simulation (Gazebo) clock if true",
-    )
-
-    declare_params_file_cmd = DeclareLaunchArgument(
-        "params_file",
-        default_value=os.path.join(bringup_dir, "params", "nav2_params.yaml"),
-        description="Full path to the ROS2 parameters file to use for all launched nodes",
-    )
-
-    declare_autostart_cmd = DeclareLaunchArgument(
-        "autostart",
-        default_value="true",
-        description="Automatically startup the nav2 stack",
-    )
-
-    declare_use_composition_cmd = DeclareLaunchArgument(
-        "use_composition",
-        default_value="False",
-        description="Use composed bringup if True",
-    )
-
-    declare_container_name_cmd = DeclareLaunchArgument(
-        "container_name",
-        default_value="nav2_container",
-        description="the name of container that nodes will load in if use composition",
-    )
-
-    declare_use_respawn_cmd = DeclareLaunchArgument(
-        "use_respawn",
-        default_value="False",
-        description="Whether to respawn if a node crashes. Applied when composition is disabled.",
-    )
-
-    declare_log_level_cmd = DeclareLaunchArgument(
-        "log_level", default_value="info", description="log level"
-    )
-
-    load_nodes = GroupAction(
-        condition=IfCondition(PythonExpression(["not ", use_composition])),
-        actions=[
-            Node(
+    # Load map_server and amcl into the shared nav2_container when localization is enabled.
+    load_localization_nodes = LoadComposableNodes(
+        condition=IfCondition(localization),
+        target_container=container_name_full,
+        composable_node_descriptions=[
+            ComposableNode(
                 package="nav2_map_server",
-                executable="map_server",
+                plugin="nav2_map_server::MapServer",
                 name="map_server",
-                output="screen",
-                respawn=use_respawn,
-                respawn_delay=2.0,
                 parameters=[configured_params],
-                arguments=["--ros-args", "--log-level", log_level],
                 remappings=remappings,
             ),
-            # Node(
-            #     package='nav2_amcl',
-            #     executable='amcl',
-            #     name='amcl',
-            #     output='screen',
-            #     respawn=use_respawn,
-            #     respawn_delay=2.0,
-            #     parameters=[configured_params],
-            #     arguments=['--ros-args', '--log-level', log_level],
-            #     remappings=remappings),
-            Node(
+            ComposableNode(
+                package="beluga_amcl",
+                plugin="beluga_amcl::AmclNode",
+                name="amcl",
+                parameters=[configured_params],
+                remappings=remappings,
+            ),
+            ComposableNode(
                 package="nav2_lifecycle_manager",
-                executable="lifecycle_manager",
+                plugin="nav2_lifecycle_manager::LifecycleManager",
                 name="lifecycle_manager_localization",
-                output="screen",
-                arguments=["--ros-args", "--log-level", log_level],
                 parameters=[
-                    {"use_sim_time": use_sim_time},
-                    {"autostart": autostart},
-                    {"node_names": lifecycle_nodes},
+                    {
+                        "use_sim_time": use_sim_time,
+                        "autostart": autostart,
+                        "node_names": ["map_server", "amcl"],
+                    }
                 ],
             ),
         ],
     )
 
-    load_composable_nodes = LoadComposableNodes(
-        condition=IfCondition(use_composition),
+    # Load map_server only (no AMCL) when localization is disabled.
+    # A static map->odom TF is expected from the parent launch in this case.
+    load_map_server_only = LoadComposableNodes(
+        condition=IfCondition(PythonExpression(["not ", localization])),
         target_container=container_name_full,
         composable_node_descriptions=[
             ComposableNode(
@@ -189,32 +146,103 @@ def generate_launch_description():
                     {
                         "use_sim_time": use_sim_time,
                         "autostart": autostart,
-                        "node_names": lifecycle_nodes,
+                        "node_names": ["map_server"],
                     }
                 ],
             ),
         ],
     )
 
-    # Create the launch description and populate
+    # Publish the robot's known sim spawn pose to /initialpose so beluga_amcl
+    # can initialize its particle filter without a manual 2D pose estimate.
+    # The 3-second delay gives map_server and amcl time to activate first.
+    # Covariance values match nav2_amcl defaults (±0.5 m, ±~15 deg).
+    initial_pose_pub = TimerAction(
+        condition=IfCondition(localization),
+        period=3.0,
+        actions=[
+            ExecuteProcess(
+                cmd=[
+                    "ros2",
+                    "topic",
+                    "pub",
+                    "--once",
+                    "/initialpose",
+                    "geometry_msgs/msg/PoseWithCovarianceStamped",
+                    (
+                        '{"header": {"frame_id": "map"}, '
+                        '"pose": {"pose": {'
+                        '"position": {"x": 0.0, "y": 0.0, "z": 0.0}, '
+                        '"orientation": {"x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0}}, '
+                        '"covariance": [0.25, 0, 0, 0, 0, 0, '
+                        "0, 0.25, 0, 0, 0, 0, "
+                        "0, 0, 0, 0, 0, 0, "
+                        "0, 0, 0, 0, 0, 0, "
+                        "0, 0, 0, 0, 0, 0, "
+                        "0, 0, 0, 0, 0, 0.0685]}}"
+                    ),
+                ],
+                output="log",
+            )
+        ],
+    )
+
     ld = LaunchDescription()
 
-    # Set environment variables
     ld.add_action(stdout_linebuf_envvar)
 
-    # Declare the launch options
-    ld.add_action(declare_namespace_cmd)
-    ld.add_action(declare_map_yaml_cmd)
-    ld.add_action(declare_use_sim_time_cmd)
-    ld.add_action(declare_params_file_cmd)
-    ld.add_action(declare_autostart_cmd)
-    ld.add_action(declare_use_composition_cmd)
-    ld.add_action(declare_container_name_cmd)
-    ld.add_action(declare_use_respawn_cmd)
-    ld.add_action(declare_log_level_cmd)
+    ld.add_action(
+        DeclareLaunchArgument(
+            "namespace", default_value="", description="Top-level namespace"
+        )
+    )
+    ld.add_action(
+        DeclareLaunchArgument("map", description="Full path to map yaml file to load")
+    )
+    ld.add_action(
+        DeclareLaunchArgument(
+            "use_sim_time",
+            default_value="false",
+            description="Use simulation clock if true",
+        )
+    )
+    ld.add_action(
+        DeclareLaunchArgument(
+            "params_file",
+            default_value=os.path.join(bringup_dir, "params", "nav2_params.yaml"),
+            description="Full path to the ROS2 parameters file to use for all launched nodes",
+        )
+    )
+    ld.add_action(
+        DeclareLaunchArgument(
+            "autostart",
+            default_value="true",
+            description="Automatically startup the nav2 stack",
+        )
+    )
+    ld.add_action(
+        DeclareLaunchArgument(
+            "container_name",
+            default_value="nav2_container",
+            description="Name of the component container to load nodes into",
+        )
+    )
+    ld.add_action(
+        DeclareLaunchArgument(
+            "log_level", default_value="info", description="log level"
+        )
+    )
+    ld.add_action(
+        DeclareLaunchArgument(
+            "localization",
+            default_value="True",
+            description="Run beluga_amcl for map-based localization. Set False to use a static map->odom TF instead.",
+        )
+    )
 
-    # Add the actions to launch all of the localiztion nodes
-    ld.add_action(load_nodes)
-    ld.add_action(load_composable_nodes)
+    ld.add_action(map_check)
+    ld.add_action(load_localization_nodes)
+    ld.add_action(load_map_server_only)
+    ld.add_action(initial_pose_pub)
 
     return ld
