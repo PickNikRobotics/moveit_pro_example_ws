@@ -15,11 +15,15 @@ on:
 
 jobs:
   integration-test-in-studio-container:
-    uses: PickNikRobotics/moveit_pro_ci/.github/workflows/workspace_integration_test.yaml@01ac7e19a9e4eeeff4965556e2be37159025e893 # v0.0.8
+    uses: PickNikRobotics/moveit_pro_ci/.github/workflows/workspace_integration_test.yaml@81223807e77a3ebfebcf2254ac830cfb4cc67a70 # v0.0.9
     with:
       image_tag: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name }}
       colcon_test_args: "--executor sequential"
       runner: "picknik-16-amd64"
+      # Coarsen MuJoCo timestep on CI (default 0.002s = 500Hz) so the heavier 3.6.0
+      # constraint solver stays at-or-under realtime on CI runners. See
+      # PickNikRobotics/moveit_pro#18534 for the underlying flake history.
+      mujoco_ci_timestep: "0.003"
     secrets:
       moveit_license_key: ${{ secrets.STUDIO_CI_LICENSE_KEY }}
 
