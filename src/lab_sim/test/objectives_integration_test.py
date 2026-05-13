@@ -34,6 +34,7 @@ from moveit_pro_test_utils.objective_test_fixture import (
     ExecuteObjectiveResource,
     execute_objective_resource as execute_objective_resource,
     get_objective_pytest_params,
+    reset_simulation_before_test as reset_simulation_before_test,
     run_objective,
 )
 
@@ -70,6 +71,10 @@ skip_objectives = {
     "Pick All Pill Bottles",
     "Pick up Object",
     "Place Object",
+    # Flaky on CI after the MuJoCo 3.2.7 -> 3.6.0 upgrade: the JTAC compliance loop
+    # is sensitive to the simulator falling under realtime, and we see ~50% flake
+    # rate even with mujoco_ci_timestep coarsening and CPU pinning. See PR #615.
+    "Push Button With a Trajectory",
     "Record Square Trajectory",
     "Scan Scene - Multiple Point Clouds",
     "Stack Objects with ICP",  # Skipped because there is no primary ui to switch to in ci
