@@ -147,7 +147,7 @@
           solution_out_2="{push_solution}"
         />
         <Action
-          ID="WaitForUserTrajectoryApproval"
+          ID="WaitForMTCSolutionApproval"
           solution="{full_push_along_axis_solution}"
         />
         <SubTree

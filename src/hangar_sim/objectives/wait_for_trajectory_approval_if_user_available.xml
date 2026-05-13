@@ -12,7 +12,7 @@
         <Action ID="IsUserAvailable" />
       </Decorator>
       <Action
-        ID="WaitForUserTrajectoryApproval"
+        ID="WaitForMTCSolutionApproval"
         solution="{solution}"
         cartesian_path_links="ridgeback_base_link;grasp_link"
       />
