@@ -12,9 +12,9 @@
         planning_scene_msg="{planning_scene}"
       />
       <Action
-        ID="CreateStampedPose"
+        ID="CreatePoseStamped"
         reference_frame="world"
-        stamped_pose="{back_wall_pose}"
+        pose_stamped="{back_wall_pose}"
         position_xyz="0.15; 0.83; 0.85"
         orientation_xyzw="0.000000;0.000000;0.000000;1.000000"
       />
@@ -167,9 +167,9 @@
             <Control ID="Sequence" name="Retract" _collapsed="false">
               <!--Retract away from the grasp-->
               <Action
-                ID="CreateStampedPose"
+                ID="CreatePoseStamped"
                 reference_frame="grasp_link"
-                stamped_pose="{retract_pose}"
+                pose_stamped="{retract_pose}"
                 position_xyz="0;0;-0.25"
                 orientation_xyzw="0.000000;0.000000;0.000000;1.000000"
               />
@@ -276,23 +276,23 @@
                   wait_for_server_available_timeout="3.000000"
                 />
                 <Action
-                  ID="CreateStampedWrench"
-                  stamped_wrench="{desired_wrench}"
+                  ID="CreateWrenchStamped"
+                  wrench_stamped="{desired_wrench}"
                   reference_frame="grasp_link"
                   torque_xyz="0;0;0"
                   force_xyz="0;0;0"
                 />
                 <Action
-                  ID="CreateStampedTwist"
+                  ID="CreateTwistStamped"
                   reference_frame="grasp_link"
-                  stamped_twist="{desired_twist}"
+                  twist_stamped="{desired_twist}"
                   angular_velocity_xyz="0;0;0"
                   linear_velocity_xyz="0.0;0;0.05"
                 />
                 <Action
-                  ID="CreateStampedPose"
+                  ID="CreatePoseStamped"
                   reference_frame="grasp_link"
-                  stamped_pose="{initial_pose}"
+                  pose_stamped="{initial_pose}"
                   orientation_xyzw="0.000000;0.000000;0.000000;1.000000"
                   position_xyz="0.000000;0.000000;0.000000"
                 />
@@ -360,9 +360,9 @@
                     <SubTree ID="Open Gripper" _collapsed="true" />
                     <!--Retract upward after releasing the bottle-->
                     <Action
-                      ID="CreateStampedPose"
+                      ID="CreatePoseStamped"
                       reference_frame="grasp_link"
-                      stamped_pose="{place_retract_pose}"
+                      pose_stamped="{place_retract_pose}"
                       position_xyz="0;0;-0.08"
                       orientation_xyzw="0.000000;0.000000;0.000000;1.000000"
                     />
