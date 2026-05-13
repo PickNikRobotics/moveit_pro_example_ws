@@ -152,12 +152,12 @@
             _collapsed="true"
           >
             <Action
-              ID="CreateStampedPose"
+              ID="CreatePoseStamped"
               name="Gripper origin in gripper frame"
               position_xyz="0;0;0"
               orientation_xyzw="0;0;0;1"
               reference_frame="grasp_link"
-              stamped_pose="{gripper_local_pose}"
+              pose_stamped="{gripper_local_pose}"
             />
             <Action
               ID="TransformPoseFrame"
@@ -179,12 +179,12 @@
               visualize_pose="false"
             />
             <Action
-              ID="CreateStampedPose"
+              ID="CreatePoseStamped"
               name="Build predrop hover pose"
               position_xyz="0.95;0.5568;0.805"
               orientation_xyzw="-0.0436;0.9990;0;0"
               reference_frame="world"
-              stamped_pose="{predrop_hover_pose}"
+              pose_stamped="{predrop_hover_pose}"
             />
             <SubTree
               ID="CreateVector"
@@ -308,12 +308,12 @@
             />
             <SubTree ID="Open Gripper" _collapsed="true" />
             <Action
-              ID="CreateStampedPose"
+              ID="CreatePoseStamped"
               name="Post-place retract pose (10 cm up in tool frame)"
               position_xyz="0;0;-0.1"
               orientation_xyzw="0;0;0;1"
               reference_frame="grasp_link"
-              stamped_pose="{post_place_retract_pose}"
+              pose_stamped="{post_place_retract_pose}"
             />
             <SubTree
               ID="CreateVector"

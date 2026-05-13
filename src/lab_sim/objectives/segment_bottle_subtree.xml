@@ -15,12 +15,12 @@
         _collapsed="false"
       >
         <Action
-          ID="CreateStampedPose"
+          ID="CreatePoseStamped"
           name="Define source-workspace crop box pose"
           reference_frame="world"
           position_xyz="0.17;0.6;0.55"
           orientation_xyzw="0;0;0;1"
-          stamped_pose="{source_crop_box_pose}"
+          pose_stamped="{source_crop_box_pose}"
         />
         <!--Flush any cached snapshot so the captured image and point
              cloud come from the current camera pose, not stale from
@@ -140,12 +140,12 @@
         _collapsed="false"
       >
         <Action
-          ID="CreateStampedPose"
+          ID="CreatePoseStamped"
           name="Define table-removal box pose"
           reference_frame="world"
           position_xyz="0;0;-0.5"
           orientation_xyzw="0;0;0;1"
-          stamped_pose="{table_remove_box_pose}"
+          pose_stamped="{table_remove_box_pose}"
         />
         <Action
           ID="RemovePointsInBox"
