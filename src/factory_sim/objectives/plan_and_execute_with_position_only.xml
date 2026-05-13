@@ -71,7 +71,7 @@
             name="Optionally execute trajectory and return to start joint state"
           >
             <Action
-              ID="WaitForUserTrajectoryApproval"
+              ID="WaitForMTCSolutionApproval"
               solution="{debug_solution}"
               cartesian_path_links="tool0"
             />
