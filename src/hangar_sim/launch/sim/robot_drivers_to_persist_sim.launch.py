@@ -28,6 +28,7 @@
 
 import os
 
+import yaml
 from ament_index_python.packages import get_package_share_directory
 
 from launch import LaunchDescription
@@ -35,7 +36,10 @@ from launch.actions import (
     DeclareLaunchArgument,
     GroupAction,
     IncludeLaunchDescription,
+    LogInfo,
+    OpaqueFunction,
     SetEnvironmentVariable,
+    Shutdown,
 )
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
@@ -49,6 +53,52 @@ from launch_ros.actions import PushRosNamespace
 from launch_ros.descriptions import ParameterFile
 from launch_ros.substitutions import FindPackageShare
 from nav2_common.launch import RewrittenYaml, ReplaceString
+
+
+def _check_fuse_publish_odom(context, *args, **kwargs):
+    """Fail fast if use_fuse:=true but MuJoCo is still configured to publish odom TF.
+
+    When fuse is enabled it is the sole authority on odom → ridgeback_base_link.
+    MuJoCo must not also publish that edge or consumers will see jittery, interleaved updates.
+    Set 'publish_odom: "false"' in config.yaml under hardware.robot_description.urdf_params.
+    """
+    if LaunchConfiguration("use_fuse").perform(context).lower() != "true":
+        return []
+
+    config_path = os.path.join(
+        get_package_share_directory("hangar_sim"), "config", "config.yaml"
+    )
+    with open(config_path) as f:
+        robot_config = yaml.safe_load(f)
+
+    urdf_params = (
+        robot_config.get("hardware", {})
+        .get("robot_description", {})
+        .get("urdf_params", [])
+    )
+    publish_odom = True  # MuJoCo default
+    for param in urdf_params:
+        if isinstance(param, dict) and "publish_odom" in param:
+            publish_odom = str(param["publish_odom"]).lower() not in (
+                "false",
+                "0",
+                "no",
+            )
+            break
+
+    if publish_odom:
+        return [
+            LogInfo(
+                msg=(
+                    "use_fuse:=true but MuJoCo is still configured to publish"
+                    " odom -> ridgeback_base_link. When fuse is enabled, fuse must be the sole"
+                    " publisher of that TF edge. Set 'publish_odom: false' in config.yaml under"
+                    " hardware.robot_description.urdf_params, then rebuild hangar_sim."
+                )
+            ),
+            Shutdown(reason="publish_odom must be false when use_fuse:=true"),
+        ]
+    return []
 
 
 def generate_launch_description():
@@ -347,7 +397,7 @@ def generate_launch_description():
     # Set environment variables
     ld.add_action(stdout_linebuf_envvar)
 
-    # Declare the launch options
+    # Declare the launch options — all args must be declared before the OpaqueFunction runs.
     ld.add_action(declare_namespace_cmd)
     ld.add_action(declare_use_namespace_cmd)
     ld.add_action(declare_slam_cmd)
@@ -359,6 +409,7 @@ def generate_launch_description():
     ld.add_action(declare_use_respawn_cmd)
     ld.add_action(declare_log_level_cmd)
     ld.add_action(declare_use_fuse_cmd)
+    ld.add_action(OpaqueFunction(function=_check_fuse_publish_odom))
 
     # Add the actions to launch all of the navigation nodes
     ld.add_action(bringup_cmd_group)
