@@ -92,10 +92,7 @@
             cartesian_space_step="0.02"
             debug_solution="{debug_solution}"
           />
-          <Action
-            ID="WaitForUserTrajectoryApproval"
-            solution="{debug_solution}"
-          />
+          <Action ID="WaitForMTCSolutionApproval" solution="{debug_solution}" />
           <Action
             ID="SetAdmittanceParameters"
             config_file_name="jtac_parameters.yaml"

@@ -83,7 +83,7 @@
         joint_trajectory_msg="{joint_trajectory_msg}"
       />
       <!--Wait for user to approve the grinding path and then execute it-->
-      <Action ID="WaitForUserTrajectoryApproval" solution="{debug_solution}" />
+      <Action ID="WaitForMTCSolutionApproval" solution="{debug_solution}" />
       <Action ID="ExecuteTrajectory" />
       <!--Move away from the part after completing the grinding path-->
       <SubTree

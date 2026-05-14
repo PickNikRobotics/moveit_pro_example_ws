@@ -32,7 +32,7 @@
           velocity_scale_factor="1.000000"
         />
         <Action
-          ID="WaitForUserTrajectoryApproval"
+          ID="WaitForMTCSolutionApproval"
           cartesian_path_links="grasp_link"
           solution="{debug_solution}"
         />
