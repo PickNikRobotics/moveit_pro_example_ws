@@ -37,7 +37,7 @@
         joint_trajectory_msg="{joint_trajectory_msg}"
       />
       <!--Preview the trajectory for approval and save if approved-->
-      <Action ID="WaitForUserTrajectoryApproval" solution="{debug_solution}" />
+      <Action ID="WaitForMTCSolutionApproval" solution="{debug_solution}" />
       <Action
         ID="SaveJointTrajectoryToYaml"
         yaml_filename="~/user_ws/src/lab_sim/objectives/joint_trajectory"

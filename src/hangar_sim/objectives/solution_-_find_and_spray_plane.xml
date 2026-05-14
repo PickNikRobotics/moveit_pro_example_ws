@@ -69,7 +69,7 @@
         trajectory_sampling_rate="100"
         velocity_scale_factor="1.000000"
       />
-      <Action ID="WaitForUserTrajectoryApproval" solution="{debug_solution}" />
+      <Action ID="WaitForMTCSolutionApproval" solution="{debug_solution}" />
       <Action
         ID="ExecuteTrajectory"
         execution_pipeline="jtc"

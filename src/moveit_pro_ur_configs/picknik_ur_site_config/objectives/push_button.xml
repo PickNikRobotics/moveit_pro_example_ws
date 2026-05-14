@@ -96,7 +96,7 @@
           solution_out_2="{push_solution}"
         />
         <Action
-          ID="WaitForUserTrajectoryApproval"
+          ID="WaitForMTCSolutionApproval"
           solution="{full_push_button_solution}"
         />
         <SubTree
