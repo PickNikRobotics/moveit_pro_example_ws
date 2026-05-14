@@ -30,7 +30,7 @@
       <Control ID="Fallback">
         <Decorator ID="Timeout" msec="1000">
           <Action
-            ID="PublishStaticFrame"
+            ID="PublishTF"
             pose="{tag_pose_world}"
             child_frame_id="tag_frame"
             publish_rate="5"
@@ -46,7 +46,7 @@
               output_pose="{object_pose_stamped_estimate}"
             />
             <Action
-              ID="PublishStaticFrame"
+              ID="PublishTF"
               pose="{object_pose_stamped_estimate}"
               child_frame_id="object_frame"
               publish_rate="5"
@@ -68,7 +68,7 @@
           <Control ID="Fallback">
             <Decorator ID="Timeout" msec="1000">
               <Action
-                ID="PublishStaticFrame"
+                ID="PublishTF"
                 pose="{object_pose_stamped_estimate}"
                 child_frame_id="object_frame"
                 publish_rate="5"
@@ -114,7 +114,7 @@
           <Control ID="Fallback">
             <Decorator ID="Timeout" msec="100">
               <Action
-                ID="PublishStaticFrame"
+                ID="PublishTF"
                 pose="{object_pose_stamped_estimate}"
                 child_frame_id="object_frame"
                 publish_rate="5"
@@ -136,7 +136,7 @@
           <Control ID="Fallback">
             <Decorator ID="Timeout" msec="1000">
               <Action
-                ID="PublishStaticFrame"
+                ID="PublishTF"
                 pose="{model_world}"
                 child_frame_id="object_frame_new"
                 publish_rate="5"
@@ -166,7 +166,7 @@
           <Control ID="Fallback">
             <Decorator ID="Timeout" msec="1000">
               <Action
-                ID="PublishStaticFrame"
+                ID="PublishTF"
                 pose="{hole_object}"
                 child_frame_id="object_hole"
                 publish_rate="5"
@@ -193,7 +193,7 @@
       <Control ID="Fallback">
         <Decorator ID="Timeout" msec="1000">
           <Action
-            ID="PublishStaticFrame"
+            ID="PublishTF"
             pose="{goal_pose}"
             child_frame_id="goal_pose"
             publish_rate="5"
