@@ -20,6 +20,9 @@ hardware:
           package: "hangar_sim"
           path: "config/moveit/joint_limits.yaml"
       - mujoco_model: "description/hangar_scene.xml"
+      # Set to false when use_fuse:=true so fuse is the sole odom -> ridgeback_base_link publisher.
+      # Rebuild hangar_sim after changing this value.
+      - publish_odom: true
 
   # Specify any additional launch files for running the robot in simulation mode.
   # Used when hardware.simulated is True.

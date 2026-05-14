@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
-  <xacro:macro name="picknik_ur_mujoco_ros2_control" params="mujoco_model mujoco_viewer:=false">
+  <xacro:macro name="picknik_ur_mujoco_ros2_control" params="mujoco_model mujoco_viewer:=false publish_odom:=true">
 
     <ros2_control name="ur_mujoco_control" type="system">
       <!-- Per-LiDAR topic routing. Sensor names match the MJCF site-name prefix
@@ -20,7 +20,7 @@
           <param name="render_publish_rate">20</param>
           <param name="tf_publish_rate">60</param>
           <param name="lidar_publish_rate">10</param>
-          <param name="publish_odom">true</param>
+          <param name="publish_odom">${publish_odom}</param>
           <param name="odom_child_frame">ridgeback_base_link</param>
           <param name="odom_rate">150</param>
           <param name="odom_zero_z">true</param>
