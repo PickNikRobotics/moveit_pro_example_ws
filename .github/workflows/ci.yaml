@@ -13,9 +13,13 @@ on:
   schedule:
     - cron: "0 */6 * * 1-5"
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   integration-test-in-studio-container:
-    uses: PickNikRobotics/moveit_pro_ci/.github/workflows/workspace_integration_test.yaml@81223807e77a3ebfebcf2254ac830cfb4cc67a70 # v0.0.9
+    uses: PickNikRobotics/moveit_pro_ci/.github/workflows/workspace_integration_test.yaml@13d4cdf34697226ac67e34d93dda8b94fa477336 # v0.2.1
     with:
       image_tag: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name }}
       colcon_test_args: "--executor sequential"
@@ -24,6 +28,7 @@ jobs:
       # constraint solver stays at-or-under realtime on CI runners. See
       # PickNikRobotics/moveit_pro#18534 for the underlying flake history.
       mujoco_ci_timestep: "0.003"
+      use_ccache: true
     secrets:
       moveit_license_key: ${{ secrets.STUDIO_CI_LICENSE_KEY }}
 
