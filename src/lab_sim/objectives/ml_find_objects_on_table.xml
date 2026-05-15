@@ -26,6 +26,11 @@
         bounding_box_labels="{confidence_scores_str}"
         image="{wrist_camera_image}"
       />
+      <!--Auto-switch a view pane to the masks visualization so users can immediately see the output.-->
+      <Action
+        ID="SwitchUIPrimaryView"
+        primary_view_name="/masks_visualization"
+      />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
