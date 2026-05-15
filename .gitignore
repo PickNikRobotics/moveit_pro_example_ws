@@ -1,5 +1,4 @@
 build/
 install/
 log/
-.vscode/
-MUJOCO_LOG.TXT
+.ccache/
