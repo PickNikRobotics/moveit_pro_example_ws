@@ -241,13 +241,13 @@
           tip_offset="0;0;0.05;0;0;0"
         />
         <Action
-          ID="WaitForUserTrajectoryApproval"
+          ID="WaitForMTCSolutionApproval"
           solution="{debug_solution}"
           cartesian_path_links="grasp_link"
         />
       </Control>
       <Action
-        ID="WaitForUserTrajectoryApproval"
+        ID="WaitForMTCSolutionApproval"
         solution="{debug_solution}"
         cartesian_path_links="grasp_link"
       />

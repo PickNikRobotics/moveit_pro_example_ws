@@ -19,6 +19,8 @@
   <xacro:arg name="initial_positions_file" default="$(find picknik_ur_base_config)/config/initial_positions.yaml"/>
   <xacro:arg name="mujoco_model" default="description/bar_scene.xml"/>
   <xacro:arg name="mujoco_viewer" default="false" />
+  <!-- Set to false when use_fuse:=true so fuse is the sole odom → ridgeback_base_link publisher. -->
+  <xacro:arg name="publish_odom" default="true"/>
 
   <!-- Import UR and environment macros -->
   <xacro:include filename="$(find picknik_ur_base_config)/description/picknik_ur_macro.xacro"/>
@@ -109,6 +111,6 @@
   <xacro:vacuum_urdf parent="tool0"/>
 
   <!-- MuJoCo Hardware interface -->
-  <xacro:picknik_ur_mujoco_ros2_control mujoco_model="$(arg mujoco_model)" mujoco_viewer="$(arg mujoco_viewer)"/>
+  <xacro:picknik_ur_mujoco_ros2_control mujoco_model="$(arg mujoco_model)" mujoco_viewer="$(arg mujoco_viewer)" publish_odom="$(arg publish_odom)"/>
 
 </robot>
