@@ -123,39 +123,6 @@
         <SubTree ID="Look at Table" _collapsed="true" />
         <SubTree ID="Take Wrist Camera Snapshot" _collapsed="true" />
       </Control>
-      <!--Warm up velocity_force_controller so the first placement is not a cold start-->
-      <Control ID="Sequence" _collapsed="false">
-        <Action
-          ID="SwitchController"
-          activate_controllers="velocity_force_controller"
-          controller_switch_action_name="/controller_manager/switch_controller"
-          timeout="-1.000000"
-          activate_asap="true"
-          strictness="1"
-          controller_list_action_name="/controller_manager/list_controllers"
-          automatic_deactivation="true"
-          automatic_activation="true"
-          deactivate_controllers=""
-        />
-        <Action
-          ID="CallTriggerService"
-          service_name="/velocity_force_controller/zero_fts"
-          response_timeout="3.000000"
-          wait_for_server_available_timeout="3.000000"
-        />
-        <Action
-          ID="SwitchController"
-          activate_controllers="joint_trajectory_admittance_controller"
-          controller_switch_action_name="/controller_manager/switch_controller"
-          timeout="-1.000000"
-          activate_asap="true"
-          strictness="1"
-          controller_list_action_name="/controller_manager/list_controllers"
-          automatic_deactivation="true"
-          automatic_activation="true"
-          deactivate_controllers=""
-        />
-      </Control>
       <Decorator ID="ForceSuccess" _collapsed="false">
         <Decorator ID="KeepRunningUntilFailure" _collapsed="false">
           <Control ID="Sequence" name="TopLevelSequence" _collapsed="false">
