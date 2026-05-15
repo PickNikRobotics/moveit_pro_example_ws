@@ -76,7 +76,7 @@ repos:
         name: "Lint Dockerfiles"
         language: docker_image
         types: ["dockerfile"]
-        entry: hadolint/hadolint:2.11.0 hadolint
+        entry: hadolint/hadolint:v2.14.0 hadolint
 
   - repo: https://github.com/pre-commit/mirrors-prettier
     rev: "v4.0.0-alpha.8"
