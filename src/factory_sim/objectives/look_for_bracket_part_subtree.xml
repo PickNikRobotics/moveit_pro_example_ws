@@ -12,7 +12,7 @@
       <!--Get the bracket pointcloud from the CAD file and make a guess as to where it might be-->
       <Action
         ID="CreatePoseStamped"
-        position_xyz="-0.35;0.8;0.4"
+        position_xyz="-0.42;0.55;0.4"
         orientation_xyzw="0.000;0.000;0.0;1"
         name="Initial guess for bracket pose, somewhere above left bin"
         pose_stamped="{guess_pose}"
@@ -79,7 +79,7 @@
         base_point_cloud="{blue_bracket_part_cloud}"
         max_iterations="100"
         target_pose_in_base_frame="{registered_to_guess_pose}"
-        max_correspondence_distance="0.5"
+        max_correspondence_distance="0.15"
         name="Produce updated pose, relative to the initial guess pose"
       />
       <Action
