@@ -3,7 +3,6 @@
   BTCPP_format="4"
   main_tree_to_execute="Grapple Moving Satellite via Fiducial Tracking"
 >
-  <!--//////////-->
   <BehaviorTree
     ID="Grapple Moving Satellite via Fiducial Tracking"
     _description="Track and grapple satellite using state estimation of target April tags. Initiate satellite motion or reset position with Key 1 in the MuJoCo viewer."
@@ -15,6 +14,16 @@
         ID="Move to Waypoint"
         _collapsed="true"
         waypoint_name="View Tag"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+        controller_names="joint_trajectory_admittance_controller"
+        execution_pipeline="jtac"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        seed="0"
+        velocity_scale_factor="1.0"
       />
       <Action
         ID="SwitchController"
@@ -25,21 +34,23 @@
         controller_switch_action_name="/controller_manager/switch_controller"
         strictness="1"
         timeout="-1.000000"
+        automatic_activation="true"
+        deactivate_controllers=""
       />
       <Action
         ID="CreatePoseStamped"
+        name="target pose offset"
         pose_stamped="{target_pose_offset}"
         orientation_xyzw="-0.7071068;0.7071068;0;0"
         position_xyz="0.0;0.0;0.2"
         reference_frame="world"
-        name="target pose offset"
       />
       <Action
         ID="CreateWrenchStamped"
+        name="Always 0, not using Force"
         torque_xyz="0.0;0.0;0.0"
         force_xyz="0.0;0.0;0.0"
         wrench_stamped="{desired_wrench}"
-        name="Always 0, not using Force"
         reference_frame="world"
       />
       <Action
@@ -49,6 +60,24 @@
         linear_velocity_xyz="0;0;0"
         twist_stamped="{desired_twist}"
         reference_frame="world"
+      />
+      <!--Seed the unstamped {twist}/{wrench} blackboard keys before the Parallel so
+          PublishVelocityForceCommand sees values on its first tick. The compute loop below
+          re-unpacks {twist} each cycle as ComputeVelocityToAlignWithTarget refreshes
+          {desired_twist}; {desired_wrench} is static so the seed unpack is sufficient.-->
+      <Action
+        ID="UnpackTwistStampedMessage"
+        name="UnpackTwistStampedMessage"
+        twist="{twist}"
+        header="{header}"
+        twist_stamped="{desired_twist}"
+      />
+      <Action
+        ID="UnpackWrenchStampedMessage"
+        name="UnpackWrenchStampedMessage"
+        wrench="{wrench}"
+        header="{header}"
+        wrench_stamped="{desired_wrench}"
       />
       <Action
         ID="ResetMujocoKeyframe"
@@ -80,6 +109,7 @@
                 marker_name="odom_pose"
                 marker_lifetime="0.000000"
                 marker_size="0.100000"
+                marker_text=""
               />
               <Action
                 ID="ComputeVelocityToAlignWithTarget"
@@ -91,6 +121,13 @@
                 target_pose_offset="{target_pose_offset}"
                 output_pose_error="{error_pose}"
               />
+              <Action
+                ID="UnpackTwistStampedMessage"
+                name="UnpackTwistStampedMessage"
+                twist="{twist}"
+                header="{header}"
+                twist_stamped="{desired_twist}"
+              />
             </Control>
           </Decorator>
         </Control>
@@ -101,9 +138,9 @@
             velocity_controlled_axes="1;1;1;1;1;1"
             force_controlled_axes="0;0;0;0;0;0"
             publish_rate="10"
-            twist_stamped="{desired_twist}"
+            twist="{twist}"
             velocity_force_controller_command_topic="/pose_jog/manipulator"
-            wrench_stamped="{desired_wrench}"
+            wrench="{wrench}"
           />
         </Decorator>
         <Decorator ID="KeepRunningUntilFailure">
@@ -114,13 +151,14 @@
             planning_group_names="manipulator"
             stop_safety_factor="1.200000"
             include_octomap="false"
+            skip_collision_checks="false"
           />
         </Decorator>
         <Control ID="Sequence" name="TopLevelSequence">
           <Action
             ID="WaitForDuration"
-            delay_duration="0.2"
             name="Wait for {error_pose} to be created."
+            delay_duration="0.2"
           />
           <Decorator ID="RetryUntilSuccessful" num_attempts="-1">
             <Control ID="Sequence">
@@ -145,6 +183,7 @@
           <Action
             ID="BreakpointSubscriber"
             breakpoint_topic="/moveit_pro_breakpoint"
+            message=""
           />
           <Action
             ID="CreatePoseStamped"
