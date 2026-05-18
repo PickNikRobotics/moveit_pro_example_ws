@@ -1,14 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Write PickNik">
-  <!--//////////-->
-  <BehaviorTree
-    ID="Write PickNik"
-    _description=""
-    _favorite="true"
-    _hardcoded="false"
-  >
+  <BehaviorTree ID="Write PickNik" _description="" _favorite="true">
     <Control ID="Sequence">
-      <SubTree ID="Move to Waypoint" _collapsed="true" waypoint_name="Home" />
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        waypoint_name="Home"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+        controller_names="joint_trajectory_admittance_controller"
+        execution_pipeline="jtac"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        seed="0"
+        velocity_scale_factor="1.0"
+      />
       <Action
         ID="CreatePoseStamped"
         reference_frame="base_link"
@@ -25,6 +33,11 @@
         />
         <Control ID="Sequence" name="TopLevelSequence">
           <Action
+            ID="WaitForDuration"
+            name="WaitForTFToBeAvailable"
+            delay_duration="0.500"
+          />
+          <Action
             ID="SwitchController"
             activate_controllers="joint_trajectory_admittance_controller"
             activate_asap="true"
@@ -33,11 +46,14 @@
             controller_switch_action_name="/controller_manager/switch_controller"
             strictness="1"
             timeout="0.000000"
+            automatic_activation="true"
+            deactivate_controllers=""
           />
           <Action
             ID="LoadPoseStampedVectorFromYaml"
             file_path="write_picknik_waypoints.yaml"
             output="{pose_stamped_msgs}"
+            package_name=""
           />
           <Action
             ID="VisualizePath"
@@ -46,6 +62,8 @@
             path="{pose_stamped_msgs}"
             pose_marker_size="0.100000"
             show_poses="false"
+            line_color_rgb="0;204;0"
+            line_width="0.010000"
           />
           <Control ID="Fallback">
             <Action
@@ -63,6 +81,7 @@
               debug_solution="{debug_solution}"
               ik_cartesian_space_density="0.010000"
               ik_joint_space_density="0.100000"
+              max_optimizer_iterations="1"
             />
             <Action
               ID="WaitForMTCSolutionApproval"
@@ -70,7 +89,13 @@
               cartesian_path_links="grasp_link"
             />
           </Control>
-          <Action ID="ExecuteTrajectory" />
+          <Action
+            ID="ExecuteTrajectory"
+            goal_duration_tolerance="-1.000000"
+            joint_trajectory_msg="{joint_trajectory_msg}"
+            controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+            execution_pipeline="jtac"
+          />
         </Control>
       </Control>
     </Control>
@@ -78,6 +103,7 @@
   <TreeNodesModel>
     <SubTree ID="Write PickNik">
       <MetadataFields>
+        <Metadata runnable="true" />
         <Metadata subcategory="Application - Advanced Examples" />
       </MetadataFields>
     </SubTree>
