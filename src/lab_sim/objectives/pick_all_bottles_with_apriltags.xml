@@ -316,16 +316,32 @@
                     force_threshold="30"
                     wrench_topic_name="/force_torque_sensor_broadcaster/wrench"
                   />
-                  <Action
-                    ID="PublishVelocityForceCommand"
-                    force_controlled_axes="0;0;0;0;0;0"
-                    wrench_gain="0.01"
-                    velocity_controlled_axes="0;0;1;0;0;0"
-                    publish_rate="50"
-                    twist_stamped="{desired_twist}"
-                    wrench_stamped="{desired_wrench}"
-                    velocity_force_controller_command_topic="/velocity_force_controller/command"
-                  />
+                  <Control ID="Sequence" name="Sequence">
+                    <Action
+                      ID="UnpackTwistStampedMessage"
+                      name="UnpackTwistStampedMessage"
+                      twist="{twist}"
+                      header="{header}"
+                      twist_stamped="{desired_twist}"
+                    />
+                    <Action
+                      ID="UnpackWrenchStampedMessage"
+                      name="UnpackWrenchStampedMessage"
+                      wrench="{wrench}"
+                      header="{header}"
+                      wrench_stamped="{desired_wrench}"
+                    />
+                    <Action
+                      ID="PublishVelocityForceCommand"
+                      force_controlled_axes="0;0;0;0;0;0"
+                      wrench_gain="0.01"
+                      velocity_controlled_axes="0;0;1;0;0;0"
+                      publish_rate="50"
+                      twist="{twist}"
+                      wrench="{wrench}"
+                      velocity_force_controller_command_topic="/velocity_force_controller/command"
+                    />
+                  </Control>
                 </Control>
                 <SubTree
                   ID="Force Relaxation"

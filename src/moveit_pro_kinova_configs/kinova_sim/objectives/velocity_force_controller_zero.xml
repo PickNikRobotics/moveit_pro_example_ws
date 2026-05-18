@@ -14,6 +14,13 @@
         reference_frame="world"
       />
       <Action
+        ID="UnpackTwistStampedMessage"
+        name="UnpackTwistStampedMessage"
+        twist="{twist}"
+        header="{header}"
+        twist_stamped="{desired_twist}"
+      />
+      <Action
         ID="SwitchController"
         activate_controllers="velocity_force_controller"
         controller_switch_action_name="/controller_manager/switch_controller"
@@ -39,14 +46,21 @@
         wait_for_server_available_timeout="3.000000"
         service_name="/velocity_force_controller/zero_fts"
       />
+      <Action
+        ID="UnpackWrenchStampedMessage"
+        name="UnpackWrenchStampedMessage"
+        wrench="{wrench}"
+        header="{header}"
+        wrench_stamped="{desired_wrench}"
+      />
       <Decorator ID="KeepRunningUntilFailure">
         <Action
           ID="PublishVelocityForceCommand"
           wrench_gain="0.1"
           velocity_controlled_axes="0;0;0;0;0;0"
           force_controlled_axes="1;1;1;0;0;0"
-          wrench_stamped="{desired_wrench}"
-          twist_stamped="{desired_twist}"
+          twist="{twist}"
+          wrench="{wrench}"
           publish_rate="10"
           velocity_force_controller_command_topic="/velocity_force_controller/command"
         />

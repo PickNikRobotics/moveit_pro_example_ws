@@ -210,15 +210,31 @@
             hand_frame_name="grasp_link"
             force_threshold="100"
           />
-          <Action
-            ID="PublishVelocityForceCommand"
-            force_controlled_axes="0;0;0;0;0;0"
-            wrench_gain="0.01"
-            velocity_controlled_axes="0;0;1;0;0;0"
-            publish_rate="50"
-            twist_stamped="{desired_twist}"
-            wrench_stamped="{desired_wrench}"
-          />
+          <Control ID="Sequence" name="Sequence">
+            <Action
+              ID="UnpackTwistStampedMessage"
+              name="UnpackTwistStampedMessage"
+              twist="{twist}"
+              header="{header}"
+              twist_stamped="{desired_twist}"
+            />
+            <Action
+              ID="UnpackWrenchStampedMessage"
+              name="UnpackWrenchStampedMessage"
+              wrench="{wrench}"
+              header="{header}"
+              wrench_stamped="{desired_wrench}"
+            />
+            <Action
+              ID="PublishVelocityForceCommand"
+              force_controlled_axes="0;0;0;0;0;0"
+              wrench_gain="0.01"
+              velocity_controlled_axes="0;0;1;0;0;0"
+              publish_rate="50"
+              twist="{twist}"
+              wrench="{wrench}"
+            />
+          </Control>
         </Control>
         <SubTree
           ID="Force Relaxation"
