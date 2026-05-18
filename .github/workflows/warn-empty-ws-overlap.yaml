@@ -1,0 +1,72 @@
+name: Warn on moveit_pro_empty_ws overlap
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  overlap:
+    name: Check overlap with moveit_pro_empty_ws
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const upstream = { owner: 'PickNikRobotics', repo: 'moveit_pro_empty_ws', ref: 'main' };
+            const marker = '<!-- empty-ws-overlap-warning -->';
+
+            const changed = await github.paginate(
+              github.rest.pulls.listFiles,
+              { owner: context.repo.owner, repo: context.repo.repo, pull_number: context.issue.number, per_page: 100 },
+              (res) => res.data.filter((f) => f.status !== 'removed').map((f) => f.filename),
+            );
+
+            const branch = await github.rest.repos.getBranch({ owner: upstream.owner, repo: upstream.repo, branch: upstream.ref });
+            const tree = await github.rest.git.getTree({
+              owner: upstream.owner,
+              repo: upstream.repo,
+              tree_sha: branch.data.commit.commit.tree.sha,
+              recursive: 'true',
+            });
+            if (tree.data.truncated) {
+              core.warning(`Tree for ${upstream.owner}/${upstream.repo}@${upstream.ref} was truncated; overlap result may be incomplete.`);
+            }
+            const upstreamPaths = new Set(tree.data.tree.filter((e) => e.type === 'blob').map((e) => e.path));
+            const overlap = changed.filter((p) => upstreamPaths.has(p)).sort();
+
+            const existing = await github.paginate(github.rest.issues.listComments, {
+              owner: context.repo.owner, repo: context.repo.repo, issue_number: context.issue.number, per_page: 100,
+            });
+            const prior = existing.find((c) => c.body && c.body.includes(marker));
+
+            if (overlap.length === 0) {
+              if (prior) {
+                await github.rest.issues.deleteComment({ owner: context.repo.owner, repo: context.repo.repo, comment_id: prior.id });
+              }
+              core.info('No overlap with moveit_pro_empty_ws.');
+              return;
+            }
+
+            const body = [
+              marker,
+              `⚠️ This PR modifies ${overlap.length} file(s) that also exist in [\`${upstream.owner}/${upstream.repo}\`](https://github.com/${upstream.owner}/${upstream.repo}/tree/${upstream.ref}).`,
+              '',
+              'Consider whether the change should land upstream in `moveit_pro_empty_ws` first so downstream forks pick it up on the next sync.',
+              '',
+              '<details><summary>Overlapping files</summary>',
+              '',
+              ...overlap.map((p) => `- \`${p}\``),
+              '',
+              '</details>',
+            ].join('\n');
+
+            if (prior) {
+              await github.rest.issues.updateComment({ owner: context.repo.owner, repo: context.repo.repo, comment_id: prior.id, body });
+            } else {
+              await github.rest.issues.createComment({ owner: context.repo.owner, repo: context.repo.repo, issue_number: context.issue.number, body });
+            }
+            core.warning(`Overlap with ${upstream.owner}/${upstream.repo}: ${overlap.length} file(s).`);
