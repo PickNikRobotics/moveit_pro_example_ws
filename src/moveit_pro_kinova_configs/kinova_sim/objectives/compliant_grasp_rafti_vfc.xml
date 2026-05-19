@@ -30,7 +30,7 @@
       <Control ID="Fallback">
         <Decorator ID="Timeout" msec="1000">
           <Action
-            ID="PublishStaticFrame"
+            ID="PublishTF"
             pose="{tag_pose_world}"
             child_frame_id="tag_frame"
             publish_rate="5"
@@ -46,7 +46,7 @@
               output_pose="{object_pose_stamped_estimate}"
             />
             <Action
-              ID="PublishStaticFrame"
+              ID="PublishTF"
               pose="{object_pose_stamped_estimate}"
               child_frame_id="object_frame"
               publish_rate="5"
@@ -68,7 +68,7 @@
           <Control ID="Fallback">
             <Decorator ID="Timeout" msec="1000">
               <Action
-                ID="PublishStaticFrame"
+                ID="PublishTF"
                 pose="{object_pose_stamped_estimate}"
                 child_frame_id="object_frame"
                 publish_rate="5"
@@ -114,7 +114,7 @@
           <Control ID="Fallback">
             <Decorator ID="Timeout" msec="100">
               <Action
-                ID="PublishStaticFrame"
+                ID="PublishTF"
                 pose="{object_pose_stamped_estimate}"
                 child_frame_id="object_frame"
                 publish_rate="5"
@@ -136,7 +136,7 @@
           <Control ID="Fallback">
             <Decorator ID="Timeout" msec="1000">
               <Action
-                ID="PublishStaticFrame"
+                ID="PublishTF"
                 pose="{model_world}"
                 child_frame_id="object_frame_new"
                 publish_rate="5"
@@ -166,7 +166,7 @@
           <Control ID="Fallback">
             <Decorator ID="Timeout" msec="1000">
               <Action
-                ID="PublishStaticFrame"
+                ID="PublishTF"
                 pose="{hole_object}"
                 child_frame_id="object_hole"
                 publish_rate="5"
@@ -268,22 +268,36 @@
         reference_frame="world"
       />
       <Action
+        ID="UnpackTwistStampedMessage"
+        name="UnpackTwistStampedMessage"
+        twist="{twist}"
+        header="{header}"
+        twist_stamped="{desired_twist}"
+      />
+      <Action
         ID="CreateWrenchStamped"
         torque_xyz="0.0;0.0;0.0"
         force_xyz="0.0;0.0;0.0"
         wrench_stamped="{desired_wrench}"
         reference_frame="world"
       />
+      <Action
+        ID="UnpackWrenchStampedMessage"
+        name="UnpackWrenchStampedMessage"
+        wrench="{wrench}"
+        header="{header}"
+        wrench_stamped="{desired_wrench}"
+      />
       <Control ID="Parallel" success_count="1" failure_count="1">
         <Action
           ID="PublishVelocityForceCommand"
           force_controlled_axes="1;1;1;1;1;1"
           publish_rate="10"
-          twist_stamped="{desired_twist}"
+          twist="{twist}"
           velocity_controlled_axes="0;0;0;0;0;0"
           velocity_force_controller_command_topic="/velocity_force_controller/command"
           wrench_gain="0.0"
-          wrench_stamped="{desired_wrench}"
+          wrench="{wrench}"
         />
         <SubTree ID="Close Gripper" _collapsed="true" />
       </Control>

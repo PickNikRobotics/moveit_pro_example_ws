@@ -32,7 +32,7 @@
       />
       <Control ID="Parallel" failure_count="1" success_count="1">
         <Action
-          ID="PublishStaticFrame"
+          ID="PublishTF"
           child_frame_id="local"
           pose="{pose_stamped}"
           publish_rate="50"

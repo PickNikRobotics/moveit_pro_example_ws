@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Force Relaxation">
-  <!--//////////-->
   <BehaviorTree
     ID="Force Relaxation"
     _description="Relaxes the force sensed at the force/torque sensor by moving the robot tip in the direction of the sensed force."
@@ -11,10 +10,28 @@
         ID="CreateTwistStamped"
         reference_frame="{tip_link}"
         twist_stamped="{zero_twist}"
+        angular_velocity_xyz="0.000000;0.000000;0.000000"
+        linear_velocity_xyz="0.000000;0.000000;0.000000"
+      />
+      <Action
+        ID="UnpackTwistStampedMessage"
+        name="UnpackTwistStampedMessage"
+        twist="{twist}"
+        header="{header}"
+        twist_stamped="{zero_twist}"
       />
       <Action
         ID="CreateWrenchStamped"
         reference_frame="{tip_link}"
+        wrench_stamped="{zero_wrench}"
+        torque_xyz="0.000000;0.000000;0.000000"
+        force_xyz="0.000000;0.000000;0.000000"
+      />
+      <Action
+        ID="UnpackWrenchStampedMessage"
+        name="UnpackWrenchStampedMessage"
+        wrench="{wrench}"
+        header="{header}"
         wrench_stamped="{zero_wrench}"
       />
       <Decorator ID="ForceSuccess">
@@ -24,10 +41,10 @@
             wrench_gain="{wrench_gain}"
             force_controlled_axes="1;1;1;0;0;0"
             publish_rate="50"
-            twist_stamped="{zero_twist}"
-            wrench_stamped="{zero_wrench}"
             velocity_controlled_axes="0;0;0;0;0;0"
             velocity_force_controller_command_topic="/velocity_force_controller/command"
+            wrench="{wrench}"
+            twist="{twist}"
           />
         </Decorator>
       </Decorator>
@@ -39,9 +56,9 @@
             force_controlled_axes="0;0;0;0;0;0"
             publish_rate="50"
             velocity_controlled_axes="1;1;1;0;0;0"
-            wrench_stamped="{zero_wrench}"
-            twist_stamped="{zero_twist}"
             velocity_force_controller_command_topic="/velocity_force_controller/command"
+            wrench="{wrench}"
+            twist="{twist}"
           />
         </Decorator>
       </Decorator>
@@ -50,8 +67,8 @@
   <TreeNodesModel>
     <SubTree ID="Force Relaxation">
       <MetadataFields>
-        <Metadata subcategory="Motion - Controls" />
         <Metadata runnable="false" />
+        <Metadata subcategory="Motion - Controls" />
       </MetadataFields>
       <input_port name="relaxation_time_ms" default="500" />
       <input_port name="tip_link" default="grasp_link" />

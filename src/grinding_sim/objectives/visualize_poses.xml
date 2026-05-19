@@ -27,7 +27,7 @@
       <Control ID="Fallback">
         <Decorator ID="Timeout" msec="500">
           <Action
-            ID="PublishStaticFrame"
+            ID="PublishTF"
             pose="{registered_pose}"
             publish_rate="50"
             child_frame_id="registered_pose"

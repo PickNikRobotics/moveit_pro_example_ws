@@ -9,7 +9,7 @@
   >
     <Control ID="Parallel" failure_count="1" success_count="1">
       <Action
-        ID="PublishStaticFrame"
+        ID="PublishTF"
         pose="{center}"
         child_frame_id="local"
         publish_rate="50"

@@ -14,6 +14,13 @@
         linear_velocity_xyz="0.0;0.0;0.0"
       />
       <Action
+        ID="UnpackTwistStampedMessage"
+        name="UnpackTwistStampedMessage"
+        twist="{twist}"
+        header="{header}"
+        twist_stamped="{desired_twist}"
+      />
+      <Action
         ID="SwitchController"
         activate_controllers="velocity_force_controller"
       />
@@ -23,12 +30,21 @@
         force_xyz="0.0;0.0;0.0"
         wrench_stamped="{desired_wrench}"
       />
+      <Action
+        ID="UnpackWrenchStampedMessage"
+        name="UnpackWrenchStampedMessage"
+        wrench="{wrench}"
+        header="{header}"
+        wrench_stamped="{desired_wrench}"
+      />
       <Decorator ID="KeepRunningUntilFailure">
         <Action
           ID="PublishVelocityForceCommand"
           wrench_gain="0.1"
           velocity_controlled_axes="0;0;0;0;0;0"
           force_controlled_axes="1;1;1;0;0;0"
+          twist="{twist}"
+          wrench="{wrench}"
         />
       </Decorator>
     </Control>
