@@ -15,6 +15,9 @@
 
   <depend>picknik_ur_base_config</depend>
 
+  <test_depend>ament_cmake_pytest</test_depend>
+  <test_depend>moveit_pro_test_utils</test_depend>
+
   <export>
     <build_type>ament_cmake</build_type>
   </export>
