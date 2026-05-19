@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Velocity Force Controller Zero">
-  <!--//////////-->
   <BehaviorTree
     ID="Velocity Force Controller Zero"
     _description="Publish a zero force command to the Velocity Force Controller"
-    _favorite="true"
+    _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
@@ -12,16 +11,33 @@
         twist_stamped="{desired_twist}"
         angular_velocity_xyz="0.0;0.0;0.0"
         linear_velocity_xyz="0.0;0.0;0.0"
+        reference_frame="world"
       />
       <Action
         ID="SwitchController"
         activate_controllers="velocity_force_controller"
+        controller_switch_action_name="/controller_manager/switch_controller"
+        timeout="-1.000000"
+        activate_asap="true"
+        strictness="1"
+        controller_list_action_name="/controller_manager/list_controllers"
+        automatic_deactivation="true"
+        automatic_activation="true"
+        deactivate_controllers=""
       />
       <Action
         ID="CreateWrenchStamped"
         torque_xyz="0.0;0.0;0.0"
         force_xyz="0.0;0.0;0.0"
         wrench_stamped="{desired_wrench}"
+        reference_frame="world"
+      />
+      <Action
+        ID="CallTriggerService"
+        name="CallTriggerService"
+        response_timeout="3.000000"
+        wait_for_server_available_timeout="3.000000"
+        service_name="/velocity_force_controller/zero_fts"
       />
       <Decorator ID="KeepRunningUntilFailure">
         <Action
@@ -29,6 +45,10 @@
           wrench_gain="0.1"
           velocity_controlled_axes="0;0;0;0;0;0"
           force_controlled_axes="1;1;1;0;0;0"
+          wrench_stamped="{desired_wrench}"
+          twist_stamped="{desired_twist}"
+          publish_rate="10"
+          velocity_force_controller_command_topic="/velocity_force_controller/command"
         />
       </Decorator>
     </Control>
@@ -36,6 +56,7 @@
   <TreeNodesModel>
     <SubTree ID="Velocity Force Controller Zero">
       <MetadataFields>
+        <Metadata runnable="true" />
         <Metadata subcategory="Application - Basic Examples" />
       </MetadataFields>
     </SubTree>
