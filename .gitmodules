@@ -33,3 +33,11 @@
 [submodule "src/moveit_pro_sam2"]
 	path = src/moveit_pro_sam2
 	url = https://github.com/PickNikRobotics/moveit_pro_sam2.git
+[submodule "src/external_dependencies/moveit_pro_experimental_behaviors"]
+	path = src/external_dependencies/moveit_pro_experimental_behaviors
+	url = git@github.com:PickNikRobotics/moveit_pro_experimental_behaviors.git
+	branch = feat/pose-vector-basis-snapshot-behaviors
+[submodule "src/external_dependencies/ROS-TCP-Endpoint"]
+	path = src/external_dependencies/ROS-TCP-Endpoint
+	url = https://github.com/Unity-Technologies/ROS-TCP-Endpoint.git
+	branch = main-ros2
