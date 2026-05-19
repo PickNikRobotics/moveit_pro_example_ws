@@ -1,31 +1,63 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Solution - Move Forward 2m">
   <!--//////////-->
   <BehaviorTree
     ID="Solution - Move Forward 2m"
-    _description=""
+    _description="Drive the mobile base 2 m forward along its current heading using Nav2."
     _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
         ID="CreatePoseStamped"
-        reference_frame="grasp_link"
-        pose_stamped="{pose_stamped}"
+        reference_frame="base_link"
+        pose_stamped="{start}"
+      />
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="base_link"
+        pose_stamped="{goal}"
         orientation_xyzw="0;0;0;1"
-        position_xyz="0;0;2"
+        position_xyz="2;0;0"
       />
       <Action
         ID="VisualizePose"
         marker_lifetime="0.000000"
-        marker_name="pose"
+        marker_name="goal"
         marker_size="0.100000"
-        pose="{pose_stamped}"
+        pose="{goal}"
       />
-      <SubTree
-        ID="Move to a StampedPose"
-        _collapsed="true"
-        controller_names="joint_trajectory_controller"
-        target_pose="{pose_stamped}"
+      <Action
+        ID="SwitchController"
+        activate_controllers="platform_velocity_controller_nav2"
+        deactivate_controllers="velocity_force_controller;joint_trajectory_controller;platform_velocity_controller"
+      />
+      <Action
+        ID="ComputePathToPoseAction"
+        action_name="/compute_path_to_pose"
+        goal="{goal}"
+        ignore_stamp_time="true"
+        path="{path}"
+        planning_time="{planning_time}"
+        start="{start}"
+        timeout_sec="-1.000000"
+        use_start="false"
+        planner_id="GridBased"
+      />
+      <Action ID="WaitForUserPathApproval" path="{path}" />
+      <Action
+        ID="FollowPathAction"
+        action_name="/follow_path"
+        controller_id="FollowPath"
+        distance_to_goal="{distance_to_goal}"
+        goal_checker_id="general_goal_checker"
+        path="{path}"
+        speed="{speed}"
+        timeout_sec="-1.000000"
+      />
+      <Action
+        ID="SwitchController"
+        activate_controllers="joint_trajectory_controller"
+        deactivate_controllers="platform_velocity_controller_nav2"
       />
     </Control>
   </BehaviorTree>
