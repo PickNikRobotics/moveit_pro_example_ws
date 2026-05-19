@@ -123,39 +123,6 @@
         <SubTree ID="Look at Table" _collapsed="true" />
         <SubTree ID="Take Wrist Camera Snapshot" _collapsed="true" />
       </Control>
-      <!--Warm up velocity_force_controller so the first placement is not a cold start-->
-      <Control ID="Sequence" _collapsed="false">
-        <Action
-          ID="SwitchController"
-          activate_controllers="velocity_force_controller"
-          controller_switch_action_name="/controller_manager/switch_controller"
-          timeout="-1.000000"
-          activate_asap="true"
-          strictness="1"
-          controller_list_action_name="/controller_manager/list_controllers"
-          automatic_deactivation="true"
-          automatic_activation="true"
-          deactivate_controllers=""
-        />
-        <Action
-          ID="CallTriggerService"
-          service_name="/velocity_force_controller/zero_fts"
-          response_timeout="3.000000"
-          wait_for_server_available_timeout="3.000000"
-        />
-        <Action
-          ID="SwitchController"
-          activate_controllers="joint_trajectory_admittance_controller"
-          controller_switch_action_name="/controller_manager/switch_controller"
-          timeout="-1.000000"
-          activate_asap="true"
-          strictness="1"
-          controller_list_action_name="/controller_manager/list_controllers"
-          automatic_deactivation="true"
-          automatic_activation="true"
-          deactivate_controllers=""
-        />
-      </Control>
       <Decorator ID="ForceSuccess" _collapsed="false">
         <Decorator ID="KeepRunningUntilFailure" _collapsed="false">
           <Control ID="Sequence" name="TopLevelSequence" _collapsed="false">
@@ -369,62 +336,56 @@
               name="Release and Retract"
               _collapsed="false"
             >
-              <Control ID="Sequence" _collapsed="false">
-                <Control ID="Sequence" _collapsed="false">
-                  <Control ID="Sequence" _collapsed="false">
-                    <!--Release the bottle-->
-                    <SubTree ID="Open Gripper" _collapsed="true" />
-                    <!--Retract upward after releasing the bottle-->
-                    <Action
-                      ID="CreatePoseStamped"
-                      reference_frame="grasp_link"
-                      pose_stamped="{place_retract_pose}"
-                      position_xyz="0;0;-0.08"
-                      orientation_xyzw="0.000000;0.000000;0.000000;1.000000"
-                    />
-                    <Action
-                      ID="ResetPoseStampedVector"
-                      vector="{place_retract_path}"
-                    />
-                    <Action
-                      ID="AddPoseStampedToVector"
-                      input="{place_retract_pose}"
-                      vector="{place_retract_path}"
-                    />
-                    <Action
-                      ID="PlanCartesianPath"
-                      acceleration_scale_factor="1.000000"
-                      blending_radius="0.020000"
-                      debug_solution="{debug_solution}"
-                      ik_cartesian_space_density="0.010000"
-                      ik_joint_space_density="0.100000"
-                      joint_trajectory_msg="{joint_trajectory_msg}"
-                      path="{place_retract_path}"
-                      planning_group_name="manipulator"
-                      position_only="true"
-                      tip_links="grasp_link"
-                      trajectory_sampling_rate="100"
-                      velocity_scale_factor="1.000000"
-                      max_optimizer_iterations="1"
-                      tip_offset="0.000000;0.000000;0.000000;0.000000;0.000000;0.000000"
-                    />
-                    <Action
-                      ID="ExecuteTrajectory"
-                      goal_duration_tolerance="-1.000000"
-                      joint_trajectory_msg="{joint_trajectory_msg}"
-                      controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory"
-                      execution_pipeline="jtac"
-                    />
-                    <!--Remove the used pose so the next iteration gets a fresh position-->
-                    <Action
-                      ID="RemoveFromVector"
-                      input_vector="{place_positions}"
-                      index="0"
-                      output_vector="{place_positions}"
-                    />
-                  </Control>
-                </Control>
-              </Control>
+              <!--Release the bottle-->
+              <SubTree ID="Open Gripper" _collapsed="true" />
+              <!--Retract upward after releasing the bottle-->
+              <Action
+                ID="CreatePoseStamped"
+                reference_frame="grasp_link"
+                pose_stamped="{place_retract_pose}"
+                position_xyz="0;0;-0.08"
+                orientation_xyzw="0.000000;0.000000;0.000000;1.000000"
+              />
+              <Action
+                ID="ResetPoseStampedVector"
+                vector="{place_retract_path}"
+              />
+              <Action
+                ID="AddPoseStampedToVector"
+                input="{place_retract_pose}"
+                vector="{place_retract_path}"
+              />
+              <Action
+                ID="PlanCartesianPath"
+                acceleration_scale_factor="1.000000"
+                blending_radius="0.020000"
+                debug_solution="{debug_solution}"
+                ik_cartesian_space_density="0.010000"
+                ik_joint_space_density="0.100000"
+                joint_trajectory_msg="{joint_trajectory_msg}"
+                path="{place_retract_path}"
+                planning_group_name="manipulator"
+                position_only="true"
+                tip_links="grasp_link"
+                trajectory_sampling_rate="100"
+                velocity_scale_factor="1.000000"
+                max_optimizer_iterations="1"
+                tip_offset="0.000000;0.000000;0.000000;0.000000;0.000000;0.000000"
+              />
+              <Action
+                ID="ExecuteTrajectory"
+                goal_duration_tolerance="-1.000000"
+                joint_trajectory_msg="{joint_trajectory_msg}"
+                controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+                execution_pipeline="jtac"
+              />
+              <!--Remove the used pose so the next iteration gets a fresh position-->
+              <Action
+                ID="RemoveFromVector"
+                input_vector="{place_positions}"
+                index="0"
+                output_vector="{place_positions}"
+              />
             </Control>
           </Control>
         </Decorator>
