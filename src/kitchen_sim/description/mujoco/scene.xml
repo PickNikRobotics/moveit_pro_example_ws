@@ -16,7 +16,7 @@
   <visual>
     <headlight diffuse="0.6 0.6 0.6" ambient="0.3 0.3 0.3" specular="0 0 0" />
     <rgba haze="0.15 0.25 0.35 1" />
-    <global azimuth="120" elevation="-20" />
+    <global azimuth="120" elevation="-20" offwidth="1280" offheight="720" />
   </visual>
 
   <asset>
@@ -62,7 +62,7 @@
     <camera
       name="scene_camera"
       fovy="48"
-      resolution="640 480"
+      resolution="1280 720"
       pos="-0.476 -0.378 2.733"
       xyaxes="0.510 -0.860 0.000 0.666 0.395 0.633"
     />
@@ -77,7 +77,7 @@
     <camera
       name="back_camera"
       fovy="48"
-      resolution="640 480"
+      resolution="1280 720"
       pos="-0.661 0.324 1.325"
       xyaxes="0.026 -1.000 0.000 0.062 0.002 0.998"
     />

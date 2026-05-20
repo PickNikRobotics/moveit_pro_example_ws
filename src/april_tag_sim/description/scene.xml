@@ -8,6 +8,10 @@
 
   <option integrator="implicitfast" />
 
+  <visual>
+    <global offwidth="1280" offheight="720" />
+  </visual>
+
   <asset>
     <mesh name="cube" file="assets/Cube.stl" />
   </asset>
@@ -39,7 +43,7 @@
       pos="-1.0 -2.0 2.966"
       fovy="58"
       mode="fixed"
-      resolution="640 480"
+      resolution="1280 720"
       euler="0.849 0.000 0.0"
     />
     <!-- lab desk -->

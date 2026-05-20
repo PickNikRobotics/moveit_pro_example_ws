@@ -53,7 +53,7 @@
   <visual>
     <headlight diffuse="0.6 0.6 0.6" ambient="0.1 0.1 0.1" specular="0 0 0" />
     <rgba haze="0.15 0.25 0.35 1" />
-    <global azimuth="120" elevation="-20" />
+    <global azimuth="120" elevation="-20" offwidth="1280" offheight="720" />
   </visual>
 
   <!-- Add Fanuc support files -->
@@ -74,7 +74,7 @@
       pos="-1.046 1.252 2.019"
       fovy="58"
       mode="fixed"
-      resolution="640 480"
+      resolution="1280 720"
       xyaxes="-0.607 -0.795 0.000 0.555 -0.424 0.715"
     />
     <site
@@ -88,7 +88,7 @@
       pos="-0.25 0.6 0.85"
       fovy="58"
       mode="fixed"
-      resolution="640 480"
+      resolution="1280 720"
       xyaxes="0 -1 0 1 0 0"
     />
     <site

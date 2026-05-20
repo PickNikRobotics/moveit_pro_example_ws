@@ -6,7 +6,13 @@
   <size nuser_jnt="0" />
 
   <visual>
-    <global azimuth="120" elevation="-21" fovy="58" />
+    <global
+      azimuth="120"
+      elevation="-21"
+      fovy="58"
+      offwidth="1280"
+      offheight="720"
+    />
     <headlight ambient="0.3 0.3 0.3" diffuse="0.6 0.6 0.6" specular="0 0 0" />
     <rgba haze="0.15 0.25 0.35 1" />
   </visual>
@@ -53,7 +59,7 @@
       pos="0.7 0.0 0.65"
       fovy="58"
       mode="fixed"
-      resolution="640 480"
+      resolution="1280 720"
       xyaxes="0 -1 0 1 0 0"
     />
     <geom
