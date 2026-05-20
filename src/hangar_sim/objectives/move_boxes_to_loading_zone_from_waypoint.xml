@@ -135,7 +135,8 @@
           returns FAILURE if every detected mask failed to pick. Non-recoverable
           per-mask faults (e.g. controller deactivation, execution abort) are
           currently indistinguishable from recoverable ones (e.g. unreachable IK)
-          inside this loop — see #19112 for the follow-up to differentiate.
+          inside this loop — see PickNikRobotics/moveit_pro#19238 for the follow-up
+          to differentiate.
         -->
         <Decorator ID="Inverter" _skipIf="num_clip_masks == 0">
           <Decorator
