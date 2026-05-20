@@ -10,6 +10,14 @@ based_on_package: kinova_sim
 # Baseline hardware configuration parameters for MoveIt Pro.
 # [Required]
 hardware:
+  # Launched by the main agent when `simulated: True`. Hosts the AprilTag
+  # detectors and the fuse state estimator so /odom_filtered is published in
+  # dev — not just in prod / e2e where `agent_bridge.launch.xml` runs
+  # standalone.
+  simulated_hardware_launch_file:
+    package: "space_satellite_sim"
+    path: "launch/simulated_extras.launch.xml"
+
   # Parameters used to configure the robot description through XACRO.
   # A URDF and SRDF are both required.
   # [Required]
