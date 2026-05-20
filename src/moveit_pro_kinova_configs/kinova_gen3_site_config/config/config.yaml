@@ -26,6 +26,9 @@ hardware:
       # When set to true, will route gripper comms through kinova and gripper_com_port is unused.
       - use_internal_bus_gripper_comm: "true"
       - gripper_com_port: "/dev/ttyUSB0"  # Must be 1st serial device plugged in to populate as ttyUSB0
+      # Wrist camera selection: none | kinova_integrated | realsense_usb.
+      # Must match the wrist_camera_type arg in launch/agent_bridge.launch.xml.
+      - wrist_camera_type: "none"
 
 # This Configures moveit params that are in moveit_config.py
 moveit_params:

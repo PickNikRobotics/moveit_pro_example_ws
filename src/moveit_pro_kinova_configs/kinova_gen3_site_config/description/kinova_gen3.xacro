@@ -1,7 +1,6 @@
 <?xml version="1.0"?>
 <robot name="gen3" xmlns:xacro="http://ros.org/wiki/xacro">
   <!-- Arguments for Kinova -->
-  <xacro:arg name="vision" default="false" />
   <xacro:arg name="robot_ip" default="yyy.yyy.yyy.yyy" />
   <xacro:arg name="robotiq_gripper" default="robotiq_2f_85" />
   <xacro:arg name="username" default="admin" />
@@ -20,8 +19,17 @@
   <xacro:arg name="gripper_max_force" default="100.0" />
   <xacro:arg name="gripper_com_port" default="/dev/ttyUSB0" />
 
+  <!-- Wrist camera selection: none | kinova_integrated | realsense_usb.
+       kinova_integrated turns on the kortex vision module (bracelet-with-vision
+       mesh + camera_link/camera_color_frame/camera_depth_frame added by
+       kortex_description). The other modes leave the bracelet unmodified. -->
+  <xacro:arg name="wrist_camera_type" default="none" />
+  <xacro:property name="wrist_camera_type" value="$(arg wrist_camera_type)" />
+  <xacro:property name="vision_effective" value="${wrist_camera_type == 'kinova_integrated'}" />
+
   <!-- Import environment macros -->
   <xacro:include filename="$(find picknik_accessories)/descriptions/geometry/cube.urdf.xacro"/>
+  <xacro:include filename="$(find picknik_accessories)/descriptions/sensors/realsense_d415.urdf.xacro"/>
 
   <!-- World is centered under base_link of the robot, on the ground -->
   <link name="world"/>
@@ -38,7 +46,7 @@
   <xacro:load_arm
     parent="world"
     dof="7"
-    vision="$(arg vision)"
+    vision="${vision_effective}"
     robot_ip="$(arg robot_ip)"
     username="$(arg username)"
     password="$(arg password)"
@@ -69,6 +77,21 @@
     use_internal_bus_gripper_comm="$(arg use_internal_bus_gripper_comm)"
     com_port="$(arg gripper_com_port)">
   </xacro:load_gripper>
+
+  <!-- USB-attached wrist RealSense. The kinova_integrated case is handled by
+       the kortex URDF via the vision flag and adds no links here. -->
+  <xacro:if value="${wrist_camera_type == 'realsense_usb'}">
+    <link name="wrist_camera_mount_link"/>
+    <joint name="wrist_camera_mount_joint" type="fixed">
+      <parent link="bracelet_link"/>
+      <child  link="wrist_camera_mount_link"/>
+      <!-- Defaults to the Kinova factory bracket pose; tune to your bracket. -->
+      <origin xyz="0 -0.06841 -0.05044" rpy="0 ${3.14 / 180.0 * 100} -1.5708"/>
+    </joint>
+    <xacro:realsense_d415 parent="wrist_camera_mount_link" name="wrist_camera">
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+    </xacro:realsense_d415>
+  </xacro:if>
 
   <!-- Environment -->
   <xacro:cube link_name="table" connected_to="world" length="2.00" width="2.00" height="0.25" alpha="0.3">

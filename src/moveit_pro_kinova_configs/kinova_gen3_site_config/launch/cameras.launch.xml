@@ -1,11 +1,37 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <launch>
-  <include
-    file="$(find-pkg-share kinova_vision)/launch/kinova_vision.launch.py"
+  <!-- Match this to urdf_params.wrist_camera_type in config.yaml: none | kinova_integrated | realsense_usb -->
+  <arg name="wrist_camera_type" default="none" />
+  <arg name="realsense_serial_no" default="_135322065444" />
+
+  <!-- Integrated Kinova vision module, driven over RTSP by kinova_vision.
+       Frame ids are left at kinova_vision defaults (camera_link / camera_color_frame /
+       camera_depth_frame) so they match the links added by kortex_description
+       when vision=true. -->
+  <group
+    if="$(eval &quot;'$(var wrist_camera_type)' == 'kinova_integrated'&quot;)"
   >
-    <arg name="camera" value="wrist_camera" />
-    <arg name="depth_registration" value="true" />
-    <arg name="max_color_pub_rate" value="6.0" />
-    <arg name="max_depth_pub_rate" value="6.0" />
-  </include>
+    <include
+      file="$(find-pkg-share kinova_vision)/launch/kinova_vision.launch.py"
+    >
+      <arg name="camera" value="wrist_camera" />
+      <arg name="depth_registration" value="true" />
+      <arg name="max_color_pub_rate" value="6.0" />
+      <arg name="max_depth_pub_rate" value="6.0" />
+    </include>
+  </group>
+
+  <!-- USB-attached RealSense, driven by realsense2_camera -->
+  <group if="$(eval &quot;'$(var wrist_camera_type)' == 'realsense_usb'&quot;)">
+    <include file="$(find-pkg-share realsense2_camera)/launch/rs_launch.py">
+      <arg name="camera_name" value="wrist_camera" />
+      <arg name="camera_namespace" value="" />
+      <arg name="serial_no" value="$(var realsense_serial_no)" />
+      <arg name="enable_color" value="true" />
+      <arg name="enable_depth" value="true" />
+      <arg name="align_depth.enable" value="true" />
+      <arg name="pointcloud.enable" value="true" />
+      <arg name="publish_tf" value="false" />
+    </include>
+  </group>
 </launch>
