@@ -84,10 +84,13 @@
     />
   </asset>
 
-  <!-- Set offscreen rendering resolution to match camera sensor resolution (640x480) so that
-       MuJoCo renders images at the correct size for the simulated wrist and scene cameras. -->
+  <!-- Offscreen buffer size. picknik_mujoco_ros (cameras.cpp) requires every
+       non-lidar camera's resolution to EXACTLY equal <global offwidth offheight>;
+       there is a single offscreen buffer shared by all cameras, so every camera
+       in this scene (scene_camera below, plus wrist_camera from the ur5e include)
+       must be 1280x720 to match. Mismatch aborts ros2_control_node on load. -->
   <visual>
-    <global offwidth="640" offheight="480" />
+    <global offwidth="1280" offheight="720" />
     <headlight ambient="0.3 0.3 0.3" diffuse="0.5 0.5 0.5" />
   </visual>
 
@@ -124,7 +127,7 @@
       pos="1.8 -0.495 1.0"
       fovy="58"
       mode="fixed"
-      resolution="640 480"
+      resolution="1280 720"
       xyaxes="0.586 0.810 0.000 -0.186 0.135 0.973"
       user="0"
     />
