@@ -7,7 +7,7 @@
   <include file="hangar.xml" />
   <option
     integrator="implicitfast"
-    timestep="0.025"
+    timestep="0.003"
     noslip_iterations="5"
     impratio="20"
     cone="elliptic"

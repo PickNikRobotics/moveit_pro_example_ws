@@ -1,6 +1,6 @@
 <mujoco model="kinova scene">
   <include file="gen3_7dof.xml" />
-  <option gravity="0 0 0" />
+  <option timestep="0.003" gravity="0 0 0" />
   <option>
     <flag multiccd="enable" />
   </option>
