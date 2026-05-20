@@ -3,7 +3,7 @@
   <!--//////////-->
   <BehaviorTree
     ID="3 Waypoints Pick and Place"
-    _description="Basic example of repeatedly grabbing a small (invisible) object, placing it at desired destination, and then moving back to a home position"
+    _description="Basic example of repeatedly picking a small medicine bottle from the table, placing it in the sorting tray, and then picking it back out and returning it to the original spot. Loops until cancelled."
     _favorite="true"
   >
     <Control ID="Sequence">
