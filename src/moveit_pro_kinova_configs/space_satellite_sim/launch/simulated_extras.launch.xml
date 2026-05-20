@@ -1,0 +1,13 @@
+<launch>
+  <!--Sim-only extras that the main agent (`agent_robot.app`) launches via the
+      `hardware.simulated_hardware_launch_file` key in config.yaml. These nodes
+      also run in prod / e2e via `agent_bridge.launch.xml`, which now delegates
+      to this same file so the two paths stay in sync.-->
+  <include
+    file="$(find-pkg-share space_satellite_sim)/launch/36h11.launch.yml"
+  />
+  <include
+    file="$(find-pkg-share space_satellite_sim)/launch/36h11_wrist.launch.yml"
+  />
+  <include file="$(find-pkg-share space_satellite_sim)/launch/fuse.launch.py" />
+</launch>
