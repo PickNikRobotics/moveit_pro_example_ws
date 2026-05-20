@@ -176,14 +176,9 @@
             </Control>
           </Decorator>
           <Action
-            ID="LogMessage"
-            log_level="info"
-            message="'Waiting for operator approval'"
-          />
-          <Action
             ID="BreakpointSubscriber"
             breakpoint_topic="/moveit_pro_breakpoint"
-            message=""
+            message="Approve satellite grappling"
           />
           <Action
             ID="CreatePoseStamped"
@@ -210,6 +205,7 @@
           <SubTree ID="Close Gripper" _collapsed="true" />
         </Control>
       </Control>
+      <Action ID="LogMessage" log_level="info" message="'Mission complete'" />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
