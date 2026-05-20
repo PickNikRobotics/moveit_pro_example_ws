@@ -17,6 +17,13 @@
     _favorite="false"
   >
     <Control ID="Sequence">
+      <!--
+        Reset the picked_box output port at the very top so the invariant
+        "picked_box reflects what happened on THIS Subtree invocation, not the
+        previous one" holds even if a step BEFORE the pick loop (waypoint motion,
+        point-cloud capture, image fetch, etc.) fails.
+      -->
+      <Action ID="Script" code="picked_box := false" />
       <Action
         ID="MoveGripperAction"
         position="0.0"
@@ -111,7 +118,26 @@
           masks_visualization_topic="/masks_visualization"
           opacity="0.500000"
         />
-        <Decorator ID="Inverter">
+        <Action
+          ID="GetSizeOfVector"
+          vector_in="{clip_masks2d}"
+          vector_size="{num_clip_masks}"
+        />
+        <!--
+          When no masks were detected, skip the pick loop entirely and return SUCCESS with
+          picked_box=false (the reset at the top of the Subtree's outer Sequence ensures
+          picked_box is already false here). The parent Objective uses picked_box to
+          distinguish "scanned and found nothing" (drained — exit cleanly) from "real
+          pick errors" (Subtree FAILURE — propagate).
+
+          The Inverter+ForEach+Inverter pattern below short-circuits on the first
+          successful pick and silently retries on per-mask failure; the Subtree only
+          returns FAILURE if every detected mask failed to pick. Non-recoverable
+          per-mask faults (e.g. controller deactivation, execution abort) are
+          currently indistinguishable from recoverable ones (e.g. unreachable IK)
+          inside this loop — see #19112 for the follow-up to differentiate.
+        -->
+        <Decorator ID="Inverter" _skipIf="num_clip_masks == 0">
           <Decorator
             ID="ForEach"
             vector_in="{clip_masks2d}"
@@ -343,6 +369,12 @@
                       timeout="10.000000"
                       gripper_command_action_name="/vacuum_gripper/gripper_cmd"
                     />
+                    <!--
+                      A full pick+place cycle completed. The parent Objective reads
+                      picked_box to decide whether to continue the outer loop or exit
+                      cleanly when both view waypoints stop yielding picks.
+                    -->
+                    <Action ID="Script" code="picked_box := true" />
                   </Control>
                 </Decorator>
               </Control>
@@ -360,6 +392,7 @@
       </MetadataFields>
       <input_port name="erosion_size" default="0" />
       <input_port name="negative_prompts" default="{negative_prompts}" />
+      <output_port name="picked_box" default="{picked_box}" />
       <input_port name="place_pose" default="{place_pose}" />
       <inout_port name="prompt" default="{prompt}" />
       <input_port name="prompts" default="{prompts}" />
