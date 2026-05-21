@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="ML Move Boxes to Loading Zone">
-  <!--//////////-->
   <BehaviorTree
     ID="ML Move Boxes to Loading Zone"
     _description="Move all of the boxes into the loading zone using ML perception."
@@ -14,33 +13,85 @@
         orientation_xyzw="0;1.0;0;0"
         position_xyz="-4.5;8.4;0.5"
       />
-      <Decorator ID="RetryUntilSuccessful" num_attempts="1000">
-        <Decorator ID="ForceFailure">
+      <!--Initialize the drained signal and the per-iteration pick flags.
+
+        `drained := false` is the load-bearing one — if the very first iteration of
+        the loop below fails before the in-loop `Script(drained := ...)` runs, the
+        post-loop `ScriptCondition(drained)` would otherwise read an undefined value.
+
+        `picked_at_wp1 := false` / `picked_at_wp2 := false` are defensive. Each pick
+        waypoint Subtree resets its `picked_box` output port at the top of its own
+        body and again before wp2 below, so the in-loop reads are always fresh; this
+        outer init only matters if the Subtree fails before either of those resets
+        runs.
+
+        Compatibility note: this Objective relies on three runtime contracts that the
+        loaded `moveit_pro` build must satisfy — `ScriptCondition` (built-in BT.CPP 4),
+        `GetMasks2DFromExemplar` (SAM3 multimodal segmenter, 9.3+) which exposes the
+        `mask_count` output port the inner Subtree uses, `RepeatUnlessFailureEachTick`
+        (9.3+), and BT.CPP 4's SKIPPED-status propagation through `_skipIf`-decorated
+        nodes and parent Sequences. Older runtimes will either fail to load the tree
+        or behave incorrectly on the `_skipIf` paths.-->
+      <Action
+        ID="Script"
+        code="picked_at_wp1 := false; picked_at_wp2 := false; drained := false"
+      />
+      <!--Loop the pick cycle until the scene is drained (drained=true), and surface
+        real pick errors as Objective FAILURE.
+
+        Each iteration: visit `View Boxes`, then `View Boxes 2` (only if the first
+        did not pick — saves a redundant scan once the first waypoint is the
+        productive one). Each Subtree returns SUCCESS with `picked_box` set true
+        or false on the happy path, and FAILURE only on real pick errors (the
+        inner Subtree's `Inverter > ForEach > Inverter` retains the existing "try
+        each mask, succeed if any" resilience — see that Subtree for the per-mask
+        FAILURE caveat).
+
+        The Script step computes whether anything was picked this cycle; the inner
+        `ScriptCondition(!drained)` converts a "nothing picked" cycle into FAILURE
+        that breaks the `RepeatUnlessFailureEachTick(-1)` loop.
+
+        The outer Fallback then distinguishes the two FAILURE causes of the loop:
+          - drained=true  → expected exit, the post-loop ScriptCondition succeeds → SUCCESS.
+          - drained=false → real pick error propagated from a Subtree, the post-loop
+                            ScriptCondition also fails → Objective FAILURE.-->
+      <Control ID="Fallback">
+        <Decorator ID="RepeatUnlessFailureEachTick" num_cycles="-1">
           <Control ID="Sequence">
-            <Control ID="Fallback">
-              <SubTree
-                ID="Move Boxes to Loading Zone Start from Waypoint"
-                waypoint_name="View Boxes"
-                _collapsed="true"
-                threshold="0.25"
-                prompt="a small brown box"
-                negative_prompts="yellow ladder;"
-                prompts="small boxes"
-                place_pose="{place_pose}"
-                erosion_size="10"
-              />
-              <SubTree
-                ID="Move Boxes to Loading Zone Start from Waypoint"
-                waypoint_name="View Boxes 2"
-                place_pose="{place_pose}"
-                threshold="0.4"
-                _collapsed="true"
-                prompts="small boxes"
-                negative_prompts="gray;gray;rails"
-                erosion_size="2"
-                prompt="{prompt}"
-              />
-            </Control>
+            <SubTree
+              ID="Move Boxes to Loading Zone Start from Waypoint"
+              _collapsed="true"
+              waypoint_name="View Boxes"
+              confidence_threshold="0.25"
+              text_prompt="brown cube"
+              place_pose="{place_pose}"
+              picked_box="{picked_at_wp1}"
+            />
+            <!--Reset picked_at_wp2 before the (possibly-skipped) wp2 SubTree so the
+              "did wp2 contribute this iteration?" reading is never stale from a prior
+              iteration. Without this, `_skipIf="picked_at_wp1"` would leave the wp2
+              SubTree's output port unwritten and the next Script would OR against a
+              stale value. The drained computation happens to be correct today (wp1
+              picked, so the OR short-circuits true), but any future read of
+              picked_at_wp2 — telemetry, an extra waypoint, etc. — would see stale
+              data and the invariant "picked_at_wpN iff wpN picked in this iteration"
+              would silently break.-->
+            <Action ID="Script" code="picked_at_wp2 := false" />
+            <SubTree
+              ID="Move Boxes to Loading Zone Start from Waypoint"
+              _collapsed="true"
+              _skipIf="picked_at_wp1"
+              waypoint_name="View Boxes 2"
+              confidence_threshold="0.25"
+              text_prompt="brown cube"
+              place_pose="{place_pose}"
+              picked_box="{picked_at_wp2}"
+            />
+            <Action
+              ID="Script"
+              code="drained := !(picked_at_wp1 || picked_at_wp2)"
+            />
+            <Action ID="ScriptCondition" code="!drained" />
             <Action
               ID="TransformPose"
               input_pose="{place_pose}"
@@ -49,7 +100,8 @@
             />
           </Control>
         </Decorator>
-      </Decorator>
+        <Action ID="ScriptCondition" code="drained" />
+      </Control>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
