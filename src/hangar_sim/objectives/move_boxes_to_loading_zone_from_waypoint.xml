@@ -117,6 +117,28 @@
           masks2d="{masks2d}"
           mask_count="{mask_count}"
         />
+        <!--
+          Drop both oversized false positives (SAM3 occasionally returns a
+          single mask covering most of the image — e.g., the cart frame, which
+          measured ~26,285 px in calibration) and tiny edge-fragment detections
+          (~778 px in calibration). Real boxes in this scene measured
+          3,949–20,643 px; thresholds sit ~2x outside that range on the low
+          end and ~12% inside the cart-vs-largest-real gap on the high end.
+          Re-run "Calibrate SAM3 Mask Areas" if the camera, lens, or scale
+          changes.
+        -->
+        <Action
+          ID="FilterMasks2DByArea"
+          masks="{masks2d}"
+          min_area="2000"
+          max_area="23000"
+          filtered_masks="{masks2d}"
+        />
+        <Action
+          ID="GetSizeOfVector"
+          vector_in="{masks2d}"
+          vector_size="{mask_count}"
+        />
         <Action
           ID="PublishMask2D"
           image="{image}"
