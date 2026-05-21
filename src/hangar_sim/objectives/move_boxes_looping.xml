@@ -11,11 +11,27 @@
       _skipIf="false"
       ID="Sequence"
     >
+      <!--Loop the drain-and-reset cycle and surface real pick errors as Objective
+        FAILURE.
+
+        Each iteration: run `ML Move Boxes to Loading Zone` (returns SUCCESS once
+        the scene is drained, FAILURE on a real pick error), then `Reset MuJoCo Sim`
+        to repopulate boxes for the next iteration.
+
+        `RepeatUnlessFailureEachTick` (vs. the previous `KeepRunningUntilFailure`)
+        propagates a child FAILURE up as Objective FAILURE instead of converting it
+        to SUCCESS. The old decorator made a real pick error indistinguishable from
+        a clean stop, which masked regressions in soak runs; this Objective is meant
+        to be a torture test, so a real failure should fail loudly.
+
+        Compatibility note: `RepeatUnlessFailureEachTick` requires moveit_pro 9.3+;
+        older runtimes will fail to load this Objective.-->
       <Decorator
-        ID="KeepRunningUntilFailure"
-        name="KeepRunningUntilFailure"
+        ID="RepeatUnlessFailureEachTick"
+        name="RepeatUnlessFailureEachTick"
         _collapsed="false"
         _skipIf="false"
+        num_cycles="-1"
       >
         <Control
           ID="Sequence"
