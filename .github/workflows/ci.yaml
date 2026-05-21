@@ -19,13 +19,22 @@ concurrency:
 
 jobs:
   integration-test-in-studio-container:
-    uses: PickNikRobotics/moveit_pro_ci/.github/workflows/workspace_integration_test.yaml@13d4cdf34697226ac67e34d93dda8b94fa477336 # v0.2.1
+    uses: PickNikRobotics/moveit_pro_ci/.github/workflows/workspace_integration_test.yaml@d490a1dfe91758dd1da3277fbd47b5b1efe5e0c3 # v0.3.1
     with:
-      image_tag: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name }}
+      # Pinned to 9.3.0-rc9 while the main-branch CUDA images are not yet
+      # published; 9.2.1's moveit_pro_test_utils is too old (missing
+      # reset_simulation_before_test that lab_sim's integration test imports).
+      # The dynamic expression below would normally resolve to the PR's base
+      # branch (main) or the pushed ref. Revert once the main-* CUDA tags exist.
+      # image_tag: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name }}
+      image_tag: "9.3.0-rc9"
       colcon_test_args: "--executor sequential"
-      runner: "picknik-16-amd64"
-      # Coarsen MuJoCo timestep on CI (default 0.002s = 500Hz) so the heavier 3.6.0
-      # constraint solver stays at-or-under realtime on CI runners. See
+      runner: "picknik-16-amd64-gpu"
+      enable_gpu: true
+      # Re-assert MuJoCo timestep on CI as a backstop. Scene files in this repo
+      # are standardized to 0.003s, but this override catches any future scene
+      # whose include chain bypasses that standard, keeping the heavier 3.6.0
+      # constraint solver at-or-under realtime on CI runners. See
       # PickNikRobotics/moveit_pro#18534 for the underlying flake history.
       mujoco_ci_timestep: "0.003"
       use_ccache: true
