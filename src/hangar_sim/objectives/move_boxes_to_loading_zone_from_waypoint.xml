@@ -207,6 +207,53 @@
                     target_object="{graspable_object}"
                     ui_grasp_link="grasp_link"
                   />
+                  <!--
+                    Discard the box-yaw component from every generated grasp.
+
+                    `GenerateVacuumGraspPoses` builds each grasp as
+                    `R_world_to_object * (face/position/flip/wrist samples)`, so
+                    the box's detected yaw rotates every candidate orientation in
+                    world frame. SAM3's per-detection yaw is noisy and arbitrary
+                    for a rotationally-symmetric brown cube, and with
+                    `max_ik_solutions="1"` MTC picks the first IK-valid candidate
+                    — meaning the chosen wrist angle drifts with detection noise
+                    instead of staying consistent across picks.
+
+                    We overwrite each grasp's orientation with a fixed
+                    "gripper pointing straight down" quaternion (matching the
+                    outer Objective's `place_pose`). The vacuum gripper is
+                    rotationally symmetric about its approach axis, so the pick
+                    is unaffected. Tradeoff: this collapses the 20 wrist-angle
+                    samples to one orientation per (face, position, flip), so
+                    candidates that previously succeeded only at a non-trivial
+                    wrist angle will now fail IK. The centroid-grasp sample and
+                    the bidirectional flip variant remain, which has been
+                    sufficient for top-face picks of cubes in hangar_sim.
+                  -->
+                  <Action
+                    ID="ResetPoseStampedVector"
+                    vector="{leveled_grasp_poses}"
+                  />
+                  <Decorator
+                    ID="ForEach"
+                    vector_in="{grasp_poses}"
+                    index="{grasp_index}"
+                    out="{grasp_pose}"
+                  >
+                    <Control ID="Sequence">
+                      <Action
+                        ID="OverridePoseOrientation"
+                        input_pose="{grasp_pose}"
+                        orientation_xyzw="0;1.0;0;0"
+                        output_pose="{leveled_grasp_pose}"
+                      />
+                      <Action
+                        ID="AddPoseStampedToVector"
+                        input="{leveled_grasp_pose}"
+                        vector="{leveled_grasp_poses}"
+                      />
+                    </Control>
+                  </Decorator>
                   <Action
                     ID="InitializeMTCTask"
                     controller_names="joint_trajectory_controller"
@@ -260,7 +307,7 @@
                     ik_timeout_s="0.01"
                     max_ik_solutions="1"
                     monitored_stage="allow collision (&lt;octomap&gt;, gripper)"
-                    target_poses="{grasp_poses}"
+                    target_poses="{leveled_grasp_poses}"
                     task="{task}"
                   />
                   <Control ID="Parallel" success_count="2" failure_count="1">
