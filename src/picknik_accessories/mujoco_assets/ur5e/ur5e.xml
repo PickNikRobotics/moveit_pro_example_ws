@@ -1,0 +1,164 @@
+<ur5e_body>
+  <body gravcomp="1" name="base" pos="0.0 0.0 0.2" euler="0 0 0" childclass="ur5e">
+    <inertial
+      mass="4.0"
+      pos="0 0 0"
+      diaginertia="0.00443333156 0.00443333156 0.0072"
+    />
+    <geom mesh="base_0" material="black" class="visual" />
+    <geom mesh="base_1" material="jointgray" class="visual" />
+    <body gravcomp="1" name="shoulder_link" pos="0 0 0.163">
+      <inertial
+        mass="3.7"
+        pos="0 0 0"
+        diaginertia="0.0102675 0.0102675 0.00666"
+      />
+      <joint name="shoulder_pan_joint" class="size3" axis="0 0 1" />
+      <geom mesh="shoulder_0" material="urblue" class="visual" />
+      <geom mesh="shoulder_1" material="black" class="visual" />
+      <geom mesh="shoulder_2" material="jointgray" class="visual" />
+      <geom class="collision" size="0.06 0.06" pos="0 0 -0.04" />
+      <body gravcomp="1" name="upper_arm_link" pos="0 0.138 0" quat="1 0 1 0">
+        <inertial
+          mass="8.393"
+          pos="0 0 0.2125"
+          diaginertia="0.133886 0.133886 0.0151074"
+        />
+        <joint name="shoulder_lift_joint" class="size3" axis="0 1 0" />
+        <geom mesh="upperarm_0" material="linkgray" class="visual" />
+        <geom mesh="upperarm_1" material="black" class="visual" />
+        <geom mesh="upperarm_2" material="jointgray" class="visual" />
+        <geom mesh="upperarm_3" material="urblue" class="visual" />
+        <geom
+          class="collision"
+          pos="0 -0.04 0"
+          quat="1 1 0 0"
+          size="0.06 0.06"
+        />
+        <geom class="collision" size="0.05 0.2" pos="0 0 0.2" />
+        <body gravcomp="1" name="forearm_link" pos="0 -0.131 0.425">
+          <inertial
+            mass="2.275"
+            pos="0 0 0.196"
+            diaginertia="0.0311796 0.0311796 0.004095"
+          />
+          <joint name="elbow_joint" class="size3_limited" />
+          <geom mesh="forearm_0" material="urblue" class="visual" />
+          <geom mesh="forearm_1" material="linkgray" class="visual" />
+          <geom mesh="forearm_2" material="black" class="visual" />
+          <geom mesh="forearm_3" material="jointgray" class="visual" />
+          <geom
+            class="collision"
+            pos="0 0.08 0"
+            quat="1 1 0 0"
+            size="0.055 0.06"
+          />
+          <geom class="collision" size="0.038 0.19" pos="0 0 0.2" />
+          <body gravcomp="1" name="wrist_1_link" pos="0 0 0.392" quat="1 0 1 0">
+            <inertial
+              mass="1.219"
+              pos="0 0.127 0"
+              diaginertia="0.0025599 0.0025599 0.0021942"
+            />
+            <joint name="wrist_1_joint" class="size1" />
+            <geom mesh="wrist1_0" material="black" class="visual" />
+            <geom mesh="wrist1_1" material="urblue" class="visual" />
+            <geom mesh="wrist1_2" material="jointgray" class="visual" />
+            <geom
+              class="collision"
+              pos="0 0.05 0"
+              quat="1 1 0 0"
+              size="0.04 0.07"
+            />
+            <body gravcomp="1" name="wrist_2_link" pos="0 0.127 0">
+              <inertial
+                mass="1.219"
+                pos="0 0 0.1"
+                diaginertia="0.0025599 0.0025599 0.0021942"
+              />
+              <joint name="wrist_2_joint" axis="0 0 1" class="size1" />
+              <geom mesh="wrist2_0" material="black" class="visual" />
+              <geom mesh="wrist2_1" material="urblue" class="visual" />
+              <geom mesh="wrist2_2" material="jointgray" class="visual" />
+              <geom class="collision" size="0.04 0.06" pos="0 0 0.04" />
+              <geom
+                class="collision"
+                pos="0 0.02 0.1"
+                quat="1 1 0 0"
+                size="0.04 0.04"
+              />
+              <body gravcomp="1" name="wrist_3_link" pos="0 0 0.1">
+                <inertial
+                  mass="0.1889"
+                  pos="0 0.0771683 0"
+                  quat="1 0 0 1"
+                  diaginertia="0.000132134 9.90863e-05 9.90863e-05"
+                />
+                <joint name="wrist_3_joint" class="size1" />
+                <geom material="linkgray" mesh="wrist3" class="visual" />
+                <!-- <geom class="eef_collision" pos="0 0.08 0" quat="1 1 0 0" size="0.04 0.02"/> -->
+                <site
+                  name="attachment_site"
+                  pos="0 0.1 0"
+                  quat="-1 1 0 0"
+                />
+                <!-- Site for FTS the base of the robotiq gripper -->
+                <!-- The site name will be used for the simulated hardware interface's name -->
+                <!-- If you have corresponding hardware, we recommend setting this to the hardware's hardware interface name -->
+                <site
+                  name="tcp_fts_sensor"
+                  size="0.01"
+                  pos="0.001 0.1 0"
+                  quat="-1 1 0 0"
+                />
+                <body
+                  name="tool_changer"
+                  gravcomp="1"
+                  pos="0.0 0.1 0"
+                  euler="-1.57 0 0"
+                >
+                  <geom
+                    mesh="mtc_ur3510_ur_toolchanger_collision"
+                    material="black"
+                    class="visual"
+                  />
+                </body>
+                <body
+                  name="camera_adapter"
+                  gravcomp="1"
+                  pos="0.0 0.135 0"
+                  euler="-1.57 3.14 0"
+                >
+                  <geom
+                    mesh="camera_adapter"
+                    material="linkgray"
+                    class="visual"
+                  />
+                </body>
+                <!-- The camera frame according to REP 103 -->
+                <!-- Positive X points to right of camera -->
+                <!-- Positive Y points up towards the top of the camera -->
+                <!-- Positive Z points to behind the camera -->
+                <camera
+                  name="wrist_camera"
+                  pos="0.0 0.2 0.05"
+                  fovy="58"
+                  mode="fixed"
+                  resolution="640 480"
+                  euler="1.57 0.0 0.0"
+                />
+                <!-- The camera optical frame should be set to the <camera> position rotated 180 degrees about its x-axis -->
+                <site
+                  name="wrist_camera_optical_frame"
+                  pos="0.0 0.2 0.05"
+                  euler="-1.57 0 0"
+                />
+                <include file="../robotiq_2f85/robotiq2f85.xml" />
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </body>
+</ur5e_body>

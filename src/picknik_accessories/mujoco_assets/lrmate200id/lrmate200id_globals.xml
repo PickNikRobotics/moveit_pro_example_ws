@@ -1,0 +1,72 @@
+<fanuc_globals>
+  <default>
+    <default class="fanuc">
+      <joint armature="0.1" damping="2.0" />
+      <geom type="mesh" />
+    </default>
+    <default class="visual">
+      <geom type="mesh" contype="0" conaffinity="0" group="2" />
+    </default>
+    <default class="collision">
+      <geom group="3" />
+    </default>
+    <default class="fanuc_actuator">
+      <general ctrlrange="-6.28319 6.28319"/>
+      <position
+        dampratio="1.0"
+      />
+    </default>
+  </default>
+
+  <asset>
+    <material name="fanuc_yellow" rgba="1.0 1.0 0.0 1.0" />
+    <material name="fanuc_gray28" rgba="0.28 0.28 0.28 1.0" />
+    <material name="fanuc_black" rgba="0.0 0.0 0.0 1.0" />
+    <!-- Define meshes with appropriate scaling -->
+    <mesh name="base_link" file="meshes/lrmate200id/visual/base_link.stl" />
+    <mesh name="link_1" file="meshes/lrmate200id/visual/link_1.stl" />
+    <mesh name="link_2" file="meshes/lrmate200id/visual/link_2.stl" />
+    <mesh name="link_3" file="meshes/lrmate200id/visual/link_3.stl" />
+    <mesh name="link_4" file="meshes/lrmate200id/visual/link_4.stl" />
+    <mesh name="link_5" file="meshes/lrmate200id/visual/link_5.stl" />
+    <mesh name="link_6" file="meshes/lrmate200id/visual/link_6.stl" />
+    <!-- Collision meshes -->
+    <mesh
+      name="base_link_collision"
+      file="meshes/lrmate200id/collision/base_link.stl"
+    />
+    <mesh
+      name="link_1_collision"
+      file="meshes/lrmate200id/collision/link_1.stl"
+    />
+    <mesh
+      name="link_2_collision"
+      file="meshes/lrmate200id/collision/link_2.stl"
+    />
+    <mesh
+      name="link_3_collision"
+      file="meshes/lrmate200id/collision/link_3.stl"
+    />
+    <mesh
+      name="link_4_collision"
+      file="meshes/lrmate200id/collision/link_4.stl"
+    />
+    <mesh
+      name="link_5_collision"
+      file="meshes/lrmate200id/collision/link_5.stl"
+    />
+    <mesh
+      name="link_6_collision"
+      file="meshes/lrmate200id/collision/link_6.stl"
+    />
+  </asset>
+
+  <actuator>
+    <position class="fanuc_actuator" name="joint_1" joint="joint_1" kp="2000" forcerange="-60000 60000" />
+    <position class="fanuc_actuator" name="joint_2" joint="joint_2" kp="20000" forcerange="-80000 80000"/>
+    <position class="fanuc_actuator" name="joint_3" joint="joint_3" kp="2000" forcerange="-10000 10000"/>
+    <position class="fanuc_actuator" name="joint_4" joint="joint_4" kp="1000" />
+    <position class="fanuc_actuator" name="joint_5" joint="joint_5" kp="1000" />
+    <position class="fanuc_actuator" name="joint_6" joint="joint_6" kp="1000" />
+  </actuator>
+</fanuc_globals>

@@ -1,0 +1,128 @@
+
+
+<body name="base_link" pos="0 0 0" childclass="fanuc">
+  <!-- Added inertial properties -->
+  <inertial mass="10.0" pos="0 0 0.165" diaginertia="0.1 0.1 0.1" />
+  <geom
+    type="mesh"
+    mesh="base_link"
+    material="fanuc_gray28"
+    class="visual"
+  />
+  <geom type="mesh" mesh="base_link_collision" class="collision" />
+  <body name="link_1" pos="0 0 0.330" childclass="fanuc">
+    <joint
+      name="joint_1"
+      type="hinge"
+      axis="0 0 1"
+      range="-2.96706 2.96706"
+    />
+    <inertial mass="5.0" pos="0 0 0" diaginertia="0.05 0.05 0.05" />
+    <geom
+      type="mesh"
+      mesh="link_1"
+      material="fanuc_yellow"
+      class="visual"
+    />
+    <geom type="mesh" mesh="link_1_collision" class="collision" />
+    <body name="link_2" pos="0.050 0 0" childclass="fanuc">
+      <joint
+        name="joint_2"
+        type="hinge"
+        axis="0 1 0"
+        range="-1.74533 2.53073"
+      />
+      <inertial mass="4.0" pos="0 0 0" diaginertia="0.04 0.04 0.04" />
+      <geom
+        type="mesh"
+        mesh="link_2"
+        material="fanuc_yellow"
+        class="visual"
+      />
+      <geom type="mesh" mesh="link_2_collision" class="collision" />
+      <body name="link_3" pos="0 0 0.330" childclass="fanuc">
+        <joint
+          name="joint_3"
+          type="hinge"
+          axis="0 -1 0"
+          range="-1.22173 3.57792"
+        />
+        <inertial mass="3.0" pos="0 0 0" diaginertia="0.03 0.03 0.03" />
+        <geom
+          type="mesh"
+          mesh="link_3"
+          material="fanuc_yellow"
+          class="visual"
+        />
+        <geom type="mesh" mesh="link_3_collision" class="collision" />
+        <body name="link_4" pos="0 0 0.035" childclass="fanuc">
+          <joint
+            name="joint_4"
+            type="hinge"
+            axis="-1 0 0"
+            range="-3.31613 3.31613"
+          />
+          <inertial mass="2.0" pos="0 0 0" diaginertia="0.02 0.02 0.02" />
+          <geom
+            type="mesh"
+            mesh="link_4"
+            material="fanuc_yellow"
+            class="visual"
+          />
+          <geom type="mesh" mesh="link_4_collision" class="collision" />
+          <body name="link_5" pos="0.335 0 0" childclass="fanuc">
+            <joint
+              name="joint_5"
+              type="hinge"
+              axis="0 -1 0"
+              range="-2.18166 2.18166"
+            />
+            <inertial
+              mass="1.5"
+              pos="0 0 0"
+              diaginertia="0.015 0.015 0.015"
+            />
+            <geom
+              type="mesh"
+              mesh="link_5"
+              material="fanuc_yellow"
+              class="visual"
+            />
+            <geom type="mesh" mesh="link_5_collision" class="collision" />
+            <body name="link_6" pos="0.080 0 0" childclass="fanuc">
+              <joint
+                name="joint_6"
+                type="hinge"
+                axis="-1 0 0"
+                range="-6.28319 6.28319"
+              />
+              <inertial
+                mass="1.0"
+                pos="0 0 0"
+                diaginertia="0.01 0.01 0.01"
+              />
+              <geom
+                type="mesh"
+                mesh="link_6"
+                material="fanuc_black"
+                class="visual"
+              />
+              <geom type="mesh" mesh="link_6_collision" class="collision" />
+              <body name="flange" pos="0 0 0" childclass="fanuc">
+                <body
+                  name="tool0"
+                  pos="0 0 0"
+                  euler="3.1416 -1.5708 0"
+                  childclass="fanuc">
+                   <geom class="collision" type="box" size="0.01 0.01 0.001" pos="0 0 -0.001" margin="0.02" gap="0.02"/>
+                   <site name="suction_cup_tool_interface" type="box" size="0.01 0.01 0.001" pos="0 0 -0.001"/>
+                </body>
+              </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </body>
+</body>

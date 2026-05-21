@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:macro name="ur_realsense_camera_adapter" params="prefix parent child_camera child_tool rotation:=^|${0.0} camera_mount_pitch_offset:=^|${6.0 * pi / 180}">
+
+    <joint name="${prefix}realsense_camera_adapter_joint" type="fixed">
+      <!-- The parent link must be read from the robot model it is attached to. -->
+      <parent link="${parent}"/>
+      <child link="${prefix}realsense_camera_adapter_link"/>
+      <origin xyz="0 0 0" rpy="0 0 ${rotation}"/>
+    </joint>
+
+    <link name="${prefix}realsense_camera_adapter_link">
+        <visual>
+          <origin xyz="0 0 0" rpy="0 0 0" />
+          <geometry>
+            <mesh filename="package://picknik_accessories/descriptions/brackets/ur_realsense_camera_adapter/picknik_ur5_realsense_camera_adapter_rev2.dae" />
+          </geometry>
+        </visual>
+        <collision>
+          <origin xyz="0 0 0" rpy="0 0 0" />
+          <geometry>
+            <mesh filename="package://picknik_accessories/descriptions/brackets/ur_realsense_camera_adapter/picknik_ur5_realsense_camera_adapter_rev2_collision.stl" />
+          </geometry>
+        </collision>
+    </link>
+
+    <link name="${prefix}realsense_camera_adapter_tool0"/>
+
+    <joint name="${prefix}realsense_camera_adapter_tool0_joint" type="fixed">
+      <parent link="${prefix}realsense_camera_adapter_link"/>
+      <child link="${child_tool}"/>
+      <origin xyz="0 0 0.007" rpy="0 0 0"/>
+    </joint>
+
+    <link name="${child_camera}"/>
+
+    <joint name="${prefix}d415_mount_joint" type="fixed">
+      <parent link="${prefix}realsense_camera_adapter_link"/>
+      <child link="${child_camera}"/>
+      <origin xyz="0 -0.067 0.0171" rpy="0 ${-pi/2 + camera_mount_pitch_offset} ${pi/2}"/>
+    </joint>
+
+    <link name="${prefix}l515_mount_link"/>
+
+    <joint name="${prefix}l515_mount_joint" type="fixed">
+      <parent link="${prefix}realsense_camera_adapter_link"/>
+      <child link="${prefix}l515_mount_link"/>
+      <origin xyz="0 -0.0406 0.0173" rpy="0 ${-pi/2 + camera_mount_pitch_offset} ${pi/2}"/>
+    </joint>
+
+
+  </xacro:macro>
+</robot>

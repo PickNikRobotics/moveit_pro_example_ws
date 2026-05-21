@@ -1,0 +1,119 @@
+<?xml version="1.0"?>
+<robot name="picknik_cabinet" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <!-- urdf so that we can display the .dae of the gazebo world inside rviz -->
+  <material name="cabinet_color"><color rgba="0.75 0.75 0.75 1"/></material>
+  <xacro:macro name="picknik_cabinet" params="parent *origin">
+    <joint name="cabinet_joint" type="fixed">
+      <parent link="${parent}"/>
+      <child link="cabinet"/>
+      <xacro:insert_block name="origin"/>
+    </joint>
+
+    <link name="cabinet">
+      <visual>
+          <origin xyz="0 0 0" rpy="0 0 0"/>
+          <geometry>
+              <mesh filename="package://picknik_accessories/descriptions/furniture/cabinet/cabinet.dae"/>
+          </geometry>
+          <material name="cabinet_color"/>
+      </visual>
+      <collision>
+        <origin xyz="0.225 0.14 0.345" rpy="0 0 0"/>
+        <geometry>
+            <box size="0.45 0.28 0.69"/>
+        </geometry>
+      </collision>
+      <inertial>
+        <origin xyz="0.225 0.14 0.345" rpy="0 0 0"/>
+        <mass value="25"/>
+        <inertia  ixx="0.001" ixy="0.0"  ixz="0.0"
+                  iyy="0.001" iyz="0.0"
+                  izz="0.001"/>
+      </inertial>
+    </link>
+
+    <!-- AR Tags on the Top left of the cabinet-->
+    <joint name="cabinet_ar_joint" type="fixed">
+      <parent link="cabinet"/>
+      <child link="cabinet_ar_tag"/>
+      <origin xyz="0.451 0.03 0.66" rpy="0 0 0"/>
+    </joint>
+    <link name="cabinet_ar_tag">
+      <visual>
+          <origin xyz="0 0 0" rpy="0 0 0"/>
+          <geometry>
+              <mesh filename="package://picknik_accessories/descriptions/ar_markers/Marker7.dae" scale="0.01 0.1 0.1"/>
+          </geometry>
+      </visual>
+      <inertial>
+        <origin xyz="0.0 0.0 0.00" rpy="0 0 0"/>
+        <mass value="0.00001"/>
+        <inertia  ixx="0.001" ixy="0.0" ixz="0.0"
+                  iyy="0.001" iyz="0.0"
+                  izz="0.001"/>
+      </inertial>
+    </link>
+
+    <xacro:macro name="drawer" params="prefix marker_tag">
+      <joint name="drawer_${prefix}_joint" type="fixed">
+        <parent link="cabinet"/>
+        <child link="drawer_${prefix}"/>
+        <origin xyz="0.02 0.025 ${(prefix*0.1)+0.06}" rpy="0 0 0"/>
+        <!--limit lower="0.0" upper="0.35" effort="100" velocity="100" /-->
+      </joint>
+
+      <link name="drawer_${prefix}">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="package://picknik_accessories/descriptions/furniture/cabinet/drawer.dae"/>
+            </geometry>
+            <material name="cabinet_color"/>
+        </visual>
+        <collision>
+          <origin xyz="0 0 0" rpy="0 0 0"/>
+          <geometry>
+              <mesh filename="package://picknik_accessories/descriptions/furniture/cabinet/drawer.dae"/>
+          </geometry>
+        </collision>
+        <inertial>
+          <origin xyz="0.225 0.14 0.05" rpy="0 0 0"/>
+          <mass value="1"/>
+          <inertia  ixx="0.001" ixy="0.0" ixz="0.0"
+                    iyy="0.001" iyz="0.0"
+                    izz="0.001"/>
+        </inertial>
+      </link>
+
+      <!-- AR Tags on the drawer front-->
+      <joint name="drawer_ar_${prefix}_joint" type="fixed">
+        <parent link="drawer_${prefix}"/>
+        <child link="drawer_ar_${prefix}"/>
+        <origin xyz="0.431 0.03 0.03" rpy="0 0 0"/>
+      </joint>
+      <link name="drawer_ar_${prefix}">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
+            <geometry>
+                <mesh filename="package://picknik_accessories/descriptions/ar_markers/Marker${marker_tag}.dae" scale="0.01 0.1 0.1"/>
+            </geometry>
+        </visual>
+        <inertial>
+          <origin xyz="0.0 0.0 0.00" rpy="0 0 0"/>
+          <mass value="0.00001"/>
+          <inertia  ixx="0.001" ixy="0.0" ixz="0.0"
+                    iyy="0.001" iyz="0.0"
+                    izz="0.001"/>
+        </inertial>
+      </link>
+    </xacro:macro>
+
+    <xacro:drawer prefix="0" marker_tag="0"/>
+    <xacro:drawer prefix="1" marker_tag="1"/>
+    <xacro:drawer prefix="2" marker_tag="2"/>
+    <xacro:drawer prefix="3" marker_tag="3"/>
+    <xacro:drawer prefix="4" marker_tag="4"/>
+    <xacro:drawer prefix="5" marker_tag="5"/>
+  </xacro:macro>
+</robot>

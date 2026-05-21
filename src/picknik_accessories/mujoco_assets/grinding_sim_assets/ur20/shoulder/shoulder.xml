@@ -1,0 +1,21 @@
+<mujoco model="shoulder">
+  <default>
+    <default class="visual">
+      <geom group="2" type="mesh" contype="0" conaffinity="0"/>
+    </default>
+    <default class="collision">
+      <geom group="3" type="mesh"/>
+    </default>
+  </default>
+  <asset>
+    <texture type="2d" name="UR20_DIFF_8bit_2K" file="UR20_DIFF_8bit_2K.png"/>
+    <material name="UR20_DIFF_8bit_2K_png.003" texture="UR20_DIFF_8bit_2K" specular="0.0" shininess="0.25"/>
+    <mesh file="shoulder.obj"/>
+  </asset>
+  <worldbody>
+    <body name="shoulder">
+      <geom material="UR20_DIFF_8bit_2K_png.003" mesh="shoulder" class="visual"/>
+      <geom mesh="shoulder" class="collision"/>
+    </body>
+  </worldbody>
+</mujoco>

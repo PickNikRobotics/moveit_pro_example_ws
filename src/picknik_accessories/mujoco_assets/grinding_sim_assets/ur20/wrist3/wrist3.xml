@@ -1,0 +1,21 @@
+<mujoco model="wrist3">
+  <default>
+    <default class="visual">
+      <geom group="2" type="mesh" contype="0" conaffinity="0"/>
+    </default>
+    <default class="collision">
+      <geom group="3" type="mesh"/>
+    </default>
+  </default>
+  <asset>
+    <texture type="2d" name="UR20_DIFF_8bit_2K" file="UR20_DIFF_8bit_2K.png"/>
+    <material name="UR20_DIFF_8bit_2K_png.010" texture="UR20_DIFF_8bit_2K" specular="0.0" shininess="0.25"/>
+    <mesh file="wrist3.obj"/>
+  </asset>
+  <worldbody>
+    <body name="wrist3">
+      <geom material="UR20_DIFF_8bit_2K_png.010" mesh="wrist3" class="visual"/>
+      <geom mesh="wrist3" class="collision"/>
+    </body>
+  </worldbody>
+</mujoco>

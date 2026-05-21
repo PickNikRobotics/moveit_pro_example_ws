@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<robot name="picknik_space_station" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <!-- urdf so that we can display the .dae of the gazebo world inside rviz -->
+  <xacro:macro name="picknik_space_station" params="parent *origin">
+
+    <joint name="space_station_joint" type="fixed">
+      <parent link="${parent}"/>
+      <child link="space_station"/>
+      <xacro:insert_block name="origin"/>
+    </joint>
+
+    <link name="space_station">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://picknik_accessories/descriptions/furniture/space_station/space_booth.dae"/>
+        </geometry>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <mesh filename="package://picknik_accessories/descriptions/furniture/space_station/space_booth.dae"/>
+        </geometry>
+      </collision>
+      <!-- box collision for the ceiling so that the robot does not try to plan into the open gaps of the ceiling -->
+      <collision>
+        <origin xyz="0 0 2.3" rpy="0 0 0"/>
+        <geometry>
+          <box size="3 2.1 0.14"/>
+        </geometry>
+        <material>
+          <color rgba="1.0 0 0 1"/>
+        </material>
+      </collision>
+      <inertial>
+        <origin xyz="0.225 0.14 0.345" rpy="0 0 0"/>
+        <mass value="25"/>
+        <inertia ixx="0.001" ixy="0.0" ixz="0.0"
+                 iyy="0.001" iyz="0.0" izz="0.001"/>
+      </inertial>
+    </link>
+
+  </xacro:macro>
+</robot>
