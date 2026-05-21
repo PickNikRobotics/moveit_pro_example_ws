@@ -12,7 +12,7 @@
     point_cloud="/wrist_camera/camera_info"
   >
     <Control ID="Sequence">
-      <Action ID="ResetPoseStampedVector" vector="{pose_stamped_vector}" />
+      <Action ID="ResetVector" vector="{point_cloud_vector}" />
       <Decorator
         ID="ForEach"
         vector_in="{masks3d}"
