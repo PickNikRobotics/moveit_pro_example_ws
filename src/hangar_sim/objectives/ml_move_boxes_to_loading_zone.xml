@@ -63,7 +63,7 @@
               _collapsed="true"
               waypoint_name="View Boxes"
               confidence_threshold="0.25"
-              text_prompt="brown cube"
+              text_prompt="a single small orange cube box"
               place_pose="{place_pose}"
               picked_box="{picked_at_wp1}"
             />
@@ -83,7 +83,7 @@
               _skipIf="picked_at_wp1"
               waypoint_name="View Boxes 2"
               confidence_threshold="0.25"
-              text_prompt="brown cube"
+              text_prompt="a single small orange cube box"
               place_pose="{place_pose}"
               picked_box="{picked_at_wp2}"
             />
