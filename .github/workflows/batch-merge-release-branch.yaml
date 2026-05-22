@@ -23,7 +23,7 @@ jobs:
 
       - name: Get current release branch
         id: get_current_release_branch
-        uses: PickNikRobotics/moveit_pro_ci/.github/actions/find_release_branch@d8676de7c5e49d274277cf536b6d41fbacf71642 # v0.2.0
+        uses: PickNikRobotics/moveit_pro_ci/.github/actions/find_release_branch@d490a1dfe91758dd1da3277fbd47b5b1efe5e0c3 # v0.3.1
 
       - name: Merge release branch into main
         id: merge
