@@ -14,11 +14,15 @@
 # Two filter chain instances run, one per lidar, each remapped to its own
 # /scan_{front,rear} input and /scan_{front,rear}_filtered output. Nav2 consumes
 # both filtered topics as independent obstacle observation sources.
+#
+# InPlace variant is used so angle_min/angle_max and beam count stay constant across
+# messages. Filtered beams are set to range_max (the "no return" sentinel); nav2's
+# inf_is_valid: false setting discards them, which is the correct behaviour.
 laser_angular_filter_front:
   ros__parameters:
     filter1:
       name: angular_bounds
-      type: laser_filters/LaserScanAngularBoundsFilter
+      type: laser_filters/LaserScanAngularBoundsFilterInPlace
       params:
         lower_angle: 0.7854
         upper_angle: 3.9270
@@ -27,7 +31,7 @@ laser_angular_filter_rear:
   ros__parameters:
     filter1:
       name: angular_bounds
-      type: laser_filters/LaserScanAngularBoundsFilter
+      type: laser_filters/LaserScanAngularBoundsFilterInPlace
       params:
         lower_angle: 0.7854
         upper_angle: 3.9270
