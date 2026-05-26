@@ -24,13 +24,15 @@
       <Action ID="ResetPoseStampedVector" vector="{corner_waypoints}" />
       <Action ID="ResetPoseStampedVector" vector="{boustrophedon_path}" />
       <Action ID="Script" code="reverse_flag := 1" />
-      <!--Define the four corner waypoints that bound the surface region to cover.
-           Corners are exposed as Objective ports so the region can be tuned without editing the XML.-->
+      <!--Define the four corner waypoints (world frame) that bound the surface region to cover.
+           Edit these XYZ literals to move or resize the raster patch. Defaults are tuned to sit
+           low on the fuselage at y~12 so the manipulator can reach them from the "Look at Plane"
+           waypoint. Order must walk the quadrilateral: bottom-left, bottom-right, top-right, top-left.-->
       <Action
         ID="CreatePoseStamped"
         reference_frame="world"
         pose_stamped="{corner_bl}"
-        position_xyz="{bottom_left_position_xyz}"
+        position_xyz="-1.0;12.0;1.0"
         orientation_xyzw="0;0;0;1"
       />
       <Action
@@ -42,7 +44,7 @@
         ID="CreatePoseStamped"
         reference_frame="world"
         pose_stamped="{corner_br}"
-        position_xyz="{bottom_right_position_xyz}"
+        position_xyz="1.0;12.0;1.0"
         orientation_xyzw="0;0;0;1"
       />
       <Action
@@ -54,7 +56,7 @@
         ID="CreatePoseStamped"
         reference_frame="world"
         pose_stamped="{corner_tr}"
-        position_xyz="{top_right_position_xyz}"
+        position_xyz="1.0;12.0;1.6"
         orientation_xyzw="0;0;0;1"
       />
       <Action
@@ -66,7 +68,7 @@
         ID="CreatePoseStamped"
         reference_frame="world"
         pose_stamped="{corner_tl}"
-        position_xyz="{top_left_position_xyz}"
+        position_xyz="-1.0;12.0;1.6"
         orientation_xyzw="0;0;0;1"
       />
       <Action
@@ -114,8 +116,8 @@
       <Action
         ID="FindSlicePlanesAlongEdge"
         waypoints="{corner_waypoints}"
-        edge_number="{slice_edge_number}"
-        stride_spacing="{stride_spacing}"
+        edge_number="1"
+        stride_spacing="0.1"
         shift_distance="0;0;0"
         output_waypoints="{slice_waypoints}"
       />
@@ -128,50 +130,60 @@
         out="{slice_pose}"
         vector_in="{slice_waypoints}"
       >
-        <Control ID="Sequence">
-          <Action ID="ResetPoseStampedVector" vector="{contour_path}" />
-          <Action
-            ID="GetContourFromPointCloudSlice"
-            input_cloud="{trimmed_point_cloud}"
-            slice_plane="{slice_pose}"
-            slice_distance_from_plane="{slice_distance_from_plane}"
-            contour_crop_angle_start="{contour_crop_angle_start}"
-            contour_crop_angle_span="{contour_crop_angle_span}"
-            hull_alpha="{hull_alpha}"
-            max_pose_spacing="{max_pose_spacing}"
-            contour_path="{contour_path}"
-          />
-          <Action
-            ID="AddOverageToPath"
-            waypoints="{contour_path}"
-            overage_distance="{overage_distance}"
-            num_waypoints="3"
-            axis="y"
-            output_waypoints="{contour_path_with_overage}"
-          />
-          <Control ID="Fallback">
-            <Decorator ID="Precondition" else="FAILURE" if="reverse_flag == 1">
-              <Action ID="AlwaysSuccess" />
+        <!--Skip slices that fall outside the cloud (empty contour) instead of failing the whole
+             raster: the inner Sequence aborts on an empty slice, and the trailing AlwaysSuccess
+             lets the ForEach continue to the next slice.-->
+        <Control ID="Fallback">
+          <Control ID="Sequence">
+            <Action ID="ResetPoseStampedVector" vector="{contour_path}" />
+            <Action
+              ID="GetContourFromPointCloudSlice"
+              input_cloud="{trimmed_point_cloud}"
+              slice_plane="{slice_pose}"
+              slice_distance_from_plane="0.01"
+              contour_crop_angle_start="0.0"
+              contour_crop_angle_span="3.14"
+              hull_alpha="0.05"
+              max_pose_spacing="0.03"
+              contour_path="{contour_path}"
+            />
+            <Action
+              ID="AddOverageToPath"
+              waypoints="{contour_path}"
+              overage_distance="0.05"
+              num_waypoints="3"
+              axis="y"
+              output_waypoints="{contour_path_with_overage}"
+            />
+            <Control ID="Fallback">
+              <Decorator
+                ID="Precondition"
+                else="FAILURE"
+                if="reverse_flag == 1"
+              >
+                <Action ID="AlwaysSuccess" />
+              </Decorator>
+              <Action
+                ID="ReversePoseStampedVector"
+                input_vector="{contour_path_with_overage}"
+                output_vector="{contour_path_with_overage}"
+              />
+            </Control>
+            <Decorator
+              ID="ForEach"
+              index="{contour_index}"
+              out="{contour_pose}"
+              vector_in="{contour_path_with_overage}"
+            >
+              <Action
+                ID="AddPoseStampedToVector"
+                input="{contour_pose}"
+                vector="{boustrophedon_path}"
+              />
             </Decorator>
-            <Action
-              ID="ReversePoseStampedVector"
-              input_vector="{contour_path_with_overage}"
-              output_vector="{contour_path_with_overage}"
-            />
+            <Action ID="Script" code="reverse_flag := reverse_flag * -1" />
           </Control>
-          <Decorator
-            ID="ForEach"
-            index="{contour_index}"
-            out="{contour_pose}"
-            vector_in="{contour_path_with_overage}"
-          >
-            <Action
-              ID="AddPoseStampedToVector"
-              input="{contour_pose}"
-              vector="{boustrophedon_path}"
-            />
-          </Decorator>
-          <Action ID="Script" code="reverse_flag := reverse_flag * -1" />
+          <Action ID="AlwaysSuccess" />
         </Control>
       </Decorator>
       <Action
@@ -196,7 +208,7 @@
         joint_trajectory_msg="{joint_trajectory_msg}"
         path="{boustrophedon_path}"
         planning_group_name="manipulator"
-        position_only="false"
+        position_only="true"
         tip_offset="0;0;0.1;0;0;0"
         trajectory_sampling_rate="100"
         velocity_scale_factor="1.000000"
@@ -214,53 +226,6 @@
         <Metadata runnable="true" />
         <Metadata subcategory="Training Examples" />
       </MetadataFields>
-      <input_port name="bottom_left_position_xyz" default="-1.0;12.0;1.0">
-        World-frame XYZ of the bottom-left corner of the raster region on the
-        fuselage. Defaults are tuned for the airplane in hangar_sim and the
-        manipulator's reach from the "Look at Plane" waypoint.
-      </input_port>
-      <input_port name="bottom_right_position_xyz" default="1.0;12.0;1.0">
-        World-frame XYZ of the bottom-right corner of the raster region.
-      </input_port>
-      <input_port name="top_right_position_xyz" default="1.0;12.0;1.6">
-        World-frame XYZ of the top-right corner of the raster region.
-      </input_port>
-      <input_port name="top_left_position_xyz" default="-1.0;12.0;1.6">
-        World-frame XYZ of the top-left corner of the raster region.
-      </input_port>
-      <input_port name="slice_edge_number" default="1">
-        Which of the four edges of the corner quadrilateral the slice planes run
-        along (1-4). Edge 1 is bottom-left to bottom-right.
-      </input_port>
-      <input_port name="stride_spacing" default="0.1">
-        Spacing in meters between adjacent raster strides.
-      </input_port>
-      <input_port name="overage_distance" default="0.05">
-        Length in meters to extend each contour past its start and end before
-        stitching, so the tool travels off-surface at row turnarounds.
-      </input_port>
-      <input_port name="slice_distance_from_plane" default="0.01">
-        Tolerance in meters for which cloud points count as "on" each slice
-        plane.
-      </input_port>
-      <input_port name="contour_crop_angle_start" default="0.0">
-        Angular start of the contour arc on each slice plane, in
-        radians. Combined with `contour_crop_angle_span` to crop the contour to
-        the portion of the surface to follow.
-      </input_port>
-      <input_port name="contour_crop_angle_span" default="-3.0">
-        Angular extent of the contour arc on each slice plane, in
-        radians. Negative values traverse clockwise; positive values traverse
-        counter-clockwise.
-      </input_port>
-      <input_port name="hull_alpha" default="0.05">
-        Alpha-shape parameter controlling how tightly the contour follows the
-        cloud edge. Smaller values follow concavities more aggressively; -1
-        falls back to a convex hull.
-      </input_port>
-      <input_port name="max_pose_spacing" default="0.03">
-        Maximum spacing in meters between adjacent poses along each contour.
-      </input_port>
     </SubTree>
   </TreeNodesModel>
 </root>
