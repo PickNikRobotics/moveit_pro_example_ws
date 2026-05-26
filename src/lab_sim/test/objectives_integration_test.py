@@ -62,6 +62,7 @@ skip_objectives = {
     "ML Find Bottles on Table from Image Exemplar",  # Skipped because it looks for a file on a home path
     "ML Segment Image",
     "ML Segment Image Loop",
+    "ML Segment Point Cloud",  # Camera topic /wrist_camera/color not available in CI
     "ML Segment Point Cloud from Clicked Point",
     "MPC Pose Tracking",
     "MPC Pose Tracking With Point Cloud Avoidance",
@@ -90,10 +91,13 @@ def wait_for_gripper_action_server(timeout: int = 180):
     action_client = ActionClient(
         node, GripperCommand, "/robotiq_gripper_controller/gripper_cmd"
     )
-    if not action_client.wait_for_server(timeout_sec=timeout):
-        raise TimeoutError(
-            "Timeout waiting for robotiq_gripper_controller gripper action server to start"
-        )
+    try:
+        if not action_client.wait_for_server(timeout_sec=timeout):
+            raise TimeoutError(
+                "Timeout waiting for robotiq_gripper_controller gripper action server to start"
+            )
+    finally:
+        node.destroy_node()
     return True
 
 
