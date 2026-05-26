@@ -20,6 +20,7 @@ hardware:
           package: "hangar_sim"
           path: "config/moveit/joint_limits.yaml"
       - mujoco_model: "description/hangar_scene.xml"
+      - mujoco_viewer: false  # set to true locally to open the MuJoCo viewer window
       # Set to false when use_fuse:=true so fuse is the sole odom -> ridgeback_base_link publisher.
       # Rebuild hangar_sim after changing this value.
       - publish_odom: true

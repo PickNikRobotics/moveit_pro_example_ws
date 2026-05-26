@@ -6,32 +6,52 @@
 #   front lidar frame yaw = -135 deg: robot angle = scan_angle - 135 deg
 #   rear  lidar frame yaw =  +45 deg: robot angle = scan_angle + 45 deg
 #
-# Chassis self-hits occur when |robot_frame_angle| > 90 deg, i.e. beams looking more
-# than 90 deg backward. This maps to scan angles 0-45 deg and 225-270 deg for both lidars.
-# Keeping scan angles 45-225 deg (0.7854 to 3.9270 rad) eliminates all self-hits and
-# gives each lidar a clean 180 deg arc; combined they cover 360 deg.
+# Chassis self-hits occur in the rear corners of each lidar's sweep. Empirically
+# (measured in simulation from /scan_front raw data) the self-hit beams are:
+#   scan  0-30 deg  (0.000-0.524 rad): rear-corner hits at 0.25-0.28 m
+#   scan 240-270 deg (4.189-4.712 rad): rear-corner hits at 0.25-0.39 m
+# Valid obstacle returns begin at scan ~33 deg. Filtering only these two narrow
+# arcs removes all chassis self-hits while preserving the maximum useful coverage.
+# Combined, each lidar keeps ~230 deg of valid arc; the two lidars together give
+# full 360 deg obstacle coverage with only ~60 deg total filtered per lidar.
 #
 # Two filter chain instances run, one per lidar, each remapped to its own
 # /scan_{front,rear} input and /scan_{front,rear}_filtered output. Nav2 consumes
 # both filtered topics as independent obstacle observation sources.
 #
 # InPlace variant is used so angle_min/angle_max and beam count stay constant across
-# messages. Filtered beams are set to range_max (the "no return" sentinel); nav2's
+# messages. Filtered beams are set to range_max+1 (the "no return" sentinel); nav2's
 # inf_is_valid: false setting discards them, which is the correct behaviour.
+#
+# NOTE: LaserScanAngularBoundsFilterInPlace removes beams that fall WITHIN [lower, upper],
+# not outside. Two filter stages per chain are therefore needed to remove the two rear
+# corner arcs without touching the valid forward arc.
 laser_angular_filter_front:
   ros__parameters:
     filter1:
-      name: angular_bounds
+      name: remove_rear_right
       type: laser_filters/LaserScanAngularBoundsFilterInPlace
       params:
-        lower_angle: 0.7854
-        upper_angle: 3.9270
+        lower_angle: 0.0
+        upper_angle: 0.5236
+    filter2:
+      name: remove_rear_left
+      type: laser_filters/LaserScanAngularBoundsFilterInPlace
+      params:
+        lower_angle: 4.1888
+        upper_angle: 4.7124
 
 laser_angular_filter_rear:
   ros__parameters:
     filter1:
-      name: angular_bounds
+      name: remove_rear_right
       type: laser_filters/LaserScanAngularBoundsFilterInPlace
       params:
-        lower_angle: 0.7854
-        upper_angle: 3.9270
+        lower_angle: 0.0
+        upper_angle: 0.5236
+    filter2:
+      name: remove_rear_left
+      type: laser_filters/LaserScanAngularBoundsFilterInPlace
+      params:
+        lower_angle: 4.1888
+        upper_angle: 4.7124
