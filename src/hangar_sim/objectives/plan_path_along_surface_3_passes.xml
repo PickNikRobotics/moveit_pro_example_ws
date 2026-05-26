@@ -1,28 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<root BTCPP_format="4" main_tree_to_execute="Raster Path Along Fuselage">
-  <!--
-    KNOWN LIMITATION — NEEDS PLANNER TUNING.
-
-    This Objective stitches three stacked fuselage contours into ONE boustrophedon
-    path and tries to plan it with a single PlanCartesianPath. On hangar_sim that
-    single plan does not return in a reasonable time (>8 min for ~116 waypoints,
-    versus ~2 s for a single 53-waypoint contour). The blow-up comes from the
-    whole-body "manipulator" group's base redundancy combined with the orientation
-    discontinuities at the seams between stacked contours.
-
-    For a working multi-pass sweep today, use the `Plan Path Along Surface 3 Passes`
-    Objective, which plans and executes each contour separately (fast, reliable) and
-    is connected by resets to the "Look at Plane" waypoint.
-
-    To make this single-path version tractable, options to explore: plan with an
-    arm-only group instead of the whole-body group, coarsen the path
-    (max_pose_spacing / ik_cartesian_space_density), increase blending_radius so the
-    planner does not have to hit every pose exactly, or split the execute per row.
-  -->
+<root BTCPP_format="4" main_tree_to_execute="Plan Path Along Surface 3 Passes">
+  <!--//////////-->
   <BehaviorTree
-    ID="Raster Path Along Fuselage"
-    _description="Build a single 2D raster coverage path over the airplane fuselage. Captures one wrist-camera point cloud, then slices it at three stacked heights (the same crop/centroid/contour approach as Plan Path Along Surface), reverses the middle contour, and stitches all three into one boustrophedon Cartesian path. NOTE: the single stitched PlanCartesianPath is currently intractable on hangar_sim - see the Plan Path Along Surface 3 Passes Objective for a working multi-pass sweep, and the header comment for tuning options."
-    _favorite="false"
+    ID="Plan Path Along Surface 3 Passes"
+    _description="Plan and execute three stacked contour passes along the fuselage. Each pass crops a thin horizontal slab of the wrist-camera cloud at a different height, takes its centroid as the slice plane, extracts a contour, and follows it. Passes run from the top (z=1.7) downward so they stay within the manipulator's reach."
+    _favorite="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree
@@ -38,7 +20,9 @@
         velocity_scale_factor="1.0"
         waypoint_name="Look at Plane"
       />
-      <!--Capture one point cloud, lift to world frame. All three slices reuse it.-->
+      <!--Capture a single point cloud and lift it into the world frame. All three
+           passes re-crop this same world-frame cloud at different heights, so it
+           stays valid even after the arm moves between passes.-->
       <Action
         ID="GetPointCloud"
         topic_name="/wrist_camera/points"
@@ -52,8 +36,7 @@
         output_cloud="{full_cloud}"
         target_frame="world"
       />
-      <Action ID="ResetPoseStampedVector" vector="{raster_path}" />
-      <!--===== Row 1: top, z = 1.7, left-to-right =====-->
+      <!--===== Pass 1: top, z = 1.7 =====-->
       <Action
         ID="CreatePoseStamped"
         reference_frame="world"
@@ -66,6 +49,11 @@
         point_cloud="{full_cloud}"
         point_cloud_cropped="{crop_1}"
         crop_box_size="5;15;0.2"
+      />
+      <Action
+        ID="SendPointCloudToUI"
+        pcd_topic="/pcd_pointcloud_captures"
+        point_cloud="{crop_1}"
       />
       <Action
         ID="GetCentroidFromPointCloud"
@@ -83,14 +71,50 @@
         contour_crop_angle_span="3.2"
         contour_crop_angle_start="1.58"
       />
-      <Decorator ID="ForEach" index="{i1}" out="{p1}" vector_in="{contour_1}">
-        <Action
-          ID="AddPoseStampedToVector"
-          input="{p1}"
-          vector="{raster_path}"
-        />
-      </Decorator>
-      <!--===== Row 2: middle, z = 1.55, reversed for a lawn-mower turn =====-->
+      <Action
+        ID="VisualizePath"
+        marker_lifetime="0.000000"
+        marker_name="pass_1"
+        path="{contour_1}"
+        pose_marker_size="0.100000"
+        show_poses="true"
+      />
+      <Action
+        ID="PlanCartesianPath"
+        acceleration_scale_factor="1.000000"
+        blending_radius="0.0050000"
+        ik_cartesian_space_density="0.010000"
+        ik_joint_space_density="0.100000"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+        path="{contour_1}"
+        planning_group_name="manipulator"
+        position_only="false"
+        trajectory_sampling_rate="100"
+        velocity_scale_factor="1.000000"
+        tip_offset="0;0;0.2;0;0;0"
+        debug_solution="{debug_solution}"
+      />
+      <Action
+        ID="ExecuteTrajectory"
+        execution_pipeline="jtc"
+        controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
+      />
+      <!--===== Pass 2: middle, z = 1.55 =====-->
+      <!--Return to the viewing waypoint first so the Cartesian plan starts from a
+           known reachable pose instead of the end of the previous contour.-->
+      <SubTree
+        ID="Move to Waypoint (JTC)"
+        _collapsed="true"
+        acceleration_scale_factor="1.0"
+        controller_names="joint_trajectory_controller"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.0"
+        seed="0"
+        velocity_scale_factor="1.0"
+        waypoint_name="Look at Plane"
+      />
       <Action
         ID="CreatePoseStamped"
         reference_frame="world"
@@ -103,6 +127,11 @@
         point_cloud="{full_cloud}"
         point_cloud_cropped="{crop_2}"
         crop_box_size="5;15;0.2"
+      />
+      <Action
+        ID="SendPointCloudToUI"
+        pcd_topic="/pcd_pointcloud_captures"
+        point_cloud="{crop_2}"
       />
       <Action
         ID="GetCentroidFromPointCloud"
@@ -121,18 +150,47 @@
         contour_crop_angle_start="1.58"
       />
       <Action
-        ID="ReversePoseStampedVector"
-        input_vector="{contour_2}"
-        output_vector="{contour_2}"
+        ID="VisualizePath"
+        marker_lifetime="0.000000"
+        marker_name="pass_2"
+        path="{contour_2}"
+        pose_marker_size="0.100000"
+        show_poses="true"
       />
-      <Decorator ID="ForEach" index="{i2}" out="{p2}" vector_in="{contour_2}">
-        <Action
-          ID="AddPoseStampedToVector"
-          input="{p2}"
-          vector="{raster_path}"
-        />
-      </Decorator>
-      <!--===== Row 3: bottom, z = 1.4, left-to-right =====-->
+      <Action
+        ID="PlanCartesianPath"
+        acceleration_scale_factor="1.000000"
+        blending_radius="0.0050000"
+        ik_cartesian_space_density="0.010000"
+        ik_joint_space_density="0.100000"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+        path="{contour_2}"
+        planning_group_name="manipulator"
+        position_only="false"
+        trajectory_sampling_rate="100"
+        velocity_scale_factor="1.000000"
+        tip_offset="0;0;0.2;0;0;0"
+        debug_solution="{debug_solution}"
+      />
+      <Action
+        ID="ExecuteTrajectory"
+        execution_pipeline="jtc"
+        controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
+      />
+      <!--===== Pass 3: bottom, z = 1.4 =====-->
+      <SubTree
+        ID="Move to Waypoint (JTC)"
+        _collapsed="true"
+        acceleration_scale_factor="1.0"
+        controller_names="joint_trajectory_controller"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.0"
+        seed="0"
+        velocity_scale_factor="1.0"
+        waypoint_name="Look at Plane"
+      />
       <Action
         ID="CreatePoseStamped"
         reference_frame="world"
@@ -145,6 +203,11 @@
         point_cloud="{full_cloud}"
         point_cloud_cropped="{crop_3}"
         crop_box_size="5;15;0.2"
+      />
+      <Action
+        ID="SendPointCloudToUI"
+        pcd_topic="/pcd_pointcloud_captures"
+        point_cloud="{crop_3}"
       />
       <Action
         ID="GetCentroidFromPointCloud"
@@ -162,20 +225,12 @@
         contour_crop_angle_span="3.2"
         contour_crop_angle_start="1.58"
       />
-      <Decorator ID="ForEach" index="{i3}" out="{p3}" vector_in="{contour_3}">
-        <Action
-          ID="AddPoseStampedToVector"
-          input="{p3}"
-          vector="{raster_path}"
-        />
-      </Decorator>
-      <!--Visualize and execute the stitched raster as a single Cartesian motion.-->
       <Action
         ID="VisualizePath"
         marker_lifetime="0.000000"
-        marker_name="raster"
-        path="{raster_path}"
-        pose_marker_size="0.050000"
+        marker_name="pass_3"
+        path="{contour_3}"
+        pose_marker_size="0.100000"
         show_poses="true"
       />
       <Action
@@ -185,12 +240,12 @@
         ik_cartesian_space_density="0.010000"
         ik_joint_space_density="0.100000"
         joint_trajectory_msg="{joint_trajectory_msg}"
-        path="{raster_path}"
+        path="{contour_3}"
         planning_group_name="manipulator"
-        position_only="true"
+        position_only="false"
         trajectory_sampling_rate="100"
         velocity_scale_factor="1.000000"
-        tip_offset="0;0;0.1;0;0;0"
+        tip_offset="0;0;0.2;0;0;0"
         debug_solution="{debug_solution}"
       />
       <Action
@@ -201,7 +256,7 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Raster Path Along Fuselage">
+    <SubTree ID="Plan Path Along Surface 3 Passes">
       <MetadataFields>
         <Metadata runnable="true" />
         <Metadata subcategory="Training Examples" />
