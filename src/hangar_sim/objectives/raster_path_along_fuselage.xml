@@ -1,27 +1,28 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Raster Path Along Fuselage">
   <!--
-    KNOWN LIMITATION — NEEDS PLANNER TUNING.
+    Single-path fuselage raster.
 
-    This Objective stitches three stacked fuselage contours into ONE boustrophedon
-    path and tries to plan it with a single PlanCartesianPath. On hangar_sim that
-    single plan does not return in a reasonable time (>8 min for ~116 waypoints,
-    versus ~2 s for a single 53-waypoint contour). The blow-up comes from the
-    whole-body "manipulator" group's base redundancy combined with the orientation
-    discontinuities at the seams between stacked contours.
+    Captures one wrist-camera cloud, slices it at three stacked heights
+    (crop -> centroid -> GetContourFromPointCloudSlice, same as Plan Path Along
+    Surface), reverses the middle contour for a boustrophedon turn, stitches all
+    three into one path, and plans+executes it as ONE PlanCartesianPath.
 
-    For a working multi-pass sweep today, use the `Plan Path Along Surface 3 Passes`
-    Objective, which plans and executes each contour separately (fast, reliable) and
-    is connected by resets to the "Look at Plane" waypoint.
+    An earlier version of this Objective took >8 min to plan. The dominant cost was
+    the number of whole-body IK solves: PlanCartesianPath samples the path at
+    ik_cartesian_space_density and solves IK at every sample, so a ~3 m stitched path
+    at 1 cm density is hundreds of redundant base+arm IK solves. The setup below keeps
+    that count small (coarse contour spacing + coarse IK density + large blending
+    radius) while keeping a well-posed 6-DOF IK (position_only=false). See the
+    PlanCartesianPath comment for the specific knobs.
 
-    To make this single-path version tractable, options to explore: plan with an
-    arm-only group instead of the whole-body group, coarsen the path
-    (max_pose_spacing / ik_cartesian_space_density), increase blending_radius so the
-    planner does not have to hit every pose exactly, or split the execute per row.
+    The `Plan Path Along Surface 3 Passes` Objective is the alternative: it plans each
+    contour as its own fast Cartesian segment and resets to "Look at Plane" between
+    passes.
   -->
   <BehaviorTree
     ID="Raster Path Along Fuselage"
-    _description="Build a single 2D raster coverage path over the airplane fuselage. Captures one wrist-camera point cloud, then slices it at three stacked heights (the same crop/centroid/contour approach as Plan Path Along Surface), reverses the middle contour, and stitches all three into one boustrophedon Cartesian path. NOTE: the single stitched PlanCartesianPath is currently intractable on hangar_sim - see the Plan Path Along Surface 3 Passes Objective for a working multi-pass sweep, and the header comment for tuning options."
+    _description="Single 2D raster coverage path over the airplane fuselage. Captures one wrist-camera point cloud, slices it at three stacked heights (crop/centroid/contour, as in Plan Path Along Surface), reverses the middle contour, and stitches all three into one boustrophedon Cartesian path planned and executed as a single motion. Planning is coarsened (contour spacing, IK density, blending radius) so the single stitched plan solves quickly."
     _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
@@ -75,7 +76,7 @@
       <Action
         ID="GetContourFromPointCloudSlice"
         contour_path="{contour_1}"
-        max_pose_spacing="0.200000"
+        max_pose_spacing="0.400000"
         hull_alpha="-1.000000"
         input_cloud="{crop_1}"
         slice_distance_from_plane="0.100000"
@@ -112,7 +113,7 @@
       <Action
         ID="GetContourFromPointCloudSlice"
         contour_path="{contour_2}"
-        max_pose_spacing="0.200000"
+        max_pose_spacing="0.400000"
         hull_alpha="-1.000000"
         input_cloud="{crop_2}"
         slice_distance_from_plane="0.100000"
@@ -154,7 +155,7 @@
       <Action
         ID="GetContourFromPointCloudSlice"
         contour_path="{contour_3}"
-        max_pose_spacing="0.200000"
+        max_pose_spacing="0.400000"
         hull_alpha="-1.000000"
         input_cloud="{crop_3}"
         slice_distance_from_plane="0.100000"
@@ -178,19 +179,28 @@
         pose_marker_size="0.050000"
         show_poses="true"
       />
+      <!--Planning is set up to solve fast over the full stitched path:
+           - position_only=false keeps a well-posed 6-DOF IK. (position_only on this
+             redundant base+arm group is UNDERconstrained and actually searches a large
+             null space, so it does not help here.)
+           - Coarse ik_cartesian_space_density (0.05) keeps the number of whole-body IK
+             solves small - this is the dominant planning cost over a ~3 m stitched path.
+           - Larger blending_radius (0.05) rounds the corners at the contour seams so the
+             wrist does not have to exactly hit a pose whose tangent-based orientation flips
+             relative to its neighbor across a row change.-->
       <Action
         ID="PlanCartesianPath"
         acceleration_scale_factor="1.000000"
-        blending_radius="0.0050000"
-        ik_cartesian_space_density="0.010000"
+        blending_radius="0.0500000"
+        ik_cartesian_space_density="0.050000"
         ik_joint_space_density="0.100000"
         joint_trajectory_msg="{joint_trajectory_msg}"
         path="{raster_path}"
         planning_group_name="manipulator"
-        position_only="true"
+        position_only="false"
         trajectory_sampling_rate="100"
         velocity_scale_factor="1.000000"
-        tip_offset="0;0;0.1;0;0;0"
+        tip_offset="0;0;0.2;0;0;0"
         debug_solution="{debug_solution}"
       />
       <Action
