@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:macro name="robot_stand" params="parent table_height *origin">
+    <joint name="robot_stand_base_joint" type="fixed">
+      <xacro:insert_block name="origin" />
+      <parent link="${parent}"/>
+      <child link="robot_stand_base_link" />
+    </joint>
+    <link name="robot_stand_base_link">
+      <visual>
+        <geometry>
+          <cylinder length = "${table_height}" radius = "0.1"/>
+        </geometry>
+        <material name="">
+          <color rgba="0.8 0.8 0.8 1"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <cylinder length = "${table_height}" radius = "0.1"/>
+        </geometry>
+      </collision>
+    </link>
+
+    <joint name="robot_stand_top_joint" type="fixed">
+      <xacro:insert_block name="origin" />
+      <parent link="robot_stand_base_link"/>
+      <child link="robot_stand_top_link" />
+    </joint>
+    <link name="robot_stand_top_link"/>
+  </xacro:macro>
+</robot>

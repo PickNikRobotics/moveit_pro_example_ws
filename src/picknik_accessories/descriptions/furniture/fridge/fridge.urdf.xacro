@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+<robot name="picknik_fridge" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <!-- urdf so that we can display the .dae of the gazebo world inside rviz -->
+  <material name="fridge_color"><color rgba="0.75 0.34 0.0 1"/></material>
+  <xacro:macro name="picknik_fridge" params="parent *origin">
+    <joint name="cabinet_joint" type="fixed">
+      <parent link="${parent}"/>
+      <child link="fridge"/>
+      <xacro:insert_block name="origin"/>
+    </joint>
+
+    <link name="fridge">
+      <visual>
+          <origin xyz="0 0 0" rpy="0 0 0"/>
+          <geometry>
+              <mesh filename="package://picknik_accessories/descriptions/furniture/fridge/fridge.stl"/>
+          </geometry>
+          <material name="fridge_color"/>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+            <mesh filename="package://picknik_accessories/descriptions/furniture/fridge/fridge.stl"/>
+        </geometry>
+      </collision>
+      <inertial>
+        <origin xyz="0.235 0.2 0.405" rpy="0 0 0"/>
+        <mass value="25"/>
+        <inertia  ixx="0.001" ixy="0.0"  ixz="0.0"
+                  iyy="0.001" iyz="0.0"
+                  izz="0.001"/>
+      </inertial>
+    </link>
+
+    <joint name="fridge_hinge_joint" type="fixed">
+      <parent link="fridge"/>
+      <child link="fridge_door"/>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <!-- <axis xyz="0 0 1"/> -->
+    </joint>
+
+    <link name="fridge_door">
+      <visual>
+          <origin xyz="0 0 0" rpy="0 0 0"/>
+          <geometry>
+              <mesh filename="package://picknik_accessories/descriptions/furniture/fridge_door.stl"/>
+          </geometry>
+          <material name="fridge_color"/>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+            <mesh filename="package://picknik_accessories/descriptions/furniture/fridge_door.stl"/>
+        </geometry>
+      </collision>
+      <inertial>
+        <origin xyz="-0.02 -0.235 0.405" rpy="0 0 0"/>
+        <mass value="25"/>
+        <inertia  ixx="0.001" ixy="0.0"  ixz="0.0"
+                  iyy="0.001" iyz="0.0"
+                  izz="0.001"/>
+      </inertial>
+    </link>
+
+
+  </xacro:macro>
+</robot>

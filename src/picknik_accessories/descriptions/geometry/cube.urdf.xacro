@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:macro name="cube" params="link_name connected_to length width height alpha
+   *origin">
+    <link name="${link_name}">
+      <visual>
+        <geometry>
+          <box size="${length} ${width} ${height} "/>
+        </geometry>
+        <material name="blue">
+          <color rgba="0 0 1 ${alpha}"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <box size="${length} ${width}  ${height} "/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="${link_name}" type="fixed">
+      <parent link="${connected_to}"/>
+      <child link = "${link_name}"/>
+      <xacro:insert_block name="origin"/>
+    </joint>
+  </xacro:macro>
+</robot>

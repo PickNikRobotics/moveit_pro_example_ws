@@ -1,6 +1,3 @@
-[submodule "src/picknik_accessories"]
-	path = src/picknik_accessories
-	url = https://github.com/PickNikRobotics/picknik_accessories.git
 [submodule "src/external_dependencies/Universal_Robots_ROS2_Description"]
 	path = src/external_dependencies/ur_description
 	url = https://github.com/PickNikRobotics/Universal_Robots_ROS2_Description.git
@@ -9,6 +6,9 @@
 	url = https://github.com/PickNikRobotics/clearpath_mecanum_drive_controller.git
 [submodule "src/external_dependencies/fanuc"]
 	path = src/external_dependencies/fanuc
+	url = https://github.com/PickNikRobotics/fanuc.git
+[submodule "src/picknik_accessories/src/dependencies/fanuc"]
+	path = src/picknik_accessories/src/dependencies/fanuc
 	url = https://github.com/PickNikRobotics/fanuc.git
 [submodule "src/external_dependencies/ros2_kortex_vision"]
 	path = src/external_dependencies/ros2_kortex_vision
