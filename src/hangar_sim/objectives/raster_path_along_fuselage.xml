@@ -185,13 +185,13 @@
              null space, so it does not help here.)
            - Coarse ik_cartesian_space_density (0.05) keeps the number of whole-body IK
              solves small - this is the dominant planning cost over a ~3 m stitched path.
-           - Larger blending_radius (0.05) rounds the corners at the contour seams so the
-             wrist does not have to exactly hit a pose whose tangent-based orientation flips
-             relative to its neighbor across a row change.-->
+           - blending_radius stays small (0.005): the contour points are intrinsically
+             dense (~0.025 m apart), and the planner requires neighbors to be farther
+             apart than 2 * blending_radius, so a large radius is rejected.-->
       <Action
         ID="PlanCartesianPath"
         acceleration_scale_factor="1.000000"
-        blending_radius="0.0500000"
+        blending_radius="0.0050000"
         ik_cartesian_space_density="0.050000"
         ik_joint_space_density="0.100000"
         joint_trajectory_msg="{joint_trajectory_msg}"
