@@ -316,11 +316,21 @@ def generate_launch_description():
         arguments=["0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "mj_world", "map"],
     )
 
+    # Static map→odom bootstrap: anchors 'odom' in the TF tree before MuJoCo finishes loading so
+    # bt_navigator can initialize without an "unconnected trees" TF error. Not used in slam mode
+    # because slam_toolbox owns and publishes map→odom dynamically.
+    static_tf_map_to_odom = Node(
+        package="tf2_ros",
+        executable="static_transform_publisher",
+        name="static_tf_map_to_odom",
+        output="log",
+        arguments=["0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "map", "odom"],
+        condition=IfCondition(PythonExpression(["not ", slam])),
+    )
+
     # Static TF connecting MoveIt's planning root ('world') to the simulation root ('mj_world').
     # The UI (pose-utils.ts) hardcodes 'world' as the reference frame for all user-clicked poses,
-    # so this link is required for nav2 goals to be transformable to 'map', and lets MoveIt
-    # locate the base link via 'world → mj_world → base_platform → ridgeback_base_link'
-    # instead of relying on virtual joint states (which are not published in sim).
+    # so this link is required for nav2 goals to be transformable to 'map'.
     static_tf_mj_world_to_world = Node(
         package="tf2_ros",
         executable="static_transform_publisher",
@@ -421,6 +431,7 @@ def generate_launch_description():
 
     ld.add_action(static_tf_world_to_map)
     ld.add_action(static_tf_mj_world_to_world)
+    ld.add_action(static_tf_map_to_odom)
     ld.add_action(sensor_qos_relay)
     ld.add_action(laser_filter_front_node)
     ld.add_action(laser_filter_rear_node)
