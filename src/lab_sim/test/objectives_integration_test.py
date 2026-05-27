@@ -66,7 +66,6 @@ skip_objectives = {
     "MPC Pose Tracking",
     "MPC Pose Tracking With Point Cloud Avoidance",
     "Octomap Example",  # Requires user input to clear the octomap.
-    "Pick 1 Pill Bottle with ML",
     "Pick All Bottles with AprilTags",
     "Pick All Pill Bottles",
     "Pick up Object",
