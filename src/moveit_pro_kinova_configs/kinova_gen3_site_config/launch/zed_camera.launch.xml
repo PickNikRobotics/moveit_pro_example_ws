@@ -2,11 +2,17 @@
 <!--
   Brings up a ZED 2i as a plain UVC RGB source via v4l2_camera.
   No ZED SDK / CUDA required. Publishes the full side-by-side frame
-  (left+right concatenated horizontally) under /scene_camera/color/*,
-  and cropped per-eye views under /scene_camera/left/* and
-  /scene_camera/right/*.
+  (left+right concatenated horizontally) under <namespace>/color/*,
+  and cropped per-eye views under <namespace>/left/* and
+  <namespace>/right/*.
+
+  Parameterized so it can be included once per physical camera. Each
+  ZED 2i enumerates two /dev/video nodes (streaming + metadata); use the
+  first node of each pair (e.g. /dev/video0 and /dev/video2).
 -->
 <launch>
+  <arg name="namespace" default="scene_camera" />
+  <arg name="frame_id" default="scene_camera_link" />
   <arg name="video_device" default="/dev/video0" />
   <arg name="image_width" default="2560" />
   <arg name="image_height" default="720" />
@@ -15,14 +21,14 @@
     pkg="v4l2_camera"
     exec="v4l2_camera_node"
     name="zed_v4l2"
-    namespace="scene_camera"
+    namespace="$(var namespace)"
     output="screen"
   >
     <param name="video_device" value="$(var video_device)" />
     <param name="pixel_format" value="YUYV" />
     <param name="output_encoding" value="rgb8" />
     <param name="image_size" value="[$(var image_width), $(var image_height)]" />
-    <param name="camera_frame_id" value="scene_camera_link" />
+    <param name="camera_frame_id" value="$(var frame_id)" />
 
     <remap from="image_raw" to="color/image_raw" />
     <remap from="camera_info" to="color/camera_info" />
@@ -32,15 +38,15 @@
     pkg="image_proc"
     exec="crop_decimate_node"
     name="crop_left_eye"
-    namespace="scene_camera"
+    namespace="$(var namespace)"
     output="screen"
   >
     <param name="offset_x" value="0" />
     <param name="offset_y" value="0" />
     <param name="width" value="1280" />
     <param name="height" value="720" />
-    <param name="qos_overrides./scene_camera/left/image_raw.publisher.reliability" value="reliable" />
-    <param name="qos_overrides./scene_camera/left/camera_info.publisher.reliability" value="reliable" />
+    <param name="qos_overrides./$(var namespace)/left/image_raw.publisher.reliability" value="reliable" />
+    <param name="qos_overrides./$(var namespace)/left/camera_info.publisher.reliability" value="reliable" />
     <remap from="in/image_raw" to="color/image_raw" />
     <remap from="in/camera_info" to="color/camera_info" />
     <remap from="out/image_raw" to="left/image_raw" />
@@ -51,15 +57,15 @@
     pkg="image_proc"
     exec="crop_decimate_node"
     name="crop_right_eye"
-    namespace="scene_camera"
+    namespace="$(var namespace)"
     output="screen"
   >
     <param name="offset_x" value="1280" />
     <param name="offset_y" value="0" />
     <param name="width" value="1280" />
     <param name="height" value="720" />
-    <param name="qos_overrides./scene_camera/right/image_raw.publisher.reliability" value="reliable" />
-    <param name="qos_overrides./scene_camera/right/camera_info.publisher.reliability" value="reliable" />
+    <param name="qos_overrides./$(var namespace)/right/image_raw.publisher.reliability" value="reliable" />
+    <param name="qos_overrides./$(var namespace)/right/camera_info.publisher.reliability" value="reliable" />
     <remap from="in/image_raw" to="color/image_raw" />
     <remap from="in/camera_info" to="color/camera_info" />
     <remap from="out/image_raw" to="right/image_raw" />
