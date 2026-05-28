@@ -7,6 +7,12 @@ based_on_package: "kinova_gen3_base_config"
 
 hardware:
   simulated: False
+  # Override the base config so the site-level persist launch file runs on real
+  # hardware. The site version launches the protective-stop manager plus the
+  # wrist (cameras.launch.xml) and ZED scene (zed_camera.launch.xml) cameras.
+  robot_driver_persist_launch_file:
+    package: "kinova_gen3_site_config"
+    path: "launch/robot_drivers_to_persist.launch.py"
   robot_description:
     urdf:
       package: "kinova_gen3_site_config"
