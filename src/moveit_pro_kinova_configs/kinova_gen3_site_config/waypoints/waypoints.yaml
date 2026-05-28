@@ -1,65 +1,279 @@
-- name: Home
+- description: ''
+  favorite: false
   joint_group_names:
-    - manipulator
+  - gripper
+  - manipulator
   joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - joint_1
+    - joint_2
+    - joint_3
+    - joint_4
+    - joint_5
+    - joint_6
+    - joint_7
+    position:
+    - 0.049519671535491944
+    - 0.19708260922892
+    - 0.47094631650321017
+    - -2.548751157017216
+    - -1.6361433757266068
+    - -0.23559494793720503
+    - -1.1426926489324414
+    - 1.022103649509217
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Above Pick
+- description: ''
+  favorite: false
+  joint_group_names:
+  - gripper
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - joint_1
+    - joint_2
+    - joint_3
+    - joint_4
+    - joint_5
+    - joint_6
+    - joint_7
+    position:
+    - 0.7923144355773927
+    - 0.3879384149340985
+    - 0.9536016202131171
+    - 2.5832137931033867
+    - -1.961391511232458
+    - -1.2916320634239948
+    - -1.0198724531479488
+    - 2.782598006014894
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Above Place
+- description: ''
+  favorite: false
+  joint_group_names:
+  - manipulator
+  joint_state:
+    effort: []
     header:
       frame_id: world
       stamp:
-        sec: 0
         nanosec: 0
-    name: [joint_1, joint_2, joint_3, joint_4, joint_5, joint_6, joint_7]
-    position: [7.2854474427322627e-05, 0.0060998872530424308, -3.1250605484909082, -2.5051932931762071, -2.7164243118882329e-05, 0.95966324117024648, 1.5699864595074029]
+        sec: 0
+    name:
+    - joint_1
+    - joint_2
+    - joint_3
+    - joint_4
+    - joint_5
+    - joint_6
+    - joint_7
+    position:
+    - 7.285447442732263e-05
+    - 0.006099887253042431
+    - -3.125060548490908
+    - -2.505193293176207
+    - -2.716424311888233e-05
+    - 0.9596632411702465
+    - 1.569986459507403
     velocity: []
-    effort: []
-- name: Place
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Home
+- description: ''
+  favorite: false
   joint_group_names:
-    - manipulator
+  - manipulator
   joint_state:
+    effort: []
     header:
       frame_id: world
       stamp:
-        sec: 0
         nanosec: 0
-    name: [joint_1, joint_2, joint_3, joint_4, joint_5, joint_6, joint_7]
-    position: [0.52290948292915906, 0.78910115573514905, -3.0436924550734994, -1.7162278254985983, -0.21909293655863848, -0.56602186649882569, 2.2964808259144789]
+        sec: 0
+    name:
+    - joint_1
+    - joint_2
+    - joint_3
+    - joint_4
+    - joint_5
+    - joint_6
+    - joint_7
+    position:
+    - -0.9400298184029365
+    - 0.6228331512416951
+    - -2.9856155696015962
+    - -2.439853168463331
+    - -0.6159651916855164
+    - -0.029422603723195273
+    - 1.3260459636622164
     velocity: []
-    effort: []
-- name: Table
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Pick
+- description: ''
+  favorite: false
   joint_group_names:
-    - manipulator
+  - manipulator
   joint_state:
+    effort: []
     header:
       frame_id: world
       stamp:
-        sec: 0
         nanosec: 0
-    name: [joint_1, joint_2, joint_3, joint_4, joint_5, joint_6, joint_7]
-    position: [-2.4501082028116627e-05, 0.26205644942336931, -3.1415215471886881, -2.269061185647133, -4.1545313004931472e-05, 0.95981743819736209, 1.5707570451688178]
+        sec: 0
+    name:
+    - joint_1
+    - joint_2
+    - joint_3
+    - joint_4
+    - joint_5
+    - joint_6
+    - joint_7
+    position:
+    - 0.5229094829291591
+    - 0.789101155735149
+    - -3.0436924550734994
+    - -1.7162278254985983
+    - -0.21909293655863848
+    - -0.5660218664988257
+    - 2.296480825914479
     velocity: []
-    effort: []
-- name: Retract
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Place
+- description: ''
+  favorite: false
   joint_group_names:
-    - manipulator
+  - manipulator
   joint_state:
+    effort: []
     header:
       frame_id: world
       stamp:
-        sec: 0
         nanosec: 0
-    name: [joint_1, joint_2, joint_3, joint_4, joint_5, joint_6, joint_7]
-    position: [8.15790740323921e-05, -0.38856425779026699, -3.1299567701550188, -2.5801602125975021, -3.0892668645421402e-05, -0.73089870221784903, 1.5699875247718389]
+        sec: 0
+    name:
+    - joint_1
+    - joint_2
+    - joint_3
+    - joint_4
+    - joint_5
+    - joint_6
+    - joint_7
+    position:
+    - 8.15790740323921e-05
+    - -0.388564257790267
+    - -3.129956770155019
+    - -2.580160212597502
+    - -3.08926686454214e-05
+    - -0.730898702217849
+    - 1.569987524771839
     velocity: []
-    effort: []
-- name: Pick
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Retract
+- description: ''
+  favorite: false
   joint_group_names:
-    - manipulator
+  - manipulator
   joint_state:
+    effort: []
     header:
       frame_id: world
       stamp:
-        sec: 0
         nanosec: 0
-    name: [joint_1, joint_2, joint_3, joint_4, joint_5, joint_6, joint_7]
-    position: [-0.94002981840293653, 0.62283315124169514, -2.9856155696015962, -2.4398531684633311, -0.61596519168551644, -0.029422603723195273, 1.3260459636622164]
+        sec: 0
+    name:
+    - joint_1
+    - joint_2
+    - joint_3
+    - joint_4
+    - joint_5
+    - joint_6
+    - joint_7
+    position:
+    - -2.4501082028116627e-05
+    - 0.2620564494233693
+    - -3.141521547188688
+    - -2.269061185647133
+    - -4.154531300493147e-05
+    - 0.9598174381973621
+    - 1.5707570451688178
     velocity: []
-    effort: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Table

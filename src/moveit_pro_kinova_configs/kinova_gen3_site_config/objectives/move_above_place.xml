@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Move Above Place">
+  <BehaviorTree
+    ID="Move Above Place"
+    _description="Move the arm to the 'Above Place' waypoint."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="root">
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        waypoint_name="Above Place"
+        joint_group_name="manipulator"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Move Above Place">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Teleop" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
