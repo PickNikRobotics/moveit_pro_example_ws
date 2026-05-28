@@ -132,7 +132,19 @@
     <joint type="free" damping="1" />
   </body>
   <body name="stirrer" pos="0.605 0.761 0.473827" euler="0 0 0">
-    <freejoint />
+    <joint type="free" damping="1" />
+    <!-- Explicit inertial keeps the burner light enough to be pushed by the gripper.
+         Without this, MuJoCo auto-infers ~9.7 kg from the 0.2x0.4x0.074 m collision box
+         at default density 1000 kg/m^3, and static friction (per MAX-rule combine
+         with the desk's default friction=1.0) pins it under any vertical-dominant
+         gripper push. priority="1" on the collision geom below makes the burner's
+         lower friction override the desk's, so the burner can actually slide.
+         The diaginertia is intentionally non-homogeneous: a real stirrer's mass
+         is biased toward the base (motor + heavy stand) under a thin top plate,
+         so xx/yy are symmetric and well below the homogeneous-box values
+         (~0.0207, ~0.00569, ~0.025 for 1.5 kg, 0.2x0.4x0.074 m). Do not
+         regenerate these from the collision box extents. -->
+    <inertial pos="0 0 0.02" mass="1.5" diaginertia="0.008 0.008 0.012" />
     <geom
       material="stirrer"
       mesh="stirrer"
@@ -140,6 +152,7 @@
       contype="0"
       conaffinity="0"
       group="2"
+      mass="0"
     />
     <geom
       class="collision"
@@ -147,6 +160,8 @@
       pos="0 0 0"
       size="0.1 0.2 0.037"
       group="4"
+      friction="0.3 0.005 0.0001"
+      priority="1"
     />
   </body>
   <body name="test_tubes_stand" pos="0.3 0.85 0.472476" euler="0 0 0">
