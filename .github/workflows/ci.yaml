@@ -23,7 +23,14 @@ jobs:
     with:
       image_tag: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name }}
       colcon_test_args: "--executor sequential"
-      runner: "picknik-16-amd64"
+      # GPU runner + enable_gpu are required so MuJoCo's EGL offscreen
+      # rendering can attach to a real GPU instead of falling back to slow
+      # software rasterization on the CPU-only picknik-16-amd64 runner — the
+      # integration test exercises camera-bearing scenes (apriltag, perception).
+      # enable_gpu also switches the container image to the -cuda12.6-cudnn9
+      # variant, so a pull failure here points at a missing CUDA image, not EGL.
+      runner: "picknik-16-amd64-gpu"
+      enable_gpu: true
       # Coarsen MuJoCo timestep on CI (default 0.002s = 500Hz) so the heavier 3.6.0
       # constraint solver stays at-or-under realtime on CI runners. See
       # PickNikRobotics/moveit_pro#18534 for the underlying flake history.
