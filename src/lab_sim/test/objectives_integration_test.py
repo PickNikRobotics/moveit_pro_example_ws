@@ -50,7 +50,6 @@ cancel_objectives = {
     "Plan and Save Trajectory",
     "Record and Replay Scanning Motion",
     "Stationary Admittance",
-    "Teleoperate",
 }
 
 # Objectives to skip entirely from integration testing
@@ -62,6 +61,7 @@ skip_objectives = {
     "ML Find Bottles on Table from Image Exemplar",  # Skipped because it looks for a file on a home path
     "ML Segment Image",
     "ML Segment Image Loop",
+    "ML Segment Point Cloud",  # Requires GPU for ONNX inference; falls back to CPU and times out waiting for /wrist_camera/points on CI runners without a camera warmup delay.
     "ML Segment Point Cloud from Clicked Point",
     "MPC Pose Tracking",
     "MPC Pose Tracking With Point Cloud Avoidance",
@@ -80,6 +80,10 @@ skip_objectives = {
     "Stitch Multiple Point Clouds Together",
     "Marker Visualization Example",  # Server not available for GetTextFromUser
     "Register CAD Part",  # TODO: remove this for 9.2.0 and fix it correctly
+    # DoTeleoperateAction immediately rejects the goal when no UI tab is subscribed to
+    # /moveit_pro_ui/do_teleoperate/goal. The objective never reaches RUNNING status, so
+    # the cancel flow times out. This is a headless-CI limitation, not a bug in the objective.
+    "Teleoperate",
 }
 
 
