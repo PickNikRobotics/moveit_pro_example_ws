@@ -1,0 +1,54 @@
+# Delete pr-<num>/ from the gh-pages branch when a PR closes (merged or
+# abandoned). Bounds gh-pages growth to roughly (open PRs × runs per PR)
+# instead of accumulating every report ever produced.
+#
+# Fork PRs never reach gh-pages in the first place (their token is read-only
+# and the publish-and-comment job's push fails), so this workflow is a no-op
+# for them — the cleanup step exits early when pr-<num>/ is absent.
+
+name: Cleanup gh-pages reports on PR close
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  cleanup-reports:
+    runs-on: ubuntu-22.04
+    # Match the publish-and-comment concurrency group in ci.yaml so an
+    # in-flight publish completes before cleanup runs (or vice versa). This
+    # avoids cleanup deleting pr-<num>/ while publish is in the middle of
+    # writing a new run-<id>/ subtree, which would result in a fast-forward
+    # failure or a partially-restored directory.
+    concurrency:
+      group: gh-pages-pr-${{ github.event.pull_request.number }}
+      cancel-in-progress: false
+    permissions:
+      # contents:write is required to push the removal commit to gh-pages.
+      # Same broad-scope caveat as the publish-and-comment job in ci.yaml:
+      # GitHub's permission model can't scope write access to a single branch.
+      contents: write
+    steps:
+      - name: Check out gh-pages
+        # gh-pages may not exist yet on a brand-new repo where no successful
+        # report deploy has happened. continue-on-error keeps the workflow
+        # from showing a red X on every early-PR close before the first deploy.
+        continue-on-error: true
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: gh-pages
+          fetch-depth: 1
+      - name: Remove pr-<num>/ subtree
+        env:
+          PR_NUM: ${{ github.event.number }}
+        run: |
+          set -euo pipefail
+          if [ ! -d "pr-${PR_NUM}" ]; then
+            echo "No pr-${PR_NUM}/ directory in gh-pages; nothing to clean up."
+            exit 0
+          fi
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git rm -rf "pr-${PR_NUM}"
+          git commit -m "chore(ci): remove gh-pages reports for closed PR #${PR_NUM}"
+          git push origin gh-pages

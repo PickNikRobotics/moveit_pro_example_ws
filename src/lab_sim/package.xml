@@ -41,6 +41,8 @@
   <test_depend>ament_cmake_lint_cmake</test_depend>
   <test_depend>picknik_ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
+  <test_depend>rclpy</test_depend>
+  <test_depend>rcl_interfaces</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
