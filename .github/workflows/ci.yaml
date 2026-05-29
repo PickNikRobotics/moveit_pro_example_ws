@@ -19,7 +19,7 @@ concurrency:
 
 jobs:
   integration-test-in-studio-container:
-    uses: PickNikRobotics/moveit_pro_ci/.github/workflows/workspace_integration_test.yaml@d490a1dfe91758dd1da3277fbd47b5b1efe5e0c3 # v0.3.1
+    uses: PickNikRobotics/moveit_pro_ci/.github/workflows/workspace_integration_test.yaml@baf17129fd55f858b7965fb971fa333cf45463cb # v0.3.2
     with:
       image_tag: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name }}
       colcon_test_args: "--executor sequential"
