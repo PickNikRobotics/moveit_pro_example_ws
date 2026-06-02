@@ -21,7 +21,8 @@ state_estimator:
       process_noise_diagonal: [1.0, 1.0, 0.0001, 0.0001, 0.0001, 0.5, 0.5, 0.5, 0.0001, 0.0001, 0.0001, 0.25, 0.00001, 0.00001, 0.00001]
       # Exponential velocity decay rate (1/s). Predicted velocity decays toward zero when the
       # odometry source goes silent (e.g., after a nav2 controller deactivates), preventing
-      # indefinite drift. Set to 0.0 to disable. With k=1.0, velocity halves in ~0.7s.
+      # indefinite drift. Set to 0.0 to disable. k=1.0 chosen so velocity is ~95% decayed
+      # within 3s — long enough to not affect normal driving, short enough to kill post-nav2 drift.
       velocity_decay: 1.0
 
     sensor_models:
