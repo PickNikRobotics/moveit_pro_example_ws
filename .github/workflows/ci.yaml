@@ -31,13 +31,261 @@ jobs:
       # variant, so a pull failure here points at a missing CUDA image, not EGL.
       runner: "picknik-16-amd64-gpu"
       enable_gpu: true
-      # Coarsen MuJoCo timestep on CI (default 0.002s = 500Hz) so the heavier 3.6.0
-      # constraint solver stays at-or-under realtime on CI runners. See
+      # Re-assert MuJoCo timestep on CI as a backstop. Scene files in this repo
+      # are standardized to 0.003s, but this override catches any future scene
+      # whose include chain bypasses that standard, keeping the heavier 3.6.0
+      # constraint solver at-or-under realtime on CI runners. See
       # PickNikRobotics/moveit_pro#18534 for the underlying flake history.
       mujoco_ci_timestep: "0.003"
       use_ccache: true
     secrets:
       moveit_license_key: ${{ secrets.STUDIO_CI_LICENSE_KEY }}
+
+  # Turn the test-results artifact into a single-file HTML report (status,
+  # timings, per-test ROS log slice with colors). Matrix on ros_distro because
+  # the upstream workflow uploads one artifact per distro. Runs whether the
+  # integration test passed, failed, or timed out -- the report is most useful
+  # for failure post-mortem.
+  render-report:
+    needs: integration-test-in-studio-container
+    # Run on success and failure, not on cancelled or skipped — `!= cancelled`
+    # alone would also fire on skipped, where no artifact was uploaded.
+    if: always() && (needs.integration-test-in-studio-container.result == 'success' || needs.integration-test-in-studio-container.result == 'failure')
+    runs-on: ubuntu-22.04
+    # Least privilege: this job only downloads/uploads artifacts and never
+    # writes to the repo, so it has no need for the default read-write token.
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        ros_distro: [humble, jazzy]
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      # The artifact name comes from workspace_integration_test.yaml — the
+      # double dash is the literal `test-results-${image_tag_suffix}-${distro}`
+      # template with an empty image_tag_suffix.
+      # continue-on-error so an early integration-test crash (no artifact
+      # uploaded) still lets render-report exit cleanly via the [-z XUNIT]
+      # guard below instead of hard-failing the matrix job.
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        continue-on-error: true
+        with:
+          name: test-results--${{ matrix.ros_distro }}
+          path: artifacts/
+      - name: Render HTML report
+        id: render
+        run: |
+          set -euo pipefail
+          # Pick the integration test xunit specifically. The artifact contains
+          # ~40 xunit files (lint_cmake / copyright / xmllint / etc., each with
+          # a single trivial testcase); `find ... | head -1` was grabbing one
+          # of those alphabetically and producing an empty-looking report.
+          XUNIT=""
+          if [ -d artifacts ]; then
+            XUNIT=$(find artifacts -name 'objectives_integration_test.xunit.xml' 2>/dev/null | head -1 || true)
+          fi
+          if [ -z "${XUNIT}" ]; then
+            echo "No objectives_integration_test.xunit.xml found in artifact; nothing to render."
+            echo "rendered=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "Rendering ${XUNIT}"
+          python3 .github/scripts/render_report.py "${XUNIT}" report.html
+          # Summary stats so publish-and-comment can pick the per-distro icon
+          # and decide whether to post a comment at all.
+          XUNIT="${XUNIT}" python3 - <<'PY'
+          import json, os, xml.etree.ElementTree as ET
+          try:
+              root = ET.parse(os.environ['XUNIT']).getroot()
+              suites = root.findall('testsuite') if root.tag == 'testsuites' else [root]
+              totals = {'tests': 0, 'failures': 0, 'errors': 0, 'skipped': 0}
+              for s in suites:
+                  for k in totals:
+                      totals[k] += int(s.attrib.get(k, '0') or '0')
+              # Clamp to 0 — xunit attrs from third-party runners occasionally
+              # report skipped > tests or similar inconsistencies, which would
+              # otherwise produce a negative "passed" count in the comment.
+              totals['passed'] = max(0, totals['tests'] - totals['failures'] - totals['errors'] - totals['skipped'])
+              totals['status'] = 'failed' if (totals['failures'] + totals['errors']) > 0 else 'passed'
+          except (ET.ParseError, OSError, ValueError) as e:
+              # report.html already rendered, so surface the parse failure via
+              # status=unknown rather than letting the step fail (and letting
+              # downstream treat the distro as wholly missing).
+              totals = {'status': 'unknown', 'error': str(e)}
+          with open('status.json', 'w') as f:
+              json.dump(totals, f)
+          print(totals)
+          PY
+          echo "rendered=true" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: steps.render.outputs.rendered == 'true'
+        with:
+          name: integration-test-report-${{ matrix.ros_distro }}
+          path: |
+            report.html
+            status.json
+          retention-days: 15
+
+  # Publish per-distro reports to GitHub Pages under pr-<num>/run-<run_id>/<distro>/
+  # and post a fresh PR comment per run (not sticky) with direct URLs to the HTML
+  # pages. Single job (not matrixed) so the two distro artifacts are deployed
+  # together — avoids gh-pages push races between parallel matrix jobs.
+  publish-and-comment:
+    needs: render-report
+    # Skip on fork PRs: a fork's GITHUB_TOKEN is read-only regardless of the
+    # permissions: block below, so the gh-pages push and PR comment would both
+    # hard-fail and leave a spurious red X on every external-contributor PR.
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && always() && (needs.render-report.result == 'success' || needs.render-report.result == 'failure')
+    runs-on: ubuntu-22.04
+    # Serialize gh-pages writes per PR so this job doesn't race with the
+    # cleanup-pr-reports workflow on `pull_request: closed`. cancel-in-progress
+    # stays false — we don't want a mid-flight publish silently killed by an
+    # untimely close event.
+    concurrency:
+      group: gh-pages-pr-${{ github.event.pull_request.number }}
+      cancel-in-progress: false
+    permissions:
+      pull-requests: write
+      # contents:write is required by peaceiris/actions-gh-pages below to push
+      # to the gh-pages branch. GitHub's permission model can't scope write
+      # access to a single branch, so the broader grant is unavoidable here.
+      contents: write
+    steps:
+      # Explicit per-distro downloads into named paths rather than `pattern:`.
+      # actions/download-artifact@v8 with pattern + single match extracts files
+      # directly to `path:` instead of `path:/<artifact-name>/`, breaking the
+      # `reports/integration-test-report-<distro>/` layout the layout step
+      # expects. Per-distro downloads sidestep that ambiguity entirely.
+      # continue-on-error so a missing artifact (distro's render emitted
+      # rendered=false) doesn't fail the job — the layout step's Python flags
+      # the distro as status=missing for the comment.
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        continue-on-error: true
+        with:
+          name: integration-test-report-humble
+          path: reports/integration-test-report-humble/
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        continue-on-error: true
+        with:
+          name: integration-test-report-jazzy
+          path: reports/integration-test-report-jazzy/
+      - name: Lay out per-distro reports
+        id: layout
+        run: |
+          set -euo pipefail
+          PR_NUM="${{ github.event.number }}"
+          RUN_ID="${{ github.run_id }}"
+          BASE="pr-${PR_NUM}/run-${RUN_ID}"
+          mkdir -p "publish/${BASE}"
+          # .nojekyll prevents Pages from running Jekyll, which would 404 on
+          # paths containing underscores (e.g. ros2_kortex).
+          touch publish/.nojekyll
+          # nullglob keeps the loop a no-op when zero artifacts were downloaded
+          # (e.g. render-report skipped entirely), instead of running once with
+          # the literal pattern and silently failing the -f check.
+          shopt -s nullglob
+          AVAILABLE=()
+          for d in reports/integration-test-report-*/; do
+            distro="${d#reports/integration-test-report-}"
+            distro="${distro%/}"
+            if [ -f "${d}report.html" ]; then
+              mkdir -p "publish/${BASE}/${distro}"
+              cp "${d}report.html" "publish/${BASE}/${distro}/report.html"
+              AVAILABLE+=("${distro}")
+            fi
+          done
+          # Build a per-distro status map for the comment step. Distros that
+          # were expected but produced no status.json (e.g. studio container
+          # crashed before the test ran) get status=missing so the comment can
+          # still surface them with a ❌.
+          STATUS_MAP=$(python3 - <<'PY'
+          import json, pathlib
+          # Keep in sync with strategy.matrix.ros_distro in the render-report
+          # job above. Used to detect distros that produced no artifact at all
+          # (container crash before xunit upload) so the comment can still flag
+          # them with ❌ instead of silently omitting them.
+          expected = ['humble', 'jazzy']
+          out = {}
+          for distro in expected:
+              p = pathlib.Path(f'reports/integration-test-report-{distro}/status.json')
+              if p.exists():
+                  out[distro] = json.loads(p.read_text())
+              else:
+                  out[distro] = {'status': 'missing'}
+          print(json.dumps(out))
+          PY
+          )
+          echo "Status map: ${STATUS_MAP}"
+          echo "base=${BASE}" >> "$GITHUB_OUTPUT"
+          echo "distros=${AVAILABLE[*]}" >> "$GITHUB_OUTPUT"
+          {
+            echo "status_map<<EOF"
+            echo "${STATUS_MAP}"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+          if [ ${#AVAILABLE[@]} -eq 0 ]; then
+            echo "any=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "any=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Deploy to GitHub Pages
+        if: steps.layout.outputs.any == 'true'
+        uses: peaceiris/actions-gh-pages@4f9cc6602d3f66b9c108549d475ec49e8ef4d45e # v4.0.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: ./publish
+          # keep_files=true so each run only adds its own pr-<num>/run-<id>/
+          # subtree instead of wiping prior reports. A cleanup workflow can
+          # prune pr-<num>/ on PR close if the branch ever gets too big.
+          keep_files: true
+      - name: Post PR comment
+        # Always post when reports exist — a per-run comment is the canonical
+        # status record for that run, including all-green runs. Comments are
+        # createComment (not sticky), so each run posts its own line; the
+        # most recent comment always reflects the current HEAD's actual
+        # state instead of leaving a stale failure-from-a-prior-run as the
+        # last word in the PR timeline.
+        if: steps.layout.outputs.any == 'true'
+        uses: actions/github-script@d746ffe35508b1917358783b479e04febd2b8f71 # v9.0.0
+        env:
+          BASE: ${{ steps.layout.outputs.base }}
+          STATUS_MAP: ${{ steps.layout.outputs.status_map }}
+        with:
+          script: |
+            const base = process.env.BASE;
+            const statusMap = JSON.parse(process.env.STATUS_MAP);
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const runUrl = `https://github.com/${owner}/${repo}/actions/runs/${context.runId}`;
+            const pagesUrl = (distro) =>
+              `https://${owner.toLowerCase()}.github.io/${repo.toLowerCase()}/${base}/${distro}/report.html`;
+            const lines = Object.entries(statusMap).map(([distro, s]) => {
+              if (s.status === 'missing') {
+                return `- ❌ **${distro}**: no report produced — see [run logs](${runUrl})`;
+              }
+              if (s.status === 'unknown') {
+                return `- ⚠️ **${distro}**: report parse failed — see [run logs](${runUrl})`;
+              }
+              const icon = s.status === 'passed' ? '✅' : '❌';
+              const failed = (s.failures || 0) + (s.errors || 0);
+              const counts = failed > 0
+                ? `${failed} failed, ${s.passed} passed`
+                : `${s.passed} passed`;
+              return `- ${icon} **${distro}**: <a href="${pagesUrl(distro)}" target="_blank" rel="noopener noreferrer">view HTML report</a> — ${counts}`;
+            });
+            const body = [
+              '### <img src="https://docs.picknik.ai/img/favicon.ico" width="20" height="20" alt=""> MoveIt Pro Example WS - Objectives Integration Test Report',
+              '',
+              lines.join('\n'),
+            ].join('\n');
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: context.issue.number,
+              body,
+            });
 
   ensure-no-ssh-in-gitmodules:
     name: Ensure no SSH URLs in .gitmodules

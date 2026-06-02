@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>MoveIt Pro Objective Integration Tests</title>
+<link rel="icon" href="https://docs.picknik.ai/img/favicon.ico" type="image/x-icon">
+<style>
+  * {{ box-sizing: border-box; }}
+  body {{
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #1f2328;
+    background: #f6f8fa;
+    line-height: 1.5;
+  }}
+  header {{ background: #fff; border-bottom: 1px solid #d0d7de; padding: 20px 32px; }}
+  h1 {{ margin: 0 0 4px; font-size: 20px; font-weight: 600; }}
+  .meta {{ color: #57606a; font-size: 13px; }}
+  .meta span + span:before {{ content: " · "; }}
+  main {{ max-width: 1800px; margin: 24px auto; padding: 0 32px; width: 95%; }}
+  .stats {{
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }}
+  .stat {{
+    background: #fff; border: 1px solid #d0d7de; border-radius: 8px;
+    padding: 16px; text-align: center;
+  }}
+  .stat-count {{ font-size: 28px; font-weight: 600; }}
+  .stat-label {{ font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: #57606a; margin-top: 4px; }}
+  .stat-passed .stat-count {{ color: #1a7f37; }}
+  .stat-failed .stat-count {{ color: #cf222e; }}
+  .stat-skipped .stat-count {{ color: #6e7781; }}
+  .stat-total .stat-count {{ color: #1f2328; }}
+  .controls {{
+    background: #fff; border: 1px solid #d0d7de; border-radius: 8px;
+    padding: 12px 16px; margin-bottom: 16px;
+    display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+  }}
+  .filter-btn {{
+    border: 1px solid #d0d7de; background: #f6f8fa;
+    padding: 4px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; color: #24292f;
+  }}
+  .filter-btn.active {{ background: #1f2328; color: #fff; border-color: #1f2328; }}
+  .filter-btn:hover {{ background: #eaeef2; }}
+  .filter-btn.active:hover {{ background: #1f2328; }}
+  input[type=search] {{
+    flex: 1; min-width: 200px;
+    border: 1px solid #d0d7de; border-radius: 6px;
+    padding: 5px 10px; font-size: 13px; font-family: inherit;
+  }}
+  .toggle {{
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 12px; color: #57606a; cursor: pointer; user-select: none;
+    padding: 4px 10px; border: 1px solid #d0d7de; border-radius: 6px; background: #f6f8fa;
+  }}
+  .toggle:hover {{ background: #eaeef2; }}
+  .toggle input {{ margin: 0; }}
+  body.hide-info .log-info, body.hide-info .log-debug {{ display: none; }}
+  .group {{ background: #fff; border: 1px solid #d0d7de; border-radius: 8px; margin-bottom: 16px; overflow: hidden; }}
+  .group-failed  {{ border-left: 4px solid #cf222e; }}
+  .group-passed  {{ border-left: 4px solid #1a7f37; }}
+  .group-skipped {{ border-left: 4px solid #d0d7de; }}
+  .group-header {{
+    padding: 10px 16px; background: #f6f8fa; border-bottom: 1px solid #d0d7de;
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 16px; flex-wrap: wrap; cursor: pointer; user-select: none;
+  }}
+  .group-header:hover {{ background: #eaeef2; }}
+  .group-left {{ display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; }}
+  .chevron {{
+    flex-shrink: 0; color: #57606a; font-size: 10px;
+    transition: transform 0.15s ease; display: inline-block; width: 12px;
+  }}
+  .group.collapsed .chevron {{ transform: rotate(-90deg); }}
+  .group.collapsed table {{ display: none; }}
+  .group.collapsed {{ border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; }}
+  .group.collapsed .group-header {{ border-bottom: none; }}
+  .group-path {{ font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; color: #57606a; word-break: break-all; }}
+  .group-chips {{ display: flex; gap: 6px; flex-shrink: 0; }}
+  .chip {{ display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 11px; font-weight: 600; }}
+  .chip-passed  {{ background: #dafbe1; color: #1a7f37; }}
+  .chip-failed  {{ background: #ffebe9; color: #cf222e; }}
+  .chip-skipped {{ background: #eaeef2; color: #6e7781; }}
+  table {{ width: 100%; border-collapse: collapse; font-size: 13px; }}
+  td {{ padding: 6px 16px; border-bottom: 1px solid #eaeef2; }}
+  tr:last-child td {{ border-bottom: none; }}
+  tr:hover {{ background: #f6f8fa; }}
+  tr.details:hover {{ background: #fff; }}
+  tr.details td {{ padding: 0; background: #fafbfc; }}
+
+  /* Log slice rendering */
+  .logs {{
+    background: #0d1117; color: #c9d1d9;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11px;
+    max-height: 720px; overflow-y: auto; padding: 0;
+  }}
+  .log-line {{
+    display: grid;
+    grid-template-columns: 64px 60px 220px 1fr;
+    gap: 12px; padding: 2px 16px;
+    border-left: 3px solid transparent;
+  }}
+  .log-line:hover {{ background: rgba(255,255,255,0.04); }}
+  .log-ts    {{ color: #6e7681; text-align: right; }}
+  .log-level {{ font-weight: 600; }}
+  .log-node  {{ color: #79c0ff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }}
+  .log-msg   {{ color: #c9d1d9; white-space: pre-wrap; word-break: break-word; }}
+  .log-count {{
+    display: inline-block; margin-left: 8px;
+    background: rgba(255,255,255,0.12); color: #c9d1d9;
+    padding: 0 6px; border-radius: 8px;
+    font-size: 10px; font-weight: 600;
+  }}
+  .log-error, .log-fatal {{
+    background: rgba(207, 34, 46, 0.18);
+    border-left-color: #ff7b72;
+  }}
+  .log-error .log-level, .log-fatal .log-level {{ color: #ff7b72; }}
+  .log-warn {{
+    background: rgba(187, 128, 9, 0.16);
+    border-left-color: #d29922;
+  }}
+  .log-warn  .log-level {{ color: #d29922; }}
+  .log-info  .log-level {{ color: #56d364; }}
+  .log-debug {{ color: #6e7681; }}
+  .log-debug .log-level {{ color: #6e7681; }}
+  .logs-empty {{
+    padding: 16px; color: #6e7781; font-size: 12px; background: #fafbfc;
+    font-style: italic;
+  }}
+
+  .status-cell {{ width: 110px; text-align: center; }}
+  .badge {{ display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; white-space: nowrap; }}
+  .badge-passed  {{ background: #dafbe1; color: #1a7f37; }}
+  .badge-failed  {{ background: #ffebe9; color: #cf222e; }}
+  .badge-error   {{ background: #ffebe9; color: #cf222e; }}
+  .badge-skipped {{ background: #eaeef2; color: #6e7781; }}
+  .fname {{ font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; color: #6e7781; }}
+  .obj-name {{ font-weight: 500; color: #0969da; }}
+  .obj-missing {{ color: #8c959f; font-weight: 400; }}
+  .time {{ font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; color: #57606a; text-align: right; width: 70px; }}
+  .msg {{ color: #57606a; font-size: 12px; }}
+  .msg-skipped {{ color: #8c959f; font-style: italic; }}
+  .msg-empty {{ color: #8c959f; font-style: italic; }}
+  .sum-err  {{ color: #cf222e; font-weight: 600; }}
+  .sum-warn {{ color: #9a6700; font-weight: 600; }}
+  .sum-info {{ color: #6e7781; }}
+  .more {{ color: #0969da; font-weight: 500; }}
+  .group.hidden {{ display: none; }}
+</style>
+</head>
+<body>
+<header>
+  <h1>MoveIt Pro Objective Integration Tests</h1>
+  <div class="meta">
+    <span>{total} tests</span>
+    <span>{duration_str} total</span>
+    <span>{timestamp_str}</span>
+    <span>{hostname_esc}</span>
+    <span>{log_line_count:,} log lines indexed (rosout + launch)</span>
+  </div>
+</header>
+<main>
+  <div class="stats">
+    <div class="stat stat-total"><div class="stat-count">{total}</div><div class="stat-label">Total objective tests</div></div>
+    <div class="stat stat-passed"><div class="stat-count">{passed}</div><div class="stat-label">Objectives passed</div></div>
+    <div class="stat stat-failed"><div class="stat-count">{failed_total}</div><div class="stat-label">Objectives failed</div></div>
+    <div class="stat stat-skipped"><div class="stat-count">{skipped}</div><div class="stat-label">Objectives skipped</div></div>
+    <div class="stat stat-total"><div class="stat-count">{avg_exec_time:.1f}s</div><div class="stat-label">Avg test time</div></div>
+    <div class="stat stat-total"><div class="stat-count">{pass_rate:.0f}%</div><div class="stat-label">Objective pass rate</div></div>
+  </div>
+  <div class="controls">
+    <button class="filter-btn{all_active}" data-filter="all">All</button>
+    <button class="filter-btn{failed_active}" data-filter="failed">Failed</button>
+    <button class="filter-btn" data-filter="passed">Passed</button>
+    <button class="filter-btn" data-filter="skipped">Skipped</button>
+    <input type="search" id="search" placeholder="Filter by name…">
+    <label class="toggle"><input type="checkbox" id="show-info" checked> Show INFO/DEBUG</label>
+  </div>
+  {sections_html}
+</main>
+<script>
+  const buttons = document.querySelectorAll('.filter-btn');
+  const search = document.getElementById('search');
+  let currentFilter = '{default_filter}';
+
+  function apply() {{
+    const q = search.value.toLowerCase();
+    document.querySelectorAll('.group').forEach(group => {{
+      let visible = 0;
+      group.querySelectorAll('tbody tr:not(.details)').forEach(row => {{
+        const status = row.dataset.status;
+        const name = row.dataset.name;
+        const matchFilter = currentFilter === 'all' || (currentFilter === 'failed' ? (status === 'failed' || status === 'error') : status === currentFilter);
+        const matchSearch = !q || name.includes(q);
+        const show = matchFilter && matchSearch;
+        row.style.display = show ? '' : 'none';
+        const details = row.nextElementSibling;
+        if (details && details.classList.contains('details')) {{
+          if (!show) {{ details.hidden = true; }}
+          details.style.display = show ? '' : 'none';
+        }}
+        if (show) visible++;
+      }});
+      group.classList.toggle('hidden', visible === 0);
+    }});
+  }}
+
+  buttons.forEach(b => b.addEventListener('click', () => {{
+    buttons.forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    currentFilter = b.dataset.filter;
+    apply();
+  }}));
+  search.addEventListener('input', apply);
+
+  const showInfo = document.getElementById('show-info');
+  // Sync the body's hide-info class to the checkbox state on initial render
+  // (and on subsequent change). When checked, full per-objective context is
+  // visible by default — INFO/DEBUG/WARN/ERROR/FATAL — which is what we want
+  // when triaging a failing test.
+  document.body.classList.toggle('hide-info', !showInfo.checked);
+  showInfo.addEventListener('change', () => {{
+    document.body.classList.toggle('hide-info', !showInfo.checked);
+  }});
+
+  // Apply the default filter to the test rows on initial load. Without this,
+  // the active button is visually highlighted but the apply() logic that
+  // hides non-matching rows hasn't run yet, so non-matching rows stay
+  // visible until the user clicks a filter button.
+  apply();
+</script>
+</body>
+</html>
