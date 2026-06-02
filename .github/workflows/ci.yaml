@@ -52,6 +52,10 @@ jobs:
     # alone would also fire on skipped, where no artifact was uploaded.
     if: always() && (needs.integration-test-in-studio-container.result == 'success' || needs.integration-test-in-studio-container.result == 'failure')
     runs-on: ubuntu-22.04
+    # Least privilege: this job only downloads/uploads artifacts and never
+    # writes to the repo, so it has no need for the default read-write token.
+    permissions:
+      contents: read
     strategy:
       fail-fast: false
       matrix:
@@ -129,7 +133,10 @@ jobs:
   # together — avoids gh-pages push races between parallel matrix jobs.
   publish-and-comment:
     needs: render-report
-    if: github.event_name == 'pull_request' && always() && (needs.render-report.result == 'success' || needs.render-report.result == 'failure')
+    # Skip on fork PRs: a fork's GITHUB_TOKEN is read-only regardless of the
+    # permissions: block below, so the gh-pages push and PR comment would both
+    # hard-fail and leave a spurious red X on every external-contributor PR.
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && always() && (needs.render-report.result == 'success' || needs.render-report.result == 'failure')
     runs-on: ubuntu-22.04
     # Serialize gh-pages writes per PR so this job doesn't race with the
     # cleanup-pr-reports workflow on `pull_request: closed`. cancel-in-progress

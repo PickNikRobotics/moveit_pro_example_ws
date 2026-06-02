@@ -51,4 +51,18 @@ jobs:
           git config user.name "github-actions[bot]"
           git rm -rf "pr-${PR_NUM}"
           git commit -m "chore(ci): remove gh-pages reports for closed PR #${PR_NUM}"
-          git push origin gh-pages
+          # gh-pages also receives publish pushes from other PRs' ci.yaml runs,
+          # whose concurrency group differs from this one — so a bare push can
+          # lose the fast-forward and hard-fail. Retry, rebasing the removal
+          # commit onto the latest remote tip each time (disjoint paths, so a
+          # conflict is not expected).
+          for attempt in 1 2 3 4 5; do
+            if git push origin gh-pages; then
+              echo "Pushed gh-pages cleanup (attempt ${attempt})."
+              exit 0
+            fi
+            echo "Push rejected (attempt ${attempt}); rebasing onto latest gh-pages and retrying."
+            git pull --rebase origin gh-pages
+          done
+          echo "Failed to push gh-pages cleanup after 5 attempts." >&2
+          exit 1
