@@ -4,6 +4,13 @@
   <include file="robotiq_2f85/robotiq2f85_globals.xml" />
   <compiler angle="radian" autolimits="true" />
   <option integrator="implicitfast" />
+  <!-- Offscreen buffer must EXACTLY match every non-lidar camera resolution
+       (cameras.cpp). This scene pulls in wrist_camera (1280x720) via the ur5e
+       include, so the global must be 1280x720 too. Without it the buffer defaults
+       to 640x480 and extract_cameras aborts ros2_control_node on model load. -->
+  <visual>
+    <global offwidth="1280" offheight="720" />
+  </visual>
   <worldbody>
     <include file="ur5e/ur5e_linear_rail.xml" />
   </worldbody>

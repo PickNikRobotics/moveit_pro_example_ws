@@ -8,6 +8,14 @@
 
   <option integrator="implicitfast" />
 
+  <!-- Offscreen buffer must EXACTLY match every non-lidar camera resolution
+       (picknik_mujoco_ros cameras.cpp). Single shared buffer for all cameras,
+       so the scene_camera below plus wrist_camera (1280x720) from the ur5e
+       include must all be 1280x720, or ros2_control_node aborts on load. -->
+  <visual>
+    <global offwidth="1280" offheight="720" />
+  </visual>
+
   <asset>
     <mesh name="cube" file="assets/Cube.stl" />
   </asset>
@@ -39,7 +47,7 @@
       pos="-1.0 -2.0 2.966"
       fovy="58"
       mode="fixed"
-      resolution="640 480"
+      resolution="1280 720"
       euler="0.849 0.000 0.0"
     />
     <!-- lab desk -->
