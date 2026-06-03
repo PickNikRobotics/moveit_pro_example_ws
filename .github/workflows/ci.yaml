@@ -19,7 +19,11 @@ concurrency:
 
 jobs:
   integration-test-in-studio-container:
-    uses: PickNikRobotics/moveit_pro_ci/.github/workflows/workspace_integration_test.yaml@baf17129fd55f858b7965fb971fa333cf45463cb # v0.3.2
+    permissions:
+      # contents: read for checkout; id-token: write to assume the LFS cache role via OIDC.
+      contents: read
+      id-token: write
+    uses: PickNikRobotics/moveit_pro_ci/.github/workflows/workspace_integration_test.yaml@e0e05a8de9a8d78e5ba58cd68ca254d3a41cc1d8 # v0.5.1
     with:
       image_tag: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name }}
       colcon_test_args: "--executor sequential"
@@ -38,8 +42,14 @@ jobs:
       # PickNikRobotics/moveit_pro#18534 for the underlying flake history.
       mujoco_ci_timestep: "0.003"
       use_ccache: true
+      # Fetch Git LFS through the in-region S3 cache instead of a direct pull.
+      # Empty for fork PRs (which get no OIDC token / secrets) so they fall back
+      # to a normal direct LFS pull instead of failing the cache preflight.
+      lfs_cache_s3_bucket: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && 'picknik-arc-ci-ccache-682033501538' || '' }}
+      lfs_cache_aws_region: us-east-1
     secrets:
       moveit_license_key: ${{ secrets.STUDIO_CI_LICENSE_KEY }}
+      lfs_cache_role_arn: ${{ secrets.LFS_CACHE_ROLE_ARN }}
 
   # Turn the test-results artifact into a single-file HTML report (status,
   # timings, per-test ROS log slice with colors). Matrix on ros_distro because
