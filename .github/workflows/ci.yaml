@@ -9,23 +9,160 @@ on:
         description: 'The tag of the image to use for the container'
         required: false
         default: ''
+  repository_dispatch:
+    # Fired by the paired moveit_pro repo when a PR there finishes its image
+    # push. The payload carries `image_ref` (full GHCR reference with `{0}`
+    # placeholder for ros_distro), `image_tag`, `base_branch`, `moveit_pro_sha`,
+    # and `moveit_pro_pr` so this workflow can run the integration suite
+    # against the just-built image and post a commit status back to that PR.
+    types: [moveit_pro_pr]
   # Run every 6 hours Mon-Fri
   schedule:
     - cron: "0 */6 * * 1-5"
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  # Dispatch-triggered runs from different moveit_pro PRs all share the same
+  # `github.ref` (this repo's default branch), so a plain ref-keyed group
+  # would let one dispatch cancel another and lose its status post-back.
+  # Include the dispatch payload's `moveit_pro_sha` / `moveit_pro_pr` (and
+  # for non-dispatch events, the PR head SHA) so each PR gets its own slot.
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.client_payload.moveit_pro_sha || github.event.client_payload.moveit_pro_pr || github.event.pull_request.head.sha || github.ref }}
   cancel-in-progress: true
 
 jobs:
-  integration-test-in-studio-container:
+  # Compute the inputs we forward to the reusable integration workflow and to
+  # the rollup status post-back. The logic differs by trigger:
+  #   - `pull_request`: image_tag = PR base ref; checkout uses the PR head
+  #     by default (no explicit `git_ref`). If the PR body contains a
+  #     `needs: moveit_pro/#N` token, also fetch that moveit_pro PR's head
+  #     SHA so we can pull its private GHCR image as `image_ref` and post
+  #     the rollup status back to the moveit_pro PR.
+  #   - `repository_dispatch`: every value comes from the payload, including
+  #     `git_ref` (the version-paired example_ws branch to check out) since
+  #     the dispatch event itself has no PR context.
+  #   - everything else (push, schedule, workflow_dispatch): image_tag = the
+  #     triggering ref's branch name.
+  resolve:
+    name: Resolve dispatch context
+    runs-on: ubuntu-22.04
+    outputs:
+      image_ref: ${{ steps.resolve.outputs.image_ref }}
+      image_tag: ${{ steps.resolve.outputs.image_tag }}
+      git_ref: ${{ steps.resolve.outputs.git_ref }}
+      moveit_pro_sha: ${{ steps.resolve.outputs.moveit_pro_sha }}
+      moveit_pro_pr_number: ${{ steps.resolve.outputs.moveit_pro_pr_number }}
+    steps:
+      - name: Detect `needs:` token in PR body
+        id: detect_needs
+        if: github.event_name == 'pull_request'
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: |
+          set -e
+          matched="$(printf '%s' "$PR_BODY" | grep -oiE 'needs:[[:space:]]*moveit_pro/#[0-9]+' || true)"
+          if [ -n "$matched" ]; then
+            pr_num="$(printf '%s' "$matched" | grep -oE '[0-9]+' | head -1)"
+            echo "moveit_pro_pr=$pr_num" >> "$GITHUB_OUTPUT"
+            echo "Detected paired moveit_pro PR: #$pr_num"
+          else
+            echo "No paired moveit_pro PR in body."
+          fi
+
+      - name: Generate cross-repo App token
+        id: app-token
+        if: steps.detect_needs.outputs.moveit_pro_pr != '' || github.event_name == 'repository_dispatch'
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.SISTER_REPOS_APP_CLIENT_ID }}
+          private-key: ${{ secrets.SISTER_REPOS_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: |
+            moveit_pro_example_ws
+            moveit_pro
+
+      - name: Resolve inputs
+        id: resolve
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          MOVEIT_PRO_PR_FROM_BODY: ${{ steps.detect_needs.outputs.moveit_pro_pr }}
+          GHCR_URL: ${{ vars.GHCR_URL }}
+        with:
+          # Falls back to the default GITHUB_TOKEN when the App token wasn't
+          # minted (no paired PR, not a dispatch). The default is sufficient
+          # for everything else this step does.
+          github-token: ${{ steps.app-token.outputs.token || github.token }}
+          script: |
+            const event = context.eventName;
+            const ghcrUrl = process.env.GHCR_URL || 'ghcr.io/picknikrobotics';
+            let image_ref = '';
+            let image_tag = '';
+            let git_ref = '';
+            let moveit_pro_sha = '';
+            let moveit_pro_pr_number = '';
+
+            const sanitizeBranch = (s) => s.replace(/[^a-zA-Z0-9._-]/g, '-');
+
+            if (event === 'repository_dispatch') {
+              const p = context.payload.client_payload || {};
+              image_ref = p.image_ref || '';
+              image_tag = p.image_tag || p.base_branch || 'main';
+              git_ref = p.base_branch || '';
+              moveit_pro_sha = p.moveit_pro_sha || '';
+              moveit_pro_pr_number = String(p.moveit_pro_pr || '');
+            } else if (event === 'pull_request') {
+              image_tag = context.payload.pull_request.base.ref;
+              const needsPr = process.env.MOVEIT_PRO_PR_FROM_BODY;
+              if (needsPr) {
+                const { data: pr } = await github.rest.pulls.get({
+                  owner: 'PickNikRobotics',
+                  repo: 'moveit_pro',
+                  pull_number: parseInt(needsPr, 10),
+                });
+                moveit_pro_sha = pr.head.sha;
+                moveit_pro_pr_number = needsPr;
+                image_ref = `${ghcrUrl}/moveit-studio:${sanitizeBranch(pr.head.ref)}-{0}-amd64`;
+              }
+            } else {
+              // push, schedule, workflow_dispatch. A `workflow_dispatch` input
+              // (`image_tag`, declared at the top of this file) lets an
+              // operator pin the image manually; honor it before falling back
+              // to the triggering branch name.
+              const dispatchTag = (context.payload.inputs && context.payload.inputs.image_tag) || '';
+              image_tag = dispatchTag || (context.ref || 'refs/heads/main').replace(/^refs\/heads\//, '');
+            }
+
+            core.info(`event=${event}`);
+            core.info(`image_ref=${image_ref}`);
+            core.info(`image_tag=${image_tag}`);
+            core.info(`git_ref=${git_ref}`);
+            core.info(`moveit_pro_sha=${moveit_pro_sha}`);
+            core.info(`moveit_pro_pr_number=${moveit_pro_pr_number}`);
+
+            core.setOutput('image_ref', image_ref);
+            core.setOutput('image_tag', image_tag);
+            core.setOutput('git_ref', git_ref);
+            core.setOutput('moveit_pro_sha', moveit_pro_sha);
+            core.setOutput('moveit_pro_pr_number', moveit_pro_pr_number);
+
+  integration-test:
+    needs: resolve
+    strategy:
+      fail-fast: false
+      matrix:
+        # Stream 2 expands this list one PR at a time as each sim gains a
+        # pytest entry. Today only lab_sim has one.
+        config_package: [lab_sim]
     permissions:
-      # contents: read for checkout; id-token: write to assume the LFS cache role via OIDC.
+      # contents: read for checkout; id-token: write so the reusable workflow
+      # can assume the LFS S3 cache IAM role via OIDC (moveit_pro_ci v0.5.x).
       contents: read
       id-token: write
     uses: PickNikRobotics/moveit_pro_ci/.github/workflows/workspace_integration_test.yaml@e0e05a8de9a8d78e5ba58cd68ca254d3a41cc1d8 # v0.5.1
     with:
-      image_tag: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name }}
+      image_tag: ${{ needs.resolve.outputs.image_tag }}
+      image_ref: ${{ needs.resolve.outputs.image_ref }}
+      git_ref: ${{ needs.resolve.outputs.git_ref }}
+      config_package: ${{ matrix.config_package }}
       colcon_test_args: "--executor sequential"
       # GPU runner + enable_gpu are required so MuJoCo's EGL offscreen
       # rendering can attach to a real GPU instead of falling back to slow
@@ -51,16 +188,113 @@ jobs:
       moveit_license_key: ${{ secrets.STUDIO_CI_LICENSE_KEY }}
       lfs_cache_role_arn: ${{ secrets.LFS_CACHE_ROLE_ARN }}
 
+  # Single byte-identical commit-status context (`example_ws / integration`)
+  # is posted from here only. Per the design doc: the matrix jobs must NOT
+  # post their own statuses, or branch protection / dedup semantics break.
+  #
+  # Skip on fork PRs: a fork's GITHUB_TOKEN cannot mint the cross-repo App
+  # token (secrets are not exposed to fork-triggered runs), so this job would
+  # hard-fail on every external-contributor PR and — because `build-status`
+  # requires this to be `success` or `skipped` — block their merge. Skipping
+  # is the correct outcome: fork PRs cannot post statuses cross-repo anyway,
+  # and `build-status`'s skipped-tolerant check resolves cleanly.
+  integration-status:
+    name: Post integration status
+    needs: [resolve, integration-test]
+    if: ${{ always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Generate cross-repo App token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.SISTER_REPOS_APP_CLIENT_ID }}
+          private-key: ${{ secrets.SISTER_REPOS_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: |
+            moveit_pro_example_ws
+            moveit_pro
+
+      - name: Post commit status
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          INTEGRATION_RESULT: ${{ needs.integration-test.result }}
+          MOVEIT_PRO_SHA: ${{ needs.resolve.outputs.moveit_pro_sha }}
+          EVENT_NAME: ${{ github.event_name }}
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            const result = process.env.INTEGRATION_RESULT;
+            // Map GitHub Actions job result → Commit Status API state.
+            //   success/failure are obvious; cancelled / skipped map to error
+            //   so reviewers see something other than a stale "pending".
+            const state = result === 'success' ? 'success'
+              : (result === 'cancelled' || result === 'skipped') ? 'error'
+              : 'failure';
+            const description = ({
+              success: 'Integration tests passed',
+              failure: 'Integration tests failed',
+              cancelled: 'Integration tests cancelled',
+              skipped: 'Integration tests skipped',
+            })[result] || `Integration tests result: ${result}`;
+            // Byte-identical across every post: GitHub deduplicates commit
+            // statuses by `(sha, context)`, so the dispatch-only run that
+            // fired against `:main` can be overwritten by the paired run.
+            // Drift here would break that dedup and leave stale checks.
+            const contextString = 'example_ws / integration';
+            const target_url = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+
+            const targets = [];
+            // example_ws PR head SHA (when triggered by pull_request).
+            if (process.env.EVENT_NAME === 'pull_request') {
+              targets.push({
+                owner: 'PickNikRobotics',
+                repo: 'moveit_pro_example_ws',
+                sha: context.payload.pull_request.head.sha,
+                label: 'example_ws PR',
+              });
+            }
+            // moveit_pro PR commit SHA (either resolved via `needs:` token in
+            // an example_ws PR body, or carried by a `repository_dispatch`
+            // payload from moveit_pro CI).
+            const moveitProSha = process.env.MOVEIT_PRO_SHA;
+            if (moveitProSha) {
+              targets.push({
+                owner: 'PickNikRobotics',
+                repo: 'moveit_pro',
+                sha: moveitProSha,
+                label: 'moveit_pro PR',
+              });
+            }
+
+            if (targets.length === 0) {
+              core.info('No commit-status targets resolved (likely a push / schedule run). Nothing to post.');
+              return;
+            }
+
+            for (const t of targets) {
+              core.info(`Posting state=${state} to ${t.label} (${t.owner}/${t.repo}@${t.sha}).`);
+              await github.rest.repos.createCommitStatus({
+                owner: t.owner,
+                repo: t.repo,
+                sha: t.sha,
+                state,
+                context: contextString,
+                description,
+                target_url,
+              });
+            }
+
   # Turn the test-results artifact into a single-file HTML report (status,
   # timings, per-test ROS log slice with colors). Matrix on ros_distro because
   # the upstream workflow uploads one artifact per distro. Runs whether the
   # integration test passed, failed, or timed out -- the report is most useful
   # for failure post-mortem.
   render-report:
-    needs: integration-test-in-studio-container
+    needs: integration-test
     # Run on success and failure, not on cancelled or skipped — `!= cancelled`
     # alone would also fire on skipped, where no artifact was uploaded.
-    if: always() && (needs.integration-test-in-studio-container.result == 'success' || needs.integration-test-in-studio-container.result == 'failure')
+    if: always() && (needs.integration-test.result == 'success' || needs.integration-test.result == 'failure')
     runs-on: ubuntu-22.04
     # Least privilege: this job only downloads/uploads artifacts and never
     # writes to the repo, so it has no need for the default read-write token.
@@ -69,19 +303,22 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # Keep in sync with `integration-test.matrix.config_package` above and
+        # with the reusable workflow's internal ros_distro matrix. Stream 2
+        # expands `config_package` per sim; this matrix expands alongside.
+        config_package: [lab_sim]
         ros_distro: [humble, jazzy]
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      # The artifact name comes from workspace_integration_test.yaml — the
-      # double dash is the literal `test-results-${image_tag_suffix}-${distro}`
-      # template with an empty image_tag_suffix.
-      # continue-on-error so an early integration-test crash (no artifact
-      # uploaded) still lets render-report exit cleanly via the [-z XUNIT]
-      # guard below instead of hard-failing the matrix job.
+      # The artifact name comes from workspace_integration_test.yaml:
+      # `test-results-<config_package>-<ros_distro>`. continue-on-error so an
+      # early integration-test crash (no artifact uploaded) still lets
+      # render-report exit cleanly via the [-z XUNIT] guard below instead of
+      # hard-failing the matrix job.
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         continue-on-error: true
         with:
-          name: test-results--${{ matrix.ros_distro }}
+          name: test-results-${{ matrix.config_package }}-${{ matrix.ros_distro }}
           path: artifacts/
       - name: Render HTML report
         id: render
@@ -131,7 +368,7 @@ jobs:
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: steps.render.outputs.rendered == 'true'
         with:
-          name: integration-test-report-${{ matrix.ros_distro }}
+          name: integration-test-report-${{ matrix.config_package }}-${{ matrix.ros_distro }}
           path: |
             report.html
             status.json
@@ -173,12 +410,12 @@ jobs:
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         continue-on-error: true
         with:
-          name: integration-test-report-humble
+          name: integration-test-report-lab_sim-humble
           path: reports/integration-test-report-humble/
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         continue-on-error: true
         with:
-          name: integration-test-report-jazzy
+          name: integration-test-report-lab_sim-jazzy
           path: reports/integration-test-report-jazzy/
       - name: Lay out per-distro reports
         id: layout
@@ -310,3 +547,48 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: PickNikRobotics/moveit_pro_lint@v0.0.1
+
+  # Single aggregator job that branch protection requires. Lists every job
+  # that must succeed (or be intentionally skipped) for a PR to be mergeable;
+  # `!cancelled()` makes it run even when an upstream job failed so the
+  # required check resolves loudly instead of hanging. Add new gating jobs
+  # to the `needs:` list and to the `required` map below.
+  build-status:
+    name: Build Status
+    needs:
+      - integration-test
+      - integration-status
+      - ensure-no-ssh-in-gitmodules
+      - validate_objectives
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Verify required jobs succeeded
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          INTEGRATION_TEST: ${{ needs.integration-test.result }}
+          INTEGRATION_STATUS: ${{ needs.integration-status.result }}
+          NO_SSH: ${{ needs['ensure-no-ssh-in-gitmodules'].result }}
+          VALIDATE_OBJECTIVES: ${{ needs.validate_objectives.result }}
+        with:
+          script: |
+            const results = {
+              'integration-test': process.env.INTEGRATION_TEST,
+              'integration-status': process.env.INTEGRATION_STATUS,
+              'ensure-no-ssh-in-gitmodules': process.env.NO_SSH,
+              'validate_objectives': process.env.VALIDATE_OBJECTIVES,
+            };
+            // `skipped` is acceptable (e.g., integration-test is skipped on
+            // push/schedule when the `resolve` job determines no run is
+            // appropriate). `success` is required for the gating jobs.
+            // Anything else (failure, cancelled) blocks the merge.
+            const failed = Object.entries(results).filter(
+              ([_, r]) => r !== 'success' && r !== 'skipped'
+            );
+            if (failed.length) {
+              core.setFailed(
+                `Required jobs did not succeed: ${failed.map(([n, r]) => `${n}=${r}`).join(', ')}`
+              );
+            } else {
+              core.info(`All required jobs OK: ${JSON.stringify(results)}`);
+            }
