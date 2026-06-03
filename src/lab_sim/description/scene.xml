@@ -6,7 +6,12 @@
 
   <compiler angle="radian" autolimits="true" />
 
-  <option integrator="implicitfast" impratio="10" noslip_iterations="3" />
+  <option
+    integrator="implicitfast"
+    timestep="0.003"
+    impratio="10"
+    noslip_iterations="3"
+  />
 
   <!-- nuser_cam=1 enables per-camera user params: 0=RGB+Depth, 1=RGB-only, 2=3D-lidar -->
   <!-- memory: arena size for contacts/constraints. MuJoCo 3.3+ stopped growing the arena

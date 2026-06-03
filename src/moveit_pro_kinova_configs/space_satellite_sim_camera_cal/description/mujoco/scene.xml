@@ -1,6 +1,6 @@
 <mujoco model="space satellite scene">
   <compiler angle="radian" meshdir="assets" />
-  <option integrator="implicitfast" gravity="0 0 0" />
+  <option integrator="implicitfast" timestep="0.003" gravity="0 0 0" />
 
   <include file="gen3_7dof_assets.xml" />
 

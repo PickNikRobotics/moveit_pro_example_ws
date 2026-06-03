@@ -1,4 +1,6 @@
 <mujoco model="lunar sim scene">
+  <option integrator="implicitfast" timestep="0.003" />
+
   <default>
     <default class="visual">
       <geom

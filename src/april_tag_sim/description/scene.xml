@@ -6,7 +6,7 @@
 
   <compiler angle="radian" autolimits="true" />
 
-  <option integrator="implicitfast" />
+  <option integrator="implicitfast" timestep="0.003" />
 
   <!-- Offscreen buffer must EXACTLY match every non-lidar camera resolution
        (picknik_mujoco_ros cameras.cpp). Single shared buffer for all cameras,
