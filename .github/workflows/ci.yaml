@@ -23,7 +23,7 @@ jobs:
       # contents: read for checkout; id-token: write to assume the LFS cache role via OIDC.
       contents: read
       id-token: write
-    uses: PickNikRobotics/moveit_pro_ci/.github/workflows/workspace_integration_test.yaml@67abf09bbe5b310a893850e476b261068c85960f # v0.5.0
+    uses: PickNikRobotics/moveit_pro_ci/.github/workflows/workspace_integration_test.yaml@e0e05a8de9a8d78e5ba58cd68ca254d3a41cc1d8 # v0.5.1
     with:
       image_tag: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref || github.ref_name }}
       colcon_test_args: "--executor sequential"
