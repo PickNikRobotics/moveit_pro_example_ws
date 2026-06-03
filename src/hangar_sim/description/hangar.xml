@@ -399,7 +399,7 @@
           type="mesh"
           name="SM_Ladder_31 geom"
           mesh="SM_Ladder_31"
-          material="metal_hangar"
+          material="white_ladder"
         />
       </body>
     </body>
@@ -1334,7 +1334,7 @@
         type="mesh"
         name="SM_Ladder2 geom"
         mesh="SM_Ladder2"
-        material="metal_hangar"
+        material="white_ladder"
       />
     </body>
     <body
@@ -1347,7 +1347,7 @@
         type="mesh"
         name="SM_Ladder3 geom"
         mesh="SM_Ladder3"
-        material="metal_hangar"
+        material="white_ladder"
       />
     </body>
     <body
@@ -3429,6 +3429,12 @@
       rgba="0.25 0.25 0.25 1.0"
       reflectance="0.8960324823856354"
       metallic="0.7795275449752808"
+    />
+    <material
+      name="white_ladder"
+      rgba="0.95 0.95 0.95 1.0"
+      reflectance="0.5"
+      metallic="0.0"
     />
     <material
       name="glass"
