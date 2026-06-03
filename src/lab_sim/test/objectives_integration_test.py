@@ -73,7 +73,7 @@ skip_objectives = {
     "Place Object",
     # Flaky on CI after the MuJoCo 3.2.7 -> 3.6.0 upgrade: the JTAC compliance loop
     # is sensitive to the simulator falling under realtime, and we see ~50% flake
-    # rate even with mujoco_ci_timestep coarsening and CPU pinning. See PR #615.
+    # rate even with the 0.003 s scene timestep and CPU pinning. See PR #615.
     "Push Button With a Trajectory",
     "Record Square Trajectory",
     "Scan Scene - Multiple Point Clouds",
