@@ -7,9 +7,6 @@
 [submodule "src/external_dependencies/fanuc"]
 	path = src/external_dependencies/fanuc
 	url = https://github.com/PickNikRobotics/fanuc.git
-[submodule "src/picknik_accessories/src/dependencies/fanuc"]
-	path = src/picknik_accessories/src/dependencies/fanuc
-	url = https://github.com/PickNikRobotics/fanuc.git
 [submodule "src/external_dependencies/ros2_kortex_vision"]
 	path = src/external_dependencies/ros2_kortex_vision
 	url = https://github.com/PickNikRobotics/ros2_kortex_vision.git
