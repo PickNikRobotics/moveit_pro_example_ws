@@ -172,12 +172,6 @@ jobs:
       # variant, so a pull failure here points at a missing CUDA image, not EGL.
       runner: "picknik-16-amd64-gpu"
       enable_gpu: true
-      # Re-assert MuJoCo timestep on CI as a backstop. Scene files in this repo
-      # are standardized to 0.003s, but this override catches any future scene
-      # whose include chain bypasses that standard, keeping the heavier 3.6.0
-      # constraint solver at-or-under realtime on CI runners. See
-      # PickNikRobotics/moveit_pro#18534 for the underlying flake history.
-      mujoco_ci_timestep: "0.003"
       use_ccache: true
       # Fetch Git LFS through the in-region S3 cache instead of a direct pull.
       # Empty for fork PRs (which get no OIDC token / secrets) so they fall back
