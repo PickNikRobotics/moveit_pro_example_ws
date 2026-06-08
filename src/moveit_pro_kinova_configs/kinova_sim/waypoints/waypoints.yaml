@@ -1,39 +1,163 @@
-- name: Home
+- description: ''
+  favorite: false
   joint_group_names:
-    - manipulator
+  - manipulator
   joint_state:
+    effort: []
     header:
       frame_id: world
       stamp:
-        sec: 0
         nanosec: 0
-    name: [joint_1, joint_2, joint_3, joint_4, joint_5, joint_6, joint_7]
-    position: [7.2854474427322627e-05, 0.0060998872530424308, -3.1250605484909082, -2.5051932931762071, -2.7164243118882329e-05, 0.95966324117024648, 1.5699864595074029]
+        sec: 0
+    name:
+    - joint_1
+    - joint_2
+    - joint_3
+    - joint_4
+    - joint_5
+    - joint_6
+    - joint_7
+    position:
+    - 7.285447442732263e-05
+    - 0.006099887253042431
+    - -3.125060548490908
+    - -2.505193293176207
+    - -2.716424311888233e-05
+    - 0.9596632411702465
+    - 1.569986459507403
     velocity: []
-    effort: []
-- name: View Satellite
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Home
+- description: ''
+  favorite: false
   joint_group_names:
-    - manipulator
+  - gripper
+  - manipulator
   joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - robotiq_85_left_finger_joint
+    - robotiq_85_right_finger_joint
+    - joint_1
+    - joint_2
+    - joint_3
+    - joint_4
+    - joint_5
+    - joint_6
+    - joint_7
+    position:
+    - 0.005882578270438299
+    - 0.0001473713592085435
+    - 0.00014736012416003764
+    - -0.6454046706789112
+    - -1.0560273411840928
+    - -2.7839904676383336
+    - -1.862959840704243
+    - 0.317657605304769
+    - -1.369552055695441
+    - 1.5731821601244134
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Look at Cube Start Pos from Side
+- description: ''
+  favorite: false
+  joint_group_names:
+  - manipulator
+  joint_state:
+    effort: []
     header:
       frame_id: world
       stamp:
-        sec: 0
         nanosec: 0
-    name: [joint_1, joint_2, joint_3, joint_4, joint_5, joint_6, joint_7]
-    position: [-0.09307641483383389, -0.19300567578465877, -3.1300095007446025, -1.0300920675150191, 0.10809231574510887, -1.8633714704671105, 0.6960333295958311]
+        sec: 0
+    name:
+    - joint_1
+    - joint_2
+    - joint_3
+    - joint_4
+    - joint_5
+    - joint_6
+    - joint_7
+    position:
+    - -0.00720012232313838
+    - 0.046292085559112114
+    - -3.1164649297565687
+    - -1.9802682633550486
+    - 0.002955344711620508
+    - 0.47456175742007445
+    - 1.5661967812762208
     velocity: []
-    effort: []
-- name: Servo Start
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Servo Start
+- description: ''
+  favorite: false
   joint_group_names:
-    - manipulator
+  - manipulator
   joint_state:
+    effort: []
     header:
       frame_id: world
       stamp:
-        sec: 0
         nanosec: 0
-    name: [joint_1, joint_2, joint_3, joint_4, joint_5, joint_6, joint_7]
-    position: [-0.00720012232313838, 0.046292085559112114, -3.1164649297565687, -1.9802682633550486, 0.002955344711620508, 0.47456175742007445, 1.5661967812762208]
+        sec: 0
+    name:
+    - joint_1
+    - joint_2
+    - joint_3
+    - joint_4
+    - joint_5
+    - joint_6
+    - joint_7
+    position:
+    - -0.09307641483383389
+    - -0.19300567578465877
+    - -3.1300095007446025
+    - -1.0300920675150191
+    - 0.10809231574510887
+    - -1.8633714704671105
+    - 0.6960333295958311
     velocity: []
-    effort: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: View Satellite

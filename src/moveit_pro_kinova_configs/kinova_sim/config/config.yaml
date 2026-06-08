@@ -60,7 +60,7 @@ hardware:
       - external_camera: "true"
       - wrist_realsense: "true"
       - use_internal_bus_gripper_comm: "false"
-      - mujoco_model: "description/mujoco/rafti_fingers_scene.xml"
+      - mujoco_model: "description/mujoco/pi0_scene.xml"
       - mujoco_viewer: false
 
 # Sets ROS global params for launch.
@@ -145,6 +145,7 @@ objectives:
       - "moveit_pro::behaviors::VisionBehaviorsLoader"
       - "moveit_pro::behaviors::ConverterBehaviorsLoader"
       - "moveit_pro::behaviors::MujocoBehaviorsLoader"
+      - "pi0_behaviors::Pi0BehaviorsLoader"
   # Specify source folder for objectives
   # [Required]
   objective_library_paths:

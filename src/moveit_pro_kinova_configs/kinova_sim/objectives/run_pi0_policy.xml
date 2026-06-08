@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Run Pi0 Policy">
+  <BehaviorTree
+    ID="Run Pi0 Policy"
+    _description="Runs the pi0 VLA policy via STREAMING control. Moves to the camera-framing start pose, activates the joint_velocity_controller (JVC), then idles to keep JVC active. The external pi0 bridge streams control_msgs/JointJog velocities straight to /joint_velocity_controller/command — no ExecuteTrajectory / JTAC. Start this objective first, then launch the bridge."
+    _favorite="true"
+    _hardcoded="false"
+  >
+    <Control ID="Sequence" name="TopLevel">
+      <!-- Frame the cube for pi0's scene + wrist cameras (also a real
+           plan+execute move). -->
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="false"
+        waypoint_name="Look at Cube Start Pos from Side"
+      />
+      <!-- Activate the joint-velocity streaming controller. automatic_deactivation
+           tears it down (arm holds) when this objective is stopped. -->
+      <Action
+        ID="SwitchController"
+        activate_controllers="joint_velocity_controller"
+        activate_asap="true"
+        automatic_deactivation="true"
+        strictness="1"
+        timeout="-1.0"
+      />
+      <!-- Keep the tree alive so JVC stays active while the external bridge
+           streams JointJog velocities to /joint_velocity_controller/command.
+           The bridge does all the control work; the objective just holds JVC up. -->
+      <Control ID="Repeat" num_cycles="-1">
+        <Action ID="WaitForDuration" delay_duration="1.0" />
+      </Control>
+    </Control>
+  </BehaviorTree>
+</root>

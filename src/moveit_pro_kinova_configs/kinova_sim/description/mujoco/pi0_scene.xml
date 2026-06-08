@@ -1,0 +1,107 @@
+<mujoco model="kinova pi0 scene">
+  <include file="gen3_7dof.xml" />
+
+  <statistic center="0.3 0 0.4" extent="1" />
+
+  <default>
+    <geom solref=".004 1" />
+  </default>
+
+  <visual>
+    <headlight diffuse="0.6 0.6 0.6" ambient="0.3 0.3 0.3" specular="0 0 0" />
+    <rgba haze="0.15 0.25 0.35 1" />
+    <global azimuth="120" elevation="-20" />
+  </visual>
+
+  <asset>
+    <texture
+      type="skybox"
+      builtin="gradient"
+      rgb1="0.3 0.5 0.7"
+      rgb2="0 0 0"
+      width="512"
+      height="3072"
+    />
+    <texture
+      type="2d"
+      name="groundplane"
+      builtin="checker"
+      mark="edge"
+      rgb1="0.2 0.3 0.4"
+      rgb2="0.1 0.2 0.3"
+      markrgb="0.8 0.8 0.8"
+      width="300"
+      height="300"
+    />
+    <material name="groundplane" texture="groundplane" texuniform="true" texrepeat="5 5" reflectance="0.2" />
+    <material name="table" rgba="0.7 0.55 0.35 1" />
+    <material name="red_cube" rgba="1 0.05 0.05 1" />
+  </asset>
+
+  <worldbody>
+    <light pos="0 0 1.5" dir="0 0 -1" directional="true" />
+    <geom name="floor" size="0 0 0.05" type="plane" material="groundplane" />
+
+    <!-- Scene camera — front-right elevated view of arm and tabletop
+         pos=(1.1, -0.7, 0.7), aimed at table center (0.45, 0, 0.2)
+         xyaxes: X=(0.734, 0.681, 0)  Y=(-0.316, 0.341, 0.886)  → look dir≈(-0.603, 0.650, -0.465) -->
+    <camera
+      name="scene_camera"
+      pos="1.1 -0.7 0.7"
+      fovy="58"
+      mode="fixed"
+      resolution="640 480"
+      xyaxes="0.734 0.681 0  -0.316 0.341 0.886"
+    />
+    <site
+      name="scene_camera_optical_frame"
+      pos="1.1 -0.7 0.7"
+      quat="0.797 0.482 0.189 0.313"
+      size="0.03"
+    />
+
+    <!-- Table the arm works on -->
+    <body name="table" pos="0.45 0 0.1">
+      <geom
+        name="table_top"
+        type="box"
+        size="0.3 0.3 0.1"
+        material="table"
+        contype="1"
+        conaffinity="1"
+      />
+    </body>
+
+    <!-- Red cube for pick-and-place -->
+    <body name="red_cube" pos="0.45 0.0 0.225">
+      <freejoint />
+      <inertial pos="0 0 0" mass="0.05" diaginertia="2e-5 2e-5 2e-5" />
+      <geom
+        name="red_cube_geom"
+        type="box"
+        size="0.025 0.025 0.025"
+        material="red_cube"
+        condim="4"
+        friction="1.0 0.005 0.0001"
+        contype="1"
+        conaffinity="1"
+      />
+    </body>
+  </worldbody>
+
+  <keyframe>
+    <!--
+      qpos layout: 7 arm joints | 8 gripper joints | 7 red_cube freejoint (3 pos + 4 quat)
+      ctrl layout: 7 arm actuators | 1 gripper actuator
+    -->
+    <!-- Servo Start pose: all joints within JTAC/URDF limits.
+         Home (joint_4=-2.505) exceeds Kinova Gen3 joint_4 limit ~±2.094 rad
+         and causes JTAC to reject all goals. -->
+    <key
+      name="default"
+      qpos="-0.007 0.046 -3.116 -1.980 0.003 0.475 1.566 0.00500747 0.000142046 0.0054543 -0.0057924 0.00500747 0.000142046 0.00545513 -0.00579407 0.45 0.0 0.225 1 0 0 0"
+      qvel="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
+      ctrl="-0.007 0.046 -3.116 -1.980 0.003 0.475 1.566 0"
+    />
+  </keyframe>
+</mujoco>

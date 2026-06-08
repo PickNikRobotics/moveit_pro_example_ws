@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>pi0_behaviors</name>
+  <version>0.0.1</version>
+  <description>BT behaviors for pi0 VLA policy control via MoveIt Pro</description>
+  <maintainer email="jonathan.fries@picknik.ai">Jonathan Fries</maintainer>
+  <license>Proprietary</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>moveit_pro_package</buildtool_depend>
+
+  <depend>moveit_pro_behavior</depend>
+  <depend>moveit_pro_behavior_interface</depend>
+  <depend>pluginlib</depend>
+  <depend>rclcpp</depend>
+  <depend>trajectory_msgs</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
