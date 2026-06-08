@@ -99,9 +99,16 @@
         log_level="info"
       />
       <Action
-        ID="ModifyObjectInPlanningScene"
-        object="{handle_object}"
-        apply_planning_scene_service="/apply_planning_scene"
+        ID="UnpackGraspableObjectMessage"
+        graspable_object="{handle_object}"
+        object="{collision_object}"
+        object_color="{object_color}"
+        grasp_info="{grasp_info}"
+      />
+      <Action
+        ID="AddCollisionObject"
+        collision_object="{collision_object}"
+        overwrite="true"
       />
     </Control>
   </BehaviorTree>

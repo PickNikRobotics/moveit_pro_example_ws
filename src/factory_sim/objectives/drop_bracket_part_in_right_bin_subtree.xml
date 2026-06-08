@@ -41,10 +41,25 @@
       />
       <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
       <Action
-        ID="SetupMTCIgnoreCollisionsBetweenObjects"
+        ID="SetupMTCSetCollisionRule"
+        name_a="link_5"
+        name_b="link_6"
         allow_collision="true"
         task="{mtc_task}"
-        object_names="link_5;link_6;suction_gripper"
+      />
+      <Action
+        ID="SetupMTCSetCollisionRule"
+        name_a="link_5"
+        name_b="suction_gripper"
+        allow_collision="true"
+        task="{mtc_task}"
+      />
+      <Action
+        ID="SetupMTCSetCollisionRule"
+        name_a="link_6"
+        name_b="suction_gripper"
+        allow_collision="true"
+        task="{mtc_task}"
       />
       <Action
         ID="SetupMTCPlanToJointState"

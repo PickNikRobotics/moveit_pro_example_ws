@@ -54,14 +54,6 @@
           </Control>
         </Decorator>
         <Action
-          ID="SetupMTCUpdateGroupCollisionRule"
-          name="AllowGripperCollisionWithOctomap"
-          group_name="gripper"
-          object_name="&lt;octomap&gt;"
-          allow_collision="true"
-          task="{push_button_task}"
-        />
-        <Action
           ID="SetupMTCMoveAlongFrameAxis"
           task="{push_button_task}"
           hand_frame="grasp_link"
@@ -74,14 +66,6 @@
           planning_group_name="manipulator"
           velocity_scale="0.05"
           acceleration_scale="0.05"
-        />
-        <Action
-          ID="SetupMTCUpdateGroupCollisionRule"
-          name="ForbidGripperCollisionWithOctomap"
-          group_name="gripper"
-          object_name="&lt;octomap&gt;"
-          allow_collision="false"
-          task="{push_button_task}"
         />
         <Action
           ID="PlanMTCTask"

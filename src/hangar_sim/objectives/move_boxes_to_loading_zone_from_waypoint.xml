@@ -219,10 +219,10 @@
                     />
                     <Action ID="SetupMTCCurrentState" task="{task}" />
                     <Action
-                      ID="SetupMTCUpdateGroupCollisionRule"
+                      ID="SetupMTCSetCollisionRule"
                       allow_collision="true"
-                      group_name="gripper"
-                      object_name="&lt;octomap&gt;"
+                      name_a="gripper"
+                      name_b="&lt;octomap&gt;"
                       task="{task}"
                     />
                     <Action
@@ -261,7 +261,7 @@
                       ik_group="manipulator"
                       ik_timeout_s="0.01"
                       max_ik_solutions="1"
-                      monitored_stage="allow collision (&lt;octomap&gt;, gripper)"
+                      monitored_stage="allow collision (gripper, &lt;octomap&gt;)"
                       target_poses="{grasp_poses}"
                       task="{task}"
                     />

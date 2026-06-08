@@ -18,23 +18,11 @@
         position_xyz="{offset}"
       />
       <Action
-        ID="CreateSolidPrimitiveBox"
-        solid_primitive="{solid_primitive}"
+        ID="AddCollisionBox"
+        object_id="{object_id}"
         dimensions="{dimensions}"
-      />
-      <Action
-        ID="CreateCollisionObjectFromSolidPrimitive"
-        collision_object="{collision_object}"
-        object_id="{object_id}"
         pose="{pose_stamped}"
-        solid_primitive="{solid_primitive}"
-      />
-      <SubTree
-        ID="AddCollisionObjectToPlanningScene"
-        _collapsed="false"
-        collision_object="{collision_object}"
-        pose="{pose_stamped}"
-        object_id="{object_id}"
+        overwrite="true"
       />
     </Control>
   </BehaviorTree>

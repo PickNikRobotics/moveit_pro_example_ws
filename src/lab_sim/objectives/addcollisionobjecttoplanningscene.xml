@@ -3,40 +3,14 @@
   <!--//////////-->
   <BehaviorTree
     ID="AddCollisionObjectToPlanningScene"
-    _description="Adds a collision box to the planning scene  with the specified ID and pose."
+    _description="Adds a prebuilt CollisionObject to the planning scene and verifies that it is present."
     _favorite="false"
   >
     <Control ID="Sequence">
       <Action
-        ID="CreateGraspableObject"
-        cuboid_object="{cuboid_object}"
-        dx="0.100000"
-        dy="0.100000"
-        dz="0.100000"
-        generate_front_face="false"
-        generate_side_faces="false"
-        generate_top_face="false"
-        object_id="{object_id}"
-        pose="{pose}"
-      />
-      <Action
-        ID="UnpackGraspableObjectMessage"
-        grasp_info="{grasp_info}"
-        graspable_object="{cuboid_object}"
-        object="{object}"
-        object_color="{object_color}"
-      />
-      <Action
-        ID="CreateGraspableObjectMessage"
-        grasp_info="{grasp_info}"
-        graspable_object="{graspable_object}"
-        object="{collision_object}"
-        object_color="{object_color}"
-      />
-      <Action
-        ID="ModifyObjectInPlanningScene"
-        apply_planning_scene_service="/apply_planning_scene"
-        object="{graspable_object}"
+        ID="AddCollisionObject"
+        collision_object="{collision_object}"
+        overwrite="true"
       />
       <Action
         ID="GetCurrentPlanningScene"
@@ -57,13 +31,9 @@
       </MetadataFields>
       <inout_port name="collision_object" default="{collision_object}" />
       <inout_port name="object_id" default="" type="std::string">
-        ID of collision object in the planning scene
+        ID used to verify the object was added; must match the id field of the
+        wired collision_object.
       </inout_port>
-      <inout_port
-        name="pose"
-        default="{pose_stamped}"
-        type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"
-      />
     </SubTree>
   </TreeNodesModel>
 </root>

@@ -17,7 +17,7 @@
             _collapsed="true"
             tool_name="{tool_1_name}"
             tool_return_site="{tool_1_return_site}"
-            ignore_collisions_between_these_objects="{ignore_collisions_between_these_objects_for_tool_1_return}"
+            tool_object_name="{tool_object_name_for_tool_1_return}"
           />
         </Decorator>
         <Decorator
@@ -30,7 +30,7 @@
             _collapsed="true"
             tool_name="{tool_2_name}"
             tool_return_site="{tool_2_return_site}"
-            ignore_collisions_between_these_objects="{ignore_collisions_between_these_objects_for_tool_2_return}"
+            tool_object_name="{tool_object_name_for_tool_2_return}"
           />
         </Decorator>
         <Decorator ID="ForceFailure">
@@ -52,16 +52,10 @@
       <inout_port name="return_tool" default="" />
       <inout_port name="tool_1_name" default="" />
       <inout_port name="tool_1_return_site" default="" />
-      <inout_port
-        name="ignore_collisions_between_these_objects_for_tool_1_return"
-        default=""
-      />
+      <inout_port name="tool_object_name_for_tool_1_return" default="" />
       <inout_port name="tool_2_name" default="" />
       <inout_port name="tool_2_return_site" default="" />
-      <inout_port
-        name="ignore_collisions_between_these_objects_for_tool_2_return"
-        default=""
-      />
+      <inout_port name="tool_object_name_for_tool_2_return" default="" />
     </SubTree>
   </TreeNodesModel>
 </root>
