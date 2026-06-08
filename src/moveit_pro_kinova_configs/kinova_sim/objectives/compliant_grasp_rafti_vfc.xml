@@ -222,13 +222,6 @@
       />
       <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
       <Action
-        ID="SetupMTCUpdateGroupCollisionRule"
-        group_name="gripper"
-        object_name="&lt;octomap&gt;"
-        allow_collision="true"
-        task="{mtc_task}"
-      />
-      <Action
         ID="SetupMTCMoveAlongFrameAxis"
         task="{mtc_task}"
         hand_frame="grasp_link"

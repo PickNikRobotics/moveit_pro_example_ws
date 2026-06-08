@@ -31,10 +31,10 @@
             return_tool="{tool_name}"
             tool_1_name="{tool_1_name}"
             tool_1_return_site="{tool_1_return_site}"
-            ignore_collisions_between_these_objects_for_tool_1_return="link_5;link_6;suction_gripper"
+            tool_object_name_for_tool_1_return="suction_gripper"
             tool_2_name="{tool_2_name}"
             tool_2_return_site="{tool_2_return_site}"
-            ignore_collisions_between_these_objects_for_tool_2_return="link_5;link_6;inspector"
+            tool_object_name_for_tool_2_return="inspector"
           />
           <SubTree
             ID="Automated Pickup Tool Subtree"

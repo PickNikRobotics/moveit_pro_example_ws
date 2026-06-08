@@ -105,10 +105,10 @@
           task="{push_along_axis_task}"
         />
         <Action
-          ID="SetupMTCUpdateGroupCollisionRule"
+          ID="SetupMTCSetCollisionRule"
           name="AllowGripperCollisionWithOctomap"
-          group_name="gripper"
-          object_name="&lt;octomap&gt;"
+          name_a="gripper"
+          name_b="&lt;octomap&gt;"
           allow_collision="true"
           task="{push_along_axis_task}"
         />
@@ -127,10 +127,10 @@
           acceleration_scale="0.05"
         />
         <Action
-          ID="SetupMTCUpdateGroupCollisionRule"
+          ID="SetupMTCSetCollisionRule"
           name="ForbidGripperCollisionWithOctomap"
-          group_name="gripper"
-          object_name="&lt;octomap&gt;"
+          name_a="gripper"
+          name_b="&lt;octomap&gt;"
           allow_collision="false"
           task="{push_along_axis_task}"
         />
@@ -172,6 +172,7 @@
         ID="Retreat To Initial Pose"
         pre_approach_robot_state="{pre_approach_robot_state}"
         initial_robot_state="{initial_robot_state}"
+        octomap_present="true"
         _collapsed="true"
       />
     </Control>

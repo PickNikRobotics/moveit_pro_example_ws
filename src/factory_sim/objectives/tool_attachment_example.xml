@@ -15,7 +15,6 @@
       <SubTree
         ID="Pick Up Tool from Holder"
         _collapsed="true"
-        ignore_collisions_between_these_objects=""
         tool_name="suction_gripper"
         tool_attach_site="suction_gripper_attach_site"
       />
@@ -23,7 +22,7 @@
       <SubTree
         ID="Place Tool in Tool Holder"
         _collapsed="false"
-        ignore_collisions_between_these_objects="link_5;link_6;suction_gripper"
+        tool_object_name="suction_gripper"
         tool_name="suction_gripper"
         tool_return_site="suction_gripper_holder_site"
       />

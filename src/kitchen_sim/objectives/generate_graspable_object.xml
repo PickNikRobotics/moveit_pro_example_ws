@@ -100,11 +100,20 @@
         out="{graspable_object}"
         vector_in="{graspable_objects}"
       >
-        <Action
-          ID="ModifyObjectInPlanningScene"
-          apply_planning_scene_service="/apply_planning_scene"
-          object="{graspable_object}"
-        />
+        <Control ID="Sequence">
+          <Action
+            ID="UnpackGraspableObjectMessage"
+            graspable_object="{graspable_object}"
+            object="{collision_object}"
+            object_color="{object_color}"
+            grasp_info="{grasp_info}"
+          />
+          <Action
+            ID="AddCollisionObject"
+            collision_object="{collision_object}"
+            overwrite="true"
+          />
+        </Control>
       </Decorator>
     </Control>
   </BehaviorTree>

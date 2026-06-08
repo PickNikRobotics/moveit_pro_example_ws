@@ -66,13 +66,6 @@
           />
           <Action ID="SetupMTCCurrentState" task="{move_to_pose_task}" />
           <Action
-            ID="SetupMTCUpdateGroupCollisionRule"
-            allow_collision="true"
-            object_name="&lt;octomap&gt;"
-            task="{move_to_pose_task}"
-            group_name="gripper"
-          />
-          <Action
             ID="SetupMTCPlanToPose"
             acceleration_scale_factor="1.000000"
             ik_frame="grasp_link"
