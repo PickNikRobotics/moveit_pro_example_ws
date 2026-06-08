@@ -5,9 +5,16 @@
   <compiler angle="radian" meshdir="assets" autolimits="true" />
   <include file="ur5e_ridgeback.xml" />
   <include file="hangar.xml" />
+  <!-- hangar runs a heavier stack (nav2 / slam_toolbox / fuse + the mecanum
+       base) than the other configs, so it owns a coarser timestep than the
+       0.003 s standard: at 0.003 the CI runner overruns ~47% of sim steps,
+       which starves controller mode-switching and fails most motion
+       objectives. 0.008 keeps the runner at-or-under realtime while staying
+       finer than the original 0.025. Wheel velocity actuators still hold:
+       armature/kv = 1.0/500 = 0.002 s < 0.008 s (see CLAUDE.md). -->
   <option
     integrator="implicitfast"
-    timestep="0.025"
+    timestep="0.008"
     noslip_iterations="5"
     impratio="20"
     cone="elliptic"

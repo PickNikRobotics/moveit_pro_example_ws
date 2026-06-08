@@ -16,6 +16,7 @@
   <depend>pluginlib</depend>
 
   <exec_depend>admittance_controller</exec_depend>
+  <exec_depend>clearpath_mecanum_drive_controller</exec_depend>
   <exec_depend>moveit_ros_perception</exec_depend>
   <exec_depend>moveit_studio_agent</exec_depend>
   <exec_depend>moveit_pro_behavior</exec_depend>
@@ -26,6 +27,8 @@
   <exec_depend>picknik_ur_base_config</exec_depend>
   <exec_depend>realsense2_camera</exec_depend>
   <exec_depend>realsense2_description</exec_depend>
+  <exec_depend>ridgeback_description</exec_depend>
+  <exec_depend>robotiq_description</exec_depend>
   <exec_depend>slam_toolbox</exec_depend>
   <exec_depend>ur_description</exec_depend>
   <exec_depend>velocity_force_controller</exec_depend>
@@ -39,6 +42,10 @@
   <test_depend>ament_cmake_lint_cmake</test_depend>
   <test_depend>picknik_ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
+  <test_depend>rclpy</test_depend>
+  <test_depend>rcl_interfaces</test_depend>
+  <test_depend>control_msgs</test_depend>
+  <test_depend>tf2_ros</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

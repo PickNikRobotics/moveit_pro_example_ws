@@ -1,6 +1,6 @@
 <mujoco model="fanuc scene">
   <compiler angle="radian" autolimits="true" />
-  <option integrator="implicitfast" timestep="0.01">
+  <option integrator="implicitfast" timestep="0.003">
     <flag multiccd="enable" override="enable" />
   </option>
 

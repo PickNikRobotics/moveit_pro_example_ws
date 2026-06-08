@@ -1,5 +1,6 @@
 <mujoco model="kinova scene">
   <include file="gen3_7dof.xml" />
+  <option timestep="0.003" />
   <statistic center="0.3 0 0.4" extent="1" />
   <default>
     <geom solref=".004 1" />
