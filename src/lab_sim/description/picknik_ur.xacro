@@ -11,6 +11,9 @@
   <material name="offwhite">
     <color rgba="0.01 0.01 0.01 1" />
   </material>
+  <material name="pedestal_metal">
+    <color rgba="0.22 0.23 0.25 1" />
+  </material>
   <link name="world" />
   <joint name="tool_changer_joint" type="fixed">
     <!-- The parent link must be read from the robot model it is attached to. -->
@@ -785,6 +788,7 @@
       <geometry>
         <box size="0.16 0.2 0.4" />
       </geometry>
+      <material name="pedestal_metal" />
     </visual>
     <collision>
       <origin rpy="0 0 0" xyz="0.0 0.0 -0.2" />

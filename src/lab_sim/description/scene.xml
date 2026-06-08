@@ -92,6 +92,7 @@
   <visual>
     <global offwidth="1280" offheight="720" />
     <headlight ambient="0.3 0.3 0.3" diffuse="0.5 0.5 0.5" />
+    <quality offsamples="4" shadowsize="4096" />
   </visual>
 
   <worldbody>
