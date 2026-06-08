@@ -1,6 +1,8 @@
 <mujoco model="ur20 grinding scene">
   <compiler angle="radian" autolimits="true" assetdir="grinding_sim_assets" />
 
+  <option integrator="implicitfast" timestep="0.003" />
+
   <default>
     <!-- Actuator & joint defaults -->
     <joint axis="0 0 1" range="-6.28319 6.28319" armature="0.5" />

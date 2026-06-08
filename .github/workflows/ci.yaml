@@ -150,8 +150,8 @@ jobs:
       fail-fast: false
       matrix:
         # Stream 2 expands this list one PR at a time as each sim gains a
-        # pytest entry. Today only lab_sim has one.
-        config_package: [lab_sim]
+        # pytest entry.
+        config_package: [lab_sim, hangar_sim]
     permissions:
       # contents: read for checkout; id-token: write so the reusable workflow
       # can assume the LFS S3 cache IAM role via OIDC (moveit_pro_ci v0.5.x).
@@ -172,12 +172,6 @@ jobs:
       # variant, so a pull failure here points at a missing CUDA image, not EGL.
       runner: "picknik-16-amd64-gpu"
       enable_gpu: true
-      # Re-assert MuJoCo timestep on CI as a backstop. Scene files in this repo
-      # are standardized to 0.003s, but this override catches any future scene
-      # whose include chain bypasses that standard, keeping the heavier 3.6.0
-      # constraint solver at-or-under realtime on CI runners. See
-      # PickNikRobotics/moveit_pro#18534 for the underlying flake history.
-      mujoco_ci_timestep: "0.003"
       use_ccache: true
       # Fetch Git LFS through the in-region S3 cache instead of a direct pull.
       # Empty for fork PRs (which get no OIDC token / secrets) so they fall back
@@ -306,7 +300,12 @@ jobs:
         # Keep in sync with `integration-test.matrix.config_package` above and
         # with the reusable workflow's internal ros_distro matrix. Stream 2
         # expands `config_package` per sim; this matrix expands alongside.
-        config_package: [lab_sim]
+        # NOTE: publish-and-comment below is still pinned to lab_sim, so other
+        # sims' reports are produced as artifacts but not yet surfaced in the PR
+        # comment. Merge gating is unaffected (the aggregate `example_ws /
+        # integration` status covers every config_package). Follow-up templates
+        # publish-and-comment over config_package.
+        config_package: [lab_sim, hangar_sim]
         ros_distro: [humble, jazzy]
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2

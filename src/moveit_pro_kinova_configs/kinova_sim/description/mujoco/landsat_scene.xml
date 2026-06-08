@@ -1,6 +1,11 @@
 <mujoco model="kinova scene">
   <include file="gen3_7dof.xml" />
-  <option gravity="0 0 0" />
+  <!-- MuJoCo merges these three <option> blocks: timestep=0.003 (the standard),
+       gravity off, multiccd on, and integrator=implicit. The implicit integrator
+       (not the implicitfast used elsewhere) is intentional for the free-floating
+       zero-g satellite. Keep timestep on this first block; editing a later block
+       must not redeclare/clobber it. -->
+  <option timestep="0.003" gravity="0 0 0" />
   <option>
     <flag multiccd="enable" />
   </option>
