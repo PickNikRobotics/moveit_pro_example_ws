@@ -157,12 +157,15 @@ jobs:
       # can assume the LFS S3 cache IAM role via OIDC (moveit_pro_ci v0.5.x).
       contents: read
       id-token: write
-    uses: PickNikRobotics/moveit_pro_ci/.github/workflows/workspace_integration_test.yaml@e0e05a8de9a8d78e5ba58cd68ca254d3a41cc1d8 # v0.5.1
+    uses: PickNikRobotics/moveit_pro_ci/.github/workflows/workspace_integration_test.yaml@b50a6d565338de91ccd4069bbb88414ffdc0b95a # v0.6.0
     with:
       image_tag: ${{ needs.resolve.outputs.image_tag }}
       image_ref: ${{ needs.resolve.outputs.image_ref }}
       git_ref: ${{ needs.resolve.outputs.git_ref }}
       config_package: ${{ matrix.config_package }}
+      # Jazzy-only: humble integration tests are turned off to cut CI cost.
+      # Drives the reusable workflow's ros_distro matrix (default both distros).
+      ros_distros: '["jazzy"]'
       colcon_test_args: "--executor sequential"
       # GPU runner + enable_gpu are required so MuJoCo's EGL offscreen
       # rendering can attach to a real GPU instead of falling back to slow
@@ -298,15 +301,14 @@ jobs:
       fail-fast: false
       matrix:
         # Keep in sync with `integration-test.matrix.config_package` above and
-        # with the reusable workflow's internal ros_distro matrix. Stream 2
+        # the `ros_distros` input passed to the reusable workflow. Stream 2
         # expands `config_package` per sim; this matrix expands alongside.
-        # NOTE: publish-and-comment below is still pinned to lab_sim, so other
-        # sims' reports are produced as artifacts but not yet surfaced in the PR
-        # comment. Merge gating is unaffected (the aggregate `example_ws /
-        # integration` status covers every config_package). Follow-up templates
-        # publish-and-comment over config_package.
+        # publish-and-comment below aggregates every config_package x ros_distro
+        # produced here.
         config_package: [lab_sim, hangar_sim]
-        ros_distro: [humble, jazzy]
+        # Jazzy-only: humble integration tests are turned off (see the
+        # `ros_distros` input on `integration-test`).
+        ros_distro: [jazzy]
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       # The artifact name comes from workspace_integration_test.yaml:
@@ -398,25 +400,29 @@ jobs:
       # access to a single branch, so the broader grant is unavoidable here.
       contents: write
     steps:
-      # Explicit per-distro downloads into named paths rather than `pattern:`.
-      # actions/download-artifact@v8 with pattern + single match extracts files
-      # directly to `path:` instead of `path:/<artifact-name>/`, breaking the
-      # `reports/integration-test-report-<distro>/` layout the layout step
-      # expects. Per-distro downloads sidestep that ambiguity entirely.
-      # continue-on-error so a missing artifact (distro's render emitted
-      # rendered=false) doesn't fail the job — the layout step's Python flags
-      # the distro as status=missing for the comment.
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        continue-on-error: true
-        with:
-          name: integration-test-report-lab_sim-humble
-          path: reports/integration-test-report-humble/
+      # Explicit per-(config_package, ros_distro) downloads into named paths
+      # rather than `pattern:`. actions/download-artifact@v8 with pattern +
+      # single match extracts files directly to `path:` instead of
+      # `path:/<artifact-name>/`, breaking the
+      # `reports/integration-test-report-<config>-<distro>/` layout the layout
+      # step expects. Explicit downloads sidestep that ambiguity entirely.
+      # continue-on-error so a missing artifact (a config/distro's render
+      # emitted rendered=false) doesn't fail the job — the layout step's Python
+      # flags that pair as status=missing for the comment.
+      #
+      # Keep these in sync with the integration-test / render-report matrices
+      # and the `ros_distros` input (jazzy-only). One step per artifact.
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         continue-on-error: true
         with:
           name: integration-test-report-lab_sim-jazzy
-          path: reports/integration-test-report-jazzy/
-      - name: Lay out per-distro reports
+          path: reports/integration-test-report-lab_sim-jazzy/
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        continue-on-error: true
+        with:
+          name: integration-test-report-hangar_sim-jazzy
+          path: reports/integration-test-report-hangar_sim-jazzy/
+      - name: Lay out per-config-and-distro reports
         id: layout
         run: |
           set -euo pipefail
@@ -432,39 +438,48 @@ jobs:
           # the literal pattern and silently failing the -f check.
           shopt -s nullglob
           AVAILABLE=()
+          # Artifact dirs are reports/integration-test-report-<config>-<distro>/.
+          # config_package names use underscores and distro names do not, so the
+          # distro is the final '-' segment and the config is everything before.
           for d in reports/integration-test-report-*/; do
-            distro="${d#reports/integration-test-report-}"
-            distro="${distro%/}"
+            key="${d#reports/integration-test-report-}"
+            key="${key%/}"          # e.g. lab_sim-jazzy
+            config="${key%-*}"      # lab_sim
+            distro="${key##*-}"     # jazzy
             if [ -f "${d}report.html" ]; then
-              mkdir -p "publish/${BASE}/${distro}"
-              cp "${d}report.html" "publish/${BASE}/${distro}/report.html"
-              AVAILABLE+=("${distro}")
+              mkdir -p "publish/${BASE}/${config}/${distro}"
+              cp "${d}report.html" "publish/${BASE}/${config}/${distro}/report.html"
+              AVAILABLE+=("${config}/${distro}")
             fi
           done
-          # Build a per-distro status map for the comment step. Distros that
-          # were expected but produced no status.json (e.g. studio container
-          # crashed before the test ran) get status=missing so the comment can
-          # still surface them with a ❌.
+          # Build a per-(config, distro) status map for the comment step, nested
+          # as {config: {distro: status}}. Pairs that were expected but produced
+          # no status.json (e.g. the studio container crashed before the test
+          # ran) get status=missing so the comment can still surface them with ❌.
           STATUS_MAP=$(python3 - <<'PY'
           import json, pathlib
-          # Keep in sync with strategy.matrix.ros_distro in the render-report
-          # job above. Used to detect distros that produced no artifact at all
-          # (container crash before xunit upload) so the comment can still flag
-          # them with ❌ instead of silently omitting them.
-          expected = ['humble', 'jazzy']
+          # Keep in sync with the integration-test / render-report matrices and
+          # the `ros_distros` input (jazzy-only). (config_package, ros_distro)
+          # pairs expected to produce a report; pairs with no artifact at all
+          # (container crash before xunit upload) are flagged status=missing so
+          # the comment surfaces them with ❌ instead of silently omitting them.
+          expected = [
+              ('lab_sim', 'jazzy'),
+              ('hangar_sim', 'jazzy'),
+          ]
           out = {}
-          for distro in expected:
-              p = pathlib.Path(f'reports/integration-test-report-{distro}/status.json')
-              if p.exists():
-                  out[distro] = json.loads(p.read_text())
-              else:
-                  out[distro] = {'status': 'missing'}
+          for config, distro in expected:
+              p = pathlib.Path(
+                  f'reports/integration-test-report-{config}-{distro}/status.json'
+              )
+              entry = json.loads(p.read_text()) if p.exists() else {'status': 'missing'}
+              out.setdefault(config, {})[distro] = entry
           print(json.dumps(out))
           PY
           )
           echo "Status map: ${STATUS_MAP}"
           echo "base=${BASE}" >> "$GITHUB_OUTPUT"
-          echo "distros=${AVAILABLE[*]}" >> "$GITHUB_OUTPUT"
+          echo "available=${AVAILABLE[*]}" >> "$GITHUB_OUTPUT"
           {
             echo "status_map<<EOF"
             echo "${STATUS_MAP}"
@@ -487,13 +502,22 @@ jobs:
           # prune pr-<num>/ on PR close if the branch ever gets too big.
           keep_files: true
       - name: Post PR comment
-        # Always post when reports exist — a per-run comment is the canonical
-        # status record for that run, including all-green runs. Comments are
-        # createComment (not sticky), so each run posts its own line; the
-        # most recent comment always reflects the current HEAD's actual
-        # state instead of leaving a stale failure-from-a-prior-run as the
-        # last word in the PR timeline.
-        if: steps.layout.outputs.any == 'true'
+        # Always post a per-run comment — it is the canonical status record for
+        # the run, including all-green runs and the all-missing case (every
+        # config/distro crashed before uploading an artifact): the status map
+        # still carries those pairs as ❌ missing, which is exactly when a
+        # reviewer most needs to see something. Not gated on `any` so the
+        # all-missing case is not silently dropped (Deploy to Pages above stays
+        # gated — there is nothing to publish then). Comments are createComment
+        # (not sticky), so each run posts its own line and the most recent
+        # comment reflects the current HEAD instead of leaving a stale
+        # failure-from-a-prior-run as the last word in the PR timeline.
+        #
+        # always() + base-is-set so the comment posts independent of the Deploy
+        # step's outcome (run it even if Pages deploy failed) while still
+        # skipping the case where the layout step itself errored before
+        # producing a status map.
+        if: always() && steps.layout.outputs.base != ''
         uses: actions/github-script@d746ffe35508b1917358783b479e04febd2b8f71 # v9.0.0
         env:
           BASE: ${{ steps.layout.outputs.base }}
@@ -505,26 +529,32 @@ jobs:
             const owner = context.repo.owner;
             const repo = context.repo.repo;
             const runUrl = `https://github.com/${owner}/${repo}/actions/runs/${context.runId}`;
-            const pagesUrl = (distro) =>
-              `https://${owner.toLowerCase()}.github.io/${repo.toLowerCase()}/${base}/${distro}/report.html`;
-            const lines = Object.entries(statusMap).map(([distro, s]) => {
+            const pagesUrl = (config, distro) =>
+              `https://${owner.toLowerCase()}.github.io/${repo.toLowerCase()}/${base}/${config}/${distro}/report.html`;
+            // statusMap is nested {config: {distro: status}}. Render one
+            // section per config_package, with an indented line per distro.
+            const distroLine = (config, distro, s) => {
               if (s.status === 'missing') {
-                return `- ❌ **${distro}**: no report produced — see [run logs](${runUrl})`;
+                return `  - ❌ **${distro}**: no report produced — see [run logs](${runUrl})`;
               }
               if (s.status === 'unknown') {
-                return `- ⚠️ **${distro}**: report parse failed — see [run logs](${runUrl})`;
+                return `  - ⚠️ **${distro}**: report parse failed — see [run logs](${runUrl})`;
               }
               const icon = s.status === 'passed' ? '✅' : '❌';
               const failed = (s.failures || 0) + (s.errors || 0);
               const counts = failed > 0
                 ? `${failed} failed, ${s.passed} passed`
                 : `${s.passed} passed`;
-              return `- ${icon} **${distro}**: <a href="${pagesUrl(distro)}" target="_blank" rel="noopener noreferrer">view HTML report</a> — ${counts}`;
+              return `  - ${icon} **${distro}**: <a href="${pagesUrl(config, distro)}" target="_blank" rel="noopener noreferrer">view HTML report</a> — ${counts}`;
+            };
+            const sections = Object.entries(statusMap).map(([config, distros]) => {
+              const lines = Object.entries(distros).map(([distro, s]) => distroLine(config, distro, s));
+              return [`- **${config}**`, ...lines].join('\n');
             });
             const body = [
               '### <img src="https://docs.picknik.ai/img/favicon.ico" width="20" height="20" alt=""> MoveIt Pro Example WS - Objectives Integration Test Report',
               '',
-              lines.join('\n'),
+              sections.join('\n'),
             ].join('\n');
             await github.rest.issues.createComment({
               owner,
