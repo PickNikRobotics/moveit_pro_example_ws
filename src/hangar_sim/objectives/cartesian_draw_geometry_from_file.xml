@@ -38,27 +38,45 @@
           publish_rate="50"
         />
         <Control ID="Sequence" name="TopLevelSequence">
-          <Action ID="WaitForDuration" delay_duration="1" />
-          <Action
-            ID="PlanCartesianPath"
-            acceleration_scale_factor="1.000000"
-            blending_radius="0.001"
-            debug_solution="{debug_solution}"
-            ik_cartesian_space_density="0.010000"
-            ik_joint_space_density="0.100000"
-            joint_trajectory_msg="{joint_trajectory_msg}"
-            path="{pose_stamped_msgs}"
-            planning_group_name="manipulator"
-            position_only="false"
-            tip_links="grasp_link"
-            trajectory_sampling_rate="100"
-            velocity_scale_factor="1.000000"
-          />
-          <Action
-            ID="VisualizePath"
-            marker_lifetime="0.000000"
-            path="{pose_stamped_msgs}"
-          />
+          <!--
+            PublishTF advertises the `local` frame from the parallel branch,
+            so the first plan/visualize attempt can race the TF buffer on a
+            loaded machine. Retry the wait+plan+visualize block until the
+            transform is available instead of relying on a single fixed delay.
+            Inverter + RepeatUnlessFailureEachTick + Inverter is the
+            non-deprecated equivalent of RetryUntilSuccessful: the loop keeps
+            re-ticking while the inner block fails, exits as soon as it
+            succeeds, and gives up after num_cycles failed attempts.
+          -->
+          <Decorator ID="Inverter">
+            <Decorator ID="RepeatUnlessFailureEachTick" num_cycles="5">
+              <Decorator ID="Inverter">
+                <Control ID="Sequence" name="PlanDrawPathSequence">
+                  <Action ID="WaitForDuration" delay_duration="1" />
+                  <Action
+                    ID="PlanCartesianPath"
+                    acceleration_scale_factor="1.000000"
+                    blending_radius="0.001"
+                    debug_solution="{debug_solution}"
+                    ik_cartesian_space_density="0.010000"
+                    ik_joint_space_density="0.100000"
+                    joint_trajectory_msg="{joint_trajectory_msg}"
+                    path="{pose_stamped_msgs}"
+                    planning_group_name="manipulator"
+                    position_only="false"
+                    tip_links="grasp_link"
+                    trajectory_sampling_rate="100"
+                    velocity_scale_factor="1.000000"
+                  />
+                  <Action
+                    ID="VisualizePath"
+                    marker_lifetime="0.000000"
+                    path="{pose_stamped_msgs}"
+                  />
+                </Control>
+              </Decorator>
+            </Decorator>
+          </Decorator>
           <Action
             ID="ExecuteTrajectory"
             execution_pipeline="jtc"
@@ -70,10 +88,6 @@
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Cartesian Draw Geometry From File">
-      <MetadataFields>
-        <Metadata runnable="true" />
-        <Metadata subcategory="Training Examples" />
-      </MetadataFields>
       <MetadataFields>
         <Metadata runnable="true" />
         <Metadata subcategory="Training Examples" />

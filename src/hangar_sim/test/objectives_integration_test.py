@@ -29,12 +29,15 @@
 """Integration tests for the hangar_sim objective library."""
 
 import time
+from pathlib import Path
 
 import pytest
 import rclpy
 import tf2_ros
+import yaml
 from rclpy.time import Time
 from control_msgs.action import GripperCommand
+from controller_manager_msgs.srv import ListControllers
 from moveit_pro_test_utils.objective_test_fixture import (
     EndStateSpec,
     ExecuteObjectiveResource,
@@ -148,6 +151,91 @@ def wait_for_mujoco_reset_service(
     wait_for_services(
         execute_objective_resource.node, [MUJOCO_RESET_SERVICE], timeout_sec=120.0
     )
+
+
+# Controllers the config spawns at startup (config.yaml ros2_control
+# controllers_active_at_startup + controllers_inactive_at_startup), read from
+# the config itself so the list cannot drift from it. The spawners run with
+# --controller-manager-timeout 180 and can lag several minutes behind the
+# first tests on a loaded CI runner, so the first controller-using objective
+# (cartesian_draw_geometry_from_file) raced them and failed SwitchController
+# with "Controller joint_trajectory_controller is not an existing controller"
+# or "command interface platform_velocity_controller/linear_x_joint/velocity
+# is not available".
+_CONFIG_YAML_PATH = Path(__file__).parent.parent / "config" / "config.yaml"
+
+
+def _spawned_controllers_from_config() -> frozenset[str]:
+    """Read the spawned-controller names from hangar_sim's config.yaml."""
+    with _CONFIG_YAML_PATH.open("r", encoding="utf-8") as config_file:
+        ros2_control = yaml.safe_load(config_file)["ros2_control"]
+    return frozenset(
+        ros2_control["controllers_active_at_startup"]
+        + ros2_control["controllers_inactive_at_startup"]
+    )
+
+
+REQUIRED_CONTROLLERS = _spawned_controllers_from_config()
+# A controller in either of these states is loaded and configured; "inactive"
+# is enough for a chained controller to export its command interfaces.
+CONFIGURED_CONTROLLER_STATES = ("inactive", "active")
+CONTROLLER_LOAD_TIMEOUT_S = 300.0
+LIST_CONTROLLERS_CALL_TIMEOUT_S = 10.0
+
+
+@pytest.fixture(scope="module", autouse=True)
+def wait_for_controllers_loaded(
+    execute_objective_resource: ExecuteObjectiveResource,
+) -> None:
+    """Block until every spawned controller is loaded and configured.
+
+    Waits for each controller in ``REQUIRED_CONTROLLERS`` to report
+    ``inactive`` or ``active`` from ``/controller_manager/list_controllers``,
+    once per module. ``inactive`` is enough: a configured chained controller
+    (platform_velocity_controller) already exports the command interfaces the
+    whole-body joint_trajectory_controller claims on activation.
+
+    Defined after ``wait_for_mujoco_reset_service`` on purpose: pytest runs
+    module-scoped autouse fixtures in definition order, and the MuJoCo reset
+    service must be warm before the first per-test reset regardless of how
+    long the controller wait takes. Keep this fixture below that one.
+    """
+    node = execute_objective_resource.node
+    client = node.create_client(ListControllers, "/controller_manager/list_controllers")
+    missing = set(REQUIRED_CONTROLLERS)
+    deadline = time.monotonic() + CONTROLLER_LOAD_TIMEOUT_S
+    try:
+        while time.monotonic() < deadline:
+            if not client.wait_for_service(timeout_sec=1.0):
+                continue
+            future = client.call_async(ListControllers.Request())
+            call_deadline = time.monotonic() + LIST_CONTROLLERS_CALL_TIMEOUT_S
+            while not future.done() and time.monotonic() < call_deadline:
+                rclpy.spin_once(node, timeout_sec=0.1)
+            if not future.done():
+                # Abandoning an in-flight future and destroying the client
+                # later trips rcl "use after free" errors — cancel it first.
+                future.cancel()
+                # Pace the retry instead of re-issuing the call back-to-back.
+                rclpy.spin_once(node, timeout_sec=0.5)
+                continue
+            response = future.result()
+            configured = {
+                controller.name
+                for controller in response.controller
+                if controller.state in CONFIGURED_CONTROLLER_STATES
+            }
+            missing = set(REQUIRED_CONTROLLERS) - configured
+            if not missing:
+                return
+            rclpy.spin_once(node, timeout_sec=0.5)
+        pytest.fail(
+            f"Controllers not loaded and configured within "
+            f"{CONTROLLER_LOAD_TIMEOUT_S:.1f}s: {sorted(missing)}. "
+            "Objectives that switch controllers cannot run."
+        )
+    finally:
+        node.destroy_client(client)
 
 
 # Fixed and end-effector frames the Cartesian objectives visualize and plan
