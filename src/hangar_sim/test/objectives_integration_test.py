@@ -36,7 +36,9 @@ import tf2_ros
 from rclpy.time import Time
 from control_msgs.action import GripperCommand
 from moveit_pro_test_utils.objective_test_fixture import (
+    EndStateSpec,
     ExecuteObjectiveResource,
+    JointTarget,
     MUJOCO_RESET_HOOK,
     MUJOCO_RESET_SERVICE,
     SIM_RESETTER,
@@ -187,6 +189,47 @@ def wait_for_robot_tf(
     )
 
 
+# --- End-state correctness checks ---
+#
+# A small, deterministic set of objectives gets an end-state assertion beyond
+# SUCCESS/FAILURE. Broad population is out of scope (follow-up tied to #17769).
+#
+# "Move to Arm Upright" drives the manipulator group to the "Arm upright"
+# waypoint via the joint_trajectory_controller. We resolve the expected target
+# at runtime from /get_saved_waypoints (same source of truth the objective
+# uses), then restrict the comparison to the manipulator arm joints: the saved
+# waypoint's joint_state also carries the mecanum base joints (linear_x/y,
+# rotational_yaw), which this objective does not command, so asserting them
+# would compare against an uncommanded pose.
+JOINT_CHECK_OBJECTIVE = "Move to Arm Upright"
+JOINT_CHECK_WAYPOINT = "Arm upright"
+MANIPULATOR_ARM_JOINTS = (
+    "shoulder_pan_joint",
+    "shoulder_lift_joint",
+    "elbow_joint",
+    "wrist_1_joint",
+    "wrist_2_joint",
+    "wrist_3_joint",
+)
+
+
+def _expected_end_state_by_id(
+    objective_id: str,
+    resource: ExecuteObjectiveResource,
+) -> dict[str, EndStateSpec] | None:
+    """Build the end-state spec for objectives we assert on; None otherwise.
+
+    Resolves the waypoint target lazily, only for the objective under test, so
+    a missing /get_saved_waypoints surfaces solely on the objective that needs
+    it rather than penalizing the whole suite.
+    """
+    if objective_id != JOINT_CHECK_OBJECTIVE:
+        return None
+    waypoint_joints = resource.get_waypoint_target(JOINT_CHECK_WAYPOINT)
+    arm_target = {joint: waypoint_joints[joint] for joint in MANIPULATOR_ARM_JOINTS}
+    return {objective_id: EndStateSpec(joints=JointTarget(positions=arm_target))}
+
+
 @pytest.mark.parametrize(
     "objective_id, should_cancel",
     get_objective_pytest_params("hangar_sim", cancel_objectives, skip_objectives),
@@ -201,8 +244,16 @@ def test_all_objectives(
         execute_objective_resource.node,
         [name for _, name in required_action_servers],
     )
+    expected_end_state_by_id = _expected_end_state_by_id(
+        objective_id, execute_objective_resource
+    )
     try:
-        run_objective(objective_id, should_cancel, execute_objective_resource)
+        run_objective(
+            objective_id,
+            should_cancel,
+            execute_objective_resource,
+            expected_end_state_by_id=expected_end_state_by_id,
+        )
     except AssertionError as e:
         mode = "cancel" if should_cancel else "execute"
         pytest.fail(f"Objective '{objective_id}' failed to {mode}: {e}")
