@@ -157,7 +157,7 @@ jobs:
       # can assume the LFS S3 cache IAM role via OIDC (moveit_pro_ci v0.5.x).
       contents: read
       id-token: write
-    uses: PickNikRobotics/moveit_pro_ci/.github/workflows/workspace_integration_test.yaml@v0.7.0 # pending: tag cut from moveit_pro_ci#34; re-pin to the v0.7.0 commit SHA once released
+    uses: PickNikRobotics/moveit_pro_ci/.github/workflows/workspace_integration_test.yaml@3a8bd80371004ebc75dbddfed1c13bd012258fc4 # v0.7.0
     with:
       image_tag: ${{ needs.resolve.outputs.image_tag }}
       image_ref: ${{ needs.resolve.outputs.image_ref }}
