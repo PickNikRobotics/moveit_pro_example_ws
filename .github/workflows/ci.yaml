@@ -85,7 +85,7 @@ jobs:
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           MOVEIT_PRO_PR_FROM_BODY: ${{ steps.detect_needs.outputs.moveit_pro_pr }}
-          GHCR_URL: ${{ vars.GHCR_URL }}
+          DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
         with:
           # Falls back to the default GITHUB_TOKEN when the App token wasn't
           # minted (no paired PR, not a dispatch). The default is sufficient
@@ -93,14 +93,22 @@ jobs:
           github-token: ${{ steps.app-token.outputs.token || github.token }}
           script: |
             const event = context.eventName;
-            const ghcrUrl = process.env.GHCR_URL || 'ghcr.io/picknikrobotics';
+            // Docker Hub org that hosts the moveit-studio customer image.
+            // moveit_pro publishes under vars.DOCKERHUB_USERNAME (picknikciuser),
+            // which is the same default the reusable workflow falls back to; that
+            // var is not defined in this repo, so default to the known owner.
+            const dockerhubUsername = process.env.DOCKERHUB_USERNAME || 'picknikciuser';
             let image_ref = '';
             let image_tag = '';
             let git_ref = '';
             let moveit_pro_sha = '';
             let moveit_pro_pr_number = '';
 
-            const sanitizeBranch = (s) => s.replace(/[^a-zA-Z0-9._-]/g, '-');
+            // Mirror moveit_pro's setup_docker_cache "Compute image tag" step
+            // exactly (`echo $TAG | tr '/' '_'`): only the slash is rewritten,
+            // to an underscore. A broader sanitize (e.g. slash -> dash) produces
+            // a tag that does not match the published image and 404s the pull.
+            const sanitizeBranch = (s) => s.replace(/\//g, '_');
 
             if (event === 'repository_dispatch') {
               const p = context.payload.client_payload || {};
@@ -120,7 +128,12 @@ jobs:
                 });
                 moveit_pro_sha = pr.head.sha;
                 moveit_pro_pr_number = needsPr;
-                image_ref = `${ghcrUrl}/moveit-studio:${sanitizeBranch(pr.head.ref)}-{0}-amd64`;
+                // Pull the paired moveit_pro PR's customer image from Docker Hub
+                // — that is where moveit_pro publishes it (the GHCR moveit-studio
+                // retag is gone). Leave the tag suffix-free (`…-amd64`): this
+                // caller sets enable_gpu, so the reusable workflow appends the
+                // -cuda12.6-cudnn9 suffix itself. Baking it here double-appends.
+                image_ref = `${dockerhubUsername}/moveit-studio:${sanitizeBranch(pr.head.ref)}-{0}-amd64`;
               }
             } else {
               // push, schedule, workflow_dispatch. A `workflow_dispatch` input
