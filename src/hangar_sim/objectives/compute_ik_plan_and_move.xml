@@ -13,10 +13,12 @@
         pose_stamped="{target_pose}"
         position_xyz="0;0;0.3"
       />
+      <Action ID="ResetVector" vector="{target_poses}" />
       <Action
-        ID="AddPoseStampedToVector"
-        input="{target_pose}"
-        vector="{target_poses}"
+        ID="PushBackVector"
+        input_vector="{target_poses}"
+        element="{target_pose}"
+        output_vector="{target_poses}"
       />
       <Action
         ID="GetCurrentPlanningScene"

@@ -35,10 +35,12 @@
         marker_size="0.100000"
         pose="{pose_stamped}"
       />
+      <Action ID="ResetVector" vector="{pose_stamped_vector}" />
       <Action
-        ID="AddPoseStampedToVector"
-        input="{pose_stamped}"
-        vector="{pose_stamped_vector}"
+        ID="PushBackVector"
+        input_vector="{pose_stamped_vector}"
+        element="{pose_stamped}"
+        output_vector="{pose_stamped_vector}"
       />
       <Action
         ID="CreatePoseStamped"
@@ -48,9 +50,10 @@
         position_xyz="0;-0.4;0.4"
       />
       <Action
-        ID="AddPoseStampedToVector"
-        input="{pose_stamped}"
-        vector="{pose_stamped_vector}"
+        ID="PushBackVector"
+        input_vector="{pose_stamped_vector}"
+        element="{pose_stamped}"
+        output_vector="{pose_stamped_vector}"
       />
       <Action
         ID="CreatePoseStamped"
@@ -60,9 +63,10 @@
         position_xyz="0.4;-0.4;0.4"
       />
       <Action
-        ID="AddPoseStampedToVector"
-        input="{pose_stamped}"
-        vector="{pose_stamped_vector}"
+        ID="PushBackVector"
+        input_vector="{pose_stamped_vector}"
+        element="{pose_stamped}"
+        output_vector="{pose_stamped_vector}"
       />
       <Action
         ID="CreatePoseStamped"
@@ -72,9 +76,10 @@
         position_xyz="0.4;0;0.4"
       />
       <Action
-        ID="AddPoseStampedToVector"
-        input="{pose_stamped}"
-        vector="{pose_stamped_vector}"
+        ID="PushBackVector"
+        input_vector="{pose_stamped_vector}"
+        element="{pose_stamped}"
+        output_vector="{pose_stamped_vector}"
       />
       <Action
         ID="CreatePoseStamped"
@@ -84,9 +89,10 @@
         position_xyz="0;0;0.4"
       />
       <Action
-        ID="AddPoseStampedToVector"
-        input="{pose_stamped}"
-        vector="{pose_stamped_vector}"
+        ID="PushBackVector"
+        input_vector="{pose_stamped_vector}"
+        element="{pose_stamped}"
+        output_vector="{pose_stamped_vector}"
       />
       <Action
         ID="VisualizePath"

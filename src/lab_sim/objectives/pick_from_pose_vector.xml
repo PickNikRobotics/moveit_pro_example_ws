@@ -67,9 +67,10 @@
       />
       <Action ID="ResetPoseStampedVector" vector="{retract_path}" />
       <Action
-        ID="AddPoseStampedToVector"
-        input="{retract_pose}"
-        vector="{retract_path}"
+        ID="PushBackVector"
+        input_vector="{retract_path}"
+        element="{retract_pose}"
+        output_vector="{retract_path}"
       />
       <Action
         ID="PlanCartesianPath"

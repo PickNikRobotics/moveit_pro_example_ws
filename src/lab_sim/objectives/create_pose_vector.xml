@@ -15,10 +15,12 @@
         pose_stamped="{pose_stamped}"
         reference_frame="world"
       />
+      <Action ID="ResetVector" vector="{target_poses}" />
       <Action
-        ID="AddPoseStampedToVector"
-        vector="{target_poses}"
-        input="{pose_stamped}"
+        ID="PushBackVector"
+        input_vector="{target_poses}"
+        element="{pose_stamped}"
+        output_vector="{target_poses}"
       />
       <Action
         ID="CreatePoseStamped"
@@ -28,9 +30,10 @@
         reference_frame="world"
       />
       <Action
-        ID="AddPoseStampedToVector"
-        vector="{target_poses}"
-        input="{pose_stamped}"
+        ID="PushBackVector"
+        input_vector="{target_poses}"
+        element="{pose_stamped}"
+        output_vector="{target_poses}"
       />
       <Action
         ID="CreatePoseStamped"
@@ -40,9 +43,10 @@
         reference_frame="world"
       />
       <Action
-        ID="AddPoseStampedToVector"
-        vector="{target_poses}"
-        input="{pose_stamped}"
+        ID="PushBackVector"
+        input_vector="{target_poses}"
+        element="{pose_stamped}"
+        output_vector="{target_poses}"
       />
       <Action
         ID="CreatePoseStamped"
@@ -52,9 +56,10 @@
         reference_frame="world"
       />
       <Action
-        ID="AddPoseStampedToVector"
-        vector="{target_poses}"
-        input="{pose_stamped}"
+        ID="PushBackVector"
+        input_vector="{target_poses}"
+        element="{pose_stamped}"
+        output_vector="{target_poses}"
       />
       <Action
         ID="CreatePoseStamped"
@@ -64,9 +69,10 @@
         reference_frame="world"
       />
       <Action
-        ID="AddPoseStampedToVector"
-        vector="{target_poses}"
-        input="{pose_stamped}"
+        ID="PushBackVector"
+        input_vector="{target_poses}"
+        element="{pose_stamped}"
+        output_vector="{target_poses}"
       />
       <Action
         ID="CreatePoseStamped"
@@ -76,9 +82,10 @@
         reference_frame="world"
       />
       <Action
-        ID="AddPoseStampedToVector"
-        vector="{target_poses}"
-        input="{pose_stamped}"
+        ID="PushBackVector"
+        input_vector="{target_poses}"
+        element="{pose_stamped}"
+        output_vector="{target_poses}"
       />
       <Action
         ID="CreatePoseStamped"
@@ -88,9 +95,10 @@
         reference_frame="world"
       />
       <Action
-        ID="AddPoseStampedToVector"
-        vector="{target_poses}"
-        input="{pose_stamped}"
+        ID="PushBackVector"
+        input_vector="{target_poses}"
+        element="{pose_stamped}"
+        output_vector="{target_poses}"
       />
       <Action
         ID="CreatePoseStamped"
@@ -100,9 +108,10 @@
         reference_frame="world"
       />
       <Action
-        ID="AddPoseStampedToVector"
-        vector="{target_poses}"
-        input="{pose_stamped}"
+        ID="PushBackVector"
+        input_vector="{target_poses}"
+        element="{pose_stamped}"
+        output_vector="{target_poses}"
       />
     </Control>
   </BehaviorTree>

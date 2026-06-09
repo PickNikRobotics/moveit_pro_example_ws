@@ -112,9 +112,10 @@
                   />
                 </Decorator>
                 <Action
-                  ID="AddPoseStampedToVector"
-                  input="{x_incremental_pose_rotated}"
-                  vector="{target_poses}"
+                  ID="PushBackVector"
+                  input_vector="{target_poses}"
+                  element="{x_incremental_pose_rotated}"
+                  output_vector="{target_poses}"
                 />
                 <Action
                   ID="TransformPose"

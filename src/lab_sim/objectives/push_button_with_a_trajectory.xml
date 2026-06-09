@@ -37,10 +37,12 @@
         marker_size="0.100000"
         pose="{target_pose}"
       />
+      <Action ID="ResetVector" vector="{path}" />
       <Action
-        ID="AddPoseStampedToVector"
-        input="{target_pose}"
-        vector="{path}"
+        ID="PushBackVector"
+        input_vector="{path}"
+        element="{target_pose}"
+        output_vector="{path}"
       />
       <Action
         ID="PlanCartesianPath"

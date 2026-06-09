@@ -25,9 +25,10 @@
         marker_size="0.100000"
       />
       <Action
-        ID="AddPoseStampedToVector"
-        input="{approach_pose}"
-        vector="{pose_stamped_vector}"
+        ID="PushBackVector"
+        input_vector="{pose_stamped_vector}"
+        element="{approach_pose}"
+        output_vector="{pose_stamped_vector}"
       />
       <Action
         ID="VisualizePose"
@@ -37,9 +38,10 @@
         marker_size="0.100000"
       />
       <Action
-        ID="AddPoseStampedToVector"
-        input="{target_pose}"
-        vector="{pose_stamped_vector}"
+        ID="PushBackVector"
+        input_vector="{pose_stamped_vector}"
+        element="{target_pose}"
+        output_vector="{pose_stamped_vector}"
       />
       <Decorator
         ID="ForceSuccess"

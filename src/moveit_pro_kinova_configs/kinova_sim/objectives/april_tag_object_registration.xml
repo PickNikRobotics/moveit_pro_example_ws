@@ -201,20 +201,24 @@
         </Decorator>
         <Action ID="AlwaysSuccess" />
       </Control>
+      <Action ID="ResetVector" vector="{pose_stamped_vector}" />
       <Action
-        ID="AddPoseStampedToVector"
-        vector="{pose_stamped_vector}"
-        input="{initial_goal_pose}"
+        ID="PushBackVector"
+        input_vector="{pose_stamped_vector}"
+        element="{initial_goal_pose}"
+        output_vector="{pose_stamped_vector}"
       />
       <Action
-        ID="AddPoseStampedToVector"
-        vector="{pose_stamped_vector}"
-        input="{goal_pose}"
+        ID="PushBackVector"
+        input_vector="{pose_stamped_vector}"
+        element="{goal_pose}"
+        output_vector="{pose_stamped_vector}"
       />
       <Action
-        ID="AddPoseStampedToVector"
-        vector="{pose_stamped_vector}"
-        input="{hole_object}"
+        ID="PushBackVector"
+        input_vector="{pose_stamped_vector}"
+        element="{hole_object}"
+        output_vector="{pose_stamped_vector}"
       />
       <Action
         ID="VisualizePose"

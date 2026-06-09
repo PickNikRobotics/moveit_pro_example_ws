@@ -73,9 +73,10 @@
               translation_xyz="0;0;0"
             />
             <Action
-              ID="AddPoseStampedToVector"
-              input="{output_pose}"
-              vector="{mesh_normal_poses_reoriented}"
+              ID="PushBackVector"
+              input_vector="{mesh_normal_poses_reoriented}"
+              element="{output_pose}"
+              output_vector="{mesh_normal_poses_reoriented}"
             />
           </Control>
         </Decorator>

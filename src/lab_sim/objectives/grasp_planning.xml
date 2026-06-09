@@ -22,10 +22,12 @@
           pose_stamped="{grasp_candidate_1}"
           reference_frame="world"
         />
+        <Action ID="ResetVector" vector="{grasp_candidates}" />
         <Action
-          ID="AddPoseStampedToVector"
-          input="{grasp_candidate_1}"
-          vector="{grasp_candidates}"
+          ID="PushBackVector"
+          input_vector="{grasp_candidates}"
+          element="{grasp_candidate_1}"
+          output_vector="{grasp_candidates}"
         />
         <Action
           ID="VisualizePose"
@@ -42,9 +44,10 @@
           reference_frame="world"
         />
         <Action
-          ID="AddPoseStampedToVector"
-          input="{grasp_candidate_2}"
-          vector="{grasp_candidates}"
+          ID="PushBackVector"
+          input_vector="{grasp_candidates}"
+          element="{grasp_candidate_2}"
+          output_vector="{grasp_candidates}"
         />
         <Action
           ID="VisualizePose"

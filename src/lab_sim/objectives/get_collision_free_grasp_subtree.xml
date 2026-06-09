@@ -99,14 +99,16 @@
           />
           <Action ID="ResetPoseStampedVector" vector="{grasp_goal}" />
           <Action
-            ID="AddPoseStampedToVector"
-            input="{pregrasp_grasp}"
-            vector="{grasp_goal}"
+            ID="PushBackVector"
+            input_vector="{grasp_goal}"
+            element="{pregrasp_grasp}"
+            output_vector="{grasp_goal}"
           />
           <Action
-            ID="AddPoseStampedToVector"
-            input="{output_grasp}"
-            vector="{grasp_goal}"
+            ID="PushBackVector"
+            input_vector="{grasp_goal}"
+            element="{output_grasp}"
+            output_vector="{grasp_goal}"
           />
           <Action
             ID="PlanCartesianPath"
