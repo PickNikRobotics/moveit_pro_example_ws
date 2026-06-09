@@ -131,26 +131,23 @@
           _collapsed="true"
           vector="{drop_path}"
         />
-        <SubTree
-          ID="AddToVector"
+        <Action
+          ID="PushBackVector"
           name="Add up via-point"
-          _collapsed="true"
           element="{up_pose}"
           input_vector="{drop_path}"
           output_vector="{drop_path}"
         />
-        <SubTree
-          ID="AddToVector"
+        <Action
+          ID="PushBackVector"
           name="Add over hover"
-          _collapsed="true"
           element="{over_pose}"
           input_vector="{drop_path}"
           output_vector="{drop_path}"
         />
-        <SubTree
-          ID="AddToVector"
+        <Action
+          ID="PushBackVector"
           name="Add down drop"
-          _collapsed="true"
           element="{down_pose}"
           input_vector="{drop_path}"
           output_vector="{drop_path}"

@@ -34,9 +34,10 @@
           pose="{approach_pose}"
         />
         <Action
-          ID="AddPoseStampedToVector"
-          input="{approach_pose}"
-          vector="{approach_candidate_pose_vector}"
+          ID="PushBackVector"
+          input_vector="{approach_candidate_pose_vector}"
+          element="{approach_pose}"
+          output_vector="{approach_candidate_pose_vector}"
         />
         <Decorator ID="Repeat" num_cycles="7">
           <Control ID="Sequence" name="">
@@ -48,9 +49,10 @@
               translation_xyz="0;0;0"
             />
             <Action
-              ID="AddPoseStampedToVector"
-              input="{approach_pose}"
-              vector="{approach_candidate_pose_vector}"
+              ID="PushBackVector"
+              input_vector="{approach_candidate_pose_vector}"
+              element="{approach_pose}"
+              output_vector="{approach_candidate_pose_vector}"
             />
             <Action ID="Script" code="approach_count += 1" />
             <Action

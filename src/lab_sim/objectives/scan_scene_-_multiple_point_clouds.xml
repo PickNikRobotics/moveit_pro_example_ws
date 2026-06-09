@@ -13,6 +13,8 @@
       <!--Clear previous data-->
       <SubTree ID="Clear Snapshot" _collapsed="true" />
       <Action ID="SwitchUIPrimaryView" primary_view_name="Visualization" />
+      <!--Start a fresh point cloud vector before accumulating snapshots into it.-->
+      <Action ID="ResetVector" vector="{point_cloud_vector}" />
       <!--Move to center scan position and capture-->
       <SubTree
         ID="Move to Waypoint"
@@ -35,9 +37,10 @@
         position_xyz="0.80;0;0"
       />
       <Action
-        ID="AddPoseStampedToVector"
-        input="{offset_pose}"
-        vector="{cartesian_path}"
+        ID="PushBackVector"
+        input_vector="{cartesian_path}"
+        element="{offset_pose}"
+        output_vector="{cartesian_path}"
       />
       <Action
         ID="PlanCartesianPath"
@@ -70,9 +73,10 @@
         position_xyz="-1.60;0;0"
       />
       <Action
-        ID="AddPoseStampedToVector"
-        input="{offset_pose}"
-        vector="{cartesian_path}"
+        ID="PushBackVector"
+        input_vector="{cartesian_path}"
+        element="{offset_pose}"
+        output_vector="{cartesian_path}"
       />
       <Action
         ID="PlanCartesianPath"

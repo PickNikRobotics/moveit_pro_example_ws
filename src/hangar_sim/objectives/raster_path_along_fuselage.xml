@@ -86,9 +86,10 @@
       />
       <Decorator ID="ForEach" index="{i1}" out="{p1}" vector_in="{contour_1}">
         <Action
-          ID="AddPoseStampedToVector"
-          input="{p1}"
-          vector="{raster_path}"
+          ID="PushBackVector"
+          input_vector="{raster_path}"
+          element="{p1}"
+          output_vector="{raster_path}"
         />
       </Decorator>
       <!--===== Row 2: middle, z = 1.55, reversed for a lawn-mower turn =====-->
@@ -128,9 +129,10 @@
       />
       <Decorator ID="ForEach" index="{i2}" out="{p2}" vector_in="{contour_2}">
         <Action
-          ID="AddPoseStampedToVector"
-          input="{p2}"
-          vector="{raster_path}"
+          ID="PushBackVector"
+          input_vector="{raster_path}"
+          element="{p2}"
+          output_vector="{raster_path}"
         />
       </Decorator>
       <!--===== Row 3: bottom, z = 1.4, left-to-right =====-->
@@ -165,9 +167,10 @@
       />
       <Decorator ID="ForEach" index="{i3}" out="{p3}" vector_in="{contour_3}">
         <Action
-          ID="AddPoseStampedToVector"
-          input="{p3}"
-          vector="{raster_path}"
+          ID="PushBackVector"
+          input_vector="{raster_path}"
+          element="{p3}"
+          output_vector="{raster_path}"
         />
       </Decorator>
       <!--Visualize and execute the stitched raster as a single Cartesian motion.-->

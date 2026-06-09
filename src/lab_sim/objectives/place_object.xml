@@ -15,10 +15,12 @@
           pose_stamped="{pose_stamped}"
           reference_frame="world"
         />
+        <Action ID="ResetVector" vector="{place_poses}" />
         <Action
-          ID="AddPoseStampedToVector"
-          input="{pose_stamped}"
-          vector="{place_poses}"
+          ID="PushBackVector"
+          input_vector="{place_poses}"
+          element="{pose_stamped}"
+          output_vector="{place_poses}"
         />
       </Control>
       <SubTree

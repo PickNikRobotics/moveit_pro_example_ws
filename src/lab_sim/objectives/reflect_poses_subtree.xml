@@ -17,9 +17,10 @@
       >
         <Control ID="Sequence">
           <Action
-            ID="AddPoseStampedToVector"
-            input="{single_pose}"
-            vector="{output_poses}"
+            ID="PushBackVector"
+            input_vector="{output_poses}"
+            element="{single_pose}"
+            output_vector="{output_poses}"
           />
           <Action
             ID="TransformPose"
@@ -29,9 +30,10 @@
             quaternion_xyzw="{reflection_axis}"
           />
           <Action
-            ID="AddPoseStampedToVector"
-            input="{rotated_pose}"
-            vector="{output_poses}"
+            ID="PushBackVector"
+            input_vector="{output_poses}"
+            element="{rotated_pose}"
+            output_vector="{output_poses}"
           />
         </Control>
       </Decorator>

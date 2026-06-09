@@ -53,14 +53,16 @@
       />
       <Action ID="ResetVector" vector="{bin_jig_cloud_vector}" />
       <Action
-        ID="AddPointCloudToVector"
-        point_cloud="{bin_table_cloud}"
-        point_cloud_vector="{bin_jig_cloud_vector}"
+        ID="PushBackVector"
+        input_vector="{bin_jig_cloud_vector}"
+        element="{bin_table_cloud}"
+        output_vector="{bin_jig_cloud_vector}"
       />
       <Action
-        ID="AddPointCloudToVector"
-        point_cloud="{jig_cloud}"
-        point_cloud_vector="{bin_jig_cloud_vector}"
+        ID="PushBackVector"
+        input_vector="{bin_jig_cloud_vector}"
+        element="{jig_cloud}"
+        output_vector="{bin_jig_cloud_vector}"
       />
       <Decorator
         ID="ForEach"
@@ -76,9 +78,10 @@
             target_frame="world"
           />
           <Action
-            ID="AddPointCloudToVector"
-            point_cloud="{additional_cloud}"
-            point_cloud_vector="{bin_jig_cloud_vector}"
+            ID="PushBackVector"
+            input_vector="{bin_jig_cloud_vector}"
+            element="{additional_cloud}"
+            output_vector="{bin_jig_cloud_vector}"
           />
         </Control>
       </Decorator>

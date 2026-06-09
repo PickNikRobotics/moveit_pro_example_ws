@@ -45,9 +45,10 @@
             />
           </Decorator>
           <Action
-            ID="AddPoseStampedToVector"
-            input="{computed_pose}"
-            vector="{poses_at_waypoint_vec}"
+            ID="PushBackVector"
+            input_vector="{poses_at_waypoint_vec}"
+            element="{computed_pose}"
+            output_vector="{poses_at_waypoint_vec}"
           />
         </Control>
       </Decorator>
@@ -68,9 +69,10 @@
         pose="{average_pose_stamped}"
       />
       <Action
-        ID="AddPoseStampedToVector"
-        input="{average_pose_stamped}"
-        vector="{computed_poses_vector}"
+        ID="PushBackVector"
+        input_vector="{computed_poses_vector}"
+        element="{average_pose_stamped}"
+        output_vector="{computed_poses_vector}"
       />
     </Control>
   </BehaviorTree>

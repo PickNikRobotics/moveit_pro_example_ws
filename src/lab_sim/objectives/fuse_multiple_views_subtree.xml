@@ -10,6 +10,8 @@
     <Control ID="Sequence">
       <SubTree ID="Clear Snapshot" _collapsed="true" />
       <Action ID="SwitchUIPrimaryView" primary_view_name="Visualization" />
+      <!--Start a fresh point cloud vector before accumulating snapshots into it.-->
+      <Action ID="ResetVector" vector="{point_cloud_vector}" />
       <SubTree
         ID="Move to Waypoint"
         _collapsed="true"
