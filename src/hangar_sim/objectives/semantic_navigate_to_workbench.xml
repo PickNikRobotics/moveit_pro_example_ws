@@ -6,14 +6,14 @@
 <root BTCPP_format="4" main_tree_to_execute="Semantic Navigate (Smoke Test)">
   <BehaviorTree
     ID="Semantic Navigate (Smoke Test)"
-    _description="Smoke test for Semantic Nav: drive to the SE door nav-ready standoff pose (map frame)."
+    _description="Smoke test for Semantic Nav: drive to the aircraft NOSE approach pose (validates A's riskiest offset)."
     _favorite="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
         ID="CreatePoseStamped"
         reference_frame="map"
-        position_xyz="21.259;0.6;0.0"
+        position_xyz="0.004;23.573;0.0"
         orientation_xyzw="0.0;0.0;-0.7071;0.7071"
         pose_stamped="{target_pose}"
       />
