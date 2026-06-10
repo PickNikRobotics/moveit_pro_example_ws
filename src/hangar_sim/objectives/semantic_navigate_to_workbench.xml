@@ -13,8 +13,8 @@
       <Action
         ID="CreatePoseStamped"
         reference_frame="map"
-        position_xyz="0.004;23.573;0.0"
-        orientation_xyzw="0.0;0.0;-0.7071;0.7071"
+        position_xyz="0.004;8.573;0.0"
+        orientation_xyzw="0.0;0.0;0.7071;0.7071"
         pose_stamped="{target_pose}"
       />
       <Action
