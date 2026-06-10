@@ -1,17 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!-- Smoke test: drives the Ridgeback to a hardcoded "workbench" pose with zero parameters.
-     Proves the Semantic Nav drive path end-to-end independent of the resolver/viewpane. -->
-<root BTCPP_format="4" main_tree_to_execute="Semantic Navigate to Workbench">
+<!-- Smoke test: drives the Ridgeback to the docking station (a pose that is free in the nav map)
+     with zero parameters. Proves the Semantic Nav drive path end-to-end, independent of the
+     resolver/viewpane. NOTE: object *centers* from the semantic map are often inside obstacles
+     (walls/shelves); the dock center is in free space, which is why it is used here. -->
+<root BTCPP_format="4" main_tree_to_execute="Semantic Navigate to Dock">
   <BehaviorTree
-    ID="Semantic Navigate to Workbench"
-    _description="Smoke test for Semantic Nav: drive to a fixed workbench pose in the map frame."
+    ID="Semantic Navigate to Dock"
+    _description="Smoke test for Semantic Nav: drive to the docking station (free-space pose, map frame)."
     _favorite="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
         ID="CreatePoseStamped"
         reference_frame="map"
-        position_xyz="24.0;8.3;0.0"
+        position_xyz="0.194;28.924;0.0"
         orientation_xyzw="0.0;0.0;0.0;1.0"
         pose_stamped="{target_pose}"
       />
@@ -33,7 +35,7 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Semantic Navigate to Workbench">
+    <SubTree ID="Semantic Navigate to Dock">
       <MetadataFields>
         <Metadata runnable="true" />
         <Metadata subcategory="Navigation" />
