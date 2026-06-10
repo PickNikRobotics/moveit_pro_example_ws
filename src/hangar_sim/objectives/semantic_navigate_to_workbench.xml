@@ -3,9 +3,9 @@
      ~2.25 m into the interior). Validates the standoff approach against the live costmap. If this
      fails, bump the standoff (B owns NAV_STANDOFF_M) or add obstacle-aware per-cluster offsets.
      Stable objective ID so we can iterate the pose without renaming in the UI. -->
-<root BTCPP_format="4" main_tree_to_execute="Semantic Navigate (Smoke Test)">
+<root BTCPP_format="4" main_tree_to_execute="Semantic Navigate: Aircraft Tail">
   <BehaviorTree
-    ID="Semantic Navigate (Smoke Test)"
+    ID="Semantic Navigate: Aircraft Tail"
     _description="Smoke test for Semantic Nav: drive to the aircraft NOSE approach pose (validates A's riskiest offset)."
     _favorite="true"
   >
@@ -35,7 +35,7 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Semantic Navigate (Smoke Test)">
+    <SubTree ID="Semantic Navigate: Aircraft Tail">
       <MetadataFields>
         <Metadata runnable="true" />
         <Metadata subcategory="Navigation" />
