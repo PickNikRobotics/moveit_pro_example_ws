@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- Auto-generated. Fired BY NAME ("Semantic Navigate: access-stand-south-east") via /execute_objective from B's pane. -->
+<root BTCPP_format="4" main_tree_to_execute="Semantic Navigate: access-stand-south-east">
+  <BehaviorTree ID="Semantic Navigate: access-stand-south-east" _description="Drive to Access Stand (south-east) (access-stand-south-east)." _favorite="true">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="CreatePoseStamped" reference_frame="map"
+        position_xyz="11.5770;9.3090;0.0"
+        orientation_xyzw="0.0;0.0;0.000000;1.000000"
+        pose_stamped="{target_pose}" />
+      <Action ID="SwitchController"
+        activate_controllers="platform_velocity_controller_nav2"
+        deactivate_controllers="velocity_force_controller;joint_trajectory_controller;platform_velocity_controller" />
+      <Action ID="NavigateToPoseAction" action_name="/navigate_to_pose"
+        behavior_tree_path="/opt/ros/humble/share/nav2_bt_navigator/behavior_trees/navigate_to_pose_w_replanning_and_recovery.xml"
+        pose_stamped="{target_pose}" />
+      <Action ID="SwitchController" activate_controllers="joint_trajectory_controller" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Semantic Navigate: access-stand-south-east">
+      <MetadataFields><Metadata runnable="true" /><Metadata subcategory="Semantic Nav" /></MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

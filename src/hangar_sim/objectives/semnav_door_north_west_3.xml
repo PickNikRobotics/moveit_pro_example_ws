@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!-- Auto-generated clickable Semantic Nav demo objective. Drives to Double Door (east) nav-ready pose. -->
-<root BTCPP_format="4" main_tree_to_execute="Semantic Navigate: Double Door (east)">
-  <BehaviorTree ID="Semantic Navigate: Double Door (east)" _description="Drive to Double Door (east) (door-east)." _favorite="true">
+<!-- Auto-generated. Fired BY NAME ("Semantic Navigate: door-north-west-3") via /execute_objective from B's pane. -->
+<root BTCPP_format="4" main_tree_to_execute="Semantic Navigate: door-north-west-3">
+  <BehaviorTree ID="Semantic Navigate: door-north-west-3" _description="Drive to Door (north-west) (door-north-west-3)." _favorite="true">
     <Control ID="Sequence" name="TopLevelSequence">
       <Action ID="CreatePoseStamped" reference_frame="map"
-        position_xyz="22.6000;24.5590;0.0"
-        orientation_xyzw="0.000000;0.000000;0.000000;1.000000"
+        position_xyz="-8.8590;55.7000;0.0"
+        orientation_xyzw="0.0;0.0;0.707179;0.707035"
         pose_stamped="{target_pose}" />
       <Action ID="SwitchController"
         activate_controllers="platform_velocity_controller_nav2"
@@ -17,11 +17,8 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Semantic Navigate: Double Door (east)">
-      <MetadataFields>
-        <Metadata runnable="true" />
-        <Metadata subcategory="Semantic Nav Demo" />
-      </MetadataFields>
+    <SubTree ID="Semantic Navigate: door-north-west-3">
+      <MetadataFields><Metadata runnable="true" /><Metadata subcategory="Semantic Nav" /></MetadataFields>
     </SubTree>
   </TreeNodesModel>
 </root>
