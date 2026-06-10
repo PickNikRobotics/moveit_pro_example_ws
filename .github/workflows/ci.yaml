@@ -48,7 +48,6 @@ jobs:
     outputs:
       image_ref: ${{ steps.resolve.outputs.image_ref }}
       image_tag: ${{ steps.resolve.outputs.image_tag }}
-      gpu_image_suffix: ${{ steps.resolve.outputs.gpu_image_suffix }}
       git_ref: ${{ steps.resolve.outputs.git_ref }}
       moveit_pro_sha: ${{ steps.resolve.outputs.moveit_pro_sha }}
       moveit_pro_pr_number: ${{ steps.resolve.outputs.moveit_pro_pr_number }}
@@ -101,16 +100,36 @@ jobs:
             const dockerhubUsername = process.env.DOCKERHUB_USERNAME || 'picknikciuser';
             let image_ref = '';
             let image_tag = '';
-            // GPU image suffix forwarded to moveit_pro_ci's reusable workflow,
-            // which appends it to the pulled image when enable_gpu is set.
-            // Defaults to the legacy -cuda12.6-cudnn9, matching moveit_pro_ci's
-            // own backward-compatible default, for the non-dispatch paths
-            // (push, schedule, workflow_dispatch, pull_request). On
-            // repository_dispatch the authoritative per-PR value is taken from
-            // the moveit_pro payload (which derives it from the distro/CUDA
-            // coupling), so the suffix is threaded end-to-end
-            // (moveit_pro -> here -> moveit_pro_ci) rather than pinned here.
-            let gpu_image_suffix = '-cuda12.6-cudnn9';
+            // Per-distro CUDA image-suffix MAP (a JSON object keyed by ros_distro).
+            // The integration-test job appends the entry for its matrix
+            // `ros_distro` to `image_ref`. This is baked in HERE because
+            // moveit_pro_ci v0.9.0 pulls `image_ref` verbatim and no longer
+            // appends any suffix itself (the `gpu_image_suffix` input was removed
+            // in v0.9.0 / PR #37) — so the suffix must live in `image_ref`.
+            //
+            // example_ws runs integration jazzy-only (humble is disabled), so the
+            // map carries only `jazzy`. The default is the CONSERVATIVE legacy
+            // suffix (-cuda12.6-cudnn9), NOT the newest CUDA the Jazzy migration
+            // targets: moveit_pro owns the distro<->CUDA coupling (its build-matrix
+            // exclusion anchors) and is the single source of truth. On a
+            // repository_dispatch it overrides the per-distro value from its
+            // payload once it publishes a divergent suffix (#19583). To re-enable
+            // humble: add a `humble` entry here AND to integration-test's
+            // `ros_distro` matrix.
+            let gpu_image_suffixes = { jazzy: '-cuda12.6-cudnn9' };
+            // The single ros_distro example_ws runs integration on — must match
+            // the `integration-test` matrix / `ros_distros` input below. The
+            // suffix is selected for THIS distro. If humble is ever re-enabled,
+            // one `image_ref` template can no longer carry two different
+            // suffixes across the matrix — switch to per-distro `uses:` calls.
+            const ACTIVE_DISTRO = 'jazzy';
+            // Suffix to bake into image_ref. moveit_pro_ci v0.9.0 (PR #37) pulls
+            // image_ref VERBATIM and no longer appends a suffix, so the CUDA
+            // variant must live in image_ref itself.
+            let gpu_image_suffix = gpu_image_suffixes[ACTIVE_DISTRO];
+            // When true, image_ref already carries its suffix (legacy moveit_pro
+            // that bakes it in and sends no suffix field) → do NOT append again.
+            let image_ref_has_suffix = false;
             let git_ref = '';
             let moveit_pro_sha = '';
             let moveit_pro_pr_number = '';
@@ -125,11 +144,22 @@ jobs:
               const p = context.payload.client_payload || {};
               image_ref = p.image_ref || '';
               image_tag = p.image_tag || p.base_branch || 'main';
-              // Fall back to the legacy default only when the field is truly
-              // absent (older moveit_pro that doesn't send it). Nullish
-              // coalescing preserves a deliberate empty string ("" => no GPU
-              // suffix / CPU image), which `||` would wrongly override.
-              gpu_image_suffix = p.gpu_image_suffix ?? gpu_image_suffix;
+              // moveit_pro owns the distro<->CUDA suffix coupling (its build
+              // matrix exclusion anchors) and is the single source of truth.
+              // Two payload shapes are accepted:
+              //   - NEW moveit_pro: a suffix-free image_ref plus an explicit
+              //     suffix — `gpu_image_suffixes` (per-distro JSON object,
+              //     preferred) or `gpu_image_suffix` (single string, back-compat).
+              //     We bake the active distro's suffix into image_ref ourselves.
+              //   - LEGACY moveit_pro: NO suffix field, suffix already baked into
+              //     image_ref. Use image_ref verbatim (do not double-append).
+              if (p.gpu_image_suffixes && p.gpu_image_suffixes[ACTIVE_DISTRO] != null) {
+                gpu_image_suffix = p.gpu_image_suffixes[ACTIVE_DISTRO];
+              } else if (p.gpu_image_suffix != null) {
+                gpu_image_suffix = p.gpu_image_suffix;
+              } else {
+                image_ref_has_suffix = true;
+              }
               git_ref = p.base_branch || '';
               moveit_pro_sha = p.moveit_pro_sha || '';
               moveit_pro_pr_number = String(p.moveit_pro_pr || '');
@@ -146,9 +176,8 @@ jobs:
                 moveit_pro_pr_number = needsPr;
                 // Pull the paired moveit_pro PR's customer image from Docker Hub
                 // — that is where moveit_pro publishes it (the GHCR moveit-studio
-                // retag is gone). Leave the tag suffix-free (`…-amd64`): this
-                // caller sets enable_gpu, so the reusable workflow appends the
-                // -cuda12.6-cudnn9 suffix itself. Baking it here double-appends.
+                // retag is gone). Suffix-free per-arch template (`…-{0}-amd64`);
+                // the active distro's suffix is baked on below.
                 image_ref = `${dockerhubUsername}/moveit-studio:${sanitizeBranch(pr.head.ref)}-{0}-amd64`;
               }
             } else {
@@ -160,17 +189,30 @@ jobs:
               image_tag = dispatchTag || (context.ref || 'refs/heads/main').replace(/^refs\/heads\//, '');
             }
 
+            // moveit_pro_ci v0.9.0 appends NOTHING, so build a complete,
+            // suffix-bearing image_ref for every GPU path. Two published tag
+            // shapes are reproduced here:
+            //   - PR-specific per-arch image:  <tag>-<distro>-amd64<suffix>
+            //     (set above for dispatch / needs-paired-PR)
+            //   - main/release multiarch tag:  <tag>-<distro><suffix>
+            //     (the fallback below for push / schedule / plain PR)
+            if (image_ref === '') {
+              image_ref = `${dockerhubUsername}/moveit-studio:${image_tag}-{0}`;
+            }
+            if (!image_ref_has_suffix) {
+              image_ref = `${image_ref}${gpu_image_suffix}`;
+            }
+
             core.info(`event=${event}`);
             core.info(`image_ref=${image_ref}`);
             core.info(`image_tag=${image_tag}`);
-            core.info(`gpu_image_suffix=${gpu_image_suffix}`);
+            core.info(`gpu_image_suffix(baked)=${image_ref_has_suffix ? '(already in image_ref)' : gpu_image_suffix}`);
             core.info(`git_ref=${git_ref}`);
             core.info(`moveit_pro_sha=${moveit_pro_sha}`);
             core.info(`moveit_pro_pr_number=${moveit_pro_pr_number}`);
 
             core.setOutput('image_ref', image_ref);
             core.setOutput('image_tag', image_tag);
-            core.setOutput('gpu_image_suffix', gpu_image_suffix);
             core.setOutput('git_ref', git_ref);
             core.setOutput('moveit_pro_sha', moveit_pro_sha);
             core.setOutput('moveit_pro_pr_number', moveit_pro_pr_number);
@@ -188,7 +230,7 @@ jobs:
       # can assume the LFS S3 cache IAM role via OIDC (moveit_pro_ci v0.5.x).
       contents: read
       id-token: write
-    uses: PickNikRobotics/moveit_pro_ci/.github/workflows/workspace_integration_test.yaml@b119d40cb5ef0a1fa1514e0424d9e45e192e6429 # v0.8.0
+    uses: PickNikRobotics/moveit_pro_ci/.github/workflows/workspace_integration_test.yaml@a0e3b30c9aa8f8f82f95c91e5a34989d01caa046 # v0.9.0
     with:
       image_tag: ${{ needs.resolve.outputs.image_tag }}
       image_ref: ${{ needs.resolve.outputs.image_ref }}
@@ -202,15 +244,14 @@ jobs:
       # rendering can attach to a real GPU instead of falling back to slow
       # software rasterization on the CPU-only picknik-16-amd64 runner — the
       # integration test exercises camera-bearing scenes (apriltag, perception).
-      # enable_gpu also switches the container image to a CUDA/cuDNN variant.
-      # The suffix is resolved in the `resolve` job and forwarded here: on a
-      # moveit_pro repository_dispatch it comes from that PR's payload (threaded
-      # end-to-end); on push/schedule/pull_request it defaults to the legacy
-      # -cuda12.6-cudnn9. moveit_pro_ci appends it to the pulled image.
+      # enable_gpu also adds `--gpus all`. As of moveit_pro_ci v0.9.0 it no
+      # longer appends a CUDA suffix to the image tag (the gpu_image_suffix
+      # input was removed in PR #37); the `resolve` job bakes the per-distro
+      # CUDA suffix into `image_ref` itself, so the image pulled here is exactly
+      # `needs.resolve.outputs.image_ref` formatted with the matrix ros_distro.
       # A pull failure here points at a missing CUDA image, not EGL.
       runner: "picknik-16-amd64-gpu"
       enable_gpu: true
-      gpu_image_suffix: ${{ needs.resolve.outputs.gpu_image_suffix }}
       use_ccache: true
       # Fetch Git LFS through the in-region S3 cache instead of a direct pull.
       # Empty for fork PRs (which get no OIDC token / secrets) so they fall back
