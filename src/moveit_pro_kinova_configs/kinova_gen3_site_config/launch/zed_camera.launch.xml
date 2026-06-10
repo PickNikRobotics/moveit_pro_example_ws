@@ -14,8 +14,14 @@
   <arg name="namespace" default="scene_camera" />
   <arg name="frame_id" default="scene_camera_link" />
   <arg name="video_device" default="/dev/video0" />
-  <arg name="image_width" default="2560" />
-  <arg name="image_height" default="720" />
+  <!-- VGA (1344x376 side-by-side = 672x376 per eye) is the ZED 2i's lowest UVC
+       mode. Two ZEDs at HD720 (2560x720) YUYV exceed the shared USB controller's
+       bandwidth -> neither streams (one alone works). VGA is ~1/4 the data so
+       both stream; the per-eye crop is downscaled to 224 by the Pi0 processor
+       anyway, so this matches the trained content. The camera exposes only YUYV
+       (no MJPG), so lowering resolution is the only bandwidth lever. -->
+  <arg name="image_width" default="1344" />
+  <arg name="image_height" default="376" />
 
   <node
     pkg="v4l2_camera"
@@ -43,8 +49,8 @@
   >
     <param name="offset_x" value="0" />
     <param name="offset_y" value="0" />
-    <param name="width" value="1280" />
-    <param name="height" value="720" />
+    <param name="width" value="672" />
+    <param name="height" value="376" />
     <param name="qos_overrides./$(var namespace)/left/image_raw.publisher.reliability" value="reliable" />
     <param name="qos_overrides./$(var namespace)/left/camera_info.publisher.reliability" value="reliable" />
     <remap from="in/image_raw" to="color/image_raw" />
@@ -60,10 +66,10 @@
     namespace="$(var namespace)"
     output="screen"
   >
-    <param name="offset_x" value="1280" />
+    <param name="offset_x" value="672" />
     <param name="offset_y" value="0" />
-    <param name="width" value="1280" />
-    <param name="height" value="720" />
+    <param name="width" value="672" />
+    <param name="height" value="376" />
     <param name="qos_overrides./$(var namespace)/right/image_raw.publisher.reliability" value="reliable" />
     <param name="qos_overrides./$(var namespace)/right/camera_info.publisher.reliability" value="reliable" />
     <remap from="in/image_raw" to="color/image_raw" />

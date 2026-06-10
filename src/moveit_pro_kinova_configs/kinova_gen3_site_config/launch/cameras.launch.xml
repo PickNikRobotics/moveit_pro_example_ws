@@ -5,7 +5,15 @@
   >
     <arg name="camera" value="wrist_camera" />
     <arg name="depth_registration" value="true" />
-    <arg name="max_color_pub_rate" value="6.0" />
-    <arg name="max_depth_pub_rate" value="6.0" />
+    <!-- Pub rate must keep up with the camera's ~30 Hz output. The
+         kinova_vision_node pulls ONE frame per loop iteration from a 5-deep
+         appsink FIFO (drop=true) and then sleeps at max_pub_rate. At 6 Hz the
+         consumer can't drain a 30 Hz producer, so the FIFO stays full and each
+         pull returns the OLDEST buffered frame -> a standing ~130-170 ms lag on
+         top of the RTSP/H.264 pipeline latency (total ~0.5 s vs the direct-USB
+         ZEDs). Matching 30 Hz keeps the FIFO near-empty so we get the newest
+         frame each pull. -->
+    <arg name="max_color_pub_rate" value="30.0" />
+    <arg name="max_depth_pub_rate" value="30.0" />
   </include>
 </launch>

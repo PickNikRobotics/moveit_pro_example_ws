@@ -84,9 +84,14 @@ ros2_control:
     - "robotiq_gripper_controller"
     - "joint_state_broadcaster"
     - "fault_controller"
+    # Kept active so the protective-stop recovery (which deactivates everything,
+    # then reactivates this default-active set) leaves a joint-based controller
+    # running. Without it the arm settles in ARMSTATE_SERVOING_READY, which the
+    # kortex driver's read() reports as in_fault_ (hardware_interface.cpp:805) ->
+    # the arm re-reports RECOVERABLE_FAULT right after a successful reset.
+    - "joint_trajectory_controller"
   # Load but do not start these controllers so they can be activated later if needed.
   controllers_inactive_at_startup:
-    - "joint_trajectory_controller"
     - "joint_trajectory_admittance_controller"
     - "velocity_force_controller"
     - "joint_velocity_controller"
