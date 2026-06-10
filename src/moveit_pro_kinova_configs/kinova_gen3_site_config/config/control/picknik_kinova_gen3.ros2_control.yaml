@@ -59,6 +59,12 @@ joint_trajectory_admittance_controller:
     sensor_frame: grasp_link
     ee_frame: grasp_link
     stop_accelerations: [3.0, 3.0, 3.0, 3.0, 5.0, 5.0, 5.0]
+    # Raised from the 0.05 rad (~2.9 deg) defaults: a real arm tracking a teleop-generated
+    # path easily exceeds 0.05 both along the path and at the end-point. Any violation funnels
+    # through writeToleranceViolation, which currently aborts ros2_control_node (fmt/spdlog
+    # ABI clash), so keep both generous until that controller bug is fixed upstream.
+    default_path_tolerance: 0.20
+    default_goal_tolerance: 0.20
 
 robotiq_gripper_controller:
   ros__parameters:
