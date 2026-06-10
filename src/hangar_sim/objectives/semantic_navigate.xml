@@ -38,12 +38,11 @@
   <TreeNodesModel>
     <SubTree ID="Semantic Navigate">
       <MetadataFields>
-        <!-- Not runnable from the sidebar: fired programmatically by B/terminal with pose params.
-             Re-enable runnable once the transport is wired and a default pose is validated. -->
+        <Metadata runnable="true" />
         <Metadata subcategory="Navigation" />
       </MetadataFields>
-      <input_port name="target_position_xyz" default="24.0;8.3;0.0">Goal position "x;y;z" in the map frame.</input_port>
-      <input_port name="target_orientation_xyzw" default="0.0;0.0;0.0;1.0">Goal orientation quaternion "x;y;z;w".</input_port>
+      <input_port name="target_position_xyz" default="21.259;0.6;0.0">Goal position "x;y;z" in the map frame (B overrides this).</input_port>
+      <input_port name="target_orientation_xyzw" default="0.0;0.0;-0.7071;0.7071">Goal orientation quaternion "x;y;z;w" (B overrides this).</input_port>
     </SubTree>
   </TreeNodesModel>
 </root>
