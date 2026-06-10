@@ -47,9 +47,10 @@
       />
       <Action ID="ResetPoseStampedVector" vector="{place_pose_vector}" />
       <Action
-        ID="AddPoseStampedToVector"
-        input="{place_pose}"
-        vector="{place_pose_vector}"
+        ID="PushBackVector"
+        input_vector="{place_pose_vector}"
+        element="{place_pose}"
+        output_vector="{place_pose_vector}"
       />
       <Action
         ID="SetupMTCBatchPoseIK"
@@ -73,9 +74,10 @@
       />
       <Action ID="ResetPoseStampedVector" vector="{retract_path}" />
       <Action
-        ID="AddPoseStampedToVector"
-        input="{retract_pose}"
-        vector="{retract_path}"
+        ID="PushBackVector"
+        input_vector="{retract_path}"
+        element="{retract_pose}"
+        output_vector="{retract_path}"
       />
       <Action
         ID="PlanCartesianPath"

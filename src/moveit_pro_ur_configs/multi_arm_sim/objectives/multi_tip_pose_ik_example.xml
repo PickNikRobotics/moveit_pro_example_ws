@@ -38,10 +38,12 @@
         marker_size="0.100000"
         pose="{target_pose_1}"
       />
+      <Action ID="ResetVector" vector="{target_poses}" />
       <Action
-        ID="AddPoseStampedToVector"
-        input="{target_pose_1}"
-        vector="{target_poses}"
+        ID="PushBackVector"
+        input_vector="{target_poses}"
+        element="{target_pose_1}"
+        output_vector="{target_poses}"
       />
       <Action
         ID="TransformPose"
@@ -58,9 +60,10 @@
         pose="{target_pose_2}"
       />
       <Action
-        ID="AddPoseStampedToVector"
-        input="{target_pose_2}"
-        vector="{target_poses}"
+        ID="PushBackVector"
+        input_vector="{target_poses}"
+        element="{target_pose_2}"
+        output_vector="{target_poses}"
       />
       <!--Compute
       IK simultaneously for two tips-->

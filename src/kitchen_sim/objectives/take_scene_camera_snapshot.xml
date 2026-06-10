@@ -34,10 +34,12 @@
           point_cloud_cropped="{point_cloud_1}"
           crop_box_size="2;5;5"
         />
+        <Action ID="ResetVector" vector="{point_clouds}" />
         <Action
-          ID="AddPointCloudToVector"
-          point_cloud="{point_cloud_1}"
-          point_cloud_vector="{point_clouds}"
+          ID="PushBackVector"
+          input_vector="{point_clouds}"
+          element="{point_cloud_1}"
+          output_vector="{point_clouds}"
         />
         <Action
           ID="CreatePoseStamped"
@@ -53,9 +55,10 @@
           crop_box_size="5;2;5"
         />
         <Action
-          ID="AddPointCloudToVector"
-          point_cloud="{point_cloud_2}"
-          point_cloud_vector="{point_clouds}"
+          ID="PushBackVector"
+          input_vector="{point_clouds}"
+          element="{point_cloud_2}"
+          output_vector="{point_clouds}"
         />
         <Action
           ID="MergePointClouds"

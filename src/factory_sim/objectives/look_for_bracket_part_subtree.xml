@@ -110,9 +110,10 @@
         />
         <Action ID="ResetVector" vector="{additional_clouds}" />
         <Action
-          ID="AddPointCloudToVector"
-          point_cloud="{green_bracket_part_cloud}"
-          point_cloud_vector="{additional_clouds}"
+          ID="PushBackVector"
+          input_vector="{additional_clouds}"
+          element="{green_bracket_part_cloud}"
+          output_vector="{additional_clouds}"
         />
         <SubTree
           ID="Visualize Bins and Jig Subtree"

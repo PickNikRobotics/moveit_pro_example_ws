@@ -48,6 +48,7 @@ jobs:
     outputs:
       image_ref: ${{ steps.resolve.outputs.image_ref }}
       image_tag: ${{ steps.resolve.outputs.image_tag }}
+      gpu_image_suffix: ${{ steps.resolve.outputs.gpu_image_suffix }}
       git_ref: ${{ steps.resolve.outputs.git_ref }}
       moveit_pro_sha: ${{ steps.resolve.outputs.moveit_pro_sha }}
       moveit_pro_pr_number: ${{ steps.resolve.outputs.moveit_pro_pr_number }}
@@ -100,6 +101,16 @@ jobs:
             const dockerhubUsername = process.env.DOCKERHUB_USERNAME || 'picknikciuser';
             let image_ref = '';
             let image_tag = '';
+            // GPU image suffix forwarded to moveit_pro_ci's reusable workflow,
+            // which appends it to the pulled image when enable_gpu is set.
+            // Defaults to the legacy -cuda12.6-cudnn9, matching moveit_pro_ci's
+            // own backward-compatible default, for the non-dispatch paths
+            // (push, schedule, workflow_dispatch, pull_request). On
+            // repository_dispatch the authoritative per-PR value is taken from
+            // the moveit_pro payload (which derives it from the distro/CUDA
+            // coupling), so the suffix is threaded end-to-end
+            // (moveit_pro -> here -> moveit_pro_ci) rather than pinned here.
+            let gpu_image_suffix = '-cuda12.6-cudnn9';
             let git_ref = '';
             let moveit_pro_sha = '';
             let moveit_pro_pr_number = '';
@@ -114,6 +125,11 @@ jobs:
               const p = context.payload.client_payload || {};
               image_ref = p.image_ref || '';
               image_tag = p.image_tag || p.base_branch || 'main';
+              // Fall back to the legacy default only when the field is truly
+              // absent (older moveit_pro that doesn't send it). Nullish
+              // coalescing preserves a deliberate empty string ("" => no GPU
+              // suffix / CPU image), which `||` would wrongly override.
+              gpu_image_suffix = p.gpu_image_suffix ?? gpu_image_suffix;
               git_ref = p.base_branch || '';
               moveit_pro_sha = p.moveit_pro_sha || '';
               moveit_pro_pr_number = String(p.moveit_pro_pr || '');
@@ -147,12 +163,14 @@ jobs:
             core.info(`event=${event}`);
             core.info(`image_ref=${image_ref}`);
             core.info(`image_tag=${image_tag}`);
+            core.info(`gpu_image_suffix=${gpu_image_suffix}`);
             core.info(`git_ref=${git_ref}`);
             core.info(`moveit_pro_sha=${moveit_pro_sha}`);
             core.info(`moveit_pro_pr_number=${moveit_pro_pr_number}`);
 
             core.setOutput('image_ref', image_ref);
             core.setOutput('image_tag', image_tag);
+            core.setOutput('gpu_image_suffix', gpu_image_suffix);
             core.setOutput('git_ref', git_ref);
             core.setOutput('moveit_pro_sha', moveit_pro_sha);
             core.setOutput('moveit_pro_pr_number', moveit_pro_pr_number);
@@ -170,7 +188,7 @@ jobs:
       # can assume the LFS S3 cache IAM role via OIDC (moveit_pro_ci v0.5.x).
       contents: read
       id-token: write
-    uses: PickNikRobotics/moveit_pro_ci/.github/workflows/workspace_integration_test.yaml@b50a6d565338de91ccd4069bbb88414ffdc0b95a # v0.6.0
+    uses: PickNikRobotics/moveit_pro_ci/.github/workflows/workspace_integration_test.yaml@b119d40cb5ef0a1fa1514e0424d9e45e192e6429 # v0.8.0
     with:
       image_tag: ${{ needs.resolve.outputs.image_tag }}
       image_ref: ${{ needs.resolve.outputs.image_ref }}
@@ -184,10 +202,15 @@ jobs:
       # rendering can attach to a real GPU instead of falling back to slow
       # software rasterization on the CPU-only picknik-16-amd64 runner — the
       # integration test exercises camera-bearing scenes (apriltag, perception).
-      # enable_gpu also switches the container image to the -cuda12.6-cudnn9
-      # variant, so a pull failure here points at a missing CUDA image, not EGL.
+      # enable_gpu also switches the container image to a CUDA/cuDNN variant.
+      # The suffix is resolved in the `resolve` job and forwarded here: on a
+      # moveit_pro repository_dispatch it comes from that PR's payload (threaded
+      # end-to-end); on push/schedule/pull_request it defaults to the legacy
+      # -cuda12.6-cudnn9. moveit_pro_ci appends it to the pulled image.
+      # A pull failure here points at a missing CUDA image, not EGL.
       runner: "picknik-16-amd64-gpu"
       enable_gpu: true
+      gpu_image_suffix: ${{ needs.resolve.outputs.gpu_image_suffix }}
       use_ccache: true
       # Fetch Git LFS through the in-region S3 cache instead of a direct pull.
       # Empty for fork PRs (which get no OIDC token / secrets) so they fall back

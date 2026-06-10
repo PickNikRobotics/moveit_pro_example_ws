@@ -192,18 +192,16 @@
               _collapsed="true"
               vector="{predrop_path}"
             />
-            <SubTree
-              ID="AddToVector"
+            <Action
+              ID="PushBackVector"
               name="Add lift via-point"
-              _collapsed="true"
               element="{lift_via_pose}"
               input_vector="{predrop_path}"
               output_vector="{predrop_path}"
             />
-            <SubTree
-              ID="AddToVector"
+            <Action
+              ID="PushBackVector"
               name="Add predrop hover"
-              _collapsed="true"
               element="{predrop_hover_pose}"
               input_vector="{predrop_path}"
               output_vector="{predrop_path}"
@@ -264,18 +262,16 @@
               _collapsed="true"
               vector="{place_descent_path}"
             />
-            <SubTree
-              ID="AddToVector"
+            <Action
+              ID="PushBackVector"
               name="Add pre-place via-point"
-              _collapsed="true"
               element="{pre_place_pose}"
               input_vector="{place_descent_path}"
               output_vector="{place_descent_path}"
             />
-            <SubTree
-              ID="AddToVector"
+            <Action
+              ID="PushBackVector"
               name="Add place target"
-              _collapsed="true"
               element="{current_bottle_place_pose}"
               input_vector="{place_descent_path}"
               output_vector="{place_descent_path}"
@@ -321,10 +317,9 @@
               _collapsed="true"
               vector="{post_place_retract_path}"
             />
-            <SubTree
-              ID="AddToVector"
+            <Action
+              ID="PushBackVector"
               name="Add post-place retract"
-              _collapsed="true"
               element="{post_place_retract_pose}"
               input_vector="{post_place_retract_path}"
               output_vector="{post_place_retract_path}"

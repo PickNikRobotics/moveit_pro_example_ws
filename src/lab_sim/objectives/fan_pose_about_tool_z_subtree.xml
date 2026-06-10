@@ -11,8 +11,8 @@
         name="Init output vector"
         vector="{output_pose_vector}"
       />
-      <SubTree
-        ID="AddToVector"
+      <Action
+        ID="PushBackVector"
         name="Add yaw+0"
         element="{input_pose}"
         input_vector="{output_pose_vector}"
@@ -30,8 +30,8 @@
         marker_text=""
         visualize_pose="false"
       />
-      <SubTree
-        ID="AddToVector"
+      <Action
+        ID="PushBackVector"
         name="Add yaw+90"
         element="{yaw_90}"
         input_vector="{output_pose_vector}"
@@ -49,8 +49,8 @@
         marker_text=""
         visualize_pose="false"
       />
-      <SubTree
-        ID="AddToVector"
+      <Action
+        ID="PushBackVector"
         name="Add yaw+180"
         element="{yaw_180}"
         input_vector="{output_pose_vector}"
@@ -68,8 +68,8 @@
         marker_text=""
         visualize_pose="false"
       />
-      <SubTree
-        ID="AddToVector"
+      <Action
+        ID="PushBackVector"
         name="Add yaw+270"
         element="{yaw_270}"
         input_vector="{output_pose_vector}"

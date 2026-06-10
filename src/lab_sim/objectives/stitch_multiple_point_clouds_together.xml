@@ -22,10 +22,12 @@
         pose_stamped="{pose1}"
         reference_frame="world"
       />
+      <Action ID="ResetVector" vector="{inspection_poses}" />
       <Action
-        ID="AddPoseStampedToVector"
-        vector="{inspection_poses}"
-        input="{pose1}"
+        ID="PushBackVector"
+        input_vector="{inspection_poses}"
+        element="{pose1}"
+        output_vector="{inspection_poses}"
       />
       <Action
         ID="CreatePoseStamped"
@@ -35,9 +37,10 @@
         reference_frame="world"
       />
       <Action
-        ID="AddPoseStampedToVector"
-        vector="{inspection_poses}"
-        input="{pose2}"
+        ID="PushBackVector"
+        input_vector="{inspection_poses}"
+        element="{pose2}"
+        output_vector="{inspection_poses}"
       />
       <Action
         ID="CreatePoseStamped"
@@ -47,9 +50,10 @@
         reference_frame="world"
       />
       <Action
-        ID="AddPoseStampedToVector"
-        vector="{inspection_poses}"
-        input="{pose3}"
+        ID="PushBackVector"
+        input_vector="{inspection_poses}"
+        element="{pose3}"
+        output_vector="{inspection_poses}"
       />
       <!--Use ForEachUntilSuccess to find first reachable inspection point (but don't execute yet)-->
       <Decorator
@@ -87,6 +91,7 @@
         joint_trajectory="{joint_traj}"
       />
       <!--Use ForEach to visit all inspection points and gather data-->
+      <Action ID="ResetVector" vector="{point_cloud_vector}" />
       <Decorator
         ID="ForEach"
         vector_in="{inspection_poses}"
@@ -150,9 +155,10 @@
             target_frame="world"
           />
           <Action
-            ID="AddPointCloudToVector"
-            point_cloud="{transformed_cloud}"
-            point_cloud_vector="{point_cloud_vector}"
+            ID="PushBackVector"
+            input_vector="{point_cloud_vector}"
+            element="{transformed_cloud}"
+            output_vector="{point_cloud_vector}"
           />
           <!--Debug: publish individual cloud and current vector size-->
           <Action

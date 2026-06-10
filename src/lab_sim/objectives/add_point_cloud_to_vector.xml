@@ -20,9 +20,10 @@
         target_frame="world"
       />
       <Action
-        ID="AddPointCloudToVector"
-        point_cloud="{point_cloud}"
-        point_cloud_vector="{point_cloud_vector}"
+        ID="PushBackVector"
+        input_vector="{point_cloud_vector}"
+        element="{point_cloud}"
+        output_vector="{point_cloud_vector}"
       />
     </Control>
   </BehaviorTree>

@@ -106,10 +106,12 @@
         translation_xyz="0;0;-0.12"
       />
       <Control ID="Sequence">
+        <Action ID="ResetVector" vector="{ik_targets}" />
         <Action
-          ID="AddPoseStampedToVector"
-          input="{first_pose}"
-          vector="{ik_targets}"
+          ID="PushBackVector"
+          input_vector="{ik_targets}"
+          element="{first_pose}"
+          output_vector="{ik_targets}"
         />
         <Action
           ID="InitializeMTCTask"

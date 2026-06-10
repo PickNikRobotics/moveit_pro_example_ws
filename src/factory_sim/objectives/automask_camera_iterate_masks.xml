@@ -30,9 +30,8 @@
         <Control ID="Sequence">
           <Action ID="Script" code="mask_label:=&quot;mask &quot;..index" />
           <SubTree ID="CreateVector" _collapsed="true" vector="{one_mask}" />
-          <SubTree
-            ID="AddToVector"
-            _collapsed="false"
+          <Action
+            ID="PushBackVector"
             element="{mask}"
             input_vector="{one_mask}"
             output_vector="{one_mask}"
