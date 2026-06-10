@@ -193,11 +193,27 @@ jobs:
             // suffix-bearing image_ref for every GPU path. Two published tag
             // shapes are reproduced here:
             //   - PR-specific per-arch image:  <tag>-<distro>-amd64<suffix>
-            //     (set above for dispatch / needs-paired-PR)
-            //   - main/release multiarch tag:  <tag>-<distro><suffix>
-            //     (the fallback below for push / schedule / plain PR)
+            //     (set above for dispatch / needs-paired-PR, and the main
+            //     fallback below)
+            //   - release multiarch tag:       <tag>-<distro><suffix>
+            //     (the fallback below for release-branch push / PR)
+            //
+            // The main fallback must use the per-arch shape: moveit_pro
+            // stopped publishing the arch-less main aliases on 2026-06-03
+            // (main-jazzy-cuda12.6-cudnn9 is frozen at that date on Docker
+            // Hub), so push/schedule/plain-PR runs against main were silently
+            // pinned to that week-old image (surfaced as an EndStateSpec
+            // ImportError once example_ws #698 needed a newer moveit_pro API).
+            // The arch-suffixed main-<distro>-amd64<suffix> tags update with
+            // every moveit_pro main merge; -amd64 matches the
+            // picknik-16-amd64-gpu runner below. Release branches (v9.2,
+            // v9.3) only have arch-less tags and keep the multiarch shape.
+            // repository_dispatch is excluded: a payload without image_ref
+            // must not be redirected to today's main image.
             if (image_ref === '') {
-              image_ref = `${dockerhubUsername}/moveit-studio:${image_tag}-{0}`;
+              const archSegment =
+                image_tag === 'main' && event !== 'repository_dispatch' ? '-amd64' : '';
+              image_ref = `${dockerhubUsername}/moveit-studio:${image_tag}-{0}${archSegment}`;
             }
             if (!image_ref_has_suffix) {
               image_ref = `${image_ref}${gpu_image_suffix}`;
