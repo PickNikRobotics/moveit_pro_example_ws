@@ -1,23 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!-- Contract #2 integration target. The caller (viewpane / Claude terminal) sets two blackboard
-     params before running, derived from the resolver's {x, y, yaw}:
-        target_position_xyz    e.g. "24.0;8.3;0.0"   (map frame, z=0 for the base)
-        target_orientation_xyzw e.g. "0.0;0.0;0.0;1.0" (caller converts yaw -> quaternion)
-     Defaults drive to the workbench so it is also runnable standalone. -->
+<!-- Single parameterized objective. The caller (B's pane) overrides `target_pose` with a
+     geometry_msgs/PoseStamped (map frame). PoseStamped has a registered parameter-override parser,
+     so the override applies cleanly; it wires straight into NavigateToPoseAction (no vector ports). -->
 <root BTCPP_format="4" main_tree_to_execute="Semantic Navigate">
   <BehaviorTree
     ID="Semantic Navigate"
-    _description="Drive the Ridgeback to a semantic goal pose (map frame) resolved from natural language."
+    _description="Drive the Ridgeback to a semantic goal pose (PoseStamped, map frame) resolved from natural language."
     _favorite="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
-      <Action
-        ID="CreatePoseStamped"
-        reference_frame="map"
-        position_xyz="{target_position_xyz}"
-        orientation_xyzw="{target_orientation_xyzw}"
-        pose_stamped="{target_pose}"
-      />
       <Action
         ID="SwitchController"
         activate_controllers="platform_velocity_controller_nav2"
@@ -41,8 +32,7 @@
         <Metadata runnable="true" />
         <Metadata subcategory="Navigation" />
       </MetadataFields>
-      <input_port name="target_position_xyz" default="21.259;0.6;0.0">Goal position "x;y;z" in the map frame (B overrides this).</input_port>
-      <input_port name="target_orientation_xyzw" default="0.0;0.0;-0.7071;0.7071">Goal orientation quaternion "x;y;z;w" (B overrides this).</input_port>
+      <input_port name="target_pose">Goal pose as geometry_msgs/PoseStamped in the map frame. Overridden by the pane.</input_port>
     </SubTree>
   </TreeNodesModel>
 </root>
