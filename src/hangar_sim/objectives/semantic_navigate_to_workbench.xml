@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!-- Smoke test: drives the Ridgeback to the docking station (a pose that is free in the nav map)
-     with zero parameters. Proves the Semantic Nav drive path end-to-end, independent of the
-     resolver/viewpane. NOTE: object *centers* from the semantic map are often inside obstacles
-     (walls/shelves); the dock center is in free space, which is why it is used here. -->
-<root BTCPP_format="4" main_tree_to_execute="Semantic Navigate to Dock">
+<!-- Smoke test: drives the Ridgeback to a nav-ready standoff pose (the SE double door, offset
+     ~2.25 m into the interior). Validates the standoff approach against the live costmap. If this
+     fails, bump the standoff (B owns NAV_STANDOFF_M) or add obstacle-aware per-cluster offsets.
+     Stable objective ID so we can iterate the pose without renaming in the UI. -->
+<root BTCPP_format="4" main_tree_to_execute="Semantic Navigate (Smoke Test)">
   <BehaviorTree
-    ID="Semantic Navigate to Dock"
-    _description="Smoke test for Semantic Nav: drive to the docking station (free-space pose, map frame)."
+    ID="Semantic Navigate (Smoke Test)"
+    _description="Smoke test for Semantic Nav: drive to the SE door nav-ready standoff pose (map frame)."
     _favorite="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
         ID="CreatePoseStamped"
         reference_frame="map"
-        position_xyz="0.194;28.924;0.0"
-        orientation_xyzw="0.0;0.0;0.0;1.0"
+        position_xyz="21.259;0.6;0.0"
+        orientation_xyzw="0.0;0.0;-0.7071;0.7071"
         pose_stamped="{target_pose}"
       />
       <Action
@@ -35,7 +35,7 @@
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Semantic Navigate to Dock">
+    <SubTree ID="Semantic Navigate (Smoke Test)">
       <MetadataFields>
         <Metadata runnable="true" />
         <Metadata subcategory="Navigation" />

@@ -38,7 +38,8 @@
   <TreeNodesModel>
     <SubTree ID="Semantic Navigate">
       <MetadataFields>
-        <Metadata runnable="true" />
+        <!-- Not runnable from the sidebar: fired programmatically by B/terminal with pose params.
+             Re-enable runnable once the transport is wired and a default pose is validated. -->
         <Metadata subcategory="Navigation" />
       </MetadataFields>
       <input_port name="target_position_xyz" default="24.0;8.3;0.0">Goal position "x;y;z" in the map frame.</input_port>
