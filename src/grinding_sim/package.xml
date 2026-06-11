@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <package format="3">
   <name>grinding_sim</name>
-  <version>7.0.0</version>
+  <version>9.5.0</version>
 
   <description>
     Simulation configuration package for Premier Lab's Fanuc R-2000iD/165FH

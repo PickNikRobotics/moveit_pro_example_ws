@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <package format="3">
   <name>factory_sim</name>
-  <version>7.2.0</version>
+  <version>9.5.0</version>
 
   <description>
     A MoveIt Pro configuration for a Fanuc LR Mate 200iD.

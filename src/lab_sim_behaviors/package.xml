@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <package format="3">
   <name>lab_sim_behaviors</name>
-  <version>6.5.0</version>
+  <version>9.5.0</version>
   <description>Lab sim specific behavior plugins for MoveIt Pro</description>
 
   <maintainer email="support@picknik.ai">MoveIt Pro Maintainer</maintainer>

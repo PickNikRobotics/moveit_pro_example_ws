@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <package format="3">
   <name>space_satellite_sim_camera_cal</name>
-  <version>7.7.0</version>
+  <version>9.5.0</version>
 
   <description>
     MoveIt Pro sub-configuration of the space_satellite_sim package to use for

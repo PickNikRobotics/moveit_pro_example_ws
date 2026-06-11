@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <package format="3">
   <name>kinova_gen3_site_config</name>
-  <version>5.1.0</version>
+  <version>9.5.0</version>
 
   <description>
     Robot config package for the Kinova Gen3 Dev-003 Robot in the Boulder

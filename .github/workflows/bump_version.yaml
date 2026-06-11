@@ -1,0 +1,81 @@
+name: Bump version
+
+on:
+  workflow_call:
+    inputs:
+      current_version:
+        description: 'Current version for the bump'
+        required: true
+        type: string
+      new_version:
+        description: 'New version for the bump'
+        required: true
+        type: string
+      base_branch:
+        description: 'Branch to check out and PR against. Defaults to the caller workflow''s ref.'
+        required: false
+        type: string
+        default: ''
+
+  workflow_dispatch:
+    inputs:
+      current_version:
+        description: 'Current version for the bump'
+        required: true
+        type: string
+      new_version:
+        description: 'New version for the bump'
+        required: true
+        type: string
+      base_branch:
+        description: 'Branch to check out and PR against. Defaults to the caller workflow''s ref.'
+        required: false
+        type: string
+        default: ''
+
+env:
+  CURRENT_VERSION: ${{ inputs.current_version }}
+  NEW_VERSION: ${{ inputs.new_version }}
+  BASE_BRANCH: ${{ inputs.base_branch || github.ref_name }}
+
+permissions:
+  contents: write
+
+jobs:
+  bump_version:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Input Check
+        run: |
+          echo "# Inputs received " >> $GITHUB_STEP_SUMMARY
+          echo "Input versions: $CURRENT_VERSION && $NEW_VERSION" >> $GITHUB_STEP_SUMMARY
+          echo "Base branch: $BASE_BRANCH" >> $GITHUB_STEP_SUMMARY
+
+      - name: Checkout code
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ env.BASE_BRANCH }}
+
+      - name: Bump version
+        run: |
+          # Source-tree version strings, excluding vendored external_dependencies.
+          mapfile -t SRC_FILES < <(grep -r "$CURRENT_VERSION" --include=package.xml --include=setup.py --include=package.json ./src/ -l | grep -v '^./src/external_dependencies/' || true)
+          for f in "${SRC_FILES[@]}"; do
+            sed -i "s|$CURRENT_VERSION|$NEW_VERSION|g" "$f"
+          done
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        with:
+          title: "Bump version to ${{ inputs.new_version }}"
+          body: |
+            Prep for ${{ inputs.new_version }} release from ${{ inputs.current_version }}.
+          commit-message: "Bump version to ${{ inputs.new_version }}"
+          branch: ${{ inputs.current_version }}-to-${{ inputs.new_version }}
+          base: ${{ env.BASE_BRANCH }}
+          draft: always-true
