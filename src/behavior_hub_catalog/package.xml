@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <package format="3">
   <name>behavior_hub_catalog</name>
-  <version>6.5.0</version>
+  <version>9.4.0</version>
 
   <description>
     Behavior Hub catalog configuration. Inherits lab_sim and adds the Navigation
