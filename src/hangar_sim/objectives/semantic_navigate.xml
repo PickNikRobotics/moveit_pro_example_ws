@@ -6,7 +6,7 @@
   <BehaviorTree
     ID="Semantic Navigate"
     _description="Drive the Ridgeback to a semantic goal pose (PoseStamped, map frame) resolved from natural language."
-    _favorite="true"
+    _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
@@ -32,7 +32,10 @@
         <Metadata runnable="true" />
         <Metadata subcategory="Navigation" />
       </MetadataFields>
-      <input_port name="target_pose">Goal pose as geometry_msgs/PoseStamped in the map frame. Overridden by the pane.</input_port>
+      <input_port name="target_pose">
+        Goal pose as geometry_msgs/PoseStamped in the map frame. Overridden by
+        the pane.
+      </input_port>
     </SubTree>
   </TreeNodesModel>
 </root>
