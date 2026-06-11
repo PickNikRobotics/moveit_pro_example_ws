@@ -1,0 +1,26 @@
+<?xml version="1.0" ?>
+<package format="3">
+  <name>behavior_hub_catalog</name>
+  <version>9.5.0</version>
+
+  <description>
+    Behavior Hub catalog configuration. Inherits lab_sim and adds the Navigation
+    behavior loader so the picknik.ai Behaviors Hub data export includes Nav
+    behaviors. Generation-only; not intended as a runnable robot config.
+  </description>
+
+  <maintainer email="support@picknik.ai">MoveIt Pro Maintainer</maintainer>
+  <license>Proprietary</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <exec_depend>lab_sim</exec_depend>
+  <exec_depend>moveit_studio_agent</exec_depend>
+  <exec_depend>moveit_pro_behavior</exec_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
