@@ -20,21 +20,15 @@
       scale="0.001 0.001 0.002"
     />
 
-    <texture
-      type="skybox"
-      builtin="gradient"
-      rgb1="0.3 0.5 0.7"
-      rgb2="0 0 0"
-      width="512"
-      height="3072"
-    />
+    <!-- Blue checker floor: rgb1/rgb2 are the light/dark alternating squares. -->
     <texture
       type="2d"
       name="groundplane"
-      builtin="flat"
-      mark="random"
-      rgb1="0.47 0.42 0.41"
-      markrgb="0.2 0.2 0.2"
+      builtin="checker"
+      mark="edge"
+      rgb1="0.2 0.3 0.4"
+      rgb2="0.1 0.2 0.3"
+      markrgb="0.8 0.8 0.8"
       width="300"
       height="300"
     />
@@ -43,8 +37,13 @@
       texture="groundplane"
       texuniform="true"
       texrepeat="5 5"
-      reflectance="0"
-      metallic="0"
+      reflectance="0.2"
+    />
+    <material
+      name="pedestal_metal"
+      rgba="0.30 0.32 0.35 1"
+      specular="0.4"
+      shininess="0.5"
     />
   </asset>
 
@@ -54,6 +53,10 @@
     <headlight diffuse="0.6 0.6 0.6" ambient="0.1 0.1 0.1" specular="0 0 0" />
     <rgba haze="0.15 0.25 0.35 1" />
     <global azimuth="120" elevation="-20" offwidth="1280" offheight="720" />
+    <!-- Render quality only (no physics effect): 4x MSAA + larger shadow map.
+         map haze=0.1 is below MuJoCo's 0.3 default, so haze is subtle. -->
+    <quality offsamples="4" shadowsize="4096" />
+    <map haze="0.1" />
   </visual>
 
   <!-- Add Fanuc support files -->
@@ -98,18 +101,38 @@
     />
 
     <body name="arm_pedestal" pos="0.0 0.0 0.15">
-      <geom type="box" size="0.2 0.2 0.15" />
+      <geom type="box" size="0.2 0.2 0.15" material="pedestal_metal" />
       <!-- Holder for tool 1 -->
-      <geom type="box" size="0.06 0.01 0.01" pos="0.23 0.05 0.1" />
-      <geom type="box" size="0.06 0.01 0.01" pos="0.23 0.11 0.1" />
+      <geom
+        type="box"
+        size="0.06 0.01 0.01"
+        pos="0.23 0.05 0.1"
+        material="pedestal_metal"
+      />
+      <geom
+        type="box"
+        size="0.06 0.01 0.01"
+        pos="0.23 0.11 0.1"
+        material="pedestal_metal"
+      />
       <site
         name="suction_gripper_holder_site"
         pos="0.25 0.08 0.15"
         euler="3.1415 0 0"
       />
       <!-- Holder for tool 2 -->
-      <geom type="box" size="0.06 0.01 0.01" pos="0.23 -0.05 0.1" />
-      <geom type="box" size="0.06 0.01 0.01" pos="0.23 -0.11 0.1" />
+      <geom
+        type="box"
+        size="0.06 0.01 0.01"
+        pos="0.23 -0.05 0.1"
+        material="pedestal_metal"
+      />
+      <geom
+        type="box"
+        size="0.06 0.01 0.01"
+        pos="0.23 -0.11 0.1"
+        material="pedestal_metal"
+      />
       <site
         name="inspection_tool_holder_site"
         pos="0.25 -0.08 0.15"
