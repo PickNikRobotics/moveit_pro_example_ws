@@ -1,0 +1,167 @@
+# Layer-2 "deploy to customer" integration: run the LICENSED, pre-bundled
+# collision_monitor node in parallel with the lab_sim MoveIt Pro integration
+# test.
+#
+# IP boundary (this repo is PUBLIC; the monitor is PROPRIETARY):
+#   * This workflow PULLS a pre-built, license-gated monitor bundle image and
+#     uses it as the build base. It NEVER clones or builds collision_monitor
+#     source. The only collision-monitor-specific things in this public repo
+#     are the lab_sim_collision_monitor usage example (launch/params/test).
+#   * The monitor's engine constructor is license-gated, so the example only
+#     runs with a valid MOVEIT_LICENSE_KEY (supplied here from the
+#     STUDIO_CI_LICENSE_KEY secret). Without it the monitor node dies on init
+#     and the Layer-2 test fails loudly.
+#
+# Dispatch contract consumed (workstream C / upstream must match EXACTLY):
+#   repository_dispatch  event_type: collision-monitor-integration
+#   client_payload:
+#     bundle_image           (REQUIRED) container image ref of the licensed,
+#                            pre-bundled monitor (monitor + licensing + coal +
+#                            runtime deps, layered on the MoveIt Pro base).
+#     collision_monitor_ref  (optional) upstream sha/branch, logged only.
+#     upstream_run_id        (optional) upstream run id, logged only.
+name: Collision Monitor Integration (Layer 2)
+
+on:
+  repository_dispatch:
+    types: [collision-monitor-integration]
+  workflow_dispatch:
+    inputs:
+      bundle_image:
+        description: >-
+          Licensed, pre-bundled collision_monitor image to use as the build
+          base (monitor + licensing + coal + runtime deps).
+        required: true
+        type: string
+      collision_monitor_ref:
+        description: 'Upstream collision_monitor ref (logged only).'
+        required: false
+        default: ''
+        type: string
+
+concurrency:
+  group: collision-monitor-integration-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  layer2-parallel-monitor:
+    name: lab_sim + licensed monitor (parallel)
+    runs-on: picknik-16-amd64
+    steps:
+      - name: Resolve dispatch inputs
+        id: inputs
+        env:
+          DISPATCH_BUNDLE: ${{ github.event.client_payload.bundle_image }}
+          DISPATCH_REF: ${{ github.event.client_payload.collision_monitor_ref }}
+          DISPATCH_RUN_ID: ${{ github.event.client_payload.upstream_run_id }}
+          MANUAL_BUNDLE: ${{ inputs.bundle_image }}
+          MANUAL_REF: ${{ inputs.collision_monitor_ref }}
+        run: |
+          set -euo pipefail
+          bundle="${DISPATCH_BUNDLE:-$MANUAL_BUNDLE}"
+          ref="${DISPATCH_REF:-$MANUAL_REF}"
+          run_id="${DISPATCH_RUN_ID:-n/a}"
+          if [ -z "${bundle}" ]; then
+            echo "::error::No bundle_image provided in client_payload or workflow_dispatch inputs." >&2
+            echo "The licensed monitor bundle image is required; this workflow does NOT build monitor source." >&2
+            exit 1
+          fi
+          echo "Using licensed monitor bundle image: ${bundle}"
+          echo "Upstream collision_monitor ref (informational): ${ref:-n/a}"
+          echo "Upstream run id (informational): ${run_id}"
+          echo "bundle_image=${bundle}" >> "${GITHUB_OUTPUT}"
+
+      - name: Verify license secret present (fail loudly if not)
+        env:
+          MOVEIT_LICENSE_KEY: ${{ secrets.STUDIO_CI_LICENSE_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "${MOVEIT_LICENSE_KEY}" ]; then
+            echo "::error::STUDIO_CI_LICENSE_KEY secret is empty. The collision_monitor engine is" >&2
+            echo "license-gated and the Layer-2 example cannot run without a valid key." >&2
+            exit 1
+          fi
+          echo "License key present (value masked)."
+
+      - name: Checkout example_ws (usage example only — NO monitor source)
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          submodules: recursive
+
+      - name: Detect bundle registry credentials
+        id: regcreds
+        env:
+          REG_USER: ${{ secrets.BUNDLE_REGISTRY_USERNAME }}
+        run: |
+          set -euo pipefail
+          if [ -n "${REG_USER}" ]; then
+            echo "have_creds=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "have_creds=false" >> "${GITHUB_OUTPUT}"
+          fi
+
+      - name: Log in to the bundle image registry
+        if: ${{ steps.regcreds.outputs.have_creds == 'true' }}
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3.4.0
+        with:
+          registry: ${{ secrets.BUNDLE_REGISTRY }}
+          username: ${{ secrets.BUNDLE_REGISTRY_USERNAME }}
+          password: ${{ secrets.BUNDLE_REGISTRY_PASSWORD }}
+
+      - name: Pull the licensed monitor bundle image
+        env:
+          BUNDLE_IMAGE: ${{ steps.inputs.outputs.bundle_image }}
+        run: |
+          set -euo pipefail
+          echo "Pulling pre-bundled licensed monitor image (no source build): ${BUNDLE_IMAGE}"
+          docker pull "${BUNDLE_IMAGE}"
+
+      - name: Build the example_ws overlay on top of the bundle image
+        env:
+          BUNDLE_IMAGE: ${{ steps.inputs.outputs.bundle_image }}
+        run: |
+          set -euo pipefail
+          # Layer the public example workspace (lab_sim + lab_sim_collision_monitor)
+          # on top of the licensed bundle. The bundle already contains the built,
+          # licensed collision_monitor overlay; we only build the example packages.
+          # NOTE: monitor source is never present here — only the prebuilt bundle.
+          docker build \
+            --build-arg "MOVEIT_PRO_BASE_IMAGE=${BUNDLE_IMAGE}" \
+            -f ./Dockerfile \
+            -t lab-sim-with-monitor:ci \
+            .
+
+      - name: Run the Layer-2 parallel-monitor test
+        env:
+          BUNDLE_IMAGE: lab-sim-with-monitor:ci
+          MOVEIT_LICENSE_KEY: ${{ secrets.STUDIO_CI_LICENSE_KEY }}
+        run: |
+          set -euo pipefail
+          # Headless, license-keyed run of lab_sim + the licensed monitor.
+          # Coarsen the MuJoCo timestep on CI (matches ci.yaml) so the heavier
+          # 3.6.0 solver stays at-or-under realtime on the runner.
+          docker run --rm \
+            -e MOVEIT_CONFIG_PACKAGE=lab_sim \
+            -e MOVEIT_LICENSE_KEY="${MOVEIT_LICENSE_KEY}" \
+            -e MUJOCO_CI_TIMESTEP=0.003 \
+            "${BUNDLE_IMAGE}" \
+            bash -lc '
+              set -euo pipefail
+              source /opt/ros/humble/setup.bash
+              source "${USER_WS}/install/setup.bash"
+              colcon test \
+                --packages-select lab_sim_collision_monitor \
+                --executor sequential \
+                --event-handlers console_direct+
+              colcon test-result --verbose
+            '
+
+      - name: Upload test results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v4.6.2
+        with:
+          name: collision-monitor-integration-results
+          path: |
+            build/lab_sim_collision_monitor/test_results/**
+            log/latest_test/**
+          if-no-files-found: ignore

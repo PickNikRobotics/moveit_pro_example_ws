@@ -1,0 +1,56 @@
+# Copyright 2026 PickNik Inc.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+#    * Redistributions of source code must retain the above copyright
+#      notice, this list of conditions and the following disclaimer.
+#    * Redistributions in binary form must reproduce the above copyright
+#      notice, this list of conditions and the following disclaimer in the
+#      documentation and/or other materials provided with the distribution.
+#    * Neither the name of the PickNik Inc. nor the names of its contributors
+#      may be used to endorse or promote products derived from this software
+#      without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES ARE DISCLAIMED. IN NO EVENT SHALL THE
+# COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DAMAGES ARISING IN ANY WAY
+# OUT OF THE USE OF THIS SOFTWARE.
+
+# Parameters for the vendor-neutral collision_monitor node, specialized for the
+# lab_sim UR-on-a-linear-rail robot. ALL robot specifics live here, never in the
+# monitor's robot-agnostic core.
+#
+# The monitor reads /joint_states in MODEL-DOF order. lab_sim reports DRIVING
+# joint angles (rad) / rail position (m) directly on /joint_states, so no
+# actuator->joint conversion is required for this robot. (If a robot reported
+# actuator/cylinder units, the conversion would belong in a Layer-C adapter that
+# republishes /joint_states in joint space — never in the monitor core.)
+/**:
+  ros__parameters:
+    # Monitor tick rate. lab_sim's controller_manager runs at 600 Hz; 100 Hz is
+    # a safe, low-cost monitor cadence for this example.
+    rate_hz: 100.0
+
+    # Per-tick wall budget. Exceeding it trips DEADLINE_OVERRUN (fail-safe).
+    deadline_us: 5000
+
+    # URDF/SRDF link names for lab_sim's picknik_ur are UNPREFIXED (e.g.
+    # base_link, wrist_3_link), so the robot_prefix is empty.
+    robot_prefix: ""
+
+    # Default acceleration limit (rad/s^2 or m/s^2) used for any DOF whose URDF
+    # <limit> carries no acceleration attribute. The 6 UR joints have no URDF
+    # acceleration attr, so they fall back to this value. lab_sim's MoveIt-level
+    # joint_limits.yaml uses 30 deg/s^2 for the arm joints:
+    #   30 deg/s^2 = 30 * pi/180 = 0.5235987755982988 rad/s^2.
+    # The linear_rail_joint DOES carry a URDF acceleration limit (10.0 m/s^2),
+    # which the engine uses directly and this default does not override.
+    # NOTE: 0.0 would be fail-safe (trip on any motion of an attr-less joint);
+    # we set a real, conservative value verified against the arm's braking spec.
+    default_accel_limit: 0.5235987755982988
+
+    # 0 = check only the forward-projected braking-stop configuration. Set >0 to
+    # also check interpolated configs along the stopping path (tunneling
+    # mitigation), at N extra collision queries per tick.
+    swept_path_samples: 0

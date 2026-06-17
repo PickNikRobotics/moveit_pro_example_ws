@@ -1,0 +1,42 @@
+<?xml version="1.0" ?>
+<package format="3">
+  <name>lab_sim_collision_monitor</name>
+  <version>0.0.0</version>
+
+  <description>
+    Usage example: configures the vendor-neutral (and separately licensed)
+    collision_monitor ROS 2 node for the lab_sim UR-on-a-rail robot.
+
+    This package contains ONLY robot-specific glue — launch, params, and a
+    parallel integration test. It does NOT contain or build the collision
+    monitor itself: the monitor node (collision_monitor_component) is provided
+    as a pre-bundled, license-gated binary image/overlay. Running the example
+    therefore requires a valid MOVEIT_LICENSE_KEY; without one the monitor's
+    engine constructor fails loudly (by design).
+  </description>
+
+  <maintainer email="support@picknik.ai">MoveIt Pro Maintainer</maintainer>
+
+  <license>BSD-3-Clause</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <!-- Robots/sim consumed by the parallel integration test. -->
+  <exec_depend>lab_sim</exec_depend>
+  <!-- The licensed monitor node. Provided by the pre-bundled overlay/image at
+       runtime; declared here so launch can resolve the component plugin when
+       the bundle is present. NOT built from this workspace. -->
+  <exec_depend>collision_monitor_ros</exec_depend>
+  <exec_depend>rclcpp_components</exec_depend>
+  <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>controller_manager</exec_depend>
+
+  <test_depend>ament_cmake_pytest</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>picknik_ament_copyright</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
