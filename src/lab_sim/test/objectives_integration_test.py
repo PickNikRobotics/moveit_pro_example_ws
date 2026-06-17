@@ -40,8 +40,11 @@ from rclpy.node import Node
 from control_msgs.action import GripperCommand
 from controller_manager_msgs.srv import ListControllers, SwitchController
 from moveit_pro_test_utils.objective_test_fixture import (
+    EndStateSpec,
     ExecuteObjectiveResource,
+    JointTarget,
     MUJOCO_RESET_HOOK,
+    ObjectPoseTarget,
     SIM_RESETTER,
     execute_objective_resource as execute_objective_resource,
     get_objective_pytest_params,
@@ -317,6 +320,65 @@ def wait_for_gripper_action_server(timeout: int = 180):
     return True
 
 
+# --- End-state correctness checks ---
+#
+# A small, deterministic set of objectives gets an end-state assertion beyond
+# SUCCESS/FAILURE. Broad population is a follow-up tied to #17769.
+#
+# "Look at Table" drives the manipulator to the saved "Look at Table" waypoint;
+# the expected target is resolved at runtime from /get_saved_waypoints (same
+# source of truth the objective uses). Unlike hangar_sim, the saved waypoint's
+# full joint set (arm + rail + gripper) is commanded or held at its stored
+# value, so no per-joint filtering is needed (validated live: worst error
+# 2.6e-3 rad across all 8 joints).
+JOINT_CHECK_OBJECTIVE = "Look at Table"
+JOINT_CHECK_WAYPOINT = "Look at Table"
+
+# "Move Flasks to Burners" places flask_1 and flask_2 onto the desk burners.
+# Expected positions are MuJoCo ground truth read from TF after a validated
+# run (picknik_mujoco_ros broadcasts every non-robot free-joint body as
+# mj_world -> <body>); run-to-run repeatability measured at < 3 mm, and the
+# two burners sit ~0.11 m apart, so the default 0.05 m tolerance both absorbs
+# physics noise and catches a flask landing on the wrong burner. Position-only:
+# the flask is radially symmetric, so its final yaw is not deterministic.
+OBJECT_CHECK_OBJECTIVE = "Move Flasks to Burners"
+FLASK_END_POSES = {
+    "flask_1": [0.6583, 0.5767, 0.5465],
+    "flask_2": [0.5446, 0.5775, 0.5465],
+}
+
+EXPECTED_END_STATE_BY_ID = {
+    OBJECT_CHECK_OBJECTIVE: EndStateSpec(
+        objects=[
+            ObjectPoseTarget(
+                object_frame=frame,
+                reference_frame="world",
+                position=position,
+            )
+            for frame, position in FLASK_END_POSES.items()
+        ]
+    ),
+}
+
+
+def _expected_end_state_by_id(
+    objective_id: str,
+    resource: ExecuteObjectiveResource,
+) -> Optional[dict[str, EndStateSpec]]:
+    """Build the end-state spec for objectives we assert on; None otherwise.
+
+    The joint-check waypoint is resolved lazily, only for the objective under
+    test, so a missing /get_saved_waypoints surfaces solely on the objective
+    that needs it rather than penalizing the whole suite.
+    """
+    if objective_id == JOINT_CHECK_OBJECTIVE:
+        target = resource.get_waypoint_target(JOINT_CHECK_WAYPOINT)
+        return {objective_id: EndStateSpec(joints=JointTarget(positions=target))}
+    if objective_id == OBJECT_CHECK_OBJECTIVE:
+        return EXPECTED_END_STATE_BY_ID
+    return None
+
+
 @pytest.mark.parametrize(
     "objective_id, should_cancel",
     get_objective_pytest_params("lab_sim", cancel_objectives, skip_objectives),
@@ -327,8 +389,16 @@ def test_all_objectives(
     execute_objective_resource: ExecuteObjectiveResource,
 ):
     wait_for_gripper_action_server()
+    expected_end_state_by_id = _expected_end_state_by_id(
+        objective_id, execute_objective_resource
+    )
     try:
-        run_objective(objective_id, should_cancel, execute_objective_resource)
+        run_objective(
+            objective_id,
+            should_cancel,
+            execute_objective_resource,
+            expected_end_state_by_id=expected_end_state_by_id,
+        )
     except AssertionError as e:
         mode = "cancel" if should_cancel else "execute"
         pytest.fail(f"Objective '{objective_id}' failed to {mode}: {e}")
