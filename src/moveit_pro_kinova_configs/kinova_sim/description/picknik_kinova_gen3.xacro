@@ -15,7 +15,7 @@
     <xacro:arg name="sim_isaac" default="false" />
     <xacro:arg name="isaac_joint_commands" default="/isaac_joint_commands" />
     <xacro:arg name="isaac_joint_states" default="/isaac_joint_states" />
-    <xacro:arg name="use_external_cable" default="false" />
+    <xacro:arg name="use_external_cable" default="true" />
     <xacro:arg name="gripper_max_velocity" default="100.0" />
     <xacro:arg name="gripper_max_force" default="100.0" />
     <xacro:arg name="gripper_com_port" default="/dev/ttyUSB0" />
@@ -87,12 +87,12 @@
         </geometry>
       </collision>
     </link>
-    <joint name="joint_1" type="continuous">
+    <joint name="joint_1" type="revolute">
       <origin rpy="3.1416 2.7629E-18 -4.9305E-36" xyz="0 0 0.15643"/>
       <parent link="base_link"/>
       <child link="shoulder_link"/>
       <axis xyz="0 0 1"/>
-      <limit effort="39" velocity="1.3963"/>
+      <limit effort="39" lower="${-2*pi}" upper="${2*pi}" velocity="1.3963"/>
     </joint>
     <link name="half_arm_1_link">
       <inertial>
@@ -145,12 +145,12 @@
         </geometry>
       </collision>
     </link>
-    <joint name="joint_3" type="continuous">
+    <joint name="joint_3" type="revolute">
       <origin rpy="-1.5708 1.2326E-32 -2.9122E-16" xyz="0 -0.21038 -0.006375"/>
       <parent link="half_arm_1_link"/>
       <child link="half_arm_2_link"/>
       <axis xyz="0 0 1"/>
-      <limit effort="39" velocity="1.3963"/>
+      <limit effort="39" lower="${-2*pi}" upper="${2*pi}" velocity="1.3963"/>
     </joint>
     <link name="forearm_link">
       <inertial>
@@ -203,12 +203,12 @@
         </geometry>
       </collision>
     </link>
-    <joint name="joint_5" type="continuous">
+    <joint name="joint_5" type="revolute">
       <origin rpy="-1.5708 2.2204E-16 -6.373E-17" xyz="0 -0.20843 -0.006375"/>
       <parent link="forearm_link"/>
       <child link="spherical_wrist_1_link"/>
       <axis xyz="0 0 1"/>
-      <limit effort="9" velocity="1.2218"/>
+      <limit effort="9" lower="${-2*pi}" upper="${2*pi}" velocity="1.2218"/>
     </joint>
     <link name="spherical_wrist_2_link">
       <inertial>
@@ -261,12 +261,12 @@
         </geometry>
       </collision>
     </link>
-    <joint name="joint_7" type="continuous">
+    <joint name="joint_7" type="revolute">
       <origin rpy="-1.5708 -5.5511E-17 9.6396E-17" xyz="0 -0.10593 -0.00017505"/>
       <parent link="spherical_wrist_2_link"/>
       <child link="bracelet_link"/>
       <axis xyz="0 0 1"/>
-      <limit effort="9" velocity="1.2218"/>
+      <limit effort="9" lower="${-2*pi}" upper="${2*pi}" velocity="1.2218"/>
     </joint>
     <link name="end_effector_link"/>
     <joint name="end_effector" type="fixed">

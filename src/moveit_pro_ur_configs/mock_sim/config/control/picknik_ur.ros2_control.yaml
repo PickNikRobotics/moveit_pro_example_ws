@@ -2,7 +2,7 @@ controller_manager:
   ros__parameters:
     update_rate: 600  # Hz
     overruns:
-      print_warnings: false  # Suppress overrun WARN logs in non-realtime sim; overrun handling (overruns.manage) untouched.
+      print_warnings: false  # Suppress overrun WARN logs in non-realtime sim; gates the WARN log only; overrun handling itself is unchanged.
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
     io_and_status_controller:
