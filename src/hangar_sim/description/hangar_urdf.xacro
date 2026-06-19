@@ -8,18 +8,70 @@
       <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
     </joint>
 
-    <!-- Use single link for visual mesh -->
-    <link name="visual_mesh">
+    <!-- Visual mesh split into 5 files to keep each under 10 MB -->
+    <link name="visual_mesh_00">
       <visual>
         <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
         <geometry>
-          <mesh filename="package://hangar_sim/description/assets/hangar_floor.dae" scale="1.0 1.0 1.0"/>
+          <mesh filename="package://hangar_sim/description/assets/hangar_floor_00.obj" scale="1.0 1.0 1.0"/>
         </geometry>
       </visual>
     </link>
-    <joint name="collision_SM_Floor_376_visual_mesh" type="fixed">
+    <joint name="collision_SM_Floor_376_visual_mesh_00" type="fixed">
       <parent link="collision_SM_Floor_376"/>
-      <child link="visual_mesh"/>
+      <child link="visual_mesh_00"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+    </joint>
+    <link name="visual_mesh_01">
+      <visual>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_floor_01.obj" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </visual>
+    </link>
+    <joint name="collision_SM_Floor_376_visual_mesh_01" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="visual_mesh_01"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+    </joint>
+    <link name="visual_mesh_02">
+      <visual>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_floor_02.dae" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </visual>
+    </link>
+    <joint name="collision_SM_Floor_376_visual_mesh_02" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="visual_mesh_02"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+    </joint>
+    <link name="visual_mesh_03">
+      <visual>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_floor_03.dae" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </visual>
+    </link>
+    <joint name="collision_SM_Floor_376_visual_mesh_03" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="visual_mesh_03"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+    </joint>
+    <link name="visual_mesh_04">
+      <visual>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+        <geometry>
+          <mesh filename="package://hangar_sim/description/assets/hangar_floor_04.dae" scale="1.0 1.0 1.0"/>
+        </geometry>
+      </visual>
+    </link>
+    <joint name="collision_SM_Floor_376_visual_mesh_04" type="fixed">
+      <parent link="collision_SM_Floor_376"/>
+      <child link="visual_mesh_04"/>
       <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
     </joint>
 
