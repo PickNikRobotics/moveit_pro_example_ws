@@ -16,9 +16,13 @@ on:
     # and `moveit_pro_pr` so this workflow can run the integration suite
     # against the just-built image and post a commit status back to that PR.
     types: [moveit_pro_pr]
-  # Run every 6 hours Mon-Fri
+  # Run lab_sim/hangar_sim every 6 hours Mon-Fri, and the remaining example
+  # sims once a week (Sunday 06:00 UTC). The weekly cron is deliberately off
+  # the 6-hour Mon-Fri grid so the two never collide on the same minute; the
+  # `integration-test-weekly` job below keys on this exact string.
   schedule:
     - cron: "0 */6 * * 1-5"
+    - cron: "0 6 * * 0"
 
 concurrency:
   # Dispatch-triggered runs from different moveit_pro PRs all share the same
@@ -236,6 +240,11 @@ jobs:
 
   integration-test:
     needs: resolve
+    # Runs on every trigger EXCEPT the Sunday weekly cron, which is reserved for
+    # integration-test-weekly (the remaining sims). Without this guard, adding
+    # the second `schedule` cron above would fan this lab_sim/hangar_sim job out
+    # an extra time every Sunday — wasted GPU-runner slots with no PR to gate.
+    if: ${{ github.event_name != 'schedule' || github.event.schedule != '0 6 * * 0' }}
     strategy:
       fail-fast: false
       matrix:
@@ -278,6 +287,135 @@ jobs:
     secrets:
       moveit_license_key: ${{ secrets.STUDIO_CI_LICENSE_KEY }}
       lfs_cache_role_arn: ${{ secrets.LFS_CACHE_ROLE_ARN }}
+
+  # Weekly-only integration suite for the remaining example sims. These run far
+  # longer in aggregate than lab_sim/hangar_sim and have no per-PR signal value,
+  # so they are kept off pull_request / push / the 6-hourly cron entirely:
+  # this job fires ONLY on the Sunday weekly cron above and on manual
+  # workflow_dispatch. It is intentionally NOT in `build-status`'s needs list,
+  # so it can never gate a PR. `integration-test` (lab_sim/hangar_sim) remains
+  # the per-PR gate.
+  integration-test-weekly:
+    needs: resolve
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'schedule' && github.event.schedule == '0 6 * * 0')
+    strategy:
+      fail-fast: false
+      matrix:
+        config_package: [april_tag_sim, dual_arm_sim, factory_sim, grinding_sim, kitchen_sim]
+    permissions:
+      # contents: read for checkout; id-token: write so the reusable workflow
+      # can assume the LFS S3 cache IAM role via OIDC (matches integration-test).
+      contents: read
+      id-token: write
+    uses: PickNikRobotics/moveit_pro_ci/.github/workflows/workspace_integration_test.yaml@a0e3b30c9aa8f8f82f95c91e5a34989d01caa046 # v0.9.0
+    with:
+      image_tag: ${{ needs.resolve.outputs.image_tag }}
+      image_ref: ${{ needs.resolve.outputs.image_ref }}
+      git_ref: ${{ needs.resolve.outputs.git_ref }}
+      config_package: ${{ matrix.config_package }}
+      # Jazzy-only, matching integration-test.
+      ros_distros: '["jazzy"]'
+      colcon_test_args: "--executor sequential"
+      # GPU runner + enable_gpu for MuJoCo EGL offscreen rendering (camera /
+      # perception scenes), same rationale as integration-test above.
+      runner: "picknik-16-amd64-gpu"
+      enable_gpu: true
+      use_ccache: true
+      # workflow_dispatch from a fork is not a thing (dispatch is repo-scoped),
+      # and the weekly cron always runs on the base repo, so the S3 LFS cache
+      # role is always available here — no fork fallback needed.
+      lfs_cache_s3_bucket: 'picknik-arc-ci-ccache-682033501538'
+      lfs_cache_aws_region: us-east-1
+    secrets:
+      moveit_license_key: ${{ secrets.STUDIO_CI_LICENSE_KEY }}
+      lfs_cache_role_arn: ${{ secrets.LFS_CACHE_ROLE_ARN }}
+
+  # File (or update) a GitHub issue when the weekly sim suite fails. Runs only
+  # when integration-test-weekly actually ran and reported failure — `result`
+  # is 'skipped' on every PR/push/6-hourly run, so this stays dormant outside
+  # the weekly schedule and manual dispatch. Dedupes by title search rather
+  # than a dedicated label (the repo reserves label creation for humans): an
+  # existing open issue gets a fresh comment instead of a duplicate issue.
+  weekly-failure-issue:
+    needs: integration-test-weekly
+    if: always() && needs.integration-test-weekly.result == 'failure'
+    runs-on: ubuntu-22.04
+    steps:
+      # Mint a cross-repo App token so the issue is filed against moveit_pro
+      # (where these objectives and the shared test fixture live), not against
+      # example_ws. Mirrors the integration-status job's token setup. The
+      # workflow's default GITHUB_TOKEN cannot write issues to another repo.
+      - name: Generate cross-repo App token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.SISTER_REPOS_APP_CLIENT_ID }}
+          private-key: ${{ secrets.SISTER_REPOS_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: |
+            moveit_pro_example_ws
+            moveit_pro
+      - name: Open or update failure issue
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            // File the issue on moveit_pro, not this repo (example_ws).
+            const issueOwner = 'PickNikRobotics';
+            const issueRepo = 'moveit_pro';
+            const title = 'Weekly example_ws sim integration tests are failing';
+            // runUrl points at the example_ws run (this workflow) where the
+            // failing logs and the HTML report live.
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const when = new Date().toISOString();
+            const configs = 'april_tag_sim, dual_arm_sim, factory_sim, grinding_sim, kitchen_sim';
+            const body = [
+              `The weekly objective integration suite reported a failure on ${when}.`,
+              '',
+              `One or more of the following config packages failed: ${configs}.`,
+              'The matrix result is aggregated, so open the run to see which leg(s) failed:',
+              '',
+              `- [Workflow run](${runUrl})`,
+              '',
+              'If a newly-added or renamed objective is the cause, update the ' +
+              '`skip_objectives` / `cancel_objectives` sets (or add an end-state spec) ' +
+              'in that config\'s `test/objectives_integration_test.py`.',
+            ].join('\n');
+            // Dedupe by exact open-issue title rather than creating a new issue
+            // each failing week. search.issuesAndPullRequests title-matches are
+            // fuzzy, so confirm an exact title match before reusing. The search
+            // is best-effort: on a transient API error, fall back to creating an
+            // issue (a possible duplicate is preferable to a silently dropped
+            // failure notification).
+            let existing;
+            try {
+              const found = await github.rest.search.issuesAndPullRequests({
+                q: `repo:${issueOwner}/${issueRepo} is:issue is:open in:title "${title}"`,
+              });
+              existing = found.data.items.find((i) => i.title === title);
+            } catch (e) {
+              core.warning(`Issue dedupe search failed (${e.message}); creating a new issue.`);
+              existing = undefined;
+            }
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner: issueOwner,
+                repo: issueRepo,
+                issue_number: existing.number,
+                body,
+              });
+              core.info(`Commented on existing ${issueOwner}/${issueRepo} issue #${existing.number}.`);
+            } else {
+              const created = await github.rest.issues.create({
+                owner: issueOwner,
+                repo: issueRepo,
+                title,
+                body,
+              });
+              core.info(`Opened ${issueOwner}/${issueRepo} issue #${created.data.number}.`);
+            }
 
   # Single byte-identical commit-status context (`example_ws / integration`)
   # is posted from here only. Per the design doc: the matrix jobs must NOT
