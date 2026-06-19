@@ -505,8 +505,6 @@
     <disable_collisions link1="collision_Cube_004" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_004" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_004" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_Cube_004" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_Cube_004" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_Cube_004" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_004" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_004" link2="wrist_3_link" reason="Never"/>
@@ -586,8 +584,6 @@
     <disable_collisions link1="collision_Cube_005" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_005" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_005" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_Cube_005" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_Cube_005" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_Cube_005" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_005" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_005" link2="wrist_3_link" reason="Never"/>
@@ -666,8 +662,6 @@
     <disable_collisions link1="collision_Cube_006" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_006" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_006" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_Cube_006" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_Cube_006" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_Cube_006" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_006" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_006" link2="wrist_3_link" reason="Never"/>
@@ -745,8 +739,6 @@
     <disable_collisions link1="collision_Cube_007" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_007" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_007" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_Cube_007" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_Cube_007" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_Cube_007" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_007" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_007" link2="wrist_3_link" reason="Never"/>
@@ -823,8 +815,6 @@
     <disable_collisions link1="collision_Cube_008" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_008" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_008" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_Cube_008" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_Cube_008" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_Cube_008" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_008" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_008" link2="wrist_3_link" reason="Never"/>
@@ -900,8 +890,6 @@
     <disable_collisions link1="collision_Cube_009" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_009" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_009" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_Cube_009" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_Cube_009" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_Cube_009" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_009" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_009" link2="wrist_3_link" reason="Never"/>
@@ -976,8 +964,6 @@
     <disable_collisions link1="collision_Cube_010" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_010" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_010" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_Cube_010" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_Cube_010" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_Cube_010" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_010" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_010" link2="wrist_3_link" reason="Never"/>
@@ -1051,8 +1037,6 @@
     <disable_collisions link1="collision_Cube_011" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_011" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_011" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_Cube_011" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_Cube_011" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_Cube_011" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_011" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_011" link2="wrist_3_link" reason="Never"/>
@@ -1125,8 +1109,6 @@
     <disable_collisions link1="collision_Cube_012" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_012" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_012" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_Cube_012" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_Cube_012" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_Cube_012" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_012" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_012" link2="wrist_3_link" reason="Never"/>
@@ -1198,8 +1180,6 @@
     <disable_collisions link1="collision_Cube_013" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_013" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_013" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_Cube_013" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_Cube_013" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_Cube_013" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_013" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_013" link2="wrist_3_link" reason="Never"/>
@@ -1270,8 +1250,6 @@
     <disable_collisions link1="collision_Cube_014" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_014" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_014" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_Cube_014" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_Cube_014" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_Cube_014" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_014" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_014" link2="wrist_3_link" reason="Never"/>
@@ -1341,8 +1319,6 @@
     <disable_collisions link1="collision_Cube_015" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_015" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_015" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_Cube_015" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_Cube_015" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_Cube_015" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_015" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_Cube_015" link2="wrist_3_link" reason="Never"/>
@@ -1649,8 +1625,6 @@
     <disable_collisions link1="collision_Plane_005" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_Plane_005" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_Plane_005" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_Plane_005" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_Plane_005" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_Plane_005" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_Plane_005" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_Plane_005" link2="wrist_3_link" reason="Never"/>
@@ -1713,8 +1687,6 @@
     <disable_collisions link1="collision_Plane_006" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_Plane_006" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_Plane_006" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_Plane_006" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_Plane_006" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_Plane_006" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_Plane_006" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_Plane_006" link2="wrist_3_link" reason="Never"/>
@@ -1776,8 +1748,6 @@
     <disable_collisions link1="collision_Plane_007" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_Plane_007" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_Plane_007" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_Plane_007" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_Plane_007" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_Plane_007" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_Plane_007" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_Plane_007" link2="wrist_3_link" reason="Never"/>
@@ -1838,8 +1808,6 @@
     <disable_collisions link1="collision_Plane_008" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_Plane_008" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_Plane_008" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_Plane_008" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_Plane_008" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_Plane_008" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_Plane_008" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_Plane_008" link2="wrist_3_link" reason="Never"/>
@@ -2056,8 +2024,6 @@
     <disable_collisions link1="collision_SM_Box_A7_73" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Box_A7_73" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Box_A7_73" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_SM_Box_A7_73" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_SM_Box_A7_73" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_SM_Box_A7_73" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Box_A7_73" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Box_A7_73" link2="wrist_3_link" reason="Never"/>
@@ -2112,8 +2078,6 @@
     <disable_collisions link1="collision_SM_Box_A8" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Box_A8" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Box_A8" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_SM_Box_A8" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_SM_Box_A8" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_SM_Box_A8" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Box_A8" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Box_A8" link2="wrist_3_link" reason="Never"/>
@@ -2160,7 +2124,6 @@
     <disable_collisions link1="collision_SM_Box_C7_77" link2="riser_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Box_C7_77" link2="shoulder_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Box_C7_77" link2="upper_arm_link" reason="Never"/>
-    <disable_collisions link1="collision_SM_Box_C7_77" link2="vacuum_base_top" reason="Never"/>
     <disable_collisions link1="collision_SM_Box_C7_77" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Box_C7_77" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Box_C7_77" link2="wrist_3_link" reason="Never"/>
@@ -2258,8 +2221,6 @@
     <disable_collisions link1="collision_SM_Pillar2_001" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Pillar2_001" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Pillar2_001" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_SM_Pillar2_001" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_SM_Pillar2_001" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_SM_Pillar2_001" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Pillar2_001" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Pillar2_001" link2="wrist_3_link" reason="Never"/>
@@ -2310,8 +2271,6 @@
     <disable_collisions link1="collision_SM_Pillar3_001" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Pillar3_001" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Pillar3_001" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_SM_Pillar3_001" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_SM_Pillar3_001" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_SM_Pillar3_001" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Pillar3_001" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Pillar3_001" link2="wrist_3_link" reason="Never"/>
@@ -2361,8 +2320,6 @@
     <disable_collisions link1="collision_SM_Pillar4_001" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Pillar4_001" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Pillar4_001" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_SM_Pillar4_001" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_SM_Pillar4_001" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_SM_Pillar4_001" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Pillar4_001" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Pillar4_001" link2="wrist_3_link" reason="Never"/>
@@ -2411,8 +2368,6 @@
     <disable_collisions link1="collision_SM_Pillar5_001" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Pillar5_001" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Pillar5_001" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_SM_Pillar5_001" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_SM_Pillar5_001" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_SM_Pillar5_001" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Pillar5_001" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Pillar5_001" link2="wrist_3_link" reason="Never"/>
@@ -2460,8 +2415,6 @@
     <disable_collisions link1="collision_SM_Pillar6_001" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Pillar6_001" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Pillar6_001" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_SM_Pillar6_001" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_SM_Pillar6_001" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_SM_Pillar6_001" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Pillar6_001" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Pillar6_001" link2="wrist_3_link" reason="Never"/>
@@ -2508,8 +2461,6 @@
     <disable_collisions link1="collision_SM_Pillar7_001" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Pillar7_001" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Pillar7_001" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_SM_Pillar7_001" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_SM_Pillar7_001" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_SM_Pillar7_001" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Pillar7_001" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Pillar7_001" link2="wrist_3_link" reason="Never"/>
@@ -2555,8 +2506,6 @@
     <disable_collisions link1="collision_SM_Pillar8_001" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Pillar8_001" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Pillar8_001" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_SM_Pillar8_001" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_SM_Pillar8_001" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_SM_Pillar8_001" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Pillar8_001" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Pillar8_001" link2="wrist_3_link" reason="Never"/>
@@ -2601,8 +2550,6 @@
     <disable_collisions link1="collision_SM_Pillar_10_001" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Pillar_10_001" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Pillar_10_001" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_SM_Pillar_10_001" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_SM_Pillar_10_001" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_SM_Pillar_10_001" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Pillar_10_001" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Pillar_10_001" link2="wrist_3_link" reason="Never"/>
@@ -2646,8 +2593,6 @@
     <disable_collisions link1="collision_SM_Room_426_001" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Room_426_001" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Room_426_001" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_SM_Room_426_001" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_SM_Room_426_001" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_SM_Room_426_001" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Room_426_001" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Room_426_001" link2="wrist_3_link" reason="Never"/>
@@ -2690,8 +2635,6 @@
     <disable_collisions link1="collision_SM_Room_426_002" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Room_426_002" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Room_426_002" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_SM_Room_426_002" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_SM_Room_426_002" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_SM_Room_426_002" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Room_426_002" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Room_426_002" link2="wrist_3_link" reason="Never"/>
@@ -2733,8 +2676,6 @@
     <disable_collisions link1="collision_SM_Room_426_003" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Room_426_003" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Room_426_003" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_SM_Room_426_003" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_SM_Room_426_003" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_SM_Room_426_003" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Room_426_003" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Room_426_003" link2="wrist_3_link" reason="Never"/>
@@ -2775,8 +2716,6 @@
     <disable_collisions link1="collision_SM_Room_426_004" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Room_426_004" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Room_426_004" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_SM_Room_426_004" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_SM_Room_426_004" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_SM_Room_426_004" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Room_426_004" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_SM_Room_426_004" link2="wrist_3_link" reason="Never"/>
@@ -2816,8 +2755,6 @@
     <disable_collisions link1="collision_SM_WallBack_396_001" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_SM_WallBack_396_001" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_SM_WallBack_396_001" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_SM_WallBack_396_001" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_SM_WallBack_396_001" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_SM_WallBack_396_001" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_SM_WallBack_396_001" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_SM_WallBack_396_001" link2="wrist_3_link" reason="Never"/>
@@ -2856,8 +2793,6 @@
     <disable_collisions link1="collision_SM_WallBack_396_002" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_SM_WallBack_396_002" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_SM_WallBack_396_002" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_SM_WallBack_396_002" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_SM_WallBack_396_002" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_SM_WallBack_396_002" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_SM_WallBack_396_002" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_SM_WallBack_396_002" link2="wrist_3_link" reason="Never"/>
@@ -2932,8 +2867,6 @@
     <disable_collisions link1="collision_SM_WallSide16_002" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_SM_WallSide16_002" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_SM_WallSide16_002" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_SM_WallSide16_002" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_SM_WallSide16_002" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_SM_WallSide16_002" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_SM_WallSide16_002" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_SM_WallSide16_002" link2="wrist_3_link" reason="Never"/>
@@ -2968,8 +2901,6 @@
     <disable_collisions link1="collision_SM_WallSide4_001" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_SM_WallSide4_001" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_SM_WallSide4_001" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_SM_WallSide4_001" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_SM_WallSide4_001" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_SM_WallSide4_001" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_SM_WallSide4_001" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_SM_WallSide4_001" link2="wrist_3_link" reason="Never"/>
@@ -3003,8 +2934,6 @@
     <disable_collisions link1="collision_supports" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_supports" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_supports" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_supports" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_supports" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_supports" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_supports" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_supports" link2="wrist_3_link" reason="Never"/>
@@ -3037,8 +2966,6 @@
     <disable_collisions link1="collision_supports_001" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_supports_001" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_supports_001" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_supports_001" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_supports_001" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_supports_001" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_supports_001" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_supports_001" link2="wrist_3_link" reason="Never"/>
@@ -3070,8 +2997,6 @@
     <disable_collisions link1="collision_supports_002" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_supports_002" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_supports_002" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_supports_002" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_supports_002" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_supports_002" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_supports_002" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_supports_002" link2="wrist_3_link" reason="Never"/>
@@ -3121,8 +3046,6 @@
     <disable_collisions link1="collision_supports_004" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_supports_004" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_supports_004" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_supports_004" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_supports_004" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_supports_004" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_supports_004" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_supports_004" link2="wrist_3_link" reason="Never"/>
@@ -3151,8 +3074,6 @@
     <disable_collisions link1="collision_supports_005" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_supports_005" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_supports_005" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_supports_005" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_supports_005" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_supports_005" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_supports_005" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_supports_005" link2="wrist_3_link" reason="Never"/>
@@ -3174,8 +3095,6 @@
     <disable_collisions link1="collision_supports_006" link2="shoulder_link" reason="Never"/>
     <disable_collisions link1="collision_supports_006" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_supports_006" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_supports_006" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_supports_006" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_supports_006" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_supports_006" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_supports_006" link2="wrist_3_link" reason="Never"/>
@@ -3202,8 +3121,6 @@
     <disable_collisions link1="collision_supports_007" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_supports_007" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_supports_007" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_supports_007" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_supports_007" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_supports_007" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_supports_007" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_supports_007" link2="wrist_3_link" reason="Never"/>
@@ -3229,8 +3146,6 @@
     <disable_collisions link1="collision_supports_008" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_supports_008" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_supports_008" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_supports_008" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_supports_008" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_supports_008" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_supports_008" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_supports_008" link2="wrist_3_link" reason="Never"/>
@@ -3255,8 +3170,6 @@
     <disable_collisions link1="collision_supports_009" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_supports_009" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_supports_009" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_supports_009" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_supports_009" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_supports_009" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_supports_009" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_supports_009" link2="wrist_3_link" reason="Never"/>
@@ -3280,8 +3193,6 @@
     <disable_collisions link1="collision_supports_010" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_supports_010" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_supports_010" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_supports_010" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_supports_010" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_supports_010" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_supports_010" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_supports_010" link2="wrist_3_link" reason="Never"/>
@@ -3304,8 +3215,6 @@
     <disable_collisions link1="collision_supports_011" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_supports_011" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_supports_011" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_supports_011" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_supports_011" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_supports_011" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_supports_011" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_supports_011" link2="wrist_3_link" reason="Never"/>
@@ -3327,8 +3236,6 @@
     <disable_collisions link1="collision_supports_012" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_supports_012" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_supports_012" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_supports_012" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_supports_012" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_supports_012" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_supports_012" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_supports_012" link2="wrist_3_link" reason="Never"/>
@@ -3349,8 +3256,6 @@
     <disable_collisions link1="collision_supports_013" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_supports_013" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_supports_013" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_supports_013" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_supports_013" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_supports_013" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_supports_013" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_supports_013" link2="wrist_3_link" reason="Never"/>
@@ -3370,8 +3275,6 @@
     <disable_collisions link1="collision_supports_014" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_supports_014" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_supports_014" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_supports_014" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_supports_014" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_supports_014" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_supports_014" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_supports_014" link2="wrist_3_link" reason="Never"/>
@@ -3390,8 +3293,6 @@
     <disable_collisions link1="collision_supports_015" link2="top_link" reason="Never"/>
     <disable_collisions link1="collision_supports_015" link2="upper_arm_link" reason="Never"/>
     <disable_collisions link1="collision_supports_015" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_supports_015" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_supports_015" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_supports_015" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_supports_015" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_supports_015" link2="wrist_3_link" reason="Never"/>
@@ -3400,8 +3301,6 @@
     <disable_collisions link1="collision_vacuum_base" link2="rear_left_wheel_link" reason="Never"/>
     <disable_collisions link1="collision_vacuum_base" link2="rear_right_wheel_link" reason="Never"/>
     <disable_collisions link1="collision_vacuum_base" link2="vacuum_base" reason="Adjacent"/>
-    <disable_collisions link1="collision_vacuum_base" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_vacuum_base" link2="vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_vacuum_base" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_vacuum_base" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_vacuum_base" link2="wrist_3_link" reason="Never"/>
@@ -3409,8 +3308,6 @@
     <disable_collisions link1="collision_vacuum_suction_cups" link2="rear_left_wheel_link" reason="Never"/>
     <disable_collisions link1="collision_vacuum_suction_cups" link2="rear_right_wheel_link" reason="Never"/>
     <disable_collisions link1="collision_vacuum_suction_cups" link2="vacuum_base" reason="Adjacent"/>
-    <disable_collisions link1="collision_vacuum_suction_cups" link2="vacuum_base_top" reason="Never"/>
-    <disable_collisions link1="collision_vacuum_suction_cups" link2="vacuum_suction_cups" reason="Default"/>
     <disable_collisions link1="collision_vacuum_suction_cups" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_vacuum_suction_cups" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="collision_vacuum_suction_cups" link2="wrist_3_link" reason="Never"/>
@@ -3455,7 +3352,6 @@
     <disable_collisions link1="rear_left_wheel_link" link2="shoulder_link" reason="Never"/>
     <disable_collisions link1="rear_left_wheel_link" link2="top_link" reason="Never"/>
     <disable_collisions link1="rear_left_wheel_link" link2="upper_arm_link" reason="Never"/>
-    <disable_collisions link1="rear_left_wheel_link" link2="vacuum_base_top" reason="Never"/>
     <disable_collisions link1="rear_left_wheel_link" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="rear_left_wheel_link" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="rear_left_wheel_link" link2="wrist_3_link" reason="Never"/>
@@ -3474,21 +3370,10 @@
     <disable_collisions link1="shoulder_link" link2="top_link" reason="Never"/>
     <disable_collisions link1="shoulder_link" link2="upper_arm_link" reason="Adjacent"/>
     <disable_collisions link1="top_link" link2="upper_arm_link" reason="Never"/>
-    <disable_collisions link1="vacuum_base" link2="vacuum_base_top" reason="Adjacent"/>
-    <disable_collisions link1="vacuum_base" link2="vacuum_suction_cups" reason="Default"/>
     <disable_collisions link1="vacuum_base" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="vacuum_base" link2="wrist_2_link" reason="Never"/>
     <disable_collisions link1="vacuum_base" link2="wrist_3_link" reason="Adjacent"/>
     <disable_collisions link1="vacuum_base" link2="wrist_3_pinch_link" reason="Default"/>
-    <disable_collisions link1="vacuum_base_top" link2="vacuum_suction_cups" reason="Adjacent"/>
-    <disable_collisions link1="vacuum_base_top" link2="wrist_1_link" reason="Never"/>
-    <disable_collisions link1="vacuum_base_top" link2="wrist_2_link" reason="Never"/>
-    <disable_collisions link1="vacuum_base_top" link2="wrist_3_link" reason="Never"/>
-    <disable_collisions link1="vacuum_base_top" link2="wrist_3_pinch_link" reason="Default"/>
-    <disable_collisions link1="vacuum_suction_cups" link2="wrist_1_link" reason="Never"/>
-    <disable_collisions link1="vacuum_suction_cups" link2="wrist_2_link" reason="Never"/>
-    <disable_collisions link1="vacuum_suction_cups" link2="wrist_3_link" reason="Never"/>
-    <disable_collisions link1="vacuum_suction_cups" link2="wrist_3_pinch_link" reason="Never"/>
     <disable_collisions link1="wrist_1_link" link2="wrist_2_link" reason="Adjacent"/>
     <disable_collisions link1="wrist_1_link" link2="wrist_3_link" reason="Never"/>
     <disable_collisions link1="wrist_1_link" link2="wrist_3_pinch_link" reason="Never"/>
