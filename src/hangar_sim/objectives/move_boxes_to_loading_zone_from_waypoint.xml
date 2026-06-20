@@ -9,6 +9,7 @@
     _description="Move boxes to loading zone from waypoint"
     waypoint_name="View Boxes"
     place_pose="{place_pose}"
+    placed_count="{placed_count}"
     threshold="{threshold}"
     prompt="{prompt}"
     negative_prompts="{negative_prompts}"
@@ -209,6 +210,36 @@
                       target_object="{graspable_object}"
                       ui_grasp_link="grasp_link"
                     />
+                    <!--Clear the previous pick's grasp markers so only the current pick's
+                        candidate poses are shown (markers use lifetime 0 = persist forever).-->
+                    <Action ID="ClearAllVisualMarkers" />
+                    <!--Visualize all candidate grasp poses in the 3D viewer (debug perception/grasp generation).-->
+                    <Control
+                      ID="Sequence"
+                      name="Visualize candidate grasp poses"
+                    >
+                      <Decorator
+                        ID="ForEach"
+                        vector_in="{grasp_poses}"
+                        out="{grasp_pose_viz}"
+                        index="{grasp_viz_index}"
+                      >
+                        <Control ID="Sequence">
+                          <!--Build a readable, unique marker name (grasp_0, grasp_1, ...) so all poses render simultaneously.-->
+                          <Action
+                            ID="Script"
+                            code="grasp_marker_name := &quot;grasp_&quot; .. grasp_viz_index"
+                          />
+                          <Action
+                            ID="VisualizePose"
+                            marker_name="{grasp_marker_name}"
+                            pose="{grasp_pose_viz}"
+                            marker_lifetime="0.000000"
+                            marker_size="0.100000"
+                          />
+                        </Control>
+                      </Decorator>
+                    </Control>
                     <Action
                       ID="InitializeMTCTask"
                       controller_names="joint_trajectory_controller"
@@ -275,7 +306,7 @@
                         <SubTree
                           ID="Execute MTC Solution (JTC)"
                           solution="{solution}"
-                          goal_duration_tolerance="-1.0"
+                          goal_duration_tolerance="30.0"
                         />
                       </Control>
                       <Control ID="Sequence" name="TopLevelSequence">
@@ -332,6 +363,37 @@
                       gripper_command_action_name="/vacuum_gripper/gripper_cmd"
                       position="1.0"
                     />
+                    <!--Box is now grasped. Add it to the planning scene at its ICP-refined pick pose
+                        under a unique id ("placed_box_N") and attach it to the gripper so the drive to
+                        the loading zone plans around the carried box. On release below it is detached
+                        and left in the world as a persistent obstacle, so later picks plan around every
+                        already-placed box instead of driving over them (#19973).-->
+                    <Action
+                      ID="Script"
+                      code="placed_box_id := 'placed_box_' .. placed_count"
+                    />
+                    <!--Idempotent cleanup: if a previous attempt for this id failed mid-carry (after
+                        AttachObject but before DetachObject), the box is still attached to grasp_link and
+                        placed_count was never advanced, so this retry reuses the same id. Detach it first
+                        (no-op if nothing is attached) so AddCollisionMesh below is not blocked by a
+                        still-attached object of the same id.-->
+                    <Decorator ID="ForceSuccess">
+                      <Action ID="DetachObject" object_id="{placed_box_id}" />
+                    </Decorator>
+                    <Action
+                      ID="AddCollisionMesh"
+                      object_id="{placed_box_id}"
+                      mesh_file_path="package://hangar_sim/objectives/box.stl"
+                      pose="{target_pose}"
+                      scale="1;1;1"
+                      overwrite="true"
+                    />
+                    <Action
+                      ID="AttachObject"
+                      object_id="{placed_box_id}"
+                      link_name="grasp_link"
+                      allowed_collision_links="vacuum_suction_cups;collision_vacuum_suction_cups"
+                    />
                     <SubTree
                       ID="Move to Pose No Preview"
                       _collapsed="true"
@@ -342,6 +404,15 @@
                       position="0.0"
                       timeout="10.000000"
                       gripper_command_action_name="/vacuum_gripper/gripper_cmd"
+                    />
+                    <!--Box released in the loading zone: detach it from the gripper so it stays in the
+                        world planning scene at its placed pose, then advance the counter so the next box
+                        gets its own unique id. These persistent obstacles are what stop the base from
+                        driving over already-placed boxes on later picks.-->
+                    <Action ID="DetachObject" object_id="{placed_box_id}" />
+                    <Action
+                      ID="Script"
+                      code="placed_count := placed_count + 1"
                     />
                   </Control>
                 </Decorator>
@@ -361,6 +432,7 @@
       <inout_port name="erosion_size" default="0" />
       <inout_port name="negative_prompts" default="{negative_prompts}" />
       <inout_port name="place_pose" default="{place_pose}" />
+      <inout_port name="placed_count" default="0" />
       <inout_port name="prompt" default="{prompt}" />
       <inout_port name="prompts" default="{prompts}" />
       <inout_port name="threshold" default="{threshold}" />

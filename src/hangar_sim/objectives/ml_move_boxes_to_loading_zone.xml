@@ -7,6 +7,10 @@
     _favorite="true"
   >
     <Control ID="Sequence">
+      <!--Clear any collision objects left in the planning scene by a previous run of this
+          Objective (the per-box "placed_box_N" obstacles added below persist until removed).
+          Without this, stale boxes from the last run would block planning at their old poses.-->
+      <Action ID="ResetPlanningSceneObjects" />
       <Action
         ID="CreatePoseStamped"
         reference_frame="world"
@@ -14,6 +18,11 @@
         orientation_xyzw="0;1.0;0;0"
         position_xyz="-4.5;8.4;0.5"
       />
+      <!--Monotonic counter that gives every placed box a unique collision-object id
+          ("placed_box_0", "placed_box_1", ...) so each one persists as an obstacle the base
+          plans around instead of overwriting the previous box. Carried across perception
+          passes via the placed_count port on the subtree below.-->
+      <Action ID="Script" code="placed_count := 0" />
       <Decorator ID="RetryUntilSuccessful" num_attempts="1000">
         <Decorator ID="ForceFailure">
           <Control ID="Sequence">
@@ -27,12 +36,14 @@
                 negative_prompts="yellow ladder;"
                 prompts="small boxes"
                 place_pose="{place_pose}"
+                placed_count="{placed_count}"
                 erosion_size="10"
               />
               <SubTree
                 ID="Move Boxes to Loading Zone Start from Waypoint"
                 waypoint_name="View Boxes 2"
                 place_pose="{place_pose}"
+                placed_count="{placed_count}"
                 threshold="0.4"
                 _collapsed="false"
                 prompts="small boxes"
