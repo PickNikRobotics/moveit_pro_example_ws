@@ -95,7 +95,7 @@
         <Metadata subcategory="Vector Handling" />
         <Metadata runnable="false" />
       </MetadataFields>
-      <output_port name="target_poses" default="{target_poses}" />
+      <inout_port name="target_poses" default="{target_poses}" />
     </SubTree>
   </TreeNodesModel>
 </root>

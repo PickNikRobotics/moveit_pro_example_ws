@@ -59,14 +59,14 @@
         <Metadata subcategory="Motion - Task Planning" />
         <Metadata runnable="false" />
       </MetadataFields>
-      <input_port
+      <inout_port
         name="controller_names"
         default="/joint_trajectory_admittance_controller;/robotiq_gripper_controller"
       />
-      <input_port name="ik_frame" default="grasp_link" />
+      <inout_port name="ik_frame" default="grasp_link" />
       <inout_port name="mtc_task" default="{mtc_task}" />
-      <input_port name="planning_group_name" default="manipulator" />
-      <input_port name="target_poses" default="{target_poses}" />
+      <inout_port name="planning_group_name" default="manipulator" />
+      <inout_port name="target_poses" default="{target_poses}" />
     </SubTree>
   </TreeNodesModel>
 </root>
