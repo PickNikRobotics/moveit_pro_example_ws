@@ -404,12 +404,41 @@ jobs:
               });
               core.info(`Commented on existing ${issueOwner}/${issueRepo} issue #${existing.number}.`);
             } else {
-              const created = await github.rest.issues.create({
-                owner: issueOwner,
-                repo: issueRepo,
-                title,
-                body,
-              });
+              // `type` is the native org-level issue Type (moveit_pro triages
+              // failures by Type); `labels` marks the issue as originating from
+              // example_ws so it can be filtered in moveit_pro's shared tracker.
+              // Both are applied best-effort: if the create rejects them (e.g.
+              // the "Bug" type is renamed), retry with just title/body so the
+              // failure notification still lands rather than throwing and being
+              // silently dropped — same fail-open intent as the search above.
+              let created;
+              try {
+                created = await github.rest.issues.create({
+                  owner: issueOwner,
+                  repo: issueRepo,
+                  title,
+                  body,
+                  type: 'Bug',
+                  labels: ['example_ws'],
+                });
+              } catch (e) {
+                // Only retry on a 422 (the type/labels were rejected). Any other
+                // error — including a lost response after the issue was already
+                // created remotely — must rethrow, or the retry would file a
+                // duplicate issue.
+                if (e?.status !== 422) {
+                  throw e;
+                }
+                core.warning(
+                  `Create with type/labels rejected (${e.message}); retrying without them.`
+                );
+                created = await github.rest.issues.create({
+                  owner: issueOwner,
+                  repo: issueRepo,
+                  title,
+                  body,
+                });
+              }
               core.info(`Opened ${issueOwner}/${issueRepo} issue #${created.data.number}.`);
             }
 
