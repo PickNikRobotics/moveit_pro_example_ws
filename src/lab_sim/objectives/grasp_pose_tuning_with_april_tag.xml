@@ -71,7 +71,7 @@
         ID="Request Teleoperation"
         _collapsed="true"
         enable_user_interaction="true"
-        initial_teleop_mode="3"
+        initial_teleop_mode="4"
         user_interaction_prompt="Teleoperate end effector to grasp pose"
         controller_action_server="/joint_trajectory_admittance_controller/follow_joint_trajectory"
         max_ik_solutions="8"
