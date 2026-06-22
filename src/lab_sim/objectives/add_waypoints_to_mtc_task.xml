@@ -39,7 +39,7 @@
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Add Waypoints to MTC Task">
-      <input_port name="joint_group_name" default="manipulator" />
+      <inout_port name="joint_group_name" default="manipulator" />
       <inout_port name="mtc_task" default="{mtc_task}" />
       <MetadataFields>
         <Metadata subcategory="Motion - Task Planning" />

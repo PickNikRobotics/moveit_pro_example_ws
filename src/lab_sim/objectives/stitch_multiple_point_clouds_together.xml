@@ -215,18 +215,18 @@
         <Metadata runnable="true" />
       </MetadataFields>
       <!--Output ports-->
-      <output_port name="current_cloud" default="{current_cloud}" />
-      <output_port name="current_pose" default="{current_pose}" />
-      <output_port name="first_solution" default="{first_solution}" />
-      <output_port name="image" default="{image}" />
-      <output_port name="inspection_poses" default="{inspection_poses}" />
-      <output_port name="joint_traj" default="{joint_traj}" />
-      <output_port name="merged_cloud" default="{merged_cloud}" />
-      <output_port name="move_solution" default="{move_solution}" />
-      <output_port name="point_cloud_vector" default="{point_cloud_vector}" />
-      <output_port name="reachable_pose" default="{reachable_pose}" />
-      <output_port name="replay_solution" default="{replay_solution}" />
-      <output_port name="transformed_cloud" default="{transformed_cloud}" />
+      <inout_port name="current_cloud" default="{current_cloud}" />
+      <inout_port name="current_pose" default="{current_pose}" />
+      <inout_port name="first_solution" default="{first_solution}" />
+      <inout_port name="image" default="{image}" />
+      <inout_port name="inspection_poses" default="{inspection_poses}" />
+      <inout_port name="joint_traj" default="{joint_traj}" />
+      <inout_port name="merged_cloud" default="{merged_cloud}" />
+      <inout_port name="move_solution" default="{move_solution}" />
+      <inout_port name="point_cloud_vector" default="{point_cloud_vector}" />
+      <inout_port name="reachable_pose" default="{reachable_pose}" />
+      <inout_port name="replay_solution" default="{replay_solution}" />
+      <inout_port name="transformed_cloud" default="{transformed_cloud}" />
     </SubTree>
   </TreeNodesModel>
 </root>
