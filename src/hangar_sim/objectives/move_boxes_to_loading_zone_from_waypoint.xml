@@ -189,7 +189,7 @@
                       ID="CreatePoseStamped"
                       reference_frame="world"
                       pose_stamped="{ee_to_tcp}"
-                      position_xyz="0;0;0"
+                      position_xyz="0;0;0.045"
                       orientation_xyzw="0;0;0;1"
                     />
                     <Action
