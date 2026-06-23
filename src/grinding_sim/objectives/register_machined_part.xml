@@ -97,7 +97,7 @@
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Register Machined Part">
-      <output_port name="registered_pose" default="{registered_pose}" />
+      <inout_port name="registered_pose" default="{registered_pose}" />
       <MetadataFields>
         <Metadata subcategory="Perception - 3D Point Cloud" />
         <Metadata runnable="true" />

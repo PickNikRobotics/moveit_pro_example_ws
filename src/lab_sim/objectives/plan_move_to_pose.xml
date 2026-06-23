@@ -30,8 +30,8 @@
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Plan Move To Pose">
-      <input_port name="target_pose" default="{target_pose}" />
-      <output_port
+      <inout_port name="target_pose" default="{target_pose}" />
+      <inout_port
         name="move_to_pose_solution"
         default="{move_to_pose_solution}"
       />

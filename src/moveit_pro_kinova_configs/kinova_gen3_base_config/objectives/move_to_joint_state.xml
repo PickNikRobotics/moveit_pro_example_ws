@@ -24,18 +24,18 @@
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Move to Joint State">
-      <input_port name="target_joint_state" default="{target_joint_state}" />
-      <input_port name="joint_group_name" default="manipulator" />
-      <input_port name="link_padding" default="0.01" />
-      <input_port name="keep_orientation_tolerance" default="0.05" />
-      <input_port name="keep_orientation" default="false" />
-      <input_port name="velocity_scale_factor" default="1.0" />
-      <input_port name="acceleration_scale_factor" default="1.0" />
-      <input_port
+      <inout_port name="target_joint_state" default="{target_joint_state}" />
+      <inout_port name="joint_group_name" default="manipulator" />
+      <inout_port name="link_padding" default="0.01" />
+      <inout_port name="keep_orientation_tolerance" default="0.05" />
+      <inout_port name="keep_orientation" default="false" />
+      <inout_port name="velocity_scale_factor" default="1.0" />
+      <inout_port name="acceleration_scale_factor" default="1.0" />
+      <inout_port
         name="controller_names"
         default="joint_trajectory_admittance_controller"
       />
-      <input_port
+      <inout_port
         name="controller_action_server"
         default="/joint_trajectory_admittance_controller/follow_joint_trajectory"
       />

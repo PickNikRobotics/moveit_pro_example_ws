@@ -70,11 +70,11 @@
         <Metadata subcategory="Motion - Execute" />
         <Metadata runnable="false" />
       </MetadataFields>
-      <input_port
+      <inout_port
         name="controller_names"
         default="/joint_trajectory_controller"
       />
-      <input_port name="target_pose" default="{pose_stamped}" />
+      <inout_port name="target_pose" default="{pose_stamped}" />
     </SubTree>
   </TreeNodesModel>
 </root>

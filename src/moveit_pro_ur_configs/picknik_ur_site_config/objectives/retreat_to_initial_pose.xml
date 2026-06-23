@@ -62,15 +62,15 @@
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Retreat To Initial Pose">
-      <input_port
+      <inout_port
         name="pre_approach_robot_state"
         default="{pre_approach_robot_state}"
       />
-      <input_port name="initial_robot_state" default="{initial_robot_state}" />
-      <input_port name="octomap_present" default="false">
+      <inout_port name="initial_robot_state" default="{initial_robot_state}" />
+      <inout_port name="octomap_present" default="false">
         Set to "true" only when an octomap has been built earlier in the
         objective; otherwise the gripper/octomap collision rules are skipped.
-      </input_port>
+      </inout_port>
       <MetadataFields>
         <Metadata subcategory="Motion - Execute" />
       </MetadataFields>

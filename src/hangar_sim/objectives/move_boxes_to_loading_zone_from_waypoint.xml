@@ -358,13 +358,13 @@
         <Metadata runnable="false" />
         <Metadata subcategory="Application - Advanced Examples" />
       </MetadataFields>
-      <input_port name="erosion_size" default="0" />
-      <input_port name="negative_prompts" default="{negative_prompts}" />
-      <input_port name="place_pose" default="{place_pose}" />
+      <inout_port name="erosion_size" default="0" />
+      <inout_port name="negative_prompts" default="{negative_prompts}" />
+      <inout_port name="place_pose" default="{place_pose}" />
       <inout_port name="prompt" default="{prompt}" />
-      <input_port name="prompts" default="{prompts}" />
-      <input_port name="threshold" default="{threshold}" />
-      <input_port name="waypoint_name" default="View Boxes" />
+      <inout_port name="prompts" default="{prompts}" />
+      <inout_port name="threshold" default="{threshold}" />
+      <inout_port name="waypoint_name" default="View Boxes" />
     </SubTree>
   </TreeNodesModel>
 </root>

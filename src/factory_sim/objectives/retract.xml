@@ -43,8 +43,8 @@
         <Metadata runnable="false" />
         <Metadata subcategory="Motion - Execute" />
       </MetadataFields>
-      <input_port name="distance" default="0.1" />
-      <input_port name="ignore_environment_collisions" default="false" />
+      <inout_port name="distance" default="0.1" />
+      <inout_port name="ignore_environment_collisions" default="false" />
     </SubTree>
   </TreeNodesModel>
 </root>
