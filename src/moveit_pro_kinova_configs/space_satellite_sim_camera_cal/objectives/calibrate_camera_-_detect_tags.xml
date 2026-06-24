@@ -129,16 +129,16 @@
         name="camera_info_topic"
         default="/scene_camera/camera_info"
       />
-      <input_port
+      <inout_port
         name="camera_mounting_frame"
         default="scene_camera_mount_link"
       />
-      <input_port
+      <inout_port
         name="camera_optical_frame"
         default="scene_camera_color_optical_frame"
       />
       <inout_port name="mounting_pose_parent_frame" default="world" />
-      <input_port
+      <inout_port
         name="mounting_pose_save_file"
         default="calibrated_scene_camera_mounting_pose.txt"
       />

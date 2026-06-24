@@ -70,9 +70,9 @@
         <Metadata runnable="false" />
         <Metadata subcategory="Motion - Controls" />
       </MetadataFields>
-      <input_port name="relaxation_time_ms" default="500" />
-      <input_port name="tip_link" default="grasp_link" />
-      <input_port name="wrench_gain" default="0.01" />
+      <inout_port name="relaxation_time_ms" default="500" />
+      <inout_port name="tip_link" default="grasp_link" />
+      <inout_port name="wrench_gain" default="0.01" />
     </SubTree>
   </TreeNodesModel>
 </root>

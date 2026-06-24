@@ -28,10 +28,10 @@
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Get IMarker Pose From Mesh Visualization">
-      <output_port name="adjusted_poses" default="{adjusted_poses}" />
-      <input_port name="mesh_path" default="{mesh_path}" />
-      <input_port name="mesh_pose" default="{mesh_pose}" />
-      <input_port name="_collapsed" default="false" />
+      <inout_port name="adjusted_poses" default="{adjusted_poses}" />
+      <inout_port name="mesh_path" default="{mesh_path}" />
+      <inout_port name="mesh_pose" default="{mesh_pose}" />
+      <inout_port name="_collapsed" default="false" />
       <MetadataFields>
         <Metadata subcategory="User Input" />
       </MetadataFields>

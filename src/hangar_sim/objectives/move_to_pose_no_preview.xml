@@ -49,7 +49,7 @@
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Move to Pose No Preview">
-      <input_port name="target_pose" default="{target_pose}" />
+      <inout_port name="target_pose" default="{target_pose}" />
       <MetadataFields>
         <Metadata subcategory="Motion - Execute" />
         <Metadata runnable="false" />

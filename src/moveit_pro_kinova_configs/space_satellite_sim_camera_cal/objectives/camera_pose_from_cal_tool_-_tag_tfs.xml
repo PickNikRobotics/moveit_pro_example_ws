@@ -64,7 +64,7 @@
         name="camera_optical_frame"
         default="{camera_optical_frame}"
       />
-      <output_port name="computed_pose" default="{computed_pose}" />
+      <inout_port name="computed_pose" default="{computed_pose}" />
     </SubTree>
   </TreeNodesModel>
 </root>

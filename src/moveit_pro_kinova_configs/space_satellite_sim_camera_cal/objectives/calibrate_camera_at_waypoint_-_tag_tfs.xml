@@ -90,8 +90,8 @@
         name="computed_poses_vector"
         default="{computed_poses_vector}"
       />
-      <input_port name="parameters" default="{parameters}" />
-      <input_port name="waypoint_name" default="{waypoint_name}" />
+      <inout_port name="parameters" default="{parameters}" />
+      <inout_port name="waypoint_name" default="{waypoint_name}" />
     </SubTree>
   </TreeNodesModel>
 </root>
