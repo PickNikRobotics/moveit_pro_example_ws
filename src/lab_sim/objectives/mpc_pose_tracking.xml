@@ -3,7 +3,7 @@
   <!--//////////-->
   <BehaviorTree
     ID="MPC Pose Tracking"
-    _description="Uses Model Predictive Control (MPC) to track a target pose in real-time."
+    _description="Uses Model Predictive Control (MPC) to track a target that sweeps along a straight line while rotating."
     _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
@@ -17,33 +17,35 @@
         <Action
           ID="CreatePoseStamped"
           reference_frame="pinch"
-          pose_stamped="{pose_stamped}"
-          position_xyz="0.2;0.2;0.0"
-          orientation_xyzw="0;0;1;1"
+          pose_stamped="{orient_carrier}"
+          position_xyz="0;0;0"
+          orientation_xyzw="0;0;0;1"
         />
         <Action
           ID="TransformPoseFrame"
-          input_pose="{pose_stamped}"
-          output_pose="{pose_stamped_linear}"
+          input_pose="{orient_carrier}"
+          output_pose="{orient_carrier}"
           target_frame_id="world"
         />
         <Action
           ID="CreatePoseStamped"
           reference_frame="world"
-          pose_stamped="{pose_stamped_rotation}"
+          pose_stamped="{pos_carrier}"
+          position_xyz="-0.08;-0.04;0.0"
+          orientation_xyzw="0;0;0;1"
         />
         <Action
           ID="TransformPoseWithPose"
-          input_pose="{pose_stamped_rotation}"
+          input_pose="{orient_carrier}"
           output_pose="{pose_stamped}"
-          transform_pose="{pose_stamped_rotation}"
+          transform_pose="{pos_carrier}"
         />
         <Action
           ID="CreateTwistStamped"
           reference_frame="world"
           twist_stamped="{twist_stamped}"
-          linear_velocity_xyz="-0.1;0.0;0.1"
-          angular_velocity_xyz="0;0;0.3"
+          linear_velocity_xyz="-0.0901;-0.0424;0.0"
+          angular_velocity_xyz="0;0;-0.0954"
         />
         <Decorator ID="Delay" delay_msec="100">
           <Decorator ID="ForceSuccess">
@@ -54,21 +56,21 @@
                     <Control ID="Sequence">
                       <Action
                         ID="TransformPose"
-                        input_pose="{pose_stamped_linear}"
-                        output_pose="{pose_stamped_linear}"
-                        translation_xyz="0.001;0.0;-0.0003"
+                        input_pose="{pos_carrier}"
+                        output_pose="{pos_carrier}"
+                        translation_xyz="-0.0017;-0.0008;0.0"
                       />
                       <Action
                         ID="TransformPose"
-                        input_pose="{pose_stamped_rotation}"
-                        output_pose="{pose_stamped_rotation}"
-                        quaternion_xyzw="0;0;-0.004;.999"
+                        input_pose="{orient_carrier}"
+                        output_pose="{orient_carrier}"
+                        quaternion_xyzw="0;0;0.0009;1"
                       />
                       <Action
                         ID="TransformPoseWithPose"
-                        input_pose="{pose_stamped_rotation}"
+                        input_pose="{orient_carrier}"
                         output_pose="{pose_stamped}"
-                        transform_pose="{pose_stamped_linear}"
+                        transform_pose="{pos_carrier}"
                       />
                     </Control>
                   </Decorator>
@@ -110,7 +112,7 @@
                 />
                 <Action
                   ID="MPCPoseTracking"
-                  horizon="0.1;"
+                  horizon="0.2;"
                   timestep="0.010000;"
                   gradient_num_trajectory="32.000000;"
                   gradient_spline_points="1.000000;"
@@ -129,7 +131,7 @@
                   cartesian_velocity_body="tool_changer"
                   max_cartesian_acceleration_goal="500.000000"
                   cartesian_acceleration_body="tool_changer"
-                  warmup_iterations="256"
+                  warmup_iterations="64"
                   max_velocity_goal="0.000000"
                   acceleration="0"
                   cartesian_acceleration="100.000000"
