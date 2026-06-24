@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- Single parameterized objective. The caller (B's pane) overrides `target_pose` with a
+     geometry_msgs/PoseStamped (map frame). PoseStamped has a registered parameter-override parser,
+     so the override applies cleanly; it wires straight into NavigateToPoseAction (no vector ports). -->
+<root BTCPP_format="4" main_tree_to_execute="Semantic Navigate">
+  <BehaviorTree
+    ID="Semantic Navigate"
+    _description="Drive the Ridgeback to a semantic goal pose (PoseStamped, map frame) resolved from natural language."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="SwitchController"
+        activate_controllers="platform_velocity_controller_nav2"
+        deactivate_controllers="velocity_force_controller;joint_trajectory_controller;platform_velocity_controller"
+      />
+      <Action
+        ID="NavigateToPoseAction"
+        action_name="/navigate_to_pose"
+        behavior_tree_path="/opt/ros/humble/share/nav2_bt_navigator/behavior_trees/navigate_to_pose_w_replanning_and_recovery.xml"
+        pose_stamped="{target_pose}"
+      />
+      <Action
+        ID="SwitchController"
+        activate_controllers="joint_trajectory_controller"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Semantic Navigate">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Navigation" />
+      </MetadataFields>
+      <input_port name="target_pose">
+        Goal pose as geometry_msgs/PoseStamped in the map frame. Overridden by
+        the pane.
+      </input_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>
