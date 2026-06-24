@@ -1,0 +1,172 @@
+###############################################################
+#
+#  This configures the robot to work with MoveIt Pro
+#
+###############################################################
+
+# Baseline hardware configuration parameters for MoveIt Pro.
+# [Required]
+hardware:
+  # Set simulated to false if you are using this as a configuration for real hardware.
+  # This allows users to switch between mock and real hardware by changing a single parameter with config inheritance.
+  # [Required]
+  simulated: true
+
+  # If the MoveIt Pro Agent should launch the ros2 controller node.
+  # [Optional, default=True]
+  launch_control_node: True
+
+  # If the MoveIt Pro Agent should launch the robot state publisher.
+  # This should be false if you are launching the robot state publisher as part of drivers.
+  # [Optional, default=True]
+  launch_robot_state_publisher: True
+
+  # Specify additional launch files for running the robot with real hardware.
+  # [Optional, defaults to a blank launch file if not specified]
+  robot_driver_persist_launch_file:
+    package: "mobile_fr3_duo_base_config"
+    path: "launch/robot_drivers_to_persist.launch.py"
+
+  # Specify any additional launch files for running the robot in simulation mode.
+  # Used when hardware.simulated is True.
+  # [Optional, defaults to a blank launch file if not specified]
+  simulated_hardware_launch_file:
+    package: "moveit_studio_agent"
+    path: "launch/blank.launch.py"
+
+  # Parameters used to configure the robot description through XACRO.
+  # A URDF and SRDF are both required.
+  # [Required]
+  robot_description:
+    urdf:
+      package: "mobile_fr3_duo_base_config"
+      path: "description/mobile_fr3_duo.xacro"
+    srdf:
+      package: "mobile_fr3_duo_base_config"
+      path: "config/moveit/mobile_fr3_duo.srdf"
+    # Specify any additional parameters required for the URDF.
+    # These are passed as xacro arguments to mobile_fr3_duo.xacro.
+    # [Optional]
+    urdf_params:
+      - robot_types: "['tmrv0_2','fr3v2','fr3v2']"
+      - no_prefix: "false"
+      - hand: "true"
+      - ee_id: "franka_hand"
+      - special_connection: ""
+      - xyz_ee: "0 0 0"
+      - rpy_ee: "0 0 -0.7854"
+      - tcp_xyz: "0 0 0.1034"
+      - tcp_rpy: "0 0 0"
+      - safety_distance: "0.03"
+      - with_sc: "false"
+      - robot_ips: "['172.16.0.1','172.16.0.2','172.16.0.3']"
+      - fake_sensor_commands: "false"
+      - gazebo: "false"
+      - gazebo_effort: "false"
+      - description_pkg: "franka_description"
+      - is_async: "false"
+      - thread_priority: "50"
+      - reduced_version: "false"
+
+# Sets ROS global params for launch.
+# [Optional]
+ros_global_params:
+  # Whether or not to use simulated time.
+  # [Optional, default=False]
+  use_sim_time: False
+
+# Configuration files for MoveIt.
+# For more information, refer to https://moveit.picknik.ai/main/doc/how_to_guides/moveit_configuration/moveit_configuration_tutorial.html
+# [Required]
+moveit_params:
+  # Used by the Waypoint Manager to save joint states from this joint group.
+  joint_group_name: "manipulator"
+
+  kinematics:
+    package: "mobile_fr3_duo_base_config"
+    path: "config/moveit/pose_ik_distance.yaml"
+  sensors_3d:
+    package: "mobile_fr3_duo_base_config"
+    path: "config/moveit/sensors_3d.yaml"
+  joint_limits:
+    package: "mobile_fr3_duo_base_config"
+    path: "config/moveit/joint_limits.yaml"
+  pose_jog:
+    package: "mobile_fr3_duo_base_config"
+    path: "config/moveit/pose_jog.yaml"
+  joint_jog:
+    package: "mobile_fr3_duo_base_config"
+    path: "config/moveit/joint_jog.yaml"
+
+  publish:
+    planning_scene: True
+    geometry_updates: True
+    state_updates: True
+    transforms_updates: True
+
+  trajectory_execution:
+    manage_controllers: True
+    allowed_execution_duration_scaling: 2.0
+    allowed_goal_duration_margin: 5.0
+    allowed_start_tolerance: 0.01
+
+# Configuration for launching ros2_control processes.
+# [Required, if using ros2_control]
+ros2_control:
+  config:
+    package: "mobile_fr3_duo_base_config"
+    path: "config/control/franka_ros2_control.yaml"
+  # MoveIt Pro will load and activate these controllers at start up to ensure they are available.
+  # If not specified, it is up to the user to ensure the appropriate controllers are active and available
+  # for running the application.
+  # [Optional, default=[]]
+  controllers_active_at_startup:
+    - "joint_state_broadcaster"
+    - "left_gripper_controller"
+    - "right_gripper_controller"
+    - "joint_trajectory_admittance_controller"
+  # Load but do not start these controllers so they can be activated later if needed.
+  # [Optional, default=[]]
+  controllers_inactive_at_startup:
+    # - "joint_trajectory_controller"
+    - "left_joint_trajectory_admittance_controller"
+    - "right_joint_trajectory_admittance_controller"
+    - "left_velocity_force_controller"
+    - "right_velocity_force_controller"
+  # Any controllers here will not be spawned by MoveIt Pro.
+  # [Optional, default=[]]
+  controllers_not_managed: []
+  # Optionally configure remapping rules to let multiple controllers receive commands on the same topic.
+  # [Optional, default=[]]
+  controller_shared_topics: []
+
+# Configuration for loading behaviors and objectives.
+# [Required]
+objectives:
+  # List of plugins for loading custom behaviors.
+  # [Required]
+  behavior_loader_plugins:
+    # This plugin will load the core MoveIt Pro Behaviors.
+    # Add additional plugin loaders as needed.
+    core:
+      - "moveit_pro::behaviors::CoreBehaviorsLoader"
+      - "moveit_pro::behaviors::MTCCoreBehaviorsLoader"
+      - "moveit_pro::behaviors::VisionBehaviorsLoader"
+      - "moveit_pro::behaviors::ConverterBehaviorsLoader"
+  # Specify source folder for objectives
+  # [Required]
+  objective_library_paths:
+    core_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/core"
+    motion_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/motion"
+    simulation_objectives:
+      package_name: "mobile_fr3_duo_base_config"
+      relative_path: "objectives"
+  # Specify the location of the saved waypoints file.
+  # [Required]
+  waypoints_file:
+    package_name: "mobile_fr3_duo_base_config"
+    relative_path: "waypoints/waypoints.yaml"
