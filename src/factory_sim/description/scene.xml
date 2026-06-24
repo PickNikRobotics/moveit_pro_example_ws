@@ -442,6 +442,14 @@
   <!-- Add welds for suction gripping of parts -->
   <include file="box-welds.xml" />
 
+  <!-- Wrist force/torque sensor on the suction tool's flange interface site.
+       MujocoSystem auto-registers these as ros2_control state interfaces named
+       "wrist_ft_sensor/{force,torque}.{x,y,z}". -->
+  <sensor>
+    <force site="wrist_ft_sensor" />
+    <torque site="wrist_ft_sensor" />
+  </sensor>
+
   <keyframe>
     <!-- qpos layout, in compile order: -->
     <!-- robot [joint_1..joint_6] (6) -->
