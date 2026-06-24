@@ -37,9 +37,9 @@
         <Metadata subcategory="Perception - 3D Point Cloud" />
         <Metadata runnable="false" />
       </MetadataFields>
-      <output_port name="bracket_part_cloud" default="{bracket_part_cloud}" />
-      <input_port name="color" default="255;0;0" />
-      <input_port name="initial_pose" default="{initial_pose}" />
+      <inout_port name="bracket_part_cloud" default="{bracket_part_cloud}" />
+      <inout_port name="color" default="255;0;0" />
+      <inout_port name="initial_pose" default="{initial_pose}" />
     </SubTree>
   </TreeNodesModel>
 </root>

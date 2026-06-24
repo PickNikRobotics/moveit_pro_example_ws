@@ -39,9 +39,9 @@
         <Metadata subcategory="Perception - 2D Image" />
         <Metadata runnable="false" />
       </MetadataFields>
-      <input_port name="camera_info" default="{camera_info}" />
-      <output_port name="detection_pose" default="{detection_pose}" />
-      <input_port name="image" default="{image}" />
+      <inout_port name="camera_info" default="{camera_info}" />
+      <inout_port name="detection_pose" default="{detection_pose}" />
+      <inout_port name="image" default="{image}" />
     </SubTree>
   </TreeNodesModel>
 </root>
