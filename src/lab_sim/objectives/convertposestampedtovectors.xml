@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="ConvertPoseStampedToVectors">
+  <!--//////////-->
+  <BehaviorTree ID="ConvertPoseStampedToVectors">
+    <Control
+      ID="Sequence"
+      name="Extract PoseStamped point and quaternion into vectors"
+    >
+      <Action ID="UnpackPoseStampedMessage" pose_stamped="{pose_stamped}" />
+      <Action
+        ID="UnpackPoseMessage"
+        position="{point}"
+        orientation="{quaternion}"
+        pose="{pose}"
+      />
+      <Action ID="UnpackPointMessage" x="{x}" />
+      <Action ID="ResetVector" vector="{vec_position}" />
+      <Action
+        ID="InsertInVector"
+        index="0"
+        input_vector="{vec_position}"
+        output_vector="{vec_position}"
+        element="{x}"
+      />
+      <Action
+        ID="InsertInVector"
+        index="1"
+        input_vector="{vec_position}"
+        output_vector="{vec_position}"
+        element="{y}"
+      />
+      <Action
+        ID="InsertInVector"
+        index="2"
+        input_vector="{vec_position}"
+        output_vector="{vec_position}"
+        element="{z}"
+      />
+      <Action
+        ID="UnpackQuaternionMessage"
+        w="{qw}"
+        x="{qx}"
+        y="{qy}"
+        z="{qz}"
+      />
+      <Action ID="ResetVector" vector="{vec_quaternion}" />
+      <Action
+        ID="InsertInVector"
+        output_vector="{vec_quaternion}"
+        input_vector="{vec_quaternion}"
+        index="0"
+        element="{qx}"
+      />
+      <Action
+        ID="InsertInVector"
+        output_vector="{vec_quaternion}"
+        input_vector="{vec_quaternion}"
+        index="1"
+        element="{qy}"
+      />
+      <Action
+        ID="InsertInVector"
+        output_vector="{vec_quaternion}"
+        input_vector="{vec_quaternion}"
+        index="2"
+        element="{qz}"
+      />
+      <Action
+        ID="InsertInVector"
+        output_vector="{vec_quaternion}"
+        input_vector="{vec_quaternion}"
+        index="3"
+        element="{qw}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="ConvertPoseStampedToVectors">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Conversion" />
+      </MetadataFields>
+      <inout_port name="vec_quaternion" default="{vec_quaternion}">
+        Output vector of xyzw quaternion
+      </inout_port>
+      <inout_port name="vec_position" default="{vec_position}">
+        Output vector of xyz positions
+      </inout_port>
+      <inout_port
+        name="pose_stamped"
+        default="{pose_stamped}"
+        type="geometry_msgs::msg::PoseStamped"
+      >
+        Input PoseStamped
+      </inout_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>
