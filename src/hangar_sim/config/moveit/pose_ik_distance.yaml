@@ -3,6 +3,11 @@ manipulator:
   target_tolerance: 0.001
   solve_mode: "optimize_distance"
   optimization_timeout: 0.005
+  # Issue #19973: weight the redundant mobile-base yaw heavily in the seed-distance cost so the IK resolves the
+  # redundancy toward keeping the base heading near its current value, instead of letting it drift a full revolution
+  # across consecutive picks. Base translation stays unweighted (free) so the arm can still reach boxes.
+  seed_distance_joint_names: ["rotational_yaw_joint"]
+  seed_distance_joint_weights: [10.0]
 
 arm_only:
   kinematics_solver: pose_ik_plugin/PoseIKPlugin
