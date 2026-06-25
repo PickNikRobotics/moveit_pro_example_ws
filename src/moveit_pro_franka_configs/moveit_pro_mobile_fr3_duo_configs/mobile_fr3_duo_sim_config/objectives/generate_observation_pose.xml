@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Generate Observation Pose">
+  <!--//////////-->
+  <BehaviorTree ID="Generate Observation Pose">
+    <Control ID="Sequence">
+      <Action
+        ID="TransformPoseWithPose"
+        input_pose="{pose_to_observe}"
+        transform_pose="{starting_pose}"
+        output_pose="{pose_to_observe}"
+      />
+      <SubTree
+        ID="Visualize Pose if True"
+        visualize_if_true="{visualize_poses_if_true}"
+        pose="{pose_to_observe}"
+        marker_name="pose_to_observe"
+        marker_size="1"
+        _collapsed="false"
+        marker_text="pose_to_observe"
+      />
+      <Action
+        ID="TransformPose"
+        input_pose="{pose_to_observe}"
+        output_pose="{observe_pose}"
+        translation_xyz="{translation_xyz}"
+        quaternion_xyzw="{quaternion_xyzw}"
+        marker_size="1"
+      />
+      <SubTree
+        ID="Visualize Pose if True"
+        visualize_if_true="{visualize_poses_if_true}"
+        pose="{observe_pose}"
+        marker_name="observe_pose"
+        marker_size="1"
+        marker_text="observe_pose"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Generate Observation Pose">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Visualization" />
+      </MetadataFields>
+      <inout_port
+        name="observe_pose"
+        default="{observe_pose}"
+        type="geometry_msgs::msg::PoseStamped"
+      />
+      <inout_port
+        name="pose_to_observe"
+        default="{pose_to_observe}"
+        type="geometry_msgs::msg::PoseStamped"
+      />
+      <inout_port
+        name="quaternion_xyzw"
+        default="0;0;0;1"
+        type="std::vector&lt;double&gt;"
+      />
+      <inout_port
+        name="starting_pose"
+        default="{starting_pose}"
+        type="geometry_msgs::msg::PoseStamped"
+      />
+      <inout_port
+        name="translation_xyz"
+        default="0;0;-0.3"
+        type="std::vector&lt;double&gt;"
+      />
+      <input_port name="visualize_poses_if_true" default="true" type="bool" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

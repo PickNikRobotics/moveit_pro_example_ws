@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Detach and Remove Collision Object"
+>
+  <!--//////////-->
+  <BehaviorTree
+    ID="Detach and Remove Collision Object"
+    _description=""
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="DetachURDF" urdf_name="hard_drive" />
+      <Action ID="RemoveURDFFromScene" urdf_name="hard_drive" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Detach and Remove Collision Object">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Application Subtrees" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

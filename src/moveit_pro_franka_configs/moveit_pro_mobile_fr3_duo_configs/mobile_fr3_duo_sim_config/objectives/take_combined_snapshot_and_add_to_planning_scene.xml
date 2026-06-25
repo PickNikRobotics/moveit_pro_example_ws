@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Take Combined Snapshot and Add to Planning Scene"
+>
+  <!--//////////-->
+  <BehaviorTree ID="Take Combined Snapshot and Add to Planning Scene">
+    <Control ID="Sequence">
+      <SubTree
+        ID="Take Combined Snapshot"
+        _collapsed="true"
+        merged_cloud="{merged_cloud}"
+        send_to_ui="false"
+      />
+      <Action
+        ID="CreateStampedPose"
+        reference_frame="base_link"
+        stamped_pose="{box_pose}"
+        position_xyz="{box_pose_position}"
+        orientation_xyzw="{box_pose_orientation}"
+      />
+      <Action
+        ID="CropPointsInBox"
+        crop_box_centroid_pose="{box_pose}"
+        crop_box_size="{crop_box_size}"
+        point_cloud="{merged_cloud}"
+        point_cloud_cropped="{merged_cloud}"
+      />
+      <Action
+        ID="UpdatePlanningSceneService"
+        point_cloud="{merged_cloud}"
+        _skipIf="true"
+      />
+      <Action ID="SendPointCloudToUI" point_cloud="{merged_cloud}" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Take Combined Snapshot and Add to Planning Scene">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Perception - 3D Point Cloud" />
+      </MetadataFields>
+      <inout_port
+        name="box_pose_orientation"
+        default="{box_pose_orientation}"
+        type="std::vector&lt;double&gt;"
+      />
+      <inout_port
+        name="box_pose_position"
+        default="2;0;1.5"
+        type="std::vector&lt;double&gt;"
+      />
+      <inout_port
+        name="crop_box_size"
+        default="2;1.5;2.9"
+        type="std::vector&lt;double&gt;"
+      />
+      <inout_port
+        name="merged_cloud"
+        default="{merged_cloud}"
+        type="sensor_msgs::msg::PointCloud2"
+      />
+    </SubTree>
+  </TreeNodesModel>
+</root>

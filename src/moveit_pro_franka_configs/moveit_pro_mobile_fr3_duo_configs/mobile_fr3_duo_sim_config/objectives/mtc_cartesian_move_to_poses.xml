@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="MTC Cartesian Move to Poses">
+  <BehaviorTree
+        ID="MTC Cartesian Move to Poses"
+        _description="Plans and executes a cartesian path through a vector of poses using the MTC pipeline"
+        _favorite="false"
+    >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="SwitchController" activate_controllers="{controller_names}" />
+      <Action
+                ID="InitializeMTCTask"
+                task="{mtc_task}"
+                timeout="-1.000000"
+                trajectory_monitoring="false"
+                controller_names="{controller_names}"
+            />
+      <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
+      <Action
+                ID="SetupMTCPathIK"
+                acceleration_scale_factor="{acceleration_scale_factor}"
+                blending_radius="0.00001"
+                ignore_environment_collisions="false"
+                ik_cartesian_space_density="0.010000"
+                ik_joint_space_density="0.100000"
+                max_optimizer_iterations="1"
+                path="{target_poses}"
+                planning_group_name="{planning_group_name}"
+                position_only="false"
+                task="{mtc_task}"
+                trajectory_sampling_rate="100"
+                velocity_scale_factor="{velocity_scale_factor}"
+                tip_links="{tip_link}"
+            />
+      <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
+      <Decorator ID="Precondition" else="SUCCESS" if="require_approval == true">
+        <Action
+                    ID="WaitForUserTrajectoryApproval"
+                    solution="{mtc_solution}"
+                    cartesian_path_links="{tip_link}"
+                />
+      </Decorator>
+      <Action
+                ID="ConvertMtcSolutionToJointTrajectory"
+                joint_group="{planning_group_name}"
+                velocity_scaling_factor="{velocity_scale_factor}"
+                acceleration_scaling_factor="{acceleration_scale_factor}"
+            />
+      <!--Optional admittance: zero FT sensor and load admittance parameters-->
+      <Decorator ID="Precondition" else="SUCCESS" if="use_admittance == true">
+        <Control ID="Sequence">
+          <Action
+                        ID="CallTriggerService"
+                        service_name="/left_joint_trajectory_admittance_controller/zero_fts/left_fr3v2_link8"
+                    />
+          <Action
+                        ID="SetAdmittanceParameters"
+                        config_file_name="{admittance_params_file}"
+                        admittance_parameters_msg="{admittance_parameters_msg}"
+                    />
+        </Control>
+      </Decorator>
+      <Action
+                ID="ExecuteTrajectory"
+                controller_action_name="{controller_action_name}"
+                execution_pipeline="{execution_pipeline}"
+                admittance_parameters_msg="{admittance_parameters_msg}"
+                absolute_force_torque_threshold="1000;1000;1000;750;750;750"
+            />
+      <SubTree
+                ID="Execute MTC Solution (JTC)"
+                _collapsed="true"
+                _skipIf="true"
+                solution="{mtc_solution}"
+                controller_names="left_joint_trajectory_admittance_controller"
+                controller_action_name="/left_joint_trajectory_admittance_controller/follow_joint_trajectory"
+                goal_duration_tolerance="-1.0"
+            />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="MTC Cartesian Move to Poses">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Motion - Execute" />
+      </MetadataFields>
+      <inout_port
+                name="admittance_params_file"
+                default="admittance_params.yaml"
+                type="std::string"
+            />
+      <input_port
+                name="acceleration_scale_factor"
+                default="1.0"
+                type="double"
+            />
+      <inout_port
+                name="controller_action_name"
+                default="/left_joint_trajectory_admittance_controller/follow_joint_trajectory"
+                type="std::string"
+            />
+      <input_port
+                name="controller_names"
+                default="left_joint_trajectory_admittance_controller"
+                type="std::string"
+            />
+      <inout_port name="execution_pipeline" default="jtac" />
+      <input_port
+                name="planning_group_name"
+                default="left_manipulator"
+                type="std::string"
+            />
+      <input_port name="require_approval" default="false" type="bool" />
+      <input_port
+                name="target_poses"
+                default="{target_poses}"
+                type="std::vector&lt;geometry_msgs::msg::PoseStamped&gt;"
+            />
+      <input_port
+                name="tip_link"
+                default="left_grasp_link_extended"
+                type="std::string"
+            />
+      <input_port name="use_admittance" default="false" type="bool" />
+      <input_port name="velocity_scale_factor" default="1.0" type="double" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

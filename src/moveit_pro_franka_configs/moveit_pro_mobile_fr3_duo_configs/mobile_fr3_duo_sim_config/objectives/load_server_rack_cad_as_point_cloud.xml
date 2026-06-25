@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root BTCPP_format="4" main_tree_to_execute="Load Server Rack CAD as Point Cloud">
+  <BehaviorTree ID="Load Server Rack CAD as Point Cloud">
+    <Control ID="Sequence">
+      <Action ID="LoadPointCloudFromFile" color="255;0;0" package_name="mobile_fr3_duo_sim_config" file_path="description/assets/server_visual/ORV3.stl" point_cloud="{server_rack_point_cloud}" frame_id="base_link"/>
+      <Action ID="CreateStampedPose" reference_frame="{transform_pose_reference_frame}" stamped_pose="{transform_pose}" position_xyz="{transform_pose_position}" orientation_xyzw="{transform_pose_orientation}"/>
+      <Action ID="TransformPointCloud" input_cloud="{server_rack_point_cloud}" output_cloud="{server_rack_point_cloud}"/>
+      <Action ID="TransformPointCloudFrame" input_cloud="{server_rack_point_cloud}" output_cloud="{server_rack_point_cloud}"/>
+      <Decorator ID="Precondition" else="SUCCESS" if="send_to_ui==true">
+        <Action ID="SendPointCloudToUI" point_cloud="{server_rack_point_cloud}"/>
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Load Server Rack CAD as Point Cloud">
+      <inout_port name="send_to_ui" default="{send_to_ui}" type="bool"/>
+      <inout_port name="server_rack_point_cloud" default="{server_rack_point_cloud}" type="sensor_msgs::msg::PointCloud2"/>
+      <inout_port name="transform_pose" default="{transform_pose}" type="geometry_msgs::msg::PoseStamped"/>
+      <inout_port name="transform_pose_orientation" default="0.000; 0.000; 0.707; 0.707" type="std::vector&lt;double&gt;"/>
+      <inout_port name="transform_pose_position" default="1.75;0;0.1" type="std::vector&lt;double&gt;"/>
+      <inout_port name="transform_pose_reference_frame" default="base_link" type="std::string"/>
+      <MetadataFields>
+        <Metadata subcategory="Application Subtrees" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

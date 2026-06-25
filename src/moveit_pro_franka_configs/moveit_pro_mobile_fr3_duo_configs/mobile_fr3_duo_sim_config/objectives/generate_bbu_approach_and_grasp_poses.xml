@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Generate BBU Approach and Grasp Poses"
+>
+  <!--//////////-->
+  <BehaviorTree ID="Generate BBU Approach and Grasp Poses">
+    <Control ID="Sequence">
+      <SubTree
+        ID="Place PoseStamped at other PoseStamped Location"
+        _collapsed="true"
+        other_posestamped="{nearest_pose}"
+        posestamped_to_place="{observe_pose}"
+        resulting_posestamped="{resulting_posestamped}"
+      />
+      <Action
+        ID="SavePoseStampedToYaml"
+        message="{resulting_posestamped}"
+        yaml_filename="initial_grasp_pose"
+        _skipIf="true"
+      />
+      <Action
+        ID="TransformPose"
+        input_pose="{resulting_posestamped}"
+        output_pose="{grasp_pose}"
+        translation_xyz="-0.01;0.03;0.01"
+        quaternion_xyzw="0.000; 0.000; -0.707; 0.707"
+      />
+      <Action
+        ID="TransformPose"
+        input_pose="{grasp_pose}"
+        output_pose="{grasp_pose_approach_2}"
+        translation_xyz="0;0.025;0"
+      />
+      <Action
+        ID="TransformPose"
+        input_pose="{grasp_pose_approach_2}"
+        output_pose="{grasp_pose_approach_1}"
+        translation_xyz="0;0;-0.025"
+      />
+      <SubTree
+        ID="Visualize Pose if True"
+        visualize_if_true="{visualize_poses_if_true}"
+        pose="{resulting_posestamped}"
+        marker_name="resulting_posestamped"
+        marker_size="1"
+        marker_text="resulting_posestamped"
+      />
+      <SubTree
+        ID="Visualize Pose if True"
+        visualize_if_true="{visualize_poses_if_true}"
+        pose="{grasp_pose}"
+        marker_name="grasp_pose"
+        marker_size="1"
+        marker_text="grasp_pose"
+      />
+      <SubTree
+        ID="Visualize Pose if True"
+        visualize_if_true="{visualize_poses_if_true}"
+        pose="{grasp_pose_approach_1}"
+        marker_name="grasp_pose_approach_1"
+        marker_size="1"
+        marker_text="grasp_pose_approach_1"
+      />
+      <SubTree
+        ID="Visualize Pose if True"
+        visualize_if_true="{visualize_poses_if_true}"
+        pose="{grasp_pose_approach_2}"
+        marker_name="grasp_pose_approach_2"
+        marker_size="1"
+        marker_text="grasp_pose_approach_2"
+      />
+      <Action ID="ResetPoseStampedVector" vector="{grasp_approach_poses}" />
+      <Action
+        ID="AddPoseStampedToVector"
+        input="{grasp_pose_approach_1}"
+        vector="{grasp_approach_poses}"
+      />
+      <Action
+        ID="AddPoseStampedToVector"
+        input="{grasp_pose_approach_2}"
+        vector="{grasp_approach_poses}"
+      />
+      <Action
+        ID="AddPoseStampedToVector"
+        input="{grasp_pose}"
+        vector="{grasp_approach_poses}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Generate BBU Approach and Grasp Poses">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Application Subtrees" />
+      </MetadataFields>
+      <output_port
+        name="grasp_approach_poses"
+        default="{grasp_approach_poses}"
+        type="std::vector&lt;geometry_msgs::msg::PoseStamped&gt;"
+      />
+      <output_port
+        name="grasp_pose_approach_1"
+        default="{grasp_pose_approach_1}"
+        type="geometry_msgs::msg::PoseStamped"
+      />
+      <input_port
+        name="nearest_pose"
+        default="{nearest_pose}"
+        type="geometry_msgs::msg::PoseStamped"
+      />
+      <input_port
+        name="observe_pose"
+        default="{observe_pose}"
+        type="geometry_msgs::msg::PoseStamped"
+      />
+      <input_port name="visualize_poses_if_true" default="true" type="bool" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

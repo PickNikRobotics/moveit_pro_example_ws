@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root BTCPP_format="4" main_tree_to_execute="test_objective">
+  <BehaviorTree ID="test_objective" _description="" _favorite="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree ID="Reset Planning Scene" _collapsed="true"/>
+      <Action ID="CreateStampedPose" orientation_xyzw="0.000; 0.000; 0.000; 1.000" position_xyz="0;0;0" reference_frame="world" stamped_pose="{world_pose}"/>
+      <Action ID="CreateStampedPose" orientation_xyzw="0.000; 0.707; 0.000; 0.707" position_xyz="1.25;0.1;1.08" stamped_pose="{pose_stamped}" reference_frame="base_link"/>
+      <Action ID="AddURDF" package_name="mobile_fr3_duo_sim_config" urdf_file_path="description/scene.urdf" urdf_pose="{world_pose}"/>
+      <Action ID="VisualizePose" marker_lifetime="0.000000" pose="{pose_stamped}"/>
+      <SubTree ID="Move to Pose" _collapsed="false" ik_frame="left_grasp_link_extended" target_pose="{pose_stamped}" controller_names="left_joint_trajectory_admittance_controller" planning_group_name="left_manipulator" controller_action_name="/left_joint_trajectory_admittance_controller/follow_joint_trajectory" execution_pipeline="jtac" link_padding="0.01" require_user_approval="false" max_ik_solutions="1" max_mtc_solutions="1"/>
+      <SubTree ID="Open Gripper" _collapsed="true"/>
+      <SubTree ID="Move along axis" _collapsed="true" execution_pipeline="jtac" controller_action_name="/left_joint_trajectory_admittance_controller/follow_joint_trajectory" controller_names="left_joint_trajectory_admittance_controller" planning_group_name="left_manipulator" require_user_approval="false" ik_frame="left_grasp_link_extended" max_distance="0.03" min_distance="0.03" link_padding="0.01" y_axis="0.0" z_axis="1.0" x_axis="0.0" axis_frame="left_grasp_link_extended" velocity_scale_factor="1.0"/>
+      <SubTree ID="Close Gripper" _collapsed="false"/>
+      <Decorator ID="Delay" delay_msec="1000">
+        <SubTree ID="Move along axis" _collapsed="true" execution_pipeline="jtac" controller_action_name="/left_joint_trajectory_admittance_controller/follow_joint_trajectory" controller_names="left_joint_trajectory_admittance_controller" planning_group_name="left_manipulator" require_user_approval="false" ik_frame="left_grasp_link_extended" max_distance="0.1" min_distance="0.1" link_padding="0.01" y_axis="0.0" x_axis="0.0" axis_frame="left_grasp_link_extended" velocity_scale_factor="0.005" z_axis="-1.0"/>
+      </Decorator>
+      <Decorator ID="Delay" delay_msec="1000">
+        <SubTree ID="Move along axis" _collapsed="true" execution_pipeline="jtac" controller_action_name="/left_joint_trajectory_admittance_controller/follow_joint_trajectory" controller_names="left_joint_trajectory_admittance_controller" planning_group_name="left_manipulator" require_user_approval="false" ik_frame="left_grasp_link_extended" max_distance="0.1" min_distance="0.1" link_padding="0.01" y_axis="0.0" x_axis="0.0" axis_frame="left_grasp_link_extended" velocity_scale_factor="0.005" z_axis="1.0"/>
+      </Decorator>
+      <SubTree ID="Open Gripper" _collapsed="true"/>
+      <SubTree ID="Move along axis" _collapsed="true" execution_pipeline="jtac" controller_action_name="/left_joint_trajectory_admittance_controller/follow_joint_trajectory" controller_names="left_joint_trajectory_admittance_controller" planning_group_name="left_manipulator" require_user_approval="false" ik_frame="left_grasp_link_extended" max_distance="0.04" min_distance="0.04" link_padding="0.01" y_axis="0.0" x_axis="0.0" axis_frame="left_grasp_link_extended" velocity_scale_factor="1.0" z_axis="-1.0"/>
+      <Action ID="CreateStampedPose" orientation_xyzw="0.000; 0.707; 0.000; 0.707" position_xyz="1.25;0.1;0.5" stamped_pose="{pose_stamped}" reference_frame="base_link"/>
+      <SubTree ID="Move to Pose" _collapsed="true" ik_frame="left_grasp_link_extended" target_pose="{pose_stamped}" controller_names="left_joint_trajectory_admittance_controller" planning_group_name="left_manipulator" controller_action_name="/left_joint_trajectory_admittance_controller/follow_joint_trajectory" execution_pipeline="jtac" link_padding="0.01" require_user_approval="false" max_ik_solutions="8" max_mtc_solutions="0"/>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="test_objective"/>
+  </TreeNodesModel>
+</root>

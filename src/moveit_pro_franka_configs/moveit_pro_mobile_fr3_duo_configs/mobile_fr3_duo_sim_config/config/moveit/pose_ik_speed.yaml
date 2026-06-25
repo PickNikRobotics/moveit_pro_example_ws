@@ -1,0 +1,19 @@
+left_manipulator:
+  kinematics_solver: pose_ik_plugin/PoseIKPlugin
+  target_tolerance: 0.001
+  solve_mode: "first_found"
+
+left_manipulator_without_spine:
+  kinematics_solver: pose_ik_plugin/PoseIKPlugin
+  target_tolerance: 0.001
+  solve_mode: "first_found"
+
+right_manipulator:
+  kinematics_solver: pose_ik_plugin/PoseIKPlugin
+  target_tolerance: 0.001
+  solve_mode: "first_found"
+
+right_manipulator_without_spine:
+  kinematics_solver: pose_ik_plugin/PoseIKPlugin
+  target_tolerance: 0.001
+  solve_mode: "first_found"

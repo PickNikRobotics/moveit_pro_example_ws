@@ -1,0 +1,337 @@
+<?xml version="1.0" ?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="mobile_fr3_duo">
+  <xacro:arg name="mujoco_model" default="description/scene.xml" />
+  <xacro:arg name="mujoco_model_package" default="mobile_fr3_duo_sim_config" />
+  <xacro:arg name="mujoco_viewer" default="true" />
+
+  <xacro:include filename="$(find franka_description)/robots/mobile_fr3_duo_v0_2/mobile_fr3_duo_v0_2.xacro"/>
+
+  <!-- Define arguments -->
+  <!-- The IDs of the robot models to be used -->
+  <xacro:arg name="robot_types" default="['tmrv0_2','fr3v2_1','fr3v2_1']"/>
+  <xacro:property name="robot_types_list" value="${$(arg robot_types)}"/>
+
+  <!-- Don't print a prefix for joints, visuals, and links? -->
+  <xacro:arg name="no_prefix" default="false"/>
+
+  <!-- Should an end-effector be mounted at the flange?" -->
+  <xacro:arg name="hand" default="true" />
+
+  <!-- Which end-effector would be mounted at the flange?" -->
+  <xacro:arg name="ee_id" default="franka_hand" />
+
+  <!-- Where is the end-effector connected to, if different from the robot flange?  -->
+  <xacro:arg name="special_connection" default="" />
+
+  <!-- Position offset between ee and parent frame -->
+  <xacro:arg name="xyz_ee" default="0 0 0" />
+
+  <!-- Rotation offset between ee and parent frame -->
+  <xacro:arg name="rpy_ee" default= "0 0 ${-pi/4}" />
+
+  <!-- Position offset between ee frame and tcp frame -->
+  <xacro:arg name="tcp_xyz" default="0 0 0.1034" />
+
+  <!-- Rotation offset between ee frame and tcp frame -->
+  <xacro:arg name="tcp_rpy" default="0 0 0" />
+
+  <!-- Safety distance for the collision capsules -->
+  <xacro:arg name="safety_distance" default="0.03" />
+
+  <!-- Should self-collision be enabled? -->
+  <xacro:arg name="with_sc" default="false" />
+
+  <!-- Is the robot being controlled with ros2_control?" -->
+  <xacro:arg name="ros2_control" default="false" />
+
+  <!-- IP address or hostname of the robot" -->
+  <xacro:arg name="robot_ips" default="['172.16.0.1','172.16.0.2','172.16.0.3']" />
+  <xacro:property name="robot_ips_list" value="${$(arg robot_ips)}"/>
+
+  <!-- Should a fake hardware be used? -->
+  <xacro:arg name="use_fake_hardware" default="false" />
+
+  <!-- Should fake sensors be used? -->
+  <xacro:arg name="fake_sensor_commands" default="false" />
+
+  <!-- Should the robot be spawned in Gazebo?" -->
+  <xacro:arg name="gazebo" default="false" />
+
+  <!-- Should the robot be spawned in Gazebo with effort interfaces?" -->
+  <xacro:arg name="gazebo_effort" default="false" />
+
+  <!-- Name of the description package -->
+  <xacro:arg name="description_pkg" default="franka_description" />
+
+  <!-- Are the robots using the async hardware interface? -->
+  <xacro:arg name="is_async" default="false" />
+
+  <!-- Thread priority for the hardware interface -->
+  <xacro:arg name="thread_priority" default="50" />
+
+  <!-- The name of the frame to which the robot is connected. -->
+  <xacro:arg name="connected_to" default="base"/>
+
+  <!-- Should the reduced tmr kinematic version (without caster wheels) be used? -->
+  <xacro:arg name="reduced_version" default="false" />
+
+  <!-- Should the arms be used? -->
+  <xacro:arg name="use_arms" default="true"/>
+
+  <!-- Planar base mobility: base → virtual_x_link → virtual_y_link → base_link.
+       These joints give MoveIt and tf the 3-DOF planar pose of the mobile base.
+       base_link itself is defined inside xacro:mobile_fr3_duo_v0_2 (via tmrv0_2). -->
+  <link name="base"/>
+  <link name="virtual_x_link"/>
+  <joint name="planar_x" type="prismatic">
+    <parent link="base"/>
+    <child link="virtual_x_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+    <limit effort="1000.0" lower="-100.0" upper="100.0" velocity="2.0"/>
+    <dynamics damping="0.5"/>
+  </joint>
+  <link name="virtual_y_link"/>
+  <joint name="planar_y" type="prismatic">
+    <parent link="virtual_x_link"/>
+    <child link="virtual_y_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <axis xyz="0 1 0"/>
+    <limit effort="1000.0" lower="-100.0" upper="100.0" velocity="2.0"/>
+    <dynamics damping="0.5"/>
+  </joint>
+  <joint name="planar_theta" type="continuous">
+    <parent link="virtual_y_link"/>
+    <child link="base_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="500.0" velocity="3.14"/>
+    <dynamics damping="1.0"/>
+  </joint>
+
+  <xacro:mobile_fr3_duo_v0_2
+    robot_types="$(arg robot_types)"
+    hand="$(arg hand)"
+    ros2_control="$(arg ros2_control)"
+    gazebo="$(arg gazebo)"
+    gazebo_effort="$(arg gazebo_effort)"
+    use_fake_hardware="$(arg use_fake_hardware)"
+    fake_sensor_commands="$(arg fake_sensor_commands)"
+    reduced_version="$(arg reduced_version)"
+    robot_ips="$(arg robot_ips)"
+    description_pkg="$(arg description_pkg)"
+    connected_to="$(arg connected_to)"
+    use_arms="$(arg use_arms)"
+    no_prefix="$(arg no_prefix)"
+    ee_id="$(arg ee_id)"
+    special_connection="$(arg special_connection)"
+    xyz_ee="$(arg xyz_ee)"
+    rpy_ee="$(arg rpy_ee)"
+    tcp_xyz="$(arg tcp_xyz)"
+    tcp_rpy="$(arg tcp_rpy)"
+    safety_distance="$(arg safety_distance)"
+    with_sc="$(arg with_sc)"
+    is_async="$(arg is_async)"
+    thread_priority="$(arg thread_priority)"/>
+
+  <!-- Grasp links: align grasp frame axes for motion planning.
+       Parented to the hand TCP links generated by xacro:mobile_fr3_duo_v0_2. -->
+  <link name="left_grasp_link"/>
+  <joint name="left_grasp_link_joint" type="fixed">
+    <parent link="left_fr3v2_hand_tcp"/>
+    <child link="left_grasp_link"/>
+    <origin xyz="0 0 0" rpy="0 0 -1.5708"/>
+  </joint>
+
+  <link name="right_grasp_link"/>
+  <joint name="right_grasp_link_joint" type="fixed">
+    <parent link="right_fr3v2_hand_tcp"/>
+    <child link="right_grasp_link"/>
+    <origin xyz="0 0 0" rpy="0 0 -1.5708"/>
+  </joint>
+
+  <link name="left_grasp_link_extended"/>
+  <joint name="left_grasp_link_extended_joint" type="fixed">
+    <parent link="left_grasp_link"/>
+    <child link="left_grasp_link_extended"/>
+    <origin xyz="0 0 0.04162500" rpy="0 0 0"/>
+  </joint>
+
+  <link name="right_grasp_link_extended"/>
+  <joint name="right_grasp_link_extended_joint" type="fixed">
+    <parent link="right_grasp_link"/>
+    <child link="right_grasp_link_extended"/>
+    <origin xyz="0 0 0.04162500" rpy="0 0 0"/>
+  </joint>
+
+  <!-- Mecanum wheel kinematics for the URDF.
+       The wheels are physically simulated in the MuJoCo scene (description/wheel_*.xml) and
+       their R1_mecanum_*_wheel_rolling_joint joints are driven through the franka_mujoco_control
+       ros2_control block below. ROS 2 Jazzy's hardware_interface validates that every joint
+       named in a <ros2_control> block also exists in the URDF kinematic tree (Humble did not),
+       so we declare matching continuous joints + leaf links here. Origins mirror the wheel
+       holder poses in the MJCF scene (robot_*.xml); they only affect TF/visualization since the
+       drive physics lives entirely in MuJoCo. -->
+  <xacro:macro name="mecanum_wheel_urdf" params="name x y">
+    <link name="${name}_wheel_link">
+      <inertial>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <mass value="0.5"/>
+        <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
+      </inertial>
+    </link>
+    <joint name="R1_mecanum_${name}_wheel_rolling_joint" type="continuous">
+      <parent link="base_link"/>
+      <child link="${name}_wheel_link"/>
+      <origin xyz="${x} ${y} 0.08" rpy="0 0 0"/>
+      <axis xyz="0 1 0"/>
+      <dynamics damping="0.5"/>
+    </joint>
+  </xacro:macro>
+  <xacro:mecanum_wheel_urdf name="FL" x="0.3"  y="0.2"/>
+  <xacro:mecanum_wheel_urdf name="FR" x="0.3"  y="-0.2"/>
+  <xacro:mecanum_wheel_urdf name="RL" x="-0.3" y="0.2"/>
+  <xacro:mecanum_wheel_urdf name="RR" x="-0.3" y="-0.2"/>
+
+  <!-- Explicit ros2_control block for mock hardware.
+       The macro's ros2_control arg stays false so its conditional blocks are disabled,
+       avoiding duplicate ros2_control tags. -->
+  <ros2_control name="franka_mujoco_control" type="system">
+    <!-- Per-LiDAR topic routing. Sensor names match the MJCF site-name prefix
+          (the portion before the '-' in replicated rangefinder site names).
+          Each LiDAR publishes to its own topic so Nav2's obstacle layer can
+          treat them as independent observation sources. -->
+    <sensor name="lidar_front">
+      <param name="topic">/scan_front</param>
+    </sensor>
+    <sensor name="lidar_rear">
+      <param name="topic">/scan_rear</param>
+    </sensor>
+    <hardware>
+      <plugin>picknik_mujoco_ros/MujocoSystem</plugin>
+      <param name="mujoco_model">$(arg mujoco_model)</param>
+      <param name="mujoco_model_package">$(arg mujoco_model_package)</param>
+      <!-- The rate <camera> data is published at -->
+      <param name="render_publish_rate">10</param>
+      <!-- The rate transforms to <site> poses are published at -->
+      <param name="tf_publish_rate">60</param>
+      <!-- The rate <rangefinder> data is published at -->
+      <param name="lidar_publish_rate">10</param>
+      <!-- Publish /odom and broadcast odom -> base_link TF based on the planar joint
+           positions in MJCF. Consumed by the platform_velocity_controller and the
+           sensor_qos_relay node. -->
+      <param name="publish_odom">true</param>
+      <param name="odom_child_frame"></param>
+      <param name="odom_zero_z">true</param>
+      <!-- Joints declared in the URDF (via franka_description's tmrv0_2.xacro) that have
+           no MJCF counterpart — they were the placeholder TMR-bogie kinematics that the
+           mecanum wheels replaced. The mobile_base_joints_mock ros2_control block below
+           provides their state interfaces so joint_state_broadcaster stays happy. -->
+      <param name="ignore_joint_validation">caster_front_left_steering_joint caster_front_left_joint tmrv0_2_joint_0 tmrv0_2_joint_1 rocker_arm_joint caster_rear_right_steering_joint caster_rear_right_joint tmrv0_2_joint_2 tmrv0_2_joint_3</param>
+      <!-- Whether to launch the MuJoCo interactive viewer -->
+      <param name="mujoco_viewer">$(arg mujoco_viewer)</param>
+      <!-- <param name="mujoco_keyframe">one</param> -->
+    </hardware>
+
+    <sensor name="left_tcp_fts_sensor">
+      <state_interface name="force.x"/>
+      <state_interface name="force.y"/>
+      <state_interface name="force.z"/>
+      <state_interface name="torque.x"/>
+      <state_interface name="torque.y"/>
+      <state_interface name="torque.z"/>
+    </sensor>
+
+    <sensor name="right_tcp_fts_sensor">
+      <state_interface name="force.x"/>
+      <state_interface name="force.y"/>
+      <state_interface name="force.z"/>
+      <state_interface name="torque.x"/>
+      <state_interface name="torque.y"/>
+      <state_interface name="torque.z"/>
+    </sensor>
+
+    <!-- Mecanum drive: velocity command per wheel; position+velocity feedback. -->
+    <joint name="R1_mecanum_FL_wheel_rolling_joint">
+      <command_interface name="velocity"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="R1_mecanum_FR_wheel_rolling_joint">
+      <command_interface name="velocity"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="R1_mecanum_RL_wheel_rolling_joint">
+      <command_interface name="velocity"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="R1_mecanum_RR_wheel_rolling_joint">
+      <command_interface name="velocity"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+
+    <!-- Planar base mobility: state-only (driven by wheel-floor friction in MuJoCo).
+         These let joint_state_broadcaster + tf publish the moving base pose. -->
+    <joint name="planar_x">
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="planar_y">
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="planar_theta">
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+
+  </ros2_control>
+
+  <!-- Mobile base joints are commented out in the MuJoCo scene for sim stability.
+       A separate mock hardware block provides their state interfaces so that
+       joint_state_broadcaster publishes them and MoveIt sees a complete robot state. -->
+  <ros2_control name="mobile_base_joints_mock" type="system">
+    <hardware>
+      <plugin>mock_components/GenericSystem</plugin>
+    </hardware>
+    <joint name="tmrv0_2_joint_0">
+      <state_interface name="position"><param name="initial_value">0.0</param></state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="tmrv0_2_joint_1">
+      <state_interface name="position"><param name="initial_value">0.0</param></state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="tmrv0_2_joint_2">
+      <state_interface name="position"><param name="initial_value">0.0</param></state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="tmrv0_2_joint_3">
+      <state_interface name="position"><param name="initial_value">0.0</param></state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="caster_front_left_steering_joint">
+      <state_interface name="position"><param name="initial_value">0.0</param></state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="caster_front_left_joint">
+      <state_interface name="position"><param name="initial_value">0.0</param></state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="rocker_arm_joint">
+      <state_interface name="position"><param name="initial_value">0.0</param></state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="caster_rear_right_steering_joint">
+      <state_interface name="position"><param name="initial_value">0.0</param></state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="caster_rear_right_joint">
+      <state_interface name="position"><param name="initial_value">0.0</param></state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+  </ros2_control>
+</robot>

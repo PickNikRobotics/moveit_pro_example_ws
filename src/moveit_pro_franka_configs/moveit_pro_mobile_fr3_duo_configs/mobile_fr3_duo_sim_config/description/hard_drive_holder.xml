@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<mujoco model="hard_drive_holder">
+  <!--
+    Hard Drive Holder - 3x3 grid of slots, box geoms only.
+
+    Hole dimensions (with 0.5 cm clearance added to length and width):
+      length (X): 0.04218200 m  (0.03718200 + 0.005)
+      width  (Y): 0.03007468 m  (0.02507468 + 0.005)
+      depth  (Z): 0.11000000 m
+
+    Wall thickness: 0.002 m
+    Bottom plate thickness: 0.01 m
+
+    Overall dimensions:
+      X: 3 * 0.042182 + 4 * 0.002 = 0.134546 m
+      Y: 3 * 0.030075 + 4 * 0.002 = 0.098224 m
+      Z: 0.110000 + 0.010000       = 0.120000 m
+
+    Origin: center of the bottom face of the holder.
+  -->
+
+    <body name="hard_drive_holder" pos="0 0 0">
+
+      <!-- Bottom plate -->
+      <geom name="bottom_plate" type="box"
+            size="0.067273 0.049112 0.005"
+            pos="0 0 0.005"
+            rgba="0.5 0.5 0.5 1" />
+
+      <!-- X-walls (parallel to YZ plane, running full Y width) -->
+      <geom name="x_wall_0" type="box"
+            size="0.001 0.049112 0.055"
+            pos="-0.066273 0 0.065"
+            rgba="0.5 0.5 0.5 1" />
+      <geom name="x_wall_1" type="box"
+            size="0.001 0.049112 0.055"
+            pos="-0.022091 0 0.065"
+            rgba="0.5 0.5 0.5 1" />
+      <geom name="x_wall_2" type="box"
+            size="0.001 0.049112 0.055"
+            pos="0.022091 0 0.065"
+            rgba="0.5 0.5 0.5 1" />
+      <geom name="x_wall_3" type="box"
+            size="0.001 0.049112 0.055"
+            pos="0.066273 0 0.065"
+            rgba="0.5 0.5 0.5 1" />
+
+      <!-- Y-walls (parallel to XZ plane, running full X length) -->
+      <geom name="y_wall_0" type="box"
+            size="0.067273 0.001 0.055"
+            pos="0 -0.048112 0.065"
+            rgba="0.5 0.5 0.5 1" />
+      <geom name="y_wall_1" type="box"
+            size="0.067273 0.001 0.055"
+            pos="0 -0.016037 0.065"
+            rgba="0.5 0.5 0.5 1" />
+      <geom name="y_wall_2" type="box"
+            size="0.067273 0.001 0.055"
+            pos="0 0.016037 0.065"
+            rgba="0.5 0.5 0.5 1" />
+      <geom name="y_wall_3" type="box"
+            size="0.067273 0.001 0.055"
+            pos="0 0.048112 0.065"
+            rgba="0.5 0.5 0.5 1" />
+
+    </body>
+</mujoco>

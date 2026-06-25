@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Move Spine to Pose Height">
+  <!--
+    Drives the prismatic spine so the spine link reaches the height of a target pose, then the
+    spine-free arm groups can plan to that pose.
+
+    Why this exists: once the spine was decoupled from the arms, arm moves plan on
+    left_manipulator_without_spine (fixed base height). If the grasp/approach pose's z is outside
+    the arm's vertical reach from the recorded spine height, IK fails — and there is no longer a
+    spine DOF to bail it out. This subtree computes a pose-dependent spine height at runtime
+    (unlike "Move to Waypoint Spine First", which only commands a recorded height) and commands it
+    first, on spine_controller, before any arm motion.
+
+    Steps:
+      1. GetCurrentPlanningScene — provides the current spine joint value + spine link height.
+      2. MoveSpineToPoseHeight — computes the clamped spine joint goal for the target pose.
+      3. Move to Joint State — plans + executes that goal on the "spine" group / spine_controller.
+  -->
+  <BehaviorTree
+    ID="Move Spine to Pose Height"
+    _description="Move the spine so the spine link matches a target pose's height, then stop (arm moves separately)."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="SpineToPoseHeight">
+      <Action ID="GetCurrentPlanningScene" />
+      <Action
+        ID="MoveSpineToPoseHeight"
+        target_pose="{target_pose}"
+        planning_scene="{planning_scene}"
+        spine_joint_name="franka_spine_vertical_joint"
+        spine_link_name="franka_spine_mounting_point"
+        reference_frame="world"
+        min_spine_joint_value="{min_spine_joint_value}"
+        max_spine_joint_value="{max_spine_joint_value}"
+        height_bias="{height_bias}"
+        spine_joint_state="{spine_joint_state}"
+        target_spine_value="{target_spine_value}"
+      />
+      <SubTree
+        ID="Move to Joint State"
+        _collapsed="true"
+        target_joint_state="{spine_joint_state}"
+        joint_group_name="spine"
+        controller_names="spine_controller"
+        controller_action_server="/spine_controller/follow_joint_trajectory"
+        execution_pipeline="jtc"
+        velocity_scale_factor="{velocity_scale_factor}"
+        acceleration_scale_factor="{acceleration_scale_factor}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Move Spine to Pose Height">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Motion - Execute" />
+      </MetadataFields>
+      <input_port name="target_pose" default="{target_pose}" type="geometry_msgs::msg::PoseStamped">
+        Pose the arm must reach; the spine link is driven to this pose's world-frame z.
+      </input_port>
+      <input_port name="min_spine_joint_value" default="-0.05" type="double">
+        Lower clamp on the commanded spine joint value (meters). Spine travel is [-0.05, 0.85].
+      </input_port>
+      <input_port name="max_spine_joint_value" default="0.85" type="double">
+        Upper clamp on the commanded spine joint value (meters). Spine travel is [-0.05, 0.85].
+      </input_port>
+      <input_port name="height_bias" default="0.0" type="double">
+        Vertical offset (meters, in world) added to the target pose's z before computing the spine
+        value. Positive drives the spine link above the pose; 0 matches the pose's height exactly.
+      </input_port>
+      <input_port name="velocity_scale_factor" default="1.0" type="double">
+        Velocity scaling for the spine move.
+      </input_port>
+      <input_port name="acceleration_scale_factor" default="1.0" type="double">
+        Acceleration scaling for the spine move.
+      </input_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>

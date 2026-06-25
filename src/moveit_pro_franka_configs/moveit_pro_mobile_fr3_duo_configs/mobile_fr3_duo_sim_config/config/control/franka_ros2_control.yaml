@@ -1,0 +1,435 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 500 # Hz
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+    joint_trajectory_admittance_controller:
+      type: joint_trajectory_admittance_controller/JointTrajectoryAdmittanceController
+    left_joint_trajectory_admittance_controller:
+      type: joint_trajectory_admittance_controller/JointTrajectoryAdmittanceController
+    right_joint_trajectory_admittance_controller:
+      type: joint_trajectory_admittance_controller/JointTrajectoryAdmittanceController
+    left_velocity_force_controller:
+      type: velocity_force_controller/VelocityForceController
+    right_velocity_force_controller:
+      type: velocity_force_controller/VelocityForceController
+    left_gripper_controller:
+      type: position_controllers/GripperActionController
+    right_gripper_controller:
+      type: position_controllers/GripperActionController
+    left_force_torque_sensor_broadcaster:
+      type: force_torque_sensor_broadcaster/ForceTorqueSensorBroadcaster
+    right_force_torque_sensor_broadcaster:
+      type: force_torque_sensor_broadcaster/ForceTorqueSensorBroadcaster
+    imu_sensor_broadcaster:
+      type: imu_sensor_broadcaster/IMUSensorBroadcaster
+
+    left_joint_trajectory_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+    # Dedicated controller for the prismatic spine. The spine must be commanded on its own
+    # (and reach its target height before the arms move) because the hardware cannot drive
+    # the spine and the arm joints from a single JointTrajectory. This is the ONLY controller
+    # allowed to claim franka_spine_vertical_joint/position.
+    spine_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+    # Controller names must differ from the site names to avoid ros2_control treating the
+    # joint as a chained controller reference interface instead of a hardware interface.
+    left_fingertip_attach_mechanism:
+      type: position_controllers/GripperActionController
+    right_fingertip_attach_mechanism:
+      type: position_controllers/GripperActionController
+    # Mecanum controller driven by Nav2. body_frame_control: true so Nav2 twists
+    # (published in base_link) are interpreted correctly.
+    # TODO: reintroduce a second mecanum controller (e.g. `platform_velocity_controller`
+    # with body_frame_control: false and reference_joint_names exposing the planar
+    # base joints) once whole-body motion / teleop is needed. It will need to be
+    # swapped in/out with this one via SwitchController since both claim the wheel
+    # command interfaces.
+    platform_velocity_controller_nav2:
+      type: clearpath_mecanum_drive_controller/MecanumDriveController
+
+platform_velocity_controller_nav2:
+  ros__parameters:
+    use_sim_time: False
+    interface_name: velocity
+    command_joint_names:
+      - R1_mecanum_FL_wheel_rolling_joint
+      - R1_mecanum_RL_wheel_rolling_joint
+      - R1_mecanum_RR_wheel_rolling_joint
+      - R1_mecanum_FR_wheel_rolling_joint
+    # body_frame_control=true: Nav2 publishes twists in the base frame.
+    body_frame_control: true
+    body_frame_yaw_joint: "rotational_yaw_joint"
+    front_left_wheel_command_joint_name: "R1_mecanum_FL_wheel_rolling_joint"
+    front_right_wheel_command_joint_name: "R1_mecanum_FR_wheel_rolling_joint"
+    rear_right_wheel_command_joint_name: "R1_mecanum_RR_wheel_rolling_joint"
+    rear_left_wheel_command_joint_name: "R1_mecanum_RL_wheel_rolling_joint"
+
+    kinematics.wheels_radius: 0.08
+    kinematics.sum_of_robot_center_projection_on_X_Y_axis: 0.5
+    wheel_separation_multiplier: 1.0
+    wheel_radius_multiplier: 1.0
+
+    publish_rate: 50.0
+    reference_timeout: 0.5
+    use_stamped_vel: False
+
+    pose_covariance_diagonal:
+      [0.001, 0.001, 1000000.0, 1000000.0, 1000000.0, 0.03]
+    twist_covariance_diagonal: [0.001, 0.001, 0.001, 1000000.0, 1000000.0, 0.03]
+
+    cmd_vel_timeout: 5.0
+
+    base_frame_id: "base_link"
+    odom_frame_id: "odom"
+    # The MuJoCo hardware plugin already publishes odom -> base_link.
+    enable_odom_tf: false
+
+    linear.x.has_velocity_limits: true
+    linear.x.has_acceleration_limits: true
+    linear.x.max_velocity: 1.0
+    linear.x.min_velocity: -1.0
+    linear.x.max_acceleration: 1.0
+    linear.x.min_acceleration: -1.0
+
+    linear.y.has_velocity_limits: true
+    linear.y.has_acceleration_limits: true
+    linear.y.max_velocity: 1.0
+    linear.y.min_velocity: -1.0
+    linear.y.max_acceleration: 1.0
+    linear.y.min_acceleration: -1.0
+
+    angular.z.has_velocity_limits: true
+    angular.z.has_acceleration_limits: true
+    angular.z.max_velocity: 2.0
+    angular.z.min_velocity: -2.0
+    angular.z.max_acceleration: 2.0
+    angular.z.min_acceleration: -2.0
+
+left_fingertip_attach_mechanism:
+  ros__parameters:
+    default: true
+    joint: suction_cup_left_gripper_left_fingertip # Must match the MuJoCo site name in robot.xml
+    allow_stalling: true
+
+right_fingertip_attach_mechanism:
+  ros__parameters:
+    default: true
+    joint: suction_cup_left_gripper_right_fingertip # Must match the MuJoCo site name in robot.xml
+    allow_stalling: true
+
+left_joint_trajectory_controller:
+  ros__parameters:
+    joints:
+      - left_fr3v2_joint1
+      - left_fr3v2_joint2
+      - left_fr3v2_joint3
+      - left_fr3v2_joint4
+      - left_fr3v2_joint5
+      - left_fr3v2_joint6
+      - left_fr3v2_joint7
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
+    command_joints:
+      - left_fr3v2_joint1
+      - left_fr3v2_joint2
+      - left_fr3v2_joint3
+      - left_fr3v2_joint4
+      - left_fr3v2_joint5
+      - left_fr3v2_joint6
+      - left_fr3v2_joint7
+    constraints:
+      stopped_velocity_tolerance: 0.0
+      goal_time: 0.0
+      left_fr3v2_joint1:
+        goal: 0.005
+      left_fr3v2_joint2:
+        goal: 0.005
+      left_fr3v2_joint3:
+        goal: 0.005
+      left_fr3v2_joint4:
+        goal: 0.005
+      left_fr3v2_joint5:
+        goal: 0.005
+      left_fr3v2_joint6:
+        goal: 0.005
+      left_fr3v2_joint7:
+        goal: 0.005
+    gains:
+      left_fr3_joint1: { p: 600., d: 30., i: 0., i_clamp: 1. }
+      left_fr3_joint2: { p: 600., d: 30., i: 0., i_clamp: 1. }
+      left_fr3_joint3: { p: 600., d: 30., i: 0., i_clamp: 1. }
+      left_fr3_joint4: { p: 600., d: 30., i: 0., i_clamp: 1. }
+      left_fr3_joint5: { p: 250., d: 10., i: 0., i_clamp: 1. }
+      left_fr3_joint6: { p: 150., d: 10., i: 0., i_clamp: 1. }
+      left_fr3_joint7: { p: 50., d: 5., i: 0., i_clamp: 1. }
+
+    state_publish_rate: 100.0
+    action_monitor_rate: 20.0
+    allow_partial_joints_goal: true
+
+spine_controller:
+  ros__parameters:
+    joints:
+      - franka_spine_vertical_joint
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
+    command_joints:
+      - franka_spine_vertical_joint
+    constraints:
+      stopped_velocity_tolerance: 0.0
+      goal_time: 0.0
+      franka_spine_vertical_joint:
+        goal: 0.005
+    state_publish_rate: 100.0
+    action_monitor_rate: 20.0
+    allow_partial_joints_goal: true
+
+joint_trajectory_admittance_controller:
+  ros__parameters:
+    planning_group_name: manipulator_without_spine
+    # Specifies the frame/link name of the end-effector frame. Must exist in the robot description.
+    ee_frame: right_grasp_link
+    sensor_frame: right_fr3v2_link8
+    ft_sensor_name: right_tcp_fts_sensor
+    # Joint accelerations to use for immediate stops (e.g. when cancelling a running trajectory).
+    # 14 entries: 7 left arm + 7 right arm joints (spine excluded, commanded by spine_controller).
+    stop_accelerations:
+      [
+        30.0,
+        30.0,
+        30.0,
+        30.0,
+        30.0,
+        30.0,
+        30.0,
+        30.0,
+        30.0,
+        30.0,
+        30.0,
+        30.0,
+        30.0,
+        30.0,
+      ]
+    # Default maximum joint-space deviation accepted along the trajectory, if not specified in the goal message.
+    default_path_tolerance: 0.5
+    default_goal_tolerance: 0.005
+
+left_gripper_controller:
+  ros__parameters:
+    default: true
+    joint: left_fr3v2_finger_joint1
+    allow_stalling: true
+    stall_timeout: 0.1
+    goal_tolerance: 0.005
+
+right_gripper_controller:
+  ros__parameters:
+    default: true
+    joint: right_fr3v2_finger_joint1
+    allow_stalling: true
+    stall_timeout: 0.1
+    goal_tolerance: 0.5
+
+left_joint_trajectory_admittance_controller:
+  ros__parameters:
+    planning_group_name: left_manipulator_without_spine
+    # Specifies the frame/link name of the end-effector frame. Must exist in the robot description.
+    ee_frame: left_grasp_link
+    sensor_frame: left_fr3v2_link8
+    ft_sensor_name: left_tcp_fts_sensor
+    # Joint accelerations to use for immediate stops (e.g. when cancelling a running trajectory).
+    # 7 entries: left arm joints (spine excluded, commanded by spine_controller).
+    stop_accelerations: [30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0]
+    # Default maximum joint-space deviation accepted along the trajectory, if not specified in the goal message.
+    default_path_tolerance: 0.5
+    default_goal_tolerance: 0.005
+
+right_joint_trajectory_admittance_controller:
+  ros__parameters:
+    planning_group_name: right_manipulator_without_spine
+    # Specifies the frame/link name of the end-effector frame. Must exist in the robot description.
+    ee_frame: right_grasp_link
+    sensor_frame: right_fr3v2_link8
+    ft_sensor_name: right_tcp_fts_sensor
+    # Joint accelerations to use for immediate stops (e.g. when cancelling a running trajectory).
+    # 7 entries: right arm joints (spine excluded, commanded by spine_controller).
+    stop_accelerations: [30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0]
+    # Default maximum joint-space deviation accepted along the trajectory, if not specified in the goal message.
+    default_path_tolerance: 0.05
+    default_goal_tolerance: 0.005
+
+left_force_torque_sensor_broadcaster:
+  ros__parameters:
+    sensor_name: left_tcp_fts_sensor
+    state_interface_names:
+      - force.x
+      - force.y
+      - force.z
+      - torque.x
+      - torque.y
+      - torque.z
+    frame_id: left_fr3v2_link8
+
+right_force_torque_sensor_broadcaster:
+  ros__parameters:
+    sensor_name: right_tcp_fts_sensor
+    state_interface_names:
+      - force.x
+      - force.y
+      - force.z
+      - torque.x
+      - torque.y
+      - torque.z
+    frame_id: right_fr3v2_link8
+
+left_velocity_force_controller:
+  ros__parameters:
+    planning_group_name: left_manipulator_without_spine
+    # The tip link of the kinematic chain, i.e. the frame that will be controlled.
+    ee_frame: left_grasp_link
+    # The frame where the force / torque sensor reading is given.
+    # (Needs to exist in the kinematic chain).
+    sensor_frame: left_fr3v2_link8
+    # The force/torque ros2_control hardware interface name.
+    ft_sensor_name: left_tcp_fts_sensor
+    # An optional deadband to apply to the force/torque signal. Set to 0.0 to disable.
+    ft_force_deadband: 2.0
+    ft_torque_deadband: 1.0
+    # Maximum joint-space velocities. 7 entries: arm joints (spine excluded).
+    max_joint_velocity:
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+    # Maximum joint-space accelerations. 7 entries: arm joints (spine excluded).
+    max_joint_acceleration:
+      - 2.0
+      - 2.0
+      - 2.0
+      - 2.0
+      - 2.0
+      - 2.0
+      - 2.0
+    # Maximum Cartesian-space velocities.
+    max_cartesian_velocity:
+      - 0.25
+      - 0.25
+      - 0.25
+      - 1.0
+      - 1.0
+      - 1.0
+    # Maximum Cartesian-space accelerations.
+    max_cartesian_acceleration:
+      - 2.0
+      - 2.0
+      - 2.0
+      - 4.0
+      - 4.0
+      - 4.0
+    # Additional optional parameters for reference (set to defaults):
+    # Cutoff frequency ratio for the FTS filter. Valid values range from 0 to 1, where 1 is the sampling frequency.
+    ft_cutoff_frequency_ratio: 1.0
+    # Rate in Hz at which the controller will publish the state.
+    state_publish_rate: 10
+    # Damping coefficient for the Jacobian damped least-squares inverse.
+    jacobian_damping: 0.002
+    # Timeout in seconds after which the controller will stop motion if no new commands are received.
+    command_timeout: 0.2
+    # Padding (in radians) to add to joint position limits as a safety margin.
+    joint_limit_position_tolerance: 0.02
+    # Joints that the controller will command. If not specified, if takes the same value as `joints`.
+    # This can be useful to implement layered control, where some joints may be controlled by a different controller
+    # downstream.
+    # command_joints: []
+    # The type of command interface to use. Supported values are "position" and "velocity".
+    command_interfaces: ["position"]
+
+right_velocity_force_controller:
+  ros__parameters:
+    planning_group_name: right_manipulator_without_spine
+    # The tip link of the kinematic chain, i.e. the frame that will be controlled.
+    ee_frame: right_grasp_link
+    # The frame where the force / torque sensor reading is given.
+    # (Needs to exist in the kinematic chain).
+    sensor_frame: right_fr3v2_link8
+    # The force/torque ros2_control hardware interface name.
+    ft_sensor_name: right_tcp_fts_sensor
+    # An optional deadband to apply to the force/torque signal. Set to 0.0 to disable.
+    ft_force_deadband: 2.0
+    ft_torque_deadband: 1.0
+    # Maximum joint-space velocities. 7 entries: arm joints (spine excluded).
+    max_joint_velocity:
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+    # Maximum joint-space accelerations. 7 entries: arm joints (spine excluded).
+    max_joint_acceleration:
+      - 2.0
+      - 2.0
+      - 2.0
+      - 2.0
+      - 2.0
+      - 2.0
+      - 2.0
+    # Maximum Cartesian-space velocities.
+    max_cartesian_velocity:
+      - 0.25
+      - 0.25
+      - 0.25
+      - 1.0
+      - 1.0
+      - 1.0
+    # Maximum Cartesian-space accelerations.
+    max_cartesian_acceleration:
+      - 2.0
+      - 2.0
+      - 2.0
+      - 4.0
+      - 4.0
+      - 4.0
+    # Additional optional parameters for reference (set to defaults):
+    # Cutoff frequency ratio for the FTS filter. Valid values range from 0 to 1, where 1 is the sampling frequency.
+    ft_cutoff_frequency_ratio: 1.0
+    # Rate in Hz at which the controller will publish the state.
+    state_publish_rate: 10
+    # Damping coefficient for the Jacobian damped least-squares inverse.
+    jacobian_damping: 0.002
+    # Timeout in seconds after which the controller will stop motion if no new commands are received.
+    command_timeout: 0.2
+    # Padding (in radians) to add to joint position limits as a safety margin.
+    joint_limit_position_tolerance: 0.02
+    # Joints that the controller will command. If not specified, if takes the same value as `joints`.
+    # This can be useful to implement layered control, where some joints may be controlled by a different controller
+    # downstream.
+    # command_joints: []
+    # The type of command interface to use. Supported values are "position" and "velocity".
+    command_interfaces: ["position"]
+
+imu_sensor_broadcaster:
+  ros__parameters:
+    sensor_name: imu_site
+    frame_id: base_footprint
+    # Static covariance values (row-major 3x3 matrices)
+    # Orientation covariance (rad^2)
+    static_covariance_orientation:
+      [0.001, 0.0, 0.0, 0.0, 0.001, 0.0, 0.0, 0.0, 0.001]
+    # Angular velocity covariance (rad/s)^2
+    static_covariance_angular_velocity:
+      [0.01, 0.0, 0.0, 0.0, 0.01, 0.0, 0.0, 0.0, 0.01]
+    # Linear acceleration covariance (m/s^2)^2
+    static_covariance_linear_acceleration:
+      [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0]

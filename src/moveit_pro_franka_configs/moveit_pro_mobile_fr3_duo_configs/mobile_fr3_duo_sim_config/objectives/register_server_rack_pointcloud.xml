@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root BTCPP_format="4" main_tree_to_execute="Register Server Rack Pointcloud">
+  <BehaviorTree ID="Register Server Rack Pointcloud">
+    <Control ID="Sequence">
+      <Action ID="RegisterPointClouds" base_point_cloud="{merged_cloud}" target_point_cloud="{server_rack_point_cloud}" max_iterations="100" max_correspondence_distance="0.1"/>
+      <Action ID="LoadPointCloudFromFile" color="0;255;0" package_name="mobile_fr3_duo_sim_config" file_path="description/assets/server_visual/ORV3.stl" point_cloud="{server_rack_point_cloud}" frame_id="base_link"/>
+      <Action ID="TransformPointCloud" input_cloud="{server_rack_point_cloud}" output_cloud="{server_rack_point_cloud}" transform_pose="{transform_pose}"/>
+      <Action ID="TransformPointCloudFrame" input_cloud="{server_rack_point_cloud}" output_cloud="{server_rack_point_cloud}"/>
+      <Action ID="TransformPointCloud" input_cloud="{server_rack_point_cloud}" output_cloud="{server_rack_point_cloud}" transform_pose="{target_pose}"/>
+      <Decorator ID="Precondition" else="SUCCESS" if="send_to_ui==true">
+        <Action ID="SendPointCloudToUI" point_cloud="{server_rack_point_cloud}"/>
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Register Server Rack Pointcloud">
+      <inout_port name="send_to_ui" default="{send_to_ui}" type="bool"/>
+      <inout_port name="merged_cloud" default="{merged_cloud}" type="sensor_msgs::msg::PointCloud2"/>
+      <inout_port name="server_rack_point_cloud" default="{server_rack_point_cloud}" type="sensor_msgs::msg::PointCloud2"/>
+      <inout_port name="target_pose" default="{target_pose}" type="geometry_msgs::msg::PoseStamped"/>
+      <inout_port name="transform_pose" default="{transform_pose}" type="geometry_msgs::msg::PoseStamped"/>
+      <MetadataFields>
+        <Metadata subcategory="Application Subtrees" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

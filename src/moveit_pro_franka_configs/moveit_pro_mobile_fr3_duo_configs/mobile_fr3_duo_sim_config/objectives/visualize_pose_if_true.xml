@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Visualize Pose if True">
+  <BehaviorTree ID="Visualize Pose if True">
+    <Decorator
+      ID="Precondition"
+      else="SUCCESS"
+      if="visualize_if_true == true"
+    >
+      <Action
+        ID="VisualizePose"
+        pose="{pose}"
+        marker_name="{marker_name}"
+        marker_size="{marker_size}"
+        marker_text="{marker_text}"
+        marker_lifetime="{marker_lifetime}"
+      />
+    </Decorator>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Visualize Pose if True">
+      <MetadataFields>
+        <Metadata subcategory="Application Subtrees" />
+      </MetadataFields>
+      <input_port
+        name="visualize_if_true"
+        default="true"
+        type="bool"
+      />
+      <input_port
+        name="pose"
+        default="{pose}"
+        type="geometry_msgs::msg::PoseStamped"
+      />
+      <input_port
+        name="marker_name"
+        default="marker"
+        type="std::string"
+      />
+      <input_port
+        name="marker_size"
+        default="1"
+        type="std::string"
+      />
+      <input_port
+        name="marker_text"
+        default="marker"
+        type="std::string"
+      />
+      <input_port
+        name="marker_lifetime"
+        default="0.000000"
+        type="double"
+      />
+    </SubTree>
+  </TreeNodesModel>
+</root>

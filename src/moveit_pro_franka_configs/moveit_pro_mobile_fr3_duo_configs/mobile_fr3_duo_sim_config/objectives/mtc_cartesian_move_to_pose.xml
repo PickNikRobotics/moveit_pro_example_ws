@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="MTC Cartesian Move to Pose">
+  <BehaviorTree
+    ID="MTC Cartesian Move to Pose"
+    _description="Plans and executes a cartesian path to a single pose using the MTC pipeline"
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="ResetPoseStampedVector" vector="{pose_vector}" />
+      <Action
+        ID="AddPoseStampedToVector"
+        input="{target_pose}"
+        vector="{pose_vector}"
+      />
+      <SubTree
+        ID="MTC Cartesian Move to Poses"
+        _collapsed="false"
+        acceleration_scale_factor="{acceleration_scale_factor}"
+        velocity_scale_factor="{velocity_scale_factor}"
+        target_poses="{pose_vector}"
+        require_approval="{require_approval}"
+        planning_group_name="{planning_group_name}"
+        controller_names="{controller_names}"
+        tip_link="{tip_link}"
+        use_admittance="{use_admittance}"
+        admittance_params_file="{admittance_params_file}"
+        controller_action_name="/left_joint_trajectory_admittance_controller/follow_joint_trajectory"
+        execution_pipeline="jtac"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="MTC Cartesian Move to Pose">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Motion - Execute" />
+      </MetadataFields>
+      <inout_port
+        name="admittance_params_file"
+        default="admittance_params.yaml"
+        type="std::string"
+      />
+      <input_port
+        name="acceleration_scale_factor"
+        default="1.0"
+        type="double"
+      />
+      <input_port
+        name="controller_names"
+        default="left_joint_trajectory_admittance_controller"
+        type="std::string"
+      />
+      <input_port
+        name="planning_group_name"
+        default="left_manipulator"
+        type="std::string"
+      />
+      <input_port name="require_approval" default="false" type="bool" />
+      <input_port
+        name="target_pose"
+        default="{target_pose}"
+        type="geometry_msgs::msg::PoseStamped"
+      />
+      <input_port
+        name="tip_link"
+        default="left_grasp_link_extended"
+        type="std::string"
+      />
+      <input_port name="use_admittance" default="false" type="bool" />
+      <input_port name="velocity_scale_factor" default="1.0" type="double" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

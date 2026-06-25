@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Pickup Hard Drive from Holder">
+  <BehaviorTree
+    ID="Pickup Hard Drive from Holder"
+    _description="Uses SAM3 vision segmentation to detect a hard drive latch in the holder, generates grasp and approach poses from the detected position, executes a cartesian approach to grasp the hard drive, and attaches it as a collision object to the gripper."
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree
+        ID="Pickup Hard Drive from Holder Subtree"
+        _collapsed="false"
+        require_approval="false"
+        enter_hard_drive_flag="false"
+        planning_group_name="left_manipulator_without_spine"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Pickup Hard Drive from Holder">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Applications" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

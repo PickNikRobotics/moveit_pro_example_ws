@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Take Combined Snapshot">
+  <!--//////////-->
+  <BehaviorTree ID="Take Combined Snapshot" _description="" _favorite="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="GetPointCloud"
+        topic_name="/left_wrist_camera/points"
+        message_out="{left_point_cloud}"
+        publisher_timeout_sec="5.000000"
+      />
+      <Action
+        ID="GetPointCloud"
+        topic_name="/right_wrist_camera/points"
+        message_out="{right_point_cloud}"
+      />
+      <Action
+        ID="TransformPointCloudFrame"
+        input_cloud="{left_point_cloud}"
+        output_cloud="{left_point_cloud}"
+      />
+      <Action
+        ID="TransformPointCloudFrame"
+        input_cloud="{right_point_cloud}"
+        output_cloud="{right_point_cloud}"
+      />
+      <SubTree ID="CreateVector" _collapsed="true" vector="{point_clouds}" />
+      <Action
+        ID="PushBackVector"
+        input_vector="{point_clouds}"
+        output_vector="{point_clouds}"
+        element="{left_point_cloud}"
+      />
+      <Action
+        ID="PushBackVector"
+        input_vector="{point_clouds}"
+        output_vector="{point_clouds}"
+        element="{right_point_cloud}"
+      />
+      <Action ID="MergePointClouds" point_clouds="{point_clouds}" />
+      <Decorator ID="Precondition" else="SUCCESS" if="send_to_ui == true">
+        <Action ID="SendPointCloudToUI" point_cloud="{merged_cloud}" />
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Take Combined Snapshot">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Perception - 3D Point Cloud" />
+      </MetadataFields>
+      <inout_port
+        name="merged_cloud"
+        default="{merged_cloud}"
+        type="sensor_msgs::msg::PointCloud2"
+      />
+      <inout_port name="send_to_ui" default="{send_to_ui}" type="bool" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

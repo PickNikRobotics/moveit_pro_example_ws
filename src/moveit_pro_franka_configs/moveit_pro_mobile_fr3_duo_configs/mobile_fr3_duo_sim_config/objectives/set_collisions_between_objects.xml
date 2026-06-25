@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Set Collisions Between Objects">
+  <!--//////////-->
+  <BehaviorTree ID="Set Collisions Between Objects">
+    <Control ID="Sequence">
+      <Action ID="InitializeMTCTask" />
+      <Action ID="SetupMTCCurrentState" />
+      <Action
+        ID="SetupMTCIgnoreCollisionsBetweenObjects"
+        object_names="{object_names}"
+        allow_collision="{allow_collision}"
+      />
+      <Action ID="PlanMTCTask" />
+      <Action ID="ExecuteMTCTask" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Set Collisions Between Objects">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Perception - Planning Scene" />
+      </MetadataFields>
+      <inout_port name="allow_collision" default="true" type="bool" />
+      <inout_port
+        name="object_names"
+        default=""
+        type="std::vector&lt;std::string&gt;"
+      />
+    </SubTree>
+  </TreeNodesModel>
+</root>

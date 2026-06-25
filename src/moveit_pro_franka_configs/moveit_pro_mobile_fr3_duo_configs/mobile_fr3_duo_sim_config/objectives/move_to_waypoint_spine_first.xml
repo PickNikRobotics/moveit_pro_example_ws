@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Move to Waypoint Spine First">
+  <!--
+    Spine-safe replacement for a bare "Move to Waypoint".
+
+    The hardware cannot drive the prismatic spine and the arm joints from a single
+    JointTrajectory, so this subtree splits a named waypoint into two sequential moves:
+
+      1. Command the "spine" planning group (only franka_spine_vertical_joint) to the
+         waypoint's stored spine height via spine_controller, and WAIT for it to finish.
+      2. Command the arm planning group (spine-free) to the same waypoint via the arm
+         controller.
+
+    Both steps read the SAME named waypoint; each "Move to Waypoint" only commands the
+    joints belonging to the planning group it is given, so no re-recording or value
+    extraction is needed. The outer Sequence guarantees the spine settles before any arm
+    motion begins ("spine first").
+
+    Pass the spine-free arm group (e.g. left_manipulator_without_spine) as joint_group_name.
+  -->
+  <BehaviorTree ID="Move to Waypoint Spine First" _description="Move the spine to a waypoint height first, then the arm." _favorite="false">
+    <Control ID="Sequence" name="SpineThenArm">
+      <!-- 1. Spine first — only franka_spine_vertical_joint, routed to spine_controller. -->
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        waypoint_name="{waypoint_name}"
+        joint_group_name="spine"
+        controller_names="spine_controller"
+        controller_action_server="/spine_controller/follow_joint_trajectory"
+        execution_pipeline="jtc"
+        velocity_scale_factor="{velocity_scale_factor}"
+        acceleration_scale_factor="{acceleration_scale_factor}"
+      />
+      <!-- 2. Then the arm — spine-free group, routed to the arm controller. -->
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        waypoint_name="{waypoint_name}"
+        joint_group_name="{joint_group_name}"
+        controller_names="{controller_names}"
+        controller_action_server="{controller_action_server}"
+        execution_pipeline="{execution_pipeline}"
+        velocity_scale_factor="{velocity_scale_factor}"
+        acceleration_scale_factor="{acceleration_scale_factor}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Move to Waypoint Spine First">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Motion - Execute" />
+      </MetadataFields>
+      <input_port name="waypoint_name" type="std::string">
+        Name of the waypoint to move to. Must contain franka_spine_vertical_joint
+        in its joint_state (all waypoints recorded under manipulator/left_manipulator do).
+      </input_port>
+      <input_port name="joint_group_name" default="left_manipulator_without_spine" type="std::string">
+        Spine-free arm planning group used for the second (arm) move.
+      </input_port>
+      <input_port name="controller_names" default="left_joint_trajectory_admittance_controller" type="std::string">
+        Controller(s) that execute the arm move.
+      </input_port>
+      <input_port name="controller_action_server" default="/left_joint_trajectory_admittance_controller/follow_joint_trajectory" type="std::string">
+        FollowJointTrajectory action server for the arm controller.
+      </input_port>
+      <input_port name="execution_pipeline" default="jtac" type="std::string">
+        Execution pipeline for the arm move (jtac for admittance, jtc for a plain JTC).
+      </input_port>
+      <input_port name="velocity_scale_factor" default="1.0" type="double">
+        Velocity scaling applied to both the spine and arm moves.
+      </input_port>
+      <input_port name="acceleration_scale_factor" default="1.0" type="double">
+        Acceleration scaling applied to both the spine and arm moves.
+      </input_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>

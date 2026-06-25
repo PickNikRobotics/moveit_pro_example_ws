@@ -1,0 +1,111 @@
+<mujoco>
+  <!-- Lidar Front: 2D safety scanner, 91 beams x 3deg = 270deg FOV.
+       lidar_front_base mount tilt is quat="0 -0.92388 0.382683 0" (z points down); this body applies the
+       inverse of that tilt (to level the sensor: z world-up, scan plane horizontal) COMPOSED WITH a +45deg
+       yaw about the (level) z axis. The yaw re-centers the 270deg sweep so that the 90deg blind notch tucks
+       into the back-right chassis corner (the sensor sits at the front-left corner): beam-0 -> base-yaw -90deg
+       (grazing along the front edge), beam-90 -> base-yaw 180deg (grazing along the left edge), and the fan
+       opens outward to the front-left. Without the yaw the fan was centered on +X and swept rearward across
+       the robot's own body, so ~1/4 of the beams self-hit. Net body quat = inv(tilt) * Rot_Z(+45deg)
+       = "0 0.707107 -0.707107 0". Each site still follows the picknik_mujoco_ros convention
+       R_site(i) = Rot_Z(phi + i*3deg) * Rot_Y(+90deg); the +45deg body yaw shifts the effective phi by +45deg.
+       Rangefinders use angle_min=0, so the plugin publishes a z-up lidar_front_ROS frame whose X axis points
+       at beam-0 (rotated with the sites, so the scan stays self-consistent). NOTE: <replicate> is intentionally
+       NOT used (known issue in this pipeline); sites are enumerated explicitly with one <rangefinder> per beam
+       in sensor.xml.
+       See: https://docs.picknik.ai/how_to/configuration_tutorials/create_robot_sim_config/migrate_to_mujoco_config/#simulated-lidar-sensor -->
+  <body name="lidar_front_sensor" pos="0.0 -0.1 0" quat="0 0.707107 -0.707107 0">
+    <inertial mass="0.25" pos="0 0 0" diaginertia="0.0001 0.0001 0.0001" />
+    <site name="lidar_front-0" size="0.01" pos="0 0 0" quat="0.2705980 0.6532815 0.2705980 -0.6532815" />
+    <site name="lidar_front-1" size="0.01" pos="0 0 0" quat="0.2876062 0.6459742 0.2876062 -0.6459742" />
+    <site name="lidar_front-2" size="0.01" pos="0 0 0" quat="0.3044173 0.6382242 0.3044173 -0.6382242" />
+    <site name="lidar_front-3" size="0.01" pos="0 0 0" quat="0.3210198 0.6300368 0.3210198 -0.6300368" />
+    <site name="lidar_front-4" size="0.01" pos="0 0 0" quat="0.3374022 0.6214175 0.3374022 -0.6214175" />
+    <site name="lidar_front-5" size="0.01" pos="0 0 0" quat="0.3535534 0.6123724 0.3535534 -0.6123724" />
+    <site name="lidar_front-6" size="0.01" pos="0 0 0" quat="0.3694623 0.6029076 0.3694623 -0.6029076" />
+    <site name="lidar_front-7" size="0.01" pos="0 0 0" quat="0.3851180 0.5930296 0.3851180 -0.5930296" />
+    <site name="lidar_front-8" size="0.01" pos="0 0 0" quat="0.4005097 0.5827452 0.4005097 -0.5827452" />
+    <site name="lidar_front-9" size="0.01" pos="0 0 0" quat="0.4156269 0.5720614 0.4156269 -0.5720614" />
+    <site name="lidar_front-10" size="0.01" pos="0 0 0" quat="0.4304593 0.5609855 0.4304593 -0.5609855" />
+    <site name="lidar_front-11" size="0.01" pos="0 0 0" quat="0.4449967 0.5495252 0.4449967 -0.5495252" />
+    <site name="lidar_front-12" size="0.01" pos="0 0 0" quat="0.4592291 0.5376882 0.4592291 -0.5376882" />
+    <site name="lidar_front-13" size="0.01" pos="0 0 0" quat="0.4731468 0.5254827 0.4731468 -0.5254827" />
+    <site name="lidar_front-14" size="0.01" pos="0 0 0" quat="0.4867402 0.5129171 0.4867402 -0.5129171" />
+    <site name="lidar_front-15" size="0.01" pos="0 0 0" quat="0.5000000 0.5000000 0.5000000 -0.5000000" />
+    <site name="lidar_front-16" size="0.01" pos="0 0 0" quat="0.5129171 0.4867402 0.5129171 -0.4867402" />
+    <site name="lidar_front-17" size="0.01" pos="0 0 0" quat="0.5254827 0.4731468 0.5254827 -0.4731468" />
+    <site name="lidar_front-18" size="0.01" pos="0 0 0" quat="0.5376882 0.4592291 0.5376882 -0.4592291" />
+    <site name="lidar_front-19" size="0.01" pos="0 0 0" quat="0.5495252 0.4449967 0.5495252 -0.4449967" />
+    <site name="lidar_front-20" size="0.01" pos="0 0 0" quat="0.5609855 0.4304593 0.5609855 -0.4304593" />
+    <site name="lidar_front-21" size="0.01" pos="0 0 0" quat="0.5720614 0.4156269 0.5720614 -0.4156269" />
+    <site name="lidar_front-22" size="0.01" pos="0 0 0" quat="0.5827452 0.4005097 0.5827452 -0.4005097" />
+    <site name="lidar_front-23" size="0.01" pos="0 0 0" quat="0.5930296 0.3851180 0.5930296 -0.3851180" />
+    <site name="lidar_front-24" size="0.01" pos="0 0 0" quat="0.6029076 0.3694623 0.6029076 -0.3694623" />
+    <site name="lidar_front-25" size="0.01" pos="0 0 0" quat="0.6123724 0.3535534 0.6123724 -0.3535534" />
+    <site name="lidar_front-26" size="0.01" pos="0 0 0" quat="0.6214175 0.3374022 0.6214175 -0.3374022" />
+    <site name="lidar_front-27" size="0.01" pos="0 0 0" quat="0.6300368 0.3210198 0.6300368 -0.3210198" />
+    <site name="lidar_front-28" size="0.01" pos="0 0 0" quat="0.6382242 0.3044173 0.6382242 -0.3044173" />
+    <site name="lidar_front-29" size="0.01" pos="0 0 0" quat="0.6459742 0.2876062 0.6459742 -0.2876062" />
+    <site name="lidar_front-30" size="0.01" pos="0 0 0" quat="0.6532815 0.2705980 0.6532815 -0.2705980" />
+    <site name="lidar_front-31" size="0.01" pos="0 0 0" quat="0.6601410 0.2534044 0.6601410 -0.2534044" />
+    <site name="lidar_front-32" size="0.01" pos="0 0 0" quat="0.6665482 0.2360371 0.6665482 -0.2360371" />
+    <site name="lidar_front-33" size="0.01" pos="0 0 0" quat="0.6724985 0.2185080 0.6724985 -0.2185080" />
+    <site name="lidar_front-34" size="0.01" pos="0 0 0" quat="0.6779879 0.2008292 0.6779879 -0.2008292" />
+    <site name="lidar_front-35" size="0.01" pos="0 0 0" quat="0.6830127 0.1830127 0.6830127 -0.1830127" />
+    <site name="lidar_front-36" size="0.01" pos="0 0 0" quat="0.6875694 0.1650708 0.6875694 -0.1650708" />
+    <site name="lidar_front-37" size="0.01" pos="0 0 0" quat="0.6916548 0.1470158 0.6916548 -0.1470158" />
+    <site name="lidar_front-38" size="0.01" pos="0 0 0" quat="0.6952662 0.1288600 0.6952662 -0.1288600" />
+    <site name="lidar_front-39" size="0.01" pos="0 0 0" quat="0.6984011 0.1106159 0.6984011 -0.1106159" />
+    <site name="lidar_front-40" size="0.01" pos="0 0 0" quat="0.7010574 0.0922960 0.7010574 -0.0922960" />
+    <site name="lidar_front-41" size="0.01" pos="0 0 0" quat="0.7032332 0.0739128 0.7032332 -0.0739128" />
+    <site name="lidar_front-42" size="0.01" pos="0 0 0" quat="0.7049270 0.0554790 0.7049270 -0.0554790" />
+    <site name="lidar_front-43" size="0.01" pos="0 0 0" quat="0.7061377 0.0370071 0.7061377 -0.0370071" />
+    <site name="lidar_front-44" size="0.01" pos="0 0 0" quat="0.7068645 0.0185099 0.7068645 -0.0185099" />
+    <site name="lidar_front-45" size="0.01" pos="0 0 0" quat="0.7071068 -0.0000000 0.7071068 0.0000000" />
+    <site name="lidar_front-46" size="0.01" pos="0 0 0" quat="0.7068645 -0.0185099 0.7068645 0.0185099" />
+    <site name="lidar_front-47" size="0.01" pos="0 0 0" quat="0.7061377 -0.0370071 0.7061377 0.0370071" />
+    <site name="lidar_front-48" size="0.01" pos="0 0 0" quat="0.7049270 -0.0554790 0.7049270 0.0554790" />
+    <site name="lidar_front-49" size="0.01" pos="0 0 0" quat="0.7032332 -0.0739128 0.7032332 0.0739128" />
+    <site name="lidar_front-50" size="0.01" pos="0 0 0" quat="0.7010574 -0.0922960 0.7010574 0.0922960" />
+    <site name="lidar_front-51" size="0.01" pos="0 0 0" quat="0.6984011 -0.1106159 0.6984011 0.1106159" />
+    <site name="lidar_front-52" size="0.01" pos="0 0 0" quat="0.6952662 -0.1288600 0.6952662 0.1288600" />
+    <site name="lidar_front-53" size="0.01" pos="0 0 0" quat="0.6916548 -0.1470158 0.6916548 0.1470158" />
+    <site name="lidar_front-54" size="0.01" pos="0 0 0" quat="0.6875694 -0.1650708 0.6875694 0.1650708" />
+    <site name="lidar_front-55" size="0.01" pos="0 0 0" quat="0.6830127 -0.1830127 0.6830127 0.1830127" />
+    <site name="lidar_front-56" size="0.01" pos="0 0 0" quat="0.6779879 -0.2008292 0.6779879 0.2008292" />
+    <site name="lidar_front-57" size="0.01" pos="0 0 0" quat="0.6724985 -0.2185080 0.6724985 0.2185080" />
+    <site name="lidar_front-58" size="0.01" pos="0 0 0" quat="0.6665482 -0.2360371 0.6665482 0.2360371" />
+    <site name="lidar_front-59" size="0.01" pos="0 0 0" quat="0.6601410 -0.2534044 0.6601410 0.2534044" />
+    <site name="lidar_front-60" size="0.01" pos="0 0 0" quat="0.6532815 -0.2705980 0.6532815 0.2705980" />
+    <site name="lidar_front-61" size="0.01" pos="0 0 0" quat="0.6459742 -0.2876062 0.6459742 0.2876062" />
+    <site name="lidar_front-62" size="0.01" pos="0 0 0" quat="0.6382242 -0.3044173 0.6382242 0.3044173" />
+    <site name="lidar_front-63" size="0.01" pos="0 0 0" quat="0.6300368 -0.3210198 0.6300368 0.3210198" />
+    <site name="lidar_front-64" size="0.01" pos="0 0 0" quat="0.6214175 -0.3374022 0.6214175 0.3374022" />
+    <site name="lidar_front-65" size="0.01" pos="0 0 0" quat="0.6123724 -0.3535534 0.6123724 0.3535534" />
+    <site name="lidar_front-66" size="0.01" pos="0 0 0" quat="0.6029076 -0.3694623 0.6029076 0.3694623" />
+    <site name="lidar_front-67" size="0.01" pos="0 0 0" quat="0.5930296 -0.3851180 0.5930296 0.3851180" />
+    <site name="lidar_front-68" size="0.01" pos="0 0 0" quat="0.5827452 -0.4005097 0.5827452 0.4005097" />
+    <site name="lidar_front-69" size="0.01" pos="0 0 0" quat="0.5720614 -0.4156269 0.5720614 0.4156269" />
+    <site name="lidar_front-70" size="0.01" pos="0 0 0" quat="0.5609855 -0.4304593 0.5609855 0.4304593" />
+    <site name="lidar_front-71" size="0.01" pos="0 0 0" quat="0.5495252 -0.4449967 0.5495252 0.4449967" />
+    <site name="lidar_front-72" size="0.01" pos="0 0 0" quat="0.5376882 -0.4592291 0.5376882 0.4592291" />
+    <site name="lidar_front-73" size="0.01" pos="0 0 0" quat="0.5254827 -0.4731468 0.5254827 0.4731468" />
+    <site name="lidar_front-74" size="0.01" pos="0 0 0" quat="0.5129171 -0.4867402 0.5129171 0.4867402" />
+    <site name="lidar_front-75" size="0.01" pos="0 0 0" quat="0.5000000 -0.5000000 0.5000000 0.5000000" />
+    <site name="lidar_front-76" size="0.01" pos="0 0 0" quat="0.4867402 -0.5129171 0.4867402 0.5129171" />
+    <site name="lidar_front-77" size="0.01" pos="0 0 0" quat="0.4731468 -0.5254827 0.4731468 0.5254827" />
+    <site name="lidar_front-78" size="0.01" pos="0 0 0" quat="0.4592291 -0.5376882 0.4592291 0.5376882" />
+    <site name="lidar_front-79" size="0.01" pos="0 0 0" quat="0.4449967 -0.5495252 0.4449967 0.5495252" />
+    <site name="lidar_front-80" size="0.01" pos="0 0 0" quat="0.4304593 -0.5609855 0.4304593 0.5609855" />
+    <site name="lidar_front-81" size="0.01" pos="0 0 0" quat="0.4156269 -0.5720614 0.4156269 0.5720614" />
+    <site name="lidar_front-82" size="0.01" pos="0 0 0" quat="0.4005097 -0.5827452 0.4005097 0.5827452" />
+    <site name="lidar_front-83" size="0.01" pos="0 0 0" quat="0.3851180 -0.5930296 0.3851180 0.5930296" />
+    <site name="lidar_front-84" size="0.01" pos="0 0 0" quat="0.3694623 -0.6029076 0.3694623 0.6029076" />
+    <site name="lidar_front-85" size="0.01" pos="0 0 0" quat="0.3535534 -0.6123724 0.3535534 0.6123724" />
+    <site name="lidar_front-86" size="0.01" pos="0 0 0" quat="0.3374022 -0.6214175 0.3374022 0.6214175" />
+    <site name="lidar_front-87" size="0.01" pos="0 0 0" quat="0.3210198 -0.6300368 0.3210198 0.6300368" />
+    <site name="lidar_front-88" size="0.01" pos="0 0 0" quat="0.3044173 -0.6382242 0.3044173 0.6382242" />
+    <site name="lidar_front-89" size="0.01" pos="0 0 0" quat="0.2876062 -0.6459742 0.2876062 0.6459742" />
+    <site name="lidar_front-90" size="0.01" pos="0 0 0" quat="0.2705980 -0.6532815 0.2705980 0.6532815" />
+  </body>
+</mujoco>

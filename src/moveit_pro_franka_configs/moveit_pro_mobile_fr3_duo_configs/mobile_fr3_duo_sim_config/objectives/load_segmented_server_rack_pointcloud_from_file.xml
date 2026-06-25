@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root BTCPP_format="4" main_tree_to_execute="Load Segmented Server Rack PointCloud from File">
+  <!--//////////-->
+  <BehaviorTree ID="Load Segmented Server Rack PointCloud from File">
+    <Control ID="Sequence">
+      <Action ID="LoadPointCloudFromFile" color="0;0;0" file_path="objectives/right_pointcloud_fragment_20260309181605.pcd" point_cloud="{right_point_cloud_fragment}" package_name="mobile_fr3_duo_sim_config"/>
+      <Action ID="LoadPointCloudFromFile" color="0;0;0" file_path="objectives/left_pointcloud_fragment_20260309181605.pcd" point_cloud="{left_point_cloud_fragment}" package_name="mobile_fr3_duo_sim_config"/>
+      <SubTree ID="CreateVector" _collapsed="true" vector="{point_clouds}"/>
+      <Action ID="PushBackVector" element="{right_point_cloud_fragment}" input_vector="{point_clouds}" output_vector="{point_clouds}"/>
+      <Action ID="PushBackVector" element="{left_point_cloud_fragment}" input_vector="{point_clouds}" output_vector="{point_clouds}"/>
+      <Action ID="MergePointClouds"/>
+      <Decorator ID="Precondition" else="SUCCESS" if="send_to_ui==true">
+        <Action ID="SendPointCloudToUI" point_cloud="{merged_cloud}"/>
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Load Segmented Server Rack PointCloud from File">
+      <MetadataFields>
+        <Metadata runnable="false"/>
+        <Metadata subcategory="Perception - 3D Point Cloud"/>
+      </MetadataFields>
+      <inout_port name="send_to_ui" default="{send_to_ui}" type="bool"/>
+      <inout_port name="merged_cloud" default="{merged_cloud}" type="sensor_msgs::msg::PointCloud2"/>
+    </SubTree>
+  </TreeNodesModel>
+</root>

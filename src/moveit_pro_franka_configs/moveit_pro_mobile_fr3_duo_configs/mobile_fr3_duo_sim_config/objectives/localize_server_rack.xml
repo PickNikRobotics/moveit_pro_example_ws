@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Localize Server Rack">
+  <!--//////////-->
+  <BehaviorTree ID="Localize Server Rack" _description="" _favorite="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree
+        ID="Load Segmented Server Rack PointCloud from File"
+        send_to_ui="{visualize_pointclouds)}"
+      />
+      <SubTree
+        ID="Load Server Rack CAD as Point Cloud"
+        send_to_ui="{visualize_pointclouds)}"
+      />
+      <SubTree
+        ID="Register Server Rack Pointcloud"
+        send_to_ui="{visualize_pointclouds)}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Localize Server Rack">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Application Subtrees" />
+      </MetadataFields>
+      <inout_port
+        name="visualize_pointclouds"
+        default="{visualize_pointclouds)"
+        type="bool"
+      />
+    </SubTree>
+  </TreeNodesModel>
+</root>

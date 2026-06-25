@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Pickup Hard Drive from Holder Subtree"
+>
+  <BehaviorTree
+    ID="Pickup Hard Drive from Holder Subtree"
+    _description=""
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence" _collapsed="false">
+      <Control ID="Sequence" _collapsed="false">
+        <SubTree
+          ID="Close Gripper and Deactivate Weld Constraints"
+          _collapsed="true"
+        />
+        <!--Spine first: command the spine to the waypoint height, wait, then move the
+             (spine-free) left arm to the waypoint. The hardware cannot drive the spine and
+             the arm joints from a single JointTrajectory.-->
+        <SubTree
+          ID="Move to Waypoint Spine First"
+          _collapsed="true"
+          waypoint_name="Observe Hard Drive Holder"
+          joint_group_name="{planning_group_name}"
+          controller_names="left_joint_trajectory_controller"
+          controller_action_server="/left_joint_trajectory_controller/follow_joint_trajectory"
+          execution_pipeline="jtc"
+          acceleration_scale_factor="1.0"
+          velocity_scale_factor="1.0"
+        />
+        <Action
+          ID="WaitForDuration"
+          name="WaitForDuration"
+          delay_duration="2.5"
+        />
+      </Control>
+      <Control ID="Sequence" _collapsed="false">
+        <Control ID="Sequence" _collapsed="false">
+          <SubTree
+            ID="SAM3 Segment Image"
+            _collapsed="true"
+            text_prompt="light green latch"
+            masks2d="{masks2d}"
+            rgb_camera_info="{rgb_camera_info}"
+            confidence_threshold="0.5"
+            mask_count="{mask_count}"
+            point_cloud="{point_cloud}"
+            rgb_image="{rgb_image}"
+          />
+          <Decorator ID="Precondition" else="SUCCESS" if="mask_count==0">
+            <Decorator ID="ForceFailure">
+              <Action
+                ID="LogMessage"
+                log_level="error"
+                message="No masks found"
+              />
+            </Decorator>
+          </Decorator>
+          <Action
+            ID="SendPointCloudToUI"
+            use_latest_transform="false"
+            point_cloud="{point_cloud}"
+            pcd_topic="/pcd_pointcloud_captures"
+          />
+        </Control>
+        <Control ID="Sequence" _collapsed="false">
+          <Action
+            ID="GetMasks3DFromMasks2D"
+            masks3d="{masks3d}"
+            camera_info="{rgb_camera_info}"
+            masks2d="{masks2d}"
+            point_cloud="{point_cloud}"
+          />
+          <SubTree
+            ID="CreateVector"
+            _collapsed="true"
+            vector="{centroid_vector}"
+          />
+          <Decorator
+            ID="ForEach"
+            _collapsed="false"
+            vector_in="{masks3d}"
+            out="{mask3d}"
+            index="{index}"
+          >
+            <Control ID="Sequence" _collapsed="false">
+              <Action
+                ID="GetPointCloudFromMask3D"
+                point_cloud_fragment="{point_cloud_fragment}"
+                mask3d="{mask3d}"
+                point_cloud="{point_cloud}"
+              />
+              <Action
+                ID="GetCentroidFromPointCloud"
+                point_cloud="{point_cloud_fragment}"
+                output_pose="{output_pose}"
+              />
+              <Action ID="ClearSnapshot" name="ClearSnapshot" />
+              <Action
+                ID="WaitForDuration"
+                name="WaitForDuration"
+                delay_duration="1"
+              />
+              <Action
+                ID="SendPointCloudToUI"
+                name="SendPointCloudToUI"
+                use_latest_transform="false"
+                point_cloud="{point_cloud_fragment}"
+                pcd_topic="/pcd_pointcloud_captures"
+              />
+              <SubTree
+                ID="Visualize Pose if True"
+                name="Visualize Pose if True"
+                _collapsed="true"
+                visualize_if_true="true"
+                pose="{output_pose}"
+                marker_name="latch_centroid_pose"
+                marker_size="0.1"
+                marker_text="latch_centroid_pose"
+                marker_lifetime="0.000000"
+              />
+              <Action
+                ID="PushBackVector"
+                element="{output_pose}"
+                input_vector="{centroid_vector}"
+                output_vector="{centroid_vector}"
+              />
+            </Control>
+          </Decorator>
+          <Control ID="IfThenElse" _collapsed="false">
+            <Decorator
+              ID="Precondition"
+              _collapsed="false"
+              else="FAILURE"
+              if="mask_count == 1"
+            >
+              <Action ID="AlwaysSuccess" />
+            </Decorator>
+            <Control ID="Sequence" _collapsed="false">
+              <Action
+                ID="VisualizePose"
+                marker_name="green latch pose"
+                marker_text="green latch pose"
+                pose="{output_pose}"
+                marker_lifetime="0.000000"
+                marker_size="0.100000"
+              />
+            </Control>
+            <Action
+              ID="VisualizePath"
+              path="{centroid_vector}"
+              pose_marker_size="1"
+              show_poses="true"
+              line_color_rgb="0;204;0"
+              marker_name="path"
+              marker_lifetime="0.000000"
+              line_width="0.010000"
+            />
+          </Control>
+        </Control>
+      </Control>
+      <Control ID="Sequence" _collapsed="false">
+        <Action
+          ID="CreateStampedPose"
+          reference_frame="left_grasp_link_extended"
+          stamped_pose="{left_grasp_link_extended_pose}"
+          orientation_xyzw="0.000000;0.000000;0.000000;1.000000"
+          position_xyz="0.000000;0.000000;0.000000"
+        />
+        <Action
+          ID="TransformPoseFrame"
+          output_pose="{left_grasp_link_extended_pose}"
+          input_pose="{left_grasp_link_extended_pose}"
+          target_frame_id="base_link"
+        />
+        <Action
+          ID="TransformPoseFrame"
+          output_pose="{output_pose}"
+          input_pose="{output_pose}"
+          target_frame_id="base_link"
+        />
+        <SubTree
+          ID="Place PoseStamped at other PoseStamped Location"
+          _collapsed="true"
+          posestamped_to_place="{left_grasp_link_extended_pose}"
+          other_posestamped="{output_pose}"
+          resulting_posestamped="{resulting_posestamped}"
+        />
+        <Control ID="IfThenElse">
+          <Decorator
+            ID="Precondition"
+            if="enter_hard_drive_flag==true"
+            else="FAILURE"
+          >
+            <Action ID="AlwaysSuccess" />
+          </Decorator>
+          <Action
+            ID="TransformPose"
+            input_pose="{resulting_posestamped}"
+            output_pose="{pose_grasp_hole}"
+            translation_xyz="0;0.015;0.015"
+            marker_lifetime="0.000000"
+            marker_size="0.100000"
+            marker_text=""
+            visualize_pose="false"
+            quaternion_xyzw="0.000000;0.000000;0.000000;1.000000"
+          />
+          <Control ID="Sequence">
+            <Action
+              ID="TransformPose"
+              input_pose="{resulting_posestamped}"
+              output_pose="{pose_grasp_hole}"
+              translation_xyz="0;0.015;-0.005"
+              marker_lifetime="0.000000"
+              marker_size="0.100000"
+              marker_text=""
+              visualize_pose="false"
+              quaternion_xyzw="0.000000;0.000000;0.000000;1.000000"
+            />
+            <SubTree ID="Set Gripper half" _collapsed="true" />
+          </Control>
+        </Control>
+        <Action
+          ID="VisualizePose"
+          pose="{pose_grasp_hole}"
+          marker_text="pose_grasp_hole"
+          marker_name="pose_grasp_hole"
+          marker_lifetime="0.000000"
+          marker_size="0.100000"
+        />
+      </Control>
+      <Control ID="Sequence">
+        <Action
+          ID="TransformPose"
+          input_pose="{pose_grasp_hole}"
+          output_pose="{approach_grasp}"
+          translation_xyz="0;0;-0.05"
+          marker_lifetime="0.000000"
+          marker_size="0.100000"
+          marker_text=""
+          visualize_pose="false"
+          quaternion_xyzw="0.000000;0.000000;0.000000;1.000000"
+        />
+        <Action
+          ID="VisualizePose"
+          pose="{approach_grasp}"
+          marker_text=""
+          marker_name="pose"
+          marker_lifetime="0.000000"
+          marker_size="0.100000"
+        />
+      </Control>
+      <Control ID="Sequence">
+        <!--Spine first: drop/raise the spine so the spine link matches the grasp height,
+             so the spine-free arm group below can actually reach it. Runtime, pose-dependent.-->
+        <SubTree
+          ID="Move Spine to Pose Height"
+          _collapsed="true"
+          _skipIf="true"
+          target_pose="{pose_grasp_hole}"
+          min_spine_joint_value="-0.05"
+          max_spine_joint_value="0.85"
+          velocity_scale_factor="1.0"
+          acceleration_scale_factor="1.0"
+        />
+        <SubTree
+          ID="Move to Pose with ExecuteTrajectory"
+          _collapsed="false"
+          controller_action_name="/left_joint_trajectory_controller/follow_joint_trajectory"
+          controller_names="left_joint_trajectory_controller"
+          execution_pipeline="jtc"
+          ik_frame="left_grasp_link_extended"
+          max_ik_solutions="8"
+          max_mtc_solutions="0"
+          planning_group_name="left_manipulator_without_spine"
+          require_user_approval="{require_approval}"
+          target_pose="{approach_grasp}"
+          velocity_scale_factor="0.075"
+          acceleration_scale_factor="0.075"
+          trajectory_completion_wait_duration="2"
+          link_padding="0.01"
+        />
+        <SubTree
+          ID="MTC Cartesian Move to Pose"
+          _collapsed="true"
+          target_pose="{pose_grasp_hole}"
+          require_approval="{require_approval}"
+          planning_group_name="left_manipulator_without_spine"
+          velocity_scale_factor="0.01"
+          acceleration_scale_factor="0.01"
+          use_admittance="true"
+          admittance_params_file="admittance_params.yaml"
+          controller_names="left_joint_trajectory_admittance_controller"
+          tip_link="left_grasp_link_extended"
+        />
+        <SubTree ID="Set Gripper half" _collapsed="true" />
+        <SubTree
+          ID="Move along axis"
+          _collapsed="true"
+          axis_frame="left_grasp_link_extended"
+          controller_action_name="/left_joint_trajectory_admittance_controller/follow_joint_trajectory"
+          controller_names="left_joint_trajectory_admittance_controller"
+          execution_pipeline="jtac"
+          max_distance="0.2"
+          min_distance="0.2"
+          planning_group_name="{planning_group_name}"
+          require_user_approval="{require_approval}"
+          z_axis="-1.0"
+          x_axis="0.0"
+          ik_frame="left_grasp_link_extended"
+          link_padding="0.01"
+          velocity_scale_factor="1.0"
+          y_axis="0.0"
+        />
+        <Action ID="WaitForDuration" delay_duration="2.5" />
+      </Control>
+      <SubTree
+        ID="Attach Hard Drive Collision Object to Gripper"
+        _collapsed="true"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Pickup Hard Drive from Holder Subtree">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Application Subtrees" />
+      </MetadataFields>
+      <inout_port name="enter_hard_drive_flag" default="true" type="bool">
+        If true, attempts to enter the hard drive to mate properly. If
+        false, just touches the hard drive and uses MuJoCos weld constraint
+        functionality to attach to the hard drive.
+      </inout_port>
+      <inout_port
+        name="planning_group_name"
+        default="left_manipulator_without_spine"
+        type="std::string"
+      />
+      <inout_port name="require_approval" default="true" type="bool" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

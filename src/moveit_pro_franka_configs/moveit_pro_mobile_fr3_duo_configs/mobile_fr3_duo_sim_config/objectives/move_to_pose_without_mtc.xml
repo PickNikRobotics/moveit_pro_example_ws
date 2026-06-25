@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root BTCPP_format="4" main_tree_to_execute="Move To Pose Without MTC">
+  <!--//////////-->
+  <BehaviorTree ID="Move To Pose Without MTC">
+    <Control ID="Sequence">
+      <SubTree ID="CreateVector" _collapsed="true" vector="{target_poses}"/>
+      <Action ID="PushBackVector" element="{pose}" input_vector="{target_poses}" output_vector="{target_poses}"/>
+      <Action ID="GetCurrentPlanningScene"/>
+      <Action ID="ComputeInverseKinematics" planning_scene_msg="{planning_scene}" planning_group_name="left_manipulator" tip_links="left_grasp_link_extended" solution="{solution}"/>
+      <Action ID="PlanToJointGoal" joint_goal="{solution}" planning_group_name="left_manipulator"/>
+      <Action ID="ValidateTrajectory" planning_group_name="left_manipulator" planning_scene_msg="{planning_scene}"/>
+      <Action ID="SwitchController" activate_controllers="left_joint_trajectory_admittance_controller"/>
+      <Action ID="ExecuteTrajectory" controller_action_name="/left_joint_trajectory_admittance_controller/follow_joint_trajectory" execution_pipeline="jtac"/>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Move To Pose Without MTC">
+      <MetadataFields>
+        <Metadata runnable="false"/>
+        <Metadata subcategory="Motion - Execute"/>
+      </MetadataFields>
+      <inout_port name="pose" default="{pose}" type="geometry_msgs::msg::PoseStamped"/>
+    </SubTree>
+  </TreeNodesModel>
+</root>

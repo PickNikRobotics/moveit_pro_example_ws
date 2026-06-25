@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Move along axis">
+  <BehaviorTree
+    ID="Move along axis"
+    _description="Plan and execute motion along an axis to a Cartesian coordinate pose in a ROS message type, using inverse kinematics."
+  >
+    <Control ID="Sequence">
+      <Action
+        ID="InitializeMTCTask"
+        task_id="move_along_axis"
+        controller_names="{controller_names}"
+        task="{move_along_the_axis_task}"
+        trajectory_monitoring="false"
+        timeout="-1.000000"
+      />
+      <Action ID="SetupMTCCurrentState" task="{move_along_the_axis_task}" />
+      <Action
+        ID="SetupMTCMoveAlongFrameAxis"
+        acceleration_scale="1.000000"
+        max_distance="{max_distance}"
+        min_distance="{min_distance}"
+        planning_group_name="{planning_group_name}"
+        task="{move_along_the_axis_task}"
+        ignore_environment_collisions="true"
+        axis_frame="{axis_frame}"
+        axis_x="{x_axis}"
+        axis_y="{y_axis}"
+        axis_z="{z_axis}"
+        hand_frame="{ik_frame}"
+      />
+      <Action
+        ID="PlanMTCTask"
+        solution="{move_along_the_axis_solution}"
+        task="{move_along_the_axis_task}"
+      />
+      <Decorator
+        ID="Precondition"
+        if="require_user_approval == 'true'"
+        else="SUCCESS"
+      >
+        <SubTree
+          ID="Wait for Trajectory Approval if User Available"
+          solution="{move_along_the_axis_solution}"
+          cartesian_path_links="{ik_frame}"
+        />
+      </Decorator>
+      <SubTree
+        ID="Execute MTC Solution"
+        solution="{move_along_the_axis_solution}"
+        controller_names="{controller_names}"
+        execution_pipeline="{execution_pipeline}"
+        controller_action_name="{controller_action_name}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Move along axis">
+      <MetadataFields>
+        <Metadata subcategory="Motion - Execute" />
+        <Metadata runnable="false" />
+      </MetadataFields>
+      <inout_port name="axis_frame" default="world" />
+      <input_port
+        name="controller_action_name"
+        default="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+      />
+      <input_port
+        name="controller_names"
+        default="joint_trajectory_admittance_controller"
+      />
+      <input_port name="execution_pipeline" default="jtac" />
+      <input_port name="ik_frame" default="left_grasp_link_extended" />
+      <input_port name="link_padding" default="0.01" />
+      <inout_port name="max_distance" default="0.2" />
+      <inout_port name="min_distance" default="0.1" />
+      <input_port name="planning_group_name" default="manipulator" />
+      <input_port name="require_user_approval" default="false" />
+      <input_port name="velocity_scale_factor" default="1.0" />
+      <inout_port name="x_axis" default="1.0" />
+      <inout_port name="y_axis" default="0.0" />
+      <inout_port name="z_axis" default="0.0" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

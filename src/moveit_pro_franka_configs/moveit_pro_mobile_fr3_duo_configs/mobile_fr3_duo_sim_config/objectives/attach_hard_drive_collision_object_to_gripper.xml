@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Attach Hard Drive Collision Object to Gripper"
+>
+  <!--//////////-->
+  <BehaviorTree ID="Attach Hard Drive Collision Object to Gripper">
+    <Control ID="Sequence">
+      <Action
+        ID="CreateStampedPose"
+        reference_frame="left_grasp_link_extended"
+        position_xyz="0;0;-0.065"
+      />
+      <Action
+        ID="AddURDF"
+        urdf_name="hard_drive"
+        urdf_pose="{pose_stamped}"
+        package_name="mobile_fr3_duo_sim_config"
+        urdf_file_path="description/hard_drive.urdf"
+      />
+      <Action
+        ID="AttachURDF"
+        urdf_name="hard_drive"
+        parent_link_name="left_grasp_link_extended"
+        allowed_collision_links="left_fr3v2_leftfinger_attachment;left_fr3v2_rightfinger_attachment;left_fr3v2_leftfinger;left_fr3v2_rightfinger"
+      />
+      <SubTree
+        ID="Set Collisions Between Objects"
+        _collapsed="true"
+        object_names="left_fr3v2_leftfinger_attachment;hard_drive;left_fr3v2_rightfinger_attachment"
+        _skipIf="true"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Attach Hard Drive Collision Object to Gripper">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Application Subtrees" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

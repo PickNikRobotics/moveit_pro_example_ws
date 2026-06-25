@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Load corner Keyframe">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Load corner Keyframe"
+    _description="Reset the MuJoCo simulation to the 'corner' keyframe defined in description/scene.xml (robot at (-9,-9), yaw = pi/2)"
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="root">
+      <Action ID="ClearSnapshot" />
+      <SubTree ID="Reset Planning Scene" _collapsed="true" />
+      <SubTree
+        ID="Close Gripper and Deactivate Weld Constraints"
+        _collapsed="true"
+      />
+      <Decorator ID="ForceSuccess">
+        <SubTree ID="Detach and Remove Collision Object" _collapsed="true" />
+      </Decorator>
+      <Action ID="ResetMujocoKeyframe" keyframe_name="corner" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Load corner Keyframe">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Simulation" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

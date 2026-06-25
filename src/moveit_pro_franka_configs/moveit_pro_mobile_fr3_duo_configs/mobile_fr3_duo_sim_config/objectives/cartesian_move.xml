@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Cartesian Move">
+  <!--//////////-->
+  <BehaviorTree ID="Cartesian Move" _description="" _favorite="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="SwitchController" activate_controllers="{controller_name}" />
+      <Action ID="ResetVector" />
+      <Action
+        ID="PushBackVector"
+        element="{pose}"
+        input_vector="{vector}"
+        output_vector="{vector}"
+      />
+      <Action
+        ID="PlanCartesianPath"
+        path="{vector}"
+        position_only="false"
+        acceleration_scale_factor="{acceleration_scale_factor}"
+        velocity_scale_factor="{velocity_scale_factor}"
+        tip_links="{tip_links}"
+        planning_group_name="{planning_group_name}"
+      />
+      <!-- Gate execution on user approval when require_approval is true. Previews the
+           planned trajectory and waits for approve/deny; otherwise passes through. -->
+      <Decorator ID="Precondition" else="SUCCESS" if="require_approval == true">
+        <SubTree
+          ID="Wait for Joint Trajectory Approval"
+          joint_trajectory_msg="{joint_trajectory_msg}"
+          cartesian_path_links="{tip_links}"
+        />
+      </Decorator>
+      <Action
+        ID="ExecuteTrajectory"
+        controller_action_name="{controller_action_name}"
+        execution_pipeline="{execution_pipeline}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Cartesian Move">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Motion - Execute" />
+      </MetadataFields>
+      <inout_port
+        name="planning_group_name"
+        default="left_manipulator"
+        type="std::string"
+      />
+      <inout_port
+        name="acceleration_scale_factor"
+        default="1.0"
+        type="double"
+      />
+      <inout_port
+        name="controller_action_name"
+        default="/left_joint_trajectory_admittance_controller/follow_joint_trajectory"
+        type="std::string"
+      />
+      <inout_port
+        name="controller_name"
+        default="left_joint_trajectory_admittance_controller"
+        type="std::string"
+      />
+      <inout_port name="execution_pipeline" default="jtac" type="std::string" />
+      <input_port name="require_approval" default="false" type="bool" />
+      <inout_port
+        name="pose"
+        default="{pose}"
+        type="geometry_msgs::msg::PoseStamped"
+      />
+      <inout_port
+        name="tip_links"
+        default="left_grasp_link_extended"
+        type="std::vector&lt;std::string&gt;"
+      />
+      <inout_port name="velocity_scale_factor" default="1.0" type="double" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

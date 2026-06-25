@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Reseat PSU">
+  <BehaviorTree
+    ID="Reseat PSU"
+    _description="Segments the PSU handle using a vision prompt, approaches and grasps the handle with admittance control, pulls the PSU partially out, then re-inserts it."
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="CreateStampedPose"
+        name="This is the approximate PSU pose relative to the localized server rack"
+        reference_frame="world"
+        stamped_pose="{approximate_psu_pose}"
+        orientation_xyzw="0.707; 0.000; 0.000; 0.707"
+        position_xyz="0.075;0.55;0.15"
+      />
+      <SubTree
+        ID="Reseat PSU Subtree"
+        _collapsed="false"
+        require_approval="false"
+        visualize_poses_if_true="false"
+        approximate_psu_pose="{approximate_psu_pose}"
+        planning_group_name="left_manipulator_without_spine"
+        visualize_icp="false"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Reseat PSU">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Applications" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

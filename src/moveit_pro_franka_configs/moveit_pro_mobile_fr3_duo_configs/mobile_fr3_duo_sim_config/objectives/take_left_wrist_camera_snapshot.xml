@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Take Left Wrist Camera Snapshot">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Take Left Wrist Camera Snapshot"
+    _description=""
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="GetPointCloud" topic_name="/left_wrist_camera/points" />
+      <Action ID="SendPointCloudToUI" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Take Left Wrist Camera Snapshot">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Perception - 3D Point Cloud" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

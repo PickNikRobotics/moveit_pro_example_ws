@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Reseat BBU">
+  <!--//////////-->
+  <BehaviorTree ID="Reseat BBU" _description="Segments the BBU grasp points using vision, generates approach and grasp poses, pulls the BBU out with controlled cartesian motions, then reverses the sequence to re-insert it." _favorite="true">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="CreateStampedPose"
+        reference_frame="world"
+        stamped_pose="{approximate_bbu_pose}"
+        name="This is the approximate BBU pose relative to the localized server rack"
+        orientation_xyzw="0.707; 0.000; 0.000; 0.707"
+        position_xyz="0.1;0.55;0.9"
+      />
+      <SubTree
+        ID="Reseat BBU Subtree"
+        _collapsed="false"
+        visualize_poses_if_true="false"
+        planning_group_name="left_manipulator_without_spine"
+        require_approval="false"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Reseat BBU">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Applications" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

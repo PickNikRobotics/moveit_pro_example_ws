@@ -1,0 +1,2043 @@
+<?xml version="1.0" ?>
+<mujoco model="mobile_fr3_duo">
+  <compiler angle="radian" />
+
+  <!-- Visual/collision defaults matching assets/franka_fr3/fr3.xml -->
+  <default>
+    <default class="visual">
+      <geom type="mesh" group="2" contype="0" conaffinity="0" />
+    </default>
+    <default class="collision">
+      <geom type="mesh" group="3" mass="0" density="0" />
+    </default>
+  </default>
+
+  <sensor>
+    <include file="sensor.xml" />
+  </sensor>
+
+  <asset>
+    <!-- FR3 materials matching assets/franka_fr3/fr3.xml -->
+    <material name="black" rgba=".2 .2 .2 1" />
+    <material name="white" rgba="1 1 1 1" />
+    <!-- Panda hand materials matching description/assets/franka_emika_panda/hand.xml (kept separate from FR3) -->
+    <material name="off_white" rgba="0.901961 0.921569 0.929412 1" />
+    <material name="panda_black" rgba="0.25 0.25 0.25 1" />
+    <material name="red" rgba="1 0.072272 0.039546 1" />
+    <material name="gray" rgba="0.863156 0.863156 0.863157 1" />
+    <material name="button_green" rgba="0.102241 0.571125 0.102242 1" />
+    <material name="button_red" rgba="0.520996 0.008023 0.013702 1" />
+    <material name="button_blue" rgba="0.024157 0.445201 0.737911 1" />
+
+    <mesh name="tmrv0_2" file="assets/tmrv0_2.stl" />
+    <mesh name="NANS3_collision" file="assets/NANS3_collision.stl" />
+    <mesh name="franka_spine" file="assets/franka_spine.stl" />
+    <mesh name="fr3_duo_mount" file="assets/fr3_duo_mount.stl" />
+    <mesh name="fr3_duo_cover" file="assets/fr3_duo_cover.stl" />
+
+    <!-- FR3 visual meshes (same files as assets/franka_fr3/fr3.xml) -->
+    <mesh file="assets/franka_fr3/assets/link0_0.obj" />
+    <mesh file="assets/franka_fr3/assets/link0_1.obj" />
+    <mesh file="assets/franka_fr3/assets/link0_2.obj" />
+    <mesh file="assets/franka_fr3/assets/link0_3.obj" />
+    <mesh file="assets/franka_fr3/assets/link0_4.obj" />
+    <mesh file="assets/franka_fr3/assets/link0_5.obj" />
+    <mesh file="assets/franka_fr3/assets/link0_6.obj" />
+    <mesh file="assets/franka_fr3/assets/link1.obj" />
+    <mesh file="assets/franka_fr3/assets/link2.obj" />
+    <mesh file="assets/franka_fr3/assets/link3_0.obj" />
+    <mesh file="assets/franka_fr3/assets/link3_1.obj" />
+    <mesh file="assets/franka_fr3/assets/link4_0.obj" />
+    <mesh file="assets/franka_fr3/assets/link4_1.obj" />
+    <mesh file="assets/franka_fr3/assets/link5_0.obj" />
+    <mesh file="assets/franka_fr3/assets/link5_1.obj" />
+    <mesh file="assets/franka_fr3/assets/link5_2.obj" />
+    <mesh file="assets/franka_fr3/assets/link6_0.obj" />
+    <mesh file="assets/franka_fr3/assets/link6_1.obj" />
+    <mesh file="assets/franka_fr3/assets/link6_2.obj" />
+    <mesh file="assets/franka_fr3/assets/link6_3.obj" />
+    <mesh file="assets/franka_fr3/assets/link6_4.obj" />
+    <mesh file="assets/franka_fr3/assets/link6_5.obj" />
+    <mesh file="assets/franka_fr3/assets/link6_6.obj" />
+    <mesh file="assets/franka_fr3/assets/link6_7.obj" />
+    <mesh file="assets/franka_fr3/assets/link7_0.obj" />
+    <mesh file="assets/franka_fr3/assets/link7_1.obj" />
+    <mesh file="assets/franka_fr3/assets/link7_2.obj" />
+    <mesh file="assets/franka_fr3/assets/link7_3.obj" />
+
+    <!-- FR3 collision meshes (same files as assets/franka_fr3/fr3.xml) -->
+    <mesh name="link0_coll" file="assets/franka_fr3/assets/link0.stl" />
+    <mesh name="link1_coll" file="assets/franka_fr3/assets/link1.stl" />
+    <mesh name="link2_coll" file="assets/franka_fr3/assets/link2.stl" />
+    <mesh name="link3_coll" file="assets/franka_fr3/assets/link3.stl" />
+    <mesh name="link4_coll" file="assets/franka_fr3/assets/link4.stl" />
+    <mesh name="link5_coll" file="assets/franka_fr3/assets/link5.stl" />
+    <mesh name="link6_coll" file="assets/franka_fr3/assets/link6.stl" />
+    <mesh name="link7_coll" file="assets/franka_fr3/assets/link7.stl" />
+
+    <!-- Panda hand meshes (same files as description/assets/franka_emika_panda/hand.xml) -->
+    <mesh name="hand_c" file="assets/franka_emika_panda/assets/hand.stl" />
+    <mesh file="assets/franka_emika_panda/assets/hand_0.obj" />
+    <mesh file="assets/franka_emika_panda/assets/hand_1.obj" />
+    <mesh file="assets/franka_emika_panda/assets/hand_2.obj" />
+    <mesh file="assets/franka_emika_panda/assets/hand_3.obj" />
+    <mesh file="assets/franka_emika_panda/assets/hand_4.obj" />
+    <mesh file="assets/franka_emika_panda/assets/finger_0.obj" />
+    <mesh file="assets/franka_emika_panda/assets/finger_1.obj" />
+
+    <!-- Custom gripper attachment -->
+    <mesh
+            name="gripper_attachment"
+            file="assets/gripper_attachment_slotted.stl"
+        />
+    <mesh
+            name="gripper_attachment_coll_0"
+            file="assets/gripper_attachment_slotted/geometry_0.stl"
+        />
+    <mesh
+            name="gripper_attachment_coll_1"
+            file="assets/gripper_attachment_slotted/geometry_1.stl"
+        />
+    <mesh
+            name="gripper_attachment_coll_2"
+            file="assets/gripper_attachment_slotted/geometry_2.stl"
+        />
+    <mesh
+            name="gripper_attachment_coll_3"
+            file="assets/gripper_attachment_slotted/geometry_3.stl"
+        />
+    <mesh
+            name="gripper_attachment_coll_4"
+            file="assets/gripper_attachment_slotted/geometry_4.stl"
+        />
+    <mesh
+            name="gripper_attachment_coll_5"
+            file="assets/gripper_attachment_slotted/geometry_5.stl"
+        />
+    <mesh
+            name="gripper_attachment_coll_6"
+            file="assets/gripper_attachment_slotted/geometry_6.stl"
+        />
+    <mesh
+            name="gripper_attachment_coll_7"
+            file="assets/gripper_attachment_slotted/geometry_7.stl"
+        />
+    <mesh
+            name="gripper_attachment_coll_8"
+            file="assets/gripper_attachment_slotted/geometry_8.stl"
+        />
+    <mesh
+            name="gripper_attachment_coll_9"
+            file="assets/gripper_attachment_slotted/geometry_9.stl"
+        />
+    <mesh
+            name="gripper_attachment_coll_10"
+            file="assets/gripper_attachment_slotted/geometry_10.stl"
+        />
+    <mesh
+            name="gripper_attachment_coll_11"
+            file="assets/gripper_attachment_slotted/geometry_11.stl"
+        />
+    <mesh
+            name="gripper_attachment_coll_12"
+            file="assets/gripper_attachment_slotted/geometry_12.stl"
+        />
+    <mesh
+            name="gripper_attachment_coll_13"
+            file="assets/gripper_attachment_slotted/geometry_13.stl"
+        />
+  </asset>
+
+  <!-- Match the gripper coupling/actuation semantics of description/assets/franka_emika_panda/hand.xml:
+       - one control input drives both finger slide joints via a fixed tendon
+       - equality constraint keeps finger joints synchronized -->
+  <tendon>
+    <fixed name="left_split">
+      <joint joint="left_fr3v2_finger_joint1" coef="0.5" />
+      <joint joint="left_fr3v2_finger_joint2" coef="0.5" />
+    </fixed>
+    <fixed name="right_split">
+      <joint joint="right_fr3v2_finger_joint1" coef="0.5" />
+      <joint joint="right_fr3v2_finger_joint2" coef="0.5" />
+    </fixed>
+  </tendon>
+
+  <equality>
+    <joint
+            joint1="left_fr3v2_finger_joint1"
+            joint2="left_fr3v2_finger_joint2"
+            solimp="0.95 0.99 0.001"
+            solref="0.005 1"
+        />
+    <joint
+            joint1="right_fr3v2_finger_joint1"
+            joint2="right_fr3v2_finger_joint2"
+            solimp="0.95 0.99 0.001"
+            solref="0.005 1"
+        />
+  </equality>
+
+  <actuator>
+    <!-- Mecanum drive wheels: velocity actuators on each wheel's rolling joint.
+         The picknik_mujoco_ros hardware plugin requires the actuator name to match
+         the controlled joint name. -->
+    <velocity
+            joint="R1_mecanum_FL_wheel_rolling_joint"
+            name="R1_mecanum_FL_wheel_rolling_joint"
+            ctrlrange="-15 15"
+            kv="50"
+        />
+    <velocity
+            joint="R1_mecanum_FR_wheel_rolling_joint"
+            name="R1_mecanum_FR_wheel_rolling_joint"
+            ctrlrange="-15 15"
+            kv="50"
+        />
+    <velocity
+            joint="R1_mecanum_RL_wheel_rolling_joint"
+            name="R1_mecanum_RL_wheel_rolling_joint"
+            ctrlrange="-15 15"
+            kv="50"
+        />
+    <velocity
+            joint="R1_mecanum_RR_wheel_rolling_joint"
+            name="R1_mecanum_RR_wheel_rolling_joint"
+            ctrlrange="-15 15"
+            kv="50"
+        />
+    <position
+            joint="franka_spine_vertical_joint"
+            name="franka_spine_vertical_joint"
+            ctrlrange="-0.08 0.85"
+            kp="4500"
+            forcelimited="false"
+            dampratio="1"
+        />
+    <position
+            name="left_fr3v2_joint1"
+            joint="left_fr3v2_joint1"
+            kp="4500"
+            kv="450"
+            ctrlrange="-2.7437 2.7437"
+        />
+    <position
+            name="left_fr3v2_joint2"
+            joint="left_fr3v2_joint2"
+            kp="4500"
+            kv="450"
+            ctrlrange="-1.7837 1.7837"
+        />
+    <position
+            name="left_fr3v2_joint3"
+            joint="left_fr3v2_joint3"
+            kp="3500"
+            kv="350"
+            ctrlrange="-2.9007 2.9007"
+        />
+    <position
+            name="left_fr3v2_joint4"
+            joint="left_fr3v2_joint4"
+            kp="3500"
+            kv="350"
+            ctrlrange="-3.0421 -0.1518"
+        />
+    <position
+            name="left_fr3v2_joint5"
+            joint="left_fr3v2_joint5"
+            kp="2000"
+            kv="200"
+            ctrlrange="-2.8065 2.8065"
+        />
+    <position
+            name="left_fr3v2_joint6"
+            joint="left_fr3v2_joint6"
+            kp="2000"
+            kv="200"
+            ctrlrange="0.5445 4.5169"
+        />
+    <position
+            name="left_fr3v2_joint7"
+            joint="left_fr3v2_joint7"
+            kp="2000"
+            kv="200"
+            ctrlrange="-3.0159 3.0159"
+        />
+
+    <!-- Grippers: tendon-driven position actuator keeps mimic behavior via fixed tendon + equality -->
+    <position
+            name="left_fr3v2_finger_joint1"
+            tendon="left_split"
+            ctrlrange="0 0.04"
+            forcerange="-1000 1000"
+            kp="1000"
+            kv="50"
+        />
+    <position
+            name="right_fr3v2_joint1"
+            joint="right_fr3v2_joint1"
+            kp="4500"
+            kv="450"
+            ctrlrange="-2.7437 2.7437"
+        />
+    <position
+            name="right_fr3v2_joint2"
+            joint="right_fr3v2_joint2"
+            kp="4500"
+            kv="450"
+            ctrlrange="-1.7837 1.7837"
+        />
+    <position
+            name="right_fr3v2_joint3"
+            joint="right_fr3v2_joint3"
+            kp="3500"
+            kv="350"
+            ctrlrange="-2.9007 2.9007"
+        />
+    <position
+            name="right_fr3v2_joint4"
+            joint="right_fr3v2_joint4"
+            kp="3500"
+            kv="350"
+            ctrlrange="-3.0421 -0.1518"
+        />
+    <position
+            name="right_fr3v2_joint5"
+            joint="right_fr3v2_joint5"
+            kp="2000"
+            kv="200"
+            ctrlrange="-2.8065 2.8065"
+        />
+    <position
+            name="right_fr3v2_joint6"
+            joint="right_fr3v2_joint6"
+            kp="2000"
+            kv="200"
+            ctrlrange="0.5445 4.5169"
+        />
+    <position
+            name="right_fr3v2_joint7"
+            joint="right_fr3v2_joint7"
+            kp="2000"
+            kv="200"
+            ctrlrange="-3.0159 3.0159"
+        />
+
+    <position
+            name="right_fr3v2_finger_joint1"
+            tendon="right_split"
+            ctrlrange="0 0.04"
+            forcerange="-1000 1000"
+            kp="1000"
+            kv="50"
+        />
+</actuator>
+
+<worldbody>
+    <body name="base" gravcomp="0">
+  <!-- TODO(V1): Keep the robot base fixed for simulation stability; revisit free-base/mobile dynamics in V2. -->
+      <!-- Lift the chassis ~26 mm so the mecanum rollers just lightly touch the
+           floor instead of being jammed ~28 mm into it (geometry: roller centers
+           sit ~28 mm below the wheel axis, sphere radius 0.08 m). -->
+      <body name="base_link_reference" pos="0 0 0.026" gravcomp="0">
+        <body name="base_link" gravcomp="0">
+          <!-- 3-DOF planar mobility: mecanum wheels push the chassis via roller-floor
+               friction. linear_x/y damping is kept low so the wheels actually do the
+               driving; yaw damping is a touch higher to suppress jitter. -->
+          <joint name="planar_x" type="slide" axis="1 0 0" damping="0.5"/>
+          <joint name="planar_y" type="slide" axis="0 1 0" damping="0.5"/>
+          <joint name="planar_theta" type="hinge" axis="0 0 1" damping="1.0"/>
+          <body name="hard_drive_holder_wrapper" pos="-0.1 0.225 0.35">
+            <include file="hard_drive_holder.xml" />
+          </body>
+          <inertial
+                        pos="0 0 0.188481"
+                        mass="200.0"
+                        diaginertia="7.149937 12.086337 15.726883"
+                    />
+          <geom type="mesh" rgba="1 1 1 1" mesh="tmrv0_2" name="tmrv0_2" />
+          <body name="base_inertia" gravcomp="0">
+            <inertial
+                            pos="0.006619 -0.00221 0.184355"
+                            quat="2.93233e-05 0.6886 -0.0048197 0.725125"
+                            mass="88.9542"
+                            diaginertia="5.84851 4.16234 3.23852"
+                        />
+          </body>
+          <!-- Mecanum drive wheels (replaces TMR-bogie caster/argo placeholders).
+               Roller spheres use contype=2 conaffinity=4 to collide only with the
+               floor (contype=4 conaffinity=2 in scene.xml), per issue #19028. -->
+          <body
+                        name="mecanum_front_left_holder"
+                        pos="0.3 0.2 0.08"
+                        gravcomp="1"
+                    >
+            <include file="wheel_FL.xml" />
+          </body>
+          <body
+                        name="mecanum_front_right_holder"
+                        pos="0.3 -0.2 0.08"
+                        gravcomp="1"
+                    >
+            <include file="wheel_FR.xml" />
+          </body>
+          <body
+                        name="mecanum_rear_left_holder"
+                        pos="-0.3 0.2 0.08"
+                        gravcomp="1"
+                    >
+            <include file="wheel_RL.xml" />
+          </body>
+          <body
+                        name="mecanum_rear_right_holder"
+                        pos="-0.3 -0.2 0.08"
+                        gravcomp="1"
+                    >
+            <include file="wheel_RR.xml" />
+          </body>
+          <body
+                        name="lidar_front_base"
+                        pos="0.3275 0.2175 0.19065"
+                        quat="0 -0.92388 0.382683 0"
+                        gravcomp="1"
+                    >
+            <body name="lidar_front" gravcomp="1">
+              <geom
+                                pos="0 0.07615 -0.016"
+                                quat="0.707107 0 0 -0.707107"
+                                type="mesh"
+                                rgba="0 0 0 1"
+                                mesh="NANS3_collision"
+                                name="NANS3_collision"
+                            />
+            </body>
+            <include file="lidar_front.xml" />
+          </body>
+          <body
+                        name="lidar_front_inertia"
+                        pos="0.3275 0.2175 0.19065"
+                        gravcomp="1"
+                    >
+            <inertial
+                            pos="-4.2e-05 -0.000171 0.017345"
+                            quat="0.205467 0.682861 -0.189903 0.674849"
+                            mass="0.591688"
+                            diaginertia="0.00082434 0.000714723 0.000708699"
+                        />
+          </body>
+          <body
+                        name="lidar_rear_base"
+                        pos="-0.3275 -0.2175 0.19065"
+                        quat="0 -0.382683 -0.92388 0"
+                        gravcomp="1"
+                    >
+            <body name="lidar_rear" gravcomp="1">
+              <geom
+                                pos="0 0.07615 -0.016"
+                                quat="0.707107 0 0 -0.707107"
+                                type="mesh"
+                                rgba="0 0 0 1"
+                                mesh="NANS3_collision"
+                                name="NANS3_collision2"
+                            />
+            </body>
+            <include file="lidar_rear.xml" />
+          </body>
+          <body
+                        name="lidar_rear_inertia"
+                        pos="-0.3275 -0.2175 0.19065"
+                        gravcomp="1"
+                    >
+            <inertial
+                            pos="4.2e-05 0.000171 0.017345"
+                            quat="0.196009 0.674656 -0.199972 0.682957"
+                            mass="0.591688"
+                            diaginertia="0.000824292 0.000714784 0.000708686"
+                        />
+          </body>
+          <body
+                        name="front_mointing_point"
+                        pos="0.380705 0 0.2345"
+                        quat="0 1 0 0"
+                        gravcomp="1"
+                    />
+          <body
+                        name="rear_mointing_point"
+                        pos="-0.380705 0 0.2345"
+                        quat="0 0 1 0"
+                        gravcomp="1"
+                    />
+          <body
+                        name="right_mointing_point"
+                        pos="0 0.272712 0.1145"
+                        quat="0 0.707107 0.707107 0"
+                        gravcomp="1"
+                    />
+          <body
+                        name="left_mointing_point"
+                        pos="0 -0.272712 0.1145"
+                        quat="0 0.707107 -0.707107 0"
+                        gravcomp="1"
+                    />
+
+          <!-- <body name="camera_front" pos="0.4 0 0.22" euler="1.57 -1.57 0">
+            <site name="camera_front_optical_frame" euler="0 0 1.57079" />
+            <camera
+                            name="camera_front"
+                            pos="0 0 0"
+                            euler="0 0 0"
+                            fovy="58"
+                            mode="fixed"
+                            resolution="640 480"
+                        />
+          </body>
+
+          <body name="camera_rear" pos="-0.4 0 0.22" euler="1.57 1.57 0">
+            <site name="camera_rear_optical_frame" euler="0 0 1.57079" />
+            <camera
+                            name="camera_rear"
+                            pos="0 0 0"
+                            euler="0 0 0"
+                            fovy="58"
+                            mode="fixed"
+                            resolution="640 480"
+                        />
+          </body>
+
+          <body name="camera_left" pos="0.0 0.28 0.1" euler="1.57 0 0">
+            <site name="camera_left_optical_frame" euler="0 0 1.57079" />
+            <camera
+                            name="camera_left"
+                            pos="0 0 0"
+                            euler="0 0 0"
+                            fovy="58"
+                            mode="fixed"
+                            resolution="640 480"
+                        />
+          </body>
+
+          <body name="camera_right" pos="0.0 -0.28 0.1" euler="-1.57 0 3.14">
+            <site name="camera_right_optical_frame" euler="0 0 1.57079" />
+            <camera
+                            name="camera_right"
+                            pos="0 0 0"
+                            euler="0 0 0"
+                            fovy="58"
+                            mode="fixed"
+                            resolution="640 480"
+                        />
+          </body> -->
+
+          <site name="imu_site" pos="0 0 0" size="0.01" rgba="0 1 0 1" />
+
+          <body name="franka_spine" pos="0.138289 0 0.35" gravcomp="1">
+            <inertial pos="0.042358 0.000378 0.495198" quat="0.998751 -0.000119517 -0.0484248 -0.0123402" mass="21.9091" diaginertia="3.36815 3.32454 0.252332"/>
+            <geom name="franka_spine" type="mesh" mesh="franka_spine"/>
+            <body name="franka_spine_mounting_point" pos="0.266711 0 0.1" gravcomp="1">
+              <inertial pos="0 0 0" mass="0.864" diaginertia="0.0011808 0.0014976 0.0017568"/>
+              <joint name="franka_spine_vertical_joint" pos="0 0 0" axis="0 0 1" type="slide" range="-0.08 0.85" actuatorfrcrange="-100 100"/>
+              <body name="fr3_duo_mount_origin" gravcomp="1">
+                <!-- <body name="camera_head" pos="0.05 -0.02 0.375" euler="0.0 -0.715585 -1.57">
+                  <site name="camera_head_optical_frame" euler="0 0 1.57079"/>
+                  <camera 
+                    name="camera_head"
+                    pos="0 0 0"
+                    euler="0 0 0"
+                    fovy="58"
+                    mode="fixed"
+                    resolution="640 480"
+                  />
+                </body> -->
+                <inertial pos="-0.011817 -5e-05 0.044431" quat="0.666904 0.66701 0.234963 -0.234796" mass="4.09385" diaginertia="0.0236957 0.0204768 0.0164193"/>
+                <geom type="mesh" mesh="fr3_duo_mount" name="fr3_duo_mount"/>
+                <geom pos="0 0 0.068" quat="1 0 0 0" type="mesh" mesh="fr3_duo_cover" name="fr3_duo_cover"/>
+                <body name="left_base" pos="0.0369 0.05018 0.050885" quat="0.865807 -0.436878 0.0222879 -0.242939" gravcomp="1">
+                  <body name="left_fr3v2_link0" gravcomp="1">
+                    <inertial
+                                            pos="-0.0172 0.0004 0.0745"
+                                            quat="0.661377 -0.250161 -0.250161 0.661377"
+                                            mass="2.3966"
+                                            diaginertia="0.0115 0.0107656 0.00673444"
+                                        />
+                    <geom mesh="link0_0" material="black" class="visual" />
+                    <geom mesh="link0_1" material="white" class="visual" />
+                    <geom mesh="link0_2" material="white" class="visual" />
+                    <geom mesh="link0_3" material="white" class="visual" />
+                    <geom mesh="link0_4" material="white" class="visual" />
+                    <geom mesh="link0_5" material="red" class="visual" />
+                    <geom mesh="link0_6" material="black" class="visual" />
+                    <geom
+                                            name="left_fr3v2_link0_collision"
+                                            mesh="link0_coll"
+                                            class="collision"
+                                        />
+                    <body
+                                            name="left_fr3v2_link0_accelerometer_top"
+                                            pos="0 0 0.05"
+                                            quat="1.32679e-06 1 0 0"
+                                            gravcomp="1"
+                                        />
+                    <body
+                                            name="left_fr3v2_link0_accelerometer_bottom"
+                                            pos="0 0 0.06"
+                                            gravcomp="1"
+                                        />
+                    <body name="left_fr3v2_link1" pos="0 0 0.333" gravcomp="1">
+                      <inertial
+                                                pos="4.128e-07 -0.0181251 -0.0386036"
+                                                quat="0.998098 -0.0605364 0.00380499 0.0110109"
+                                                mass="2.92747"
+                                                diaginertia="0.0239286 0.0227246 0.00610634"
+                                            />
+                      <joint
+                                                name="left_fr3v2_joint1"
+                                                pos="0 0 0"
+                                                axis="0 0 1"
+                                                range="-2.7437 2.7437"
+                                                actuatorfrcrange="-87 87"
+                                                damping="0.21"
+                                                armature="0.195"
+                                                frictionloss="1.137"
+                                            />
+                      <geom
+                                                name="left_fr3v2_link1_collision"
+                                                mesh="link1_coll"
+                                                class="collision"
+                                            />
+                      <geom mesh="link1" material="white" class="visual" />
+                      <body
+                                                name="left_fr3v2_link1_accelerometer_top"
+                                                pos="0 -0.1 0"
+                                                quat="0.707105 0.707108 0 0"
+                                                gravcomp="1"
+                                            />
+                      <body
+                                                name="left_fr3v2_link1_accelerometer_bottom"
+                                                pos="0 -0.09 0"
+                                                quat="0.707105 -0.707108 0 0"
+                                                gravcomp="1"
+                                            />
+                      <body
+                                                name="left_fr3v2_link2"
+                                                quat="0.707107 -0.707107 0 0"
+                                                gravcomp="1"
+                                            >
+                        <inertial
+                                                    pos="0.00318289 -0.0743222 0.00881461"
+                                                    quat="0.502599 0.584437 -0.465998 0.434366"
+                                                    mass="2.93554"
+                                                    diaginertia="0.0629567 0.0411924 0.0246371"
+                                                />
+                        <joint
+                                                    name="left_fr3v2_joint2"
+                                                    pos="0 0 0"
+                                                    axis="0 0 1"
+                                                    range="-1.7837 1.7837"
+                                                    actuatorfrcrange="-87 87"
+                                                    damping="0.21"
+                                                    armature="0.195"
+                                                    frictionloss="1.137"
+                                                />
+                        <geom
+                                                    name="left_fr3v2_link2_collision"
+                                                    mesh="link2_coll"
+                                                    class="collision"
+                                                />
+                        <geom mesh="link2" material="white" class="visual" />
+                        <body
+                                                    name="left_fr3v2_link2_accelerometer_top"
+                                                    pos="0 -0.13 0"
+                                                    quat="0.707105 -0.707108 0 0"
+                                                    gravcomp="1"
+                                                />
+                        <body
+                                                    name="left_fr3v2_link2_accelerometer_bottom"
+                                                    pos="0 -0.14 0"
+                                                    quat="0.707105 0.707108 0 0"
+                                                    gravcomp="1"
+                                                />
+                        <body
+                                                    name="left_fr3v2_link3"
+                                                    pos="0 -0.316 0"
+                                                    quat="0.707107 0.707107 0 0"
+                                                    gravcomp="1"
+                                                >
+                          <inertial
+                                                        pos="0.0407016 -0.00482006 -0.0289731"
+                                                        quat="0.921025 -0.244161 0.155272 0.260745"
+                                                        mass="2.2449"
+                                                        diaginertia="0.0267409 0.0189869 0.0171587"
+                                                    />
+                          <joint
+                                                        name="left_fr3v2_joint3"
+                                                        pos="0 0 0"
+                                                        axis="0 0 1"
+                                                        range="-2.9007 2.9007"
+                                                        actuatorfrcrange="-87 87"
+                                                        damping="0.21"
+                                                        armature="0.195"
+                                                        frictionloss="1.137"
+                                                    />
+                          <geom
+                                                        mesh="link3_0"
+                                                        material="white"
+                                                        class="visual"
+                                                    />
+                          <geom
+                                                        mesh="link3_1"
+                                                        material="black"
+                                                        class="visual"
+                                                    />
+                          <geom
+                                                        name="left_fr3v2_link3_collision"
+                                                        mesh="link3_coll"
+                                                        class="collision"
+                                                    />
+                          <body
+                                                        name="left_fr3v2_link3_accelerometer_top"
+                                                        pos="0.0825 0.05 0"
+                                                        quat="0.707105 -0.707108 0 0"
+                                                        gravcomp="1"
+                                                    />
+                          <body
+                                                        name="left_fr3v2_link3_accelerometer_bottom"
+                                                        pos="0.0825 0.04 0"
+                                                        quat="0.707105 0.707108 0 0"
+                                                        gravcomp="1"
+                                                    />
+                          <body
+                                                        name="left_fr3v2_link4"
+                                                        pos="0.0825 0 0"
+                                                        quat="0.707107 0.707107 0 0"
+                                                        gravcomp="1"
+                                                    >
+                            <inertial
+                                                            pos="-0.0459101 0.0630493 -0.00851879"
+                                                            quat="0.438018 0.803311 0.00937812 0.403414"
+                                                            mass="2.6156"
+                                                            diaginertia="0.05139 0.0372717 0.0160047"
+                                                        />
+                            <joint
+                                                            name="left_fr3v2_joint4"
+                                                            pos="0 0 0"
+                                                            axis="0 0 1"
+                                                            range="-3.0421 -0.1518"
+                                                            actuatorfrcrange="-87 87"
+                                                            damping="0.21"
+                                                            armature="0.195"
+                                                            frictionloss="1.137"
+                                                        />
+                            <geom
+                                                            mesh="link4_0"
+                                                            material="white"
+                                                            class="visual"
+                                                        />
+                            <geom
+                                                            mesh="link4_1"
+                                                            material="black"
+                                                            class="visual"
+                                                        />
+                            <geom
+                                                            name="left_fr3v2_link4_collision"
+                                                            mesh="link4_coll"
+                                                            class="collision"
+                                                        />
+                            <body
+                                                            name="left_fr3v2_link4_accelerometer_top"
+                                                            pos="-0.0825 0.05 0"
+                                                            quat="0.707105 0.707108 0 0"
+                                                            gravcomp="1"
+                                                        />
+                            <body
+                                                            name="left_fr3v2_link4_accelerometer_bottom"
+                                                            pos="-0.0825 0.06 0"
+                                                            quat="0.707105 -0.707108 0 0"
+                                                            gravcomp="1"
+                                                        />
+                            <body
+                                                            name="left_fr3v2_link5"
+                                                            pos="-0.0825 0.384 0"
+                                                            quat="0.707107 -0.707107 0 0"
+                                                            gravcomp="1"
+                                                        >
+                              <inertial
+                                                                pos="-0.00160396 0.0292536 -0.0972966"
+                                                                quat="0.919031 0.125604 0.0751531 -0.366003"
+                                                                mass="2.32712"
+                                                                diaginertia="0.0579335 0.0449144 0.0130634"
+                                                            />
+                              <joint
+                                                                name="left_fr3v2_joint5"
+                                                                pos="0 0 0"
+                                                                axis="0 0 1"
+                                                                range="-2.8065 2.8065"
+                                                                actuatorfrcrange="-12 12"
+                                                                damping="0.21"
+                                                                armature="0.074"
+                                                                frictionloss="0.763"
+                                                            />
+                              <geom
+                                                                mesh="link5_0"
+                                                                material="white"
+                                                                class="visual"
+                                                            />
+                              <geom
+                                                                mesh="link5_1"
+                                                                material="white"
+                                                                class="visual"
+                                                            />
+                              <geom
+                                                                mesh="link5_2"
+                                                                material="black"
+                                                                class="visual"
+                                                            />
+                              <geom
+                                                                name="left_fr3v2_link5_collision"
+                                                                mesh="link5_coll"
+                                                                class="collision"
+                                                            />
+                              <body
+                                                                name="left_fr3v2_link5_accelerometer_top"
+                                                                pos="0 0.11 0"
+                                                                quat="0.707105 -0.707108 0 0"
+                                                                gravcomp="1"
+                                                            />
+                              <body
+                                                                name="left_fr3v2_link5_accelerometer_bottom"
+                                                                pos="0 0.1 0"
+                                                                quat="0.707105 0.707108 0 0"
+                                                                gravcomp="1"
+                                                            />
+                              <body
+                                                                name="left_fr3v2_link6"
+                                                                quat="0.707107 0.707107 0 0"
+                                                                gravcomp="1"
+                                                            >
+                                <inertial
+                                                                    pos="0.0597131 -0.0410295 -0.0101693"
+                                                                    quat="0.621301 0.552665 0.510011 0.220081"
+                                                                    mass="1.81704"
+                                                                    diaginertia="0.0175039 0.0161123 0.00193529"
+                                                                />
+                                <joint
+                                                                    name="left_fr3v2_joint6"
+                                                                    pos="0 0 0"
+                                                                    axis="0 0 1"
+                                                                    range="0.5445 4.5169"
+                                                                    actuatorfrcrange="-12 12"
+                                                                    damping="0.21"
+                                                                    armature="0.074"
+                                                                    frictionloss="0.44"
+                                                                />
+                                <geom
+                                                                    mesh="link6_0"
+                                                                    material="button_green"
+                                                                    class="visual"
+                                                                />
+                                <geom
+                                                                    mesh="link6_1"
+                                                                    material="white"
+                                                                    class="visual"
+                                                                />
+                                <geom
+                                                                    mesh="link6_2"
+                                                                    material="white"
+                                                                    class="visual"
+                                                                />
+                                <geom
+                                                                    mesh="link6_3"
+                                                                    material="gray"
+                                                                    class="visual"
+                                                                />
+                                <geom
+                                                                    mesh="link6_4"
+                                                                    material="button_red"
+                                                                    class="visual"
+                                                                />
+                                <geom
+                                                                    mesh="link6_5"
+                                                                    material="white"
+                                                                    class="visual"
+                                                                />
+                                <geom
+                                                                    mesh="link6_6"
+                                                                    material="black"
+                                                                    class="visual"
+                                                                />
+                                <geom
+                                                                    mesh="link6_7"
+                                                                    material="button_blue"
+                                                                    class="visual"
+                                                                />
+                                <geom
+                                                                    name="left_fr3v2_link6_collision"
+                                                                    mesh="link6_coll"
+                                                                    class="collision"
+                                                                />
+                                <body
+                                                                    name="left_fr3v2_link7"
+                                                                    pos="0.088 0 0"
+                                                                    quat="0.707107 0.707107 0 0"
+                                                                    gravcomp="1"
+                                                                >
+                                  <inertial
+                                                                        pos="0.00452258 0.00862619 -0.0161633"
+                                                                        quat="0.727579 0.0978688 -0.24906 0.63168"
+                                                                        mass="0.627143"
+                                                                        diaginertia="0.000223836 0.000223642 5.64132e-07"
+                                                                    />
+                                  <joint
+                                                                        name="left_fr3v2_joint7"
+                                                                        pos="0 0 0"
+                                                                        axis="0 0 1"
+                                                                        range="-3.0159 3.0159"
+                                                                        actuatorfrcrange="-12 12"
+                                                                        damping="0.21"
+                                                                        armature="0.074"
+                                                                        frictionloss="0.248"
+                                                                    />
+                                  <geom
+                                                                        mesh="link7_0"
+                                                                        material="black"
+                                                                        class="visual"
+                                                                    />
+                                  <geom
+                                                                        mesh="link7_1"
+                                                                        material="white"
+                                                                        class="visual"
+                                                                    />
+                                  <geom
+                                                                        mesh="link7_2"
+                                                                        material="white"
+                                                                        class="visual"
+                                                                    />
+                                  <geom
+                                                                        mesh="link7_3"
+                                                                        material="black"
+                                                                        class="visual"
+                                                                    />
+                                  <geom
+                                                                        name="left_fr3v2_link7_collision"
+                                                                        mesh="link7_coll"
+                                                                        class="collision"
+                                                                    />
+                                  <body
+                                                                        name="left_fr3v2_link8"
+                                                                        pos="0 0 0.107"
+                                                                        gravcomp="1"
+                                                                    >
+                                    <site
+                                                                            name="left_tcp_fts_sensor"
+                                                                            size="0.01"
+                                                                            pos="0 0 0"
+                                                                        />
+                                    <body
+                                                                            name="left_fr3v2_hand"
+                                                                            quat="0.923879 0 0 -0.382684"
+                                                                            gravcomp="1"
+                                                                        >
+                                      <site
+                                                                                name="left_wrist_camera_optical_frame"
+                                                                                pos="0.04 0 0.05"
+                                                                                size="0.004"
+                                                                                euler="0 0 1.57079"
+                                                                            />
+                                      <!-- <camera
+                                        name="left_wrist_camera"
+                                        pos="0.04 0 0.05"
+                                        euler="0 3.14159 1.57079"
+                                        fovy="58"
+                                        mode="fixed"
+                                        resolution="640 480"
+                                      /> -->
+                                      <inertial
+                                                                                pos="-3.76e-05 0.0119128 0.020726"
+                                                                                quat="0.702181 0.711999 0 0"
+                                                                                mass="0.6544"
+                                                                                diaginertia="0.00186 0.00174028 0.000299722"
+                                                                            />
+                                      <geom
+                                                                                mesh="hand_0"
+                                                                                material="off_white"
+                                                                                class="visual"
+                                                                            />
+                                      <geom
+                                                                                mesh="hand_1"
+                                                                                material="panda_black"
+                                                                                class="visual"
+                                                                            />
+                                      <geom
+                                                                                mesh="hand_2"
+                                                                                material="panda_black"
+                                                                                class="visual"
+                                                                            />
+                                      <geom
+                                                                                mesh="hand_3"
+                                                                                material="white"
+                                                                                class="visual"
+                                                                            />
+                                      <geom
+                                                                                mesh="hand_4"
+                                                                                material="off_white"
+                                                                                class="visual"
+                                                                            />
+                                      <geom
+                                                                                name="left_fr3v2_hand_collision"
+                                                                                mesh="hand_c"
+                                                                                class="collision"
+                                                                            />
+                                      <body
+                                                                                name="left_fr3v2_hand_tcp"
+                                                                                pos="0 0 0.1034"
+                                                                                gravcomp="1"
+                                                                            >
+                                        <body
+                                                                                    name="left_grasp_link"
+                                                                                    quat="0.707105 0 0 -0.707108"
+                                                                                    gravcomp="1"
+                                                                                />
+                                      </body>
+                                      <body
+                                                                                name="left_fr3v2_leftfinger"
+                                                                                pos="0 0 0.0584"
+                                                                                gravcomp="1"
+                                                                            >
+                                        <inertial
+                                                                                    pos="0 0.015285 0.0219675"
+                                                                                    quat="0.705067 -0.0536699 0.0536699 0.705067"
+                                                                                    mass="0.0291"
+                                                                                    diaginertia="8.69232e-06 8.49e-06 1.60768e-06"
+                                                                                />
+                                        <joint
+                                                                                    name="left_fr3v2_finger_joint1"
+                                                                                    pos="0 0 0"
+                                                                                    axis="0 1 0"
+                                                                                    type="slide"
+                                                                                    range="0 0.04"
+                                                                                    actuatorfrcrange="-1000 1000"
+                                                                                    damping="0.5"
+                                                                                />
+                                        <geom
+                                                                                    mesh="finger_0"
+                                                                                    material="off_white"
+                                                                                    class="visual"
+                                                                                />
+                                        <geom
+                                                                                    mesh="finger_1"
+                                                                                    material="panda_black"
+                                                                                    class="visual"
+                                                                                />
+                                        <geom
+                                                                                    mesh="finger_0"
+                                                                                    class="collision"
+                                                                                />
+                                        <geom
+                                                                                    class="collision"
+                                                                                    type="box"
+                                                                                    size="0.0085 0.004 0.0085"
+                                                                                    pos="0 0.0055 0.0445"
+                                                                                />
+                                        <geom
+                                                                                    class="collision"
+                                                                                    type="box"
+                                                                                    size="0.003 0.002 0.003"
+                                                                                    pos="0.0055 0.002 0.05"
+                                                                                />
+                                        <geom
+                                                                                    class="collision"
+                                                                                    type="box"
+                                                                                    size="0.003 0.002 0.003"
+                                                                                    pos="-0.0055 0.002 0.05"
+                                                                                />
+                                        <geom
+                                                                                    class="collision"
+                                                                                    type="box"
+                                                                                    size="0.003 0.002 0.0035"
+                                                                                    pos="0.0055 0.002 0.0395"
+                                                                                />
+                                        <geom
+                                                                                    class="collision"
+                                                                                    type="box"
+                                                                                    size="0.003 0.002 0.0035"
+                                                                                    pos="-0.0055 0.002 0.0395"
+                                                                                />
+                                        <body
+                                                                                    name="left_fr3v2_leftfinger_attachment"
+                                                                                    pos="-0.00 0.005 0.045"
+                                                                                    euler="3.14159 0 -1.57079"
+                                                                                    gravcomp="1"
+                                                                                >
+                                          <site
+                                                                                        name="suction_cup_left_gripper_left_fingertip"
+                                                                                        pos="0 0 0"
+                                                                                        size="0.004"
+                                                                                        rgba="0 0.5 1 1"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment"
+                                                                                        class="visual"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_0"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_1"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_2"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_3"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_4"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_5"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_6"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_7"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_8"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_9"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_10"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_11"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_12"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_13"
+                                                                                        class="collision"
+                                                                                    />
+<!--                                           <geom mesh="gripper_attachment_coll_14" class="collision" />
+                                          <geom mesh="gripper_attachment_coll_15" class="collision" /> -->
+                                        </body>
+                                      </body>
+                                      <body
+                                                                                name="left_fr3v2_rightfinger"
+                                                                                pos="0 0 0.0584"
+                                                                                quat="0 0 0 1"
+                                                                                gravcomp="1"
+                                                                            >
+                                        <inertial
+                                                                                    pos="0 0.015285 0.0219675"
+                                                                                    quat="0.705067 -0.0536699 0.0536699 0.705067"
+                                                                                    mass="0.0291"
+                                                                                    diaginertia="8.69232e-06 8.49e-06 1.60768e-06"
+                                                                                />
+                                        <joint
+                                                                                    name="left_fr3v2_finger_joint2"
+                                                                                    pos="0 0 0"
+                                                                                    axis="0 1 0"
+                                                                                    type="slide"
+                                                                                    range="0 0.04"
+                                                                                    actuatorfrcrange="-100 100"
+                                                                                    damping="0.5"
+                                                                                />
+                                        <geom
+                                                                                    mesh="finger_0"
+                                                                                    material="off_white"
+                                                                                    class="visual"
+                                                                                />
+                                        <geom
+                                                                                    mesh="finger_1"
+                                                                                    material="panda_black"
+                                                                                    class="visual"
+                                                                                />
+                                        <geom
+                                                                                    mesh="finger_0"
+                                                                                    class="collision"
+                                                                                />
+                                        <geom
+                                                                                    class="collision"
+                                                                                    type="box"
+                                                                                    size="0.0085 0.004 0.0085"
+                                                                                    pos="0 0.0055 0.0445"
+                                                                                />
+                                        <geom
+                                                                                    class="collision"
+                                                                                    type="box"
+                                                                                    size="0.003 0.002 0.003"
+                                                                                    pos="0.0055 0.002 0.05"
+                                                                                />
+                                        <geom
+                                                                                    class="collision"
+                                                                                    type="box"
+                                                                                    size="0.003 0.002 0.003"
+                                                                                    pos="-0.0055 0.002 0.05"
+                                                                                />
+                                        <geom
+                                                                                    class="collision"
+                                                                                    type="box"
+                                                                                    size="0.003 0.002 0.0035"
+                                                                                    pos="0.0055 0.002 0.0395"
+                                                                                />
+                                        <geom
+                                                                                    class="collision"
+                                                                                    type="box"
+                                                                                    size="0.003 0.002 0.0035"
+                                                                                    pos="-0.0055 0.002 0.0395"
+                                                                                />
+                                        <body
+                                                                                    name="left_fr3v2_rightfinger_attachment"
+                                                                                    pos="-0.00 0.005 0.045"
+                                                                                    euler="3.14159 0 -1.57079"
+                                                                                    gravcomp="1"
+                                                                                >
+                                          <site
+                                                                                        name="suction_cup_left_gripper_right_fingertip"
+                                                                                        pos="0 0 0"
+                                                                                        size="0.004"
+                                                                                        rgba="0 0.5 1 1"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment"
+                                                                                        class="visual"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_0"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_1"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_2"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_3"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_4"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_5"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_6"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_7"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_8"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_9"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_10"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_10"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_11"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_12"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_13"
+                                                                                        class="collision"
+                                                                                    />
+                                        </body>
+                                      </body>
+                                    </body>
+                                  </body>
+                                </body>
+                              </body>
+                            </body>
+                          </body>
+                        </body>
+                      </body>
+                    </body>
+                  </body>
+                </body>
+                <body
+                                    name="right_base"
+                                    pos="0.0369 -0.05018 0.050885"
+                                    quat="0.865807 0.436878 0.0222879 0.242939"
+                                    gravcomp="1"
+                                >
+                  <body name="right_fr3v2_link0" gravcomp="1">
+                    <inertial
+                                            pos="-0.0172 0.0004 0.0745"
+                                            quat="0.661377 -0.250161 -0.250161 0.661377"
+                                            mass="2.3966"
+                                            diaginertia="0.0115 0.0107656 0.00673444"
+                                        />
+                    <geom mesh="link0_0" material="black" class="visual" />
+                    <geom mesh="link0_1" material="white" class="visual" />
+                    <geom mesh="link0_2" material="white" class="visual" />
+                    <geom mesh="link0_3" material="white" class="visual" />
+                    <geom mesh="link0_4" material="white" class="visual" />
+                    <geom mesh="link0_5" material="red" class="visual" />
+                    <geom mesh="link0_6" material="black" class="visual" />
+                    <geom
+                                            name="right_fr3v2_link0_collision"
+                                            mesh="link0_coll"
+                                            class="collision"
+                                        />
+                    <body
+                                            name="right_fr3v2_link0_accelerometer_top"
+                                            pos="0 0 0.05"
+                                            quat="1.32679e-06 1 0 0"
+                                            gravcomp="1"
+                                        />
+                    <body
+                                            name="right_fr3v2_link0_accelerometer_bottom"
+                                            pos="0 0 0.06"
+                                            gravcomp="1"
+                                        />
+                    <body name="right_fr3v2_link1" pos="0 0 0.333" gravcomp="1">
+                      <inertial
+                                                pos="4.128e-07 -0.0181251 -0.0386036"
+                                                quat="0.998098 -0.0605364 0.00380499 0.0110109"
+                                                mass="2.92747"
+                                                diaginertia="0.0239286 0.0227246 0.00610634"
+                                            />
+                      <joint
+                                                name="right_fr3v2_joint1"
+                                                pos="0 0 0"
+                                                axis="0 0 1"
+                                                range="-2.7437 2.7437"
+                                                actuatorfrcrange="-87 87"
+                                                damping="0.21"
+                                                armature="0.195"
+                                                frictionloss="1.137"
+                                            />
+                      <geom
+                                                name="right_fr3v2_link1_collision"
+                                                mesh="link1_coll"
+                                                class="collision"
+                                            />
+                      <geom mesh="link1" material="white" class="visual" />
+                      <body
+                                                name="right_fr3v2_link1_accelerometer_top"
+                                                pos="0 -0.1 0"
+                                                quat="0.707105 0.707108 0 0"
+                                                gravcomp="1"
+                                            />
+                      <body
+                                                name="right_fr3v2_link1_accelerometer_bottom"
+                                                pos="0 -0.09 0"
+                                                quat="0.707105 -0.707108 0 0"
+                                                gravcomp="1"
+                                            />
+                      <body
+                                                name="right_fr3v2_link2"
+                                                quat="0.707107 -0.707107 0 0"
+                                                gravcomp="1"
+                                            >
+                        <inertial
+                                                    pos="0.00318289 -0.0743222 0.00881461"
+                                                    quat="0.502599 0.584437 -0.465998 0.434366"
+                                                    mass="2.93554"
+                                                    diaginertia="0.0629567 0.0411924 0.0246371"
+                                                />
+                        <joint
+                                                    name="right_fr3v2_joint2"
+                                                    pos="0 0 0"
+                                                    axis="0 0 1"
+                                                    range="-1.7837 1.7837"
+                                                    actuatorfrcrange="-87 87"
+                                                    damping="0.21"
+                                                    armature="0.195"
+                                                    frictionloss="1.137"
+                                                />
+                        <geom
+                                                    name="right_fr3v2_link2_collision"
+                                                    mesh="link2_coll"
+                                                    class="collision"
+                                                />
+                        <geom mesh="link2" material="white" class="visual" />
+                        <body
+                                                    name="right_fr3v2_link2_accelerometer_top"
+                                                    pos="0 -0.13 0"
+                                                    quat="0.707105 -0.707108 0 0"
+                                                    gravcomp="1"
+                                                />
+                        <body
+                                                    name="right_fr3v2_link2_accelerometer_bottom"
+                                                    pos="0 -0.14 0"
+                                                    quat="0.707105 0.707108 0 0"
+                                                    gravcomp="1"
+                                                />
+                        <body
+                                                    name="right_fr3v2_link3"
+                                                    pos="0 -0.316 0"
+                                                    quat="0.707107 0.707107 0 0"
+                                                    gravcomp="1"
+                                                >
+                          <inertial
+                                                        pos="0.0407016 -0.00482006 -0.0289731"
+                                                        quat="0.921025 -0.244161 0.155272 0.260745"
+                                                        mass="2.2449"
+                                                        diaginertia="0.0267409 0.0189869 0.0171587"
+                                                    />
+                          <joint
+                                                        name="right_fr3v2_joint3"
+                                                        pos="0 0 0"
+                                                        axis="0 0 1"
+                                                        range="-2.9007 2.9007"
+                                                        actuatorfrcrange="-87 87"
+                                                        damping="0.21"
+                                                        armature="0.195"
+                                                        frictionloss="1.137"
+                                                    />
+                          <geom
+                                                        mesh="link3_0"
+                                                        material="white"
+                                                        class="visual"
+                                                    />
+                          <geom
+                                                        mesh="link3_1"
+                                                        material="black"
+                                                        class="visual"
+                                                    />
+                          <geom
+                                                        name="right_fr3v2_link3_collision"
+                                                        mesh="link3_coll"
+                                                        class="collision"
+                                                    />
+                          <body
+                                                        name="right_fr3v2_link3_accelerometer_top"
+                                                        pos="0.0825 0.05 0"
+                                                        quat="0.707105 -0.707108 0 0"
+                                                        gravcomp="1"
+                                                    />
+                          <body
+                                                        name="right_fr3v2_link3_accelerometer_bottom"
+                                                        pos="0.0825 0.04 0"
+                                                        quat="0.707105 0.707108 0 0"
+                                                        gravcomp="1"
+                                                    />
+                          <body
+                                                        name="right_fr3v2_link4"
+                                                        pos="0.0825 0 0"
+                                                        quat="0.707107 0.707107 0 0"
+                                                        gravcomp="1"
+                                                    >
+                            <inertial
+                                                            pos="-0.0459101 0.0630493 -0.00851879"
+                                                            quat="0.438018 0.803311 0.00937812 0.403414"
+                                                            mass="2.6156"
+                                                            diaginertia="0.05139 0.0372717 0.0160047"
+                                                        />
+                            <joint
+                                                            name="right_fr3v2_joint4"
+                                                            pos="0 0 0"
+                                                            axis="0 0 1"
+                                                            range="-3.0421 -0.1518"
+                                                            actuatorfrcrange="-87 87"
+                                                            damping="0.21"
+                                                            armature="0.195"
+                                                            frictionloss="1.137"
+                                                        />
+                            <geom
+                                                            mesh="link4_0"
+                                                            material="white"
+                                                            class="visual"
+                                                        />
+                            <geom
+                                                            mesh="link4_1"
+                                                            material="black"
+                                                            class="visual"
+                                                        />
+                            <geom
+                                                            name="right_fr3v2_link4_collision"
+                                                            mesh="link4_coll"
+                                                            class="collision"
+                                                        />
+                            <body
+                                                            name="right_fr3v2_link4_accelerometer_top"
+                                                            pos="-0.0825 0.05 0"
+                                                            quat="0.707105 0.707108 0 0"
+                                                            gravcomp="1"
+                                                        />
+                            <body
+                                                            name="right_fr3v2_link4_accelerometer_bottom"
+                                                            pos="-0.0825 0.06 0"
+                                                            quat="0.707105 -0.707108 0 0"
+                                                            gravcomp="1"
+                                                        />
+                            <body
+                                                            name="right_fr3v2_link5"
+                                                            pos="-0.0825 0.384 0"
+                                                            quat="0.707107 -0.707107 0 0"
+                                                            gravcomp="1"
+                                                        >
+                              <inertial
+                                                                pos="-0.00160396 0.0292536 -0.0972966"
+                                                                quat="0.919031 0.125604 0.0751531 -0.366003"
+                                                                mass="2.32712"
+                                                                diaginertia="0.0579335 0.0449144 0.0130634"
+                                                            />
+                              <joint
+                                                                name="right_fr3v2_joint5"
+                                                                pos="0 0 0"
+                                                                axis="0 0 1"
+                                                                range="-2.8065 2.8065"
+                                                                actuatorfrcrange="-12 12"
+                                                                damping="0.21"
+                                                                armature="0.074"
+                                                                frictionloss="0.763"
+                                                            />
+                              <geom
+                                                                mesh="link5_0"
+                                                                material="white"
+                                                                class="visual"
+                                                            />
+                              <geom
+                                                                mesh="link5_1"
+                                                                material="white"
+                                                                class="visual"
+                                                            />
+                              <geom
+                                                                mesh="link5_2"
+                                                                material="black"
+                                                                class="visual"
+                                                            />
+                              <geom
+                                                                name="right_fr3v2_link5_collision"
+                                                                mesh="link5_coll"
+                                                                class="collision"
+                                                            />
+                              <body
+                                                                name="right_fr3v2_link5_accelerometer_top"
+                                                                pos="0 0.11 0"
+                                                                quat="0.707105 -0.707108 0 0"
+                                                                gravcomp="1"
+                                                            />
+                              <body
+                                                                name="right_fr3v2_link5_accelerometer_bottom"
+                                                                pos="0 0.1 0"
+                                                                quat="0.707105 0.707108 0 0"
+                                                                gravcomp="1"
+                                                            />
+                              <body
+                                                                name="right_fr3v2_link6"
+                                                                quat="0.707107 0.707107 0 0"
+                                                                gravcomp="1"
+                                                            >
+                                <inertial
+                                                                    pos="0.0597131 -0.0410295 -0.0101693"
+                                                                    quat="0.621301 0.552665 0.510011 0.220081"
+                                                                    mass="1.81704"
+                                                                    diaginertia="0.0175039 0.0161123 0.00193529"
+                                                                />
+                                <joint
+                                                                    name="right_fr3v2_joint6"
+                                                                    pos="0 0 0"
+                                                                    axis="0 0 1"
+                                                                    range="0.5445 4.5169"
+                                                                    actuatorfrcrange="-12 12"
+                                                                    damping="0.21"
+                                                                    armature="0.074"
+                                                                    frictionloss="0.44"
+                                                                />
+                                <geom
+                                                                    mesh="link6_0"
+                                                                    material="button_green"
+                                                                    class="visual"
+                                                                />
+                                <geom
+                                                                    mesh="link6_1"
+                                                                    material="white"
+                                                                    class="visual"
+                                                                />
+                                <geom
+                                                                    mesh="link6_2"
+                                                                    material="white"
+                                                                    class="visual"
+                                                                />
+                                <geom
+                                                                    mesh="link6_3"
+                                                                    material="gray"
+                                                                    class="visual"
+                                                                />
+                                <geom
+                                                                    mesh="link6_4"
+                                                                    material="button_red"
+                                                                    class="visual"
+                                                                />
+                                <geom
+                                                                    mesh="link6_5"
+                                                                    material="white"
+                                                                    class="visual"
+                                                                />
+                                <geom
+                                                                    mesh="link6_6"
+                                                                    material="black"
+                                                                    class="visual"
+                                                                />
+                                <geom
+                                                                    mesh="link6_7"
+                                                                    material="button_blue"
+                                                                    class="visual"
+                                                                />
+                                <geom
+                                                                    name="right_fr3v2_link6_collision"
+                                                                    mesh="link6_coll"
+                                                                    class="collision"
+                                                                />
+                                <body
+                                                                    name="right_fr3v2_link7"
+                                                                    pos="0.088 0 0"
+                                                                    quat="0.707107 0.707107 0 0"
+                                                                    gravcomp="1"
+                                                                >
+                                  <inertial
+                                                                        pos="0.00452258 0.00862619 -0.0161633"
+                                                                        quat="0.727579 0.0978688 -0.24906 0.63168"
+                                                                        mass="0.627143"
+                                                                        diaginertia="0.000223836 0.000223642 5.64132e-07"
+                                                                    />
+                                  <joint
+                                                                        name="right_fr3v2_joint7"
+                                                                        pos="0 0 0"
+                                                                        axis="0 0 1"
+                                                                        range="-3.0159 3.0159"
+                                                                        actuatorfrcrange="-12 12"
+                                                                        damping="0.21"
+                                                                        armature="0.074"
+                                                                        frictionloss="0.248"
+                                                                    />
+                                  <geom
+                                                                        mesh="link7_0"
+                                                                        material="black"
+                                                                        class="visual"
+                                                                    />
+                                  <geom
+                                                                        mesh="link7_1"
+                                                                        material="white"
+                                                                        class="visual"
+                                                                    />
+                                  <geom
+                                                                        mesh="link7_2"
+                                                                        material="white"
+                                                                        class="visual"
+                                                                    />
+                                  <geom
+                                                                        mesh="link7_3"
+                                                                        material="black"
+                                                                        class="visual"
+                                                                    />
+                                  <geom
+                                                                        name="right_fr3v2_link7_collision"
+                                                                        mesh="link7_coll"
+                                                                        class="collision"
+                                                                    />
+                                  <body
+                                                                        name="right_fr3v2_link8"
+                                                                        pos="0 0 0.107"
+                                                                        gravcomp="1"
+                                                                    >
+                                    <site
+                                                                            name="right_tcp_fts_sensor"
+                                                                            size="0.01"
+                                                                            pos="0 0 0"
+                                                                        />
+                                    <body
+                                                                            name="right_fr3v2_hand"
+                                                                            quat="0.923879 0 0 -0.382684"
+                                                                            gravcomp="1"
+                                                                        >
+                                      <site
+                                                                                name="right_wrist_camera_optical_frame"
+                                                                                pos="0.04 0 0.05"
+                                                                                size="0.004"
+                                                                                euler="0 0 1.57079"
+                                                                            />
+                                      <!-- <camera
+                                        name="right_wrist_camera"
+                                        pos="0.04 0 0.05"
+                                        euler="0 3.14159 1.57079"
+                                        fovy="58"
+                                        mode="fixed"
+                                        resolution="640 480"
+                                      /> -->
+                                      <inertial
+                                                                                pos="-3.76e-05 0.0119128 0.020726"
+                                                                                quat="0.702181 0.711999 0 0"
+                                                                                mass="0.6544"
+                                                                                diaginertia="0.00186 0.00174028 0.000299722"
+                                                                            />
+                                      <geom
+                                                                                mesh="hand_0"
+                                                                                material="off_white"
+                                                                                class="visual"
+                                                                            />
+                                      <geom
+                                                                                mesh="hand_1"
+                                                                                material="panda_black"
+                                                                                class="visual"
+                                                                            />
+                                      <geom
+                                                                                mesh="hand_2"
+                                                                                material="panda_black"
+                                                                                class="visual"
+                                                                            />
+                                      <geom
+                                                                                mesh="hand_3"
+                                                                                material="white"
+                                                                                class="visual"
+                                                                            />
+                                      <geom
+                                                                                mesh="hand_4"
+                                                                                material="off_white"
+                                                                                class="visual"
+                                                                            />
+                                      <geom
+                                                                                name="right_fr3v2_hand_collision"
+                                                                                mesh="hand_c"
+                                                                                class="collision"
+                                                                            />
+                                      <body
+                                                                                name="right_fr3v2_hand_tcp"
+                                                                                pos="0 0 0.1034"
+                                                                                gravcomp="1"
+                                                                            >
+                                        <body
+                                                                                    name="right_grasp_link"
+                                                                                    quat="0.707105 0 0 -0.707108"
+                                                                                    gravcomp="1"
+                                                                                />
+                                      </body>
+                                      <body
+                                                                                name="right_fr3v2_leftfinger"
+                                                                                pos="0 0 0.0584"
+                                                                                gravcomp="1"
+                                                                            >
+                                        <inertial
+                                                                                    pos="0 0.015285 0.0219675"
+                                                                                    quat="0.705067 -0.0536699 0.0536699 0.705067"
+                                                                                    mass="0.0291"
+                                                                                    diaginertia="8.69232e-06 8.49e-06 1.60768e-06"
+                                                                                />
+                                        <joint
+                                                                                    name="right_fr3v2_finger_joint1"
+                                                                                    pos="0 0 0"
+                                                                                    axis="0 1 0"
+                                                                                    type="slide"
+                                                                                    range="0 0.04"
+                                                                                    actuatorfrcrange="-1000 1000"
+                                                                                    damping="1.0"
+                                                                                />
+                                        <geom
+                                                                                    mesh="finger_0"
+                                                                                    material="off_white"
+                                                                                    class="visual"
+                                                                                />
+                                        <geom
+                                                                                    mesh="finger_1"
+                                                                                    material="panda_black"
+                                                                                    class="visual"
+                                                                                />
+                                        <geom
+                                                                                    mesh="finger_0"
+                                                                                    class="collision"
+                                                                                />
+                                        <geom
+                                                                                    class="collision"
+                                                                                    type="box"
+                                                                                    size="0.0085 0.004 0.0085"
+                                                                                    pos="0 0.0055 0.0445"
+                                                                                />
+                                        <geom
+                                                                                    class="collision"
+                                                                                    type="box"
+                                                                                    size="0.003 0.002 0.003"
+                                                                                    pos="0.0055 0.002 0.05"
+                                                                                />
+                                        <geom
+                                                                                    class="collision"
+                                                                                    type="box"
+                                                                                    size="0.003 0.002 0.003"
+                                                                                    pos="-0.0055 0.002 0.05"
+                                                                                />
+                                        <geom
+                                                                                    class="collision"
+                                                                                    type="box"
+                                                                                    size="0.003 0.002 0.0035"
+                                                                                    pos="0.0055 0.002 0.0395"
+                                                                                />
+                                        <geom
+                                                                                    class="collision"
+                                                                                    type="box"
+                                                                                    size="0.003 0.002 0.0035"
+                                                                                    pos="-0.0055 0.002 0.0395"
+                                                                                />
+                                        <body
+                                                                                    name="right_fr3v2_leftfinger_attachment"
+                                                                                    pos="-0.00 0.005 0.045"
+                                                                                    euler="3.14159 0 -1.57079"
+                                                                                    gravcomp="1"
+                                                                                >
+                                          <geom
+                                                                                        mesh="gripper_attachment"
+                                                                                        class="visual"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_0"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_1"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_2"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_3"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_4"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_5"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_6"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_7"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_8"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_9"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_10"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_11"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_12"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_13"
+                                                                                        class="collision"
+                                                                                    />
+                                        </body>
+                                      </body>
+                                      <body
+                                                                                name="right_fr3v2_rightfinger"
+                                                                                pos="0 0 0.0584"
+                                                                                quat="0 0 0 1"
+                                                                                gravcomp="1"
+                                                                            >
+                                        <inertial
+                                                                                    pos="0 0.015285 0.0219675"
+                                                                                    quat="0.705067 -0.0536699 0.0536699 0.705067"
+                                                                                    mass="0.0291"
+                                                                                    diaginertia="8.69232e-06 8.49e-06 1.60768e-06"
+                                                                                />
+                                        <joint
+                                                                                    name="right_fr3v2_finger_joint2"
+                                                                                    pos="0 0 0"
+                                                                                    axis="0 1 0"
+                                                                                    type="slide"
+                                                                                    range="0 0.04"
+                                                                                    actuatorfrcrange="-100 100"
+                                                                                    damping="1.0"
+                                                                                />
+                                        <geom
+                                                                                    mesh="finger_0"
+                                                                                    material="off_white"
+                                                                                    class="visual"
+                                                                                />
+                                        <geom
+                                                                                    mesh="finger_1"
+                                                                                    material="panda_black"
+                                                                                    class="visual"
+                                                                                />
+                                        <geom
+                                                                                    mesh="finger_0"
+                                                                                    class="collision"
+                                                                                />
+                                        <geom
+                                                                                    class="collision"
+                                                                                    type="box"
+                                                                                    size="0.0085 0.004 0.0085"
+                                                                                    pos="0 0.0055 0.0445"
+                                                                                />
+                                        <geom
+                                                                                    class="collision"
+                                                                                    type="box"
+                                                                                    size="0.003 0.002 0.003"
+                                                                                    pos="0.0055 0.002 0.05"
+                                                                                />
+                                        <geom
+                                                                                    class="collision"
+                                                                                    type="box"
+                                                                                    size="0.003 0.002 0.003"
+                                                                                    pos="-0.0055 0.002 0.05"
+                                                                                />
+                                        <geom
+                                                                                    class="collision"
+                                                                                    type="box"
+                                                                                    size="0.003 0.002 0.0035"
+                                                                                    pos="0.0055 0.002 0.0395"
+                                                                                />
+                                        <geom
+                                                                                    class="collision"
+                                                                                    type="box"
+                                                                                    size="0.003 0.002 0.0035"
+                                                                                    pos="-0.0055 0.002 0.0395"
+                                                                                />
+                                        <body
+                                                                                    name="right_fr3v2_rightfinger_attachment"
+                                                                                    pos="-0.00 0.005 0.045"
+                                                                                    euler="3.14159 0 -1.57079"
+                                                                                    gravcomp="1"
+                                                                                >
+                                          <geom
+                                                                                        mesh="gripper_attachment"
+                                                                                        class="visual"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_0"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_1"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_2"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_3"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_4"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_5"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_6"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_7"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_8"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_9"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_10"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_11"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_12"
+                                                                                        class="collision"
+                                                                                    />
+                                          <geom
+                                                                                        mesh="gripper_attachment_coll_13"
+                                                                                        class="collision"
+                                                                                    />
+                                        </body>
+                                      </body>
+                                    </body>
+                                  </body>
+                                </body>
+                              </body>
+                            </body>
+                          </body>
+                        </body>
+                      </body>
+                    </body>
+                  </body>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+
+  <contact>
+    <exclude body1="left_fr3v2_link0" body2="left_fr3v2_link1" />
+    <exclude body1="right_fr3v2_link0" body2="right_fr3v2_link1" />
+    <exclude body1="left_fr3v2_hand" body2="left_fr3v2_leftfinger" />
+    <exclude body1="left_fr3v2_hand" body2="left_fr3v2_rightfinger" />
+    <exclude body1="right_fr3v2_hand" body2="right_fr3v2_leftfinger" />
+    <exclude body1="right_fr3v2_hand" body2="right_fr3v2_rightfinger" />
+  </contact>
+
+  <sensor>
+    <force site="left_tcp_fts_sensor" />
+    <torque site="left_tcp_fts_sensor" />
+    <force site="right_tcp_fts_sensor" />
+    <torque site="right_tcp_fts_sensor" />
+  </sensor>
+</mujoco>

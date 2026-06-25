@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Visualize Path if True">
+  <BehaviorTree ID="Visualize Path if True">
+    <Decorator
+      ID="Precondition"
+      else="SUCCESS"
+      if="visualize_if_true == true"
+    >
+      <Action
+        ID="VisualizePath"
+        path="{path}"
+        pose_marker_size="{pose_marker_size}"
+        show_poses="{show_poses}"
+      />
+    </Decorator>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Visualize Path if True">
+      <MetadataFields>
+        <Metadata subcategory="Application Subtrees" />
+      </MetadataFields>
+      <input_port
+        name="visualize_if_true"
+        default="true"
+        type="bool"
+      />
+      <input_port
+        name="path"
+        default="{path}"
+        type="std::vector&lt;geometry_msgs::msg::PoseStamped&gt;"
+      />
+      <input_port
+        name="pose_marker_size"
+        default="1"
+        type="std::string"
+      />
+      <input_port
+        name="show_poses"
+        default="true"
+        type="bool"
+      />
+    </SubTree>
+  </TreeNodesModel>
+</root>

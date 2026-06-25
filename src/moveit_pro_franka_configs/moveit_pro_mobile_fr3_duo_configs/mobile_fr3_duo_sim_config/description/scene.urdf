@@ -1,0 +1,547 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot name="server_scene">
+
+  <link name="world"/>
+
+  <!-- ===================== PSU SHELF ===================== -->
+  <link name="psu_shelf">
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/psu_shelf/bottom_wall.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/psu_shelf/left_wall.001.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/psu_shelf/left_wall.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/psu_shelf/part_001.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/psu_shelf/part_002.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/psu_shelf/part_003.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/psu_shelf/part_004.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/psu_shelf/part_005.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/psu_shelf/part_006.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/psu_shelf/right_wall.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/psu_shelf/top_wall.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/psu_shelf/back_wall.stl"/></geometry>
+    </collision>
+  </link>
+  <joint name="psu_shelf_joint" type="fixed">
+    <parent link="world"/>
+    <child link="psu_shelf"/>
+    <origin xyz="1.7 0.0 0.3" rpy="0 0 1.5708"/>
+  </joint>
+
+  <!-- ===================== BBU SHELF ===================== -->
+  <link name="bbu_shelf">
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/bbu_shelf/bbu_rack_back_wall.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/bbu_shelf/bbu_rack_bottom_wall.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/bbu_shelf/bbu_rack_left_wall.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/bbu_shelf/bbu_rack_part_001.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/bbu_shelf/bbu_rack_part_002.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/bbu_shelf/bbu_rack_part_003.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/bbu_shelf/bbu_rack_part_004.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/bbu_shelf/bbu_rack_part_005.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/bbu_shelf/bbu_rack_right_wall.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/bbu_shelf/bbu_rack_top_wall.stl"/></geometry>
+    </collision>
+  </link>
+  <joint name="bbu_shelf_joint" type="fixed">
+    <parent link="world"/>
+    <child link="bbu_shelf"/>
+    <origin xyz="1.7 0.0 1.0" rpy="0 0 1.5708"/>
+  </joint>
+
+  <!-- ===================== YV3 SHELF ===================== -->
+  <link name="yv3_shelf">
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/ys3_shelf/yv3_bottom_wall.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/ys3_shelf/yv3_bottom_wall.002.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/ys3_shelf/yv3_left_wall.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/ys3_shelf/yv3_back_wall.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/ys3_shelf/yv3_top_wall.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/ys3_shelf/yv3_top_part.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/ys3_shelf/yv3_part.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/ys3_shelf/yv3_part.001.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/ys3_shelf/yv3_part.002.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/ys3_shelf/yv3_part.003.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/ys3_shelf/yv3_part.004.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/ys3_shelf/yv3_part.005.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/ys3_shelf/yv3_part.006.stl"/></geometry>
+    </collision>
+  </link>
+  <joint name="yv3_shelf_joint" type="fixed">
+    <parent link="world"/>
+    <child link="yv3_shelf"/>
+    <origin xyz="1.7 0.0 0.2" rpy="0 0 1.5708"/>
+  </joint>
+
+  <!-- ===================== ORV3 RACK ===================== -->
+  <link name="orv3">
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_visual/ORV3_decimated.stl"/></geometry>
+    </collision>
+  </link>
+  <joint name="orv3_joint" type="fixed">
+    <parent link="world"/>
+    <child link="orv3"/>
+    <origin xyz="1.7 0.0 0.05" rpy="0 0 1.5708"/>
+  </joint>
+
+  <!--
+  ===================== BBU UNITS =====================
+  <link name="bbu_unit_000">
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/bbu_unit/bbu_unit_collision.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/bbu_unit/bbu_unit_collision_handle_1.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/bbu_unit/bbu_unit_collision_handle_2.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/bbu_unit/bbu_unit_collision_handle_3.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/bbu_unit/bbu_unit_collision_latch.stl"/></geometry>
+    </collision>
+  </link>
+  <joint name="bbu_unit_000_joint" type="fixed">
+    <parent link="world"/>
+    <child link="bbu_unit_000"/>
+    <origin xyz="1.7 0.0 1.0" rpy="0 0 1.5708"/>
+  </joint>
+
+  <link name="bbu_unit_001">
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/bbu_unit/bbu_unit_collision.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/bbu_unit/bbu_unit_collision_handle_1.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/bbu_unit/bbu_unit_collision_handle_2.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/bbu_unit/bbu_unit_collision_handle_3.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/bbu_unit/bbu_unit_collision_latch.stl"/></geometry>
+    </collision>
+  </link>
+  <joint name="bbu_unit_001_joint" type="fixed">
+    <parent link="world"/>
+    <child link="bbu_unit_001"/>
+    <origin xyz="1.7 0.08072 1.0" rpy="0 0 1.5708"/>
+  </joint>
+
+  <link name="bbu_unit_002">
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/bbu_unit/bbu_unit_collision.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/bbu_unit/bbu_unit_collision_handle_1.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/bbu_unit/bbu_unit_collision_handle_2.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/bbu_unit/bbu_unit_collision_handle_3.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/bbu_unit/bbu_unit_collision_latch.stl"/></geometry>
+    </collision>
+  </link>
+  <joint name="bbu_unit_002_joint" type="fixed">
+    <parent link="world"/>
+    <child link="bbu_unit_002"/>
+    <origin xyz="1.7 0.16144 1.0" rpy="0 0 1.5708"/>
+  </joint>
+
+  <link name="bbu_unit_003">
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/bbu_unit/bbu_unit_collision.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/bbu_unit/bbu_unit_collision_handle_1.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/bbu_unit/bbu_unit_collision_handle_2.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/bbu_unit/bbu_unit_collision_handle_3.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/bbu_unit/bbu_unit_collision_latch.stl"/></geometry>
+    </collision>
+  </link>
+  <joint name="bbu_unit_003_joint" type="fixed">
+    <parent link="world"/>
+    <child link="bbu_unit_003"/>
+    <origin xyz="1.7 0.24216 1.0" rpy="0 0 1.5708"/>
+  </joint>
+
+  <link name="bbu_unit_004">
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/bbu_unit/bbu_unit_collision.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/bbu_unit/bbu_unit_collision_handle_1.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/bbu_unit/bbu_unit_collision_handle_2.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/bbu_unit/bbu_unit_collision_handle_3.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/bbu_unit/bbu_unit_collision_latch.stl"/></geometry>
+    </collision>
+  </link>
+  <joint name="bbu_unit_004_joint" type="fixed">
+    <parent link="world"/>
+    <child link="bbu_unit_004"/>
+    <origin xyz="1.7 0.32288 1.0" rpy="0 0 1.5708"/>
+  </joint>
+
+  <link name="bbu_unit_005">
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/bbu_unit/bbu_unit_collision.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/bbu_unit/bbu_unit_collision_handle_1.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/bbu_unit/bbu_unit_collision_handle_2.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/bbu_unit/bbu_unit_collision_handle_3.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/bbu_unit/bbu_unit_collision_latch.stl"/></geometry>
+    </collision>
+  </link>
+  <joint name="bbu_unit_005_joint" type="fixed">
+    <parent link="world"/>
+    <child link="bbu_unit_005"/>
+    <origin xyz="1.7 0.40360 1.0" rpy="0 0 1.5708"/>
+  </joint>
+
+  ===================== PSU UNITS =====================
+  <link name="psu_unit_000">
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/psu_unit/psu_unit_collision.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/psu_unit/psu_unit_collision_handle_1.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/psu_unit/psu_unit_collision_handle_left.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/psu_unit/psu_unit_collision_handle_right.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/psu_unit/bbu_unit_colliision_latch.stl"/></geometry>
+    </collision>
+  </link>
+  <joint name="psu_unit_000_joint" type="fixed">
+    <parent link="world"/>
+    <child link="psu_unit_000"/>
+    <origin xyz="1.7 -0.077337 0.3" rpy="0 0 1.5708"/>
+  </joint>
+
+  <link name="psu_unit_001">
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/psu_unit/psu_unit_collision.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/psu_unit/psu_unit_collision_handle_1.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/psu_unit/psu_unit_collision_handle_left.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/psu_unit/psu_unit_collision_handle_right.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/psu_unit/bbu_unit_colliision_latch.stl"/></geometry>
+    </collision>
+  </link>
+  <joint name="psu_unit_001_joint" type="fixed">
+    <parent link="world"/>
+    <child link="psu_unit_001"/>
+    <origin xyz="1.7 0.0 0.3" rpy="0 0 1.5708"/>
+  </joint>
+
+  <link name="psu_unit_002">
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/psu_unit/psu_unit_collision.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/psu_unit/psu_unit_collision_handle_1.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/psu_unit/psu_unit_collision_handle_left.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/psu_unit/psu_unit_collision_handle_right.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/psu_unit/bbu_unit_colliision_latch.stl"/></geometry>
+    </collision>
+  </link>
+  <joint name="psu_unit_002_joint" type="fixed">
+    <parent link="world"/>
+    <child link="psu_unit_002"/>
+    <origin xyz="1.7 0.077337 0.3" rpy="0 0 1.5708"/>
+  </joint>
+
+  <link name="psu_unit_003">
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/psu_unit/psu_unit_collision.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/psu_unit/psu_unit_collision_handle_1.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/psu_unit/psu_unit_collision_handle_left.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/psu_unit/psu_unit_collision_handle_right.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/psu_unit/bbu_unit_colliision_latch.stl"/></geometry>
+    </collision>
+  </link>
+  <joint name="psu_unit_003_joint" type="fixed">
+    <parent link="world"/>
+    <child link="psu_unit_003"/>
+    <origin xyz="1.7 -0.154674 0.3" rpy="0 0 1.5708"/>
+  </joint>
+
+  <link name="psu_unit_004">
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/psu_unit/psu_unit_collision.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/psu_unit/psu_unit_collision_handle_1.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/psu_unit/psu_unit_collision_handle_left.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/psu_unit/psu_unit_collision_handle_right.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/psu_unit/bbu_unit_colliision_latch.stl"/></geometry>
+    </collision>
+  </link>
+  <joint name="psu_unit_004_joint" type="fixed">
+    <parent link="world"/>
+    <child link="psu_unit_004"/>
+    <origin xyz="1.7 -0.232011 0.3" rpy="0 0 1.5708"/>
+  </joint>
+
+  <link name="psu_unit_005">
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/psu_unit/psu_unit_collision.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/psu_unit/psu_unit_collision_handle_1.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/psu_unit/psu_unit_collision_handle_left.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/psu_unit/psu_unit_collision_handle_right.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/psu_unit/bbu_unit_colliision_latch.stl"/></geometry>
+    </collision>
+  </link>
+  <joint name="psu_unit_005_joint" type="fixed">
+    <parent link="world"/>
+    <child link="psu_unit_005"/>
+    <origin xyz="1.7 -0.309348 0.3" rpy="0 0 1.5708"/>
+  </joint>
+
+  ===================== YV3 UNIT =====================
+  <link name="yv3_unit_000">
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/yv3_unit/yv3_unit_body.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/yv3_unit/yv3_contact_1.stl"/></geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry><mesh filename="package://mobile_fr3_duo_sim_config/description/assets/server_collision/yv3_unit/yv3_contact_2.stl"/></geometry>
+    </collision>
+  </link>
+  <joint name="yv3_unit_000_joint" type="fixed">
+    <parent link="world"/>
+    <child link="yv3_unit_000"/>
+    <origin xyz="1.7 0.0 0.2" rpy="0 0 1.5708"/>
+  </joint>
+  -->
+
+</robot>

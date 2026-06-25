@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Generate And Transform Pose">
+  <BehaviorTree ID="Generate And Transform Pose">
+    <Control ID="Sequence">
+      <Action
+        ID="CreateStampedPose"
+        reference_frame="{reference_frame}"
+        stamped_pose="{output_pose}"
+      />
+      <Action
+        ID="TransformPose"
+        input_pose="{output_pose}"
+        output_pose="{output_pose}"
+        translation_xyz="{translation_xyz}"
+        quaternion_xyzw="{quaternion_xyzw}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Generate And Transform Pose">
+      <MetadataFields>
+        <Metadata subcategory="Application Subtrees" />
+      </MetadataFields>
+      <input_port
+        name="reference_frame"
+        default="base_link"
+        type="std::string"
+      />
+      <input_port
+        name="translation_xyz"
+        default="0;0;0"
+        type="std::string"
+      />
+      <input_port
+        name="quaternion_xyzw"
+        default="0.000; 0.000; 0.000; 1.000"
+        type="std::string"
+      />
+      <output_port
+        name="output_pose"
+        default="{output_pose}"
+        type="geometry_msgs::msg::PoseStamped"
+      />
+    </SubTree>
+  </TreeNodesModel>
+</root>

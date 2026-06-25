@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Move to Pose with ExecuteTrajectory"
+>
+  <BehaviorTree
+    ID="Move to Pose with ExecuteTrajectory"
+    _description="Plan and execute motion to a Cartesian coordinate pose in a ROS message type, using inverse kinematics."
+  >
+    <Control ID="Sequence">
+      <Action ID="SwitchController" activate_controllers="{controller_names}" />
+      <Action
+        ID="InitializeMTCTask"
+        task_id="move_to_pose"
+        controller_names="{controller_names}"
+        task="{move_to_pose_task}"
+        trajectory_monitoring="false"
+      />
+      <Action ID="SetupMTCCurrentState" task="{move_to_pose_task}" />
+      <Action
+        ID="SetupMTCPlanToPose"
+        planning_group_name="{planning_group_name}"
+        ik_frame="{ik_frame}"
+        target_pose="{target_pose}"
+        link_padding="{link_padding}"
+        velocity_scale_factor="{velocity_scale_factor}"
+        task="{move_to_pose_task}"
+        max_ik_solutions="{max_ik_solutions}"
+      />
+      <Action
+        ID="PlanMTCTask"
+        solution="{move_to_pose_solution}"
+        task="{move_to_pose_task}"
+        max_solutions="{max_mtc_solutions}"
+      />
+      <Decorator
+        ID="Precondition"
+        if="require_user_approval == 'true'"
+        else="SUCCESS"
+      >
+        <SubTree
+          ID="Wait for Trajectory Approval if User Available"
+          solution="{move_to_pose_solution}"
+          cartesian_path_links="{ik_frame}"
+        />
+      </Decorator>
+      <Action
+        ID="ConvertMtcSolutionToJointTrajectory"
+        velocity_scaling_factor="{velocity_scale_factor}"
+        acceleration_scaling_factor="{acceleration_scale_factor}"
+        joint_group="{planning_group_name}"
+        solution="{move_to_pose_solution}"
+      />
+      <Action
+        ID="ExecuteTrajectory"
+        controller_action_name="{controller_action_name}"
+        execution_pipeline="{execution_pipeline}"
+      />
+      <Action
+        ID="WaitForDuration"
+        delay_duration="{trajectory_completion_wait_duration}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Move to Pose with ExecuteTrajectory">
+      <MetadataFields>
+        <Metadata subcategory="Motion - Execute" />
+        <Metadata runnable="false" />
+      </MetadataFields>
+      <inout_port name="acceleration_scale_factor" default="1.0" />
+      <input_port
+        name="controller_action_name"
+        default="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+      />
+      <input_port
+        name="controller_names"
+        default="joint_trajectory_admittance_controller"
+      />
+      <input_port name="execution_pipeline" default="jtac" />
+      <input_port name="ik_frame" default="grasp_link" />
+      <input_port name="link_padding" default="0.01" />
+      <inout_port
+        name="max_ik_solutions"
+        default="{max_ik_solutions}"
+        type="unsigned int"
+      >
+        Maximum number of IK solutions PlanToPose will try to produce for a
+        given pose
+      </inout_port>
+      <inout_port
+        name="max_mtc_solutions"
+        default="{max_mtc_solutions}"
+        type="unsigned long"
+      >
+        Maximum number of MTC solutions to find before returning early (0 to
+        find all solutions)
+      </inout_port>
+      <input_port name="planning_group_name" default="manipulator" />
+      <input_port name="require_user_approval" default="false" />
+      <input_port name="target_pose" default="{target_pose}" />
+      <inout_port
+        name="trajectory_completion_wait_duration"
+        default="0.1"
+        type="double"
+      />
+      <input_port name="velocity_scale_factor" default="1.0" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

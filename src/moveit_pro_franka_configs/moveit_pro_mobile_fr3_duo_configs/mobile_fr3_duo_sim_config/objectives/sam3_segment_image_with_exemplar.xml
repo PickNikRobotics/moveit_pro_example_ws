@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="SAM3 Segment Image with Exemplar">
+  <!--//////////-->
+  <BehaviorTree ID="SAM3 Segment Image with Exemplar" _description="">
+    <Control ID="Sequence">
+      <Action
+        ID="LoadImageFromFile"
+        frame_id="camera"
+        file_path="{path_to_exemplar_image}"
+        image="{exemplar}"
+      />
+      <Action
+        ID="CreateBoundingBoxFromOffset"
+        exemplar_image="{exemplar}"
+        bounding_boxes="{bounding_boxes}"
+      />
+      <Action
+        ID="GetSyncedImageAndPointCloud"
+        point_cloud_topic_name="/left_wrist_camera/points"
+        rgb_camera_info_topic_name="/left_wrist_camera/camera_info"
+        rgb_image_topic_name="/left_wrist_camera/color"
+        rgb_camera_info="{rgb_camera_info}"
+        rgb_image="{rgb_image}"
+      />
+      <Action
+        ID="GetMasks2DFromExemplar"
+        target_image="{rgb_image}"
+        confidence_threshold="{confidence_threshold}"
+        model_package="moveit_pro_sam3"
+        text_encoder_model_path="models/sam3_text_encoder.onnx"
+        mask_count="{mask_count}"
+        geometry_encoder_model_path="models/sam3_geometry_encoder.onnx"
+        encoder_model_path="models/sam3_vision_encoder.onnx"
+        decoder_model_path="models/sam3_decoder.onnx"
+        confidence_scores_str="{confidence_scores_str}"
+        exemplar_image="{exemplar}"
+        exemplar_bboxes="{bounding_boxes}"
+      />
+      <Action ID="PublishMask2D" image="{rgb_image}" masks="{masks2d}" />
+      <Action ID="WaitForDuration" delay_duration="1.0" />
+      <Action ID="PublishMask2D" image="{rgb_image}" masks="{masks2d}" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="SAM3 Segment Image with Exemplar">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="ML" />
+      </MetadataFields>
+      <inout_port name="confidence_threshold" default="0.5" type="double" />
+      <inout_port name="mask_count" default="{mask_count}" type="int" />
+      <inout_port
+        name="masks2d"
+        default="{masks2d}"
+        type="std::vector&lt;moveit_studio_vision_msgs::msg::Mask2D&gt;"
+      />
+      <inout_port
+        name="path_to_exemplar_image"
+        default="{exemplar_path}"
+        type="std::string"
+      />
+      <inout_port
+        name="point_cloud"
+        default="{point_cloud}"
+        type="sensor_msgs::msg::PointCloud2"
+      />
+      <inout_port
+        name="rgb_camera_info"
+        default="{rgb_camera_info}"
+        type="sensor_msgs::msg::CameraInfo"
+      />
+      <inout_port
+        name="rgb_image"
+        default="{rgb_image}"
+        type="sensor_msgs::msg::Image"
+      />
+    </SubTree>
+  </TreeNodesModel>
+</root>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Close Gripper and Deactivate Weld Constraints"
+>
+  <!--//////////-->
+  <BehaviorTree
+    ID="Close Gripper and Deactivate Weld Constraints"
+    _description="Close the left gripper by default"
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="MoveGripperAction"
+        gripper_command_action_name="/left_gripper_controller/gripper_cmd"
+        position="0.0"
+        timeout="2.000000"
+      />
+      <Action
+        ID="MoveGripperAction"
+        gripper_command_action_name="/left_fingertip_attach_mechanism/gripper_cmd"
+        position="0.0"
+        timeout="5.0"
+      />
+      <Action
+        ID="MoveGripperAction"
+        gripper_command_action_name="/right_fingertip_attach_mechanism/gripper_cmd"
+        position="0.0"
+        timeout="5.0"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Close Gripper and Deactivate Weld Constraints">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Grasping" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

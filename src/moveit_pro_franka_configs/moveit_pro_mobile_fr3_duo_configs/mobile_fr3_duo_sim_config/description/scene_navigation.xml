@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<mujoco model="scene">
+  <include file="robot_navigation.xml" />
+  <compiler angle="radian" />
+  <option
+        timestep="0.005"
+        integrator="implicitfast"
+        solver="Newton"
+        noslip_iterations="2"
+        cone="elliptic"
+        gravity="0 0 -9.81"
+    />
+
+  <size nuser_cam="1" />
+
+  <default>
+    <default class="freejoint_collision">
+      <geom
+                type="mesh"
+                group="3"
+                mass="0"
+                density="0"
+                solref="0.005 1"
+                solimp="0.9 0.95 0.001 0.5 2"
+            />
+    </default>
+  </default>
+
+  <statistic center="0.3 0 0.4" extent="1" />
+
+  <visual>
+    <global azimuth="120" elevation="-20" offwidth="640" offheight="480" />
+    <quality shadowsize="2048" />
+    <headlight
+            diffuse="0.35 0.35 0.35"
+            ambient="0.22 0.22 0.22"
+            specular="0.05 0.05 0.05"
+        />
+    <rgba haze="0.08 0.12 0.16 1" />
+  </visual>
+
+  <asset>
+    <texture
+            type="skybox"
+            builtin="gradient"
+            rgb1=".3 .5 .7"
+            rgb2="0 0 0"
+            width="512"
+            height="512"
+        />
+    <texture
+            name="grid"
+            type="2d"
+            builtin="checker"
+            width="512"
+            height="512"
+            rgb1="0.45 0.45 0.45"
+            rgb2="0.55 0.55 0.55"
+        />
+    <material
+            name="grid"
+            texture="grid"
+            texrepeat="5 5"
+            texuniform="true"
+            reflectance=".2"
+        />
+
+    <!-- <material
+            name="metal_rack"
+            rgba="0.75 0.75 0.75 1"
+            specular="0.9"
+            shininess="0.8"
+            reflectance="0.35"
+        />
+    <material
+            name="metal_black"
+            rgba="0.08 0.08 0.08 1"
+            specular="0.95"
+            shininess="0.9"
+            reflectance="0.4"
+        /> -->
+    <!-- <material name="handle_light_green" rgba="0.72 0.95 0.58 1" /> -->
+    <material
+            name="datacenter_wall"
+            rgba="1 1 1 1"
+            specular="0.15"
+            shininess="0.2"
+            reflectance="0.05"
+        />
+  </asset>
+
+  <worldbody>
+
+    <!-- FILL -->
+    <light
+            name="fill_light"
+            pos="-1.6 1.2 2.2"
+            dir="0.6 -0.4 -0.7"
+            directional="true"
+            diffuse="0.35 0.40 0.48"
+            specular="0.08 0.08 0.1"
+            castshadow="false"
+        />
+
+    <!-- RIM -->
+    <light
+            name="rim_light"
+            pos="0 2.4 2.4"
+            dir="0 -1 -0.7"
+            directional="true"
+            diffuse="0.35 0.35 0.4"
+            specular="0.2 0.2 0.25"
+            castshadow="false"
+        />
+
+    <!-- SOFT TOP -->
+    <light
+            name="top_soft"
+            pos="0 0 3.5"
+            dir="0 0 -1"
+            directional="true"
+            diffuse="0.25 0.25 0.25"
+            specular="0.05 0.05 0.05"
+            castshadow="false"
+        />
+
+    <geom
+            name="floor"
+            type="plane"
+            size="10 10 0.1"
+            material="grid"
+            condim="4"
+            contype="4"
+            conaffinity="2"
+            friction="5 0.005 0.0001"
+        />
+    <geom
+            name="wall_north"
+            type="box"
+            size="10 0.025 1.25"
+            pos="0 10 1.25"
+            material="datacenter_wall"
+            contype="1"
+            conaffinity="1"
+        />
+    <geom
+            name="wall_south"
+            type="box"
+            size="10 0.025 1.25"
+            pos="0 -10 1.25"
+            material="datacenter_wall"
+            contype="1"
+            conaffinity="1"
+        />
+    <geom
+            name="wall_east"
+            type="box"
+            size="0.025 9.975 1.25"
+            pos="10 0 1.25"
+            material="datacenter_wall"
+            contype="1"
+            conaffinity="1"
+        />
+    <geom
+            name="wall_west"
+            type="box"
+            size="0.025 9.975 1.25"
+            pos="-10 0 1.25"
+            material="datacenter_wall"
+            contype="1"
+            conaffinity="1"
+        />
+
+    <!-- <camera
+            name="scene_camera_hard_drive_holder"
+            pos="-0.266 0.012 0.618"
+            xyaxes="0.767 -0.641 0.000 0.246 0.295 0.923"
+            fovy="58"
+            mode="fixed"
+            resolution="640 480"
+            user="1"
+        />
+    <site
+            name="scene_camera_hard_drive_holder_optical_frame"
+            pos="-0.266 0.012 0.618"
+            xyaxes="0.767 -0.641 0.000 -0.246 -0.295 -0.923"
+        />
+    <camera
+            name="scene_camera_overview"
+            pos="-0.091 -1.521 2.302"
+            xyaxes="0.856 -0.516 0.000 0.332 0.551 0.766"
+            fovy="58"
+            mode="fixed"
+            resolution="640 480"
+            user="1"
+        />
+    <site
+            name="scene_camera_overview_optical_frame"
+            pos="-0.091 -1.521 2.302"
+            xyaxes="0.856 -0.516 0.000 -0.332 -0.551 -0.766"
+        />
+    <camera
+            name="scene_camera_hard_drive_rack"
+            pos="1.197 0.060 0.673"
+            xyaxes="0.407 -0.913 -0.000 0.225 0.100 0.969"
+            fovy="58"
+            mode="fixed"
+            resolution="640 480"
+            user="1"
+        />
+    <site
+            name="scene_camera_hard_drive_rack_optical_frame"
+            pos="1.197 0.060 0.673"
+            xyaxes="0.407 -0.913 -0.000 -0.225 -0.100 -0.969"
+        /> -->
+  </worldbody>
+
+</mujoco>

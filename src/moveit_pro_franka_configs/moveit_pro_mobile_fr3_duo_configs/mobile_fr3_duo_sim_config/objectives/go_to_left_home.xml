@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Go to Left Home">
+  <!--//////////-->
+  <BehaviorTree ID="Go to Left Home" _description="" _favorite="true">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        controller_action_server="/left_joint_trajectory_admittance_controller/follow_joint_trajectory"
+        controller_names="left_joint_trajectory_admittance_controller"
+        execution_pipeline="jtac"
+        waypoint_name="Left Home"
+        joint_group_name="left_manipulator"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Go to Left Home">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Motion - Execute" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

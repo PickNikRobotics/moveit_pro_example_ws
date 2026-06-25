@@ -1,0 +1,328 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Request Teleoperation">
+  <!--The integer value used here for teleoperation mode comes from the moveit_studio_sdk_msgs/TeleoperationMode ROS message.-->
+  <BehaviorTree
+    ID="Request Teleoperation"
+    _description="Handles the different variations of teleoperation from the web UI, with the option of interactive user prompts and choosing the initial mode. Should be used as a subtree with port remapping as part of an another Objective."
+    _favorite="false"
+    _hardcoded="false"
+  >
+    <Control ID="Sequence">
+      <Action ID="Script" code="teleop_mode := 0" />
+      <Control ID="Parallel" success_count="1" failure_count="1">
+        <Action
+          ID="DoTeleoperateAction"
+          enable_user_interaction="{enable_user_interaction}"
+          user_interaction_prompt="{user_interaction_prompt}"
+          initial_teleop_mode="{initial_teleop_mode}"
+          current_teleop_mode="{teleop_mode}"
+          planning_groups="{planning_groups}"
+          controllers="{controllers}"
+          tip_links="{tip_links}"
+          skip_collision_checks="{skip_collision_checks}"
+          velocity_scale_factor="{velocity_scale_factor}"
+        />
+        <Decorator ID="RepeatUnlessFailureEachTick" num_cycles="-1">
+          <Control ID="Sequence">
+            <!--Closing and opening the gripper-->
+            <Decorator ID="ForceSuccess" _skipIf="teleop_mode != 7">
+              <SubTree ID="Close Gripper" />
+            </Decorator>
+            <Decorator ID="ForceSuccess" _skipIf="teleop_mode != 6">
+              <SubTree ID="Open Gripper" />
+            </Decorator>
+            <!--Joint sliders interpolate to joint state-->
+            <Decorator ID="ForceSuccess" _while="teleop_mode == 5">
+              <Control ID="Sequence">
+                <Control ID="Fallback" name="root">
+                  <Control ID="Sequence">
+                    <Action
+                      ID="RetrieveJointStateParameter"
+                      timeout_sec="-1"
+                      joint_state="{target_joint_state}"
+                    />
+                    <SubTree
+                      ID="Interpolate to Joint State"
+                      _collapsed="false"
+                      target_joint_state="{target_joint_state}"
+                      controller_names="{joint_trajectory_controller_name}"
+                      controller_action_server="{controller_action_server}"
+                      planning_group_name="{default_planning_group}"
+                      velocity_scale_factor="{velocity_scale_factor}"
+                      execution_pipeline="{execution_pipeline}"
+                    />
+                    <Action
+                      ID="PublishEmpty"
+                      topic="/moveit_pro_ui/motion_ended"
+                      queue_size="1"
+                      use_best_effort="false"
+                    />
+                  </Control>
+                  <Control ID="Sequence">
+                    <Action
+                      ID="PublishEmpty"
+                      topic="/moveit_pro_ui/motion_ended"
+                      queue_size="1"
+                      use_best_effort="false"
+                    />
+                    <Action ID="AlwaysFailure" />
+                  </Control>
+                </Control>
+              </Control>
+            </Decorator>
+            <!--Interactive markers move to pose-->
+            <Decorator ID="ForceSuccess" _while="teleop_mode == 4">
+              <Control ID="Sequence">
+                <Control ID="Fallback" name="root">
+                  <Control ID="Sequence">
+                    <Action
+                      ID="RetrievePoseParameter"
+                      timeout_sec="-1"
+                      pose="{target_pose}"
+                    />
+                    <Decorator
+                      ID="ForEach"
+                      index="{index}"
+                      out="{planning_group}"
+                      vector_in="{planning_groups}"
+                    >
+                      <Action ID="AlwaysSuccess" />
+                    </Decorator>
+                    <Decorator
+                      ID="ForEach"
+                      index="{index}"
+                      out="{tip_link}"
+                      vector_in="{tip_links}"
+                    >
+                      <Action ID="AlwaysSuccess" />
+                    </Decorator>
+                    <SubTree
+                      ID="Move to Pose"
+                      _collapsed="false"
+                      target_pose="{target_pose}"
+                      controller_names="{joint_trajectory_controller_name}"
+                      controller_action_name="{controller_action_server}"
+                      execution_pipeline="{execution_pipeline}"
+                      link_padding="{link_padding}"
+                      ik_frame="{tip_link}"
+                      planning_group_name="{planning_group}"
+                      max_mtc_solutions="{max_mtc_solutions}"
+                      max_ik_solutions="{max_ik_solutions}"
+                      require_user_approval="true"
+                      velocity_scale_factor="{velocity_scale_factor}"
+                    />
+                    <Action
+                      ID="PublishEmpty"
+                      topic="/moveit_pro_ui/motion_ended"
+                      queue_size="1"
+                      use_best_effort="false"
+                    />
+                  </Control>
+                  <Control ID="Sequence">
+                    <Action
+                      ID="PublishEmpty"
+                      topic="/moveit_pro_ui/motion_ended"
+                      queue_size="1"
+                      use_best_effort="false"
+                    />
+                    <Action ID="AlwaysFailure" />
+                  </Control>
+                </Control>
+              </Control>
+            </Decorator>
+            <!--
+              Waypoint buttons move to joint state — spine first, then arm.
+
+              The arm controllers were decoupled from the prismatic spine, so a single
+              JointTrajectory cannot drive both: the waypoint's joint_state contains all 15
+              joints (franka_spine_vertical_joint + 14 arm joints) but the arm controller
+              only owns the 14 spine-free joints, which is why a bare "Move to Joint State"
+              over the "manipulator" group fails with "specifies 15 joints, but controller
+              only has 14 joints". This mirrors the "Move to Waypoint Spine First" objective:
+              command the spine (group "spine" -> spine_controller) and WAIT, then command the
+              spine-free arm group to the SAME target_joint_state. Each "Move to Joint State"
+              only plans the joints belonging to its planning group, so no value extraction is
+              needed.
+            -->
+            <Decorator ID="ForceSuccess" _while="teleop_mode == 3">
+              <Control ID="Sequence">
+                <Control ID="Fallback" name="root">
+                  <Control ID="Sequence">
+                    <Action
+                      ID="RetrieveJointStateParameter"
+                      timeout_sec="-1"
+                      joint_state="{target_joint_state}"
+                    />
+                    <!-- 1. Spine first — only franka_spine_vertical_joint, routed to spine_controller.
+                         spine_controller is a plain JointTrajectoryController, so execute on the
+                         "jtc" pipeline (the default "jtac"/admittance pipeline has no action server here). -->
+                    <SubTree
+                      ID="Move to Joint State"
+                      _collapsed="true"
+                      target_joint_state="{target_joint_state}"
+                      acceleration_scale_factor="1.0"
+                      velocity_scale_factor="{velocity_scale_factor}"
+                      controller_action_server="/spine_controller/follow_joint_trajectory"
+                      controller_names="spine_controller"
+                      joint_group_name="spine"
+                      execution_pipeline="jtc"
+                      link_padding="{link_padding}"
+                    />
+                    <!-- 2. Then the arm — spine-free group, routed to the arm controller. -->
+                    <SubTree
+                      ID="Move to Joint State"
+                      _collapsed="true"
+                      target_joint_state="{target_joint_state}"
+                      acceleration_scale_factor="1.0"
+                      velocity_scale_factor="{velocity_scale_factor}"
+                      controller_action_server="{controller_action_server}"
+                      controller_names="{joint_trajectory_controller_name}"
+                      joint_group_name="{default_planning_group}"
+                      execution_pipeline="{execution_pipeline}"
+                      link_padding="{link_padding}"
+                    />
+                    <Action
+                      ID="PublishEmpty"
+                      topic="/moveit_pro_ui/motion_ended"
+                      queue_size="1"
+                      use_best_effort="false"
+                    />
+                  </Control>
+                  <Control ID="Sequence">
+                    <Action
+                      ID="PublishEmpty"
+                      topic="/moveit_pro_ui/motion_ended"
+                      queue_size="1"
+                      use_best_effort="false"
+                    />
+                    <Action ID="AlwaysFailure" />
+                  </Control>
+                </Control>
+              </Control>
+            </Decorator>
+            <!--Cartesian jogging-->
+            <Control ID="Sequence" _while="teleop_mode == 2">
+              <Decorator ID="RepeatUnlessFailureEachTick" num_cycles="-1">
+                <Control ID="Sequence">
+                  <Action
+                    ID="SwitchController"
+                    activate_controllers="{controllers}"
+                    automatic_deactivation="true"
+                    strictness="2"
+                  />
+                  <Decorator ID="ForceSuccess">
+                    <Action
+                      ID="PoseJog"
+                      controller_names="{controllers}"
+                      link_padding="{link_padding}"
+                      planning_group_names="{planning_groups}"
+                      stop_safety_factor="1.500000"
+                      include_octomap="false"
+                    />
+                  </Decorator>
+                </Control>
+              </Decorator>
+            </Control>
+            <!--Joint jogging-->
+            <Control ID="Sequence" _while="teleop_mode == 1">
+              <Decorator ID="RepeatUnlessFailureEachTick" num_cycles="-1">
+                <Control ID="Sequence">
+                  <Action
+                    ID="SwitchController"
+                    activate_asap="true"
+                    automatic_deactivation="true"
+                    controller_list_action_name="/controller_manager/list_controllers"
+                    controller_switch_action_name="/controller_manager/switch_controller"
+                    strictness="1"
+                    timeout="-1.000000"
+                    activate_controllers="{controllers}"
+                  />
+                  <Decorator ID="ForceSuccess">
+                    <Decorator ID="RepeatUnlessFailureEachTick" num_cycles="-1">
+                      <Control
+                        ID="Parallel"
+                        success_count="1"
+                        failure_count="1"
+                      >
+                        <Decorator
+                          ID="RepeatUnlessFailureEachTick"
+                          num_cycles="-1"
+                        >
+                          <Action
+                            ID="GetElementOfVector"
+                            vector_in="{controllers}"
+                            index="0"
+                            element="{first_controller}"
+                          />
+                        </Decorator>
+                        <Action
+                          ID="JointJog"
+                          controller_name="{first_controller}"
+                          link_padding="0.00000"
+                          stop_safety_factor="1.500000"
+                          skip_collision_checks="{skip_collision_checks}"
+                        />
+                      </Control>
+                    </Decorator>
+                  </Decorator>
+                </Control>
+              </Decorator>
+            </Control>
+          </Control>
+        </Decorator>
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Request Teleoperation">
+      <MetadataFields>
+        <Metadata subcategory="User Input" />
+        <Metadata runnable="false" />
+      </MetadataFields>
+      <input_port
+        name="controller_action_server"
+        default="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+        type="std::string"
+      />
+      <input_port name="enable_user_interaction" default="false" type="bool">
+        Enable interactive user prompts during teleoperation mode selection
+      </input_port>
+      <inout_port name="max_ik_solutions" default="8" type="unsigned int">
+        Maximum number of IK solutions PlanToPose will try to produce for a
+        given pose
+      </inout_port>
+      <inout_port name="max_mtc_solutions" default="1" type="unsigned long">
+        Maximum number of MTC solutions to find before returning early (0 to
+        find all solutions)
+      </inout_port>
+      <input_port name="initial_teleop_mode" default="3" type="int" />
+      <input_port
+        name="joint_trajectory_controller_name"
+        default="joint_trajectory_admittance_controller"
+        type="std::string"
+      />
+      <input_port
+        name="user_interaction_prompt"
+        default="Press Abort to return FAILURE, Continue for SUCCESS"
+        type="std::string"
+      />
+      <!--
+        Spine-free combined-arm group (14 joints). Must exclude
+        franka_spine_vertical_joint so the mode-3 arm move matches the 14-joint arm
+        controller; the spine is commanded separately (group "spine" -> spine_controller).
+      -->
+      <input_port
+        name="default_planning_group"
+        default="manipulator_without_spine"
+        type="std::string"
+      />
+      <input_port
+        name="default_ik_frame"
+        default="grasp_link"
+        type="std::string"
+      />
+      <input_port name="link_padding" default="0.01" type="double" />
+      <input_port name="execution_pipeline" default="jtac" type="std::string" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Insert Hard Drive into Server Rack"
+>
+  <BehaviorTree
+    ID="Insert Hard Drive into Server Rack"
+    _description="Takes a combined snapshot of the server rack, registers its point cloud for pose estimation, generates approach and goal poses for the insertion slot, and executes a slow cartesian insertion motion."
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="CreateStampedPose"
+        name="This is the approximate hard drive insertion location relative to the localized server rack"
+        reference_frame="world"
+        stamped_pose="{approximate_hard_drive_insertion_pose}"
+        orientation_xyzw="0.707; 0.000; 0.000; 0.707"
+        position_xyz="0.12;0.475;0.46"
+      />
+      <SubTree
+        ID="Insert Hard Drive into Server Rack Subtree"
+        _collapsed="false"
+        visualize_poses_if_true="true"
+        approximate_hard_drive_insertion_pose="{approximate_hard_drive_insertion_pose}"
+        planning_group_name="left_manipulator_without_spine"
+        visualize_icp="false"
+        require_approval="false"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Insert Hard Drive into Server Rack">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Applications" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

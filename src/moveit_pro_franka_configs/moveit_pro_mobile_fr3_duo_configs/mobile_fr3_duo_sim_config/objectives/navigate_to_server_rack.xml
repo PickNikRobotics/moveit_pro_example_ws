@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Navigate To Server Rack">
+  <BehaviorTree
+    ID="Navigate To Server Rack"
+    _description="Navigates to given pose"
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="root">
+      <Control ID="Sequence" name="Sequence">
+        <!--Keep both the arm controller and the dedicated spine_controller active: the spine is
+             decoupled onto spine_controller, and "Move to Waypoint Spine First" commands the spine
+             before the arm.-->
+        <Action
+          ID="SwitchController"
+          name="SwitchController"
+          controller_switch_action_name="/controller_manager/switch_controller"
+          timeout="-1.000000"
+          activate_asap="true"
+          strictness="1"
+          controller_list_action_name="/controller_manager/list_controllers"
+          automatic_deactivation="true"
+          automatic_activation="true"
+          activate_controllers="joint_trajectory_admittance_controller;spine_controller"
+        />
+        <!--Stowed arms stores all 15 joints (spine + 14 arm). A bare "Move to Waypoint" over the
+             spine-free arm group leaves the spine wherever it was; "Move to Waypoint Spine First"
+             drives the spine to its recorded height (spine_controller / jtc) first, then the arm.-->
+        <!--Run the stow slowly: the combined admittance controller (default_path_tolerance 0.5 rad)
+             can't track a full-speed 14-joint move and aborts on path tolerance. Lower acceleration in
+             particular keeps the compliant controller's tracking error well under tolerance.-->
+        <SubTree
+          ID="Move to Waypoint Spine First"
+          name="Move to Waypoint Spine First"
+          _collapsed="true"
+          acceleration_scale_factor="0.1"
+          controller_action_server="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+          controller_names="joint_trajectory_admittance_controller"
+          execution_pipeline="jtac"
+          joint_group_name="manipulator_without_spine"
+          velocity_scale_factor="0.1"
+          waypoint_name="Stowed arms"
+        />
+      </Control>
+      <Action
+        ID="CreateStampedPose"
+        name="CreateStampedPose"
+        stamped_pose="{goal_pose}"
+        orientation_xyzw="0.000000;0.000000;0.000000;1.000000"
+        position_xyz="0.000000;0.000000;0.000000"
+        reference_frame="world"
+      />
+      <SubTree
+        ID="Navigate To Server Rack Subtree"
+        name="Navigate To Server Rack Subtree"
+        _collapsed="true"
+        goal_pose="{goal_pose}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Navigate To Server Rack">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Applications" />
+      </MetadataFields>
+      <inout_port
+        name="goal_pose"
+        default="{goal_pose}"
+        type="geometry_msgs::msg::PoseStamped"
+      />
+    </SubTree>
+  </TreeNodesModel>
+</root>

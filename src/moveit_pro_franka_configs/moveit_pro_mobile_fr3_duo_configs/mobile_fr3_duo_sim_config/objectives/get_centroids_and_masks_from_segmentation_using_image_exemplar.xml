@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Get Centroids and Masks from Segmentation using Image Exemplar"
+>
+  <!--//////////-->
+  <BehaviorTree
+    ID="Get Centroids and Masks from Segmentation using Image Exemplar"
+    _description=""
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree
+        ID="SAM3 Segment Image with Exemplar"
+        _collapsed="false"
+        path_to_exemplar_image="{path_to_exemplar_image}"
+        confidence_threshold="{confidence_threshold}"
+        point_cloud="{point_cloud}"
+      />
+      <Control ID="Sequence">
+        <Action
+          ID="GetMasks3DFromMasks2D"
+          masks3d="{masks3d}"
+          camera_info="{rgb_camera_info}"
+          masks2d="{masks2d}"
+        />
+        <SubTree
+          ID="CreateVector"
+          _collapsed="true"
+          vector="{centroid_vector}"
+        />
+        <Decorator ID="ForEach" vector_in="{masks3d}" out="{mask3d}">
+          <Control ID="Sequence">
+            <Action ID="GetPointCloudFromMask3D" />
+            <Action
+              ID="GetCentroidFromPointCloud"
+              point_cloud="{point_cloud_fragment}"
+              output_pose="{output_pose}"
+            />
+            <Action ID="TransformPoseFrame" input_pose="{output_pose}" />
+            <Action
+              ID="PushBackVector"
+              element="{output_pose}"
+              input_vector="{centroid_vector}"
+              output_vector="{centroid_vector}"
+            />
+          </Control>
+        </Decorator>
+        <SubTree
+          ID="Visualize Path if True"
+          visualize_if_true="{visualize_poses_if_true}"
+          path="{centroid_vector}"
+          pose_marker_size="1"
+          show_poses="true"
+        />
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree
+      ID="Get Centroids and Masks from Segmentation using Image Exemplar"
+    >
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Application Subtrees" />
+      </MetadataFields>
+      <inout_port
+        name="centroid_vector"
+        default="{centroid_vector}"
+        type="std::vector&lt;BT::Any&gt;"
+      />
+      <inout_port name="confidence_threshold" default="0.5" type="double" />
+      <inout_port
+        name="masks2d"
+        default="{masks2d}"
+        type="std::vector&lt;moveit_studio_vision_msgs::msg::Mask2D&gt;"
+      />
+      <inout_port
+        name="path_to_exemplar_image"
+        default="~/user_ws/src/mobile_fr3_duo_sim_config/objectives/BBU.png"
+        type="std::string"
+      />
+      <inout_port
+        name="point_cloud"
+        default="{point_cloud}"
+        type="sensor_msgs::msg::PointCloud2"
+      />
+      <input_port
+        name="visualize_poses_if_true"
+        default="true"
+        type="bool"
+      />
+    </SubTree>
+  </TreeNodesModel>
+</root>

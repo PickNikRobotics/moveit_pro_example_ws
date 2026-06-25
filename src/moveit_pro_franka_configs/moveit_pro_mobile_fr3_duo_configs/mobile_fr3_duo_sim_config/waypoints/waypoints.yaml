@@ -1,0 +1,440 @@
+- description: ''
+  favorite: false
+  joint_group_names:
+  - manipulator
+  - manipulator_without_spine
+  - left_manipulator_without_spine
+  - right_manipulator_without_spine
+  - spine
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - franka_spine_vertical_joint
+    - left_fr3v2_joint1
+    - left_fr3v2_joint2
+    - left_fr3v2_joint3
+    - left_fr3v2_joint4
+    - left_fr3v2_joint5
+    - left_fr3v2_joint6
+    - left_fr3v2_joint7
+    - right_fr3v2_joint1
+    - right_fr3v2_joint2
+    - right_fr3v2_joint3
+    - right_fr3v2_joint4
+    - right_fr3v2_joint5
+    - right_fr3v2_joint6
+    - right_fr3v2_joint7
+    position:
+    - -0.00017329489396175786
+    - 0.27728306181034545
+    - -0.7338347627831875
+    - 0.001483143735219015
+    - -1.0502138874262914
+    - -0.0017939255182626759
+    - 1.3053255179867098
+    - 1.8512410528688013
+    - 0.2778028932098642
+    - -0.7342525012030394
+    - 0.0014634880718909287
+    - -1.0504425282938594
+    - -0.551786567713692
+    - 1.150495476719347
+    - -0.33739629929827797
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Find Server Rack
+- description: ''
+  favorite: false
+  joint_group_names:
+  - manipulator
+  - manipulator_without_spine
+  - left_manipulator_without_spine
+  - right_manipulator_without_spine
+  - spine
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - franka_spine_vertical_joint
+    - left_fr3v2_joint1
+    - left_fr3v2_joint2
+    - left_fr3v2_joint3
+    - left_fr3v2_joint4
+    - left_fr3v2_joint5
+    - left_fr3v2_joint6
+    - left_fr3v2_joint7
+    - right_fr3v2_joint1
+    - right_fr3v2_joint2
+    - right_fr3v2_joint3
+    - right_fr3v2_joint4
+    - right_fr3v2_joint5
+    - right_fr3v2_joint6
+    - right_fr3v2_joint7
+    position:
+    - 0.4132390712604424
+    - -1.14721794846832
+    - -1.3003143293693924
+    - -0.06614930850475545
+    - -2.4350170094125736
+    - -0.3867824844957126
+    - 2.781269156591197
+    - -0.041114843893738595
+    - -0.7996220698902894
+    - -1.2854006297343215
+    - -0.02073700079966255
+    - -2.343620118575659
+    - 0.04286752856175021
+    - 2.0136136842153567
+    - -0.5000246151970631
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Find Server Rack Intermediate
+- description: ''
+  favorite: false
+  joint_group_names:
+  - manipulator
+  - manipulator_without_spine
+  - left_manipulator_without_spine
+  - right_manipulator_without_spine
+  - spine
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - franka_spine_vertical_joint
+    - left_fr3v2_joint1
+    - left_fr3v2_joint2
+    - left_fr3v2_joint3
+    - left_fr3v2_joint4
+    - left_fr3v2_joint5
+    - left_fr3v2_joint6
+    - left_fr3v2_joint7
+    - right_fr3v2_joint1
+    - right_fr3v2_joint2
+    - right_fr3v2_joint3
+    - right_fr3v2_joint4
+    - right_fr3v2_joint5
+    - right_fr3v2_joint6
+    - right_fr3v2_joint7
+    position:
+    - 0.3876562070528634
+    - 0.584378662388288
+    - -1.4801190653769813
+    - 0.34648777367603767
+    - -1.9289631264596605
+    - 0.042459178298862255
+    - 1.3760122681716862
+    - 2.208200176088357
+    - -0.8007130237950947
+    - -1.2881136818558387
+    - -0.021765404161948058
+    - -2.347747789517849
+    - 0.04220700213079923
+    - 2.015826258014218
+    - -0.5010068931990121
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Find Server Rack New
+- description: ''
+  favorite: false
+  joint_group_names:
+  - manipulator
+  - manipulator_without_spine
+  - left_manipulator_without_spine
+  - right_manipulator_without_spine
+  - spine
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - franka_spine_vertical_joint
+    - left_fr3v2_joint1
+    - left_fr3v2_joint2
+    - left_fr3v2_joint3
+    - left_fr3v2_joint4
+    - left_fr3v2_joint5
+    - left_fr3v2_joint6
+    - left_fr3v2_joint7
+    - right_fr3v2_joint1
+    - right_fr3v2_joint2
+    - right_fr3v2_joint3
+    - right_fr3v2_joint4
+    - right_fr3v2_joint5
+    - right_fr3v2_joint6
+    - right_fr3v2_joint7
+    position:
+    - -0.032862956538163714
+    - -0.47007043456099706
+    - 1.4339790815303481
+    - 1.3434683110685524
+    - -1.6221499429881723
+    - -0.4485660022036641
+    - 3.9816717538572153
+    - 0.6672145098697801
+    - 0.2778869558785934
+    - -0.7344177761193106
+    - 0.001138630929069201
+    - -1.0504049617352667
+    - -0.551560901716961
+    - 1.1503223663662094
+    - -0.33727374632088786
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Left Arm Grab Hard Drive
+- description: ''
+  favorite: false
+  joint_group_names:
+  - left_manipulator
+  - left_manipulator_without_spine
+  - spine
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - franka_spine_vertical_joint
+    - left_fr3v2_joint1
+    - left_fr3v2_joint2
+    - left_fr3v2_joint3
+    - left_fr3v2_joint4
+    - left_fr3v2_joint5
+    - left_fr3v2_joint6
+    - left_fr3v2_joint7
+    position:
+    - -1.337252577201905e-07
+    - 0.00019861060737413273
+    - -0.0003891847786443268
+    - -4.678895764598049e-05
+    - -1.2000660056490242
+    - -0.0002558107685440375
+    - 0.9999838631585123
+    - 1.7298032982475515e-05
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Left Home
+- description: ''
+  favorite: false
+  joint_group_names:
+  - left_manipulator
+  - left_manipulator_without_spine
+  - spine
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - franka_spine_vertical_joint
+    - left_fr3v2_joint1
+    - left_fr3v2_joint2
+    - left_fr3v2_joint3
+    - left_fr3v2_joint4
+    - left_fr3v2_joint5
+    - left_fr3v2_joint6
+    - left_fr3v2_joint7
+    position:
+    - -0.007119293304727261
+    - 0.02605042021146109
+    - -1.0108769433718192
+    - -2.0697383409282795
+    - -1.5441219263781012
+    - -1.3644272558885127
+    - 1.166533394528869
+    - -0.0411004350423978
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Observe Hard Drive Holder
+- description: ''
+  favorite: false
+  joint_group_names:
+  - manipulator
+  - manipulator_without_spine
+  - left_manipulator_without_spine
+  - right_manipulator_without_spine
+  - spine
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - franka_spine_vertical_joint
+    - left_fr3v2_joint1
+    - left_fr3v2_joint2
+    - left_fr3v2_joint3
+    - left_fr3v2_joint4
+    - left_fr3v2_joint5
+    - left_fr3v2_joint6
+    - left_fr3v2_joint7
+    - right_fr3v2_joint1
+    - right_fr3v2_joint2
+    - right_fr3v2_joint3
+    - right_fr3v2_joint4
+    - right_fr3v2_joint5
+    - right_fr3v2_joint6
+    - right_fr3v2_joint7
+    position:
+    - 0.5204841705137708
+    - -0.9561556230258539
+    - -1.406562279486498
+    - 2.8796112112927768
+    - -1.9594848626732244
+    - -1.433330230736418
+    - 1.6035547354942492
+    - -1.2922600069906784
+    - -0.8006235843605126
+    - -1.2877763671323903
+    - -0.02181425323073091
+    - -2.3475508312357825
+    - 0.04278956112846229
+    - 2.0155513467366966
+    - -0.5008866490915108
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Pre-Observe Server Rack
+- description: Arms in a stowed position looking forward
+  favorite: false
+  joint_group_names:
+  - manipulator
+  - manipulator_without_spine
+  - left_manipulator_without_spine
+  - right_manipulator_without_spine
+  - spine
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - franka_spine_vertical_joint
+    - left_fr3v2_joint1
+    - left_fr3v2_joint2
+    - left_fr3v2_joint3
+    - left_fr3v2_joint4
+    - left_fr3v2_joint5
+    - left_fr3v2_joint6
+    - left_fr3v2_joint7
+    - right_fr3v2_joint1
+    - right_fr3v2_joint2
+    - right_fr3v2_joint3
+    - right_fr3v2_joint4
+    - right_fr3v2_joint5
+    - right_fr3v2_joint6
+    - right_fr3v2_joint7
+    position:
+    - 2.808472910775222e-09
+    - 0.4326586445944865
+    - 0.002018592785018235
+    - -0.0001779092797233376
+    - -2.788311892247743
+    - 0.0001740168358420238
+    - 4.355437199141426
+    - 1.7757443817761471
+    - -0.21647547553118962
+    - -0.001801677154171312
+    - -0.00018822283548167873
+    - -2.867362387239154
+    - 0.0012347586110410308
+    - 4.387721881165755
+    - -0.06842624096641065
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Stowed arms

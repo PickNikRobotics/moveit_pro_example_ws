@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Set Gripper Position">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Set Gripper Position"
+    _description="Sets the gripper position"
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="Script" code="position_attach:=1.0-position" />
+      <Action
+        ID="MoveGripperAction"
+        gripper_command_action_name="/left_gripper_controller/gripper_cmd"
+        position="{position}"
+        timeout="2.000000"
+      />
+      <Action
+        ID="MoveGripperAction"
+        gripper_command_action_name="/left_fingertip_attach_mechanism/gripper_cmd"
+        position="{position_attach}"
+        timeout="5.0"
+      />
+      <Action
+        ID="MoveGripperAction"
+        gripper_command_action_name="/right_fingertip_attach_mechanism/gripper_cmd"
+        position="{position_attach}"
+        timeout="5.0"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Set Gripper Position">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Grasping" />
+      </MetadataFields>
+      <inout_port name="position" default="{position}" type="double" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

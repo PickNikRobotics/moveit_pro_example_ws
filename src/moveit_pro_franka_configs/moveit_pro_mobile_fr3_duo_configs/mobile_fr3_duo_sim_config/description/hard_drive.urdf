@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<robot name="hard_drive_collision_geometry">
+  <link name="hard_drive">
+    <collision>
+      <origin xyz="0 0 0.13" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.037 0.025 0.13"/>
+      </geometry>
+    </collision>
+  </link>
+</robot>

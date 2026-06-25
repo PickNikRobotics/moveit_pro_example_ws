@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Load at_rack Keyframe">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Load at_rack Keyframe"
+    _description="Reset the MuJoCo simulation to the 'at_rack' keyframe defined in description/scene.xml"
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="root">
+      <Action ID="ClearSnapshot" />
+      <SubTree ID="Reset Planning Scene" _collapsed="true" />
+      <SubTree
+        ID="Close Gripper and Deactivate Weld Constraints"
+        _collapsed="true"
+      />
+      <Decorator ID="ForceSuccess">
+        <SubTree ID="Detach and Remove Collision Object" _collapsed="true" />
+      </Decorator>
+      <Action ID="ResetMujocoKeyframe" keyframe_name="at_rack" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Load at_rack Keyframe">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Simulation" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

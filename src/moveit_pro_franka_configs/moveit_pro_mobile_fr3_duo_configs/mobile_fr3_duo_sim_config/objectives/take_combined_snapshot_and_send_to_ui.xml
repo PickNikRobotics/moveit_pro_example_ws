@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Take Combined Snapshot and Send to UI"
+>
+  <!--//////////-->
+  <BehaviorTree
+    ID="Take Combined Snapshot and Send to UI"
+    _description=""
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree
+        ID="Take Combined Snapshot"
+        _collapsed="true"
+        send_to_ui="true"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Take Combined Snapshot and Send to UI">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Perception - 3D Point Cloud" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

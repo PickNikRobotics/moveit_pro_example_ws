@@ -1,0 +1,357 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Insert Hard Drive into Server Rack Subtree"
+>
+  <BehaviorTree
+    ID="Insert Hard Drive into Server Rack Subtree"
+    _description="Insert the Hard Drive into the server rack in simulation"
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Control ID="Sequence">
+        <Action ID="ClearSnapshot" />
+        <SubTree
+          ID="Visualize Pose if True"
+          _collapsed="true"
+          visualize_if_true="{visualize_poses_if_true}"
+          pose="{approximate_hard_drive_insertion_pose}"
+          marker_name="approximate_hard_drive_insertion_pose"
+          marker_size="1"
+          marker_text="approximate_hard_drive_insertion_pose"
+          marker_lifetime="0.000000"
+        />
+        <Action ID="CreateStampedPose" stamped_pose="{world_pose}" />
+      </Control>
+      <Control ID="Sequence">
+        <!--Spine first: command the spine to the waypoint height, wait, then move both
+             arms (spine-free) to the waypoint via the combined admittance controller. The
+             hardware cannot drive the spine and the arm joints from a single JointTrajectory.-->
+        <SubTree
+          ID="Move to Waypoint Spine First"
+          _collapsed="true"
+          waypoint_name="Find Server Rack Intermediate"
+          joint_group_name="manipulator_without_spine"
+          controller_names="joint_trajectory_admittance_controller"
+          controller_action_server="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+          execution_pipeline="jtac"
+          acceleration_scale_factor="0.5"
+          velocity_scale_factor="0.5"
+        />
+        <SubTree
+          ID="Move to Waypoint Spine First"
+          _collapsed="true"
+          waypoint_name="Find Server Rack New"
+          joint_group_name="manipulator_without_spine"
+          controller_names="joint_trajectory_admittance_controller"
+          controller_action_server="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+          execution_pipeline="jtac"
+          acceleration_scale_factor="0.5"
+          velocity_scale_factor="0.5"
+        />
+      </Control>
+      <Control
+        ID="Sequence"
+        name="TODO: add if else about either segmenting server rack or loading from file"
+      >
+        <SubTree
+          ID="Take Combined Snapshot and Add to Planning Scene"
+          _collapsed="true"
+          box_pose_orientation="0;0;0;1"
+          box_pose_position="2;0;1.5"
+          crop_box_size="2;1.5;2.9"
+          merged_cloud="{merged_cloud}"
+        />
+        <SubTree
+          ID="Load Segmented Server Rack PointCloud from File"
+          _collapsed="true"
+          send_to_ui="{visualize_icp}"
+          merged_cloud="{merged_cloud}"
+        />
+      </Control>
+      <Control ID="Sequence">
+        <SubTree
+          ID="Load Server Rack CAD as Point Cloud"
+          _collapsed="true"
+          send_to_ui="{visualize_icp}"
+          server_rack_point_cloud="{server_rack_point_cloud}"
+          transform_pose="{transform_pose}"
+          transform_pose_orientation="0.000; 0.000; 0.707; 0.707"
+          transform_pose_position="1.75;0;0.1"
+          transform_pose_reference_frame="base_link"
+        />
+        <SubTree
+          ID="Register Server Rack Pointcloud"
+          _collapsed="true"
+          send_to_ui="{visualize_icp}"
+          merged_cloud="{merged_cloud}"
+          server_rack_point_cloud="{server_rack_point_cloud}"
+          target_pose="{target_pose}"
+          transform_pose="{transform_pose}"
+        />
+        <Control ID="Sequence">
+          <Action
+            ID="CreateStampedPose"
+            stamped_pose="{registered_server_rack_pose}"
+            reference_frame="base_link"
+          />
+          <Action
+            ID="TransformPoseWithPose"
+            input_pose="{registered_server_rack_pose}"
+            output_pose="{registered_server_rack_pose}"
+          />
+          <Action
+            ID="TransformPoseFrame"
+            input_pose="{registered_server_rack_pose}"
+            output_pose="{registered_server_rack_pose}"
+          />
+          <Action
+            ID="TransformPoseWithPose"
+            input_pose="{registered_server_rack_pose}"
+            output_pose="{registered_server_rack_pose}"
+            transform_pose="{target_pose}"
+          />
+          <SubTree
+            ID="Visualize Pose if True"
+            _collapsed="true"
+            visualize_if_true="{visualize_poses_if_true}"
+            pose="{registered_server_rack_pose}"
+            marker_name="registered_server_rack_pose"
+            marker_size="1"
+            marker_text="registered_server_rack_pose"
+            marker_lifetime="0.000000"
+          />
+        </Control>
+        <Decorator ID="ForceSuccess">
+          <Action
+            ID="AddURDF"
+            package_name="mobile_fr3_duo_sim_config"
+            urdf_file_path="description/scene.urdf"
+            urdf_pose="{world_pose}"
+          />
+        </Decorator>
+      </Control>
+      <!--Spine first: command the spine to the waypoint height, wait, then move both
+           arms (spine-free) to the waypoint via the combined admittance controller.-->
+      <SubTree
+        ID="Move to Waypoint Spine First"
+        _collapsed="true"
+        waypoint_name="Pre-Observe Server Rack"
+        joint_group_name="manipulator_without_spine"
+        controller_names="joint_trajectory_admittance_controller"
+        controller_action_server="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+        execution_pipeline="jtac"
+        acceleration_scale_factor="0.5"
+        velocity_scale_factor="0.5"
+      />
+      <SubTree
+        ID="Generate Observation Pose"
+        _collapsed="true"
+        observe_pose="{observe_pose}"
+        pose_to_observe="{approximate_hard_drive_insertion_pose}"
+        starting_pose="{registered_server_rack_pose}"
+        visualize_poses_if_true="{visualize_poses_if_true}"
+        translation_xyz="0;0;-0.3"
+        quaternion_xyzw="0;0;0;1"
+      />
+      <SubTree
+        ID="Move to Pose"
+        _collapsed="true"
+        controller_action_name="/left_joint_trajectory_controller/follow_joint_trajectory"
+        controller_names="left_joint_trajectory_controller"
+        execution_pipeline="jtc"
+        ik_frame="left_grasp_link_extended"
+        max_ik_solutions="16"
+        max_mtc_solutions="0"
+        planning_group_name="{planning_group_name}"
+        target_pose="{observe_pose}"
+        require_user_approval="{require_approval}"
+        link_padding="0.01"
+        velocity_scale_factor="1.0"
+      />
+      <SubTree ID="Detach and Remove Collision Object" _collapsed="true" />
+      <Control ID="Sequence">
+        <Action
+          ID="TransformPose"
+          input_pose="{approximate_hard_drive_insertion_pose}"
+          output_pose="{insertion_approach_pose}"
+          marker_size="0.100000"
+          quaternion_xyzw="0.000; 0.000; 0.707; 0.707"
+          translation_xyz="0;0;-0.15"
+        />
+        <SubTree
+          ID="Visualize Pose if True"
+          _collapsed="true"
+          marker_name="insertion_approach_pose"
+          marker_text="insertion_approach_pose"
+          pose="{insertion_approach_pose}"
+          visualize_if_true="{visualize_poses_if_true}"
+          marker_size="1"
+          marker_lifetime="0.000000"
+        />
+        <Action
+          ID="TransformPose"
+          input_pose="{approximate_hard_drive_insertion_pose}"
+          output_pose="{goal_pose}"
+          marker_size="0.100000"
+          quaternion_xyzw="0.000; 0.000; 0.707; 0.707"
+          translation_xyz="0;0;0"
+        />
+        <SubTree
+          ID="Visualize Pose if True"
+          _collapsed="true"
+          marker_name="goal_pose"
+          marker_text="goal_pose"
+          pose="{goal_pose}"
+          visualize_if_true="{visualize_poses_if_true}"
+          marker_size="1"
+          marker_lifetime="0.000000"
+        />
+        <Action
+          ID="TransformPose"
+          input_pose="{observe_pose}"
+          output_pose="{rotated_approach_pose}"
+          quaternion_xyzw="0.000; 0.000; 0.707; 0.707"
+        />
+        <SubTree
+          ID="Visualize Pose if True"
+          _collapsed="true"
+          marker_name="rotated_approach_pose"
+          marker_text="rotated_approach_pose"
+          pose="{rotated_approach_pose}"
+          visualize_if_true="{visualize_poses_if_true}"
+          marker_size="1"
+          marker_lifetime="0.000000"
+        />
+      </Control>
+      <Control ID="Sequence">
+        <SubTree
+          ID="Move to Pose with ExecuteTrajectory"
+          _collapsed="true"
+          controller_action_name="/left_joint_trajectory_admittance_controller/follow_joint_trajectory"
+          controller_names="left_joint_trajectory_admittance_controller"
+          execution_pipeline="jtac"
+          ik_frame="left_grasp_link_extended"
+          max_ik_solutions="8"
+          max_mtc_solutions="0"
+          planning_group_name="left_manipulator_without_spine"
+          require_user_approval="{require_approval}"
+          target_pose="{rotated_approach_pose}"
+          acceleration_scale_factor="0.1"
+          velocity_scale_factor="0.1"
+          link_padding="0.01"
+          trajectory_completion_wait_duration="0.1"
+        />
+        <!--Spine first: now that the observe-height moves are done, drop/raise the spine so
+             the spine link matches the insertion height, so the spine-free arm group can reach
+             the insertion approach + goal poses. Runtime, pose-dependent.-->
+        <SubTree
+          ID="Move Spine to Pose Height"
+          _collapsed="true"
+          target_pose="{goal_pose}"
+          min_spine_joint_value="-0.05"
+          max_spine_joint_value="0.85"
+          height_bias="-0.1"
+          velocity_scale_factor="1.0"
+          acceleration_scale_factor="1.0"
+        />
+        <SubTree
+          ID="Move to Pose with ExecuteTrajectory"
+          _collapsed="true"
+          controller_action_name="/left_joint_trajectory_admittance_controller/follow_joint_trajectory"
+          controller_names="left_joint_trajectory_admittance_controller"
+          execution_pipeline="jtac"
+          ik_frame="left_grasp_link_extended"
+          max_ik_solutions="8"
+          max_mtc_solutions="0"
+          planning_group_name="left_manipulator_without_spine"
+          require_user_approval="{require_approval}"
+          target_pose="{insertion_approach_pose}"
+          acceleration_scale_factor="0.1"
+          velocity_scale_factor="0.1"
+          link_padding="0.01"
+          trajectory_completion_wait_duration="0.1"
+        />
+        <Action ID="WaitForDuration" delay_duration="1.0" />
+        <SubTree
+          ID="MTC Cartesian Move to Pose"
+          _collapsed="true"
+          acceleration_scale_factor="0.01"
+          velocity_scale_factor="0.01"
+          target_pose="{goal_pose}"
+          planning_group_name="left_manipulator_without_spine"
+          require_approval="{require_approval}"
+          use_admittance="true"
+          controller_names="left_joint_trajectory_admittance_controller"
+          admittance_params_file="admittance_params_insertion.yaml"
+          tip_link="left_grasp_link_extended"
+        />
+        <SubTree
+          ID="Close Gripper and Deactivate Weld Constraints"
+          _collapsed="true"
+        />
+        <SubTree ID="Reset Planning Scene" _collapsed="true" />
+        <SubTree
+          ID="Move along axis"
+          _collapsed="true"
+          _skipIf="true"
+          controller_action_name="/left_joint_trajectory_controller/follow_joint_trajectory"
+          controller_names="left_joint_trajectory_controller"
+          min_distance="0.2"
+          planning_group_name="left_manipulator_without_spine"
+          x_axis="0.0"
+          z_axis="-1.0"
+          execution_pipeline="jtc"
+          link_padding="0"
+          axis_frame="world"
+          ik_frame="left_grasp_link_extended"
+          max_distance="0.2"
+          require_user_approval="false"
+          velocity_scale_factor="1.0"
+          y_axis="0.0"
+        />
+        <Action
+          ID="CreateStampedPose"
+          reference_frame="left_grasp_link_extended"
+          position_xyz="0;0;-0.1"
+          stamped_pose="{retreat_pose}"
+        />
+        <SubTree
+          ID="Cartesian Move"
+          _collapsed="true"
+          _skipIf="true"
+          acceleration_scale_factor="0.1"
+          pose="{retreat_pose}"
+          velocity_scale_factor="0.1"
+          planning_group_name="left_manipulator"
+          controller_action_name="/left_joint_trajectory_admittance_controller/follow_joint_trajectory"
+          controller_name="left_joint_trajectory_admittance_controller"
+          execution_pipeline="jtac"
+          require_approval="false"
+          tip_links="left_grasp_link_extended"
+        />
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Insert Hard Drive into Server Rack Subtree">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Application Subtrees" />
+      </MetadataFields>
+      <input_port
+        name="approximate_hard_drive_insertion_pose"
+        default="{approximate_hard_drive_insertion_pose}"
+        type="geometry_msgs::msg::PoseStamped"
+      />
+      <input_port
+        name="planning_group_name"
+        default="left_manipulator_without_spine"
+        type="std::string"
+      />
+      <inout_port name="require_approval" default="false" type="bool" />
+      <inout_port name="visualize_icp" default="false" type="bool" />
+      <input_port name="visualize_poses_if_true" default="true" type="bool" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

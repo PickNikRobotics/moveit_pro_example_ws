@@ -1,0 +1,78 @@
+<body name="mecanum_FR_wheel_intermediate_link" pos="0.0 0.0 0.0">
+    <inertial pos="0 0 0" quat="0.707107 0 0 0.707107" mass="6.5" diaginertia="0.0524193 0.0303095 0.0303095" />
+    <joint name="R1_mecanum_FR_wheel_rolling_joint" pos="0 0 0" axis="0 1 0" damping="0.5" armature="0.05" />
+    <geom size="0.08 0.025" quat="0.707107 0.707107 0 0" type="cylinder" rgba="0.2 0.2 0.2 0.5" contype="0" conaffinity="0"/>
+    
+
+    <body name="mecanum_FR_roller_0_link" pos="0.027623053221375947 0.0 0.007401574803149606">
+        <joint name="mecanum_FR_slipping_0_joint" type="hinge" pos="0 0 0" axis="-0.003966491982444965 0.025 0.014803149606299212" damping="0.1" limited="false" actuatorfrclimited="false"/>
+        <inertial pos="0 0 0" quat="0.711549 0.711549 0 0 " mass="0.001" diaginertia="0.00001 0.00001 0.00001" />
+        <geom size="0.08" quat="1 0 0 0" type="sphere" rgba="0.2 0.2 0.2 1" contype="2" conaffinity="4" condim="4" friction="0.5 0.005 0.0001" solimp="0.9 0.95 0.001" solref="0.02 1"/>
+    </body>
+
+    <body name="mecanum_FR_roller_1_link" pos="0.02022147841822634 0.0 0.020221478418226337">
+        <joint name="mecanum_FR_slipping_1_joint" type="hinge" pos="0 0 0" axis="-0.010836657623854246 0.025 0.010836657623854247" damping="0.1" limited="false" actuatorfrclimited="false"/>
+        <inertial pos="0 0 0" quat="0.711549 0.711549 0 0 " mass="0.001" diaginertia="0.00001 0.00001 0.00001" />
+        <geom size="0.08" quat="1 0 0 0" type="sphere" rgba="0.2 0.2 0.2 1" contype="2" conaffinity="4" condim="4" friction="0.5 0.005 0.0001" solimp="0.9 0.95 0.001" solref="0.02 1"/>
+    </body>
+
+    <body name="mecanum_FR_roller_2_link" pos="0.0074015748031496095 0.0 0.027623053221375943">
+        <joint name="mecanum_FR_slipping_2_joint" type="hinge" pos="0 0 0" axis="-0.014803149606299216 0.025 0.003966491982444968" damping="0.1" limited="false" actuatorfrclimited="false"/>
+        <inertial pos="0 0 0" quat="0.711549 0.711549 0 0 " mass="0.001" diaginertia="0.00001 0.00001 0.00001" />
+        <geom size="0.08" quat="1 0 0 0" type="sphere" rgba="0.2 0.2 0.2 1" contype="2" conaffinity="4" condim="4" friction="0.5 0.005 0.0001" solimp="0.9 0.95 0.001" solref="0.02 1"/>
+    </body>
+
+    <body name="mecanum_FR_roller_3_link" pos="-0.0074015748031496026 0.0 0.027623053221375947">
+        <joint name="mecanum_FR_slipping_3_joint" type="hinge" pos="0 0 0" axis="-0.014803149606299209 0.025 -0.003966491982444965" damping="0.1" limited="false" actuatorfrclimited="false"/>
+        <inertial pos="0 0 0" quat="0.711549 0.711549 0 0 " mass="0.001" diaginertia="0.00001 0.00001 0.00001" />
+        <geom size="0.08" quat="1 0 0 0" type="sphere" rgba="0.2 0.2 0.2 1" contype="2" conaffinity="4" condim="4" friction="0.5 0.005 0.0001" solimp="0.9 0.95 0.001" solref="0.02 1"/>
+    </body>
+
+    <body name="mecanum_FR_roller_4_link" pos="-0.02022147841822633 0.0 0.020221478418226344">
+        <joint name="mecanum_FR_slipping_4_joint" type="hinge" pos="0 0 0" axis="-0.010836657623854249 0.025 -0.010836657623854239" damping="0.1" limited="false" actuatorfrclimited="false"/>
+        <inertial pos="0 0 0" quat="0.711549 0.711549 0 0 " mass="0.001" diaginertia="0.00001 0.00001 0.00001" />
+        <geom size="0.08" quat="1 0 0 0" type="sphere" rgba="0.2 0.2 0.2 1" contype="2" conaffinity="4" condim="4" friction="0.5 0.005 0.0001" solimp="0.9 0.95 0.001" solref="0.02 1"/>
+    </body>
+
+    <body name="mecanum_FR_roller_5_link" pos="-0.02762305322137594 0.0 0.007401574803149614">
+        <joint name="mecanum_FR_slipping_5_joint" type="hinge" pos="0 0 0" axis="-0.003966491982444972 0.025 -0.01480314960629922" damping="0.1" limited="false" actuatorfrclimited="false"/>
+        <inertial pos="0 0 0" quat="0.711549 0.711549 0 0 " mass="0.001" diaginertia="0.00001 0.00001 0.00001" />
+        <geom size="0.08" quat="1 0 0 0" type="sphere" rgba="0.2 0.2 0.2 1" contype="2" conaffinity="4" condim="4" friction="0.5 0.005 0.0001" solimp="0.9 0.95 0.001" solref="0.02 1"/>
+    </body>
+
+    <body name="mecanum_FR_roller_6_link" pos="-0.027623053221375947 0.0 -0.007401574803149601">
+        <joint name="mecanum_FR_slipping_6_joint" type="hinge" pos="0 0 0" axis="0.003966491982444961 0.025 -0.014803149606299209" damping="0.1" limited="false" actuatorfrclimited="false"/>
+        <inertial pos="0 0 0" quat="0.711549 0.711549 0 0 " mass="0.001" diaginertia="0.00001 0.00001 0.00001" />
+        <geom size="0.08" quat="1 0 0 0" type="sphere" rgba="0.2 0.2 0.2 1" contype="2" conaffinity="4" condim="4" friction="0.5 0.005 0.0001" solimp="0.9 0.95 0.001" solref="0.02 1"/>
+    </body>
+
+    <body name="mecanum_FR_roller_7_link" pos="-0.020221478418226347 0.0 -0.02022147841822633">
+        <joint name="mecanum_FR_slipping_7_joint" type="hinge" pos="0 0 0" axis="0.010836657623854239 0.025 -0.010836657623854247" damping="0.1" limited="false" actuatorfrclimited="false"/>
+        <inertial pos="0 0 0" quat="0.711549 0.711549 0 0 " mass="0.001" diaginertia="0.00001 0.00001 0.00001" />
+        <geom size="0.08" quat="1 0 0 0" type="sphere" rgba="0.2 0.2 0.2 1" contype="2" conaffinity="4" condim="4" friction="0.5 0.005 0.0001" solimp="0.9 0.95 0.001" solref="0.02 1"/>
+    </body>
+
+    <body name="mecanum_FR_roller_8_link" pos="-0.007401574803149616 0.0 -0.02762305322137594">
+        <joint name="mecanum_FR_slipping_8_joint" type="hinge" pos="0 0 0" axis="0.014803149606299222 0.025 -0.003966491982444975" damping="0.1" limited="false" actuatorfrclimited="false"/>
+        <inertial pos="0 0 0" quat="0.711549 0.711549 0 0 " mass="0.001" diaginertia="0.00001 0.00001 0.00001" />
+        <geom size="0.08" quat="1 0 0 0" type="sphere" rgba="0.2 0.2 0.2 1" contype="2" conaffinity="4" condim="4" friction="0.5 0.005 0.0001" solimp="0.9 0.95 0.001" solref="0.02 1"/>
+    </body>
+
+    <body name="mecanum_FR_roller_9_link" pos="0.007401574803149595 0.0 -0.02762305322137595">
+        <joint name="mecanum_FR_slipping_9_joint" type="hinge" pos="0 0 0" axis="0.0148031496062992 0.025 0.003966491982444954" damping="0.1" limited="false" actuatorfrclimited="false"/>
+        <inertial pos="0 0 0" quat="0.711549 0.711549 0 0 " mass="0.001" diaginertia="0.00001 0.00001 0.00001" />
+        <geom size="0.08" quat="1 0 0 0" type="sphere" rgba="0.2 0.2 0.2 1" contype="2" conaffinity="4" condim="4" friction="0.5 0.005 0.0001" solimp="0.9 0.95 0.001" solref="0.02 1"/>
+    </body>
+
+    <body name="mecanum_FR_roller_10_link" pos="0.020221478418226323 0.0 -0.02022147841822635">
+        <joint name="mecanum_FR_slipping_10_joint" type="hinge" pos="0 0 0" axis="0.010836657623854258 0.025 0.010836657623854246" damping="0.1" limited="false" actuatorfrclimited="false"/>
+        <inertial pos="0 0 0" quat="0.711549 0.711549 0 0 " mass="0.001" diaginertia="0.00001 0.00001 0.00001" />
+        <geom size="0.08" quat="1 0 0 0" type="sphere" rgba="0.2 0.2 0.2 1" contype="2" conaffinity="4" condim="4" friction="0.5 0.005 0.0001" solimp="0.9 0.95 0.001" solref="0.02 1"/>
+    </body>
+
+    <body name="mecanum_FR_roller_11_link" pos="0.02762305322137594 0.0 -0.007401574803149614">
+        <joint name="mecanum_FR_slipping_11_joint" type="hinge" pos="0 0 0" axis="0.003966491982444975 0.025 0.014803149606299228" damping="0.1" limited="false" actuatorfrclimited="false"/>
+        <inertial pos="0 0 0" quat="0.711549 0.711549 0 0 " mass="0.001" diaginertia="0.00001 0.00001 0.00001" />
+        <geom size="0.08" quat="1 0 0 0" type="sphere" rgba="0.2 0.2 0.2 1" contype="2" conaffinity="4" condim="4" friction="0.5 0.005 0.0001" solimp="0.9 0.95 0.001" solref="0.02 1"/>
+    </body>
+</body>
