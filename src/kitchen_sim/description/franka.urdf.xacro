@@ -15,6 +15,7 @@
                       hand="true"
                       tcp_xyz="0 0 0.1034"
                       ee_id="$(arg ee_id)"
+                      rpy_ee="$(arg rpy_ee)"
                       with_sc="false"
                       ros2_control="false"
                       robot_ip=""
