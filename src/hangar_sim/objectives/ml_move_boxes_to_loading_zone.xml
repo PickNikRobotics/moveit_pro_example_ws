@@ -6,6 +6,10 @@
     _favorite="true"
   >
     <Control ID="Sequence">
+      <!--Clear any collision objects left in the planning scene by a previous run of this
+          Objective (the per-box "placed_box_N" obstacles added below persist until removed).
+          Without this, stale boxes from the last run would block planning at their old poses.-->
+      <Action ID="ResetPlanningSceneObjects" />
       <Action
         ID="CreatePoseStamped"
         reference_frame="world"
@@ -34,7 +38,7 @@
         or behave incorrectly on the `_skipIf` paths.-->
       <Action
         ID="Script"
-        code="picked_at_wp1 := false; picked_at_wp2 := false; drained := false"
+        code="picked_at_wp1 := false; picked_at_wp2 := false; drained := false; placed_count := 0"
       />
       <!--Loop the pick cycle until the scene is drained (drained=true), and surface
         real pick errors as Objective FAILURE.
@@ -65,6 +69,7 @@
               confidence_threshold="0.25"
               text_prompt="a single small orange cube box"
               place_pose="{place_pose}"
+              placed_count="{placed_count}"
               picked_box="{picked_at_wp1}"
             />
             <!--Reset picked_at_wp2 before the (possibly-skipped) wp2 SubTree so the
@@ -85,6 +90,7 @@
               confidence_threshold="0.25"
               text_prompt="a single small orange cube box"
               place_pose="{place_pose}"
+              placed_count="{placed_count}"
               picked_box="{picked_at_wp2}"
             />
             <Action
