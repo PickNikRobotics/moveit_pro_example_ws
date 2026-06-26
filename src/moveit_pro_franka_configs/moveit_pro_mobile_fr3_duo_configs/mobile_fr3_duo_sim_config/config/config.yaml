@@ -34,7 +34,7 @@ hardware:
       - fake_sensor_commands: "false"
       - gazebo: "false"
       - gazebo_effort: "false"
-      - mujoco_viewer: "true"  # set to true locally to open the MuJoCo viewer window; true contends with the offscreen EGL camera render thread (eglMakeCurrent EGL_NOT_INITIALIZED)
+      - mujoco_viewer: "false"  # set to true locally to open the MuJoCo viewer window; true contends with the offscreen EGL camera render thread (eglMakeCurrent EGL_NOT_INITIALIZED)
       - description_pkg: "franka_description"
       - is_async: "false"
       - thread_priority: "50"
@@ -43,9 +43,9 @@ hardware:
 
   # Additional sim-only nodes (cmd_vel QoS relay + world->odom static TF).
   # Brought up automatically by the MoveIt Pro agent when hardware.simulated is true.
-  # simulated_robot_driver_persist_launch_file:
-  #   package: "mobile_fr3_duo_sim_config"
-  #   path: "launch/sim/robot_drivers_to_persist_sim.launch.py"
+  simulated_robot_driver_persist_launch_file:
+    package: "mobile_fr3_duo_sim_config"
+    path: "launch/sim/robot_drivers_to_persist_sim.launch.py"
 
 moveit_params:
   # Spine-free combined-arm group (14 joints). The arm controllers were decoupled from the
