@@ -22,7 +22,7 @@
   <BehaviorTree
     ID="Calibrate SAM3 Mask Areas"
     _description="Runs SAM3 segmentation on the current wrist camera image, then cycles /masks_visualization through each detected mask labeled with its pixel area. Use to pick FilterMasks2DByArea thresholds."
-    _favorite="true"
+    _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action

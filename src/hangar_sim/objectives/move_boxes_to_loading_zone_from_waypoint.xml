@@ -9,6 +9,7 @@
     _description="Move boxes to loading zone from waypoint"
     waypoint_name="View Boxes"
     place_pose="{place_pose}"
+    placed_count="{placed_count}"
     confidence_threshold="{confidence_threshold}"
     text_prompt="{text_prompt}"
     _favorite="false"
@@ -412,6 +413,38 @@
                     timeout="10.000000"
                     gripper_command_action_name="/vacuum_gripper/gripper_cmd"
                   />
+                  <!--Box released at the loading zone. Drop a persistent collision obstacle at the
+                      commanded place pose under a unique id ("placed_box_N"), then advance the counter
+                      so the next box gets its own id. place_pose is built in the world frame by the
+                      parent Objective, so the obstacle lands where the box was actually placed; later
+                      picks then plan the whole-body base around every already-placed box instead of
+                      driving over them (#19973). We add the obstacle here (after release) rather than
+                      attaching the carried box, because the ICP target_pose is base-relative and
+                      mislabeled world, which placed earlier attempts ~10 m off the robot.-->
+                  <Action
+                    ID="Script"
+                    code="placed_box_id := 'placed_box_' .. placed_count"
+                  />
+                  <!--Drop the obstacle pose from the place-pose hover height (z=0.5) down to the
+                      floor where the released box actually rests. TransformPose applies the offset in
+                      place_pose's body frame; place_pose points straight down (180 deg about Y), so a
+                      local +0.4 z maps to world -0.4 z, leaving x/y unchanged. Output to a separate
+                      pose so the parent's place motion still targets the original place_pose.-->
+                  <Action
+                    ID="TransformPose"
+                    input_pose="{place_pose}"
+                    output_pose="{placed_box_pose}"
+                    translation_xyz="0;0;0.4"
+                  />
+                  <Action
+                    ID="AddCollisionMesh"
+                    object_id="{placed_box_id}"
+                    mesh_file_path="package://hangar_sim/objectives/box.stl"
+                    pose="{placed_box_pose}"
+                    scale="1;1;1"
+                    overwrite="true"
+                  />
+                  <Action ID="Script" code="placed_count := placed_count + 1" />
                   <!--
                       A full pick+place cycle completed. The parent Objective reads
                       picked_box to decide whether to continue the outer loop or exit
@@ -438,6 +471,7 @@
       />
       <output_port name="picked_box" default="{picked_box}" />
       <input_port name="place_pose" default="{place_pose}" />
+      <inout_port name="placed_count" default="0" />
       <input_port name="text_prompt" default="{text_prompt}" />
       <input_port name="waypoint_name" default="View Boxes" />
     </SubTree>
