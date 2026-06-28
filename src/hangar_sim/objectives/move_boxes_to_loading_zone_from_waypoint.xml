@@ -223,7 +223,7 @@
                     end_effector_group_name="gripper"
                     generate_centroid_grasps="true"
                     grasp_poses="{grasp_poses}"
-                    num_orientation_samples="20"
+                    num_orientation_samples="8"
                     padding_dimension="0.01"
                     planning_scene_msg="{planning_scene}"
                     samples_per_plane="2"
@@ -239,10 +239,7 @@
                     world frame. SAM3's per-detection yaw is noisy and arbitrary
                     for a rotationally-symmetric brown cube, so letting it
                     rotate the gripper makes the wrist angle drift with
-                    detection noise instead of staying consistent across picks
-                    and can land the IK solver in awkward configurations that
-                    self-collide once the box is attached (see the bump to
-                    `max_ik_solutions="16"` below for the same reason).
+                    detection noise instead of staying consistent across picks.
 
                     We overwrite each grasp's orientation with a fixed
                     "gripper pointing straight down" quaternion (matching the
@@ -330,7 +327,7 @@
                     end_effector_link="grasp_link"
                     ik_group="manipulator"
                     ik_timeout_s="0.01"
-                    max_ik_solutions="16"
+                    max_ik_solutions="8"
                     monitored_stage="allow collision (gripper, &lt;octomap&gt;)"
                     target_poses="{leveled_grasp_poses}"
                     task="{task}"
@@ -402,6 +399,47 @@
                     gripper_command_action_name="/vacuum_gripper/gripper_cmd"
                     position="1.0"
                   />
+                  <!--Lift the box straight up ~10 cm right after grasping to clear the surface before
+                      transiting, so it does not drag along the ground. grasp_link points straight down at
+                      the grasp, so a grasp_link-relative -Z move is world +Z (up); mirrors the standard
+                      pick retreat (retract_xyz default 0;0;-0.1).-->
+                  <Action
+                    ID="CreatePoseStamped"
+                    reference_frame="grasp_link"
+                    pose_stamped="{lift_pose}"
+                    position_xyz="0;0;-0.1"
+                  />
+                  <Action ID="ResetPoseStampedVector" vector="{lift_path}" />
+                  <Action
+                    ID="PushBackVector"
+                    input_vector="{lift_path}"
+                    element="{lift_pose}"
+                    output_vector="{lift_path}"
+                  />
+                  <Action
+                    ID="PlanCartesianPath"
+                    acceleration_scale_factor="1.000000"
+                    blending_radius="0.020000"
+                    ik_cartesian_space_density="0.010000"
+                    ik_joint_space_density="0.100000"
+                    joint_trajectory_msg="{joint_trajectory_msg}"
+                    path="{lift_path}"
+                    planning_group_name="manipulator"
+                    position_only="false"
+                    tip_links="grasp_link"
+                    trajectory_sampling_rate="100"
+                    velocity_scale_factor="1.000000"
+                  />
+                  <!--Execute the lift on the JTC pipeline. ExecuteTrajectory defaults to the JTAC
+                      (admittance) controller, which hangar_sim does not run; this objective uses
+                      joint_trajectory_controller everywhere, so target it explicitly or the lift fails
+                      with "action server not available" and the cycle stalls.-->
+                  <Action
+                    ID="ExecuteTrajectory"
+                    execution_pipeline="jtc"
+                    controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
+                    joint_trajectory_msg="{joint_trajectory_msg}"
+                  />
                   <SubTree
                     ID="Move to Pose No Preview"
                     _collapsed="true"
@@ -413,14 +451,9 @@
                     timeout="10.000000"
                     gripper_command_action_name="/vacuum_gripper/gripper_cmd"
                   />
-                  <!--Box released at the loading zone. Drop a persistent collision obstacle at the
-                      commanded place pose under a unique id ("placed_box_N"), then advance the counter
-                      so the next box gets its own id. place_pose is built in the world frame by the
-                      parent Objective, so the obstacle lands where the box was actually placed; later
-                      picks then plan the whole-body base around every already-placed box instead of
-                      driving over them (#19973). We add the obstacle here (after release) rather than
-                      attaching the carried box, because the ICP target_pose is base-relative and
-                      mislabeled world, which placed earlier attempts ~10 m off the robot.-->
+                  <!--Box released at the loading zone: drop a persistent collision obstacle at the place
+                      pose (floor height) under a unique id so the whole-body base plans around every
+                      already-placed box instead of driving over them (#19973).-->
                   <Action
                     ID="Script"
                     code="placed_box_id := 'placed_box_' .. placed_count"

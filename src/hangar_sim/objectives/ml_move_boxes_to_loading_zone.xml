@@ -29,9 +29,9 @@
         outer init only matters if the Subtree fails before either of those resets
         runs.
 
-        Compatibility note: this Objective relies on three runtime contracts that the
+        Compatibility note: this Objective relies on four runtime contracts that the
         loaded `moveit_pro` build must satisfy — `ScriptCondition` (built-in BT.CPP 4),
-        `GetMasks2DFromExemplar` (SAM3 multimodal segmenter, 9.3+) which exposes the
+        `GetMasks2DFromExemplar` (SAM3 multimodal segmenter, 9.1+) which exposes the
         `mask_count` output port the inner Subtree uses, `RepeatUnlessFailureEachTick`
         (9.3+), and BT.CPP 4's SKIPPED-status propagation through `_skipIf`-decorated
         nodes and parent Sequences. Older runtimes will either fail to load the tree

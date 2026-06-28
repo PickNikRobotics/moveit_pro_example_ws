@@ -82,6 +82,10 @@ skip_objectives = {
     # same class lab_sim skips for the same reason.
     "ML Move Boxes to Loading Zone",
     "Move Boxes Looping",  # KeepRunningUntilFailure loop over the ML pick pipeline above.
+    # SAM3 diagnostic: needs the moveit_pro_sam3 model package, which the CI
+    # image does not ship (GetMasks2DFromExemplar fails to resolve the encoder
+    # model path). Same ML-inference class as the skips above.
+    "Calibrate SAM3 Mask Areas",
     "Segment Image from Point",
     "Segment Image from Text Prompt",
     "Segment Point Cloud from Clicked Point",
