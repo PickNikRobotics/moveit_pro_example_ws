@@ -3,6 +3,9 @@ build:
   # Enable this for bidirectional syncing from the UI
   symlink-install: true
   allow-overriding:
+    - ewellix_description
+    - franka_description
+    - kortex_description
     - robotiq_description
     - ur_description
   mixin:
@@ -16,37 +19,7 @@ build:
     - build-testing-on
     - coverage-gcc
     - coverage-pytest
-  packages-skip:
-    - libfranka
-    - franka_bringup
-    - franka_example_controllers
-    - franka_fr3_moveit_config
-    - franka_gazebo_bringup
-    - franka_ign_ros2_control
-    - franka_gripper
-    - franka_hardware
-    - franka_robot_state_broadcaster
-    - franka_ros2
-    - franka_semantic_components
-    - integration_launch_testing
-    - phoebe_hw
-    - phoebe_bridgeback_description
 test:
   event-handlers:
     - console_direct+
     - desktop_notification+
-  packages-skip:
-    - libfranka
-    - franka_bringup
-    - franka_example_controllers
-    - franka_fr3_moveit_config
-    - franka_gazebo_bringup
-    - franka_ign_ros2_control
-    - franka_gripper
-    - franka_hardware
-    - franka_robot_state_broadcaster
-    - franka_ros2
-    - franka_semantic_components
-    - integration_launch_testing
-    - phoebe_hw
-    - phoebe_bridgeback_description
