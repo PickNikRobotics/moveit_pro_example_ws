@@ -46,4 +46,4 @@ jobs:
             PR_BODY="⚠️Merge failed with conflicts! Please pull this branch and manually resolve the conflict by resetting this branch and re-merging."
           fi
           git push origin merge-$RELEASE_BRANCH-main-$RAND_SUFFIX
-          gh pr create --title "Merge ${{ steps.get_current_release_branch.outputs.branch }} into main" --body "$PR_BODY" --base main --head merge-$RELEASE_BRANCH-main-$RAND_SUFFIX --draft --reviewer shaur-k,JWhitleyWork,dsobek
+          gh pr create --title "Merge ${{ steps.get_current_release_branch.outputs.branch }} into main" --body "$PR_BODY" --base main --head merge-$RELEASE_BRANCH-main-$RAND_SUFFIX --draft --reviewer infrastructure-devs
