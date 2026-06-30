@@ -55,6 +55,8 @@ cancel_objectives: set[str] = set()
 # than guessing more aggressively up front.
 skip_objectives: set[str] = {
     "Teleoperate",  # Waits on UI teleoperation input.
+    "Marker Visualization Example",  # GetTextFromUser server unavailable headless.
+    "Writing Demo",  # Long-running drawing objective times out on the CI backend.
     "Find Green Block",  # ML text-prompt segmentation.
     "Find Red Block",  # ML text-prompt segmentation.
     "Sort Blocks",  # ML perception + multi-step grasp pipeline.

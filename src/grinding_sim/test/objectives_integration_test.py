@@ -53,6 +53,11 @@ cancel_objectives: set[str] = set()
 # more aggressively up front.
 skip_objectives: set[str] = {
     "Grind Machined Part",  # Admittance surface pass never converges in CI: no contact force.
+    # Core-library objectives aggregated into every config; both need a
+    # primary UI and cannot run in headless CI.
+    "Teleoperate",  # DoTeleoperateAction rejects the goal with no UI subscribed.
+    "Marker Visualization Example",  # GetTextFromUser server unavailable headless.
+    "Register Machined Part",  # Registration flow exceeds the fixture timeout headless.
 }
 
 
