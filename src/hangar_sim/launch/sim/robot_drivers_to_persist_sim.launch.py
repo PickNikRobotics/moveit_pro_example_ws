@@ -116,6 +116,7 @@ def generate_launch_description():
     namespace = LaunchConfiguration("namespace")
     use_namespace = LaunchConfiguration("use_namespace")
     slam = LaunchConfiguration("slam")
+    localization = LaunchConfiguration("localization")
     map_yaml_file = LaunchConfiguration("map")
     use_sim_time = LaunchConfiguration("use_sim_time")
     params_file = LaunchConfiguration("params_file")
@@ -178,6 +179,12 @@ def generate_launch_description():
 
     declare_slam_cmd = DeclareLaunchArgument(
         "slam", default_value="False", description="Whether run a SLAM"
+    )
+
+    declare_localization_cmd = DeclareLaunchArgument(
+        "localization",
+        default_value="True",
+        description="Run beluga_amcl for map-based localization. Set False to use a static map->odom TF instead.",
     )
 
     declare_map_yaml_cmd = DeclareLaunchArgument(
@@ -274,9 +281,8 @@ def generate_launch_description():
                     "use_sim_time": use_sim_time,
                     "autostart": autostart,
                     "params_file": params_file,
-                    "use_composition": use_composition,
-                    "use_respawn": use_respawn,
                     "container_name": "nav2_container",
+                    "localization": localization,
                 }.items(),
             ),
             IncludeLaunchDescription(
@@ -316,16 +322,26 @@ def generate_launch_description():
         arguments=["0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "mj_world", "map"],
     )
 
-    # Static map→odom bootstrap: anchors 'odom' in the TF tree before MuJoCo finishes loading so
-    # bt_navigator can initialize without an "unconnected trees" TF error. Not used in slam mode
-    # because slam_toolbox owns and publishes map→odom dynamically.
+    # Static map->odom TF fallback: only used when neither SLAM nor AMCL is publishing it.
+    # Compare lowercased strings rather than `not <bareword>` so this still works
+    # when slam/localization are passed as ROS-style lowercase booleans.
     static_tf_map_to_odom = Node(
+        condition=IfCondition(
+            PythonExpression(
+                [
+                    "'",
+                    slam,
+                    "'.lower() == 'false' and '",
+                    localization,
+                    "'.lower() == 'false'",
+                ]
+            )
+        ),
         package="tf2_ros",
         executable="static_transform_publisher",
         name="static_tf_map_to_odom",
         output="log",
         arguments=["0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "map", "odom"],
-        condition=IfCondition(PythonExpression(["not ", slam])),
     )
 
     # Static TF connecting MoveIt's planning root ('world') to the simulation root ('mj_world').
@@ -411,6 +427,7 @@ def generate_launch_description():
     ld.add_action(declare_namespace_cmd)
     ld.add_action(declare_use_namespace_cmd)
     ld.add_action(declare_slam_cmd)
+    ld.add_action(declare_localization_cmd)
     ld.add_action(declare_map_yaml_cmd)
     ld.add_action(declare_use_sim_time_cmd)
     ld.add_action(declare_params_file_cmd)
