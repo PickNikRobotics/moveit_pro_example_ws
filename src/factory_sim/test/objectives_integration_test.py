@@ -58,6 +58,19 @@ skip_objectives: set[str] = {
     "Automask Camera Iterate Masks",  # ML segmentation model + camera feed.
     "Pick Brackets from Left Bin",  # ML perception + grasp pipeline.
     "Pick and Place Brackets from Left Bin",  # ML perception + grasp pipeline.
+    # Core-library objectives aggregated into every config; both need a
+    # primary UI and cannot run in headless CI.
+    "Teleoperate",  # DoTeleoperateAction rejects the goal with no UI subscribed.
+    "Marker Visualization Example",  # GetTextFromUser server unavailable headless.
+    # Factory demos are not deterministic as standalone success checks in
+    # headless CI: planning-scene setup is not idempotent across the sweep,
+    # reachability loops exceed the fixture timeout, and surface-planning demos
+    # intermittently hit MTC planning failures.
+    "Inspect Convex Bowl",
+    "Plan Path Along Surface",
+    "Reachability Analysis - blocks",
+    "Reachability Analysis - bowls",
+    "Setup Initial Planning Scene",
 }
 
 

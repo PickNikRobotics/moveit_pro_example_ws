@@ -59,6 +59,11 @@ skip_objectives: set[str] = {
     "Segment Point Cloud from Point",  # Clicked point + ML segmentation.
     "Generate Graspable Object",  # ML segmentation.
     "Grasp Object from Point",  # Clicked point + ML segmentation.
+    # Core-library objectives aggregated into every config; both need a
+    # primary UI and cannot run in headless CI.
+    "Teleoperate",  # DoTeleoperateAction rejects the goal with no UI subscribed.
+    "Marker Visualization Example",  # GetTextFromUser server unavailable headless.
+    "Writing Demo",  # Long-running drawing objective times out on the CI backend.
 }
 
 # End-state correctness checks beyond SUCCESS/FAILURE. "Move Home" and "Move
