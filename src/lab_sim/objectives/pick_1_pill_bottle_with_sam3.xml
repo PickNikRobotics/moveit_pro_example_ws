@@ -162,12 +162,10 @@
           planning_group_name="manipulator"
           tip_links="grasp_link"
           tip_offset="0;0;0;0;0;0"
-          acceleration_scale_factor="1.000000"
-          velocity_scale_factor="1.000000"
           blending_radius="0.020000"
           ik_cartesian_space_density="0.010000"
           ik_joint_space_density="0.100000"
-          trajectory_sampling_rate="100"
+          trajectory_timing="[{mode: time_optimal}]"
           max_optimizer_iterations="1"
         />
         <Action

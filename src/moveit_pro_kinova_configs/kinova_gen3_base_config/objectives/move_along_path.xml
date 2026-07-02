@@ -77,9 +77,7 @@
             tip_offset="0.0;0.0;0.0;0.0;0.0;0.0"
             position_only="false"
             blending_radius="0.02"
-            velocity_scale_factor="0.5"
-            acceleration_scale_factor="0.5"
-            trajectory_sampling_rate="100"
+            trajectory_timing="[{mode: time_optimal, velocity_scale_factor: 0.5, acceleration_scale_factor: 0.5}]"
             joint_trajectory_msg="{joint_trajectory_msg}"
             debug_solution="{debug_solution}"
           />

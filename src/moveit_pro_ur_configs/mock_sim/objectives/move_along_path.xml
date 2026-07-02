@@ -94,7 +94,7 @@
             tip_offset="0.0;0.0;0.0;0.0;0.0;0.0"
             position_only="false"
             blending_radius="0.02"
-            trajectory_sampling_rate="100"
+            trajectory_timing="[{mode: time_optimal}]"
             joint_trajectory_msg="{joint_trajectory_msg}"
             ik_joint_space_density="0.05000"
             ik_cartesian_space_density="0.01000"

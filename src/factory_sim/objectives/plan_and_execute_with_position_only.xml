@@ -54,10 +54,8 @@
           <Control ID="Sequence" name="Plan">
             <Action
               ID="PlanCartesianPath"
-              trajectory_sampling_rate="30"
+              trajectory_timing="[{mode: time_optimal, trajectory_sampling_rate: 30}]"
               debug_solution="{debug_solution}"
-              velocity_scale_factor="1.000000"
-              acceleration_scale_factor="1.000000"
               blending_radius="0.020000"
               position_only="{position_only_ik}"
               joint_trajectory_msg="{joint_trajectory_msg}"
