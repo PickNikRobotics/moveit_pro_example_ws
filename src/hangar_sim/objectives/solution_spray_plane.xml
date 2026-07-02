@@ -46,7 +46,6 @@
       />
       <Action
         ID="PlanCartesianPath"
-        acceleration_scale_factor="1.000000"
         blending_radius="0.020000"
         debug_solution="{debug_solution}"
         ik_cartesian_space_density="0.010000"
@@ -56,8 +55,7 @@
         planning_group_name="manipulator"
         position_only="false"
         tip_links="grasp_link"
-        trajectory_sampling_rate="100"
-        velocity_scale_factor="1.000000"
+        trajectory_timing="[{mode: time_optimal}]"
       />
       <Action ID="WaitForMTCSolutionApproval" solution="{debug_solution}" />
       <Action

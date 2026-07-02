@@ -25,7 +25,6 @@
       />
       <Action
         ID="PlanCartesianPath"
-        acceleration_scale_factor="0.05"
         blending_radius="0.000005"
         debug_solution="{debug_solution}"
         ik_cartesian_space_density="0.010000"
@@ -34,8 +33,7 @@
         path="{pose_stamped_vector}"
         planning_group_name="manipulator"
         position_only="true"
-        trajectory_sampling_rate="100"
-        velocity_scale_factor="1.000000"
+        trajectory_timing="[{mode: time_optimal, acceleration_scale_factor: 0.05}]"
       />
       <Action ID="ExecuteTrajectory" />
     </Control>

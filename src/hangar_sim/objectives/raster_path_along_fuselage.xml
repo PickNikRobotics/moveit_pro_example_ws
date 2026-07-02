@@ -184,7 +184,6 @@
       />
       <Action
         ID="PlanCartesianPath"
-        acceleration_scale_factor="1.000000"
         blending_radius="0.0050000"
         ik_cartesian_space_density="0.010000"
         ik_joint_space_density="0.100000"
@@ -192,8 +191,7 @@
         path="{raster_path}"
         planning_group_name="manipulator"
         position_only="true"
-        trajectory_sampling_rate="100"
-        velocity_scale_factor="1.000000"
+        trajectory_timing="[{mode: time_optimal}]"
         tip_offset="0;0;0.1;0;0;0"
         debug_solution="{debug_solution}"
       />
