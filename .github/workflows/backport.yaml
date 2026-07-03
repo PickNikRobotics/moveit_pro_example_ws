@@ -1,0 +1,207 @@
+name: Backport merged pull request
+
+on:
+  pull_request_target:
+    types: [closed]
+  issue_comment:
+    types: [created]
+
+# All operations in this workflow — including `actions/checkout` — flow
+# through a GitHub App installation token (see the `app-token` step), so
+# the default `GITHUB_TOKEN` only needs the minimum scope to satisfy the
+# Actions runner.
+permissions:
+  contents: read
+
+concurrency:
+  group: backport-${{ github.event.pull_request.number || github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  backport:
+    name: Backport pull request
+    runs-on: ubuntu-latest
+
+    # Run on merged PRs that carry a backport label (default `label_pattern` is `^backport ([^ ]+)$`),
+    # or on `/backport <branch>` comments posted on a merged pull request.
+    # The trailing space in `/backport ` avoids matching `/backporting`, `/backport-status`, etc.
+    if: >
+      (
+        github.event_name == 'pull_request_target' &&
+        github.event.pull_request.merged &&
+        contains(toJSON(github.event.pull_request.labels.*.name), '"backport ')
+      ) || (
+        github.event_name == 'issue_comment' &&
+        github.event.issue.pull_request &&
+        github.event.issue.pull_request.merged_at != null &&
+        startsWith(github.event.comment.body, '/backport ')
+      )
+
+    steps:
+      # The default `GITHUB_TOKEN` cannot push to `.github/workflows/` — the
+      # Actions App has no `workflows` write capability and the `permissions:`
+      # schema has no key to grant it. A GitHub App installation token does
+      # carry that capability, scoped to the App's installation and short-lived
+      # (~1 hour), so it replaces the previously-used PAT (`PRO_ACTION_USER`).
+      #
+      # Mint the App token before `actions/checkout` and pass it as the
+      # checkout token. Otherwise `actions/checkout` persists the workflow's
+      # read-only `GITHUB_TOKEN` in `http.<url>.extraheader` (in a temp config
+      # included at local scope). That header — which git sends on every
+      # subsequent push — overrides the App-token credentials that
+      # `korthout/backport-action` injects into its push URL, and GitHub
+      # honors the read-only extraheader and returns 403
+      # ("Write access to repository not granted").
+      - name: Generate Token for backport
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.BACKPORT_APP_CLIENT_ID }}
+          private-key: ${{ secrets.BACKPORT_APP_PRIVATE_KEY }}
+
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+
+      # On the `/backport <branch>` comment path the action has no label to read,
+      # so parse the target branch out of the first line of the comment and feed
+      # it to the action via `target_branches`. Skipped for the label-triggered
+      # `pull_request_target` path, where the action's default `label_pattern`
+      # extracts the branch from the `backport <branch>` label name.
+      - name: Parse target branch from /backport comment
+        id: parse-comment
+        if: github.event_name == 'issue_comment'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            // Take only the first token after `/backport ` so trailing text in the
+            // same comment (e.g. an explanation) doesn't get fed in as part of the
+            // branch name.
+            const match = context.payload.comment.body.match(/^\/backport\s+(\S+)/);
+            if (!match) {
+              core.setFailed('Expected `/backport <branch>` but found no target branch in the comment.');
+              return;
+            }
+            const branch = match[1];
+            core.info(`Parsed target branch from comment: ${branch}`);
+            core.setOutput('branch', branch);
+
+      # The backport action only exposes the source PR's FULL body via its
+      # `${pull_description}` placeholder — there's no built-in way to copy just
+      # one section. Extract the `Release notes` section here so the action can
+      # append it to the generated backport PR description below (see the
+      # `pull_description` input). The section is everything from its header up
+      # to (but not including) the next same-or-higher markdown header or the
+      # next thematic break (`---`) — exactly where the PR template ends it,
+      # with the `---` separator before `## Claude agent checks`. The parser is
+      # fenced-code-block aware (a `## ...` or `---` inside a ``` fence is not a
+      # real header/break), strips the template's HTML-comment placeholder so an
+      # unfilled section yields nothing, and emits an empty string when the
+      # source PR has no Release notes content.
+      #
+      # The source PR body is attacker-controllable, so it is read as DATA via
+      # the `context.payload` object — never interpolated into this script with
+      # `${{ }}` — which is the documented-safe pattern for `pull_request_target`.
+      - name: Extract Release notes section from source PR
+        id: release-notes
+        if: github.event_name == 'pull_request_target' || github.event_name == 'issue_comment'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            // On the comment path the PR body lives on `issue.body` (a PR is an
+            // issue); on the merge path it's on `pull_request.body`. The
+            // job-level `if:` guarantees one of these two events.
+            const body = (context.eventName === 'issue_comment'
+              ? context.payload.issue?.body
+              : context.payload.pull_request?.body) || '';
+
+            const lines = body.split(/\r?\n/);
+            // Allow up to 3 leading spaces (CommonMark) on headers / breaks.
+            const headerRe = /^ {0,3}(#{1,6})\s+(.*?)\s*$/;
+            const breakRe = /^ {0,3}(?:-{3,}|\*{3,}|_{3,})\s*$/;
+            const fenceRe = /^\s*(?:```+|~~~+)/;
+
+            // 1. Locate the "Release notes" header, skipping fenced code blocks
+            //    (a `## Release notes` quoted inside a ``` fence is not real).
+            //    `.replace(/\s+#+\s*$/, '')` strips ATX closing hashes so
+            //    `## Release notes ##` still matches.
+            let start = -1;
+            let level = 0;
+            let inFence = false;
+            for (let i = 0; i < lines.length; i++) {
+              if (fenceRe.test(lines[i])) { inFence = !inFence; continue; }
+              if (inFence) continue;
+              const m = lines[i].match(headerRe);
+              if (m && m[2].replace(/\s+#+\s*$/, '').trim().toLowerCase() === 'release notes') {
+                start = i;
+                level = m[1].length;
+                break;
+              }
+            }
+
+            if (start === -1) {
+              core.info('No "Release notes" section found in the source PR description.');
+              core.setOutput('section', '');
+              return;
+            }
+
+            // 2. Collect the section body — fence-aware so a `---` or header
+            //    inside a code block doesn't terminate it early.
+            const collected = [];
+            inFence = false;
+            for (let i = start + 1; i < lines.length; i++) {
+              if (fenceRe.test(lines[i])) { inFence = !inFence; collected.push(lines[i]); continue; }
+              if (!inFence) {
+                const m = lines[i].match(headerRe);
+                if (m && m[1].length <= level) break; // next same/higher-level header
+                if (breakRe.test(lines[i])) break;    // thematic break (template separator)
+              }
+              collected.push(lines[i]);
+            }
+
+            // 3. Strip the template's HTML-comment placeholder; an unfilled
+            //    section is comment-only, so treat that as "no release notes".
+            const cleaned = collected.join('\n').replace(/<!--[\s\S]*?-->/g, '');
+            if (cleaned.trim() === '') {
+              core.info('Release notes section is empty (unfilled template). Emitting nothing.');
+              core.setOutput('section', '');
+              return;
+            }
+
+            // 4. Rebuild: header + tidied body (drop leading/trailing blank
+            //    runs, collapse 3+ newlines to a single blank line).
+            let section = lines[start] + '\n\n'
+              + cleaned.replace(/^\n+/, '').replace(/\s+$/, '').replace(/\n{3,}/g, '\n\n');
+
+            // 5. Neutralize GitHub issue-closure keywords (close/fix/resolve +
+            //    #N | GH-N | owner/repo#N) by backtick-quoting the keyword, so
+            //    merging the backport doesn't replay a `Closes #N` smuggled in
+            //    from the source PR's notes and close an unrelated issue.
+            section = section.replace(
+              /\b(close[sd]?|fix(?:e[sd])?|resolve[sd]?)(\s*:?\s+)((?:[\w.-]+\/[\w.-]+)?#\d+|GH-\d+)/gi,
+              (m, kw, sep, ref) => '`' + kw + '`' + sep + ref);
+
+            core.setOutput('section', section);
+
+      - name: Create backport pull requests
+        uses: korthout/backport-action@66065406958f46e82238fd59546f5a99e69e22aa # v4.5.2
+        with:
+          github_token: ${{ steps.app-token.outputs.token }}
+          target_branches: ${{ steps.parse-comment.outputs.branch }}
+          add_author_as_assignee: true
+          add_labels: backport
+          auto_merge_enabled: true
+          copy_all_reviewers: true
+          experimental: '{"conflict_resolution": "draft_commit_conflicts"}'
+          # The first two lines are the action's default body (matched to
+          # v4.5.2, pinned by the SHA above); the trailing expression appends
+          # the source PR's Release notes section, or nothing when absent.
+          # `${pull_number}` / `${target_branch}` are the action's own template
+          # placeholders, substituted per-target PR; `${{ ... }}` is a GitHub
+          # Actions expression resolved before the action runs.
+          pull_description: |-
+            # Description
+            Backport of #${pull_number} to `${target_branch}`.
+
+            ${{ steps.release-notes.outputs.section }}
