@@ -14,14 +14,60 @@
         translation_xyz=".125;-0.07;0.01"
         name="Create pick pose for the bracket part"
       />
+      <!--A suction grasp on the flat bracket face is yaw-free about the face normal, so
+          approach candidates are sampled at 45-degree yaw increments about the pick pose
+          z-axis. The parts settle near the edge of the robot's reachable workspace, where
+          only some yaws have IK solutions; the batch IK stage below picks any that plans.-->
+      <Action ID="ResetPoseStampedVector" vector="{approach_candidates}" />
       <Action
         ID="TransformPose"
         input_pose="{pick_pose}"
-        output_pose="{approach_pose}"
+        output_pose="{yaw_pick_pose}"
+        translation_xyz="0;0;0"
+        quaternion_xyzw="0;0;0;1"
+        name="Copy pick pose as the yaw-0 candidate"
+      />
+      <Action
+        ID="TransformPose"
+        input_pose="{yaw_pick_pose}"
+        output_pose="{approach_candidate}"
         translation_xyz="0;0;0.15"
         quaternion_xyzw="-0.0; -1.0; -0.0; -0.0"
         name="Create approach pose before straight pick"
       />
+      <Action
+        ID="PushBackVector"
+        input_vector="{approach_candidates}"
+        element="{approach_candidate}"
+        output_vector="{approach_candidates}"
+      />
+      <Decorator ID="RepeatUnlessFailureWithinTick" num_cycles="7">
+        <Control
+          ID="Sequence"
+          name="Rotate the pick yaw 45 degrees and add the approach candidate"
+        >
+          <Action
+            ID="TransformPose"
+            input_pose="{yaw_pick_pose}"
+            output_pose="{yaw_pick_pose}"
+            translation_xyz="0;0;0"
+            quaternion_xyzw="0;0;0.3826834;0.9238795"
+          />
+          <Action
+            ID="TransformPose"
+            input_pose="{yaw_pick_pose}"
+            output_pose="{approach_candidate}"
+            translation_xyz="0;0;0.15"
+            quaternion_xyzw="-0.0; -1.0; -0.0; -0.0"
+          />
+          <Action
+            ID="PushBackVector"
+            input_vector="{approach_candidates}"
+            element="{approach_candidate}"
+            output_vector="{approach_candidates}"
+          />
+        </Control>
+      </Decorator>
       <Action
         ID="InitializeMTCTask"
         task="{mtc_task}"
@@ -53,20 +99,29 @@
         task="{mtc_task}"
       />
       <Action
-        ID="SetupMTCPlanToPose"
+        ID="SetupMTCConnectWithProRRT"
         acceleration_scale_factor="1.000000"
-        ik_frame="tool0"
         keep_orientation="false"
         keep_orientation_link_names="tool0"
         keep_orientation_tolerance="0.100000"
         link_padding="0.0100000"
         max_iterations="5000"
-        monitored_stage="current state"
         planning_group_name="manipulator"
-        target_pose="{approach_pose}"
+        seed="0"
         task="{mtc_task}"
         trajectory_sampling_rate="100"
         velocity_scale_factor="1.000000"
+      />
+      <Action
+        ID="SetupMTCBatchPoseIK"
+        end_effector_group="fanuc_ee"
+        end_effector_link="tool0"
+        ik_group="manipulator"
+        ik_timeout_s="0.05"
+        max_ik_solutions="1"
+        monitored_stage="current state"
+        target_poses="{approach_candidates}"
+        task="{mtc_task}"
       />
       <Action
         ID="SetupMTCMoveAlongFrameAxis"
