@@ -31,69 +31,103 @@
         tool_2_return_site="inspection_tool_holder_site"
         tool_names="suction_gripper;inspector"
       />
+      <Action
+        ID="Script"
+        code="halt_picking := false"
+        name="Picking continues until a part cannot be picked"
+      />
       <Decorator
-        ID="Repeat"
+        ID="RepeatUnlessFailureWithinTick"
         num_cycles="3"
         name="Pick a fixed number of brackets"
       >
-        <Control
-          ID="Sequence"
-          name="This is the main sequence of detecting and picking the bracket parts, putting them on the jig, and them putting them in the right bin"
+        <Decorator
+          ID="Precondition"
+          if="halt_picking == false"
+          else="SUCCESS"
+          name="Skip remaining cycles once a part is unpickable"
         >
-          <SubTree ID="Indicate Jig Empty" _collapsed="true" />
-          <SubTree
-            ID="Look for Bracket Part Subtree"
-            _collapsed="true"
-            registered_pose="{registered_pose}"
-          />
-          <SubTree
-            ID="Vacuum Pick Bracket Part Subtree"
-            _collapsed="true"
-            bracket_part_pose="{registered_pose}"
-            part_name="single_bracket_part"
-          />
-          <SubTree
-            ID="Drop Bracket Part on Jig Subtree"
-            _collapsed="true"
-            part_name="single_bracket_part"
-          />
-          <!--This jig apparatus and waiting is here just to motivate the use case and explain why the arm moves to a waiting pose, instead of dropping the part on the jig and then picking it right back up again-->
-          <SubTree
-            ID="Move to Waypoint"
-            _collapsed="true"
-            acceleration_scale_factor="1.0"
-            controller_action_server="/joint_trajectory_admittance_controller/follow_joint_trajectory"
-            controller_names="joint_trajectory_admittance_controller"
-            joint_group_name="manipulator"
-            keep_orientation="false"
-            keep_orientation_tolerance="0.05"
-            link_padding="0.01"
-            seed="0"
-            velocity_scale_factor="1.0"
-            waypoint_name="Home"
-            name="Send arm to waiting pose"
-          />
-          <Action
-            ID="LogMessage"
-            log_level="info"
-            message="Waiting for a few seconds to simulate a operation being done to the bracket"
-          />
-          <SubTree ID="Visualize Bins and Jig" _collapsed="true" />
-          <SubTree ID="Indicate Jig Working" _collapsed="true" />
-          <Action ID="WaitForDuration" delay_duration="2" />
-          <SubTree ID="Indicate Part Ready" _collapsed="true" />
-          <SubTree
-            ID="Pick Bracket Part from Jig Subtree"
-            _collapsed="true"
-            part_name="single_bracket_part"
-          />
-          <SubTree ID="Indicate Jig Empty" _collapsed="true" />
-          <SubTree
-            ID="Drop Bracket Part in Right Bin Subtree"
-            _collapsed="true"
-            part_name="single_bracket_part"
-          />
-        </Control>
+          <Control
+            ID="IfThenElse"
+            name="Detect and pick the next bracket; if the pick cannot be planned, report it and stop picking"
+          >
+            <Control
+              ID="Sequence"
+              name="Detect the next bracket and pick it with the vacuum gripper"
+            >
+              <SubTree ID="Indicate Jig Empty" _collapsed="true" />
+              <SubTree
+                ID="Look for Bracket Part Subtree"
+                _collapsed="true"
+                registered_pose="{registered_pose}"
+              />
+              <SubTree
+                ID="Vacuum Pick Bracket Part Subtree"
+                _collapsed="true"
+                bracket_part_pose="{registered_pose}"
+                part_name="single_bracket_part"
+              />
+            </Control>
+            <Control
+              ID="Sequence"
+              name="Place the bracket on the jig, then transfer it to the right bin"
+            >
+              <SubTree
+                ID="Drop Bracket Part on Jig Subtree"
+                _collapsed="true"
+                part_name="single_bracket_part"
+              />
+              <!--This jig apparatus and waiting is here just to motivate the use case and explain why the arm moves to a waiting pose, instead of dropping the part on the jig and then picking it right back up again-->
+              <SubTree
+                ID="Move to Waypoint"
+                _collapsed="true"
+                acceleration_scale_factor="1.0"
+                controller_action_server="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+                controller_names="joint_trajectory_admittance_controller"
+                joint_group_name="manipulator"
+                keep_orientation="false"
+                keep_orientation_tolerance="0.05"
+                link_padding="0.01"
+                seed="0"
+                velocity_scale_factor="1.0"
+                waypoint_name="Home"
+                name="Send arm to waiting pose"
+              />
+              <Action
+                ID="LogMessage"
+                log_level="info"
+                message="Waiting for a few seconds to simulate a operation being done to the bracket"
+              />
+              <SubTree ID="Visualize Bins and Jig" _collapsed="true" />
+              <SubTree ID="Indicate Jig Working" _collapsed="true" />
+              <Action ID="WaitForDuration" delay_duration="2" />
+              <SubTree ID="Indicate Part Ready" _collapsed="true" />
+              <SubTree
+                ID="Pick Bracket Part from Jig Subtree"
+                _collapsed="true"
+                part_name="single_bracket_part"
+              />
+              <SubTree ID="Indicate Jig Empty" _collapsed="true" />
+              <SubTree
+                ID="Drop Bracket Part in Right Bin Subtree"
+                _collapsed="true"
+                part_name="single_bracket_part"
+              />
+            </Control>
+            <Control
+              ID="Sequence"
+              name="Report the unpickable part and stop picking"
+            >
+              <SubTree ID="Deactivate Vacuum" _collapsed="true" />
+              <Action
+                ID="LogMessage"
+                log_level="info"
+                message="Could not detect the next bracket or plan a pick for it at any sampled grasp yaw; see the preceding log messages for the failing Behavior. A part that cannot be picked may have settled outside the reachable workspace. Skipping the remaining bracket picks."
+              />
+              <Action ID="Script" code="halt_picking := true" />
+            </Control>
+          </Control>
+        </Decorator>
       </Decorator>
       <SubTree ID="Visualize Bins and Jig" _collapsed="true" />
       <!--Stow vacuum gripper-->
