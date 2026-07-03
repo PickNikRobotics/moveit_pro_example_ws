@@ -21,7 +21,10 @@ hardware:
           path: "config/moveit/joint_limits.yaml"
       - mujoco_model: "description/hangar_scene.xml"
       - mujoco_viewer: false  # set to true locally to open the MuJoCo viewer window
-      # Set to false when use_fuse:=true so fuse is the sole odom -> ridgeback_base_link publisher.
+      # Publishes /odom messages for Nav2. The odom -> ridgeback_base_link TF edge is NOT
+      # published by MuJoCo (odom_publish_tf is false in the ros2_control xacro);
+      # robot_state_publisher owns the live transform to ridgeback_base_link via
+      # the virtual-rail joint chain, so this can stay true with fuse enabled.
       # Rebuild hangar_sim after changing this value.
       - publish_odom: true
 
