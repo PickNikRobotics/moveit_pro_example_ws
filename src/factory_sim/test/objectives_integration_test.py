@@ -30,6 +30,7 @@
 
 import pytest
 
+from moveit_pro_test_utils.objective_helpers import DEFAULT_OBJECTIVE_WAIT_S
 from moveit_pro_test_utils.objective_test_fixture import (
     ExecuteObjectiveResource,
     MUJOCO_RESET_HOOK,
@@ -40,6 +41,13 @@ from moveit_pro_test_utils.objective_test_fixture import (
     run_objective,
 )
 
+# Execution timeouts (seconds) for objectives that legitimately run longer than
+# DEFAULT_OBJECTIVE_WAIT_S. The bracket demo runs three full pick -> jig ->
+# re-pick -> right-bin cycles plus automated tool changing (~100-135 s locally).
+objective_wait_overrides: dict[str, float] = {
+    "Pick and Place Brackets from Left Bin": 240.0,
+}
+
 # factory_sim is a MuJoCo-backed sim: reset the keyframe between tests with the
 # default reset hook.
 SIM_RESETTER.register("factory_sim", MUJOCO_RESET_HOOK)
@@ -48,16 +56,16 @@ SIM_RESETTER.register("factory_sim", MUJOCO_RESET_HOOK)
 cancel_objectives: set[str] = set()
 
 # Objectives to skip entirely. The automask objectives run ML segmentation off
-# a camera feed, and the bin-picking objectives drive the full ML perception +
-# grasp pipeline — neither completes on the headless CI backend. Expand this
+# a camera feed, which the headless CI backend cannot satisfy. Expand this
 # set from the first weekly CI run rather than guessing more aggressively up
 # front.
 skip_objectives: set[str] = {
     "Automask from File",  # ML segmentation model.
     "Automask from Camera",  # ML segmentation model + camera feed.
     "Automask Camera Iterate Masks",  # ML segmentation model + camera feed.
-    "Pick Brackets from Left Bin",  # ML perception + grasp pipeline.
-    "Pick and Place Brackets from Left Bin",  # ML perception + grasp pipeline.
+    # Not yet validated headless; shares the pick subtree with the covered
+    # "Pick and Place Brackets from Left Bin" but lacks its jig/place coverage.
+    "Pick Brackets from Left Bin",
     # Core-library objectives aggregated into every config; both need a
     # primary UI and cannot run in headless CI.
     "Teleoperate",  # DoTeleoperateAction rejects the goal with no UI subscribed.
@@ -85,7 +93,14 @@ def test_all_objectives(
 ) -> None:
     """Run (or cancel) each factory_sim objective and assert it completes without error."""
     try:
-        run_objective(objective_id, should_cancel, execute_objective_resource)
+        run_objective(
+            objective_id,
+            should_cancel,
+            execute_objective_resource,
+            objective_wait_time=objective_wait_overrides.get(
+                objective_id, DEFAULT_OBJECTIVE_WAIT_S
+            ),
+        )
     except AssertionError as e:
         mode = "cancel" if should_cancel else "execute"
         pytest.fail(f"Objective '{objective_id}' failed to {mode}: {e}")
