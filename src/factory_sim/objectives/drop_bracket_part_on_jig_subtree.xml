@@ -10,12 +10,16 @@
       name="Drop bracket part on jig via an intermediate waypoint"
     >
       <!--The drop pose is just above two tapered posts representing a tooling jib that match alignment holes in the bracket part. The part is then released and settles onto those jig posts.-->
+      <!--The target is expressed for the attached part's own frame (ik_frame below), not tool0:
+          the pick may grasp the part at any sampled yaw, and the attached body carries the true
+          part-to-gripper transform, so planning for the part frame places the alignment holes on
+          the posts regardless of which grasp yaw was chosen.-->
       <Action
         ID="CreatePoseStamped"
         reference_frame="jig_post1"
         pose_stamped="{drop_pose}"
-        orientation_xyzw="1.000; 0.000; 0.000; 0.000"
-        position_xyz="0.012;-0.01;0.16"
+        orientation_xyzw="0.000; 0.000; 1.000; 0.000"
+        position_xyz="0.137;-0.08;0.055"
       />
       <Action
         ID="VisualizePose"
@@ -59,7 +63,7 @@
       <Action
         ID="SetupMTCPlanToPose"
         acceleration_scale_factor="0.5"
-        ik_frame="tool0"
+        ik_frame="{part_name}"
         keep_orientation="false"
         keep_orientation_link_names="tool0"
         keep_orientation_tolerance="0.100000"
