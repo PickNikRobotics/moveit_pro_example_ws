@@ -17,8 +17,6 @@
       <Action
         ID="InitializeMTCTask"
         task="{mtc_task}"
-        trajectory_monitoring="false"
-        controller_names="joint_trajectory_admittance_controller"
         task_id="drop_task"
         timeout="-1.000000"
       />

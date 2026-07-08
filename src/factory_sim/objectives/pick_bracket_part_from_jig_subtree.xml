@@ -35,10 +35,8 @@
         />
         <Action
           ID="InitializeMTCTask"
-          controller_names="joint_trajectory_admittance_controller"
           task_id="jig_approach"
           task="{mtc_task}"
-          trajectory_monitoring="false"
           timeout="-1.000000"
         />
         <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
@@ -101,10 +99,8 @@
       <Control ID="Sequence" name="Retract straight off of jig ">
         <Action
           ID="InitializeMTCTask"
-          controller_names="joint_trajectory_admittance_controller"
           task_id="jig_retract"
           task="{mtc_task}"
-          trajectory_monitoring="false"
           timeout="-1.000000"
         />
         <Action ID="SetupMTCCurrentState" task="{mtc_task}" />

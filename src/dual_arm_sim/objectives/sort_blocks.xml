@@ -34,8 +34,6 @@
                   ID="InitializeMTCTask"
                   task="{mtc_task}"
                   timeout="-1.000000"
-                  trajectory_monitoring="false"
-                  controller_names="right_joint_trajectory_admittance_controller"
                   task_id="right_grasp_task"
                 />
                 <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
@@ -86,8 +84,6 @@
                   ID="InitializeMTCTask"
                   task="{mtc_task}"
                   timeout="-1.000000"
-                  trajectory_monitoring="false"
-                  controller_names="right_joint_trajectory_admittance_controller"
                   task_id="right_place_task"
                 />
                 <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
@@ -167,8 +163,6 @@
                   ID="InitializeMTCTask"
                   task="{mtc_task}"
                   timeout="-1.000000"
-                  trajectory_monitoring="false"
-                  controller_names="left_joint_trajectory_admittance_controller"
                   task_id="left_grasp_task"
                 />
                 <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
@@ -219,8 +213,6 @@
                   ID="InitializeMTCTask"
                   task="{mtc_task}"
                   timeout="-1.000000"
-                  trajectory_monitoring="false"
-                  controller_names="left_joint_trajectory_admittance_controller"
                   task_id="left_place_task"
                 />
                 <Action

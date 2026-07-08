@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="IK Test">
+  <BehaviorTree ID="IK Test" _description="" _favorite="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="CreateStampedPose"
+        name="CreateStampedPose"
+        stamped_pose="{pose_stamped}"
+        orientation_xyzw="0.000000;0.000000;0.000000;1.000000"
+        position_xyz="0.000000;0.000000;0.500000"
+        reference_frame="grasp_link"
+      />
+      <Action
+        ID="AddPoseStampedToVector"
+        name="AddPoseStampedToVector"
+        input="{pose_stamped}"
+        vector="{pose_stamped_vector}"
+      />
+      <Action
+        ID="InitializeMTCTask"
+        name="InitializeMTCTask"
+        task="{mtc_task}"
+        enable_introspection="true"
+        timeout="-1.000000"
+        task_id=""
+      />
+      <Action
+        ID="SetupMTCCurrentState"
+        name="SetupMTCCurrentState"
+        task="{mtc_task}"
+      />
+      <Action
+        ID="SetupMTCConnectWithProRRT"
+        name="SetupMTCConnectWithProRRT"
+        task="{mtc_task}"
+        keep_orientation_link_names="grasp_link"
+        keep_orientation_tolerance="0.100000"
+        keep_orientation="false"
+        link_padding="0.000000"
+        trajectory_sampling_rate="100"
+        seed="0"
+        acceleration_scale_factor="1.000000"
+        velocity_scale_factor="1.000000"
+        max_iterations="5000"
+        planning_group_name="manipulator"
+      />
+      <Action
+        ID="SetupMTCBatchPoseIK"
+        name="SetupMTCBatchPoseIK"
+        max_ik_solutions="100"
+        ik_timeout_s="0.5"
+        end_effector_link="grasp_link"
+        end_effector_group="moveit_ee"
+        ik_group="manipulator"
+        monitored_stage="current state"
+        target_poses="{pose_stamped_vector}"
+        task="{mtc_task}"
+        spawn_top_k="0"
+      />
+      <Action
+        ID="PlanMTCTask"
+        name="PlanMTCTask"
+        suppress_failure_message="false"
+        solution="{mtc_solution}"
+        max_solutions="2"
+        task="{mtc_task}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="IK Test">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Basic Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

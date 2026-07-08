@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Reset MuJoCo Sim copy">
+  <BehaviorTree
+    ID="Reset MuJoCo Sim copy"
+    _description="Reset the MuJoCo simulation to the `default` keyframe (if specified in the mujoco model)."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="ListControllers"
+        type="command"
+        state="active"
+        controller_list="{command_controllers}"
+        service_name="/controller_manager/list_controllers"
+      />
+      <Action
+        ID="SwitchController"
+        deactivate_controllers="{command_controllers}"
+      />
+      <Action ID="WaitForDuration" name="WaitForDuration" delay_duration="2" />
+      <Decorator ID="ForceSuccess">
+        <Action
+          ID="ResetMujocoKeyframe"
+          response_timeout="10.000000"
+          wait_for_server_available_timeout="3.000000"
+          keyframe_name="default"
+        />
+      </Decorator>
+      <Action
+        ID="SwitchController"
+        _skipIf="true"
+        controller_list_action_name="/controller_manager/list_controllers"
+        activate_controllers="{command_controllers}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Reset MuJoCo Sim copy">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="MuJoCo Simulation" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

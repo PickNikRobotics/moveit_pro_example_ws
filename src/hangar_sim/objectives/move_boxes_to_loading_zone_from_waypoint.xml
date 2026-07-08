@@ -278,10 +278,8 @@
                   </Decorator>
                   <Action
                     ID="InitializeMTCTask"
-                    controller_names="joint_trajectory_controller"
                     task="{task}"
                     task_id=""
-                    trajectory_monitoring="false"
                     timeout="-1.000000"
                   />
                   <Action ID="SetupMTCCurrentState" task="{task}" />
