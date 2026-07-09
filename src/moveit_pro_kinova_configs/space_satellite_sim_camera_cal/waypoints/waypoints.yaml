@@ -306,3 +306,187 @@
     twist: []
     wrench: []
   name: View Tag
+- description: Wrist camera views the satellite tags (eye-in-hand cal)
+  favorite: false
+  joint_group_names:
+  - gripper
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - robotiq_85_left_finger_joint
+    - robotiq_85_right_finger_joint
+    - joint_1
+    - joint_2
+    - joint_3
+    - joint_4
+    - joint_5
+    - joint_6
+    - joint_7
+    position:
+    - 0.0029407721601535414
+    - 0.00014643648808031575
+    - 0.0001464364880981395
+    - -0.7466
+    - 1.5857
+    - -1.3846
+    - -0.0286
+    - -1.2893
+    - -1.9375
+    - 2.5092
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Wrist Camera Calibration 1
+- description: Wrist camera views the satellite tags (eye-in-hand cal)
+  favorite: false
+  joint_group_names:
+  - gripper
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - robotiq_85_left_finger_joint
+    - robotiq_85_right_finger_joint
+    - joint_1
+    - joint_2
+    - joint_3
+    - joint_4
+    - joint_5
+    - joint_6
+    - joint_7
+    position:
+    - 0.0029407721601535414
+    - 0.00014643648808031575
+    - 0.0001464364880981395
+    - -0.9087
+    - 1.5934
+    - -1.4064
+    - -0.527
+    - -1.2613
+    - -1.8057
+    - 2.8234
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Wrist Camera Calibration 2
+- description: Wrist camera views the satellite tags (eye-in-hand cal)
+  favorite: false
+  joint_group_names:
+  - gripper
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - robotiq_85_left_finger_joint
+    - robotiq_85_right_finger_joint
+    - joint_1
+    - joint_2
+    - joint_3
+    - joint_4
+    - joint_5
+    - joint_6
+    - joint_7
+    position:
+    - 0.0029407721601535414
+    - 0.00014643648808031575
+    - 0.0001464364880981395
+    - -0.7697
+    - 1.5421
+    - -1.3189
+    - -0.0283
+    - -1.3543
+    - -1.9853
+    - 2.5073
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Wrist Camera Calibration 3
+- description: Wrist camera views the satellite tags (eye-in-hand cal)
+  favorite: false
+  joint_group_names:
+  - gripper
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - robotiq_85_left_finger_joint
+    - robotiq_85_right_finger_joint
+    - joint_1
+    - joint_2
+    - joint_3
+    - joint_4
+    - joint_5
+    - joint_6
+    - joint_7
+    position:
+    - 0.0029407721601535414
+    - 0.00014643648808031575
+    - 0.0001464364880981395
+    - -0.7479
+    - 1.3555
+    - -1.3291
+    - -0.0284
+    - -1.4385
+    - -2.0564
+    - 2.5514
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Wrist Camera Calibration 4

@@ -20,7 +20,7 @@
       />
       <Action
         ID="WaitForDuration"
-        delay_duration="2.5"
+        delay_duration="5.0"
         name="Wait for arm to settle."
       />
       <Action ID="ResetPoseStampedVector" vector="{poses_at_waypoint_vec}" />
@@ -39,6 +39,7 @@
               ID="Camera Pose from Cal Tool - Detect Tags"
               _collapsed="true"
               camera_optical_frame="{camera_optical_frame}"
+              tag_frame_prefix="{tag_frame_prefix}"
               computed_pose="{computed_pose}"
               camera_image_topic="{camera_image_topic}"
               camera_info_topic="{camera_info_topic}"
@@ -69,9 +70,16 @@
         pose="{average_pose_stamped}"
       />
       <Action
+        ID="TransformPoseFrame"
+        input_pose="{average_pose_stamped}"
+        output_pose="{average_pose_in_mount_parent}"
+        target_frame_id="{mounting_pose_parent_frame}"
+        name="Express per-waypoint optical pose in mount parent frame (rigid to camera; invariant across waypoints, so the cross-waypoint average is unbiased)"
+      />
+      <Action
         ID="PushBackVector"
         input_vector="{computed_poses_vector}"
-        element="{average_pose_stamped}"
+        element="{average_pose_in_mount_parent}"
         output_vector="{computed_poses_vector}"
       />
     </Control>
@@ -87,6 +95,11 @@
       <inout_port
         name="camera_optical_frame"
         default="{camera_optical_frame}"
+      />
+      <inout_port name="tag_frame_prefix" default="calibration_tag_" />
+      <inout_port
+        name="mounting_pose_parent_frame"
+        default="{mounting_pose_parent_frame}"
       />
       <inout_port
         name="computed_poses_vector"

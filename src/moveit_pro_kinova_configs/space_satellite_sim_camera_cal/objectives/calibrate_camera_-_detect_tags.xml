@@ -25,7 +25,9 @@
         _collapsed="true"
         computed_poses_vector="{computed_poses_vector}"
         camera_optical_frame="{camera_optical_frame}"
-        waypoint_name="Camera Calibration 1"
+        tag_frame_prefix="{tag_frame_prefix}"
+        mounting_pose_parent_frame="{mounting_pose_parent_frame}"
+        waypoint_name="{waypoint_1_name}"
         camera_image_topic="{camera_image_topic}"
         camera_info_topic="{camera_info_topic}"
       />
@@ -34,7 +36,9 @@
         _collapsed="true"
         computed_poses_vector="{computed_poses_vector}"
         camera_optical_frame="{camera_optical_frame}"
-        waypoint_name="Camera Calibration 2"
+        tag_frame_prefix="{tag_frame_prefix}"
+        mounting_pose_parent_frame="{mounting_pose_parent_frame}"
+        waypoint_name="{waypoint_2_name}"
         camera_image_topic="{camera_image_topic}"
         camera_info_topic="{camera_info_topic}"
       />
@@ -43,7 +47,9 @@
         _collapsed="true"
         computed_poses_vector="{computed_poses_vector}"
         camera_optical_frame="{camera_optical_frame}"
-        waypoint_name="Camera Calibration 3"
+        tag_frame_prefix="{tag_frame_prefix}"
+        mounting_pose_parent_frame="{mounting_pose_parent_frame}"
+        waypoint_name="{waypoint_3_name}"
         camera_image_topic="{camera_image_topic}"
         camera_info_topic="{camera_info_topic}"
       />
@@ -52,7 +58,9 @@
         _collapsed="true"
         computed_poses_vector="{computed_poses_vector}"
         camera_optical_frame="{camera_optical_frame}"
-        waypoint_name="Camera Calibration 4"
+        tag_frame_prefix="{tag_frame_prefix}"
+        mounting_pose_parent_frame="{mounting_pose_parent_frame}"
+        waypoint_name="{waypoint_4_name}"
         camera_image_topic="{camera_image_topic}"
         camera_info_topic="{camera_info_topic}"
       />
@@ -142,6 +150,11 @@
         name="mounting_pose_save_file"
         default="calibrated_scene_camera_mounting_pose.txt"
       />
+      <inout_port name="tag_frame_prefix" default="calibration_tag_" />
+      <inout_port name="waypoint_1_name" default="Camera Calibration 1" />
+      <inout_port name="waypoint_2_name" default="Camera Calibration 2" />
+      <inout_port name="waypoint_3_name" default="Camera Calibration 3" />
+      <inout_port name="waypoint_4_name" default="Camera Calibration 4" />
     </SubTree>
   </TreeNodesModel>
 </root>

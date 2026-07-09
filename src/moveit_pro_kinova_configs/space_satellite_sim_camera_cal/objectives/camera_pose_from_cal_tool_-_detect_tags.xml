@@ -27,7 +27,7 @@
         image="{image}"
         camera_info="{camera_info}"
         base_link="base_link"
-        tag_frame_prefix="calibration_tag_"
+        tag_frame_prefix="{tag_frame_prefix}"
         tag_size="0.051"
         tag_family="tag36h11"
         min_tags="3"
@@ -55,6 +55,7 @@
         name="camera_optical_frame"
         default="{camera_optical_frame}"
       />
+      <inout_port name="tag_frame_prefix" default="calibration_tag_" />
       <inout_port name="computed_pose" default="{computed_pose}" />
     </SubTree>
   </TreeNodesModel>

@@ -618,6 +618,41 @@
     <origin xyz="0 0 0" rpy="0 0 0" />
   </xacro:realsense_d415>
 
+  <!-- Wrist Camera mount (eye-in-hand calibration). The nominal flange-to-camera pose
+       that the "Calibrate Wrist Camera" objective solves for; paste its result here to
+       correct the extrinsics. For the sim, mount == optical: bracelet_link -> optical is
+       Ry(180 deg) at [0, -0.056, -0.058] (MuJoCo renders /wrist_camera/* from this). -->
+  <link name="wrist_camera_mount_link" />
+  <joint name="wrist_camera_mount_joint" type="fixed">
+    <parent link="bracelet_link" />
+    <child link="wrist_camera_mount_link" />
+    <origin xyz="0 -0.056 -0.058" rpy="0 3.14159265358979 0" />
+  </joint>
+
+  <!-- Satellite calibration tags (static, world-fixed) for the wrist camera. tag36h11
+       ids 3/4/5, mounted as angled plates on the drum top facing the servicer arm; the
+       rpy tilt (Ry 30 deg) points +Z out of the tag face for the corner-based PnP solve.
+       Poses match the MuJoCo satellite_tags geoms in description/mujoco/scene.xml. The
+       "Calibrate Wrist Camera" objective looks up frame 'sat_tag_<id>'. -->
+  <link name="sat_tag_3" />
+  <joint name="sat_tag_3_joint" type="fixed">
+    <parent link="world" />
+    <child link="sat_tag_3" />
+    <origin xyz="0.42 0.46 0.274" rpy="0 0.5236 0" />
+  </joint>
+  <link name="sat_tag_4" />
+  <joint name="sat_tag_4_joint" type="fixed">
+    <parent link="world" />
+    <child link="sat_tag_4" />
+    <origin xyz="0.42 0.66 0.274" rpy="0 0.5236 0" />
+  </joint>
+  <link name="sat_tag_5" />
+  <joint name="sat_tag_5_joint" type="fixed">
+    <parent link="world" />
+    <child link="sat_tag_5" />
+    <origin xyz="0.20 0.56 0.274" rpy="0 0.5236 0" />
+  </joint>
+
   <ros2_control name="kinova_mujoco_simulation" type="system">
     <joint name="joint_1">
       <command_interface name="position">
