@@ -185,18 +185,20 @@
 
     <!--
       Satellite calibration tags for the WRIST camera (eye-in-hand). Three tag36h11
-      markers (ids 3,4,5) on the drum top, tilted ~30 deg about Y (quat = Ry30) so the
-      tag face angles toward the servicer arm. World-fixed; matching URDF frames
-      sat_tag_3/4/5 are children of `world`. Distinct ids from the tool plate (0,1,2)
-      so the wrist can see the tool without corrupting the satellite-tag detections.
+      markers (ids 3,4,5) mounted flat and coplanar on the servicer's front (+x) gold
+      face, facing out into the arm's workspace (quat = Ry90 -> tag normal +x). They sit
+      on the arm-base side of the face, clear of the central docking mechanism. World-
+      fixed; matching URDF frames sat_tag_3/4/5 are children of `world`. Distinct ids
+      from the tool plate (0,1,2) so the wrist can see the tool without corrupting the
+      satellite-tag detections.
     -->
     <body name="satellite_tags">
       <geom
         name="sat_tag_3"
         type="box"
-        quat="0.9659258 0 0.2588190 0"
+        quat="0.7071068 0 0.7071068 0"
         size="0.031875 0.031875 0.0002"
-        pos="0.42 0.46 0.274"
+        pos="0.50 0.45 0.04"
         rgba="1 1 1 1"
         material="ar_marker_3"
         contype="0"
@@ -205,9 +207,9 @@
       <geom
         name="sat_tag_4"
         type="box"
-        quat="0.9659258 0 0.2588190 0"
+        quat="0.7071068 0 0.7071068 0"
         size="0.031875 0.031875 0.0002"
-        pos="0.42 0.66 0.274"
+        pos="0.50 0.27 0.04"
         rgba="1 1 1 1"
         material="ar_marker_4"
         contype="0"
@@ -216,9 +218,9 @@
       <geom
         name="sat_tag_5"
         type="box"
-        quat="0.9659258 0 0.2588190 0"
+        quat="0.7071068 0 0.7071068 0"
         size="0.031875 0.031875 0.0002"
-        pos="0.20 0.56 0.274"
+        pos="0.50 0.36 -0.12"
         rgba="1 1 1 1"
         material="ar_marker_5"
         contype="0"

@@ -630,27 +630,28 @@
   </joint>
 
   <!-- Satellite calibration tags (static, world-fixed) for the wrist camera. tag36h11
-       ids 3/4/5, mounted as angled plates on the drum top facing the servicer arm; the
-       rpy tilt (Ry 30 deg) points +Z out of the tag face for the corner-based PnP solve.
-       Poses match the MuJoCo satellite_tags geoms in description/mujoco/scene.xml. The
-       "Calibrate Wrist Camera" objective looks up frame 'sat_tag_<id>'. -->
+       ids 3/4/5, mounted flat and coplanar on the servicer's front (+x) gold face, on
+       the arm-base side of the central docking mechanism. rpy (Ry 90 deg) points +Z out
+       of the tag face (normal +x) for the corner-based PnP solve. Poses match the MuJoCo
+       satellite_tags geoms in description/mujoco/scene.xml. The "Calibrate Wrist Camera"
+       objective looks up frame 'sat_tag_<id>'. -->
   <link name="sat_tag_3" />
   <joint name="sat_tag_3_joint" type="fixed">
     <parent link="world" />
     <child link="sat_tag_3" />
-    <origin xyz="0.42 0.46 0.274" rpy="0 0.5236 0" />
+    <origin xyz="0.50 0.45 0.04" rpy="0 1.5708 0" />
   </joint>
   <link name="sat_tag_4" />
   <joint name="sat_tag_4_joint" type="fixed">
     <parent link="world" />
     <child link="sat_tag_4" />
-    <origin xyz="0.42 0.66 0.274" rpy="0 0.5236 0" />
+    <origin xyz="0.50 0.27 0.04" rpy="0 1.5708 0" />
   </joint>
   <link name="sat_tag_5" />
   <joint name="sat_tag_5_joint" type="fixed">
     <parent link="world" />
     <child link="sat_tag_5" />
-    <origin xyz="0.20 0.56 0.274" rpy="0 0.5236 0" />
+    <origin xyz="0.50 0.36 -0.12" rpy="0 1.5708 0" />
   </joint>
 
   <ros2_control name="kinova_mujoco_simulation" type="system">
