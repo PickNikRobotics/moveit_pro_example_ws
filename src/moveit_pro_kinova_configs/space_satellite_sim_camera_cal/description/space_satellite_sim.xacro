@@ -559,45 +559,38 @@
     <child link="calibration_tool_link"/>
     <origin xyz="0 0 0.169" rpy="0 0 0"/>
   </joint>
-  <link name="calibration_tag_right">
-    <visual>
-      <origin xyz="0 0 0" rpy="0 1.5708 0"/>
-      <geometry>
-        <mesh filename="package://picknik_accessories/descriptions/ar_markers/Marker0.dae" scale=".05 .102 .102"/>
-        <!-- .dae tag side len = 0.5m, and tag size is 0.051m -> scale=0.102m -->
-      </geometry>
-    </visual>
-  </link>
-  <joint name="calibration_tag_right_joint" type="fixed">
+  <!--
+    AprilTag TF frames consumed by CalibrateCameraPosePnp. Frame calibration_tag_<id>
+    is the pose of the physical tag with detected id <id>, origin at the tag center and
+    +Z out of the tag face. These reproduce the tags rendered in simulation (see
+    description/mujoco/gen3_7dof_body.xml) so the frames stay coincident with what the
+    camera sees: the MuJoCo "calibration_tool" body applies a -90 deg yaw that
+    calibration_tool_link does not, so the tags hang off a matching intermediate frame.
+    Detected ids follow the MuJoCo materials: 0 = tool left, 1 = tool right, 2 = bottom.
+  -->
+  <link name="calibration_tags_root"/>
+  <joint name="calibration_tags_root_joint" type="fixed">
     <parent link="calibration_tool_link"/>
-    <child link="calibration_tag_right"/>
-    <origin xyz="-0.08625 -0.04925 -0.01" rpy="0 0 0"/>
+    <child link="calibration_tags_root"/>
+    <origin xyz="0 0 0" rpy="0 0 -1.5708"/>
   </joint>
-  <link name="calibration_tag_left">
-    <visual>
-      <origin xyz="0 0 0" rpy="0 1.5708 0"/>
-      <geometry>
-        <mesh filename="package://picknik_accessories/descriptions/ar_markers/Marker1.dae" scale=".05 .102 .102"/>
-      </geometry>
-    </visual>
-  </link>
-  <joint name="calibration_tag_left_joint" type="fixed">
-    <parent link="calibration_tool_link"/>
-    <child link="calibration_tag_left"/>
-    <origin xyz="0.08625 -0.04925 -0.01" rpy="0 0 0"/>
+  <link name="calibration_tag_0"/>
+  <joint name="calibration_tag_0_joint" type="fixed">
+    <parent link="calibration_tags_root"/>
+    <child link="calibration_tag_0"/>
+    <origin xyz="0.08625 -0.04925 -0.01" rpy="3.14159 0 0"/>
   </joint>
-  <link name="calibration_tag_bottom">
-    <visual>
-      <origin xyz="0 0 0" rpy="0 1.5708 0"/>
-      <geometry>
-        <mesh filename="package://picknik_accessories/descriptions/ar_markers/Marker2.dae" scale=".05 .102 .102"/>
-      </geometry>
-    </visual>
-  </link>
-  <joint name="calibration_tag_bottom_joint" type="fixed">
-    <parent link="calibration_tool_link"/>
-    <child link="calibration_tag_bottom"/>
-    <origin xyz="0.0 -0.18125 -0.01" rpy="0 0 0"/>
+  <link name="calibration_tag_1"/>
+  <joint name="calibration_tag_1_joint" type="fixed">
+    <parent link="calibration_tags_root"/>
+    <child link="calibration_tag_1"/>
+    <origin xyz="-0.08625 -0.04925 -0.01" rpy="3.14159 0 0"/>
+  </joint>
+  <link name="calibration_tag_2"/>
+  <joint name="calibration_tag_2_joint" type="fixed">
+    <parent link="calibration_tags_root"/>
+    <child link="calibration_tag_2"/>
+    <origin xyz="0.0 -0.18125 -0.01" rpy="3.14159 0 0"/>
   </joint>
 
   <link name="calibration_tool_frame"/>
