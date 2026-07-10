@@ -66,7 +66,7 @@ BT::NodeStatus ExampleConvertMtcSolutionToJointTrajectory::tick()
   // Initialize the robot model loader if this is the first time this Behavior has been run.
   if (robot_model_loader_ == nullptr)
   {
-    robot_model_loader_ = std::make_unique<robot_model_loader::RobotModelLoader>(shared_resources_->node);
+    robot_model_loader_ = std::make_unique<robot_model_loader::RobotModelLoader>(getBehaviorContext()->node);
   }
 
   // Get the robot model from the robot model loader.

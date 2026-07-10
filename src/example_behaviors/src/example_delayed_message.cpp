@@ -34,8 +34,8 @@ BT::NodeStatus ExampleDelayedMessage::onStart()
   if (const auto error = moveit_pro::behaviors::maybe_error(maybe_duration); error)
   {
     // If the port was set incorrectly, we will log an error message to the UI and the node will return FAILURE
-    shared_resources_->logger->publishFailureMessage(name(), "Failed to get required values from input data ports." +
-                                                                 error.value());
+    getBehaviorContext()->logger->publishFailureMessage(name(), "Failed to get required values from input data ports." +
+                                                                    error.value());
     return BT::NodeStatus::FAILURE;
   }
 
@@ -47,7 +47,7 @@ BT::NodeStatus ExampleDelayedMessage::onStart()
   {
     // Log the "Hello, world!" message.
     // Setting the third argument to false ensures the message will be shown immediately
-    shared_resources_->logger->publishInfoMessage(name(), "Hello, world!");
+    getBehaviorContext()->logger->publishInfoMessage(name(), "Hello, world!");
     return BT::NodeStatus::SUCCESS;
   }
 
@@ -62,7 +62,7 @@ BT::NodeStatus ExampleDelayedMessage::onRunning()
   {
     // Log the "Hello, world!" message.
     // Setting the third argument to false ensures the message will be shown immediately
-    shared_resources_->logger->publishInfoMessage(name(), "Hello, world!");
+    getBehaviorContext()->logger->publishInfoMessage(name(), "Hello, world!");
     return BT::NodeStatus::SUCCESS;
   }
   else

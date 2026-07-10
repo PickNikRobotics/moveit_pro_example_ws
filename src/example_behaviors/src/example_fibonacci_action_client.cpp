@@ -66,7 +66,7 @@ ExampleFibonacciActionClient::processResult(const std::shared_ptr<Fibonacci::Res
   std::cout << stream.str() << std::endl;
 
   // Publish the result to the UI
-  shared_resources_->logger->publishInfoMessage(name(), "Result: " + stream.str());
+  getBehaviorContext()->logger->publishInfoMessage(name(), "Result: " + stream.str());
 
   setOutput<std::vector<int>>("result", result->sequence);
 
@@ -83,7 +83,7 @@ void ExampleFibonacciActionClient::processFeedback(const std::shared_ptr<const F
   std::cout << stream.str() << std::endl;
 
   // Publish the feedback to the UI
-  shared_resources_->logger->publishInfoMessage(name(), "Feedback: " + stream.str());
+  getBehaviorContext()->logger->publishInfoMessage(name(), "Feedback: " + stream.str());
 
   setOutput<std::vector<int>>("feedback", feedback->sequence);
 }

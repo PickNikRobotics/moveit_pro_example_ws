@@ -34,8 +34,8 @@ BT::NodeStatus ExampleCreateStringMsg::tick()
   if (const auto error = moveit_pro::behaviors::maybe_error(expected_string); error)
   {
     // If the port was set incorrectly, we will log an error message to the UI and the node will return FAILURE
-    shared_resources_->logger->publishFailureMessage(name(), "Failed to get required values from input data ports." +
-                                                                 error.value());
+    getBehaviorContext()->logger->publishFailureMessage(name(), "Failed to get required values from input data ports." +
+                                                                    error.value());
     return BT::NodeStatus::FAILURE;
   }
 

@@ -23,7 +23,7 @@ BT::NodeStatus ExampleHelloWorld::tick()
 {
   // Do ExampleHelloWorld's useful work.
   // Setting the third argument to false ensures the message will be shown immediately
-  shared_resources_->logger->publishInfoMessage(name(), "Hello, world!");
+  getBehaviorContext()->logger->publishInfoMessage(name(), "Hello, world!");
 
   return BT::NodeStatus::SUCCESS;
 }

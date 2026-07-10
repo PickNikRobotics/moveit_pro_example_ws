@@ -106,8 +106,8 @@ BT::NodeStatus ComputeTrayPlacePositionsUsingAprilTags::tick()
 
   if (!ports.has_value())
   {
-    shared_resources_->logger->publishFailureMessage(name(), "Failed to get required values from input data ports: " +
-                                                                 ports.error());
+    getBehaviorContext()->logger->publishFailureMessage(
+        name(), "Failed to get required values from input data ports: " + ports.error());
     return BT::NodeStatus::FAILURE;
   }
 
@@ -128,7 +128,7 @@ BT::NodeStatus ComputeTrayPlacePositionsUsingAprilTags::tick()
 
   if (tray_it == detections_array.detections.end())
   {
-    shared_resources_->logger->publishFailureMessage(
+    getBehaviorContext()->logger->publishFailureMessage(
         name(), fmt::format("Tray AprilTag with ID {} not found in detections.", tray_apriltag_id));
     return BT::NodeStatus::FAILURE;
   }
@@ -168,14 +168,14 @@ BT::NodeStatus ComputeTrayPlacePositionsUsingAprilTags::tick()
   }
 
   // Look up camera_frame -> "world" transform
-  if (!shared_resources_->transform_buffer_ptr->canTransform("world", camera_frame, tf2::TimePointZero))
+  if (!getBehaviorContext()->transform_buffer_ptr->canTransform("world", camera_frame, tf2::TimePointZero))
   {
-    shared_resources_->logger->publishFailureMessage(name(), fmt::format("Cannot transform between '{}' and 'world'.",
-                                                                         camera_frame));
+    getBehaviorContext()->logger->publishFailureMessage(
+        name(), fmt::format("Cannot transform between '{}' and 'world'.", camera_frame));
     return BT::NodeStatus::FAILURE;
   }
   const geometry_msgs::msg::TransformStamped camera_to_world_tf =
-      shared_resources_->transform_buffer_ptr->lookupTransform("world", camera_frame, tf2::TimePointZero);
+      getBehaviorContext()->transform_buffer_ptr->lookupTransform("world", camera_frame, tf2::TimePointZero);
   const Eigen::Isometry3d camera_to_world = tf2::transformToEigen(camera_to_world_tf);
 
   // Transform all positions to world frame with gripper-down orientation (x=1, y=0, z=0, w=0)
@@ -201,14 +201,14 @@ BT::NodeStatus ComputeTrayPlacePositionsUsingAprilTags::tick()
   const auto maybe_image = getInput<sensor_msgs::msg::Image>(kPortIDInputImage);
   if (!maybe_image.has_value())
   {
-    shared_resources_->logger->publishInfoMessage(name(), "No input_image provided; skipping visualization.");
+    getBehaviorContext()->logger->publishInfoMessage(name(), "No input_image provided; skipping visualization.");
   }
   else
   {
     try
     {
       const auto viz_topic = getInput<std::string>(kPortIDVisualizationTopic).value();
-      ros_publisher_interface_->init(viz_topic, shared_resources_);
+      ros_publisher_interface_->init(viz_topic, getBehaviorContext());
 
       const double fx = camera_info.k[0];
       const double fy = camera_info.k[4];
@@ -260,8 +260,8 @@ BT::NodeStatus ComputeTrayPlacePositionsUsingAprilTags::tick()
     }
     catch (const cv_bridge::Exception& e)
     {
-      shared_resources_->logger->publishFailureMessage(name(), fmt::format("cv_bridge error during visualization: {}",
-                                                                           e.what()));
+      getBehaviorContext()->logger->publishFailureMessage(
+          name(), fmt::format("cv_bridge error during visualization: {}", e.what()));
     }
   }
 
