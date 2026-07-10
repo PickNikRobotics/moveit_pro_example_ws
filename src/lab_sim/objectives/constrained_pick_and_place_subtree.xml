@@ -81,7 +81,6 @@
           <Action
             ID="InitializeMTCTask"
             task_id="move_to_pre_pick"
-            controller_names="joint_trajectory_admittance_controller;robotiq_gripper_controller"
             task="{pre_pick_task}"
           />
           <Action ID="SetupMTCCurrentState" task="{pre_pick_task}" />
@@ -147,7 +146,6 @@
           <Action
             ID="InitializeMTCTask"
             task_id="move_to_pre_place"
-            controller_names="joint_trajectory_admittance_controller;robotiq_gripper_controller"
             task="{pre_place_task}"
           />
           <Action ID="SetupMTCCurrentState" task="{pre_place_task}" />

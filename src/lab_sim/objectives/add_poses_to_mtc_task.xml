@@ -7,12 +7,7 @@
     _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
-      <Action
-        ID="InitializeMTCTask"
-        controller_names="joint_trajectory_admittance_controller;robotiq_gripper_controller"
-        task="{mtc_task}"
-        trajectory_monitoring="false"
-      />
+      <Action ID="InitializeMTCTask" task="{mtc_task}" />
       <!--Start the MTC task from the robot's current pose-->
       <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
       <!--Use a script with a pose counter so we can give a unique name to each marker (allowing multiple poses to be visualized)-->
@@ -59,10 +54,6 @@
         <Metadata subcategory="Motion - Task Planning" />
         <Metadata runnable="false" />
       </MetadataFields>
-      <inout_port
-        name="controller_names"
-        default="/joint_trajectory_admittance_controller;/robotiq_gripper_controller"
-      />
       <inout_port name="ik_frame" default="grasp_link" />
       <inout_port name="mtc_task" default="{mtc_task}" />
       <inout_port name="planning_group_name" default="manipulator" />

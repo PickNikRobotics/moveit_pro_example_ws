@@ -69,9 +69,7 @@
         <Action
           ID="InitializeMTCTask"
           task_id="move_to_pose"
-          controller_names="{controller_names}"
           task="{mtc_task}"
-          trajectory_monitoring="false"
           timeout="-1.000000"
         />
         <Action ID="SetupMTCCurrentState" task="{mtc_task}" />

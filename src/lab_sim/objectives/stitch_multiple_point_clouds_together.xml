@@ -65,7 +65,6 @@
         <Control ID="Sequence">
           <Action
             ID="InitializeMTCTask"
-            controller_names="joint_trajectory_admittance_controller"
             task="{mtc_task}"
             task_id="reach_test"
           />
@@ -100,12 +99,7 @@
       >
         <Control ID="Sequence">
           <!--Move to inspection point-->
-          <Action
-            ID="InitializeMTCTask"
-            controller_names="joint_trajectory_admittance_controller"
-            task="{move_task}"
-            task_id="inspect"
-          />
+          <Action ID="InitializeMTCTask" task="{move_task}" task_id="inspect" />
           <Action ID="SetupMTCCurrentState" task="{move_task}" />
           <Action
             ID="SetupMTCPlanToPose"
@@ -185,7 +179,6 @@
       <!--Demonstrate SetupMTCFromSolution for repeatable inspection routine-->
       <Action
         ID="InitializeMTCTask"
-        controller_names="joint_trajectory_admittance_controller"
         task="{replay_task}"
         task_id="repeat_inspection"
       />

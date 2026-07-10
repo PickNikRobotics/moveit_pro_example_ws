@@ -9,11 +9,9 @@
     <Control ID="Sequence">
       <Action
         ID="InitializeMTCTask"
-        controller_names="joint_trajectory_admittance_controller"
         task="{mtc_task}"
         task_id="move_along_axis"
         timeout="-1.000000"
-        trajectory_monitoring="false"
       />
       <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
       <Action

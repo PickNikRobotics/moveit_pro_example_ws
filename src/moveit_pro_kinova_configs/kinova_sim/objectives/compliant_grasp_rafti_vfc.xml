@@ -176,13 +176,7 @@
           </Control>
         </Control>
       </Control>
-      <Action
-        ID="InitializeMTCTask"
-        task_id=""
-        controller_names="joint_trajectory_admittance_controller;robotiq_gripper_controller"
-        task="{mtc_task}"
-        trajectory_monitoring="false"
-      />
+      <Action ID="InitializeMTCTask" task_id="" task="{mtc_task}" />
       <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
       <Action
         ID="SetupMTCPlanToPose"
@@ -213,13 +207,7 @@
         quaternion_xyzw="0.0;1.0;0.0;0.0"
         output_pose="{goal_pose}"
       />
-      <Action
-        ID="InitializeMTCTask"
-        task_id=""
-        controller_names="joint_trajectory_admittance_controller;robotiq_gripper_controller"
-        task="{mtc_task}"
-        trajectory_monitoring="false"
-      />
+      <Action ID="InitializeMTCTask" task_id="" task="{mtc_task}" />
       <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
       <Action
         ID="SetupMTCMoveAlongFrameAxis"

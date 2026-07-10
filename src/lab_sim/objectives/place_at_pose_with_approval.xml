@@ -9,10 +9,8 @@
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
         ID="InitializeMTCTask"
-        controller_names="joint_trajectory_admittance_controller;robotiq_gripper_controller"
         task="{mtc_task}"
         task_id="place_object"
-        trajectory_monitoring="false"
         timeout="-1.000000"
       />
       <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
