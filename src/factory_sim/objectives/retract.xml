@@ -6,13 +6,7 @@
     distance="0.1"
   >
     <Control ID="Sequence" name="TopLevelSequence">
-      <Action
-        ID="InitializeMTCTask"
-        controller_names="joint_trajectory_admittance_controller"
-        task_id="retract"
-        task="{mtc_task}"
-        trajectory_monitoring="false"
-      />
+      <Action ID="InitializeMTCTask" task_id="retract" task="{mtc_task}" />
       <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
       <Action
         ID="SetupMTCMoveAlongFrameAxis"

@@ -12,13 +12,7 @@
         position_xyz="0;0;-0.15"
         pose_stamped="{approach_pose}"
       />
-      <Action
-        ID="InitializeMTCTask"
-        task_id="pick_up_tool"
-        controller_names="joint_trajectory_admittance_controller"
-        task="{mtc_task}"
-        trajectory_monitoring="false"
-      />
+      <Action ID="InitializeMTCTask" task_id="pick_up_tool" task="{mtc_task}" />
       <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
       <Decorator
         ID="Precondition"

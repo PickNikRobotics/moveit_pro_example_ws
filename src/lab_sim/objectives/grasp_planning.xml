@@ -62,9 +62,7 @@
         <Action
           ID="InitializeMTCTask"
           task_id="pick_object"
-          controller_names="joint_trajectory_admittance_controller;robotiq_gripper_controller"
           task="{pick_object_task}"
-          trajectory_monitoring="false"
           timeout="-1.000000"
         />
         <Action ID="SetupMTCCurrentState" task="{pick_object_task}" />
