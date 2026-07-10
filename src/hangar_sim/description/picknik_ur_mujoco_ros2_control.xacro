@@ -23,9 +23,22 @@
           <param name="publish_odom">${publish_odom}</param>
           <param name="odom_child_frame">ridgeback_base_link</param>
           <param name="odom_rate">150</param>
-          <param name="odom_zero_z">true</param>
+          <!-- Zero z/roll/pitch in /odom for this planar base. The previous tag here,
+               odom_zero_z, is not a recognized odom publisher parameter and was silently
+               ignored; odom_planar is the real one. -->
+          <param name="odom_planar">true</param>
+          <!-- robot_state_publisher owns the live TF to ridgeback_base_link via the
+               virtual-rail joint chain (driven by MuJoCo's own joint states), so the
+               odom publisher must not broadcast a competing odom -> ridgeback_base_link
+               edge. /odom messages keep flowing for Nav2. -->
+          <param name="odom_publish_tf">false</param>
           <param name="odom_frame">odom</param>
           <param name="publish_mj_world_tf">false</param>
+          <!-- Stop the lidar TF fill-in chain at the robot's base instead of walking to
+               the MJCF worldbody. Without this, MuJoCo broadcasts
+               base_platform -> ridgeback_base_link, a second parent for a frame that
+               robot_state_publisher already publishes. -->
+          <param name="base_link_name">ridgeback_base_link</param>
           <param name="mujoco_viewer">${mujoco_viewer}</param>
           <param name="mujoco_keyframe">default</param>
       </hardware>

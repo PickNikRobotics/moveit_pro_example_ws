@@ -804,11 +804,18 @@ static_tf_world_to_map = Node(
     arguments=["0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "mj_world", "map"],
 )
 
-# Static transform: map to odometry frame
+# Static map->odom TF fallback: only used when neither SLAM nor AMCL is publishing it
 static_tf_map_to_odom = Node(
     package="tf2_ros",
     executable="static_transform_publisher",
     arguments=["0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "map", "odom"],
+)
+
+# Static transform anchoring MoveIt's planning root under the odometry frame
+static_tf_odom_to_world = Node(
+    package="tf2_ros",
+    executable="static_transform_publisher",
+    arguments=["0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "odom", "world"],
 )
 ```
 
@@ -821,15 +828,17 @@ mj_world (MuJoCo simulation root)
   │
   ├─ [static] → map
   │    │
-  │    └─ [static] → odom
+  │    └─ [beluga_amcl | static fallback] → odom
   │         │
-  │         └─ [robot_state_publisher] → ridgeback_base_link
-  │              (via virtual joint chain)
+  │         └─ [static] → world
+  │              │
+  │              └─ [robot_state_publisher] → ridgeback_base_link
+  │                   (via world → virtual_rail_link_1 → virtual_rail_link_2 chain)
   │
   └─ [Other scene elements]
 ```
 
-In production deployments with active localization, the static `map` to `odom` transform would be replaced with a dynamic transform published by the localization system (e.g., AMCL), representing the estimated pose correction between odometry and the global map frame.
+With `localization:=True` (the default), beluga_amcl publishes the dynamic `map` → `odom` correction and the static fallback is suppressed; its correction shifts the entire robot subtree (everything under `odom`), which is exactly the REP-105 localization semantics.
 
 ---
 
@@ -864,14 +873,22 @@ The `enable_odom_tf: false` parameter prevents the mecanum drive controllers fro
 | Transform | Publishing Node | Mechanism |
 |-----------|----------------|-----------|
 | `mj_world` → `map` | `static_transform_publisher` | Launch file configuration |
-| `map` → `odom` | `static_transform_publisher` | Launch file configuration (simulation only) |
-| `odom` → `ridgeback_base_link` | `robot_state_publisher` | URDF virtual joint chain with joint state feedback |
+| `map` → `odom` | `beluga_amcl` (or `static_transform_publisher` fallback) | Localization when `localization:=True`; static identity otherwise |
+| `odom` → `world` | `static_transform_publisher` | Launch file configuration (anchors the URDF root under the odometry frame) |
+| `world` → … → `ridgeback_base_link` | `robot_state_publisher` | URDF virtual joint chain with joint state feedback |
+| `ridgeback_base_link` → lidar mounts | MuJoCo hardware plugin | Lidar fill-in chain, stopped at the base by the `base_link_name` hardware parameter |
+
+`robot_state_publisher` is the **sole owner** of the live transform into `ridgeback_base_link`. Every other subsystem that knows the base pose expresses it as data, not as a competing TF parent:
+
+- The MuJoCo odom publisher emits `/odom` messages for Nav2 but not TF (`odom_publish_tf: false`).
+- The MuJoCo lidar fill-in chain stops at `ridgeback_base_link` (`base_link_name` hardware parameter) instead of broadcasting the ground-truth body chain (`base_platform` → `ridgeback_base_link`) up to the MJCF worldbody.
+- fuse keeps `publish_tf: false`; its estimate stays on `odom_filtered`. On real hardware the estimate feeds the virtual-rail joint states (odometry-to-joint-state bridge) rather than TF.
 
 ### Transform Source Analysis
 
-The `robot_state_publisher` node computes and publishes the `odom` to `ridgeback_base_link` transform based on:
+The `robot_state_publisher` node computes and publishes the transform into `ridgeback_base_link` based on:
 1. The URDF virtual joint chain definition (`world` → `virtual_rail_link_1` → `virtual_rail_link_2` → `ridgeback_base_link`)
-2. Current joint state values received on `/joint_states` (populated by the odometry bridge)
+2. Current joint state values received on `/joint_states` — in simulation these come straight from the MuJoCo virtual-rail joints via `joint_state_broadcaster` (ground truth); on real hardware they come from an odometry-to-joint-state bridge fed by the state estimator
 
 If the mecanum drive controllers were configured with `enable_odom_tf: true`, they would publish the same transform based on wheel odometry integration. This would result in multiple publishers for the same transform, violating the ROS 2 transform system's requirement for unique transform publishers.
 
@@ -881,10 +898,10 @@ Enabling odometry transform publication on the controllers would produce the fol
 
 **Multiple Transform Publishers**
 ```
-Transform odom → ridgeback_base_link published by:
-1. robot_state_publisher (from virtual joint states)
-2. platform_velocity_controller (from wheel odometry)
-3. platform_velocity_controller_nav2 (from wheel odometry)
+Transforms into ridgeback_base_link published by:
+1. robot_state_publisher (world → … → ridgeback_base_link, from virtual joint states)
+2. platform_velocity_controller (odom → ridgeback_base_link, from wheel odometry)
+3. platform_velocity_controller_nav2 (odom → ridgeback_base_link, from wheel odometry)
 ```
 
 **System-Level Effects**
@@ -927,7 +944,7 @@ In real-world systems with active localization:
 - Remove the static `map` → `odom` transform publisher
 - Configure the localization system (AMCL, Cartographer, etc.) to publish the dynamic `map` → `odom` transform
 - Maintain `enable_odom_tf: false` on platform controllers
-- The `odom` → `base_link` transform continues to be published by `robot_state_publisher` via virtual joints
+- The `world` → … → `ridgeback_base_link` chain continues to be published by `robot_state_publisher` via virtual joints; `odom` → `world` stays a static link. On hardware, the state estimate feeds the virtual-rail joint states (odometry-to-joint-state bridge) rather than TF
 - Localization system consumes odometry messages to estimate drift and publish correction transforms
 
 ---
@@ -1029,7 +1046,7 @@ For implementing whole body planning on mobile manipulator platforms:
 | Mobile base unresponsive during whole body planning | Trajectory controller not activated | Query controller manager state: `ros2 control list_controllers` | Verify controller activates when executing trajectories; check action server connection |
 | Base motion in incorrect direction | Frame transformation error | Verify yaw joint in `/joint_states`; check `body_frame_yaw_joint` parameter | Confirm `odometry_joint_state_publisher.py` is running; verify parameter configuration |
 | Nav2 commands not executed | Incorrect controller active state | Check controller manager state; verify command topic remapping | Activate `platform_velocity_controller_nav2`; verify `/cmd_vel` remapping |
-| Virtual joints absent from state | Odometry bridge failure | Monitor `/joint_states` for virtual joint messages; check node status | Restart `odometry_joint_state_publisher.py`; verify `/odom` topic publication |
+| Virtual joints absent from state | Joint state source failure | Monitor `/joint_states` for virtual joint messages; check node status | In simulation the virtual-rail joints come from MuJoCo via `joint_state_broadcaster` — check `ros2 control list_controllers`. On hardware, restart the odometry-to-joint-state bridge and verify odometry publication |
 | Planning failures for whole body group | Incorrect planning group configuration | Examine SRDF planning group definition; verify joint names | Use `manipulator` group for whole body; confirm SRDF includes virtual joints |
 | TF_REPEATED_DATA warnings | Multiple transform publishers | Execute `ros2 run tf2_tools view_frames`; identify duplicate publishers | Set `enable_odom_tf: false` in both platform controllers; verify single source per transform |
 | Discontinuous position in visualization | Transform tree inconsistency | Monitor `/tf` for conflicting transforms; check timing | Verify transform publication sources; ensure consistent timestamp sources |
