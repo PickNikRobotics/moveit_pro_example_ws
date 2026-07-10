@@ -34,8 +34,11 @@ from pathlib import Path
 import pytest
 import rclpy
 import tf2_ros
+from tf2_msgs.msg import TFMessage
+from nav_msgs.msg import Odometry
 import yaml
 from rclpy.time import Time
+from rclpy.qos import qos_profile_sensor_data
 from control_msgs.action import GripperCommand
 from controller_manager_msgs.srv import ListControllers
 from moveit_pro_test_utils.objective_test_fixture import (
@@ -320,6 +323,89 @@ def _expected_end_state_by_id(
     waypoint_joints = resource.get_waypoint_target(JOINT_CHECK_WAYPOINT)
     arm_target = {joint: waypoint_joints[joint] for joint in MANIPULATOR_ARM_JOINTS}
     return {objective_id: EndStateSpec(joints=JointTarget(positions=arm_target))}
+
+
+BASE_LINK_FRAME = "ridgeback_base_link"
+# Phase 1: how long to wait for the FIRST transform into the base link (and the
+# first /odom message) before declaring the stack broken. Generous on purpose:
+# it only bounds startup latency on a loaded CI runner, not the assertion.
+TF_FIRST_SIGHTING_TIMEOUT_S = 60.0
+# Phase 2: once the frame has been seen, how long to keep sampling to catch
+# additional (conflicting) parents. Competing publishers broadcast at 10-120 Hz,
+# so a second parent would appear hundreds of times within this window.
+TF_PARENT_SAMPLE_DURATION_S = 4.0
+
+
+def test_base_link_has_single_tf_parent(
+    execute_objective_resource: ExecuteObjectiveResource,
+) -> None:
+    """The live transform into ridgeback_base_link must have exactly one publisher.
+
+    Regression guard for the three-parent TF conflict (MuJoCo lidar fill-in
+    chain, MuJoCo odom TF, and robot_state_publisher all claiming the frame),
+    which made the robot oscillate below base_link in the web UI.
+    robot_state_publisher owns the edge via the virtual-rail chain; a second
+    parent appearing here means a MuJoCo TF publisher was re-enabled (check
+    base_link_name / odom_publish_tf in the ros2_control xacro) or fuse's
+    publish_tf was turned back on.
+    """
+    node = execute_objective_resource.node
+    parents: set[str] = set()
+    odom_z_samples: list[float] = []
+
+    # Watching /tf only is correct while rotational_yaw_joint (the edge into
+    # ridgeback_base_link) is a moving joint; if it ever becomes fixed the edge
+    # moves to /tf_static and this test must follow it there.
+    def collect(msg: TFMessage) -> None:
+        for transform in msg.transforms:
+            if transform.child_frame_id == BASE_LINK_FRAME:
+                parents.add(transform.header.frame_id)
+
+    def collect_odom(msg: Odometry) -> None:
+        odom_z_samples.append(msg.pose.pose.position.z)
+
+    subscription = node.create_subscription(TFMessage, "/tf", collect, 100)
+    # Piggyback an odom_planar check: odom_zero_z was a silently-ignored
+    # parameter for months, so pin the real one's effect (z zeroed in /odom)
+    # rather than trusting the spelling.
+    odom_subscription = node.create_subscription(
+        Odometry, "/odom", collect_odom, qos_profile_sensor_data
+    )
+    # Phase 1: wait for the first sighting so slow stack bring-up on a loaded
+    # CI runner cannot masquerade as "wrong publishers" (or eat into the
+    # sampling window below).
+    first_sighting_deadline = time.monotonic() + TF_FIRST_SIGHTING_TIMEOUT_S
+    while time.monotonic() < first_sighting_deadline and not (
+        parents and odom_z_samples
+    ):
+        rclpy.spin_once(node, timeout_sec=0.1)
+
+    # Distinguish "frame never seen" (a startup failure or renamed frame) from
+    # "wrong publishers" so failures read correctly.
+    assert parents, (
+        f"No transform into {BASE_LINK_FRAME} observed on /tf within "
+        f"{TF_FIRST_SIGHTING_TIMEOUT_S:.1f}s — robot_state_publisher may not "
+        f"be up, or the frame was renamed."
+    )
+
+    # Phase 2: the frame is live; sample long enough that any competing
+    # publisher (10-120 Hz) would land in `parents`.
+    sample_deadline = time.monotonic() + TF_PARENT_SAMPLE_DURATION_S
+    while time.monotonic() < sample_deadline:
+        rclpy.spin_once(node, timeout_sec=0.1)
+    node.destroy_subscription(subscription)
+    node.destroy_subscription(odom_subscription)
+    assert parents == {"virtual_rail_link_2"}, (
+        f"Expected robot_state_publisher's virtual_rail_link_2 as the sole TF "
+        f"parent of {BASE_LINK_FRAME}, saw parents: {sorted(parents)}"
+    )
+    assert (
+        odom_z_samples
+    ), "No /odom messages observed; MuJoCo odom publisher may be off."
+    assert all(abs(z) < 1e-6 for z in odom_z_samples), (
+        f"odom_planar should zero /odom pose z for this planar base; "
+        f"saw max |z| = {max(abs(z) for z in odom_z_samples):.4f}"
+    )
 
 
 @pytest.mark.parametrize(
