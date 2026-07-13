@@ -249,7 +249,14 @@ joint_trajectory_controller:
         angle_wraparound: true
     constraints:
       stopped_velocity_tolerance: 0.0
-      goal_time: 0.0
+      # A zero goal_time disables the goal-time check entirely: a goal whose
+      # joints sit outside their goal tolerance after the last trajectory
+      # point neither succeeds nor aborts, so the controller waits forever
+      # and callers hang (moveit_pro#20427). A finite tolerance converts
+      # that hang into a GOAL_TOLERANCE_VIOLATED abort that names the
+      # offending joint. 20 s is generous headroom for post-trajectory
+      # convergence.
+      goal_time: 20.0
       shoulder_pan_joint:
         goal: 0.05
       shoulder_lift_joint:

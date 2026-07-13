@@ -59,10 +59,6 @@
     <disable_collisions link1="base_link_inertia" link2="collision_Cube_013" reason="Never"/>
     <disable_collisions link1="base_link_inertia" link2="collision_Cube_014" reason="Never"/>
     <disable_collisions link1="base_link_inertia" link2="collision_Cube_015" reason="Never"/>
-    <disable_collisions link1="base_link_inertia" link2="collision_Plane_005" reason="Never"/>
-    <disable_collisions link1="base_link_inertia" link2="collision_Plane_006" reason="Never"/>
-    <disable_collisions link1="base_link_inertia" link2="collision_Plane_007" reason="Never"/>
-    <disable_collisions link1="base_link_inertia" link2="collision_Plane_008" reason="Never"/>
     <disable_collisions link1="base_link_inertia" link2="collision_SM_Box_A7_73" reason="Never"/>
     <disable_collisions link1="base_link_inertia" link2="collision_SM_Box_A8" reason="Never"/>
     <disable_collisions link1="base_link_inertia" link2="collision_SM_Box_C7_77" reason="Never"/>
@@ -119,10 +115,6 @@
     <disable_collisions link1="chassis_link" link2="collision_Cube_013" reason="Never"/>
     <disable_collisions link1="chassis_link" link2="collision_Cube_014" reason="Never"/>
     <disable_collisions link1="chassis_link" link2="collision_Cube_015" reason="Never"/>
-    <disable_collisions link1="chassis_link" link2="collision_Plane_005" reason="Never"/>
-    <disable_collisions link1="chassis_link" link2="collision_Plane_006" reason="Never"/>
-    <disable_collisions link1="chassis_link" link2="collision_Plane_007" reason="Never"/>
-    <disable_collisions link1="chassis_link" link2="collision_Plane_008" reason="Never"/>
     <disable_collisions link1="chassis_link" link2="collision_SM_Box_A7_73" reason="Never"/>
     <disable_collisions link1="chassis_link" link2="collision_SM_Box_A8" reason="Never"/>
     <disable_collisions link1="chassis_link" link2="collision_SM_Floor_376" reason="Adjacent"/>
@@ -1373,7 +1365,6 @@
     <disable_collisions link1="collision_Plane" link2="collision_supports_013" reason="Never"/>
     <disable_collisions link1="collision_Plane" link2="collision_supports_014" reason="Never"/>
     <disable_collisions link1="collision_Plane" link2="collision_supports_015" reason="Never"/>
-    <disable_collisions link1="collision_Plane" link2="wrist_1_link" reason="Never"/>
     <disable_collisions link1="collision_Plane_001" link2="collision_Plane_002" reason="Never"/>
     <disable_collisions link1="collision_Plane_001" link2="collision_Plane_003" reason="Never"/>
     <disable_collisions link1="collision_Plane_001" link2="collision_Plane_004" reason="Never"/>
@@ -1471,7 +1462,6 @@
     <disable_collisions link1="collision_Plane_002" link2="collision_supports_013" reason="Never"/>
     <disable_collisions link1="collision_Plane_002" link2="collision_supports_014" reason="Never"/>
     <disable_collisions link1="collision_Plane_002" link2="collision_supports_015" reason="Never"/>
-    <disable_collisions link1="collision_Plane_002" link2="collision_vacuum_base" reason="Never"/>
     <disable_collisions link1="collision_Plane_003" link2="collision_Plane_004" reason="Never"/>
     <disable_collisions link1="collision_Plane_003" link2="collision_Plane_005" reason="Never"/>
     <disable_collisions link1="collision_Plane_003" link2="collision_Plane_006" reason="Never"/>
@@ -1565,7 +1555,6 @@
     <disable_collisions link1="collision_Plane_004" link2="collision_supports_013" reason="Never"/>
     <disable_collisions link1="collision_Plane_004" link2="collision_supports_014" reason="Never"/>
     <disable_collisions link1="collision_Plane_004" link2="collision_supports_015" reason="Never"/>
-    <disable_collisions link1="collision_Plane_004" link2="collision_vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_Plane_005" link2="collision_Plane_006" reason="Never"/>
     <disable_collisions link1="collision_Plane_005" link2="collision_Plane_007" reason="Never"/>
     <disable_collisions link1="collision_Plane_005" link2="collision_Plane_008" reason="Never"/>
@@ -1611,24 +1600,6 @@
     <disable_collisions link1="collision_Plane_005" link2="collision_supports_013" reason="Never"/>
     <disable_collisions link1="collision_Plane_005" link2="collision_supports_014" reason="Never"/>
     <disable_collisions link1="collision_Plane_005" link2="collision_supports_015" reason="Never"/>
-    <disable_collisions link1="collision_Plane_005" link2="collision_vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_Plane_005" link2="collision_vacuum_suction_cups" reason="Never"/>
-    <disable_collisions link1="collision_Plane_005" link2="forearm_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_005" link2="forearm_pinch_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_005" link2="front_left_wheel_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_005" link2="front_right_wheel_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_005" link2="ham_assem_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_005" link2="rear_left_wheel_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_005" link2="rear_right_wheel_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_005" link2="riser_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_005" link2="shoulder_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_005" link2="top_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_005" link2="upper_arm_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_005" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_Plane_005" link2="wrist_1_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_005" link2="wrist_2_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_005" link2="wrist_3_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_005" link2="wrist_3_pinch_link" reason="Never"/>
     <disable_collisions link1="collision_Plane_006" link2="collision_Plane_007" reason="Never"/>
     <disable_collisions link1="collision_Plane_006" link2="collision_Plane_008" reason="Never"/>
     <disable_collisions link1="collision_Plane_006" link2="collision_Plane_009" reason="Default"/>
@@ -1673,24 +1644,6 @@
     <disable_collisions link1="collision_Plane_006" link2="collision_supports_013" reason="Never"/>
     <disable_collisions link1="collision_Plane_006" link2="collision_supports_014" reason="Never"/>
     <disable_collisions link1="collision_Plane_006" link2="collision_supports_015" reason="Never"/>
-    <disable_collisions link1="collision_Plane_006" link2="collision_vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_Plane_006" link2="collision_vacuum_suction_cups" reason="Never"/>
-    <disable_collisions link1="collision_Plane_006" link2="forearm_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_006" link2="forearm_pinch_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_006" link2="front_left_wheel_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_006" link2="front_right_wheel_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_006" link2="ham_assem_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_006" link2="rear_left_wheel_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_006" link2="rear_right_wheel_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_006" link2="riser_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_006" link2="shoulder_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_006" link2="top_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_006" link2="upper_arm_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_006" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_Plane_006" link2="wrist_1_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_006" link2="wrist_2_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_006" link2="wrist_3_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_006" link2="wrist_3_pinch_link" reason="Never"/>
     <disable_collisions link1="collision_Plane_007" link2="collision_Plane_008" reason="Never"/>
     <disable_collisions link1="collision_Plane_007" link2="collision_Plane_009" reason="Never"/>
     <disable_collisions link1="collision_Plane_007" link2="collision_Plane_010" reason="Never"/>
@@ -1734,24 +1687,6 @@
     <disable_collisions link1="collision_Plane_007" link2="collision_supports_013" reason="Never"/>
     <disable_collisions link1="collision_Plane_007" link2="collision_supports_014" reason="Never"/>
     <disable_collisions link1="collision_Plane_007" link2="collision_supports_015" reason="Never"/>
-    <disable_collisions link1="collision_Plane_007" link2="collision_vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_Plane_007" link2="collision_vacuum_suction_cups" reason="Never"/>
-    <disable_collisions link1="collision_Plane_007" link2="forearm_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_007" link2="forearm_pinch_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_007" link2="front_left_wheel_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_007" link2="front_right_wheel_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_007" link2="ham_assem_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_007" link2="rear_left_wheel_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_007" link2="rear_right_wheel_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_007" link2="riser_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_007" link2="shoulder_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_007" link2="top_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_007" link2="upper_arm_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_007" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_Plane_007" link2="wrist_1_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_007" link2="wrist_2_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_007" link2="wrist_3_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_007" link2="wrist_3_pinch_link" reason="Never"/>
     <disable_collisions link1="collision_Plane_008" link2="collision_Plane_009" reason="Never"/>
     <disable_collisions link1="collision_Plane_008" link2="collision_Plane_010" reason="Never"/>
     <disable_collisions link1="collision_Plane_008" link2="collision_Plane_011" reason="Never"/>
@@ -1794,24 +1729,6 @@
     <disable_collisions link1="collision_Plane_008" link2="collision_supports_013" reason="Never"/>
     <disable_collisions link1="collision_Plane_008" link2="collision_supports_014" reason="Never"/>
     <disable_collisions link1="collision_Plane_008" link2="collision_supports_015" reason="Never"/>
-    <disable_collisions link1="collision_Plane_008" link2="collision_vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_Plane_008" link2="collision_vacuum_suction_cups" reason="Never"/>
-    <disable_collisions link1="collision_Plane_008" link2="forearm_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_008" link2="forearm_pinch_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_008" link2="front_left_wheel_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_008" link2="front_right_wheel_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_008" link2="ham_assem_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_008" link2="rear_left_wheel_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_008" link2="rear_right_wheel_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_008" link2="riser_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_008" link2="shoulder_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_008" link2="top_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_008" link2="upper_arm_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_008" link2="vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_Plane_008" link2="wrist_1_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_008" link2="wrist_2_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_008" link2="wrist_3_link" reason="Never"/>
-    <disable_collisions link1="collision_Plane_008" link2="wrist_3_pinch_link" reason="Never"/>
     <disable_collisions link1="collision_Plane_009" link2="collision_Plane_010" reason="Never"/>
     <disable_collisions link1="collision_Plane_009" link2="collision_Plane_011" reason="Never"/>
     <disable_collisions link1="collision_Plane_009" link2="collision_Plane_012" reason="Never"/>
@@ -1893,8 +1810,6 @@
     <disable_collisions link1="collision_Plane_010" link2="collision_supports_013" reason="Never"/>
     <disable_collisions link1="collision_Plane_010" link2="collision_supports_014" reason="Never"/>
     <disable_collisions link1="collision_Plane_010" link2="collision_supports_015" reason="Never"/>
-    <disable_collisions link1="collision_Plane_010" link2="collision_vacuum_base" reason="Never"/>
-    <disable_collisions link1="collision_Plane_010" link2="collision_vacuum_suction_cups" reason="Never"/>
     <disable_collisions link1="collision_Plane_011" link2="collision_Plane_012" reason="Default"/>
     <disable_collisions link1="collision_Plane_011" link2="collision_SM_Box_A7_73" reason="Never"/>
     <disable_collisions link1="collision_Plane_011" link2="collision_SM_Box_A8" reason="Never"/>
@@ -1934,7 +1849,6 @@
     <disable_collisions link1="collision_Plane_011" link2="collision_supports_013" reason="Never"/>
     <disable_collisions link1="collision_Plane_011" link2="collision_supports_014" reason="Never"/>
     <disable_collisions link1="collision_Plane_011" link2="collision_supports_015" reason="Never"/>
-    <disable_collisions link1="collision_Plane_011" link2="collision_vacuum_base" reason="Never"/>
     <disable_collisions link1="collision_Plane_012" link2="collision_SM_Box_A7_73" reason="Never"/>
     <disable_collisions link1="collision_Plane_012" link2="collision_SM_Box_A8" reason="Never"/>
     <disable_collisions link1="collision_Plane_012" link2="collision_SM_Box_C7_77" reason="Never"/>

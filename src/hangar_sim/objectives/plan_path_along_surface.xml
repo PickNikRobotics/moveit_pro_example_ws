@@ -74,8 +74,8 @@
         input_cloud="{point_cloud}"
         slice_distance_from_plane="0.100000"
         slice_plane="{centroid}"
-        contour_crop_angle_span="3.2"
-        contour_crop_angle_start="1.58"
+        contour_crop_angle_span="2.25"
+        contour_crop_angle_start="2.4"
       />
       <Action
         ID="VisualizePath"
@@ -96,7 +96,20 @@
         planning_group_name="manipulator"
         position_only="false"
         trajectory_timing="[{mode: time_optimal}]"
-        tip_offset="0;0;0.1;0;0;0"
+        tip_offset="0;0;0.2;0;0;0"
+        debug_solution="{debug_solution}"
+      />
+      <Action
+        ID="GetCurrentPlanningScene"
+        planning_scene_msg="{planning_scene}"
+      />
+      <Action
+        ID="ValidateTrajectory"
+        cartesian_space_step="0.020000"
+        joint_space_step="0.100000"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+        planning_group_name="manipulator"
+        planning_scene_msg="{planning_scene}"
         debug_solution="{debug_solution}"
       />
       <Action
