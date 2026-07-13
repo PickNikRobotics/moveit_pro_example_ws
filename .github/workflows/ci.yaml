@@ -246,7 +246,10 @@ jobs:
       matrix:
         # Stream 2 expands this list one PR at a time as each sim gains a
         # pytest entry.
-        config_package: [lab_sim, hangar_sim]
+        # DIAGNOSTIC BRANCH ONLY (moveit_pro#20427): restricted to hangar_sim
+        # so repeated dispatch runs don't burn lab_sim runners. Restore
+        # [lab_sim, hangar_sim] before any merge.
+        config_package: [hangar_sim]
     permissions:
       # contents: read for checkout; id-token: write so the reusable workflow
       # can assume the LFS S3 cache IAM role via OIDC (moveit_pro_ci v0.5.x).
