@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Plan Path Along Surface">
-  <!--//////////-->
   <BehaviorTree
     ID="Plan Path Along Surface"
     _description="Plan and execute a path following a surface"
@@ -19,6 +18,7 @@
         seed="0"
         velocity_scale_factor="1.0"
         waypoint_name="Look at Plane"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
       />
       <!--Get a point cloud and crop it to the area of interest-->
       <Action
@@ -74,7 +74,7 @@
         input_cloud="{point_cloud}"
         slice_distance_from_plane="0.100000"
         slice_plane="{centroid}"
-        contour_crop_angle_span="3.2"
+        contour_crop_angle_span="3.19"
         contour_crop_angle_start="1.58"
       />
       <Action
