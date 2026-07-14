@@ -2,6 +2,10 @@
 <robot name="ur5e" xmlns:xacro="http://ros.org/wiki/xacro">
   <xacro:arg name="mujoco_model" default="description/scene.xml" />
   <xacro:arg name="mujoco_model_package" default="lab_sim" />
+  <xacro:arg
+    name="point_cloud_publish_rate"
+    default="$(optenv MOVEIT_PRO_POINT_CLOUD_PUBLISH_RATE 10)"
+  />
   <material name="aluminum">
     <color rgba="0.5 0.5 0.5 1" />
   </material>
@@ -1201,6 +1205,8 @@
       <param name="mujoco_model_package">$(arg mujoco_model_package)</param>
       <!-- The rate <camera> data is published at -->
       <param name="render_publish_rate">10</param>
+      <!-- The rate point clouds generated from depth images are published at -->
+      <param name="point_cloud_publish_rate">$(arg point_cloud_publish_rate)</param>
       <!-- The rate transforms to <site> poses are published at -->
       <param name="tf_publish_rate">60</param>
       <!-- The rate <rangefinder> data is published at -->

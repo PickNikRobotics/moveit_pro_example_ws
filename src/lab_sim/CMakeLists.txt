@@ -48,12 +48,21 @@ if(BUILD_TESTING)
   # artifact ships them back too. Default would be ~/.ros/log/, which lives
   # on the doomed container filesystem and never gets uploaded -- making
   # post-mortem of objective failures impossible.
+  set(LAB_SIM_INTEGRATION_TEST_ENV
+      MOVEIT_CONFIG_PACKAGE=lab_sim
+      MOVEIT_HOST_USER_WORKSPACE=${CMAKE_SOURCE_DIR}
+      ROS_LOG_DIR=${CMAKE_CURRENT_BINARY_DIR}/test_results/${PROJECT_NAME}/ros_logs)
+  # Point-cloud conversion for the 1280x720 wrist camera can starve MuJoCo's
+  # single render executor on a loaded GitHub Actions runner. Reduce only the
+  # integration-test rate; normal and local-test launches retain the 10 Hz
+  # Xacro default so moving-camera point clouds keep their temporal fidelity.
+  if("$ENV{GITHUB_ACTIONS}" STREQUAL "true")
+    list(APPEND LAB_SIM_INTEGRATION_TEST_ENV MOVEIT_PRO_POINT_CLOUD_PUBLISH_RATE=1)
+  endif()
   ament_add_pytest_test(
           objectives_integration_test test/objectives_integration_test.py
           TIMEOUT 600
-          ENV MOVEIT_CONFIG_PACKAGE=lab_sim
-              MOVEIT_HOST_USER_WORKSPACE=${CMAKE_SOURCE_DIR}
-              ROS_LOG_DIR=${CMAKE_CURRENT_BINARY_DIR}/test_results/${PROJECT_NAME}/ros_logs)
+          ENV ${LAB_SIM_INTEGRATION_TEST_ENV})
 endif()
 
 ament_package()
