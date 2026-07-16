@@ -1,0 +1,31 @@
+vo_vslam_evaluation_harness:
+  ros__parameters:
+    left_image_topic: /stereo/left/image_rect
+    right_image_topic: /stereo/right/image_rect
+    left_camera_info_topic: /stereo/left/camera_info
+    right_camera_info_topic: /stereo/right/camera_info
+    odometry_topic: /vo/odometry
+    diagnostics_topic: /vo/diagnostics
+    odom_frame: odom
+    base_frame: camera_left_optical
+    runtime_adapter: tensorrt_fp32_tf32
+    engine_path: ""
+    engine_metadata_path: ""
+    device: cuda
+    max_keypoints: 768
+    aliked_model_name: aliked-n16
+    lightglue_layers: 9
+    lightglue_depth_confidence: 0.95
+    lightglue_width_confidence: 0.99
+    lightglue_filter_threshold: 0.1
+    engine_preprocess_resize: 1024
+    engine_score_threshold: 0.2
+    sync_queue_size: 10
+    sync_slop_seconds: 0.01
+    min_disparity_px: 0.5
+    max_depth_m: 100.0
+    min_pnp_points: 6
+    pnp_reprojection_error_px: 0.75
+    pnp_confidence: 0.999
+    pnp_iterations: 100
+    reset_after_failures: 3

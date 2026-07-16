@@ -1,0 +1,12 @@
+#!/usr/bin/env python3
+
+# Copyright 2026 PickNik Inc.
+# All rights reserved.
+#
+# Unauthorized copying of this code base via any medium is strictly prohibited.
+# Proprietary and confidential.
+
+from vo_vslam_evaluation_harness.playback import main
+
+if __name__ == "__main__":
+    main()

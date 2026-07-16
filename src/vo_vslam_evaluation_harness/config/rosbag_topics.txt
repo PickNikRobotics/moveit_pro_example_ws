@@ -1,0 +1,13 @@
+/stereo/left/image_rect
+/stereo/right/image_rect
+/stereo/left/camera_info
+/stereo/right/camera_info
+/vo/odometry
+/vo/diagnostics
+/ground_truth/pose
+/tf
+/tf_static
+/imu/data
+/wheel/odometry
+/lidar/scan
+/lidar/points
