@@ -72,6 +72,17 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
       --from-paths src \
       --ignore-src
 
+# Python dependencies for the C0 Kinova rollout client (scripts/kinova/rollout.py).
+# The torch-free real-Kinova rollout client runs in the agent_bridge container and uses
+# `websockets` (sync) + `msgpack` to talk to the policy server. These are installed via pip
+# (rather than a rosdep key) because the Ubuntu Jammy apt `python3-websockets` is 9.1, which
+# does not satisfy the required `websockets>=13`. Baking them in here replaces the previous
+# ephemeral `pip install` workaround inside the running container.
+# hadolint ignore=DL3013
+RUN python3 -m pip install --no-cache-dir \
+      "websockets>=13" \
+      "msgpack>=1.0"
+
 # Set up colcon defaults for the new user
 USER ${USERNAME}
 RUN colcon mixin add default \
