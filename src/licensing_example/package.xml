@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<package format="3">
+  <name>licensing_example</name>
+  <version>9.5.0</version>
+  <description>
+    Minimal example showing how a user-workspace binary links against the
+    MoveIt Pro licensing library and checks license validity.
+  </description>
+
+  <maintainer email="support@picknik.ai">MoveIt Pro Maintainer</maintainer>
+  <author email="support@picknik.ai">MoveIt Pro Maintainer</author>
+
+  <license>BSD-3-Clause</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <build_depend>moveit_pro_package</build_depend>
+
+  <depend>moveit_studio_licensing</depend>
+
+  <!-- Transitive link deps of the static studio_licensing library that it does
+       not re-export; needed so their IMPORTED CMake targets resolve. -->
+  <depend>moveit_pro_macros</depend>
+  <depend>ament_index_cpp</depend>
+  <depend>fmt</depend>
+  <depend>tinyxml2</depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
