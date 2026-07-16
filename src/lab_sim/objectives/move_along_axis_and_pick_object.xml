@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Move along axis and pick object">
+  <BehaviorTree
+    ID="Move along axis and pick object"
+    _description="Move down along world axis and pick up object"
+    _favorite="true"
+  >
+    <Control ID="Sequence">
+      <Control ID="Sequence">
+        <Action ID="UnpackGraspableObjectMessage" object="{collision_object}" />
+        <Action
+          ID="UnpackCollisionObjectMessage"
+          collision_object="{collision_object}"
+          id="{graspable_object_id}"
+        />
+      </Control>
+      <Action
+        ID="InitializeMTCTask"
+        task="{mtc_task}"
+        timeout="-1.000000"
+        trajectory_monitoring="false"
+        controller_names="joint_trajectory_controller"
+      />
+      <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
+      <Action
+        ID="SetupMTCUpdateObjectCollisionRule"
+        allow_collision="true"
+        object="{graspable_object}"
+        object_or_group_name="manipulator"
+        task="{mtc_task}"
+      />
+      <Action
+        ID="SetupMTCMoveAlongFrameAxis"
+        acceleration_scale="1.000000"
+        axis_frame="world"
+        axis_x="0.000000"
+        axis_y="0.000000"
+        axis_z="-1.0"
+        hand_frame="grasp_link"
+        ignore_environment_collisions="false"
+        max_distance="0.08"
+        min_distance="0.08"
+        planning_group_name="manipulator"
+        task="{mtc_task}"
+        velocity_scale="1.000000"
+      />
+      <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
+      <Action
+        ID="ExecuteMTCTask"
+        goal_duration_tolerance="-1.000000"
+        solution="{mtc_solution}"
+      />
+      <SubTree ID="Close Gripper" _collapsed="true" />
+      <Action ID="ResetVector" vector="{collision_vector}" />
+      <SubTree
+        ID="AddToVector"
+        input_vector="{collision_vector}"
+        output_vector="{collision_vector}"
+        element="{object_supporting_surface_id}"
+      />
+      <SubTree
+        ID="AddToVector"
+        _collapsed="true"
+        input_vector="{collision_vector}"
+        output_vector="{collision_vector}"
+        element="{graspable_object_id}"
+      />
+      <Action
+        ID="InitializeMTCTask"
+        task="{mtc_task}"
+        timeout="-1.000000"
+        trajectory_monitoring="false"
+        controller_names="joint_trajectory_controller"
+      />
+      <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
+      <Action
+        ID="SetupMTCIgnoreCollisionsBetweenObjects"
+        object_names="{collision_vector}"
+      />
+      <Action
+        ID="SetupMTCAttachObject"
+        frame_id="grasp_link"
+        object="{graspable_object}"
+        task="{mtc_task}"
+      />
+      <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
+      <Action
+        ID="ExecuteMTCTask"
+        goal_duration_tolerance="-1.000000"
+        solution="{mtc_solution}"
+      />
+      <Action
+        ID="GetCurrentPlanningScene"
+        planning_scene_msg="{planning_scene}"
+      />
+      <Action
+        ID="IsObjectAttachedTo"
+        link_name="grasp_link"
+        object_id="{graspable_object_id}"
+        planning_scene="{planning_scene}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Move along axis and pick object">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Basic Examples" />
+      </MetadataFields>
+      <inout_port name="graspable_object" default="{graspable_object}" />
+      <inout_port
+        name="object_supporting_surface_id"
+        default="{object_supporting_surface_id}"
+      >
+        Object id of the surface on which the graspable object is
+        placed. Primary purpose is to disable collisions.
+      </inout_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>

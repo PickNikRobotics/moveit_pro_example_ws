@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Evaluate Pose Vector and Execute">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Evaluate Pose Vector and Execute"
+    _description="Plans and executes a vector of poses after filtering for failure Cartesian poses"
+    _favorite="true"
+  >
+    <Control ID="Sequence">
+      <Action
+        ID="SolveIKQueries"
+        check_collisions="true"
+        ik_query_results="{ik_query_results}"
+        joint_group_name="manipulator"
+        timeout="0.010000"
+        target_poses="{vector_of_poses}"
+      />
+      <Action ID="ResetPoseStampedVector" vector="{ik_queries}" />
+      <Decorator
+        ID="ForEach"
+        index="{index}"
+        out="{out}"
+        vector_in="{ik_query_results}"
+      >
+        <Control ID="Fallback">
+          <Decorator ID="Precondition" else="FAILURE" if="out==1">
+            <Control ID="Sequence">
+              <Action
+                ID="GetElementOfVector"
+                element="{element}"
+                index="{index}"
+                vector_in="{vector_of_poses}"
+              />
+              <Action
+                ID="TransformPose"
+                input_pose="{element}"
+                output_pose="{transformed_pose}"
+                translation_xyz="0.0;0.0;-0.1"
+              />
+              <Action
+                ID="AddPoseStampedToVector"
+                input="{transformed_pose}"
+                vector="{ik_queries}"
+              />
+              <Action
+                ID="VisualizePose"
+                marker_lifetime="0.000000"
+                marker_name="pose"
+                marker_size="0.0500000"
+                pose="{element}"
+              />
+              <Action ID="WaitForDuration" delay_duration="0.5" />
+            </Control>
+          </Decorator>
+          <Action ID="AlwaysSuccess" />
+        </Control>
+      </Decorator>
+      <Control ID="Sequence">
+        <Action
+          ID="GetElementOfVector"
+          vector_in="{ik_queries}"
+          index="0"
+          element="{first_pose}"
+        />
+        <SubTree
+          ID="Move to Pose"
+          _collapsed="true"
+          target_pose="{first_pose}"
+          require_user_approval="false"
+          controller_names="joint_trajectory_controller;robotiq_gripper_controller"
+        />
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Evaluate Pose Vector and Execute">
+      <MetadataFields>
+        <Metadata subcategory="Application - Basic Examples" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+      <inout_port name="vector_of_poses" default="{vector_of_poses}" />
+    </SubTree>
+  </TreeNodesModel>
+</root>
