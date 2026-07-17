@@ -15,11 +15,15 @@ on:
 
 jobs:
   integration-test-in-studio-container:
-    uses: PickNikRobotics/moveit_pro_ci/.github/workflows/workspace_integration_test.yaml@virtual-buffer
+    uses: PickNikRobotics/moveit_pro_ci/.github/workflows/workspace_integration_test.yaml@a0e3b30c9aa8f8f82f95c91e5a34989d01caa046 # v0.9.0
+    permissions:
+      contents: read
     with:
-      image_tag: ${{ github.event.inputs.image_tag || null }}
+      image_tag: ${{ github.event.inputs.image_tag || 'main' }}
+      ros_distros: '["jazzy"]'
       colcon_test_args: "--executor sequential"
-    secrets: inherit
+    secrets:
+      moveit_license_key: ${{ secrets.MOVEIT_PRO_LICENSE_KEY }}
 
   ensure-no-ssh-in-gitmodules:
     name: Ensure no SSH URLs in .gitmodules
