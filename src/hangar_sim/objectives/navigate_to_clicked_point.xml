@@ -29,7 +29,7 @@
         ID="ComputePathToPoseAction"
         action_name="/compute_path_to_pose"
         goal="{goal}"
-        ignore_stamp_time="false"
+        ignore_stamp_time="true"
         path="{path}"
         planning_time="{planning_time}"
         start="{start}"
