@@ -112,8 +112,7 @@ skip_objectives = {
     # reasons.
     "Teleoperate",  # DoTeleoperateAction rejects the goal with no UI subscribed.
     "Marker Visualization Example",  # GetTextFromUser server unavailable headless.
-    # Jazzy CI-runner flakes (pass on the slower humble runner, intermittent on
-    # jazzy). Skipped so the suite is deterministic on both distros.
+    # Intermittent Jazzy CI-runner flakes. Skipped so the suite is deterministic.
     #
     # "Solution - Draw Picknik" is the suite's longest objective and sits on
     # the 90 s execute-timeout boundary on the jazzy runner. When it overruns,

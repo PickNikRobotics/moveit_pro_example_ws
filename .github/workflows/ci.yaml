@@ -111,22 +111,19 @@ jobs:
             // appends any suffix itself (the `gpu_image_suffix` input was removed
             // in v0.9.0 / PR #37) — so the suffix must live in `image_ref`.
             //
-            // example_ws runs integration jazzy-only (humble is disabled), so the
-            // map carries only `jazzy`. The default must track what moveit_pro
+            // example_ws runs integration on Jazzy, so the map carries only
+            // `jazzy`. The default must track what moveit_pro
             // actually publishes for jazzy: since the CUDA 13.2 migration
             // (#19583 fanout), jazzy images carry -cuda13.2-cudnn9 ONLY — the
             // old -cuda12.6 jazzy variant is no longer built, so a stale default
             // 404s every `needs:` pull. moveit_pro owns the distro<->CUDA
             // coupling (its build-matrix exclusion anchors) and is the single
             // source of truth: on a repository_dispatch its payload overrides
-            // this value. To re-enable humble: add a `humble` entry here AND to
-            // integration-test's `ros_distro` matrix.
+            // this value.
             let gpu_image_suffixes = { jazzy: '-cuda13.2-cudnn9' };
             // The single ros_distro example_ws runs integration on — must match
             // the `integration-test` matrix / `ros_distros` input below. The
-            // suffix is selected for THIS distro. If humble is ever re-enabled,
-            // one `image_ref` template can no longer carry two different
-            // suffixes across the matrix — switch to per-distro `uses:` calls.
+            // suffix is selected for this distro.
             const ACTIVE_DISTRO = 'jazzy';
             // Suffix to bake into image_ref. moveit_pro_ci v0.9.0 (PR #37) pulls
             // image_ref VERBATIM and no longer appends a suffix, so the CUDA
@@ -258,8 +255,7 @@ jobs:
       image_ref: ${{ needs.resolve.outputs.image_ref }}
       git_ref: ${{ needs.resolve.outputs.git_ref }}
       config_package: ${{ matrix.config_package }}
-      # Jazzy-only: humble integration tests are turned off to cut CI cost.
-      # Drives the reusable workflow's ros_distro matrix (default both distros).
+      # Drive the reusable workflow's ros_distro matrix explicitly.
       ros_distros: '["jazzy"]'
       colcon_test_args: "--executor sequential"
       # GPU runner + enable_gpu are required so MuJoCo's EGL offscreen
@@ -563,8 +559,7 @@ jobs:
         # publish-and-comment below aggregates every config_package x ros_distro
         # produced here.
         config_package: [lab_sim, hangar_sim]
-        # Jazzy-only: humble integration tests are turned off (see the
-        # `ros_distros` input on `integration-test`).
+        # Keep in sync with the `ros_distros` input on `integration-test`.
         ros_distro: [jazzy]
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
