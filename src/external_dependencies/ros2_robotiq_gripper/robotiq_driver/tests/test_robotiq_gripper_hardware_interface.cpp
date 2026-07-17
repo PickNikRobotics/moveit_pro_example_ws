@@ -65,7 +65,7 @@ TEST(TestRobotiqGripperHardwareInterface, load_urdf)
              <param name="COM_port">/dev/ttyUSB0</param>
              <param name="gripper_closed_position">0.7929</param>
            </hardware>
-           <joint name="robotiq_85_left_knuckle_joint">
+           <joint name="joint1">
              <command_interface name="position" />
              <state_interface name="position">
                <param name="initial_value">0.7929</param>
@@ -76,12 +76,8 @@ TEST(TestRobotiqGripperHardwareInterface, load_urdf)
        )";
 
   auto urdf = ros2_control_test_assets::urdf_head + urdf_control_ + ros2_control_test_assets::urdf_tail;
-#ifdef ROS_DISTRO_JAZZY
   hardware_interface::ResourceManager rm(urdf, std::make_shared<rclcpp::Clock>(RCL_ROS_TIME),
                                          rclcpp::get_logger("test_robotiq_gripper_hardware_interface"));
-#else
-  hardware_interface::ResourceManager rm(urdf);
-#endif
 
   // Check interfaces
   EXPECT_EQ(1u, rm.system_components_size());

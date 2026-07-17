@@ -1,4 +1,4 @@
-# See https://docs.ros.org/en/humble/How-To-Guides/Ament-CMake-Documentation.html
+# See https://docs.ros.org/en/jazzy/How-To-Guides/Ament-CMake-Documentation.html
 
 cmake_minimum_required(VERSION 3.8)
 project(robotiq_driver LANGUAGES CXX)
@@ -8,15 +8,6 @@ include(GNUInstallDirs)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
-
-# Detect ROS distro for API compatibility
-if(DEFINED ENV{ROS_DISTRO})
-  if("$ENV{ROS_DISTRO}" STREQUAL "jazzy")
-    add_compile_definitions(ROS_DISTRO_JAZZY)
-  elseif("$ENV{ROS_DISTRO}" STREQUAL "humble")
-    add_compile_definitions(ROS_DISTRO_HUMBLE)
-  endif()
 endif()
 
 find_package(ament_cmake REQUIRED)
