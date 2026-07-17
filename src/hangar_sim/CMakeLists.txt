@@ -3,6 +3,12 @@ project(hangar_sim)
 
 find_package(ament_cmake REQUIRED)
 find_package(picknik_accessories REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(nav_msgs REQUIRED)
+
+add_executable(slip_aware_odom src/slip_aware_odom.cpp)
+ament_target_dependencies(slip_aware_odom rclcpp nav_msgs)
+install(TARGETS slip_aware_odom DESTINATION lib/${PROJECT_NAME})
 
 install(
   DIRECTORY
@@ -20,6 +26,7 @@ install(
 install(PROGRAMS
   script/odometry_joint_state_publisher.py
   script/odom_qos_relay.py
+  script/odom_world_drift.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

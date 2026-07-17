@@ -37,7 +37,7 @@ from launch.actions import (
     IncludeLaunchDescription,
     SetEnvironmentVariable,
 )
-from launch.conditions import IfCondition
+from launch.conditions import IfCondition, UnlessCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import (
     LaunchConfiguration,
@@ -189,7 +189,7 @@ def generate_launch_description():
 
     declare_use_fuse_cmd = DeclareLaunchArgument(
         "use_fuse",
-        default_value="false",
+        default_value="true",  # #19667: fuse drives sim odometry (was "false")
         description="Whether to launch the fuse state estimator",
     )
 
@@ -303,12 +303,38 @@ def generate_launch_description():
     # MuJoCo broadcast a competing odom->ridgeback_base_link TF — removed in this
     # change.) The UI (pose-utils.ts) hardcodes 'world' for user-clicked poses, so
     # this link also keeps nav2 goals transformable to 'map'.
+    # odom -> world. Without fuse it's a static identity (odom == world). With fuse
+    # (#19667), odom_world_drift replaces it with a live transform so odom -> base
+    # resolves to fuse's drifty estimate, giving AMCL real drift to correct while
+    # world -> base stays ground truth for whole-body.
     static_tf_odom_to_world = Node(
+        condition=UnlessCondition(LaunchConfiguration("use_fuse")),
         package="tf2_ros",
         executable="static_transform_publisher",
         name="static_tf_odom_to_world",
         output="log",
         arguments=["0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "odom", "world"],
+    )
+
+    odom_world_drift = Node(
+        condition=IfCondition(LaunchConfiguration("use_fuse")),
+        package="hangar_sim",
+        executable="odom_world_drift.py",
+        name="odom_world_drift",
+        output="log",
+        parameters=[{"use_sim_time": use_sim_time}],
+    )
+
+    # Slip-aware wheel-odom covariance: distrust wheel yaw during spins (mecanum
+    # rollers slip), trust it when straight (bounds gyro drift). fuse reads the
+    # republished topic instead of the raw controller odom.
+    slip_aware_odom = Node(
+        condition=IfCondition(LaunchConfiguration("use_fuse")),
+        package="hangar_sim",
+        executable="slip_aware_odom",
+        name="slip_aware_odom",
+        output="log",
+        parameters=[{"use_sim_time": use_sim_time}],
     )
 
     # QoS relay to bridge BEST_EFFORT odom and IMU to RELIABLE for fuse
@@ -403,6 +429,8 @@ def generate_launch_description():
 
     ld.add_action(static_tf_world_to_map)
     ld.add_action(static_tf_odom_to_world)
+    ld.add_action(odom_world_drift)
+    ld.add_action(slip_aware_odom)
     ld.add_action(static_tf_map_to_odom)
     ld.add_action(sensor_qos_relay)
     ld.add_action(laser_filter_front_node)

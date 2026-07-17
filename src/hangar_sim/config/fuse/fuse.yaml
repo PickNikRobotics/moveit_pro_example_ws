@@ -3,7 +3,7 @@
 state_estimator:
   ros__parameters:
     # Fixed-lag smoother configuration
-    optimization_frequency: 20.0
+    optimization_frequency: 10.0  # match publish_frequency (10 Hz); optimizing 2x faster than we publish was wasted work
     transaction_timeout: 0.01
     lag_duration: 0.5
 
@@ -51,7 +51,7 @@ state_estimator:
     # only the relative change between consecutive messages, preventing
     # accumulated drift from corrupting the estimate.
     wheel_odom_sensor:
-      topic: /platform_velocity_controller_nav2/odom
+      topic: /odom_slip_aware  # slip_aware_odom republishes with spin-aware yaw covariance
       queue_size: 10
       pose_loss:
         type: fuse_loss::HuberLoss

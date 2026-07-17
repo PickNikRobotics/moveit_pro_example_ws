@@ -215,6 +215,10 @@
       />
       <body name="base_platform" pos="0 0 0" euler="0 0 0">
         <body name="ridgeback_base_link">
+          <!-- Ground-truth base pose for localization testing and QA. MujocoSystem auto-publishes
+               every site as TF mj_world -> <name> at its true world pose, independent of
+               fuse/AMCL, so it can be compared against the estimate. Sites add no DOF. -->
+          <site name="base_gt" pos="0 0 0" size="0.01" rgba="1 0 0 0" />
           <!-- Front SICK TIM571: mounted at x=+0.45m (front bumper), z=0.15m.
                91 beams x 3 deg = 270 deg FOV, sweeping CCW from beam-0 at -135 deg in robot frame.
                Quat rule: site Z axis = beam-0 firing direction. Site X axis must point in world -Z
