@@ -182,6 +182,51 @@
         <include file="gen3_7dof_body.xml" />
       </body>
     </body>
+
+    <!--
+      Satellite calibration tags for the WRIST camera (eye-in-hand). Three tag36h11
+      markers (ids 3,4,5) mounted flat and coplanar on the servicer's front (+x) gold
+      face, facing out into the arm's workspace (quat = Ry90 -> tag normal +x). They sit
+      on the arm-base side of the face, clear of the central docking mechanism. World-
+      fixed; matching URDF frames sat_tag_3/4/5 are children of `world`. Distinct ids
+      from the tool plate (0,1,2) so the wrist can see the tool without corrupting the
+      satellite-tag detections.
+    -->
+    <body name="satellite_tags">
+      <geom
+        name="sat_tag_3"
+        type="box"
+        quat="0.7071068 0 0.7071068 0"
+        size="0.031875 0.031875 0.0002"
+        pos="0.50 0.45 0.04"
+        rgba="1 1 1 1"
+        material="ar_marker_3"
+        contype="0"
+        conaffinity="0"
+      />
+      <geom
+        name="sat_tag_4"
+        type="box"
+        quat="0.7071068 0 0.7071068 0"
+        size="0.031875 0.031875 0.0002"
+        pos="0.50 0.27 0.04"
+        rgba="1 1 1 1"
+        material="ar_marker_4"
+        contype="0"
+        conaffinity="0"
+      />
+      <geom
+        name="sat_tag_5"
+        type="box"
+        quat="0.7071068 0 0.7071068 0"
+        size="0.031875 0.031875 0.0002"
+        pos="0.50 0.36 -0.12"
+        rgba="1 1 1 1"
+        material="ar_marker_5"
+        contype="0"
+        conaffinity="0"
+      />
+    </body>
   </worldbody>
 
   <actuator>

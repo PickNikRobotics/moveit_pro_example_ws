@@ -7,7 +7,7 @@
   <BehaviorTree
     ID="Camera Pose from Cal Tool - Detect Tags"
     computed_pose="{computed_pose}"
-    _description="Directly detect the calibration tool's AprilTags to compute the camera pose."
+    _description="Compute the camera optical pose from the calibration tool's AprilTags with a single joint PnP solve over every tag corner."
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
@@ -23,48 +23,15 @@
         topic_name="{camera_info_topic}"
       />
       <Action
-        ID="DetectAprilTags"
-        camera_info="{camera_info}"
-        detections="{detections}"
+        ID="CalibrateCameraPosePnp"
         image="{image}"
-        apriltag_family_name="36h11"
-        max_hamming="0"
-        n_threads="1"
-        quad_decimate="2.0"
-        quad_sigma="0.0"
-        refine_edges="true"
-        tag_size="0.051"
-      />
-      <Action
-        ID="GetDetectionPose"
-        detections="{detections}"
-        name="topRight"
-        target_id="1"
-        detection_pose="{right_pose}"
-      />
-      <Action
-        ID="GetDetectionPose"
-        detections="{detections}"
-        target_id="0"
-        name="topLeft"
-        detection_pose="{left_pose}"
-      />
-      <Action
-        ID="GetDetectionPose"
-        detections="{detections}"
-        target_id="2"
-        name="bottom"
-        detection_pose="{bottom_pose}"
-      />
-      <Action
-        ID="CalibrateCameraPose"
+        camera_info="{camera_info}"
         base_link="base_link"
-        calibration_tool_frame="calibration_tool_frame"
+        tag_frame_prefix="{tag_frame_prefix}"
+        tag_size="0.051"
+        tag_family="tag36h11"
+        min_tags="3"
         computed_pose="{computed_pose}"
-        right_tag_pose="{right_pose}"
-        left_tag_pose="{left_pose}"
-        bottom_tag_pose="{bottom_pose}"
-        camera_optical_frame="{camera_optical_frame}"
       />
       <Action
         ID="VisualizePose"
@@ -88,6 +55,7 @@
         name="camera_optical_frame"
         default="{camera_optical_frame}"
       />
+      <inout_port name="tag_frame_prefix" default="calibration_tag_" />
       <inout_port name="computed_pose" default="{computed_pose}" />
     </SubTree>
   </TreeNodesModel>
