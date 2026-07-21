@@ -97,7 +97,7 @@ jobs:
           github-token: ${{ steps.app-token.outputs.token || github.token }}
           script: |
             const event = context.eventName;
-            // Docker Hub org that hosts the moveit-studio customer image.
+            // Docker Hub org that hosts the moveit-pro customer image.
             // moveit_pro publishes under vars.DOCKERHUB_USERNAME (picknikciuser),
             // which is the same default the reusable workflow falls back to; that
             // var is not defined in this repo, so default to the known owner.
@@ -180,10 +180,10 @@ jobs:
                 moveit_pro_sha = pr.head.sha;
                 moveit_pro_pr_number = needsPr;
                 // Pull the paired moveit_pro PR's customer image from Docker Hub
-                // — that is where moveit_pro publishes it (the GHCR moveit-studio
+                // — that is where moveit_pro publishes it (the GHCR moveit-pro
                 // retag is gone). Suffix-free per-arch template (`…-{0}-amd64`);
                 // the active distro's suffix is baked on below.
-                image_ref = `${dockerhubUsername}/moveit-studio:${sanitizeBranch(pr.head.ref)}-{0}-amd64`;
+                image_ref = `${dockerhubUsername}/moveit-pro:${sanitizeBranch(pr.head.ref)}-{0}-amd64`;
               }
             } else {
               // push, schedule, workflow_dispatch. A `workflow_dispatch` input
@@ -214,7 +214,7 @@ jobs:
             // image_ref, so it never reaches this fallback.
             if (image_ref === '') {
               const archSegment = event !== 'repository_dispatch' ? '-amd64' : '';
-              image_ref = `${dockerhubUsername}/moveit-studio:${image_tag}-{0}${archSegment}`;
+              image_ref = `${dockerhubUsername}/moveit-pro:${image_tag}-{0}${archSegment}`;
             }
             if (!image_ref_has_suffix) {
               image_ref = `${image_ref}${gpu_image_suffix}`;
