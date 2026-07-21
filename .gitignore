@@ -4,3 +4,15 @@ log/
 .vscode/
 MUJOCO_LOG.TXT
 .ccache/
+
+__pycache__/
+
+# VLA checkpoint drop folder: multi-GB model weights must never be committed.
+src/vla_sim/models/*
+!src/vla_sim/models/.gitkeep
+src/vla_sim/hf_cache/*
+!src/vla_sim/hf_cache/.gitkeep
+
+# Machine-local launcher/workspace settings and secrets (HF_TOKEN etc.).
+.env
+.env.*

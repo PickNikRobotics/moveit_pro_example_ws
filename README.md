@@ -30,6 +30,7 @@ git submodule foreach --recursive git lfs pull
 - `lab_sim`
 - `lunar_sim`
 - `phoebe_sim`
+- `vla_sim`
 - `moveit_pro_franka_configs/franka_base_config`
 - `moveit_pro_kinova_configs/kinova_gen3_base_config`
 - `moveit_pro_kinova_configs/kinova_gen3_site_config`

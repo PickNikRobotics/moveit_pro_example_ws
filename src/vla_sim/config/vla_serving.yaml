@@ -1,0 +1,42 @@
+# Model-serving configuration for the vla_sim inference server, and the place to
+# swap or re-tune the policy. Edits take effect when the inference_server
+# container restarts; there is no image rebuild.
+#
+# Each knob resolves as: a vla_inference_server.py CLI flag, then this file,
+# then a built-in default. A missing or empty file is fine; a malformed one
+# parks the server in the error state.
+
+# LeRobot checkpoint to serve: a Hugging Face repo id (org/name), or a local
+# directory placed in src/vla_sim/models/, which the server reads as
+# /models/<checkpoint-dir>.
+# This chooses the robot's actions, so point it only at a source you trust.
+checkpoint: PickNikRobotics/pi05-kinova-color-cube-stack-mujoco
+
+# LeRobot policy family (pi05 | smolvla | ...). Empty reads the checkpoint's
+# config.json "type"; set it only when that field is missing.
+policy_class: ""
+
+# Training frame rate. The chunk plays at 1/fps seconds per step, so a wrong
+# value rescales every commanded joint velocity. Keep the objective's dt at
+# 1/fps. 0 reads the rate from train_config.json, which this checkpoint omits.
+fps: 10.0
+
+# Torch device: auto | cpu | cuda. auto takes a usable GPU and otherwise cpu.
+# Asking for cuda on a host without one fails at startup rather than running an
+# order of magnitude slower on cpu.
+device: auto
+
+# Trained observation.state width: 7 arm joints plus 1 gripper. 0 trusts
+# config.json, which for this checkpoint reports its padded 32-dim
+# architecture width instead of the real one.
+state_dim: 8
+
+# Real-time-chunking soft guidance, in steps past the frozen prefix. Only used
+# for requests that leave guidance_horizon at 0; the shipped objective sets its
+# own on the ExecutePolicy port, so tune it there.
+guidance_horizon: 8
+
+# Real-time-chunking guidance-weight schedule, a lerobot RTCAttentionSchedule
+# name. An invalid value parks the server in the error state naming the valid
+# ones.
+rtc_schedule: EXP

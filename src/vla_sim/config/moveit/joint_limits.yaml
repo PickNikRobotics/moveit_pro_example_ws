@@ -1,0 +1,12 @@
+# Overrides the URDF dynamics limits for MoveIt planning and the ExecutePolicy
+# velocity/acceleration gate. Values are the Kinova Gen3 hardware limits: 1.3963 rad/s
+# for the large actuators (joints 1-4), 1.2218 rad/s for the small actuators (joints 5-7),
+# 52.4 rad/s^2 acceleration.
+joint_limits:
+  joint_1: {has_velocity_limits: true, max_velocity: 1.3963, has_acceleration_limits: true, max_acceleration: 52.4}
+  joint_2: {has_velocity_limits: true, max_velocity: 1.3963, has_acceleration_limits: true, max_acceleration: 52.4}
+  joint_3: {has_velocity_limits: true, max_velocity: 1.3963, has_acceleration_limits: true, max_acceleration: 52.4}
+  joint_4: {has_velocity_limits: true, max_velocity: 1.3963, has_acceleration_limits: true, max_acceleration: 52.4}
+  joint_5: {has_velocity_limits: true, max_velocity: 1.2218, has_acceleration_limits: true, max_acceleration: 52.4}
+  joint_6: {has_velocity_limits: true, max_velocity: 1.2218, has_acceleration_limits: true, max_acceleration: 52.4}
+  joint_7: {has_velocity_limits: true, max_velocity: 1.2218, has_acceleration_limits: true, max_acceleration: 52.4}
