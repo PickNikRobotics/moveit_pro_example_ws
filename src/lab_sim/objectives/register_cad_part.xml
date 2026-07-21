@@ -8,16 +8,19 @@
     <Control ID="Sequence" name="TopLevelSequence">
       <Action ID="ClearSnapshot" />
       <SubTree ID="Look at Table" _collapsed="true" />
+      <!--Where we think the microscope is wrt the world frame, before any registration (Initial Guess Pose)-->
       <Action
         ID="CreatePoseStamped"
+        name="Initial Guess"
         reference_frame="world"
         position_xyz="-1.0;.5;0.7"
         orientation_xyzw="0;0;0;1"
         pose_stamped="{pose_stamped}"
-        name="Initial Guess"
       />
+      <!--Build the red (before) cloud: load the STL, reframe to world, place at the guessed pose.-->
       <Action
         ID="LoadPointCloudFromFile"
+        name="Load microscope STL (red = before)"
         color="255;0;0"
         package_name="lab_sim"
         file_path="description/assets/microscope.stl"
@@ -25,16 +28,19 @@
       />
       <Action
         ID="TransformPointCloudFrame"
+        name="Reframe the STL cloud into the world frame"
         input_cloud="{red_cloud}"
         output_cloud="{red_cloud}"
       />
       <Action
         ID="TransformPointCloud"
+        name="Place the model cloud at the initial guess"
         input_cloud="{red_cloud}"
         transform_pose="{pose_stamped}"
         output_cloud="{red_cloud}"
       />
       <Action ID="SendPointCloudToUI" point_cloud="{red_cloud}" />
+      <!--Capture a live cloud of the real microscope, reframed to the world so ICP can compare it against the red cloud.-->
       <SubTree
         ID="Move to Waypoint"
         _collapsed="true"
@@ -42,25 +48,31 @@
       />
       <Action
         ID="GetPointCloud"
+        name="Capture the live cloud from the wrist camera"
         message_out="{wrist_point_cloud}"
         message_timeout_sec="10.0"
         publisher_timeout_sec="10.0"
       />
       <Action
         ID="TransformPointCloudFrame"
+        name="Reframe the live cloud into the world frame"
         input_cloud="{wrist_point_cloud}"
         output_cloud="{wrist_point_cloud}"
       />
       <Action ID="SendPointCloudToUI" point_cloud="{wrist_point_cloud}" />
+      <!--ICP output target_pose_in_base_frame is a correction relative to the guess, a delta, not an absolute pose.-->
       <Action
         ID="RegisterPointClouds"
+        name="ICP: red (guess) cloud onto the live cloud"
         target_point_cloud="{wrist_point_cloud}"
         base_point_cloud="{red_cloud}"
         max_correspondence_distance="0.5"
         max_iterations="100"
       />
+      <!--Build the green "after" cloud: apply it to the guess, then stack the ICP delta on top (final = guess + correction).-->
       <Action
         ID="LoadPointCloudFromFile"
+        name="Reload microscope STL (green = after)"
         color="0;255;0"
         package_name="lab_sim"
         file_path="description/assets/microscope.stl"
@@ -68,17 +80,20 @@
       />
       <Action
         ID="TransformPointCloudFrame"
+        name="Reframe the STL cloud into the world frame"
         input_cloud="{green_cloud}"
         output_cloud="{green_cloud}"
       />
       <Action
         ID="TransformPointCloud"
+        name="Re-apply the initial guess (the base the delta is measured from)"
         input_cloud="{green_cloud}"
         transform_pose="{pose_stamped}"
         output_cloud="{green_cloud}"
       />
       <Action
         ID="TransformPointCloud"
+        name="Apply the ICP correction on top: guess + delta = final pose"
         input_cloud="{green_cloud}"
         transform_pose="{target_pose}"
         output_cloud="{output_cloud_aligned}"
