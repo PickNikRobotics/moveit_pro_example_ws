@@ -18,6 +18,7 @@
       />
       <Action
         ID="LoadPointCloudFromFile"
+        name="Load the microscope model as the red before cloud"
         color="255;0;0"
         package_name="lab_sim"
         file_path="description/assets/microscope.stl"
@@ -25,6 +26,7 @@
       />
       <Action
         ID="TransformPointCloudFrame"
+        name="Transform the red model cloud into the world frame"
         input_cloud="{red_cloud}"
         output_cloud="{red_cloud}"
       />
@@ -33,6 +35,7 @@
         input_cloud="{red_cloud}"
         transform_pose="{pose_stamped}"
         output_cloud="{red_cloud}"
+        name="Place the red model cloud at the initial guess"
       />
       <Action ID="SendPointCloudToUI" point_cloud="{red_cloud}" />
       <SubTree
@@ -48,19 +51,23 @@
       />
       <Action
         ID="TransformPointCloudFrame"
+        name="Transform the live wrist cloud into the world frame"
         input_cloud="{wrist_point_cloud}"
         output_cloud="{wrist_point_cloud}"
       />
       <Action ID="SendPointCloudToUI" point_cloud="{wrist_point_cloud}" />
       <Action
         ID="RegisterPointClouds"
+        name="Compute the ICP correction relative to the initial guess"
         target_point_cloud="{wrist_point_cloud}"
         base_point_cloud="{red_cloud}"
         max_correspondence_distance="0.5"
         max_iterations="100"
+        target_pose_in_base_frame="{target_pose}"
       />
       <Action
         ID="LoadPointCloudFromFile"
+        name="Load the microscope model as the green after cloud"
         color="0;255;0"
         package_name="lab_sim"
         file_path="description/assets/microscope.stl"
@@ -68,6 +75,7 @@
       />
       <Action
         ID="TransformPointCloudFrame"
+        name="Transform the green model cloud into the world frame"
         input_cloud="{green_cloud}"
         output_cloud="{green_cloud}"
       />
@@ -76,12 +84,14 @@
         input_cloud="{green_cloud}"
         transform_pose="{pose_stamped}"
         output_cloud="{green_cloud}"
+        name="Place the green model cloud at the initial guess"
       />
       <Action
         ID="TransformPointCloud"
         input_cloud="{green_cloud}"
         transform_pose="{target_pose}"
         output_cloud="{output_cloud_aligned}"
+        name="Apply the ICP correction on top of the initial guess"
       />
       <Action ID="SendPointCloudToUI" point_cloud="{output_cloud_aligned}" />
     </Control>
