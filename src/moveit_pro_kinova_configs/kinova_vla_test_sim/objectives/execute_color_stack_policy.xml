@@ -26,7 +26,7 @@
         committed_action_steps="12"
         num_interpolation_points="200"
         goal_path_tolerance="99.0"
-        policy_tracking_weight="300.0"
+        policy_tracking_weight="30.0"
         policy_uses_real_time_chunking="true"
         policy_call_timeout="10.0"
         image_topics="/scene_camera/color;/wrist_camera/color;/overview_camera/color"

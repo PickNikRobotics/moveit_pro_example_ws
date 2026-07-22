@@ -1,0 +1,20 @@
+services:
+  serve_policy:
+    build:
+      context: .
+      dockerfile: Dockerfile.serve_policy
+    runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu, compute, utility]
+    ports:
+      - "${SERVE_POLICY_PORT:-8973}:8973"
+    environment:
+      - HF_HUB_OFFLINE=1
+    volumes:
+      - /data/checkpoints:/data/checkpoints:ro
+      - /data/cache/huggingface:/root/.cache/huggingface:ro

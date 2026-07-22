@@ -4,3 +4,5 @@ log/
 .vscode/
 MUJOCO_LOG.TXT
 .ccache/
+__pycache__/
+.pytest_cache/
