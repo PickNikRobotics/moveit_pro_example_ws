@@ -10,7 +10,7 @@ Runs on the host; the in-container bridge node (get_action_chunk_adapter.py)
 reaches it at http://172.17.0.1:<port>/infer.
 
   env -u LD_LIBRARY_PATH <python-with-lerobot> serve_policy.py \
-      --checkpoint <path-to-merged-checkpoint> --policy-class pi05 --fps 20 --port 8973
+      --checkpoint <path-to-merged-checkpoint> --policy-class pi05
 """
 import argparse
 import base64
@@ -206,12 +206,12 @@ def main():
         help="override observation.state dim for warmup (0=use config)",
     )
     ap.add_argument(
-        "--fps", type=float, default=20.0, help="training fps; response dt=1/fps"
+        "--fps", type=float, default=10.0, help="training fps; response dt=1/fps"
     )
     ap.add_argument("--port", type=int, default=8973)
     ap.add_argument("--device", default="cuda")
     ap.add_argument(
-        "--execution-horizon", type=int, default=12, help="server RTC default window"
+        "--execution-horizon", type=int, default=20, help="server RTC default window"
     )
     args = ap.parse_args()
 

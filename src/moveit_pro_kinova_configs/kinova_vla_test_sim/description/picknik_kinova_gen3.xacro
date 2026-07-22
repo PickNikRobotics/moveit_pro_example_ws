@@ -19,13 +19,11 @@
     <xacro:arg name="gripper_max_velocity" default="100.0" />
     <xacro:arg name="gripper_max_force" default="100.0" />
     <xacro:arg name="gripper_com_port" default="/dev/ttyUSB0" />
-    <xacro:arg name="wrist_realsense" default="true" />
     <xacro:arg name="mujoco_model" default="description/mujoco/scene.xml" />
 
     <!-- Import macros for main hardware components -->
     <xacro:include filename="$(find kortex_description)/arms/$(arg arm)/$(arg dof)dof/urdf/$(arg arm)_macro.xacro" />
     <xacro:include filename="$(find kortex_description)/grippers/$(arg gripper)/urdf/$(arg gripper)_macro.xacro" />
-    <xacro:include filename="$(find picknik_accessories)/descriptions/sensors/realsense_d415.urdf.xacro"/>
 
     <!-- Import environment macros -->
     <xacro:include filename="$(find picknik_accessories)/descriptions/geometry/cube.urdf.xacro"/>
