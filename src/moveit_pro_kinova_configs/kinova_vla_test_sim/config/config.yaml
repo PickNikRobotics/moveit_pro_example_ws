@@ -1,0 +1,39 @@
+###############################################################
+#
+#  This configures the robot to work with MoveIt Pro
+#
+###############################################################
+
+based_on_package: "kinova_sim"
+
+hardware:
+  simulated: True
+  launch_control_node: True
+  launch_robot_state_publisher: True
+
+  robot_description:
+    urdf:
+      package: "kinova_vla_test_sim"
+      path: "description/picknik_kinova_gen3.xacro"
+    srdf:
+      package: "kinova_sim"
+      path: "config/moveit/picknik_kinova_gen3_base.srdf"
+    urdf_params:
+      - mujoco_keyframe: "default"
+      - arm: "gen3"
+      - dof: "7"
+      - vision: "false"
+      - gripper: "robotiq_2f_85"
+      - use_fake_hardware: "%>> hardware.simulated"
+      - fake_sensor_commands: "false"
+      - external_camera: "true"
+      - wrist_realsense: "true"
+      - use_internal_bus_gripper_comm: "false"
+      - mujoco_model: "description/mujoco/cube_stack_scene.xml"
+      - mujoco_viewer: false
+
+objectives:
+  objective_library_paths:
+    colorstack_objectives:
+      package_name: "kinova_vla_test_sim"
+      relative_path: "objectives"

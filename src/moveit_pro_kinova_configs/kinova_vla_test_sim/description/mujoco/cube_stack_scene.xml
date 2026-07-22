@@ -1,0 +1,140 @@
+<mujoco model="kinova color-cube stacking scene">
+  <include file="gen3_7dof.xml" />
+
+  <statistic center="0.45 0.0 0.2" extent="0.8" />
+
+  <default>
+    <geom solref=".004 1" />
+  </default>
+
+  <visual>
+    <headlight diffuse="0.6 0.6 0.6" ambient="0.3 0.3 0.3" specular="0 0 0" />
+    <rgba haze="0.15 0.25 0.35 1" />
+    <global azimuth="140" elevation="-20" />
+  </visual>
+
+  <asset>
+    <texture
+      type="skybox"
+      builtin="gradient"
+      rgb1="0.3 0.5 0.7"
+      rgb2="0 0 0"
+      width="512"
+      height="3072"
+    />
+    <texture
+      type="2d"
+      name="groundplane"
+      builtin="checker"
+      mark="edge"
+      rgb1="0.2 0.3 0.4"
+      rgb2="0.1 0.2 0.3"
+      markrgb="0.8 0.8 0.8"
+      width="300"
+      height="300"
+    />
+    <material
+      name="groundplane"
+      texture="groundplane"
+      texuniform="true"
+      texrepeat="5 5"
+      reflectance="0.2"
+    />
+    <material name="table_mat" rgba="0.55 0.55 0.58 1" />
+  </asset>
+
+  <worldbody>
+    <light pos="0.4 0 1.6" dir="0 0 -1" directional="true" />
+    <geom name="floor" size="0 0 0.05" type="plane" material="groundplane" />
+
+    <camera
+      name="overview_camera"
+      pos="0.5 0.035 0.9"
+      mode="fixed"
+      quat="-0.707107 0 0 0.707107"
+      fovy="45"
+      resolution="640 480"
+    />
+    <site
+      name="overview_camera_optical_frame"
+      pos="0.5 0.035 0.9"
+      quat="-0.707107 0 0 0.707107"
+      size="0.02"
+    />
+
+    <camera
+      name="scene_camera"
+      pos="0.12 0.52 0.92"
+      mode="fixed"
+      quat="-0.245859 -0.080379 0.300170 0.918145"
+      fovy="54"
+      resolution="640 480"
+    />
+    <site
+      name="scene_camera_optical_frame"
+      pos="0.12 0.52 0.92"
+      quat="-0.245859 -0.080379 0.300170 0.918145"
+      size="0.02"
+    />
+
+    <body name="table" pos="0.5 0.0 0.05">
+      <geom
+        name="table_top"
+        type="box"
+        size="0.22 0.28 0.05"
+        material="table_mat"
+        friction="1 0.05 0.01"
+      />
+    </body>
+
+    <body name="cube_red" pos="0.44 -0.12 0.115">
+      <freejoint name="cube_red_free" />
+      <geom
+        name="cube_red_geom"
+        type="box"
+        size="0.015 0.015 0.015"
+        rgba="0.85 0.10 0.10 1"
+        condim="4"
+        friction="1 0.05 0.01"
+        solref="0.004 1"
+      />
+      <site name="cube_red_tf" pos="0 0 0" size="0.005" rgba="0 0 0 0" />
+    </body>
+    <body name="cube_green" pos="0.56 0.0 0.115">
+      <freejoint name="cube_green_free" />
+      <geom
+        name="cube_green_geom"
+        type="box"
+        size="0.015 0.015 0.015"
+        rgba="0.10 0.85 0.10 1"
+        condim="4"
+        friction="1 0.05 0.01"
+        solref="0.004 1"
+      />
+      <site name="cube_green_tf" pos="0 0 0" size="0.005" rgba="0 0 0 0" />
+    </body>
+    <body name="cube_blue" pos="0.50 0.13 0.115">
+      <freejoint name="cube_blue_free" />
+      <geom
+        name="cube_blue_geom"
+        type="box"
+        size="0.015 0.015 0.015"
+        rgba="0.10 0.10 0.85 1"
+        condim="4"
+        friction="1 0.05 0.01"
+        solref="0.004 1"
+      />
+      <site name="cube_blue_tf" pos="0 0 0" size="0.005" rgba="0 0 0 0" />
+    </body>
+  </worldbody>
+
+  <!-- Initial state. qpos layout (compile order):
+       robot [7 arm + 8 robotiq gripper] (15), then 3 cube freejoints (3x7=21). -->
+  <keyframe>
+    <key
+      name="default"
+      qpos="7.2854474427322627e-05 0.0060998872530424308 -3.1250605484909082 -2.5051932931762071 -2.7164243118882329e-05 0.95966324117024648 1.5699864595074029 0.00500747 0.000142046 0.0054543 -0.0057924 0.00500747 0.000142046 0.00545513 -0.00579407 0.44 -0.12 0.115 1 0 0 0 0.56 0.0 0.115 1 0 0 0 0.50 0.13 0.115 1 0 0 0"
+      ctrl="7.2854474427322627e-05 0.0060998872530424308 -3.1250605484909082 -2.5051932931762071 -2.7164243118882329e-05 0.95966324117024648 1.5699864595074029 0"
+    />
+  </keyframe>
+</mujoco>
