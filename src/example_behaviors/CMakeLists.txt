@@ -5,7 +5,7 @@ find_package(moveit_pro_package REQUIRED)
 find_package(example_interfaces REQUIRED)
 moveit_pro_package()
 
-set(THIS_PACKAGE_INCLUDE_DEPENDS cartesian_planning moveit_pro_behavior
+set(THIS_PACKAGE_INCLUDE_DEPENDS path_ik moveit_pro_behavior
   moveit_pro_behavior_interface pluginlib moveit_studio_vision
   moveit_studio_vision_msgs PCL pcl_conversions pcl_ros example_interfaces)
 foreach(package IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
