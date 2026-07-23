@@ -321,6 +321,17 @@ def generate_launch_description():
 
     hangar_sim_pkg = FindPackageShare("hangar_sim")
 
+    forward_stereo_publisher = Node(
+        package="hangar_sim",
+        executable="forward_stereo_publisher.py",
+        name="forward_stereo_publisher",
+        parameters=[
+            PathJoinSubstitution([hangar_sim_pkg, "params", "forward_stereo.yaml"]),
+            {"use_sim_time": use_sim_time},
+        ],
+        output="log",
+    )
+
     # Angular bounds filter: clips chassis self-hitting beams (±93° to ±135°).
     # One filter instance per lidar; each publishes its filtered scan to
     # /scan_{front,rear}_filtered for Nav2 to consume as an independent
@@ -405,6 +416,7 @@ def generate_launch_description():
     ld.add_action(static_tf_odom_to_world)
     ld.add_action(static_tf_map_to_odom)
     ld.add_action(sensor_qos_relay)
+    ld.add_action(forward_stereo_publisher)
     ld.add_action(laser_filter_front_node)
     ld.add_action(laser_filter_rear_node)
     ld.add_action(fuse_state_estimator)

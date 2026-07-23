@@ -3,7 +3,9 @@
 
   <option integrator="implicitfast" />
 
-  <size nuser_sensor="6" />
+  <!-- Camera user parameter 0 selects the picknik_mujoco_ros depth type:
+       0=RGB_DEPTH, 1=RGB_ONLY, 2=THREE_D_LIDAR. -->
+  <size nuser_sensor="6" nuser_cam="1" />
 
   <default>
     <default class="ur5e">
@@ -215,6 +217,42 @@
       />
       <body name="base_platform" pos="0 0 0" euler="0 0 0">
         <body name="ridgeback_base_link">
+          <!-- Calibrated forward stereo input for downstream VO/VSLAM evaluation.
+               This model publishes camera input only; it does not launch a VO/VSLAM
+               implementation, evaluation harness, or benchmark Objective.
+               Base axes are +X forward, +Y left, +Z up. MuJoCo cameras look
+               along local -Z with local +Y up, while the sites encode ROS
+               optical axes (+Z forward, +X right, +Y down). The optical
+               centers are coplanar and separated by the OAK-D Pro's nominal
+               0.075 m stereo baseline. -->
+          <camera
+            name="forward_stereo_left"
+            pos="0.45 0.0375 0.55"
+            fovy="50.53401584672457"
+            mode="fixed"
+            resolution="1280 720"
+            user="1"
+            xyaxes="0 -1 0 0 0 1"
+          />
+          <site
+            name="forward_stereo_left_optical_frame"
+            pos="0.45 0.0375 0.55"
+            xyaxes="0 -1 0 0 0 -1"
+          />
+          <camera
+            name="forward_stereo_right"
+            pos="0.45 -0.0375 0.55"
+            fovy="50.53401584672457"
+            mode="fixed"
+            resolution="1280 720"
+            user="1"
+            xyaxes="0 -1 0 0 0 1"
+          />
+          <site
+            name="forward_stereo_right_optical_frame"
+            pos="0.45 -0.0375 0.55"
+            xyaxes="0 -1 0 0 0 -1"
+          />
           <!-- Front SICK TIM571: mounted at x=+0.45m (front bumper), z=0.15m.
                91 beams x 3 deg = 270 deg FOV, sweeping CCW from beam-0 at -135 deg in robot frame.
                Quat rule: site Z axis = beam-0 firing direction. Site X axis must point in world -Z

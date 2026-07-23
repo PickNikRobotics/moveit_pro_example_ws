@@ -8,6 +8,7 @@ install(
   DIRECTORY
     config
     description
+    docs
     launch
     maps
     objectives
@@ -18,6 +19,7 @@ install(
 )
 
 install(PROGRAMS
+  script/forward_stereo_publisher.py
   script/odometry_joint_state_publisher.py
   script/odom_qos_relay.py
   DESTINATION lib/${PROJECT_NAME}
@@ -31,6 +33,12 @@ if(BUILD_TESTING)
   # artifact ships them back too. Default would be ~/.ros/log/, which lives
   # on the doomed container filesystem and never gets uploaded -- making
   # post-mortem of objective failures impossible.
+  ament_add_pytest_test(
+          forward_stereo_calibration_test test/test_forward_stereo_calibration.py
+          TIMEOUT 30)
+  ament_add_pytest_test(
+          forward_stereo_publisher_test test/test_forward_stereo_publisher.py
+          TIMEOUT 60)
   ament_add_pytest_test(
           objectives_integration_test test/objectives_integration_test.py
           TIMEOUT 600
