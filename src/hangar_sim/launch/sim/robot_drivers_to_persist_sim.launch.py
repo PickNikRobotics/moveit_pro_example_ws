@@ -337,6 +337,17 @@ def generate_launch_description():
         parameters=[{"use_sim_time": use_sim_time}],
     )
 
+    # Confidence-gated map->odom: holds AMCL's correction and rides fuse odom when the
+    # particle cloud spreads on unmapped obstacles (AMCL runs with tf_broadcast:=false).
+    amcl_odom_gate = Node(
+        condition=IfCondition(LaunchConfiguration("use_fuse")),
+        package="hangar_sim",
+        executable="amcl_odom_gate",
+        name="amcl_odom_gate",
+        output="log",
+        parameters=[{"use_sim_time": use_sim_time}],
+    )
+
     # QoS relay to bridge BEST_EFFORT odom and IMU to RELIABLE for fuse
     sensor_qos_relay = Node(
         package="hangar_sim",
@@ -431,6 +442,9 @@ def generate_launch_description():
     ld.add_action(static_tf_odom_to_world)
     ld.add_action(odom_world_drift)
     ld.add_action(slip_aware_odom)
+    ld.add_action(
+        amcl_odom_gate
+    )  # ENABLED: degeneracy gate (spread hysteresis + innovation)
     ld.add_action(static_tf_map_to_odom)
     ld.add_action(sensor_qos_relay)
     ld.add_action(laser_filter_front_node)

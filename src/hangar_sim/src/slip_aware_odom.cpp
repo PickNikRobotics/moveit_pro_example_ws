@@ -15,9 +15,16 @@
 //      this software without specific prior written permission.
 //
 // THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES ARE DISCLAIMED. IN NO EVENT SHALL THE
-// COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DAMAGES ARISING IN ANY WAY
-// OUT OF THE USE OF THIS SOFTWARE.
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
 
 // Forward the active platform controller's odometry as one continuous stream with
 // a yaw covariance that grows during spin, for fuse's wheel_odom_sensor.
@@ -49,7 +56,10 @@
 namespace
 {
 constexpr double kBaseCov = 0.03;     // straight-line yaw covariance
-constexpr double kSpinCov = 0.2;      // fully-slipping yaw covariance
+constexpr double kSpinCov = 10.0;     // fully-slipping yaw covariance: large enough to
+                                      // effectively drop the wheel yaw so fuse rides the
+                                      // IMU (its orientation tracks truth to ~0.1 deg even
+                                      // mid-spin, where the mecanum wheels slip badly)
 constexpr double kTau = 0.5;          // slip relaxation time constant [s]
 constexpr double kSlipFull = 0.5;     // leaky-integrated |yaw rate| for full distrust
 constexpr double kMaxDt = 0.1;        // clamp dt so a stale gap can't spike the integral

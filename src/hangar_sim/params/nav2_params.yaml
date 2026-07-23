@@ -5,8 +5,9 @@ amcl:
     # activation, so localization starts without a manual 2D pose estimate.
     # beluga_amcl is 2D: only x, y, yaw are declared (no z). The covariances set
     # the initial spread (~0.5 m position, ~15 deg yaw) so the seed is not
-    # overconfident; beluga's default covariance is near-zero. The SetInitialPose
-    # Behavior re-seeds at the robot's current pose at each navigation Objective.
+    # overconfident; beluga's default covariance is near-zero. The navigation
+    # Objectives no longer re-seed per run: slip_aware_odom keeps odom continuous
+    # across controller switches and amcl_odom_gate rides odom through divergences.
     set_initial_pose: true
     initial_pose:
       x: 0.0
@@ -44,7 +45,7 @@ amcl:
     robot_model_type: "nav2_amcl::OmniMotionModel"
     save_pose_rate: 0.5
     sigma_hit: 0.25  # E1 keeper: relaxed peak, boxes as outliers
-    tf_broadcast: true
+    tf_broadcast: false  # gate is sole map->odom publisher (amcl_odom_gate)
     transform_tolerance: 1.0
     update_min_a: 0.1  # correct often for box robustness
     update_min_d: 0.1
