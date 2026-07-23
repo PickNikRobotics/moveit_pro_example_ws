@@ -18,6 +18,7 @@ install(
 )
 
 install(PROGRAMS
+  script/forward_stereo_publisher.py
   script/odometry_joint_state_publisher.py
   script/odom_qos_relay.py
   DESTINATION lib/${PROJECT_NAME}
@@ -27,6 +28,12 @@ if(BUILD_TESTING)
   find_package(ament_cmake_pytest REQUIRED)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
+  ament_add_pytest_test(
+          forward_stereo_calibration_test test/test_forward_stereo_calibration.py
+          TIMEOUT 30)
+  ament_add_pytest_test(
+          forward_stereo_publisher_test test/test_forward_stereo_publisher.py
+          TIMEOUT 60)
   # Redirect ROS node logs into the test_results tree so the test-results CI
   # artifact ships them back too. Default would be ~/.ros/log/, which lives
   # on the doomed container filesystem and never gets uploaded -- making

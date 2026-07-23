@@ -3,7 +3,9 @@
 
   <option integrator="implicitfast" />
 
-  <size nuser_sensor="6" />
+  <!-- Camera user parameter 0 selects the picknik_mujoco_ros depth type:
+       0=RGB_DEPTH, 1=RGB_ONLY, 2=THREE_D_LIDAR. -->
+  <size nuser_sensor="6" nuser_cam="1" />
 
   <default>
     <default class="ur5e">
@@ -215,6 +217,102 @@
       />
       <body name="base_platform" pos="0 0 0" euler="0 0 0">
         <body name="ridgeback_base_link">
+          <!-- Calibrated forward stereo input for downstream VO/VSLAM evaluation.
+               This model publishes camera input only; it does not launch a VO/VSLAM
+               implementation, evaluation harness, or benchmark Objective.
+               Base axes are +X forward, +Y left, +Z up. MuJoCo cameras look
+               along local -Z with local +Y up, while the sites encode ROS
+               optical axes (+Z forward, +X right, +Y down). The optical
+               centers are coplanar and separated by the OAK-D Pro's nominal
+               0.075 m stereo baseline. -->
+          <camera
+            name="forward_stereo_left"
+            pos="0.45 0.0375 0.55"
+            fovy="50.53401584672457"
+            mode="fixed"
+            resolution="1280 720"
+            user="1"
+            xyaxes="0 -1 0 0 0 1"
+          />
+          <site
+            name="forward_stereo_left_optical_frame"
+            pos="0.45 0.0375 0.55"
+            xyaxes="0 -1 0 0 0 -1"
+          />
+          <camera
+            name="forward_stereo_right"
+            pos="0.45 -0.0375 0.55"
+            fovy="50.53401584672457"
+            mode="fixed"
+            resolution="1280 720"
+            user="1"
+            xyaxes="0 -1 0 0 0 1"
+          />
+          <site
+            name="forward_stereo_right_optical_frame"
+            pos="0.45 -0.0375 0.55"
+            xyaxes="0 -1 0 0 0 -1"
+          />
+          <!-- Forward stereo mount: visual-only sensor bar (Husky-style) so the
+               pair is visible in the sim. Non-colliding like the SICK lidar
+               geoms below, so it cannot introduce arm interference; the optical
+               centers above are unchanged.
+               The cameras look along base +X, so every geom here stays behind
+               x=0.45 (the optical plane) or below it: group 2 is rendered by
+               MuJoCo's offscreen pass, so geometry in front of the optical
+               center would occlude the stereo images. A regression test pins
+               that margin (test_forward_stereo_calibration.py).
+               contype/conaffinity remove these from contact dynamics but not
+               from mj_ray, which the rangefinder lidars use; what keeps them
+               out of the front scan is height: the mast's lower cap sits at
+               z=0.30, clear of the z=0.15 scan plane.
+               mass="0" keeps this decorative: ridgeback_base_link declares no
+               <inertial>, so MuJoCo would otherwise infer added mass and shift
+               the base COM from these geoms' default density. -->
+          <geom
+            name="forward_stereo_mast"
+            type="cylinder"
+            fromto="0.41 0 0.30 0.41 0 0.55"
+            size="0.02"
+            mass="0"
+            rgba="0.15 0.15 0.15 1"
+            contype="0"
+            conaffinity="0"
+            group="2"
+          />
+          <geom
+            name="forward_stereo_bar"
+            type="box"
+            size="0.02 0.075 0.02"
+            pos="0.41 0 0.55"
+            mass="0"
+            rgba="0.15 0.15 0.15 1"
+            contype="0"
+            conaffinity="0"
+            group="2"
+          />
+          <geom
+            name="forward_stereo_left_lens"
+            type="cylinder"
+            fromto="0.40 0.0375 0.55 0.44 0.0375 0.55"
+            size="0.012"
+            mass="0"
+            rgba="0.05 0.05 0.05 1"
+            contype="0"
+            conaffinity="0"
+            group="2"
+          />
+          <geom
+            name="forward_stereo_right_lens"
+            type="cylinder"
+            fromto="0.40 -0.0375 0.55 0.44 -0.0375 0.55"
+            size="0.012"
+            mass="0"
+            rgba="0.05 0.05 0.05 1"
+            contype="0"
+            conaffinity="0"
+            group="2"
+          />
           <!-- Front SICK TIM571: mounted at x=+0.45m (front bumper), z=0.15m.
                91 beams x 3 deg = 270 deg FOV, sweeping CCW from beam-0 at -135 deg in robot frame.
                Quat rule: site Z axis = beam-0 firing direction. Site X axis must point in world -Z
