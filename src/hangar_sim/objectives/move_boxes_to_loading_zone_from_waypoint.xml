@@ -206,11 +206,32 @@
             >
               <Decorator ID="Inverter">
                 <Control ID="Sequence">
+                  <!--
+                    `grasp_link` sits exactly at the suction-cup tip plane
+                    (vacuum_urdf.xacro places it at the collision-mesh tip), so
+                    the end-effector-to-TCP offset must be zero: the generated
+                    grasp puts the TCP on the box face, and any positive z here
+                    holds the cup tips that far above the surface. The previous
+                    0.045 offset likely compensated for a low box-top bias in
+                    the pre-SAM3 perception chain; SAM3 reads the top surface
+                    to within a few millimeters, so with 0.045 the cups hovered
+                    45 mm above the box and the vacuum never sealed.
+
+                    Assumptions this zero offset leans on: SAM3's small bias
+                    reads the top HIGH (an under-read would command the cups
+                    into the surface — the approach is a fixed-distance
+                    Cartesian move with no force feedback, absorbed only by
+                    cup compliance in sim), and gripper-box contact stays
+                    collision-legal because the box lives in the octomap,
+                    which SetupMTCSetCollisionRule allows against the gripper.
+                    The reference_frame on this pose is inert — the value is
+                    consumed as a relative end-effector-to-TCP transform.
+                  -->
                   <Action
                     ID="CreatePoseStamped"
                     reference_frame="world"
                     pose_stamped="{ee_to_tcp}"
-                    position_xyz="0;0;0.045"
+                    position_xyz="0;0;0"
                     orientation_xyzw="0;0;0;1"
                   />
                   <Action
