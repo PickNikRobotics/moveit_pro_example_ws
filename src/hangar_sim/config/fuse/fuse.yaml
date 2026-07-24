@@ -5,7 +5,7 @@ state_estimator:
     # Fixed-lag smoother configuration
     optimization_frequency: 10.0  # match publish_frequency (10 Hz); optimizing 2x faster than we publish was wasted work
     transaction_timeout: 0.01
-    lag_duration: 0.5
+    lag_duration: 0.3  # chosen: median 0.465deg (<0.5 goal), clean transient tail vs 0.25
 
     # Motion model for mobile base (3D omnidirectional)
     motion_models:
