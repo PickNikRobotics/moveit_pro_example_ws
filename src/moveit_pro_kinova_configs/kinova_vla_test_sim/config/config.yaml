@@ -19,8 +19,8 @@ hardware:
       package: "kinova_vla_test_sim"
       path: "description/picknik_kinova_gen3.xacro"
     srdf:
-      package: "kinova_sim"
-      path: "config/moveit/picknik_kinova_gen3_base.srdf"
+      package: "kinova_vla_test_sim"
+      path: "config/moveit/picknik_kinova_gen3.srdf"
     urdf_params:
       - mujoco_keyframe: "default"
       - arm: "gen3"
@@ -29,8 +29,6 @@ hardware:
       - gripper: "robotiq_2f_85"
       - use_fake_hardware: "%>> hardware.simulated"
       - fake_sensor_commands: "false"
-      - external_camera: "true"
-      - wrist_realsense: "true"
       - use_internal_bus_gripper_comm: "false"
       - mujoco_model: "description/mujoco/cube_stack_scene.xml"
       - mujoco_viewer: false

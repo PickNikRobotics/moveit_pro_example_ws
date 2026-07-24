@@ -564,18 +564,6 @@
       <origin xyz="0 0 0.15" rpy="0 0 0"/>
     </joint>
 
-    <!-- Camera External -->
-    <link name="external_camera_link" />
-    <joint name="external_camera_joint" type="fixed">
-      <parent link="world" />
-      <child link="external_camera_link" />
-      <origin xyz="-0.3 0.3 1.0" rpy="0.0 0.4 0" />
-    </joint>
-
-    <xacro:realsense_d415 parent="external_camera_link" name="scene_camera">
-      <origin xyz="0 0 0" rpy="0 0 0" />
-    </xacro:realsense_d415>
-
     <ros2_control name="kinova_mujoco_simulation" type="system">
       <joint name="joint_1">
         <command_interface name="position">
