@@ -5,7 +5,7 @@ Runs a trained policy against the `Execute Color-Stack Policy` objective via Mov
 ## 1. Serve (model container)
 
 ```bash
-docker compose run --rm serve_policy \
+docker compose run --rm --service-ports serve_policy \
   --checkpoint <path-to-merged-checkpoint> --policy-class pi05
 ```
 
