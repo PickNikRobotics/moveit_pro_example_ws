@@ -1,0 +1,34 @@
+<?xml version="1.0" ?>
+<package format="3">
+  <name>kinova_vla_test_sim</name>
+  <version>6.5.0</version>
+
+  <description>
+    MuJoCo simulation of a Kinova Gen3 (7-DoF) + Robotiq 2F-85 stacking
+    colored cubes, for testing VLA policy execution.
+  </description>
+
+  <maintainer email="dan.wahl@picknik.ai">Dan Wahl</maintainer>
+
+  <license>BSD-3-Clause</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <exec_depend>kinova_sim</exec_depend>
+  <exec_depend>kinova_gen3_base_config</exec_depend>
+  <exec_depend>joint_trajectory_admittance_controller</exec_depend>
+  <exec_depend>kortex_description</exec_depend>
+  <exec_depend>moveit_pro_ml_msgs</exec_depend>
+  <exec_depend>moveit_studio_kinova_pstop_manager</exec_depend>
+  <exec_depend>picknik_mujoco_ros</exec_depend>
+  <exec_depend>picknik_accessories</exec_depend>
+  <exec_depend>realsense2_description</exec_depend>
+  <exec_depend>velocity_force_controller</exec_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_cmake_pytest</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
