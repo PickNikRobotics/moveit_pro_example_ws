@@ -160,6 +160,7 @@ platform_velocity_controller_nav2:
 joint_state_broadcaster:
   ros__parameters:
     use_local_topics: false
+    update_rate: 50  # publish /joint_states at 50 Hz, not the 600 Hz control loop
     joints:
       - shoulder_pan_joint
       - shoulder_lift_joint
@@ -283,6 +284,7 @@ force_torque_sensor_broadcaster:
 
 imu_sensor_broadcaster:
   ros__parameters:
+    update_rate: 100  # 100 Hz IMU is plenty for fuse (optimizes at 10 Hz); was inheriting the 600 Hz control loop
     sensor_name: imu_site
     frame_id: ridgeback_base_link
     # Static covariance values (row-major 3x3 matrices)

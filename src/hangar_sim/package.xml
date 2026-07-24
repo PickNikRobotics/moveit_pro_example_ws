@@ -14,6 +14,10 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>pluginlib</depend>
+  <depend>rclcpp</depend>
+  <depend>nav_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>tf2_ros</depend>
 
   <exec_depend>admittance_controller</exec_depend>
   <exec_depend>clearpath_mecanum_drive_controller</exec_depend>
@@ -36,6 +40,11 @@
   <exec_depend>velocity_force_controller</exec_depend>
   <exec_depend>moveit_pro_sam2</exec_depend>
   <exec_depend>moveit_pro_sam3</exec_depend>
+
+  <!-- Runtime deps for the installed Python nodes (odom_world_drift, odom_qos_relay).
+       geometry_msgs and tf2_ros are covered by the <depend> tags above. -->
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
 
