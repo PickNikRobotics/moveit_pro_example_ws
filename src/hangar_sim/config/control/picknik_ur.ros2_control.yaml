@@ -211,6 +211,20 @@ joint_trajectory_controller:
     action_monitor_rate: 20.0
     allow_partial_joints_goal: true
     open_loop_control: false # this is closed loop
+    # Workaround for PickNikRobotics/moveit_pro#20766: trajectory generation
+    # leaves sub-epsilon terminal-velocity residuals that Jazzy's JTC rejects
+    # by default — measured ~1e-4 on `linear_x_joint` from the MTC Cartesian
+    # approach in "ML Move Boxes to Loading Zone", and ~4e-7 from joint
+    # interpolation in "Point-to-Point Trajectory" (previously skipped in
+    # test/objectives_integration_test.py for exactly this rejection).
+    # CAUTION: this flag is binary and controller-wide — it disables the
+    # endpoint-still-moving check for every magnitude on every joint,
+    # including the mecanum base, where a genuinely nonzero terminal velocity
+    # means the base is still translating at trajectory end and then snaps to
+    # a position hold. Acceptable for this sim config; re-evaluate before
+    # copying to real hardware. Remove when moveit_pro#20766 clamps the
+    # residuals at trajectory generation.
+    allow_nonzero_velocity_at_trajectory_end: true
     gains:
       shoulder_pan_joint:
         p: 10.0

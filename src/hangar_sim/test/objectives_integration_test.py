@@ -121,14 +121,6 @@ skip_objectives = {
     # the next objectives plan from a self-colliding start. Skipping removes the
     # timeout flake and its downstream sim-state pollution.
     "Solution - Draw Picknik",
-    # "Point-to-Point Trajectory" interpolates to the "Arm Forward" waypoint on
-    # joint_trajectory_controller, which also owns the mecanum linear_x_joint
-    # (config/control/picknik_ur.ros2_control.yaml). The interpolated terminal
-    # velocity carries a floating-point residual (~3.8e-7) that the controller's
-    # nonzero-terminal-velocity validation intermittently rejects ("Velocity of
-    # last trajectory point of joint linear_x_joint is not zero"). Real
-    # controller/interpolation bug, not a test issue -- skip pending that fix.
-    "Point-to-Point Trajectory",
 }
 
 # Action servers the hangar_sim tree types need before any objective runs.
