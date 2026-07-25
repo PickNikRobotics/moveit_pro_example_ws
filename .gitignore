@@ -4,3 +4,7 @@ log/
 .vscode/
 MUJOCO_LOG.TXT
 .ccache/
+
+# Bytecode caches, written next to Python Behaviors in a config package's source tree.
+__pycache__/
+*.py[cod]
