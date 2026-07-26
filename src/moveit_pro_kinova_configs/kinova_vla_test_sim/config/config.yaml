@@ -30,7 +30,7 @@ hardware:
       - use_fake_hardware: "%>> hardware.simulated"
       - fake_sensor_commands: "false"
       - use_internal_bus_gripper_comm: "false"
-      - mujoco_model: "description/mujoco/cube_stack_scene.xml"
+      - mujoco_model: "description/mujoco/scene.xml"
       - mujoco_viewer: false
 
 moveit_params:
