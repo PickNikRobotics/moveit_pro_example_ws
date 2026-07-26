@@ -143,6 +143,26 @@
       name="bracelet_with_vision_link"
       file="kinova/bracelet_with_vision_link.obj"
     />
+    <!-- CoACD convex decomposition of bracelet_with_vision_link (render-only): MJWarp's inside-mesh ray culling needs convex geometry, and the wrist camera sits inside this mesh. -->
+    <mesh name="bracelet_with_vision_link_convex_0" file="kinova/bracelet_with_vision_link_convex/bracelet_convex_0.obj" />
+    <mesh name="bracelet_with_vision_link_convex_1" file="kinova/bracelet_with_vision_link_convex/bracelet_convex_1.obj" />
+    <mesh name="bracelet_with_vision_link_convex_2" file="kinova/bracelet_with_vision_link_convex/bracelet_convex_2.obj" />
+    <mesh name="bracelet_with_vision_link_convex_3" file="kinova/bracelet_with_vision_link_convex/bracelet_convex_3.obj" />
+    <mesh name="bracelet_with_vision_link_convex_4" file="kinova/bracelet_with_vision_link_convex/bracelet_convex_4.obj" />
+    <mesh name="bracelet_with_vision_link_convex_5" file="kinova/bracelet_with_vision_link_convex/bracelet_convex_5.obj" />
+    <mesh name="bracelet_with_vision_link_convex_6" file="kinova/bracelet_with_vision_link_convex/bracelet_convex_6.obj" />
+    <mesh name="bracelet_with_vision_link_convex_7" file="kinova/bracelet_with_vision_link_convex/bracelet_convex_7.obj" />
+    <mesh name="bracelet_with_vision_link_convex_8" file="kinova/bracelet_with_vision_link_convex/bracelet_convex_8.obj" />
+    <mesh name="bracelet_with_vision_link_convex_9" file="kinova/bracelet_with_vision_link_convex/bracelet_convex_9.obj" />
+    <mesh name="bracelet_with_vision_link_convex_10" file="kinova/bracelet_with_vision_link_convex/bracelet_convex_10.obj" />
+    <mesh name="bracelet_with_vision_link_convex_11" file="kinova/bracelet_with_vision_link_convex/bracelet_convex_11.obj" />
+    <mesh name="bracelet_with_vision_link_convex_12" file="kinova/bracelet_with_vision_link_convex/bracelet_convex_12.obj" />
+    <mesh name="bracelet_with_vision_link_convex_13" file="kinova/bracelet_with_vision_link_convex/bracelet_convex_13.obj" />
+    <mesh name="bracelet_with_vision_link_convex_14" file="kinova/bracelet_with_vision_link_convex/bracelet_convex_14.obj" />
+    <mesh name="bracelet_with_vision_link_convex_15" file="kinova/bracelet_with_vision_link_convex/bracelet_convex_15.obj" />
+    <mesh name="bracelet_with_vision_link_convex_16" file="kinova/bracelet_with_vision_link_convex/bracelet_convex_16.obj" />
+    <mesh name="bracelet_with_vision_link_convex_17" file="kinova/bracelet_with_vision_link_convex/bracelet_convex_17.obj" />
+    <mesh name="bracelet_with_vision_link_convex_18" file="kinova/bracelet_with_vision_link_convex/bracelet_convex_18.obj" />
     <!-- Robotiq 2f85 meshes -->
     <mesh name="robotiq_85_base" class="2f85" file="robotiq_2f85/base.stl" />
     <mesh
@@ -341,11 +361,33 @@
                       name="joint_7"
                       armature="0.000001928"
                     />
+                    <!-- Hidden (group 5): replaced below by convex-hull geoms for rendering, see the mesh comment above. -->
                     <geom
                       class="visual"
                       mesh="bracelet_with_vision_link"
                       material="white"
+                      group="5"
                     />
+                    <!-- Convex-hull stand-in geoms, same compiled placement as the original mesh geom above. -->
+                    <geom class="visual" mesh="bracelet_with_vision_link_convex_0" material="white" pos="2.6677708e-06 -0.014812024 -0.037298802" quat="0.41953784 0.56899367 -0.56910963 0.41993861" />
+                    <geom class="visual" mesh="bracelet_with_vision_link_convex_1" material="white" pos="2.6677708e-06 -0.014812024 -0.037298802" quat="0.41953784 0.56899367 -0.56910963 0.41993861" />
+                    <geom class="visual" mesh="bracelet_with_vision_link_convex_2" material="white" pos="2.6677708e-06 -0.014812024 -0.037298802" quat="0.41953784 0.56899367 -0.56910963 0.41993861" />
+                    <geom class="visual" mesh="bracelet_with_vision_link_convex_3" material="white" pos="2.6677708e-06 -0.014812024 -0.037298802" quat="0.41953784 0.56899367 -0.56910963 0.41993861" />
+                    <geom class="visual" mesh="bracelet_with_vision_link_convex_4" material="white" pos="2.6677708e-06 -0.014812024 -0.037298802" quat="0.41953784 0.56899367 -0.56910963 0.41993861" />
+                    <geom class="visual" mesh="bracelet_with_vision_link_convex_5" material="white" pos="2.6677708e-06 -0.014812024 -0.037298802" quat="0.41953784 0.56899367 -0.56910963 0.41993861" />
+                    <geom class="visual" mesh="bracelet_with_vision_link_convex_6" material="white" pos="2.6677708e-06 -0.014812024 -0.037298802" quat="0.41953784 0.56899367 -0.56910963 0.41993861" />
+                    <geom class="visual" mesh="bracelet_with_vision_link_convex_7" material="white" pos="2.6677708e-06 -0.014812024 -0.037298802" quat="0.41953784 0.56899367 -0.56910963 0.41993861" />
+                    <geom class="visual" mesh="bracelet_with_vision_link_convex_8" material="white" pos="2.6677708e-06 -0.014812024 -0.037298802" quat="0.41953784 0.56899367 -0.56910963 0.41993861" />
+                    <geom class="visual" mesh="bracelet_with_vision_link_convex_9" material="white" pos="2.6677708e-06 -0.014812024 -0.037298802" quat="0.41953784 0.56899367 -0.56910963 0.41993861" />
+                    <geom class="visual" mesh="bracelet_with_vision_link_convex_10" material="white" pos="2.6677708e-06 -0.014812024 -0.037298802" quat="0.41953784 0.56899367 -0.56910963 0.41993861" />
+                    <geom class="visual" mesh="bracelet_with_vision_link_convex_11" material="white" pos="2.6677708e-06 -0.014812024 -0.037298802" quat="0.41953784 0.56899367 -0.56910963 0.41993861" />
+                    <geom class="visual" mesh="bracelet_with_vision_link_convex_12" material="white" pos="2.6677708e-06 -0.014812024 -0.037298802" quat="0.41953784 0.56899367 -0.56910963 0.41993861" />
+                    <geom class="visual" mesh="bracelet_with_vision_link_convex_13" material="white" pos="2.6677708e-06 -0.014812024 -0.037298802" quat="0.41953784 0.56899367 -0.56910963 0.41993861" />
+                    <geom class="visual" mesh="bracelet_with_vision_link_convex_14" material="white" pos="2.6677708e-06 -0.014812024 -0.037298802" quat="0.41953784 0.56899367 -0.56910963 0.41993861" />
+                    <geom class="visual" mesh="bracelet_with_vision_link_convex_15" material="white" pos="2.6677708e-06 -0.014812024 -0.037298802" quat="0.41953784 0.56899367 -0.56910963 0.41993861" />
+                    <geom class="visual" mesh="bracelet_with_vision_link_convex_16" material="white" pos="2.6677708e-06 -0.014812024 -0.037298802" quat="0.41953784 0.56899367 -0.56910963 0.41993861" />
+                    <geom class="visual" mesh="bracelet_with_vision_link_convex_17" material="white" pos="2.6677708e-06 -0.014812024 -0.037298802" quat="0.41953784 0.56899367 -0.56910963 0.41993861" />
+                    <geom class="visual" mesh="bracelet_with_vision_link_convex_18" material="white" pos="2.6677708e-06 -0.014812024 -0.037298802" quat="0.41953784 0.56899367 -0.56910963 0.41993861" />
                     <geom
                       class="collision"
                       mesh="bracelet_with_vision_link_c"
