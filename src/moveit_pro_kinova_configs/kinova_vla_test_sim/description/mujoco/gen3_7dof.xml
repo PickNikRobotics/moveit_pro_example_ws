@@ -1,6 +1,7 @@
 <mujoco model="gen3">
   <compiler angle="radian" meshdir="assets" />
-  <option integrator="implicitfast" />
+  <!-- impratio=20: default (1) friction is too compliant to hold a pinched object under load. -->
+  <option integrator="implicitfast" impratio="20" />
 
   <default>
     <!-- kinova defaults -->
