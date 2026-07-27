@@ -567,7 +567,7 @@ jobs:
         # `ros_distros` input on `integration-test`).
         ros_distro: [jazzy]
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       # The artifact name comes from workspace_integration_test.yaml:
       # `test-results-<config_package>-<ros_distro>`. continue-on-error so an
       # early integration-test crash (no artifact uploaded) still lets
@@ -824,14 +824,14 @@ jobs:
     name: Ensure no SSH URLs in .gitmodules
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Check .gitmodules file for Git-over-SSH URLs
         run: "! grep 'git@' .gitmodules"
 
   validate_objectives:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: PickNikRobotics/moveit_pro_lint@v0.0.1
 
   # Single aggregator job that branch protection requires. Lists every job
