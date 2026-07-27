@@ -10,7 +10,9 @@
   <visual>
     <headlight diffuse="0.6 0.6 0.6" ambient="0.3 0.3 0.3" specular="0 0 0" />
     <rgba haze="0.15 0.25 0.35 1" />
-    <global azimuth="140" elevation="-20" />
+    <!-- offwidth/offheight must equal every camera's resolution, or
+         picknik_mujoco_ros' extract_cameras aborts ros2_control. -->
+    <global azimuth="140" elevation="-20" offwidth="480" offheight="480" />
   </visual>
 
   <asset>
@@ -53,7 +55,7 @@
       mode="fixed"
       quat="-0.707107 0 0 0.707107"
       fovy="45"
-      resolution="640 480"
+      resolution="480 480"
     />
     <site
       name="overview_camera_optical_frame"
@@ -68,7 +70,7 @@
       mode="fixed"
       quat="-0.245859 -0.080379 0.300170 0.918145"
       fovy="54"
-      resolution="640 480"
+      resolution="480 480"
     />
     <site
       name="scene_camera_optical_frame"
