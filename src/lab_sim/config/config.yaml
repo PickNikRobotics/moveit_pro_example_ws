@@ -20,6 +20,14 @@ hardware:
       - mujoco_model: "description/scene.xml"
       - mujoco_viewer: false
 
+  # Override the inherited (empty) drivers-to-persist launch so the Meta Quest
+  # ros_tcp_endpoint node starts with the sim and persists across agent_bridge
+  # restarts. Without it, /right_controller_odom and the button-event topics
+  # never publish, and the "Quest Teleop" objective blocks forever.
+  simulated_robot_driver_persist_launch_file:
+    package: "lab_sim"
+    path: "launch/sim/robot_drivers_to_persist_sim.launch.py"
+
 moveit_params:
   joint_limits:
     package: "lab_sim"
@@ -51,6 +59,8 @@ objectives:
       - "moveit_pro::behaviors::MujocoBehaviorsLoader"
     lab_sim:
       - "lab_sim_behaviors::LabSimBehaviorsLoader"
+    experimental:
+      - "experimental_behaviors::ExperimentalBehaviorsLoader"
   # Specify source folder for objectives
   # [Required]
   objective_library_paths:
