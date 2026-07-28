@@ -6,3 +6,4 @@ MUJOCO_LOG.TXT
 .ccache/
 __pycache__/
 .pytest_cache/
+.venv/
