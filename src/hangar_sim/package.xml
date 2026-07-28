@@ -14,6 +14,13 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>pluginlib</depend>
+  <depend>rclcpp</depend>
+  <depend>nav_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>tf2</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>tf2_ros</depend>
 
   <exec_depend>admittance_controller</exec_depend>
   <exec_depend>clearpath_mecanum_drive_controller</exec_depend>
@@ -34,7 +41,6 @@
   <exec_depend>realsense2_description</exec_depend>
   <exec_depend>ridgeback_description</exec_depend>
   <exec_depend>robotiq_description</exec_depend>
-  <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>slam_toolbox</exec_depend>
   <exec_depend>ur_description</exec_depend>
   <exec_depend>velocity_force_controller</exec_depend>
@@ -47,6 +53,7 @@
   <test_depend>ament_clang_format</test_depend>
   <test_depend>ament_clang_tidy</test_depend>
   <test_depend>ament_cmake_copyright</test_depend>
+  <test_depend>ament_cmake_gmock</test_depend>
   <test_depend>ament_cmake_lint_cmake</test_depend>
   <test_depend>picknik_ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
