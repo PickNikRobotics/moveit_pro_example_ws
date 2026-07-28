@@ -5,8 +5,9 @@ amcl:
     # activation, so localization starts without a manual 2D pose estimate.
     # beluga_amcl is 2D: only x, y, yaw are declared (no z). The covariances set
     # the initial spread (~0.5 m position, ~15 deg yaw) so the seed is not
-    # overconfident; beluga's default covariance is near-zero. The SetInitialPose
-    # Behavior re-seeds at the robot's current pose at each navigation Objective.
+    # overconfident; beluga's default covariance is near-zero. The navigation
+    # Objectives no longer re-seed per run: slip_aware_odom keeps odom continuous
+    # across controller switches and amcl_odom_gate rides odom through divergences.
     set_initial_pose: true
     initial_pose:
       x: 0.0
@@ -15,11 +16,12 @@ amcl:
       covariance_x: 0.25
       covariance_y: 0.25
       covariance_yaw: 0.0685
-    alpha1: 0.05
-    alpha2: 0.05
-    alpha3: 0.1
-    alpha4: 0.05
-    alpha5: 0.05
+    # Raised ~2x from 0.05/0.1 to cover drifty odom without over-spreading the cloud.
+    alpha1: 0.4  # rotational particle spread to keep yaw lock through spins
+    alpha2: 0.1
+    alpha3: 0.2
+    alpha4: 0.1
+    alpha5: 0.1
     base_frame_id: "ridgeback_base_link"
     beam_skip_distance: 0.5
     beam_skip_error_threshold: 0.9
@@ -31,25 +33,33 @@ amcl:
     laser_max_range: 25.0
     laser_min_range: 0.0
     laser_model_type: "likelihood_field"
-    max_beams: 60
-    max_particles: 5000
+    max_beams: 720  # full merged scan (0.5deg) -- max hits
+    max_particles: 2000  # E1: needed for box-cluster convergence
     min_particles: 1000
     odom_frame_id: "odom"
     pf_err: 0.05
     pf_z: 0.99
     recovery_alpha_fast: 0.1
     recovery_alpha_slow: 0.001
-    resample_interval: 1
+    resample_interval: 3  # resample less often than we correct: avoids particle depletion that diverged at update_min_a=0.05/0.1
     robot_model_type: "nav2_amcl::OmniMotionModel"
     save_pose_rate: 0.5
-    sigma_hit: 0.2
-    tf_broadcast: true
+    sigma_hit: 0.25  # E1 keeper: relaxed peak, boxes as outliers
+    tf_broadcast: false  # AMCL never broadcasts map->odom: the amcl_odom_gate publishes it when
+    # use_fuse+localization are on, else a static map->odom fallback does (see the launch file).
+    # Coupled to use_fuse: the gate only launches with use_fuse:=true, so use_fuse:=false +
+    # localization:=true is unsupported (AMCL's correction is discarded) -- the launch file logs a
+    # loud warning for that combination.
     transform_tolerance: 1.0
-    update_min_a: 0.2
-    update_min_d: 0.25
-    z_hit: 0.5
+    update_min_a: 0.1  # correct often for box robustness
+    update_min_d: 0.1
+    # likelihood_field uses only z_hit + z_rand. Their RATIO (0.65:0.30) is the tuned quantity;
+    # the 0.95 sum is deliberate -- a constant scale on every beam's likelihood that cancels in the
+    # particle-weight normalization, so summing to 1.0 would be cosmetic while re-weighting one term
+    # would change the tuned mix. z_short/z_max are ignored in this model.
+    z_hit: 0.65
     z_max: 0.05
-    z_rand: 0.5
+    z_rand: 0.3
     z_short: 0.05
     scan_topic: /scan_merged
 
@@ -120,7 +130,7 @@ controller_server:
       vx_max: 0.5
       vx_min: -0.35
       vy_max: 0.5
-      wz_max: 1.9
+      wz_max: 0.6  # must stay below velocity_smoother max_velocity[2] (1.0) to bind; slower turns keep the base within AMCL's correction bandwidth so map->odom tracks instead of lagging
       iteration_count: 1
       prune_distance: 1.7
       transform_tolerance: 0.1
@@ -404,7 +414,7 @@ velocity_smoother:
     smoothing_frequency: 20.0
     scale_velocities: False
     feedback: "OPEN_LOOP"
-    max_velocity: [1.0, 1.0, 1.0]
+    max_velocity: [1.0, 1.0, 1.0]  # [2] (yaw) caps controller wz_max above; keep >= wz_max (0.6) or the gate's turn-rate assumption drifts
     min_velocity: [-1.0, -1.0, -1.0]
     max_accel: [2.5, 2.5, 3.2]
     max_decel: [-2.5, -2.5, -3.2]
