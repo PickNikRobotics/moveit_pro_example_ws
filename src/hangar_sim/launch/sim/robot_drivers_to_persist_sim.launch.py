@@ -31,13 +31,15 @@ import os
 from ament_index_python.packages import get_package_share_directory
 
 from launch import LaunchDescription
+import launch.logging
 from launch.actions import (
     DeclareLaunchArgument,
     GroupAction,
     IncludeLaunchDescription,
+    OpaqueFunction,
     SetEnvironmentVariable,
 )
-from launch.conditions import IfCondition
+from launch.conditions import IfCondition, UnlessCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import (
     LaunchConfiguration,
@@ -49,6 +51,26 @@ from launch_ros.actions import PushRosNamespace
 from launch_ros.descriptions import ParameterFile
 from launch_ros.substitutions import FindPackageShare
 from nav2_common.launch import RewrittenYaml, ReplaceString
+
+
+def _warn_unsupported_localization(context, *args, **kwargs):
+    """Emit a WARNING for the unsupported use_fuse:=false + localization:=true combination.
+
+    launch has no LogWarn action, so evaluate the condition here and log at warning severity via an
+    OpaqueFunction -- LogInfo would print at INFO and blend into normal launch output, defeating the
+    "fail loudly" intent for a config that silently degrades localization to raw odometry.
+    """
+    if (
+        LaunchConfiguration("use_fuse").perform(context).lower() == "false"
+        and LaunchConfiguration("localization").perform(context).lower() == "true"
+    ):
+        launch.logging.get_logger("hangar_sim").warning(
+            "UNSUPPORTED: use_fuse:=false with localization:=true -- amcl_odom_gate does not launch, "
+            "so AMCL's map->odom correction is discarded and a static identity is used instead; "
+            "localization degrades to raw odometry. Use use_fuse:=true (default) for map-based "
+            "localization, or localization:=false for the intentional static-TF fallback."
+        )
+    return []
 
 
 def generate_launch_description():
@@ -189,7 +211,7 @@ def generate_launch_description():
 
     declare_use_fuse_cmd = DeclareLaunchArgument(
         "use_fuse",
-        default_value="false",
+        default_value="true",  # #19667: fuse drives sim odometry (was "false")
         description="Whether to launch the fuse state estimator",
     )
 
@@ -288,18 +310,25 @@ def generate_launch_description():
         arguments=["0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "mj_world", "map"],
     )
 
-    # Static map->odom TF fallback: only used when neither SLAM nor AMCL is publishing it.
-    # Compare lowercased strings rather than `not <bareword>` so this still works
-    # when slam/localization are passed as ROS-style lowercase booleans.
+    # Static map->odom TF fallback: launched whenever nothing else publishes map->odom.
+    # The amcl_odom_gate is the sole publisher only when BOTH use_fuse and localization are
+    # true (it coasts on fuse odom and consumes AMCL's /particle_cloud); AMCL itself never
+    # broadcasts (tf_broadcast:false). So publish this static identity unless SLAM is on or the
+    # gate is active -- i.e. when slam is false AND (use_fuse is false OR localization is false).
+    # Without this, use_fuse:=false + localization:=true (no gate, AMCL not broadcasting) would
+    # have no map->odom source at all. Compare lowercased strings rather than `not <bareword>`
+    # so this still works when the args are passed as ROS-style lowercase booleans.
     static_tf_map_to_odom = Node(
         condition=IfCondition(
             PythonExpression(
                 [
                     "'",
                     slam,
-                    "'.lower() == 'false' and '",
+                    "'.lower() == 'false' and ('",
+                    LaunchConfiguration("use_fuse"),
+                    "'.lower() == 'false' or '",
                     localization,
-                    "'.lower() == 'false'",
+                    "'.lower() == 'false')",
                 ]
             )
         ),
@@ -319,12 +348,79 @@ def generate_launch_description():
     # MuJoCo broadcast a competing odom->ridgeback_base_link TF — removed in this
     # change.) The UI (pose-utils.ts) hardcodes 'world' for user-clicked poses, so
     # this link also keeps nav2 goals transformable to 'map'.
+    # odom -> world. Without fuse it's a static identity (odom == world). With fuse
+    # (#19667), odom_world_drift replaces it with a live transform so odom -> base
+    # resolves to fuse's drifty estimate, giving AMCL real drift to correct while
+    # world -> base stays ground truth for whole-body.
     static_tf_odom_to_world = Node(
+        condition=UnlessCondition(LaunchConfiguration("use_fuse")),
         package="tf2_ros",
         executable="static_transform_publisher",
         name="static_tf_odom_to_world",
         output="log",
         arguments=["0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "odom", "world"],
+    )
+
+    odom_world_drift = Node(
+        condition=IfCondition(LaunchConfiguration("use_fuse")),
+        package="hangar_sim",
+        executable="odom_world_drift",
+        name="odom_world_drift",
+        output="log",
+        respawn=LaunchConfiguration("use_respawn"),
+        respawn_delay=2.0,
+        parameters=[{"use_sim_time": use_sim_time}],
+    )
+
+    # Slip-aware wheel-odom covariance: distrust wheel yaw during spins (mecanum
+    # rollers slip), trust it when straight (bounds gyro drift). fuse reads the
+    # republished topic instead of the raw controller odom.
+    slip_aware_odom = Node(
+        condition=IfCondition(LaunchConfiguration("use_fuse")),
+        package="hangar_sim",
+        executable="slip_aware_odom",
+        name="slip_aware_odom",
+        output="log",
+        respawn=LaunchConfiguration("use_respawn"),
+        respawn_delay=2.0,
+        parameters=[{"use_sim_time": use_sim_time}],
+    )
+
+    # Confidence-gated map->odom: holds AMCL's correction and rides fuse odom when the
+    # particle cloud spreads on unmapped obstacles (AMCL runs with tf_broadcast:=false).
+    # latency_compensation_sec composes the correction with odom->base from ~300 ms ago --
+    # beluga's estimate content trails the true pose by about that (its stamp under-reports it),
+    # so during motion this cancels most of the speed*lag error (measured: moving-pose error
+    # ~14 cm -> ~8 cm, moving yaw ~1.2 deg -> ~0.9 deg on the fuselage route). Tuned to this sim's
+    # pipeline; re-measure per platform. 0 disables.
+    amcl_odom_gate = Node(
+        # Sole map->odom publisher only when slam is off AND both use_fuse and localization are on --
+        # makes the single-publisher invariant structural (matches static_tf_map_to_odom's slam guard)
+        # instead of resting on beluga staying silent. Under slam:=true, slam_toolbox owns map->odom
+        # and AMCL is skipped, so the gate must stand down to avoid two competing publishers.
+        condition=IfCondition(
+            PythonExpression(
+                [
+                    "'",
+                    slam,
+                    "'.lower() == 'false' and '",
+                    LaunchConfiguration("use_fuse"),
+                    "'.lower() == 'true' and '",
+                    localization,
+                    "'.lower() == 'true'",
+                ]
+            )
+        ),
+        package="hangar_sim",
+        executable="amcl_odom_gate",
+        name="amcl_odom_gate",
+        output="log",
+        respawn=LaunchConfiguration("use_respawn"),
+        # Shorter than the other nodes: this is the sole map->odom publisher, and AMCL's
+        # transform_tolerance is 1.0 s, so keep the crash-recovery gap under that to avoid
+        # map->base lookup failures during respawn.
+        respawn_delay=0.5,
+        parameters=[{"use_sim_time": use_sim_time, "latency_compensation_sec": 0.30}],
     )
 
     # QoS relay to bridge BEST_EFFORT odom and IMU to RELIABLE for fuse
@@ -393,11 +489,25 @@ def generate_launch_description():
         package="fuse_optimizers",
         executable="fixed_lag_smoother_node",
         name="state_estimator",
+        respawn=LaunchConfiguration("use_respawn"),
+        respawn_delay=2.0,
         parameters=[
-            PathJoinSubstitution([hangar_sim_pkg, "config", "fuse", "fuse.yaml"])
+            PathJoinSubstitution([hangar_sim_pkg, "config", "fuse", "fuse.yaml"]),
+            {"use_sim_time": use_sim_time},
         ],
         output="screen",
         condition=IfCondition(LaunchConfiguration("use_fuse")),
+    )
+
+    # Loud guard for an unsupported combination. amcl_odom_gate is the sole map->odom publisher and
+    # only launches when use_fuse:=true. With use_fuse:=false and localization:=true, AMCL converges
+    # but nothing broadcasts its correction (the gate is absent and static_tf_map_to_odom publishes a
+    # fixed identity instead), so localization silently degrades to raw odometry. Warn loudly rather
+    # than look like healthy AMCL. Supported modes: use_fuse:=true (map-based, default) or
+    # localization:=false (intentional static-TF fallback). See _warn_unsupported_localization: the
+    # OpaqueFunction logs at WARNING (launch has no LogWarn action), so it does not blend into INFO.
+    warn_unsupported_localization = OpaqueFunction(
+        function=_warn_unsupported_localization
     )
 
     # Create the launch description and populate
@@ -430,7 +540,13 @@ def generate_launch_description():
 
     ld.add_action(static_tf_world_to_map)
     ld.add_action(static_tf_odom_to_world)
+    ld.add_action(odom_world_drift)
+    ld.add_action(slip_aware_odom)
+    ld.add_action(
+        amcl_odom_gate
+    )  # ENABLED: degeneracy gate (spread hysteresis + innovation)
     ld.add_action(static_tf_map_to_odom)
+    ld.add_action(warn_unsupported_localization)
     ld.add_action(sensor_qos_relay)
     ld.add_action(forward_stereo_publisher)
     ld.add_action(laser_filter_front_node)
