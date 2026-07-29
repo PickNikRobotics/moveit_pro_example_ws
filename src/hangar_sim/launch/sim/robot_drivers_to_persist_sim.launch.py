@@ -207,6 +207,22 @@ def generate_launch_description():
                 remappings=remappings,
                 output="screen",
             ),
+            # Localization (map_server, AMCL, scan merger) runs in its own container so a
+            # crash in any navigation node cannot take localization down with it. The
+            # map -> odom transform AMCL publishes is what connects the MuJoCo scene
+            # frames (cameras under mj_world -> map) to MoveIt's planning frame
+            # (world under odom); if this container dies, every point-cloud-to-world
+            # transform in the product breaks, not just navigation.
+            Node(
+                condition=IfCondition(use_composition),
+                name="localization_container",
+                package="rclcpp_components",
+                executable="component_container_isolated",
+                parameters=[configured_params, {"autostart": autostart}],
+                arguments=["--ros-args", "--log-level", log_level],
+                remappings=remappings,
+                output="screen",
+            ),
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(
                     os.path.join(launch_dir, "slam_launch.py")
@@ -231,7 +247,7 @@ def generate_launch_description():
                     "use_sim_time": use_sim_time,
                     "autostart": autostart,
                     "params_file": params_file,
-                    "container_name": "nav2_container",
+                    "container_name": "localization_container",
                     "localization": localization,
                 }.items(),
             ),
