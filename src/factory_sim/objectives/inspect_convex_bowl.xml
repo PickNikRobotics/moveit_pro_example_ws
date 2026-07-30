@@ -24,10 +24,10 @@
           waypoint_name="View Convex"
         />
         <Action
-          ID="UnpackRobotJointStateMessage"
+          ID="UnpackRobotStateMessage"
           joint_state="{joint_state}"
           multi_dof_joint_state="{multi_dof_joint_state}"
-          robot_joint_state="{target_joint_state}"
+          robot_state="{target_joint_state}"
         />
         <Action
           ID="GetCurrentPlanningScene"
