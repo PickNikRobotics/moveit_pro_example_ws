@@ -145,15 +145,7 @@
       />
       <inout_port name="ik_frame" default="{ik_frame}" />
       <inout_port name="joint_group_name" default="{joint_group_name}" />
-      <inout_port name="keep_orientation" default="{keep_orientation}" />
-      <inout_port
-        name="keep_orientation_link_names"
-        default="{keep_orientation_link_names}"
-      />
-      <inout_port
-        name="keep_orientation_tolerance"
-        default="{keep_orientation_tolerance}"
-      />
+      <inout_port name="orientation_constraint" default="[]" />
       <inout_port name="mesh_link_name" default="{mesh_link_name}" />
       <inout_port name="position_only_ik" default="{position_only_ik}" />
       <inout_port name="starting_waypoint" default="{starting_waypoint}" />
