@@ -5,11 +5,6 @@
 ###############################################################
 
 hardware:
-  # Set simulated to false if you are using this as a configuration for real hardware.
-  # This allows users to switch between mock and real hardware using the same configuration.
-  # [Required]
-  simulated: True
-
   # If the MoveIt Pro Agent should launch the ros2 controller node.
   # [Optional, default=True]
   launch_control_node: True
@@ -19,21 +14,12 @@ hardware:
   # [Optional, default=True]
   launch_robot_state_publisher: True
 
-  # Specify additional launch files for running the robot with real hardware.
+  # Additional launch file included with the persistent driver process. This base
+  # config ships the simulated drivers; a real-hardware child overrides this key.
   # [Optional, defaults to a blank launch file if not specified]
-  robot_driver_persist_launch_file:
-    package: "kinova_gen3_base_config"
-    path: "launch/robot_drivers_to_persist.launch.py"
-
-  # Specify any additional launch files for running the robot in simulation mode.
-  # Used when hardware.simulated is True.
-  # [Optional, defaults to a blank launch file if not specified]
-  simulated_robot_driver_persist_launch_file:
+  additional_driver_launch_file:
     package: "kinova_gen3_base_config"
     path: "launch/sim/robot_drivers_to_persist_sim.launch.py"
-  simulated_hardware_launch_file:
-    package: "moveit_studio_agent"
-    path: "launch/blank.launch.py"
 
   # These Params are pasted to the XACRO to create the URDF
   robot_description:

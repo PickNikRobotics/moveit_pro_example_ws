@@ -28,10 +28,9 @@ hardware:
       # Rebuild hangar_sim after changing this value.
       - publish_odom: true
 
-  # Specify any additional launch files for running the robot in simulation mode.
-  # Used when hardware.simulated is True.
+  # Additional launch file included with the persistent driver process (Nav2 sim drivers).
   # [Optional, defaults to a blank launch file if not specified]
-  simulated_robot_driver_persist_launch_file:
+  additional_driver_launch_file:
     package: "hangar_sim"
     path: "launch/sim/robot_drivers_to_persist_sim.launch.py"
 

@@ -6,7 +6,11 @@
 based_on_package: "kinova_gen3_base_config"
 
 hardware:
-  simulated: False
+  # Real-hardware drivers. Overrides the base config's simulated default
+  # (additional_driver_launch_file is always included).
+  additional_driver_launch_file:
+    package: "kinova_gen3_base_config"
+    path: "launch/robot_drivers_to_persist.launch.py"
   robot_description:
     urdf:
       package: "kinova_gen3_site_config"

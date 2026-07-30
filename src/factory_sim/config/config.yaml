@@ -7,16 +7,6 @@
 # Baseline hardware configuration parameters for MoveIt Pro.
 # [Required]
 hardware:
-  # Set simulated to false if you are using this as a configuration for real hardware.
-  # This allows users to switch between mock and real hardware by changing a single parameter with config inheritance.
-  # [Required]
-  simulated: true
-  # If simulated is false, launch the following file:
-  # [Optional, defaults to a blank launch file if not specified]
-  robot_driver_persist_launch_file:
-    package: "moveit_studio_agent"
-    path: "launch/blank.launch.py"
-
   # If the MoveIt Pro Agent should launch the ros2 controller node.
   # [Optional, default=True]
   launch_control_node: True
