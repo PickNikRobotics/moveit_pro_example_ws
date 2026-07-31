@@ -4,7 +4,7 @@
   <BehaviorTree ID="Save Robot Joint State" _description="" _favorite="false">
     <Control ID="Sequence" name="TopLevelSequence">
       <Action ID="GetCurrentPlanningScene" />
-      <Action ID="GetRobotJointState" />
+      <Action ID="GetJointState" />
       <Action
         ID="SaveRobotJointStateToYaml"
         message="{robot_joint_state}"

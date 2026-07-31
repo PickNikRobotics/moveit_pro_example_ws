@@ -60,7 +60,7 @@
         task="{mtc_task}"
       />
       <Action
-        ID="SetupMTCPlanToJointState"
+        ID="SetupMTCPlanToRobotState"
         acceleration_scale_factor="1"
         joint_state="{midpoint_move}"
         keep_orientation="false"

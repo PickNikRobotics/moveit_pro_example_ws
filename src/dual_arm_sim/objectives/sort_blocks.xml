@@ -109,7 +109,7 @@
                   velocity_scale="1.000000"
                 />
                 <Action
-                  ID="SetupMTCPlanToJointState"
+                  ID="SetupMTCPlanToRobotState"
                   acceleration_scale_factor="1.000000"
                   joint_state="{target_joint_state}"
                   keep_orientation_link_names="grasp_link"
@@ -238,7 +238,7 @@
                   velocity_scale="1.000000"
                 />
                 <Action
-                  ID="SetupMTCPlanToJointState"
+                  ID="SetupMTCPlanToRobotState"
                   acceleration_scale_factor="1.000000"
                   joint_state="{target_joint_state}"
                   keep_orientation_link_names="grasp_link"
