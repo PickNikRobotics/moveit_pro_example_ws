@@ -15,5 +15,16 @@ def generate_launch_description():
                 name="get_action_chunk_adapter",
                 output="log",
             ),
+            # Republishes the trajectory controller's commanded setpoint (plus the
+            # latched gripper command) as /joint_commands, which the Trainer records
+            # and Forge maps to the training `action`. Without it a Behavior-Tree
+            # oracle records no command stream and conversion falls back to
+            # next-state action labels.
+            Node(
+                package="kinova_vla_test_sim",
+                executable="joint_command_bridge.py",
+                name="joint_command_bridge",
+                output="log",
+            ),
         ]
     )
