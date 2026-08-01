@@ -16,6 +16,7 @@
 
   <exec_depend>control_msgs</exec_depend>
   <exec_depend>kinova_sim</exec_depend>
+  <exec_depend>kinova_vla_test_sim_behaviors</exec_depend>
   <exec_depend>kinova_gen3_base_config</exec_depend>
   <exec_depend>joint_trajectory_admittance_controller</exec_depend>
   <exec_depend>kortex_description</exec_depend>

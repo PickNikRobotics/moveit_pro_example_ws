@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Collect Color-Stack Demonstration">
+  <!--
+    Replays the scripted stacking oracle (end-to-end-colorstack
+    scripts/kinova/blockstack/oracle.py) as Pro motion, to record demonstrations
+    matching the v7-square dataset.
+
+    Cube poses come from the MuJoCo scene's `cube_*_tf` sites, which
+    picknik_mujoco_ros broadcasts to TF, so resetting to a keyframe fully
+    determines the layout.
+
+    The scene and cube pair are literals here. Sweeping the training keyframes
+    means driving these trees from a script that sets them per episode.
+  -->
+  <BehaviorTree
+    ID="Collect Color-Stack Demonstration"
+    _description="Record one oracle demonstration of stacking the red cube on the green cube."
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="root">
+      <SubTree ID="Prepare Color-Stack Scene" keyframe_name="eval_0" />
+      <Action
+        ID="RecordEpisode"
+        dataset_name="colorstack_oracle"
+        task="stack the red cube on the green cube"
+        num_episodes="1"
+        recording_id="{recording_id}"
+      />
+      <SubTree
+        ID="Execute Color-Stack Oracle"
+        held_cube_frame="cube_red_tf"
+        target_cube_frame="cube_green_tf"
+      />
+      <Action ID="SaveEpisode" />
+      <Action ID="StopRecording" />
+    </Control>
+  </BehaviorTree>
+
+  <TreeNodesModel>
+    <SubTree ID="Collect Color-Stack Demonstration">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Color-Cube Stacking" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

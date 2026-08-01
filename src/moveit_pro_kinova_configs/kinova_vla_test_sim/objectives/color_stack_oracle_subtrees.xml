@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Execute Color-Stack Oracle">
+  <!--//////////-->
+  <!--
+    The oracle's four segments. Heights are its constants: HOVER_DZ and LIFT_H are
+    0.12 above the cube, the place hover and rest are CUBE_SIDE (0.03) plus
+    PLACE_HOVER_DZ and REST_GAP, and the retract is LIFT_H above wherever the tip
+    finished. The gripper is binary, GRIP_OPEN 0.0 and GRIP_CLOSED 0.6 rad.
+  -->
+  <BehaviorTree
+    ID="Execute Color-Stack Oracle"
+    _description="Pick one cube and stack it on another, following the oracle's keyposes."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="root">
+      <SubTree
+        ID="Move Along Color-Stack Keyposes"
+        aim_frame="{held_cube_frame}"
+        held_object_frame="pinch"
+        heights="0.12;0.0"
+      />
+      <SubTree ID="Command Color-Stack Gripper" gripper_position="0.6" />
+      <SubTree
+        ID="Move Along Color-Stack Keyposes"
+        aim_frame="{held_cube_frame}"
+        held_object_frame="pinch"
+        heights="0.12"
+      />
+      <!-- Aim the carried cube rather than the tip, so it lands square on the target. -->
+      <SubTree
+        ID="Move Along Color-Stack Keyposes"
+        aim_frame="{target_cube_frame}"
+        held_object_frame="{held_cube_frame}"
+        heights="0.150;0.031"
+      />
+      <SubTree ID="Command Color-Stack Gripper" gripper_position="0.0" />
+      <SubTree
+        ID="Move Along Color-Stack Keyposes"
+        aim_frame="pinch"
+        held_object_frame="pinch"
+        heights="0.12"
+      />
+    </Control>
+  </BehaviorTree>
+
+  <!--//////////-->
+  <!--//////////-->
+  <!--
+    Resetting a keyframe writes qpos directly, so the running controllers must be
+    stopped first or they drive the arm back to their stale setpoints.
+  -->
+  <BehaviorTree
+    ID="Prepare Color-Stack Scene"
+    _description="Reset the simulation to a keyframe and open the gripper."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="root">
+      <Action
+        ID="SwitchController"
+        activate_asap="true"
+        automatic_deactivation="true"
+        controller_list_action_name="/controller_manager/list_controllers"
+        controller_switch_action_name="/controller_manager/switch_controller"
+        strictness="1"
+        timeout="-1.000000"
+        deactivate_controllers="joint_trajectory_admittance_controller;velocity_force_controller"
+      />
+      <Action
+        ID="ResetMujocoKeyframe"
+        response_timeout="10.000000"
+        wait_for_server_available_timeout="3.000000"
+        keyframe_name="{keyframe_name}"
+      />
+      <Action
+        ID="SwitchController"
+        activate_controllers="joint_trajectory_admittance_controller"
+        deactivate_controllers="velocity_force_controller"
+        strictness="1"
+        timeout="-1.000000"
+        controller_list_action_name="/controller_manager/list_controllers"
+        controller_switch_action_name="/controller_manager/switch_controller"
+      />
+      <SubTree ID="Command Color-Stack Gripper" gripper_position="0.0" />
+    </Control>
+  </BehaviorTree>
+
+  <!--//////////-->
+  <!--//////////-->
+  <!--
+    One oracle segment: read the live cube pose, build the top-down keyposes above
+    it, and follow them at the oracle's harmonized Cartesian speed.
+
+    `held_object_frame` names what the tip is carrying, so the keyposes position
+    that object instead of the tip; `pinch` means carrying nothing, since the
+    offset is then identity.
+  -->
+  <BehaviorTree
+    ID="Move Along Color-Stack Keyposes"
+    _description="Plan and execute one top-down segment of the stacking oracle."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="root">
+      <Action
+        ID="GetLatestTransform"
+        target_frame_id="mj_world"
+        source_frame_id="{aim_frame}"
+        transform="{aim_transform}"
+      />
+      <Action
+        ID="ConvertTransformStampedToPoseStamped"
+        transform_stamped="{aim_transform}"
+        pose_stamped="{aim_pose}"
+      />
+      <Action
+        ID="GetLatestTransform"
+        target_frame_id="mj_world"
+        source_frame_id="pinch"
+        transform="{tip_transform}"
+      />
+      <Action
+        ID="ConvertTransformStampedToPoseStamped"
+        transform_stamped="{tip_transform}"
+        pose_stamped="{reference_pose}"
+      />
+      <Action
+        ID="GetLatestTransform"
+        target_frame_id="pinch"
+        source_frame_id="{held_object_frame}"
+        transform="{held_object_offset}"
+      />
+      <Action
+        ID="ComputeTopDownKeyposes"
+        aim_pose="{aim_pose}"
+        reference_pose="{reference_pose}"
+        held_object_offset="{held_object_offset}"
+        heights="{heights}"
+        path="{path}"
+      />
+      <!--
+        tip_offset moves the planned frame from grasp_link onto the MJCF `pinch`
+        site the oracle drives. Both are fixed to robotiq_85_base_link with the
+        same orientation, at z=0.15 and z=0.145.
+
+        Time-optimal timing at the oracle's own cap: JOINT_VEL_CAP is half the
+        rated joint speed. A constant-speed Cartesian profile was tried first,
+        since the oracle budgets its moves in Cartesian metres, but it prices
+        rotation into the same profile and the oracle budgets no angular speed at
+        all -- capping rotation low enough to corner within the joint
+        acceleration limits then paced every segment, at 68s against the oracle's
+        18.7s. Time-optimal timing has no angular term to fight and runs 16s.
+      -->
+      <Action
+        ID="PlanCartesianPath"
+        path="{path}"
+        planning_group_name="manipulator"
+        tip_links="grasp_link"
+        tip_offset="0.0;0.0;-0.005;0.0;0.0;0.0"
+        position_only="false"
+        blending_radius="0.02"
+        trajectory_timing="[{mode: time_optimal, velocity_scale_factor: 0.5, acceleration_scale_factor: 0.5, trajectory_sampling_rate: 100}]"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+      />
+      <Action
+        ID="ExecuteTrajectory"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+      />
+    </Control>
+  </BehaviorTree>
+
+  <!--//////////-->
+  <!--//////////-->
+  <!--
+    Drive the gripper and tell the recording bridge what was commanded. A
+    GripperCommand goal is not observable on any topic, so this parameter is the
+    only way the recorded `action` carries a gripper channel.
+  -->
+  <BehaviorTree
+    ID="Command Color-Stack Gripper"
+    _description="Command the gripper and mirror the command to the recorded action."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="root">
+      <Action
+        ID="SetRos2Parameter"
+        node_name="/joint_command_bridge"
+        parameter_name="gripper_command_position"
+        parameter_value="{gripper_position}"
+        parameter_type="double"
+        response_timeout="5.000000"
+        wait_for_server_available_timeout="3.000000"
+      />
+      <Action
+        ID="MoveGripperAction"
+        gripper_command_action_name="/robotiq_gripper_controller/gripper_cmd"
+        position="{gripper_position}"
+      />
+    </Control>
+  </BehaviorTree>
+
+  <TreeNodesModel>
+    <SubTree ID="Execute Color-Stack Oracle">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Color-Cube Stacking" />
+      </MetadataFields>
+    </SubTree>
+    <SubTree ID="Prepare Color-Stack Scene">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Color-Cube Stacking" />
+      </MetadataFields>
+    </SubTree>
+    <SubTree ID="Move Along Color-Stack Keyposes">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Color-Cube Stacking" />
+      </MetadataFields>
+    </SubTree>
+    <SubTree ID="Command Color-Stack Gripper">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Color-Cube Stacking" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

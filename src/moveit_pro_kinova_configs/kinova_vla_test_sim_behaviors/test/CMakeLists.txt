@@ -1,0 +1,8 @@
+find_package(ament_cmake_gtest REQUIRED)
+
+ament_add_gtest(test_behavior_plugins test_behavior_plugins.cpp)
+ament_target_dependencies(test_behavior_plugins ${THIS_PACKAGE_INCLUDE_DEPENDS})
+
+ament_add_gtest(test_compute_top_down_keyposes test_compute_top_down_keyposes.cpp)
+target_link_libraries(test_compute_top_down_keyposes kinova_vla_test_sim_behaviors)
+ament_target_dependencies(test_compute_top_down_keyposes ${THIS_PACKAGE_INCLUDE_DEPENDS})
