@@ -30,7 +30,9 @@ uv run lerobot-train \
 ```
 
 Needs `HF_TOKEN` in the environment and a GPU with 40+ GB. On smaller GPUs, add
-`--policy.gradient_checkpointing=true`.
+`--policy.path=lerobot/pi05_base --policy.gradient_checkpointing=true`. A 24 GB
+card needs it: the recipe as written runs out of memory, and checkpointing brings
+it down to 14.7 GB at ~1.1 step/s.
 
 ## Merge, then serve
 
