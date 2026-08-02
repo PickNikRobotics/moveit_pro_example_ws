@@ -1,0 +1,46 @@
+# joint_limits.yaml allows the dynamics properties specified in the URDF to be overwritten or augmented as needed
+# Specific joint properties can be changed with the keys [max_position, min_position, max_velocity, max_acceleration]
+# Joint limits can be turned off with [has_velocity_limits, has_acceleration_limits]
+#
+# Matches external_dependencies/ros2_kortex/kortex_moveit_config/
+# kinova_gen3_7dof_robotiq_2f_85_moveit_config/config/joint_limits.yaml (the vendor's
+# own MoveIt config for this arm+gripper combo), rather than kinova_sim's conservative
+# sim defaults, so ExecutePolicy's velocity/acceleration gate doesn't reject
+# policy-commanded trajectories that are within hardware limits but above the sim
+# defaults.
+joint_limits:
+  joint_1:
+    has_velocity_limits: true
+    max_velocity: 1.3963
+    has_acceleration_limits: true
+    max_acceleration: 8.6
+  joint_2:
+    has_velocity_limits: true
+    max_velocity: 1.3963
+    has_acceleration_limits: true
+    max_acceleration: 8.6
+  joint_3:
+    has_velocity_limits: true
+    max_velocity: 1.3963
+    has_acceleration_limits: true
+    max_acceleration: 8.6
+  joint_4:
+    has_velocity_limits: true
+    max_velocity: 1.3963
+    has_acceleration_limits: true
+    max_acceleration: 8.6
+  joint_5:
+    has_velocity_limits: true
+    max_velocity: 1.2218
+    has_acceleration_limits: true
+    max_acceleration: 8.6
+  joint_6:
+    has_velocity_limits: true
+    max_velocity: 1.2218
+    has_acceleration_limits: true
+    max_acceleration: 8.6
+  joint_7:
+    has_velocity_limits: true
+    max_velocity: 1.2218
+    has_acceleration_limits: true
+    max_acceleration: 8.6

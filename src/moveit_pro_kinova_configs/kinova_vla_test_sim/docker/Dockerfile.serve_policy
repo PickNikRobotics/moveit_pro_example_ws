@@ -1,0 +1,9 @@
+FROM python:3.12-slim
+
+RUN pip install --no-cache-dir "lerobot[pi,smolvla]==0.6.0"
+
+COPY serve_policy.py /app/serve_policy.py
+WORKDIR /app
+
+EXPOSE 8973
+ENTRYPOINT ["python", "serve_policy.py"]

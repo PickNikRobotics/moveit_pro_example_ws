@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<library path="kinova_vla_test_sim_behaviors">
+  <class
+    type="kinova_vla_test_sim_behaviors::KinovaVlaTestSimBehaviorsLoader"
+    base_class_type="moveit_pro::behaviors::SharedResourcesNodeLoaderBase"
+  />
+</library>

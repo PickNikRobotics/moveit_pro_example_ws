@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Move Along Color-Stack Keyposes">
+  <!--
+    `held_object_frame` names what the tip is carrying, so the keyposes position that
+    object instead of the tip; `pinch` means carrying nothing, since the offset is then
+    identity.
+
+    tip_offset moves the planned frame from grasp_link onto the MJCF `pinch` site the
+    oracle drives. Both are fixed to robotiq_85_base_link with the same orientation, at
+    z=0.15 and z=0.145.
+
+    Leave `reuse_orientation` unwired to choose a grasp orientation, and wire it from an
+    earlier segment's `orientation` for any move made while holding a cube.
+  -->
+  <BehaviorTree
+    ID="Move Along Color-Stack Keyposes"
+    _description="Plan and execute one top-down segment of the stacking oracle."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="root">
+      <Action
+        ID="GetLatestTransform"
+        target_frame_id="mj_world"
+        source_frame_id="{aim_frame}"
+        transform="{aim_transform}"
+      />
+      <Action
+        ID="ConvertTransformStampedToPoseStamped"
+        transform_stamped="{aim_transform}"
+        pose_stamped="{aim_pose}"
+      />
+      <Action
+        ID="GetLatestTransform"
+        target_frame_id="pinch"
+        source_frame_id="{held_object_frame}"
+        transform="{held_object_offset}"
+      />
+      <Action
+        ID="GetCurrentPlanningScene"
+        planning_scene_msg="{planning_scene}"
+      />
+      <Action
+        ID="GetRobotJointState"
+        planning_scene="{planning_scene}"
+        planning_group_name="manipulator"
+        joint_state="{seed_joint_state}"
+        robot_joint_state="{robot_joint_state}"
+      />
+      <Action
+        ID="ComputeTopDownKeyposes"
+        aim_pose="{aim_pose}"
+        seed_joint_state="{seed_joint_state}"
+        planning_group_name="manipulator"
+        tip_link="grasp_link"
+        held_object_offset="{held_object_offset}"
+        heights="{heights}"
+        reuse_orientation="{reuse_orientation}"
+        path="{path}"
+        orientation="{orientation}"
+      />
+      <Action
+        ID="PlanJointSplineThroughPoses"
+        path="{path}"
+        seed_joint_state="{seed_joint_state}"
+        planning_group_name="manipulator"
+        tip_link="grasp_link"
+        tip_offset="0.0;0.0;-0.005"
+        cartesian_speed="0.065"
+        joint_velocity_scale="0.5"
+        sampling_rate="100"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+      />
+      <Action
+        ID="ExecuteTrajectory"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+      />
+    </Control>
+  </BehaviorTree>
+
+  <TreeNodesModel>
+    <SubTree ID="Move Along Color-Stack Keyposes">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Color-Cube Stacking" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

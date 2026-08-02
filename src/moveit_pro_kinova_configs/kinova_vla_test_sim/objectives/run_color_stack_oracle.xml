@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Run Color-Stack Oracle">
+  <BehaviorTree
+    ID="Run Color-Stack Oracle"
+    _description="Run the oracle stacking motion without recording, to check fidelity."
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="root">
+      <SubTree
+        ID="Prepare Color-Stack Scene"
+        _collapsed="true"
+        keyframe_name="eval_0"
+      />
+      <SubTree
+        ID="Execute Color-Stack Oracle"
+        _collapsed="true"
+        held_cube_frame="cube_red_tf"
+        target_cube_frame="cube_green_tf"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Run Color-Stack Oracle">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Color-Cube Stacking" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Execute Color-Stack Oracle">
+  <!--
+    Heights are measured from the frame each segment aims at. The place segment aims at
+    the target cube, so its 0.150 and 0.031 clear the 0.030 cube by the same hover and
+    resting gap the pick uses.
+
+    A grasp orientation is chosen once per cube and then reused until the gripper opens.
+    Choosing again mid-carry would pick a different symmetry-equivalent yaw and twist the
+    cube in the jaws.
+  -->
+  <BehaviorTree
+    ID="Execute Color-Stack Oracle"
+    _description="Pick one cube and stack it on another, following the oracle's keyposes."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="root">
+      <SubTree
+        ID="Move Along Color-Stack Keyposes"
+        _collapsed="true"
+        aim_frame="{held_cube_frame}"
+        held_object_frame="pinch"
+        heights="0.12;0.0"
+        orientation="{grasp_orientation}"
+      />
+      <SubTree
+        ID="Command Color-Stack Gripper"
+        _collapsed="true"
+        gripper_position="0.6"
+        dwell_duration="0.6"
+      />
+      <SubTree
+        ID="Move Along Color-Stack Keyposes"
+        _collapsed="true"
+        aim_frame="{held_cube_frame}"
+        held_object_frame="pinch"
+        heights="0.12"
+        reuse_orientation="{grasp_orientation}"
+        orientation="{grasp_orientation}"
+      />
+      <SubTree
+        ID="Move Along Color-Stack Keyposes"
+        _collapsed="true"
+        aim_frame="{target_cube_frame}"
+        held_object_frame="{held_cube_frame}"
+        heights="0.150;0.031"
+        orientation="{place_orientation}"
+      />
+      <!--Let the arm converge onto the resting pose before the jaws let go.-->
+      <Action ID="WaitForDuration" delay_duration="0.4" />
+      <SubTree
+        ID="Command Color-Stack Gripper"
+        _collapsed="true"
+        gripper_position="0.0"
+        dwell_duration="0.4"
+      />
+      <SubTree
+        ID="Move Along Color-Stack Keyposes"
+        _collapsed="true"
+        aim_frame="pinch"
+        held_object_frame="pinch"
+        heights="0.12"
+        reuse_orientation="{place_orientation}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Execute Color-Stack Oracle">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Color-Cube Stacking" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
