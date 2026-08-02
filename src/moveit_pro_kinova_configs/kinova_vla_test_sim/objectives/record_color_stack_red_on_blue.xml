@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Record Color-Stack Red On Blue">
+  <!--
+    See "Record Color-Stack Red On Green" for why the queue is a literal.
+  -->
+  <BehaviorTree
+    ID="Record Color-Stack Red On Blue"
+    _description="Record 60 oracle demonstrations of stack the red cube on the blue cube."
+    _favorite="true"
+  >
+    <Decorator ID="LoopString" queue="train_1;train_7;train_13;train_19;train_25;train_31;train_37;train_43;train_49;train_55;train_61;train_67;train_73;train_79;train_85;train_91;train_97;train_103;train_109;train_115;train_121;train_127;train_133;train_139;train_145;train_151;train_157;train_163;train_169;train_175;train_181;train_187;train_193;train_199;train_205;train_211;train_217;train_223;train_229;train_235;train_241;train_247;train_253;train_259;train_265;train_271;train_277;train_283;train_289;train_295;train_301;train_307;train_313;train_319;train_325;train_331;train_337;train_343;train_349;train_355" value="{keyframe_name}">
+      <SubTree
+        ID="Record Color-Stack Episode"
+        dataset_name="colorstack_red_on_blue"
+        task="stack the red cube on the blue cube"
+        held_cube_frame="cube_red_tf"
+        target_cube_frame="cube_blue_tf"
+        keyframe_name="{keyframe_name}"
+      />
+    </Decorator>
+  </BehaviorTree>
+
+  <TreeNodesModel>
+    <SubTree ID="Record Color-Stack Red On Blue">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Color-Cube Stacking" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
