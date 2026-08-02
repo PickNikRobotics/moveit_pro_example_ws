@@ -10,6 +10,8 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
   moveit_pro_base
   moveit_pro_behavior
   moveit_pro_behavior_interface
+  moveit_studio_internal_msgs
+  nlohmann_json
   pluginlib
   rclcpp_action
   sensor_msgs
@@ -25,6 +27,7 @@ add_library(
   src/compute_top_down_keyposes.cpp
   src/plan_joint_spline_through_poses.cpp
   src/send_gripper_command.cpp
+  src/wait_for_episode_start.cpp
   src/register_behaviors.cpp)
 target_include_directories(
   kinova_vla_test_sim_behaviors

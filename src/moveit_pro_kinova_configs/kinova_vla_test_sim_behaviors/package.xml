@@ -20,6 +20,8 @@
   <depend>moveit_pro_base</depend>
   <depend>moveit_pro_behavior</depend>
   <depend>moveit_pro_behavior_interface</depend>
+  <depend>moveit_studio_internal_msgs</depend>
+  <depend>nlohmann_json</depend>
   <depend>pluginlib</depend>
   <depend>rclcpp_action</depend>
   <depend>sensor_msgs</depend>

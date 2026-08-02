@@ -11,6 +11,7 @@
 #include <kinova_vla_test_sim_behaviors/compute_top_down_keyposes.hpp>
 #include <kinova_vla_test_sim_behaviors/plan_joint_spline_through_poses.hpp>
 #include <kinova_vla_test_sim_behaviors/send_gripper_command.hpp>
+#include <kinova_vla_test_sim_behaviors/wait_for_episode_start.hpp>
 
 #include <pluginlib/class_list_macros.hpp>
 
@@ -26,6 +27,7 @@ public:
     moveit_pro::behaviors::registerBehavior<PlanJointSplineThroughPoses>(factory, "PlanJointSplineThroughPoses",
                                                                          shared_resources);
     moveit_pro::behaviors::registerBehavior<SendGripperCommand>(factory, "SendGripperCommand", shared_resources);
+    moveit_pro::behaviors::registerBehavior<WaitForEpisodeStart>(factory, "WaitForEpisodeStart", shared_resources);
   }
 };
 }  // namespace kinova_vla_test_sim_behaviors

@@ -18,3 +18,7 @@ ament_target_dependencies(test_plan_joint_spline_through_poses ${THIS_PACKAGE_IN
 ament_add_gtest(test_send_gripper_command test_send_gripper_command.cpp ENV "ROS_DOMAIN_ID=90")
 target_link_libraries(test_send_gripper_command kinova_vla_test_sim_behaviors)
 ament_target_dependencies(test_send_gripper_command ${THIS_PACKAGE_INCLUDE_DEPENDS})
+
+ament_add_gtest(test_wait_for_episode_start test_wait_for_episode_start.cpp ENV "ROS_DOMAIN_ID=91")
+target_link_libraries(test_wait_for_episode_start kinova_vla_test_sim_behaviors)
+ament_target_dependencies(test_wait_for_episode_start ${THIS_PACKAGE_INCLUDE_DEPENDS})

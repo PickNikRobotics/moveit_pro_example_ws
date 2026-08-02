@@ -10,7 +10,11 @@ services:
   base: {}
 
   # Starts the MoveIt Pro Agent and the Bridge between the Agent and the Web UI.
-  agent_bridge: {}
+  agent_bridge:
+    environment:
+      # /joint_states carries all fifteen joints; the recorded `observation.state`
+      # must be the eight the policies use. See script/joint_command_bridge.py.
+      - MOVEIT_PRO_TRAIN_JOINT_STATES_TOPIC=/observed_joint_states
 
   # Starts the robot drivers.
   drivers:
@@ -23,6 +27,10 @@ services:
 
   # Developer specific configuration when running `moveit_pro dev`.
   dev:
+    environment:
+      # /joint_states carries all fifteen joints; the recorded `observation.state`
+      # must be the eight the policies use. See script/joint_command_bridge.py.
+      - MOVEIT_PRO_TRAIN_JOINT_STATES_TOPIC=/observed_joint_states
     volumes:
       # Allow access to host hardware e.g. RealSense cameras
       - /dev:/dev

@@ -9,6 +9,9 @@
     picknik_mujoco_ros broadcasts to TF, so resetting to a keyframe fully
     determines the layout.
 
+    Resetting the scene before the recording starts keeps the keyframe teleport
+    out of the episode.
+
     The scene and cube pair are literals here. Sweeping the training keyframes
     means driving these trees from a script that sets them per episode.
   -->
@@ -26,6 +29,9 @@
         num_episodes="1"
         recording_id="{recording_id}"
       />
+      <Action ID="WaitForEpisodeStart" timeout="30.0" />
+      <!--Hold still across the frames straddling the start marker.-->
+      <Action ID="WaitForDuration" delay_duration="0.5" />
       <SubTree
         ID="Execute Color-Stack Oracle"
         held_cube_frame="cube_red_tf"

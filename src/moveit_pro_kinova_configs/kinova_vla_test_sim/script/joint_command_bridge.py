@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
-"""Publish /joint_commands, which Forge records as the training `action`.
+"""Publish the training `action` and `observation.state` streams.
 
 Forge labels `action` from a joint command topic and falls back to next-state
 labels when there is none; no MoveIt Pro Behavior publishes one. This node
 assembles the trajectory controller's reference setpoint with the latched
 gripper command and republishes both as a `sensor_msgs/JointState`.
+
+`/joint_states` carries all fifteen joints, eight of them passive Robotiq
+linkage. Recording it as `observation.state` gives a fifteen-wide state the
+policies are not trained on, so this node republishes the same eight joints the
+action uses. Point MOVEIT_PRO_TRAIN_JOINT_STATES_TOPIC at that topic.
 
     ros2 run kinova_vla_test_sim joint_command_bridge.py \\
         --ros-args -p publish_rate:=10.0
@@ -21,6 +26,12 @@ from sensor_msgs.msg import JointState
 # a goal executes, so a reference older than this means no trajectory is running
 # and the arm should be labelled with the pose it is holding.
 DEFAULT_REFERENCE_TIMEOUT_S = 0.5
+
+# The arm joints, in the order the trajectory controller reports them. Fixing the
+# layout here rather than waiting for the controller to announce it is what lets
+# both streams publish from the first tick: the controller is silent until a
+# trajectory runs, which is several frames into an episode.
+DEFAULT_ARM_JOINT_NAMES = [f"joint_{index}" for index in range(1, 8)]
 
 
 def is_reference_fresh(now: float, stamp: float, timeout: float) -> bool:
@@ -83,6 +94,12 @@ class JointCommandBridge(Node):
         self._joint_command_topic = self._param(
             "joint_command_topic", "/joint_commands"
         )
+        self._observation_state_topic = self._param(
+            "observation_state_topic", "/observed_joint_states"
+        )
+        self._arm_joint_names = list(
+            self._param("arm_joint_names", DEFAULT_ARM_JOINT_NAMES)
+        )
         self._gripper_joint = self._param(
             "gripper_joint_name", "robotiq_85_left_knuckle_joint"
         )
@@ -103,10 +120,17 @@ class JointCommandBridge(Node):
         self._reference: tuple[list[str], list[float]] | None = None
         self._reference_stamp = 0.0
         self._measured: dict[str, float] = {}
-        self._joint_order: list[str] | None = None
+        self._measured_stamp = 0.0
+        # ExecutePolicy's layout: the planning group's order, gripper last.
+        self._joint_order = self._arm_joint_names + (
+            [self._gripper_joint] if self._gripper_joint else []
+        )
 
         self._publisher = self.create_publisher(
             JointState, self._joint_command_topic, 10
+        )
+        self._state_publisher = self.create_publisher(
+            JointState, self._observation_state_topic, 10
         )
         self.create_subscription(
             JointTrajectoryControllerState,
@@ -120,7 +144,8 @@ class JointCommandBridge(Node):
         self.create_timer(1.0 / self._publish_rate, self._publish)
         self.get_logger().info(
             f"bridging {self._controller_state_topic} -> {self._joint_command_topic} "
-            f"at {self._publish_rate:g} Hz"
+            f"and {self._joint_states_topic} -> {self._observation_state_topic} "
+            f"at {self._publish_rate:g} Hz for {self._joint_order}"
         )
 
     def _param(self, name: str, default):
@@ -132,26 +157,25 @@ class JointCommandBridge(Node):
     def _on_controller_state(self, msg: JointTrajectoryControllerState) -> None:
         self._reference = (list(msg.joint_names), list(msg.reference.positions))
         self._reference_stamp = self._now()
-        if self._joint_order is None and msg.joint_names:
-            # ExecutePolicy's layout: the planning group's order, gripper last.
-            order = list(msg.joint_names)
-            if self._gripper_joint:
-                order.append(self._gripper_joint)
-            self._joint_order = order
+        if msg.joint_names and list(msg.joint_names) != self._arm_joint_names:
+            # Reordering the channels partway through an episode would corrupt it,
+            # so the configured layout stands and the mismatch is reported instead.
+            self.get_logger().error(
+                f"{self._controller_state_topic} reports {list(msg.joint_names)}, not "
+                f"the configured arm_joint_names {self._arm_joint_names}; recorded "
+                "channels will not match the controller. Fix arm_joint_names.",
+                throttle_duration_sec=30.0,
+            )
 
     def _on_joint_states(self, msg: JointState) -> None:
         self._measured = dict(zip(msg.name, msg.position))
+        self._measured_stamp = self._now()
 
     def _publish(self) -> None:
-        if self._joint_order is None:
-            self.get_logger().warning(
-                f"no message yet on {self._controller_state_topic}; not publishing "
-                f"{self._joint_command_topic}. The trajectory controller publishes "
-                "only while a goal runs, so this is expected before the first "
-                "trajectory and a misconfiguration after it.",
-                throttle_duration_sec=10.0,
-            )
-            return
+        self._publish_action()
+        self._publish_observation()
+
+    def _publish_action(self) -> None:
         if (
             self._gripper_joint
             and self._measured
@@ -185,12 +209,38 @@ class JointCommandBridge(Node):
                 throttle_duration_sec=10.0,
             )
             return
+        self._publisher.publish(self._joint_state(positions))
 
+    def _publish_observation(self) -> None:
+        # Republishing the last positions under a fresh stamp would record a frozen
+        # arm as a still one, which nothing downstream could tell apart.
+        if not is_reference_fresh(
+            self._now(), self._measured_stamp, self._reference_timeout
+        ):
+            self.get_logger().warning(
+                f"no {self._joint_states_topic} within {self._reference_timeout:g}s; "
+                f"not publishing {self._observation_state_topic}.",
+                throttle_duration_sec=10.0,
+            )
+            return
+        missing = [j for j in self._joint_order if j not in self._measured]
+        if missing:
+            self.get_logger().warning(
+                f"{self._joint_states_topic} carries no {missing}; not publishing "
+                f"{self._observation_state_topic}.",
+                throttle_duration_sec=10.0,
+            )
+            return
+        self._state_publisher.publish(
+            self._joint_state([self._measured[j] for j in self._joint_order])
+        )
+
+    def _joint_state(self, positions: list[float]) -> JointState:
         msg = JointState()
         msg.header.stamp = self.get_clock().now().to_msg()
         msg.name = list(self._joint_order)
         msg.position = positions
-        self._publisher.publish(msg)
+        return msg
 
 
 def main() -> None:
