@@ -5,15 +5,8 @@
     scripts/kinova/blockstack/oracle.py) as Pro motion, to record demonstrations
     matching the v7-square dataset.
 
-    Cube poses come from the MuJoCo scene's `cube_*_tf` sites, which
-    picknik_mujoco_ros broadcasts to TF, so resetting to a keyframe fully
-    determines the layout.
-
-    Resetting the scene before the recording starts keeps the keyframe teleport
-    out of the episode.
-
-    The scene and cube pair are literals here. Sweeping the training keyframes
-    means driving these trees from a script that sets them per episode.
+    One episode from one eval keyframe, for checking the oracle by hand. Sweeping
+    the training keyframes is Record Color-Stack Red On Green and its siblings.
   -->
   <BehaviorTree
     ID="Collect Color-Stack Demonstration"
@@ -21,24 +14,14 @@
     _favorite="true"
   >
     <Control ID="Sequence" name="root">
-      <SubTree ID="Prepare Color-Stack Scene" keyframe_name="eval_0" />
-      <Action
-        ID="RecordEpisode"
+      <SubTree
+        ID="Record Color-Stack Episode"
         dataset_name="colorstack_oracle"
         task="stack the red cube on the green cube"
-        num_episodes="1"
-        recording_id="{recording_id}"
-      />
-      <Action ID="WaitForEpisodeStart" timeout="30.0" />
-      <!--Hold still across the frames straddling the start marker.-->
-      <Action ID="WaitForDuration" delay_duration="0.5" />
-      <SubTree
-        ID="Execute Color-Stack Oracle"
         held_cube_frame="cube_red_tf"
         target_cube_frame="cube_green_tf"
+        keyframe_name="eval_0"
       />
-      <Action ID="SaveEpisode" />
-      <Action ID="StopRecording" />
     </Control>
   </BehaviorTree>
 

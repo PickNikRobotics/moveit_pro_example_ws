@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Record Color-Stack Episode">
+  <!--
+    Records one oracle demonstration from `keyframe_name` into the dataset named
+    by `dataset_name`.
+
+    Each episode gets its own recording session. The Trainer opens the next
+    episode a fixed delay after the previous one is saved, which would race the
+    scene reset and record the cube teleport; a session per episode keeps the
+    reset outside any recording window. Sessions sharing a dataset name
+    accumulate into one dataset.
+
+    A demonstration the oracle cannot finish is left unsaved and the tree still
+    succeeds, so a sweep over keyframes loses the attempt rather than the run.
+  -->
+  <BehaviorTree
+    ID="Record Color-Stack Episode"
+    _description="Record one oracle demonstration from a keyframe into a dataset."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="root">
+      <SubTree ID="Prepare Color-Stack Scene" keyframe_name="{keyframe_name}" />
+      <Action
+        ID="RecordEpisode"
+        dataset_name="{dataset_name}"
+        task="{task}"
+        num_episodes="1"
+        recording_id="{recording_id}"
+      />
+      <Action ID="WaitForEpisodeStart" timeout="30.0" />
+      <!--Hold still across the frames straddling the start marker.-->
+      <Action ID="WaitForDuration" delay_duration="0.5" />
+      <Control ID="Fallback" name="save_only_what_finished">
+        <Control ID="Sequence" name="demonstration">
+          <SubTree
+            ID="Execute Color-Stack Oracle"
+            held_cube_frame="{held_cube_frame}"
+            target_cube_frame="{target_cube_frame}"
+          />
+          <Action ID="SaveEpisode" />
+        </Control>
+        <Action ID="AlwaysSuccess" />
+      </Control>
+      <!--
+        The snapshot rolls the bag to a fresh split. Stopping before any message
+        reaches that split leaves it header-only and unfinalized, which the
+        converter cannot read: it aborts the whole dataset rather than skipping
+        the file. Holding here lets the split take frames first.
+      -->
+      <Action ID="WaitForDuration" delay_duration="1.0" />
+      <Action ID="StopRecording" />
+    </Control>
+  </BehaviorTree>
+
+  <TreeNodesModel>
+    <SubTree ID="Record Color-Stack Episode">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Color-Cube Stacking" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
