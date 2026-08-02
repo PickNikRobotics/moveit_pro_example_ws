@@ -6,12 +6,15 @@
 
 #pragma once
 
+#include <functional>
+#include <optional>
 #include <vector>
 
 #include <behaviortree_cpp/action_node.h>
 #include <Eigen/Geometry>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <moveit_pro_behavior_interface/shared_resources_node.hpp>
+#include <sensor_msgs/msg/joint_state.hpp>
 
 namespace kinova_vla_test_sim_behaviors
 {
@@ -27,25 +30,35 @@ namespace kinova_vla_test_sim_behaviors
 [[nodiscard]] double yawOf(const Eigen::Quaterniond& orientation);
 
 /**
- * @brief The one of a cube's four symmetry-equivalent top-down yaws nearest @p reference_yaw.
+ * @brief The one of a cube's four symmetry-equivalent top-down yaws that @p cost scores lowest.
  *
- * A cube is 4-fold symmetric about its vertical axis, so all four grasps are equivalent; taking
- * the nearest keeps the wrist off its limits. The oracle instead scores the four by IK joint
- * distance (`oracle.py::_choose_topdown_yaw`), which selects the same candidate whenever wrist
- * rotation dominates the joint cost.
+ * A cube is 4-fold symmetric about its vertical axis, so all four grasps are visually identical
+ * and any of them stacks; which one the arm takes is purely a question of how far it has to
+ * move. The oracle scores them by IK joint distance from the arm's current pose
+ * (`oracle.py::_choose_topdown_yaw`), and this reproduces that with @p cost injected so the
+ * ranking is testable without a robot model.
+ *
+ * @returns nullopt when @p cost scores no candidate, i.e. none is reachable.
  */
-[[nodiscard]] double chooseTopDownYaw(double cube_yaw, double reference_yaw);
+[[nodiscard]] std::optional<double> chooseTopDownYawByCost(double cube_yaw,
+                                                           const std::function<std::optional<double>(double)>& cost);
+
+/** @brief Sum of squared per-joint differences, the oracle's IK cost. */
+[[nodiscard]] double jointDistanceCost(const std::vector<double>& from, const std::vector<double>& to);
 
 /**
- * @brief Top-down waypoints at each of @p heights above @p aim_pose.
+ * @brief One top-down waypoint @p height above @p aim_pose, at @p orientation.
  *
- * All waypoints share the orientation from chooseTopDownYaw(yaw of @p aim_pose,
- * @p reference_yaw). @p held_object_offset is the held object's origin in the tip frame; it
- * shifts each waypoint so the *object* lands on the aim point rather than the tip. Pass zero
- * when the tip itself is the thing being positioned.
+ * @p held_object_offset is the held object's origin in the tip frame; it shifts the waypoint so
+ * the *object* lands on the aim point rather than the tip. Pass zero when the tip itself is the
+ * thing being positioned.
  */
+[[nodiscard]] Eigen::Isometry3d topDownKeypose(const Eigen::Isometry3d& aim_pose, const Eigen::Quaterniond& orientation,
+                                               const Eigen::Vector3d& held_object_offset, double height);
+
+/** @brief topDownKeypose() at each of @p heights, all sharing @p orientation. */
 [[nodiscard]] std::vector<Eigen::Isometry3d> computeTopDownKeyposes(const Eigen::Isometry3d& aim_pose,
-                                                                    double reference_yaw,
+                                                                    const Eigen::Quaterniond& orientation,
                                                                     const Eigen::Vector3d& held_object_offset,
                                                                     const std::vector<double>& heights);
 

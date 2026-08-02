@@ -7,13 +7,16 @@
 #include <gtest/gtest.h>
 
 #include <cmath>
+#include <optional>
+#include <vector>
 
 #include <kinova_vla_test_sim_behaviors/compute_top_down_keyposes.hpp>
 
 namespace
 {
-using kinova_vla_test_sim_behaviors::chooseTopDownYaw;
+using kinova_vla_test_sim_behaviors::chooseTopDownYawByCost;
 using kinova_vla_test_sim_behaviors::computeTopDownKeyposes;
+using kinova_vla_test_sim_behaviors::jointDistanceCost;
 using kinova_vla_test_sim_behaviors::topDownGraspOrientation;
 using kinova_vla_test_sim_behaviors::yawOf;
 
@@ -68,53 +71,76 @@ TEST(YawOf, RoundTripsTopDownGraspOrientation)
   }
 }
 
-TEST(ChooseTopDownYaw, ReturnsACubeYawPlusAWholeNumberOfQuarterTurns)
+TEST(JointDistanceCost, IsZeroForTheSamePose)
+{
+  const std::vector<double> pose{ 0.1, -0.2, 0.3 };
+  EXPECT_NEAR(jointDistanceCost(pose, pose), 0.0, kEpsilon);
+}
+
+TEST(JointDistanceCost, SumsTheSquaredPerJointDifferences)
+{
+  // The oracle's score, so a joint that moves twice as far counts four times as much and one
+  // big wrist swing outweighs several small arm adjustments.
+  EXPECT_NEAR(jointDistanceCost({ 0.0, 0.0 }, { 3.0, 4.0 }), 25.0, kEpsilon);
+}
+
+TEST(ChooseTopDownYawByCost, ReturnsACubeYawPlusAWholeNumberOfQuarterTurns)
 {
   // Every candidate must be a symmetry of the cube. A yaw that is not one grasps a corner.
-  for (const double reference : { -3.0, -1.1, 0.0, 0.4, 2.7 })
-  {
-    const double chosen = chooseTopDownYaw(0.3, reference);
-    const double turns = (chosen - 0.3) / kQuarterTurn;
-    EXPECT_NEAR(turns, std::round(turns), kEpsilon) << "reference " << reference;
-  }
+  const double chosen =
+      chooseTopDownYawByCost(0.3, [](double yaw) { return std::optional<double>(std::abs(yaw)); }).value();
+  const double turns = (chosen - 0.3) / kQuarterTurn;
+  EXPECT_NEAR(turns, std::round(turns), kEpsilon);
 }
 
-TEST(ChooseTopDownYaw, LandsWithinAnEighthTurnOfTheReference)
+TEST(ChooseTopDownYawByCost, PicksTheCheapestCandidateRatherThanTheNearest)
 {
-  // Candidates are a quarter turn apart, so the nearest is always within an eighth turn. A
-  // farther pick means the wrist rotates further than it has to.
-  for (const double cube_yaw : { -1.4, -0.05, 0.0, 0.8, 2.2 })
-  {
-    for (const double reference : { -2.5, 0.0, 1.3 })
+  // The whole point of scoring by IK: on eval_0 the oracle takes a candidate 180 degrees from
+  // the wrist's current yaw because it holds joint_5 still. A nearest-yaw rule cannot do that.
+  const double cube_yaw = 0.0;
+  const auto cost = [](double yaw) -> std::optional<double> {
+    // cheapest at two quarter turns, i.e. the candidate a half turn away
+    return std::abs(std::remainder(yaw - M_PI, 2.0 * M_PI));
+  };
+  EXPECT_NEAR(chooseTopDownYawByCost(cube_yaw, cost).value(), M_PI, kEpsilon);
+}
+
+TEST(ChooseTopDownYawByCost, SkipsUnreachableCandidates)
+{
+  // IK fails on candidates that would put the wrist past a limit; those must not be chosen
+  // even when a reachable one scores worse.
+  const auto cost = [](double yaw) -> std::optional<double> {
+    if (std::abs(std::remainder(yaw, 2.0 * M_PI)) < kEpsilon)
     {
-      EXPECT_LE(std::abs(chooseTopDownYaw(cube_yaw, reference) - reference), kQuarterTurn / 2.0 + kEpsilon)
-          << "cube " << cube_yaw << " reference " << reference;
+      return 0.0;  // cheapest, but pretend it is the only reachable one below
     }
-  }
+    return std::nullopt;
+  };
+  EXPECT_NEAR(chooseTopDownYawByCost(0.0, cost).value(), 0.0, kEpsilon);
 }
 
-TEST(ChooseTopDownYaw, IsIdempotentUnderItsOwnResult)
+TEST(ChooseTopDownYawByCost, ReturnsNulloptWhenNothingIsReachable)
 {
-  // The lift and place segments re-derive the yaw with the wrist already at the chosen one.
-  // Drifting by a quarter turn there would twist a cube that is already gripped.
-  const double first = chooseTopDownYaw(0.37, 1.1);
-  EXPECT_NEAR(chooseTopDownYaw(0.37, first), first, kEpsilon);
+  // The segment must fail loudly rather than plan a path the arm cannot follow.
+  EXPECT_FALSE(chooseTopDownYawByCost(0.4, [](double) { return std::nullopt; }).has_value());
 }
 
-TEST(ChooseTopDownYaw, IsUnchangedByCubeYawsAQuarterTurnApart)
+TEST(ChooseTopDownYawByCost, IsUnchangedByCubeYawsAQuarterTurnApart)
 {
   // The cube's own yaw is only known modulo a quarter turn, so equivalent readings of the same
   // physical cube must produce the same grasp.
-  const double reference = 0.6;
-  const double base = chooseTopDownYaw(0.2, reference);
-  EXPECT_NEAR(chooseTopDownYaw(0.2 + kQuarterTurn, reference), base, kEpsilon);
-  EXPECT_NEAR(chooseTopDownYaw(0.2 - kQuarterTurn, reference), base, kEpsilon);
+  const auto cost = [](double yaw) -> std::optional<double> { return std::abs(std::remainder(yaw - 0.9, 2.0 * M_PI)); };
+  const double base = chooseTopDownYawByCost(0.2, cost).value();
+  EXPECT_NEAR(std::remainder(chooseTopDownYawByCost(0.2 + kQuarterTurn, cost).value() - base, 2.0 * M_PI), 0.0,
+              kEpsilon);
+  EXPECT_NEAR(std::remainder(chooseTopDownYawByCost(0.2 - kQuarterTurn, cost).value() - base, 2.0 * M_PI), 0.0,
+              kEpsilon);
 }
 
 TEST(ComputeTopDownKeyposes, StacksOneWaypointPerHeightAboveTheAimPose)
 {
-  const auto keyposes =
-      computeTopDownKeyposes(makePose({ 0.5, -0.1, 0.115 }, 0.0), 0.0, Eigen::Vector3d::Zero(), { 0.12, 0.0 });
+  const auto keyposes = computeTopDownKeyposes(makePose({ 0.5, -0.1, 0.115 }, 0.0), topDownGraspOrientation(0.0),
+                                               Eigen::Vector3d::Zero(), { 0.12, 0.0 });
 
   ASSERT_EQ(keyposes.size(), 2u);
   EXPECT_NEAR(keyposes[0].translation().z(), 0.235, kEpsilon);
@@ -126,28 +152,19 @@ TEST(ComputeTopDownKeyposes, StacksOneWaypointPerHeightAboveTheAimPose)
   }
 }
 
-TEST(ComputeTopDownKeyposes, GivesEveryWaypointTheSameOrientation)
+TEST(ComputeTopDownKeyposes, GivesEveryWaypointTheChosenOrientation)
 {
   // The oracle descends straight down onto the cube. Re-deriving the orientation per waypoint
   // would let the wrist rotate mid-descent and shear the grasp.
-  const auto keyposes =
-      computeTopDownKeyposes(makePose({ 0.5, 0.0, 0.115 }, 0.4), 0.0, Eigen::Vector3d::Zero(), { 0.12, 0.06, 0.0 });
+  const Eigen::Quaterniond orientation = topDownGraspOrientation(0.4);
+  const auto keyposes = computeTopDownKeyposes(makePose({ 0.5, 0.0, 0.115 }, 0.4), orientation, Eigen::Vector3d::Zero(),
+                                               { 0.12, 0.06, 0.0 });
 
   ASSERT_EQ(keyposes.size(), 3u);
   for (const auto& keypose : keyposes)
   {
-    EXPECT_NEAR(std::abs(Eigen::Quaterniond(keypose.rotation()).dot(Eigen::Quaterniond(keyposes[0].rotation()))), 1.0,
-                kEpsilon);
+    EXPECT_NEAR(std::abs(Eigen::Quaterniond(keypose.rotation()).dot(orientation)), 1.0, kEpsilon);
   }
-}
-
-TEST(ComputeTopDownKeyposes, AlignsTheGraspToTheAimPoseYaw)
-{
-  const auto keyposes =
-      computeTopDownKeyposes(makePose({ 0.5, 0.0, 0.115 }, 0.3), 0.3, Eigen::Vector3d::Zero(), { 0.0 });
-
-  ASSERT_EQ(keyposes.size(), 1u);
-  EXPECT_NEAR(yawOf(Eigen::Quaterniond(keyposes[0].rotation())), 0.3, kEpsilon);
 }
 
 TEST(ComputeTopDownKeyposes, PlacesTheHeldObjectRatherThanTheTipWhenOffsetIsSet)
@@ -155,7 +172,8 @@ TEST(ComputeTopDownKeyposes, PlacesTheHeldObjectRatherThanTheTipWhenOffsetIsSet)
   // The place segment aims the carried cube at the target, so the tip must land offset by
   // exactly the grip, rotated into the world.
   const Eigen::Vector3d grip_offset(0.0, 0.0, 0.02);
-  const auto keyposes = computeTopDownKeyposes(makePose({ 0.4, 0.2, 0.115 }, 0.0), 0.0, grip_offset, { 0.031 });
+  const auto keyposes =
+      computeTopDownKeyposes(makePose({ 0.4, 0.2, 0.115 }, 0.0), topDownGraspOrientation(0.0), grip_offset, { 0.031 });
 
   ASSERT_EQ(keyposes.size(), 1u);
   // The tip's +Z points down, so an object 20 mm along +Z sits 20 mm below the tip: the tip goes
@@ -170,8 +188,8 @@ TEST(ComputeTopDownKeyposes, RotatesALateralHeldObjectOffsetIntoTheWorld)
   // A grip that is off-center laterally must be corrected in the direction the wrist is actually
   // pointing. Ignoring the rotation would put the cube down on the wrong side of the target.
   const Eigen::Vector3d grip_offset(0.01, 0.0, 0.0);
-  const auto aim = makePose({ 0.4, 0.2, 0.115 }, kQuarterTurn);
-  const auto keyposes = computeTopDownKeyposes(aim, kQuarterTurn, grip_offset, { 0.0 });
+  const auto keyposes = computeTopDownKeyposes(makePose({ 0.4, 0.2, 0.115 }, kQuarterTurn),
+                                               topDownGraspOrientation(kQuarterTurn), grip_offset, { 0.0 });
 
   ASSERT_EQ(keyposes.size(), 1u);
   // Rz(pi/2) * Rx(pi) maps the tip's +X onto world +Y, so the tip shifts back along -Y.
@@ -181,20 +199,25 @@ TEST(ComputeTopDownKeyposes, RotatesALateralHeldObjectOffsetIntoTheWorld)
 
 TEST(ComputeTopDownKeyposes, ReturnsAnEmptyPathForNoHeights)
 {
-  EXPECT_TRUE(computeTopDownKeyposes(makePose({ 0.5, 0.0, 0.115 }, 0.0), 0.0, Eigen::Vector3d::Zero(), {}).empty());
+  EXPECT_TRUE(computeTopDownKeyposes(makePose({ 0.5, 0.0, 0.115 }, 0.0), topDownGraspOrientation(0.0),
+                                     Eigen::Vector3d::Zero(), {})
+                  .empty());
 }
 
-TEST(ComputeTopDownKeyposes, IgnoresTiltInTheAimPose)
+TEST(ComputeTopDownKeyposes, TakesOnlyThePositionFromATiltedAimPose)
 {
-  // Cube poses come from live physics and are never exactly level. The grasp must stay top-down
-  // regardless, since the arm approaches vertically.
+  // Cube poses come from live physics and are never exactly level. The waypoint must still sit
+  // straight above the cube, since the arm approaches vertically.
   Eigen::Isometry3d tilted(Eigen::AngleAxisd(0.3, Eigen::Vector3d::UnitZ()) *
                            Eigen::AngleAxisd(0.05, Eigen::Vector3d::UnitX()));
   tilted.translation() = Eigen::Vector3d(0.5, 0.0, 0.115);
 
-  const auto keyposes = computeTopDownKeyposes(tilted, 0.3, Eigen::Vector3d::Zero(), { 0.0 });
+  const auto keyposes = computeTopDownKeyposes(tilted, topDownGraspOrientation(0.3), Eigen::Vector3d::Zero(), { 0.12 });
 
   ASSERT_EQ(keyposes.size(), 1u);
+  EXPECT_NEAR(keyposes[0].translation().x(), 0.5, kEpsilon);
+  EXPECT_NEAR(keyposes[0].translation().y(), 0.0, kEpsilon);
+  EXPECT_NEAR(keyposes[0].translation().z(), 0.235, kEpsilon);
   const Eigen::Vector3d approach = keyposes[0].rotation() * Eigen::Vector3d::UnitZ();
   EXPECT_NEAR(approach.z(), -1.0, kEpsilon);
 }

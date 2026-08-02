@@ -5,11 +5,16 @@ find_package(moveit_pro_package REQUIRED)
 moveit_pro_package()
 
 set(THIS_PACKAGE_INCLUDE_DEPENDS
+  control_msgs
   geometry_msgs
+  moveit_pro_base
   moveit_pro_behavior
   moveit_pro_behavior_interface
   pluginlib
-  tf2_eigen)
+  rclcpp_action
+  sensor_msgs
+  tf2_eigen
+  trajectory_msgs)
 foreach(package IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${package} REQUIRED)
 endforeach()
@@ -18,6 +23,8 @@ add_library(
   kinova_vla_test_sim_behaviors
   SHARED
   src/compute_top_down_keyposes.cpp
+  src/plan_joint_spline_through_poses.cpp
+  src/send_gripper_command.cpp
   src/register_behaviors.cpp)
 target_include_directories(
   kinova_vla_test_sim_behaviors
@@ -35,7 +42,9 @@ install(
   DESTINATION include)
 
 if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
   moveit_pro_behavior_test(kinova_vla_test_sim_behaviors)
+  ament_lint_auto_find_test_dependencies()
 endif()
 
 pluginlib_export_plugin_description_file(

@@ -15,10 +15,15 @@
 
   <build_depend>moveit_pro_package</build_depend>
 
+  <depend>control_msgs</depend>
   <depend>geometry_msgs</depend>
+  <depend>moveit_pro_base</depend>
   <depend>moveit_pro_behavior</depend>
   <depend>moveit_pro_behavior_interface</depend>
   <depend>pluginlib</depend>
+  <depend>rclcpp_action</depend>
+  <depend>sensor_msgs</depend>
+  <depend>trajectory_msgs</depend>
   <depend>tf2_eigen</depend>
 
   <test_depend>ament_lint_auto</test_depend>

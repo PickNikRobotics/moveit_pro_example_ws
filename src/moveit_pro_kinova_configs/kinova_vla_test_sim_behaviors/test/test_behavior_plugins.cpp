@@ -30,8 +30,11 @@ TEST(BehaviorTests, test_load_behavior_plugins)
     ASSERT_NO_THROW(plugin_instance->registerBehaviors(factory, shared_resources));
   }
   // Test that ClassLoader is able to find and instantiate each Behavior using the package's plugin description info.
-  EXPECT_NO_THROW(
-      (void)factory.instantiateTreeNode("test_behavior_name", "ComputeTopDownKeyposes", BT::NodeConfiguration()));
+  for (const auto& behavior_name : { "ComputeTopDownKeyposes", "PlanJointSplineThroughPoses", "SendGripperCommand" })
+  {
+    EXPECT_NO_THROW((void)factory.instantiateTreeNode("test_behavior_name", behavior_name, BT::NodeConfiguration()))
+        << "Behavior '" << behavior_name << "' is registered but could not be instantiated.";
+  }
 }
 
 int main(int argc, char** argv)
