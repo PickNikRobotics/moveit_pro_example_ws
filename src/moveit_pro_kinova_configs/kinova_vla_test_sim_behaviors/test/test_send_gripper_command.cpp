@@ -7,6 +7,7 @@
 #include <chrono>
 #include <future>
 #include <memory>
+#include <mutex>
 #include <string>
 #include <thread>
 
@@ -50,8 +51,25 @@ public:
         },
         [this](const std::shared_ptr<rclcpp_action::ServerGoalHandle<GripperCommand>>& handle) {
           // Held, never completed, exactly like jaws still compressing an object.
+          std::lock_guard lock(mutex_);
           held_ = handle;
         });
+  }
+
+  /** @brief Ends the held goal, which rclcpp_action can wedge on if left executing. */
+  ~StallingGripperServer()
+  {
+    // Terminating the goal re-enters the server's own callbacks, so the lock is
+    // released first; holding it here throws EDEADLK out of a destructor.
+    std::shared_ptr<rclcpp_action::ServerGoalHandle<GripperCommand>> held;
+    {
+      std::lock_guard lock(mutex_);
+      held = held_;
+    }
+    if (held != nullptr && held->is_executing())
+    {
+      held->abort(std::make_shared<GripperCommand::Result>());
+    }
   }
 
   /** @brief Commanded position of the first goal the server received. */
@@ -62,6 +80,7 @@ public:
 
 private:
   rclcpp_action::Server<GripperCommand>::SharedPtr server_;
+  std::mutex mutex_;
   std::shared_ptr<rclcpp_action::ServerGoalHandle<GripperCommand>> held_;
   std::promise<double> received_;
 };
