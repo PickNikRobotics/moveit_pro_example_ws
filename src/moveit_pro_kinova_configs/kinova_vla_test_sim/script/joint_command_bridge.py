@@ -6,11 +6,6 @@ labels when there is none; no MoveIt Pro Behavior publishes one. This node
 assembles the trajectory controller's reference setpoint with the latched
 gripper command and republishes both as a `sensor_msgs/JointState`.
 
-FIXME-CLAUDE: NOT IMPLEMENTED - no Objective sets `gripper_command_position`
-yet, so the gripper channel records as a constant and a dataset collected now
-has an unusable gripper action. The collection Objective that sets it (through
-`SetROS2Parameter`, before each `MoveGripperAction`) is the next piece of work.
-
     ros2 run kinova_vla_test_sim joint_command_bridge.py \\
         --ros-args -p publish_rate:=10.0
 """
@@ -126,12 +121,6 @@ class JointCommandBridge(Node):
         self.get_logger().info(
             f"bridging {self._controller_state_topic} -> {self._joint_command_topic} "
             f"at {self._publish_rate:g} Hz"
-        )
-        # FIXME-CLAUDE: NOT IMPLEMENTED - drop with the collection Objective.
-        self.get_logger().warning(
-            "no Objective sets gripper_command_position yet, so the recorded "
-            f"action's gripper channel is a constant {self._gripper_fallback:g}. "
-            "Datasets collected now have an unusable gripper action."
         )
 
     def _param(self, name: str, default):
