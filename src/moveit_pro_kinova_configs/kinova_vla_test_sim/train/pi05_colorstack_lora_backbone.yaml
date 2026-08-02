@@ -15,6 +15,10 @@ dataset:
   repo_id: PickNikRobotics/kinova-color-cube-stack-mujoco
   revision: main
   video_backend: pyav
+  # Pro-recorded datasets carry no image statistics, and pi0.5 normalizes images
+  # with IDENTITY so nothing reads them. Left true, LeRobot fails writing ImageNet
+  # constants into a camera entry that does not exist. See backfill_stats.py.
+  use_imagenet_stats: false
   image_transforms:
     enable: false  # enable to improve robustness to image variance
 

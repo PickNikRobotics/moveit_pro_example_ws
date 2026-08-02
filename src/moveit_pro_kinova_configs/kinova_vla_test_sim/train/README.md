@@ -2,6 +2,23 @@
 
 Recipe for the checkpoint served by `docker/serve_policy.py`.
 
+## Combine the recordings
+
+Each prompt is recorded as its own Pro dataset. Merge them into the one dataset
+training reads, under `~/.local/share/moveit_pro/trainer/recordings`:
+
+```bash
+uv run python combine_datasets.py <out> <dataset>-lerobot <dataset>-lerobot ...
+```
+
+This also backfills the quantile statistics the Trainer's converter leaves out,
+which pi0.5 needs to normalize state and action. Training a single unmerged
+dataset needs that backfill on its own:
+
+```bash
+uv run python backfill_stats.py <dataset>-lerobot
+```
+
 ## LeRobot Train
 
 ```bash
@@ -13,7 +30,7 @@ uv run lerobot-train \
 ```
 
 Needs `HF_TOKEN` in the environment and a GPU with 40+ GB. On smaller GPUs, add
-`--policy.path=lerobot/pi05_base --policy.gradient_checkpointing=true`.
+`--policy.gradient_checkpointing=true`.
 
 ## Merge, then serve
 
