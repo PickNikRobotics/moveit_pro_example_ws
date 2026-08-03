@@ -6,7 +6,7 @@ Runs a trained policy against the `Execute Color-Stack Policy` objective via Mov
 
 ```bash
 docker compose run --rm --service-ports serve_policy \
-  --checkpoint <path-to-merged-checkpoint> --policy-class pi05
+  --checkpoint <path-to-merged-checkpoint> --policy-class pi05 --state-dim 8
 ```
 
 If `SERVE_POLICY_PORT` is set, also point the bridge's `INFER_URL` at
