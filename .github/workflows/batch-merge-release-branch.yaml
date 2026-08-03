@@ -34,9 +34,30 @@ jobs:
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
           RAND_SUFFIX=$RANDOM
-          git checkout -b merge-$RELEASE_BRANCH-main-$RAND_SUFFIX
-          git fetch origin $RELEASE_BRANCH
-          if git merge origin/$RELEASE_BRANCH --no-edit; then
+          TEMP_BRANCH="merge-$RELEASE_BRANCH-main-$RAND_SUFFIX"
+          git checkout -b "$TEMP_BRANCH"
+          git fetch origin "$RELEASE_BRANCH"
+
+          # Skip only when the resulting clean merge would leave main's tree unchanged.
+          # `git merge-tree --write-tree` returns 0 for a clean merge, 1 for conflicts,
+          # and another nonzero status for errors.
+          if merge_tree=$(git merge-tree --write-tree main "origin/$RELEASE_BRANCH"); then
+            main_tree=$(git rev-parse "main^{tree}")
+            if [ "$merge_tree" = "$main_tree" ]; then
+              echo "# Release branch has no changes to merge into main" >> "$GITHUB_STEP_SUMMARY"
+              git checkout main
+              git branch -D "$TEMP_BRANCH"
+              exit 0
+            fi
+          else
+            merge_tree_status=$?
+            if [ "$merge_tree_status" -ne 1 ]; then
+              echo "# Failed to compute the release branch merge result" >> "$GITHUB_STEP_SUMMARY"
+              exit "$merge_tree_status"
+            fi
+          fi
+
+          if git merge "origin/$RELEASE_BRANCH" --no-edit; then
             echo "# Merge succeeded without conflicts" >> $GITHUB_STEP_SUMMARY
             PR_BODY="Ready for merge!"
           else
@@ -45,5 +66,5 @@ jobs:
             git commit -m "Merge $RELEASE_BRANCH into main (with conflicts)"
             PR_BODY="⚠️Merge failed with conflicts! Please pull this branch and manually resolve the conflict by resetting this branch and re-merging."
           fi
-          git push origin merge-$RELEASE_BRANCH-main-$RAND_SUFFIX
-          gh pr create --title "Merge ${{ steps.get_current_release_branch.outputs.branch }} into main" --body "$PR_BODY" --base main --head merge-$RELEASE_BRANCH-main-$RAND_SUFFIX --draft --reviewer infrastructure-devs
+          git push origin "$TEMP_BRANCH"
+          gh pr create --title "Merge $RELEASE_BRANCH into main" --body "$PR_BODY" --base main --head "$TEMP_BRANCH" --draft --reviewer infrastructure-devs
