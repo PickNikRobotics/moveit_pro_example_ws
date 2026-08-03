@@ -79,6 +79,62 @@ def pytest_runtest_logreport(report):
     os.write(2, (line + "\n").encode())
 
 
+def _udp_rcvbuf_errors() -> "int | None":
+    """UDP RcvbufErrors from /proc/net/snmp — the socket-receive overflow counter."""
+    try:
+        lines = Path("/proc/net/snmp").read_text().splitlines()
+    except OSError:
+        return None
+    header = values = None
+    for line in lines:
+        if line.startswith("Udp:"):
+            if header is None:
+                header = line.split()[1:]
+            else:
+                values = line.split()[1:]
+                break
+    if not header or not values or "RcvbufErrors" not in header:
+        return None
+    try:
+        return int(values[header.index("RcvbufErrors")])
+    except (ValueError, IndexError):
+        return None
+
+
+@pytest.fixture(scope="session", autouse=True)
+def dds_transport_diagnostics():
+    """Log UDP receive-buffer capacity and overflow across the run (issue #20603).
+
+    The MuJoCo cameras publish ~14.7 MB PointCloud2 samples best-effort. If the
+    socket receive buffer is smaller than one sample — e.g. net.core.rmem_max
+    caps CycloneDDS's requested 10 MB — fragments are lost and whole samples are
+    silently dropped, the suspected GetPointCloud-timeout cause. A rising
+    RcvbufErrors count over the run confirms socket-receive overflow; rmem_max
+    shows whether the buffer request could have been honored at all. Written to
+    fd 2 so it survives pytest's fd capture (see module docstring)."""
+
+    def _read(path: str) -> str:
+        try:
+            return Path(path).read_text().strip()
+        except OSError:
+            return "?"
+
+    rmem_max = _read("/proc/sys/net/core/rmem_max")
+    rmem_default = _read("/proc/sys/net/core/rmem_default")
+    before = _udp_rcvbuf_errors()
+    os.write(
+        2,
+        f"[dds-diag] net.core.rmem_max={rmem_max} rmem_default={rmem_default} "
+        f"UDP RcvbufErrors(start)={before}\n".encode(),
+    )
+    try:
+        yield
+    finally:
+        after = _udp_rcvbuf_errors()
+        delta = after - before if after is not None and before is not None else "?"
+        os.write(2, f"[dds-diag] UDP RcvbufErrors(end)={after} delta={delta}\n".encode())
+
+
 @pytest.fixture(scope="session", autouse=True)
 def capture_rosout():
     """Run capture_rosout.py as a subprocess to mirror /rosout to NDJSON.
