@@ -42,7 +42,7 @@
         planning_scene_msg="{planning_scene}"
       />
       <Action
-        ID="GetRobotJointState"
+        ID="GetJointState"
         joint_state="{joint_state}"
         planning_scene="{planning_scene}"
         planning_group_name="manipulator"

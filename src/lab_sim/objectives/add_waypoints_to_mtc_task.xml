@@ -16,9 +16,9 @@
         joint_group_name="{joint_group_name}"
       />
       <Action
-        ID="SetupMTCPlanToJointState"
+        ID="SetupMTCPlanToRobotState"
         joint_state="{target_joint_state}"
-        name="SetupMTCPlanToJointState"
+        name="SetupMTCPlanToRobotState"
         planning_group_name="{joint_group_name}"
         task="{mtc_task}"
       />
@@ -29,9 +29,9 @@
         joint_group_name="{joint_group_name}"
       />
       <Action
-        ID="SetupMTCPlanToJointState"
+        ID="SetupMTCPlanToRobotState"
         joint_state="{target_joint_state}"
-        name="SetupMTCPlanToJointState"
+        name="SetupMTCPlanToRobotState"
         planning_group_name="{joint_group_name}"
         task="{mtc_task}"
       />

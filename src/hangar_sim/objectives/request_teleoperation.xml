@@ -36,7 +36,7 @@
                 <Control ID="Fallback" name="root">
                   <Control ID="Sequence">
                     <Action
-                      ID="RetrieveJointStateParameter"
+                      ID="RetrieveRobotStateParameter"
                       timeout_sec="-1"
                       joint_state="{target_joint_state}"
                     />
@@ -127,7 +127,7 @@
                 <Control ID="Fallback" name="root">
                   <Control ID="Sequence">
                     <Action
-                      ID="RetrieveJointStateParameter"
+                      ID="RetrieveRobotStateParameter"
                       timeout_sec="-1"
                       joint_state="{target_joint_state}"
                     />

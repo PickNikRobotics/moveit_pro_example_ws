@@ -23,7 +23,7 @@
         />
       </Decorator>
       <Action
-        ID="SetupMTCCartesianMoveToJointState"
+        ID="SetupMTCCartesianMoveToRobotState"
         joint_state="{pre_approach_robot_state}"
         planning_group_name="manipulator"
         task="{retreat_task}"
@@ -43,7 +43,7 @@
         />
       </Decorator>
       <Action
-        ID="SetupMTCPlanToJointState"
+        ID="SetupMTCPlanToRobotState"
         joint_state="{initial_robot_state}"
         planning_group_name="manipulator"
         task="{retreat_task}"
