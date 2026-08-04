@@ -22,9 +22,8 @@
         min_component_area="2000"
         nms_threshold="0.200000"
         score_threshold="0.8"
-        decoder_model_path="models/sam2.1_decoder.onnx"
-        encoder_model_path="models/sam2.1_hiera_l_image_encoder.onnx"
-        prompt_encoder_model_path="models/sam2.1_prompt_encoder.onnx"
+        model_bundle_manifest="models/sam2_automask_bundle.yaml"
+        runtime_id="onnxruntime"
         model_package="factory_sim"
       />
       <Action
