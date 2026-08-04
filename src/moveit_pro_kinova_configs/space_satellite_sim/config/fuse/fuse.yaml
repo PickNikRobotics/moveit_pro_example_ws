@@ -82,7 +82,7 @@ state_estimator:
       # this is the frame that all transforms should be parented to for fuse to use as a measurement
       # thus a measurement will be a tf from `estimation_frame` to any frame in `transforms` (see above)
       estimation_frames:
-        ["servicer_camera_optical_frame", "wrist_mounted_camera_optical_frame"]
+        ["servicer_camera_optical_frame", "wrist_camera_optical_frame"]
       position_dimensions: ["x", "y", "z"]
       orientation_dimensions: ["roll", "pitch", "yaw"]
       base_frame: "world"
