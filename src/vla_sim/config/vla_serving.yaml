@@ -10,7 +10,7 @@
 # directory placed in src/vla_sim/models/, which the server reads as
 # /models/<checkpoint-dir>.
 # This chooses the robot's actions, so point it only at a source you trust.
-checkpoint: PickNikRobotics/pi05-kinova-color-cube-stack-mujoco
+checkpoint: PickNikRobotics/pi05_kinova_gen3_cube_stack_sim
 
 # LeRobot policy family (pi05 | smolvla | ...). Empty reads the checkpoint's
 # config.json "type"; set it only when that field is missing.

@@ -672,6 +672,8 @@
         <param name="mujoco_model">$(arg mujoco_model)</param>
         <param name="mujoco_model_package">vla_sim</param>
         <param name="render_publish_rate">10</param>
+        <param name="camera_shadows">true</param>
+        <param name="camera_offsamples">4</param>
         <param name="tf_publish_rate">60</param>
         <param name="mujoco_viewer">$(arg mujoco_viewer)</param>
       </hardware>
