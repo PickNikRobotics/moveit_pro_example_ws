@@ -2,7 +2,11 @@
 <package format="3">
   <name>vla_sim_behaviors</name>
   <version>10.3.0</version>
-  <description>vla_sim specific behavior plugins for MoveIt Pro</description>
+  <description>
+    vla_sim specific behavior plugins for MoveIt Pro: cube-stacking trial
+    sampling, and the scripted stacking oracle's motion planning, recordable
+    gripper command and recording start barrier used to collect demonstrations.
+  </description>
 
   <maintainer email="support@picknik.ai">MoveIt Pro Maintainer</maintainer>
   <author email="support@picknik.ai">MoveIt Pro Maintainer</author>
@@ -13,10 +17,19 @@
 
   <build_depend>moveit_pro_package</build_depend>
 
+  <depend>control_msgs</depend>
   <depend>fmt</depend>
   <depend>geometry_msgs</depend>
+  <depend>moveit_pro_base</depend>
+  <depend>moveit_pro_behavior</depend>
   <depend>moveit_pro_behavior_interface</depend>
+  <depend>moveit_studio_internal_msgs</depend>
+  <depend>nlohmann-json-dev</depend>
   <depend>pluginlib</depend>
+  <depend>rclcpp_action</depend>
+  <depend>sensor_msgs</depend>
+  <depend>trajectory_msgs</depend>
+  <depend>tf2_eigen</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_cmake_gmock</test_depend>

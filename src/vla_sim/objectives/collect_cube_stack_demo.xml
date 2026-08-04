@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Collect Cube-Stack Demonstration">
+  <!--
+    Records from an eval layout, keeping the training layouts and their datasets
+    to the per-prompt sweeps.
+  -->
+  <BehaviorTree
+    ID="Collect Cube-Stack Demonstration"
+    _description="Record one oracle demonstration of stacking the red cube on the green cube."
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="root">
+      <SubTree
+        ID="Record Cube-Stack Episode"
+        dataset_name="cubestack_oracle"
+        task="stack the red cube on the green cube"
+        held_cube_frame="cube_red_tf"
+        target_cube_frame="cube_green_tf"
+        keyframe_name="eval_0"
+      />
+    </Control>
+  </BehaviorTree>
+
+  <TreeNodesModel>
+    <SubTree ID="Collect Cube-Stack Demonstration">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - VLA Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

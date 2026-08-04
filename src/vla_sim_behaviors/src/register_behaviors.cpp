@@ -30,7 +30,11 @@
 #include <moveit_pro_behavior_interface/behavior_context.hpp>
 #include <moveit_pro_behavior_interface/shared_resources_node_loader.hpp>
 
+#include <vla_sim_behaviors/compute_top_down_keyposes.hpp>
+#include <vla_sim_behaviors/plan_joint_spline_through_poses.hpp>
 #include <vla_sim_behaviors/sample_cube_stack_trial.hpp>
+#include <vla_sim_behaviors/send_gripper_command.hpp>
+#include <vla_sim_behaviors/wait_for_episode_start.hpp>
 
 #include <pluginlib/class_list_macros.hpp>
 
@@ -43,6 +47,11 @@ public:
                          const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources) override
   {
     moveit_pro::behaviors::registerBehavior<SampleCubeStackTrial>(factory, "SampleCubeStackTrial", shared_resources);
+    moveit_pro::behaviors::registerBehavior<ComputeTopDownKeyposes>(factory, "ComputeTopDownKeyposes", shared_resources);
+    moveit_pro::behaviors::registerBehavior<PlanJointSplineThroughPoses>(factory, "PlanJointSplineThroughPoses",
+                                                                         shared_resources);
+    moveit_pro::behaviors::registerBehavior<SendGripperCommand>(factory, "SendGripperCommand", shared_resources);
+    moveit_pro::behaviors::registerBehavior<WaitForEpisodeStart>(factory, "WaitForEpisodeStart", shared_resources);
   }
 };
 }  // namespace vla_sim_behaviors

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Prepare Cube-Stack Scene">
+  <!--
+    Resetting a keyframe writes qpos directly, so the controllers are stopped
+    across the reset and restarted against the new state.
+  -->
+  <BehaviorTree
+    ID="Prepare Cube-Stack Scene"
+    _description="Reset the simulation to a keyframe and open the gripper."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="root">
+      <Action
+        ID="SwitchController"
+        activate_asap="true"
+        automatic_deactivation="true"
+        controller_list_action_name="/controller_manager/list_controllers"
+        controller_switch_action_name="/controller_manager/switch_controller"
+        strictness="1"
+        timeout="-1.000000"
+        deactivate_controllers="joint_trajectory_admittance_controller;velocity_force_controller"
+      />
+      <Action
+        ID="ResetMujocoKeyframe"
+        response_timeout="10.000000"
+        wait_for_server_available_timeout="3.000000"
+        keyframe_name="{keyframe_name}"
+      />
+      <Action
+        ID="SwitchController"
+        activate_controllers="joint_trajectory_admittance_controller"
+        deactivate_controllers="velocity_force_controller"
+        strictness="1"
+        timeout="-1.000000"
+        controller_list_action_name="/controller_manager/list_controllers"
+        controller_switch_action_name="/controller_manager/switch_controller"
+      />
+      <SubTree
+        ID="Command Cube-Stack Gripper"
+        gripper_position="0.0"
+        dwell_duration="0.3"
+      />
+    </Control>
+  </BehaviorTree>
+
+  <TreeNodesModel>
+    <SubTree ID="Prepare Cube-Stack Scene">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Application - VLA Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

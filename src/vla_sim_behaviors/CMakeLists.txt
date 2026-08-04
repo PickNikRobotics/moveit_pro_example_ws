@@ -4,8 +4,19 @@ project(vla_sim_behaviors)
 find_package(moveit_pro_package REQUIRED)
 moveit_pro_package()
 
-set(THIS_PACKAGE_INCLUDE_DEPENDS geometry_msgs moveit_pro_behavior_interface
-                                 pluginlib)
+set(THIS_PACKAGE_INCLUDE_DEPENDS
+  control_msgs
+  geometry_msgs
+  moveit_pro_base
+  moveit_pro_behavior
+  moveit_pro_behavior_interface
+  moveit_studio_internal_msgs
+  nlohmann_json
+  pluginlib
+  rclcpp_action
+  sensor_msgs
+  tf2_eigen
+  trajectory_msgs)
 foreach(package IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${package} REQUIRED)
 endforeach()
@@ -14,8 +25,12 @@ find_package(fmt REQUIRED)
 add_library(
   vla_sim_behaviors
   SHARED
+  src/compute_top_down_keyposes.cpp
   src/cube_stack_trial.cpp
+  src/plan_joint_spline_through_poses.cpp
   src/sample_cube_stack_trial.cpp
+  src/send_gripper_command.cpp
+  src/wait_for_episode_start.cpp
   src/register_behaviors.cpp)
 target_include_directories(
   vla_sim_behaviors
@@ -34,7 +49,9 @@ install(
   DESTINATION include)
 
 if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
   moveit_pro_behavior_test(vla_sim_behaviors)
+  ament_lint_auto_find_test_dependencies()
 endif()
 
 pluginlib_export_plugin_description_file(
