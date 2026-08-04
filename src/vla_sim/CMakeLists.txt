@@ -18,6 +18,7 @@ install(
 
 install(PROGRAMS
   script/get_action_chunk_adapter.py
+  script/joint_command_bridge.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
@@ -30,6 +31,11 @@ if(BUILD_TESTING)
   # (see docker/README.md).
   ament_add_pytest_test(test_get_action_chunk_adapter
     test/test_get_action_chunk_adapter.py
+    TIMEOUT 60
+  )
+
+  ament_add_pytest_test(test_joint_command_bridge
+    test/test_joint_command_bridge.py
     TIMEOUT 60
   )
 

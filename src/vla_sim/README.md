@@ -15,4 +15,19 @@ be too slow to run at all. A smaller model such as SmolVLA might be the better
 fit there. AMD GPUs are not passed through yet, so those machines run inference
 on the CPU as well.
 
+## Collecting demonstrations
+
+The same scene also records the demonstrations a replacement policy is trained
+on, one Pro dataset per prompt.
+
+`Run Cube-Stack Oracle` performs one stack from a scripted oracle, with no
+recording, which is the quickest way to see whether a change to the scene or the
+planner still produces a clean demonstration. `Collect Cube-Stack Demonstration`
+records one. The six `Record Cube-Stack <held> On <target>` objectives each
+sweep the 60 training layouts drawn for their prompt, producing one dataset per
+prompt.
+
+[`description/mujoco/keyframes.xml`](description/mujoco/keyframes.xml) holds the
+layouts: 360 `train_*` and 150 `eval_*`.
+
 For detailed documentation see: [MoveIt Pro Documentation](https://docs.picknik.ai/)

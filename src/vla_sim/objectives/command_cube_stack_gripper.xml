@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Command Cube-Stack Gripper">
+  <!--
+    A GripperCommand goal is not observable on any topic, so the parameter is what
+    gives the recorded `action` its gripper channel.
+
+    `dwell_duration` holds the arm still while the jaws travel. The goal stays live
+    afterwards, so the gripper keeps its grip through the segments that follow.
+  -->
+  <BehaviorTree
+    ID="Command Cube-Stack Gripper"
+    _description="Command the gripper and mirror the command to the recorded action."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="root">
+      <Action
+        ID="SetRos2Parameter"
+        node_name="/joint_command_bridge"
+        parameter_name="gripper_command_position"
+        parameter_value="{gripper_position}"
+        parameter_type="double"
+        response_timeout="5.000000"
+        wait_for_server_available_timeout="3.000000"
+      />
+      <Action
+        ID="SendGripperCommand"
+        gripper_command_action_name="/robotiq_gripper_controller/gripper_cmd"
+        position="{gripper_position}"
+      />
+      <Action ID="WaitForDuration" delay_duration="{dwell_duration}" />
+    </Control>
+  </BehaviorTree>
+
+  <TreeNodesModel>
+    <SubTree ID="Command Cube-Stack Gripper">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Application - VLA Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
