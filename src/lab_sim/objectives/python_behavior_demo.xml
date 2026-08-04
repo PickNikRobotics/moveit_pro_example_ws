@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Python Behavior Demo">
+  <BehaviorTree
+    ID="Python Behavior Demo"
+    _description="Exercises the example Behaviors written in Python."
+    _favorite="true"
+    _subtreeOnly="false"
+  >
+    <Control ID="Sequence" name="root">
+      <Action
+        ID="ScaleValue"
+        value="21.0"
+        factor="2.0"
+        result="{scaled_value}"
+      />
+      <Action ID="CountTicks" ticks="5" />
+      <Action
+        ID="MakePose"
+        x="0.0"
+        y="0.0"
+        z="0.0"
+        frame_id="world"
+        pose="{python_pose}"
+      />
+      <Action
+        ID="IsPoseNearIdentity"
+        pose="{python_pose}"
+        position_tolerance="0.01"
+        rotation_tolerance="0.1"
+      />
+      <Action
+        ID="RetrieveWaypoint"
+        waypoint_joint_state="{target_joint_state}"
+        waypoint_name="Look at Table"
+        joint_group_name="manipulator"
+      />
+      <Action
+        ID="SummarizeJointState"
+        joint_state="{target_joint_state}"
+        largest_position="{largest_position}"
+      />
+      <Action
+        ID="ComputeToolPose"
+        joint_state="{target_joint_state}"
+        joint_group_name="manipulator"
+        link_name=""
+        timeout="10.0"
+        tool_pose="{tool_pose}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Python Behavior Demo">
+      <MetadataFields>
+        <Metadata subcategory="Application - Basic Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
