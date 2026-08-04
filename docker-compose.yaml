@@ -16,6 +16,9 @@ services:
       # MOVEIT_INFERENCE_PORT that publishes the server's host port, so
       # changing the port is a one-variable edit. No other config reads it.
       - INFER_URL=http://127.0.0.1:${MOVEIT_INFERENCE_PORT:-8973}/infer
+      # What the Trainer records as `observation.state`; see
+      # src/vla_sim/script/joint_command_bridge.py.
+      - MOVEIT_PRO_TRAIN_JOINT_STATES_TOPIC=${MOVEIT_PRO_TRAIN_JOINT_STATES_TOPIC:-/observed_joint_states}
 
   # Starts the robot drivers.
   drivers:

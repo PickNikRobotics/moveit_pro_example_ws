@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Execute Cube-Stack Oracle">
+  <!--
+    Heights are measured from the frame each segment aims at, so the place segment's
+    heights are the pick's plus a cube.
+  -->
+  <BehaviorTree
+    ID="Execute Cube-Stack Oracle"
+    _description="Pick one cube and stack it on another, following the oracle's keyposes."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="root">
+      <SubTree
+        ID="Move Along Cube-Stack Keyposes"
+        _collapsed="true"
+        aim_frame="{held_cube_frame}"
+        held_object_frame="pinch"
+        heights="0.12;0.0"
+        orientation="{grasp_orientation}"
+      />
+      <SubTree
+        ID="Command Cube-Stack Gripper"
+        _collapsed="true"
+        gripper_position="0.6"
+        dwell_duration="0.6"
+      />
+      <SubTree
+        ID="Move Along Cube-Stack Keyposes"
+        _collapsed="true"
+        aim_frame="{held_cube_frame}"
+        held_object_frame="pinch"
+        heights="0.12"
+        reuse_orientation="{grasp_orientation}"
+      />
+      <SubTree
+        ID="Move Along Cube-Stack Keyposes"
+        _collapsed="true"
+        aim_frame="{target_cube_frame}"
+        held_object_frame="{held_cube_frame}"
+        heights="0.150;0.031"
+        orientation="{place_orientation}"
+      />
+      <!--Settle onto the resting pose, then hold still while the jaws open.-->
+      <Action ID="WaitForDuration" delay_duration="0.4" />
+      <SubTree
+        ID="Command Cube-Stack Gripper"
+        _collapsed="true"
+        gripper_position="0.0"
+        dwell_duration="0.4"
+      />
+      <SubTree
+        ID="Move Along Cube-Stack Keyposes"
+        _collapsed="true"
+        aim_frame="pinch"
+        held_object_frame="pinch"
+        heights="0.12"
+        reuse_orientation="{place_orientation}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Execute Cube-Stack Oracle">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Application - VLA Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
