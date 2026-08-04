@@ -19,8 +19,6 @@
         controller_names="joint_trajectory_admittance_controller"
         execution_pipeline="jtac"
         joint_group_name="manipulator"
-        keep_orientation="false"
-        keep_orientation_tolerance="0.05"
         link_padding="0.01"
         seed="0"
         velocity_scale_factor="1.0"

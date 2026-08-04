@@ -43,9 +43,7 @@
         num_rows="2"
         row_spacing_translation="0.3;0;0"
         ik_frame="tool0"
-        keep_orientation="true"
-        keep_orientation_tolerance="0.5"
-        keep_orientation_link_names="tool0"
+        orientation_constraint="[{link_name: tool0, angle_tolerance: 0.5}]"
       />
     </Control>
   </BehaviorTree>

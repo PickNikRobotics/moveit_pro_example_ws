@@ -14,8 +14,6 @@
         controller_action_server="/joint_trajectory_admittance_controller/follow_joint_trajectory"
         controller_names="joint_trajectory_admittance_controller"
         joint_group_name="manipulator"
-        keep_orientation="false"
-        keep_orientation_tolerance="0.05"
         link_padding="0.0"
         seed="0"
         velocity_scale_factor="1.0"
@@ -123,9 +121,6 @@
         <Action
           ID="SetupMTCConnectWithProRRT"
           acceleration_scale_factor="1.000000"
-          keep_orientation="false"
-          keep_orientation_link_names="grasp_link"
-          keep_orientation_tolerance="0.100000"
           link_padding="0.000000"
           max_iterations="5000"
           planning_group_name="manipulator"
