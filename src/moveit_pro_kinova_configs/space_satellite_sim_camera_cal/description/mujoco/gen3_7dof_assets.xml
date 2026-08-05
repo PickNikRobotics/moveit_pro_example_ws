@@ -204,10 +204,14 @@
     <texture type="2d" name="ar_marker_1" file="assets/tag36_11_00001.png" />
     <texture type="2d" name="ar_marker_2" file="assets/tag36_11_00002.png" />
     <texture type="2d" name="ar_marker_3" file="assets/tag36_11_00003.png" />
+    <texture type="2d" name="ar_marker_4" file="assets/tag36_11_00004.png" />
+    <texture type="2d" name="ar_marker_5" file="assets/tag36_11_00005.png" />
     <material name="ar_marker_0" texture="ar_marker_0" texuniform="false" />
     <material name="ar_marker_1" texture="ar_marker_1" texuniform="false" />
     <material name="ar_marker_2" texture="ar_marker_2" texuniform="false" />
     <material name="ar_marker_3" texture="ar_marker_3" texuniform="false" />
+    <material name="ar_marker_4" texture="ar_marker_4" texuniform="false" />
+    <material name="ar_marker_5" texture="ar_marker_5" texuniform="false" />
   </asset>
 
   <contact>

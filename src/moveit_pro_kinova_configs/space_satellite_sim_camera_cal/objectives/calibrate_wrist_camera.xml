@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Calibrate Wrist Camera">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Calibrate Wrist Camera"
+    _description="Calibrate the wrist-mounted camera (eye-in-hand) from multiple waypoints by observing the static satellite AprilTags with CalibrateCameraPosePnp. Same subtree/behavior as the scene-camera calibration; only the frames, topics, tag prefix, and waypoints differ."
+    _favorite="true"
+  >
+    <SubTree
+      ID="Calibrate Camera - Detect Tags"
+      _collapsed="true"
+      camera_mounting_frame="wrist_camera_mount_link"
+      camera_optical_frame="wrist_camera_optical_frame"
+      mounting_pose_save_file="calibrated_wrist_camera_mounting_pose.txt"
+      camera_image_topic="/wrist_camera/color"
+      camera_info_topic="/wrist_camera/camera_info"
+      mounting_pose_parent_frame="bracelet_link"
+      tag_frame_prefix="sat_tag_"
+      waypoint_1_name="Wrist Camera Calibration 1"
+      waypoint_2_name="Wrist Camera Calibration 2"
+      waypoint_3_name="Wrist Camera Calibration 3"
+      waypoint_4_name="Wrist Camera Calibration 4"
+    />
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Calibrate Wrist Camera">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Perception - Camera Calibration" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
