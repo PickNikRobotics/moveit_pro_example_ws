@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Force Relaxation">
+  <BehaviorTree
+    ID="Force Relaxation"
+    _description="Relaxes the force sensed at the force/torque sensor by moving the robot tip in the direction of the sensed force."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="CreateTwistStamped"
+        reference_frame="{tip_link}"
+        twist_stamped="{zero_twist}"
+        angular_velocity_xyz="0.000000;0.000000;0.000000"
+        linear_velocity_xyz="0.000000;0.000000;0.000000"
+      />
+      <Action
+        ID="UnpackTwistStampedMessage"
+        name="UnpackTwistStampedMessage"
+        twist="{twist}"
+        header="{header}"
+        twist_stamped="{zero_twist}"
+      />
+      <Action
+        ID="CreateWrenchStamped"
+        reference_frame="{tip_link}"
+        wrench_stamped="{zero_wrench}"
+        torque_xyz="0.000000;0.000000;0.000000"
+        force_xyz="0.000000;0.000000;0.000000"
+      />
+      <Action
+        ID="UnpackWrenchStampedMessage"
+        name="UnpackWrenchStampedMessage"
+        wrench="{wrench}"
+        header="{header}"
+        wrench_stamped="{zero_wrench}"
+      />
+      <Decorator ID="ForceSuccess">
+        <Decorator ID="Timeout" msec="{relaxation_time_ms}">
+          <Action
+            ID="PublishVelocityForceCommand"
+            wrench_gain="{wrench_gain}"
+            force_controlled_axes="1;1;1;0;0;0"
+            publish_rate="50"
+            velocity_controlled_axes="0;0;0;0;0;0"
+            velocity_force_controller_command_topic="/velocity_force_controller/command"
+            wrench="{wrench}"
+            twist="{twist}"
+          />
+        </Decorator>
+      </Decorator>
+      <Decorator ID="ForceSuccess">
+        <Decorator ID="Timeout" msec="10">
+          <Action
+            ID="PublishVelocityForceCommand"
+            wrench_gain="{wrench_gain}"
+            force_controlled_axes="0;0;0;0;0;0"
+            publish_rate="50"
+            velocity_controlled_axes="1;1;1;0;0;0"
+            velocity_force_controller_command_topic="/velocity_force_controller/command"
+            wrench="{wrench}"
+            twist="{twist}"
+          />
+        </Decorator>
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Force Relaxation">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Motion - Controls" />
+      </MetadataFields>
+      <inout_port name="relaxation_time_ms" default="500" />
+      <inout_port name="tip_link" default="grasp_link" />
+      <inout_port name="wrench_gain" default="0.01" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

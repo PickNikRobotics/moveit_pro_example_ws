@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Pick 1 Pill Bottle with SAM3">
+  <BehaviorTree
+    ID="Pick 1 Pill Bottle with SAM3"
+    _description="Single-bottle version of Pick All Pill Bottles. Uses SAM3 text-prompt segmentation seeded into an ICP fit, then picks one bottle and drops it in the tray via a Cartesian up-over-down drop."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence" _collapsed="false">
+      <SubTree ID="Open Gripper" _collapsed="true" />
+      <SubTree
+        ID="Move to Waypoint"
+        name="Look at pill bottles"
+        _collapsed="true"
+        joint_group_name="manipulator"
+        waypoint_name="Look at Bottles Left"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+        controller_names="joint_trajectory_admittance_controller"
+        execution_pipeline="jtac"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.01"
+        seed="0"
+        velocity_scale_factor="1.0"
+      />
+      <!--The admittance controller reports trajectory success before the arm
+           has fully settled, so without this wait the wrist camera captures
+           a mid-motion frame.-->
+      <Action
+        ID="WaitForDuration"
+        name="Let arm settle at look pose"
+        delay_duration="1.0"
+      />
+      <SubTree ID="Add Table to Planning Scene" _collapsed="true" />
+      <!--Perception: SAM3 segments a bottle, derives an ICP seed from the
+           mask centroid, and fits the bottle CAD model to the masked cloud
+           via ICP. Output is a world-frame grasp pose at the bottle cap.-->
+      <SubTree
+        ID="Get Bottle Grasp via ICP Subtree"
+        name="Get grasp pose for a pill bottle"
+        _collapsed="true"
+        camera_image_topic="/wrist_camera/color"
+        camera_info_topic="/wrist_camera/camera_info"
+        camera_points_topic="/wrist_camera/points"
+        output_grasp="{output_grasp}"
+        object_prompt="a small white or grey rectangular pill bottle with a purple blue top cap"
+        exemplar_image="{exemplar_image}"
+        target_bboxes="{target_bboxes}"
+        exemplar_bboxes="{exemplar_bboxes}"
+      />
+      <Action
+        ID="VisualizePose"
+        name="Show grasp pose"
+        marker_lifetime="0.000000"
+        marker_name="grasp_pose"
+        marker_size="0.100000"
+        pose="{output_grasp}"
+        marker_text="grasp_pose"
+      />
+      <SubTree
+        ID="Fan Pose About Tool-Z Subtree"
+        name="Build yaw-variant grasp poses"
+        _collapsed="true"
+        input_pose="{output_grasp}"
+        output_pose_vector="{grasp_pose_vector}"
+      />
+      <SubTree
+        ID="Pick from Pose Vector"
+        name="Pick up pill bottle"
+        _collapsed="true"
+        approach_distance="0.1"
+        retract_xyz="0;0;-0.1"
+        grasp_poses="{grasp_pose_vector}"
+      />
+      <!--Drop: cartesian up-over-down to the tray, orientation-locked so the
+           gripper stays vertical and the bottle does not tip mid-flight.
+           position_only="false" on the lift, position_only="true" on the
+           descent so the soft nullspace task can absorb small orientation
+           drift during the longer Cartesian move.-->
+      <Control
+        ID="Sequence"
+        name="Drop: cartesian up-over-down to tray"
+        _collapsed="true"
+      >
+        <Action
+          ID="CreatePoseStamped"
+          name="Gripper origin in gripper frame"
+          position_xyz="0;0;0"
+          orientation_xyzw="0;0;0;1"
+          reference_frame="grasp_link"
+          pose_stamped="{gripper_local_pose}"
+        />
+        <Action
+          ID="TransformPoseFrame"
+          name="Resolve gripper pose in world"
+          input_pose="{gripper_local_pose}"
+          target_frame_id="world"
+          output_pose="{post_pick_world_pose}"
+        />
+        <Action
+          ID="TransformPose"
+          name="Up: lift 10 cm in local frame"
+          input_pose="{post_pick_world_pose}"
+          output_pose="{up_pose}"
+          translation_xyz="0;0;-0.1"
+          quaternion_xyzw="0;0;0;1"
+          marker_lifetime="0.000000"
+          marker_size="0.000000"
+          marker_text=""
+          visualize_pose="false"
+        />
+        <Action
+          ID="CreatePoseStamped"
+          name="Over: hover above tray"
+          position_xyz="0.95;0.5568;0.85"
+          orientation_xyzw="-0.0436;0.9990;0;0"
+          reference_frame="world"
+          pose_stamped="{over_pose}"
+        />
+        <Action
+          ID="CreatePoseStamped"
+          name="Down: drop pose above tray surface"
+          position_xyz="0.95;0.5568;0.605"
+          orientation_xyzw="-0.0436;0.9990;0;0"
+          reference_frame="world"
+          pose_stamped="{down_pose}"
+        />
+        <SubTree
+          ID="CreateVector"
+          name="Init drop path"
+          _collapsed="true"
+          vector="{drop_path}"
+        />
+        <Action
+          ID="PushBackVector"
+          name="Add up via-point"
+          element="{up_pose}"
+          input_vector="{drop_path}"
+          output_vector="{drop_path}"
+        />
+        <Action
+          ID="PushBackVector"
+          name="Add over hover"
+          element="{over_pose}"
+          input_vector="{drop_path}"
+          output_vector="{drop_path}"
+        />
+        <Action
+          ID="PushBackVector"
+          name="Add down drop"
+          element="{down_pose}"
+          input_vector="{drop_path}"
+          output_vector="{drop_path}"
+        />
+        <Action
+          ID="PlanCartesianPath"
+          name="Plan up-over-down"
+          path="{drop_path}"
+          position_only="true"
+          joint_trajectory_msg="{drop_traj}"
+          debug_solution="{drop_debug}"
+          planning_group_name="manipulator"
+          tip_links="grasp_link"
+          tip_offset="0;0;0;0;0;0"
+          blending_radius="0.020000"
+          ik_cartesian_space_density="0.010000"
+          ik_joint_space_density="0.100000"
+          trajectory_timing="[{mode: time_optimal}]"
+          max_optimizer_iterations="1"
+        />
+        <Action
+          ID="ExecuteTrajectory"
+          name="Execute up-over-down"
+          joint_trajectory_msg="{drop_traj}"
+          goal_duration_tolerance="-1.000000"
+          controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+          execution_pipeline="jtac"
+        />
+        <SubTree ID="Open Gripper" _collapsed="true" />
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Pick 1 Pill Bottle with SAM3">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - ML (GPU Recommended)" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

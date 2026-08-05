@@ -1,0 +1,97 @@
+# Mobile base localization configuration using fuse
+# Ground vehicle state estimation: wheel odometry + IMU
+state_estimator:
+  ros__parameters:
+    # Fixed-lag smoother configuration
+    optimization_frequency: 20.0
+    transaction_timeout: 0.01
+    lag_duration: 0.5
+
+    # Motion model for mobile base (3D omnidirectional)
+    motion_models:
+      mobile_base_motion:
+        type: fuse_models::Omnidirectional3D
+
+    mobile_base_motion:
+      # Process noise for state variables
+      # Order: x, y, z, roll, pitch, yaw, vx, vy, vz, vroll, vpitch, vyaw, ax, ay, az
+      # z, roll, pitch and their derivatives are near-zero for a ground robot.
+      #process_noise_diagonal: [0.25, 0.25, 0.00001, 0.00001, 0.00001, 0.25
+      #   -, 0.1, 0.1, 0.00001, 0.00001, 0.0001, 0.1, 0.0001, 0.0001, 0.00001]
+      process_noise_diagonal: [1.0, 1.0, 0.0001, 0.0001, 0.0001, 0.5, 0.5, 0.5, 0.0001, 0.0001, 0.0001, 0.25, 0.00001, 0.00001, 0.00001]
+      # Exponential velocity decay rate (1/s). Predicted velocity decays toward zero when the
+      # odometry source goes silent (e.g., after a nav2 controller deactivates), preventing
+      # indefinite drift. Set to 0.0 to disable. k=1.0 chosen so velocity is ~95% decayed
+      # within 3s — long enough to not affect normal driving, short enough to kill post-nav2 drift.
+      velocity_decay: 1.0
+
+    sensor_models:
+      initial_localization_sensor:
+        type: fuse_models::Omnidirectional3DIgnition
+        motion_models: [mobile_base_motion]
+        ignition: true
+      wheel_odom_sensor:
+        type: fuse_models::Odometry3D
+        motion_models: [mobile_base_motion]
+      imu_sensor:
+        type: fuse_models::Imu3D
+        motion_models: [mobile_base_motion]
+
+    initial_localization_sensor:
+      publish_on_startup: true
+      # Order: x, y, z, roll, pitch, yaw, vx, vy, vz, vroll, vpitch, vyaw, ax, ay, az
+      initial_state: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+      # Order: x, y, z, roll, pitch, yaw, vx, vy, vz, vroll, vpitch, vyaw, ax, ay, az
+      # z and its derivatives start with very tight sigma — ground robot stays on the plane.
+      initial_sigma: [0.1, 0.1, 0.001, 0.01, 0.01, 0.1, 0.1, 0.1, 0.001, 0.01, 0.01, 0.1, 0.001, 0.001, 0.001]
+
+    # Wheel odometry — provides translation (x, y) and yaw
+    # Using differential mode because platform_velocity_controller/odom is
+    # wheel-integrated odometry that drifts over time. Differential mode fuses
+    # only the relative change between consecutive messages, preventing
+    # accumulated drift from corrupting the estimate.
+    wheel_odom_sensor:
+      topic: /platform_velocity_controller_nav2/odom
+      queue_size: 10
+      pose_loss:
+        type: fuse_loss::HuberLoss
+        a: 1.0
+      linear_velocity_loss:
+        type: fuse_loss::HuberLoss
+        a: 1.0
+      position_dimensions: ['x', 'y', 'z']
+      orientation_dimensions: ['yaw']
+      linear_velocity_dimensions: ['x', 'y']
+      angular_velocity_dimensions: ['yaw']
+      differential: true
+      independent: false
+      use_twist_covariance: true
+
+    # IMU sensor — provides orientation and yaw rate
+    # - Roll/pitch/yaw orientation (absolute, covariance 0.001 vs wheel odom 0.5)
+    # - Yaw angular velocity from gyroscope
+    imu_sensor:
+      topic: /imu_sensor_broadcaster/imu_reliable
+      orientation_dimensions: ['roll', 'pitch', 'yaw']
+      angular_velocity_dimensions: ['yaw']
+      queue_size: 10
+
+    # Publish filtered odometry
+    publishers:
+      filtered_publisher:
+        type: fuse_models::Odometry3DPublisher
+
+    filtered_publisher:
+      topic: 'odom_filtered'
+      base_link_frame_id: 'ridgeback_base_link'
+      base_link_output_frame_id: 'ridgeback_base_link'
+      odom_frame_id: 'odom'
+      map_frame_id: 'map'
+      # robot_state_publisher owns the live TF to ridgeback_base_link via the
+      # virtual-rail joint chain; fuse must not publish a competing parent.
+      # Its estimate stays available on odom_filtered. On real hardware, feed
+      # the estimate into the virtual-rail joint states instead of TF.
+      world_frame_id: 'odom'
+      publish_tf: false
+      publish_frequency: 10.0
+      predict_to_current_time: true

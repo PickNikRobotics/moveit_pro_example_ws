@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Teleoperate">
+  <BehaviorTree
+    ID="Teleoperate"
+    _description="Teleoperation using the standard joint trajectory controller (JTC). This config uses JTC instead of JTAC."
+  >
+    <SubTree
+      ID="Request Teleoperation"
+      controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+      joint_trajectory_controller_name="joint_trajectory_controller"
+      execution_pipeline="jtc"
+      enable_user_interaction="false"
+      initial_teleop_mode="3"
+      user_interaction_prompt=""
+    />
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Teleoperate">
+      <MetadataFields>
+        <Metadata subcategory="User Input" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

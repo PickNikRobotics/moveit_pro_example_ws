@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://wiki.ros.org/xacro">
+
+  <xacro:macro name="robot_mount"
+               params="parent_link">
+
+    <!-- Import environment macros -->
+    <xacro:include filename="$(find picknik_accessories)/descriptions/geometry/collision_and_visual/cube_collision_and_visual.urdf.xacro"/>
+
+    <!-- Required links -->
+    <link name="workcell"/>
+    <link name="robot_mount"/>
+
+     <!-- Table -->
+    <link name="table">
+
+      <xacro:cube_collision_and_visual length="0.61" width="1.22" height="0.25">
+        <origin xyz="0 0 ${0.25/2}" rpy="0 0 0"/>
+        <color rgba="0 0 1 0.3"/>
+      </xacro:cube_collision_and_visual>
+
+    </link>
+
+    <!-- Walls -->
+    <link name="walls">
+
+      <!-- Far  Wall -->
+      <xacro:cube_collision_and_visual length="2.00" width="0.1" height="2.00">
+        <origin xyz="0 -0.65 1" rpy="0 0 0"/>
+        <color rgba="0 0 1 0.3"/>
+      </xacro:cube_collision_and_visual>
+
+      <!-- Left Wall -->
+      <xacro:cube_collision_and_visual length="2.00" width="0.1" height="2.00">
+        <origin xyz="0.5 0.0 1" rpy="0 0 ${pi / 180.0 * 90}"/>
+        <color rgba="0 0 1 0.3"/>
+      </xacro:cube_collision_and_visual>
+
+      <!-- Right Wall -->
+      <xacro:cube_collision_and_visual length="2.00" width="0.1" height="2.00">
+        <origin xyz="-0.5 0.0 1" rpy="0 0 ${pi / 180.0 * 90}"/>
+        <color rgba="0 0 1 0.3"/>
+      </xacro:cube_collision_and_visual>
+
+      <!-- Near Wall -->
+      <xacro:cube_collision_and_visual length="2.00" width="0.1" height="2.00">
+        <origin xyz="0 0.75 1" rpy="0 0 0"/>
+        <color rgba="0 0 1 0.3"/>
+      </xacro:cube_collision_and_visual>
+
+    </link>
+
+    <!-- Joints -->
+    <joint name="${parent_link}_to_workcell" type="fixed">
+    <parent link="${parent_link}"/>
+      <child link="workcell"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </joint>
+
+    <joint name="workcell_to_walls" type="fixed">
+      <parent link="workcell"/>
+      <child link="walls"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </joint>
+
+    <joint name="workcell_to_table" type="fixed">
+      <parent link="workcell"/>
+      <child link="table"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </joint>
+
+    <joint name="table_to_robot_mount" type="fixed">
+      <parent link="table"/>
+      <child link="robot_mount"/>
+      <origin rpy="0 0 0" xyz="0 0 0.25"/>
+    </joint>
+
+  </xacro:macro>
+
+</robot>

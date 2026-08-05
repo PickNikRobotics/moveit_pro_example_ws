@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Move To and Detect Tag 45">
+  <!--//////////-->
+  <BehaviorTree ID="Move To and Detect Tag 45" _description="">
+    <Control ID="Sequence">
+      <Action
+        ID="CreatePoseStamped"
+        pose_stamped="{pose_stamped}"
+        reference_frame="{tag_name}"
+        orientation_xyzw="0.92388;0;0.382683;0"
+        position_xyz="-0.6;0.0;0.6"
+      />
+      <Action ID="ResetPoseStampedVector" vector="{pose_stamped_vector}" />
+      <Action
+        ID="PushBackVector"
+        input_vector="{pose_stamped_vector}"
+        element="{pose_stamped}"
+        output_vector="{pose_stamped_vector}"
+      />
+      <Control ID="Fallback">
+        <Action
+          ID="PlanCartesianPath"
+          blending_radius="0.020000"
+          debug_solution="{debug_solution}"
+          ik_cartesian_space_density="0.010000"
+          ik_joint_space_density="0.100000"
+          joint_trajectory_msg="{joint_trajectory_msg}"
+          path="{pose_stamped_vector}"
+          planning_group_name="manipulator"
+          position_only="false"
+          trajectory_timing="[{mode: time_optimal}]"
+        />
+        <Action
+          ID="WaitForMTCSolutionApproval"
+          cartesian_path_links="grasp_link"
+          solution="{debug_solution}"
+        />
+      </Control>
+      <Action ID="ExecuteTrajectory" />
+      <Action
+        ID="GetCameraInfo"
+        message_out="{camera_info}"
+        message_timeout_sec="5.000000"
+        topic_name="/wrist_camera/camera_info"
+      />
+      <Action
+        ID="GetImage"
+        message_out="{image}"
+        message_timeout_sec="5.000000"
+        topic_name="/wrist_camera/color"
+      />
+      <Action
+        ID="DetectAprilTags"
+        image="{image}"
+        camera_info="{camera_info}"
+        detections="{detections}"
+        apriltag_family_name="36h11"
+        max_hamming="0"
+        n_threads="1"
+        quad_decimate="2.0"
+        quad_sigma="0.0"
+        refine_edges="true"
+        tag_size="{tag_size}"
+      />
+      <Action
+        ID="GetDetectionPose"
+        detection_pose="{detection_pose}"
+        detections="{detections}"
+        target_id="-1"
+      />
+      <Action
+        ID="TransformPoseFrame"
+        input_pose="{detection_pose}"
+        output_pose="{detection_pose}"
+        target_frame_id="grasp_link"
+      />
+      <Action
+        ID="VisualizePose"
+        marker_lifetime="0.000000"
+        marker_name="pose"
+        marker_size="0.100000"
+        pose="{detection_pose}"
+      />
+      <Action
+        ID="CreatePoseStamped"
+        pose_stamped="{pose_stamped}"
+        reference_frame="{tag_name}"
+      />
+      <Action
+        ID="TransformPoseFrame"
+        input_pose="{pose_stamped}"
+        output_pose="{pose_stamped}"
+        target_frame_id="grasp_link"
+      />
+      <Action
+        ID="CalculatePoseOffset"
+        destination_pose="{detection_pose}"
+        source_pose="{pose_stamped}"
+        source_to_destination_pose="{pose_diff}"
+      />
+      <Action ID="Script" code="dir_path := '45degree_runs/'" />
+      <Action ID="Script" code="full_path := dir_path + tag_name" />
+      <Action
+        ID="SavePoseStampedToYaml"
+        message="{pose_diff}"
+        yaml_filename="{full_path}"
+        namespace="{run_counter}"
+        overwrite="false"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Move To and Detect Tag 45">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="AprilTag Detection Analysis - Subtrees" />
+      </MetadataFields>
+      <inout_port name="run_counter" default="{run_counter}" />
+      <inout_port name="tag_name" default="{tag_name}" />
+      <inout_port name="tag_size" default="{tag_size}" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

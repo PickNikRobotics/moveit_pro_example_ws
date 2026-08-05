@@ -1,0 +1,55 @@
+<mujocoinclude>
+  <body name="wallroot" childclass="backwall" pos="0.0354 0.3504 0.9522">
+    <geom pos="-0.066 0.036 0.36" size="0.756 0.042 0.36" type="box" />
+    <geom
+      material="wall_white"
+      pos="-0.066 0.036 0.087"
+      size="0.756 0.048 0.087"
+      type="box"
+    />
+
+    <geom
+      class="wall_collision"
+      pos="-0.066 0.036 0.36"
+      size="0.756 0.042 0.36"
+      type="box"
+      mass=".2"
+    />
+    <geom
+      class="wall_collision"
+      pos="-0.066 0.036 0.087"
+      size="0.756 0.048 0.087"
+      type="box"
+      mass=".2"
+    />
+  </body>
+  <body
+    euler="0 0 1.57"
+    name="wall2"
+    childclass="backwall"
+    pos="-0.783 -0.3276 0.9522"
+  >
+    <geom pos="0.0264 0.036 0.36" size="0.6474 0.042 0.36" type="box" />
+    <geom
+      material="wall_white"
+      pos="0.0264 0.036 0.087"
+      size="0.6474 0.048 0.087"
+      type="box"
+    />
+
+    <geom
+      class="wall_collision"
+      pos="0.0264 0.036 0.36"
+      size="0.6474 0.042 0.36"
+      type="box"
+      mass=".2"
+    />
+    <geom
+      class="wall_collision"
+      pos="0.0264 0.036 0.087"
+      size="0.6474 0.048 0.087"
+      type="box"
+      mass=".2"
+    />
+  </body>
+</mujocoinclude>

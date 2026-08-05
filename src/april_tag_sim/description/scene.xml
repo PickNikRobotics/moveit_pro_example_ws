@@ -1,0 +1,176 @@
+<!-- UR5e inspired from https://github.com/google-deepmind/mujoco_menagerie/tree/main/universal_robots_ur5e -->
+<mujoco model="ur5e scene">
+  <include file="ur5e/ur5e_linear_rail_globals.xml" />
+  <include file="lab_desk/desk_globals.xml" />
+  <include file="robotiq_2f85/robotiq2f85_globals.xml" />
+
+  <compiler angle="radian" autolimits="true" />
+
+  <option integrator="implicitfast" timestep="0.003" />
+
+  <!-- Offscreen buffer must EXACTLY match every non-lidar camera resolution
+       (picknik_mujoco_ros cameras.cpp). Single shared buffer for all cameras,
+       so the scene_camera below plus wrist_camera (1280x720) from the ur5e
+       include must all be 1280x720, or ros2_control_node aborts on load. -->
+  <visual>
+    <global offwidth="1280" offheight="720" />
+  </visual>
+
+  <asset>
+    <mesh name="cube" file="assets/Cube.stl" />
+  </asset>
+
+  <worldbody>
+    <light pos="0 0 1.5" dir="0 0 -1" directional="true" />
+
+    <light
+      name="spotlight"
+      mode="targetbodycom"
+      target="wrist_2_link"
+      pos="0 -1 2"
+    />
+    <geom
+      name="floor"
+      pos="0 0 -0.512"
+      size="0 0 0.05"
+      type="plane"
+      material="groundplane"
+    />
+    <!-- Scene Camera -->
+    <site
+      name="scene_camera_optical_frame"
+      pos="-1.0 -2.0 2.966"
+      euler="3.99 0.000 0"
+    />
+    <camera
+      name="scene_camera"
+      pos="-1.0 -2.0 2.966"
+      fovy="58"
+      mode="fixed"
+      resolution="1280 720"
+      euler="0.849 0.000 0.0"
+    />
+    <!-- lab desk -->
+    <!-- Define AprilTag blocks -->
+    <body name="block1" pos="1.75 0.75 0.575">
+      <freejoint name="block1" />
+      <geom
+        type="box"
+        size="0.3 0.3 0.05"
+        rgba="1 1 1 1"
+        material="apriltag_material1"
+      />
+      <site name="tag1" pos="0 0 0.05" euler="0 0 3.14159" />
+      <site name="tag1l" pos="0 -0.24 0.05" euler="0 0 3.14159" />
+      <site name="tag1r" pos="0 0.24 0.05" euler="0 0 3.14159" />
+    </body>
+    <body name="seperator1" pos="1.4 0.75 0.0">
+      <geom
+        type="box"
+        size="0.01 0.3 0.5"
+        rgba="1 1 1 1"
+        contype="0"
+        conaffinity="0"
+        group="2"
+      />
+    </body>
+    <body name="block2" pos="1.0 0.75 0.575">
+      <freejoint name="block2" />
+      <geom
+        type="box"
+        size="0.2 0.2 0.05"
+        rgba="1 1 1 1"
+        material="apriltag_material1"
+      />
+      <site name="tag2" pos="0 0 0.05" euler="0 0 3.14159" />
+      <site name="tag2l" pos="0 -0.16 0.05" euler="0 0 3.14159" />
+      <site name="tag2r" pos="0 0.16 0.05" euler="0 0 3.14159" />
+    </body>
+    <body name="block3" pos="0.25 0.75 0.575">
+      <freejoint name="block3" />
+      <geom
+        type="box"
+        size="0.15 0.15 0.05"
+        rgba="1 1 1 1"
+        material="apriltag_material1"
+      />
+      <site name="tag3" pos="0 0 0.05" euler="0 0 3.14159" />
+    </body>
+    <body name="seperator2" pos="-0.25 0.75 0.0">
+      <geom
+        type="box"
+        size="0.01 0.3 0.5"
+        rgba="1 1 1 1"
+        contype="0"
+        conaffinity="0"
+        group="2"
+      />
+    </body>
+    <body name="block4" pos="-0.5 0.75 0.575">
+      <freejoint name="block4" />
+      <geom
+        type="box"
+        size="0.1 0.1 0.05"
+        rgba="1 1 1 1"
+        material="apriltag_material1"
+      />
+      <site name="tag4" pos="0 0 0.05" euler="0 0 3.14159" />
+    </body>
+    <body name="block5" pos="-1.25 0.75 0.575">
+      <freejoint name="block5" />
+      <geom
+        type="box"
+        size="0.075 0.075 0.05"
+        rgba="1 1 1 1"
+        material="apriltag_material1"
+      />
+      <site name="tag5" pos="0 0 0.05" euler="0 0 3.14159" />
+    </body>
+    <body name="seperator3" pos="-1.8 0.75 0.0">
+      <geom
+        type="box"
+        size="0.01 0.3 0.5"
+        rgba="1 1 1 1"
+        contype="0"
+        conaffinity="0"
+        group="2"
+      />
+    </body>
+    <body name="block6" pos="-2.0 0.75 0.575">
+      <freejoint name="block6" />
+      <geom
+        type="box"
+        size="0.05 0.05 0.05"
+        rgba="1 1 1 1"
+        material="apriltag_material1"
+      />
+      <site name="tag6" pos="0 0 0.05" euler="0 0 3.14159" />
+    </body>
+    <include file="ur5e/ur5e_linear_rail.xml" />
+  </worldbody>
+
+  <keyframe>
+    <!-- qpos layout: -->
+    <!-- block1..block6 freejoints [x y z qw qx qy qz] (6 x 7 = 42) -->
+    <!-- linear_rail_joint slide (1) -->
+    <!-- shoulder_pan, shoulder_lift, elbow, wrist_1, wrist_2, wrist_3 (6) -->
+    <!-- robotiq_85_right_knuckle_joint (1) -->
+    <!-- 7 gripper mimic joints (7) -->
+    <!-- total: 42 + 1 + 6 + 1 + 7 = 57 -->
+    <key
+      name="default"
+      qpos="
+        1.75 0.75 0.575 1 0 0 0
+        1.0  0.75 0.575 1 0 0 0
+        0.25 0.75 0.575 1 0 0 0
+        -0.5  0.75 0.575 1 0 0 0
+        -1.25 0.75 0.575 1 0 0 0
+        -2.0  0.75 0.575 1 0 0 0
+        0
+        -1.88491 1.10028 -1.25653 -1.57075 0 0
+        0
+        0 0 0 0 0 0 0"
+      ctrl="0 -1.8849 1.0997 -1.2566 -1.57075 0 0 0"
+    />
+  </keyframe>
+</mujoco>

@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Plan Path Along Surface 3 Passes">
+  <BehaviorTree
+    ID="Plan Path Along Surface 3 Passes"
+    _description="Sweep three stacked contour passes along the side of the fuselage. Generates and previews all three surface-contour markers up front, then plans, validates, and executes a Cartesian path for each pass in turn -- each pass starting where the previous one ended (a pseudo-raster). Built on the same GetContourFromPointCloudSlice perception as Plan Path Along Surface."
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree
+        ID="Move to Waypoint (JTC)"
+        _collapsed="true"
+        acceleration_scale_factor="1.0"
+        controller_names="joint_trajectory_controller"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.0"
+        seed="0"
+        velocity_scale_factor="1.0"
+        waypoint_name="Look at Plane"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+      />
+      <!--Capture one point cloud and lift it to the world frame; all three slices reuse it.-->
+      <Action
+        ID="GetPointCloud"
+        topic_name="/wrist_camera/points"
+        message_out="{full_cloud}"
+        publisher_timeout_sec="5.000000"
+        message_timeout_sec="5.000000"
+      />
+      <Action
+        ID="TransformPointCloudFrame"
+        input_cloud="{full_cloud}"
+        output_cloud="{full_cloud}"
+        target_frame="world"
+      />
+      <!--========== Generate all three contours and show their markers ==========-->
+      <!--Row 1: top, z = 1.7-->
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="world"
+        pose_stamped="{roi_1}"
+        position_xyz="0;12.5;1.7"
+      />
+      <Action
+        ID="CropPointsInBox"
+        crop_box_centroid_pose="{roi_1}"
+        point_cloud="{full_cloud}"
+        point_cloud_cropped="{crop_1}"
+        crop_box_size="5;4;0.2"
+      />
+      <Action
+        ID="GetCentroidFromPointCloud"
+        output_pose="{centroid_1}"
+        point_cloud="{crop_1}"
+      />
+      <Action
+        ID="GetContourFromPointCloudSlice"
+        contour_path="{contour_1}"
+        max_pose_spacing="0.200000"
+        hull_alpha="-1.0"
+        input_cloud="{crop_1}"
+        slice_distance_from_plane="0.050000"
+        slice_plane="{centroid_1}"
+        contour_crop_angle_span="3.15"
+        contour_crop_angle_start="1.60"
+      />
+      <!--Reverse contours 1 and 3 (contour 2 is left as-is) so the three passes
+           chain end-to-start in alternating directions: pass 1 y11->y14,
+           pass 2 y14->y11, pass 3 y11->y14. No return-home between passes.-->
+      <Action
+        ID="ReversePoseStampedVector"
+        input_vector="{contour_1}"
+        output_vector="{contour_1}"
+      />
+      <!--Row 2: middle, z = 1.55-->
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="world"
+        pose_stamped="{roi_2}"
+        position_xyz="0;12.5;1.55"
+      />
+      <Action
+        ID="CropPointsInBox"
+        crop_box_centroid_pose="{roi_2}"
+        point_cloud="{full_cloud}"
+        point_cloud_cropped="{crop_2}"
+        crop_box_size="5;4;0.2"
+      />
+      <Action
+        ID="GetCentroidFromPointCloud"
+        output_pose="{centroid_2}"
+        point_cloud="{crop_2}"
+      />
+      <Action
+        ID="GetContourFromPointCloudSlice"
+        contour_path="{contour_2}"
+        max_pose_spacing="0.200000"
+        hull_alpha="-1.0"
+        input_cloud="{crop_2}"
+        slice_distance_from_plane="0.050000"
+        slice_plane="{centroid_2}"
+        contour_crop_angle_span="3.15"
+        contour_crop_angle_start="1.60"
+      />
+      <!--Row 3: bottom, z = 1.4-->
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="world"
+        pose_stamped="{roi_3}"
+        position_xyz="0;12.5;1.4"
+      />
+      <Action
+        ID="CropPointsInBox"
+        crop_box_centroid_pose="{roi_3}"
+        point_cloud="{full_cloud}"
+        point_cloud_cropped="{crop_3}"
+        crop_box_size="5;4;0.2"
+      />
+      <Action
+        ID="GetCentroidFromPointCloud"
+        output_pose="{centroid_3}"
+        point_cloud="{crop_3}"
+      />
+      <Action
+        ID="GetContourFromPointCloudSlice"
+        contour_path="{contour_3}"
+        max_pose_spacing="0.200000"
+        hull_alpha="-1.0"
+        input_cloud="{crop_3}"
+        slice_distance_from_plane="0.050000"
+        slice_plane="{centroid_3}"
+        contour_crop_angle_span="3.15"
+        contour_crop_angle_start="1.60"
+      />
+      <Action
+        ID="ReversePoseStampedVector"
+        input_vector="{contour_3}"
+        output_vector="{contour_3}"
+      />
+      <!--Show all three path markers at once before any motion.-->
+      <Action
+        ID="VisualizePath"
+        marker_lifetime="0.000000"
+        marker_name="pass_1"
+        path="{contour_1}"
+        pose_marker_size="0.050000"
+        show_poses="true"
+      />
+      <Action
+        ID="VisualizePath"
+        marker_lifetime="0.000000"
+        marker_name="pass_2"
+        path="{contour_2}"
+        pose_marker_size="0.050000"
+        show_poses="true"
+      />
+      <Action
+        ID="VisualizePath"
+        marker_lifetime="0.000000"
+        marker_name="pass_3"
+        path="{contour_3}"
+        pose_marker_size="0.050000"
+        show_poses="true"
+      />
+      <!--========== Pass 1: top contour (from the Look at Plane pose) ==========-->
+      <Action
+        ID="PlanCartesianPath"
+        blending_radius="0.0050000"
+        ik_cartesian_space_density="0.010000"
+        ik_joint_space_density="0.100000"
+        joint_trajectory_msg="{traj_1}"
+        path="{contour_1}"
+        planning_group_name="manipulator"
+        position_only="false"
+        trajectory_timing="[{mode: time_optimal}]"
+        tip_offset="0;0;0.2;0;0;0"
+        debug_solution="{debug_solution}"
+      />
+      <Action
+        ID="GetCurrentPlanningScene"
+        planning_scene_msg="{planning_scene}"
+      />
+      <Action
+        ID="ValidateTrajectory"
+        planning_scene_msg="{planning_scene}"
+        planning_group_name="manipulator"
+        joint_trajectory_msg="{traj_1}"
+      />
+      <Action
+        ID="ExecuteTrajectory"
+        execution_pipeline="jtc"
+        controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
+        joint_trajectory_msg="{traj_1}"
+      />
+      <!--========== Pass 2: middle contour (continues from end of pass 1) ==========-->
+      <Action
+        ID="PlanCartesianPath"
+        blending_radius="0.0050000"
+        ik_cartesian_space_density="0.010000"
+        ik_joint_space_density="0.100000"
+        joint_trajectory_msg="{traj_2}"
+        path="{contour_2}"
+        planning_group_name="manipulator"
+        position_only="false"
+        trajectory_timing="[{mode: time_optimal}]"
+        tip_offset="0;0;0.2;0;0;0"
+        debug_solution="{debug_solution}"
+      />
+      <Action
+        ID="GetCurrentPlanningScene"
+        planning_scene_msg="{planning_scene}"
+      />
+      <Action
+        ID="ValidateTrajectory"
+        planning_scene_msg="{planning_scene}"
+        planning_group_name="manipulator"
+        joint_trajectory_msg="{traj_2}"
+      />
+      <Action
+        ID="ExecuteTrajectory"
+        execution_pipeline="jtc"
+        controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
+        joint_trajectory_msg="{traj_2}"
+      />
+      <!--========== Pass 3: bottom contour (continues from end of pass 2) ==========-->
+      <!--tip_offset z is 0.3 here vs 0.2 on passes 1-2: the fuselage's coarse
+           collision mesh (collision_Plane_009) bulges past the visual skin low on
+           the body, so the bottom pass needs a little more standoff to validate
+           collision-free. See the PR follow-up note on the collision mesh.-->
+      <Action
+        ID="PlanCartesianPath"
+        blending_radius="0.0050000"
+        ik_cartesian_space_density="0.010000"
+        ik_joint_space_density="0.100000"
+        joint_trajectory_msg="{traj_3}"
+        path="{contour_3}"
+        planning_group_name="manipulator"
+        position_only="false"
+        trajectory_timing="[{mode: time_optimal}]"
+        tip_offset="0;0;0.3;0;0;0"
+        debug_solution="{debug_solution}"
+      />
+      <Action
+        ID="GetCurrentPlanningScene"
+        planning_scene_msg="{planning_scene}"
+      />
+      <Action
+        ID="ValidateTrajectory"
+        planning_scene_msg="{planning_scene}"
+        planning_group_name="manipulator"
+        joint_trajectory_msg="{traj_3}"
+      />
+      <Action
+        ID="ExecuteTrajectory"
+        execution_pipeline="jtc"
+        controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
+        joint_trajectory_msg="{traj_3}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Plan Path Along Surface 3 Passes">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Training Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

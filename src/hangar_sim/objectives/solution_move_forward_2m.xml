@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Solution - Move Forward 2m">
+  <BehaviorTree
+    ID="Solution - Move Forward 2m"
+    _description=""
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree
+        ID="Move to Arm Upright"
+        name="Move to Arm Upright"
+        _collapsed="true"
+      />
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="grasp_link"
+        pose_stamped="{pose_stamped}"
+        orientation_xyzw="0;0;0;1"
+        position_xyz="0;0;2"
+      />
+      <Action
+        ID="VisualizePose"
+        marker_lifetime="0.000000"
+        marker_name="pose"
+        marker_size="0.100000"
+        pose="{pose_stamped}"
+      />
+      <SubTree
+        ID="Move to a StampedPose"
+        _collapsed="true"
+        controller_names="joint_trajectory_controller"
+        target_pose="{pose_stamped}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Solution - Move Forward 2m">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Training Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

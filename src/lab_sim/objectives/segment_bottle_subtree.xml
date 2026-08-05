@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Segment Bottle Subtree">
+  <BehaviorTree
+    ID="Segment Bottle Subtree"
+    _description="Segment a bottle with SAM3 and output the masked point cloud in world frame."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence" _collapsed="false">
+      <!--Crop the wrist-camera point cloud to the pickable-object
+           workspace so only objects there remain in the cloud passed
+           to ICP downstream.-->
+      <Control
+        ID="Sequence"
+        name="Capture and crop wrist camera frame"
+        _collapsed="false"
+      >
+        <Action
+          ID="CreatePoseStamped"
+          name="Define source-workspace crop box pose"
+          reference_frame="world"
+          position_xyz="0.17;0.6;0.55"
+          orientation_xyzw="0;0;0;1"
+          pose_stamped="{source_crop_box_pose}"
+        />
+        <!--Flush any cached snapshot so the captured image and point
+             cloud come from the current camera pose, not stale from
+             before the last move.-->
+        <Action ID="ClearSnapshot" name="ClearSnapshot" />
+        <Action
+          ID="GetImage"
+          topic_name="{camera_image_topic}"
+          message_timeout_sec="5.000000"
+          message_out="{image}"
+          publisher_timeout_sec="5.000000"
+        />
+        <Action
+          ID="GetPointCloud"
+          topic_name="{camera_points_topic}"
+          message_timeout_sec="5.000000"
+          message_out="{point_cloud}"
+          publisher_timeout_sec="5.000000"
+        />
+        <Action
+          ID="CropPointsInBox"
+          name="Keep only source-workspace points"
+          point_cloud="{point_cloud}"
+          crop_box_centroid_pose="{source_crop_box_pose}"
+          crop_box_size="0.5;0.6;0.3"
+          point_cloud_cropped="{point_cloud}"
+        />
+      </Control>
+      <Control
+        ID="Sequence"
+        name="Run SAM3 exemplar segmentation"
+        _collapsed="false"
+      >
+        <Action
+          ID="GetMasks2DFromExemplar"
+          name="GetMasks2DFromExemplar"
+          confidence_scores="{confidence_scores}"
+          target_image="{image}"
+          text_prompt="{object_prompt}"
+          geometry_encoder_model_path="models/sam3_geometry_encoder.onnx"
+          confidence_scores_str="{confidence_scores_str}"
+          mask_count="{mask_count}"
+          masks2d="{refined_masks}"
+          confidence_threshold="0.5"
+          text_encoder_model_path="models/sam3_text_encoder.onnx"
+          encoder_model_path="models/sam3_vision_encoder.onnx"
+          decoder_model_path="models/sam3_decoder.onnx"
+          model_package="moveit_pro_sam3"
+          exemplar_image="{exemplar_image}"
+          target_bboxes="{target_bboxes}"
+          exemplar_bboxes="{exemplar_bboxes}"
+        />
+        <Action
+          ID="PublishMask2D"
+          name="Show SAM3 mask"
+          image="{image}"
+          masks="{refined_masks}"
+          masks_visualization_topic="/masks_visualization"
+          opacity="0.500000"
+          bounding_box_detection_class="{object_prompt}"
+          bounding_box_labels=""
+        />
+      </Control>
+      <!--Iterate masks3d and stop at the first one with a non-empty
+           point cloud. SAM3 can produce 2D masks over objects whose 3D
+           points were cropped upstream; those lift to empty Mask3Ds,
+           which we skip.-->
+      <Control
+        ID="Sequence"
+        name="Get 3D masks and pick first non-empty"
+        _collapsed="false"
+      >
+        <Action
+          ID="GetCameraInfo"
+          topic_name="{camera_info_topic}"
+          message_out="{camera_info}"
+          message_timeout_sec="5.000000"
+          publisher_timeout_sec="5.000000"
+        />
+        <Action
+          ID="GetMasks3DFromMasks2D"
+          camera_info="{camera_info}"
+          masks2d="{refined_masks}"
+          point_cloud="{point_cloud}"
+          masks3d="{masks3d}"
+        />
+        <Decorator
+          ID="ForEachUntilSuccess"
+          name="Pick first mask with non-empty 3D fragment"
+          _collapsed="false"
+          vector_in="{masks3d}"
+          out="{mask3d}"
+          index="{mask3d_index}"
+        >
+          <Control ID="Sequence" name="Validate one mask" _collapsed="false">
+            <Action
+              ID="GetPointCloudFromMask3D"
+              point_cloud="{point_cloud}"
+              mask3d="{mask3d}"
+              point_cloud_fragment="{point_cloud_fragment}"
+            />
+            <Action
+              ID="TransformPointCloudFrame"
+              input_cloud="{point_cloud_fragment}"
+              target_frame="world"
+              output_cloud="{masked_cloud_world}"
+            />
+          </Control>
+        </Decorator>
+      </Control>
+      <!--Drop mask points at or below the table-surface cut plane to
+           clean up SAM3 mask bleed before ICP. The cut plane sits a
+           few mm above the table top.-->
+      <Control
+        ID="Sequence"
+        name="Remove table and below, publish cleaned cloud"
+        _collapsed="false"
+      >
+        <Action
+          ID="CreatePoseStamped"
+          name="Define table-removal box pose"
+          reference_frame="world"
+          position_xyz="0;0;-0.5"
+          orientation_xyzw="0;0;0;1"
+          pose_stamped="{table_remove_box_pose}"
+        />
+        <Action
+          ID="RemovePointsInBox"
+          name="Remove table and everything below"
+          point_cloud="{masked_cloud_world}"
+          remove_box_centroid_pose="{table_remove_box_pose}"
+          remove_box_size="10.0;10.0;1.964"
+          point_cloud_culled="{masked_cloud_world}"
+        />
+        <Action
+          ID="SendPointCloudToUI"
+          point_cloud="{masked_cloud_world}"
+          pcd_topic="/pcd_pointcloud_captures"
+          use_latest_transform="false"
+        />
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Segment Bottle Subtree">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Perception - ML" />
+      </MetadataFields>
+      <inout_port name="camera_image_topic" default="{camera_image_topic}" />
+      <inout_port name="camera_info_topic" default="{camera_info_topic}" />
+      <inout_port name="camera_points_topic" default="{camera_points_topic}" />
+      <inout_port name="object_prompt" default="{object_prompt}" />
+      <inout_port name="exemplar_image" default="{exemplar_image}" />
+      <inout_port name="target_bboxes" default="{target_bboxes}" />
+      <inout_port name="exemplar_bboxes" default="{exemplar_bboxes}" />
+      <inout_port name="masked_cloud_world" default="{masked_cloud_world}" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

@@ -1,0 +1,41 @@
+<ridgeback_globals>
+  <default>
+    <default class="rail">
+      <joint armature="0.1" damping="1" axis="0 0 1" range="-5.0 5.0" />
+      <general
+        dyntype="none"
+        biastype="affine"
+        ctrlrange="-5.0 5.0"
+        forcerange="-50000 50000"
+      />
+    </default>
+  </default>
+  <asset>
+    <!-- Ridgeback -->
+    <mesh name="chassis_link" file="body.stl" />
+    <mesh name="top_link" file="top.stl" />
+  </asset>
+  <actuator>
+    <position
+      class="rail"
+      name="linear_x_joint"
+      joint="linear_x_joint"
+      kp="75000"
+      dampratio="1.0"
+    />
+    <position
+      class="rail"
+      name="linear_y_joint"
+      joint="linear_y_joint"
+      kp="75000"
+      dampratio="1.0"
+    />
+    <position
+      class="robot"
+      name="rotational_yaw_joint"
+      joint="rotational_yaw_joint"
+      kp="75000"
+      dampratio="1.0"
+    />
+  </actuator>
+</ridgeback_globals>

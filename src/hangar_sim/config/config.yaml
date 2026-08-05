@@ -1,0 +1,111 @@
+#
+#  This contains information for a unique instance of a robot.
+#
+
+# Name of the package to specialize
+based_on_package: "picknik_ur_base_config"
+hardware:
+  # Parameters used to configure the robot description through XACRO.
+  # A URDF and SRDF are both required.
+  # [Required]
+  robot_description:
+    urdf:
+      package: "hangar_sim"
+      path: "description/ur5e_ridgeback.xacro"
+    srdf:
+      package: "hangar_sim"
+      path: "config/moveit/picknik_ur.srdf"
+    urdf_params:
+      - joint_limits_parameters_file:
+          package: "hangar_sim"
+          path: "config/moveit/joint_limits.yaml"
+      - mujoco_model: "description/hangar_scene.xml"
+      - mujoco_viewer: false  # set to true locally to open the MuJoCo viewer window
+      # Publishes /odom messages for Nav2. The odom -> ridgeback_base_link TF edge is NOT
+      # published by MuJoCo (odom_publish_tf is false in the ros2_control xacro);
+      # robot_state_publisher owns the live transform to ridgeback_base_link via
+      # the virtual-rail joint chain, so this can stay true with fuse enabled.
+      # Rebuild hangar_sim after changing this value.
+      - publish_odom: true
+
+  # Specify any additional launch files for running the robot in simulation mode.
+  # Used when hardware.simulated is True.
+  # [Optional, defaults to a blank launch file if not specified]
+  simulated_robot_driver_persist_launch_file:
+    package: "hangar_sim"
+    path: "launch/sim/robot_drivers_to_persist_sim.launch.py"
+
+moveit_params:
+  joint_limits:
+    package: "hangar_sim"
+    path: "config/moveit/joint_limits.yaml"
+  kinematics:
+    package: "hangar_sim"
+    path: "config/moveit/pose_ik_distance.yaml"
+  sensors_3d:
+    package: "hangar_sim"
+    path: "config/moveit/sensors_3d.yaml"
+  pose_jog:
+    package: "hangar_sim"
+    path: "config/moveit/pose_jog.yaml"
+  joint_jog:
+    package: "hangar_sim"
+    path: "config/moveit/joint_jog.yaml"
+
+
+# Configuration for loading behaviors and objectives.
+# [Required]
+objectives:
+  # List of plugins for loading custom behaviors.
+  # [Required]
+  behavior_loader_plugins:
+    # This plugin will load the core MoveIt Pro Behaviors.
+    # Add additional plugin loaders as needed.
+    core:
+      - "moveit_pro::behaviors::CoreBehaviorsLoader"
+      - "moveit_pro::behaviors::MTCCoreBehaviorsLoader"
+      - "moveit_pro::behaviors::NavBehaviorsLoader"
+      - "moveit_pro::behaviors::VisionBehaviorsLoader"
+      - "moveit_pro::behaviors::ConverterBehaviorsLoader"
+      - "moveit_pro::behaviors::MujocoBehaviorsLoader"
+  # Specify source folder for objectives
+  # [Required]
+  objective_library_paths:
+    mujoco_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/mujoco"
+    hangar_sim_objectives:
+      package_name: "hangar_sim"
+      relative_path: "objectives"
+
+  # Specify the location of the saved waypoints file.
+  # [Required]
+  waypoints_file:
+    package_name: "hangar_sim"
+    relative_path: "waypoints/ur_waypoints.yaml"
+
+# Configuration for launching ros2_control processes.
+# [Required, if using ros2_control]
+ros2_control:
+  config:
+    package: "hangar_sim"
+    path: "config/control/picknik_ur.ros2_control.yaml"
+
+  # MoveIt Pro will load and activate these controllers at start up to ensure they are available.
+  # If not specified, it is up to the user to ensure the appropriate controllers are active and available
+  # for running the application.
+  # [Optional, default=[]]
+  controllers_active_at_startup:
+    - "force_torque_sensor_broadcaster"
+    - "imu_sensor_broadcaster"
+    - "joint_state_broadcaster"
+    - "platform_velocity_controller"
+    - "vacuum_gripper"
+  # Load but do not start these controllers so they can be activated later if needed.
+  controllers_inactive_at_startup:
+    - "platform_velocity_controller_nav2"
+    - "joint_trajectory_controller"
+    - "velocity_force_controller"
+    - "arm_only_velocity_force_controller"
+    - "joint_velocity_controller"
+    - "arm_only_joint_velocity_controller"

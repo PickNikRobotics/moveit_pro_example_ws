@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Fan Pose About Tool-Z Subtree">
+  <BehaviorTree
+    ID="Fan Pose About Tool-Z Subtree"
+    _description="Expand a single pose into a vector of four yaw-equivalent poses rotated 0/90/180/270 degrees about the tool Z axis. Useful when the object is rotationally symmetric about the gripper axis (e.g., pill bottles, cylinders) — feeding all four variants to an MTC BatchPoseIK lets the planner pick the one closest in joint space to the current arm configuration, avoiding an unnecessary wrist pirouette."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="FanPoseAboutToolZ" _collapsed="false">
+      <SubTree
+        ID="CreateVector"
+        name="Init output vector"
+        vector="{output_pose_vector}"
+      />
+      <Action
+        ID="PushBackVector"
+        name="Add yaw+0"
+        element="{input_pose}"
+        input_vector="{output_pose_vector}"
+        output_vector="{output_pose_vector}"
+      />
+      <Action
+        ID="TransformPose"
+        name="Rotate +90 about tool z"
+        input_pose="{input_pose}"
+        output_pose="{yaw_90}"
+        translation_xyz="0;0;0"
+        quaternion_xyzw="0;0;0.7071068;0.7071068"
+        marker_lifetime="0.000000"
+        marker_size="0.000000"
+        marker_text=""
+        visualize_pose="false"
+      />
+      <Action
+        ID="PushBackVector"
+        name="Add yaw+90"
+        element="{yaw_90}"
+        input_vector="{output_pose_vector}"
+        output_vector="{output_pose_vector}"
+      />
+      <Action
+        ID="TransformPose"
+        name="Rotate +180 about tool z"
+        input_pose="{input_pose}"
+        output_pose="{yaw_180}"
+        translation_xyz="0;0;0"
+        quaternion_xyzw="0;0;1;0"
+        marker_lifetime="0.000000"
+        marker_size="0.000000"
+        marker_text=""
+        visualize_pose="false"
+      />
+      <Action
+        ID="PushBackVector"
+        name="Add yaw+180"
+        element="{yaw_180}"
+        input_vector="{output_pose_vector}"
+        output_vector="{output_pose_vector}"
+      />
+      <Action
+        ID="TransformPose"
+        name="Rotate +270 about tool z"
+        input_pose="{input_pose}"
+        output_pose="{yaw_270}"
+        translation_xyz="0;0;0"
+        quaternion_xyzw="0;0;0.7071068;-0.7071068"
+        marker_lifetime="0.000000"
+        marker_size="0.000000"
+        marker_text=""
+        visualize_pose="false"
+      />
+      <Action
+        ID="PushBackVector"
+        name="Add yaw+270"
+        element="{yaw_270}"
+        input_vector="{output_pose_vector}"
+        output_vector="{output_pose_vector}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Fan Pose About Tool-Z Subtree">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Vector Handling" />
+      </MetadataFields>
+      <inout_port name="input_pose" default="{input_pose}" />
+      <inout_port name="output_pose_vector" default="{output_pose_vector}" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Retreat To Initial Pose">
+  <BehaviorTree ID="Retreat To Initial Pose" _description="">
+    <Control ID="Sequence">
+      <Action
+        ID="InitializeMTCTask"
+        task_id="close_cabinet_door_retreat"
+        task="{retreat_task}"
+      />
+      <Action ID="SetupMTCCurrentState" task="{retreat_task}" />
+      <Decorator
+        ID="Precondition"
+        else="SUCCESS"
+        if="octomap_present == &quot;true&quot;"
+      >
+        <Action
+          ID="SetupMTCSetCollisionRule"
+          name="AllowGripperCollisionWithOctomap"
+          name_a="gripper"
+          name_b="&lt;octomap&gt;"
+          allow_collision="true"
+          task="{retreat_task}"
+        />
+      </Decorator>
+      <Action
+        ID="SetupMTCCartesianMoveToJointState"
+        joint_state="{pre_approach_robot_state}"
+        planning_group_name="manipulator"
+        task="{retreat_task}"
+      />
+      <Decorator
+        ID="Precondition"
+        else="SUCCESS"
+        if="octomap_present == &quot;true&quot;"
+      >
+        <Action
+          ID="SetupMTCSetCollisionRule"
+          name="ForbidGripperCollisionWithOctomap"
+          name_a="gripper"
+          name_b="&lt;octomap&gt;"
+          allow_collision="false"
+          task="{retreat_task}"
+        />
+      </Decorator>
+      <Action
+        ID="SetupMTCPlanToJointState"
+        joint_state="{initial_robot_state}"
+        planning_group_name="manipulator"
+        task="{retreat_task}"
+      />
+      <Action
+        ID="PlanMTCTask"
+        solution="{return_to_initial_waypoint_solution}"
+        task="{retreat_task}"
+      />
+      <SubTree
+        ID="Execute MTC Solution"
+        solution="{return_to_initial_waypoint_solution}"
+        goal_duration_tolerance="-1.0"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Retreat To Initial Pose">
+      <inout_port
+        name="pre_approach_robot_state"
+        default="{pre_approach_robot_state}"
+      />
+      <inout_port name="initial_robot_state" default="{initial_robot_state}" />
+      <inout_port name="octomap_present" default="false">
+        Set to "true" only when an octomap has been built earlier in the
+        objective; otherwise the gripper/octomap collision rules are skipped.
+      </inout_port>
+      <MetadataFields>
+        <Metadata subcategory="Motion - Execute" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

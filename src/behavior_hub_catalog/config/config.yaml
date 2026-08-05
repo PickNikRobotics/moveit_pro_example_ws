@@ -1,0 +1,19 @@
+#
+# Behavior Hub catalog config.
+#
+# Used only to generate the data behind the picknik.ai Behaviors Hub — it is not a
+# robot a user would run. It inherits lab_sim and adds NavBehaviorsLoader so the
+# `/behaviors/data` dump includes Nav behaviors (e.g. `ComputePathToPoseAction`),
+# which lab_sim's loader set omits (see picknik.ai#3086).
+#
+# The backend unions `behavior_loader_plugins` across the whole `based_on_package`
+# chain (moveit_studio_utils_py system_config.get_behavior_loader_plugins), so this
+# config only needs to ADD the missing loader — lab_sim's loaders, objectives, robot,
+# and everything else are inherited automatically and stay in sync with no edits here.
+#
+based_on_package: "lab_sim"
+objectives:
+  behavior_loader_plugins:
+    # Adds the Navigation behaviors on top of lab_sim's set (unioned by the backend).
+    nav:
+      - "moveit_pro::behaviors::NavBehaviorsLoader"

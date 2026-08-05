@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Load MuJoCo Robot State">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Load MuJoCo Robot State"
+    _description="Load the Robot State from file and update the Robot State in the MuJoCo simulation."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="ListControllers"
+        type="command"
+        controller_list="{command_controllers}"
+        state="active"
+      />
+      <Decorator ID="ForceSuccess">
+        <Action
+          ID="SwitchController"
+          deactivate_controllers="{command_controllers}"
+        />
+      </Decorator>
+      <Action
+        ID="LoadRobotJointStateFromYaml"
+        output="{joint_state_msg}"
+        file_path="robot_joint_state.yaml"
+      />
+      <Decorator ID="ForceSuccess">
+        <Action ID="SetMujocoState" />
+      </Decorator>
+      <Decorator ID="ForceSuccess">
+        <Action
+          ID="SwitchController"
+          activate_controllers="{command_controllers}"
+        />
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Load MuJoCo Robot State">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="MuJoCo Simulation" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Automated Pickup Tool Subtree">
+  <!-- ////////// -->
+  <BehaviorTree
+    ID="Automated Pickup Tool Subtree"
+    _description="Subtree for picking up the desired tool from the correct holder"
+  >
+    <Control ID="Sequence">
+      <Control ID="Fallback">
+        <Decorator
+          ID="Precondition"
+          else="FAILURE"
+          if="pickup_tool==tool_1_name"
+        >
+          <SubTree
+            ID="Pick Up Tool from Holder"
+            _collapsed="true"
+            tool_attach_site="{tool_1_pickup_site}"
+            tool_name="{tool_1_name}"
+          />
+        </Decorator>
+        <Decorator
+          ID="Precondition"
+          else="FAILURE"
+          if="pickup_tool==tool_2_name"
+        >
+          <SubTree
+            ID="Pick Up Tool from Holder"
+            _collapsed="true"
+            tool_attach_site="{tool_2_pickup_site}"
+            tool_name="{tool_2_name}"
+          />
+        </Decorator>
+        <Decorator ID="ForceFailure">
+          <Action ID="LogMessage" log_level="error" message="Unknown error" />
+        </Decorator>
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Automated Pickup Tool Subtree">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Application - Advanced Examples" />
+      </MetadataFields>
+      <inout_port name="pickup_tool" default="" />
+      <inout_port name="tool_1_name" default="" />
+      <inout_port name="tool_1_pickup_site" default="" />
+      <inout_port name="tool_2_name" default="" />
+      <inout_port name="tool_2_pickup_site" default="" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

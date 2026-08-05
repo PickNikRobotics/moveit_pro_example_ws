@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Solution - Draw Picknik">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Solution - Draw Picknik"
+    _description="Training example that shows how to load a Cartesian path from a file and execute the path"
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="LoadPoseStampedVectorFromYaml"
+        output="{pose_stamped_msgs}"
+        file_path="picknik.yaml"
+      />
+      <Action
+        ID="CreatePoseStamped"
+        pose_stamped="{pose_stamped}"
+        orientation_xyzw="0;0;1;0"
+        position_xyz="0;0;0.5"
+        reference_frame="grasp_link"
+      />
+      <Action
+        ID="VisualizePose"
+        marker_lifetime="0.000000"
+        marker_name="pose"
+        marker_size="0.100000"
+        pose="{pose_stamped}"
+      />
+      <Control ID="Parallel" failure_count="1" success_count="1">
+        <Action
+          ID="PublishTF"
+          child_frame_id="local"
+          pose="{pose_stamped}"
+          publish_rate="50"
+        />
+        <Control ID="Sequence" name="TopLevelSequence">
+          <Action ID="WaitForDuration" delay_duration="1" />
+          <Action
+            ID="PlanCartesianPath"
+            blending_radius="0.001"
+            debug_solution="{debug_solution}"
+            ik_cartesian_space_density="0.010000"
+            ik_joint_space_density="0.100000"
+            joint_trajectory_msg="{joint_trajectory_msg}"
+            path="{pose_stamped_msgs}"
+            planning_group_name="manipulator"
+            position_only="false"
+            tip_links="grasp_link"
+            trajectory_timing="[{mode: time_optimal}]"
+          />
+          <Action
+            ID="VisualizePath"
+            marker_lifetime="0.000000"
+            path="{pose_stamped_msgs}"
+          />
+          <Action
+            ID="ExecuteTrajectory"
+            execution_pipeline="jtc"
+            controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
+          />
+        </Control>
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Solution - Draw Picknik">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Training Examples" />
+      </MetadataFields>
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Training Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Place Tool in Tool Holder">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Place Tool in Tool Holder"
+    _description="Puts the tool back in the tool holder"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="{tool_return_site}"
+        position_xyz="0;0;-0.15"
+        pose_stamped="{approach_pose}"
+      />
+      <Action ID="InitializeMTCTask" task_id="pick_up_tool" task="{mtc_task}" />
+      <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
+      <Decorator
+        ID="Precondition"
+        else="SUCCESS"
+        if="tool_object_name!=&quot;&quot;"
+      >
+        <Control ID="Sequence">
+          <Action
+            ID="SetupMTCSetCollisionRule"
+            name_a="link_5"
+            name_b="link_6"
+            allow_collision="true"
+            task="{mtc_task}"
+          />
+          <Action
+            ID="SetupMTCSetCollisionRule"
+            name_a="link_5"
+            name_b="{tool_object_name}"
+            allow_collision="true"
+            task="{mtc_task}"
+          />
+          <Action
+            ID="SetupMTCSetCollisionRule"
+            name_a="link_6"
+            name_b="{tool_object_name}"
+            allow_collision="true"
+            task="{mtc_task}"
+          />
+        </Control>
+      </Decorator>
+      <Action
+        ID="SetupMTCPlanToPose"
+        acceleration_scale_factor="0.5"
+        ik_frame="tool0"
+        keep_orientation="false"
+        keep_orientation_tolerance="0.100000"
+        link_padding="0.020000"
+        max_iterations="5000"
+        monitored_stage="current state"
+        planning_group_name="manipulator"
+        target_pose="{approach_pose}"
+        trajectory_sampling_rate="100"
+        velocity_scale_factor="0.5"
+        task="{mtc_task}"
+        keep_orientation_link_names="tool0"
+      />
+      <Action
+        ID="SetupMTCMoveAlongFrameAxis"
+        hand_frame="tool0"
+        max_distance="0.14"
+        axis_frame="tool0"
+        min_distance="0.14"
+        acceleration_scale="0.5"
+        axis_x="0.000000"
+        axis_y="0.000000"
+        axis_z="1.000000"
+        ignore_environment_collisions="false"
+        planning_group_name="manipulator"
+        velocity_scale="0.5"
+        task="{mtc_task}"
+      />
+      <Action ID="PlanMTCTask" task="{mtc_task}" solution="{mtc_solution}" />
+      <SubTree
+        ID="Execute MTC Solution"
+        solution="{mtc_solution}"
+        goal_duration_tolerance="-1.0"
+      />
+      <Action ID="WaitForDuration" delay_duration="1" />
+      <Action
+        ID="MoveGripperAction"
+        position="0"
+        gripper_command_action_name="/tool_attach_controller/gripper_cmd"
+        timeout="10"
+      />
+      <Action ID="DetachURDF" urdf_name="{tool_name}" />
+      <SubTree
+        ID="Retract"
+        _collapsed="true"
+        distance="0.35"
+        ignore_environment_collisions="true"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Place Tool in Tool Holder">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Grasping" />
+      </MetadataFields>
+      <inout_port name="tool_object_name" default="" />
+      <inout_port name="tool_name" default="" />
+      <inout_port name="tool_return_site" default="" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

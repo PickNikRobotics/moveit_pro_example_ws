@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Create PCL Poses Vector">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Create PCL Poses Vector"
+    _favorite="false"
+    _description="Creates a sequence of stamped poses and adds them to a vector"
+    target_poses="{target_poses}"
+  >
+    <Control ID="Sequence">
+      <Action
+        ID="CreatePoseStamped"
+        orientation_xyzw="0.000; 0.000; 0.000; 1.000"
+        position_xyz="0.5;0.2;0.9"
+        pose_stamped="{pose_stamped}"
+        reference_frame="world"
+      />
+      <Action ID="ResetVector" vector="{target_poses}" />
+      <Action
+        ID="PushBackVector"
+        input_vector="{target_poses}"
+        element="{pose_stamped}"
+        output_vector="{target_poses}"
+      />
+      <Action
+        ID="CreatePoseStamped"
+        orientation_xyzw="0.000; 0.000; 0.000; 1.000"
+        position_xyz="0.4;0.2;0.9"
+        pose_stamped="{pose_stamped}"
+        reference_frame="world"
+      />
+      <Action
+        ID="PushBackVector"
+        input_vector="{target_poses}"
+        element="{pose_stamped}"
+        output_vector="{target_poses}"
+      />
+      <Action
+        ID="CreatePoseStamped"
+        orientation_xyzw="0.000; 0.000; 0.000; 1.000"
+        position_xyz="0.3;0.2;0.9"
+        pose_stamped="{pose_stamped}"
+        reference_frame="world"
+      />
+      <Action
+        ID="PushBackVector"
+        input_vector="{target_poses}"
+        element="{pose_stamped}"
+        output_vector="{target_poses}"
+      />
+      <Action
+        ID="CreatePoseStamped"
+        orientation_xyzw="0.000; 0.000; 0.000; 1.000"
+        position_xyz="0.2;0.2;0.9"
+        pose_stamped="{pose_stamped}"
+        reference_frame="world"
+      />
+      <Action
+        ID="PushBackVector"
+        input_vector="{target_poses}"
+        element="{pose_stamped}"
+        output_vector="{target_poses}"
+      />
+      <Action
+        ID="CreatePoseStamped"
+        orientation_xyzw="0.000; 0.000; 0.000; 1.000"
+        position_xyz="0.1;0.2;0.9"
+        pose_stamped="{pose_stamped}"
+        reference_frame="world"
+      />
+      <Action
+        ID="PushBackVector"
+        input_vector="{target_poses}"
+        element="{pose_stamped}"
+        output_vector="{target_poses}"
+      />
+      <Action
+        ID="CreatePoseStamped"
+        orientation_xyzw="0.000; 0.000; 0.000; 1.000"
+        position_xyz="-0.1;0.2;0.9"
+        pose_stamped="{pose_stamped}"
+        reference_frame="world"
+      />
+      <Action
+        ID="PushBackVector"
+        input_vector="{target_poses}"
+        element="{pose_stamped}"
+        output_vector="{target_poses}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Create PCL Poses Vector">
+      <MetadataFields>
+        <Metadata subcategory="Vector Handling" />
+        <Metadata runnable="false" />
+      </MetadataFields>
+      <inout_port name="target_poses" default="{target_poses}" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

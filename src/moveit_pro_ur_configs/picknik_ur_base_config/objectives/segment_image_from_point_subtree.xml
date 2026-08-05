@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Segment Image from Point Subtree">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Segment Image from Point Subtree"
+    _description="Captures an image and segments it using three user provided prompt points."
+    _favorite="false"
+    decoder_model_path="models/sam2_decoder.onnx"
+    encoder_model_path="models/sam2_hiera_large_encoder.onnx"
+    image_topic_name="/wrist_camera/color"
+    masks_visualization_topic="/masks_visualization"
+    model_package="moveit_pro_sam2"
+    masks2d="{masks2d}"
+    pixel_coords="{pixel_coords}"
+  >
+    <Control ID="Sequence">
+      <Action
+        ID="GetImage"
+        topic_name="{image_topic_name}"
+        message_timeout_sec="5.000000"
+        message_out="{image}"
+      />
+      <Action
+        ID="GetPointsFromUser"
+        point_prompts="Select the object to be segmented (1/3);Select another point on the object to be segmented (2/3);Select another point on the object to be segmented (3/3)"
+        point_names="Point1;Point2;Point3;"
+        view_name="{image_topic_name}"
+        pixel_coords="{pixel_coords}"
+      />
+      <Action
+        ID="GetMasks2DFromPointQuery"
+        image="{image}"
+        pixel_coords="{pixel_coords}"
+        masks2d="{masks2d}"
+        decoder_model_path="{decoder_model_path}"
+        encoder_model_path="{encoder_model_path}"
+        model_package="{model_package}"
+      />
+      <Action
+        ID="PublishMask2D"
+        image="{image}"
+        masks="{masks2d}"
+        masks_visualization_topic="{masks_visualization_topic}"
+      />
+      <Action ID="SwitchUIPrimaryView" primary_view_name="Visualization" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Segment Image from Point Subtree">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Perception - ML" />
+      </MetadataFields>
+      <inout_port
+        name="decoder_model_path"
+        default="models/sam2_decoder.onnx"
+      />
+      <inout_port
+        name="encoder_model_path"
+        default="models/sam2_hiera_large_encoder.onnx"
+      />
+      <inout_port name="image_topic_name" default="/wrist_camera/color" />
+      <inout_port
+        name="masks_visualization_topic"
+        default="/masks_visualization"
+      />
+      <inout_port name="masks2d" default="{masks2d}" />
+      <inout_port name="model_package" default="moveit_pro_sam2" />
+      <inout_port name="pixel_coords" default="{pixel_coords}" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

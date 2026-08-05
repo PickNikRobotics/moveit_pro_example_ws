@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<robot name="bracket_collision_geometry">
+  <link name="bracket">
+    <collision>
+      <origin xyz="0.0975 -0.0725 0.004" rpy="0 0 0"/>
+      <geometry>
+        <box size="0.2 0.15 0.02"/> 
+      </geometry>
+    </collision>
+  </link>
+</robot>

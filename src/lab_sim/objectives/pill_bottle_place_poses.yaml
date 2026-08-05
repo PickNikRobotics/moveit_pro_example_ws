@@ -1,0 +1,48 @@
+---
+header:
+  stamp:
+    sec: 1776982644
+    nanosec: 816106161
+  frame_id: world
+pose:
+  position:
+    x: 0.9806297649587842
+    y: 0.7000159819942231
+    z: 0.605
+  orientation:
+    x: -0.043636140099257426
+    y: 0.9990474900009698
+    z: 0.0
+    w: 0.0
+---
+header:
+  stamp:
+    sec: 1776982644
+    nanosec: 816106161
+  frame_id: world
+pose:
+  position:
+    x: 0.9029268065435351
+    y: 0.6932152281008621
+    z: 0.605
+  orientation:
+    x: -0.043636140099257426
+    y: 0.9990474900009698
+    z: 0.0
+    w: 0.0
+---
+header:
+  stamp:
+    sec: 1776982644
+    nanosec: 816106161
+  frame_id: world
+pose:
+  position:
+    x: 0.989348680206683
+    y: 0.6003968045387754
+    z: 0.605
+  orientation:
+    x: -0.043636140099257426
+    y: 0.9990474900009698
+    z: 0.0
+    w: 0.0

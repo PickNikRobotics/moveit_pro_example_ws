@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+    <xacro:macro name="cube_collision_and_visual" params="length width height *origin *color">
+        <xacro:include filename="$(find picknik_accessories)/descriptions/geometry/visual/cube_visual.urdf.xacro" />
+        <xacro:include filename="$(find picknik_accessories)/descriptions/geometry/collision/cube_collision.urdf.xacro" />
+
+        <xacro:cube_visual length="${length}" width="${width}" height="${height}">
+            <xacro:insert_block name="origin" />
+            <xacro:insert_block name="color" />
+        </xacro:cube_visual>
+        <xacro:cube_collision length="${length}" width="${width}" height="${height}">
+            <xacro:insert_block name="origin" />
+        </xacro:cube_collision>
+    </xacro:macro>
+</robot>

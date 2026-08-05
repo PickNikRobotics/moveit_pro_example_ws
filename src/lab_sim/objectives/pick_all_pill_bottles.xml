@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Pick All Pill Bottles">
+  <BehaviorTree
+    ID="Pick All Pill Bottles"
+    _description="Uses ML models to repeatedly identify and grasp plan to pick up objects."
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="TopLevelSequence" _collapsed="false">
+      <!--Setup (once per run): load placement poses from YAML and drop
+           a persistent marker at each one so the full placement grid is
+           visible before the per-bottle loop starts.-->
+      <Control
+        ID="Sequence"
+        name="Setup: load and visualize placement poses"
+        _collapsed="true"
+      >
+        <Action
+          ID="LogMessage"
+          name="Caution about errors"
+          log_level="info"
+          message="There might be some warnings and errors when this Objective runs, as long as the Objective completes successfully, everything worked as intended."
+        />
+        <SubTree
+          ID="CreateVector"
+          name="Initialize placement vector"
+          _collapsed="true"
+          vector="{bottle_place_poses}"
+        />
+        <Action
+          ID="LoadPoseStampedVectorFromYaml"
+          name="Load placement poses"
+          output="{bottle_place_poses}"
+          file_path="pill_bottle_place_poses.yaml"
+        />
+        <!--Visualize every entry in pill_bottle_place_poses.yaml with a
+             persistent, uniquely-named marker so all poses show at once in
+             the scene.-->
+        <Decorator
+          ID="ForEach"
+          name="Visualize all place poses"
+          _collapsed="true"
+          index="{viz_idx}"
+          out="{viz_pose}"
+          vector_in="{bottle_place_poses}"
+        >
+          <Control ID="Sequence" name="ShowOnePlacePose" _collapsed="true">
+            <Action
+              ID="Script"
+              name="Build marker name"
+              code="viz_marker_name:=&quot;place_pose_&quot;..viz_idx"
+            />
+            <Action
+              ID="VisualizePose"
+              name="Show place pose"
+              marker_lifetime="0.000000"
+              marker_name="{viz_marker_name}"
+              marker_size="0.060000"
+              pose="{viz_pose}"
+              marker_text="{viz_marker_name}"
+            />
+          </Control>
+        </Decorator>
+      </Control>
+      <!--Per-bottle loop: for each place pose, perceive a source bottle,
+           pick it, transit to a predrop hover over the sorting tray, and
+           place it at the current target pose.-->
+      <Decorator
+        ID="ForEach"
+        name="Try to place at each location"
+        _collapsed="false"
+        index="{index}"
+        out="{current_bottle_place_pose}"
+        vector_in="{bottle_place_poses}"
+      >
+        <Control ID="Sequence" name="PerBottleSequence" _collapsed="false">
+          <Control
+            ID="Sequence"
+            name="Prepare for perception"
+            _collapsed="true"
+          >
+            <Action ID="ClearSnapshot" />
+            <SubTree ID="Open Gripper" _collapsed="true" />
+            <Action
+              ID="VisualizePose"
+              name="Show drop pose"
+              marker_lifetime="0.000000"
+              marker_name="bottle_drop_pose"
+              marker_size="0.100000"
+              pose="{current_bottle_place_pose}"
+              marker_text=""
+            />
+            <SubTree
+              ID="Move to Waypoint"
+              name="Look at pill bottles"
+              _collapsed="true"
+              joint_group_name="manipulator"
+              waypoint_name="Look at Bottles Left"
+              acceleration_scale_factor="1.0"
+              controller_action_server="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+              controller_names="joint_trajectory_admittance_controller"
+              execution_pipeline="jtac"
+              keep_orientation="false"
+              keep_orientation_tolerance="0.05"
+              link_padding="0.01"
+              seed="0"
+              velocity_scale_factor="1.0"
+            />
+            <!--The admittance controller reports trajectory success before
+                 the arm has fully settled, so without this wait the wrist
+                 camera captures a mid-motion frame.-->
+            <Action
+              ID="WaitForDuration"
+              name="Let arm settle at look pose"
+              delay_duration="1.0"
+            />
+            <SubTree ID="Add Table to Planning Scene" _collapsed="true" />
+          </Control>
+          <SubTree
+            ID="Get Bottle Grasp via ICP Subtree"
+            name="Get grasp pose for a pill bottle"
+            _collapsed="true"
+            camera_image_topic="/wrist_camera/color"
+            camera_info_topic="/wrist_camera/camera_info"
+            camera_points_topic="/wrist_camera/points"
+            output_grasp="{output_grasp}"
+            object_prompt="a small white or grey rectangular pill bottle with a purple blue top cap"
+            exemplar_image="{exemplar_image}"
+            target_bboxes="{target_bboxes}"
+            exemplar_bboxes="{exemplar_bboxes}"
+          />
+          <SubTree
+            ID="Fan Pose About Tool-Z Subtree"
+            name="Build yaw-variant grasp poses"
+            _collapsed="true"
+            input_pose="{output_grasp}"
+            output_pose_vector="{grasp_pose_vector}"
+          />
+          <SubTree
+            ID="Pick from Pose Vector"
+            name="Pick up pill bottle"
+            _collapsed="true"
+            approach_distance="0.1"
+            retract_xyz="0;0;-0.1"
+            grasp_poses="{grasp_pose_vector}"
+          />
+          <!--Pick → Predrop cartesian transit, orientation-locked so
+               the gripper stays vertical and the picked bottle doesn't
+               tip during transport.-->
+          <Control
+            ID="Sequence"
+            name="Transit: pick → predrop hover (cartesian, orientation-locked)"
+            _collapsed="true"
+          >
+            <Action
+              ID="CreatePoseStamped"
+              name="Gripper origin in gripper frame"
+              position_xyz="0;0;0"
+              orientation_xyzw="0;0;0;1"
+              reference_frame="grasp_link"
+              pose_stamped="{gripper_local_pose}"
+            />
+            <Action
+              ID="TransformPoseFrame"
+              name="Resolve gripper pose in world"
+              input_pose="{gripper_local_pose}"
+              target_frame_id="world"
+              output_pose="{post_pick_world_pose}"
+            />
+            <Action
+              ID="TransformPose"
+              name="Build lift via-point (20 cm above current)"
+              input_pose="{post_pick_world_pose}"
+              output_pose="{lift_via_pose}"
+              translation_xyz="0;0;-0.2"
+              quaternion_xyzw="0;0;0;1"
+              marker_lifetime="0.000000"
+              marker_size="0.000000"
+              marker_text=""
+              visualize_pose="false"
+            />
+            <Action
+              ID="CreatePoseStamped"
+              name="Build predrop hover pose"
+              position_xyz="0.95;0.5568;0.805"
+              orientation_xyzw="-0.0436;0.9990;0;0"
+              reference_frame="world"
+              pose_stamped="{predrop_hover_pose}"
+            />
+            <SubTree
+              ID="CreateVector"
+              name="Init predrop path"
+              _collapsed="true"
+              vector="{predrop_path}"
+            />
+            <Action
+              ID="PushBackVector"
+              name="Add lift via-point"
+              element="{lift_via_pose}"
+              input_vector="{predrop_path}"
+              output_vector="{predrop_path}"
+            />
+            <Action
+              ID="PushBackVector"
+              name="Add predrop hover"
+              element="{predrop_hover_pose}"
+              input_vector="{predrop_path}"
+              output_vector="{predrop_path}"
+            />
+            <Action
+              ID="PlanCartesianPath"
+              name="Plan pick→predrop"
+              path="{predrop_path}"
+              position_only="false"
+              joint_trajectory_msg="{pick_to_predrop_traj}"
+              debug_solution="{pick_to_predrop_debug}"
+              planning_group_name="manipulator"
+              tip_links="grasp_link"
+              tip_offset="0;0;0;0;0;0"
+              blending_radius="0.020000"
+              ik_cartesian_space_density="0.010000"
+              ik_joint_space_density="0.100000"
+              trajectory_timing="[{mode: time_optimal}]"
+              max_optimizer_iterations="1"
+            />
+            <Action
+              ID="ExecuteTrajectory"
+              name="Execute pick→predrop"
+              joint_trajectory_msg="{pick_to_predrop_traj}"
+              goal_duration_tolerance="-1.000000"
+              controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+              execution_pipeline="jtac"
+            />
+          </Control>
+          <!--Place: cartesian descent through a pre-place via-point 20 cm
+               above the target → open → retract. Avoids Place at Pose
+               Vector, whose free-space replan can swing tool-z ~90 deg
+               off vertical mid-flight. position_only="true" on descent
+               and retract relaxes orientation to a soft nullspace task
+               to pass long-path deviation checks.-->
+          <Control
+            ID="Sequence"
+            name="Place: cartesian descend, open, retract"
+            _collapsed="true"
+          >
+            <Action
+              ID="TransformPose"
+              name="Build pre-place pose (20 cm above place)"
+              input_pose="{current_bottle_place_pose}"
+              output_pose="{pre_place_pose}"
+              translation_xyz="0;0;-0.2"
+              quaternion_xyzw="0;0;0;1"
+              marker_lifetime="0.000000"
+              marker_size="0.100000"
+              marker_text="preplacepose"
+              visualize_pose="true"
+            />
+            <SubTree
+              ID="CreateVector"
+              name="Init descent path"
+              _collapsed="true"
+              vector="{place_descent_path}"
+            />
+            <Action
+              ID="PushBackVector"
+              name="Add pre-place via-point"
+              element="{pre_place_pose}"
+              input_vector="{place_descent_path}"
+              output_vector="{place_descent_path}"
+            />
+            <Action
+              ID="PushBackVector"
+              name="Add place target"
+              element="{current_bottle_place_pose}"
+              input_vector="{place_descent_path}"
+              output_vector="{place_descent_path}"
+            />
+            <Action
+              ID="PlanCartesianPath"
+              name="Plan descent (pre-place → place)"
+              path="{place_descent_path}"
+              position_only="true"
+              joint_trajectory_msg="{place_descent_traj}"
+              debug_solution="{place_descent_debug}"
+              planning_group_name="manipulator"
+              tip_links="grasp_link"
+              tip_offset="0;0;0;0;0;0"
+              blending_radius="0.020000"
+              ik_cartesian_space_density="0.010000"
+              ik_joint_space_density="0.100000"
+              trajectory_timing="[{mode: time_optimal}]"
+              max_optimizer_iterations="1"
+            />
+            <Action
+              ID="ExecuteTrajectory"
+              name="Execute descent"
+              joint_trajectory_msg="{place_descent_traj}"
+              goal_duration_tolerance="-1.000000"
+              controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+              execution_pipeline="jtac"
+            />
+            <SubTree ID="Open Gripper" _collapsed="true" />
+            <Action
+              ID="CreatePoseStamped"
+              name="Post-place retract pose (10 cm up in tool frame)"
+              position_xyz="0;0;-0.1"
+              orientation_xyzw="0;0;0;1"
+              reference_frame="grasp_link"
+              pose_stamped="{post_place_retract_pose}"
+            />
+            <SubTree
+              ID="CreateVector"
+              name="Init retract path"
+              _collapsed="true"
+              vector="{post_place_retract_path}"
+            />
+            <Action
+              ID="PushBackVector"
+              name="Add post-place retract"
+              element="{post_place_retract_pose}"
+              input_vector="{post_place_retract_path}"
+              output_vector="{post_place_retract_path}"
+            />
+            <Action
+              ID="PlanCartesianPath"
+              name="Plan post-place retract"
+              path="{post_place_retract_path}"
+              position_only="true"
+              joint_trajectory_msg="{post_place_retract_traj}"
+              debug_solution="{post_place_retract_debug}"
+              planning_group_name="manipulator"
+              tip_links="grasp_link"
+              tip_offset="0;0;0;0;0;0"
+              blending_radius="0.020000"
+              ik_cartesian_space_density="0.010000"
+              ik_joint_space_density="0.100000"
+              trajectory_timing="[{mode: time_optimal}]"
+              max_optimizer_iterations="1"
+            />
+            <Action
+              ID="ExecuteTrajectory"
+              name="Execute post-place retract"
+              joint_trajectory_msg="{post_place_retract_traj}"
+              goal_duration_tolerance="-1.000000"
+              controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+              execution_pipeline="jtac"
+            />
+          </Control>
+          <!--Reset the planning scene to clear attached collision
+               objects before the next iteration perceives fresh bottles.-->
+          <SubTree ID="Reset Planning Scene" _collapsed="true" />
+        </Control>
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Pick All Pill Bottles">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - ML (GPU Recommended)" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

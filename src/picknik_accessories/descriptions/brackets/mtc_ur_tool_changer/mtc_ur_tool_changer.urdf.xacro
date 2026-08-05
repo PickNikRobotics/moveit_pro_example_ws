@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:macro name="mtc_ur_tool_changer" params="prefix parent child rotation:=^|${0.0}">
+
+    <joint name="${prefix}tool_changer_joint" type="fixed">
+      <!-- The parent link must be read from the robot model it is attached to. -->
+      <parent link="${parent}"/>
+      <child link="${prefix}tool_changer_link"/>
+      <origin xyz="0 0 0" rpy="0 0 ${rotation}"/>
+    </joint>
+
+    <link name="${prefix}tool_changer_link">
+        <visual>
+          <origin xyz="0 0 0" rpy="0 0 0" />
+          <geometry>
+            <mesh filename="package://picknik_accessories/descriptions/brackets/mtc_ur_tool_changer/mtc_ur3510_ur_toolchanger.dae" />
+          </geometry>
+        </visual>
+        <collision>
+          <origin xyz="0 0 0" rpy="0 0 0" />
+          <geometry>
+            <mesh filename="package://picknik_accessories/descriptions/brackets/mtc_ur_tool_changer/mtc_ur3510_ur_toolchanger_collision.stl" />
+          </geometry>
+        </collision>
+    </link>
+
+    <joint name="${prefix}tool_side_joint" type="fixed">
+      <parent link="${prefix}tool_changer_link"/>
+      <child link="${prefix}tool_changer_tool0"/>
+      <origin xyz="0 0 0.0331" rpy="0 0 0"/>
+    </joint>
+    <link name="${child}"/>
+
+  </xacro:macro>
+</robot>

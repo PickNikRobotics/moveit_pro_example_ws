@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Remove Tools from PlanningScene">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Remove Tools from PlanningScene"
+    _description="Remove all tools from the planning scene"
+  >
+    <Control ID="Fallback">
+      <Decorator ID="ForceFailure">
+        <SubTree
+          ID="Detach and Remove Tool"
+          _collapsed="true"
+          tool_name="suction_gripper"
+        />
+      </Decorator>
+      <Decorator ID="ForceSuccess">
+        <SubTree
+          ID="Detach and Remove Tool"
+          _collapsed="true"
+          tool_name="inspector"
+        />
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Remove Tools from PlanningScene">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Motion - Planning" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

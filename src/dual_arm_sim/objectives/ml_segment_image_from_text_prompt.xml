@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="ML Segment Image from Text Prompt">
+  <!--//////////-->
+  <BehaviorTree
+    ID="ML Segment Image from Text Prompt"
+    _description="Run an ML model to find all objects and visualize the masks with bounding boxes."
+    _favorite="false"
+  >
+    <Control ID="Sequence">
+      <Action
+        ID="SwitchUIPrimaryView"
+        primary_view_name="/masks_visualization"
+      />
+      <SubTree
+        ID="Segment Image from No Negative Text Prompt Subtree"
+        _collapsed="true"
+        masks_visualization_topic="/masks_visualization"
+        model_package="moveit_pro_sam3"
+        confidence_threshold="0.5"
+        text_prompt="an object"
+        image_topic_name="/wrist_camera/color"
+        masks2d="{masks2d}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="ML Segment Image from Text Prompt">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Application - ML (GPU Recommended)" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

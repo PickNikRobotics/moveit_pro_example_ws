@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:macro name="picknik_ur_mujoco_ros2_control" params="mujoco_model mujoco_viewer:=false publish_odom:=true">
+
+    <ros2_control name="ur_mujoco_control" type="system">
+      <!-- Per-LiDAR topic routing. Sensor names match the MJCF site-name prefix
+           (the portion before the '-' in replicated rangefinder site names).
+           Each LiDAR publishes to its own topic so Nav2's obstacle layer can
+           treat them as independent observation sources. -->
+      <sensor name="lidar_front">
+        <param name="topic">/scan_front</param>
+      </sensor>
+      <sensor name="lidar_rear">
+        <param name="topic">/scan_rear</param>
+      </sensor>
+      <hardware>
+          <plugin>picknik_mujoco_ros/MujocoSystem</plugin>
+          <param name="mujoco_model">${mujoco_model}</param>
+          <param name="mujoco_model_package">hangar_sim</param>
+          <param name="render_publish_rate">20</param>
+          <param name="tf_publish_rate">60</param>
+          <param name="lidar_publish_rate">10</param>
+          <param name="publish_odom">${publish_odom}</param>
+          <param name="odom_child_frame">ridgeback_base_link</param>
+          <param name="odom_rate">150</param>
+          <!-- Zero z/roll/pitch in /odom for this planar base. The previous tag here,
+               odom_zero_z, is not a recognized odom publisher parameter and was silently
+               ignored; odom_planar is the real one. -->
+          <param name="odom_planar">true</param>
+          <!-- robot_state_publisher owns the live TF to ridgeback_base_link via the
+               virtual-rail joint chain (driven by MuJoCo's own joint states), so the
+               odom publisher must not broadcast a competing odom -> ridgeback_base_link
+               edge. /odom messages keep flowing for Nav2. -->
+          <param name="odom_publish_tf">false</param>
+          <param name="odom_frame">odom</param>
+          <param name="publish_mj_world_tf">false</param>
+          <!-- Stop the lidar TF fill-in chain at the robot's base instead of walking to
+               the MJCF worldbody. Without this, MuJoCo broadcasts
+               base_platform -> ridgeback_base_link, a second parent for a frame that
+               robot_state_publisher already publishes. -->
+          <param name="base_link_name">ridgeback_base_link</param>
+          <param name="mujoco_viewer">${mujoco_viewer}</param>
+          <param name="mujoco_keyframe">default</param>
+      </hardware>
+      <sensor name="imu_site">
+        <state_interface name="orientation.x"/>
+        <state_interface name="orientation.y"/>
+        <state_interface name="orientation.z"/>
+        <state_interface name="orientation.w"/>
+        <state_interface name="angular_velocity.x"/>
+        <state_interface name="angular_velocity.y"/>
+        <state_interface name="angular_velocity.z"/>
+        <state_interface name="linear_acceleration.x"/>
+        <state_interface name="linear_acceleration.y"/>
+        <state_interface name="linear_acceleration.z"/>
+      </sensor>
+    </ros2_control>
+  </xacro:macro>
+</robot>

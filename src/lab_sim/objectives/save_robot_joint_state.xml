@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Save Robot Joint State">
+  <!--//////////-->
+  <BehaviorTree ID="Save Robot Joint State" _description="" _favorite="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="GetCurrentPlanningScene" />
+      <Action ID="GetRobotJointState" />
+      <Action
+        ID="SaveRobotJointStateToYaml"
+        message="{robot_joint_state}"
+        yaml_filename="robot_joint_state"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Save Robot Joint State">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="MuJoCo Simulation" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

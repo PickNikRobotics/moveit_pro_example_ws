@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Vacuum Pick Bracket Part Subtree">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Vacuum Pick Bracket Part Subtree"
+    _description="Picks the bracket part using vacuum gripper.&#10;The pick and approach poses specific to the bracket part are hardcoded into this subtree."
+  >
+    <Control ID="Sequence" name="">
+      <SubTree ID="Activate Vacuum" _collapsed="true" />
+      <Action
+        ID="TransformPose"
+        input_pose="{bracket_part_pose}"
+        output_pose="{pick_pose}"
+        translation_xyz=".125;-0.07;0.01"
+        name="Create pick pose for the bracket part"
+      />
+      <!--A suction grasp on the flat bracket face is yaw-free about the face normal, so
+          approach candidates are sampled at 45-degree yaw increments about the pick pose
+          z-axis. The parts settle near the edge of the robot's reachable workspace, where
+          only some yaws have IK solutions; the batch IK stage below picks any that plans.-->
+      <Action ID="ResetPoseStampedVector" vector="{approach_candidates}" />
+      <Action
+        ID="TransformPose"
+        input_pose="{pick_pose}"
+        output_pose="{yaw_pick_pose}"
+        translation_xyz="0;0;0"
+        quaternion_xyzw="0;0;0;1"
+        name="Copy pick pose as the yaw-0 candidate"
+      />
+      <Action
+        ID="TransformPose"
+        input_pose="{yaw_pick_pose}"
+        output_pose="{approach_candidate}"
+        translation_xyz="0;0;0.15"
+        quaternion_xyzw="-0.0; -1.0; -0.0; -0.0"
+        name="Create approach pose before straight pick"
+      />
+      <Action
+        ID="PushBackVector"
+        input_vector="{approach_candidates}"
+        element="{approach_candidate}"
+        output_vector="{approach_candidates}"
+      />
+      <Decorator ID="RepeatUnlessFailureWithinTick" num_cycles="7">
+        <Control
+          ID="Sequence"
+          name="Rotate the pick yaw 45 degrees and add the approach candidate"
+        >
+          <Action
+            ID="TransformPose"
+            input_pose="{yaw_pick_pose}"
+            output_pose="{yaw_pick_pose}"
+            translation_xyz="0;0;0"
+            quaternion_xyzw="0;0;0.3826834;0.9238795"
+          />
+          <Action
+            ID="TransformPose"
+            input_pose="{yaw_pick_pose}"
+            output_pose="{approach_candidate}"
+            translation_xyz="0;0;0.15"
+            quaternion_xyzw="-0.0; -1.0; -0.0; -0.0"
+          />
+          <Action
+            ID="PushBackVector"
+            input_vector="{approach_candidates}"
+            element="{approach_candidate}"
+            output_vector="{approach_candidates}"
+          />
+        </Control>
+      </Decorator>
+      <Action
+        ID="InitializeMTCTask"
+        task="{mtc_task}"
+        task_id="pick_part"
+        timeout="-1.000000"
+      />
+      <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
+      <Action
+        ID="SetupMTCSetCollisionRule"
+        name_a="link_5"
+        name_b="link_6"
+        allow_collision="true"
+        task="{mtc_task}"
+      />
+      <Action
+        ID="SetupMTCSetCollisionRule"
+        name_a="link_5"
+        name_b="suction_gripper"
+        allow_collision="true"
+        task="{mtc_task}"
+      />
+      <Action
+        ID="SetupMTCSetCollisionRule"
+        name_a="link_6"
+        name_b="suction_gripper"
+        allow_collision="true"
+        task="{mtc_task}"
+      />
+      <Action
+        ID="SetupMTCConnectWithProRRT"
+        acceleration_scale_factor="1.000000"
+        keep_orientation="false"
+        keep_orientation_link_names="tool0"
+        keep_orientation_tolerance="0.100000"
+        link_padding="0.0100000"
+        max_iterations="5000"
+        planning_group_name="manipulator"
+        seed="0"
+        task="{mtc_task}"
+        trajectory_sampling_rate="100"
+        velocity_scale_factor="1.000000"
+      />
+      <Action
+        ID="SetupMTCBatchPoseIK"
+        end_effector_group="fanuc_ee"
+        end_effector_link="tool0"
+        ik_group="manipulator"
+        ik_timeout_s="0.05"
+        max_ik_solutions="1"
+        monitored_stage="current state"
+        target_poses="{approach_candidates}"
+        task="{mtc_task}"
+      />
+      <Action
+        ID="SetupMTCMoveAlongFrameAxis"
+        acceleration_scale="0.5"
+        axis_frame="tool0"
+        axis_x="0.000000"
+        axis_y="0.000000"
+        axis_z="1.000000"
+        hand_frame="tool0"
+        ignore_environment_collisions="false"
+        max_distance="0.055"
+        min_distance="0.055"
+        planning_group_name="manipulator"
+        task="{mtc_task}"
+        velocity_scale="1.000000"
+        name="This move is done to push the vacuum gripper into the part a little to get it to collide. This causes the mujoco weld to activate. An improvement would be to detect the force on the gripper and stop"
+      />
+      <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
+      <SubTree
+        ID="Execute MTC Solution"
+        solution="{mtc_solution}"
+        goal_duration_tolerance="-1.0"
+      />
+      <Action
+        ID="AddURDF"
+        urdf_name="{part_name}"
+        urdf_pose="{bracket_part_pose}"
+        package_name="factory_sim"
+        urdf_file_path="description/simple_bracket_collision_geometry.urdf"
+      />
+      <Action
+        ID="AttachURDF"
+        urdf_name="{part_name}"
+        allowed_collision_links="link_5;link_6"
+        parent_link_name="tool0"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Vacuum Pick Bracket Part Subtree">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Motion - Execute" />
+      </MetadataFields>
+      <inout_port name="part_name" default="{part_name}" type="std::string">
+        Name to use for the part URDF attached to the suction gripper.
+      </inout_port>
+      <inout_port
+        name="bracket_part_pose"
+        default="{bracket_part_pose}"
+        type="geometry_msgs::msg::PoseStamped_&lt;std::allocator&lt;void&gt; &gt;"
+      >
+        Origin pose of the bracket part urdf.
+      </inout_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>

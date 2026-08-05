@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Octomap Example">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Octomap Example"
+    _description="Takes a snapshot of the scene camera and then updates the planning scene in RViz with an ocotomap based on the `sensors_3d.yaml` file settings."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="ClearSnapshot" />
+      <Action
+        ID="GetPointCloud"
+        message_out="{point_cloud}"
+        publisher_timeout_sec="5.000000"
+        message_timeout_sec="5.000000"
+        topic_name="/scene_camera/points"
+      />
+      <Action
+        ID="UpdatePlanningSceneService"
+        point_cloud="{point_cloud}"
+        point_cloud_service="/point_cloud_service"
+      />
+      <Action
+        ID="SendPointCloudToUI"
+        pcd_topic="/pcd_pointcloud_captures"
+        point_cloud="{point_cloud}"
+      />
+      <Action
+        ID="LogMessage"
+        log_level="info"
+        message="Click Resume to reset the octomap and finish the Behavior"
+      />
+      <!--Clear the Octomap at the end to avoid interfering with other Behaviors-->
+      <Action
+        ID="BreakpointSubscriber"
+        breakpoint_topic="/moveit_pro_breakpoint"
+      />
+      <SubTree ID="Clear Snapshot" _collapsed="true" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Octomap Example">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Perception - 3D Point Cloud" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

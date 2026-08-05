@@ -1,0 +1,32 @@
+[submodule "src/external_dependencies/Universal_Robots_ROS2_Description"]
+	path = src/external_dependencies/ur_description
+	url = https://github.com/PickNikRobotics/Universal_Robots_ROS2_Description.git
+[submodule "src/external_dependencies/clearpath_mecanum_drive_controller"]
+	path = src/external_dependencies/clearpath_mecanum_drive_controller
+	url = https://github.com/PickNikRobotics/clearpath_mecanum_drive_controller.git
+[submodule "src/external_dependencies/fanuc"]
+	path = src/external_dependencies/fanuc
+	url = https://github.com/PickNikRobotics/fanuc.git
+[submodule "src/external_dependencies/ros2_kortex_vision"]
+	path = src/external_dependencies/ros2_kortex_vision
+	url = https://github.com/PickNikRobotics/ros2_kortex_vision.git
+[submodule "src/external_dependencies/ros2_kortex"]
+	path = src/external_dependencies/ros2_kortex
+	url = https://github.com/PickNikRobotics/ros2_kortex.git
+[submodule "src/external_dependencies/franka_config/franka_description"]
+	path = src/external_dependencies/franka_config/franka_description
+	url = https://github.com/frankarobotics/franka_description.git
+	branch = main
+[submodule "src/moveit_pro_clipseg"]
+	path = src/moveit_pro_clipseg
+	url = https://github.com/PickNikRobotics/moveit_pro_clipseg.git
+[submodule "src/external_dependencies/phoebe_ws"]
+	path = src/external_dependencies/phoebe_ws
+	url = https://github.com/PickNikRobotics/phoebe_ws.git
+	branch = for-example-ws-no-dups
+[submodule "src/moveit_pro_sam3"]
+	path = src/moveit_pro_sam3
+	url = https://github.com/PickNikRobotics/moveit_pro_sam3.git
+[submodule "src/moveit_pro_sam2"]
+	path = src/moveit_pro_sam2
+	url = https://github.com/PickNikRobotics/moveit_pro_sam2.git

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="ML Segment Point Cloud">
+  <!--//////////-->
+  <BehaviorTree
+    ID="ML Segment Point Cloud"
+    _description="Captures a point cloud and segments out all possible objects from a text prompt"
+    _favorite="false"
+  >
+    <Control ID="Sequence">
+      <SubTree
+        ID="Segment Point Cloud from Text Prompt Subtree"
+        _collapsed="true"
+        camera_topic_name="/wrist_camera/camera_info"
+        image_topic_name="/wrist_camera/color"
+        masks_visualization_topic="/masks_visualization"
+        model_package="moveit_pro_sam3"
+        points_topic_name="/wrist_camera/points"
+        text_prompt="an object"
+        confidence_threshold="0.5"
+        masks3d="{masks3d}"
+        point_cloud="{point_cloud}"
+        point_cloud_vector="{point_cloud_vector}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="ML Segment Point Cloud">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - ML (GPU Recommended)" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

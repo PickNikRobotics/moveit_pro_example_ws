@@ -1,0 +1,4 @@
+# Planning groups to use in PoseJog, and their corresponding VFC controllers.
+# The number of elements in `planning_groups` and `controllers` must match.
+planning_groups: ['first_manipulator', 'second_manipulator', 'third_manipulator', 'fourth_manipulator']
+controllers: ['first_velocity_force_controller', 'second_velocity_force_controller', 'third_velocity_force_controller', 'fourth_velocity_force_controller']

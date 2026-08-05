@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Writing Demo">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Writing Demo"
+    _description="Pick up a pen, draw a text on a flat surface, and place the pen back."
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        acceleration_scale_factor="0.1"
+        velocity_scale_factor="0.1"
+        waypoint_name="Home"
+        name="Move To Pen Location"
+      />
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        acceleration_scale_factor="0.1"
+        velocity_scale_factor="0.1"
+        waypoint_name="Home"
+        name="Move To Home Pose"
+      />
+      <Control ID="Sequence">
+        <Action
+          ID="CreatePoseStamped"
+          reference_frame="fr3_link0"
+          pose_stamped="{pose_stamped}"
+          orientation_xyzw="-0.7073883;0.7068252;0.0000327;0.0000328"
+          position_xyz="0.6;0.3;0.09"
+        />
+        <Action
+          ID="VisualizePose"
+          marker_lifetime="0.000000"
+          marker_name="pose"
+          marker_size="0.100000"
+          pose="{pose_stamped}"
+        />
+        <SubTree
+          ID="Write Text"
+          _collapsed="true"
+          file_path="moveitpro_loves_franka.yaml"
+          bottom_right_corner="{pose_stamped}"
+        />
+        <SubTree
+          ID="Wipe Text"
+          _collapsed="true"
+          bottom_right_corner="{pose_stamped}"
+        />
+      </Control>
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        acceleration_scale_factor="0.1"
+        velocity_scale_factor="0.1"
+        waypoint_name="Home"
+      />
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        acceleration_scale_factor="0.1"
+        velocity_scale_factor="0.1"
+        waypoint_name="Home"
+        name="Move To Pen Holder"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Writing Demo">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Motion - Execute" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

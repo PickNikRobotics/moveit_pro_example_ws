@@ -1,0 +1,133 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 1000  # Hz
+    overruns:
+      print_warnings: false  # Suppress overrun WARN logs in non-realtime sim; gates the WARN log only; overrun handling itself is unchanged.
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+    joint_trajectory_admittance_controller:
+      type: joint_trajectory_admittance_controller/JointTrajectoryAdmittanceController
+    twist_controller:
+      type: picknik_twist_controller/PicknikTwistController
+    # The gripper controller just relays position commands
+    robotiq_gripper_controller:
+      type: position_controllers/GripperActionController
+    fault_controller:
+      type: picknik_reset_fault_controller/PicknikResetFaultController
+    force_torque_sensor_broadcaster:
+      type: force_torque_sensor_broadcaster/ForceTorqueSensorBroadcaster
+    velocity_force_controller:
+      type: velocity_force_controller/VelocityForceController
+    joint_velocity_controller:
+      type: joint_velocity_controller/JointVelocityController
+
+twist_controller:
+  ros__parameters:
+    joint: tcp
+    interface_names:
+      - twist.linear.x
+      - twist.linear.y
+      - twist.linear.z
+      - twist.angular.x
+      - twist.angular.y
+      - twist.angular.z
+
+robotiq_gripper_controller:
+  ros__parameters:
+    default: true
+    joint: robotiq_85_left_knuckle_joint
+    allow_stalling: true
+    stall_timeout: 0.05
+    goal_tolerance: 0.02
+
+force_torque_sensor_broadcaster:
+  ros__parameters:
+    sensor_name: fts
+    state_interface_names:
+      - force.x
+      - force.y
+      - force.z
+      - torque.x
+      - torque.y
+      - torque.z
+    frame_id: fts_link
+
+
+joint_trajectory_admittance_controller:
+  ros__parameters:
+    planning_group_name: manipulator
+    sensor_frame: fts_link
+    ee_frame: grasp_link
+    ft_sensor_name: fts
+    default_path_tolerance: 0.5
+    stop_accelerations: [3.0, 3.0, 3.0, 3.0, 5.0, 5.0, 5.0]
+
+
+velocity_force_controller:
+  ros__parameters:
+    planning_group_name: manipulator
+    sensor_frame: fts_link
+    ee_frame: grasp_link
+    ft_sensor_name: fts
+    ft_force_deadband: 2.0
+    ft_torque_deadband: 1.0
+    max_joint_velocity:
+      - 0.524
+      - 0.524
+      - 0.524
+      - 0.524
+      - 1.407
+      - 1.407
+      - 1.407
+    max_joint_acceleration:
+      - 52.4
+      - 52.4
+      - 52.4
+      - 52.4
+      - 52.4
+      - 52.4
+      - 52.4
+    max_cartesian_velocity:
+      - 0.25
+      - 0.25
+      - 0.25
+      - 1.5707
+      - 1.5707
+      - 1.5707
+    max_cartesian_acceleration:
+      - 20.0
+      - 20.0
+      - 20.0
+      - 40.0
+      - 40.0
+      - 40.0
+
+joint_velocity_controller:
+  ros__parameters:
+    # Joint group to control.
+    planning_group_name: manipulator
+    # Maximum joint-space velocities.
+    max_joint_velocity:
+      - 0.7
+      - 0.7
+      - 0.7
+      - 0.7
+      - 0.6
+      - 0.6
+      - 0.6
+    # Maximum joint-space accelerations.
+    max_joint_acceleration:
+      - 2.6
+      - 2.6
+      - 2.6
+      - 2.6
+      - 5.0
+      - 5.0
+      - 5.0
+    command_interfaces: ["position"]
+    # Padding (in radians) to add to joint position limits as a safety margin.
+    joint_limit_position_tolerance: 0.02
+    # Timeout in seconds after which the controller will stop motion if no new commands are received.
+    command_timeout: 0.2
+    # Rate in Hz at which the controller will publish the state.
+    state_publish_rate: 20

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Collect AprilTag Detection Data">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Collect AprilTag Detection Data"
+    _description="Run both the angled and parallel detection objectives"
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree
+        ID="Collect Parallel AprilTag Detection Data"
+        _collapsed="true"
+      />
+      <SubTree ID="Collect Angled AprilTag Detection Data" _collapsed="true" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Collect AprilTag Detection Data">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="AprilTag Detection Analysis" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

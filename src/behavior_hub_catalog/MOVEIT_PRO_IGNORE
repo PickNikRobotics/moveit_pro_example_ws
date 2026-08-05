@@ -1,0 +1,3 @@
+# Presence of this file hides the package from the MoveIt Pro robot/config picker.
+# This config is generation-only (Behaviors Hub data dump); it still builds and can
+# be launched explicitly via MOVEIT_CONFIG_PACKAGE=behavior_hub_catalog.

@@ -1,0 +1,263 @@
+<mujocoinclude>
+  <body name="counters" childclass="counters">
+    <geom material="counter_blue" mesh="cabinetbase" />
+    <geom material="counter_marble" mesh="countertop" />
+    <geom
+      material="counter_marble"
+      pos="-0.513 -0.3048 0.942"
+      size="0.2778 0.648 0.018"
+      type="box"
+    />
+    <geom mesh="faucet" pos="0.5424 -0.1032 0.9066" />
+    <geom pos="0.54 0.051 1.098" size="0.021 0.03" type="cylinder" />
+    <geom pos="0.54 0.051 1.152" size="0.015 0.048" type="capsule" />
+    <geom
+      euler="1.57 0 0"
+      pos="0.54 0.12 1.2"
+      size="0.015 0.066"
+      type="capsule"
+    />
+    <geom pos="0.54 0.1902 1.08" size="0.015 0.12" type="capsule" />
+    <geom pos="0.54 0.1902 1.002" size="0.0192 0.042" type="cylinder" />
+    <geom
+      pos="0.5682 0.1908 1.008"
+      euler="0 1.57 0"
+      size="0.0174 0.018"
+      type="cylinder"
+    />
+    <geom
+      pos="0.594 0.1908 1.008"
+      euler="0 1.57 0"
+      size="0.021 0.0078"
+      type="cylinder"
+    />
+    <geom
+      euler="1.57 0 0"
+      pos="0.594 0.156 1.008"
+      size="0.006 0.018"
+      type="capsule"
+    />
+    <geom
+      euler="0 1.57 0"
+      pos="0.5454 -0.417 0.834"
+      size="0.0132 0.168"
+      type="cylinder"
+    />
+    <geom
+      euler="1.57 0 0"
+      pos="0.426 -0.399 0.834"
+      size="0.0108 0.018"
+      type="cylinder"
+    />
+    <geom
+      euler="1.57 0 0"
+      pos="0.6648 -0.399 0.834"
+      size="0.0108 0.018"
+      type="cylinder"
+    />
+    <geom
+      euler="0 1.57 0"
+      pos="0.5454 -0.417 0.684"
+      size="0.0132 0.168"
+      type="cylinder"
+    />
+    <geom
+      euler="1.57 0 0"
+      pos="0.426 -0.399 0.684"
+      size="0.0108 0.018"
+      type="cylinder"
+    />
+    <geom
+      euler="1.57 0 0"
+      pos="0.6648 -0.399 0.684"
+      size="0.0108 0.018"
+      type="cylinder"
+    />
+
+    <geom
+      class="counter_collision"
+      euler="0 1.57 0"
+      pos="0.5454 -0.417 0.834"
+      size="0.0132 0.168"
+      type="cylinder"
+      mass=".1"
+    />
+    <geom
+      class="counter_collision"
+      euler="1.57 0 0"
+      pos="0.426 -0.399 0.834"
+      size="0.0108 0.018"
+      type="cylinder"
+      mass=".02"
+    />
+    <geom
+      class="counter_collision"
+      euler="1.57 0 0"
+      pos="0.6648 -0.399 0.834"
+      size="0.0108 0.018"
+      type="cylinder"
+      mass=".02"
+    />
+    <geom
+      class="counter_collision"
+      euler="0 1.57 0"
+      pos="0.5454 -0.417 0.684"
+      size="0.0132 0.168"
+      type="cylinder"
+      mass=".1"
+    />
+    <geom
+      class="counter_collision"
+      euler="1.57 0 0"
+      pos="0.426 -0.399 0.684"
+      size="0.0108 0.018"
+      type="cylinder"
+      mass=".02"
+    />
+    <geom
+      class="counter_collision"
+      euler="1.57 0 0"
+      pos="0.6648 -0.399 0.684"
+      size="0.0108 0.018"
+      type="cylinder"
+      mass=".02"
+    />
+    <geom
+      class="counter_collision"
+      pos="-0.516 -0.3 0.468"
+      size="0.276 0.642 0.4662"
+      type="box"
+      mass="5"
+    />
+    <geom
+      class="counter_collision"
+      pos="0.5442 -0.027 0.426"
+      size="0.1824 0.3636 0.426"
+      type="box"
+      mass="3"
+    />
+    <geom
+      class="counter_collision"
+      pos="-0.513 -0.3048 0.942"
+      size="0.2778 0.648 0.018"
+      type="box"
+      mass=".5"
+    />
+    <geom
+      class="counter_collision"
+      pos="0.6954 -0.027 0.942"
+      size="0.0306 0.3666 0.018"
+      type="box"
+      mass=".2"
+    />
+    <geom
+      class="counter_collision"
+      pos="0.3894 -0.027 0.942"
+      size="0.0306 0.3666 0.018"
+      type="box"
+      mass=".2"
+    />
+    <geom
+      class="counter_collision"
+      pos="0.5424 0.24 0.942"
+      size="0.1224 0.099 0.018"
+      type="box"
+      mass=".2"
+    />
+    <geom
+      class="counter_collision"
+      pos="0.5424 -0.3702 0.942"
+      size="0.1224 0.0234 0.018"
+      type="box"
+      mass=".2"
+    />
+    <geom
+      class="counter_collision"
+      pos="0.6948 -0.024 0.882"
+      size="0.03 0.366 0.0456"
+      type="box"
+      mass=".2"
+    />
+    <geom
+      class="counter_collision"
+      pos="0.3912 -0.024 0.882"
+      size="0.03 0.366 0.0456"
+      type="box"
+      mass=".2"
+    />
+    <geom
+      class="counter_collision"
+      pos="0.5424 0.2406 0.882"
+      size="0.1224 0.0996 0.0456"
+      type="box"
+      mass=".2"
+    />
+    <geom
+      class="counter_collision"
+      pos="0.5424 -0.3666 0.882"
+      size="0.1236 0.0204 0.0456"
+      type="box"
+      mass=".2"
+    />
+    <geom
+      class="counter_collision"
+      pos="0.54 0.051 1.098"
+      size="0.021 0.03"
+      type="cylinder"
+      mass=".02"
+    />
+    <geom
+      class="counter_collision"
+      pos="0.54 0.051 1.152"
+      size="0.015 0.048"
+      type="capsule"
+      mass=".02"
+    />
+    <geom
+      class="counter_collision"
+      euler="1.57 0 0"
+      pos="0.54 0.12 1.2"
+      size="0.015 0.066"
+      type="capsule"
+      mass=".02"
+    />
+    <geom
+      class="counter_collision"
+      pos="0.54 0.1902 1.08"
+      size="0.015 0.12"
+      type="capsule"
+      mass=".02"
+    />
+    <geom
+      class="counter_collision"
+      pos="0.54 0.1902 1.002"
+      size="0.0192 0.042"
+      type="cylinder"
+      mass=".02"
+    />
+    <geom
+      class="counter_collision"
+      pos="0.5682 0.1908 1.008"
+      euler="0 1.57 0"
+      size="0.0174 0.018"
+      type="cylinder"
+      mass=".02"
+    />
+    <geom
+      class="counter_collision"
+      pos="0.594 0.1908 1.008"
+      euler="0 1.57 0"
+      size="0.021 0.0078"
+      type="cylinder"
+      mass=".02"
+    />
+    <geom
+      class="counter_collision"
+      euler="1.57 0 0"
+      pos="0.594 0.156 1.008"
+      size="0.006 0.018"
+      type="capsule"
+      mass=".02"
+    />
+  </body>
+</mujocoinclude>

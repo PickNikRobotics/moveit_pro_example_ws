@@ -1,0 +1,48 @@
+joint_state:
+  header:
+    stamp:
+      sec: 1772563087
+      nanosec: 123736969
+    frame_id: ""
+  name:
+    - linear_rail_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+  position:
+    - -3.7888509479240455e-13
+    - 7.7000625282890057e-10
+    - -1.8849000070075239
+    - 1.0996999957226834
+    - -1.2566000010799672
+    - -1.5707500000002714
+    - -5.6739939771275992e-13
+  velocity:
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+  effort:
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+    - 0
+multi_dof_joint_state:
+  header:
+    stamp:
+      sec: 0
+      nanosec: 0
+    frame_id: world
+  joint_names: []
+  transforms: []
+  twist: []
+  wrench: []

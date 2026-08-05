@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Plan and Save Trajectory">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Plan and Save Trajectory"
+    _description="Use a series of waypoints to generate a motion plan, convert the solution to a Joint Trajectory message, and save it to disk in YAML format"
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <!--Before we plan we want to make sure we are at a known position, so when we execute the plan it can be done from the same position-->
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        waypoint_name="Workspace Right"
+        joint_group_name="manipulator"
+      />
+      <!--Create a vector of poses we want to move through-->
+      <SubTree
+        ID="Create Pose Vector"
+        _collapsed="false"
+        target_poses="{target_poses}"
+      />
+      <!--Plan a cartesian path through the desired poses-->
+      <Action
+        ID="PlanCartesianPath"
+        blending_radius="0.020000"
+        ik_cartesian_space_density="0.010000"
+        ik_joint_space_density="0.100000"
+        path="{target_poses}"
+        planning_group_name="manipulator"
+        position_only="false"
+        tip_links="grasp_link"
+        trajectory_timing="[{mode: time_optimal}]"
+        debug_solution="{debug_solution}"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+      />
+      <!--Preview the trajectory for approval and save if approved-->
+      <Action ID="WaitForMTCSolutionApproval" solution="{debug_solution}" />
+      <Action
+        ID="SaveJointTrajectoryToYaml"
+        yaml_filename="~/user_ws/src/lab_sim/objectives/joint_trajectory"
+        message="{joint_trajectory_msg}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Plan and Save Trajectory">
+      <MetadataFields>
+        <Metadata subcategory="Application - Basic Examples" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

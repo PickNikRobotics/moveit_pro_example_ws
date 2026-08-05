@@ -1,0 +1,25 @@
+# Contains colcon default settings for user overlay containers.
+build:
+  # Enable this for bidirectional syncing from the UI
+  symlink-install: true
+  allow-overriding:
+    - ewellix_description
+    - franka_description
+    - kortex_description
+    - robotiq_description
+    - ur_description
+  mixin:
+    # Enable ccache support
+    - ccache
+    # Multithreaded linker to speed up linking step during compilation
+    - lld
+    - compile-commands
+    # Debug info and build testing for dev workflows
+    - rel-with-deb-info
+    - build-testing-on
+    - coverage-gcc
+    - coverage-pytest
+test:
+  event-handlers:
+    - console_direct+
+    - desktop_notification+

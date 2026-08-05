@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Load and Execute Joint Trajectory">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Load and Execute Joint Trajectory"
+    _description="Load a trajectory that was saved as a YAML file"
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <!--Make sure to move the robot to the same starting position as the saved trajectory starts, otherwise the joint_trajectory_admittance_controller will use joint interpolation to align the robot with the path-->
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        waypoint_name="Workspace Right"
+        joint_group_name="manipulator"
+      />
+      <Action
+        ID="LoadJointTrajectoryFromYaml"
+        file_path="joint_trajectory.yaml"
+        output="{joint_trajectory_msg}"
+      />
+      <!--Validate the loaded trajectory with the current planning scene to check for collisions before executing-->
+      <Action
+        ID="GetCurrentPlanningScene"
+        planning_scene_msg="{planning_scene}"
+      />
+      <Action
+        ID="ValidateTrajectory"
+        cartesian_space_step="0.020000"
+        joint_space_step="0.100000"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+        planning_group_name="manipulator"
+        planning_scene_msg="{planning_scene}"
+        debug_solution="{debug_solution}"
+      />
+      <Action ID="ExecuteTrajectory" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Load and Execute Joint Trajectory">
+      <MetadataFields>
+        <Metadata subcategory="Application - Basic Examples" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

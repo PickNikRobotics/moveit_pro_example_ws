@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Multi-tip Pose IK Example">
+  <!--//////////-->
+  <BehaviorTree ID="Multi-tip Pose IK Example" _description="" _favorite="true">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        joint_group_name="manipulator"
+        waypoint_name="Start"
+      />
+      <!--Create the target poses into a vector-->
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="world"
+        pose_stamped="{target}"
+        position_xyz="-0.4;0.2;0.2"
+        orientation_xyzw="0.7071068;-0.7071068;0;0"
+      />
+      <Action
+        ID="VisualizePose"
+        marker_lifetime="0.000000"
+        marker_name="target"
+        marker_size="0.100000"
+        pose="{target}"
+      />
+      <Action
+        ID="TransformPose"
+        input_pose="{target}"
+        output_pose="{target_pose_1}"
+        quaternion_xyzw="0;0.7071068;0;0.7071068"
+        translation_xyz="-0.05;0;0"
+      />
+      <Action
+        ID="VisualizePose"
+        marker_lifetime="0.000000"
+        marker_name="target_pose_1"
+        marker_size="0.100000"
+        pose="{target_pose_1}"
+      />
+      <Action ID="ResetVector" vector="{target_poses}" />
+      <Action
+        ID="PushBackVector"
+        input_vector="{target_poses}"
+        element="{target_pose_1}"
+        output_vector="{target_poses}"
+      />
+      <Action
+        ID="TransformPose"
+        input_pose="{target}"
+        output_pose="{target_pose_2}"
+        quaternion_xyzw="0;0.7071068;0;-0.7071068"
+        translation_xyz="0.05;0;0"
+      />
+      <Action
+        ID="VisualizePose"
+        marker_lifetime="0.000000"
+        marker_name="target_pose_2"
+        marker_size="0.100000"
+        pose="{target_pose_2}"
+      />
+      <Action
+        ID="PushBackVector"
+        input_vector="{target_poses}"
+        element="{target_pose_2}"
+        output_vector="{target_poses}"
+      />
+      <!--Compute
+      IK simultaneously for two tips-->
+      <Action
+        ID="GetCurrentPlanningScene"
+        planning_scene_msg="{planning_scene}"
+      />
+      <Action
+        ID="ComputeInverseKinematics"
+        ik_timeout_s="0.01"
+        planning_group_name="manipulator"
+        planning_scene_msg="{planning_scene}"
+        target_poses="{target_poses}"
+        tip_links="third_grasp_link;second_grasp_link"
+        solution="{solution}"
+      />
+      <!--Move
+      to the computed solution-->
+      <SubTree
+        ID="Move to Joint State"
+        _collapsed="false"
+        joint_group_name="manipulator"
+        link_padding="0.00"
+        target_joint_state="{solution}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Multi-tip Pose IK Example">
+      <MetadataFields>
+        <Metadata subcategory="Application - Advanced Examples" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

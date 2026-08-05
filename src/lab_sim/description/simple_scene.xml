@@ -1,0 +1,22 @@
+<!-- This is a simplified model used for MPC optimization -->
+<mujoco model="ur5e scene">
+  <include file="ur5e/ur5e_linear_rail_globals.xml" />
+  <include file="robotiq_2f85/robotiq2f85_globals.xml" />
+  <compiler angle="radian" autolimits="true" />
+  <!-- timestep pins this top-level MPC scene to the 0.003 s standard. Required
+       now that the mujoco_ci_timestep CI override (which used to coarsen every
+       scene at build time) is gone: the JTAC/MPC compliance loop flakes when the
+       sim falls under realtime, and this scene is loaded by three non-skipped
+       mpc_pose_tracking objectives in the lab_sim integration test. -->
+  <option integrator="implicitfast" timestep="0.003" />
+  <!-- Offscreen buffer must EXACTLY match every non-lidar camera resolution
+       (cameras.cpp). This scene pulls in wrist_camera (1280x720) via the ur5e
+       include, so the global must be 1280x720 too. Without it the buffer defaults
+       to 640x480 and extract_cameras aborts ros2_control_node on model load. -->
+  <visual>
+    <global offwidth="1280" offheight="720" />
+  </visual>
+  <worldbody>
+    <include file="ur5e/ur5e_linear_rail.xml" />
+  </worldbody>
+</mujoco>

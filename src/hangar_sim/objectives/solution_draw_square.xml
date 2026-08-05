@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Solution - Draw Square">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Solution - Draw Square"
+    _description="Training example that shows how to create a path from poses and execute the path"
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree
+        ID="Move to Waypoint (JTC)"
+        _collapsed="true"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        controller_names="joint_trajectory_controller"
+        joint_group_name="manipulator"
+        keep_orientation="false"
+        keep_orientation_link_names="grasp_link"
+        keep_orientation_tolerance="0.05"
+        link_padding="0.0"
+        velocity_scale_factor="1.0"
+        waypoint_name="Look at Plane"
+      />
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="grasp_link"
+        pose_stamped="{pose_stamped}"
+        orientation_xyzw="0;0;0;1"
+        position_xyz="0;0;0.4"
+      />
+      <Action
+        ID="VisualizePose"
+        marker_lifetime="0.000000"
+        marker_name="pose"
+        marker_size="0.100000"
+        pose="{pose_stamped}"
+      />
+      <Action ID="ResetVector" vector="{pose_stamped_vector}" />
+      <Action
+        ID="PushBackVector"
+        input_vector="{pose_stamped_vector}"
+        element="{pose_stamped}"
+        output_vector="{pose_stamped_vector}"
+      />
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="grasp_link"
+        pose_stamped="{pose_stamped}"
+        orientation_xyzw="0;0;0;1"
+        position_xyz="0;-0.4;0.4"
+      />
+      <Action
+        ID="PushBackVector"
+        input_vector="{pose_stamped_vector}"
+        element="{pose_stamped}"
+        output_vector="{pose_stamped_vector}"
+      />
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="grasp_link"
+        pose_stamped="{pose_stamped}"
+        orientation_xyzw="0;0;0;1"
+        position_xyz="0.4;-0.4;0.4"
+      />
+      <Action
+        ID="PushBackVector"
+        input_vector="{pose_stamped_vector}"
+        element="{pose_stamped}"
+        output_vector="{pose_stamped_vector}"
+      />
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="grasp_link"
+        pose_stamped="{pose_stamped}"
+        orientation_xyzw="0;0;0;1"
+        position_xyz="0.4;0;0.4"
+      />
+      <Action
+        ID="PushBackVector"
+        input_vector="{pose_stamped_vector}"
+        element="{pose_stamped}"
+        output_vector="{pose_stamped_vector}"
+      />
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="grasp_link"
+        pose_stamped="{pose_stamped}"
+        orientation_xyzw="0;0;0;1"
+        position_xyz="0;0;0.4"
+      />
+      <Action
+        ID="PushBackVector"
+        input_vector="{pose_stamped_vector}"
+        element="{pose_stamped}"
+        output_vector="{pose_stamped_vector}"
+      />
+      <Action
+        ID="VisualizePath"
+        marker_lifetime="0.000000"
+        path="{pose_stamped_vector}"
+      />
+      <Action
+        ID="PlanCartesianPath"
+        blending_radius="0.020000"
+        debug_solution="{debug_solution}"
+        ik_cartesian_space_density="0.010000"
+        ik_joint_space_density="0.100000"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+        path="{pose_stamped_vector}"
+        planning_group_name="manipulator"
+        position_only="false"
+        tip_links="grasp_link"
+        trajectory_timing="[{mode: time_optimal}]"
+      />
+      <Action ID="IsUserAvailable" />
+      <Action ID="WaitForMTCSolutionApproval" solution="{debug_solution}" />
+      <Action
+        ID="ExecuteTrajectory"
+        execution_pipeline="jtc"
+        controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Solution - Draw Square">
+      <MetadataFields>
+        <Metadata subcategory="Training Examples" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

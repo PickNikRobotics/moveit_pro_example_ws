@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Segment Point Cloud from Text Prompt Subtree"
+>
+  <!--//////////-->
+  <BehaviorTree
+    ID="Segment Point Cloud from Text Prompt Subtree"
+    _description="Captures a point cloud and runs text-based segmentation on the camera image using the given text prompts. The point cloud is then filtered to only include the regions matching the prompts."
+    _favorite="false"
+    camera_topic_name="/wrist_camera/camera_info"
+    image_topic_name="/wrist_camera/color"
+    masks_visualization_topic="/masks_visualization"
+    model_package="moveit_pro_sam3"
+    points_topic_name="/wrist_camera/points"
+    text_prompt="{text_prompt}"
+    confidence_threshold="{confidence_threshold}"
+    masks3d="{masks3d}"
+    point_cloud="{point_cloud}"
+  >
+    <Control ID="Sequence">
+      <Action ID="ClearSnapshot" />
+      <SubTree
+        ID="Segment Image from No Negative Text Prompt Subtree"
+        _collapsed="true"
+        masks_visualization_topic="{masks_visualization_topic}"
+        model_package="{model_package}"
+        encoder_model_path="{encoder_model_path}"
+        decoder_model_path="{decoder_model_path}"
+        geometry_encoder_model_path="{geometry_encoder_model_path}"
+        text_encoder_model_path="{text_encoder_model_path}"
+        text_prompt="{text_prompt}"
+        confidence_threshold="{confidence_threshold}"
+        image_topic_name="{image_topic_name}"
+        masks2d="{masks2d}"
+      />
+      <Action
+        ID="GetPointCloud"
+        topic_name="{points_topic_name}"
+        message_timeout_sec="10.000000"
+        message_out="{point_cloud}"
+      />
+      <Action
+        ID="GetCameraInfo"
+        topic_name="{camera_topic_name}"
+        message_out="{camera_info}"
+        message_timeout_sec="5.000000"
+      />
+      <Action
+        ID="GetMasks3DFromMasks2D"
+        camera_info="{camera_info}"
+        masks2d="{masks2d}"
+        point_cloud="{point_cloud}"
+        masks3d="{masks3d}"
+      />
+      <SubTree
+        ID="Create Point Cloud Vector From Masks"
+        _collapsed="false"
+        masks3d="{masks3d}"
+        point_cloud="{point_cloud}"
+        point_cloud_vector="{point_cloud_vector}"
+      />
+      <Decorator
+        ID="ForEach"
+        index="{index}"
+        out="{point_cloud_fragment}"
+        vector_in="{point_cloud_vector}"
+      >
+        <Action
+          ID="SendPointCloudToUI"
+          pcd_topic="/pcd_pointcloud_captures"
+          point_cloud="{point_cloud_fragment}"
+        />
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Segment Point Cloud from Text Prompt Subtree">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Perception - ML" />
+      </MetadataFields>
+      <inout_port
+        name="camera_topic_name"
+        default="/wrist_camera/camera_info"
+      />
+      <inout_port name="confidence_threshold" default="0.5" />
+      <inout_port
+        name="decoder_model_path"
+        default="models/sam3_decoder.onnx"
+      />
+      <inout_port
+        name="encoder_model_path"
+        default="models/sam3_vision_encoder.onnx"
+      />
+      <inout_port
+        name="geometry_encoder_model_path"
+        default="models/sam3_geometry_encoder.onnx"
+      />
+      <inout_port name="image_topic_name" default="/wrist_camera/color" />
+      <inout_port
+        name="masks_visualization_topic"
+        default="/masks_visualization"
+      />
+      <inout_port name="masks3d" default="{masks3d}" />
+      <inout_port name="model_package" default="moveit_pro_sam3" />
+      <inout_port name="point_cloud" default="{point_cloud}" />
+      <inout_port name="point_cloud_vector" default="{point_cloud_vector}" />
+      <inout_port name="points_topic_name" default="/wrist_camera/points" />
+      <inout_port
+        name="text_encoder_model_path"
+        default="models/sam3_text_encoder.onnx"
+      />
+      <inout_port name="text_prompt" default="{text_prompt}" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

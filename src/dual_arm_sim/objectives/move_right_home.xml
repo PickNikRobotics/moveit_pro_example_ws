@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Move Right Home">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Move Right Home"
+    _description="Move the right arm to the home position"
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        controller_action_server="/right_joint_trajectory_admittance_controller/follow_joint_trajectory"
+        controller_names="right_joint_trajectory_admittance_controller"
+        joint_group_name="right_manipulator"
+        waypoint_name="Home"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Move Right Home">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Motion - Execute" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

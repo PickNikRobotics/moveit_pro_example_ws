@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Get Pose from TF Frame">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Get Pose from TF Frame"
+    _description="Creates a stamped pose from a published TF frame in the desired reference frame."
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="{pose_frame}"
+        pose_stamped="{pose_stamped}"
+      />
+      <Action
+        ID="TransformPoseFrame"
+        input_pose="{pose_stamped}"
+        output_pose="{tf_pose}"
+        target_frame_id="{reference_frame}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Get Pose from TF Frame">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Perception - Camera Calibration" />
+      </MetadataFields>
+      <inout_port name="pose_frame" default="{pose_frame_name}" />
+      <inout_port name="reference_frame" default="{reference_frame_name}" />
+      <inout_port name="tf_pose" default="{tf_pose}" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

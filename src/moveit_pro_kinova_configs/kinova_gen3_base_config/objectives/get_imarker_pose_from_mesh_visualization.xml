@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Get IMarker Pose From Mesh Visualization"
+>
+  <!--//////////-->
+  <BehaviorTree
+    ID="Get IMarker Pose From Mesh Visualization"
+    _description="Visualize a mesh in the UI and use an IMarker to get a grasp pose based on that mesh"
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="VisualizeMesh" marker_lifetime="0.0" />
+      <Action ID="ResetVector" vector="{pose_stamped_vector}" />
+      <Action
+        ID="PushBackVector"
+        input_vector="{pose_stamped_vector}"
+        element="{mesh_pose}"
+        output_vector="{pose_stamped_vector}"
+      />
+      <Action
+        ID="AdjustPoseWithIMarker"
+        initial_poses="{pose_stamped_vector}"
+        adjusted_poses="{adjusted_poses}"
+        prompts="Adjust IMarker for Poses relative to the mesh"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Get IMarker Pose From Mesh Visualization">
+      <inout_port name="adjusted_poses" default="{adjusted_poses}" />
+      <inout_port name="mesh_path" default="{mesh_path}" />
+      <inout_port name="mesh_pose" default="{mesh_pose}" />
+      <inout_port name="_collapsed" default="false" />
+      <MetadataFields>
+        <Metadata subcategory="User Input" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

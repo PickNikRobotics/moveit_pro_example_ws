@@ -1,0 +1,98 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 600  # Hz
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+    io_and_status_controller:
+      type: ur_controllers/GPIOController
+    force_torque_sensor_broadcaster:
+      type: force_torque_sensor_broadcaster/ForceTorqueSensorBroadcaster
+    robotiq_gripper_controller:
+      type: position_controllers/GripperActionController
+    robotiq_activation_controller:
+      type: robotiq_controllers/RobotiqActivationController
+    joint_trajectory_admittance_controller:
+      type: joint_trajectory_admittance_controller/JointTrajectoryAdmittanceController
+    velocity_force_controller:
+      type: velocity_force_controller/VelocityForceController
+
+io_and_status_controller:
+  ros__parameters:
+    tf_prefix: ""
+
+force_torque_sensor_broadcaster:
+  ros__parameters:
+    sensor_name: tcp_fts_sensor
+    state_interface_names:
+      - force.x
+      - force.y
+      - force.z
+      - torque.x
+      - torque.y
+      - torque.z
+    frame_id: tool0
+
+robotiq_gripper_controller:
+  ros__parameters:
+    default: true
+    joint: robotiq_85_left_knuckle_joint
+    allow_stalling: true
+    # These need to be tuned for HW:
+    # stall_timeout: 0.05
+    # goal_tolerance: 0.02
+
+robotiq_activation_controller:
+  ros__parameters:
+    default: true
+
+joint_trajectory_admittance_controller:
+  ros__parameters:
+    planning_group_name: manipulator
+    sensor_frame: tool0
+    ee_frame: grasp_link
+    ft_sensor_name: tcp_fts_sensor
+    # Joint accelerations chosen to match MoveIt configs.
+    stop_accelerations:
+      - 30.0
+      - 30.0
+      - 30.0
+      - 30.0
+      - 30.0
+      - 30.0
+
+velocity_force_controller:
+  ros__parameters:
+    planning_group_name: manipulator
+    sensor_frame: tool0
+    ee_frame: grasp_link
+    ft_sensor_name: tcp_fts_sensor
+    ft_force_deadband: 2.0
+    ft_torque_deadband: 1.0
+    max_joint_velocity:
+      - 0.524
+      - 0.524
+      - 0.524
+      - 1.047
+      - 1.047
+      - 1.047
+    max_joint_acceleration:
+      - 52.4
+      - 52.4
+      - 52.4
+      - 52.4
+      - 52.4
+      - 52.4
+    max_cartesian_velocity:
+      - 0.25
+      - 0.25
+      - 0.25
+      - 1.5707
+      - 1.5707
+      - 1.5707
+    max_cartesian_acceleration:
+      - 20.0
+      - 20.0
+      - 20.0
+      - 40.0
+      - 40.0
+      - 40.0

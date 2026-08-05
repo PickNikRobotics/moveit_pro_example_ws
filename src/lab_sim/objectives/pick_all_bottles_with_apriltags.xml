@@ -1,0 +1,386 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Pick All Bottles with AprilTags">
+  <BehaviorTree
+    ID="Pick All Bottles with AprilTags"
+    _description="Detects AprilTags on medicine bottles, picks them up, and places them in a tray. Loops until no more tags are found."
+    _favorite="true"
+  >
+    <Control ID="Sequence" _collapsed="false">
+      <!--Add collision wall at the back of the table to prevent the arm from hitting the shelf-->
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="world"
+        pose_stamped="{back_wall_pose}"
+        position_xyz="0.15; 0.83; 0.85"
+        orientation_xyzw="0.000000;0.000000;0.000000;1.000000"
+      />
+      <Action
+        ID="AddCollisionBox"
+        object_id="virtual_back_wall"
+        dimensions="2.0;0.05;1.0"
+        pose="{back_wall_pose}"
+        overwrite="true"
+      />
+      <Control
+        ID="Sequence"
+        name="Compute Tray Place Positions"
+        _collapsed="false"
+      >
+        <SubTree ID="Open Gripper" _collapsed="true" />
+        <SubTree
+          ID="Move to Waypoint"
+          _collapsed="true"
+          waypoint_name="Look at Tray"
+          acceleration_scale_factor="1.0"
+          controller_action_server="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+          controller_names="joint_trajectory_admittance_controller"
+          execution_pipeline="jtac"
+          joint_group_name="manipulator"
+          keep_orientation="false"
+          keep_orientation_tolerance="0.05"
+          link_padding="0.01"
+          seed="0"
+          velocity_scale_factor="1.0"
+        />
+        <SubTree
+          ID="Take Wrist Camera Image"
+          name="Take Wrist Camera Image"
+          _collapsed="true"
+          wrist_camera_image="{tray_image}"
+          wrist_camera_info="{camera_info}"
+        />
+        <Action
+          ID="DetectAprilTags"
+          image="{tray_image}"
+          camera_info="{camera_info}"
+          detections="{tray_detections}"
+          apriltag_family_name="36h11"
+          max_hamming="0"
+          n_threads="1"
+          quad_decimate="2.0"
+          quad_sigma="0.0"
+          refine_edges="true"
+          tag_size="0.064"
+        />
+        <Action
+          ID="ComputeTrayPlacePositionsUsingAprilTags"
+          detections="{tray_detections}"
+          camera_info="{camera_info}"
+          input_image="{tray_image}"
+          tray_apriltag_id="1"
+          num_rows="3"
+          columns_per_row="2"
+          row_spacing="0.10"
+          column_spacing="0.09"
+          tag_to_tray_center="0.125"
+          bottle_diameter="0.04"
+          place_positions="{place_positions}"
+          visualization_topic="/apriltag_detections"
+        />
+        <!--Visualize coordinate frames at every place location-->
+        <Action ID="Script" code="place_marker_count := 0" />
+        <Decorator
+          ID="ForEach"
+          _collapsed="false"
+          vector_in="{place_positions}"
+          out="{place_viz_pose}"
+          index="{place_viz_index}"
+        >
+          <Control ID="Sequence" _collapsed="false">
+            <Action
+              ID="VisualizePose"
+              pose="{place_viz_pose}"
+              marker_size="0.05"
+              marker_lifetime="0"
+              marker_name="{place_marker_count}"
+              marker_text="Place"
+            />
+            <Action ID="Script" code="place_marker_count += 1" />
+          </Control>
+        </Decorator>
+      </Control>
+      <Action
+        ID="SwitchUIPrimaryView"
+        primary_view_name="/apriltag_detections"
+      />
+      <Control ID="Sequence" _collapsed="false">
+        <SubTree ID="Clear Snapshot" _collapsed="true" />
+        <SubTree ID="Look at Table" _collapsed="true" />
+        <SubTree ID="Take Wrist Camera Snapshot" _collapsed="true" />
+      </Control>
+      <Decorator ID="ForceSuccess" _collapsed="false">
+        <Decorator ID="KeepRunningUntilFailure" _collapsed="false">
+          <Control ID="Sequence" name="TopLevelSequence" _collapsed="false">
+            <SubTree
+              ID="Pick April Tag Labeled Object"
+              name="Pick April Tag Labeled Object"
+              _collapsed="true"
+            />
+            <Control ID="Sequence" name="Retract" _collapsed="false">
+              <!--Retract away from the grasp-->
+              <Action
+                ID="CreatePoseStamped"
+                reference_frame="grasp_link"
+                pose_stamped="{retract_pose}"
+                position_xyz="0;0;-0.25"
+                orientation_xyzw="0.000000;0.000000;0.000000;1.000000"
+              />
+              <Action ID="ResetPoseStampedVector" vector="{retract_path}" />
+              <Action
+                ID="PushBackVector"
+                input_vector="{retract_path}"
+                element="{retract_pose}"
+                output_vector="{retract_path}"
+              />
+              <Action
+                ID="PlanCartesianPath"
+                blending_radius="0.020000"
+                debug_solution="{debug_solution}"
+                ik_cartesian_space_density="0.010000"
+                ik_joint_space_density="0.100000"
+                joint_trajectory_msg="{joint_trajectory_msg}"
+                path="{retract_path}"
+                planning_group_name="manipulator"
+                position_only="true"
+                tip_links="grasp_link"
+                trajectory_timing="[{mode: time_optimal}]"
+                max_optimizer_iterations="1"
+                tip_offset="0.000000;0.000000;0.000000;0.000000;0.000000;0.000000"
+              />
+              <Action
+                ID="ExecuteTrajectory"
+                goal_duration_tolerance="-1.000000"
+                joint_trajectory_msg="{joint_trajectory_msg}"
+                controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+                execution_pipeline="jtac"
+                absolute_force_torque_threshold=""
+              />
+            </Control>
+            <Control ID="Sequence" name="Place in Tray" _collapsed="false">
+              <!--Pop the next place pose from the front of the computed positions vector-->
+              <Action
+                ID="GetElementOfVector"
+                vector_in="{place_positions}"
+                index="0"
+                element="{current_place_pose}"
+              />
+              <!--Pause here to inspect the place pose before lowering-->
+              <!--Compute a pre-place hover pose above the target-->
+              <Action
+                ID="TransformPose"
+                input_pose="{current_place_pose}"
+                output_pose="{pre_place_pose}"
+                quaternion_xyzw="0;0;1;0"
+                translation_xyz="0;0;-0.4"
+                visualize_pose="true"
+                marker_text="Pre-Place Pose"
+                marker_lifetime="0.000000"
+                marker_size="0.100000"
+              />
+              <!--Move to the pre-place hover position above the tray-->
+              <Action
+                ID="VisualizePose"
+                name="VisualizePose"
+                marker_text="pre-place"
+                marker_name="pre-place"
+                marker_lifetime="0.000000"
+                marker_size="0.100000"
+                pose="{pre_place_pose}"
+              />
+              <SubTree
+                ID="Plan Move To Pose"
+                _collapsed="true"
+                target_pose="{pre_place_pose}"
+                move_to_pose_solution="{place_solution}"
+              />
+              <SubTree
+                ID="Execute MTC Solution"
+                _collapsed="true"
+                solution="{place_solution}"
+                controller_names="joint_trajectory_admittance_controller"
+                execution_pipeline="jtac"
+                controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+                goal_position_tolerance="{goal_position_tolerance}"
+                path_position_tolerance="{path_position_tolerance}"
+                absolute_force_torque_threshold="{absolute_force_torque_threshold}"
+                goal_duration_tolerance="-1.0"
+                admittance_parameters_msg="{admittance_parameters_msg}"
+              />
+              <!--Lower until contact: flattened from lab_sim Push Button (velocity/force controller)-->
+              <Control ID="Sequence" _collapsed="false">
+                <Action
+                  ID="SwitchController"
+                  activate_controllers="velocity_force_controller"
+                  controller_switch_action_name="/controller_manager/switch_controller"
+                  timeout="-1.000000"
+                  activate_asap="true"
+                  strictness="1"
+                  controller_list_action_name="/controller_manager/list_controllers"
+                  automatic_deactivation="true"
+                  automatic_activation="true"
+                  deactivate_controllers=""
+                />
+                <Action
+                  ID="CallTriggerService"
+                  service_name="/velocity_force_controller/zero_fts"
+                  response_timeout="3.000000"
+                  wait_for_server_available_timeout="3.000000"
+                />
+                <Action
+                  ID="CreateWrenchStamped"
+                  wrench_stamped="{desired_wrench}"
+                  reference_frame="grasp_link"
+                  torque_xyz="0;0;0"
+                  force_xyz="0;0;0"
+                />
+                <Action
+                  ID="CreateTwistStamped"
+                  reference_frame="grasp_link"
+                  twist_stamped="{desired_twist}"
+                  angular_velocity_xyz="0;0;0"
+                  linear_velocity_xyz="0.0;0;0.05"
+                />
+                <Action
+                  ID="CreatePoseStamped"
+                  reference_frame="grasp_link"
+                  pose_stamped="{initial_pose}"
+                  orientation_xyzw="0.000000;0.000000;0.000000;1.000000"
+                  position_xyz="0.000000;0.000000;0.000000"
+                />
+                <Action
+                  ID="TransformPoseFrame"
+                  output_pose="{initial_pose}"
+                  input_pose="{initial_pose}"
+                  target_frame_id="world"
+                />
+                <Control
+                  ID="Parallel"
+                  _collapsed="false"
+                  failure_count="1"
+                  success_count="1"
+                >
+                  <Action
+                    ID="ForceExceedsThreshold"
+                    minimum_consecutive_wrench_values="5"
+                    wrench_frame_name="tool0"
+                    hand_frame_name="grasp_link"
+                    force_threshold="30"
+                    wrench_topic_name="/force_torque_sensor_broadcaster/wrench"
+                  />
+                  <Control ID="Sequence" name="Sequence">
+                    <Action
+                      ID="UnpackTwistStampedMessage"
+                      name="UnpackTwistStampedMessage"
+                      twist="{twist}"
+                      header="{header}"
+                      twist_stamped="{desired_twist}"
+                    />
+                    <Action
+                      ID="UnpackWrenchStampedMessage"
+                      name="UnpackWrenchStampedMessage"
+                      wrench="{wrench}"
+                      header="{header}"
+                      wrench_stamped="{desired_wrench}"
+                    />
+                    <Action
+                      ID="PublishVelocityForceCommand"
+                      force_controlled_axes="0;0;0;0;0;0"
+                      wrench_gain="0.01"
+                      velocity_controlled_axes="0;0;1;0;0;0"
+                      publish_rate="50"
+                      twist="{twist}"
+                      wrench="{wrench}"
+                      velocity_force_controller_command_topic="/velocity_force_controller/command"
+                    />
+                  </Control>
+                </Control>
+                <SubTree
+                  ID="Force Relaxation"
+                  _collapsed="true"
+                  wrench_gain="0.01"
+                  relaxation_time_ms="500"
+                  tip_link="grasp_link"
+                />
+                <Action
+                  ID="SwitchController"
+                  activate_controllers="joint_trajectory_admittance_controller"
+                  controller_switch_action_name="/controller_manager/switch_controller"
+                  timeout="-1.000000"
+                  activate_asap="true"
+                  strictness="1"
+                  controller_list_action_name="/controller_manager/list_controllers"
+                  automatic_deactivation="true"
+                  automatic_activation="true"
+                  deactivate_controllers=""
+                />
+              </Control>
+            </Control>
+            <Control
+              ID="Sequence"
+              name="Release and Retract"
+              _collapsed="false"
+            >
+              <!--Release the bottle-->
+              <SubTree ID="Open Gripper" _collapsed="true" />
+              <!--Retract upward after releasing the bottle-->
+              <Action
+                ID="CreatePoseStamped"
+                reference_frame="grasp_link"
+                pose_stamped="{place_retract_pose}"
+                position_xyz="0;0;-0.08"
+                orientation_xyzw="0.000000;0.000000;0.000000;1.000000"
+              />
+              <Action
+                ID="ResetPoseStampedVector"
+                vector="{place_retract_path}"
+              />
+              <Action
+                ID="PushBackVector"
+                input_vector="{place_retract_path}"
+                element="{place_retract_pose}"
+                output_vector="{place_retract_path}"
+              />
+              <Action
+                ID="PlanCartesianPath"
+                blending_radius="0.020000"
+                debug_solution="{debug_solution}"
+                ik_cartesian_space_density="0.010000"
+                ik_joint_space_density="0.100000"
+                joint_trajectory_msg="{joint_trajectory_msg}"
+                path="{place_retract_path}"
+                planning_group_name="manipulator"
+                position_only="true"
+                tip_links="grasp_link"
+                trajectory_timing="[{mode: time_optimal}]"
+                max_optimizer_iterations="1"
+                tip_offset="0.000000;0.000000;0.000000;0.000000;0.000000;0.000000"
+              />
+              <Action
+                ID="ExecuteTrajectory"
+                goal_duration_tolerance="-1.000000"
+                joint_trajectory_msg="{joint_trajectory_msg}"
+                controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+                execution_pipeline="jtac"
+              />
+              <!--Remove the used pose so the next iteration gets a fresh position-->
+              <Action
+                ID="RemoveFromVector"
+                input_vector="{place_positions}"
+                index="0"
+                output_vector="{place_positions}"
+              />
+            </Control>
+          </Control>
+        </Decorator>
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Pick All Bottles with AprilTags">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="AprilTag" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

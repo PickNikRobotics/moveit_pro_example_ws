@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Take Scene Camera Snapshot">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Take Scene Camera Snapshot"
+    _description="Use the camera that is not fixed to the robot, to capture a point cloud"
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="ClearSnapshot" />
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        waypoint_name="Out of the way"
+      />
+      <Action
+        ID="GetPointCloud"
+        message_out="{point_cloud}"
+        publisher_timeout_sec="5.000000"
+        message_timeout_sec="5.000000"
+        topic_name="/scene_camera/points"
+      />
+      <Control ID="Sequence">
+        <Action
+          ID="CreatePoseStamped"
+          reference_frame="world"
+          pose_stamped="{pose}"
+          position_xyz="1.2;0;0.9"
+        />
+        <Action
+          ID="CropPointsInBox"
+          crop_box_centroid_pose="{pose}"
+          point_cloud="{point_cloud}"
+          point_cloud_cropped="{point_cloud_1}"
+          crop_box_size="2;5;5"
+        />
+        <Action ID="ResetVector" vector="{point_clouds}" />
+        <Action
+          ID="PushBackVector"
+          input_vector="{point_clouds}"
+          element="{point_cloud_1}"
+          output_vector="{point_clouds}"
+        />
+        <Action
+          ID="CreatePoseStamped"
+          reference_frame="world"
+          pose_stamped="{pose}"
+          position_xyz="0;1.2;0.9"
+        />
+        <Action
+          ID="CropPointsInBox"
+          crop_box_centroid_pose="{pose}"
+          point_cloud="{point_cloud}"
+          point_cloud_cropped="{point_cloud_2}"
+          crop_box_size="5;2;5"
+        />
+        <Action
+          ID="PushBackVector"
+          input_vector="{point_clouds}"
+          element="{point_cloud_2}"
+          output_vector="{point_clouds}"
+        />
+        <Action
+          ID="MergePointClouds"
+          align_point_clouds="false"
+          grid_resolution_meters="0.010000"
+          icp_correspondence_distance="0.050000"
+          icp_max_iterations="20"
+          merged_cloud="{point_cloud}"
+          point_clouds="{point_clouds}"
+        />
+      </Control>
+      <Action
+        ID="SendPointCloudToUI"
+        pcd_topic="/pcd_pointcloud_captures"
+        point_cloud="{point_cloud}"
+      />
+      <SubTree ID="Move to Waypoint" _collapsed="true" waypoint_name="Home" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Take Scene Camera Snapshot">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Visualization" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Move to Joint State">
+  <BehaviorTree
+    ID="Move to Joint State"
+    _description="Move to a specified joint state"
+  >
+    <Control ID="Sequence">
+      <Action ID="SwitchController" activate_controllers="{controller_names}" />
+      <Action
+        ID="PlanToJointGoal"
+        joint_goal="{target_joint_state}"
+        keep_orientation_tolerance="{keep_orientation_tolerance}"
+        link_padding="{link_padding}"
+        keep_orientation="{keep_orientation}"
+        acceleration_scale_factor="{acceleration_scale_factor}"
+        velocity_scale_factor="{velocity_scale_factor}"
+        planning_group_name="{joint_group_name}"
+      />
+      <Action
+        ID="ExecuteTrajectory"
+        controller_action_name="{controller_action_server}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Move to Joint State">
+      <inout_port name="target_joint_state" default="{target_joint_state}" />
+      <inout_port name="joint_group_name" default="manipulator" />
+      <inout_port name="link_padding" default="0.01" />
+      <inout_port name="keep_orientation_tolerance" default="0.05" />
+      <inout_port name="keep_orientation" default="false" />
+      <inout_port name="velocity_scale_factor" default="1.0" />
+      <inout_port name="acceleration_scale_factor" default="1.0" />
+      <inout_port
+        name="controller_names"
+        default="joint_trajectory_admittance_controller"
+      />
+      <inout_port
+        name="controller_action_server"
+        default="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+      />
+      <MetadataFields>
+        <Metadata subcategory="Motion - Execute" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Multi-tip Path IK Example">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Multi-tip Path IK Example"
+    _description="An example of computing Path IK for two tips moving synchronously"
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree ID="Multi-tip Pose IK Example" _collapsed="true" />
+      <Control ID="Sequence">
+        <Action
+          ID="CreatePoseStamped"
+          reference_frame="third_grasp_link"
+          pose_stamped="{pose_stamped}"
+        />
+        <Action ID="ResetVector" vector="{pose_stamped_vector}" />
+        <Action
+          ID="PushBackVector"
+          input_vector="{pose_stamped_vector}"
+          element="{pose_stamped}"
+          output_vector="{pose_stamped_vector}"
+        />
+        <Action
+          ID="CreatePoseStamped"
+          reference_frame="third_grasp_link"
+          pose_stamped="{pose_stamped}"
+          position_xyz="0.2;0.0;0"
+        />
+        <Action
+          ID="PushBackVector"
+          input_vector="{pose_stamped_vector}"
+          element="{pose_stamped}"
+          output_vector="{pose_stamped_vector}"
+        />
+        <Action
+          ID="CreatePoseStamped"
+          reference_frame="third_grasp_link"
+          pose_stamped="{pose_stamped}"
+          position_xyz="0.2;0.0;-0.1"
+        />
+        <Action
+          ID="PushBackVector"
+          input_vector="{pose_stamped_vector}"
+          element="{pose_stamped}"
+          output_vector="{pose_stamped_vector}"
+        />
+        <Action
+          ID="CreatePoseStamped"
+          reference_frame="third_grasp_link"
+          pose_stamped="{pose_stamped}"
+          position_xyz="0.0;0.0;-0.1"
+        />
+        <Action
+          ID="PushBackVector"
+          input_vector="{pose_stamped_vector}"
+          element="{pose_stamped}"
+          output_vector="{pose_stamped_vector}"
+        />
+        <Action
+          ID="CreatePoseStamped"
+          reference_frame="third_grasp_link"
+          pose_stamped="{pose_stamped}"
+        />
+        <Action
+          ID="PushBackVector"
+          input_vector="{pose_stamped_vector}"
+          element="{pose_stamped}"
+          output_vector="{pose_stamped_vector}"
+        />
+      </Control>
+      <Control ID="Fallback">
+        <Action
+          ID="PlanCartesianPath"
+          blending_radius="0.020000"
+          debug_solution="{debug_solution}"
+          ik_cartesian_space_density="0.010000"
+          ik_joint_space_density="0.100000"
+          joint_trajectory_msg="{joint_trajectory_msg}"
+          path="{pose_stamped_vector}"
+          planning_group_name="manipulator"
+          position_only="false"
+          tip_links="third_grasp_link;second_grasp_link"
+          trajectory_timing="[{mode: time_optimal}]"
+        />
+        <Action ID="WaitForMTCSolutionApproval" solution="{debug_solution}" />
+      </Control>
+      <Action ID="ExecuteTrajectory" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Multi-tip Path IK Example">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Advanced Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

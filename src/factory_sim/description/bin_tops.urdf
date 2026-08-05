@@ -1,0 +1,73 @@
+<?xml version='1.0' encoding='utf-8'?>
+<robot name="bin_table">
+
+  <link name="bin_table">
+  </link>
+
+  <link name="left_bin">
+    <collision>
+      <origin xyz="0.2923 0 0.17" />
+      <geometry>
+        <box size="0.025 0.331 0.05" />
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="-0.2923 0 0.17" />
+      <geometry>
+        <box size="0.025 0.331 0.05" />
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0.178 0.17" />
+      <geometry>
+        <box size="0.6096 0.025 0.05" />
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 -0.178 0.17" />
+      <geometry>
+        <box size="0.6096 0.025 0.05" />
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="left_bin_joint" type="fixed">
+    <parent link="bin_table" />
+    <child link="left_bin" />
+    <origin xyz="-0.25 0.6 0.25" rpy="0 0 1.5708" />
+  </joint>
+
+  <link name="right_bin">
+    <collision>
+      <origin xyz="0.2923 0 0.17" />
+      <geometry>
+        <box size="0.025 0.331 0.05" />
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="-0.2923 0 0.17" />
+      <geometry>
+        <box size="0.025 0.331 0.05" />
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 0.178 0.17" />
+      <geometry>
+        <box size="0.6096 0.025 0.05" />
+      </geometry>
+    </collision>
+    <collision>
+      <origin xyz="0 -0.178 0.17" />
+      <geometry>
+        <box size="0.6096 0.025 0.05" />
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="right_bin_joint" type="fixed">
+    <parent link="bin_table" />
+    <child link="right_bin" />
+    <origin xyz="0.25 0.6 0.25" rpy="0 0 1.5708" />
+  </joint>
+
+</robot>

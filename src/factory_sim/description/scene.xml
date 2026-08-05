@@ -1,0 +1,465 @@
+<mujoco model="fanuc scene">
+  <compiler angle="radian" autolimits="true" />
+  <option integrator="implicitfast" timestep="0.003">
+    <flag multiccd="enable" override="enable" />
+  </option>
+
+  <size memory="64M" />
+
+  <asset>
+    <!-- Define textures and materials -->
+    <texture name="wood" type="cube" file="assets/wood.png" />
+    <material name="wood" texture="wood" texrepeat="1 1" />
+    <mesh name="bowl" file="assets/bowl.stl" />
+
+    <texture name="sheet_metal" type="2d" file="assets/sheet_metal.png" />
+    <material name="sheet_metal" texture="sheet_metal" texrepeat="1 1" />
+    <mesh
+      name="bracket"
+      file="assets/bracket_sample1.stl"
+      scale="0.001 0.001 0.002"
+    />
+
+    <!-- Blue checker floor: rgb1/rgb2 are the light/dark alternating squares. -->
+    <texture
+      type="2d"
+      name="groundplane"
+      builtin="checker"
+      mark="edge"
+      rgb1="0.2 0.3 0.4"
+      rgb2="0.1 0.2 0.3"
+      markrgb="0.8 0.8 0.8"
+      width="300"
+      height="300"
+    />
+    <material
+      name="groundplane"
+      texture="groundplane"
+      texuniform="true"
+      texrepeat="5 5"
+      reflectance="0.2"
+    />
+    <material
+      name="pedestal_metal"
+      rgba="0.30 0.32 0.35 1"
+      specular="0.4"
+      shininess="0.5"
+    />
+  </asset>
+
+  <statistic center="0.3 0 0.4" extent="0.8" />
+
+  <visual>
+    <headlight diffuse="0.6 0.6 0.6" ambient="0.1 0.1 0.1" specular="0 0 0" />
+    <rgba haze="0.15 0.25 0.35 1" />
+    <global azimuth="120" elevation="-20" offwidth="1280" offheight="720" />
+    <!-- Render quality only (no physics effect): 4x MSAA + larger shadow map.
+         map haze=0.1 is below MuJoCo's 0.3 default, so haze is subtle. -->
+    <quality offsamples="4" shadowsize="4096" />
+    <map haze="0.1" />
+  </visual>
+
+  <!-- Add Fanuc support files -->
+  <include file="lrmate200id/lrmate200id_globals.xml" />
+
+  <worldbody>
+    <light pos="0 0 1.5" dir="0 0 -1" directional="true" />
+    <geom
+      name="floor"
+      pos="0 0 0"
+      size="0 0 0.05"
+      type="plane"
+      material="groundplane"
+    />
+    <!-- Add a scene camera -->
+    <camera
+      name="scene_camera"
+      pos="-1.046 1.252 2.019"
+      fovy="58"
+      mode="fixed"
+      resolution="1280 720"
+      xyaxes="-0.607 -0.795 0.000 0.555 -0.424 0.715"
+    />
+    <site
+      name="scene_camera_optical_frame"
+      pos="-1.046 1.252 2.019"
+      xyaxes="-0.607 -0.795 0.000 -0.555 0.424 -0.715"
+    />
+
+    <camera
+      name="bin_camera_left"
+      pos="-0.25 0.6 0.85"
+      fovy="58"
+      mode="fixed"
+      resolution="1280 720"
+      xyaxes="0 -1 0 1 0 0"
+    />
+    <site
+      name="bin_camera_left_optical_frame"
+      pos="-0.25 0.6 0.85"
+      xyaxes="0 -1 0 -1 0 0"
+    />
+
+    <body name="arm_pedestal" pos="0.0 0.0 0.15">
+      <geom type="box" size="0.2 0.2 0.15" material="pedestal_metal" />
+      <!-- Holder for tool 1 -->
+      <geom
+        type="box"
+        size="0.06 0.01 0.01"
+        pos="0.23 0.05 0.1"
+        material="pedestal_metal"
+      />
+      <geom
+        type="box"
+        size="0.06 0.01 0.01"
+        pos="0.23 0.11 0.1"
+        material="pedestal_metal"
+      />
+      <site
+        name="suction_gripper_holder_site"
+        pos="0.25 0.08 0.15"
+        euler="3.1415 0 0"
+      />
+      <!-- Holder for tool 2 -->
+      <geom
+        type="box"
+        size="0.06 0.01 0.01"
+        pos="0.23 -0.05 0.1"
+        material="pedestal_metal"
+      />
+      <geom
+        type="box"
+        size="0.06 0.01 0.01"
+        pos="0.23 -0.11 0.1"
+        material="pedestal_metal"
+      />
+      <site
+        name="inspection_tool_holder_site"
+        pos="0.25 -0.08 0.15"
+        euler="3.1415 0 0"
+      />
+    </body>
+
+    <body name="arm_mount" pos="0.0 0.0 0.3">
+      <include file="lrmate200id/lrmate200id.xml" />
+    </body>
+
+    <!--  -->
+    <!-- BIN PICKING SCENARIO -->
+    <!--  -->
+    <!-- Define the table for bin picking scenario -->
+    <body name="bin_table" pos="0 0.6 0.2">
+      <geom type="box" size="0.6 0.4 0.025" rgba="0.1 0.1 0.1 1" />
+
+      <body name="left_bin" pos="-0.25 0 0.025" quat="0.707 0 0 0.707">
+        <!-- <geom type="box" size="1 1 .01" pos="0.5 0.5 0" rgba=".5 .5 .5 1"/>
+        <geom type="box" size="1 1 .01" pos="0 0 0" rgba=".5 0 0 1"/> -->
+        <!-- Bottom -->
+        <!-- <box size="${x_length} ${y_length} ${bottom_thickness}"/> -->
+        <!-- <origin xyz="${x_length/2} ${y_length/2} ${bottom_thickness/2}"/> -->
+        <!-- <geom type="box" size="0.3048 0.1905 0.0025" pos="0 0 0.0025" rgba=".11 .51 .86 1"/> -->
+        <geom
+          margin="0.005"
+          friction="2 0.1 0.1"
+          type="box"
+          size="0.3048 0.1905 0.025"
+          pos="0 0 0.0025"
+          rgba=".11 .51 .86 1"
+        />
+        <!-- Back -->
+        <!-- <box size="${side_wall_thickness} ${y_length-side_wall_thickness} ${z_length}"/> -->
+        <!-- <origin xyz="${side_wall_thickness/2} ${(y_length-side_wall_thickness)/2} ${z_length/2}"/> -->
+        <!-- <geom type="box" size="0.0125 0.190 0.09525" pos="0.3048-0.0125 0 0.0025+0.09525" rgba="1 .5 .5 1"/> -->
+        <geom
+          margin="0.005"
+          friction="2 0.1 0.1"
+          type="box"
+          size="0.0125 0.1655 0.09525"
+          pos="0.2923 0 0.09775"
+          rgba=".11 .51 .86 1"
+        />
+        <!-- Front -->
+        <!-- <box size="${side_wall_thickness} ${y_length} ${z_length}"/> -->
+        <!-- <origin xyz="${x_length - side_wall_thickness/2} ${y_length/2} ${z_length/2}"/> -->
+        <!-- <geom type="box" size="0.0125 0.190 0.09525" pos="-0.3048+0.0125 0 0.0025+0.09525" rgba="1 .5 .5 1"/> -->
+        <geom
+          margin="0.005"
+          friction="2 0.1 0.1"
+          type="box"
+          size="0.0125 0.1655 0.09525"
+          pos="-0.2923 0 0.09775"
+          rgba=".11 .51 .86 1"
+        />
+        <!-- Right -->
+        <!-- <box size="${x_length} ${side_wall_thickness} ${z_length}"/> -->
+        <!-- <origin xyz="${x_length/2} ${side_wall_thickness/2} ${z_length/2}"/> -->
+        <!-- <geom type="box" size="0.3048 0.0125 0.09525" pos="0 0.1905-0.0125 0.09775" rgba=".5 .5 .5 1"/> -->
+        <geom
+          margin="0.005"
+          friction="2 0.1 0.1"
+          type="box"
+          size="0.3048 0.0125 0.09525"
+          pos="0 0.178 0.09775"
+          rgba=".11 .51 .86 1"
+        />
+        <!-- Left -->
+        <!-- <box size="${x_length} ${side_wall_thickness} ${z_length}"/> -->
+        <!-- <origin xyz="${x_length/2} ${y_length - side_wall_thickness/2} ${z_length/2}"/> -->
+        <geom
+          margin="0.005"
+          friction="2 0.1 0.1"
+          type="box"
+          size="0.3048 0.0125 0.09525"
+          pos="0 -0.178 0.09775"
+          rgba=".11 .51 .86 1"
+        />
+      </body>
+
+      <body name="right_bin" pos="0.25 0 0.025" quat="0.707 0 0 0.707">
+        <geom
+          margin="0.005"
+          friction="2 0.1 0.1"
+          type="box"
+          size="0.3048 0.1905 0.025"
+          pos="0 0 0.0025"
+          rgba=".11 .51 .86 1"
+        />
+        <geom
+          margin="0.005"
+          friction="2 0.1 0.1"
+          type="box"
+          size="0.0125 0.1655 0.09525"
+          pos="0.2923 0 0.09775"
+          rgba=".11 .51 .86 1"
+        />
+        <geom
+          margin="0.005"
+          friction="2 0.1 0.1"
+          type="box"
+          size="0.0125 0.1655 0.09525"
+          pos="-0.2923 0 0.09775"
+          rgba=".11 .51 .86 1"
+        />
+        <geom
+          margin="0.005"
+          friction="2 0.1 0.1"
+          type="box"
+          size="0.3048 0.0125 0.09525"
+          pos="0 0.178 0.09775"
+          rgba=".11 .51 .86 1"
+        />
+        <geom
+          margin="0.005"
+          friction="2 0.1 0.1"
+          type="box"
+          size="0.3048 0.0125 0.09525"
+          pos="0 -0.178 0.09775"
+          rgba=".11 .51 .86 1"
+        />
+      </body>
+    </body>
+
+    <!-- Bracket parts in left bin.
+         Three explicit bodies instead of <replicate count="3">: with replicate +
+         <keyframe>, MuJoCo 3.2.7 silently corrupts the first replica's freejoint
+         qpos to (0,0,0,1,0,0,0) on key load, dropping bracket-0-0 under the
+         pedestal on "Reset MuJoCo Sim". MuJoCo 3.3.5 surfaces the same bug as
+         "Keyframe 'default' has invalid qpos size, got 48, should be 13".
+         Explicit bodies preserve every keyframe row, so all three brackets reset
+         in their bin. Refs PickNikRobotics/moveit_pro#18180. -->
+    <include file="bracket_collision_geometry_0.xml" />
+    <include file="bracket_collision_geometry_1.xml" />
+    <include file="bracket_collision_geometry_2.xml" />
+    <!--  -->
+    <!-- ASSEMBLY SCENARIO -->
+    <!--  -->
+    <!-- Define the table for assembly scenario -->
+    <!-- y -0.2-0.2 -->
+    <body name="assembly_table" pos="0 -0.4 0.2">
+      <geom type="box" size="0.6 0.2 0.025" rgba="0.1 0.1 0.1 1" />
+    </body>
+    <!-- z 0.225+.005+.0001 -->
+    <body name="shelf" pos="0.25 -0.4 0.2301">
+      <geom type="box" size="0.2 0.1 0.005" material="wood" />
+      <freejoint />
+    </body>
+
+    <body name="jig1_1" pos="-0.4601 -0.4 0.25">
+      <geom
+        type="ellipsoid"
+        size="0.005 0.005 0.035"
+        pos="0 0 -0.005"
+        rgba="1 0.6 0 1"
+      />
+      <geom
+        type="cylinder"
+        size="0.005 0.025"
+        pos="0 0 -0.030"
+        rgba="1. 0.6 0. 1"
+      />
+      <site name="jig_post1" />
+    </body>
+
+    <body name="jig1_2" pos="-0.3951 -0.40283 0.25">
+      <geom
+        type="ellipsoid"
+        size="0.005 0.005 0.035"
+        pos="0 0 -0.005"
+        rgba="1 0.6 0 1"
+      />
+      <geom
+        type="cylinder"
+        size="0.005 0.025"
+        pos="0 0 -0.030"
+        rgba="1. 0.6 0. 1"
+      />
+      <site name="jig_post2" />
+    </body>
+
+    <!--  -->
+    <!-- REGISTER AND RASTERIZE SCENARIO -->
+    <!--  -->
+    <body name="stationary_rail" pos="1.1 0 0">
+      <geom
+        type="box"
+        size="0.04 0.04 0.7"
+        pos="0 0.8 0.7"
+        rgba="0.21 0.88 0.55 1"
+      />
+      <geom
+        type="box"
+        size="0.24 0.04 0.04"
+        pos="-0.2 0.8 1.44"
+        rgba="0.21 0.88 0.55 1"
+      />
+
+      <geom
+        type="box"
+        size="0.04 0.04 0.7"
+        pos="0 -0.8 0.7"
+        rgba="0.21 0.88 0.55 1"
+      />
+      <geom
+        type="box"
+        size="0.24 0.04 0.04"
+        pos="-0.2 -0.8 1.44"
+        rgba="0.21 0.88 0.55 1"
+      />
+
+      <geom
+        type="box"
+        size="0.04 1.0 0.04"
+        pos="-0.4 0.0 1.36"
+        rgba="0.8 0.8 0.8 1"
+      />
+
+      <geom
+        type="mesh"
+        mesh="bowl"
+        pos="-0.45 0.6 0.9"
+        euler="0 1.5708 0"
+        material="wood"
+      />
+      <site name="convex_bowl_1" pos="-0.45 0.6 0.9" euler="0 0 1.5708" />
+      <geom
+        type="box"
+        size="0.01 0.02 0.16"
+        pos="-0.4 0.6 1.22"
+        rgba="0.1 0.1 0.1 1"
+      />
+
+      <geom
+        type="mesh"
+        mesh="bowl"
+        pos="-0.45 0.2 0.9"
+        euler="0 1.5708 0"
+        material="wood"
+      />
+      <site name="convex_bowl_2" pos="-0.45 0.2 0.9" euler="0 0 1.5708" />
+      <geom
+        type="box"
+        size="0.01 0.02 0.16"
+        pos="-0.4 0.2 1.22"
+        rgba="0.1 0.1 0.1 1"
+      />
+
+      <geom
+        type="mesh"
+        mesh="bowl"
+        pos="-0.35 -0.2 0.9"
+        euler="0 -1.5708 0"
+        material="wood"
+      />
+      <site name="concave_bowl_1" pos="-0.456 -0.2 0.9" euler="0 0 -1.5708" />
+      <geom
+        type="box"
+        size="0.01 0.02 0.16"
+        pos="-0.4 -0.2 1.22"
+        rgba="0.1 0.1 0.1 1"
+      />
+
+      <geom
+        type="mesh"
+        mesh="bowl"
+        pos="-0.35 -0.6 0.9"
+        euler="0 -1.5708 0"
+        material="wood"
+      />
+      <site name="concave_bowl_2" pos="-0.456 -0.6 0.9" euler="0 0 -1.5708" />
+      <geom
+        type="box"
+        size="0.01 0.02 0.16"
+        pos="-0.4 -0.6 1.22"
+        rgba="0.1 0.1 0.1 1"
+      />
+    </body>
+  </worldbody>
+
+  <!-- Add tools -->
+  <include file="suction_tool.xml" />
+  <include file="inspection_tool.xml" />
+
+  <!-- Define weld constraints between the robot flange (tool0) and the gripper -->
+  <equality>
+    <weld
+      name="tool_attachment_one"
+      body1="tool0"
+      body2="gripper_base"
+      active="false"
+      torquescale="5"
+    />
+  </equality>
+  <equality>
+    <weld
+      name="tool_attachment_two"
+      body1="tool0"
+      body2="inspection_tool_base"
+      active="false"
+      torquescale="5"
+    />
+  </equality>
+
+  <!-- Add welds for suction gripping of parts -->
+  <include file="box-welds.xml" />
+
+  <keyframe>
+    <!-- qpos layout, in compile order: -->
+    <!-- robot [joint_1..joint_6] (6) -->
+    <!-- bracket-0 freejoint [x y z qw qx qy qz] (7), bracket-1 (7), bracket-2 (7) -->
+    <!-- shelf freejoint (7) -->
+    <!-- suction_tool (gripper_base) freejoint (7) -->
+    <!-- inspection_tool freejoint (7) -->
+    <key
+      name="default"
+      qpos="
+        0 0 0 0 0 0
+        -0.42 0.5 0.35 1 0 0 0
+        -0.42 0.56 0.40 1 0 0 0
+        -0.42 0.62 0.45 1 0 0 0
+        0.25 -0.4 0.2301 1 0 0 0
+        0.25 0.08 0.3 0 1 0 0
+        0.25 -0.08 0.3 0 1 0 0"
+      ctrl="0 0 0 0 0 0"
+    />
+  </keyframe>
+</mujoco>

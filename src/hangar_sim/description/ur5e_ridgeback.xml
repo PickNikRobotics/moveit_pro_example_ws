@@ -1,0 +1,2444 @@
+<mujoco model="ur5e_ridgeback">
+  <compiler angle="radian" meshdir="assets" autolimits="true" />
+
+  <option integrator="implicitfast" />
+
+  <size nuser_sensor="6" />
+
+  <default>
+    <default class="ur5e">
+      <material specular="0.5" shininess="0.25" />
+      <joint axis="0 1 0" range="-6.28319 6.28319" armature="0.1" />
+      <general
+        gaintype="fixed"
+        biastype="affine"
+        ctrlrange="-6.2831 6.2831"
+        gainprm="2000"
+        biasprm="0 -2000 -400"
+        forcerange="-50000 50000"
+      />
+      <default class="size3">
+        <default class="size3_limited">
+          <joint range="-3.1415 3.1415" />
+          <general ctrlrange="-3.1415 3.1415" />
+        </default>
+      </default>
+      <default class="visual">
+        <geom type="mesh" contype="0" conaffinity="0" group="2" />
+      </default>
+      <default class="collision">
+        <geom type="capsule" group="3" />
+        <default class="eef_collision">
+          <geom type="cylinder" />
+        </default>
+      </default>
+      <site size="0.001" rgba="0.5 0.5 0.5 0.3" group="4" />
+    </default>
+
+    <!-- robotiq 2f85 defaults -->
+    <default class="2f85">
+      <mesh scale="0.001 0.001 0.001" />
+      <general biastype="affine" />
+
+      <joint axis="1 0 0" />
+      <default class="knuckle_link">
+        <joint
+          range="0 0.8"
+          armature="0.005"
+          damping="0.1"
+          solimplimit="0.95 0.99 0.001"
+          solreflimit="0.005 1"
+        />
+      </default>
+      <default class="finger_tip_link">
+        <joint
+          range="-0.872664 0.872664"
+          armature="0.001"
+          pos="0 -0.018 0.0065"
+          solimplimit="0.95 0.99 0.001"
+          solreflimit="0.005 1"
+        />
+      </default>
+      <default class="inner_knuckle_link">
+        <joint
+          range="-0.29670597283 0.8"
+          armature="0.001"
+          stiffness="0.05"
+          springref="2.62"
+          damping="0.00125"
+        />
+      </default>
+      <default class="finger_link">
+        <joint
+          range="-1.57 0"
+          armature="0.001"
+          solimplimit="0.95 0.99 0.001"
+          solreflimit="0.005 1"
+        />
+      </default>
+
+      <default class="2f85_visual">
+        <geom type="mesh" contype="0" conaffinity="0" group="2" />
+      </default>
+      <default class="2f85_collision">
+        <geom type="mesh" group="3" condim="6" />
+        <default class="pad_box1">
+          <geom
+            mass="0"
+            type="box"
+            pos="0 -0.0026 0.028125"
+            size="0.011 0.004 0.009375"
+            friction="0.7"
+            solimp="0.95 0.99 0.001"
+            solref="0.004 1"
+            priority="1"
+            rgba="0.55 0.55 0.55 1"
+          />
+        </default>
+        <default class="pad_box2">
+          <geom
+            mass="0"
+            type="box"
+            pos="0 -0.0026 0.009375"
+            size="0.011 0.004 0.009375"
+            friction="0.6"
+            solimp="0.95 0.99 0.001"
+            solref="0.004 1"
+            priority="1"
+            rgba="0.45 0.45 0.45 1"
+          />
+        </default>
+      </default>
+    </default>
+    <default class="robot">
+      <material specular="0.5" shininess="0.25" />
+      <joint armature="0.1" damping="1" axis="0 0 1" range="-2.8973 2.8973" />
+      <general
+        dyntype="none"
+        biastype="affine"
+        ctrlrange="-3.14159 3.14159"
+        forcerange="-50000 50000"
+      />
+      <default class="limitedJoints">
+        <joint limited="true" />
+      </default>
+      <site size="0.001" rgba="0.5 0.5 0.5 0.3" group="4" />
+    </default>
+    <default class="rail">
+      <joint armature="0.1" damping="1" axis="0 0 1" range="-5.0 5.0" />
+      <general
+        dyntype="none"
+        biastype="affine"
+        ctrlrange="-5.0 5.0"
+        forcerange="-50000 50000"
+      />
+    </default>
+  </default>
+  <asset>
+    <material name="metal" rgba="0.58 0.58 0.58 1" />
+    <material name="silicone" rgba="0.1882 0.1882 0.1882 1" />
+    <material name="white" rgba="1.0 1.0 1.0 1" />
+    <material name="gray" rgba="0.4627 0.4627 0.4627 1" />
+    <material class="ur5e" name="black" rgba="0.033 0.033 0.033 1" />
+    <material class="ur5e" name="jointgray" rgba="0.278 0.278 0.278 1" />
+    <material class="ur5e" name="linkgray" rgba="0.82 0.82 0.82 1" />
+    <material class="ur5e" name="urblue" rgba="0.49 0.678 0.8 1" />
+    <material
+      name="dark metal"
+      rgba="0.04245108366012573 0.04245108366012573 0.04245108366012573 1.0"
+      reflectance="0.5"
+      metallic="0.0"
+    />
+    <material
+      name="plastic"
+      rgba="0.9433449506759644 0.9433449506759644 0.9433449506759644 1.0"
+      reflectance="0.5"
+      metallic="0.0"
+    />
+    <mesh name="base" file="base.stl" scale="0.001 0.001 0.001" />
+    <mesh name="base_platform" file="base_platform.stl" />
+    <mesh file="base_0.obj" />
+    <mesh file="base_1.obj" />
+    <mesh file="shoulder_0.obj" />
+    <mesh file="shoulder_1.obj" />
+    <mesh file="shoulder_2.obj" />
+    <mesh file="upperarm_0.obj" />
+    <mesh file="upperarm_1.obj" />
+    <mesh file="upperarm_2.obj" />
+    <mesh file="upperarm_3.obj" />
+    <mesh file="forearm_0.obj" />
+    <mesh file="forearm_1.obj" />
+    <mesh file="forearm_2.obj" />
+    <mesh file="forearm_3.obj" />
+    <mesh file="wrist1_0.obj" />
+    <mesh file="wrist1_1.obj" />
+    <mesh file="wrist1_2.obj" />
+    <mesh file="wrist2_0.obj" />
+    <mesh file="wrist2_1.obj" />
+    <mesh file="wrist2_2.obj" />
+    <mesh file="wrist3.obj" />
+    <!-- Ridgeback -->
+    <mesh name="chassis_link" file="ridgeback/body.stl" />
+    <mesh name="top_link" file="ridgeback/top.stl" />
+    <mesh name="summit_xls_omni_wheel_1" file="omni_wheel_1.stl" />
+    <mesh name="summit_xls_omni_wheel_2" file="omni_wheel_2.stl" />
+    <mesh name="ham_assem" file="HAM_Assem.stl" />
+    <mesh name="camera_adapter" file="camera_adapter.stl" />
+    <mesh name="vacuum_base" file="vacuum_base.obj" />
+    <mesh name="vacuum_base_top" file="vacuum_base_top.obj" />
+    <mesh name="vacuum_suction_cups" file="vacuum_suction_cups.obj" />
+    <mesh name="collision_vacuum_base" file="collision_vacuum_base.obj" />
+    <mesh
+      name="collision_vacuum_suction_cups"
+      file="collision_vacuum_suction_cups.obj"
+      scale="1.0 1.0 1.0"
+    />
+  </asset>
+
+  <worldbody>
+    <body name="base_platform_rotation" pos="0 0 -0.048" euler="0 0 0">
+      <inertial mass="0.01" pos="0 0 0" diaginertia="0.001 0.001 0.001" />
+      <!--      <joint-->
+      <!--        type="free"-->
+      <!--        stiffness="0"-->
+      <!--        damping="0"-->
+      <!--        frictionloss="0"-->
+      <!--        armature="0"-->
+      <!--      />-->
+      <joint name="linear_x_joint" type="slide" axis="1 0 0" damping="0.5" />
+      <joint name="linear_y_joint" type="slide" axis="0 1 0" damping="0.5" />
+      <joint
+        name="rotational_yaw_joint"
+        type="hinge"
+        axis="0 0 1"
+        damping="1.0"
+      />
+      <body name="base_platform" pos="0 0 0" euler="0 0 0">
+        <body name="ridgeback_base_link">
+          <!-- Front SICK TIM571: mounted at x=+0.45m (front bumper), z=0.15m.
+               91 beams x 3 deg = 270 deg FOV, sweeping CCW from beam-0 at -135 deg in robot frame.
+               Quat rule: site Z axis = beam-0 firing direction. Site X axis must point in world -Z
+               so the plugin's Rot(-90,Y) produces a Z-up _ROS frame.
+               Formula: R_base = Rot_Z(phi) * Rot_Y(+90 deg), where phi = beam-0 robot-frame angle.
+               Front: phi=-135 deg -> R_base = Rot_Z(-135)*Rot_Y(90) -> quat=(0.2706,0.6533,0.2706,-0.6533).
+               angle_min=0 in rangefinder user params so the plugin sets _ROS frame X = beam-0 direction. -->
+          <body name="lidar_front_mount" pos="0.45 0 0.15">
+            <inertial
+              mass="0.25"
+              pos="0 0 0"
+              diaginertia="0.0001 0.0001 0.0001"
+            />
+            <site
+              name="lidar_front-0"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.2706 0.6533 0.2706 -0.6533"
+            />
+            <site
+              name="lidar_front-1"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.2876087 0.6459926 0.2876087 -0.6459926"
+            />
+            <site
+              name="lidar_front-2"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.3044203 0.6382425 0.3044203 -0.6382425"
+            />
+            <site
+              name="lidar_front-3"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.3210233 0.630055 0.3210233 -0.630055"
+            />
+            <site
+              name="lidar_front-4"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.3374062 0.6214357 0.3374062 -0.6214357"
+            />
+            <site
+              name="lidar_front-5"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.3535579 0.6123904 0.3535579 -0.6123904"
+            />
+            <site
+              name="lidar_front-6"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.3694673 0.6029255 0.3694673 -0.6029255"
+            />
+            <site
+              name="lidar_front-7"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.3851235 0.5930473 0.3851235 -0.5930473"
+            />
+            <site
+              name="lidar_front-8"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.4005157 0.5827627 0.4005157 -0.5827627"
+            />
+            <site
+              name="lidar_front-9"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.4156335 0.5720787 0.4156335 -0.5720787"
+            />
+            <site
+              name="lidar_front-10"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.4304664 0.5610026 0.4304664 -0.5610026"
+            />
+            <site
+              name="lidar_front-11"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.4450042 0.5495421 0.4450042 -0.5495421"
+            />
+            <site
+              name="lidar_front-12"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.4592371 0.5377049 0.4592371 -0.5377049"
+            />
+            <site
+              name="lidar_front-13"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.4731552 0.5254992 0.4731552 -0.5254992"
+            />
+            <site
+              name="lidar_front-14"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.4867491 0.5129333 0.4867491 -0.5129333"
+            />
+            <site
+              name="lidar_front-15"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.5000093 0.5000159 0.5000093 -0.5000159"
+            />
+            <site
+              name="lidar_front-16"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.5129269 0.4867558 0.5129269 -0.4867558"
+            />
+            <site
+              name="lidar_front-17"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.525493 0.4731621 0.525493 -0.4731621"
+            />
+            <site
+              name="lidar_front-18"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.5376989 0.4592441 0.5376989 -0.4592441"
+            />
+            <site
+              name="lidar_front-19"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.5495362 0.4450114 0.5495362 -0.4450114"
+            />
+            <site
+              name="lidar_front-20"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.560997 0.4304737 0.560997 -0.4304737"
+            />
+            <site
+              name="lidar_front-21"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.5720733 0.415641 0.5720733 -0.415641"
+            />
+            <site
+              name="lidar_front-22"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.5827575 0.4005234 0.5827575 -0.4005234"
+            />
+            <site
+              name="lidar_front-23"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.5930423 0.3851313 0.5930423 -0.3851313"
+            />
+            <site
+              name="lidar_front-24"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.6029206 0.3694752 0.6029206 -0.3694752"
+            />
+            <site
+              name="lidar_front-25"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.6123858 0.353566 0.6123858 -0.353566"
+            />
+            <site
+              name="lidar_front-26"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.6214312 0.3374144 0.6214312 -0.3374144"
+            />
+            <site
+              name="lidar_front-27"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.6300508 0.3210315 0.6300508 -0.3210315"
+            />
+            <site
+              name="lidar_front-28"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.6382385 0.3044287 0.6382385 -0.3044287"
+            />
+            <site
+              name="lidar_front-29"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.6459889 0.2876172 0.6459889 -0.2876172"
+            />
+            <site
+              name="lidar_front-30"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.6532965 0.2706086 0.6532965 -0.2706086"
+            />
+            <site
+              name="lidar_front-31"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.6601563 0.2534145 0.6601563 -0.2534145"
+            />
+            <site
+              name="lidar_front-32"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.6665637 0.2360467 0.6665637 -0.2360467"
+            />
+            <site
+              name="lidar_front-33"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.6725143 0.2185172 0.6725143 -0.2185172"
+            />
+            <site
+              name="lidar_front-34"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.678004 0.2008379 0.678004 -0.2008379"
+            />
+            <site
+              name="lidar_front-35"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.683029 0.183021 0.683029 -0.183021"
+            />
+            <site
+              name="lidar_front-36"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.6875859 0.1650786 0.6875859 -0.1650786"
+            />
+            <site
+              name="lidar_front-37"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.6916715 0.1470231 0.6916715 -0.1470231"
+            />
+            <site
+              name="lidar_front-38"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.6952831 0.1288668 0.6952831 -0.1288668"
+            />
+            <site
+              name="lidar_front-39"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.6984182 0.1106222 0.6984182 -0.1106222"
+            />
+            <site
+              name="lidar_front-40"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.7010746 0.0923018 0.7010746 -0.0923018"
+            />
+            <site
+              name="lidar_front-41"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.7032506 0.0739181 0.7032506 -0.0739181"
+            />
+            <site
+              name="lidar_front-42"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.7049445 0.0554838 0.7049445 -0.0554838"
+            />
+            <site
+              name="lidar_front-43"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.7061554 0.0370115 0.7061554 -0.0370115"
+            />
+            <site
+              name="lidar_front-44"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.7068822 0.0185137 0.7068822 -0.0185137"
+            />
+            <site
+              name="lidar_front-45"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.7071246 0.0000033 0.7071246 -0.0000033"
+            />
+            <site
+              name="lidar_front-46"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.7068824 -0.0185071 0.7068824 0.0185071"
+            />
+            <site
+              name="lidar_front-47"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.7061557 -0.0370048 0.7061557 0.0370048"
+            />
+            <site
+              name="lidar_front-48"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.7049451 -0.0554772 0.7049451 0.0554772"
+            />
+            <site
+              name="lidar_front-49"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.7032513 -0.0739115 0.7032513 0.0739115"
+            />
+            <site
+              name="lidar_front-50"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.7010755 -0.0922952 0.7010755 0.0922952"
+            />
+            <site
+              name="lidar_front-51"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.6984192 -0.1106156 0.6984192 0.1106156"
+            />
+            <site
+              name="lidar_front-52"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.6952843 -0.1288602 0.6952843 0.1288602"
+            />
+            <site
+              name="lidar_front-53"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.6916729 -0.1470166 0.6916729 0.1470166"
+            />
+            <site
+              name="lidar_front-54"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.6875874 -0.1650721 0.6875874 0.1650721"
+            />
+            <site
+              name="lidar_front-55"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.6830307 -0.1830145 0.6830307 0.1830145"
+            />
+            <site
+              name="lidar_front-56"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.6780059 -0.2008315 0.6780059 0.2008315"
+            />
+            <site
+              name="lidar_front-57"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.6725164 -0.2185109 0.6725164 0.2185109"
+            />
+            <site
+              name="lidar_front-58"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.6665659 -0.2360404 0.6665659 0.2360404"
+            />
+            <site
+              name="lidar_front-59"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.6601587 -0.2534083 0.6601587 0.2534083"
+            />
+            <site
+              name="lidar_front-60"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.653299 -0.2706024 0.653299 0.2706024"
+            />
+            <site
+              name="lidar_front-61"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.6459916 -0.2876111 0.6459916 0.2876111"
+            />
+            <site
+              name="lidar_front-62"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.6382414 -0.3044227 0.6382414 0.3044227"
+            />
+            <site
+              name="lidar_front-63"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.6300538 -0.3210256 0.6300538 0.3210256"
+            />
+            <site
+              name="lidar_front-64"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.6214344 -0.3374085 0.6214344 0.3374085"
+            />
+            <site
+              name="lidar_front-65"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.6123891 -0.3535602 0.6123891 0.3535602"
+            />
+            <site
+              name="lidar_front-66"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.6029241 -0.3694695 0.6029241 0.3694695"
+            />
+            <site
+              name="lidar_front-67"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.5930459 -0.3851257 0.5930459 0.3851257"
+            />
+            <site
+              name="lidar_front-68"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.5827613 -0.4005179 0.5827613 0.4005179"
+            />
+            <site
+              name="lidar_front-69"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.5720772 -0.4156356 0.5720772 0.4156356"
+            />
+            <site
+              name="lidar_front-70"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.5610011 -0.4304684 0.5610011 0.4304684"
+            />
+            <site
+              name="lidar_front-71"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.5495404 -0.4450062 0.5495404 0.4450062"
+            />
+            <site
+              name="lidar_front-72"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.5377032 -0.4592391 0.5377032 0.4592391"
+            />
+            <site
+              name="lidar_front-73"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.5254974 -0.4731572 0.5254974 0.4731572"
+            />
+            <site
+              name="lidar_front-74"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.5129315 -0.486751 0.5129315 0.486751"
+            />
+            <site
+              name="lidar_front-75"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.5000141 -0.5000112 0.5000141 0.5000112"
+            />
+            <site
+              name="lidar_front-76"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.4867539 -0.5129287 0.4867539 0.5129287"
+            />
+            <site
+              name="lidar_front-77"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.4731602 -0.5254947 0.4731602 0.5254947"
+            />
+            <site
+              name="lidar_front-78"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.4592422 -0.5377006 0.4592422 0.5377006"
+            />
+            <site
+              name="lidar_front-79"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.4450094 -0.5495379 0.4450094 0.5495379"
+            />
+            <site
+              name="lidar_front-80"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.4304716 -0.5609986 0.4304716 0.5609986"
+            />
+            <site
+              name="lidar_front-81"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.4156389 -0.5720748 0.4156389 0.5720748"
+            />
+            <site
+              name="lidar_front-82"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.4005212 -0.5827589 0.4005212 0.5827589"
+            />
+            <site
+              name="lidar_front-83"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.3851291 -0.5930437 0.3851291 0.5930437"
+            />
+            <site
+              name="lidar_front-84"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.369473 -0.602922 0.369473 0.602922"
+            />
+            <site
+              name="lidar_front-85"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.3535637 -0.6123871 0.3535637 0.6123871"
+            />
+            <site
+              name="lidar_front-86"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.3374121 -0.6214325 0.3374121 0.6214325"
+            />
+            <site
+              name="lidar_front-87"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.3210292 -0.630052 0.3210292 0.630052"
+            />
+            <site
+              name="lidar_front-88"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.3044263 -0.6382397 0.3044263 0.6382397"
+            />
+            <site
+              name="lidar_front-89"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.2876148 -0.6459899 0.2876148 0.6459899"
+            />
+            <site
+              name="lidar_front-90"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.2706062 -0.6532974 0.2706062 0.6532974"
+            />
+            <!-- TIM571 body: dark cylinder, visual-only -->
+            <geom
+              name="lidar_front_body"
+              type="cylinder"
+              size="0.030 0.042"
+              pos="0 0 0"
+              rgba="0.2 0.2 0.2 1"
+              contype="0"
+              conaffinity="0"
+              group="2"
+            />
+          </body>
+
+          <!-- Rear SICK TIM571: mounted at x=-0.45m (rear bumper), z=0.15m.
+               91 beams x 3 deg = 270 deg FOV, sweeping CCW from beam-0 at +45 deg in robot frame.
+               Rear: phi=+45 deg -> R_base = Rot_Z(45)*Rot_Y(90) -> quat=(0.6533,-0.2706,0.6533,0.2706).
+               angle_min=0 in rangefinder user params so the plugin sets _ROS frame X = beam-0 direction. -->
+          <body name="lidar_rear_mount" pos="-0.45 0 0.15">
+            <inertial
+              mass="0.25"
+              pos="0 0 0"
+              diaginertia="0.0001 0.0001 0.0001"
+            />
+            <site
+              name="lidar_rear-0"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.6533 -0.2706 0.6533 0.2706"
+            />
+            <site
+              name="lidar_rear-1"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.6459926 -0.2876087 0.6459926 0.2876087"
+            />
+            <site
+              name="lidar_rear-2"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.6382425 -0.3044203 0.6382425 0.3044203"
+            />
+            <site
+              name="lidar_rear-3"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.630055 -0.3210233 0.630055 0.3210233"
+            />
+            <site
+              name="lidar_rear-4"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.6214357 -0.3374062 0.6214357 0.3374062"
+            />
+            <site
+              name="lidar_rear-5"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.6123904 -0.3535579 0.6123904 0.3535579"
+            />
+            <site
+              name="lidar_rear-6"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.6029255 -0.3694673 0.6029255 0.3694673"
+            />
+            <site
+              name="lidar_rear-7"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.5930473 -0.3851235 0.5930473 0.3851235"
+            />
+            <site
+              name="lidar_rear-8"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.5827627 -0.4005157 0.5827627 0.4005157"
+            />
+            <site
+              name="lidar_rear-9"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.5720787 -0.4156335 0.5720787 0.4156335"
+            />
+            <site
+              name="lidar_rear-10"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.5610026 -0.4304664 0.5610026 0.4304664"
+            />
+            <site
+              name="lidar_rear-11"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.5495421 -0.4450042 0.5495421 0.4450042"
+            />
+            <site
+              name="lidar_rear-12"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.5377049 -0.4592371 0.5377049 0.4592371"
+            />
+            <site
+              name="lidar_rear-13"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.5254992 -0.4731552 0.5254992 0.4731552"
+            />
+            <site
+              name="lidar_rear-14"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.5129333 -0.4867491 0.5129333 0.4867491"
+            />
+            <site
+              name="lidar_rear-15"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.5000159 -0.5000093 0.5000159 0.5000093"
+            />
+            <site
+              name="lidar_rear-16"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.4867558 -0.5129269 0.4867558 0.5129269"
+            />
+            <site
+              name="lidar_rear-17"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.4731621 -0.525493 0.4731621 0.525493"
+            />
+            <site
+              name="lidar_rear-18"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.4592441 -0.5376989 0.4592441 0.5376989"
+            />
+            <site
+              name="lidar_rear-19"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.4450114 -0.5495362 0.4450114 0.5495362"
+            />
+            <site
+              name="lidar_rear-20"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.4304737 -0.560997 0.4304737 0.560997"
+            />
+            <site
+              name="lidar_rear-21"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.415641 -0.5720733 0.415641 0.5720733"
+            />
+            <site
+              name="lidar_rear-22"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.4005234 -0.5827575 0.4005234 0.5827575"
+            />
+            <site
+              name="lidar_rear-23"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.3851313 -0.5930423 0.3851313 0.5930423"
+            />
+            <site
+              name="lidar_rear-24"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.3694752 -0.6029206 0.3694752 0.6029206"
+            />
+            <site
+              name="lidar_rear-25"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.353566 -0.6123858 0.353566 0.6123858"
+            />
+            <site
+              name="lidar_rear-26"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.3374144 -0.6214312 0.3374144 0.6214312"
+            />
+            <site
+              name="lidar_rear-27"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.3210315 -0.6300508 0.3210315 0.6300508"
+            />
+            <site
+              name="lidar_rear-28"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.3044287 -0.6382385 0.3044287 0.6382385"
+            />
+            <site
+              name="lidar_rear-29"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.2876172 -0.6459889 0.2876172 0.6459889"
+            />
+            <site
+              name="lidar_rear-30"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.2706086 -0.6532965 0.2706086 0.6532965"
+            />
+            <site
+              name="lidar_rear-31"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.2534145 -0.6601563 0.2534145 0.6601563"
+            />
+            <site
+              name="lidar_rear-32"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.2360467 -0.6665637 0.2360467 0.6665637"
+            />
+            <site
+              name="lidar_rear-33"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.2185172 -0.6725143 0.2185172 0.6725143"
+            />
+            <site
+              name="lidar_rear-34"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.2008379 -0.678004 0.2008379 0.678004"
+            />
+            <site
+              name="lidar_rear-35"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.183021 -0.683029 0.183021 0.683029"
+            />
+            <site
+              name="lidar_rear-36"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.1650786 -0.6875859 0.1650786 0.6875859"
+            />
+            <site
+              name="lidar_rear-37"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.1470231 -0.6916715 0.1470231 0.6916715"
+            />
+            <site
+              name="lidar_rear-38"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.1288668 -0.6952831 0.1288668 0.6952831"
+            />
+            <site
+              name="lidar_rear-39"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.1106222 -0.6984182 0.1106222 0.6984182"
+            />
+            <site
+              name="lidar_rear-40"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.0923018 -0.7010746 0.0923018 0.7010746"
+            />
+            <site
+              name="lidar_rear-41"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.0739181 -0.7032506 0.0739181 0.7032506"
+            />
+            <site
+              name="lidar_rear-42"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.0554838 -0.7049445 0.0554838 0.7049445"
+            />
+            <site
+              name="lidar_rear-43"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.0370115 -0.7061554 0.0370115 0.7061554"
+            />
+            <site
+              name="lidar_rear-44"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.0185137 -0.7068822 0.0185137 0.7068822"
+            />
+            <site
+              name="lidar_rear-45"
+              size="0.01"
+              pos="0 0 0"
+              quat="0.0000033 -0.7071246 0.0000033 0.7071246"
+            />
+            <site
+              name="lidar_rear-46"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.0185071 -0.7068824 -0.0185071 0.7068824"
+            />
+            <site
+              name="lidar_rear-47"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.0370048 -0.7061557 -0.0370048 0.7061557"
+            />
+            <site
+              name="lidar_rear-48"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.0554772 -0.7049451 -0.0554772 0.7049451"
+            />
+            <site
+              name="lidar_rear-49"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.0739115 -0.7032513 -0.0739115 0.7032513"
+            />
+            <site
+              name="lidar_rear-50"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.0922952 -0.7010755 -0.0922952 0.7010755"
+            />
+            <site
+              name="lidar_rear-51"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.1106156 -0.6984192 -0.1106156 0.6984192"
+            />
+            <site
+              name="lidar_rear-52"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.1288602 -0.6952843 -0.1288602 0.6952843"
+            />
+            <site
+              name="lidar_rear-53"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.1470166 -0.6916729 -0.1470166 0.6916729"
+            />
+            <site
+              name="lidar_rear-54"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.1650721 -0.6875874 -0.1650721 0.6875874"
+            />
+            <site
+              name="lidar_rear-55"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.1830145 -0.6830307 -0.1830145 0.6830307"
+            />
+            <site
+              name="lidar_rear-56"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.2008315 -0.6780059 -0.2008315 0.6780059"
+            />
+            <site
+              name="lidar_rear-57"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.2185109 -0.6725164 -0.2185109 0.6725164"
+            />
+            <site
+              name="lidar_rear-58"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.2360404 -0.6665659 -0.2360404 0.6665659"
+            />
+            <site
+              name="lidar_rear-59"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.2534083 -0.6601587 -0.2534083 0.6601587"
+            />
+            <site
+              name="lidar_rear-60"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.2706024 -0.653299 -0.2706024 0.653299"
+            />
+            <site
+              name="lidar_rear-61"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.2876111 -0.6459916 -0.2876111 0.6459916"
+            />
+            <site
+              name="lidar_rear-62"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.3044227 -0.6382414 -0.3044227 0.6382414"
+            />
+            <site
+              name="lidar_rear-63"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.3210256 -0.6300538 -0.3210256 0.6300538"
+            />
+            <site
+              name="lidar_rear-64"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.3374085 -0.6214344 -0.3374085 0.6214344"
+            />
+            <site
+              name="lidar_rear-65"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.3535602 -0.6123891 -0.3535602 0.6123891"
+            />
+            <site
+              name="lidar_rear-66"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.3694695 -0.6029241 -0.3694695 0.6029241"
+            />
+            <site
+              name="lidar_rear-67"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.3851257 -0.5930459 -0.3851257 0.5930459"
+            />
+            <site
+              name="lidar_rear-68"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.4005179 -0.5827613 -0.4005179 0.5827613"
+            />
+            <site
+              name="lidar_rear-69"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.4156356 -0.5720772 -0.4156356 0.5720772"
+            />
+            <site
+              name="lidar_rear-70"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.4304684 -0.5610011 -0.4304684 0.5610011"
+            />
+            <site
+              name="lidar_rear-71"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.4450062 -0.5495404 -0.4450062 0.5495404"
+            />
+            <site
+              name="lidar_rear-72"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.4592391 -0.5377032 -0.4592391 0.5377032"
+            />
+            <site
+              name="lidar_rear-73"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.4731572 -0.5254974 -0.4731572 0.5254974"
+            />
+            <site
+              name="lidar_rear-74"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.486751 -0.5129315 -0.486751 0.5129315"
+            />
+            <site
+              name="lidar_rear-75"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.5000112 -0.5000141 -0.5000112 0.5000141"
+            />
+            <site
+              name="lidar_rear-76"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.5129287 -0.4867539 -0.5129287 0.4867539"
+            />
+            <site
+              name="lidar_rear-77"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.5254947 -0.4731602 -0.5254947 0.4731602"
+            />
+            <site
+              name="lidar_rear-78"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.5377006 -0.4592422 -0.5377006 0.4592422"
+            />
+            <site
+              name="lidar_rear-79"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.5495379 -0.4450094 -0.5495379 0.4450094"
+            />
+            <site
+              name="lidar_rear-80"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.5609986 -0.4304716 -0.5609986 0.4304716"
+            />
+            <site
+              name="lidar_rear-81"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.5720748 -0.4156389 -0.5720748 0.4156389"
+            />
+            <site
+              name="lidar_rear-82"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.5827589 -0.4005212 -0.5827589 0.4005212"
+            />
+            <site
+              name="lidar_rear-83"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.5930437 -0.3851291 -0.5930437 0.3851291"
+            />
+            <site
+              name="lidar_rear-84"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.602922 -0.369473 -0.602922 0.369473"
+            />
+            <site
+              name="lidar_rear-85"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.6123871 -0.3535637 -0.6123871 0.3535637"
+            />
+            <site
+              name="lidar_rear-86"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.6214325 -0.3374121 -0.6214325 0.3374121"
+            />
+            <site
+              name="lidar_rear-87"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.630052 -0.3210292 -0.630052 0.3210292"
+            />
+            <site
+              name="lidar_rear-88"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.6382397 -0.3044263 -0.6382397 0.3044263"
+            />
+            <site
+              name="lidar_rear-89"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.6459899 -0.2876148 -0.6459899 0.2876148"
+            />
+            <site
+              name="lidar_rear-90"
+              size="0.01"
+              pos="0 0 0"
+              quat="-0.6532974 -0.2706062 -0.6532974 0.2706062"
+            />
+            <!-- TIM571 body: dark cylinder, visual-only -->
+            <geom
+              name="lidar_rear_body"
+              type="cylinder"
+              size="0.030 0.042"
+              pos="0 0 0"
+              rgba="0.2 0.2 0.2 1"
+              contype="0"
+              conaffinity="0"
+              group="2"
+            />
+          </body>
+          <geom
+            name="chassis_link"
+            mesh="chassis_link"
+            material="black"
+            type="mesh"
+            contype="0"
+            conaffinity="0"
+            group="2"
+          />
+          <geom
+            name="riser_link"
+            size="0.2465 0.2465 0.0275"
+            pos="0 0 0.2475"
+            quat="0.92388 0 0 0.382683"
+            type="box"
+            rgba="0.4 0.4 0.4 1"
+            contype="0"
+            conaffinity="0"
+          />
+          <geom
+            name="top_link"
+            mesh="top_link"
+            material="black"
+            type="mesh"
+            contype="0"
+            conaffinity="0"
+            group="2"
+          />
+          <body name="front_rocker_link" pos="0.319 0 0.05">
+            <inertial
+              pos="0 0 0"
+              quat="0.475329 0.523511 0.47531 0.523526"
+              mass="10.267"
+              diaginertia="0.432583 0.412817 0.0288"
+            />
+            <joint
+              name="front_rocker"
+              pos="0 0 0"
+              axis="1 0 0"
+              range="-0.001 0.001"
+              stiffness="10000"
+              damping="500"
+            />
+            <body name="front_left_wheel_link" pos="0 0.2755 0.07">
+              <include file="front_left_wheel_link.xml" />
+            </body>
+            <body name="front_right_wheel_link" pos="0 -0.2755 0.07">
+              <include file="front_right_wheel_link.xml" />
+            </body>
+          </body>
+          <body name="rear_left_wheel_link" pos="-0.319 0.2755 0.12">
+            <include file="rear_left_wheel_link.xml" />
+          </body>
+          <body name="rear_right_wheel_link" pos="-0.319 -0.2755 0.12">
+            <include file="rear_right_wheel_link.xml" />
+          </body>
+          <!-- IMU: position from ridgeback.urdf.xacro imu_joint, relative to chassis_link -->
+          <body name="imu_link" pos="0.2085 -0.2902 0.1681">
+            <inertial
+              mass="0.001"
+              pos="0 0 0"
+              diaginertia="1e-09 1e-09 1e-09"
+            />
+            <site name="imu_site" pos="0 0 0" size="0.01" rgba="0 1 0 1" />
+          </body>
+          <body name="ham_assem" pos="0 0 0.278813" euler="1.5708 -1.57079 0">
+            <geom
+              name="ham_assem"
+              mesh="ham_assem"
+              type="mesh"
+              contype="0"
+              conaffinity="0"
+              group="2"
+            />
+            <geom
+              name="ham_assem_collision_1"
+              mass="0"
+              type="box"
+              pos="0 0.60358  0.148988"
+              size="0.395 0.01 0.307422"
+              group="3"
+            />
+            <geom
+              name="ham_assem_collision_2"
+              mass="0"
+              type="box"
+              pos="-0.26118 0.60358 -0.299002"
+              size="0.133638 0.01 0.140708"
+              group="3"
+            />
+            <geom
+              name="ham_assem_collision_3"
+              mass="0"
+              type="box"
+              pos="0.26118 0.60358 -0.299002"
+              size="0.133638 0.01 0.140708"
+              group="3"
+            />
+
+            <!-- UR5E -->
+            <body
+              name="base"
+              pos="0 0.51905 -0.278813"
+              euler="-1.5708 0 1.5708"
+              childclass="ur5e"
+            >
+              <inertial
+                mass="4.0"
+                pos="0 0 0"
+                diaginertia="0.00443333156 0.00443333156 0.0072"
+              />
+              <geom mesh="base_0" material="black" class="visual" />
+              <geom mesh="base_1" material="jointgray" class="visual" />
+              <body name="shoulder_link" gravcomp="1" pos="0 0 0.163">
+                <inertial
+                  mass="3.7"
+                  pos="0 0 0"
+                  diaginertia="0.0102675 0.0102675 0.00666"
+                />
+                <joint name="shoulder_pan_joint" class="size3" axis="0 0 1" />
+                <geom mesh="shoulder_0" material="urblue" class="visual" />
+                <geom mesh="shoulder_1" material="black" class="visual" />
+                <geom mesh="shoulder_2" material="jointgray" class="visual" />
+                <geom class="collision" size="0.06 0.06" pos="0 0 -0.04" />
+                <body
+                  name="upper_arm_link"
+                  gravcomp="1"
+                  pos="0 0.138 0"
+                  quat="1 0 1 0"
+                >
+                  <inertial
+                    mass="8.393"
+                    pos="0 0 0.2125"
+                    diaginertia="0.133886 0.133886 0.0151074"
+                  />
+                  <joint name="shoulder_lift_joint" class="size3" />
+                  <geom mesh="upperarm_0" material="linkgray" class="visual" />
+                  <geom mesh="upperarm_1" material="black" class="visual" />
+                  <geom mesh="upperarm_2" material="jointgray" class="visual" />
+                  <geom mesh="upperarm_3" material="urblue" class="visual" />
+                  <geom
+                    class="collision"
+                    pos="0 -0.04 0"
+                    quat="1 1 0 0"
+                    size="0.06 0.06"
+                  />
+                  <geom class="collision" size="0.05 0.2" pos="0 0 0.2" />
+                  <body name="forearm_link" gravcomp="1" pos="0 -0.131 0.425">
+                    <inertial
+                      mass="2.275"
+                      pos="0 0 0.196"
+                      diaginertia="0.0311796 0.0311796 0.004095"
+                    />
+                    <joint name="elbow_joint" class="size3_limited" />
+                    <geom mesh="forearm_0" material="urblue" class="visual" />
+                    <geom mesh="forearm_1" material="linkgray" class="visual" />
+                    <geom mesh="forearm_2" material="black" class="visual" />
+                    <geom
+                      mesh="forearm_3"
+                      material="jointgray"
+                      class="visual"
+                    />
+                    <geom
+                      class="collision"
+                      pos="0 0.08 0"
+                      quat="1 1 0 0"
+                      size="0.055 0.06"
+                    />
+                    <geom class="collision" size="0.038 0.19" pos="0 0 0.2" />
+                    <body
+                      name="wrist_1_link"
+                      gravcomp="1"
+                      pos="0 0 0.392"
+                      quat="1 0 1 0"
+                    >
+                      <inertial
+                        mass="1.219"
+                        pos="0 0.127 0"
+                        diaginertia="0.0025599 0.0025599 0.0021942"
+                      />
+                      <joint name="wrist_1_joint" class="size3" />
+                      <geom mesh="wrist1_0" material="black" class="visual" />
+                      <geom mesh="wrist1_1" material="urblue" class="visual" />
+                      <geom
+                        mesh="wrist1_2"
+                        material="jointgray"
+                        class="visual"
+                      />
+                      <geom
+                        class="collision"
+                        pos="0 0.05 0"
+                        quat="1 1 0 0"
+                        size="0.04 0.07"
+                      />
+                      <body name="wrist_2_link" gravcomp="1" pos="0 0.127 0">
+                        <inertial
+                          mass="1.219"
+                          pos="0 0 0.1"
+                          diaginertia="0.0025599 0.0025599 0.0021942"
+                        />
+                        <joint
+                          name="wrist_2_joint"
+                          axis="0 0 1"
+                          class="size3"
+                        />
+                        <geom mesh="wrist2_0" material="black" class="visual" />
+                        <geom
+                          mesh="wrist2_1"
+                          material="urblue"
+                          class="visual"
+                        />
+                        <geom
+                          mesh="wrist2_2"
+                          material="jointgray"
+                          class="visual"
+                        />
+                        <geom
+                          class="collision"
+                          size="0.04 0.06"
+                          pos="0 0 0.04"
+                        />
+                        <geom
+                          class="collision"
+                          pos="0 0.02 0.1"
+                          quat="1 1 0 0"
+                          size="0.04 0.04"
+                        />
+                        <body name="wrist_3_link" gravcomp="1" pos="0 0 0.1">
+                          <inertial
+                            mass="0.1889"
+                            pos="0 0.0771683 0"
+                            quat="1 0 0 1"
+                            diaginertia="0.000132134 9.90863e-05 9.90863e-05"
+                          />
+                          <joint name="wrist_3_joint" class="size3" />
+                          <geom
+                            material="linkgray"
+                            mesh="wrist3"
+                            class="visual"
+                          />
+                          <geom
+                            class="eef_collision"
+                            pos="0 0.08 0"
+                            quat="1 1 0 0"
+                            size="0.04 0.02"
+                          />
+                          <site
+                            name="attachment_site"
+                            pos="0 0.1 0"
+                            quat="-1 1 0 0"
+                          />
+                          <!-- Vacuum + end effector attachments -->
+                          <body>
+                            <!-- site for end effector's f/t sensor right at the base of the gripper -->
+                            <site
+                              name="tcp_fts_sensor"
+                              size="0.01"
+                              pos="0.001 0.1 0"
+                              quat="-1 1 0 0"
+                            />
+                            <body
+                              name="camera_adapter"
+                              gravcomp="1"
+                              pos="0.0 0.1 0"
+                              euler="-1.57 3.14 0"
+                            >
+                              <geom
+                                mesh="camera_adapter"
+                                material="linkgray"
+                                class="visual"
+                              />
+                            </body>
+                            <camera
+                              name="wrist_camera"
+                              pos="0.0 0.2 0.1"
+                              fovy="58"
+                              mode="fixed"
+                              resolution="1280 720"
+                              euler="1.57 0.0 0.0"
+                            />
+                            <site
+                              name="wrist_camera_optical_frame"
+                              pos="0.0 0.2 0.1"
+                              euler="-1.57 0 0"
+                            />
+                            <body
+                              gravcomp="1"
+                              pos="0.0 0.1 0"
+                              quat="0.5 -0.5 0.5 0.5"
+                            >
+                              <include file="vacuum.xml" />
+                            </body>
+                          </body>
+                        </body>
+                      </body>
+                    </body>
+                  </body>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <velocity
+      class="size3"
+      name="shoulder_pan_joint"
+      joint="shoulder_pan_joint"
+      kv="500"
+    />
+    <velocity
+      class="size3"
+      name="shoulder_lift_joint"
+      joint="shoulder_lift_joint"
+      kv="500"
+    />
+    <velocity
+      class="size3_limited"
+      name="elbow_joint"
+      joint="elbow_joint"
+      kv="500"
+    />
+    <velocity
+      class="size3"
+      name="wrist_1_joint"
+      joint="wrist_1_joint"
+      kv="500"
+    />
+    <velocity
+      class="size3"
+      name="wrist_2_joint"
+      joint="wrist_2_joint"
+      kv="500"
+    />
+    <velocity
+      class="size3"
+      name="wrist_3_joint"
+      joint="wrist_3_joint"
+      kv="500"
+    />
+  </actuator>
+
+  <contact>
+    <exclude body1="base_platform" body2="base" />
+  </contact>
+
+  <actuator>
+    <velocity
+      name="front_right_wheel"
+      joint="front_right_wheel"
+      ctrlrange="-15 15"
+      kv="500"
+    />
+    <velocity
+      name="front_left_wheel"
+      joint="front_left_wheel"
+      ctrlrange="-15 15"
+      kv="500"
+    />
+    <velocity
+      name="rear_right_wheel"
+      joint="rear_right_wheel"
+      ctrlrange="-15 15"
+      kv="500"
+    />
+    <velocity
+      name="rear_left_wheel"
+      joint="rear_left_wheel"
+      ctrlrange="-15 15"
+      kv="500"
+    />
+  </actuator>
+
+  <sensor>
+    <force site="tcp_fts_sensor" />
+    <torque site="tcp_fts_sensor" />
+    <framequat objtype="site" objname="imu_site" />
+    <gyro site="imu_site" />
+    <accelerometer site="imu_site" />
+    <!-- Front TIM571: 270 deg FOV, 3 deg resolution (91 beams), 0.05-25m range.
+         angle_min=0 so the _ROS frame X axis points at beam-0 (per plugin convention).
+         The sweep is 0 to 4.7124 rad (270 deg) in the sensor frame, which maps to
+         beam-0 at -135 deg and beam-90 at +135 deg in the robot frame. -->
+    <rangefinder
+      site="lidar_front-0"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-1"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-2"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-3"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-4"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-5"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-6"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-7"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-8"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-9"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-10"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-11"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-12"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-13"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-14"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-15"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-16"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-17"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-18"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-19"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-20"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-21"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-22"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-23"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-24"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-25"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-26"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-27"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-28"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-29"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-30"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-31"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-32"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-33"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-34"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-35"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-36"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-37"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-38"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-39"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-40"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-41"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-42"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-43"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-44"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-45"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-46"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-47"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-48"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-49"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-50"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-51"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-52"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-53"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-54"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-55"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-56"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-57"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-58"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-59"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-60"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-61"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-62"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-63"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-64"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-65"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-66"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-67"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-68"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-69"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-70"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-71"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-72"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-73"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-74"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-75"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-76"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-77"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-78"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-79"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-80"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-81"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-82"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-83"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-84"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-85"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-86"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-87"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-88"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-89"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_front-90"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <!-- Rear TIM571: same convention — angle_min=0, frame X points at beam-0 (+45 deg robot frame). -->
+    <rangefinder site="lidar_rear-0" user="0.05 0.0 4.7124 0.05236 0.05 25.0" />
+    <rangefinder site="lidar_rear-1" user="0.05 0.0 4.7124 0.05236 0.05 25.0" />
+    <rangefinder site="lidar_rear-2" user="0.05 0.0 4.7124 0.05236 0.05 25.0" />
+    <rangefinder site="lidar_rear-3" user="0.05 0.0 4.7124 0.05236 0.05 25.0" />
+    <rangefinder site="lidar_rear-4" user="0.05 0.0 4.7124 0.05236 0.05 25.0" />
+    <rangefinder site="lidar_rear-5" user="0.05 0.0 4.7124 0.05236 0.05 25.0" />
+    <rangefinder site="lidar_rear-6" user="0.05 0.0 4.7124 0.05236 0.05 25.0" />
+    <rangefinder site="lidar_rear-7" user="0.05 0.0 4.7124 0.05236 0.05 25.0" />
+    <rangefinder site="lidar_rear-8" user="0.05 0.0 4.7124 0.05236 0.05 25.0" />
+    <rangefinder site="lidar_rear-9" user="0.05 0.0 4.7124 0.05236 0.05 25.0" />
+    <rangefinder
+      site="lidar_rear-10"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-11"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-12"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-13"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-14"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-15"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-16"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-17"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-18"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-19"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-20"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-21"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-22"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-23"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-24"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-25"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-26"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-27"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-28"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-29"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-30"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-31"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-32"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-33"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-34"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-35"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-36"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-37"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-38"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-39"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-40"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-41"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-42"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-43"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-44"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-45"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-46"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-47"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-48"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-49"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-50"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-51"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-52"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-53"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-54"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-55"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-56"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-57"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-58"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-59"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-60"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-61"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-62"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-63"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-64"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-65"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-66"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-67"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-68"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-69"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-70"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-71"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-72"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-73"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-74"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-75"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-76"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-77"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-78"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-79"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-80"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-81"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-82"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-83"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-84"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-85"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-86"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-87"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-88"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-89"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+    <rangefinder
+      site="lidar_rear-90"
+      user="0.05 0.0 4.7124 0.05236 0.05 25.0"
+    />
+  </sensor>
+</mujoco>

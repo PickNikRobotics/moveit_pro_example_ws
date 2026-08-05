@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="3 Waypoints Pick and Place">
+  <!--//////////-->
+  <BehaviorTree
+    ID="3 Waypoints Pick and Place"
+    _description="Basic example of repeatedly picking a small medicine bottle from the table, placing it in the sorting tray, and then picking it back out and returning it to the original spot. Loops until cancelled."
+    _favorite="true"
+  >
+    <Control ID="Sequence">
+      <!--Setup the environment to its "home" configuration - move to center and open gripper-->
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="3 Waypoint Mid Point"
+        joint_group_name="manipulator"
+      />
+      <Action
+        ID="MoveGripperAction"
+        gripper_command_action_name="/robotiq_gripper_controller/gripper_cmd"
+        position="0"
+        timeout="10.000000"
+      />
+      <!--Run pick and place on loop-->
+      <Decorator ID="KeepRunningUntilFailure">
+        <Control ID="Sequence">
+          <!--Pick object from original location, put it down at a different part of the table, and go back to center pose-->
+          <Control ID="Sequence">
+            <SubTree
+              ID="Move to Waypoint"
+              waypoint_name="3 Waypoint Pick Pose"
+              joint_group_name="manipulator"
+            />
+            <Action
+              ID="MoveGripperAction"
+              gripper_command_action_name="/robotiq_gripper_controller/gripper_cmd"
+              position="0.7929"
+              timeout="10.000000"
+            />
+            <SubTree
+              ID="Move to Waypoint"
+              waypoint_name="3 Waypoint Mid Point"
+              joint_group_name="manipulator"
+            />
+            <SubTree
+              ID="Move to Waypoint"
+              joint_group_name="manipulator"
+              waypoint_name="3 Waypoint Place Pose"
+            />
+            <Action
+              ID="MoveGripperAction"
+              gripper_command_action_name="/robotiq_gripper_controller/gripper_cmd"
+              position="0"
+              timeout="10.000000"
+            />
+            <SubTree
+              ID="Move to Waypoint"
+              waypoint_name="3 Waypoint Mid Point"
+              joint_group_name="manipulator"
+            />
+          </Control>
+          <!--Pick object from where it was placed, put it down on the original location, and go back to center pose-->
+          <Control ID="Sequence">
+            <SubTree
+              ID="Move to Waypoint"
+              waypoint_name="3 Waypoint Place Pose"
+              joint_group_name="manipulator"
+            />
+            <Action
+              ID="MoveGripperAction"
+              gripper_command_action_name="/robotiq_gripper_controller/gripper_cmd"
+              position="0.7929"
+              timeout="10.000000"
+            />
+            <SubTree
+              ID="Move to Waypoint"
+              waypoint_name="3 Waypoint Mid Point"
+              joint_group_name="manipulator"
+            />
+            <SubTree
+              ID="Move to Waypoint"
+              waypoint_name="3 Waypoint Pick Pose"
+              joint_group_name="manipulator"
+            />
+            <Action
+              ID="MoveGripperAction"
+              gripper_command_action_name="/robotiq_gripper_controller/gripper_cmd"
+              position="0"
+              timeout="10.000000"
+            />
+            <SubTree
+              ID="Move to Waypoint"
+              waypoint_name="3 Waypoint Mid Point"
+              joint_group_name="manipulator"
+            />
+          </Control>
+        </Control>
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="3 Waypoints Pick and Place">
+      <MetadataFields>
+        <Metadata subcategory="Application - Basic Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

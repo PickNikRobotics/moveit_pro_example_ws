@@ -1,0 +1,13 @@
+find_package(ament_cmake_gtest REQUIRED)
+find_package(ament_cmake_gmock REQUIRED)
+
+ament_add_gtest(test_behavior_plugins test_behavior_plugins.cpp)
+ament_target_dependencies(test_behavior_plugins ${THIS_PACKAGE_INCLUDE_DEPENDS})
+
+ament_add_gmock(test_generate_surface_coverage_path test_generate_surface_coverage_path.cpp)
+target_link_libraries(test_generate_surface_coverage_path lab_sim_behaviors)
+ament_target_dependencies(test_generate_surface_coverage_path ${THIS_PACKAGE_INCLUDE_DEPENDS})
+
+ament_add_gmock(test_get_mask2d_from_region test_get_mask2d_from_region.cpp)
+target_link_libraries(test_get_mask2d_from_region lab_sim_behaviors)
+ament_target_dependencies(test_get_mask2d_from_region ${THIS_PACKAGE_INCLUDE_DEPENDS})
