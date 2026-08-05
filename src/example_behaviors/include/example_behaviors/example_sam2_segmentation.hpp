@@ -1,12 +1,13 @@
 #pragma once
 
+#include <filesystem>
 #include <future>
 #include <memory>
+#include <optional>
 #include <string>
 
 #include <moveit_pro_behavior_interface/async_behavior_base.hpp>
-#include <moveit_pro_ml/onnx_sam2.hpp>
-#include <moveit_pro_ml/onnx_sam2_types.hpp>
+#include <moveit_pro_ml/sam2_segment.hpp>
 #include <moveit_studio_vision_msgs/msg/mask2_d.hpp>
 #include <sensor_msgs/msg/image.hpp>
 #include <tl_expected/expected.hpp>
@@ -53,10 +54,18 @@ protected:
   tl::expected<bool, std::string> doWork() override;
 
 private:
-  std::unique_ptr<moveit_pro_ml::SAM2> sam2_;
-  moveit_pro_ml::ONNXImage onnx_image_;
-  sensor_msgs::msg::Image mask_image_msg_;
-  moveit_studio_vision_msgs::msg::Mask2D mask_msg_;
+  /**
+   * @brief Load the SAM2 pipeline on first tick and reuse it afterwards.
+   * @details The model latches to the bundle and runtime it first loaded with. Changing either port
+   * afterwards fails loudly rather than silently continuing to serve the original model, because the
+   * pipeline does not support hot reload.
+   */
+  tl::expected<void, std::string> ensureLoaded(const std::filesystem::path& bundle_manifest,
+                                               const std::string& runtime_id);
+
+  std::optional<moveit_pro_ml::SAM2Segment> sam2_;
+  std::filesystem::path loaded_bundle_manifest_;
+  std::string loaded_runtime_id_;
 
   /** @brief Classes derived from AsyncBehaviorBase must implement getFuture() so that it returns a shared_future class member */
   std::shared_future<tl::expected<bool, std::string>>& getFuture() override
