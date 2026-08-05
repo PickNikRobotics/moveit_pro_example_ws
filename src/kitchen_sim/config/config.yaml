@@ -5,6 +5,9 @@
 ###############################################################
 
 based_on_package: "franka_base_config"
+runtime_launch_file:
+  package: "kitchen_sim"
+  path: "launch/runtime.launch.xml"
 # Baseline hardware configuration parameters for MoveIt Pro.
 # [Required]
 hardware:

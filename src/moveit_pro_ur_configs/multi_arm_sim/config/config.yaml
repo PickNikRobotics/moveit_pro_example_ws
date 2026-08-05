@@ -1,5 +1,9 @@
 # Baseline hardware configuration parameters for MoveIt Pro.
 # [Required]
+runtime_launch_file:
+  package: "multi_arm_sim"
+  path: "launch/runtime.launch.xml"
+
 hardware:
 
   # If the MoveIt Pro Agent should launch the ros2 controller node.

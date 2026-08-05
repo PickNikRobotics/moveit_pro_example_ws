@@ -5,6 +5,9 @@
 #
 
 based_on_package: "phoebe_sim"
+runtime_launch_file:
+  package: "lunar_sim"
+  path: "launch/runtime.launch.xml"
 
 hardware:
   robot_description:
