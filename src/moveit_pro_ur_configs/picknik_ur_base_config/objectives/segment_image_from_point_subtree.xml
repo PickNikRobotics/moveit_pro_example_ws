@@ -5,8 +5,8 @@
     ID="Segment Image from Point Subtree"
     _description="Captures an image and segments it using three user provided prompt points."
     _favorite="false"
-    decoder_model_path="models/sam2_decoder.onnx"
-    encoder_model_path="models/sam2_hiera_large_encoder.onnx"
+    model_bundle_manifest="models/model.yaml"
+    runtime_id="onnxruntime"
     image_topic_name="/wrist_camera/color"
     masks_visualization_topic="/masks_visualization"
     model_package="moveit_pro_sam2"
@@ -32,8 +32,8 @@
         image="{image}"
         pixel_coords="{pixel_coords}"
         masks2d="{masks2d}"
-        decoder_model_path="{decoder_model_path}"
-        encoder_model_path="{encoder_model_path}"
+        model_bundle_manifest="{model_bundle_manifest}"
+        runtime_id="{runtime_id}"
         model_package="{model_package}"
       />
       <Action
@@ -51,14 +51,8 @@
         <Metadata runnable="false" />
         <Metadata subcategory="Perception - ML" />
       </MetadataFields>
-      <inout_port
-        name="decoder_model_path"
-        default="models/sam2_decoder.onnx"
-      />
-      <inout_port
-        name="encoder_model_path"
-        default="models/sam2_hiera_large_encoder.onnx"
-      />
+      <inout_port name="model_bundle_manifest" default="models/model.yaml" />
+      <inout_port name="runtime_id" default="onnxruntime" />
       <inout_port name="image_topic_name" default="/wrist_camera/color" />
       <inout_port
         name="masks_visualization_topic"

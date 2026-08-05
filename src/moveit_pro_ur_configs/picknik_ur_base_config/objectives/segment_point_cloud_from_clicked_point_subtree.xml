@@ -9,8 +9,8 @@
     _description="Captures a point cloud and requests the user to click an object in the image to be segmented. The point cloud is then filtered to only include the selected object."
     _favorite="false"
     camera_topic_name="{camera_topic_name}"
-    decoder_model_path="{decoder_model_path}"
-    encoder_model_path="{encoder_model_path}"
+    model_bundle_manifest="{model_bundle_manifest}"
+    runtime_id="{runtime_id}"
     image_topic_name="{image_topic_name}"
     masks_visualization_topic="{masks_visualization_topic}"
     model_package="{model_package}"
@@ -21,8 +21,8 @@
       <SubTree
         ID="Segment Image from Point Subtree"
         _collapsed="true"
-        decoder_model_path="{decoder_model_path}"
-        encoder_model_path="{encoder_model_path}"
+        model_bundle_manifest="{model_bundle_manifest}"
+        runtime_id="{runtime_id}"
         image_topic="{image_topic_name}"
         masks_visualization_topic="{masks_visualization_topic}"
         model_package="{model_package}"
@@ -60,8 +60,11 @@
   <TreeNodesModel>
     <SubTree ID="Segment Point Cloud from Clicked Point Subtree">
       <inout_port name="camera_topic_name" default="{camera_topic_name}" />
-      <inout_port name="decoder_model_path" default="{decoder_model_path}" />
-      <inout_port name="encoder_model_path" default="{encoder_model_path}" />
+      <inout_port
+        name="model_bundle_manifest"
+        default="{model_bundle_manifest}"
+      />
+      <inout_port name="runtime_id" default="{runtime_id}" />
       <inout_port name="image_topic_name" default="{image_topic_name}" />
       <inout_port
         name="masks_visualization_topic"
