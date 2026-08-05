@@ -1,16 +1,21 @@
 #include <fmt/format.h>
+#include <cstdint>
 #include <future>
 #include <memory>
 #include <string>
+#include <vector>
 
+#include <ament_index_cpp/get_package_prefix.hpp>
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #include <example_behaviors/example_sam2_segmentation.hpp>
 #include <geometry_msgs/msg/point_stamped.hpp>
 #include <moveit_pro_behavior_interface/async_behavior_base.hpp>
 #include <moveit_pro_behavior_interface/get_required_ports.hpp>
-#include <moveit_pro_ml/onnx_sam2.hpp>
+#include <moveit_pro_ml/data_types.hpp>
+#include <moveit_pro_ml/sam2_segment.hpp>
 #include <moveit_studio_vision_msgs/msg/mask2_d.hpp>
 #include <sensor_msgs/msg/image.hpp>
+#include <std_msgs/msg/header.hpp>
 #include <tl_expected/expected.hpp>
 
 namespace
@@ -21,54 +26,95 @@ constexpr auto kPortPoint = "pixel_coords";
 constexpr auto kPortPointDefault = "{pixel_coords}";
 constexpr auto kPortMasks = "masks2d";
 constexpr auto kPortMasksDefault = "{masks2d}";
+constexpr auto kPortModelPackage = "model_package";
+constexpr auto kPortModelPackageDefault = "moveit_pro_sam2";
+constexpr auto kPortBundleManifest = "model_bundle_manifest";
+constexpr auto kPortBundleManifestDefault = "models/model.yaml";
+constexpr auto kPortRuntimeId = "runtime_id";
+constexpr auto kPortRuntimeIdDefault = "onnxruntime";
 
 constexpr auto kImageInferenceWidth = 1024;
 constexpr auto kImageInferenceHeight = 1024;
+
+/// Number of bytes per pixel each supported ROS encoding stores.
+constexpr size_t kRgb8Channels = 3;
+constexpr size_t kRgba8Channels = 4;
 }  // namespace
 
 namespace example_behaviors
 {
-// Convert a ROS image message to the ONNX image format used by the SAM 2 model
-void set_onnx_image_from_ros_image(const sensor_msgs::msg::Image& image_msg, moveit_pro_ml::ONNXImage& onnx_image)
+namespace
 {
-  onnx_image.shape = { 1, image_msg.height, image_msg.width, 3 };
-  onnx_image.data.resize(image_msg.height * image_msg.width * 3);
-  const int stride = image_msg.encoding != "rgb8" ? 3 : 4;
-  for (size_t i = 0; i < onnx_image.data.size(); i += stride)
+/**
+ * @brief Convert a ROS image message to the NHWC tensor the SAM2 pipeline consumes.
+ * @details The source may carry an alpha channel; the tensor is always three-channel RGB with
+ * values normalized to [0.0, 1.0].
+ */
+tl::expected<moveit_pro_ml::data::Tensor<float, moveit_pro_ml::data::format::NHWC>, std::string>
+toImageTensor(const sensor_msgs::msg::Image& image_msg)
+{
+  namespace data = moveit_pro_ml::data;
+
+  const size_t source_channels = image_msg.encoding == "rgb8" ? kRgb8Channels : kRgba8Channels;
+  const size_t pixel_count = static_cast<size_t>(image_msg.height) * image_msg.width;
+  if (image_msg.data.size() < pixel_count * source_channels)
   {
-    onnx_image.data[i] = static_cast<float>(image_msg.data[i]) / 255.0f;
-    onnx_image.data[i + 1] = static_cast<float>(image_msg.data[i + 1]) / 255.0f;
-    onnx_image.data[i + 2] = static_cast<float>(image_msg.data[i + 2]) / 255.0f;
+    return tl::make_unexpected(fmt::format("Image message declares {}x{} {} but carries only {} bytes", image_msg.width,
+                                           image_msg.height, image_msg.encoding, image_msg.data.size()));
   }
+
+  std::vector<float> values(pixel_count * kRgb8Channels);
+  for (size_t pixel = 0; pixel < pixel_count; ++pixel)
+  {
+    const size_t source = pixel * source_channels;
+    const size_t destination = pixel * kRgb8Channels;
+    for (size_t channel = 0; channel < kRgb8Channels; ++channel)
+    {
+      values[destination + channel] = static_cast<float>(image_msg.data[source + channel]) / 255.0f;
+    }
+  }
+
+  auto tensor = data::Tensor<float, data::format::NHWC>::create(
+      std::move(values), data::Batch{ 1 }, data::Channels{ static_cast<int64_t>(kRgb8Channels) },
+      data::Extent{ data::Height{ static_cast<int64_t>(image_msg.height) },
+                    data::Width{ static_cast<int64_t>(image_msg.width) } });
+  if (!tensor.has_value())
+  {
+    return tl::make_unexpected(fmt::format("Failed to build the SAM2 input tensor: {}", tensor.error()));
+  }
+  return std::move(tensor).value();
 }
 
-// Converts a single channel ONNX image mask to a ROS mask message.
-void set_ros_mask_from_onnx_mask(const moveit_pro_ml::ONNXImage& onnx_image, sensor_msgs::msg::Image& mask_image_msg,
-                                 moveit_studio_vision_msgs::msg::Mask2D& mask_msg)
+/// @brief Convert a single-channel mask of probabilities to a ROS mask message.
+moveit_studio_vision_msgs::msg::Mask2D
+toMaskMessage(const moveit_pro_ml::data::Tensor<float, moveit_pro_ml::data::format::HW>& mask,
+              const std_msgs::msg::Header& header)
 {
-  mask_image_msg.height = static_cast<uint32_t>(onnx_image.shape[0]);
-  mask_image_msg.width = static_cast<uint32_t>(onnx_image.shape[1]);
+  sensor_msgs::msg::Image mask_image_msg;
+  mask_image_msg.header = header;
+  mask_image_msg.height = static_cast<uint32_t>(mask.height());
+  mask_image_msg.width = static_cast<uint32_t>(mask.width());
   mask_image_msg.encoding = "mono8";
-  mask_image_msg.data.resize(mask_image_msg.height * mask_image_msg.width);
   mask_image_msg.step = mask_image_msg.width;
-  for (size_t i = 0; i < onnx_image.data.size(); ++i)
+  mask_image_msg.data.resize(mask.data.size());
+  for (size_t i = 0; i < mask.data.size(); ++i)
   {
-    mask_image_msg.data[i] = onnx_image.data[i] > 0.5 ? 255 : 0;
+    mask_image_msg.data[i] = mask.data[i] > 0.5f ? 255 : 0;
   }
-  mask_msg.pixels = mask_image_msg;
+
+  moveit_studio_vision_msgs::msg::Mask2D mask_msg;
+  mask_msg.pixels = std::move(mask_image_msg);
   mask_msg.x = 0;
   mask_msg.y = 0;
+  return mask_msg;
 }
+}  // namespace
 
 ExampleSAM2Segmentation::ExampleSAM2Segmentation(
     const std::string& name, const BT::NodeConfiguration& config,
     const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources)
   : moveit_pro::behaviors::AsyncBehaviorBase(name, config, shared_resources)
 {
-  const std::filesystem::path package_path = ament_index_cpp::get_package_share_directory("moveit_pro_sam2");
-  const std::filesystem::path encoder_onnx_file = package_path / "models" / "sam2_hiera_large_encoder.onnx";
-  const std::filesystem::path decoder_onnx_file = package_path / "models" / "sam2_decoder.onnx";
-  sam2_ = std::make_unique<moveit_pro_ml::SAM2>(encoder_onnx_file, decoder_onnx_file);
 }
 
 BT::PortsList ExampleSAM2Segmentation::providedPorts()
@@ -78,17 +124,53 @@ BT::PortsList ExampleSAM2Segmentation::providedPorts()
                                                                         "The input points, as a vector of "
                                                                         "<code>geometry_msgs/PointStamped</code> "
                                                                         "messages to be used for segmentation."),
+           BT::InputPort<std::string>(kPortModelPackage, kPortModelPackageDefault,
+                                      "ROS package containing the SAM 2 model bundle."),
+           BT::InputPort<std::string>(kPortBundleManifest, kPortBundleManifestDefault,
+                                      "Path to the SAM 2 model bundle manifest, relative to the model package's share "
+                                      "directory. The manifest names every graph the pipeline loads."),
+           BT::InputPort<std::string>(kPortRuntimeId, kPortRuntimeIdDefault,
+                                      "Which <code>runtimes:</code> section of the bundle manifest to load."),
 
            BT::OutputPort<std::vector<moveit_studio_vision_msgs::msg::Mask2D>>(
                kPortMasks, kPortMasksDefault,
                "The masks contained in a vector of <code>moveit_studio_vision_msgs::msg::Mask2D</code> messages.") };
 }
 
+tl::expected<void, std::string> ExampleSAM2Segmentation::ensureLoaded(const std::filesystem::path& bundle_manifest,
+                                                                      const std::string& runtime_id)
+{
+  if (sam2_.has_value())
+  {
+    if (bundle_manifest != loaded_bundle_manifest_ || runtime_id != loaded_runtime_id_)
+    {
+      return tl::make_unexpected(
+          fmt::format("The SAM 2 model latched to bundle '{}' (runtime '{}') on its first run and cannot be reloaded "
+                      "with bundle '{}' (runtime '{}'). Stop the Objective, change the ports, and run it again.",
+                      loaded_bundle_manifest_.string(), loaded_runtime_id_, bundle_manifest.string(), runtime_id));
+    }
+    return {};
+  }
+
+  auto model = moveit_pro_ml::SAM2Segment::load(
+      { .bundle_manifest = bundle_manifest, .runtime = moveit_pro_ml::model::RuntimeId{ runtime_id } });
+  if (!model.has_value())
+  {
+    return tl::make_unexpected(
+        fmt::format("Failed to load the SAM 2 model bundle '{}': {}", bundle_manifest.string(), model.error().message));
+  }
+  sam2_ = std::move(model).value();
+  loaded_bundle_manifest_ = bundle_manifest;
+  loaded_runtime_id_ = runtime_id;
+  return {};
+}
+
 tl::expected<bool, std::string> ExampleSAM2Segmentation::doWork()
 {
-  const auto ports =
-      moveit_pro::behaviors::getRequiredInputs(getInput<sensor_msgs::msg::Image>(kPortImage),
-                                               getInput<std::vector<geometry_msgs::msg::PointStamped>>(kPortPoint));
+  const auto ports = moveit_pro::behaviors::getRequiredInputs(
+      getInput<sensor_msgs::msg::Image>(kPortImage),
+      getInput<std::vector<geometry_msgs::msg::PointStamped>>(kPortPoint), getInput<std::string>(kPortModelPackage),
+      getInput<std::string>(kPortBundleManifest), getInput<std::string>(kPortRuntimeId));
 
   // Check that all required input data ports were set.
   if (!ports.has_value())
@@ -96,7 +178,7 @@ tl::expected<bool, std::string> ExampleSAM2Segmentation::doWork()
     auto error_message = fmt::format("Failed to get required values from input data ports:\n{}", ports.error());
     return tl::make_unexpected(error_message);
   }
-  const auto& [image_msg, points_2d] = ports.value();
+  const auto& [image_msg, points_2d, model_package, bundle_manifest, runtime_id] = ports.value();
 
   if (image_msg.encoding != "rgb8" && image_msg.encoding != "rgba8")
   {
@@ -105,10 +187,30 @@ tl::expected<bool, std::string> ExampleSAM2Segmentation::doWork()
     return tl::make_unexpected(error_message);
   }
 
-  // Create ONNX formatted image tensor from ROS image
-  set_onnx_image_from_ros_image(image_msg, onnx_image_);
+  std::filesystem::path manifest_path;
+  try
+  {
+    manifest_path =
+        std::filesystem::path{ ament_index_cpp::get_package_share_directory(model_package) } / bundle_manifest;
+  }
+  catch (const ament_index_cpp::PackageNotFoundError& e)
+  {
+    return tl::make_unexpected(fmt::format("Model package '{}' was not found: {}", model_package, e.what()));
+  }
 
-  std::vector<moveit_pro_ml::PointPrompt> point_prompts;
+  if (const auto loaded = ensureLoaded(manifest_path, runtime_id); !loaded.has_value())
+  {
+    return tl::make_unexpected(loaded.error());
+  }
+
+  auto image_tensor = toImageTensor(image_msg);
+  if (!image_tensor.has_value())
+  {
+    return tl::make_unexpected(image_tensor.error());
+  }
+
+  std::vector<moveit_pro_ml::data::Point> point_prompts;
+  point_prompts.reserve(points_2d.size());
   for (auto const& point : points_2d)
   {
     // Assume all points are the same label
@@ -117,19 +219,15 @@ tl::expected<bool, std::string> ExampleSAM2Segmentation::doWork()
                               { 1.0f } });
   }
 
-  try
+  const auto result =
+      sam2_->predict({ .image = std::move(image_tensor).value(), .point_prompts = std::move(point_prompts) });
+  if (!result.has_value())
   {
-    const auto masks = sam2_->predict(onnx_image_, point_prompts);
-
-    mask_image_msg_.header = image_msg.header;
-    set_ros_mask_from_onnx_mask(masks, mask_image_msg_, mask_msg_);
-
-    setOutput<std::vector<moveit_studio_vision_msgs::msg::Mask2D>>(kPortMasks, { mask_msg_ });
+    return tl::make_unexpected(fmt::format("SAM 2 segmentation failed: {}", result.error().message));
   }
-  catch (const std::invalid_argument& e)
-  {
-    return tl::make_unexpected(fmt::format("Invalid argument: {}", e.what()));
-  }
+
+  setOutput<std::vector<moveit_studio_vision_msgs::msg::Mask2D>>(kPortMasks,
+                                                                 { toMaskMessage(result->mask, image_msg.header) });
 
   return true;
 }
