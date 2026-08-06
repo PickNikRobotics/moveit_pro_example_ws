@@ -27,7 +27,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 // Publish odom -> world so that odom -> base equals fuse's (drifty) estimate,
-// while robot_state_publisher keeps world -> base as ground truth (#19667).
+// while robot_state_publisher keeps world -> base as ground truth.
 //
 //     odom -> world = fuse_estimate(odom->base) (+) inverse(world->base_true)
 // makes the TF lookup odom -> base resolve to fuse's estimate; AMCL then has real
@@ -70,7 +70,11 @@ using hangar_sim::se2::Pose2;
 using odom_world_drift::internal::kRailJoints;
 using odom_world_drift::internal::resolveRailIndices;
 
-constexpr double kPubPeriod = 0.02;  // 50 Hz, keeps odom->world fresh for AMCL
+constexpr double kPubPeriod = 0.02;   // 50 Hz, keeps odom->world fresh for AMCL
+constexpr double kEstStaleSec = 0.5;  // ~5x fuse's ~10 Hz publish period: treat /odom_filtered as
+                                      // stale (fuse crashed/stalled) beyond this and stop
+                                      // broadcasting, rather than replaying a frozen estimate
+                                      // against a still-advancing ground-truth base_ stamp.
 }  // namespace
 
 class OdomWorldDrift : public rclcpp::Node
@@ -97,6 +101,8 @@ private:
   {
     const auto& p = m.pose.pose;
     est_ = Pose2{ p.position.x, p.position.y, tf2::getYaw(p.orientation) };
+    est_stamp_ = get_clock()->now();  // arrival time, not the sender's stamp: staleness is judged
+                                      // against how long WE have gone without a fresh sample.
   }
 
   void onJoints(const sensor_msgs::msg::JointState& msg)
@@ -133,6 +139,20 @@ private:
     {
       return;
     }
+    // base_ keeps updating from /joint_states at 50 Hz independent of fuse's health, so a stale
+    // est_ (fuse crashed or stalled -- now recoverable via respawn) would otherwise broadcast
+    // odom->world with an advancing stamp but frozen content: the TF lookup stays "available" and
+    // AMCL silently localizes against a base that appears not to be moving. Withhold instead.
+    const double est_age = (get_clock()->now() - est_stamp_).seconds();
+    if (est_age > kEstStaleSec)
+    {
+      RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 5000,
+                           "odom_world_drift: /odom_filtered is %.2fs stale (fuse down?) -- "
+                           "withholding odom->world so downstream TF lookups fail loudly instead "
+                           "of localizing against a frozen estimate.",
+                           est_age);
+      return;
+    }
     // odom->world = odom->base(est) (+) inverse(world->base(true))
     // Note: est (fuse, ~10 Hz) and base (rail joints, ~50 Hz) are the latest of each, sampled at
     // different instants, so during motion this carries up to ~speed*0.1s of timing-skew noise
@@ -155,6 +175,7 @@ private:
   // which share the node's default mutually-exclusive callback group -- so they never run
   // concurrently and the state needs no locking.
   std::optional<Pose2> est_;                                        // fuse estimate odom->base
+  rclcpp::Time est_stamp_;                                          // arrival time of the last est_
   std::optional<Pose2> base_;                                       // ground-truth world->base
   std::vector<std::string> cached_names_;                           // /joint_states name list idx_ resolves against
   std::optional<std::array<std::size_t, kRailJoints.size()>> idx_;  // cached rail-joint indices into that list

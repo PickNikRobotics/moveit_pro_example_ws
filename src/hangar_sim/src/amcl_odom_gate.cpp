@@ -49,6 +49,7 @@
 
 #include <chrono>
 #include <cmath>
+#include <optional>
 #include <vector>
 
 #include <tf2_ros/buffer.h>
@@ -77,6 +78,13 @@ constexpr int64_t kStaleWarnThrottleMs = 2000;  // min interval between stale-in
 constexpr double kOdomBufferSec = 1.0;          // odom->base history kept for latency compensation [s].
                                                 // Usable compensation ceiling is this minus the newest
                                                 // sample's age (the odom TF lag), not the full window.
+constexpr double kOdomBufferStaleSec = 0.5;     // treat the odom buffer as unavailable once its newest
+                                                // sample is older than this: appendOdomSample never empties
+                                                // the buffer on a running TF failure (it only clears on a
+                                                // backward clock jump), so without this age check a
+                                                // persistently-failing odom->base lookup would silently
+                                                // clamp interpolateOdom to an ever-staler sample forever
+                                                // instead of falling through to the retry/skip path below.
 }  // namespace
 
 using amcl_odom_gate::Pose2;
@@ -190,8 +198,14 @@ private:
     // candidate by a constant offset that persistence would then accept as a real correction.
     const double now_sec = this->now().seconds();
     const double odom_target = rclcpp::Time(cloud.header.stamp).seconds() - params_.latency_compensation_sec;
+    // A non-empty buffer whose newest sample is stale means the odom->base TF lookup has been
+    // failing (see kOdomBufferStaleSec above), not that a fresh sample is simply pending -- treat
+    // it the same as an empty buffer and fall through to the retry/skip path instead of silently
+    // clamping to an arbitrarily old pose.
+    const bool odom_buf_fresh = !odom_buf_.empty() && (now_sec - odom_buf_.back().t) <= kOdomBufferStaleSec;
     Pose2 odom_base{ 0.0, 0.0, 0.0 };
-    if (const auto interp = amcl_odom_gate::interpolateOdom(odom_buf_, odom_target); interp.has_value())
+    if (const auto interp = odom_buf_fresh ? amcl_odom_gate::interpolateOdom(odom_buf_, odom_target) : std::nullopt;
+        interp.has_value())
     {
       odom_base = interp.value();
       if (params_.latency_compensation_sec > 0.0 && !odom_buf_.empty() && odom_target > odom_buf_.back().t)
@@ -207,9 +221,20 @@ private:
     }
     else
     {
-      // interpolateOdom returns nullopt only when odom_buf_ is empty, which -- given the
-      // sampleOdomForBuffer() at the top of this callback -- only happens in the narrow startup
-      // window where that lookup just failed. Retry once here; if it still fails, skip this cloud.
+      // Reached when the buffer is empty (narrow startup window) or its newest sample is stale
+      // (odom->base TF lookup has been failing -- see kOdomBufferStaleSec above). Distinguish the
+      // two: an empty buffer at startup is expected and not worth warning about, but a non-empty,
+      // stale buffer means the TF lookup was working and then stopped -- surface that specifically
+      // rather than relying on the generic starvation watchdog in publish() to eventually notice.
+      if (!odom_buf_.empty())
+      {
+        RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), kStaleWarnThrottleMs,
+                             "amcl_odom_gate: odom->base buffer is stale (newest sample is %.2fs old, > "
+                             "kOdomBufferStaleSec=%.2fs) -- the odom->ridgeback_base_link TF lookup has "
+                             "stopped succeeding.",
+                             now_sec - odom_buf_.back().t, kOdomBufferStaleSec);
+      }
+      // Retry once here; if it still fails, skip this cloud.
       try
       {
         const auto t = tf_buffer_.lookupTransform("odom", "ridgeback_base_link", tf2::TimePointZero);
