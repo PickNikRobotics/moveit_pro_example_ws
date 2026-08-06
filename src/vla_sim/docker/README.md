@@ -65,23 +65,28 @@ chooses the robot's actions, and `VLA_TORCH_INDEX` supplies the torch build.
 
 ## Running the image outside compose
 
-Compose supplies the environment the image needs. By hand:
+Compose builds the image and supplies the environment it needs. By hand, from
+this directory:
 
 ```bash
+docker build -f Dockerfile.vla_inference_server -t vla_inference_server .
 docker run --rm --user "$(id -u):$(id -g)" \
+  --gpus all \
   -e HOME=/tmp -e USER=vla \
   -v "$PWD/../hf_cache:/hf" -e HF_HOME=/hf -e HF_TOKEN="$HF_TOKEN" \
   -v "$PWD/../config:/vla_config:ro" \
   -e MOVEIT_FRONTEND_KEY=moveit-secret-key \
-  -p 127.0.0.1:8973:8973 <image>
+  -p 127.0.0.1:8973:8973 vla_inference_server
 ```
 
 `--user` keeps bind-mounted files from being written as uid 1000, which means
 the image's own passwd entry no longer applies, so `HOME` and `USER` have to be
-set for torch's import-time cache setup. The Hugging Face cache mount makes
-checkpoint downloads persist, and the config mount is where the server reads
-which checkpoint to load. The image's entrypoint already runs the server, so
-anything after `<image>` is appended as arguments to it, and
+set for torch's import-time cache setup. `--gpus all` exposes the GPU to the
+container; without it `device: auto` silently serves on cpu. Omit the flag on a
+machine without an NVIDIA GPU, where it fails outright. The Hugging Face cache
+mount makes checkpoint downloads persist, and the config mount is where the
+server reads which checkpoint to load. The image's entrypoint already runs the
+server, so anything after the image name is appended as arguments to it, and
 `--checkpoint <dir-or-hf-id>` overrides the config.
 
 ## Tests
