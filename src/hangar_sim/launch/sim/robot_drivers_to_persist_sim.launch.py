@@ -211,7 +211,7 @@ def generate_launch_description():
 
     declare_use_fuse_cmd = DeclareLaunchArgument(
         "use_fuse",
-        default_value="true",  # #19667: fuse drives sim odometry (was "false")
+        default_value="true",
         description="Whether to launch the fuse state estimator",
     )
 
@@ -348,8 +348,8 @@ def generate_launch_description():
     # MuJoCo broadcast a competing odom->ridgeback_base_link TF — removed in this
     # change.) The UI (pose-utils.ts) hardcodes 'world' for user-clicked poses, so
     # this link also keeps nav2 goals transformable to 'map'.
-    # odom -> world. Without fuse it's a static identity (odom == world). With fuse
-    # (#19667), odom_world_drift replaces it with a live transform so odom -> base
+    # odom -> world. Without fuse it's a static identity (odom == world). With fuse,
+    # odom_world_drift replaces it with a live transform so odom -> base
     # resolves to fuse's drifty estimate, giving AMCL real drift to correct while
     # world -> base stays ground truth for whole-body.
     static_tf_odom_to_world = Node(
@@ -366,7 +366,9 @@ def generate_launch_description():
         package="hangar_sim",
         executable="odom_world_drift",
         name="odom_world_drift",
-        output="log",
+        # "both": this node's warnings are operator-facing signal, not noise -- log-only would
+        # route them to ~/.ros/log/ on the (per this package's harness notes) doomed container fs.
+        output="both",
         respawn=LaunchConfiguration("use_respawn"),
         respawn_delay=2.0,
         parameters=[{"use_sim_time": use_sim_time}],
@@ -380,7 +382,8 @@ def generate_launch_description():
         package="hangar_sim",
         executable="slip_aware_odom",
         name="slip_aware_odom",
-        output="log",
+        # "both": see odom_world_drift's comment above.
+        output="both",
         respawn=LaunchConfiguration("use_respawn"),
         respawn_delay=2.0,
         parameters=[{"use_sim_time": use_sim_time}],
@@ -414,7 +417,10 @@ def generate_launch_description():
         package="hangar_sim",
         executable="amcl_odom_gate",
         name="amcl_odom_gate",
-        output="log",
+        # "both": the gate's coast/starvation watchdogs and parameter-validation warnings are
+        # exactly the operator-facing signal this node exists to surface -- see odom_world_drift's
+        # comment above.
+        output="both",
         respawn=LaunchConfiguration("use_respawn"),
         # Shorter than the other nodes: this is the sole map->odom publisher, and AMCL's
         # transform_tolerance is 1.0 s, so keep the crash-recovery gap under that to avoid

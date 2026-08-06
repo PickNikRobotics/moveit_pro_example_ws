@@ -83,6 +83,11 @@ if(BUILD_TESTING)
   ament_add_gmock(test_odom_world_drift test/test_odom_world_drift.cpp)
   target_include_directories(test_odom_world_drift PRIVATE include)
   target_compile_features(test_odom_world_drift PRIVATE cxx_std_20)
+
+  # Unit tests for the pure slip_aware_odom re-anchor/stitch and covariance-ramp logic (no ROS).
+  ament_add_gmock(test_slip_aware_odom test/test_slip_aware_odom.cpp)
+  target_include_directories(test_slip_aware_odom PRIVATE include)
+  target_compile_features(test_slip_aware_odom PRIVATE cxx_std_20)
 endif()
 
 ament_package()

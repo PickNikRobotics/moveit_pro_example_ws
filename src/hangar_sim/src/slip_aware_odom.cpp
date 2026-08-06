@@ -46,8 +46,6 @@
 // then never loses its wheel constraint and cannot coast, which otherwise jumped
 // the estimate ~1 m at the switch and flipped the map during whole-body motion.
 
-#include <algorithm>
-#include <chrono>
 #include <cmath>
 
 #include <nav_msgs/msg/odometry.hpp>
@@ -55,27 +53,24 @@
 #include <tf2/utils.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
-#include "hangar_sim/se2.hpp"
+#include "hangar_sim/slip_aware_odom_logic.hpp"
 
 namespace
 {
-constexpr double kBaseCov = 0.03;     // straight-line yaw covariance
-constexpr double kSpinCov = 10.0;     // fully-slipping yaw covariance: large enough to
-                                      // effectively drop the wheel yaw so fuse rides the
-                                      // IMU (its orientation tracks truth to ~0.1 deg even
-                                      // mid-spin, where the mecanum wheels slip badly)
-constexpr double kTau = 0.5;          // slip relaxation time constant [s]
-constexpr double kSlipFull = 0.5;     // leaky-integrated |yaw rate| for full distrust
-constexpr double kMaxDt = 0.1;        // clamp dt so a stale gap can't spike the integral
-constexpr double kSourceGap = 0.2;    // a source quiet longer than this counts as switched out [s]
-constexpr int kYaw = 35;              // (yaw, yaw) pose element and (vyaw, vyaw) twist element
-constexpr double kHoldPeriod = 0.02;  // 50 Hz: rate at which to check for a silent source
-constexpr double kHoldGap = 0.015;    // hold the last pose once the source is quiet this long [s]
+constexpr int kYaw = 35;                          // (yaw, yaw) pose element and (vyaw, vyaw) twist element
+constexpr double kHoldPeriod = 0.02;              // 50 Hz: rate at which to check for a silent source
+constexpr double kHoldGap = 0.015;                // hold the last pose once the source is quiet this long [s]
+constexpr double kHoldMaxSec = 0.5;               // stop holding (and warn) once the source has been quiet this
+                                                  // long: well beyond the ~15 ms handoff beat kHoldGap bridges,
+                                                  // so a hold reaching this means the active controller died,
+                                                  // not a handoff -- keep publishing a fabricated "parked" state
+                                                  // forever would tell fuse the base is stationary indefinitely.
+constexpr int64_t kHoldMaxWarnThrottleMs = 2000;  // min interval between hold-timeout warnings [ms]
 
-// SE(2) primitives shared with amcl_odom_gate (se2.hpp).
-using hangar_sim::se2::compose;
-using hangar_sim::se2::invert;
-using hangar_sim::se2::Pose2;
+using slip_aware_odom::Pose2;
+using slip_aware_odom::RelayParams;
+using slip_aware_odom::RelayState;
+using slip_aware_odom::updateRelay;
 }  // namespace
 
 class SlipAwareOdom : public rclcpp::Node
@@ -119,36 +114,23 @@ private:
 
     // Only the active controller publishes odom (the inactive one is silent), so the
     // two sources never interleave and a source change always means a genuine handoff.
-    // On that switch or a stale gap, re-anchor so the output continues seamlessly:
-    // pick the offset for which compose(offset, p) == the last output pose.
-    if (source != active_ || last_t_ <= 0.0 || t - last_t_ > kSourceGap)
-    {
-      offset_ = compose(out_, invert(p));
-      active_ = source;
-    }
-    out_ = compose(offset_, p);
-
-    // Full elapsed time drives the decay -- a long gap (e.g. a nav <-> whole-body handoff silence)
-    // SHOULD relax the integral toward kBaseCov. The clamped value drives only the growth term, so a
-    // stale gap cannot spike |yaw rate| * dt. Under normal ~500 Hz relay the two are equal (dt << kMaxDt).
-    const double elapsed = (last_t_ > 0.0) ? std::max(t - last_t_, 0.0) : 0.0;
-    const double dt = std::min(elapsed, kMaxDt);
-    last_t_ = t;
-    // Leaky integral of |yaw rate|: grows over sustained spin, decays with kTau.
-    slip_ = slip_ * std::exp(-elapsed / kTau) + std::abs(m.twist.twist.angular.z) * dt;
-    const double cov = kBaseCov + (kSpinCov - kBaseCov) * std::min(1.0, slip_ / kSlipFull);
+    // updateRelay re-anchors on that switch (or a stale gap) so the output continues
+    // seamlessly, and ramps the yaw covariance toward spin_cov as the leaky-integrated
+    // |yaw rate| accumulates. Pure logic lives in slip_aware_odom_logic.hpp -- unit-tested
+    // in test/test_slip_aware_odom.cpp.
+    const auto result = updateRelay(p, t, m.twist.twist.angular.z, source, relay_params_, relay_state_);
 
     odom_.header.stamp = m.header.stamp;
-    odom_.pose.pose.position.x = out_.x;
-    odom_.pose.pose.position.y = out_.y;
-    odom_.pose.pose.orientation.z = std::sin(out_.yaw / 2.0);
-    odom_.pose.pose.orientation.w = std::cos(out_.yaw / 2.0);
+    odom_.pose.pose.position.x = result.pose.x;
+    odom_.pose.pose.position.y = result.pose.y;
+    odom_.pose.pose.orientation.z = std::sin(result.pose.yaw / 2.0);
+    odom_.pose.pose.orientation.w = std::cos(result.pose.yaw / 2.0);
     odom_.pose.covariance = m.pose.covariance;  // keep the controller's x/y covariance
     odom_.twist = m.twist;                      // body-frame twist is source-independent
     // Grow both the pose-yaw and twist-yaw-rate covariance so fuse defers to the IMU
     // gyro -- for orientation and yaw rate alike -- while the mecanum wheels slip.
-    odom_.pose.covariance[kYaw] = cov;
-    odom_.twist.covariance[kYaw] = cov;
+    odom_.pose.covariance[kYaw] = result.yaw_cov;
+    odom_.twist.covariance[kYaw] = result.yaw_cov;
     pub_->publish(odom_);
     last_relay_ = now();
   }
@@ -159,19 +141,29 @@ private:
   // normal driving the ~500 Hz stream keeps last_relay_ fresh and this no-ops.
   void hold()
   {
-    if (active_ < 0)
-    {
-      return;
-    }
     const double gap = (now() - last_relay_).seconds();
-    if (gap < kHoldGap)
+    if (gap > kHoldMaxSec)
+    {
+      // The active source has been quiet far longer than a handoff beat -- it died (crashed
+      // controller, deactivated with nothing taking over) rather than switched. Stop fabricating
+      // zero-velocity odometry: let fuse's wheel constraint lapse loudly instead of asserting
+      // "parked" indefinitely.
+      RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), kHoldMaxWarnThrottleMs,
+                           "slip_aware_odom: active source has been silent for %.2fs (> %.2fs) -- "
+                           "treating it as dead, not a handoff. Withholding held odometry.",
+                           gap, kHoldMaxSec);
+      return;
+    }
+    // computeHoldStamp returns the stamp (last relayed message time, on the controllers'
+    // clock, advanced by the elapsed gap) to publish a held sample at, or nullopt if
+    // nothing has been relayed yet or the gap hasn't reached kHoldGap. Pure logic in
+    // slip_aware_odom_logic.hpp -- unit-tested in test/test_slip_aware_odom.cpp.
+    const auto held_opt = slip_aware_odom::computeHoldStamp(relay_state_.active, relay_state_.last_t, gap, kHoldGap);
+    if (!held_opt.has_value())
     {
       return;
     }
-    // Stamp = last relayed message stamp (last_t_, on the controllers' clock) advanced
-    // by the elapsed gap, so held samples stay on the relayed stream's clock base and
-    // strictly increase -- independent of whether the node clock matches it.
-    const double held = last_t_ + gap;
+    const double held = held_opt.value();
     odom_.header.stamp.sec = static_cast<int32_t>(held);
     odom_.header.stamp.nanosec = static_cast<uint32_t>((held - std::floor(held)) * 1e9);
     odom_.twist.twist.linear.x = 0.0;
@@ -185,11 +177,9 @@ private:
   // concurrently and the state needs no locking. Do NOT move either callback to a
   // separate or reentrant callback group without adding synchronization.
   nav_msgs::msg::Odometry odom_;
-  Pose2 out_{ 0.0, 0.0, 0.0 };     // continuous output pose
-  Pose2 offset_{ 0.0, 0.0, 0.0 };  // current source -> output-frame offset
-  int active_ = -1;                // source id currently being forwarded
-  double slip_ = 0.0, last_t_ = 0.0;
-  rclcpp::Time last_relay_;  // node-clock time of the last forwarded message
+  RelayParams relay_params_;  // relay/covariance-ramp tunables (defaults match the prior constants)
+  RelayState relay_state_;    // mutable re-anchor/slip state, updated in relay()
+  rclcpp::Time last_relay_;   // node-clock time of the last forwarded message
   // ROS entities declared last so they destruct (and stop firing callbacks) before
   // the state above that those callbacks read.
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr pub_;
