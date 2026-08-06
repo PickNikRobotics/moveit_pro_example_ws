@@ -9,8 +9,13 @@ services:
   # The base image that all MoveIt Pro services extend off of. Builds the user workspace.
   base: {}
 
-  # Starts the MoveIt Pro Agent and the Bridge between the Agent and the Web UI.
-  runtime: {}
+  # Starts the MoveIt Pro runtime: the Agent and its Bridge to the Web UI.
+  runtime:
+    environment:
+      # The vla_sim adapter's target; derived from the same
+      # MOVEIT_INFERENCE_PORT that publishes the server's host port, so
+      # changing the port is a one-variable edit. No other config reads it.
+      - INFER_URL=http://127.0.0.1:${MOVEIT_INFERENCE_PORT:-8973}/infer
 
   # Starts the robot drivers.
   drivers:
@@ -26,3 +31,59 @@ services:
     volumes:
       # Allow access to host hardware e.g. RealSense cameras
       - /dev:/dev
+
+  # LeRobot VLA inference server for the vla_sim config (src/vla_sim/docker/).
+  # The workspace half of the product's `inference_server` skeleton (see
+  # /opt/moveit_pro/docker-compose.yaml): the two same-named services merge,
+  # with the product side owning lifecycle, GPU runtime, security, and the
+  # published port. Only `moveit_pro run --with-inference-server` and
+  # `--only-inference-server` build or start it. Model selection lives in
+  # src/vla_sim/config/vla_serving.yaml, mounted at /vla_config; everything
+  # below is a host setting.
+  inference_server:
+    # Declared here too, so a launcher whose compose file carries no
+    # inference_server skeleton still gates this service instead of building
+    # and starting it on every plain run and build.
+    profiles: ["inference"]
+    build:
+      # Relative paths resolve against the compose project directory
+      # (/opt/moveit_pro when the launcher runs this), so workspace paths must
+      # go through MOVEIT_HOST_USER_WORKSPACE, same as the base service.
+      context: ${MOVEIT_HOST_USER_WORKSPACE:-.}/src/vla_sim/docker
+      dockerfile: Dockerfile.vla_inference_server
+      args:
+        TORCH_INDEX: ${VLA_TORCH_INDEX:-}
+    # Host facts only; model knobs live in vla_serving.yaml (mounted below).
+    environment:
+      # Token for gated/private Hugging Face downloads (the pi0.5 processor
+      # resolves the gated google/paligemma tokenizer even for local
+      # checkpoints; accept its license once with this token, or pre-seed the
+      # cache and set HF_HUB_OFFLINE=1).
+      - HF_TOKEN=${HF_TOKEN:-}
+      - HF_HUB_OFFLINE=${HF_HUB_OFFLINE:-0}
+      - HF_HOME=/hf
+      # Scratch home for the mapped user; only /hf persists. The image ships
+      # a passwd entry for uid 1000 only, so USER keeps getpass.getuser()
+      # (torch cache-dir setup) working when the host uid differs.
+      - HOME=/tmp
+      - USER=vla
+    volumes:
+      # Hub downloads (checkpoints, tokenizers) persist here across restarts.
+      # The default is a workspace-owned folder that exists in every clone, so
+      # docker never creates the bind source as root (a missing host path
+      # would be created root-owned and the non-root container could not
+      # write to it). Point VLA_HF_CACHE at an absolute path to reuse an
+      # existing Hugging Face cache instead.
+      - ${VLA_HF_CACHE:-${MOVEIT_HOST_USER_WORKSPACE:-.}/src/vla_sim/hf_cache}:/hf
+      # Local checkpoints: drop a checkpoint directory into
+      # src/vla_sim/models/ and set the vla_serving.yaml checkpoint to
+      # /models/<checkpoint-dir>. VLA_MODELS_DIR overrides the host folder
+      # for checkpoints stored elsewhere.
+      - ${VLA_MODELS_DIR:-${MOVEIT_HOST_USER_WORKSPACE:-.}/src/vla_sim/models}:/models:ro
+      # Model-serving config (checkpoint, fps, device, ...); edits picked up on
+      # restart, no image rebuild.
+      - ${MOVEIT_HOST_USER_WORKSPACE:-.}/src/vla_sim/config:/vla_config:ro
+      # The server script and its tests; edits take effect on restart, no
+      # image rebuild, and `docker exec ... python -m unittest` reaches the
+      # test suite (see src/vla_sim/docker/README.md).
+      - ${MOVEIT_HOST_USER_WORKSPACE:-.}/src/vla_sim/docker:/app:ro

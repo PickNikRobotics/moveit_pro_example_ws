@@ -1,0 +1,27 @@
+<launch>
+  <!-- URL of the inference server (the workspace docker-compose.yaml
+       `inference_server` service). The compose file sets INFER_URL from
+       MOVEIT_INFERENCE_PORT so the port stays a one-variable edit. The host
+       must be a loopback address: requests carry the deployment's shared key
+       over plain HTTP, so the adapter refuses to send them off this machine.
+       Serving the policy from another host is not supported. -->
+  <arg
+    name="infer_url"
+    default="$(env INFER_URL 'http://127.0.0.1:8973/infer')"
+  />
+  <include
+    file="$(find-pkg-share moveit_studio_agent)/launch/studio_agent_bridge.launch.xml"
+  />
+  <!-- Bridges ExecutePolicy's /get_action_chunk service to the inference server over
+       HTTP. Lightweight (no ML dependencies), so it always runs with the config; when
+       the server is down it fails requests with an actionable message instead. -->
+  <node
+    pkg="vla_sim"
+    exec="get_action_chunk_adapter.py"
+    name="get_action_chunk_adapter"
+    output="both"
+    emulate_tty="true"
+  >
+    <param name="infer_url" value="$(var infer_url)" />
+  </node>
+</launch>
