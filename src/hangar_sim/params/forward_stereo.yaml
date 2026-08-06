@@ -1,0 +1,16 @@
+forward_stereo_publisher:
+  ros__parameters:
+    # OAK-D Pro-compatible center-cropped OV9282 stereo profile. The real
+    # camera should use the same 1280x720 @ 20 Hz profile for parity captures.
+    width: 1280
+    height: 720
+    vertical_fov_degrees: 50.53401584672457
+    baseline_m: 0.075
+    left_frame_id: "forward_stereo_left_optical_frame"
+    right_frame_id: "forward_stereo_right_optical_frame"
+    left_source_topic: "/forward_stereo_left/color"
+    right_source_topic: "/forward_stereo_right/color"
+    left_image_topic: "/forward_stereo/left/image_rect"
+    right_image_topic: "/forward_stereo/right/image_rect"
+    left_camera_info_topic: "/forward_stereo/left/camera_info"
+    right_camera_info_topic: "/forward_stereo/right/camera_info"
