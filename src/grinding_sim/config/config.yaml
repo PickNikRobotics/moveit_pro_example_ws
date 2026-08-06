@@ -4,6 +4,10 @@
 #
 ###############################################################
 
+runtime_launch_file:
+  package: "grinding_sim"
+  path: "launch/runtime.launch.xml"
+
 # Baseline hardware configuration parameters for MoveIt Pro.
 # [Required]
 hardware:

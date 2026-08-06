@@ -1,4 +1,7 @@
 based_on_package: "picknik_ur_base_config"
+runtime_launch_file:
+  package: "picknik_ur_site_config"
+  path: "launch/runtime.launch.xml"
 
 objectives:
   behavior_loader_plugins:

@@ -4,6 +4,10 @@
 #
 ###############################################################
 
+runtime_launch_file:
+  package: "kinova_gen3_base_config"
+  path: "launch/runtime.launch.xml"
+
 hardware:
   # If the MoveIt Pro Agent should launch the ros2 controller node.
   # [Optional, default=True]

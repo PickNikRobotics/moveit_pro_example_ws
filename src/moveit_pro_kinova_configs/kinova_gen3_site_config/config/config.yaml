@@ -4,6 +4,9 @@
 
 # Name of the package to specialize
 based_on_package: "kinova_gen3_base_config"
+runtime_launch_file:
+  package: "kinova_gen3_site_config"
+  path: "launch/runtime.launch.xml"
 
 hardware:
   # Real-hardware drivers. Overrides the base config's simulated default
