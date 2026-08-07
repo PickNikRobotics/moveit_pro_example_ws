@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Record Cube-Stack Blue On Green">
+  <!--
+    The training layouts drawn for this prompt, named by the trailing comment on
+    each key in description/mujoco/keyframes.xml. LoopString converts its queue
+    port from a literal only, so the layouts are spelled out here.
+  -->
+  <BehaviorTree
+    ID="Record Cube-Stack Blue On Green"
+    _description="Record 60 oracle demonstrations of stacking the blue cube on the green cube."
+    _favorite="false"
+  >
+    <Decorator
+      ID="LoopString"
+      queue="train_5;train_11;train_17;train_23;train_29;train_35;train_41;train_47;train_53;train_59;train_65;train_71;train_77;train_83;train_89;train_95;train_101;train_107;train_113;train_119;train_125;train_131;train_137;train_143;train_149;train_155;train_161;train_167;train_173;train_179;train_185;train_191;train_197;train_203;train_209;train_215;train_221;train_227;train_233;train_239;train_245;train_251;train_257;train_263;train_269;train_275;train_281;train_287;train_293;train_299;train_305;train_311;train_317;train_323;train_329;train_335;train_341;train_347;train_353;train_359"
+      value="{keyframe_name}"
+    >
+      <SubTree
+        ID="Record Cube-Stack Episode"
+        dataset_name="cubestack_blue_on_green"
+        task="stack the blue cube on the green cube"
+        held_cube_frame="cube_blue_tf"
+        target_cube_frame="cube_green_tf"
+        keyframe_name="{keyframe_name}"
+      />
+    </Decorator>
+  </BehaviorTree>
+
+  <TreeNodesModel>
+    <SubTree ID="Record Cube-Stack Blue On Green">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - VLA Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

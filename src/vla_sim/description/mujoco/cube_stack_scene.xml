@@ -1,4 +1,4 @@
-<mujoco model="kinova color-cube stacking scene">
+<mujoco model="kinova cube stacking scene">
   <!-- ============================================================
        Kinova Gen3 (7-DoF) + Robotiq 2F-85 stacking colored cubes.
 
@@ -183,20 +183,14 @@
     </body>
   </worldbody>
 
-  <!-- Initial state. qpos layout (compile order):
-       robot [7 arm + 8 robotiq gripper] (15), then 3 cube freejoints (3x7=21).
-       The 7 arm values are the "Home" waypoint pose (arm tucked up off the
-       table), so the scene resets at home. The 8 robotiq values are the
-       gripper rest pose. Each cube freejoint is
-       pos(3)+quat(4): the three table-rest poses above, identity orientation.
-       ctrl = 8 actuators (7 arm + 1 gripper). The 7 arm position actuators must
-       be commanded to the SAME home angles as qpos (else they'd drive toward
-       zero on tick 1); the gripper actuator holds 0 (open). -->
-  <keyframe>
-    <key
-      name="default"
-      qpos="7.2854474427322627e-05 0.0060998872530424308 -3.1250605484909082 -2.5051932931762071 -2.7164243118882329e-05 0.95966324117024648 1.5699864595074029 0.00500747 0.000142046 0.0054543 -0.0057924 0.00500747 0.000142046 0.00545513 -0.00579407 0.44 -0.12 0.115 1 0 0 0 0.56 0.0 0.115 1 0 0 0 0.50 0.13 0.115 1 0 0 0"
-      ctrl="7.2854474427322627e-05 0.0060998872530424308 -3.1250605484909082 -2.5051932931762071 -2.7164243118882329e-05 0.95966324117024648 1.5699864595074029 0"
-    />
-  </keyframe>
+  <!-- Startup state (the `default` key) plus the randomized train/eval cube
+       layouts. qpos layout (compile order): robot [7 arm + 8 robotiq gripper]
+       (15), then 3 cube freejoints (3x7=21), in the red/green/blue declaration
+       order above.
+
+       The 7 arm values are the "Home" waypoint pose, so the scene starts and
+       resets with the arm tucked up off the table. ctrl = 8 actuators (7 arm +
+       1 gripper); the arm actuators carry the SAME home angles as qpos, so they
+       hold that pose from tick 1. The gripper holds 0 (open). -->
+  <include file="keyframes.xml" />
 </mujoco>

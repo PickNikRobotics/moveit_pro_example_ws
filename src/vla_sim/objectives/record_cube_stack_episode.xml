@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Record Cube-Stack Episode">
+  <!--
+    One recording session per episode, so the scene reset happens outside any
+    recording window. Sessions sharing a dataset name accumulate into one
+    dataset.
+
+    A demonstration the oracle cannot finish is left unsaved and the tree still
+    succeeds, so a sweep over keyframes loses the attempt rather than the run.
+  -->
+  <BehaviorTree
+    ID="Record Cube-Stack Episode"
+    _description="Record one oracle demonstration from a keyframe into a dataset."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="root">
+      <SubTree ID="Prepare Cube-Stack Scene" keyframe_name="{keyframe_name}" />
+      <Action
+        ID="RecordEpisode"
+        dataset_name="{dataset_name}"
+        task="{task}"
+        num_episodes="1"
+        recording_id="{recording_id}"
+      />
+      <Action ID="WaitForEpisodeStart" timeout="30.0" />
+      <!--Hold still across the frames straddling the start marker.-->
+      <Action ID="WaitForDuration" delay_duration="0.5" />
+      <Control ID="Fallback" name="save_only_what_finished">
+        <Control ID="Sequence" name="demonstration">
+          <SubTree
+            ID="Execute Cube-Stack Oracle"
+            held_cube_frame="{held_cube_frame}"
+            target_cube_frame="{target_cube_frame}"
+          />
+          <Action ID="SaveEpisode" />
+        </Control>
+        <Action ID="AlwaysSuccess" />
+      </Control>
+      <!--
+        Saving rolls the bag to a fresh split. Hold long enough for that split to
+        take frames, so the converter reads a finalized file.
+      -->
+      <Action ID="WaitForDuration" delay_duration="1.0" />
+      <Action ID="StopRecording" />
+    </Control>
+  </BehaviorTree>
+
+  <TreeNodesModel>
+    <SubTree ID="Record Cube-Stack Episode">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Application - VLA Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
