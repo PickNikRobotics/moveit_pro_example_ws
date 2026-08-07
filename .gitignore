@@ -16,3 +16,5 @@ src/vla_sim/hf_cache/*
 # Machine-local launcher/workspace settings and secrets (HF_TOKEN etc.).
 .env
 .env.*
+# uv-managed venv for the training recipe (src/vla_sim/train/).
+src/vla_sim/train/.venv/

@@ -1,0 +1,26 @@
+# Environment for the training recipes in this directory. Standalone so it can be
+# copied elsewhere (e.g. a RunPod box) and still resolve the same versions.
+
+[project]
+name = "lerobot-training-recipes"
+version = "0.1.0"
+description = "Pinned environment for running the training recipes in this directory"
+requires-python = ">=3.12,<3.13"
+
+dependencies = [
+    "lerobot[pi,peft,training]==0.6.0",
+    "torch==2.10.0",
+    "torchvision==0.25.0",
+]
+
+[tool.uv]
+package = false  # a dependency set, not an importable package
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cu128", marker = "sys_platform == 'linux'" }]
+torchvision = [{ index = "pytorch-cu128", marker = "sys_platform == 'linux'" }]
