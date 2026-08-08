@@ -56,21 +56,43 @@ toImageTensor(const sensor_msgs::msg::Image& image_msg)
   namespace data = moveit_pro_ml::data;
 
   const size_t source_channels = image_msg.encoding == "rgb8" ? kRgb8Channels : kRgba8Channels;
-  const size_t pixel_count = static_cast<size_t>(image_msg.height) * image_msg.width;
-  if (image_msg.data.size() < pixel_count * source_channels)
+
+  // The tensor's strong dimension types reject a non-positive extent by throwing, so catch an empty
+  // image here and report it through the same error channel as every other malformed message.
+  if (image_msg.height == 0 || image_msg.width == 0)
   {
-    return tl::make_unexpected(fmt::format("Image message declares {}x{} {} but carries only {} bytes", image_msg.width,
-                                           image_msg.height, image_msg.encoding, image_msg.data.size()));
+    return tl::make_unexpected(
+        fmt::format("Image message has a zero extent ({}x{})", image_msg.width, image_msg.height));
   }
 
-  std::vector<float> values(pixel_count * kRgb8Channels);
-  for (size_t pixel = 0; pixel < pixel_count; ++pixel)
+  // Rows are `step` bytes apart, not necessarily tightly packed: a publisher may pad each row. Walking
+  // by pixel would read padding as image data once step exceeds one row of pixels.
+  const size_t row_bytes = static_cast<size_t>(image_msg.width) * source_channels;
+  if (image_msg.step < row_bytes)
   {
-    const size_t source = pixel * source_channels;
-    const size_t destination = pixel * kRgb8Channels;
-    for (size_t channel = 0; channel < kRgb8Channels; ++channel)
+    return tl::make_unexpected(fmt::format("Image message row stride {} is smaller than one {} row of {} pixels ({} "
+                                           "bytes)",
+                                           image_msg.step, image_msg.encoding, image_msg.width, row_bytes));
+  }
+  if (image_msg.data.size() < static_cast<size_t>(image_msg.height) * image_msg.step)
+  {
+    return tl::make_unexpected(fmt::format("Image message declares {}x{} {} with row stride {} but carries only {} "
+                                           "bytes",
+                                           image_msg.width, image_msg.height, image_msg.encoding, image_msg.step,
+                                           image_msg.data.size()));
+  }
+
+  std::vector<float> values(static_cast<size_t>(image_msg.height) * image_msg.width * kRgb8Channels);
+  for (size_t row = 0; row < image_msg.height; ++row)
+  {
+    for (size_t column = 0; column < image_msg.width; ++column)
     {
-      values[destination + channel] = static_cast<float>(image_msg.data[source + channel]) / 255.0f;
+      const size_t source = row * image_msg.step + column * source_channels;
+      const size_t destination = (row * image_msg.width + column) * kRgb8Channels;
+      for (size_t channel = 0; channel < kRgb8Channels; ++channel)
+      {
+        values[destination + channel] = static_cast<float>(image_msg.data[source + channel]) / 255.0f;
+      }
     }
   }
 
