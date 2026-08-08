@@ -25,8 +25,8 @@
         image="{image}"
         masks2d="{masks2d}"
         pixel_coords="{pixel_coords}"
-        decoder_model_path="models/sam2_decoder.onnx"
-        encoder_model_path="models/sam2_hiera_large_encoder.onnx"
+        model_bundle_manifest="models/model.yaml"
+        runtime_id="onnxruntime"
         model_package="moveit_pro_sam2"
       />
       <Action
