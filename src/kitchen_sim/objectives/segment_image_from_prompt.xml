@@ -17,10 +17,7 @@
       <Action
         ID="GetMasks2DFromExemplar"
         model_package="moveit_pro_sam3"
-        encoder_model_path="models/sam3_vision_encoder.onnx"
-        decoder_model_path="models/sam3_decoder.onnx"
-        geometry_encoder_model_path="models/sam3_geometry_encoder.onnx"
-        text_encoder_model_path="models/sam3_text_encoder.onnx"
+        model_bundle_manifest="models/model.yaml"
         confidence_threshold="0.5"
         target_image="{image}"
         text_prompt="a stove circular burner"
