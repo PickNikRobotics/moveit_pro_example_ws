@@ -10,6 +10,7 @@
   <maintainer email="support@picknik.ai">MoveIt Pro Maintainer</maintainer>
 
   <license>BSD-3-Clause</license>
+  <license file="models/LICENSE">Apache-2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 

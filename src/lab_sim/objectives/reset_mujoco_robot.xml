@@ -18,7 +18,7 @@
         deactivate_controllers="{command_controllers}"
       />
       <Action
-        ID="CreateJointState"
+        ID="CreateRobotState"
         joint_names="linear_rail_joint;shoulder_pan_joint;shoulder_lift_joint;elbow_joint;wrist_1_joint;wrist_2_joint;wrist_3_joint"
         positions="0.0;0.0;-1.57;0.0;0.0;0.0;0.0"
       />

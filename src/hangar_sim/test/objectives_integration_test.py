@@ -42,6 +42,7 @@ from rclpy.qos import qos_profile_sensor_data
 from control_msgs.action import GripperCommand
 from controller_manager_msgs.srv import ListControllers
 from moveit_pro_test_utils.objective_test_fixture import (
+    DEFAULT_OBJECTIVE_WAIT_S,
     EndStateSpec,
     ExecuteObjectiveResource,
     JointTarget,
@@ -121,14 +122,17 @@ skip_objectives = {
     # the next objectives plan from a self-colliding start. Skipping removes the
     # timeout flake and its downstream sim-state pollution.
     "Solution - Draw Picknik",
-    # "Point-to-Point Trajectory" interpolates to the "Arm Forward" waypoint on
-    # joint_trajectory_controller, which also owns the mecanum linear_x_joint
-    # (config/control/picknik_ur.ros2_control.yaml). The interpolated terminal
-    # velocity carries a floating-point residual (~3.8e-7) that the controller's
-    # nonzero-terminal-velocity validation intermittently rejects ("Velocity of
-    # last trajectory point of joint linear_x_joint is not zero"). Real
-    # controller/interpolation bug, not a test issue -- skip pending that fix.
-    "Point-to-Point Trajectory",
+}
+
+# Execute-timeout overrides for objectives that legitimately exceed the 90 s
+# default on the CI runner. The surface-following objectives run the full
+# wrist-snap -> raster-generation -> Cartesian-plan pipeline; on the shared CI
+# runner the single-pass variant needs >90 s and the 3-pass variant passed with
+# only ~20 s of headroom. (Before the nav2 TF fix these objectives failed fast
+# at the point-cloud transform ~30 s in, so the default budget never bound.)
+EXECUTE_TIMEOUT_OVERRIDES_S = {
+    "Plan Path Along Surface": 180.0,
+    "Plan Path Along Surface 3 Passes": 180.0,
 }
 
 # Action servers the hangar_sim tree types need before any objective runs.
@@ -429,6 +433,9 @@ def test_all_objectives(
             objective_id,
             should_cancel,
             execute_objective_resource,
+            objective_wait_time=EXECUTE_TIMEOUT_OVERRIDES_S.get(
+                objective_id, DEFAULT_OBJECTIVE_WAIT_S
+            ),
             expected_end_state_by_id=expected_end_state_by_id,
         )
     except AssertionError as e:

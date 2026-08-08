@@ -41,8 +41,6 @@
                   ID="SetupMTCPlanToPose"
                   acceleration_scale_factor="1.000000"
                   ik_frame="right_fr3_hand_tcp"
-                  keep_orientation_link_names="right_fr3_hand_tcp"
-                  keep_orientation_tolerance="0.100000"
                   link_padding="0.000000"
                   max_iterations="5000"
                   monitored_stage="current state"
@@ -109,11 +107,9 @@
                   velocity_scale="1.000000"
                 />
                 <Action
-                  ID="SetupMTCPlanToJointState"
+                  ID="SetupMTCPlanToRobotState"
                   acceleration_scale_factor="1.000000"
                   joint_state="{target_joint_state}"
-                  keep_orientation_link_names="grasp_link"
-                  keep_orientation_tolerance="0.100000"
                   link_padding="0.000000"
                   max_iterations="5000"
                   planning_group_name="right_manipulator"
@@ -170,8 +166,6 @@
                   ID="SetupMTCPlanToPose"
                   acceleration_scale_factor="1.000000"
                   ik_frame="left_fr3_hand_tcp"
-                  keep_orientation_link_names="left_fr3_hand_tcp"
-                  keep_orientation_tolerance="0.100000"
                   link_padding="0.000000"
                   max_iterations="5000"
                   monitored_stage="current state"
@@ -238,11 +232,9 @@
                   velocity_scale="1.000000"
                 />
                 <Action
-                  ID="SetupMTCPlanToJointState"
+                  ID="SetupMTCPlanToRobotState"
                   acceleration_scale_factor="1.000000"
                   joint_state="{target_joint_state}"
-                  keep_orientation_link_names="grasp_link"
-                  keep_orientation_tolerance="0.100000"
                   link_padding="0.000000"
                   max_iterations="5000"
                   planning_group_name="left_manipulator"

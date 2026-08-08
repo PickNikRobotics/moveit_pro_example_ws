@@ -24,8 +24,7 @@
           joint_group_name="manipulator"
           waypoint_name="Grasp Left"
           link_padding="0.0"
-          keep_orientation="true"
-          keep_orientation_tolerance="0.2"
+          orientation_constraint="[{link_name: grasp_link, angle_tolerance: 0.2}]"
         />
       </Control>
     </Decorator>

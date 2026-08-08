@@ -12,8 +12,6 @@
         acceleration_scale_factor="1.0"
         controller_names="joint_trajectory_controller"
         joint_group_name="manipulator"
-        keep_orientation="false"
-        keep_orientation_tolerance="0.05"
         link_padding="0.0"
         seed="0"
         velocity_scale_factor="1.0"

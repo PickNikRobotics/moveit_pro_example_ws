@@ -13,6 +13,19 @@
       <sensor name="lidar_rear">
         <param name="topic">/scan_rear</param>
       </sensor>
+      <!-- Move the plugin's per-camera monocular camera_info off the ROS sibling
+           name of the stereo source images. That info carries the same K and
+           frame_id as the stereo contract but P[3]=0, so a consumer resolving
+           camera_info as the sibling of /forward_stereo_right/color would read a
+           zero baseline and infer infinite depth from finite disparity, with
+           nothing to flag the mistake. The calibrated stereo contract is
+           published by forward_stereo_publisher on /forward_stereo/{left,right}/. -->
+      <sensor name="forward_stereo_left">
+        <param name="camera_info_topic">/forward_stereo_left/monocular_camera_info</param>
+      </sensor>
+      <sensor name="forward_stereo_right">
+        <param name="camera_info_topic">/forward_stereo_right/monocular_camera_info</param>
+      </sensor>
       <hardware>
           <plugin>picknik_mujoco_ros/MujocoSystem</plugin>
           <param name="mujoco_model">${mujoco_model}</param>

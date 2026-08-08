@@ -17,9 +17,6 @@
       <Action
         ID="SetupMTCConnectWithProRRT"
         acceleration_scale_factor="1.000000"
-        keep_orientation="false"
-        keep_orientation_link_names="grasp_link"
-        keep_orientation_tolerance="0.100000"
         link_padding="0.000000"
         max_iterations="5000"
         planning_group_name="manipulator"

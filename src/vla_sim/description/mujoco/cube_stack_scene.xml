@@ -1,0 +1,202 @@
+<mujoco model="kinova color-cube stacking scene">
+  <!-- ============================================================
+       Kinova Gen3 (7-DoF) + Robotiq 2F-85 stacking colored cubes.
+
+       Three 30 mm cubes (red / green / blue) sit on a table in front of
+       the arm; the task is "stack the <held> cube on the <target> cube".
+
+       This file includes the robot (gen3_7dof.xml, robotiq variant),
+       which sets <compiler meshdir="assets">, then adds the task
+       environment, the two external cameras, and a keyframe.
+
+       Coordinates: Kinova base at the world origin (z=0.02), reaching
+       toward +x. A flat table is centered at (0.5, 0.0) with its top at
+       z=0.10; the three cubes rest on it (~0.115 m centroid), within the
+       arm's top-down reach.
+       ============================================================ -->
+
+  <include file="gen3_7dof.xml" />
+
+  <statistic center="0.45 0.0 0.2" extent="0.8" />
+
+  <default>
+    <geom solref=".004 1" />
+  </default>
+
+  <visual>
+    <headlight diffuse="0.6 0.6 0.6" ambient="0.3 0.3 0.3" specular="0 0 0" />
+    <rgba haze="0.15 0.25 0.35 1" />
+    <!-- MuJoCo camera rendering in MoveIt Pro requires every
+         camera's resolution to EXACTLY equal the model offscreen framebuffer,
+         so offwidth/offheight and the camera resolutions (including the wrist
+         camera in gen3_7dof.xml) must move together. 480x480 matches the
+         shipped checkpoint's square training frames, which are center crops
+         of 640x480 captures; with fovy fixed, rendering 480 of 640 columns
+         is exactly that crop. -->
+    <global azimuth="140" elevation="-20" offwidth="480" offheight="480" />
+  </visual>
+
+  <asset>
+    <texture
+      type="skybox"
+      builtin="gradient"
+      rgb1="0.3 0.5 0.7"
+      rgb2="0 0 0"
+      width="512"
+      height="3072"
+    />
+    <texture
+      type="2d"
+      name="groundplane"
+      builtin="checker"
+      mark="edge"
+      rgb1="0.2 0.3 0.4"
+      rgb2="0.1 0.2 0.3"
+      markrgb="0.8 0.8 0.8"
+      width="300"
+      height="300"
+    />
+    <material
+      name="groundplane"
+      texture="groundplane"
+      texuniform="true"
+      texrepeat="5 5"
+      reflectance="0.2"
+    />
+    <!-- table finish (light neutral, non-reflective so cube colors read cleanly) -->
+    <material name="table_mat" rgba="0.55 0.55 0.58 1" />
+  </asset>
+
+  <worldbody>
+    <light pos="0.4 0 1.6" dir="0 0 -1" directional="true" />
+    <geom name="floor" size="0 0 0.05" type="plane" material="groundplane" />
+
+    <!-- Overview camera: looks straight DOWN on the cube workspace (centered
+         ~x=0.5, y=0.035), the overhead/top-down view. Rolled -90deg about the
+         view axis (quat -0.707107 0 0 0.707107) so the arm enters from the BOTTOM
+         of the image (image up = world +x, image right = world -y), matching the
+         image orientation of the policy training data. MuJoCo cameras
+         view along their frame's -z. MUST be mode="fixed": MoveIt Pro only
+         publishes ROS topics for FIXED cameras. Each fixed camera also
+         REQUIRES a <site> named "<camera>_optical_frame", or ros2_control
+         aborts on start up; the site quat == the camera quat. fovy 45 frames
+         ~0.66 m of the table at z=0.9. -->
+    <camera
+      name="overview_camera"
+      pos="0.5 0.035 0.9"
+      mode="fixed"
+      quat="-0.707107 0 0 0.707107"
+      fovy="45"
+      resolution="480 480"
+    />
+    <site
+      name="overview_camera_optical_frame"
+      pos="0.5 0.035 0.9"
+      quat="-0.707107 0 0 0.707107"
+      size="0.02"
+    />
+
+    <!-- Scene camera: 3/4 oblique from the back-left (+y, low +x), looking
+         toward the arm so it sits in the background instead of occluding the
+         cubes. This is the establishing view, and its parallax gives the
+         policy the stack height the overhead camera cannot show. It is one of
+         the three views the policy consumes, alongside the wrist and overview
+         cameras. Publishes /scene_camera/{color,depth,points,camera_info}. -->
+    <camera
+      name="scene_camera"
+      pos="0.12 0.52 0.92"
+      mode="fixed"
+      quat="-0.245859 -0.080379 0.300170 0.918145"
+      fovy="54"
+      resolution="480 480"
+    />
+    <site
+      name="scene_camera_optical_frame"
+      pos="0.12 0.52 0.92"
+      quat="-0.245859 -0.080379 0.300170 0.918145"
+      size="0.02"
+    />
+
+    <!-- ======================= TABLE ======================= -->
+    <!-- Flat static work surface. Half-extents (0.22, 0.28, 0.05) centered at
+         z=0.05 -> top face at z=0.10. Reaches x in [0.28,0.72], y in
+         [-0.28,0.28], so the cube start positions below sit well inside it.
+         Static (no joint) fixed fixture. -->
+    <body name="table" pos="0.5 0.0 0.05">
+      <geom
+        name="table_top"
+        type="box"
+        size="0.22 0.28 0.05"
+        material="table_mat"
+        friction="1 0.05 0.01"
+      />
+    </body>
+
+    <!-- ======================= CUBES ======================= -->
+    <!-- Three 30 mm free-body cubes (red / green / blue), resting on the table
+         (centroid z = 0.10 + 0.015 = 0.115). Each has a body-origin site
+         "cube_<color>_tf" (= centroid, invisible rgba alpha 0) published to TF by
+         picknik_mujoco_ros publish_sites, so cube centroids are available in world
+         coordinates. condim 4 (adds torsional friction) + moderate
+         friction so a top-down pad grasp holds; the Robotiq pads (friction 5.0,
+         priority 1) win the contact friction.
+         Declaration order (red, green, blue) fixes the freejoint qpos order the
+         keyframe below depends on. -->
+    <body name="cube_red" pos="0.44 -0.12 0.115">
+      <freejoint name="cube_red_free" />
+      <geom
+        name="cube_red_geom"
+        type="box"
+        size="0.015 0.015 0.015"
+        rgba="0.85 0.10 0.10 1"
+        condim="4"
+        friction="1 0.05 0.01"
+        solref="0.004 1"
+      />
+      <site name="cube_red_tf" pos="0 0 0" size="0.005" rgba="0 0 0 0" />
+    </body>
+    <body name="cube_green" pos="0.56 0.0 0.115">
+      <freejoint name="cube_green_free" />
+      <geom
+        name="cube_green_geom"
+        type="box"
+        size="0.015 0.015 0.015"
+        rgba="0.10 0.85 0.10 1"
+        condim="4"
+        friction="1 0.05 0.01"
+        solref="0.004 1"
+      />
+      <site name="cube_green_tf" pos="0 0 0" size="0.005" rgba="0 0 0 0" />
+    </body>
+    <body name="cube_blue" pos="0.50 0.13 0.115">
+      <freejoint name="cube_blue_free" />
+      <geom
+        name="cube_blue_geom"
+        type="box"
+        size="0.015 0.015 0.015"
+        rgba="0.10 0.10 0.85 1"
+        condim="4"
+        friction="1 0.05 0.01"
+        solref="0.004 1"
+      />
+      <site name="cube_blue_tf" pos="0 0 0" size="0.005" rgba="0 0 0 0" />
+    </body>
+  </worldbody>
+
+  <!-- Initial state. qpos layout (compile order):
+       robot [7 arm + 8 robotiq gripper] (15), then 3 cube freejoints (3x7=21).
+       The 7 arm values are the "Home" waypoint pose (arm tucked up off the
+       table), so the scene resets at home. The 8 robotiq values are the
+       gripper rest pose. Each cube freejoint is
+       pos(3)+quat(4): the three table-rest poses above, identity orientation.
+       ctrl = 8 actuators (7 arm + 1 gripper). The 7 arm position actuators must
+       be commanded to the SAME home angles as qpos (else they'd drive toward
+       zero on tick 1); the gripper actuator holds 0 (open). -->
+  <keyframe>
+    <key
+      name="default"
+      qpos="7.2854474427322627e-05 0.0060998872530424308 -3.1250605484909082 -2.5051932931762071 -2.7164243118882329e-05 0.95966324117024648 1.5699864595074029 0.00500747 0.000142046 0.0054543 -0.0057924 0.00500747 0.000142046 0.00545513 -0.00579407 0.44 -0.12 0.115 1 0 0 0 0.56 0.0 0.115 1 0 0 0 0.50 0.13 0.115 1 0 0 0"
+      ctrl="7.2854474427322627e-05 0.0060998872530424308 -3.1250605484909082 -2.5051932931762071 -2.7164243118882329e-05 0.95966324117024648 1.5699864595074029 0"
+    />
+  </keyframe>
+</mujoco>

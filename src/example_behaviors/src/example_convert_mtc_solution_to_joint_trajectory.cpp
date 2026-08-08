@@ -91,8 +91,8 @@ BT::NodeStatus ExampleConvertMtcSolutionToJointTrajectory::tick()
 
   // Use trajectory_utils.hpp to create a trajectory
   auto trajectory_result =
-      cartesian_planning::createTrajectoryFromWaypoints(*joint_model_group, waypoints, velocity_scaling_factor.value(),
-                                                        acceleration_scaling_factor.value(), sampling_rate.value());
+      path_ik::createTrajectoryFromWaypoints(*joint_model_group, waypoints, velocity_scaling_factor.value(),
+                                             acceleration_scaling_factor.value(), sampling_rate.value());
 
   if (!trajectory_result)
   {

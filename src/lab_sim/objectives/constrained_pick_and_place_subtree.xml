@@ -24,10 +24,10 @@
           waypoint_name="{pick}"
         />
         <Action
-          ID="UnpackRobotJointStateMessage"
+          ID="UnpackRobotStateMessage"
           joint_state="{pick_joint_state_msg}"
           multi_dof_joint_state="{pick_multi_dof}"
-          robot_joint_state="{pick_joint_state}"
+          robot_state="{pick_joint_state}"
         />
         <Action
           ID="ComputeLinkPoseForwardKinematics"
@@ -53,10 +53,10 @@
           waypoint_name="{place}"
         />
         <Action
-          ID="UnpackRobotJointStateMessage"
+          ID="UnpackRobotStateMessage"
           joint_state="{place_joint_state_msg}"
           multi_dof_joint_state="{place_multi_dof}"
-          robot_joint_state="{place_joint_state}"
+          robot_state="{place_joint_state}"
         />
         <Action
           ID="ComputeLinkPoseForwardKinematics"
@@ -102,9 +102,7 @@
             ID="Move to Waypoint"
             waypoint_name="{pick}"
             joint_group_name="manipulator"
-            keep_orientation="true"
-            keep_orientation_tolerance="0.2"
-            keep_orientation_link_names="grasp_link"
+            orientation_constraint="[{link_name: grasp_link, angle_tolerance: 0.2}]"
           />
           <!--ForceSuccess because the gripper closes to a position it will never reach (fingers fully closed)-->
           <SubTree ID="Close Gripper" />

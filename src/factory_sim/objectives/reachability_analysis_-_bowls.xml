@@ -25,9 +25,7 @@
         starting_waypoint="View bowls"
         mesh_link_name="convex_bowl"
         execute_trajectories="true"
-        keep_orientation="true"
-        keep_orientation_tolerance="0.5"
-        keep_orientation_link_names="tool0"
+        orientation_constraint="[{link_name: tool0, angle_tolerance: 0.5}]"
       />
     </Control>
   </BehaviorTree>

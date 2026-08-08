@@ -1,0 +1,39 @@
+FROM python:3.12-slim
+
+# opencv needs libGL/glib at import time even headless-adjacent; install once here
+# rather than debugging ImportErrors inside a slim image.
+# hadolint ignore=DL3008
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      libgl1 libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
+
+# TORCH_INDEX pre-installs torch from a specific wheel index before lerobot
+# resolves it. Empty (default) lets lerobot pull the standard build, which is
+# CUDA-enabled on Linux and also runs on CPU; set it to
+# https://download.pytorch.org/whl/cpu for a much smaller CPU-only image on
+# machines without an NVIDIA GPU (VLA_TORCH_INDEX in the workspace .env).
+# torch/torchvision are pinned (within lerobot 0.6.0's >=2.7,<2.12 range) so
+# builds are reproducible and the CPU-only pre-install cannot be re-resolved
+# to a CUDA build by the lerobot install.
+ARG TORCH_INDEX=
+ARG TORCH_VERSION=2.11.0
+ARG TORCHVISION_VERSION=0.26.0
+RUN if [ -n "$TORCH_INDEX" ]; then \
+      pip install --no-cache-dir --index-url "$TORCH_INDEX" \
+        --extra-index-url https://pypi.org/simple \
+        "torch==$TORCH_VERSION" "torchvision==$TORCHVISION_VERSION"; \
+    fi \
+    && pip install --no-cache-dir "lerobot[pi,smolvla]==0.6.0" \
+      "torch==$TORCH_VERSION" "torchvision==$TORCHVISION_VERSION"
+
+COPY vla_inference_server.py /app/vla_inference_server.py
+WORKDIR /app
+
+# Non-root default for a bare `docker run` (the compose service overrides the
+# user anyway); a real passwd entry keeps getpass.getuser() working in torch's
+# import-time cache-dir setup.
+RUN useradd --create-home --uid 1000 vla
+USER vla
+
+EXPOSE 8973
+ENTRYPOINT ["python", "vla_inference_server.py"]

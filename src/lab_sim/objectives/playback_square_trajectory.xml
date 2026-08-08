@@ -13,7 +13,7 @@
         output="{joint_trajectory_msg}"
       />
       <Action
-        ID="GetTrajectoryStateAtTime"
+        ID="GetRobotStateFromTrajectory"
         from_start="true"
         joint_state="{joint_state}"
         joint_trajectory_msg="{joint_trajectory_msg}"

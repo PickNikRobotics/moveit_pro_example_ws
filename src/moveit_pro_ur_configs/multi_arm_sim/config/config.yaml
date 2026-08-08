@@ -1,11 +1,10 @@
 # Baseline hardware configuration parameters for MoveIt Pro.
 # [Required]
-hardware:
+runtime_launch_file:
+  package: "multi_arm_sim"
+  path: "launch/runtime.launch.xml"
 
-  # Set simulated to false if you are using this as a configuration for real hardware.
-  # This allows users to switch between mock and real hardware by changing a single parameter with config inheritance.
-  # [Required]
-  simulated: true
+hardware:
 
   # If the MoveIt Pro Agent should launch the ros2 controller node.
   # [Optional, default=True]
@@ -16,16 +15,9 @@ hardware:
   # [Optional, default=True]
   launch_robot_state_publisher: True
 
-  # Specify additional launch files for running the robot with real hardware.
+  # Additional launch file included with the persistent driver process.
   # [Optional, defaults to a blank launch file if not specified]
-  robot_driver_persist_launch_file:
-    package: "picknik_ur_base_config"
-    path: "launch/robot_drivers_to_persist.launch.py"
-
-  # Specify any additional launch files for running the robot in simulation mode.
-  # Used when hardware.simulated is True.
-  # [Optional, defaults to a blank launch file if not specified]
-  simulated_robot_driver_persist_launch_file:
+  additional_driver_launch_file:
     package: "picknik_ur_base_config"
     path: "launch/sim/robot_drivers_to_persist_sim.launch.py"
 

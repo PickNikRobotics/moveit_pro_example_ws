@@ -27,7 +27,6 @@
         ID="SetupMTCPlanToPose"
         acceleration_scale_factor="1.000000"
         ik_frame="{ik_frame}"
-        keep_orientation="false"
         link_padding="0.01"
         max_iterations="50000"
         monitored_stage="current state"
@@ -36,14 +35,12 @@
         trajectory_sampling_rate="100"
         velocity_scale_factor="1.000000"
         task="{mtc_task}"
-        keep_orientation_link_names="tool0"
-        keep_orientation_tolerance="0.100000"
       />
       <Action
         ID="SetupMTCPlanToPose"
         acceleration_scale_factor="1.000000"
         ik_frame="{ik_frame}"
-        keep_orientation="{keep_orientation}"
+        orientation_constraint="{orientation_constraint}"
         link_padding="0.01"
         max_iterations="50000"
         monitored_stage="current state"
@@ -52,8 +49,6 @@
         trajectory_sampling_rate="100"
         velocity_scale_factor="1.000000"
         task="{mtc_task}"
-        keep_orientation_tolerance="{keep_orientation_tolerance}"
-        keep_orientation_link_names="{keep_orientation_link_names}"
       />
       <Decorator
         ID="ForceSuccess"
@@ -137,15 +132,7 @@
       />
       <inout_port name="ik_frame" default="{ik_frame}" />
       <inout_port name="joint_group_name" default="{joint_group_name}" />
-      <inout_port name="keep_orientation" default="{keep_orientation}" />
-      <inout_port
-        name="keep_orientation_link_names"
-        default="{keep_orientation_link_names}"
-      />
-      <inout_port
-        name="keep_orientation_tolerance"
-        default="{keep_orientation_tolerance}"
-      />
+      <inout_port name="orientation_constraint" default="[]" />
       <inout_port
         name="starting_joint_state"
         default="{starting_joint_state}"

@@ -4,6 +4,9 @@
 
 # Name of the package to specialize
 based_on_package: "lab_sim"
+runtime_launch_file:
+  package: "april_tag_sim"
+  path: "launch/runtime.launch.xml"
 hardware:
   # Parameters used to configure the robot description through XACRO.
   # A URDF and SRDF are both required.

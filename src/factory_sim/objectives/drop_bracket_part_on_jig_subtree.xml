@@ -44,12 +44,9 @@
       <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
       <!--The arm is moved to this intermediate waypoint to give a more predictable arm motion while avoiding the hanging bowls. Even with a collision object modeled the arm would still make large motions at times which influenced how well the part was aligned to the jig posts.-->
       <Action
-        ID="SetupMTCPlanToJointState"
+        ID="SetupMTCPlanToRobotState"
         acceleration_scale_factor="1"
         joint_state="{midpoint_move}"
-        keep_orientation="false"
-        keep_orientation_link_names="tool0"
-        keep_orientation_tolerance="0.300000"
         link_padding="0.0100000"
         max_iterations="5000"
         planning_group_name="manipulator"
@@ -62,9 +59,6 @@
         ID="SetupMTCPlanToPose"
         acceleration_scale_factor="0.5"
         ik_frame="{part_name}"
-        keep_orientation="false"
-        keep_orientation_link_names="tool0"
-        keep_orientation_tolerance="0.100000"
         link_padding="0.0100000"
         max_iterations="5000"
         monitored_stage="current state"

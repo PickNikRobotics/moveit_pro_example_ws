@@ -2,3 +2,6 @@
 build
 install
 log
+# VLA checkpoints: keep multi-GB weights out of the workspace image build context.
+src/vla_sim/models
+src/vla_sim/hf_cache

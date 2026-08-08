@@ -1,8 +1,9 @@
 based_on_package: "picknik_ur_base_config"
+runtime_launch_file:
+  package: "mock_sim"
+  path: "launch/runtime.launch.xml"
 
 hardware:
-  simulated: True
-
   # Update robot description for machine tending world.
   robot_description:
     urdf:

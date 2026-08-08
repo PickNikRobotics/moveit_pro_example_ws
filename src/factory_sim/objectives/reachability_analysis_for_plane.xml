@@ -242,15 +242,7 @@
       />
       <inout_port name="ik_frame" default="{ik_frame}" />
       <inout_port name="joint_group_name" default="{joint_group_name}" />
-      <inout_port name="keep_orientation" default="{keep_orientation}" />
-      <inout_port
-        name="keep_orientation_link_names"
-        default="{keep_orientation_link_names}"
-      />
-      <inout_port
-        name="keep_orientation_tolerance"
-        default="{keep_orientation_tolerance}"
-      />
+      <inout_port name="orientation_constraint" default="[]" />
       <inout_port name="num_45_deg_rotations" default="0" />
       <inout_port name="num_columns" default="{num_columns}" />
       <inout_port name="num_rows" default="{num_rows}" />

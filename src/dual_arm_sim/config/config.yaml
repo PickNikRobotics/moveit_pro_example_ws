@@ -4,14 +4,13 @@
 #
 ###############################################################
 
+runtime_launch_file:
+  package: "dual_arm_sim"
+  path: "launch/runtime.launch.xml"
+
 # Baseline hardware configuration parameters for MoveIt Pro.
 # [Required]
 hardware:
-  # Set simulated to false if you are using this as a configuration for real hardware.
-  # This allows users to switch between mock and real hardware using the same configuration.
-  # [Required]
-  simulated: True
-
   # If the MoveIt Pro Agent should launch the ros2 controller node.
   # [Optional, default=True]
   launch_control_node: True
@@ -35,9 +34,6 @@ hardware:
       - mujoco_keyframe: "default"
       - mujoco_model: "description/mujoco/scene.xml"
       - mujoco_viewer: false
-    simulated_hardware_launch_file:
-      package: "moveit_studio_agent"
-      path: "launch/blank.launch.py"
 
 # Configuration files for MoveIt.
 # For more information, refer to https://moveit.picknik.ai/main/doc/how_to_guides/moveit_configuration/moveit_configuration_tutorial.html

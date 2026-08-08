@@ -6,6 +6,9 @@
 
 # Extend the basic Kinova MuJoCo configuration
 based_on_package: "space_satellite_sim"
+runtime_launch_file:
+  package: "space_satellite_sim_camera_cal"
+  path: "launch/runtime.launch.xml"
 
 # Baseline hardware configuration parameters for MoveIt Pro.
 # [Required]

@@ -24,10 +24,10 @@
           waypoint_name="View Convex"
         />
         <Action
-          ID="UnpackRobotJointStateMessage"
+          ID="UnpackRobotStateMessage"
           joint_state="{joint_state}"
           multi_dof_joint_state="{multi_dof_joint_state}"
-          robot_joint_state="{target_joint_state}"
+          robot_state="{target_joint_state}"
         />
         <Action
           ID="GetCurrentPlanningScene"
@@ -61,9 +61,6 @@
           ID="SetupMTCPlanToPose"
           acceleration_scale_factor="0.5"
           ik_frame="tool0"
-          keep_orientation="false"
-          keep_orientation_link_names="tool0"
-          keep_orientation_tolerance="0.100000"
           link_padding="0.000000"
           max_iterations="5000"
           monitored_stage="current state"
