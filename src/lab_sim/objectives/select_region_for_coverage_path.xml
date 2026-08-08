@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Select Region for Coverage Path">
+  <BehaviorTree
+    ID="Select Region for Coverage Path"
+    _description="Draw a box on the wrist camera, then sweep a coverage path over it (GetRegionFromUser demo)."
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="root">
+      <!-- 1. Show the wrist camera view, and activate the admittance controller ExecuteTrajectory uses. -->
+      <Action
+        ID="SwitchUIPrimaryView"
+        primary_view_name="/wrist_camera/color"
+      />
+      <Action
+        ID="SwitchController"
+        activate_controllers="joint_trajectory_admittance_controller"
+      />
+
+      <!-- Close the gripper so a pointed tool, not open fingers, sweeps the surface. -->
+      <SubTree ID="Close Gripper" _collapsed="true" />
+
+      <!-- 2. User draws a bounding box on the wrist camera image. -->
+      <Action
+        ID="GetRegionFromUser"
+        region_name="selected_region"
+        prompt="Draw a box over the area to cover"
+        region="{selected_region}"
+      />
+
+      <!-- 3. Wrist camera cloud + intrinsics (camera_info denormalizes the region into pixels). -->
+      <Action
+        ID="GetPointCloud"
+        topic_name="/wrist_camera/points"
+        message_out="{point_cloud}"
+        message_timeout_sec="5.0"
+      />
+      <Action
+        ID="GetCameraInfo"
+        topic_name="/wrist_camera/camera_info"
+        message_out="{camera_info}"
+        message_timeout_sec="5.0"
+      />
+
+      <!-- 4. Rasterize the normalized region into a mask (lab_sim_behaviors). -->
+      <Action
+        ID="GetMask2DFromRegion"
+        region="{selected_region}"
+        camera_info="{camera_info}"
+        masks2d="{masks2d}"
+      />
+
+      <!-- 5. Lift the 2D mask onto the cloud -> 3D mask(s). -->
+      <Action
+        ID="GetMasks3DFromMasks2D"
+        masks2d="{masks2d}"
+        point_cloud="{point_cloud}"
+        camera_info="{camera_info}"
+        masks3d="{masks3d}"
+      />
+
+      <!-- Reference pose to disambiguate the OBB orientation (GetOrientedBoundingBox picks the box
+           orientation closest to it). 180 deg about the optical X axis points the reference +Z back
+           toward the camera — the outward surface normal. Identity would leave +Z along the camera
+           view (into the table), so the OBB would pick region +Z downward and GenerateSurfaceCoveragePath
+           (which assumes +Z is outward) would drive the sweep and its green grid below the surface. -->
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="wrist_camera_optical_frame"
+        orientation_xyzw="1;0;0;0"
+        pose_stamped="{region_reference_pose}"
+      />
+
+      <!-- 6-9. One mask in, one out: recover the 3D region, fit a box, sweep it, plan + execute. -->
+      <Decorator
+        ID="ForEachUntilSuccess"
+        index="{index}"
+        out="{mask3d}"
+        vector_in="{masks3d}"
+      >
+        <Control ID="Sequence">
+          <Action
+            ID="GetPointCloudFromMask3D"
+            mask3d="{mask3d}"
+            point_cloud="{point_cloud}"
+            point_cloud_fragment="{region_cloud}"
+          />
+          <Action
+            ID="GetOrientedBoundingBoxFromPointCloud"
+            point_cloud="{region_cloud}"
+            reference_pose="{region_reference_pose}"
+            box_center_pose="{region_pose}"
+            box_dimensions="{region_dimensions}"
+          />
+          <Action
+            ID="GenerateSurfaceCoveragePath"
+            region_pose="{region_pose}"
+            region_dimensions="{region_dimensions}"
+            line_spacing="0.03"
+            point_spacing="0.02"
+            standoff="0.04"
+            margin="0.0"
+            coverage_path="{coverage_path}"
+          />
+
+          <!-- Draw the coverage path as green grid lines over the region so the operator sees the
+               sweep before it is planned, approved, and executed. marker_lifetime 0 keeps it up. -->
+          <Action
+            ID="VisualizePath"
+            path="{coverage_path}"
+            marker_name="coverage_path"
+            line_color_rgb="0;255;0"
+            line_width="0.005"
+            marker_lifetime="0"
+          />
+          <Action
+            ID="PlanCartesianPath"
+            path="{coverage_path}"
+            planning_group_name="manipulator"
+            tip_links="grasp_link"
+            blending_radius="0.001"
+            joint_trajectory_msg="{coverage_trajectory}"
+          />
+          <Action
+            ID="WaitForJointTrajectoryApproval"
+            joint_trajectory_msg="{coverage_trajectory}"
+          />
+          <Action
+            ID="ExecuteTrajectory"
+            joint_trajectory_msg="{coverage_trajectory}"
+          />
+        </Control>
+      </Decorator>
+
+      <!-- Return the arm to Home so the operator can immediately re-run the demo. -->
+      <SubTree ID="Move to Waypoint" waypoint_name="Home" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Select Region for Coverage Path">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Basic Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
