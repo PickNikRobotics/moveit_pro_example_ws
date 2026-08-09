@@ -279,23 +279,12 @@ skip_objectives = {
     "ML Find Bottles on Table from Image Exemplar",  # Skipped because it looks for a file on a home path
     "ML Segment Image",
     "ML Segment Image Loop",
-    # Temporarily skipped: reaches GetMasks2DFromExemplar, whose four per-model path ports
-    # (encoder_model_path, text_encoder_model_path, geometry_encoder_model_path,
-    # decoder_model_path) were replaced by model_bundle_manifest + runtime_id in
-    # moveit_pro#21155. The objective still sets the removed ports, so it cannot load against
-    # that image. Re-enabled by PR #802, which performs the port swap.
-    "ML Segment Bottles from File",
     "ML Segment Point Cloud",  # Requires GPU for ONNX inference; falls back to CPU and times out waiting for /wrist_camera/points on CI runners without a camera warmup delay.
     "ML Segment Point Cloud from Clicked Point",
     "MPC Pose Tracking",
     "MPC Pose Tracking With Point Cloud Avoidance",
     "Octomap Example",  # Requires user input to clear the octomap.
     "Pick 1 Pill Bottle with ML",
-    # Temporarily skipped for the same reason as "ML Segment Bottles from File": it reaches
-    # GetMasks2DFromExemplar indirectly, through "Get Bottle Grasp via ICP Subtree" ->
-    # "Segment Bottle Subtree", and that subtree sets the removed per-model path ports.
-    # Re-enabled by PR #802.
-    "Pick 1 Pill Bottle with SAM3",
     "Pick All Bottles with AprilTags",
     "Pick All Pill Bottles",
     "Pick up Object",
