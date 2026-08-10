@@ -120,8 +120,9 @@
             blending_radius="0.001"
             joint_trajectory_msg="{coverage_trajectory}"
           />
-          <Action
-            ID="WaitForJointTrajectoryApproval"
+          <SubTree
+            ID="Wait for Joint Trajectory Approval"
+            _collapsed="true"
             joint_trajectory_msg="{coverage_trajectory}"
           />
           <Action
