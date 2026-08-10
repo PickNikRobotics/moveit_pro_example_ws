@@ -252,7 +252,7 @@ jobs:
       # can assume the LFS S3 cache IAM role via OIDC (moveit_pro_ci v0.5.x).
       contents: read
       id-token: write
-    uses: PickNikRobotics/moveit_pro_ci/.github/workflows/workspace_integration_test.yaml@a0e3b30c9aa8f8f82f95c91e5a34989d01caa046 # v0.9.0
+    uses: PickNikRobotics/moveit_pro_ci/.github/workflows/workspace_integration_test.yaml@2eff8c8aa644ed07acaaebc9eb15af4af7169e79 # v0.9.1
     with:
       image_tag: ${{ needs.resolve.outputs.image_tag }}
       image_ref: ${{ needs.resolve.outputs.image_ref }}
@@ -305,7 +305,7 @@ jobs:
       # can assume the LFS S3 cache IAM role via OIDC (matches integration-test).
       contents: read
       id-token: write
-    uses: PickNikRobotics/moveit_pro_ci/.github/workflows/workspace_integration_test.yaml@a0e3b30c9aa8f8f82f95c91e5a34989d01caa046 # v0.9.0
+    uses: PickNikRobotics/moveit_pro_ci/.github/workflows/workspace_integration_test.yaml@2eff8c8aa644ed07acaaebc9eb15af4af7169e79 # v0.9.1
     with:
       image_tag: ${{ needs.resolve.outputs.image_tag }}
       image_ref: ${{ needs.resolve.outputs.image_ref }}
