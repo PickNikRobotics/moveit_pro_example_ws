@@ -31,10 +31,6 @@ TEST(BehaviorTests, test_load_behavior_plugins)
   // Test that ClassLoader is able to find and instantiate each Behavior using the package's plugin description info.
   EXPECT_NO_THROW((void)factory.instantiateTreeNode("test_behavior_name", "ComputeTrayPlacePositionsUsingAprilTags",
                                                     BT::NodeConfiguration()));
-  EXPECT_NO_THROW(
-      (void)factory.instantiateTreeNode("test_behavior_name", "GenerateSurfaceCoveragePath", BT::NodeConfiguration()));
-  EXPECT_NO_THROW(
-      (void)factory.instantiateTreeNode("test_behavior_name", "GetMask2DFromRegion", BT::NodeConfiguration()));
 }
 
 int main(int argc, char** argv)

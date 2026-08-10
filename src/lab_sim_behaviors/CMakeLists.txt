@@ -5,15 +5,11 @@ find_package(moveit_pro_package REQUIRED)
 moveit_pro_package()
 
 set(THIS_PACKAGE_INCLUDE_DEPENDS
-  cv_bridge
-  geometry_msgs
   moveit_pro_behavior
   moveit_pro_behavior_interface
   moveit_studio_vision
   moveit_studio_vision_msgs
-  pluginlib
-  sensor_msgs
-  tf2_eigen)
+  pluginlib)
 foreach(package IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${package} REQUIRED)
 endforeach()
@@ -22,8 +18,6 @@ add_library(
   lab_sim_behaviors
   SHARED
   src/compute_tray_place_positions_using_apriltags.cpp
-  src/generate_surface_coverage_path.cpp
-  src/get_mask2d_from_region.cpp
   src/register_behaviors.cpp)
 target_include_directories(
   lab_sim_behaviors

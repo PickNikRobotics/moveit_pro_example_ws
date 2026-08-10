@@ -9,8 +9,6 @@
 #include <moveit_pro_behavior_interface/shared_resources_node_loader.hpp>
 
 #include <lab_sim_behaviors/compute_tray_place_positions_using_apriltags.hpp>
-#include <lab_sim_behaviors/generate_surface_coverage_path.hpp>
-#include <lab_sim_behaviors/get_mask2d_from_region.hpp>
 
 #include <pluginlib/class_list_macros.hpp>
 
@@ -24,9 +22,6 @@ public:
   {
     moveit_pro::behaviors::registerBehavior<ComputeTrayPlacePositionsUsingAprilTags>(
         factory, "ComputeTrayPlacePositionsUsingAprilTags", shared_resources);
-    moveit_pro::behaviors::registerBehavior<GenerateSurfaceCoveragePath>(factory, "GenerateSurfaceCoveragePath",
-                                                                         shared_resources);
-    moveit_pro::behaviors::registerBehavior<GetMask2DFromRegion>(factory, "GetMask2DFromRegion", shared_resources);
   }
 };
 }  // namespace lab_sim_behaviors
