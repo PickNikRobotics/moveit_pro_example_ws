@@ -1,0 +1,22 @@
+# SAM2 automask model bundle manifest. Consumed by MoveIt Pro's runtime-neutral
+# inference layer (moveit_pro_ml::model::loadBundle): artifact paths are relative
+# to this file, and each digest is verified at load time.
+schema_version: 1
+model_id: sam2_automask
+model_version: sam2.1_hiera_l
+graph_abi: moveit_pro.sam2_automask.v1
+
+runtimes:
+  onnxruntime:
+    image_encoder:
+      path: sam2.1_hiera_l_image_encoder.onnx
+      sha256: "cbdbe1e1ad3b616985d0f9c071a5948f8f8342d8e55e98857159405678b70cec"
+    prompt_encoder:
+      path: sam2.1_prompt_encoder.onnx
+      sha256: "eb2130a99f74bb2f6a430c0f1fe6af291b45ead4bf0beee715330c3def901206"
+    decoder:
+      path: sam2.1_decoder.onnx
+      sha256: "e11609a8d694f2186f5974cf0d86e1588dbbb126088c4a7849adbc546b284e3a"
+
+metadata:
+  input_size: "1024"
