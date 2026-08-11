@@ -7,7 +7,7 @@
   <BehaviorTree
     ID="Scan Scene - Multiple Point Clouds"
     _description="Take multiple snapshots from the wrist camera at 3 positions (center, left, right) using Cartesian offsets and merge them into a single point cloud."
-    _favorite="true"
+    _favorite="false"
   >
     <Control ID="Sequence">
       <!--Clear previous data-->

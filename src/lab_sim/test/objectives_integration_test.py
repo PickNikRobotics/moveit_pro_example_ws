@@ -299,6 +299,7 @@ skip_objectives = {
     "Stitch Multiple Point Clouds Together",
     "Marker Visualization Example",  # Server not available for GetTextFromUser
     "Register CAD Part",  # TODO: remove this for 9.2.0 and fix it correctly
+    "Select Region for Coverage Path",  # Server not available for GetRegionFromUser (needs a UI prompt)
     # DoTeleoperateAction immediately rejects the goal when no UI tab is subscribed to
     # /moveit_pro_ui/do_teleoperate/goal. The objective never reaches RUNNING status, so
     # the cancel flow times out. This is a headless-CI limitation, not a bug in the objective.
