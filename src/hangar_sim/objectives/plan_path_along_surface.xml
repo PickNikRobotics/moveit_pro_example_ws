@@ -6,6 +6,39 @@
     _favorite="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
+      <!--DIAGNOSTIC: capture the camera pose BEFORE the move as well. Paired
+           camera-frame and world-frame saves let the exact camera pose be
+           recovered, so comparing before/after answers directly whether the
+           base actually travelled to the waypoint.-->
+      <Decorator ID="ForceSuccess">
+        <Control ID="Sequence">
+          <Action
+            ID="GetPointCloud"
+            topic_name="/wrist_camera/points"
+            message_out="{pre_cloud}"
+            publisher_timeout_sec="5.000000"
+            message_timeout_sec="5.000000"
+          />
+          <Action
+            ID="SavePointCloudToFile"
+            file_path="/__w/moveit_pro_example_ws/moveit_pro_example_ws/build/hangar_sim/test_results/hangar_sim"
+            file_prefix="diag_premove_cam"
+            point_cloud="{pre_cloud}"
+          />
+          <Action
+            ID="TransformPointCloudFrame"
+            input_cloud="{pre_cloud}"
+            output_cloud="{pre_cloud}"
+            target_frame="world"
+          />
+          <Action
+            ID="SavePointCloudToFile"
+            file_path="/__w/moveit_pro_example_ws/moveit_pro_example_ws/build/hangar_sim/test_results/hangar_sim"
+            file_prefix="diag_premove_world"
+            point_cloud="{pre_cloud}"
+          />
+        </Control>
+      </Decorator>
       <SubTree
         ID="Move to Waypoint (JTC)"
         _collapsed="true"
