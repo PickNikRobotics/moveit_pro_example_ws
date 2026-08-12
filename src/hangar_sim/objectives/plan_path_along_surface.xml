@@ -26,6 +26,18 @@
         publisher_timeout_sec="5.000000"
         message_timeout_sec="5.000000"
       />
+      <!--DIAGNOSTIC: save the RAW camera-frame cloud first. Point order is
+           preserved through the transform, so the rigid transform between this
+           and the world-frame save below IS the world->camera transform CI
+           actually used - which yields CI's camera pose as a measured number.-->
+      <Decorator ID="ForceSuccess">
+        <Action
+          ID="SavePointCloudToFile"
+          file_path="/__w/moveit_pro_example_ws/moveit_pro_example_ws/build/hangar_sim/test_results/hangar_sim"
+          file_prefix="diag_camframe"
+          point_cloud="{point_cloud}"
+        />
+      </Decorator>
       <Action
         ID="TransformPointCloudFrame"
         input_cloud="{point_cloud}"
