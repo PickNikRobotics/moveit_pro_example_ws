@@ -32,8 +32,6 @@
         output_cloud="{full_cloud}"
         target_frame="world"
       />
-      <!--DIAGNOSTIC: settle AFTER the transform and BEFORE the first crop.-->
-      <Action ID="WaitForDuration" delay_duration="1.0" />
       <!--========== Generate all three contours and show their markers ==========-->
       <!--Row 1: top, z = 1.7-->
       <Action

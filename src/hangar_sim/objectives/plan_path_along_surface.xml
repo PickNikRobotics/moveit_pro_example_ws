@@ -32,10 +32,18 @@
         output_cloud="{point_cloud}"
         target_frame="world"
       />
-      <!--DIAGNOSTIC: settle AFTER the transform and BEFORE the crop. Local
-           in-process measurement shows the transform always emits ~73k points
-           inside the crop box, so this tests the only remaining window.-->
-      <Action ID="WaitForDuration" delay_duration="1.0" />
+      <!--DIAGNOSTIC: write the transformed, pre-crop cloud into the directory CI
+           uploads as an artifact, so its true world-frame extent can be measured
+           from a genuinely failing CI run. Wrapped in ForceSuccess so a failed
+           write cannot change the objective's outcome and mask the real failure.-->
+      <Decorator ID="ForceSuccess">
+        <Action
+          ID="SavePointCloudToFile"
+          file_path="/__w/moveit_pro_example_ws/moveit_pro_example_ws/build/hangar_sim/test_results/hangar_sim"
+          file_prefix="diag_precrop"
+          point_cloud="{point_cloud}"
+        />
+      </Decorator>
       <Action
         ID="CreatePoseStamped"
         reference_frame="world"
