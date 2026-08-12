@@ -18,6 +18,8 @@
         waypoint_name="Look at Plane"
         controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
       />
+      <!--DIAGNOSTIC: settle before capture so the cloud is rendered after the base arrives.-->
+      <Action ID="WaitForDuration" delay_duration="1.5" />
       <!--Get a point cloud and crop it to the area of interest-->
       <Action
         ID="GetPointCloud"
