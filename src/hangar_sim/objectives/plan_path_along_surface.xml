@@ -18,8 +18,6 @@
         waypoint_name="Look at Plane"
         controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
       />
-      <!--DIAGNOSTIC: settle before capture so the cloud is rendered after the base arrives.-->
-      <Action ID="WaitForDuration" delay_duration="1.5" />
       <!--Get a point cloud and crop it to the area of interest-->
       <Action
         ID="GetPointCloud"
@@ -45,7 +43,7 @@
         crop_box_centroid_pose="{roi_frame}"
         point_cloud="{point_cloud}"
         point_cloud_cropped="{point_cloud}"
-        crop_box_size="5;15;0.2"
+        crop_box_size="200;200;200"
       />
       <!--Visualize the cropped point cloud-->
       <Action
