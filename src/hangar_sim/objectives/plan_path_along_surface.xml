@@ -32,6 +32,10 @@
         output_cloud="{point_cloud}"
         target_frame="world"
       />
+      <!--DIAGNOSTIC: settle AFTER the transform and BEFORE the crop. Local
+           in-process measurement shows the transform always emits ~73k points
+           inside the crop box, so this tests the only remaining window.-->
+      <Action ID="WaitForDuration" delay_duration="1.0" />
       <Action
         ID="CreatePoseStamped"
         reference_frame="world"
@@ -43,7 +47,7 @@
         crop_box_centroid_pose="{roi_frame}"
         point_cloud="{point_cloud}"
         point_cloud_cropped="{point_cloud}"
-        crop_box_size="200;200;200"
+        crop_box_size="5;15;0.2"
       />
       <!--Visualize the cropped point cloud-->
       <Action
