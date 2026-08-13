@@ -230,11 +230,10 @@ def generate_launch_description():
                 output="screen",
             ),
             # Localization (map_server, AMCL, scan merger) runs in its own container so a
-            # crash in any navigation node cannot take localization down with it. The
-            # map -> odom transform AMCL publishes is what connects the MuJoCo scene
-            # frames (cameras under mj_world -> map) to MoveIt's planning frame
-            # (world under odom); if this container dies, every point-cloud-to-world
-            # transform in the product breaks, not just navigation.
+            # crash in any navigation node cannot take localization down with it. Losing it
+            # costs navigation: the map -> odom transform AMCL publishes places the robot in
+            # the map. Sensor frames are unaffected, because they descend from the robot's own
+            # links rather than from the MuJoCo scene root.
             Node(
                 condition=IfCondition(use_composition),
                 name="localization_container",
