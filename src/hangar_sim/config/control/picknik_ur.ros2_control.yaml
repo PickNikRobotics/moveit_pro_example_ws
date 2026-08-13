@@ -210,7 +210,7 @@ joint_trajectory_controller:
       - platform_velocity_controller/rotational_yaw_joint
     state_publish_rate: 100.0
     action_monitor_rate: 20.0
-    allow_partial_joints_goal: true
+    allow_partial_joints_goal: false  # DIAGNOSTIC: reject arm-only goals loudly
     open_loop_control: false # this is closed loop
     # Workaround: trajectory generation leaves sub-epsilon terminal-velocity
     # residuals that Jazzy's JTC rejects by default — measured ~1e-4 on
