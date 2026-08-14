@@ -67,4 +67,4 @@ jobs:
             PR_BODY="⚠️Merge failed with conflicts! Please pull this branch and manually resolve the conflict by resetting this branch and re-merging."
           fi
           git push origin "$TEMP_BRANCH"
-          gh pr create --title "Merge $RELEASE_BRANCH into main" --body "$PR_BODY" --base main --head "$TEMP_BRANCH" --draft --reviewer infrastructure-devs
+          gh pr create --title "Merge $RELEASE_BRANCH into main" --body "$PR_BODY" --base main --head "$TEMP_BRANCH" --draft --reviewer JWhitleyWork
