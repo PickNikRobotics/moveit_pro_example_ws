@@ -9,7 +9,8 @@ services:
   # The base image that all MoveIt Pro services extend off of. Builds the user workspace.
   base: {}
 
-  # Starts the MoveIt Pro runtime: the Agent and its Bridge to the Web UI.
+  # Starts the MoveIt Pro Runtime: the Agent and the web bridge the
+  # MoveIt Pro Desktop App connects to.
   runtime:
     environment:
       # The vla_sim adapter's target; derived from the same
@@ -22,9 +23,6 @@ services:
     volumes:
       # Allow access to host hardware e.g. RealSense cameras
       - /dev:/dev
-
-  # Starts the web UI frontend.
-  web_ui: {}
 
   # Developer specific configuration when running `moveit_pro dev`.
   dev:
