@@ -1,0 +1,653 @@
+<mujoco model="so101_follower">
+  <!--
+    Single-follower extraction of so101_overhead_bimanual.xml.
+    Source SHA-256: a04048ae67fd9ff2c43ed030503828ac876b1fb1a0226e3c7706cc28bc3f949c
+    The complete bimanual stand remains in the scene while only the attached
+    right follower is actuated. The source model's padded registered ranges
+    admit live telemetry; the Pi-published canonical limits remain
+    authoritative for physical commands.
+  -->
+  <compiler angle="radian" meshdir="./assets/" fusestatic="false" />
+  <option
+    integrator="implicitfast"
+    timestep="0.005"
+    cone="elliptic"
+    iterations="10"
+    ls_iterations="20"
+    impratio="10"
+  />
+  <visual>
+    <global offwidth="1280" offheight="720" />
+    <quality offsamples="4" shadowsize="4096" />
+    <headlight
+      ambient="0.35 0.35 0.35"
+      diffuse="0.8 0.8 0.8"
+      specular="0.3 0.3 0.3"
+    />
+    <map haze="0.1" />
+  </visual>
+
+  <asset>
+    <material
+      name="galaxy_black"
+      rgba="0.028 0.032 0.041 1"
+      specular="0.32"
+      shininess="0.38"
+    />
+    <material
+      name="motor"
+      rgba="0.1 0.1 0.1 1"
+      specular="0.1"
+      shininess="0.1"
+    />
+    <material
+      name="cream_white"
+      rgba="0.91 0.86 0.74 1"
+      specular="0.12"
+      shininess="0.16"
+    />
+    <material
+      name="pgripper_hardware"
+      rgba="0.32 0.33 0.34 1"
+      specular="0.35"
+      shininess="0.4"
+    />
+
+    <mesh name="Base" file="Base.stl" />
+    <mesh name="Base_Motor" file="Base_Motor.stl" />
+    <mesh name="Rotation_Pitch" file="Rotation_Pitch.stl" />
+    <mesh name="Rotation_Pitch_Motor" file="Rotation_Pitch_Motor.stl" />
+    <mesh name="Upper_Arm" file="Upper_Arm.stl" />
+    <mesh name="Upper_Arm_Motor" file="Upper_Arm_Motor.stl" />
+    <mesh name="Lower_Arm" file="Lower_Arm.stl" />
+    <mesh name="Lower_Arm_Motor" file="Lower_Arm_Motor.stl" />
+    <mesh name="Wrist_Pitch_Roll" file="Wrist_Pitch_Roll.stl" />
+    <mesh name="Wrist_Pitch_Roll_Motor" file="Wrist_Pitch_Roll_Motor.stl" />
+    <mesh
+      name="Norma_Gripper_Base"
+      file="norma_pgripper/gripper_base.stl"
+      scale="0.001 0.001 0.001"
+    />
+    <mesh
+      name="Norma_Gripper_Gear"
+      file="norma_pgripper/gripper_gear.stl"
+      scale="0.001 0.001 0.001"
+    />
+    <mesh
+      name="Norma_Gripper_Jaw"
+      file="norma_pgripper/gripper_jaw.stl"
+      scale="0.001 0.001 0.001"
+    />
+    <mesh
+      name="Norma_Gripper_Shield"
+      file="norma_pgripper/gripper_base_shield.stl"
+      scale="0.001 0.001 0.001"
+    />
+    <mesh
+      name="Norma_Gripper_Wiring"
+      file="norma_pgripper/wiring_bracket.stl"
+      scale="0.001 0.001 0.001"
+    />
+    <mesh
+      name="Norma_Camera_Mount_27mm"
+      file="norma_pgripper/camera_mount_square_27mm.stl"
+      scale="0.001 0.001 0.001"
+    />
+    <mesh
+      name="Norma_U20_Camera"
+      file="norma_pgripper/norma_u20_camera.stl"
+      scale="0.001 0.001 0.001"
+    />
+    <mesh
+      name="Norma_ST3215_Servo"
+      file="norma_pgripper/norma_st3215_servo.stl"
+      scale="0.001 0.001 0.001"
+    />
+    <mesh
+      name="Norma_Gripper_Hardware"
+      file="norma_pgripper/norma_gripper_hardware.stl"
+      scale="0.001 0.001 0.001"
+    />
+    <mesh
+      name="XLeRobot_camera2"
+      file="XLeRobot_camera2.stl"
+      scale="0.001 0.001 0.001"
+    />
+    <mesh name="arm_base_mount" file="arm_base.stl" scale="0.001 0.001 0.001" />
+    <mesh
+      name="cam_mount_bottom"
+      file="cam_mount_bottom.stl"
+      scale="0.001 0.001 0.001"
+    />
+    <mesh
+      name="cam_mount_middle"
+      file="cam_mount_middle.stl"
+      scale="0.001 0.001 0.001"
+    />
+    <mesh
+      name="cam_mount_top"
+      file="cam_mount_top.stl"
+      scale="0.001 0.001 0.001"
+    />
+  </asset>
+
+  <default>
+    <geom contype="0" conaffinity="0" condim="1" solref="0.005 1" />
+    <default class="sts3215">
+      <geom contype="0" conaffinity="0" />
+      <joint damping="0.60" frictionloss="0.052" armature="0.028" />
+      <position kp="998.22" kv="2.731" forcerange="-2.94 2.94" />
+    </default>
+    <default class="pgripper_slide">
+      <joint damping="6" frictionloss="0.25" armature="0.001" />
+      <position kp="1200" kv="70" forcerange="-25 25" />
+    </default>
+    <default class="visual">
+      <geom type="mesh" contype="0" conaffinity="0" density="0" group="2" />
+    </default>
+    <default class="collision">
+      <geom
+        contype="1"
+        conaffinity="1"
+        group="3"
+        type="mesh"
+        condim="4"
+        solref="0.002 1.0"
+        solimp="0.95 0.99 0.001"
+      />
+    </default>
+  </default>
+
+  <worldbody>
+    <light directional="true" pos="-0.5 0.5 3" dir="0 0 -1" />
+    <geom
+      name="floor"
+      type="plane"
+      pos="0 0 0"
+      size="1 1 0.02"
+      rgba="0.22 0.23 0.25 1"
+      contype="1"
+      conaffinity="1"
+    />
+    <body name="overhead_stand" pos="0 0 0">
+      <geom
+        name="stand_bottom"
+        type="mesh"
+        mesh="cam_mount_bottom"
+        pos="-0.0187 0.0365 0"
+        euler="1.5707963 0 0"
+        material="galaxy_black"
+        class="visual"
+      />
+      <geom
+        name="stand_middle"
+        type="mesh"
+        mesh="cam_mount_middle"
+        pos="0 0 0.1885"
+        euler="1.5707963 0 0"
+        material="galaxy_black"
+        class="visual"
+      />
+      <geom
+        name="stand_top"
+        type="mesh"
+        mesh="cam_mount_top"
+        pos="0 0 0.1885"
+        euler="1.5707963 0 0"
+        material="galaxy_black"
+        class="visual"
+      />
+      <geom
+        name="left_arm_plate"
+        type="mesh"
+        mesh="arm_base_mount"
+        pos="0.0753 0.0626 0.005"
+        euler="1.5707963 0 0"
+        material="galaxy_black"
+        class="visual"
+      />
+      <geom
+        name="right_arm_plate"
+        type="mesh"
+        mesh="arm_base_mount"
+        pos="0.0753 -0.1695 0.005"
+        euler="1.5707963 0 0"
+        material="galaxy_black"
+        class="visual"
+      />
+      <geom
+        name="overhead_cam_module"
+        type="mesh"
+        mesh="XLeRobot_camera2"
+        pos="0.07769 -0.00373 0.54222"
+        quat="0.50562 -0.50324 0.4922 0.49884"
+        material="motor"
+        class="visual"
+      />
+      <camera
+        name="overhead_cam"
+        pos="0.0374 0 0.5338"
+        xyaxes="0 -1 0 0.9 0 0.435"
+        resolution="1280 720"
+        fovy="74.5"
+      />
+      <site
+        name="overhead_cam_optical_frame"
+        pos="0.0374 0 0.5338"
+        xyaxes="0 -1 0 0.9 0 0.435"
+        size="0.003"
+        group="4"
+      />
+    </body>
+
+    <body name="Base_2" pos="-0.0013 -0.11605 0.0072" euler="0 0 1.5707963">
+      <inertial
+        pos="0.0137179 -5.19711e-05 0.0334843"
+        mass="0.147"
+        fullinertia="0.000114686 0.000136117 0.000130364 -4.59787e-07 4.97151e-06 9.75275e-08"
+      />
+      <geom type="mesh" mesh="Base" material="galaxy_black" class="visual" />
+      <geom type="mesh" mesh="Base_Motor" material="motor" class="visual" />
+      <geom type="mesh" mesh="Base" class="collision" />
+      <geom type="mesh" mesh="Base_Motor" class="collision" />
+
+      <body name="Rotation_Pitch_2" pos="0 -0.0452 0.0165" euler="1.5708 0 0">
+        <inertial
+          pos="-0.0307604 -1.66727e-05 -0.0252713"
+          mass="0.100006"
+          fullinertia="8.3759e-05 8.10403e-05 2.39783e-05 7.55525e-08 -1.16342e-06 1.54663e-07"
+        />
+        <joint
+          name="Rotation_R"
+          type="hinge"
+          axis="0 -1 0"
+          range="-2.16 2.16"
+          class="sts3215"
+        />
+        <geom
+          type="mesh"
+          mesh="Rotation_Pitch"
+          material="galaxy_black"
+          class="visual"
+        />
+        <geom
+          type="mesh"
+          mesh="Rotation_Pitch_Motor"
+          material="motor"
+          class="visual"
+        />
+        <geom type="mesh" mesh="Rotation_Pitch" class="collision" />
+        <geom type="mesh" mesh="Rotation_Pitch_Motor" class="collision" />
+
+        <body name="Upper_Arm_2" pos="0 0.1025 0.0306" euler="1.5708 0 0">
+          <inertial
+            pos="-0.0898471 -0.00838224 0.0184089"
+            mass="0.103"
+            fullinertia="4.08002e-05 0.000147318 0.000142487 -1.97819e-05 -4.03016e-08 8.97326e-09"
+          />
+          <joint
+            name="Pitch_R"
+            type="hinge"
+            axis="-1 0 0"
+            range="-0.24 3.56"
+            class="sts3215"
+          />
+          <geom
+            type="mesh"
+            mesh="Upper_Arm"
+            material="galaxy_black"
+            class="visual"
+          />
+          <geom
+            type="mesh"
+            mesh="Upper_Arm_Motor"
+            material="motor"
+            class="visual"
+          />
+          <geom type="mesh" mesh="Upper_Arm" class="collision" />
+          <geom type="mesh" mesh="Upper_Arm_Motor" class="collision" />
+
+          <body name="Lower_Arm_2" pos="0 0.11257 0.028" euler="-1.5708 0 0">
+            <inertial
+              pos="-0.0980701 0.00324376 0.0182831"
+              mass="0.104"
+              fullinertia="2.87438e-05 0.000159844 0.00014529 7.41152e-06 1.26409e-06 -4.90188e-08"
+            />
+            <joint
+              name="Elbow_R"
+              type="hinge"
+              axis="1 0 0"
+              range="-0.47 3.40"
+              class="sts3215"
+            />
+            <geom
+              type="mesh"
+              mesh="Lower_Arm"
+              material="galaxy_black"
+              class="visual"
+            />
+            <geom
+              type="mesh"
+              mesh="Lower_Arm_Motor"
+              material="motor"
+              class="visual"
+            />
+            <geom type="mesh" mesh="Lower_Arm" class="collision" />
+            <geom type="mesh" mesh="Lower_Arm_Motor" class="collision" />
+
+            <body
+              name="Wrist_Pitch_Roll_2"
+              pos="0 0.0052 0.1349"
+              euler="-1.5708 0 0"
+            >
+              <inertial
+                pos="-0.000103312 -0.0386143 0.0281156"
+                mass="0.079"
+                fullinertia="3.68263e-05 2.5391e-05 2.1e-05 1.7893e-08 -5.28128e-08 3.6412e-06"
+              />
+              <joint
+                name="Wrist_Pitch_R"
+                type="hinge"
+                axis="1 0 0"
+                range="-1.86 1.94"
+                class="sts3215"
+              />
+              <geom
+                type="mesh"
+                mesh="Wrist_Pitch_Roll"
+                material="galaxy_black"
+                class="visual"
+              />
+              <geom
+                type="mesh"
+                mesh="Wrist_Pitch_Roll_Motor"
+                material="motor"
+                class="visual"
+              />
+              <geom type="mesh" mesh="Wrist_Pitch_Roll" class="collision" />
+              <geom
+                type="mesh"
+                mesh="Wrist_Pitch_Roll_Motor"
+                class="collision"
+              />
+
+              <body name="Norma_Gripper_R" pos="0 -0.0601 0" euler="0 1.5708 0">
+                <inertial
+                  pos="0 -0.028 0"
+                  mass="0.22"
+                  diaginertia="0.00028 0.00022 0.0002"
+                />
+                <joint
+                  name="Wrist_Roll_R"
+                  type="hinge"
+                  axis="0 -1 0"
+                  range="-3.15 3.15"
+                  class="sts3215"
+                />
+                <geom
+                  type="mesh"
+                  mesh="Norma_Gripper_Base"
+                  pos="0 -0.027975 -0.03525"
+                  quat="0.70710678 0 0 -0.70710678"
+                  material="cream_white"
+                  class="visual"
+                />
+                <geom
+                  type="mesh"
+                  mesh="Norma_Gripper_Shield"
+                  pos="-0.02325 -0.023375 -0.01525"
+                  quat="0.70710678 0 0 0.70710678"
+                  material="cream_white"
+                  class="visual"
+                />
+                <geom
+                  type="mesh"
+                  mesh="Norma_Gripper_Shield"
+                  pos="0.023146893 -0.023375 0.01525"
+                  quat="0 0.70710678 0.70710678 0"
+                  material="cream_white"
+                  class="visual"
+                />
+                <geom
+                  type="mesh"
+                  mesh="Norma_Gripper_Wiring"
+                  pos="0 -0.00925 -0.03275"
+                  quat="0 0 0.70710678 0.70710678"
+                  material="cream_white"
+                  class="visual"
+                />
+                <geom
+                  type="mesh"
+                  mesh="Norma_Camera_Mount_27mm"
+                  pos="0 -0.015785372 0.01525"
+                  quat="0.70710678 0 0 -0.70710678"
+                  material="cream_white"
+                  class="visual"
+                />
+                <geom
+                  type="mesh"
+                  mesh="Norma_ST3215_Servo"
+                  material="motor"
+                  class="visual"
+                />
+                <geom
+                  type="mesh"
+                  mesh="Norma_Gripper_Hardware"
+                  material="pgripper_hardware"
+                  class="visual"
+                />
+                <geom
+                  type="mesh"
+                  mesh="Norma_U20_Camera"
+                  material="motor"
+                  class="visual"
+                />
+
+                <site
+                  name="gripper_mount_R"
+                  pos="0 0 0"
+                  size="0.003"
+                  group="4"
+                />
+                <site
+                  name="gripper_R"
+                  pos="0 -0.08145 0"
+                  size="0.005"
+                  group="4"
+                />
+                <site
+                  name="right_wrist_cam_optical_frame"
+                  pos="0 -0.022269 0.060999"
+                  xyaxes="-1 0 0 0 -0.422618 0.906308"
+                  size="0.003"
+                  group="4"
+                />
+                <camera
+                  name="right_wrist_cam"
+                  pos="0 -0.022269 0.060999"
+                  xyaxes="-1 0 0 0 -0.422618 0.906308"
+                  resolution="1280 720"
+                  fovy="74.5"
+                />
+
+                <body name="Norma_Gear_R" pos="0 -0.04845 0">
+                  <inertial
+                    pos="0 0 0"
+                    mass="0.006"
+                    diaginertia="0.000001 0.000002 0.000001"
+                  />
+                  <joint
+                    name="Norma_Gear_R"
+                    type="hinge"
+                    axis="0 -1 0"
+                    range="-0.18 2.18"
+                    damping="0.02"
+                  />
+                  <geom
+                    type="mesh"
+                    mesh="Norma_Gripper_Gear"
+                    pos="0 0 -0.01370322"
+                    quat="0.70710678 0 0 -0.70710678"
+                    material="cream_white"
+                    class="visual"
+                  />
+                </body>
+
+                <body name="Norma_Jaw_Pos_R" pos="-0.011 -0.10345 0">
+                  <inertial
+                    pos="0 0.029 0"
+                    mass="0.025"
+                    diaginertia="0.000012 0.00002 0.000015"
+                  />
+                  <joint
+                    name="Jaw_R"
+                    type="slide"
+                    axis="1 0 0"
+                    range="0 0.027"
+                    class="pgripper_slide"
+                  />
+                  <geom
+                    type="mesh"
+                    mesh="Norma_Gripper_Jaw"
+                    quat="0.70710678 -0.70710678 0 0"
+                    material="cream_white"
+                    class="visual"
+                  />
+                  <geom
+                    name="jaw_pad_collision_pos_R"
+                    type="box"
+                    pos="0.015 0.022 0"
+                    size="0.004 0.022 0.011"
+                    class="collision"
+                    friction="3 0.2 0.1"
+                    condim="6"
+                  />
+                </body>
+
+                <body name="Norma_Jaw_Neg_R" pos="0.011 -0.10345 0">
+                  <inertial
+                    pos="0 0.029 0"
+                    mass="0.025"
+                    diaginertia="0.000012 0.00002 0.000015"
+                  />
+                  <joint
+                    name="Jaw_Mate_R"
+                    type="slide"
+                    axis="-1 0 0"
+                    range="0 0.027"
+                    class="pgripper_slide"
+                  />
+                  <geom
+                    type="mesh"
+                    mesh="Norma_Gripper_Jaw"
+                    quat="0 0 0.70710678 0.70710678"
+                    material="cream_white"
+                    class="visual"
+                  />
+                  <geom
+                    name="jaw_pad_collision_neg_R"
+                    type="box"
+                    pos="-0.015 0.022 0"
+                    size="0.004 0.022 0.011"
+                    class="collision"
+                    friction="3 0.2 0.1"
+                    condim="6"
+                  />
+                </body>
+
+                <body name="gripper_tip" pos="0 -0.08145 0">
+                  <site name="gripper_tip_site" size="0.002" group="4" />
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+
+  <contact>
+    <exclude body1="Base_2" body2="Rotation_Pitch_2" />
+    <exclude body1="Rotation_Pitch_2" body2="Upper_Arm_2" />
+    <exclude body1="Upper_Arm_2" body2="Lower_Arm_2" />
+    <exclude body1="Lower_Arm_2" body2="Wrist_Pitch_Roll_2" />
+    <exclude body1="Wrist_Pitch_Roll_2" body2="Norma_Gripper_R" />
+    <exclude body1="Norma_Jaw_Pos_R" body2="Norma_Gripper_R" />
+    <exclude body1="Norma_Jaw_Neg_R" body2="Norma_Gripper_R" />
+    <exclude body1="Norma_Jaw_Pos_R" body2="Norma_Jaw_Neg_R" />
+    <exclude body1="Rotation_Pitch_2" body2="Lower_Arm_2" />
+    <exclude body1="Rotation_Pitch_2" body2="Wrist_Pitch_Roll_2" />
+    <exclude body1="Upper_Arm_2" body2="Wrist_Pitch_Roll_2" />
+    <exclude body1="Upper_Arm_2" body2="Base_2" />
+    <exclude body1="Norma_Jaw_Pos_R" body2="Wrist_Pitch_Roll_2" />
+    <exclude body1="Norma_Jaw_Neg_R" body2="Wrist_Pitch_Roll_2" />
+  </contact>
+
+  <equality>
+    <joint
+      name="norma_jaw_coupling_R"
+      joint1="Jaw_Mate_R"
+      joint2="Jaw_R"
+      polycoef="0 1 0 0 0"
+    />
+    <joint
+      name="norma_gear_coupling_R"
+      joint1="Norma_Gear_R"
+      joint2="Jaw_R"
+      polycoef="2.173913 -86.956522 0 0 0"
+    />
+  </equality>
+
+  <actuator>
+    <position
+      class="sts3215"
+      name="Rotation_R"
+      joint="Rotation_R"
+      forcerange="-3.35 3.35"
+      ctrlrange="-2.16 2.16"
+    />
+    <position
+      class="sts3215"
+      name="Pitch_R"
+      joint="Pitch_R"
+      forcerange="-3.35 3.35"
+      ctrlrange="-0.24 3.56"
+    />
+    <position
+      class="sts3215"
+      name="Elbow_R"
+      joint="Elbow_R"
+      forcerange="-3.35 3.35"
+      ctrlrange="-0.47 3.40"
+    />
+    <position
+      class="sts3215"
+      name="Wrist_Pitch_R"
+      joint="Wrist_Pitch_R"
+      forcerange="-3.35 3.35"
+      ctrlrange="-1.86 1.94"
+    />
+    <position
+      class="sts3215"
+      name="Wrist_Roll_R"
+      joint="Wrist_Roll_R"
+      forcerange="-3.35 3.35"
+      ctrlrange="-3.15 3.15"
+    />
+    <position
+      class="pgripper_slide"
+      name="Jaw_R"
+      joint="Jaw_R"
+      forcerange="-25 25"
+      ctrlrange="0 0.027"
+    />
+  </actuator>
+
+  <keyframe>
+    <key
+      name="home"
+      qpos="0 1.575 1.46 0 1.5707963267948966 -0.173913094 0.027 0.027"
+      ctrl="0 1.575 1.46 0 1.5707963267948966 0.027"
+    />
+  </keyframe>
+</mujoco>

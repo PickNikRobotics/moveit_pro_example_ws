@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Execute SO101 VLA Policy">
+  <BehaviorTree
+    ID="Execute SO101 VLA Policy"
+    _description="Execute a camera-conditioned policy through the SO-101 trajectory-admittance controller. Requires an explicitly selected live-compatible checkpoint."
+  >
+    <Control ID="Sequence" name="SO101Vla">
+      <Action ID="Script" code="policy_succeeded := 0" />
+      <Action
+        ID="SwitchController"
+        activate_controllers="joint_trajectory_admittance_controller"
+        deactivate_controllers="joint_trajectory_controller;velocity_force_controller;joint_velocity_controller"
+        automatic_deactivation="true"
+        strictness="2"
+        timeout="-1.0"
+        controller_list_action_name="/controller_manager/list_controllers"
+        controller_switch_action_name="/controller_manager/switch_controller"
+      />
+      <Control ID="Fallback" name="RunPolicyAndRememberResult">
+        <Control ID="Sequence">
+          <Action
+            ID="ExecutePolicy"
+            policy_service_name="{policy_service_name}"
+            joint_group_name="manipulator"
+            prompt="{prompt}"
+            total_action_steps="{total_action_steps}"
+            dt="{dt}"
+            committed_action_steps="{committed_action_steps}"
+            num_interpolation_points="100"
+            link_padding="0.01"
+            goal_path_tolerance="0.15"
+            policy_tracking_weight="300.0"
+            policy_uses_real_time_chunking="{policy_uses_real_time_chunking}"
+            guidance_horizon="{guidance_horizon}"
+            policy_call_timeout="{policy_call_timeout}"
+            controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+            image_topics="{image_topics}"
+            image_names="{image_names}"
+            joint_states_topic="/joint_states"
+            absolute_force_torque_threshold="1000;1000;1000;1000;1000;1000"
+            gripper_command_action_name="/gripper_controller/gripper_cmd"
+            gripper_joint_name="Jaw_R"
+          />
+          <Action ID="Script" code="policy_succeeded = 1" />
+        </Control>
+        <Action ID="AlwaysSuccess" />
+      </Control>
+      <Action
+        ID="SwitchController"
+        activate_controllers="joint_trajectory_controller"
+        deactivate_controllers="joint_trajectory_admittance_controller"
+        automatic_deactivation="true"
+        strictness="2"
+        timeout="-1.0"
+        controller_list_action_name="/controller_manager/list_controllers"
+        controller_switch_action_name="/controller_manager/switch_controller"
+      />
+      <Decorator ID="Precondition" if="policy_succeeded == 1" else="FAILURE">
+        <Action ID="AlwaysSuccess" />
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Execute SO101 VLA Policy">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="SO-101 / VLA" />
+      </MetadataFields>
+      <input_port
+        name="policy_service_name"
+        default="/get_action_chunk"
+        type="std::string"
+      />
+      <input_port name="prompt" default="perform the task" type="std::string" />
+      <input_port name="total_action_steps" default="20" type="int" />
+      <input_port name="dt" default="0.1" type="double" />
+      <input_port name="committed_action_steps" default="8" type="int" />
+      <input_port
+        name="policy_uses_real_time_chunking"
+        default="false"
+        type="bool"
+      />
+      <input_port name="guidance_horizon" default="0" type="int" />
+      <input_port name="policy_call_timeout" default="10.0" type="double" />
+      <input_port
+        name="image_topics"
+        default="/so101/cameras/overhead/image_raw;/so101/cameras/wrist/image_raw"
+        type="std::vector&lt;std::string&gt;"
+      />
+      <input_port
+        name="image_names"
+        default="overhead;wrist"
+        type="std::vector&lt;std::string&gt;"
+      />
+    </SubTree>
+  </TreeNodesModel>
+</root>

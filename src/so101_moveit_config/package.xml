@@ -1,0 +1,28 @@
+<?xml version="1.0" ?>
+<package format="3">
+  <name>so101_moveit_config</name>
+  <version>0.1.0</version>
+  <description>
+    MoveIt Pro and MuJoCo configuration for the SO-101 follower arm.
+  </description>
+
+  <maintainer email="noah-wardlow@users.noreply.github.com">Noah</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <exec_depend>joint_state_broadcaster</exec_depend>
+  <exec_depend>joint_trajectory_controller</exec_depend>
+  <exec_depend>moveit_pro_behavior</exec_depend>
+  <exec_depend>moveit_studio_agent</exec_depend>
+  <exec_depend>picknik_mujoco_ros</exec_depend>
+  <exec_depend>position_controllers</exec_depend>
+  <exec_depend>rmw_cyclonedds_cpp</exec_depend>
+  <exec_depend>vla_sim</exec_depend>
+  <exec_depend>velocity_force_controller</exec_depend>
+  <exec_depend>xacro</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

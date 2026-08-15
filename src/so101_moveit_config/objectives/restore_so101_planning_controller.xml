@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Restore SO101 Planning Controller">
+  <BehaviorTree
+    ID="Restore SO101 Planning Controller"
+    _description="Return the SO-101 to its standard trajectory controller after a cancelled or interrupted policy run."
+  >
+    <Action
+      ID="SwitchController"
+      activate_controllers="joint_trajectory_controller"
+      deactivate_controllers="joint_trajectory_admittance_controller;velocity_force_controller;joint_velocity_controller"
+      automatic_deactivation="true"
+      strictness="2"
+      timeout="-1.0"
+      controller_list_action_name="/controller_manager/list_controllers"
+      controller_switch_action_name="/controller_manager/switch_controller"
+    />
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Restore SO101 Planning Controller">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="SO-101 / Safety" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

@@ -13,6 +13,12 @@ services:
   # MoveIt Pro Desktop App connects to.
   runtime:
     environment:
+      - RMW_IMPLEMENTATION=${RMW_IMPLEMENTATION:-rmw_cyclonedds_cpp}
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+      - SO101_GRIPPER_RTSP_URL=${SO101_GRIPPER_RTSP_URL:-}
+      - SO101_HEAD_RTSP_URL=${SO101_HEAD_RTSP_URL:-}
+      - SO101_ROBOT_HOST=${SO101_ROBOT_HOST:-so101-pi.tail337068.ts.net}
+      - MOVEIT_WEBRTC_PASSTHROUGH=${MOVEIT_WEBRTC_PASSTHROUGH:-}
       # The vla_sim adapter's target; derived from the same
       # MOVEIT_INFERENCE_PORT that publishes the server's host port, so
       # changing the port is a one-variable edit. No other config reads it.
@@ -20,6 +26,9 @@ services:
 
   # Starts the robot drivers.
   drivers:
+    environment:
+      RMW_IMPLEMENTATION: "${RMW_IMPLEMENTATION:-rmw_cyclonedds_cpp}"
+      ROS_DOMAIN_ID: "${ROS_DOMAIN_ID:-0}"
     volumes:
       # Allow access to host hardware e.g. RealSense cameras
       - /dev:/dev
@@ -30,13 +39,13 @@ services:
       # Allow access to host hardware e.g. RealSense cameras
       - /dev:/dev
 
-  # LeRobot VLA inference server for the vla_sim config (src/vla_sim/docker/).
+  # LeRobot VLA inference server shared by vla_sim and SO-101.
   # The workspace half of the product's `inference_server` skeleton (see
   # /opt/moveit_pro/docker-compose.yaml): the two same-named services merge,
   # with the product side owning lifecycle, GPU runtime, security, and the
   # published port. Only `moveit_pro run --with-inference-server` and
-  # `--only-inference-server` build or start it. Model selection lives in
-  # src/vla_sim/config/vla_serving.yaml, mounted at /vla_config; everything
+  # `--only-inference-server` build or start it. Model selection lives in the
+  # selected config's vla_serving.yaml, mounted at /vla_config; everything
   # below is a host setting.
   inference_server:
     # Declared here too, so a launcher whose compose file carries no
@@ -50,6 +59,9 @@ services:
       context: ${MOVEIT_HOST_USER_WORKSPACE:-.}/src/vla_sim/docker
       dockerfile: Dockerfile.vla_inference_server
       args:
+        # The Dockerfile owns the torch package mapping for each product
+        # target; policy code continues to use torch's vendor-neutral API.
+        MOVEIT_TARGET: ${MOVEIT_TARGET:-}
         TORCH_INDEX: ${VLA_TORCH_INDEX:-}
     # Host facts only; model knobs live in vla_serving.yaml (mounted below).
     environment:
@@ -78,9 +90,9 @@ services:
       # /models/<checkpoint-dir>. VLA_MODELS_DIR overrides the host folder
       # for checkpoints stored elsewhere.
       - ${VLA_MODELS_DIR:-${MOVEIT_HOST_USER_WORKSPACE:-.}/src/vla_sim/models}:/models:ro
-      # Model-serving config (checkpoint, fps, device, ...); edits picked up on
-      # restart, no image rebuild.
-      - ${MOVEIT_HOST_USER_WORKSPACE:-.}/src/vla_sim/config:/vla_config:ro
+      # Model-serving config (checkpoint, fps, device, ...); the SO-101
+      # launcher selects its config directory through VLA_CONFIG_DIR.
+      - ${VLA_CONFIG_DIR:-${MOVEIT_HOST_USER_WORKSPACE:-.}/src/vla_sim/config}:/vla_config:ro
       # The server script and its tests; edits take effect on restart, no
       # image rebuild, and `docker exec ... python -m unittest` reaches the
       # test suite (see src/vla_sim/docker/README.md).

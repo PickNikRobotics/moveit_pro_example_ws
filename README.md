@@ -41,6 +41,18 @@ git submodule foreach --recursive git lfs pull
 - `moveit_pro_ur_configs/multi_arm_sim`
 - `moveit_pro_ur_configs/picknik_ur_base_config`
 - `moveit_pro_ur_configs/picknik_ur_site_config`
+- `so101_moveit_config`
+- `so101_moveit_hardware_config`
+
+## SO-101 VLA workspace
+
+This fork includes a single-follower SO-101 configuration for MuJoCo
+simulation and a physical arm whose Feetech hardware driver, controller
+manager, and standard ros2_control controllers run on its Raspberry Pi.
+MoveIt Pro connects through a directionally filtered ROS2DDS bridge; the same
+stable camera topics and VLA Objectives are available in simulation and
+hardware. See
+[the SO-101 workspace guide](docs/so101/README.md).
 
 ## Updating Submodules
 

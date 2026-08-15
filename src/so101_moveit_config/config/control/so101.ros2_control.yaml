@@ -1,0 +1,118 @@
+controller_manager:
+  ros__parameters:
+    # This controller manager is used only by MuJoCo. On physical hardware the
+    # Pi owns controller_manager and exposes the same standard controller names.
+    update_rate: 50
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+    joint_trajectory_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+    gripper_controller:
+      type: position_controllers/GripperActionController
+    joint_trajectory_admittance_controller:
+      type: joint_trajectory_admittance_controller/JointTrajectoryAdmittanceController
+    velocity_force_controller:
+      type: velocity_force_controller/VelocityForceController
+    joint_velocity_controller:
+      type: joint_velocity_controller/JointVelocityController
+
+joint_state_broadcaster:
+  ros__parameters:
+    use_local_topics: false
+    joints:
+      - Rotation_R
+      - Pitch_R
+      - Elbow_R
+      - Wrist_Pitch_R
+      - Wrist_Roll_R
+      - Jaw_R
+    interfaces:
+      - position
+      - velocity
+      - effort
+
+joint_trajectory_controller:
+  ros__parameters:
+    joints:
+      - Rotation_R
+      - Pitch_R
+      - Elbow_R
+      - Wrist_Pitch_R
+      - Wrist_Roll_R
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
+    state_publish_rate: 50.0
+    action_monitor_rate: 20.0
+    allow_partial_joints_goal: false
+    # Simulation tolerances mirror the physical controller's public contract.
+    constraints:
+      stopped_velocity_tolerance: 0.02
+      goal_time: 3.0
+      Rotation_R:
+        trajectory: 0.15
+        goal: 0.06
+      Pitch_R:
+        trajectory: 0.15
+        goal: 0.06
+      Elbow_R:
+        trajectory: 0.15
+        goal: 0.08
+      Wrist_Pitch_R:
+        trajectory: 0.15
+        goal: 0.06
+      Wrist_Roll_R:
+        trajectory: 0.15
+        goal: 0.06
+
+gripper_controller:
+  ros__parameters:
+    default: true
+    joint: Jaw_R
+    allow_stalling: true
+    stall_timeout: 0.5
+    stall_velocity_threshold: 0.001
+    goal_tolerance: 0.002
+
+joint_trajectory_admittance_controller:
+  ros__parameters:
+    planning_group_name: manipulator
+    sensor_frame: gripper_tip
+    ee_frame: gripper_tip
+    # The SO-101 has no force/torque sensor. JTAC is used for ExecutePolicy's
+    # chunk-stitching action contract, with admittance disabled.
+    ft_sensor_name: ""
+    stop_accelerations: [0.60, 0.60, 0.60, 0.60, 0.60]
+    state_publish_rate: 20
+    jacobian_damping: 0.02
+    gravity_vector: [0.0, 0.0, -9.81]
+    default_path_tolerance: 0.15
+    default_goal_tolerance: 0.08
+    default_absolute_force_torque_threshold: [1000.0, 1000.0, 1000.0, 1000.0, 1000.0, 1000.0]
+
+velocity_force_controller:
+  ros__parameters:
+    planning_group_name: manipulator
+    ee_frame: gripper_tip
+    sensor_frame: gripper_tip
+    max_joint_velocity: [1.00, 1.00, 1.00, 1.00, 1.00]
+    max_joint_acceleration: [2.00, 2.00, 2.00, 2.00, 2.00]
+    max_cartesian_velocity: [0.15, 0.15, 0.15, 1.00, 1.00, 1.00]
+    max_cartesian_acceleration: [2.00, 2.00, 2.00, 4.00, 4.00, 4.00]
+    state_publish_rate: 10
+    jacobian_damping: 0.02
+    command_timeout: 0.2
+    joint_limit_position_tolerance: 0.02
+    command_interfaces: ["position"]
+
+joint_velocity_controller:
+  ros__parameters:
+    planning_group_name: manipulator
+    max_joint_velocity: [1.00, 1.00, 1.00, 1.00, 1.00]
+    max_joint_acceleration: [2.00, 2.00, 2.00, 2.00, 2.00]
+    command_interfaces: ["position"]
+    joint_limit_position_tolerance: 0.02
+    command_timeout: 0.2
+    state_publish_rate: 20

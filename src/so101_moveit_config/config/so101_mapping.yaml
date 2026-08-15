@@ -1,0 +1,33 @@
+schema: so101.moveit.mapping.v1
+robot_id: so101_pi_follower
+hardware_arm: right
+mapping_id: xlerobot-overhead-v2
+calibration_sha256: 409228de0b511c46e44c5a4e5eeece5da09d6d58329b93889d611f75213c08b9
+source_model:
+  # Provenance path relative to the maintained so101-robot-ops repository.
+  path: camera-dashboard/public/models/so101_overhead_bimanual/so101_overhead_bimanual.xml
+  sha256: a04048ae67fd9ff2c43ed030503828ac876b1fb1a0226e3c7706cc28bc3f949c
+registration:
+  # registered_moveit_position = canonical_pi_position + offset
+  Rotation_R: 0.0
+  Pitch_R: 0.004203673205103398
+  Elbow_R: -0.1107963267948966
+  Wrist_Pitch_R: -0.00000006006107966527452
+  Wrist_Roll_R: 0.0
+  Jaw_R: 0.0
+canonical_fields:
+  Rotation_R: rotation_rad
+  Pitch_R: pitch_rad
+  Elbow_R: elbow_rad
+  Wrist_Pitch_R: wrist_pitch_rad
+  Wrist_Roll_R: wrist_roll_rad
+  Jaw_R: jaw_travel_m
+registered_limits:
+  # Padded model/planning bounds from the authoritative bimanual MJCF.
+  # Physical commands are clamped again to the Pi-published canonical limits.
+  Rotation_R: [-2.16, 2.16]
+  Pitch_R: [-0.24, 3.56]
+  Elbow_R: [-0.47, 3.40]
+  Wrist_Pitch_R: [-1.86, 1.94]
+  Wrist_Roll_R: [-3.15, 3.15]
+  Jaw_R: [0.0, 0.027]

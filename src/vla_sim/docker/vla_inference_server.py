@@ -208,6 +208,20 @@ def resolve_fps(checkpoint: str, fps: float) -> float:
     )
 
 
+def torch_accelerator_backend(torch_module=torch) -> str:
+    """Name the binary backend without changing torch's public device API.
+
+    PyTorch intentionally exposes ROCm devices through ``torch.cuda``. The
+    build metadata is the supported way to distinguish a ROCm distribution
+    from CUDA for diagnostics and benchmark provenance.
+    """
+    if getattr(torch_module.version, "hip", None):
+        return "rocm"
+    if getattr(torch_module.version, "cuda", None):
+        return "cuda"
+    return "cpu"
+
+
 def resolve_device(requested: str, cuda_available: bool) -> str:
     """Resolve the torch device, failing loudly when an explicit request can't be honored.
 
@@ -221,8 +235,8 @@ def resolve_device(requested: str, cuda_available: bool) -> str:
     if requested.startswith("cuda") and not cuda_available:
         raise ValueError(
             f"device '{requested}' was requested but this torch build reports "
-            "no usable GPU; run the container with the NVIDIA runtime "
-            "(GPU serving is automatic on NVIDIA machines under the launcher) "
+            "no usable GPU; expose the accelerator to the container "
+            "(the NVIDIA runtime for CUDA, or /dev/kfd and /dev/dri for ROCm) "
             "or set device: auto in vla_serving.yaml"
         )
     return requested
@@ -452,6 +466,9 @@ class ServerState:
         self.runner: PolicyRunner | None = None
         # Resolved by the loader thread; meaningful once status is "ready".
         self.fps = 0.0
+        self.accelerator = torch_accelerator_backend()
+        self.torch_version = str(torch.__version__)
+        self.warmup_metrics: dict = {}
         # Shared secret /infer requests must present; set from
         # MOVEIT_FRONTEND_KEY in main() before serve_forever() accepts any
         # request.
@@ -525,7 +542,7 @@ def load_policy(state: ServerState, args: argparse.Namespace) -> None:
             )
         log(
             f"loading {policy_type} checkpoint '{args.checkpoint}' on '{device}' "
-            f"(torch {torch.__version__}) ..."
+            f"({state.accelerator}, torch {state.torch_version}) ..."
         )
         runner = PolicyRunner(
             args.checkpoint,
@@ -557,14 +574,20 @@ def load_policy(state: ServerState, args: argparse.Namespace) -> None:
             # least latency/dt steps yet leave at least as many uncommitted,
             # capping tolerable latency at (chunk/2)*dt.
             budget_s = (chunk_steps / 2.0) / state.fps
+            state.warmup_metrics = {
+                "cold_seconds": cold_s,
+                "steady_seconds": steady_s,
+                "chunk_steps": chunk_steps,
+                "realtime_budget_seconds": budget_s,
+            }
             if steady_s > budget_s:
                 log(
                     f"WARNING: inference takes {steady_s:.2f}s per "
                     f"{chunk_steps}-step chunk on '{device}', over the "
                     f"{budget_s:.2f}s real-time budget at {state.fps:g} fps; "
                     "execution will starve at chunk seams. Serve on a faster "
-                    "device (the launcher uses the GPU automatically on NVIDIA "
-                    "machines) or use a policy this machine can serve in time. The "
+                    "device (the launcher exposes supported NVIDIA and AMD GPUs "
+                    "automatically) or use a policy this machine can serve in time. The "
                     "objective's committed_action_steps x dt sets the "
                     "tighter per-run budget."
                 )
@@ -719,6 +742,10 @@ def make_handler(state: ServerState):
                 health["detail"] = state.detail
             elif state.status == "ready":
                 health["device"] = state.runner.device
+                health["accelerator"] = state.accelerator
+                health["torch_version"] = state.torch_version
+                if state.warmup_metrics:
+                    health["warmup"] = state.warmup_metrics
             self._send(200, health)
 
         def _authorized(self) -> bool:

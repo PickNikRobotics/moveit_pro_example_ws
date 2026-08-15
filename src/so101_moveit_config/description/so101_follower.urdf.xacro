@@ -1,0 +1,602 @@
+<?xml version="1.0" ?>
+<robot name="so101_follower" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:arg name="hardware_interface" default="mujoco" />
+  <xacro:arg name="mujoco_model" default="description/so101_follower_scene.xml" />
+  <xacro:arg name="mujoco_keyframe" default="home" />
+  <xacro:arg name="mujoco_viewer" default="false" />
+
+  <material name="galaxy_black">
+    <color rgba="0.028 0.032 0.041 1" />
+  </material>
+  <material name="motor">
+    <color rgba="0.1 0.1 0.1 1" />
+  </material>
+  <material name="cream_white">
+    <color rgba="0.91 0.86 0.74 1" />
+  </material>
+  <material name="pgripper_hardware">
+    <color rgba="0.32 0.33 0.34 1" />
+  </material>
+
+  <xacro:macro name="mesh_geometry" params="file">
+    <geometry>
+      <mesh filename="package://so101_moveit_config/description/assets/${file}" />
+    </geometry>
+  </xacro:macro>
+
+  <xacro:macro name="millimeter_mesh_geometry" params="file">
+    <geometry>
+      <mesh
+        filename="package://so101_moveit_config/description/assets/${file}"
+        scale="0.001 0.001 0.001"
+      />
+    </geometry>
+  </xacro:macro>
+
+  <xacro:macro
+    name="controlled_joint"
+    params="name initial min_position max_position"
+  >
+    <joint name="${name}">
+      <command_interface name="position">
+        <param name="min">${min_position}</param>
+        <param name="max">${max_position}</param>
+      </command_interface>
+      <state_interface name="position">
+        <param name="initial_value">${initial}</param>
+      </state_interface>
+      <state_interface name="velocity" />
+      <state_interface name="effort" />
+    </joint>
+  </xacro:macro>
+
+  <xacro:macro name="so101_ros2_control" params="hardware_interface">
+    <ros2_control name="so101_follower_system" type="system">
+      <xacro:if value="${hardware_interface == 'mujoco'}">
+        <sensor name="overhead_cam">
+          <param name="rgb_topic">/so101/cameras/overhead/image_raw</param>
+          <param name="camera_info_topic">/so101/cameras/overhead/camera_info</param>
+        </sensor>
+        <sensor name="right_wrist_cam">
+          <param name="rgb_topic">/so101/cameras/wrist/image_raw</param>
+          <param name="camera_info_topic">/so101/cameras/wrist/camera_info</param>
+        </sensor>
+      </xacro:if>
+      <xacro:if value="${hardware_interface == 'mujoco'}">
+        <hardware>
+          <plugin>picknik_mujoco_ros/MujocoSystem</plugin>
+          <param name="mujoco_model">$(arg mujoco_model)</param>
+          <param name="mujoco_model_package">so101_moveit_config</param>
+          <param name="mujoco_keyframe">$(arg mujoco_keyframe)</param>
+          <param name="mujoco_viewer">$(arg mujoco_viewer)</param>
+          <param name="render_publish_rate">10</param>
+          <param name="point_cloud_publish_rate">5</param>
+          <param name="tf_publish_rate">30</param>
+          <param name="publish_mj_world_tf">false</param>
+          <param name="base_link_name">Base_2</param>
+        </hardware>
+      </xacro:if>
+      <xacro:controlled_joint
+        name="Rotation_R"
+        initial="0.0"
+        min_position="-2.16"
+        max_position="2.16"
+      />
+      <xacro:controlled_joint
+        name="Pitch_R"
+        initial="1.575"
+        min_position="-0.24"
+        max_position="3.56"
+      />
+      <xacro:controlled_joint
+        name="Elbow_R"
+        initial="1.46"
+        min_position="-0.47"
+        max_position="3.40"
+      />
+      <xacro:controlled_joint
+        name="Wrist_Pitch_R"
+        initial="0.0"
+        min_position="-1.86"
+        max_position="1.94"
+      />
+      <xacro:controlled_joint
+        name="Wrist_Roll_R"
+        initial="1.5707963267948966"
+        min_position="-3.15"
+        max_position="3.15"
+      />
+      <xacro:controlled_joint
+        name="Jaw_R"
+        initial="0.027"
+        min_position="0.0"
+        max_position="0.027"
+      />
+    </ros2_control>
+  </xacro:macro>
+
+  <link name="world" />
+
+  <!--
+    Static bimanual workcell from the authoritative MuJoCo twin. Both arm
+    plates remain visible even though this config controls only the attached
+    right follower. The stand is visual-only, matching the source model.
+  -->
+  <link name="overhead_stand">
+    <visual name="stand_bottom">
+      <origin xyz="-0.0187 0.0365 0" rpy="1.5707963 0 0" />
+      <xacro:millimeter_mesh_geometry file="cam_mount_bottom.stl" />
+      <material name="galaxy_black" />
+    </visual>
+    <visual name="stand_middle">
+      <origin xyz="0 0 0.1885" rpy="1.5707963 0 0" />
+      <xacro:millimeter_mesh_geometry file="cam_mount_middle.stl" />
+      <material name="galaxy_black" />
+    </visual>
+    <visual name="stand_top">
+      <origin xyz="0 0 0.1885" rpy="1.5707963 0 0" />
+      <xacro:millimeter_mesh_geometry file="cam_mount_top.stl" />
+      <material name="galaxy_black" />
+    </visual>
+    <visual name="left_arm_plate">
+      <origin xyz="0.0753 0.0626 0.005" rpy="1.5707963 0 0" />
+      <xacro:millimeter_mesh_geometry file="arm_base.stl" />
+      <material name="galaxy_black" />
+    </visual>
+    <visual name="right_arm_plate">
+      <origin xyz="0.0753 -0.1695 0.005" rpy="1.5707963 0 0" />
+      <xacro:millimeter_mesh_geometry file="arm_base.stl" />
+      <material name="galaxy_black" />
+    </visual>
+    <visual name="overhead_cam_module">
+      <origin
+        xyz="0.07769 -0.00373 0.54222"
+        rpy="-1.1045436248526044 1.5510380297980149 0.4708007064179038"
+      />
+      <xacro:millimeter_mesh_geometry file="XLeRobot_camera2.stl" />
+      <material name="motor" />
+    </visual>
+  </link>
+  <joint name="world_to_overhead_stand" type="fixed">
+    <parent link="world" />
+    <child link="overhead_stand" />
+  </joint>
+
+  <link name="Base_2">
+    <inertial>
+      <origin xyz="0.0137179 -0.0000519711 0.0334843" />
+      <mass value="0.147" />
+      <inertia
+        ixx="0.000114686"
+        ixy="-0.000000459787"
+        ixz="0.00000497151"
+        iyy="0.000136117"
+        iyz="0.0000000975275"
+        izz="0.000130364"
+      />
+    </inertial>
+    <visual>
+      <xacro:mesh_geometry file="Base.stl" />
+      <material name="galaxy_black" />
+    </visual>
+    <visual>
+      <xacro:mesh_geometry file="Base_Motor.stl" />
+      <material name="motor" />
+    </visual>
+    <collision>
+      <xacro:mesh_geometry file="Base.stl" />
+    </collision>
+    <collision>
+      <xacro:mesh_geometry file="Base_Motor.stl" />
+    </collision>
+  </link>
+  <joint name="world_to_Base_2" type="fixed">
+    <parent link="world" />
+    <child link="Base_2" />
+    <origin xyz="-0.0013 -0.11605 0.0072" rpy="0 0 1.5707963" />
+  </joint>
+
+  <link name="Rotation_Pitch_2">
+    <inertial>
+      <origin xyz="-0.0307604 -0.0000166727 -0.0252713" />
+      <mass value="0.100006" />
+      <inertia
+        ixx="0.000083759"
+        ixy="0.0000000755525"
+        ixz="-0.00000116342"
+        iyy="0.0000810403"
+        iyz="0.000000154663"
+        izz="0.0000239783"
+      />
+    </inertial>
+    <visual>
+      <xacro:mesh_geometry file="Rotation_Pitch.stl" />
+      <material name="galaxy_black" />
+    </visual>
+    <visual>
+      <xacro:mesh_geometry file="Rotation_Pitch_Motor.stl" />
+      <material name="motor" />
+    </visual>
+    <collision>
+      <xacro:mesh_geometry file="Rotation_Pitch.stl" />
+    </collision>
+    <collision>
+      <xacro:mesh_geometry file="Rotation_Pitch_Motor.stl" />
+    </collision>
+  </link>
+  <joint name="Rotation_R" type="revolute">
+    <parent link="Base_2" />
+    <child link="Rotation_Pitch_2" />
+    <origin xyz="0 -0.0452 0.0165" rpy="1.5708 0 0" />
+    <axis xyz="0 -1 0" />
+    <limit
+      lower="-2.16"
+      upper="2.16"
+      effort="3.35"
+      velocity="1.20"
+    />
+    <dynamics damping="0.60" friction="0.052" />
+  </joint>
+
+  <link name="Upper_Arm_2">
+    <inertial>
+      <origin xyz="-0.0898471 -0.00838224 0.0184089" />
+      <mass value="0.103" />
+      <inertia
+        ixx="0.0000408002"
+        ixy="-0.0000197819"
+        ixz="-0.0000000403016"
+        iyy="0.000147318"
+        iyz="0.00000000897326"
+        izz="0.000142487"
+      />
+    </inertial>
+    <visual>
+      <xacro:mesh_geometry file="Upper_Arm.stl" />
+      <material name="galaxy_black" />
+    </visual>
+    <visual>
+      <xacro:mesh_geometry file="Upper_Arm_Motor.stl" />
+      <material name="motor" />
+    </visual>
+    <collision>
+      <xacro:mesh_geometry file="Upper_Arm.stl" />
+    </collision>
+    <collision>
+      <xacro:mesh_geometry file="Upper_Arm_Motor.stl" />
+    </collision>
+  </link>
+  <joint name="Pitch_R" type="revolute">
+    <parent link="Rotation_Pitch_2" />
+    <child link="Upper_Arm_2" />
+    <origin xyz="0 0.1025 0.0306" rpy="1.5708 0 0" />
+    <axis xyz="-1 0 0" />
+    <limit
+      lower="-0.24"
+      upper="3.56"
+      effort="3.35"
+      velocity="1.20"
+    />
+    <dynamics damping="0.60" friction="0.052" />
+  </joint>
+
+  <link name="Lower_Arm_2">
+    <inertial>
+      <origin xyz="-0.0980701 0.00324376 0.0182831" />
+      <mass value="0.104" />
+      <inertia
+        ixx="0.0000287438"
+        ixy="0.00000741152"
+        ixz="0.00000126409"
+        iyy="0.000159844"
+        iyz="-0.0000000490188"
+        izz="0.00014529"
+      />
+    </inertial>
+    <visual>
+      <xacro:mesh_geometry file="Lower_Arm.stl" />
+      <material name="galaxy_black" />
+    </visual>
+    <visual>
+      <xacro:mesh_geometry file="Lower_Arm_Motor.stl" />
+      <material name="motor" />
+    </visual>
+    <collision>
+      <xacro:mesh_geometry file="Lower_Arm.stl" />
+    </collision>
+    <collision>
+      <xacro:mesh_geometry file="Lower_Arm_Motor.stl" />
+    </collision>
+  </link>
+  <joint name="Elbow_R" type="revolute">
+    <parent link="Upper_Arm_2" />
+    <child link="Lower_Arm_2" />
+    <origin xyz="0 0.11257 0.028" rpy="-1.5708 0 0" />
+    <axis xyz="1 0 0" />
+    <limit
+      lower="-0.47"
+      upper="3.40"
+      effort="3.35"
+      velocity="1.20"
+    />
+    <dynamics damping="0.60" friction="0.052" />
+  </joint>
+
+  <link name="Wrist_Pitch_Roll_2">
+    <inertial>
+      <origin xyz="-0.000103312 -0.0386143 0.0281156" />
+      <mass value="0.079" />
+      <inertia
+        ixx="0.0000368263"
+        ixy="0.000000017893"
+        ixz="-0.0000000528128"
+        iyy="0.000025391"
+        iyz="0.0000036412"
+        izz="0.000021"
+      />
+    </inertial>
+    <visual>
+      <xacro:mesh_geometry file="Wrist_Pitch_Roll.stl" />
+      <material name="galaxy_black" />
+    </visual>
+    <visual>
+      <xacro:mesh_geometry file="Wrist_Pitch_Roll_Motor.stl" />
+      <material name="motor" />
+    </visual>
+    <collision>
+      <xacro:mesh_geometry file="Wrist_Pitch_Roll.stl" />
+    </collision>
+    <collision>
+      <xacro:mesh_geometry file="Wrist_Pitch_Roll_Motor.stl" />
+    </collision>
+  </link>
+  <joint name="Wrist_Pitch_R" type="revolute">
+    <parent link="Lower_Arm_2" />
+    <child link="Wrist_Pitch_Roll_2" />
+    <origin xyz="0 0.0052 0.1349" rpy="-1.5708 0 0" />
+    <axis xyz="1 0 0" />
+    <limit
+      lower="-1.86"
+      upper="1.94"
+      effort="3.35"
+      velocity="1.20"
+    />
+    <dynamics damping="0.60" friction="0.052" />
+  </joint>
+
+  <link name="Norma_Gripper_R">
+    <inertial>
+      <origin xyz="0 -0.028 0" />
+      <mass value="0.22" />
+      <inertia
+        ixx="0.00028"
+        ixy="0"
+        ixz="0"
+        iyy="0.00022"
+        iyz="0"
+        izz="0.0002"
+      />
+    </inertial>
+    <visual>
+      <origin xyz="0 -0.027975 -0.03525" rpy="0 0 -1.5707963267948966" />
+      <xacro:millimeter_mesh_geometry file="norma_pgripper/gripper_base.stl" />
+      <material name="cream_white" />
+    </visual>
+    <visual>
+      <origin
+        xyz="-0.02325 -0.023375 -0.01525"
+        rpy="0 0 1.5707963267948966"
+      />
+      <xacro:millimeter_mesh_geometry
+        file="norma_pgripper/gripper_base_shield.stl"
+      />
+      <material name="cream_white" />
+    </visual>
+    <visual>
+      <origin
+        xyz="0.023146893 -0.023375 0.01525"
+        rpy="3.141592653589793 0 1.5707963267948966"
+      />
+      <xacro:millimeter_mesh_geometry
+        file="norma_pgripper/gripper_base_shield.stl"
+      />
+      <material name="cream_white" />
+    </visual>
+    <visual>
+      <origin
+        xyz="0 -0.00925 -0.03275"
+        rpy="1.5707963267948966 0 3.141592653589793"
+      />
+      <xacro:millimeter_mesh_geometry
+        file="norma_pgripper/wiring_bracket.stl"
+      />
+      <material name="cream_white" />
+    </visual>
+    <visual>
+      <origin
+        xyz="0 -0.015785372 0.01525"
+        rpy="0 0 -1.5707963267948966"
+      />
+      <xacro:millimeter_mesh_geometry
+        file="norma_pgripper/camera_mount_square_27mm.stl"
+      />
+      <material name="cream_white" />
+    </visual>
+    <visual>
+      <xacro:millimeter_mesh_geometry
+        file="norma_pgripper/norma_st3215_servo.stl"
+      />
+      <material name="motor" />
+    </visual>
+    <visual>
+      <xacro:millimeter_mesh_geometry
+        file="norma_pgripper/norma_gripper_hardware.stl"
+      />
+      <material name="pgripper_hardware" />
+    </visual>
+    <visual>
+      <xacro:millimeter_mesh_geometry
+        file="norma_pgripper/norma_u20_camera.stl"
+      />
+      <material name="motor" />
+    </visual>
+  </link>
+  <joint name="Wrist_Roll_R" type="revolute">
+    <parent link="Wrist_Pitch_Roll_2" />
+    <child link="Norma_Gripper_R" />
+    <origin xyz="0 -0.0601 0" rpy="0 1.5708 0" />
+    <axis xyz="0 -1 0" />
+    <limit
+      lower="-3.15"
+      upper="3.15"
+      effort="3.35"
+      velocity="1.20"
+    />
+    <dynamics damping="0.60" friction="0.052" />
+  </joint>
+
+  <link name="Norma_Gear_R">
+    <inertial>
+      <mass value="0.006" />
+      <inertia
+        ixx="0.000001"
+        ixy="0"
+        ixz="0"
+        iyy="0.000002"
+        iyz="0"
+        izz="0.000001"
+      />
+    </inertial>
+    <visual>
+      <origin xyz="0 0 -0.01370322" rpy="0 0 -1.5707963267948966" />
+      <geometry>
+        <mesh
+          filename="package://so101_moveit_config/description/assets/norma_pgripper/gripper_gear.stl"
+          scale="0.001 0.001 0.001"
+        />
+      </geometry>
+      <material name="cream_white" />
+    </visual>
+  </link>
+  <joint name="Norma_Gear_R" type="revolute">
+    <parent link="Norma_Gripper_R" />
+    <child link="Norma_Gear_R" />
+    <origin xyz="0 -0.04845 0" />
+    <axis xyz="0 -1 0" />
+    <limit lower="-0.18" upper="2.18" effort="1" velocity="2" />
+    <mimic joint="Jaw_R" multiplier="-86.956522" offset="2.173913" />
+  </joint>
+
+  <link name="Norma_Jaw_Pos_R">
+    <inertial>
+      <origin xyz="0 0.029 0" />
+      <mass value="0.025" />
+      <inertia
+        ixx="0.000012"
+        ixy="0"
+        ixz="0"
+        iyy="0.000020"
+        iyz="0"
+        izz="0.000015"
+      />
+    </inertial>
+    <visual>
+      <origin rpy="-1.5707963267948966 0 0" />
+      <geometry>
+        <mesh
+          filename="package://so101_moveit_config/description/assets/norma_pgripper/gripper_jaw.stl"
+          scale="0.001 0.001 0.001"
+        />
+      </geometry>
+      <material name="cream_white" />
+    </visual>
+    <collision>
+      <origin xyz="0.015 0.022 0" />
+      <geometry>
+        <box size="0.008 0.044 0.022" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Jaw_R" type="prismatic">
+    <parent link="Norma_Gripper_R" />
+    <child link="Norma_Jaw_Pos_R" />
+    <origin xyz="-0.011 -0.10345 0" />
+    <axis xyz="1 0 0" />
+    <limit lower="0.0" upper="0.027" effort="25" velocity="0.01" />
+    <dynamics damping="6" friction="0.25" />
+  </joint>
+
+  <link name="Norma_Jaw_Neg_R">
+    <inertial>
+      <origin xyz="0 0.029 0" />
+      <mass value="0.025" />
+      <inertia
+        ixx="0.000012"
+        ixy="0"
+        ixz="0"
+        iyy="0.000020"
+        iyz="0"
+        izz="0.000015"
+      />
+    </inertial>
+    <visual>
+      <origin rpy="1.5707963267948966 0 3.141592653589793" />
+      <geometry>
+        <mesh
+          filename="package://so101_moveit_config/description/assets/norma_pgripper/gripper_jaw.stl"
+          scale="0.001 0.001 0.001"
+        />
+      </geometry>
+      <material name="cream_white" />
+    </visual>
+    <collision>
+      <origin xyz="-0.015 0.022 0" />
+      <geometry>
+        <box size="0.008 0.044 0.022" />
+      </geometry>
+    </collision>
+  </link>
+  <joint name="Jaw_Mate_R" type="prismatic">
+    <parent link="Norma_Gripper_R" />
+    <child link="Norma_Jaw_Neg_R" />
+    <origin xyz="0.011 -0.10345 0" />
+    <axis xyz="-1 0 0" />
+    <limit lower="0.0" upper="0.027" effort="25" velocity="0.01" />
+    <dynamics damping="6" friction="0.25" />
+    <mimic joint="Jaw_R" multiplier="1.0" offset="0.0" />
+  </joint>
+
+  <link name="gripper_tip" />
+  <joint name="gripper_tip_joint" type="fixed">
+    <parent link="Norma_Gripper_R" />
+    <child link="gripper_tip" />
+    <origin xyz="0 -0.08145 0" />
+  </joint>
+
+  <xacro:if value="${'$(arg hardware_interface)' == 'external'}">
+    <!--
+      Physical-camera optical frames mirror the MuJoCo camera-site contract.
+      The head camera is external and is represented at the calibrated twin
+      pose; refine this fixed transform after a physical extrinsic calibration.
+    -->
+    <link name="overhead_cam_optical_frame" />
+    <joint name="overhead_cam_optical_joint" type="fixed">
+      <parent link="Base_2" />
+      <child link="overhead_cam_optical_frame" />
+      <origin xyz="0.11605 -0.0387 0.5266" rpy="0.450 0 3.141592654" />
+    </joint>
+    <link name="right_wrist_cam_optical_frame" />
+    <joint name="right_wrist_cam_optical_joint" type="fixed">
+      <parent link="Norma_Gripper_R" />
+      <child link="right_wrist_cam_optical_frame" />
+      <origin
+        xyz="0 -0.022269 0.060999"
+        rpy="1.134464014 0 3.141592654"
+      />
+    </joint>
+  </xacro:if>
+
+  <xacro:unless value="${'$(arg hardware_interface)' == 'external'}">
+    <xacro:so101_ros2_control hardware_interface="$(arg hardware_interface)" />
+  </xacro:unless>
+</robot>

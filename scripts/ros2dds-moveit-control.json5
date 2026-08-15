@@ -1,0 +1,44 @@
+{
+  plugins: {
+    ros2dds: {
+      // Operator side of the standard ros2_control boundary. Import only the
+      // state and servers exported by the Pi. Keeping this direction explicit
+      // prevents bridge-created DDS proxies from being reflected into Zenoh.
+      allow: {
+        publishers: [
+          "/velocity_force_controller/command",
+          "/joint_velocity_controller/command",
+        ],
+        subscribers: [
+          "/joint_states",
+          "/dynamic_joint_states",
+          "/controller_manager/activity",
+          "/velocity_force_controller/.*",
+          "/joint_velocity_controller/.*",
+        ],
+        service_servers: [],
+        service_clients: [
+          "/controller_manager/.*",
+          "/velocity_force_controller/.*",
+          "/joint_velocity_controller/.*",
+        ],
+        action_servers: [],
+        action_clients: [
+          "/joint_trajectory_controller/follow_joint_trajectory",
+          "/joint_trajectory_admittance_controller/follow_joint_trajectory",
+          "/gripper_controller/gripper_cmd",
+        ],
+      },
+      pub_max_frequencies: [
+        "^/joint_states$=50",
+        "^/dynamic_joint_states$=20",
+        "^/controller_manager/activity$=10",
+      ],
+      pub_priorities: [
+        "^/joint_states$=2:express",
+        "^/dynamic_joint_states$=3",
+        "^/controller_manager/activity$=3",
+      ],
+    },
+  },
+}

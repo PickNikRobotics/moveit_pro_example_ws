@@ -1,0 +1,2 @@
+planning_groups: ['manipulator']
+controllers: ['joint_velocity_controller']

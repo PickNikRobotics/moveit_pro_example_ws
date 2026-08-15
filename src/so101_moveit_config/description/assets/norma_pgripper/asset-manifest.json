@@ -1,0 +1,23 @@
+{
+  "schema": "so101.norma-pgripper-assets.v1",
+  "upstream": {
+    "repository": "https://github.com/norma-core/norma-core",
+    "commit": "dea97c596aa5e3833c26586ec3edf74cd717144a",
+    "directory": "hardware/pgripper",
+    "stepSha256": "4c12c156b34d9027ab94c674f4932430fcbccd3caed15d9f5254cb0e79953955",
+    "referenceImageSha256": "c0c1b4c1347489d99a0f28aad53c9106975a609ca02119304a8a835af5ed964d"
+  },
+  "units": "millimeter",
+  "meshScale": [0.001, 0.001, 0.001],
+  "mechanics": {
+    "travelPerJawMeters": 0.027,
+    "totalOpeningMeters": 0.054,
+    "stepReferenceOpeningMeters": 0.05,
+    "rackPitchRadiusMeters": 0.0115
+  },
+  "camera": {
+    "variant": "Innomaker U20CAM 27 mm",
+    "opticalAxisInHornFrame": [0, -0.9063078, -0.4226183],
+    "lensFrontInHornFrameMeters": [0, -0.022269, 0.060999]
+  }
+}

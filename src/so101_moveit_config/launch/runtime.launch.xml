@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<launch>
+  <arg
+    name="infer_url"
+    default="$(env INFER_URL 'http://127.0.0.1:8973/infer')"
+  />
+  <include
+    file="$(find-pkg-share moveit_studio_agent)/launch/studio_agent_bridge.launch.xml"
+  />
+  <node
+    pkg="vla_sim"
+    exec="get_action_chunk_adapter.py"
+    name="get_action_chunk_adapter"
+    output="both"
+    emulate_tty="true"
+  >
+    <param name="infer_url" value="$(var infer_url)" />
+  </node>
+</launch>

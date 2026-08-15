@@ -1,0 +1,84 @@
+runtime_launch_file:
+  package: "so101_moveit_config"
+  path: "launch/runtime.launch.xml"
+
+hardware:
+  launch_control_node: true
+  launch_robot_state_publisher: true
+  robot_description:
+    urdf:
+      package: "so101_moveit_config"
+      path: "description/so101_follower.urdf.xacro"
+    srdf:
+      package: "so101_moveit_config"
+      path: "config/moveit/so101_follower.srdf"
+    urdf_params:
+      - hardware_interface: "mujoco"
+      - mujoco_model: "description/so101_follower_scene.xml"
+      - mujoco_keyframe: "home"
+      - mujoco_viewer: false
+
+ros_global_params:
+  use_sim_time: false
+
+moveit_params:
+  joint_group_name: "manipulator"
+  kinematics:
+    package: "so101_moveit_config"
+    path: "config/moveit/pose_ik.yaml"
+  joint_limits:
+    package: "so101_moveit_config"
+    path: "config/moveit/joint_limits.yaml"
+  pose_jog:
+    package: "so101_moveit_config"
+    path: "config/moveit/pose_jog.yaml"
+  joint_jog:
+    package: "so101_moveit_config"
+    path: "config/moveit/joint_jog.yaml"
+  publish:
+    planning_scene: true
+    geometry_updates: true
+    state_updates: true
+    transforms_updates: true
+
+ros2_control:
+  config:
+    package: "so101_moveit_config"
+    path: "config/control/so101.ros2_control.yaml"
+  controllers_active_at_startup:
+    - "joint_state_broadcaster"
+    - "joint_trajectory_controller"
+    - "gripper_controller"
+  controllers_inactive_at_startup:
+    - "joint_trajectory_admittance_controller"
+    - "velocity_force_controller"
+    - "joint_velocity_controller"
+  controllers_not_managed: []
+  controller_shared_topics: []
+
+objectives:
+  behavior_loader_plugins:
+    core:
+      - "moveit_pro::behaviors::CoreBehaviorsLoader"
+      - "moveit_pro::behaviors::MTCCoreBehaviorsLoader"
+      - "moveit_pro::behaviors::ConverterBehaviorsLoader"
+      - "moveit_pro::behaviors::MujocoBehaviorsLoader"
+  objective_library_paths:
+    core_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/core"
+    motion_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/motion"
+    mujoco_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/mujoco"
+    so101_objectives:
+      package_name: "so101_moveit_config"
+      relative_path: "objectives"
+    so101_simulation_objectives:
+      package_name: "so101_moveit_config"
+      relative_path: "simulation_objectives"
+  waypoints_file:
+    package_name: "so101_moveit_config"
+    relative_path: "waypoints/so101_waypoints.yaml"

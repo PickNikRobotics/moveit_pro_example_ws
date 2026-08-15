@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Move Simulated SO101 to Waypoint">
+  <BehaviorTree
+    ID="Move Simulated SO101 to Waypoint"
+    _description="Plan and execute a conservative joint-space move to a named waypoint in the SO-101 MuJoCo simulation through the standard Joint Trajectory Controller. Defaults to Ready."
+    _favorite="true"
+  >
+    <SubTree
+      ID="Move to Waypoint"
+      _collapsed="true"
+      waypoint_name="{waypoint_name}"
+      joint_group_name="manipulator"
+      velocity_scale_factor="{velocity_scale_factor}"
+      acceleration_scale_factor="{acceleration_scale_factor}"
+      link_padding="0.01"
+      seed="0"
+      keep_orientation="false"
+      controller_names="joint_trajectory_controller"
+      controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+      execution_pipeline="jtc"
+    />
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Move Simulated SO101 to Waypoint">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="SO-101 / Simulation" />
+      </MetadataFields>
+      <input_port name="waypoint_name" default="Ready" type="std::string">
+        Named SO-101 waypoint to plan and execute.
+      </input_port>
+      <input_port name="velocity_scale_factor" default="0.50" type="double">
+        Fraction of the configured joint velocity limit.
+      </input_port>
+      <input_port name="acceleration_scale_factor" default="0.50" type="double">
+        Fraction of the configured joint acceleration limit.
+      </input_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>

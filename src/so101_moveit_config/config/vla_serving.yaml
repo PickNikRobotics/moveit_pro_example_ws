@@ -1,0 +1,21 @@
+# A live-compatible SO-101 checkpoint is intentionally not selected by
+# default. Setting one changes what commands can reach a physical robot, so
+# the inference server must fail closed until the operator chooses it.
+checkpoint: ""
+
+# Empty reads the policy family from the checkpoint's config.json.
+policy_class: ""
+
+# Read the training rate from train_config.json. ExecutePolicy's `dt` must be
+# set to the inverse of the resolved rate.
+fps: 0.0
+
+# `auto` selects ROCm on the Framework Desktop through MoveIt Pro's detected
+# product target, CUDA when available, and otherwise CPU.
+device: auto
+
+# Five arm joints plus the prismatic jaw.
+state_dim: 6
+
+guidance_horizon: 8
+rtc_schedule: EXP
