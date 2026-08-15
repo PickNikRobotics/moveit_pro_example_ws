@@ -69,6 +69,7 @@ from vla_inference_server import (
     resolve_fps,
     resolve_rtc_horizon,
     resolve_rtc_schedule,
+    torch_accelerator_backend,
 )
 
 
@@ -97,6 +98,33 @@ class TestResolveDevice(unittest.TestCase):
     def test_explicit_cpu_always_honored(self) -> None:
         """An explicit cpu request is honored even when a GPU exists."""
         self.assertEqual(resolve_device("cpu", cuda_available=True), "cpu")
+
+
+class TestTorchAcceleratorBackend(unittest.TestCase):
+    """torch_accelerator_backend: build provenance, independent of device spelling."""
+
+    @staticmethod
+    def _torch_version(*, hip=None, cuda=None):
+        return type(
+            "FakeTorch",
+            (),
+            {"version": type("Version", (), {"hip": hip, "cuda": cuda})()},
+        )()
+
+    def test_rocm_build_wins_even_though_device_is_cuda(self) -> None:
+        """ROCm is identified from build metadata, not torch's shared cuda API."""
+        module = self._torch_version(hip="7.2.2", cuda=None)
+        self.assertEqual(torch_accelerator_backend(module), "rocm")
+
+    def test_cuda_build_is_identified(self) -> None:
+        """A CUDA-only distribution reports the NVIDIA backend."""
+        module = self._torch_version(hip=None, cuda="13.0")
+        self.assertEqual(torch_accelerator_backend(module), "cuda")
+
+    def test_cpu_build_is_identified(self) -> None:
+        """A distribution with neither GPU build marker reports CPU."""
+        module = self._torch_version(hip=None, cuda=None)
+        self.assertEqual(torch_accelerator_backend(module), "cpu")
 
 
 class TestLoadServingConfig(unittest.TestCase):
@@ -619,6 +647,21 @@ class TestHttpStateMachine(unittest.TestCase):
 
         self.assertEqual(resp.status, 200)
         self.assertEqual(json.loads(resp.read())["status"], "ready")
+
+    def test_health_reports_accelerator_provenance_and_warmup(self) -> None:
+        """A ready health response proves which binary backend ran the model."""
+        state = self._ready_state()
+        state.accelerator = "rocm"
+        state.torch_version = "2.10.0+rocm7.2.2"
+        state.warmup_metrics = {"steady_seconds": 1.25, "chunk_steps": 50}
+        conn = self._start(state)
+        conn.request("GET", "/health")
+        body = json.loads(conn.getresponse().read())
+
+        self.assertEqual(body["device"], "cpu")
+        self.assertEqual(body["accelerator"], "rocm")
+        self.assertEqual(body["torch_version"], "2.10.0+rocm7.2.2")
+        self.assertEqual(body["warmup"]["chunk_steps"], 50)
 
     def test_infer_malformed_json_is_400(self) -> None:
         """A body that isn't valid JSON is rejected before it reaches the policy."""

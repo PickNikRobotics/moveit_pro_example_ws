@@ -9,14 +9,19 @@ this directory's image. Model and device selection live in
 ## Running it
 
 The default checkpoint resolves the gated `google/paligemma` tokenizer on first
-load, so export a token from an account that has accepted the
+load, so sign in with an account that has accepted the
 [PaliGemma license](https://huggingface.co/google/paligemma-3b-pt-224):
 
 ```bash
-export HF_TOKEN=hf_your_token_here
+hf auth login
+export HF_TOKEN="$(hf auth token)"
 moveit_pro build
 moveit_pro run -c vla_sim --with-inference-server
 ```
+
+MoveIt Pro automatically selects CPU, NVIDIA, Jetson, or AMD from the host;
+there is no accelerator option to set. Existing `hf` CLI credentials are used
+by the command above without putting the token in shell history.
 
 The first run builds the image and downloads the checkpoint into `../hf_cache/`;
 later runs reuse both. Then run **Stack Cubes with the VLA Policy** in the web
@@ -54,6 +59,12 @@ Set these in the workspace `.env`; all are optional.
 | `VLA_MODELS_DIR` | Host folder mounted at `/models`, for checkpoints stored outside the workspace. Defaults to `../models`. |
 | `VLA_TORCH_INDEX` | Package index the image installs torch from, for example `https://download.pytorch.org/whl/cpu` on a machine with no NVIDIA GPU. Defaults to PyPI. |
 
+On a MoveIt Pro ROCm target, the image ignores `VLA_TORCH_INDEX` and installs
+LeRobot on AMD's immutable ROCm 7.2.2 PyTorch release image, then verifies the
+exact Torch, torchvision, and Triton versions. PyTorch exposes both NVIDIA and
+AMD devices as `cuda`; check `/health`'s `accelerator` field to distinguish the
+binary backend.
+
 ## The HTTP contract
 
 `GET /health` reports `loading` / `ready` / `error` and needs no token.
@@ -62,6 +73,7 @@ token. The server speaks plain HTTP and publishes on `127.0.0.1` only, which is
 what keeps that token off the network. Two settings decide what code and weights
 the container runs, so point both only at sources you trust: `checkpoint`
 chooses the robot's actions, and `VLA_TORCH_INDEX` supplies the torch build.
+The ROCm target instead pins the complete AMD base image by digest.
 
 ## Running the image outside compose
 
@@ -79,6 +91,11 @@ docker run --rm --user "$(id -u):$(id -g)" \
   -p 127.0.0.1:8973:8973 vla_inference_server
 ```
 
+For AMD, build with `--build-arg MOVEIT_TARGET=-rocm7.2.2` and replace
+`--gpus all` with `--device /dev/kfd --device /dev/dri`; add the numeric group
+that owns `/dev/kfd` with `--group-add "$(stat -c %g /dev/kfd)"` when the host
+user does not already have a matching device ACL.
+
 `--user` keeps bind-mounted files from being written as uid 1000, which means
 the image's own passwd entry no longer applies, so `HOME` and `USER` have to be
 set for torch's import-time cache setup. `--gpus all` exposes the GPU to the
@@ -91,9 +108,27 @@ server, so anything after the image name is appended as arguments to it, and
 
 ## Tests
 
-`test_vla_inference_server.py` needs `lerobot` and `torch`, so it runs in the
-container, which mounts this directory at `/app`:
+The server and benchmark tests run in the container, which mounts this
+directory at `/app`:
 
 ```bash
-docker exec "$(docker ps -qf name=inference_server)" python -m unittest -v test_vla_inference_server
+docker exec "$(docker ps -qf name=inference_server)" \
+  python -m unittest -v test_vla_inference_server test_benchmark_vla_inference
 ```
+
+After `/health` reports `ready`, collect a repeatable synthetic-input latency
+report with the checkpoint's exact camera names and state width:
+
+```bash
+docker exec "$(docker ps -qf name=inference_server)" \
+  python benchmark_vla_inference.py \
+    --camera scene --camera wrist --camera overview --state-dim 8 \
+    --warmups 1 --samples 5 \
+    --json /tmp/vla-benchmark.json --html /tmp/vla-benchmark.html
+```
+
+The harness validates every returned action and records backend provenance,
+warmup budget, request latency, output shape, and action digests. Synthetic
+images measure serving throughput, not task success. Pass `--payload` with a
+recorded request JSON for representative-input comparisons. Copy the two
+reports out with `docker cp` before removing the container.

@@ -1,39 +1,65 @@
-FROM python:3.12-slim
+# Keep the default base multi-architecture for CPU, NVIDIA, and Jetson. ROCm
+# needs AMD's matching userspace libraries in addition to the Python wheels, so
+# its product target selects AMD's release image by immutable digest.
+ARG MOVEIT_TARGET=
+FROM python:3.12-slim@sha256:dd29372629eeba2dd003fd9e9d35a5b8236c44727875a0364254b5127af88e65 AS vla-base
+FROM vla-base AS vla-base-cuda13.2-cudnn9
+FROM vla-base AS vla-base-cuda-cudnn9
+FROM vla-base AS vla-base-jetson-cuda13.2-cudnn9
+FROM rocm/pytorch@sha256:73136312e61ea15af04e89a9df3830bd3fa91c14aad755cde0e426e707f493ff AS vla-base-rocm7.2.2
+
+ARG MOVEIT_TARGET
+# All possible values resolve to the versioned local stages declared above.
+# hadolint ignore=DL3006
+FROM vla-base${MOVEIT_TARGET}
 
 # opencv needs libGL/glib at import time even headless-adjacent; install once here
 # rather than debugging ImportErrors inside a slim image.
 # hadolint ignore=DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
-      libgl1 libglib2.0-0 \
+      libgl1 libglib2.0-0 libgomp1 \
     && rm -rf /var/lib/apt/lists/*
 
-# TORCH_INDEX pre-installs torch from a specific wheel index before lerobot
-# resolves it. Empty (default) lets lerobot pull the standard build, which is
-# CUDA-enabled on Linux and also runs on CPU; set it to
-# https://download.pytorch.org/whl/cpu for a much smaller CPU-only image on
-# machines without an NVIDIA GPU (VLA_TORCH_INDEX in the workspace .env).
-# torch/torchvision are pinned (within lerobot 0.6.0's >=2.7,<2.12 range) so
-# builds are reproducible and the CPU-only pre-install cannot be re-resolved
-# to a CUDA build by the lerobot install.
+# The serving contract is accelerator-neutral; only the torch distribution is
+# hardware-specific. The ROCm base already contains AMD's tested binary set,
+# while CUDA and CPU retain the existing PyPI/TORCH_INDEX path.
+ARG MOVEIT_TARGET
 ARG TORCH_INDEX=
 ARG TORCH_VERSION=2.11.0
 ARG TORCHVISION_VERSION=0.26.0
-RUN if [ -n "$TORCH_INDEX" ]; then \
-      pip install --no-cache-dir --index-url "$TORCH_INDEX" \
-        --extra-index-url https://pypi.org/simple \
-        "torch==$TORCH_VERSION" "torchvision==$TORCHVISION_VERSION"; \
-    fi \
-    && pip install --no-cache-dir "lerobot[pi,smolvla]==0.6.0" \
-      "torch==$TORCH_VERSION" "torchvision==$TORCHVISION_VERSION"
+ARG ROCM_TORCH_VERSION=2.10.0+rocm7.2.2.git23d69b29
+ARG ROCM_TORCH_PACKAGE_VERSION=2.10.0+rocm7.2.2.lw.git23d69b29
+ARG ROCM_TORCHVISION_VERSION=0.25.0+rocm7.2.2.git82df5f59
+ARG ROCM_TRITON_VERSION=3.6.0+rocm7.2.2.git4ed88892
+RUN set -eu; \
+    case "$MOVEIT_TARGET" in \
+      *rocm*) \
+        selected_torch="$ROCM_TORCH_PACKAGE_VERSION"; \
+        selected_torchvision="$ROCM_TORCHVISION_VERSION"; \
+        test "$(python -c 'import torch; print(torch.__version__)')" = "$ROCM_TORCH_VERSION"; \
+        test "$(python -c 'import torchvision; print(torchvision.__version__)')" = "$ROCM_TORCHVISION_VERSION"; \
+        test "$(python -c 'import triton; print(triton.__version__)')" = "$ROCM_TRITON_VERSION"; \
+        ;; \
+      *) \
+        selected_torch="$TORCH_VERSION"; \
+        selected_torchvision="$TORCHVISION_VERSION"; \
+        if [ -n "$TORCH_INDEX" ]; then \
+          pip install --no-cache-dir --index-url "$TORCH_INDEX" \
+            --extra-index-url https://pypi.org/simple \
+            "torch==$selected_torch" "torchvision==$selected_torchvision"; \
+        fi; \
+        ;; \
+    esac; \
+    pip install --no-cache-dir "lerobot[pi,smolvla]==0.6.0" \
+      "torch==$selected_torch" "torchvision==$selected_torchvision"
 
 COPY vla_inference_server.py /app/vla_inference_server.py
 WORKDIR /app
 
 # Non-root default for a bare `docker run` (the compose service overrides the
-# user anyway); a real passwd entry keeps getpass.getuser() working in torch's
-# import-time cache-dir setup.
-RUN useradd --create-home --uid 1000 vla
-USER vla
+# user anyway). AMD's base already owns UID 1000; the slim base does not.
+RUN getent passwd 1000 >/dev/null || useradd --create-home --uid 1000 vla
+USER 1000
 
 EXPOSE 8973
 ENTRYPOINT ["python", "vla_inference_server.py"]

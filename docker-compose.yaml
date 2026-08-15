@@ -50,6 +50,9 @@ services:
       context: ${MOVEIT_HOST_USER_WORKSPACE:-.}/src/vla_sim/docker
       dockerfile: Dockerfile.vla_inference_server
       args:
+        # The Dockerfile owns the torch package mapping for each product
+        # target; policy code continues to use torch's vendor-neutral API.
+        MOVEIT_TARGET: ${MOVEIT_TARGET:-}
         TORCH_INDEX: ${VLA_TORCH_INDEX:-}
     # Host facts only; model knobs live in vla_serving.yaml (mounted below).
     environment:
