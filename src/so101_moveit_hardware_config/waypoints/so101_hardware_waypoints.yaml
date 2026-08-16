@@ -1,0 +1,38 @@
+- name: Home
+  description: Measured folded pose commissioned for the physical SO-101.
+  favorite: true
+  joint_group_names:
+    - manipulator
+    - gripper
+  joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        sec: 0
+        nanosec: 0
+    name:
+      - Rotation_R
+      - Pitch_R
+      - Elbow_R
+      - Wrist_Pitch_R
+      - Wrist_Roll_R
+      - Jaw_R
+    position:
+      - 0.0
+      - 3.1
+      - 2.9
+      - 1.4
+      - 1.5707963267948966
+      - 0.027
+    velocity: []
+    effort: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        sec: 0
+        nanosec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []

@@ -35,7 +35,7 @@ def test_velocity_scale_is_seeded_before_parallel_teleoperation() -> None:
     assert children[0].attrib == {"ID": "Script", "code": "teleop_mode := 0"}
     assert children[1].attrib == {
         "ID": "Script",
-        "code": "velocity_scale_factor := 0.75",
+        "code": "velocity_scale_factor := 0.25",
     }
     assert children[2].attrib["ID"] == "Parallel"
 

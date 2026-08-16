@@ -27,7 +27,7 @@ moveit_params:
     package: "so101_moveit_config"
     path: "config/moveit/pose_ik.yaml"
   joint_limits:
-    package: "so101_moveit_config"
+    package: "so101_moveit_hardware_config"
     path: "config/moveit/joint_limits.yaml"
   pose_jog:
     package: "so101_moveit_config"
@@ -76,5 +76,5 @@ objectives:
       package_name: "so101_moveit_hardware_config"
       relative_path: "objectives"
   waypoints_file:
-    package_name: "so101_moveit_config"
-    relative_path: "waypoints/so101_waypoints.yaml"
+    package_name: "so101_moveit_hardware_config"
+    relative_path: "waypoints/so101_hardware_waypoints.yaml"

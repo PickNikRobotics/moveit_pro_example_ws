@@ -2,7 +2,7 @@
 <root BTCPP_format="4" main_tree_to_execute="Move Live SO101 to Waypoint">
   <BehaviorTree
     ID="Move Live SO101 to Waypoint"
-    _description="Plan and execute a joint-space move on the Pi-managed standard Joint Trajectory Controller. Defaults to Ready."
+    _description="Plan and execute a conservative joint-space move on the Pi-managed standard Joint Trajectory Controller. Defaults to the commissioned Home pose."
     _favorite="true"
   >
     <SubTree
@@ -26,13 +26,13 @@
         <Metadata runnable="true" />
         <Metadata subcategory="SO-101 / Hardware" />
       </MetadataFields>
-      <input_port name="waypoint_name" default="Ready" type="std::string">
+      <input_port name="waypoint_name" default="Home" type="std::string">
         Named SO-101 waypoint to plan and execute.
       </input_port>
-      <input_port name="velocity_scale_factor" default="0.75" type="double">
+      <input_port name="velocity_scale_factor" default="0.25" type="double">
         Fraction of the configured joint velocity limit.
       </input_port>
-      <input_port name="acceleration_scale_factor" default="0.75" type="double">
+      <input_port name="acceleration_scale_factor" default="0.25" type="double">
         Fraction of the configured joint acceleration limit.
       </input_port>
     </SubTree>

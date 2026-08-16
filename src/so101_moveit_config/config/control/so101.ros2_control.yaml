@@ -44,6 +44,12 @@ joint_trajectory_controller:
     state_interfaces:
       - position
       - velocity
+    command_joints:
+      - Rotation_R
+      - Pitch_R
+      - Elbow_R
+      - Wrist_Pitch_R
+      - Wrist_Roll_R
     state_publish_rate: 50.0
     action_monitor_rate: 20.0
     allow_partial_joints_goal: false
@@ -66,6 +72,12 @@ joint_trajectory_controller:
       Wrist_Roll_R:
         trajectory: 0.15
         goal: 0.06
+    acceleration_limits:
+      Rotation_R: 0.50
+      Pitch_R: 0.50
+      Elbow_R: 0.50
+      Wrist_Pitch_R: 0.50
+      Wrist_Roll_R: 0.50
 
 gripper_controller:
   ros__parameters:

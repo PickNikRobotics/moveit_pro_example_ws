@@ -79,10 +79,17 @@ until JTAC is installed in the Pi sidecar.
 
 The hardware configuration shadows MoveIt Pro's `Request Teleoperation`
 Objective to make that controller split explicit. It initializes the UI's
-velocity scale to `0.75` before accepting a waypoint and routes joint-slider,
+velocity scale to `0.25` before accepting a waypoint and routes joint-slider,
 interactive-marker, and waypoint plans through
 `joint_trajectory_controller`. JTAC remains reserved for VLA trajectory chunk
 stitching.
+
+The simulation-only `Ready` waypoint is intentionally absent from the physical
+configuration. It extends the arm and must not be treated as a commissioned
+hardware pose. Live hardware exposes only the measured, folded `Home` pose
+until a load-bearing Ready pose has been validated on that robot. Physical
+planning and teleoperation also use lower velocity and acceleration limits
+than simulation.
 
 ## Cameras
 

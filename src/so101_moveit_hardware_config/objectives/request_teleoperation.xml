@@ -15,7 +15,7 @@
         waypoint parameter cannot race the first UI feedback message and leave
         a planning subtree with an unresolved blackboard input.
       -->
-      <Action ID="Script" code="velocity_scale_factor := 0.75" />
+      <Action ID="Script" code="velocity_scale_factor := 0.25" />
       <Control ID="Parallel" success_count="1" failure_count="1">
         <Action
           ID="DoTeleoperateAction"
