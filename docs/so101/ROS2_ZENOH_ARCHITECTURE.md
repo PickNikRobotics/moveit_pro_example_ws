@@ -61,6 +61,13 @@ inside its isolated DDS graph.
 | `/joint_velocity_controller/*` | Pi | Joint Jog commands and services |
 | `/get_action_chunk` | Framework Desktop | ExecutePolicy-to-inference adapter |
 
+The SO-101 hardware Objective library overrides `Request Teleoperation` at the
+robot-configuration seam. The override seeds the teleoperation velocity scale
+before the UI and motion branches run in parallel, and defaults planned
+teleoperation motion to the JTC action, controller name, and `jtc` execution
+pipeline. This keeps JTAC available for VLA execution without sending ordinary
+waypoints through its admittance pipeline.
+
 The bridge filters are directional. The Pi exports state plus service and
 action servers; the workstation exports commands plus service and action
 clients. Neither side imports and exports the same server endpoint, preventing

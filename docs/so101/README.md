@@ -77,6 +77,13 @@ stitching. The launcher permits normal planning and teleoperation with the
 Pi's standard trajectory controller, but refuses a requested inference launch
 until JTAC is installed in the Pi sidecar.
 
+The hardware configuration shadows MoveIt Pro's `Request Teleoperation`
+Objective to make that controller split explicit. It initializes the UI's
+velocity scale to `0.75` before accepting a waypoint and routes joint-slider,
+interactive-marker, and waypoint plans through
+`joint_trajectory_controller`. JTAC remains reserved for VLA trajectory chunk
+stitching.
+
 ## Cameras
 
 The physical cameras keep their existing MediaMTX RTSP streams. For a camera
@@ -107,6 +114,10 @@ workspace before any live test.
 4. Validate simulation policy behavior before selecting a live checkpoint.
 5. Only after explicit authorization, test bounded gripper, waypoint, jog, and
    policy motions in that order.
+
+If a waypoint produces clicking, stop the attempt and inspect the physical
+joint and tracking error. Do not increase path tolerances to make a stalled
+joint appear successful.
 
 Logs for the workstation ROS2DDS client are retained under
 `${XDG_STATE_HOME:-$HOME/.local/state}/so101-moveit-pro/`.

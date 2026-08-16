@@ -17,6 +17,10 @@ if(BUILD_TESTING)
     test_external_driver_contract
     test/test_external_driver_contract.py
   )
+  ament_add_pytest_test(
+    test_teleoperation_contract
+    test/test_teleoperation_contract.py
+  )
 endif()
 
 ament_package()
