@@ -11,9 +11,14 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <exec_depend>moveit_studio_utils_py</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>so101_camera_bridge</exec_depend>
   <exec_depend>so101_moveit_config</exec_depend>
   <exec_depend>vla_sim</exec_depend>
+
+  <test_depend>ament_cmake_pytest</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

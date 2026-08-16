@@ -5,6 +5,9 @@ runtime_launch_file:
 hardware:
   launch_control_node: false
   launch_robot_state_publisher: true
+  additional_driver_launch_file:
+    package: "so101_moveit_hardware_config"
+    path: "launch/external_driver_watchdog.launch.py"
   robot_description:
     urdf:
       package: "so101_moveit_config"

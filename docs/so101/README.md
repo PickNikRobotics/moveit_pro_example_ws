@@ -11,8 +11,9 @@ contract.
 ## Start on the Framework Desktop
 
 The launcher detects the local Tailscale address for WebRTC, downloads and
-verifies the matching ROS2DDS bridge when needed, and checks the Pi with a
-typed `ListControllers` request before starting the MoveIt Pro Agent:
+verifies the matching ROS2DDS bridge when needed, isolates local DDS to
+loopback, and checks the Pi's typed controller activity before starting the
+MoveIt Pro Runtime:
 
 ```bash
 ./scripts/run-so101.bash

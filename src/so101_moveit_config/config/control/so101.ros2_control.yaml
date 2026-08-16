@@ -80,7 +80,7 @@ joint_trajectory_admittance_controller:
   ros__parameters:
     planning_group_name: manipulator
     sensor_frame: gripper_tip
-    ee_frame: gripper_tip
+    ee_frames: [gripper_tip]
     # The SO-101 has no force/torque sensor. JTAC is used for ExecutePolicy's
     # chunk-stitching action contract, with admittance disabled.
     ft_sensor_name: ""

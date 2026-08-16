@@ -186,11 +186,24 @@ if [[ "$MODE" == "hardware" ]]; then
     exit 1
   fi
 
+  # The local DDS graph is intentionally loopback-only. Clear inherited host
+  # overrides so the Runtime generates its matching default local profile;
+  # Zenoh remains the only network transport between hosts.
+  unset \
+    USE_HOST_DDS \
+    CYCLONEDDS_NETWORK_INTERFACE \
+    CYCLONEDDS_PEER_ADDRESSES \
+    CYCLONEDDS_USE_MULTICAST \
+    CYCLONEDDS_MAX_AUTO_PARTICIPANT_INDEX \
+    CYCLONEDDS_URI \
+    FASTRTPS_DEFAULT_PROFILES_FILE
+
   bridge_binary="$("${SCRIPT_DIR}/install-ros2dds-bridge.bash")"
   bridge_log="${STATE_DIR}/ros2dds-bridge.log"
-  "$bridge_binary" \
+  ROS_DISTRO=jazzy \
+  CYCLONEDDS_URI="${SCRIPT_DIR}/cyclonedds-local.xml" \
+    "$bridge_binary" \
     --config "${SCRIPT_DIR}/ros2dds-moveit-control.json5" \
-    --ros-localhost-only \
     client \
     --connect "$ros2dds_endpoint" \
     --no-multicast-scouting \
@@ -208,31 +221,23 @@ if [[ "$MODE" == "hardware" ]]; then
     local response="$1"
     local name="$2"
     local flattened="${response//$'\n'/ }"
-    local pattern="name='${name}'.*state='active'"
+    local pattern="name:[[:space:]]*${name}[[:space:]]+state:[[:space:]]+id:[[:space:]]*[0-9]+[[:space:]]+label:[[:space:]]*active"
     [[ "$flattened" =~ $pattern ]]
   }
 
   # `moveit_pro shell` uses an ephemeral Runtime container when the stack is
-  # not running. That gives this preflight the same ROS environment and host
-  # network as the real Runtime without starting the Agent first.
+  # not running. The transient-local activity message gives this preflight the
+  # current typed controller contract without racing a WAN service proxy.
   controller_response="$(
-    # Variables in this command are intentionally expanded inside the Runtime.
-    # shellcheck disable=SC2016
-    moveit_pro shell -s runtime bash -lc '
+    moveit_pro shell -s runtime -- bash -lc '
       source /opt/ros/jazzy/setup.bash
       source /opt/overlay_ws/install/setup.bash
       export ROS2CLI_NO_DAEMON=1
-      for _ in $(seq 1 30); do
-        if response="$(timeout 5 ros2 service call \
-          /controller_manager/list_controllers \
-          controller_manager_msgs/srv/ListControllers \
-          "{}" 2>/dev/null)"; then
-          printf "%s\n" "$response"
-          exit 0
-        fi
-        sleep 2
-      done
-      exit 1
+      timeout 15 ros2 topic echo \
+        --once \
+        --qos-durability transient_local \
+        /controller_manager/activity \
+        controller_manager_msgs/msg/ControllerManagerActivity
     ' 2>/dev/null || true
   )"
 
