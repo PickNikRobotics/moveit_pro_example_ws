@@ -95,36 +95,19 @@
               z="{z}"
             />
           </Control>
-          <Control ID="Sequence">
-            <Action ID="ResetVector" vector="{vector}" />
-            <Action
-              ID="InsertInVector"
-              index="0"
-              output_vector="{vector}"
-              element="{z}"
-              input_vector="{vector}"
-            />
-            <Action
-              ID="InsertInVector"
-              index="0"
-              output_vector="{vector}"
-              element="{y}"
-              input_vector="{vector}"
-            />
-            <Action
-              ID="InsertInVector"
-              index="0"
-              output_vector="{vector}"
-              element="{x}"
-              input_vector="{vector}"
-            />
-          </Control>
+          <Action
+            ID="CreateVector3Message"
+            x="{x}"
+            y="{y}"
+            z="{z}"
+            vector3="{offset}"
+          />
           <Action ID="Script" code="object_id:='bottle'..index" />
           <SubTree
             ID="AddCollisionBoxInFrontOfEndEffector"
             _collapsed="true"
             dimensions="0.15;0.15;0.15"
-            offset="{vector}"
+            offset="{offset}"
             object_id="{object_id}"
           />
         </Control>
