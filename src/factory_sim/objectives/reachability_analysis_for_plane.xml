@@ -246,7 +246,6 @@
       <inout_port name="num_45_deg_rotations" default="0" />
       <inout_port name="num_columns" default="{num_columns}" />
       <inout_port name="num_rows" default="{num_rows}" />
-      <inout_port name="position_only_ik" default="{position_only_ik}" />
       <inout_port
         name="reachability_origin_pose"
         default="{reachability_origin_pose}"

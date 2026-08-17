@@ -70,11 +70,10 @@
         retract_xyz="0;0;-0.1"
         grasp_poses="{grasp_pose_vector}"
       />
-      <!--Drop: cartesian up-over-down to the tray, orientation-locked so the
-           gripper stays vertical and the bottle does not tip mid-flight.
-           position_only="false" on the lift, position_only="true" on the
-           descent so the soft nullspace task can absorb small orientation
-           drift during the longer Cartesian move.-->
+      <!--Drop: one Cartesian plan through up, over, and down via-points to
+           the tray. The position-only constraint leaves waypoint orientations
+           unenforced; the gripper stays near-vertical because each IK step
+           is seeded from the previous waypoint.-->
       <Control
         ID="Sequence"
         name="Drop: cartesian up-over-down to tray"
@@ -154,7 +153,7 @@
           ID="PlanCartesianPath"
           name="Plan up-over-down"
           path="{drop_path}"
-          position_only="true"
+          cartesian_constraint="[{constraint_type: position_only}]"
           joint_trajectory_msg="{drop_traj}"
           debug_solution="{drop_debug}"
           planning_group_name="manipulator"

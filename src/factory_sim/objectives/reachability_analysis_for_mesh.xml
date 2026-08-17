@@ -147,7 +147,6 @@
       <inout_port name="joint_group_name" default="{joint_group_name}" />
       <inout_port name="orientation_constraint" default="[]" />
       <inout_port name="mesh_link_name" default="{mesh_link_name}" />
-      <inout_port name="position_only_ik" default="{position_only_ik}" />
       <inout_port name="starting_waypoint" default="{starting_waypoint}" />
     </SubTree>
   </TreeNodesModel>

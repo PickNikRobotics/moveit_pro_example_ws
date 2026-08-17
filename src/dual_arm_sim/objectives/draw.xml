@@ -41,7 +41,7 @@
         <Action
           ID="PlanCartesianPath"
           path="{pose_stamped_msgs}"
-          position_only="false"
+          cartesian_constraint="[{constraint_type: position_and_orientation}]"
           blending_radius="0.000001"
           trajectory_timing="[{mode: time_optimal, velocity_scale_factor: 0.1, acceleration_scale_factor: 0.05}]"
           joint_trajectory_msg="{joint_trajectory_msg}"

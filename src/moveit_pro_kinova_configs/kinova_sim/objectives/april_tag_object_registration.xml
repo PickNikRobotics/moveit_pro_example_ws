@@ -233,7 +233,7 @@
           trajectory_timing="[{mode: time_optimal, velocity_scale_factor: 0.2, acceleration_scale_factor: 0.5}]"
           debug_solution="{debug_solution}"
           blending_radius="0.020000"
-          position_only="false"
+          cartesian_constraint="[{constraint_type: position_and_orientation}]"
           joint_trajectory_msg="{joint_trajectory_msg}"
           tip_links="grasp_link"
           planning_group_name="manipulator"

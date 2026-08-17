@@ -28,7 +28,6 @@
         ID="Reachability Analysis for plane"
         _collapsed="true"
         approach_translation="0;0;-0.1"
-        position_only_ik="true"
         end_effector_joint_group="fanuc_ee"
         joint_group_name="manipulator"
         controller_names="joint_trajectory_admittance_controller"

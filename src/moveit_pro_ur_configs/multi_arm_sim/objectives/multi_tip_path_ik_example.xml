@@ -79,7 +79,7 @@
           joint_trajectory_msg="{joint_trajectory_msg}"
           path="{pose_stamped_vector}"
           planning_group_name="manipulator"
-          position_only="false"
+          cartesian_constraint="[{constraint_type: position_and_orientation}]"
           tip_links="third_grasp_link;second_grasp_link"
           trajectory_timing="[{mode: time_optimal}]"
         />
