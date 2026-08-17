@@ -41,7 +41,7 @@
       <inout_port
         name="offset"
         default="0;0;0.1"
-        type="std::vector&lt;double, std::allocator&lt;double&gt; &gt;"
+        type="geometry_msgs::msg::Vector3"
       />
     </SubTree>
   </TreeNodesModel>
