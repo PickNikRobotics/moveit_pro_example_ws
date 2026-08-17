@@ -74,12 +74,20 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 
 # Set up colcon defaults for the new user
 USER ${USERNAME}
-RUN colcon mixin add default \
-    https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml && \
+# Clone the colcon mixin/metadata repositories over git rather than letting colcon
+# fetch each file from raw.githubusercontent.com. The CDN rate-limits (HTTP 429),
+# colcon's load_url() only retries 503 and socket timeouts, and `colcon mixin update`
+# fails if any single file in the index fails -- so one throttled request out of 19
+# breaks the whole image build. Cloning is one request per repository.
+RUN git clone --depth 1 \
+      https://github.com/colcon/colcon-mixin-repository /tmp/cmr && \
+    colcon mixin add default file:///tmp/cmr/index.yaml && \
     colcon mixin update && \
-    colcon metadata add default \
-    https://raw.githubusercontent.com/colcon/colcon-metadata-repository/master/index.yaml && \
-    colcon metadata update
+    git clone --depth 1 \
+      https://github.com/colcon/colcon-metadata-repository /tmp/cmdr && \
+    colcon metadata add default file:///tmp/cmdr/index.yaml && \
+    colcon metadata update && \
+    rm -rf /tmp/cmr /tmp/cmdr
 COPY colcon-defaults.yaml /home/${USERNAME}/.colcon/defaults.yaml
 
 # hadolint ignore=DL3002
