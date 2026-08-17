@@ -32,7 +32,7 @@
         joint_trajectory_msg="{joint_trajectory_msg}"
         path="{pose_stamped_vector}"
         planning_group_name="manipulator"
-        position_only="true"
+        cartesian_constraint="[{constraint_type: position_only}]"
         trajectory_timing="[{mode: time_optimal, acceleration_scale_factor: 0.05}]"
       />
       <Action ID="ExecuteTrajectory" />

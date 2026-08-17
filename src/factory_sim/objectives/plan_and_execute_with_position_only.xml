@@ -6,7 +6,7 @@
   <!--//////////-->
   <BehaviorTree
     ID="Plan And Execute With Position Only"
-    _description="Cartesian plan to an approach pose then cartesian plan to a target pose with optional position only IK. With position only IK the solving constraints are largely decreasing by ignoring the orientation of the approach and target poses."
+    _description="Cartesian plan to an approach pose then cartesian plan to a target pose with an optional Cartesian constraint. A position-only constraint largely decreases the solving constraints by ignoring the orientation of the approach and target poses."
   >
     <Control ID="Sequence">
       <Action ID="ResetPoseStampedVector" vector="{pose_stamped_vector}" />
@@ -57,13 +57,13 @@
               trajectory_timing="[{mode: time_optimal, trajectory_sampling_rate: 30}]"
               debug_solution="{debug_solution}"
               blending_radius="0.020000"
-              position_only="{position_only_ik}"
+              cartesian_constraint="{cartesian_constraint}"
               joint_trajectory_msg="{joint_trajectory_msg}"
               planning_group_name="{joint_group_name}"
               path="{pose_stamped_vector}"
               ik_cartesian_space_density="0.010000"
               ik_joint_space_density="0.100000"
-              tip_link="{ik_frame}"
+              tip_links="{ik_frame}"
             />
           </Control>
           <Control
@@ -122,6 +122,10 @@
       </MetadataFields>
       <inout_port name="approach_pose" default="{approach_pose}" />
       <inout_port
+        name="cartesian_constraint"
+        default="{cartesian_constraint}"
+      />
+      <inout_port
         name="controller_action_server"
         default="{controller_action_server}"
       />
@@ -131,7 +135,6 @@
         default="{execute_trajectories}"
       />
       <inout_port name="joint_group_name" default="{joint_group_name}" />
-      <inout_port name="position_only_ik" default="{position_only_ik}" />
       <inout_port
         name="starting_joint_state"
         default="{starting_joint_state}"

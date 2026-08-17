@@ -132,7 +132,7 @@
           joint_trajectory_msg="{joint_trajectory_msg}"
           path="{pick_retract_path}"
           planning_group_name="manipulator"
-          position_only="true"
+          cartesian_constraint="[{constraint_type: position_only}]"
           tip_links="grasp_link"
           trajectory_timing="[{mode: time_optimal}]"
         />
@@ -269,7 +269,7 @@
             joint_trajectory_msg="{joint_trajectory_msg}"
             path="{place_retract_path}"
             planning_group_name="manipulator"
-            position_only="true"
+            cartesian_constraint="[{constraint_type: position_only}]"
             tip_links="grasp_link"
             trajectory_timing="[{mode: time_optimal}]"
           />
