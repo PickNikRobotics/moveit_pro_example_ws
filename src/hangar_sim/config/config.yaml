@@ -109,5 +109,6 @@ ros2_control:
     - "joint_trajectory_controller"
     - "velocity_force_controller"
     - "arm_only_velocity_force_controller"
+    - "mobile_base_velocity_force_controller"
     - "joint_velocity_controller"
     - "arm_only_joint_velocity_controller"
