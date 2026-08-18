@@ -274,6 +274,7 @@ cancel_objectives = {
 # Objectives to skip entirely from integration testing
 skip_objectives = {
     "AddBottlesToPlanningScene",
+    "Collect Training Data with Behaviors",  # Requires setup for data collection (recording infrastructure not available in CI)
     "Grasp Planning",
     "Joint Diagnostic",
     "ML Find Bottles on Table from Image Exemplar",  # Skipped because it looks for a file on a home path
