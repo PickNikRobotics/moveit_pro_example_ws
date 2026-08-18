@@ -188,7 +188,7 @@
         joint_trajectory_msg="{joint_trajectory_msg}"
         path="{raster_path}"
         planning_group_name="manipulator"
-        position_only="true"
+        cartesian_constraint="[{constraint_type: position_only}]"
         trajectory_timing="[{mode: time_optimal}]"
         tip_offset="0;0;0.1;0;0;0"
         debug_solution="{debug_solution}"

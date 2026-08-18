@@ -208,7 +208,7 @@
               ID="PlanCartesianPath"
               name="Plan pick→predrop"
               path="{predrop_path}"
-              position_only="false"
+              cartesian_constraint="[{constraint_type: position_and_orientation}]"
               joint_trajectory_msg="{pick_to_predrop_traj}"
               debug_solution="{pick_to_predrop_debug}"
               planning_group_name="manipulator"
@@ -232,9 +232,10 @@
           <!--Place: cartesian descent through a pre-place via-point 20 cm
                above the target → open → retract. Avoids Place at Pose
                Vector, whose free-space replan can swing tool-z ~90 deg
-               off vertical mid-flight. position_only="true" on descent
-               and retract relaxes orientation to a soft nullspace task
-               to pass long-path deviation checks.-->
+               off vertical mid-flight. A position-only constraint on descent
+               and retract disables the rotation deviation tolerance on these
+               longer paths; orientation stays near-vertical because each IK
+               step is seeded from the previous waypoint.-->
           <Control
             ID="Sequence"
             name="Place: cartesian descend, open, retract"
@@ -276,7 +277,7 @@
               ID="PlanCartesianPath"
               name="Plan descent (pre-place → place)"
               path="{place_descent_path}"
-              position_only="true"
+              cartesian_constraint="[{constraint_type: position_only}]"
               joint_trajectory_msg="{place_descent_traj}"
               debug_solution="{place_descent_debug}"
               planning_group_name="manipulator"
@@ -322,7 +323,7 @@
               ID="PlanCartesianPath"
               name="Plan post-place retract"
               path="{post_place_retract_path}"
-              position_only="true"
+              cartesian_constraint="[{constraint_type: position_only}]"
               joint_trajectory_msg="{post_place_retract_traj}"
               debug_solution="{post_place_retract_debug}"
               planning_group_name="manipulator"

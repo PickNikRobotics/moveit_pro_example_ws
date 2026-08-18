@@ -50,7 +50,7 @@
         joint_trajectory_msg="{joint_trajectory_msg}"
         path="{path}"
         planning_group_name="manipulator"
-        position_only="true"
+        cartesian_constraint="[{constraint_type: position_only}]"
         tip_links="grasp_link"
         trajectory_timing="[{mode: time_optimal, velocity_scale_factor: 0.1, acceleration_scale_factor: 0.2}]"
       />
