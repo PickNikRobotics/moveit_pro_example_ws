@@ -15,7 +15,6 @@
         ID="Reachability Analysis for mesh"
         _collapsed="true"
         approach_translation="0;0;-0.1"
-        position_only_ik="true"
         ik_frame="tool0"
         approach_distance="0.1"
         end_effector_joint_group="fanuc_ee"

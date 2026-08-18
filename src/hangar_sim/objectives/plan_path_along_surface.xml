@@ -92,7 +92,7 @@
         joint_trajectory_msg="{joint_trajectory_msg}"
         path="{contour_path}"
         planning_group_name="manipulator"
-        position_only="false"
+        cartesian_constraint="[{constraint_type: position_and_orientation}]"
         trajectory_timing="[{mode: time_optimal}]"
         tip_offset="0;0;0.1;0;0;0"
         debug_solution="{debug_solution}"

@@ -28,7 +28,7 @@
         ik_joint_space_density="0.100000"
         path="{target_poses}"
         planning_group_name="manipulator"
-        position_only="false"
+        cartesian_constraint="[{constraint_type: position_and_orientation}]"
         tip_links="grasp_link"
         trajectory_timing="[{mode: time_optimal}]"
         debug_solution="{debug_solution}"
