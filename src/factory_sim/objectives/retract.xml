@@ -3,7 +3,8 @@
   <BehaviorTree
     ID="Retract"
     _description="Move back a distance in the tool frame"
-    distance="0.1"
+    min_distance="0.1"
+    max_distance="0.15"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action ID="InitializeMTCTask" task_id="retract" task="{mtc_task}" />
@@ -12,8 +13,8 @@
         ID="SetupMTCMoveAlongFrameAxis"
         axis_frame="tool0"
         axis_z="-1"
-        max_distance="{distance}"
-        min_distance="{distance}"
+        max_distance="{max_distance}"
+        min_distance="{min_distance}"
         hand_frame="tool0"
         acceleration_scale="0.5"
         axis_x="0.000000"
@@ -37,7 +38,8 @@
         <Metadata runnable="false" />
         <Metadata subcategory="Motion - Execute" />
       </MetadataFields>
-      <inout_port name="distance" default="0.1" />
+      <inout_port name="min_distance" default="0.1" />
+      <inout_port name="max_distance" default="0.15" />
       <inout_port name="ignore_environment_collisions" default="false" />
     </SubTree>
   </TreeNodesModel>
