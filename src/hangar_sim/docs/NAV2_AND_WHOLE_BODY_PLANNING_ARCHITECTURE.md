@@ -328,7 +328,7 @@ The `manipulator` group defines a kinematic chain originating from `ridgeback_ba
 ### System Requirements
 MoveIt requires joint state information for all joints in the planning group to maintain an accurate robot state representation. For virtual joints representing the mobile base, these states must be derived from the platform's odometry.
 
-**In this simulation the bridge below is not launched.** The virtual-rail joints are real MuJoCo joints, so `joint_state_broadcaster` publishes their ground-truth positions on `/joint_states` directly. `odometry_joint_state_publisher.py` is installed by `CMakeLists.txt` and documented here as the hardware pattern: on a real base the state estimate is converted into virtual-rail joint states this way rather than broadcast as TF (see "Transform Publishing Ownership").
+**In this simulation the bridge below is not launched.** The virtual-rail joints are real MuJoCo joints, so `joint_state_broadcaster` publishes their ground-truth positions on `/joint_states` directly. `odometry_joint_state_publisher.py` is installed by `CMakeLists.txt` and documented here as the hardware pattern: on a real base the state estimate is converted into virtual-rail joint states this way rather than broadcast as TF (see "Transform Publisher Allocation").
 
 ### Implementation
 **Location**: `src/hangar_sim/script/odometry_joint_state_publisher.py`
