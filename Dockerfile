@@ -25,7 +25,7 @@ ARG USER_GID
 
 # Ubuntu 24.04 images include user `ubuntu` with UID/GID 1000.
 # Remove it before creating the workspace user with the host UID/GID.
-RUN if id -u ubuntu > /dev/null 2>&1; then userdel -r ubuntu || userdel ubuntu; fi
+RUN if id -u ubuntu > /dev/null 2>&1; then userdel -r ubuntu || true; fi
 
 # Copy source code from the workspace's ROS 2 packages to a workspace inside the container
 ARG USER_WS=/home/${USERNAME}/user_ws

@@ -810,11 +810,12 @@ static_tf_world_to_map = Node(
     arguments=["0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "mj_world", "map"],
 )
 
-# Static map->odom TF fallback: only used when neither SLAM nor AMCL is publishing it
+# Static map->odom bootstrap: skipped under slam:=True, where slam_toolbox owns map->odom
 static_tf_map_to_odom = Node(
     package="tf2_ros",
     executable="static_transform_publisher",
     arguments=["0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "map", "odom"],
+    condition=IfCondition(PythonExpression(["not ", slam])),
 )
 
 # Static transform anchoring MoveIt's planning root under the odometry frame
