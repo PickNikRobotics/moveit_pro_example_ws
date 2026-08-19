@@ -281,8 +281,9 @@ def generate_launch_description():
     # Static TF anchoring MoveIt's planning root ('world') under the odometry frame.
     # robot_state_publisher owns the only live chain into ridgeback_base_link
     # (world -> virtual_rail_... -> ridgeback_base_link), so 'odom' must sit above
-    # 'world' for REP-105 semantics: AMCL's live map->odom correction then shifts the
-    # whole robot subtree, and its own odom->base lookups resolve through this link.
+    # 'world' for REP-105 semantics: a live map->odom correction (slam_toolbox today,
+    # AMCL if it is ever enabled here) then shifts the whole robot subtree, and its
+    # own odom->base lookups resolve through this link.
     # (Previously this was mj_world->world, and the 'odom' frame only existed because
     # MuJoCo broadcast a competing odom->ridgeback_base_link TF — removed in this
     # change.) The UI (pose-utils.ts) hardcodes 'world' for user-clicked poses, so

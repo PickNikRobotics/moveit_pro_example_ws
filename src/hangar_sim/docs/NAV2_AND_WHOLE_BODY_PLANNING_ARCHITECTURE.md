@@ -828,7 +828,7 @@ mj_world (MuJoCo simulation root)
   │
   ├─ [static] → map
   │    │
-  │    └─ [beluga_amcl | static fallback] → odom
+  │    └─ [static identity | slam_toolbox when slam:=True] → odom
   │         │
   │         └─ [static] → world
   │              │
@@ -838,7 +838,9 @@ mj_world (MuJoCo simulation root)
   └─ [Other scene elements]
 ```
 
-With `localization:=True` (the default), beluga_amcl publishes the dynamic `map` → `odom` correction and the static fallback is suppressed; its correction shifts the entire robot subtree (everything under `odom`), which is exactly the REP-105 localization semantics.
+In this configuration `map` → `odom` is a static identity: AMCL is commented out in `localization_launch.py` (`nav2_params.yaml` states "amcl is not used because odom is received directly from MuJoCo"), and `static_tf_map_to_odom` is published whenever `slam:=False` (the default). Only `slam:=True` replaces it, with `slam_toolbox` owning the correction. Whichever node owns it, the correction applies above `odom` and therefore shifts the entire robot subtree, which is the REP-105 localization semantics.
+
+> Note: this section diverges from the same doc on `main` (PR #756), which describes a beluga_amcl-driven `map` → `odom`. The v9.4 branch has no AMCL/localization wiring and no `localization` launch argument, so the static identity described above is what actually runs here.
 
 ---
 
@@ -873,7 +875,7 @@ The `enable_odom_tf: false` parameter prevents the mecanum drive controllers fro
 | Transform | Publishing Node | Mechanism |
 |-----------|----------------|-----------|
 | `mj_world` → `map` | `static_transform_publisher` | Launch file configuration |
-| `map` → `odom` | `beluga_amcl` (or `static_transform_publisher` fallback) | Localization when `localization:=True`; static identity otherwise |
+| `map` → `odom` | `static_transform_publisher` (or `slam_toolbox` when `slam:=True`) | Static identity by default; AMCL is not launched on v9.4 |
 | `odom` → `world` | `static_transform_publisher` | Launch file configuration (anchors the URDF root under the odometry frame) |
 | `world` → … → `ridgeback_base_link` | `robot_state_publisher` | URDF virtual joint chain with joint state feedback |
 | `ridgeback_base_link` → lidar mounts | MuJoCo hardware plugin | Lidar fill-in chain, stopped at the base by the `base_link_name` hardware parameter |
