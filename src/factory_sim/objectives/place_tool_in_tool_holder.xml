@@ -29,6 +29,13 @@
           />
           <Action
             ID="SetupMTCSetCollisionRule"
+            name_a="link_4"
+            name_b="{tool_object_name}"
+            allow_collision="true"
+            task="{mtc_task}"
+          />
+          <Action
+            ID="SetupMTCSetCollisionRule"
             name_a="link_5"
             name_b="{tool_object_name}"
             allow_collision="true"

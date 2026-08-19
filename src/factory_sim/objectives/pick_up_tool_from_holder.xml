@@ -29,6 +29,13 @@
       />
       <Action
         ID="SetupMTCSetCollisionRule"
+        name_a="link_4"
+        name_b="suction_gripper"
+        allow_collision="true"
+        task="{mtc_task}"
+      />
+      <Action
+        ID="SetupMTCSetCollisionRule"
         name_a="link_5"
         name_b="suction_gripper"
         allow_collision="true"
@@ -79,7 +86,7 @@
         ID="AttachURDF"
         parent_link_name="tool0"
         urdf_name="{tool_name}"
-        allowed_collision_links="link_5;link_6"
+        allowed_collision_links="link_4;link_5;link_6"
       />
       <SubTree ID="Retract" _collapsed="true" distance="0.35" />
     </Control>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Collect Training Data with Behaviors"
+>
+  <BehaviorTree
+    ID="Collect Training Data with Behaviors"
+    _description="Wraps the Pick April Tag Labeled Object task with data-recording Behaviors: starts a Trainer recording, runs the task, saves the successful episode, and converts the dataset to LeRobotDataset v3.0. A failed pick is discarded and the Objective fails."
+    _favorite="false"
+  >
+    <Control ID="Fallback" name="RecordWithCleanup">
+      <Control ID="Sequence" name="RecordAndConvert">
+        <Action
+          ID="RecordEpisode"
+          name="Start Trainer recording"
+          dataset_name="behavior_bottle_pick"
+          task="Pick up an AprilTag-labeled bottle."
+          config_name="lab_sim"
+          num_episodes="1"
+        />
+        <!--Let the recording settle before motion begins.-->
+        <Action
+          ID="WaitForDuration"
+          name="Let recording settle"
+          delay_duration="2.0"
+        />
+        <SubTree ID="Pick April Tag Labeled Object" _collapsed="true" />
+        <Action ID="SaveEpisode" name="Keep successful demonstration" />
+        <!--Let the saved episode finish updating in Trainer before the
+             session closes.-->
+        <Action
+          ID="WaitForDuration"
+          name="Let episode finish saving"
+          delay_duration="1.0"
+        />
+        <Action ID="StopRecording" name="Finish recording session" />
+        <Action
+          ID="ConvertDataset"
+          name="Convert to LeRobot dataset"
+          dataset_name="behavior_bottle_pick"
+        />
+      </Control>
+      <!--Cleanup, not a forced success: if the task fails before SaveEpisode,
+           StopRecording discards the unsaved attempt and AlwaysFailure
+           preserves the Objective's failed result, so a failed pick is never
+           labeled as a successful demonstration.-->
+      <Control ID="Sequence" name="DiscardFailedAttempt">
+        <Action ID="StopRecording" name="Discard unsaved attempt" />
+        <Action ID="AlwaysFailure" />
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Collect Training Data with Behaviors">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Advanced Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

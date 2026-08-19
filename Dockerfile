@@ -74,11 +74,24 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 
 # Set up colcon defaults for the new user
 USER ${USERNAME}
-RUN colcon mixin add default \
-    https://raw.githubusercontent.com/colcon/colcon-mixin-repository/master/index.yaml && \
+# Vendor the colcon mixin/metadata repositories into the image over git rather than
+# letting colcon fetch each file from raw.githubusercontent.com. The CDN rate-limits
+# (HTTP 429), colcon's load_url() only retries 503 and socket timeouts, and
+# `colcon mixin update` fails if any single file in the index fails -- so one throttled
+# request out of 19 breaks the whole image build.
+#
+# The clones are kept rather than deleted: `colcon mixin add` persists the index URL, and
+# a later unqualified `colcon mixin update` re-reads every registered source. Keeping them
+# also takes the CDN off the build path entirely. Combined size is ~164 KB without .git.
+RUN mkdir -p /home/${USERNAME}/.colcon/repositories && \
+    git clone --depth 1 \
+      https://github.com/colcon/colcon-mixin-repository /home/${USERNAME}/.colcon/repositories/mixin && \
+    git clone --depth 1 \
+      https://github.com/colcon/colcon-metadata-repository /home/${USERNAME}/.colcon/repositories/metadata && \
+    rm -rf /home/${USERNAME}/.colcon/repositories/mixin/.git /home/${USERNAME}/.colcon/repositories/metadata/.git && \
+    colcon mixin add default file:///home/${USERNAME}/.colcon/repositories/mixin/index.yaml && \
     colcon mixin update && \
-    colcon metadata add default \
-    https://raw.githubusercontent.com/colcon/colcon-metadata-repository/master/index.yaml && \
+    colcon metadata add default file:///home/${USERNAME}/.colcon/repositories/metadata/index.yaml && \
     colcon metadata update
 COPY colcon-defaults.yaml /home/${USERNAME}/.colcon/defaults.yaml
 
