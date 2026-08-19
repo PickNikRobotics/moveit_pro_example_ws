@@ -11,6 +11,7 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS path_ik moveit_pro_behavior
 foreach(package IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${package} REQUIRED)
 endforeach()
+find_package(tl-expected REQUIRED)
 
 add_library(
   example_behaviors
@@ -35,6 +36,7 @@ target_include_directories(
   PRIVATE ${PCL_INCLUDE_DIRS})
 ament_target_dependencies(example_behaviors
                           ${THIS_PACKAGE_INCLUDE_DEPENDS})
+target_link_libraries(example_behaviors tl::expected)
 
 # Install Libraries
 install(
@@ -59,5 +61,5 @@ pluginlib_export_plugin_description_file(
   moveit_pro_behavior_interface example_behaviors_plugin_description.xml)
 
 ament_export_targets(example_behaviorsTargets HAS_LIBRARY_TARGET)
-ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS})
+ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS} tl-expected)
 ament_package()

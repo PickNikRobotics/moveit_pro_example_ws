@@ -20,6 +20,7 @@
   <depend>moveit_studio_vision_msgs</depend>
   <depend>moveit_studio_vision</depend>
   <depend>moveit_pro_behavior</depend>
+  <depend>libexpected-dev</depend>
 
   <exec_depend>moveit_pro_sam2</exec_depend>
 
