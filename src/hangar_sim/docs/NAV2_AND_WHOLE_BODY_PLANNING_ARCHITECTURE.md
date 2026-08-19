@@ -846,7 +846,7 @@ mj_world (MuJoCo simulation root)
 
 In this configuration `map` → `odom` is a static identity: AMCL is commented out in `localization_launch.py` (`nav2_params.yaml` states "amcl is not used because odom is received directly from MuJoCo"), and `static_tf_map_to_odom` is published whenever `slam:=False` (the default). Only `slam:=True` replaces it, with `slam_toolbox` owning the correction. Whichever node owns it, the correction applies above `odom` and therefore shifts the entire robot subtree, which is the REP-105 localization semantics.
 
-> Note: this section diverges from the same doc on `main` (PR #756), which describes a beluga_amcl-driven `map` → `odom`. The v9.4 branch has no AMCL/localization wiring and no `localization` launch argument, so the static identity described above is what actually runs here.
+> Note: this configuration has no active AMCL-based localization — `localization_launch.py` includes no live `amcl`/`beluga_amcl` node, so nothing estimates a `map` → `odom` correction unless `slam:=True` starts `slam_toolbox`. Newer releases do run beluga_amcl for that correction; here the transform is the static identity described above.
 
 ---
 
