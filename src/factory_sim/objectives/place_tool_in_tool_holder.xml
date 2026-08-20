@@ -95,7 +95,8 @@
       <SubTree
         ID="Retract"
         _collapsed="true"
-        distance="0.35"
+        min_distance="0.15"
+        max_distance="0.35"
         ignore_environment_collisions="true"
       />
     </Control>
