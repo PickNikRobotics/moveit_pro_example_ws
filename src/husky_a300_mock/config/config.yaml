@@ -98,6 +98,11 @@ objectives:
     core_objectives:
       package_name: "moveit_pro_objectives"
       relative_path: "objectives/core"
+    # This config adds no custom Objectives, but the last entry must resolve to a
+    # package source directory inside the user workspace, so keep it in-workspace.
+    husky_a300_mock_objectives:
+      package_name: "husky_a300_mock"
+      relative_path: "objectives"
   # Specify the location of the saved waypoints file.
   # [Required]
   waypoints_file:
