@@ -1,0 +1,4 @@
+# This blank-world mock ships no localization, so its TF tree roots at
+# `odom`, not the frontend's default `world`. Override so the 3D Visualizer
+# renders the robot without a manual Fixed Frame change.
+referenceFrame: odom
