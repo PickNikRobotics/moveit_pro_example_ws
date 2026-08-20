@@ -1,0 +1,65 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="husky_a300">
+  <!-- Real A300 platform body, sourced entirely from clearpathrobotics/clearpath_common's own
+       (public, BSD-licensed) clearpath_platform_description package - not from any private Togo
+       integration source. Confirmed byte-identical in composition to the private
+       togo_description/urdf/a300/a300.urdf.xacro fork this robot's real deployment uses, except for
+       an unused gazebo_controllers arg and which drivetrain file supplies the ros2_control block
+       (irrelevant here: use_platform_controllers:=false skips that include entirely below). -->
+  <xacro:arg name="use_platform_controllers" default="false" />
+  <xacro:include filename="$(find clearpath_platform_description)/urdf/common.urdf.xacro" />
+  <xacro:include filename="$(find clearpath_platform_description)/urdf/a300/a300.urdf.xacro" />
+  <xacro:a300 control="diff_4wd" front_wheels="outdoor" rear_wheels="outdoor" />
+
+  <!-- Attachments: the standard A300 accessory kit (front/rear bumper, sensor enclosure, sensor
+       arch), for visual/body fidelity with the real robot. No sensors are mounted - out of scope
+       for this task; see the port plan report for the sensor work. -->
+  <xacro:include filename="$(find clearpath_platform_description)/urdf/a300/attachments/bumper.urdf.xacro" />
+  <xacro:bumper name="front_bumper" model="default" parent_link="front_bumper_mount" extension="0.0">
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+  </xacro:bumper>
+  <xacro:bumper name="rear_bumper" model="default" parent_link="rear_bumper_mount" extension="0.0">
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+  </xacro:bumper>
+
+  <xacro:include filename="$(find clearpath_platform_description)/urdf/a300/attachments/amp_enclosure.urdf.xacro" />
+  <xacro:amp_enclosure name="enclosure" model="amp_enclosure" parent_link="base_link">
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+  </xacro:amp_enclosure>
+
+  <xacro:include filename="$(find clearpath_platform_description)/urdf/a300/attachments/amp_sensor_arch.urdf.xacro" />
+  <xacro:amp_sensor_arch name="sensor_arch" model="amp_sensor_arch" parent_link="enclosure_antenna_mount">
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+  </xacro:amp_sensor_arch>
+
+  <!-- Mock hardware: command velocity in, integrated position/velocity state out. No physics, no
+       sensors - this is the "blank world", fast-iteration counterpart to a full MuJoCo simulation.
+       Wheel joint names match clearpath_platform_description/urdf/a300/drivetrain/wheels/outdoor.urdf.xacro
+       (front_left_wheel_joint etc.), the same names the real robot's drivetrain.urdf.xacro claims. -->
+  <ros2_control name="husky_a300_hardware" type="system">
+    <hardware>
+      <plugin>mock_components/GenericSystem</plugin>
+      <param name="calculate_dynamics">true</param>
+    </hardware>
+    <joint name="front_left_wheel_joint">
+      <command_interface name="velocity" />
+      <state_interface name="position" />
+      <state_interface name="velocity" />
+    </joint>
+    <joint name="front_right_wheel_joint">
+      <command_interface name="velocity" />
+      <state_interface name="position" />
+      <state_interface name="velocity" />
+    </joint>
+    <joint name="rear_left_wheel_joint">
+      <command_interface name="velocity" />
+      <state_interface name="position" />
+      <state_interface name="velocity" />
+    </joint>
+    <joint name="rear_right_wheel_joint">
+      <command_interface name="velocity" />
+      <state_interface name="position" />
+      <state_interface name="velocity" />
+    </joint>
+  </ros2_control>
+</robot>

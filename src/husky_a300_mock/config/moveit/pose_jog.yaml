@@ -1,0 +1,6 @@
+# The base has no arm and no IK-capable group, so Cartesian pose jogging does not apply here -
+# Nav2 drives the base directly via /cmd_vel. An empty planning_groups/controllers pair crashes
+# MoveIt Pro's launch (evaluates to an untyped empty parameter tuple), so this points at "base"
+# inertly instead - Pose Jog is never invoked for this robot.
+planning_groups: ["base"]
+controllers: ["platform_velocity_controller"]
