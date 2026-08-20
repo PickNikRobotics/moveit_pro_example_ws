@@ -90,6 +90,7 @@ objectives:
   behavior_loader_plugins:
     core:
       - "moveit_pro::behaviors::CoreBehaviorsLoader"
+      - "moveit_pro::behaviors::MTCCoreBehaviorsLoader"
       - "moveit_pro::behaviors::ConverterBehaviorsLoader"
       - "moveit_pro::behaviors::VisionBehaviorsLoader"
   # Specify source folder for objectives
