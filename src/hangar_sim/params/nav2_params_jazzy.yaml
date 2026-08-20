@@ -114,6 +114,9 @@ controller_server:
       yaw_goal_tolerance: 0.25
     FollowPath:
       plugin: "nav2_mppi_controller::MPPIController"
+      # Integrate from MPPI's last command instead of lagging odometry feedback;
+      # this requires Nav2's Jazzy backport of ros-navigation/navigation2#5617.
+      open_loop: true
       time_steps: 56
       model_dt: 0.05
       batch_size: 500
