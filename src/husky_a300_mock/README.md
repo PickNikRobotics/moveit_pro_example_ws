@@ -15,4 +15,8 @@ named `platform_velocity_controller`, matching the real robot's controller namin
 (`nav_msgs/Odometry`) are remapped to those plain top-level topic names from
 `platform_velocity_controller`'s own namespaced topics.
 
+The Pose Jog and Joint Jog UI panels are wired to the `base` group only to avoid a MoveIt Pro
+launch crash on an empty jog config; neither is functionally usable on this robot (no IK-capable
+group, no per-joint velocity controller).
+
 For detailed documentation see: [MoveIt Pro Documentation](https://docs.picknik.ai/)

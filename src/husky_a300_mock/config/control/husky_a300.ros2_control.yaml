@@ -40,11 +40,17 @@ platform_velocity_controller:
     linear.x.has_velocity_limits: true
     linear.x.has_acceleration_limits: true
     linear.x.max_velocity: 0.8
-    # Real robot has separate forward/reverse accel (2.0) and decel (4.0) limits;
-    # stock diff_drive_controller only exposes one symmetric max_acceleration.
+    # Asymmetric accel/decel limits carried from the real robot. Sign convention is the
+    # controller's: max_acceleration/max_deceleration_reverse are >= 0, the other two <= 0.
     linear.x.max_acceleration: 2.0
+    linear.x.max_deceleration: -4.0
+    linear.x.max_acceleration_reverse: -2.0
+    linear.x.max_deceleration_reverse: 4.0
 
     angular.z.has_velocity_limits: true
     angular.z.has_acceleration_limits: true
     angular.z.max_velocity: 2.0
     angular.z.max_acceleration: 4.0
+    angular.z.max_deceleration: -4.0
+    angular.z.max_acceleration_reverse: -4.0
+    angular.z.max_deceleration_reverse: 4.0

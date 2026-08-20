@@ -1,19 +1,25 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="husky_a300">
   <!-- Real A300 platform body, sourced entirely from clearpathrobotics/clearpath_common's own
-       (public, BSD-licensed) clearpath_platform_description package - not from any private Togo
-       integration source. Confirmed byte-identical in composition to the private
-       togo_description/urdf/a300/a300.urdf.xacro fork this robot's real deployment uses, except for
-       an unused gazebo_controllers arg and which drivetrain file supplies the ros2_control block
-       (irrelevant here: use_platform_controllers:=false skips that include entirely below). -->
+       (public, BSD-licensed) clearpath_platform_description package. No customer-specific
+       description source is vendored or copied here; the macro composition below was confirmed to
+       match the vendor description this platform ships with, differing only in an unused xacro arg
+       and in which drivetrain file supplies the ros2_control block - irrelevant here, since
+       use_platform_controllers:=false skips that include entirely and this file declares its own
+       mock ros2_control block below. -->
   <xacro:arg name="use_platform_controllers" default="false" />
+  <!-- a300.urdf.xacro declares this arg with a default that resolves $(find clearpath_control), a
+       package this config never uses (no Gazebo) and does not vendor. Declaring it first wins: xacro
+       only applies an <xacro:arg> default for a name it has not already seen, so the upstream
+       default is never evaluated. -->
+  <xacro:arg name="gazebo_controllers" default="unused" />
   <xacro:include filename="$(find clearpath_platform_description)/urdf/common.urdf.xacro" />
   <xacro:include filename="$(find clearpath_platform_description)/urdf/a300/a300.urdf.xacro" />
   <xacro:a300 control="diff_4wd" front_wheels="outdoor" rear_wheels="outdoor" />
 
   <!-- Attachments: the standard A300 accessory kit (front/rear bumper, sensor enclosure, sensor
-       arch), for visual/body fidelity with the real robot. No sensors are mounted - out of scope
-       for this task; see the port plan report for the sensor work. -->
+       arch), for visual/body fidelity with the real robot. No sensors are mounted - sensors are out
+       of scope for this configuration. -->
   <xacro:include filename="$(find clearpath_platform_description)/urdf/a300/attachments/bumper.urdf.xacro" />
   <xacro:bumper name="front_bumper" model="default" parent_link="front_bumper_mount" extension="0.0">
     <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />

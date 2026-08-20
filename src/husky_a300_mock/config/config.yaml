@@ -29,13 +29,6 @@ hardware:
     srdf:
       package: "husky_a300_mock"
       path: "config/moveit/husky_a300.srdf"
-    # Specify any additional parameters required for the URDF.
-    # [Optional]
-    urdf_params:
-      # clearpath_platform_description's a300.urdf.xacro declares this arg with a default that
-      # resolves $(find clearpath_control) - a package this config never uses (no Gazebo) and
-      # does not vendor. Any override value skips evaluating that default.
-      - gazebo_controllers: "unused"
 
 # Sets ROS global params for launch.
 # [Optional]
