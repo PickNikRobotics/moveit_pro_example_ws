@@ -4,8 +4,8 @@
   <version>9.5.0</version>
 
   <description>
-    Minimal MoveIt Pro configuration for a Clearpath Husky A300 in a blank world, for fast
-    iteration decoupled from a full simulated environment.
+    Minimal MoveIt Pro configuration for a Clearpath Husky A300 in a blank
+    world, for fast iteration decoupled from a full simulated environment.
   </description>
 
   <maintainer email="support@picknik.ai">MoveIt Pro Maintainer</maintainer>
