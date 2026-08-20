@@ -92,6 +92,7 @@ HUMBLE_ONLY_KEYS = {
 
 JAZZY_ONLY_KEYS = {
     "controller_server.ros__parameters.progress_checker_plugins",
+    "controller_server.ros__parameters.FollowPath.open_loop",
     "behavior_server.ros__parameters.local_costmap_topic",
     "behavior_server.ros__parameters.local_footprint_topic",
 }
@@ -126,6 +127,14 @@ def test_shared_keys_hold_identical_values(flattened):
         if humble[key] != jazzy[key]
     }
     assert mismatches == EXPECTED_PLUGIN_RENAMES
+
+
+def test_jazzy_enables_mppi_open_loop(flattened):
+    """The Jazzy backport only restores MPPI acceleration when explicitly enabled."""
+    humble, jazzy = flattened
+    key = "controller_server.ros__parameters.FollowPath.open_loop"
+    assert key not in humble
+    assert jazzy[key] is True
 
 
 def test_jazzy_uses_no_slash_form_plugin_names(flattened):
