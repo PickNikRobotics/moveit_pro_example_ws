@@ -69,17 +69,20 @@ The whole body planning capability requires **custom modifications** to the `cle
                         │ MuJoCo Sim    │
                         └───────────────┘
                                 │
-                                ▼
-                        ┌───────────────┐
-                        │  Odometry     │
-                        │  Publisher    │
-                        └───────────────┘
-                                │
-                                ▼
+                    ┌───────────┴───────────┐
+                    │                       │
+                    ▼                       ▼
+        ┌───────────────────────┐           │
+        │   Odometry Publisher  │           │
+        │   → /odom (Nav2 only, │           │
+        │     no TF broadcast)  │           │
+        └───────────────────────┘           │
+                                            ▼
                 ┌───────────────────────────────────┐
-                │ odometry_joint_state_publisher.py│
+                │      joint_state_broadcaster      │
                 │                                   │
-                │ Converts /odom → /joint_states   │
+                │ Publishes /joint_states for the   │
+                │ MuJoCo virtual-rail joints:       │
                 │ - linear_x_joint                  │
                 │ - linear_y_joint                  │
                 │ - rotational_yaw_joint            │
@@ -230,7 +233,7 @@ These modifications follow the same architectural pattern regardless of drive co
 The mobile base's three planar degrees of freedom (translation in X and Y, rotation about Z) are represented as joints within the URDF kinematic tree. This abstraction allows MoveIt to treat the mobile base as additional articulated joints, enabling unified trajectory planning across the combined arm-base system.
 
 ### Implementation Details
-**Location**: `src/hangar_sim/description/ur5e_ridgeback.xacro:73-100`
+**Location**: `src/hangar_sim/description/ur5e_ridgeback.xacro:75-108`
 
 ```xml
 <link name="virtual_rail_link_1"/>
@@ -239,8 +242,10 @@ The mobile base's three planar degrees of freedom (translation in X and Y, rotat
   <axis xyz="1 0 0"/>
   <parent link="world" />
   <child link="virtual_rail_link_1" />
-  <origin xyz="0 0 0" rpy="0 0 0" />
-  <limit effort="1000.0" lower="-20.0" upper="20.0"
+  <!-- z matches the MJCF base_platform_rotation anchor (pos 0 0 -0.048) so the
+       rendered base sits where the physics puts it; the sim base has no z DOF. -->
+  <origin xyz="0 0 -0.048" rpy="0 0 0" />
+  <limit effort="1000.0" lower="-25.0" upper="25.0"
          velocity="0.175" acceleration="10.0"/>
   <dynamics damping="20.0" friction="500.0" />
 </joint>
@@ -271,7 +276,7 @@ The mobile base's three planar degrees of freedom (translation in X and Y, rotat
 The virtual joints establish the following kinematic chain: `world` → `virtual_rail_link_1` → `virtual_rail_link_2` → `ridgeback_base_link`. This chain represents the mobile base's pose in the global reference frame through three sequential transformations corresponding to planar motion.
 
 ### Control Characteristics
-These joints lack direct physical actuators. Instead, their commanded velocities are transformed into mecanum wheel commands through inverse kinematics performed by the platform velocity controller. Joint state feedback is derived from odometry integration via the odometry-to-joint-state bridge.
+These joints lack direct physical actuators. Instead, their commanded velocities are transformed into mecanum wheel commands through inverse kinematics performed by the platform velocity controller. In simulation, joint state feedback comes straight from the MuJoCo virtual-rail joints via `joint_state_broadcaster`; on hardware it is derived from odometry integration via the odometry-to-joint-state bridge (Component 3).
 
 ---
 
@@ -323,6 +328,8 @@ The `manipulator` group defines a kinematic chain originating from `ridgeback_ba
 ### System Requirements
 MoveIt requires joint state information for all joints in the planning group to maintain an accurate robot state representation. For virtual joints representing the mobile base, these states must be derived from the platform's odometry.
 
+**In this simulation the bridge below is not launched.** The virtual-rail joints are real MuJoCo joints, so `joint_state_broadcaster` publishes their ground-truth positions on `/joint_states` directly. `odometry_joint_state_publisher.py` is installed by `CMakeLists.txt` and documented here as the hardware pattern: on a real base the state estimate is converted into virtual-rail joint states this way rather than broadcast as TF (see "Transform Publisher Allocation").
+
 ### Implementation
 **Location**: `src/hangar_sim/script/odometry_joint_state_publisher.py`
 
@@ -353,21 +360,19 @@ class OdometryJointStateRepublisher(Node):
 
 ### Data Flow Architecture
 ```
-MuJoCo Simulation → /odom (nav_msgs/Odometry) → odometry_joint_state_publisher.py
+# Hardware (bridge active):
+State estimate → /odom (nav_msgs/Odometry) → odometry_joint_state_publisher.py
+    → /joint_states (sensor_msgs/JointState) → MoveIt Robot State
+
+# Simulation (what runs here):
+MuJoCo virtual-rail joints → joint_state_broadcaster
     → /joint_states (sensor_msgs/JointState) → MoveIt Robot State
 ```
 
 ### Node Configuration
-**Location**: `src/hangar_sim/launch/sim/robot_drivers_to_persist_sim.launch.py:274-280`
-
-```python
-odom_to_joint_state_repub = Node(
-    package="hangar_sim",
-    executable="odometry_joint_state_publisher.py",
-    name="odometry_joint_state_publisher",
-    output="log",
-)
-```
+No launch file instantiates this node; it would be added to the driver launch on a real
+base. Running it in simulation would put a second publisher of the virtual-rail joint
+positions on `/joint_states`, competing with `joint_state_broadcaster`.
 
 ### Functional Description
 This node subscribes to odometry messages published by the mecanum drive controller and converts the pose information into joint states for the three virtual joints. The conversion extracts the X and Y positions directly and computes the yaw angle from the quaternion orientation. These joint states are then published on the `/joint_states` topic, where they are consumed by `robot_state_publisher` and MoveIt's planning scene monitor.
@@ -705,8 +710,8 @@ Wheel velocity commands are written to the MuJoCo simulation interfaces, causing
 **Step 10: Odometry Integration**
 The simulation integrates wheel velocities to compute platform motion and publishes odometry messages on `/odom`.
 
-**Step 11: State Conversion**
-The `odometry_joint_state_publisher.py` node converts odometry messages to joint state messages and publishes them on `/joint_states`.
+**Step 11: State Feedback**
+`joint_state_broadcaster` publishes the MuJoCo virtual-rail joint positions on `/joint_states`. (On hardware this step is the odometry-to-joint-state bridge instead — see Component 3.)
 
 **Step 12: State Update**
 MoveIt's planning scene monitor receives the joint state updates, updating the robot state representation. The `joint_trajectory_controller` uses this feedback for closed-loop trajectory tracking and error correction.
@@ -717,22 +722,23 @@ MoveIt's planning scene monitor receives the joint state updates, updating the r
 
 ### Initial Configuration
 
-**Location**: `src/hangar_sim/config/config.yaml:94-105`
+**Location**: `src/hangar_sim/config/config.yaml:98-111`
 
 ```yaml
-ros2_control:
+ros2_control:  # config.yaml:89
   controllers_active_at_startup:
     - "force_torque_sensor_broadcaster"
+    - "imu_sensor_broadcaster"
     - "joint_state_broadcaster"
     - "platform_velocity_controller"
     - "vacuum_gripper"
-
   controllers_inactive_at_startup:
-    - "joint_trajectory_controller"
-    - "servo_controller"
     - "platform_velocity_controller_nav2"
+    - "joint_trajectory_controller"
     - "velocity_force_controller"
     - "arm_only_velocity_force_controller"
+    - "joint_velocity_controller"
+    - "arm_only_joint_velocity_controller"
 ```
 
 ### State Transition Model
@@ -780,7 +786,7 @@ The trajectory and navigation controllers are activated on-demand when their res
 
 ### Command Routing Configuration
 
-**Location**: `src/hangar_sim/launch/sim/robot_drivers_to_persist_sim.launch.py:81-85`
+**Location**: `src/hangar_sim/launch/sim/robot_drivers_to_persist_sim.launch.py:86-90`
 
 ```python
 remappings = [
@@ -794,7 +800,7 @@ Nav2's velocity commands are remapped to the `platform_velocity_controller_nav2`
 
 ### Transform Tree Configuration
 
-**Location**: `src/hangar_sim/launch/sim/robot_drivers_to_persist_sim.launch.py:256-272`
+**Location**: `src/hangar_sim/launch/sim/robot_drivers_to_persist_sim.launch.py:260-297`
 
 ```python
 # Static transform: MuJoCo world to map frame
@@ -804,11 +810,19 @@ static_tf_world_to_map = Node(
     arguments=["0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "mj_world", "map"],
 )
 
-# Static transform: map to odometry frame
+# Static map->odom bootstrap: skipped under slam:=True, where slam_toolbox owns map->odom
 static_tf_map_to_odom = Node(
     package="tf2_ros",
     executable="static_transform_publisher",
     arguments=["0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "map", "odom"],
+    condition=IfCondition(PythonExpression(["not ", slam])),
+)
+
+# Static transform anchoring MoveIt's planning root under the odometry frame
+static_tf_odom_to_world = Node(
+    package="tf2_ros",
+    executable="static_transform_publisher",
+    arguments=["0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "odom", "world"],
 )
 ```
 
@@ -821,15 +835,19 @@ mj_world (MuJoCo simulation root)
   │
   ├─ [static] → map
   │    │
-  │    └─ [static] → odom
+  │    └─ [static identity | slam_toolbox when slam:=True] → odom
   │         │
-  │         └─ [robot_state_publisher] → ridgeback_base_link
-  │              (via virtual joint chain)
+  │         └─ [static] → world
+  │              │
+  │              └─ [robot_state_publisher] → ridgeback_base_link
+  │                   (via world → virtual_rail_link_1 → virtual_rail_link_2 chain)
   │
   └─ [Other scene elements]
 ```
 
-In production deployments with active localization, the static `map` to `odom` transform would be replaced with a dynamic transform published by the localization system (e.g., AMCL), representing the estimated pose correction between odometry and the global map frame.
+In this configuration `map` → `odom` is a static identity: AMCL is commented out in `localization_launch.py` (`nav2_params.yaml` states "amcl is not used because odom is received directly from MuJoCo"), and `static_tf_map_to_odom` is published whenever `slam:=False` (the default). Only `slam:=True` replaces it, with `slam_toolbox` owning the correction. Whichever node owns it, the correction applies above `odom` and therefore shifts the entire robot subtree, which is the REP-105 localization semantics.
+
+> Note: this configuration has no active AMCL-based localization — `localization_launch.py` includes no live `amcl`/`beluga_amcl` node, so nothing estimates a `map` → `odom` correction unless `slam:=True` starts `slam_toolbox`. Newer releases do run beluga_amcl for that correction; here the transform is the static identity described above.
 
 ---
 
@@ -864,14 +882,22 @@ The `enable_odom_tf: false` parameter prevents the mecanum drive controllers fro
 | Transform | Publishing Node | Mechanism |
 |-----------|----------------|-----------|
 | `mj_world` → `map` | `static_transform_publisher` | Launch file configuration |
-| `map` → `odom` | `static_transform_publisher` | Launch file configuration (simulation only) |
-| `odom` → `ridgeback_base_link` | `robot_state_publisher` | URDF virtual joint chain with joint state feedback |
+| `map` → `odom` | `static_transform_publisher` (or `slam_toolbox` when `slam:=True`) | Static identity by default; AMCL is not launched on v9.4 |
+| `odom` → `world` | `static_transform_publisher` | Launch file configuration (anchors the URDF root under the odometry frame) |
+| `world` → … → `ridgeback_base_link` | `robot_state_publisher` | URDF virtual joint chain with joint state feedback |
+| `ridgeback_base_link` → lidar mounts | MuJoCo hardware plugin | Lidar fill-in chain, stopped at the base by the `base_link_name` hardware parameter |
+
+`robot_state_publisher` is the **sole owner** of the live transform into `ridgeback_base_link`. Every other subsystem that knows the base pose expresses it as data, not as a competing TF parent:
+
+- The MuJoCo odom publisher emits `/odom` messages for Nav2 but not TF (`odom_publish_tf: false`).
+- The MuJoCo lidar fill-in chain stops at `ridgeback_base_link` (`base_link_name` hardware parameter) instead of broadcasting the ground-truth body chain (`base_platform` → `ridgeback_base_link`) up to the MJCF worldbody.
+- fuse keeps `publish_tf: false`; its estimate stays on `odom_filtered`. On real hardware the estimate feeds the virtual-rail joint states (odometry-to-joint-state bridge) rather than TF.
 
 ### Transform Source Analysis
 
-The `robot_state_publisher` node computes and publishes the `odom` to `ridgeback_base_link` transform based on:
+The `robot_state_publisher` node computes and publishes the transform into `ridgeback_base_link` based on:
 1. The URDF virtual joint chain definition (`world` → `virtual_rail_link_1` → `virtual_rail_link_2` → `ridgeback_base_link`)
-2. Current joint state values received on `/joint_states` (populated by the odometry bridge)
+2. Current joint state values received on `/joint_states` — in simulation these come straight from the MuJoCo virtual-rail joints via `joint_state_broadcaster` (ground truth); on real hardware they come from an odometry-to-joint-state bridge fed by the state estimator
 
 If the mecanum drive controllers were configured with `enable_odom_tf: true`, they would publish the same transform based on wheel odometry integration. This would result in multiple publishers for the same transform, violating the ROS 2 transform system's requirement for unique transform publishers.
 
@@ -881,10 +907,10 @@ Enabling odometry transform publication on the controllers would produce the fol
 
 **Multiple Transform Publishers**
 ```
-Transform odom → ridgeback_base_link published by:
-1. robot_state_publisher (from virtual joint states)
-2. platform_velocity_controller (from wheel odometry)
-3. platform_velocity_controller_nav2 (from wheel odometry)
+Transforms into ridgeback_base_link published by:
+1. robot_state_publisher (world → … → ridgeback_base_link, from virtual joint states)
+2. platform_velocity_controller (odom → ridgeback_base_link, from wheel odometry)
+3. platform_velocity_controller_nav2 (odom → ridgeback_base_link, from wheel odometry)
 ```
 
 **System-Level Effects**
@@ -903,13 +929,12 @@ The controllers continue to publish odometry data as messages despite disabled t
 | `platform_velocity_controller` | No (`enable_odom_tf: false`) | Yes (to `/platform_velocity_controller/odom`) |
 | `platform_velocity_controller_nav2` | No (`enable_odom_tf: false`) | Yes (to `/platform_velocity_controller_nav2/odom`) |
 | `robot_state_publisher` | Yes (from URDF with joint states) | No |
-| `odometry_joint_state_publisher.py` | No | No (converts messages to joint states) |
+| `joint_state_broadcaster` | No | No (publishes the virtual-rail joint states) |
 
 ### Message vs Transform Distinction
 
 **Odometry Messages**: Data structures of type `nav_msgs/Odometry` published on topics, containing pose and twist estimates with covariance information. These messages are consumed by:
 - Nav2 for localization and path tracking
-- The odometry bridge for joint state conversion
 - Monitoring and diagnostic tools
 - Data logging systems
 
@@ -927,7 +952,7 @@ In real-world systems with active localization:
 - Remove the static `map` → `odom` transform publisher
 - Configure the localization system (AMCL, Cartographer, etc.) to publish the dynamic `map` → `odom` transform
 - Maintain `enable_odom_tf: false` on platform controllers
-- The `odom` → `base_link` transform continues to be published by `robot_state_publisher` via virtual joints
+- The `world` → … → `ridgeback_base_link` chain continues to be published by `robot_state_publisher` via virtual joints; `odom` → `world` stays a static link. On hardware, the state estimate feeds the virtual-rail joint states (odometry-to-joint-state bridge) rather than TF
 - Localization system consumes odometry messages to estimate drift and publish correction transforms
 
 ---
@@ -1027,9 +1052,9 @@ For implementing whole body planning on mobile manipulator platforms:
 | Symptom | Probable Cause | Diagnostic Steps | Resolution |
 |---------|---------------|------------------|------------|
 | Mobile base unresponsive during whole body planning | Trajectory controller not activated | Query controller manager state: `ros2 control list_controllers` | Verify controller activates when executing trajectories; check action server connection |
-| Base motion in incorrect direction | Frame transformation error | Verify yaw joint in `/joint_states`; check `body_frame_yaw_joint` parameter | Confirm `odometry_joint_state_publisher.py` is running; verify parameter configuration |
+| Base motion in incorrect direction | Frame transformation error | Verify yaw joint in `/joint_states`; check `body_frame_yaw_joint` parameter | Confirm `joint_state_broadcaster` is active (`ros2 control list_controllers`); verify parameter configuration |
 | Nav2 commands not executed | Incorrect controller active state | Check controller manager state; verify command topic remapping | Activate `platform_velocity_controller_nav2`; verify `/cmd_vel` remapping |
-| Virtual joints absent from state | Odometry bridge failure | Monitor `/joint_states` for virtual joint messages; check node status | Restart `odometry_joint_state_publisher.py`; verify `/odom` topic publication |
+| Virtual joints absent from state | Joint state source failure | Monitor `/joint_states` for virtual joint messages; check node status | In simulation the virtual-rail joints come from MuJoCo via `joint_state_broadcaster` — check `ros2 control list_controllers`. On hardware, restart the odometry-to-joint-state bridge and verify odometry publication |
 | Planning failures for whole body group | Incorrect planning group configuration | Examine SRDF planning group definition; verify joint names | Use `manipulator` group for whole body; confirm SRDF includes virtual joints |
 | TF_REPEATED_DATA warnings | Multiple transform publishers | Execute `ros2 run tf2_tools view_frames`; identify duplicate publishers | Set `enable_odom_tf: false` in both platform controllers; verify single source per transform |
 | Discontinuous position in visualization | Transform tree inconsistency | Monitor `/tf` for conflicting transforms; check timing | Verify transform publication sources; ensure consistent timestamp sources |
