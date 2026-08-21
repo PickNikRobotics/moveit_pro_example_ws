@@ -285,9 +285,10 @@
                         output_pose="{leveled_grasp_pose}"
                       />
                       <Action
-                        ID="AddPoseStampedToVector"
-                        input="{leveled_grasp_pose}"
-                        vector="{leveled_grasp_poses}"
+                        ID="PushBackVector"
+                        input_vector="{leveled_grasp_poses}"
+                        element="{leveled_grasp_pose}"
+                        output_vector="{leveled_grasp_poses}"
                       />
                     </Control>
                   </Decorator>
@@ -428,7 +429,6 @@
                   />
                   <Action
                     ID="PlanCartesianPath"
-                    acceleration_scale_factor="1.000000"
                     blending_radius="0.020000"
                     ik_cartesian_space_density="0.010000"
                     ik_joint_space_density="0.100000"
@@ -437,8 +437,7 @@
                     planning_group_name="manipulator"
                     cartesian_constraint="[{constraint_type: position_and_orientation}]"
                     tip_links="grasp_link"
-                    trajectory_sampling_rate="100"
-                    velocity_scale_factor="1.000000"
+                    trajectory_timing="[{mode: time_optimal, velocity_scale_factor: 1.0, acceleration_scale_factor: 1.0, trajectory_sampling_rate: 100}]"
                   />
                   <!--Execute the lift on the JTC pipeline. ExecuteTrajectory defaults to the JTAC
                       (admittance) controller, which hangar_sim does not run; this objective uses
