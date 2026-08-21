@@ -35,6 +35,9 @@ if(BUILD_TESTING)
   find_package(ament_cmake_pytest REQUIRED)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
+  ament_add_pytest_test(
+          nav2_params_distro_parity_test test/nav2_params_distro_parity_test.py
+          TIMEOUT 60)
   # Redirect ROS node logs into the test_results tree so the test-results CI
   # artifact ships them back too. Default would be ~/.ros/log/, which lives
   # on the doomed container filesystem and never gets uploaded -- making

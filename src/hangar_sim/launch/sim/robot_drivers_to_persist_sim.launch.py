@@ -35,6 +35,7 @@ from launch.actions import (
     DeclareLaunchArgument,
     GroupAction,
     IncludeLaunchDescription,
+    LogInfo,
     SetEnvironmentVariable,
 )
 from launch.conditions import IfCondition
@@ -142,9 +143,39 @@ def generate_launch_description():
         description="Use simulation clock if true",
     )
 
+    # Nav2's pluginlib lookup names differ by distro: Humble exports `pkg/Class`,
+    # Jazzy exports `pkg::Class`, and the two are mutually exclusive. Jazzy's
+    # bt_navigator also loads its default BT plugin libraries implicitly, so
+    # listing them again double-registers every node. Each distro therefore gets
+    # its own parameter file. This is the only place the choice is made: every
+    # nav2 consumer below -- the slam, localization and navigation includes, and
+    # the nav2_container node -- takes it from the `params_file` argument.
+    # Anything that is not Jazzy gets the Humble file, which is correct for the
+    # two distros the 9.4 line publishes; a future distro must be added here
+    # explicitly rather than inheriting the Humble form by default.
+    ros_distro = os.environ.get("ROS_DISTRO", "")
+    nav2_params_file = (
+        "nav2_params_jazzy.yaml" if ros_distro == "jazzy" else "nav2_params.yaml"
+    )
+    # The wrong branch reproduces the bug this selection exists to avoid, and the
+    # only symptom is nav2_container aborting, so name the choice in the log.
+    nav2_params_log = LogInfo(
+        msg=(
+            [f"nav2 params (ROS_DISTRO={ros_distro}): ", params_file]
+            if ros_distro in ("humble", "jazzy")
+            else [
+                f"WARNING: ROS_DISTRO={ros_distro or 'unset'} is not a distro "
+                f"hangar_sim ships nav2 parameters for; defaulting to "
+                f"{nav2_params_file}, which is only correct for Humble. "
+                "nav2 params: ",
+                params_file,
+            ]
+        )
+    )
+
     declare_params_file_cmd = DeclareLaunchArgument(
         "params_file",
-        default_value=os.path.join(config_dir, "params", "nav2_params.yaml"),
+        default_value=os.path.join(config_dir, "params", nav2_params_file),
         description="Full path to the ROS2 parameters file to use for all launched nodes",
     )
 
@@ -371,6 +402,7 @@ def generate_launch_description():
     ld.add_action(declare_map_yaml_cmd)
     ld.add_action(declare_use_sim_time_cmd)
     ld.add_action(declare_params_file_cmd)
+    ld.add_action(nav2_params_log)
     ld.add_action(declare_autostart_cmd)
     ld.add_action(declare_use_composition_cmd)
     ld.add_action(declare_use_respawn_cmd)
