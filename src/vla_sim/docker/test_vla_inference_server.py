@@ -210,6 +210,42 @@ class TestParseArgsCoercion(unittest.TestCase):
         self.assertEqual(args.fps, 0.0)
         self.assertEqual(args.state_dim, 0)
 
+    def test_non_boolean_int8_parks_in_config_error(self) -> None:
+        """A quoted or misspelled int8 lands in config_error with the flag off.
+        Coercing it with bool() would read every non-empty string as true, so the
+        server would quantize the policy the operator asked to leave alone."""
+        # GIVEN a serving config whose int8 is a string rather than a boolean
+        with tempfile.NamedTemporaryFile("w", suffix=".yaml", delete=False) as f:
+            f.write('int8: "false"\n')
+            path = f.name
+        try:
+            # WHEN parsing arguments against that config
+            with patch("sys.argv", ["vla_inference_server.py", "--config", path]):
+                args = parse_args()
+        finally:
+            os.unlink(path)
+
+        # THEN the value is reported and the flag stays off
+        self.assertIn("int8", args.config_error)
+        self.assertFalse(args.int8)
+
+    def test_boolean_int8_is_honored(self) -> None:
+        """A real YAML boolean reaches the flag, so the knob works as documented."""
+        # GIVEN a serving config asking for int8
+        with tempfile.NamedTemporaryFile("w", suffix=".yaml", delete=False) as f:
+            f.write("int8: true\n")
+            path = f.name
+        try:
+            # WHEN parsing arguments against that config
+            with patch("sys.argv", ["vla_inference_server.py", "--config", path]):
+                args = parse_args()
+        finally:
+            os.unlink(path)
+
+        # THEN the flag is on and nothing is reported
+        self.assertTrue(args.int8)
+        self.assertEqual(args.config_error, "")
+
 
 class TestLoadPolicyMissingCheckpoint(unittest.TestCase):
     """load_policy: an unset checkpoint parks the error state, never exits."""
@@ -424,6 +460,7 @@ class FakeRunner:
         native_map: dict | None = None,
     ) -> None:
         self.device = "cpu"
+        self.int8 = False
         self._infer_error = infer_error
         # Like PolicyRunner, derived once at construction.
         self.request_names = request_camera_names(

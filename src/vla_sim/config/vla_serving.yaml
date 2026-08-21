@@ -26,6 +26,13 @@ fps: 10.0
 # order of magnitude slower on cpu.
 device: auto
 
+# Hold the pi0.5 language backbone and vision tower at eight bits, most of the
+# weights: roughly 3 GiB less GPU memory for a little more time per chunk. false
+# loads every weight at full width, and a policy family other than pi0.5 ignores
+# this without saying so. What it costs in success rate is unmeasured on this
+# checkpoint.
+int8: false
+
 # Trained observation.state width: 7 arm joints plus 1 gripper. 0 trusts
 # config.json, which for this checkpoint reports its padded 32-dim
 # architecture width instead of the real one.
