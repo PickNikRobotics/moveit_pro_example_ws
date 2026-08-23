@@ -12,8 +12,9 @@
       ID="Sequence"
     >
       <Decorator
-        ID="KeepRunningUntilFailure"
-        name="KeepRunningUntilFailure"
+        ID="RepeatUnlessFailureEachTick"
+        num_cycles="-1"
+        name="RepeatUnlessFailureEachTick"
         _collapsed="false"
         _skipIf="false"
       >

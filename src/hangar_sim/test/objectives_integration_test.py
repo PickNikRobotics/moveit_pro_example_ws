@@ -67,7 +67,7 @@ SIM_RESETTER.register("hangar_sim", MUJOCO_RESET_HOOK)
 
 # Loop-style objectives cancelled mid-execution rather than waited to
 # completion. "Plan Path Along Surface - Loop" wraps the surface-following
-# sequence in KeepRunningUntilFailure, so it never terminates on its own.
+# sequence in RepeatUnlessFailureEachTick, so it never terminates on its own.
 #
 # NOTE (jazzy watch-item): this objective ticks SendPointCloudToUI. If the
 # first dispatched CI run reproduces the jazzy `pcl::fromPCLPointCloud2: No
@@ -85,7 +85,7 @@ skip_objectives = {
     # (the GPU runner backs MuJoCo's EGL render only), so these time out --
     # same class lab_sim skips for the same reason.
     "ML Move Boxes to Loading Zone",
-    "Move Boxes Looping",  # KeepRunningUntilFailure loop over the ML pick pipeline above.
+    "Move Boxes Looping",  # RepeatUnlessFailureEachTick loop over the ML pick pipeline above.
     # SAM3 diagnostic: needs the moveit_pro_sam3 model package, which the CI
     # image does not ship (GetMasks2DFromExemplar fails to resolve the encoder
     # model path). Same ML-inference class as the skips above.

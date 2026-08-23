@@ -9,6 +9,29 @@
   >
     <Control ID="Sequence">
       <Action ID="Script" code="teleop_mode := 0" />
+      <!--Start from empty slots so a target stored during an earlier run cannot execute now.
+      Only the modes that consume a stored target are gated on this. Jogging stores nothing, so
+      gating it would buy no safety and cost the recovery path: it is a dead-man velocity stream
+      bounded by the controllers' 0.2 s command_timeout, on this robot driving the base as well as
+      the arm, so releasing the control stops it.-->
+      <Control ID="Fallback">
+        <Control ID="Sequence">
+          <Action ID="DiscardTeleoperationCommand" command_type="waypoint" />
+          <Action
+            ID="DiscardTeleoperationCommand"
+            command_type="interactive_marker"
+          />
+          <Action
+            ID="DiscardTeleoperationCommand"
+            command_type="joint_slider"
+          />
+          <Action ID="Script" code="stored_targets_clear := true" />
+        </Control>
+        <Action ID="Script" code="stored_targets_clear := false" />
+      </Control>
+      <!--success_count must stay positive. On an idle tick every mode branch skips and the
+      dispatch Sequence returns SKIPPED; with success_count="-1" the Parallel would count that
+      skip as success and end the session before the operator touches anything.-->
       <Control ID="Parallel" success_count="1" failure_count="1">
         <Action
           ID="DoTeleoperateAction"
@@ -20,8 +43,9 @@
           controllers="{controllers}"
           skip_collision_checks="{skip_collision_checks}"
           tip_links="{tip_links}"
+          require_user_approval="{require_user_approval}"
         />
-        <Decorator ID="KeepRunningUntilFailure">
+        <Decorator ID="RepeatUnlessFailureEachTick" num_cycles="-1">
           <Control ID="Sequence">
             <!--Closing and opening the gripper-->
             <Decorator ID="ForceSuccess" _skipIf="teleop_mode != 7">
@@ -30,27 +54,41 @@
             <Decorator ID="ForceSuccess" _skipIf="teleop_mode != 6">
               <SubTree ID="Open Gripper" />
             </Decorator>
+            <!--Each motion branch reports its outcome twice: TeleoperationCommandScope settles the
+            correlated result the Desktop App consumes, and PublishEmpty keeps feeding
+            /moveit_pro_ui/motion_ended, which the app still subscribes to.-->
             <!--Joint sliders interpolate to joint state-->
-            <Decorator ID="ForceSuccess" _while="teleop_mode == 5">
-              <Control ID="Sequence">
+            <Decorator
+              ID="ForceSuccess"
+              _while="teleop_mode == 5 &amp;&amp; stored_targets_clear"
+            >
+              <Decorator
+                ID="TeleoperationCommandScope"
+                command_type="joint_slider"
+              >
                 <Control ID="Fallback" name="root">
                   <Control ID="Sequence">
                     <Action
                       ID="RetrieveRobotStateParameter"
                       timeout_sec="-1"
                       joint_state="{target_joint_state}"
+                      command_type="joint_slider"
                     />
+                    <!--planning_group_name is pinned rather than left to the SubTree default:
+                    this is the one consuming branch with no planner between the operator and the
+                    wheels, so which joints it can interpolate should be stated, not inherited.-->
                     <SubTree
                       ID="Interpolate to Joint State"
                       _collapsed="false"
                       target_joint_state="{target_joint_state}"
+                      planning_group_name="manipulator"
                       controller_names="joint_trajectory_controller"
                       controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
                       execution_pipeline="jtc"
                     />
                     <Action
                       ID="PublishEmpty"
-                      topic="/studio_ui/motion_ended"
+                      topic="/moveit_pro_ui/motion_ended"
                       queue_size="1"
                       use_best_effort="false"
                     />
@@ -58,24 +96,38 @@
                   <Control ID="Sequence">
                     <Action
                       ID="PublishEmpty"
-                      topic="/studio_ui/motion_ended"
+                      topic="/moveit_pro_ui/motion_ended"
                       queue_size="1"
                       use_best_effort="false"
                     />
                     <Action ID="AlwaysFailure" />
                   </Control>
                 </Control>
-              </Control>
+              </Decorator>
             </Decorator>
             <!--Interactive markers move to pose-->
-            <Decorator ID="ForceSuccess" _while="teleop_mode == 4">
-              <Control ID="Sequence">
+            <Decorator
+              ID="ForceSuccess"
+              _while="teleop_mode == 4 &amp;&amp; stored_targets_clear"
+            >
+              <Decorator
+                ID="TeleoperationCommandScope"
+                command_type="interactive_marker"
+              >
                 <Control ID="Fallback" name="root">
                   <Control ID="Sequence">
                     <Action
                       ID="RetrievePoseParameter"
                       timeout_sec="-1"
                       pose="{target_pose}"
+                      command_type="interactive_marker"
+                    />
+                    <!--Skip-on-'false' rather than run-on-'true': the port reaches the scripting
+                    language as text, so a non-canonical value such as 1 matches neither literal.
+                    This spelling then runs the check; the inverse would silently drop the gate.-->
+                    <Action
+                      ID="IsUserAvailable"
+                      _skipIf="require_user_approval == 'false'"
                     />
                     <Decorator
                       ID="ForEach"
@@ -100,11 +152,12 @@
                       link_padding="0.0"
                       planning_group_name="{planning_group}"
                       ik_frame="{tip_link}"
-                      require_user_approval="true"
+                      require_user_approval="{require_user_approval}"
+                      max_mtc_solutions="1"
                     />
                     <Action
                       ID="PublishEmpty"
-                      topic="/studio_ui/motion_ended"
+                      topic="/moveit_pro_ui/motion_ended"
                       queue_size="1"
                       use_best_effort="false"
                     />
@@ -112,24 +165,28 @@
                   <Control ID="Sequence">
                     <Action
                       ID="PublishEmpty"
-                      topic="/studio_ui/motion_ended"
+                      topic="/moveit_pro_ui/motion_ended"
                       queue_size="1"
                       use_best_effort="false"
                     />
                     <Action ID="AlwaysFailure" />
                   </Control>
                 </Control>
-              </Control>
+              </Decorator>
             </Decorator>
             <!--Waypoint buttons move to joint state-->
-            <Decorator ID="ForceSuccess" _while="teleop_mode == 3">
-              <Control ID="Sequence">
+            <Decorator
+              ID="ForceSuccess"
+              _while="teleop_mode == 3 &amp;&amp; stored_targets_clear"
+            >
+              <Decorator ID="TeleoperationCommandScope" command_type="waypoint">
                 <Control ID="Fallback" name="root">
                   <Control ID="Sequence">
                     <Action
                       ID="RetrieveRobotStateParameter"
                       timeout_sec="-1"
                       joint_state="{target_joint_state}"
+                      command_type="waypoint"
                     />
                     <SubTree
                       ID="Move to Joint State"
@@ -146,7 +203,7 @@
                     />
                     <Action
                       ID="PublishEmpty"
-                      topic="/studio_ui/motion_ended"
+                      topic="/moveit_pro_ui/motion_ended"
                       queue_size="1"
                       use_best_effort="false"
                     />
@@ -154,23 +211,24 @@
                   <Control ID="Sequence">
                     <Action
                       ID="PublishEmpty"
-                      topic="/studio_ui/motion_ended"
+                      topic="/moveit_pro_ui/motion_ended"
                       queue_size="1"
                       use_best_effort="false"
                     />
                     <Action ID="AlwaysFailure" />
                   </Control>
                 </Control>
-              </Control>
+              </Decorator>
             </Decorator>
             <!--Cartesian and joint jogging-->
             <Control ID="Sequence" _while="teleop_mode == 2">
-              <Decorator ID="Repeat" num_cycles="-1">
+              <Decorator ID="RepeatUnlessFailureEachTick" num_cycles="-1">
                 <Control ID="Sequence">
                   <Action
                     ID="SwitchController"
                     activate_controllers="{controllers}"
                     deactivate_controllers="platform_velocity_controller_nav2"
+                    strictness="2"
                   />
                   <Decorator ID="ForceSuccess">
                     <Action
@@ -186,7 +244,7 @@
               </Decorator>
             </Control>
             <Control ID="Sequence" _while="teleop_mode == 1">
-              <Decorator ID="Repeat" num_cycles="-1">
+              <Decorator ID="RepeatUnlessFailureEachTick" num_cycles="-1">
                 <Control ID="Sequence">
                   <Action
                     ID="SwitchController"
@@ -195,13 +253,16 @@
                   />
 
                   <Decorator ID="ForceSuccess">
-                    <Decorator ID="Repeat" num_cycles="-1">
+                    <Decorator ID="RepeatUnlessFailureEachTick" num_cycles="-1">
                       <Control
                         ID="Parallel"
                         success_count="1"
                         failure_count="1"
                       >
-                        <Decorator ID="KeepRunningUntilFailure">
+                        <Decorator
+                          ID="RepeatUnlessFailureEachTick"
+                          num_cycles="-1"
+                        >
                           <Action
                             ID="GetElementOfVector"
                             vector_in="{controllers}"
@@ -233,6 +294,10 @@
       <inout_port name="enable_user_interaction" default="false" />
       <inout_port name="user_interaction_prompt" default="" />
       <inout_port name="initial_teleop_mode" default="3" />
+      <input_port name="require_user_approval" default="true" type="bool">
+        Whether trajectory previews from Interactive Marker teleop must be
+        approved before execution. Set to false to skip the approval prompt.
+      </input_port>
       <MetadataFields>
         <Metadata subcategory="User Input" />
         <Metadata runnable="false" />

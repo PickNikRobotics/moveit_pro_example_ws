@@ -43,7 +43,7 @@
         />
         <Action
           ID="PublishEmpty"
-          topic="/studio_ui/motion_ended"
+          topic="/moveit_pro_ui/motion_ended"
           queue_size="1"
           use_best_effort="false"
         />
@@ -51,7 +51,7 @@
       <Control ID="Sequence">
         <Action
           ID="PublishEmpty"
-          topic="/studio_ui/motion_ended"
+          topic="/moveit_pro_ui/motion_ended"
           queue_size="1"
           use_best_effort="false"
         />

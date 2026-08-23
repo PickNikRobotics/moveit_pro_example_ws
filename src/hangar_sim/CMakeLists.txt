@@ -34,6 +34,12 @@ if(BUILD_TESTING)
   ament_add_pytest_test(
           forward_stereo_publisher_test test/test_forward_stereo_publisher.py
           TIMEOUT 60)
+  # Static checks over the copied Request Teleoperation Objective. Needs no
+  # running stack: the regression it guards aborts the command before any
+  # motion, and Teleoperate cannot run headless (see the module docstring).
+  ament_add_pytest_test(
+          teleoperation_commands_smoke_test test/teleoperation_commands_smoke_test.py
+          TIMEOUT 30)
   # Redirect ROS node logs into the test_results tree so the test-results CI
   # artifact ships them back too. Default would be ~/.ros/log/, which lives
   # on the doomed container filesystem and never gets uploaded -- making

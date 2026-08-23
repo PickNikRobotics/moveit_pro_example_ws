@@ -5,7 +5,7 @@
     _description="Plan and execute a path following a surface"
     _favorite="true"
   >
-    <Decorator ID="KeepRunningUntilFailure">
+    <Decorator ID="RepeatUnlessFailureEachTick" num_cycles="-1">
       <Control ID="Sequence" name="TopLevelSequence" _collapsed="true">
         <SubTree
           ID="Move to Waypoint (JTC)"
