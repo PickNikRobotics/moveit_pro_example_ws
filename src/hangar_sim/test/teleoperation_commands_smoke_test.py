@@ -79,9 +79,17 @@ RETRIEVALS = {
 # The slot each consuming interaction fills.
 SLOTS = {"joint_slider", "waypoint", "interactive_marker"}
 
-# teleop_mode values whose branches consume a stored target, from
-# moveit_studio_sdk_msgs/TeleoperationMode. The jog modes (1, 2) consume none.
-CONSUMING_MODES = {"3", "4", "5"}
+# Which teleop_mode each consuming slot belongs to, from
+# moveit_studio_sdk_msgs/TeleoperationMode. Swapping two of these would route an
+# operator's command into another interaction's motion profile and still look
+# correct from outside, which is the substitution the command protocol exists to
+# prevent -- so the binding is pinned, not just the shape of the gates.
+MODE_FOR_SLOT = {
+    "waypoint": "3",  # MOVE_TO_WAYPOINT
+    "interactive_marker": "4",  # INTERACTIVE_MARKER
+    "joint_slider": "5",  # JOINT_SLIDER
+}
+CONSUMING_MODES = set(MODE_FOR_SLOT.values())
 JOG_MODES = {"1", "2"}
 
 
@@ -148,11 +156,12 @@ def test_each_retrieval_is_scoped_to_its_own_command_type(tree) -> None:
     parents = _parents(tree)
     retrievals = [n for n in tree.iter() if n.get("ID") in RETRIEVALS]
 
-    # THEN one retrieval per consuming slot is present. Asserted before the
-    # loop: RETRIEVALS is a hand-kept copy of two core class names, and a
-    # rename upstream would otherwise shrink the list and quietly turn the
-    # slot-agreement check below into a no-op.
-    assert len(retrievals) == len(SLOTS)
+    # THEN there is exactly one retrieval per consuming slot. Asserted before the
+    # loop, and by slot rather than by count: RETRIEVALS is a hand-kept copy of two
+    # core class names, so a rename upstream would shrink the list and quietly turn
+    # the agreement check below into a no-op -- and counting alone would accept two
+    # retrievals on one slot with a third slot unread.
+    assert Counter(n.get(COMMAND_TYPE) for n in retrievals) == Counter(SLOTS)
 
     for retrieval in retrievals:
         scope = _enclosing_scope(retrieval, parents)
@@ -186,49 +195,72 @@ def test_all_three_consuming_slots_are_covered(tree) -> None:
     assert scoped == Counter(SLOTS)
 
 
-def test_stale_targets_are_discarded_before_the_modes_run(tree) -> None:
-    """Every slot is discarded at start of run, and the consumers wait on it.
+def test_no_mode_cancels_a_command_it_does_not_own(tree) -> None:
+    """Start of run ends nothing that another producer may have stored.
 
-    A run that inherits a target stored during an earlier run would execute a
-    motion the operator asked for at some earlier moment.
+    Opening an interaction marks the slot so a target left by an earlier one
+    is passed over; it used to be discarded, which cancelled by position and
+    could end a command the Desktop App had stored a moment before.
     """
-    # GIVEN the discards at the top of the Objective
-    discarded = Counter(
-        n.get(COMMAND_TYPE) for n in tree.iter() if n.get("ID") == DISCARD_ID
-    )
+    # GIVEN the Objective as it runs
+    # THEN it never discards a slot it has not consumed from
+    assert not [n for n in tree.iter() if n.get("ID") == DISCARD_ID]
 
-    # THEN each consuming slot is discarded exactly once
-    assert discarded == Counter(SLOTS)
 
-    # AND the discards run before the modes do, not somewhere inside them
-    top = list(tree.find("Control"))
-    discard_at = [
-        i for i, n in enumerate(top) for _ in n.iter() if _.get("ID") == DISCARD_ID
-    ]
-    parallel_at = [i for i, n in enumerate(top) if n.get("ID") == "Parallel"]
-    assert discard_at and parallel_at
-    assert max(discard_at) < min(parallel_at), "discards do not precede the modes"
+def test_each_slot_is_reached_only_from_its_own_teleoperation_mode(tree) -> None:
+    """Mode 5 drives the joint slider, 4 the marker, 3 the waypoint.
 
-    # AND every branch that consumes a stored target is gated on that discard
+    Exchanging two branches leaves every count and every gate syntactically
+    intact, so nothing else here would notice -- but a slider target would run
+    through the waypoint planner, or a waypoint through straight interpolation
+    with no planner between the operator and the wheels.
+    """
+    # GIVEN each scope and the mode gate it sits under
+    parents = _parents(tree)
+    for scope in [n for n in tree.iter() if n.get("ID") == SCOPE_ID]:
+        slot = scope.get(COMMAND_TYPE)
+        gate = None
+        current = parents.get(scope)
+        while current is not None and gate is None:
+            gate = current.get("_while")
+            current = parents.get(current)
+
+        # THEN the branch guarding it tests this slot's own mode
+        assert gate is not None, f"{slot!r} scope sits under no mode gate"
+        assert re.fullmatch(
+            rf"teleop_mode\s*==\s*{MODE_FOR_SLOT[slot]}", gate.strip()
+        ), f"{slot!r} is reached from {gate!r}, expected mode {MODE_FOR_SLOT[slot]}"
+
+
+def test_the_consuming_branches_gate_on_the_mode_alone(tree) -> None:
+    """Each consuming branch runs on its mode, with no extra precondition.
+
+    Gating them on a start-of-run cleanup made all three modes dead for the
+    rest of the session whenever that cleanup failed once.
+    """
+    # GIVEN the gates on the three consuming branches
     consuming = _gates_for(tree, CONSUMING_MODES)
+
+    # THEN there is one per mode and each tests only the mode
     assert len(consuming) == len(CONSUMING_MODES)
     for gate in consuming:
-        assert "stored_targets_clear" in gate, f"ungated consuming branch: {gate!r}"
+        assert re.fullmatch(r"teleop_mode\s*==\s*\d+", gate.strip()), gate
 
 
-def test_jogging_is_not_gated_on_the_discard(tree) -> None:
-    """Jogging must stay reachable when the discard fails.
+def test_jogging_runs_on_its_mode_alone(tree) -> None:
+    """Jogging must stay reachable whatever the state of the command slots.
 
-    Jogging consumes no stored target, and it is how an operator walks the arm
-    out of a bad configuration -- so it must not depend on slot cleanup.
+    It stores nothing, and it is a dead-man velocity stream bounded by the
+    controllers' command timeout -- on this robot driving the base as well as
+    the arm, so releasing the control stops it.
     """
     # GIVEN the gates on the jog branches (teleop_mode 1 and 2)
     jog = _gates_for(tree, JOG_MODES)
 
-    # THEN both jog branches exist and neither waits on the discard
+    # THEN both exist and neither carries an extra precondition
     assert len(jog) == len(JOG_MODES)
     for gate in jog:
-        assert "stored_targets_clear" not in gate, f"jog branch gated: {gate!r}"
+        assert re.fullmatch(r"teleop_mode\s*==\s*\d+", gate.strip()), gate
 
 
 def test_completion_publishes_to_the_current_ui_namespace(tree) -> None:
