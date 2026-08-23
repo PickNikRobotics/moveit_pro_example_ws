@@ -26,8 +26,11 @@ platform_velocity_controller:
 
     publish_rate: 50.0
     odom_frame_id: odom
-    base_frame_id: base_link
-    # A state estimator (fuse, matching hangar_sim's config) will own odom->base_link once the
+    # base_link sits above true ground contact (see husky_a300_blank_world.xacro's footprint_joint
+    # comment), so the controller publishes odom->footprint - the REP105 ground frame the xacro
+    # wrapper adds as base_link's parent - not odom->base_link directly.
+    base_frame_id: footprint
+    # A state estimator (fuse, matching hangar_sim's config) will own odom->footprint once the
     # sensor port lands; until then keep the controller's own TF so it is not broken mid-port.
     enable_odom_tf: true
 

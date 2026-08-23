@@ -17,6 +17,25 @@
   <xacro:include filename="$(find clearpath_platform_description)/urdf/a300/a300.urdf.xacro" />
   <xacro:a300 control="diff_4wd" front_wheels="outdoor" rear_wheels="outdoor" />
 
+  <!-- Known upstream artifact: a300.urdf.xacro's own base_footprint_joint (chassis_link ->
+       base_footprint, origin z=front_wheel_radius) puts base_footprint 0.30 m ABOVE true ground
+       contact instead of on it - the sign should carry the wheel-center offset the other way.
+       FK-measured against this file's own generated URDF: base_link=[0,0,0], front wheel
+       centers=[...,0.0291], wheel radius=0.1651 -> true ground contact is 0.13597 m BELOW
+       base_link. We can't fix that vendored joint in place (it would mean editing the vendored
+       clearpath_platform_description package, which this file keeps byte-identical to upstream)
+       and we can't add a second link literally named "base_footprint" either (URDF requires
+       unique link names; confirmed check_urdf rejects the duplicate). So this adds a
+       REP105-shaped ground frame under a different name, "footprint", that becomes base_link's
+       real parent - the wheel-radius/wheel-center numbers above are the platform_velocity_
+       controller's own SRDF/description geometry, not customer-specific measurements. -->
+  <link name="footprint" />
+  <joint name="footprint_joint" type="fixed">
+    <parent link="footprint" />
+    <child link="base_link" />
+    <origin xyz="0 0 0.13597" rpy="0 0 0" />
+  </joint>
+
   <!-- Attachments: the standard A300 accessory kit (front/rear bumper, sensor enclosure, sensor
        arch), for visual/body fidelity with the real robot. No sensors are mounted - sensors are out
        of scope for this configuration. -->
