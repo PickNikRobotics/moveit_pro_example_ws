@@ -1,12 +1,9 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="husky_a300">
-  <!-- Real A300 platform body, sourced entirely from clearpathrobotics/clearpath_common's own
-       (public, BSD-licensed) clearpath_platform_description package. No customer-specific
-       description source is vendored or copied here; the macro composition below was confirmed to
-       match the vendor description this platform ships with, differing only in an unused xacro arg
-       and in which drivetrain file supplies the ros2_control block - irrelevant here, since
-       use_platform_controllers:=false skips that include entirely and this file declares its own
-       mock ros2_control block below. -->
+  <!-- A300 platform body from clearpathrobotics/clearpath_common's clearpath_platform_description
+       package (BSD-licensed), vendored under ../../external_dependencies and kept byte-identical to
+       upstream. This file supplies its own mock ros2_control block below, so
+       use_platform_controllers:=false keeps the upstream ros2_control include out of the build. -->
   <xacro:arg name="use_platform_controllers" default="false" />
   <!-- a300.urdf.xacro declares this arg with a default that resolves $(find clearpath_control), a
        package this config never uses (no Gazebo) and does not vendor. Declaring it first wins: xacro
@@ -17,18 +14,21 @@
   <xacro:include filename="$(find clearpath_platform_description)/urdf/a300/a300.urdf.xacro" />
   <xacro:a300 control="diff_4wd" front_wheels="outdoor" rear_wheels="outdoor" />
 
-  <!-- Known upstream artifact: a300.urdf.xacro's own base_footprint_joint (chassis_link ->
-       base_footprint, origin z=front_wheel_radius) puts base_footprint 0.30 m ABOVE true ground
-       contact instead of on it - the sign should carry the wheel-center offset the other way.
-       FK-measured against this file's own generated URDF: base_link=[0,0,0], front wheel
-       centers=[...,0.0291], wheel radius=0.1651 -> true ground contact is 0.13597 m BELOW
-       base_link. We can't fix that vendored joint in place (it would mean editing the vendored
-       clearpath_platform_description package, which this file keeps byte-identical to upstream)
-       and we can't add a second link literally named "base_footprint" either (URDF requires
-       unique link names; confirmed check_urdf rejects the duplicate). So this adds a
-       REP105-shaped ground frame under a different name, "footprint", that becomes base_link's
-       real parent - the wheel-radius/wheel-center numbers above are the platform_velocity_
-       controller's own SRDF/description geometry, not customer-specific measurements. -->
+  <!-- FRAME NAMING: the ground-contact frame on this robot is "footprint", NOT "base_footprint".
+       Anything that needs a REP-105 ground frame - TF consumers, RViz/UI reference frames, Nav2,
+       the platform_velocity_controller's base_frame_id - must use "footprint".
+
+       Why the unconventional name: upstream a300.urdf.xacro defines a base_footprint_joint
+       (chassis_link -> base_footprint) whose origin adds the wheel radius instead of subtracting
+       the wheel-center height, placing base_footprint 0.30 m above the ground plane. FK on the
+       URDF this file generates: base_link at z=0, front wheel centers at z=0.0291, wheel
+       radius=0.1651, so ground contact is 0.13597 m below base_link. base_footprint stays in the
+       published TF tree at z=+0.30107 and is unused by this configuration.
+
+       That joint lives in the vendored package, which is kept byte-identical to upstream, so it is
+       corrected here instead of edited in place. The correction cannot reuse the name
+       base_footprint - URDF requires unique link names, and check_urdf rejects the duplicate - so
+       the corrected frame is named "footprint" and becomes base_link's parent. -->
   <link name="footprint" />
   <joint name="footprint_joint" type="fixed">
     <parent link="footprint" />
