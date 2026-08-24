@@ -1,4 +1,21 @@
 <mujoco model="fanuc scene">
+
+    <!-- Environment lighting for the Nyx path tracer; MuJoCo does not interpret <custom>, so
+         its own renderer is unaffected.
+
+         The analytic `studio` dome rather than a photographed HDRI. A real capture lights this
+         scene better - the green concrete floor below was tinted to match that map's aisle - but a 2k HDRI is about 6 MB of
+         binary in a public repository, and this config's own materials are what the PBR work
+         here is for. The dome is a smooth grey gradient, so it lights the scene without giving
+         it a background: expect flat surroundings and no reflected detail in the stainless table tops or the Fanuc's yellow paint.
+
+         To render it against the map it was tuned for, fetch the CC0 original with
+         the nyx_assets hdri subcommand (asset id industrial_workshop_foundry) into this
+         config's assets directory, then swap this nyx_sky element for an nyx_env_map
+         one naming that file. -->
+    <custom>
+      <text name="nyx_sky" data="studio" />
+    </custom>
   <compiler angle="radian" autolimits="true" />
   <option integrator="implicitfast" timestep="0.003">
     <flag multiccd="enable" override="enable" />
@@ -9,14 +26,28 @@
   <asset>
     <!-- Define textures and materials -->
     <texture name="wood" type="cube" file="assets/wood.png" />
-    <material name="wood" texture="wood" texrepeat="1 1" />
-    <mesh name="bowl" file="assets/bowl.stl" />
+    <material name="wood" texrepeat="1 1">
+      <layer role="rgb" texture="wood_alb" />
+      <layer role="normal" texture="wood_nrm" />
+      <layer role="orm" texture="wood_orm" />
+    </material>
+    <!-- bowl_uv.obj is bowl.stl carrying box-projected texture coordinates. STL cannot
+         store UVs at all, so the original renders any texture through MuJoCo's fallback
+         projection - visible as stripes. Geometry is unchanged: same 10000 faces and the
+         same volume, with vertices welded 30000 -> 5560 to share UVs across seams. -->
+    <mesh name="bowl" file="assets/bowl_uv.obj" />
 
     <texture name="sheet_metal" type="2d" file="assets/sheet_metal.png" />
-    <material name="sheet_metal" texture="sheet_metal" texrepeat="1 1" />
+    <material name="sheet_metal" metallic="1" roughness="1.0" texrepeat="1 1">
+      <layer role="rgb" texture="sheet_metal_alb" />
+      <layer role="normal" texture="sheet_metal_nrm" />
+      <layer role="orm" texture="sheet_metal_orm" />
+    </material>
+    <!-- Box-projected UVs, as for the bowl above. Tile chosen in mesh units (50) so that
+         after scale="0.001 ..." one tile spans 0.05 m of the real part. -->
     <mesh
       name="bracket"
-      file="assets/bracket_sample1.stl"
+      file="assets/bracket_sample1_uv.obj"
       scale="0.001 0.001 0.002"
     />
 
@@ -32,19 +63,75 @@
       width="300"
       height="300"
     />
+    <texture type="2d" name="wood_alb" file="assets/wood_albedo.png" />
+    <texture type="2d" name="wood_nrm" file="assets/wood_normal.png" />
+    <texture type="2d" name="wood_orm" file="assets/wood_orm.png" />
+    <texture type="2d" name="groundplane_alb" file="assets/groundplane_albedo.png" />
+    <texture type="2d" name="groundplane_nrm" file="assets/groundplane_normal.png" />
+    <texture type="2d" name="groundplane_orm" file="assets/groundplane_orm.png" />
+    <texture type="2d" name="sheet_metal_alb" file="assets/sheet_metal_albedo.png" />
+    <texture type="2d" name="sheet_metal_nrm" file="assets/sheet_metal_normal.png" />
+    <texture type="2d" name="sheet_metal_orm" file="assets/sheet_metal_orm.png" />
+    <texture type="2d" name="pedestal_metal_alb" file="assets/pedestal_metal_albedo.png" />
+    <texture type="2d" name="pedestal_metal_nrm" file="assets/pedestal_metal_normal.png" />
+    <texture type="2d" name="pedestal_metal_orm" file="assets/pedestal_metal_orm.png" />
+    <texture type="2d" name="bin_plastic_alb" file="assets/bin_plastic_albedo.png" />
+    <texture type="2d" name="bin_plastic_nrm" file="assets/bin_plastic_normal.png" />
+    <texture type="2d" name="bin_plastic_orm" file="assets/bin_plastic_orm.png" />
+    <texture type="2d" name="table_steel_alb" file="assets/table_steel_albedo.png" />
+    <texture type="2d" name="table_steel_nrm" file="assets/table_steel_normal.png" />
+    <texture type="2d" name="table_steel_orm" file="assets/table_steel_orm.png" />
+    <!-- Tinted toward the green concrete of the industrial_workshop_foundry environment.
+         Measured off that HDRI's nadir band, which is green-dominant at RGB
+         (0.134, 0.149, 0.049); rgba multiplies the granular-concrete albedo, so the texture's
+         aggregate survives and only the hue shifts. -->
     <material
       name="groundplane"
-      texture="groundplane"
+      rgba="0.62 0.70 0.44 1"
       texuniform="true"
       texrepeat="5 5"
-      reflectance="0.2"
-    />
+      reflectance="0.2">
+      <layer role="rgb" texture="groundplane_alb" />
+      <layer role="normal" texture="groundplane_nrm" />
+      <layer role="orm" texture="groundplane_orm" />
+    </material>
     <material
       name="pedestal_metal"
+      metallic="1"
+      roughness="1.0"
       rgba="0.30 0.32 0.35 1"
       specular="0.4"
-      shininess="0.5"
-    />
+      shininess="0.5">
+      <layer role="rgb" texture="pedestal_metal_alb" />
+      <layer role="normal" texture="pedestal_metal_nrm" />
+      <layer role="orm" texture="pedestal_metal_orm" />
+    </material>
+    <!-- Moulded polypropylene, as picking bins are. Dielectric with a soft sheen: the
+         generated painted-panel maps give the subtle orange-peel a moulded surface has,
+         and rgba keeps the original blue. -->
+    <material
+      name="bin_plastic"
+      rgba=".11 .51 .86 1"
+      metallic="1"
+      roughness="1.0"
+      specular="0.35"
+      shininess="0.4">
+      <layer role="rgb" texture="bin_plastic_alb" />
+      <layer role="normal" texture="bin_plastic_nrm" />
+      <layer role="orm" texture="bin_plastic_orm" />
+    </material>
+    <!-- Stainless tops for both work tables. -->
+    <material
+      name="table_steel"
+      metallic="1"
+      roughness="1.0"
+      rgba="0.80 0.81 0.83 1"
+      specular="0.9"
+      shininess="0.8">
+      <layer role="rgb" texture="table_steel_alb" />
+      <layer role="normal" texture="table_steel_nrm" />
+      <layer role="orm" texture="table_steel_orm" />
+    </material>
   </asset>
 
   <statistic center="0.3 0 0.4" extent="0.8" />
@@ -64,12 +151,20 @@
 
   <worldbody>
     <light pos="0 0 1.5" dir="0 0 -1" directional="true" />
+    <!-- Collision-only floor: group 3, and no material. MuJoCo's default visual options show
+         groups 0-2 and hide 3+, and nyx_export_scene exports the same range, so this plane
+         still stops anything falling into the void while appearing in neither render. What
+         shows below the horizon instead is the environment map's own lower hemisphere.
+         Groups do not affect contact, so the physics is unchanged.
+         Note the trade this makes: an HDRI is at infinity and has no surface, so nothing
+         casts a shadow onto the ground any more, and the map's nadir carries very little
+         detail - measured at 3% of its horizon band - because that is where the tripod stood. -->
     <geom
       name="floor"
       pos="0 0 0"
       size="0 0 0.05"
       type="plane"
-      material="groundplane"
+      group="3"
     />
     <!-- Add a scene camera -->
     <camera
@@ -149,7 +244,7 @@
     <!--  -->
     <!-- Define the table for bin picking scenario -->
     <body name="bin_table" pos="0 0.6 0.2">
-      <geom type="box" size="0.6 0.4 0.025" rgba="0.1 0.1 0.1 1" />
+      <geom type="box" size="0.6 0.4 0.025" material="table_steel" />
 
       <body name="left_bin" pos="-0.25 0 0.025" quat="0.707 0 0 0.707">
         <!-- <geom type="box" size="1 1 .01" pos="0.5 0.5 0" rgba=".5 .5 .5 1"/>
@@ -157,14 +252,14 @@
         <!-- Bottom -->
         <!-- <box size="${x_length} ${y_length} ${bottom_thickness}"/> -->
         <!-- <origin xyz="${x_length/2} ${y_length/2} ${bottom_thickness/2}"/> -->
-        <!-- <geom type="box" size="0.3048 0.1905 0.0025" pos="0 0 0.0025" rgba=".11 .51 .86 1"/> -->
+        <!-- <geom type="box" size="0.3048 0.1905 0.0025" pos="0 0 0.0025" material="bin_plastic"/> -->
         <geom
           margin="0.005"
           friction="2 0.1 0.1"
           type="box"
           size="0.3048 0.1905 0.025"
           pos="0 0 0.0025"
-          rgba=".11 .51 .86 1"
+          material="bin_plastic"
         />
         <!-- Back -->
         <!-- <box size="${side_wall_thickness} ${y_length-side_wall_thickness} ${z_length}"/> -->
@@ -176,7 +271,7 @@
           type="box"
           size="0.0125 0.1655 0.09525"
           pos="0.2923 0 0.09775"
-          rgba=".11 .51 .86 1"
+          material="bin_plastic"
         />
         <!-- Front -->
         <!-- <box size="${side_wall_thickness} ${y_length} ${z_length}"/> -->
@@ -188,7 +283,7 @@
           type="box"
           size="0.0125 0.1655 0.09525"
           pos="-0.2923 0 0.09775"
-          rgba=".11 .51 .86 1"
+          material="bin_plastic"
         />
         <!-- Right -->
         <!-- <box size="${x_length} ${side_wall_thickness} ${z_length}"/> -->
@@ -200,7 +295,7 @@
           type="box"
           size="0.3048 0.0125 0.09525"
           pos="0 0.178 0.09775"
-          rgba=".11 .51 .86 1"
+          material="bin_plastic"
         />
         <!-- Left -->
         <!-- <box size="${x_length} ${side_wall_thickness} ${z_length}"/> -->
@@ -211,7 +306,7 @@
           type="box"
           size="0.3048 0.0125 0.09525"
           pos="0 -0.178 0.09775"
-          rgba=".11 .51 .86 1"
+          material="bin_plastic"
         />
       </body>
 
@@ -222,7 +317,7 @@
           type="box"
           size="0.3048 0.1905 0.025"
           pos="0 0 0.0025"
-          rgba=".11 .51 .86 1"
+          material="bin_plastic"
         />
         <geom
           margin="0.005"
@@ -230,7 +325,7 @@
           type="box"
           size="0.0125 0.1655 0.09525"
           pos="0.2923 0 0.09775"
-          rgba=".11 .51 .86 1"
+          material="bin_plastic"
         />
         <geom
           margin="0.005"
@@ -238,7 +333,7 @@
           type="box"
           size="0.0125 0.1655 0.09525"
           pos="-0.2923 0 0.09775"
-          rgba=".11 .51 .86 1"
+          material="bin_plastic"
         />
         <geom
           margin="0.005"
@@ -246,7 +341,7 @@
           type="box"
           size="0.3048 0.0125 0.09525"
           pos="0 0.178 0.09775"
-          rgba=".11 .51 .86 1"
+          material="bin_plastic"
         />
         <geom
           margin="0.005"
@@ -254,7 +349,7 @@
           type="box"
           size="0.3048 0.0125 0.09525"
           pos="0 -0.178 0.09775"
-          rgba=".11 .51 .86 1"
+          material="bin_plastic"
         />
       </body>
     </body>
@@ -276,7 +371,7 @@
     <!-- Define the table for assembly scenario -->
     <!-- y -0.2-0.2 -->
     <body name="assembly_table" pos="0 -0.4 0.2">
-      <geom type="box" size="0.6 0.2 0.025" rgba="0.1 0.1 0.1 1" />
+      <geom type="box" size="0.6 0.2 0.025" material="table_steel" />
     </body>
     <!-- z 0.225+.005+.0001 -->
     <body name="shelf" pos="0.25 -0.4 0.2301">

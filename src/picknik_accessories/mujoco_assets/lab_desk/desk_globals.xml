@@ -38,11 +38,13 @@
     />
     <material
       name="groundplane"
-      texture="groundplane"
       texuniform="true"
       texrepeat="5 5"
-      reflectance="0.2"
-    />
+      reflectance="0.2">
+      <layer role="rgb" texture="groundplane_alb" />
+      <layer role="normal" texture="groundplane_nrm" />
+      <layer role="orm" texture="groundplane_orm" />
+    </material>
   </asset>
 
   <asset>
@@ -56,6 +58,9 @@
       file="assets/test_tubes_stand.png"
     />
     <texture type="2d" name="bottle_texture" file="assets/bottle.png" />
+    <texture type="2d" name="groundplane_alb" file="assets/groundplane_albedo.png" />
+    <texture type="2d" name="groundplane_nrm" file="assets/groundplane_normal.png" />
+    <texture type="2d" name="groundplane_orm" file="assets/groundplane_orm.png" />
 
     <material
       name="desk"

@@ -1,6 +1,24 @@
 <mujoco model="ur20 grinding scene">
   <compiler angle="radian" autolimits="true" assetdir="grinding_sim_assets" />
 
+  <!-- Environment lighting for the Nyx path tracer. MuJoCo does not interpret <custom>,
+       so its own renderer is unaffected; nyx_export_scene reads these from the compiled
+       model. Declaring it here rather than passing --env-map means the scene carries its
+       own lighting, so two people exporting it get the same picture. A command-line flag
+       still overrides, for one-off experiments.
+
+       `small_hangar_01`, the map hangar_sim also uses, replacing `industrial_workshop_foundry`.
+       Sharing it with hangar_sim is deliberate: the foundry map stays on factory_sim, so the
+       two configs that were lit identically now differ. Brighter at the horizon than the
+       foundry, 1.31 against 0.88, with a comparable nadir (0.13 against 0.11) and slightly
+       less azimuthal structure (1.69 against 2.14). -->
+  <custom>
+    <text
+      name="nyx_env_map"
+      data="small_hangar_01_2k.hdr"
+    />
+  </custom>
+
   <option integrator="implicitfast" timestep="0.003" />
 
   <default>
@@ -37,7 +55,63 @@
   <asset>
     <!-- Textures and materials -->
     <material name="metal" rgba="0.58 0.58 0.58 1" />
+    <!-- Brushed stainless for the workcell table. roughness 0.09 is the point: low enough
+         that the path tracer produces a legible mirror image of the sky, the part and the
+         arm in the table top, which is the whole reason to run a path tracer rather than a
+         rasteriser. Not 0.0 -- a perfect mirror looks like glass and hides the surface. -->
+    <material
+      name="stainless_steel"
+      texrepeat="14 14"
+      rgba="0.74 0.75 0.77 1"
+      metallic="1"
+      roughness="1.0"
+      specular="1"
+      shininess="0.91"
+      reflectance="0.6">
+      <layer role="rgb" texture="steel_alb" />
+      <layer role="normal" texture="steel_nrm" />
+      <layer role="orm" texture="steel_orm" />
+    </material>
+    <!-- Outdoor dirt ground. The scene previously had only a *collision* floor box and no
+         visual floor at all, so every camera saw the environment map straight to the
+         horizon and the surroundings read as flat void. texrepeat tiles the 1024px
+         texture across the plane; the generator guarantees a seamless wrap. -->
+    <texture type="2d" name="dirt_ground_tex" file="dirt_ground.png" />
+    <material
+      name="dirt_ground"
+      texrepeat="14 14"
+      texuniform="true"
+      rgba="1 1 1 1"
+      specular="0.08"
+      shininess="0.05"
+      reflectance="0"
+      roughness="0.92"
+      metallic="0">
+      <layer role="rgb" texture="dirt_ground_alb" />
+      <layer role="normal" texture="dirt_ground_nrm" />
+      <layer role="orm" texture="dirt_ground_orm" />
+    </material>
+    <!-- Machined cast aluminium for the engine block. Kept separate from `metal` (which
+         the workcell also uses) so the part reads as a machined casting rather than
+         sheet stock. roughness 0.38 is a cast-then-machined surface: crisp enough to
+         mirror the environment, broad enough not to look chromed. specular/shininess are
+         set too so MuJoCo's own rasteriser is not left flat. -->
+    <material
+      name="engine_block_cast_aluminum"
+      rgba="0.62 0.63 0.65 1"
+      metallic="1"
+      roughness="0.38"
+      specular="0.9"
+      shininess="0.62"
+      reflectance="0.35"
+    />
     <texture type="2d" name="UR20_DIFF_8bit_2K" file="UR20_DIFF_8bit_2K.png" />
+    <texture type="2d" name="dirt_ground_alb" file="dirt_ground_albedo.png" />
+    <texture type="2d" name="dirt_ground_nrm" file="dirt_ground_normal.png" />
+    <texture type="2d" name="dirt_ground_orm" file="dirt_ground_orm.png" />
+    <texture type="2d" name="steel_alb" file="brushed_stainless_rgb.png" />
+    <texture type="2d" name="steel_nrm" file="brushed_stainless_normal.png" />
+    <texture type="2d" name="steel_orm" file="brushed_stainless_orm.png" />
     <material
       name="UR20_DIFF_8bit_2K_png"
       texture="UR20_DIFF_8bit_2K"
@@ -102,9 +176,17 @@
 
   <worldbody>
     <light pos="0 0 1.5" dir="0 0 -1" directional="true" />
+    <geom
+      name="dirt_ground_plane"
+      type="plane"
+      pos="0 -0.7 -0.06"
+      size="18 18 0.1"
+      class="visual"
+      group="3"
+    />
     <!-- Define the workcell with the engine block part -->
     <body name="workcell" pos="0 0 0">
-      <geom material="metal" mesh="workcell" class="visual" />
+      <geom material="stainless_steel" mesh="workcell" class="visual" />
       <!-- Floor -->
       <!--<geom type="box" pos="0 -0.7 -0.05" size="1.385 1.4 0.01" class="collision"/>-->
       <geom type="box" pos="0 -0.7 -0.05" size="1 1 0.01" class="collision" />
@@ -117,7 +199,7 @@
       />
       <body name="engine_block" pos="0 -1.69 0.71" quat="0.707 0 0 0.707">
         <site name="engine_block_pose" />
-        <geom material="metal" mesh="engine_block" class="visual" />
+        <geom material="engine_block_cast_aluminum" mesh="engine_block" class="visual" />
         <geom mesh="engine_block_geometry_0" class="collision" />
         <geom mesh="engine_block_geometry_1" class="collision" />
         <geom mesh="engine_block_geometry_2" class="collision" />
@@ -300,6 +382,17 @@
                   />
                   <!-- Tool -->
                   <body name="tool_base" pos="0 0 0" gravcomp="1">
+                    <!-- Wrist camera on the grasp_link/flange frame, looking along +Z
+                         (the approach direction) so it faces away from the tool. -->
+                    <site name="tool_camera_optical_frame" pos="0 0.42 0.20" />
+                    <camera
+                      name="tool_camera"
+                      pos="0 0.42 0.20"
+                      mode="fixed"
+                      xyaxes="1 0 0 0 0 1"
+                      fovy="65"
+                      resolution="1280 720"
+                    />
                     <geom
                       mesh="tool_base"
                       class="visual"
@@ -349,6 +442,9 @@
                       <geom mesh="tool_geometry_4" class="collision" />
                       <geom mesh="tool_geometry_5" class="collision" />
                       <geom mesh="tool_geometry_6" class="collision" />
+                      <!-- Tool-mounted camera: rides the wrist so a pass over the engine
+                           block sweeps the view, which is what makes path-traced
+                           reflections and moving contact shadows visible. -->
                     </body>
                   </body>
                 </body>

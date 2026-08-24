@@ -1,7 +1,6 @@
 - description: ''
   favorite: false
   joint_group_names:
-  - gripper
   - manipulator
   joint_state:
     effort: []
@@ -11,56 +10,19 @@
         nanosec: 0
         sec: 0
     name:
-      - shoulder_pan_joint
-      - shoulder_lift_joint
-      - elbow_joint
-      - wrist_1_joint
-      - wrist_2_joint
-      - wrist_3_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
     position:
-      - 1.4355448559291046
-      - -1.7981269662790258
-      - -1.2969225076652635
-      - -2.609605198796954
-      - -1.6841589996060233
-      - -3.068129336152101
-    velocity: []
-  multi_dof_joint_state:
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    joint_names: []
-    transforms: []
-    twist: []
-    wrench: []
-  name: Pre Grind
-- description: ''
-  favorite: false
-  joint_group_names:
-    - manipulator
-  joint_state:
-    effort: []
-    header:
-      frame_id: ''
-      stamp:
-        nanosec: 0
-        sec: 0
-    name:
-      - shoulder_pan_joint
-      - shoulder_lift_joint
-      - elbow_joint
-      - wrist_1_joint
-      - wrist_2_joint
-      - wrist_3_joint
-    position:
-      - 1.7894428928154598
-      - -1.638499457038523
-      - -1.434179295733346
-      - -2.624797523080427
-      - -1.3876062823191038
-      - -3.262080157894407
+    - 1.7894428928154598
+    - -1.638499457038523
+    - -1.434179295733346
+    - -2.624797523080427
+    - -1.3876062823191038
+    - -3.262080157894407
     velocity: []
   multi_dof_joint_state:
     header:
@@ -76,7 +38,8 @@
 - description: ''
   favorite: false
   joint_group_names:
-    - manipulator
+  - gripper
+  - manipulator
   joint_state:
     effort: []
     header:
@@ -85,19 +48,94 @@
         nanosec: 0
         sec: 0
     name:
-      - shoulder_pan_joint
-      - shoulder_lift_joint
-      - elbow_joint
-      - wrist_1_joint
-      - wrist_2_joint
-      - wrist_3_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
     position:
-      - 1.570550790089764
-      - -1
-      - -1.8
-      - -2.4562309340422486
-      - -1.5708574669202913
-      - -3.1416105133836805
+    - 2.9735872759892663
+    - -1.6476276072863436
+    - -0.865662925080191
+    - -2.5957541175107317
+    - -0.41425557114032086
+    - -4.2839946975887555
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Left
+- description: ''
+  favorite: false
+  joint_group_names:
+  - gripper
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
+    - 1.4355448559291046
+    - -1.7981269662790258
+    - -1.2969225076652635
+    - -2.609605198796954
+    - -1.6841589996060233
+    - -3.068129336152101
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Pre Grind
+- description: ''
+  favorite: false
+  joint_group_names:
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
+    - 1.570550790089764
+    - -1
+    - -1.8
+    - -2.4562309340422486
+    - -1.5708574669202913
+    - -3.1416105133836805
     velocity: []
   multi_dof_joint_state:
     header:
@@ -110,3 +148,117 @@
     twist: []
     wrench: []
   name: Retract
+- description: ''
+  favorite: false
+  joint_group_names:
+  - gripper
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
+    - 0.6952395018967769
+    - -1.7555785041933538
+    - -0.6033431159229136
+    - -3.365498510806283
+    - -2.363834102886372
+    - -2.7219134358810395
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Right
+- description: ''
+  favorite: false
+  joint_group_names:
+  - gripper
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
+    - 2.547440421390261
+    - -1.7755506541300765
+    - -1.1162999680602224
+    - -1.7885439047812592
+    - -1.6247893643705986
+    - -4.124760034567608
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Upper Left
+- description: ''
+  favorite: false
+  joint_group_names:
+  - gripper
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
+    - 1.609844598486005
+    - -2.075755619421526
+    - -0.980643459768281
+    - -0.6549783550412731
+    - -1.6122211664651318
+    - -3.1638157758115173
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Upper Right

@@ -4,6 +4,23 @@
   <!-- Robot -->
   <include file="franka3.xml" />
 
+    <!-- Environment lighting for the Nyx path tracer; MuJoCo does not interpret <custom>, so
+         its own renderer is unaffected.
+
+         The analytic `studio` dome rather than a photographed HDRI. A real capture lights this
+         scene better - a real capture is the only thing that puts anything in the marble and brushed-metal counters to reflect - but a 2k HDRI is about 6 MB of
+         binary in a public repository, and this config's own materials are what the PBR work
+         here is for. The dome is a smooth grey gradient, so it lights the scene without giving
+         it a background: expect flat surroundings and no reflected detail in the marble and brushed-metal counters.
+
+         To render it against the map it was tuned for, fetch the CC0 original with
+         the nyx_assets hdri subcommand (asset id white_home_studio) into this
+         config's assets directory, then swap this nyx_sky element for an nyx_env_map
+         one naming that file. -->
+    <custom>
+      <text name="nyx_sky" data="studio" />
+    </custom>
+
   <!-- Assets -->
   <include file="assets/kitchen_assets/item_assets/oven_asset.xml" />
   <include file="assets/kitchen_assets/item_assets/counters_asset.xml" />
@@ -39,18 +56,25 @@
       width="300"
       height="300"
     />
+    <texture type="2d" name="groundplane_alb" file="assets/groundplane_albedo.png" />
+    <texture type="2d" name="groundplane_nrm" file="assets/groundplane_normal.png" />
+    <texture type="2d" name="groundplane_orm" file="assets/groundplane_orm.png" />
     <material
       name="groundplane"
-      texture="groundplane"
       texuniform="true"
       texrepeat="5 5"
-      reflectance="0.2"
-    />
+      reflectance="0.2">
+      <layer role="rgb" texture="groundplane_alb" />
+      <layer role="normal" texture="groundplane_nrm" />
+      <layer role="orm" texture="groundplane_orm" />
+    </material>
   </asset>
 
   <worldbody>
     <light pos="0 0 0.9" dir="0 0 -1" directional="true" />
-    <geom name="floor" size="0 0 0.03" type="plane" material="groundplane" />
+    <geom name="floor" size="0 0 0.03" type="plane"
+      group="3"
+    />
 
     <!-- Scene Camera -->
     <site

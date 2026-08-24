@@ -3,6 +3,23 @@
     <flag multiccd="enable" />
   </option>
   <compiler angle="radian" meshdir="assets" autolimits="true" />
+
+  <!-- Environment lighting for the Nyx path tracer; MuJoCo does not interpret <custom>, so
+       its own renderer is unaffected. This scene declares no MJCF lights and no skybox, so
+       before this the path tracer fell back to a dim ambient tint and the hangar rendered
+       almost black - the PBR maps on metal_hangar and floor had nothing to reflect. An
+       interior HDRI is the light source, not a brightness knob. -->
+  <custom>
+    <text
+      name="nyx_env_map"
+      data="assets/small_hangar_01_2k.hdr"
+    />
+    <!-- x3, measured: the hangar is a closed shell, so only what reaches through the door
+         lights the interior. Mean luminance on forward_stereo_right goes 55.7 -> 85.1 with
+         0.3% of pixels clipped; x8 reaches 116.8 but clips 1.7% and blows the doorway. -->
+    <text name="nyx_env_multiplier" data="3" />
+  </custom>
+
   <include file="ur5e_ridgeback.xml" />
   <include file="hangar.xml" />
   <!-- hangar runs a heavier stack (nav2 / slam_toolbox / fuse + the mecanum
@@ -38,6 +55,7 @@
       condim="4"
       friction="5 0.005 0.0001"
       rgba="0 0 0 0"
+      group="3"
     />
     <!-- Scene Camera -->
     <site

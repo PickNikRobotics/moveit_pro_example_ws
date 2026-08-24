@@ -1,5 +1,22 @@
 <!-- UR5e inspired from https://github.com/google-deepmind/mujoco_menagerie/tree/main/universal_robots_ur5e -->
 <mujoco model="ur5e scene">
+
+    <!-- Environment lighting for the Nyx path tracer; MuJoCo does not interpret <custom>, so
+         its own renderer is unaffected.
+
+         The analytic `studio` dome rather than a photographed HDRI. A real capture lights this
+         scene better - `white_home_studio` gives a 5.5x vertical falloff, 2.39 at the horizon against 0.43 at the nadir - but a 2k HDRI is about 6 MB of
+         binary in a public repository, and this config's own materials are what the PBR work
+         here is for. The dome is a smooth grey gradient, so it lights the scene without giving
+         it a background: expect flat surroundings and no reflected detail in the trays and tag plates.
+
+         To render it against the map it was tuned for, fetch the CC0 original with
+         the nyx_assets hdri subcommand (asset id white_home_studio) into this
+         config's assets directory, then swap this nyx_sky element for an nyx_env_map
+         one naming that file. -->
+    <custom>
+      <text name="nyx_sky" data="studio" />
+    </custom>
   <include file="ur5e/ur5e_linear_rail_globals.xml" />
   <include file="lab_desk/desk_globals.xml" />
   <include file="robotiq_2f85/robotiq2f85_globals.xml" />
@@ -34,7 +51,7 @@
       pos="0 0 -0.512"
       size="0 0 0.05"
       type="plane"
-      material="groundplane"
+      group="3"
     />
     <!-- Scene Camera -->
     <site

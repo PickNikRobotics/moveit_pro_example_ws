@@ -3426,10 +3426,14 @@
     <mesh name="box_8" file="hangar_mesh/box_8.obj" />
     <material
       name="metal_hangar"
+      texrepeat="57 57"
       rgba="0.25 0.25 0.25 1.0"
       reflectance="0.8960324823856354"
-      metallic="0.7795275449752808"
-    />
+      metallic="0.7795275449752808">
+      <layer role="rgb" texture="metal_hangar_alb" />
+      <layer role="normal" texture="metal_hangar_nrm" />
+      <layer role="orm" texture="metal_hangar_orm" />
+    </material>
     <material
       name="white_ladder"
       rgba="0.95 0.95 0.95 1.0"
@@ -3452,12 +3456,14 @@
     />
     <material
       name="floor"
-      texture="floor"
       texuniform="true"
       texrepeat="1 1"
       reflectance="0.4472135901451111"
-      metallic="0.0"
-    />
+      metallic="0.0">
+      <layer role="rgb" texture="floor_alb" />
+      <layer role="normal" texture="floor_nrm" />
+      <layer role="orm" texture="floor_orm" />
+    </material>
     <texture
       type="2d"
       name="walls"
@@ -3466,6 +3472,12 @@
       width="2048"
       height="2048"
     />
+    <texture type="2d" name="metal_hangar_alb" file="assets/metal_hangar_albedo.png" />
+    <texture type="2d" name="metal_hangar_nrm" file="assets/metal_hangar_normal.png" />
+    <texture type="2d" name="metal_hangar_orm" file="assets/metal_hangar_orm.png" />
+    <texture type="2d" name="floor_alb" file="assets/floor_albedo.png" />
+    <texture type="2d" name="floor_nrm" file="assets/floor_normal.png" />
+    <texture type="2d" name="floor_orm" file="assets/floor_orm.png" />
     <material
       name="walls"
       texture="walls"
