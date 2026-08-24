@@ -25,8 +25,8 @@
     />
     <inertial
       pos="0 0 0"
-      mass="0.005"
-      diaginertia="0.0000005445 0.0000005445 0.0000005445"
+      mass="0.0066666667"
+      diaginertia="0.000000726 0.000000726 0.000000726"
     />
     <geom
       size="0.0165"
@@ -34,27 +34,27 @@
       rgba="0.2 0.2 0.2 1"
       contype="1"
       conaffinity="1"
-      condim="4"
+      condim="3"
       friction="0.5 0.005 0.0001"
       solimp="0.9 0.95 0.001"
       solref="0.016 1"
     />
   </body>
 
-  <body name="rear_left_roller_1_link" pos="0.0548784442 0.0 0.0227313959">
+  <body name="rear_left_roller_1_link" pos="0.0514419090 0.0 0.0297000000">
     <joint
       name="rear_left_slipping_1_joint"
       type="hinge"
       pos="0 0 0"
-      axis="-0.2705980501 0.7071067812 0.6532814824"
+      axis="-0.3535533906 0.7071067812 0.6123724357"
       damping="0.1"
       limited="false"
       actuatorfrclimited="false"
     />
     <inertial
       pos="0 0 0"
-      mass="0.005"
-      diaginertia="0.0000005445 0.0000005445 0.0000005445"
+      mass="0.0066666667"
+      diaginertia="0.000000726 0.000000726 0.000000726"
     />
     <geom
       size="0.0165"
@@ -62,27 +62,27 @@
       rgba="0.2 0.2 0.2 1"
       contype="1"
       conaffinity="1"
-      condim="4"
+      condim="3"
       friction="0.5 0.005 0.0001"
       solimp="0.9 0.95 0.001"
       solref="0.016 1"
     />
   </body>
 
-  <body name="rear_left_roller_2_link" pos="0.0420021428 0.0 0.0420021428">
+  <body name="rear_left_roller_2_link" pos="0.0297000000 0.0 0.0514419090">
     <joint
       name="rear_left_slipping_2_joint"
       type="hinge"
       pos="0 0 0"
-      axis="-0.5000000000 0.7071067812 0.5000000000"
+      axis="-0.6123724357 0.7071067812 0.3535533906"
       damping="0.1"
       limited="false"
       actuatorfrclimited="false"
     />
     <inertial
       pos="0 0 0"
-      mass="0.005"
-      diaginertia="0.0000005445 0.0000005445 0.0000005445"
+      mass="0.0066666667"
+      diaginertia="0.000000726 0.000000726 0.000000726"
     />
     <geom
       size="0.0165"
@@ -90,44 +90,16 @@
       rgba="0.2 0.2 0.2 1"
       contype="1"
       conaffinity="1"
-      condim="4"
+      condim="3"
       friction="0.5 0.005 0.0001"
       solimp="0.9 0.95 0.001"
       solref="0.016 1"
     />
   </body>
 
-  <body name="rear_left_roller_3_link" pos="0.0227313959 0.0 0.0548784442">
+  <body name="rear_left_roller_3_link" pos="0.0000000000 0.0 0.0594000000">
     <joint
       name="rear_left_slipping_3_joint"
-      type="hinge"
-      pos="0 0 0"
-      axis="-0.6532814824 0.7071067812 0.2705980501"
-      damping="0.1"
-      limited="false"
-      actuatorfrclimited="false"
-    />
-    <inertial
-      pos="0 0 0"
-      mass="0.005"
-      diaginertia="0.0000005445 0.0000005445 0.0000005445"
-    />
-    <geom
-      size="0.0165"
-      type="sphere"
-      rgba="0.2 0.2 0.2 1"
-      contype="1"
-      conaffinity="1"
-      condim="4"
-      friction="0.5 0.005 0.0001"
-      solimp="0.9 0.95 0.001"
-      solref="0.016 1"
-    />
-  </body>
-
-  <body name="rear_left_roller_4_link" pos="0.0000000000 0.0 0.0594000000">
-    <joint
-      name="rear_left_slipping_4_joint"
       type="hinge"
       pos="0 0 0"
       axis="-0.7071067812 0.7071067812 0.0000000000"
@@ -137,8 +109,8 @@
     />
     <inertial
       pos="0 0 0"
-      mass="0.005"
-      diaginertia="0.0000005445 0.0000005445 0.0000005445"
+      mass="0.0066666667"
+      diaginertia="0.000000726 0.000000726 0.000000726"
     />
     <geom
       size="0.0165"
@@ -146,27 +118,55 @@
       rgba="0.2 0.2 0.2 1"
       contype="1"
       conaffinity="1"
-      condim="4"
+      condim="3"
       friction="0.5 0.005 0.0001"
       solimp="0.9 0.95 0.001"
       solref="0.016 1"
     />
   </body>
 
-  <body name="rear_left_roller_5_link" pos="-0.0227313959 0.0 0.0548784442">
+  <body name="rear_left_roller_4_link" pos="-0.0297000000 0.0 0.0514419090">
+    <joint
+      name="rear_left_slipping_4_joint"
+      type="hinge"
+      pos="0 0 0"
+      axis="-0.6123724357 0.7071067812 -0.3535533906"
+      damping="0.1"
+      limited="false"
+      actuatorfrclimited="false"
+    />
+    <inertial
+      pos="0 0 0"
+      mass="0.0066666667"
+      diaginertia="0.000000726 0.000000726 0.000000726"
+    />
+    <geom
+      size="0.0165"
+      type="sphere"
+      rgba="0.2 0.2 0.2 1"
+      contype="1"
+      conaffinity="1"
+      condim="3"
+      friction="0.5 0.005 0.0001"
+      solimp="0.9 0.95 0.001"
+      solref="0.016 1"
+    />
+  </body>
+
+  <body name="rear_left_roller_5_link" pos="-0.0514419090 0.0 0.0297000000">
     <joint
       name="rear_left_slipping_5_joint"
       type="hinge"
       pos="0 0 0"
-      axis="-0.6532814824 0.7071067812 -0.2705980501"
+      axis="-0.3535533906 0.7071067812 -0.6123724357"
       damping="0.1"
       limited="false"
       actuatorfrclimited="false"
     />
     <inertial
       pos="0 0 0"
-      mass="0.005"
-      diaginertia="0.0000005445 0.0000005445 0.0000005445"
+      mass="0.0066666667"
+      diaginertia="0.000000726 0.000000726 0.000000726"
     />
     <geom
       size="0.0165"
@@ -174,72 +174,16 @@
       rgba="0.2 0.2 0.2 1"
       contype="1"
       conaffinity="1"
-      condim="4"
+      condim="3"
       friction="0.5 0.005 0.0001"
       solimp="0.9 0.95 0.001"
       solref="0.016 1"
     />
   </body>
 
-  <body name="rear_left_roller_6_link" pos="-0.0420021428 0.0 0.0420021428">
+  <body name="rear_left_roller_6_link" pos="-0.0594000000 0.0 0.0000000000">
     <joint
       name="rear_left_slipping_6_joint"
-      type="hinge"
-      pos="0 0 0"
-      axis="-0.5000000000 0.7071067812 -0.5000000000"
-      damping="0.1"
-      limited="false"
-      actuatorfrclimited="false"
-    />
-    <inertial
-      pos="0 0 0"
-      mass="0.005"
-      diaginertia="0.0000005445 0.0000005445 0.0000005445"
-    />
-    <geom
-      size="0.0165"
-      type="sphere"
-      rgba="0.2 0.2 0.2 1"
-      contype="1"
-      conaffinity="1"
-      condim="4"
-      friction="0.5 0.005 0.0001"
-      solimp="0.9 0.95 0.001"
-      solref="0.016 1"
-    />
-  </body>
-
-  <body name="rear_left_roller_7_link" pos="-0.0548784442 0.0 0.0227313959">
-    <joint
-      name="rear_left_slipping_7_joint"
-      type="hinge"
-      pos="0 0 0"
-      axis="-0.2705980501 0.7071067812 -0.6532814824"
-      damping="0.1"
-      limited="false"
-      actuatorfrclimited="false"
-    />
-    <inertial
-      pos="0 0 0"
-      mass="0.005"
-      diaginertia="0.0000005445 0.0000005445 0.0000005445"
-    />
-    <geom
-      size="0.0165"
-      type="sphere"
-      rgba="0.2 0.2 0.2 1"
-      contype="1"
-      conaffinity="1"
-      condim="4"
-      friction="0.5 0.005 0.0001"
-      solimp="0.9 0.95 0.001"
-      solref="0.016 1"
-    />
-  </body>
-
-  <body name="rear_left_roller_8_link" pos="-0.0594000000 0.0 0.0000000000">
-    <joint
-      name="rear_left_slipping_8_joint"
       type="hinge"
       pos="0 0 0"
       axis="-0.0000000000 0.7071067812 -0.7071067812"
@@ -249,8 +193,8 @@
     />
     <inertial
       pos="0 0 0"
-      mass="0.005"
-      diaginertia="0.0000005445 0.0000005445 0.0000005445"
+      mass="0.0066666667"
+      diaginertia="0.000000726 0.000000726 0.000000726"
     />
     <geom
       size="0.0165"
@@ -258,100 +202,72 @@
       rgba="0.2 0.2 0.2 1"
       contype="1"
       conaffinity="1"
-      condim="4"
+      condim="3"
       friction="0.5 0.005 0.0001"
       solimp="0.9 0.95 0.001"
       solref="0.016 1"
     />
   </body>
 
-  <body name="rear_left_roller_9_link" pos="-0.0548784442 0.0 -0.0227313959">
+  <body name="rear_left_roller_7_link" pos="-0.0514419090 0.0 -0.0297000000">
+    <joint
+      name="rear_left_slipping_7_joint"
+      type="hinge"
+      pos="0 0 0"
+      axis="0.3535533906 0.7071067812 -0.6123724357"
+      damping="0.1"
+      limited="false"
+      actuatorfrclimited="false"
+    />
+    <inertial
+      pos="0 0 0"
+      mass="0.0066666667"
+      diaginertia="0.000000726 0.000000726 0.000000726"
+    />
+    <geom
+      size="0.0165"
+      type="sphere"
+      rgba="0.2 0.2 0.2 1"
+      contype="1"
+      conaffinity="1"
+      condim="3"
+      friction="0.5 0.005 0.0001"
+      solimp="0.9 0.95 0.001"
+      solref="0.016 1"
+    />
+  </body>
+
+  <body name="rear_left_roller_8_link" pos="-0.0297000000 0.0 -0.0514419090">
+    <joint
+      name="rear_left_slipping_8_joint"
+      type="hinge"
+      pos="0 0 0"
+      axis="0.6123724357 0.7071067812 -0.3535533906"
+      damping="0.1"
+      limited="false"
+      actuatorfrclimited="false"
+    />
+    <inertial
+      pos="0 0 0"
+      mass="0.0066666667"
+      diaginertia="0.000000726 0.000000726 0.000000726"
+    />
+    <geom
+      size="0.0165"
+      type="sphere"
+      rgba="0.2 0.2 0.2 1"
+      contype="1"
+      conaffinity="1"
+      condim="3"
+      friction="0.5 0.005 0.0001"
+      solimp="0.9 0.95 0.001"
+      solref="0.016 1"
+    />
+  </body>
+
+  <body name="rear_left_roller_9_link" pos="-0.0000000000 0.0 -0.0594000000">
     <joint
       name="rear_left_slipping_9_joint"
-      type="hinge"
-      pos="0 0 0"
-      axis="0.2705980501 0.7071067812 -0.6532814824"
-      damping="0.1"
-      limited="false"
-      actuatorfrclimited="false"
-    />
-    <inertial
-      pos="0 0 0"
-      mass="0.005"
-      diaginertia="0.0000005445 0.0000005445 0.0000005445"
-    />
-    <geom
-      size="0.0165"
-      type="sphere"
-      rgba="0.2 0.2 0.2 1"
-      contype="1"
-      conaffinity="1"
-      condim="4"
-      friction="0.5 0.005 0.0001"
-      solimp="0.9 0.95 0.001"
-      solref="0.016 1"
-    />
-  </body>
-
-  <body name="rear_left_roller_10_link" pos="-0.0420021428 0.0 -0.0420021428">
-    <joint
-      name="rear_left_slipping_10_joint"
-      type="hinge"
-      pos="0 0 0"
-      axis="0.5000000000 0.7071067812 -0.5000000000"
-      damping="0.1"
-      limited="false"
-      actuatorfrclimited="false"
-    />
-    <inertial
-      pos="0 0 0"
-      mass="0.005"
-      diaginertia="0.0000005445 0.0000005445 0.0000005445"
-    />
-    <geom
-      size="0.0165"
-      type="sphere"
-      rgba="0.2 0.2 0.2 1"
-      contype="1"
-      conaffinity="1"
-      condim="4"
-      friction="0.5 0.005 0.0001"
-      solimp="0.9 0.95 0.001"
-      solref="0.016 1"
-    />
-  </body>
-
-  <body name="rear_left_roller_11_link" pos="-0.0227313959 0.0 -0.0548784442">
-    <joint
-      name="rear_left_slipping_11_joint"
-      type="hinge"
-      pos="0 0 0"
-      axis="0.6532814824 0.7071067812 -0.2705980501"
-      damping="0.1"
-      limited="false"
-      actuatorfrclimited="false"
-    />
-    <inertial
-      pos="0 0 0"
-      mass="0.005"
-      diaginertia="0.0000005445 0.0000005445 0.0000005445"
-    />
-    <geom
-      size="0.0165"
-      type="sphere"
-      rgba="0.2 0.2 0.2 1"
-      contype="1"
-      conaffinity="1"
-      condim="4"
-      friction="0.5 0.005 0.0001"
-      solimp="0.9 0.95 0.001"
-      solref="0.016 1"
-    />
-  </body>
-
-  <body name="rear_left_roller_12_link" pos="-0.0000000000 0.0 -0.0594000000">
-    <joint
-      name="rear_left_slipping_12_joint"
       type="hinge"
       pos="0 0 0"
       axis="0.7071067812 0.7071067812 -0.0000000000"
@@ -361,8 +277,8 @@
     />
     <inertial
       pos="0 0 0"
-      mass="0.005"
-      diaginertia="0.0000005445 0.0000005445 0.0000005445"
+      mass="0.0066666667"
+      diaginertia="0.000000726 0.000000726 0.000000726"
     />
     <geom
       size="0.0165"
@@ -370,27 +286,27 @@
       rgba="0.2 0.2 0.2 1"
       contype="1"
       conaffinity="1"
-      condim="4"
+      condim="3"
       friction="0.5 0.005 0.0001"
       solimp="0.9 0.95 0.001"
       solref="0.016 1"
     />
   </body>
 
-  <body name="rear_left_roller_13_link" pos="0.0227313959 0.0 -0.0548784442">
+  <body name="rear_left_roller_10_link" pos="0.0297000000 0.0 -0.0514419090">
     <joint
-      name="rear_left_slipping_13_joint"
+      name="rear_left_slipping_10_joint"
       type="hinge"
       pos="0 0 0"
-      axis="0.6532814824 0.7071067812 0.2705980501"
+      axis="0.6123724357 0.7071067812 0.3535533906"
       damping="0.1"
       limited="false"
       actuatorfrclimited="false"
     />
     <inertial
       pos="0 0 0"
-      mass="0.005"
-      diaginertia="0.0000005445 0.0000005445 0.0000005445"
+      mass="0.0066666667"
+      diaginertia="0.000000726 0.000000726 0.000000726"
     />
     <geom
       size="0.0165"
@@ -398,27 +314,27 @@
       rgba="0.2 0.2 0.2 1"
       contype="1"
       conaffinity="1"
-      condim="4"
+      condim="3"
       friction="0.5 0.005 0.0001"
       solimp="0.9 0.95 0.001"
       solref="0.016 1"
     />
   </body>
 
-  <body name="rear_left_roller_14_link" pos="0.0420021428 0.0 -0.0420021428">
+  <body name="rear_left_roller_11_link" pos="0.0514419090 0.0 -0.0297000000">
     <joint
-      name="rear_left_slipping_14_joint"
+      name="rear_left_slipping_11_joint"
       type="hinge"
       pos="0 0 0"
-      axis="0.5000000000 0.7071067812 0.5000000000"
+      axis="0.3535533906 0.7071067812 0.6123724357"
       damping="0.1"
       limited="false"
       actuatorfrclimited="false"
     />
     <inertial
       pos="0 0 0"
-      mass="0.005"
-      diaginertia="0.0000005445 0.0000005445 0.0000005445"
+      mass="0.0066666667"
+      diaginertia="0.000000726 0.000000726 0.000000726"
     />
     <geom
       size="0.0165"
@@ -426,39 +342,10 @@
       rgba="0.2 0.2 0.2 1"
       contype="1"
       conaffinity="1"
-      condim="4"
+      condim="3"
       friction="0.5 0.005 0.0001"
       solimp="0.9 0.95 0.001"
       solref="0.016 1"
     />
   </body>
-
-  <body name="rear_left_roller_15_link" pos="0.0548784442 0.0 -0.0227313959">
-    <joint
-      name="rear_left_slipping_15_joint"
-      type="hinge"
-      pos="0 0 0"
-      axis="0.2705980501 0.7071067812 0.6532814824"
-      damping="0.1"
-      limited="false"
-      actuatorfrclimited="false"
-    />
-    <inertial
-      pos="0 0 0"
-      mass="0.005"
-      diaginertia="0.0000005445 0.0000005445 0.0000005445"
-    />
-    <geom
-      size="0.0165"
-      type="sphere"
-      rgba="0.2 0.2 0.2 1"
-      contype="1"
-      conaffinity="1"
-      condim="4"
-      friction="0.5 0.005 0.0001"
-      solimp="0.9 0.95 0.001"
-      solref="0.016 1"
-    />
-  </body>
-
 </body>
