@@ -18,10 +18,12 @@
           current_teleop_mode="{teleop_mode}"
           planning_groups="{planning_groups}"
           controllers="{controllers}"
-          skip_collision_checks="{skip_collision_checks}"
           tip_links="{tip_links}"
+          skip_collision_checks="{skip_collision_checks}"
+          velocity_scale_factor="{velocity_scale_factor}"
+          require_user_approval="{require_user_approval}"
         />
-        <Decorator ID="KeepRunningUntilFailure">
+        <Decorator ID="RepeatUnlessFailureEachTick" num_cycles="-1">
           <Control ID="Sequence">
             <!--Closing and opening the gripper-->
             <Decorator ID="ForceSuccess" _skipIf="teleop_mode != 7">
@@ -44,13 +46,15 @@
                       ID="Interpolate to Joint State"
                       _collapsed="false"
                       target_joint_state="{target_joint_state}"
-                      controller_names="joint_trajectory_controller"
-                      controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-                      execution_pipeline="jtc"
+                      controller_names="{joint_trajectory_controller_name}"
+                      controller_action_server="{controller_action_server}"
+                      planning_group_name="{default_planning_group}"
+                      velocity_scale_factor="{velocity_scale_factor}"
+                      execution_pipeline="{execution_pipeline}"
                     />
                     <Action
                       ID="PublishEmpty"
-                      topic="/studio_ui/motion_ended"
+                      topic="/moveit_pro_ui/motion_ended"
                       queue_size="1"
                       use_best_effort="false"
                     />
@@ -58,7 +62,7 @@
                   <Control ID="Sequence">
                     <Action
                       ID="PublishEmpty"
-                      topic="/studio_ui/motion_ended"
+                      topic="/moveit_pro_ui/motion_ended"
                       queue_size="1"
                       use_best_effort="false"
                     />
@@ -94,17 +98,23 @@
                       <Action ID="AlwaysSuccess" />
                     </Decorator>
                     <SubTree
-                      ID="Move to Pose (JTC)"
+                      ID="Move to Pose"
                       _collapsed="false"
                       target_pose="{target_pose}"
-                      link_padding="0.0"
-                      planning_group_name="{planning_group}"
+                      controller_names="{joint_trajectory_controller_name}"
+                      controller_action_name="{controller_action_server}"
+                      execution_pipeline="{execution_pipeline}"
+                      link_padding="{link_padding}"
                       ik_frame="{tip_link}"
-                      require_user_approval="true"
+                      planning_group_name="{planning_group}"
+                      max_mtc_solutions="{max_mtc_solutions}"
+                      max_ik_solutions="{max_ik_solutions}"
+                      require_user_approval="{require_user_approval}"
+                      velocity_scale_factor="{velocity_scale_factor}"
                     />
                     <Action
                       ID="PublishEmpty"
-                      topic="/studio_ui/motion_ended"
+                      topic="/moveit_pro_ui/motion_ended"
                       queue_size="1"
                       use_best_effort="false"
                     />
@@ -112,7 +122,7 @@
                   <Control ID="Sequence">
                     <Action
                       ID="PublishEmpty"
-                      topic="/studio_ui/motion_ended"
+                      topic="/moveit_pro_ui/motion_ended"
                       queue_size="1"
                       use_best_effort="false"
                     />
@@ -136,17 +146,16 @@
                       _collapsed="false"
                       target_joint_state="{target_joint_state}"
                       acceleration_scale_factor="1.0"
-                      controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+                      velocity_scale_factor="{velocity_scale_factor}"
+                      controller_action_server="{controller_action_server}"
                       controller_names="joint_trajectory_controller;platform_velocity_controller"
-                      joint_group_name="manipulator"
-                      link_padding="0.0"
-                      velocity_scale_factor="1.0"
-                      seed="0"
-                      execution_pipeline="jtc"
+                      joint_group_name="{default_planning_group}"
+                      link_padding="{link_padding}"
+                      execution_pipeline="{execution_pipeline}"
                     />
                     <Action
                       ID="PublishEmpty"
-                      topic="/studio_ui/motion_ended"
+                      topic="/moveit_pro_ui/motion_ended"
                       queue_size="1"
                       use_best_effort="false"
                     />
@@ -154,7 +163,7 @@
                   <Control ID="Sequence">
                     <Action
                       ID="PublishEmpty"
-                      topic="/studio_ui/motion_ended"
+                      topic="/moveit_pro_ui/motion_ended"
                       queue_size="1"
                       use_best_effort="false"
                     />
@@ -163,45 +172,55 @@
                 </Control>
               </Control>
             </Decorator>
-            <!--Cartesian and joint jogging-->
+            <!--Cartesian jogging-->
             <Control ID="Sequence" _while="teleop_mode == 2">
-              <Decorator ID="Repeat" num_cycles="-1">
+              <Decorator ID="RepeatUnlessFailureEachTick" num_cycles="-1">
                 <Control ID="Sequence">
                   <Action
                     ID="SwitchController"
                     activate_controllers="{controllers}"
-                    deactivate_controllers="platform_velocity_controller_nav2"
+                    automatic_deactivation="true"
+                    strictness="2"
                   />
                   <Decorator ID="ForceSuccess">
                     <Action
                       ID="PoseJog"
                       controller_names="{controllers}"
-                      link_padding="0.0"
+                      link_padding="{link_padding}"
                       planning_group_names="{planning_groups}"
                       stop_safety_factor="1.500000"
+                      skip_collision_checks="{skip_collision_checks}"
                       include_octomap="false"
                     />
                   </Decorator>
                 </Control>
               </Decorator>
             </Control>
+            <!--Joint jogging-->
             <Control ID="Sequence" _while="teleop_mode == 1">
-              <Decorator ID="Repeat" num_cycles="-1">
+              <Decorator ID="RepeatUnlessFailureEachTick" num_cycles="-1">
                 <Control ID="Sequence">
                   <Action
                     ID="SwitchController"
+                    activate_asap="true"
+                    automatic_deactivation="true"
+                    controller_list_action_name="/controller_manager/list_controllers"
+                    controller_switch_action_name="/controller_manager/switch_controller"
+                    strictness="1"
+                    timeout="-1.000000"
                     activate_controllers="{controllers}"
-                    deactivate_controllers="platform_velocity_controller_nav2"
                   />
-
                   <Decorator ID="ForceSuccess">
-                    <Decorator ID="Repeat" num_cycles="-1">
+                    <Decorator ID="RepeatUnlessFailureEachTick" num_cycles="-1">
                       <Control
                         ID="Parallel"
                         success_count="1"
                         failure_count="1"
                       >
-                        <Decorator ID="KeepRunningUntilFailure">
+                        <Decorator
+                          ID="RepeatUnlessFailureEachTick"
+                          num_cycles="-1"
+                        >
                           <Action
                             ID="GetElementOfVector"
                             vector_in="{controllers}"
@@ -209,11 +228,10 @@
                             element="{first_controller}"
                           />
                         </Decorator>
-
                         <Action
                           ID="JointJog"
                           controller_name="{first_controller}"
-                          link_padding="0.00000"
+                          link_padding="{link_padding}"
                           stop_safety_factor="1.500000"
                           skip_collision_checks="{skip_collision_checks}"
                         />
@@ -230,13 +248,59 @@
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Request Teleoperation">
-      <inout_port name="enable_user_interaction" default="false" />
-      <inout_port name="user_interaction_prompt" default="" />
-      <inout_port name="initial_teleop_mode" default="3" />
       <MetadataFields>
         <Metadata subcategory="User Input" />
         <Metadata runnable="false" />
       </MetadataFields>
+      <input_port
+        name="controller_action_server"
+        default="/joint_trajectory_controller/follow_joint_trajectory"
+        type="std::string"
+      />
+      <input_port name="enable_user_interaction" default="false" type="bool">
+        Enable interactive user prompts during teleoperation mode selection
+      </input_port>
+      <inout_port name="max_ik_solutions" default="8" type="unsigned int">
+        Maximum number of IK solutions PlanToPose will try to produce for a
+        given pose
+      </inout_port>
+      <inout_port name="max_mtc_solutions" default="1" type="unsigned long">
+        Maximum number of MTC solutions to find before returning early (0 to
+        find all solutions)
+      </inout_port>
+      <input_port name="initial_teleop_mode" default="3" type="int" />
+      <input_port
+        name="joint_trajectory_controller_name"
+        default="joint_trajectory_controller"
+        type="std::string"
+      />
+      <input_port
+        name="user_interaction_prompt"
+        default="Press Abort to return FAILURE, Continue for SUCCESS"
+        type="std::string"
+      />
+      <input_port
+        name="default_planning_group"
+        default="manipulator"
+        type="std::string"
+      />
+      <input_port
+        name="default_ik_frame"
+        default="grasp_link"
+        type="std::string"
+      />
+      <input_port name="velocity_scale_factor" default="0.5" type="double">
+        Fraction of each joint's maximum velocity that the motion branches plan
+        with. DoTeleoperateAction overwrites it with the speed the operator
+        selects; this default only covers the window before its first feedback,
+        and matches the speed the UI itself starts at.
+      </input_port>
+      <input_port name="link_padding" default="0.0" type="double" />
+      <input_port name="execution_pipeline" default="jtc" type="std::string" />
+      <input_port name="require_user_approval" default="true" type="bool">
+        Whether trajectory previews from Interactive Marker teleop must be
+        approved before execution. Set to false to skip the approval prompt.
+      </input_port>
     </SubTree>
   </TreeNodesModel>
 </root>
