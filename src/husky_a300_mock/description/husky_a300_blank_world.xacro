@@ -15,8 +15,9 @@
   <xacro:a300 control="diff_4wd" front_wheels="outdoor" rear_wheels="outdoor" />
 
   <!-- FRAME NAMING: the ground-contact frame on this robot is "footprint", NOT "base_footprint".
-       Anything that needs a REP-105 ground frame - TF consumers, RViz/UI reference frames, Nav2,
-       the platform_velocity_controller's base_frame_id - must use "footprint".
+       Anything that needs a REP-105 ground frame - TF consumers, Nav2, the
+       platform_velocity_controller's base_frame_id - must use "footprint". (The 3D Visualizer's
+       fixed frame is a separate setting and is "odom"; see config/frontend_settings.yaml.)
 
        Why the unconventional name: upstream a300.urdf.xacro defines a base_footprint_joint
        (chassis_link -> base_footprint) whose origin adds the wheel radius instead of subtracting
