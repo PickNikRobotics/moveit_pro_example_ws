@@ -13,7 +13,7 @@
     armature="1.0"
   />
 
-  <body name="front_left_roller_0_link" pos="0.0656327724 0.0 0.0000000000">
+  <body name="front_left_roller_0_link" pos="0.0659002081 0.0 0.0000000000">
     <joint
       name="front_left_slipping_0_joint"
       type="hinge"
@@ -26,10 +26,10 @@
     <inertial
       pos="0 0 0"
       mass="0.004"
-      diaginertia="0.0000001586974 0.0000001586974 0.0000001586974"
+      diaginertia="0.0000001599933 0.0000001599933 0.0000001599933"
     />
     <geom
-      size="0.009959"
+      size="0.010000"
       type="sphere"
       rgba="0.2 0.2 0.2 1"
       contype="1"
@@ -41,7 +41,7 @@
     />
   </body>
 
-  <body name="front_left_roller_1_link" pos="0.0624204758 0.0 0.0202816420">
+  <body name="front_left_roller_1_link" pos="0.0626748224 0.0 0.0203642842">
     <joint
       name="front_left_slipping_1_joint"
       type="hinge"
@@ -54,10 +54,10 @@
     <inertial
       pos="0 0 0"
       mass="0.004"
-      diaginertia="0.0000001586974 0.0000001586974 0.0000001586974"
+      diaginertia="0.0000001599933 0.0000001599933 0.0000001599933"
     />
     <geom
-      size="0.009959"
+      size="0.010000"
       type="sphere"
       rgba="0.2 0.2 0.2 1"
       contype="1"
@@ -69,7 +69,7 @@
     />
   </body>
 
-  <body name="front_left_roller_2_link" pos="0.0530980282 0.0 0.0385779757">
+  <body name="front_left_roller_2_link" pos="0.0533143883 0.0 0.0387351705">
     <joint
       name="front_left_slipping_2_joint"
       type="hinge"
@@ -82,10 +82,10 @@
     <inertial
       pos="0 0 0"
       mass="0.004"
-      diaginertia="0.0000001586974 0.0000001586974 0.0000001586974"
+      diaginertia="0.0000001599933 0.0000001599933 0.0000001599933"
     />
     <geom
-      size="0.009959"
+      size="0.010000"
       type="sphere"
       rgba="0.2 0.2 0.2 1"
       contype="1"
@@ -97,7 +97,7 @@
     />
   </body>
 
-  <body name="front_left_roller_3_link" pos="0.0385779757 0.0 0.0530980282">
+  <body name="front_left_roller_3_link" pos="0.0387351705 0.0 0.0533143883">
     <joint
       name="front_left_slipping_3_joint"
       type="hinge"
@@ -110,10 +110,10 @@
     <inertial
       pos="0 0 0"
       mass="0.004"
-      diaginertia="0.0000001586974 0.0000001586974 0.0000001586974"
+      diaginertia="0.0000001599933 0.0000001599933 0.0000001599933"
     />
     <geom
-      size="0.009959"
+      size="0.010000"
       type="sphere"
       rgba="0.2 0.2 0.2 1"
       contype="1"
@@ -125,7 +125,7 @@
     />
   </body>
 
-  <body name="front_left_roller_4_link" pos="0.0202816420 0.0 0.0624204758">
+  <body name="front_left_roller_4_link" pos="0.0203642842 0.0 0.0626748224">
     <joint
       name="front_left_slipping_4_joint"
       type="hinge"
@@ -138,10 +138,10 @@
     <inertial
       pos="0 0 0"
       mass="0.004"
-      diaginertia="0.0000001586974 0.0000001586974 0.0000001586974"
+      diaginertia="0.0000001599933 0.0000001599933 0.0000001599933"
     />
     <geom
-      size="0.009959"
+      size="0.010000"
       type="sphere"
       rgba="0.2 0.2 0.2 1"
       contype="1"
@@ -153,7 +153,7 @@
     />
   </body>
 
-  <body name="front_left_roller_5_link" pos="0.0000000000 0.0 0.0656327724">
+  <body name="front_left_roller_5_link" pos="0.0000000000 0.0 0.0659002081">
     <joint
       name="front_left_slipping_5_joint"
       type="hinge"
@@ -166,10 +166,10 @@
     <inertial
       pos="0 0 0"
       mass="0.004"
-      diaginertia="0.0000001586974 0.0000001586974 0.0000001586974"
+      diaginertia="0.0000001599933 0.0000001599933 0.0000001599933"
     />
     <geom
-      size="0.009959"
+      size="0.010000"
       type="sphere"
       rgba="0.2 0.2 0.2 1"
       contype="1"
@@ -181,7 +181,7 @@
     />
   </body>
 
-  <body name="front_left_roller_6_link" pos="-0.0202816420 0.0 0.0624204758">
+  <body name="front_left_roller_6_link" pos="-0.0203642842 0.0 0.0626748224">
     <joint
       name="front_left_slipping_6_joint"
       type="hinge"
@@ -194,10 +194,10 @@
     <inertial
       pos="0 0 0"
       mass="0.004"
-      diaginertia="0.0000001586974 0.0000001586974 0.0000001586974"
+      diaginertia="0.0000001599933 0.0000001599933 0.0000001599933"
     />
     <geom
-      size="0.009959"
+      size="0.010000"
       type="sphere"
       rgba="0.2 0.2 0.2 1"
       contype="1"
@@ -209,7 +209,7 @@
     />
   </body>
 
-  <body name="front_left_roller_7_link" pos="-0.0385779757 0.0 0.0530980282">
+  <body name="front_left_roller_7_link" pos="-0.0387351705 0.0 0.0533143883">
     <joint
       name="front_left_slipping_7_joint"
       type="hinge"
@@ -222,10 +222,10 @@
     <inertial
       pos="0 0 0"
       mass="0.004"
-      diaginertia="0.0000001586974 0.0000001586974 0.0000001586974"
+      diaginertia="0.0000001599933 0.0000001599933 0.0000001599933"
     />
     <geom
-      size="0.009959"
+      size="0.010000"
       type="sphere"
       rgba="0.2 0.2 0.2 1"
       contype="1"
@@ -237,7 +237,7 @@
     />
   </body>
 
-  <body name="front_left_roller_8_link" pos="-0.0530980282 0.0 0.0385779757">
+  <body name="front_left_roller_8_link" pos="-0.0533143883 0.0 0.0387351705">
     <joint
       name="front_left_slipping_8_joint"
       type="hinge"
@@ -250,10 +250,10 @@
     <inertial
       pos="0 0 0"
       mass="0.004"
-      diaginertia="0.0000001586974 0.0000001586974 0.0000001586974"
+      diaginertia="0.0000001599933 0.0000001599933 0.0000001599933"
     />
     <geom
-      size="0.009959"
+      size="0.010000"
       type="sphere"
       rgba="0.2 0.2 0.2 1"
       contype="1"
@@ -265,7 +265,7 @@
     />
   </body>
 
-  <body name="front_left_roller_9_link" pos="-0.0624204758 0.0 0.0202816420">
+  <body name="front_left_roller_9_link" pos="-0.0626748224 0.0 0.0203642842">
     <joint
       name="front_left_slipping_9_joint"
       type="hinge"
@@ -278,10 +278,10 @@
     <inertial
       pos="0 0 0"
       mass="0.004"
-      diaginertia="0.0000001586974 0.0000001586974 0.0000001586974"
+      diaginertia="0.0000001599933 0.0000001599933 0.0000001599933"
     />
     <geom
-      size="0.009959"
+      size="0.010000"
       type="sphere"
       rgba="0.2 0.2 0.2 1"
       contype="1"
@@ -293,7 +293,7 @@
     />
   </body>
 
-  <body name="front_left_roller_10_link" pos="-0.0656327724 0.0 0.0000000000">
+  <body name="front_left_roller_10_link" pos="-0.0659002081 0.0 0.0000000000">
     <joint
       name="front_left_slipping_10_joint"
       type="hinge"
@@ -306,10 +306,10 @@
     <inertial
       pos="0 0 0"
       mass="0.004"
-      diaginertia="0.0000001586974 0.0000001586974 0.0000001586974"
+      diaginertia="0.0000001599933 0.0000001599933 0.0000001599933"
     />
     <geom
-      size="0.009959"
+      size="0.010000"
       type="sphere"
       rgba="0.2 0.2 0.2 1"
       contype="1"
@@ -321,7 +321,7 @@
     />
   </body>
 
-  <body name="front_left_roller_11_link" pos="-0.0624204758 0.0 -0.0202816420">
+  <body name="front_left_roller_11_link" pos="-0.0626748224 0.0 -0.0203642842">
     <joint
       name="front_left_slipping_11_joint"
       type="hinge"
@@ -334,10 +334,10 @@
     <inertial
       pos="0 0 0"
       mass="0.004"
-      diaginertia="0.0000001586974 0.0000001586974 0.0000001586974"
+      diaginertia="0.0000001599933 0.0000001599933 0.0000001599933"
     />
     <geom
-      size="0.009959"
+      size="0.010000"
       type="sphere"
       rgba="0.2 0.2 0.2 1"
       contype="1"
@@ -349,7 +349,7 @@
     />
   </body>
 
-  <body name="front_left_roller_12_link" pos="-0.0530980282 0.0 -0.0385779757">
+  <body name="front_left_roller_12_link" pos="-0.0533143883 0.0 -0.0387351705">
     <joint
       name="front_left_slipping_12_joint"
       type="hinge"
@@ -362,10 +362,10 @@
     <inertial
       pos="0 0 0"
       mass="0.004"
-      diaginertia="0.0000001586974 0.0000001586974 0.0000001586974"
+      diaginertia="0.0000001599933 0.0000001599933 0.0000001599933"
     />
     <geom
-      size="0.009959"
+      size="0.010000"
       type="sphere"
       rgba="0.2 0.2 0.2 1"
       contype="1"
@@ -377,7 +377,7 @@
     />
   </body>
 
-  <body name="front_left_roller_13_link" pos="-0.0385779757 0.0 -0.0530980282">
+  <body name="front_left_roller_13_link" pos="-0.0387351705 0.0 -0.0533143883">
     <joint
       name="front_left_slipping_13_joint"
       type="hinge"
@@ -390,10 +390,10 @@
     <inertial
       pos="0 0 0"
       mass="0.004"
-      diaginertia="0.0000001586974 0.0000001586974 0.0000001586974"
+      diaginertia="0.0000001599933 0.0000001599933 0.0000001599933"
     />
     <geom
-      size="0.009959"
+      size="0.010000"
       type="sphere"
       rgba="0.2 0.2 0.2 1"
       contype="1"
@@ -405,7 +405,7 @@
     />
   </body>
 
-  <body name="front_left_roller_14_link" pos="-0.0202816420 0.0 -0.0624204758">
+  <body name="front_left_roller_14_link" pos="-0.0203642842 0.0 -0.0626748224">
     <joint
       name="front_left_slipping_14_joint"
       type="hinge"
@@ -418,10 +418,10 @@
     <inertial
       pos="0 0 0"
       mass="0.004"
-      diaginertia="0.0000001586974 0.0000001586974 0.0000001586974"
+      diaginertia="0.0000001599933 0.0000001599933 0.0000001599933"
     />
     <geom
-      size="0.009959"
+      size="0.010000"
       type="sphere"
       rgba="0.2 0.2 0.2 1"
       contype="1"
@@ -433,7 +433,7 @@
     />
   </body>
 
-  <body name="front_left_roller_15_link" pos="-0.0000000000 0.0 -0.0656327724">
+  <body name="front_left_roller_15_link" pos="-0.0000000000 0.0 -0.0659002081">
     <joint
       name="front_left_slipping_15_joint"
       type="hinge"
@@ -446,10 +446,10 @@
     <inertial
       pos="0 0 0"
       mass="0.004"
-      diaginertia="0.0000001586974 0.0000001586974 0.0000001586974"
+      diaginertia="0.0000001599933 0.0000001599933 0.0000001599933"
     />
     <geom
-      size="0.009959"
+      size="0.010000"
       type="sphere"
       rgba="0.2 0.2 0.2 1"
       contype="1"
@@ -461,7 +461,7 @@
     />
   </body>
 
-  <body name="front_left_roller_16_link" pos="0.0202816420 0.0 -0.0624204758">
+  <body name="front_left_roller_16_link" pos="0.0203642842 0.0 -0.0626748224">
     <joint
       name="front_left_slipping_16_joint"
       type="hinge"
@@ -474,10 +474,10 @@
     <inertial
       pos="0 0 0"
       mass="0.004"
-      diaginertia="0.0000001586974 0.0000001586974 0.0000001586974"
+      diaginertia="0.0000001599933 0.0000001599933 0.0000001599933"
     />
     <geom
-      size="0.009959"
+      size="0.010000"
       type="sphere"
       rgba="0.2 0.2 0.2 1"
       contype="1"
@@ -489,7 +489,7 @@
     />
   </body>
 
-  <body name="front_left_roller_17_link" pos="0.0385779757 0.0 -0.0530980282">
+  <body name="front_left_roller_17_link" pos="0.0387351705 0.0 -0.0533143883">
     <joint
       name="front_left_slipping_17_joint"
       type="hinge"
@@ -502,10 +502,10 @@
     <inertial
       pos="0 0 0"
       mass="0.004"
-      diaginertia="0.0000001586974 0.0000001586974 0.0000001586974"
+      diaginertia="0.0000001599933 0.0000001599933 0.0000001599933"
     />
     <geom
-      size="0.009959"
+      size="0.010000"
       type="sphere"
       rgba="0.2 0.2 0.2 1"
       contype="1"
@@ -517,7 +517,7 @@
     />
   </body>
 
-  <body name="front_left_roller_18_link" pos="0.0530980282 0.0 -0.0385779757">
+  <body name="front_left_roller_18_link" pos="0.0533143883 0.0 -0.0387351705">
     <joint
       name="front_left_slipping_18_joint"
       type="hinge"
@@ -530,10 +530,10 @@
     <inertial
       pos="0 0 0"
       mass="0.004"
-      diaginertia="0.0000001586974 0.0000001586974 0.0000001586974"
+      diaginertia="0.0000001599933 0.0000001599933 0.0000001599933"
     />
     <geom
-      size="0.009959"
+      size="0.010000"
       type="sphere"
       rgba="0.2 0.2 0.2 1"
       contype="1"
@@ -545,7 +545,7 @@
     />
   </body>
 
-  <body name="front_left_roller_19_link" pos="0.0624204758 0.0 -0.0202816420">
+  <body name="front_left_roller_19_link" pos="0.0626748224 0.0 -0.0203642842">
     <joint
       name="front_left_slipping_19_joint"
       type="hinge"
@@ -558,10 +558,10 @@
     <inertial
       pos="0 0 0"
       mass="0.004"
-      diaginertia="0.0000001586974 0.0000001586974 0.0000001586974"
+      diaginertia="0.0000001599933 0.0000001599933 0.0000001599933"
     />
     <geom
-      size="0.009959"
+      size="0.010000"
       type="sphere"
       rgba="0.2 0.2 0.2 1"
       contype="1"
