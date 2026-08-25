@@ -1492,9 +1492,7 @@
               name="front_rocker"
               pos="0 0 0"
               axis="1 0 0"
-              range="-0.001 0.001"
-              stiffness="10000"
-              damping="500"
+              range="-0.08726 0.08726"
             />
             <body name="front_left_wheel_link" pos="0 0.2755 0.07">
               <include file="front_left_wheel_link.xml" />
