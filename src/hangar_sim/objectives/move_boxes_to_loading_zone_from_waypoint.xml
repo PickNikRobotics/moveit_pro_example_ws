@@ -95,12 +95,11 @@
       />
       <Control ID="Sequence">
         <!--
-          SAM3 text-prompt segmentation. Unlike the previous CLIPSeg + SAM2-refine
-          chain, SAM3 produces high-quality per-detection masks directly from a text
-          prompt, so no point-prompt refinement step is needed. The Behavior returns
-          SUCCESS with `mask_count == 0` when nothing is detected, which the
-          `_skipIf` below uses to bypass the pick loop and let the Subtree exit
-          cleanly with `picked_box=false`.
+          SAM3 text-prompt segmentation. SAM3 produces high-quality per-detection
+          masks directly from a text prompt, so no point-prompt refinement step is
+          needed. The Behavior returns SUCCESS with `mask_count == 0` when nothing
+          is detected, which the `_skipIf` below uses to bypass the pick loop and
+          let the Subtree exit cleanly with `picked_box=false`.
         -->
         <Action
           ID="GetMasks2DFromExemplar"
