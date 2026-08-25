@@ -198,7 +198,7 @@
   </asset>
 
   <worldbody>
-    <body name="base_platform_rotation" pos="0 0 -0.048" euler="0 0 0">
+    <body name="base_platform_rotation" pos="0 0 0.0259" euler="0 0 0">
       <inertial mass="0.01" pos="0 0 0" diaginertia="0.001 0.001 0.001" />
       <!--      <joint-->
       <!--        type="free"-->
@@ -1494,17 +1494,17 @@
               axis="1 0 0"
               range="-0.08726 0.08726"
             />
-            <body name="front_left_wheel_link" pos="0 0.2755 0.07">
+            <body name="front_left_wheel_link" pos="0 0.2755 0">
               <include file="front_left_wheel_link.xml" />
             </body>
-            <body name="front_right_wheel_link" pos="0 -0.2755 0.07">
+            <body name="front_right_wheel_link" pos="0 -0.2755 0">
               <include file="front_right_wheel_link.xml" />
             </body>
           </body>
-          <body name="rear_left_wheel_link" pos="-0.319 0.2755 0.12">
+          <body name="rear_left_wheel_link" pos="-0.319 0.2755 0.05">
             <include file="rear_left_wheel_link.xml" />
           </body>
-          <body name="rear_right_wheel_link" pos="-0.319 -0.2755 0.12">
+          <body name="rear_right_wheel_link" pos="-0.319 -0.2755 0.05">
             <include file="rear_right_wheel_link.xml" />
           </body>
           <!-- IMU: position from ridgeback.urdf.xacro imu_joint, relative to chassis_link -->
