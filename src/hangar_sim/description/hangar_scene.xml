@@ -17,7 +17,10 @@
          a + r            = 75.9002 mm  peak, reached only at each sphere
          a*cos(pi/N) + r  = 75.0889 mm  between spheres; the static ride height,
                                         which ur5e_ridgeback.xacro anchors to
-         hull perimeter/2pi = 75.630 mm rolling radius, for kinematics.wheels_radius
+         hull perimeter/2pi = 75.630 mm rolling radius, for the controllers'
+                                        kinematics.wheels_radius — which still reads
+                                        0.0666 in picknik_ur.ros2_control.yaml and is
+                                        corrected on feat/19667-fuse-odometry
        The 0.811 mm ripple between the first two is inherent to approximating a
        circle with N spheres — a*(1-cos(pi/N)) — and sizing them tangent would not
        remove it. They are not tangent as built: tangency wants r = 10.309 mm, so

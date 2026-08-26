@@ -1,10 +1,32 @@
 #!/usr/bin/env python3
 
 # Copyright 2026 PickNik Inc.
-# All rights reserved.
 #
-# Unauthorized copying of this code base via any medium is strictly prohibited.
-# Proprietary and confidential.
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+#    * Redistributions of source code must retain the above copyright
+#      notice, this list of conditions and the following disclaimer.
+#
+#    * Redistributions in binary form must reproduce the above copyright
+#      notice, this list of conditions and the following disclaimer in the
+#      documentation and/or other materials provided with the distribution.
+#
+#    * Neither the name of the PickNik Inc. nor the names of its
+#      contributors may be used to endorse or promote products derived from
+#      this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
 
 """The kinematic model and the physics model must place the wheels identically.
 
@@ -31,7 +53,6 @@ from ament_index_python.packages import get_package_share_directory
 
 DESCRIPTION = Path(__file__).resolve().parent.parent / "description"
 MJCF = DESCRIPTION / "ur5e_ridgeback.xml"
-WHEEL_INCLUDE = DESCRIPTION / "front_left_wheel_link.xml"
 XACRO = DESCRIPTION / "ur5e_ridgeback.xacro"
 RIDGEBACK_XACRO = (
     Path(get_package_share_directory("ridgeback_description"))
@@ -44,12 +65,20 @@ RIDGEBACK_XACRO = (
 # correct anchor from one set to the peak radius.
 TOLERANCE_M = 1e-5
 
+# Where HAM_Assem.stl begins along its mounting axis, measured off the mesh. The mount
+# rotation maps the mesh's local +y to world +z, so the plate lands this far above the
+# joint origin.
+MESH_BASE_OFFSET_M = 0.00635
+
 WHEELS = (
     "front_left_wheel_link",
     "front_right_wheel_link",
     "rear_left_wheel_link",
     "rear_right_wheel_link",
 )
+
+# One MJCF include per wheel, each holding that wheel's ring of roller spheres.
+WHEEL_INCLUDES = tuple(DESCRIPTION / f"{wheel}.xml" for wheel in WHEELS)
 
 
 def _xacro_property(source: Path, name: str) -> float:
@@ -63,8 +92,8 @@ def _xacro_property(source: Path, name: str) -> float:
 def _base_anchor_z() -> float:
     """z of the joint that hangs the whole robot off the world frame."""
     match = re.search(
-        r'<joint name="linear_x_joint".*?<origin xyz="[-0-9.eE]+ [-0-9.eE]+ '
-        r'([-0-9.eE]+)"',
+        r'<joint name="linear_x_joint"[^>]*>(?:(?!</joint>).)*?'
+        r'<origin xyz="[-0-9.eE]+ [-0-9.eE]+ ([-0-9.eE]+)"',
         XACRO.read_text(),
         re.DOTALL,
     )
@@ -75,9 +104,10 @@ def _base_anchor_z() -> float:
 def _urdf_wheel_height() -> float:
     """World z of a wheel axle, walked down the URDF chain.
 
-    world -> ... -> chassis_link is the base anchor; chassis_link -> axle_link is
-    `axle_offset`; the rocker and wheel joints below it are planar in the vendored
-    description, so any z they gain is a change this test should catch.
+    `linear_x_joint` carries the whole robot's height; the joints between it and
+    `chassis_link` are planar, which `test_base_chain_is_otherwise_planar` holds to.
+    Below that, chassis -> axle is `axle_offset` and the rocker and wheel joints add
+    whatever z the vendored description gives them.
     """
     rocker_z, wheel_z = _rocker_and_wheel_z()
     return (
@@ -91,7 +121,8 @@ def _urdf_wheel_height() -> float:
 def _rocker_and_wheel_z() -> tuple[float, float]:
     text = RIDGEBACK_XACRO.read_text()
     rocker = re.search(
-        r'<joint name="\$\{prefix\}_rocker".*?<origin xyz="[^"]*?\s([-0-9.eE]+)"',
+        r'<joint name="\$\{prefix\}_rocker"[^>]*>(?:(?!</joint>).)*?'
+        r'<origin xyz="[^"]*?\s([-0-9.eE]+)"',
         text,
         re.DOTALL,
     )
@@ -111,19 +142,23 @@ def _roller_ring() -> tuple[float, float, int]:
     The ring is spheres, not a cylinder, so it has no single radius. Callers pick
     the one their question needs — see the comment in `hangar_scene.xml`.
     """
-    text = WHEEL_INCLUDE.read_text()
-    radii = {float(m) for m in re.findall(r'<geom\s+size="([-0-9.eE]+)"', text)}
-    assert len(radii) == 1, f"expected one sphere radius, found {sorted(radii)}"
-    centres = {
-        round(math.hypot(float(x), float(z)), 9)
-        for x, _, z in re.findall(
-            r'pos="([-0-9.eE]+)\s+([-0-9.eE]+)\s+([-0-9.eE]+)"', text
-        )
-    }
-    ring = max(centres)
-    count = len(re.findall(r"<geom\s+size=", text))
-    assert ring > 0 and count > 2, "could not read the roller ring from the wheel"
-    return ring, radii.pop(), count
+    rings = set()
+    for source in WHEEL_INCLUDES:
+        text = source.read_text()
+        radii = {float(m) for m in re.findall(r'<geom\s+size="([-0-9.eE]+)"', text)}
+        assert len(radii) == 1, f"{source.name}: sphere radii differ, {sorted(radii)}"
+        centres = {
+            round(math.hypot(float(x), float(z)), 9)
+            for x, _, z in re.findall(
+                r'pos="([-0-9.eE]+)\s+([-0-9.eE]+)\s+([-0-9.eE]+)"', text
+            )
+        }
+        count = len(re.findall(r"<geom\s+size=", text))
+        assert max(centres) > 0 and count > 2, f"{source.name}: no roller ring found"
+        rings.add((round(max(centres), 9), radii.pop(), count))
+    # One wheel standing in for four is only sound while they are the same wheel.
+    assert len(rings) == 1, f"the four wheels carry different rollers: {sorted(rings)}"
+    return rings.pop()
 
 
 def _static_ride_height() -> float:
@@ -154,6 +189,67 @@ def _mjcf_wheel_heights() -> dict[str, float]:
     return heights
 
 
+def test_base_chain_is_otherwise_planar() -> None:
+    """`_urdf_wheel_height` reads one joint's z; the rest of the chain must add none."""
+    text = XACRO.read_text() + RIDGEBACK_XACRO.read_text()
+    for joint in ("linear_y_joint", "rotational_yaw_joint", "base_link_joint"):
+        match = re.search(
+            rf'<joint name="{joint}"[^>]*>(?:(?!</joint>).)*?'
+            rf'<origin xyz="[-0-9.eE]+ [-0-9.eE]+ ([-0-9.eE]+)"',
+            text,
+            re.DOTALL,
+        )
+        if match is None:
+            continue  # no origin means the identity, which is what we want
+        assert float(match.group(1)) == pytest.approx(0.0, abs=TOLERANCE_M), (
+            f"{joint} now adds {float(match.group(1)):+.6f} m of height, which the "
+            f"wheel-height walk does not account for."
+        )
+
+
+def _rotation_of(body: ET.Element) -> str | None:
+    """The body's orientation, or None when it is the identity however it is written."""
+    identities = {
+        "euler": (0.0, 0.0, 0.0),
+        "quat": (1.0, 0.0, 0.0, 0.0),
+        "zaxis": (0.0, 0.0, 1.0),
+        "xyaxes": (1.0, 0.0, 0.0, 0.0, 1.0, 0.0),
+    }
+    for attr, identity in identities.items():
+        raw = body.get(attr)
+        if raw is None:
+            continue
+        values = tuple(float(v) for v in raw.split())
+        if len(values) != len(identity) or any(
+            abs(v - i) > 1e-9 for v, i in zip(values, identity)
+        ):
+            return f'{attr}="{raw}"'
+    return None
+
+
+def test_no_rotation_above_the_wheels() -> None:
+    """The MJCF height walk sums `pos` only, so a rotated parent would invalidate it."""
+
+    def walk(element: ET.Element) -> None:
+        for body in element.findall("body"):
+            name = body.get("name", "")
+            if name in WHEELS:
+                continue
+            rotation = _rotation_of(body)
+            if rotation is not None and any(
+                child.get("name", "") in WHEELS for child in body.iter("body")
+            ):
+                raise AssertionError(
+                    f"{name} sits above a wheel and carries {rotation}; summing pos z "
+                    f"down this chain no longer gives a world height."
+                )
+            walk(body)
+
+    worldbody = ET.parse(MJCF).getroot().find("worldbody")
+    assert worldbody is not None
+    walk(worldbody)
+
+
 def test_mjcf_describes_every_wheel() -> None:
     """A wheel missing from the MJCF would make the comparisons below vacuous."""
     assert sorted(_mjcf_wheel_heights()) == sorted(WHEELS)
@@ -175,7 +271,7 @@ def test_urdf_wheel_radius_matches_the_rollers() -> None:
     """The URDF cylinder stands in for the MJCF spheres; it must match their peak."""
     ring, radius, _ = _roller_ring()
     declared = _xacro_property(RIDGEBACK_XACRO, "wheel_radius")
-    assert ring + radius == pytest.approx(declared, abs=1e-5), (
+    assert ring + radius == pytest.approx(declared, abs=TOLERANCE_M), (
         f"the roller ring reaches {ring + radius:.7f} m but the URDF collision cylinder is "
         f"{declared:.7f} m. Re-sizing the rollers without updating the URDF leaves "
         f"the two models describing different wheels."
@@ -195,8 +291,8 @@ def test_wheels_rest_on_the_floor() -> None:
 def test_arm_mount_agrees_between_the_models() -> None:
     """The 5 mm that matters: an offset here lands at the gripper."""
     urdf = re.search(
-        r'<joint name="ham_assem_joint".*?<origin xyz="[-0-9.eE]+ [-0-9.eE]+ '
-        r'([-0-9.eE]+)"',
+        r'<joint name="ham_assem_joint"[^>]*>(?:(?!</joint>).)*?'
+        r'<origin xyz="[-0-9.eE]+ [-0-9.eE]+ ([-0-9.eE]+)"',
         XACRO.read_text(),
         re.DOTALL,
     )
@@ -205,10 +301,17 @@ def test_arm_mount_agrees_between_the_models() -> None:
         MJCF.read_text(),
     )
     assert urdf and mjcf, "could not read the ham_assem mount from both models"
-    assert float(urdf.group(1)) == pytest.approx(
-        float(mjcf.group(1)), abs=TOLERANCE_M
-    ), (
-        f"the arm mounts at {float(urdf.group(1)):.6f} m in the URDF and "
+    urdf_z = float(urdf.group(1))
+    assert urdf_z == pytest.approx(float(mjcf.group(1)), abs=TOLERANCE_M), (
+        f"the arm mounts at {urdf_z:.6f} m in the URDF and "
         f"{float(mjcf.group(1)):.6f} m in the MJCF, so every arm frame is offset "
         f"between TF and the physics."
+    )
+
+    # Agreeing on a wrong height would still pass the check above, so pin the mount to
+    # the thing it exists to sit on.
+    deck = _xacro_property(RIDGEBACK_XACRO, "deck_height")
+    assert urdf_z + MESH_BASE_OFFSET_M == pytest.approx(deck, abs=TOLERANCE_M), (
+        f"the arm plate lands at {urdf_z + MESH_BASE_OFFSET_M:.6f} m rather than on "
+        f"the {deck:.6f} m deck."
     )
