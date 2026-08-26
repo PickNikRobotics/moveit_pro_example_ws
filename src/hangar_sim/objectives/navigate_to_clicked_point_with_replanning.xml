@@ -10,7 +10,6 @@
     _favorite="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
-      <Action ID="SetInitialPose" robot_frame_id="ridgeback_base_link" />
       <Action
         ID="CreatePoseStamped"
         reference_frame="base_link"
