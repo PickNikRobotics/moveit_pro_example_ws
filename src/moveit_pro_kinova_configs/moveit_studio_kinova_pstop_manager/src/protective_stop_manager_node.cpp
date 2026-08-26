@@ -31,9 +31,9 @@ ProtectiveStopManager::ProtectiveStopManager(const rclcpp::NodeOptions& options)
         kRecoveryServiceName,
         [this](const std_srvs::srv::Trigger::Request::SharedPtr request,
                std_srvs::srv::Trigger::Response::SharedPtr response) { recoverFromProtectiveStop(request, response); },
-        rmw_qos_profile_services_default, reentrant_callback_group_))
-  , switch_controller_client_(create_client<SwitchController>(
-        kSwitchControllerService, rmw_qos_profile_services_default, reentrant_callback_group_))
+        rclcpp::ServicesQoS(), reentrant_callback_group_))
+  , switch_controller_client_(
+        create_client<SwitchController>(kSwitchControllerService, rclcpp::ServicesQoS(), reentrant_callback_group_))
   , fault_status_publisher_(create_publisher<moveit_studio_agent_msgs::msg::FaultStatus>(kFaultStatusTopic, 1))
   , fault_status_timer_(create_wall_timer(kFaultStatusPeriod, [this] { this->publishFaultStatus(); }))
   , in_fault_(false)
@@ -44,8 +44,8 @@ ProtectiveStopManager::ProtectiveStopManager(const rclcpp::NodeOptions& options)
           in_fault_ = msg->data;
           last_fault_status_update_ = this->now();
         }))
-  , fault_reset_client_(create_client<example_interfaces::srv::Trigger>(kResetFault, rmw_qos_profile_services_default,
-                                                                        reentrant_callback_group_))
+  , fault_reset_client_(
+        create_client<example_interfaces::srv::Trigger>(kResetFault, rclcpp::ServicesQoS(), reentrant_callback_group_))
 {
   declare_parameter<std::vector<std::string>>(kParameterControllersDefaultActive, std::vector<std::string>{});
   declare_parameter<std::vector<std::string>>(kParameterControllersDefaultNotActive, std::vector<std::string>{});
