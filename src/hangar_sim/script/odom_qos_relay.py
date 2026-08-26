@@ -34,7 +34,6 @@ import rclpy
 from rclpy.node import Node
 
 from geometry_msgs.msg import Twist
-from nav_msgs.msg import Odometry
 from sensor_msgs.msg import Imu
 
 from rclpy.qos import (
@@ -67,12 +66,6 @@ class SensorQoSRelay(Node):
             depth=10,
         )
 
-        # Odometry relay
-        self.odom_sub = self.create_subscription(
-            Odometry, "/odom", self.odom_callback, qos_sub
-        )
-        self.odom_pub = self.create_publisher(Odometry, "/odom_reliable", qos_pub)
-
         # IMU relay
         self.imu_sub = self.create_subscription(
             Imu, "/imu_sensor_broadcaster/imu", self.imu_callback, qos_sub
@@ -88,9 +81,6 @@ class SensorQoSRelay(Node):
         self.cmd_vel_pub = self.create_publisher(
             Twist, "/platform_velocity_controller_nav2/cmd_vel_unstamped", 10
         )
-
-    def odom_callback(self, msg):
-        self.odom_pub.publish(msg)
 
     def imu_callback(self, msg):
         self.imu_pub.publish(msg)
