@@ -198,7 +198,7 @@
   </asset>
 
   <worldbody>
-    <body name="base_platform_rotation" pos="0 0 0.0259" euler="0 0 0">
+    <body name="base_platform_rotation" pos="0 0 0.0250889" euler="0 0 0">
       <inertial mass="0.01" pos="0 0 0" diaginertia="0.001 0.001 0.001" />
       <!--      <joint-->
       <!--        type="free"-->
@@ -1516,7 +1516,7 @@
             />
             <site name="imu_site" pos="0 0 0" size="0.01" rgba="0 1 0 1" />
           </body>
-          <body name="ham_assem" pos="0 0 0.278813" euler="1.5708 -1.57079 0">
+          <body name="ham_assem" pos="0 0 0.27365" euler="1.5708 -1.57079 0">
             <geom
               name="ham_assem"
               mesh="ham_assem"

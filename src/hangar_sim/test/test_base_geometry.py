@@ -21,6 +21,7 @@ friends) and would tie these assertions to launch configuration they do not care
 about. No simulator, no ROS.
 """
 
+import math
 import re
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -30,6 +31,7 @@ from ament_index_python.packages import get_package_share_directory
 
 DESCRIPTION = Path(__file__).resolve().parent.parent / "description"
 MJCF = DESCRIPTION / "ur5e_ridgeback.xml"
+WHEEL_INCLUDE = DESCRIPTION / "front_left_wheel_link.xml"
 XACRO = DESCRIPTION / "ur5e_ridgeback.xacro"
 RIDGEBACK_XACRO = (
     Path(get_package_share_directory("ridgeback_description"))
@@ -37,8 +39,10 @@ RIDGEBACK_XACRO = (
     / "ridgeback.urdf.xacro"
 )
 
-# Slack for float formatting across the two file formats, not a physical tolerance.
-TOLERANCE_M = 0.001
+# Slack for decimal rounding between the two file formats, not a physical tolerance.
+# It has to stay well under the roller ring's 0.811 mm ripple, or the check cannot tell a
+# correct anchor from one set to the peak radius.
+TOLERANCE_M = 1e-5
 
 WHEELS = (
     "front_left_wheel_link",
@@ -101,6 +105,38 @@ def _rocker_and_wheel_z() -> tuple[float, float]:
     return float(rocker.group(1)), float(wheel.group(1))
 
 
+def _roller_ring() -> tuple[float, float, int]:
+    """Ring radius, sphere radius and sphere count of one mecanum roller ring.
+
+    The ring is spheres, not a cylinder, so it has no single radius. Callers pick
+    the one their question needs — see the comment in `hangar_scene.xml`.
+    """
+    text = WHEEL_INCLUDE.read_text()
+    radii = {float(m) for m in re.findall(r'<geom\s+size="([-0-9.eE]+)"', text)}
+    assert len(radii) == 1, f"expected one sphere radius, found {sorted(radii)}"
+    centres = {
+        round(math.hypot(float(x), float(z)), 9)
+        for x, _, z in re.findall(
+            r'pos="([-0-9.eE]+)\s+([-0-9.eE]+)\s+([-0-9.eE]+)"', text
+        )
+    }
+    ring = max(centres)
+    count = len(re.findall(r"<geom\s+size=", text))
+    assert ring > 0 and count > 2, "could not read the roller ring from the wheel"
+    return ring, radii.pop(), count
+
+
+def _static_ride_height() -> float:
+    """Distance from the axle to the floor once the roller ring has settled.
+
+    Between spheres the envelope drops to `a*cos(pi/N) + r`; the peak `a + r` is
+    reached only N times per revolution. The base has no z DOF, so anchoring to the
+    peak leaves the wheel clear of the floor at every other angle.
+    """
+    ring, radius, count = _roller_ring()
+    return ring * math.cos(math.pi / count) + radius
+
+
 def _mjcf_wheel_heights() -> dict[str, float]:
     """World z of each wheel body, accumulated down the MJCF body nesting."""
     heights: dict[str, float] = {}
@@ -135,12 +171,44 @@ def test_urdf_and_mjcf_agree_on_wheel_height(wheel: str) -> None:
     )
 
 
+def test_urdf_wheel_radius_matches_the_rollers() -> None:
+    """The URDF cylinder stands in for the MJCF spheres; it must match their peak."""
+    ring, radius, _ = _roller_ring()
+    declared = _xacro_property(RIDGEBACK_XACRO, "wheel_radius")
+    assert ring + radius == pytest.approx(declared, abs=1e-5), (
+        f"the roller ring reaches {ring + radius:.7f} m but the URDF collision cylinder is "
+        f"{declared:.7f} m. Re-sizing the rollers without updating the URDF leaves "
+        f"the two models describing different wheels."
+    )
+
+
 def test_wheels_rest_on_the_floor() -> None:
-    """Agreeing on a wrong height is still wrong: the axle sits one radius up."""
-    radius = _xacro_property(RIDGEBACK_XACRO, "wheel_radius")
-    contact = _urdf_wheel_height() - radius
+    """Taken from the MJCF rollers, so a change to them alone still fails."""
+    contact = _urdf_wheel_height() - _static_ride_height()
     assert contact == pytest.approx(0.0, abs=TOLERANCE_M), (
         f"the wheels contact z = {contact:+.4f} m rather than the floor. Negative "
-        f"means the robot is modelled sunk into the ground plane; positive means "
-        f"it floats."
+        f"means the robot is modelled sunk into the ground plane; positive means it "
+        f"floats — and with no z DOF on the base, nothing settles it."
+    )
+
+
+def test_arm_mount_agrees_between_the_models() -> None:
+    """The 5 mm that matters: an offset here lands at the gripper."""
+    urdf = re.search(
+        r'<joint name="ham_assem_joint".*?<origin xyz="[-0-9.eE]+ [-0-9.eE]+ '
+        r'([-0-9.eE]+)"',
+        XACRO.read_text(),
+        re.DOTALL,
+    )
+    mjcf = re.search(
+        r'<body name="ham_assem" pos="[-0-9.eE]+ [-0-9.eE]+ ([-0-9.eE]+)"',
+        MJCF.read_text(),
+    )
+    assert urdf and mjcf, "could not read the ham_assem mount from both models"
+    assert float(urdf.group(1)) == pytest.approx(
+        float(mjcf.group(1)), abs=TOLERANCE_M
+    ), (
+        f"the arm mounts at {float(urdf.group(1)):.6f} m in the URDF and "
+        f"{float(mjcf.group(1)):.6f} m in the MJCF, so every arm frame is offset "
+        f"between TF and the physics."
     )
