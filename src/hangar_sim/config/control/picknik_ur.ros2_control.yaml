@@ -46,7 +46,17 @@ platform_velocity_controller:
     rear_right_wheel_command_joint_name: "rear_right_wheel"
     rear_left_wheel_command_joint_name: "rear_left_wheel"
 
-    kinematics.wheels_radius: 0.0666
+    # Effective ROLLING radius of the mecanum wheels: the perimeter actually covered
+    # per revolution, divided by 2*pi. The tread is a ring of 20 spheres of r=0.010 whose
+    # centres sit at a=0.0659002081 (see description/*_wheel_link.xml). Rolling on that
+    # ring traces the convex hull of the spheres: 20 tangent segments of 2*a*sin(pi/20)
+    # plus arcs summing to one full circle of radius r, so
+    #   (20 * 2*a*sin(pi/20) + 2*pi*r) / (2*pi) = 0.07563.
+    # NOT the 0.0759 outer radius (a + r) — that is the static ride height and is what
+    # PR #882 derives the base height from; a wheel does not cover its outer circumference
+    # per turn because the contact point rides the scalloped hull, not the enclosing circle.
+    # Do not "correct" this back to 0.0759 or to the old 0.0666.
+    kinematics.wheels_radius: 0.0756
     kinematics.sum_of_robot_center_projection_on_X_Y_axis: 0.59
     wheel_separation_multiplier: 1.0
     wheel_radius_multiplier: 1.0
@@ -107,7 +117,17 @@ platform_velocity_controller_nav2:
     rear_right_wheel_command_joint_name: "rear_right_wheel"
     rear_left_wheel_command_joint_name: "rear_left_wheel"
 
-    kinematics.wheels_radius: 0.0666
+    # Effective ROLLING radius of the mecanum wheels: the perimeter actually covered
+    # per revolution, divided by 2*pi. The tread is a ring of 20 spheres of r=0.010 whose
+    # centres sit at a=0.0659002081 (see description/*_wheel_link.xml). Rolling on that
+    # ring traces the convex hull of the spheres: 20 tangent segments of 2*a*sin(pi/20)
+    # plus arcs summing to one full circle of radius r, so
+    #   (20 * 2*a*sin(pi/20) + 2*pi*r) / (2*pi) = 0.07563.
+    # NOT the 0.0759 outer radius (a + r) — that is the static ride height and is what
+    # PR #882 derives the base height from; a wheel does not cover its outer circumference
+    # per turn because the contact point rides the scalloped hull, not the enclosing circle.
+    # Do not "correct" this back to 0.0759 or to the old 0.0666.
+    kinematics.wheels_radius: 0.0756
     kinematics.sum_of_robot_center_projection_on_X_Y_axis: 0.59
     wheel_separation_multiplier: 1.0
     wheel_radius_multiplier: 1.0
