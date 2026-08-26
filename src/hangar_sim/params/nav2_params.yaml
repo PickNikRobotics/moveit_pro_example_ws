@@ -16,12 +16,15 @@ amcl:
       covariance_x: 0.25
       covariance_y: 0.25
       covariance_yaw: 0.0685
-    # Raised ~2x from 0.05/0.1 to cover drifty odom without over-spreading the cloud.
-    alpha1: 0.4  # rotational particle spread to keep yaw lock through spins
-    alpha2: 0.1
-    alpha3: 0.2
-    alpha4: 0.1
-    alpha5: 0.1
+    # Back at their pre-drift values, matching main. These had been raised ~2x to cover
+    # odom that under-reported distance by ~11.9%; that came from the wheel rolling radius
+    # (kinematics.wheels_radius), now corrected, so the compensation comes back off.
+    # Re-check these once the base has been driven at its real, corrected speed.
+    alpha1: 0.05
+    alpha2: 0.05
+    alpha3: 0.1
+    alpha4: 0.05
+    alpha5: 0.05
     base_frame_id: "ridgeback_base_link"
     beam_skip_distance: 0.5
     beam_skip_error_threshold: 0.9
