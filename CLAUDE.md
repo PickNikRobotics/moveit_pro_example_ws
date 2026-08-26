@@ -27,6 +27,28 @@ The two coupled numbers live in different files: the actuator `kv` is in the `<v
 
 Rule of thumb when changing a sim `timestep`: for every velocity actuator, check `armature/kv < timestep`. The symptom of violation is a joint that ignores commands (pinned), not one that oscillates.
 
+### Mecanum wheel radius: rolling radius != outer radius
+
+`hangar_sim`'s mecanum wheels have no cylindrical tread — each is a ring of spheres
+(`description/{front,rear}_{left,right}_wheel_link.xml`). Two different radii come out of
+that geometry and they are NOT interchangeable:
+
+- **Outer radius** `a + r` — ring radius plus sphere radius. This is the static ride height,
+  and is what the base's z-offset is derived from.
+- **Rolling radius** — perimeter actually covered per revolution over 2*pi. The contact point
+  rides the scalloped convex hull of the spheres, not the enclosing circle, so this is
+  strictly smaller: `(n * 2*a*sin(pi/n) + 2*pi*r) / (2*pi)` for n spheres.
+
+`kinematics.wheels_radius` in `config/control/picknik_ur.ros2_control.yaml` needs the
+**rolling** radius. Getting it wrong is doubly bad and easy to miss: the controller divides
+commanded body velocity by it (base drives too fast) while wheel odometry multiplies by it
+(distance under-reported), so the base overshoots *and* believes it undershot. A value ~12%
+low showed up as localization drift, which invites the wrong fix — inflating the AMCL
+motion-model alphas in `params/nav2_params.yaml` to spread the particle cloud over it.
+
+The value is geometry-dependent, so re-derive it whenever the roller count or ring radius
+changes; the derivation is recorded in a comment at the constant itself.
+
 ### MuJoCo documentation
 
 Refer to [docs.picknik.ai](https://docs.picknik.ai) for MuJoCo configuration guides:
