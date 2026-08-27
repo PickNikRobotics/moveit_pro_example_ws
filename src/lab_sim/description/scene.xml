@@ -2,20 +2,16 @@
 <mujoco model="ur5e scene">
 
     <!-- Environment lighting for the Nyx path tracer; MuJoCo does not interpret <custom>, so
-         its own renderer is unaffected.
+         its own renderer is unaffected. `childrens_hospital`: a clinical interior, which is what a lab bench sits in; the CC0 library has no laboratory.
 
-         The analytic `studio` dome rather than a photographed HDRI. A real capture lights this
-         scene better - `bank_vault`'s nadir is brighter than its horizon, 0.17 against 0.053, which suits a camera angled down and raised background contrast 1.67x - but a 2k HDRI is about 6 MB of
-         binary in a public repository, and this config's own materials are what the PBR work
-         here is for. The dome is a smooth grey gradient, so it lights the scene without giving
-         it a background: expect flat surroundings and no reflected detail in the bench surfaces and glassware.
-
-         To render it against the map it was tuned for, fetch the CC0 original with
-         the nyx_assets hdri subcommand (asset id bank_vault) into this
-         config's assets directory, then swap this nyx_sky element for an nyx_env_map
-         one naming that file. -->
+         Chosen by eye, not by metric. The obvious measure - how much detail the map's floor
+         carries - was tested and rejected: `small_hangar_01`, which reads well, scores lowest
+         of every map tried, so the statistic does not predict what looks right. -->
     <custom>
-      <text name="nyx_sky" data="studio" />
+      <text
+        name="nyx_env_map"
+        data="assets/childrens_hospital_2k.hdr"
+      />
     </custom>
   <include file="ur5e/ur5e_linear_rail_globals.xml" />
   <include file="lab_desk/desk_globals.xml" />

@@ -1,20 +1,16 @@
 <mujoco model="fanuc scene">
 
     <!-- Environment lighting for the Nyx path tracer; MuJoCo does not interpret <custom>, so
-         its own renderer is unaffected.
+         its own renderer is unaffected. `machine_shop_01`: a working machine shop - the closest match in the CC0 library to a Fanuc cell with parts bins and steel tables.
 
-         The analytic `studio` dome rather than a photographed HDRI. A real capture lights this
-         scene better - the green concrete floor below was tinted to match that map's aisle - but a 2k HDRI is about 6 MB of
-         binary in a public repository, and this config's own materials are what the PBR work
-         here is for. The dome is a smooth grey gradient, so it lights the scene without giving
-         it a background: expect flat surroundings and no reflected detail in the stainless table tops or the Fanuc's yellow paint.
-
-         To render it against the map it was tuned for, fetch the CC0 original with
-         the nyx_assets hdri subcommand (asset id industrial_workshop_foundry) into this
-         config's assets directory, then swap this nyx_sky element for an nyx_env_map
-         one naming that file. -->
+         Chosen by eye, not by metric. The obvious measure - how much detail the map's floor
+         carries - was tested and rejected: `small_hangar_01`, which reads well, scores lowest
+         of every map tried, so the statistic does not predict what looks right. -->
     <custom>
-      <text name="nyx_sky" data="studio" />
+      <text
+        name="nyx_env_map"
+        data="assets/machine_shop_01_2k.hdr"
+      />
     </custom>
   <compiler angle="radian" autolimits="true" />
   <option integrator="implicitfast" timestep="0.003">
