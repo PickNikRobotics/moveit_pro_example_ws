@@ -1,0 +1,43 @@
+- description: 'Calibration pose: the wrist camera faces the world board and the wrist plate faces the scene cameras.'
+  favorite: false
+  joint_group_names:
+  - gripper
+  - linear_actuator
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - linear_rail_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
+    - 0.0026035957049470554
+    - 8.220538339495654e-21
+    - -4.101983724358406e-20
+    - -1.8849000000000018
+    - 1.0996999999999981
+    - -1.2566000000000017
+    - -1.5707500000000016
+    - -2.5032559135860884e-20
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Home

@@ -1,0 +1,39 @@
+#
+#  This contains information for a unique instance of a robot.
+#
+
+# Name of the package to specialize
+based_on_package: "lab_sim"
+runtime_launch_file:
+  package: "hand_eye_calibration_sim"
+  path: "launch/runtime.launch.xml"
+hardware:
+  # Parameters used to configure the robot description through XACRO.
+  # A URDF and SRDF are both required.
+  # [Required]
+  robot_description:
+    urdf:
+      package: "lab_sim"
+      path: "description/picknik_ur.xacro"
+    srdf:
+      package: "lab_sim"
+      path: "config/moveit/picknik_ur.srdf"
+    urdf_params:
+      - mujoco_model_package: "hand_eye_calibration_sim"
+# Configuration for loading behaviors and objectives.
+# [Required]
+objectives:
+  # Specify source folder for objectives
+  # [Required]
+  objective_library_paths:
+    mujoco_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/mujoco"
+    sim_objectives:
+      package_name: "hand_eye_calibration_sim"
+      relative_path: "objectives"
+  # Specify the location of the saved waypoints file.
+  # [Required]
+  waypoints_file:
+    package_name: "hand_eye_calibration_sim"
+    relative_path: "waypoints/ur_waypoints.yaml"
