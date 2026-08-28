@@ -3,7 +3,7 @@
   <!--//////////-->
   <BehaviorTree
     ID="Octomap Example"
-    _description="Takes a snapshot of the scene camera and then updates the planning scene in RViz with an ocotomap based on the `sensors_3d.yaml` file settings."
+    _description="Takes a snapshot of the scene camera and then updates the planning scene with an octomap based on the `sensors_3d.yaml` file settings."
     _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
