@@ -331,12 +331,15 @@
                     task="{task}"
                     velocity_scale="1.000000"
                   />
+                  <!--`manipulator` is the whole-body group, so a solve relocates the base metres
+                      from the seed with the arm low in its envelope; 0.01 s leaves pose_ik too few
+                      restarts and it returns nothing for any generated grasp about half the time.-->
                   <Action
                     ID="SetupMTCBatchPoseIK"
                     end_effector_group="moveit_ee"
                     end_effector_link="grasp_link"
                     ik_group="manipulator"
-                    ik_timeout_s="0.01"
+                    ik_timeout_s="0.05"
                     max_ik_solutions="8"
                     monitored_stage="allow collision (gripper, &lt;octomap&gt;)"
                     target_poses="{leveled_grasp_poses}"
