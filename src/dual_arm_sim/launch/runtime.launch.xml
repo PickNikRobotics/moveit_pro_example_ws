@@ -3,4 +3,36 @@
   <include
     file="$(find-pkg-share moveit_studio_agent)/launch/studio_agent_bridge.launch.xml"
   />
+
+  <!-- Nyx path-traced cameras, started only when this config asks for them. One variable
+       drives both halves of the choice: the same MOVEIT_PRO_CAMERA_RENDERER the robot
+       description reads to decide the MuJoCo camera rate, so the two renderers cannot both
+       be switched on by accident or both be switched off unnoticed.
+
+         mujoco   MuJoCo cameras only. The default, and the only option on an image with no
+                  Nyx runtime, which is every arm64 image and the amd64 CPU image.
+         nyx      Nyx only. MuJoCo's camera rate goes to 0, so nothing renders it twice.
+         both     Both, on separate topics. Costs two renderers.
+         none     Neither, for a config driven from a bag or a real camera.
+
+       The sidecar needs a scene exported first: `ros2 run picknik_nyx_renderer
+       nyx_export_scene`. Its launch file reports a missing scene rather than failing
+       obscurely, so a wrong setting here is legible. -->
+  <let
+    name="camera_renderer"
+    value="$(env MOVEIT_PRO_CAMERA_RENDERER mujoco)"
+  />
+  <include
+    file="$(find-pkg-share picknik_nyx_renderer)/launch/nyx_camera_sidecar.launch.py"
+    if="$(eval '&quot;$(var camera_renderer)&quot; in (&quot;nyx&quot;, &quot;both&quot;)')"
+  >
+    <arg
+      name="mjcf"
+      value="$(find-pkg-share dual_arm_sim)/description/mujoco/scene.xml"
+    />
+    <arg
+      name="scene_dir"
+      value="$(env USER_WS $(env HOME)/user_ws)/.nyx_scenes/dual_arm_sim"
+    />
+  </include>
 </launch>

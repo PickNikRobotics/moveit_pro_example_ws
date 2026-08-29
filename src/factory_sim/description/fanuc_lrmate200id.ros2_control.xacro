@@ -1,5 +1,22 @@
 <?xml version="1.0" ?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- Which camera renderer this config starts: mujoco (default), nyx, both, or none.
+       `nyx` and `none` set the MuJoCo camera rate to 0, which disables that renderer - its
+       image timer is gated on the rate and the point-cloud rate falls back to it. The launch
+       side reads the same variable to decide whether to start the Nyx sidecar, so one setting
+       drives both halves and they cannot contradict each other.
+
+       render_publish_rate stays separate because it answers a different question: how fast
+       MuJoCo renders when it is the renderer at all. -->
+  <xacro:arg
+    name="camera_renderer"
+    default="$(optenv MOVEIT_PRO_CAMERA_RENDERER mujoco)"
+  />
+  <xacro:arg
+    name="render_publish_rate"
+    default="$(optenv MOVEIT_PRO_RENDER_PUBLISH_RATE 10)"
+  />
   <xacro:macro
     name="fanuc_lrmate200id_ros2_control"
     params="name initial_positions_file hardware_interface mujoco_model mujoco_viewer"
@@ -28,7 +45,7 @@
           <param name="mujoco_model">$(arg mujoco_model)</param>
           <param name="mujoco_model_package">factory_sim</param>
           <param name="mujoco_viewer">$(arg mujoco_viewer)</param>
-          <param name="render_publish_rate">10</param>
+          <param name="render_publish_rate">${$(arg render_publish_rate) if '$(arg camera_renderer)' in ('mujoco', 'both') else 0}</param>
           <param name="tf_publish_rate">60</param>
           <param name="lidar_publish_rate">10</param>
         </hardware>

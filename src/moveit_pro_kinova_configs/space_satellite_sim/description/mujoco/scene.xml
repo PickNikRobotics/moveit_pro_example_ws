@@ -43,18 +43,66 @@
     <texture type="2d" name="ar_marker_0" file="assets/tag36_11_00000.png" />
     <texture type="2d" name="ar_marker_1" file="assets/tag36_11_00001.png" />
     <texture type="2d" name="ar_marker_2" file="assets/tag36_11_00002.png" />
-    <texture type="2d" name="servicer_platform_silver_alb" file="assets/servicer_platform_silver_albedo.png" />
-    <texture type="2d" name="servicer_platform_silver_nrm" file="assets/servicer_platform_silver_normal.png" />
-    <texture type="2d" name="servicer_platform_silver_orm" file="assets/servicer_platform_silver_orm.png" />
-    <texture type="2d" name="metal_rafti_alb" file="assets/metal_rafti_albedo.png" />
-    <texture type="2d" name="metal_rafti_nrm" file="assets/metal_rafti_normal.png" />
-    <texture type="2d" name="metal_rafti_orm" file="assets/metal_rafti_orm.png" />
-    <texture type="2d" name="landsat_gold_alb" file="assets/landsat_gold_albedo.png" />
-    <texture type="2d" name="landsat_gold_nrm" file="assets/landsat_gold_normal.png" />
-    <texture type="2d" name="landsat_gold_orm" file="assets/landsat_gold_orm.png" />
-    <texture type="2d" name="servicer_platform_gold_alb" file="assets/servicer_platform_gold_albedo.png" />
-    <texture type="2d" name="servicer_platform_gold_nrm" file="assets/servicer_platform_gold_normal.png" />
-    <texture type="2d" name="servicer_platform_gold_orm" file="assets/servicer_platform_gold_orm.png" />
+    <texture
+      type="2d"
+      name="servicer_platform_silver_alb"
+      file="assets/servicer_platform_silver_albedo.png"
+    />
+    <texture
+      type="2d"
+      name="servicer_platform_silver_nrm"
+      file="assets/servicer_platform_silver_normal.png"
+    />
+    <texture
+      type="2d"
+      name="servicer_platform_silver_orm"
+      file="assets/servicer_platform_silver_orm.png"
+    />
+    <texture
+      type="2d"
+      name="metal_rafti_alb"
+      file="assets/metal_rafti_albedo.png"
+    />
+    <texture
+      type="2d"
+      name="metal_rafti_nrm"
+      file="assets/metal_rafti_normal.png"
+    />
+    <texture
+      type="2d"
+      name="metal_rafti_orm"
+      file="assets/metal_rafti_orm.png"
+    />
+    <texture
+      type="2d"
+      name="landsat_gold_alb"
+      file="assets/landsat_gold_albedo.png"
+    />
+    <texture
+      type="2d"
+      name="landsat_gold_nrm"
+      file="assets/landsat_gold_normal.png"
+    />
+    <texture
+      type="2d"
+      name="landsat_gold_orm"
+      file="assets/landsat_gold_orm.png"
+    />
+    <texture
+      type="2d"
+      name="servicer_platform_gold_alb"
+      file="assets/servicer_platform_gold_albedo.png"
+    />
+    <texture
+      type="2d"
+      name="servicer_platform_gold_nrm"
+      file="assets/servicer_platform_gold_normal.png"
+    />
+    <texture
+      type="2d"
+      name="servicer_platform_gold_orm"
+      file="assets/servicer_platform_gold_orm.png"
+    />
     <material name="ar_marker_0" texture="ar_marker_0" texuniform="false" />
     <material name="ar_marker_1" texture="ar_marker_1" texuniform="false" />
     <material name="ar_marker_2" texture="ar_marker_2" texuniform="false" />
@@ -67,20 +115,27 @@
          0.45 rather than the 0.85 first used, which is a measured compromise: at 0.85 the
          foil reads warmest (R-B +3.31) but forms no specular highlight at all (0.04% of frame
          above 200), because a surface that rough has no mirror direction. At 0.45 the
-         highlight covers 0.43% -- ten times as much, and visible as a single bright reflection
-         of the sun -- while warmth stays positive at +0.67, so it still reads gold rather than
+         highlight covers 0.43% - ten times as much, and visible as a single bright reflection
+         of the sun - while warmth stays positive at +0.67, so it still reads gold rather than
          cold. Below 0.45 the highlight stops growing and the colour goes cold. -->
     <material
       name="landsat_gold"
       rgba="1.0 0.85 0.6 1"
       reflectance="0.2"
       roughness="0.45"
-      metallic="1">
+      metallic="1"
+    >
       <layer role="rgb" texture="landsat_gold_alb" />
       <layer role="normal" texture="landsat_gold_nrm" />
       <layer role="orm" texture="landsat_gold_orm" />
     </material>
-    <material name="metal_rafti" metallic="1" roughness="1.0" rgba="0.8 0.8 0.8 1" reflectance="0.5">
+    <material
+      name="metal_rafti"
+      metallic="1"
+      roughness="1.0"
+      rgba="0.8 0.8 0.8 1"
+      reflectance="0.5"
+    >
       <layer role="rgb" texture="metal_rafti_alb" />
       <layer role="normal" texture="metal_rafti_nrm" />
       <layer role="orm" texture="metal_rafti_orm" />
@@ -96,7 +151,8 @@
       rgba="0.7 0.6 0.4 1"
       reflectance="0.5"
       roughness="0.45"
-      metallic="1">
+      metallic="1"
+    >
       <layer role="rgb" texture="servicer_platform_gold_alb" />
       <layer role="normal" texture="servicer_platform_gold_nrm" />
       <layer role="orm" texture="servicer_platform_gold_orm" />
@@ -106,7 +162,8 @@
       metallic="1"
       roughness="1.0"
       rgba="0.6 0.6 0.6 1"
-      reflectance="0.5">
+      reflectance="0.5"
+    >
       <layer role="rgb" texture="servicer_platform_silver_alb" />
       <layer role="normal" texture="servicer_platform_silver_nrm" />
       <layer role="orm" texture="servicer_platform_silver_orm" />

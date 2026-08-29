@@ -13,10 +13,7 @@
        foundry, 1.31 against 0.88, with a comparable nadir (0.13 against 0.11) and slightly
        less azimuthal structure (1.69 against 2.14). -->
   <custom>
-    <text
-      name="nyx_env_map"
-      data="small_hangar_01_2k.hdr"
-    />
+    <text name="nyx_env_map" data="small_hangar_01_2k.hdr" />
   </custom>
 
   <option integrator="implicitfast" timestep="0.003" />
@@ -58,7 +55,7 @@
     <!-- Brushed stainless for the workcell table. roughness 0.09 is the point: low enough
          that the path tracer produces a legible mirror image of the sky, the part and the
          arm in the table top, which is the whole reason to run a path tracer rather than a
-         rasteriser. Not 0.0 -- a perfect mirror looks like glass and hides the surface. -->
+         rasteriser. Not 0.0 - a perfect mirror looks like glass and hides the surface. -->
     <material
       name="stainless_steel"
       texrepeat="14 14"
@@ -67,7 +64,8 @@
       roughness="1.0"
       specular="1"
       shininess="0.91"
-      reflectance="0.6">
+      reflectance="0.6"
+    >
       <layer role="rgb" texture="steel_alb" />
       <layer role="normal" texture="steel_nrm" />
       <layer role="orm" texture="steel_orm" />
@@ -86,7 +84,8 @@
       shininess="0.05"
       reflectance="0"
       roughness="0.92"
-      metallic="0">
+      metallic="0"
+    >
       <layer role="rgb" texture="dirt_ground_alb" />
       <layer role="normal" texture="dirt_ground_nrm" />
       <layer role="orm" texture="dirt_ground_orm" />
@@ -199,7 +198,11 @@
       />
       <body name="engine_block" pos="0 -1.69 0.71" quat="0.707 0 0 0.707">
         <site name="engine_block_pose" />
-        <geom material="engine_block_cast_aluminum" mesh="engine_block" class="visual" />
+        <geom
+          material="engine_block_cast_aluminum"
+          mesh="engine_block"
+          class="visual"
+        />
         <geom mesh="engine_block_geometry_0" class="collision" />
         <geom mesh="engine_block_geometry_1" class="collision" />
         <geom mesh="engine_block_geometry_2" class="collision" />
