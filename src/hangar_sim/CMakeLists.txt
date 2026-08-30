@@ -28,6 +28,11 @@ if(BUILD_TESTING)
   find_package(ament_cmake_pytest REQUIRED)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
+  # Pure-data comparison of the URDF chain against the MJCF bodies; no simulator,
+  # so it stays outside the long objectives suite below.
+  ament_add_pytest_test(
+          base_geometry_test test/test_base_geometry.py
+          TIMEOUT 30)
   ament_add_pytest_test(
           forward_stereo_calibration_test test/test_forward_stereo_calibration.py
           TIMEOUT 30)

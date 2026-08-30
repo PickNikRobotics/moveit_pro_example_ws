@@ -198,7 +198,7 @@
   </asset>
 
   <worldbody>
-    <body name="base_platform_rotation" pos="0 0 -0.048" euler="0 0 0">
+    <body name="base_platform_rotation" pos="0 0 0.0250889" euler="0 0 0">
       <inertial mass="0.01" pos="0 0 0" diaginertia="0.001 0.001 0.001" />
       <!--      <joint-->
       <!--        type="free"-->
@@ -1494,17 +1494,17 @@
               axis="1 0 0"
               range="-0.08726 0.08726"
             />
-            <body name="front_left_wheel_link" pos="0 0.2755 0.07">
+            <body name="front_left_wheel_link" pos="0 0.2755 0">
               <include file="front_left_wheel_link.xml" />
             </body>
-            <body name="front_right_wheel_link" pos="0 -0.2755 0.07">
+            <body name="front_right_wheel_link" pos="0 -0.2755 0">
               <include file="front_right_wheel_link.xml" />
             </body>
           </body>
-          <body name="rear_left_wheel_link" pos="-0.319 0.2755 0.12">
+          <body name="rear_left_wheel_link" pos="-0.319 0.2755 0.05">
             <include file="rear_left_wheel_link.xml" />
           </body>
-          <body name="rear_right_wheel_link" pos="-0.319 -0.2755 0.12">
+          <body name="rear_right_wheel_link" pos="-0.319 -0.2755 0.05">
             <include file="rear_right_wheel_link.xml" />
           </body>
           <!-- IMU: position from ridgeback.urdf.xacro imu_joint, relative to chassis_link -->
@@ -1516,7 +1516,7 @@
             />
             <site name="imu_site" pos="0 0 0" size="0.01" rgba="0 1 0 1" />
           </body>
-          <body name="ham_assem" pos="0 0 0.278813" euler="1.5708 -1.57079 0">
+          <body name="ham_assem" pos="0 0 0.27365" euler="1.5708 -1.57079 0">
             <geom
               name="ham_assem"
               mesh="ham_assem"

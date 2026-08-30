@@ -41,6 +41,9 @@
   <exec_depend>moveit_pro_sam2</exec_depend>
   <exec_depend>moveit_pro_sam3</exec_depend>
 
+  <!-- test_base_geometry.py resolves ridgeback_description's share directory. -->
+  <test_depend>ridgeback_description</test_depend>
+  <test_depend>ament_index_python</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_cmake_pytest</test_depend>
 
