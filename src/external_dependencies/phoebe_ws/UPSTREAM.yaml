@@ -1,0 +1,38 @@
+upstream:
+  repository: https://github.com/PickNikRobotics/phoebe_ws.git
+  commit: 22a1c004895e1ca35bbcc287ddeccdc41d486056
+  branch: for-example-ws-no-dups
+vendored_paths:
+  - COPYING
+  - LICENSE
+  - LICENSES
+  - NOTICE
+  - src/ewellix_description
+  - src/phoebe_bridgeback_description
+  - src/phoebe_sim
+pruned_paths:
+  - development workspace files
+  - unused l2g.onnx model
+  - RViz launch and configuration files
+  - Ewellix variants, configuration, macros, and documentation unused by phoebe_sim
+modified_paths:
+  - src/ewellix_description/CMakeLists.txt
+  - src/phoebe_bridgeback_description/package.xml
+  - src/phoebe_sim/objectives/close_gripper.xml
+  - src/phoebe_sim/objectives/close_left_gripper.xml
+  - src/phoebe_sim/objectives/close_right_gripper.xml
+  - src/phoebe_sim/objectives/open_gripper.xml
+  - src/phoebe_sim/objectives/open_left_gripper.xml
+  - src/phoebe_sim/objectives/open_right_gripper.xml
+  - src/phoebe_sim/objectives/wrist_snap.xml
+  - src/phoebe_sim/CMakeLists.txt
+  - src/phoebe_sim/package.xml
+  - src/phoebe_sim/config/control/dual_arm.ros2_control.yaml
+apache_paths:
+  - src/phoebe_sim/description/assets/trainer_hatch
+apache_excluded_paths:
+  - src/phoebe_sim/description/assets/trainer_hatch/collision/cylinder_mockup_full_length.stl
+notes:
+  - lunar_sim inherits the phoebe_sim robot configuration and MuJoCo assets.
+  - phoebe_sim uses only the Ewellix TLT500 long lift meshes.
+  - Binary files matching workspace Git LFS patterns are stored as LFS objects; checked-out bytes match upstream.

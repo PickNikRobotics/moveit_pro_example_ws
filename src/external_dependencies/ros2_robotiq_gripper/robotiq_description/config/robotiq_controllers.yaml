@@ -18,3 +18,4 @@ robotiq_gripper_controller:
 robotiq_activation_controller:
   ros__parameters:
     default: true
+    simulation_only: true

@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Multi-tip Path Re-Orient, Move Up and Push"
+>
+  <BehaviorTree
+    ID="Multi-tip Path Re-Orient, Move Up and Push"
+    _description="Example of Re-Orientation for a bottle and then moving it up. "
+    _favorite="false"
+  >
+    <Control ID="Sequence">
+      <!--hard coded moving robot to bottle and grasping-->
+      <Control ID="Sequence">
+        <SubTree
+          ID="Move to Waypoint"
+          _collapsed="true"
+          acceleration_scale_factor="1.0"
+          controller_action_server="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+          controller_names="joint_trajectory_admittance_controller"
+          execution_pipeline="jtac"
+          joint_group_name="manipulator"
+          keep_orientation="false"
+          keep_orientation_tolerance="0.05"
+          link_padding="0.01"
+          seed="0"
+          velocity_scale_factor="1.0"
+          waypoint_name="AwayTable"
+        />
+        <SubTree
+          ID="Move to Waypoint"
+          _collapsed="true"
+          acceleration_scale_factor="1.0"
+          controller_action_server="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+          controller_names="joint_trajectory_admittance_controller"
+          execution_pipeline="jtac"
+          joint_group_name="manipulator"
+          keep_orientation="false"
+          keep_orientation_tolerance="0.05"
+          link_padding="0.01"
+          seed="0"
+          velocity_scale_factor="1.0"
+          waypoint_name="ApproachBottle"
+        />
+        <SubTree
+          ID="Move to Waypoint"
+          _collapsed="true"
+          acceleration_scale_factor="1.0"
+          controller_action_server="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+          controller_names="joint_trajectory_admittance_controller"
+          execution_pipeline="jtac"
+          joint_group_name="manipulator"
+          keep_orientation="false"
+          keep_orientation_tolerance="0.05"
+          link_padding="0.01"
+          seed="0"
+          velocity_scale_factor="1.0"
+          waypoint_name="PreGraspStart"
+        />
+        <SubTree
+          ID="Move to Waypoint"
+          _collapsed="true"
+          acceleration_scale_factor="1.0"
+          controller_action_server="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+          controller_names="joint_trajectory_admittance_controller"
+          execution_pipeline="jtac"
+          joint_group_name="manipulator"
+          keep_orientation="false"
+          keep_orientation_tolerance="0.05"
+          link_padding="0.01"
+          seed="0"
+          velocity_scale_factor="1.0"
+          waypoint_name="SurroundPreGrasp"
+        />
+        <Control ID="Fallback">
+          <Decorator ID="Timeout" msec="1000">
+            <SubTree ID="Close Right Gripper" _collapsed="true" />
+          </Decorator>
+          <Action ID="AlwaysSuccess" />
+        </Control>
+        <Control ID="Fallback">
+          <Decorator ID="Timeout" msec="1000">
+            <SubTree ID="Close Left Gripper" _collapsed="true" />
+          </Decorator>
+          <Action ID="AlwaysSuccess" />
+        </Control>
+      </Control>
+      <SubTree ID="Multi-tip Path Re-Orient Bottle" _collapsed="true" />
+      <!--the behavior below moves the bottle up and to the left (can tweak, it's hardcoded)-->
+      <SubTree ID="Multi-tip Path Move Up Bottle" _collapsed="false" />
+      <!--two-handed push first-->
+      <SubTree ID="Multi-tip Path Move Push Bottle" _collapsed="true" />
+      <!--Move right arm out of the way-->
+      <SubTree ID="Open Right Gripper" _collapsed="true" />
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="right_grasp_link"
+        position_xyz="0;0;-0.2"
+        pose_stamped="{pose_stamped}"
+      />
+      <Action
+        ID="AddPoseStampedToVector"
+        input="{pose_stamped}"
+        vector="{pose_stamped_vector}"
+      />
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="right_grasp_link"
+        position_xyz="0.3;0;-0.2"
+        pose_stamped="{pose_stamped}"
+      />
+      <Action ID="AddPoseStampedToVector" input="{pose_stamped}" />
+      <Action
+        ID="VisualizePose"
+        marker_lifetime="0.000000"
+        marker_name="pose3"
+      />
+      <Action ID="BreakpointSubscriber" />
+      <Control ID="Fallback">
+        <Action
+          ID="PlanCartesianPath"
+          planning_group_name="arms_only"
+          tip_links="right_grasp_link"
+          debug_solution="{debug_solution}"
+        />
+        <Action
+          ID="WaitForUserTrajectoryApproval"
+          cartesian_path_links="right_grasp_link"
+          solution="{debug_solution}"
+        />
+      </Control>
+      <Action
+        ID="SwitchController"
+        activate_controllers="arms_only_joint_trajectory_admittance_controller"
+      />
+      <Action
+        ID="ExecuteTrajectory"
+        execution_pipeline="jtac"
+        controller_action_name="/arms_only_joint_trajectory_admittance_controller/follow_joint_trajectory"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+        goal_position_tolerance="0.000000"
+      />
+      <!--Now try to push with admittance with just left arm-->
+      <SubTree
+        ID="Single-tip Path Admittance Move Push Bottle"
+        _collapsed="true"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Multi-tip Path Re-Orient, Move Up and Push">
+      <MetadataFields>
+        <Metadata subcategory="Application - Advanced Examples" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

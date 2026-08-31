@@ -1,0 +1,29 @@
+upstream:
+  repository: https://github.com/frankarobotics/franka_description.git
+  commit: 494d1d474844c167d72ccd604633545c9067eea2
+  branch: main
+snapshot_path: franka_description
+vendored_paths:
+  - franka_description/CMakeLists.txt
+  - franka_description/LICENSE
+  - franka_description/NOTICE
+  - franka_description/package.xml
+  - franka_description/robots/common
+  - franka_description/robots/fr3
+  - franka_description/robots/fr3_duo/fr3_duo_mount
+  - franka_description/end_effectors/common
+  - franka_description/end_effectors/franka_hand/inertials.yaml
+  - franka_description/meshes/robots/fr3
+  - franka_description/meshes/accessories/fr3_duo_mount
+  - franka_description/meshes/robot_ee/franka_hand_white
+pruned_paths:
+  - non-FR3 robot descriptions and meshes
+  - unused end effectors, SRDF macros, standalone robot wrappers, documentation, visualization scripts, and tests
+modified_paths:
+  - franka_description/CMakeLists.txt
+  - franka_description/package.xml
+apache_paths:
+  - franka_description
+notes:
+  - dual_arm_sim and kitchen_sim use only FR3 variants.
+  - Binary files matching workspace Git LFS patterns are stored as LFS objects; checked-out bytes match upstream.

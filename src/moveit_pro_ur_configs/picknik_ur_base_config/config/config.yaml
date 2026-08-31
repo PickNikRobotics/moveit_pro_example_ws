@@ -126,7 +126,6 @@ ros2_control:
     - "robotiq_gripper_controller"
     - "joint_state_broadcaster"
     - "io_and_status_controller"
-    - "robotiq_activation_controller"
   # Load but do not start these controllers so they can be activated later if needed.
   # [Optional, default=[]]
   controllers_inactive_at_startup:

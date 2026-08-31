@@ -1,0 +1,26 @@
+upstream:
+  repository: https://github.com/PickNikRobotics/ros2_robotiq_gripper.git
+  commit: 2ff85455d4b9f973c4b0bab1ce95fb09367f0d26
+  branch: humble
+vendored_paths:
+  - LICENSE
+  - robotiq_controllers
+  - robotiq_description
+pruned_paths:
+  - upstream CI, formatting configuration, repository metadata, and documentation
+  - robotiq_driver (hardware driver and interface)
+  - robotiq_hardware_tests (hardware-only test utilities)
+modified_paths:
+  - robotiq_controllers/CMakeLists.txt
+  - robotiq_controllers/controller_plugins.xml
+  - robotiq_controllers/include/robotiq_controllers/robotiq_activation_controller.hpp
+  - robotiq_controllers/include/robotiq_controllers/internal/reactivation.hpp
+  - robotiq_controllers/package.xml
+  - robotiq_controllers/src/robotiq_activation_controller.cpp
+  - robotiq_controllers/src/reactivation.cpp
+  - robotiq_controllers/test/reactivation_test.cpp
+  - robotiq_description/config/robotiq_controllers.yaml
+notes:
+  - PickNik ports the retained activation controller to ROS 2 Jazzy while preserving Humble compatibility.
+  - The retained controller preserves the reactivation service as a deterministic simulation no-op without hardware command interfaces and fails lifecycle activation unless simulation_only is explicitly true.
+  - Binary files matching workspace Git LFS patterns are stored as LFS objects; checked-out bytes match upstream.

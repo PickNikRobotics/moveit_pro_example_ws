@@ -8,10 +8,12 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(controller_interface REQUIRED)
+find_package(rcl_interfaces REQUIRED)
 find_package(std_srvs REQUIRED)
 
 set(THIS_PACKAGE_INCLUDE_DEPENDS
   controller_interface
+  rcl_interfaces
   std_srvs
 )
 
@@ -19,6 +21,7 @@ include_directories(include)
 
 add_library(${PROJECT_NAME} SHARED
   src/robotiq_activation_controller.cpp
+  src/reactivation.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE
@@ -30,6 +33,14 @@ ament_target_dependencies(${PROJECT_NAME}
 )
 
 pluginlib_export_plugin_description_file(controller_interface controller_plugins.xml)
+
+if(BUILD_TESTING)
+  find_package(ament_cmake_gmock REQUIRED)
+
+  ament_add_gmock(reactivation_test test/reactivation_test.cpp)
+  target_include_directories(reactivation_test PRIVATE include)
+  target_link_libraries(reactivation_test ${PROJECT_NAME})
+endif()
 
 # # INSTALL
 install(

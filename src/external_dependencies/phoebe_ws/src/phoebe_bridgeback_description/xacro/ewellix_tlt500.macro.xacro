@@ -1,0 +1,174 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:macro name="ewellix_tlt500" params="
+    parent_link='default_mount'
+    prefix:=''
+    generate_ros2_control_tag:='false'
+    lift_comm_port:='/dev/ttyUSB1'
+    use_fake_lift_hardware:=false
+    *origin
+    ">
+    <link name="${prefix}plate_link">
+      <visual>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+        <geometry>
+          <mesh filename="package://ewellix_description/meshes/tlt500/plate.stl"/>
+        </geometry>
+        <material name="LightGrey">
+          <color rgba="0.7 0.7 0.7 1.0"/>
+        </material>
+      </visual>
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0075"/>
+        <geometry>
+          <box size="0.2 0.22 0.015"/>
+        </geometry>
+        <material name="LightGrey">
+          <color rgba="0.7 0.7 0.7 1.0"/>
+        </material>
+      </collision>
+      <inertial>
+        <mass value="1.0"/>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0075"/>
+        <inertia ixx="0.004052083333333333" ixy="0.0" ixz="0.0" iyy="0.003352083333333334" iyz="0.0" izz="0.007366666666666667"/>
+      </inertial>
+    </link>
+    <joint name="${prefix}plate_joint" type="fixed">
+      <child link="${prefix}plate_link"/>
+      <parent link="${parent_link}"/>
+      <xacro:insert_block name="origin"/>
+    </joint>
+    <joint name="${prefix}base_joint" type="fixed">
+      <child link="${prefix}base_link"/>
+      <parent link="${prefix}plate_link"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.015"/>
+    </joint>
+    <link name="${prefix}base_link">
+      <visual>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 -0.0151"/>
+        <geometry>
+          <mesh filename="package://ewellix_description/meshes/tlt500/long/base.stl"/>
+        </geometry>
+        <material name="LightGrey">
+          <color rgba="0.7 0.7 0.7 1.0"/>
+        </material>
+      </visual>
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.24"/>
+        <geometry>
+          <box size="0.1654 0.1654 0.48"/>
+        </geometry>
+        <material name="LightGrey">
+          <color rgba="0.7 0.7 0.7 1.0"/>
+        </material>
+      </collision>
+      <inertial>
+        <mass value="10.0"/>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.24"/>
+        <inertia ixx="0.21479763333333332" ixy="0.0" ixz="0.0" iyy="0.21479763333333332" iyz="0.0" izz="0.04559526666666667"/>
+      </inertial>
+    </link>
+    <link name="${prefix}lower_link">
+      <visual>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 -0.2721"/>
+        <geometry>
+          <mesh filename="package://ewellix_description/meshes/tlt500/long/lower.stl"/>
+        </geometry>
+        <material name="LightGrey">
+          <color rgba="0.7 0.7 0.7 1.0"/>
+        </material>
+      </visual>
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.2415"/>
+        <geometry>
+          <box size="0.1484 0.1484 0.483"/>
+        </geometry>
+        <material name="LightGrey">
+          <color rgba="0.7 0.7 0.7 1.0"/>
+        </material>
+      </collision>
+      <inertial>
+        <mass value="10.0"/>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.2415"/>
+        <inertia ixx="0.21275963333333334" ixy="0.0" ixz="0.0" iyy="0.21275963333333334" iyz="0.0" izz="0.036704266666666666"/>
+      </inertial>
+    </link>
+    <joint name="${prefix}lower_joint" type="prismatic">
+      <child link="${prefix}lower_link"/>
+      <parent link="${prefix}base_link"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
+      <limit effort="2000.0" lower="0.0" upper="0.4" velocity="0.025"/>
+      <axis xyz="0 0 1"/>
+      <dynamics damping="0.01" friction="0.01"/>
+      <mimic joint="${prefix}upper_joint" multiplier="0.5"/>
+    </joint>
+    <link name="${prefix}upper_link">
+      <visual>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 -0.5151"/>
+        <geometry>
+          <mesh filename="package://ewellix_description/meshes/tlt500/long/upper.stl"/>
+        </geometry>
+        <material name="LightGrey">
+          <color rgba="0.7 0.7 0.7 1.0"/>
+        </material>
+      </visual>
+      <collision>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.24500000000000005"/>
+        <geometry>
+          <box size="0.129 0.129 0.4900000000000001"/>
+        </geometry>
+        <material name="LightGrey">
+          <color rgba="0.7 0.7 0.7 1.0"/>
+        </material>
+      </collision>
+      <inertial>
+        <mass value="10.0"/>
+        <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.24500000000000005"/>
+        <inertia ixx="0.21395083333333342" ixy="0.0" ixz="0.0" iyy="0.21395083333333342" iyz="0.0" izz="0.027735"/>
+      </inertial>
+    </link>
+    <joint name="${prefix}upper_joint" type="prismatic">
+      <child link="${prefix}upper_link"/>
+      <parent link="${prefix}base_link"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.025"/>
+      <axis xyz="0 0 1"/>
+      <limit effort="2000.0" lower="0.0" upper="0.25" velocity="0.025"/>
+      <dynamics damping="0.01" friction="0.01"/>
+    </joint>
+    <!-- Mount -->
+    <link name="${prefix}mount"/>
+    <joint name="${prefix}mount_joint" type="fixed">
+      <child link="${prefix}mount"/>
+      <parent link="${prefix}upper_link"/>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.4900000000000001"/>
+    </joint>
+    <xacro:if value="${generate_ros2_control_tag}">
+      <ros2_control name="${prefix}hardware" type="system">
+        <hardware>
+          <xacro:if value="${use_fake_lift_hardware}">
+            <plugin>mock_components/GenericSystem</plugin>
+            <param name="state_following_offset">0.0</param>
+            <param name="calculate_dynamics">true</param>
+          </xacro:if>
+          <xacro:unless value="${use_fake_lift_hardware}">
+            <plugin>ewellix_driver/EwellixHardwareInterface</plugin>
+            <param name="port">${lift_comm_port}</param>
+            <param name="baud">38400</param>
+            <param name="timeout">1000</param>
+            <param name="conversion">1600</param>
+            <param name="rated_effort">2000</param>
+            <param name="tolerance">0.005</param>
+          </xacro:unless>
+        </hardware>
+        <joint name="${prefix}upper_joint">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">0.25</param>
+          </state_interface>
+          <state_interface name="velocity"/>
+          <state_interface name="effort"/>
+        </joint>
+      </ros2_control>
+    </xacro:if>
+  </xacro:macro>
+</robot>

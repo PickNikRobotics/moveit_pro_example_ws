@@ -1,22 +1,23 @@
 # MoveIt Pro Example Workspace
 
-This workspace contains reference materials for using MoveIt Pro, including example robot configurations, simulated environments, and reusable behaviors.
+This simulation-only workspace contains reference materials for using MoveIt Pro, including example robot configurations, simulated environments, and reusable behaviors. Hardware robot configurations, drivers, and hardware-only dependencies are intentionally excluded to reduce build time and avoid maintaining complex dependencies that the simulation examples do not use.
 
 ## Cloning
 
-This repository uses git submodules. Clone with:
+Install [Git LFS](https://git-lfs.com/) before cloning so robot meshes and scene assets are checked out correctly:
+
 ```bash
-git clone --recurse-submodules <repo-url>
+sudo apt install git-lfs
+git lfs install
+git clone <repo-url>
 ```
 
-If you already cloned without submodules, initialize them with:
-```bash
-git submodule update --recursive --init
-```
+Robot descriptions and simulation assets are vendored under `src/external_dependencies`; each vendored source has an `UPSTREAM.yaml` file recording its repository, commit, and pruned paths. No source submodules are required for simulation.
 
-Several submodules (notably `picknik_accessories`) use git LFS. Install [git-lfs](https://git-lfs.com/) first (e.g., `sudo apt install git-lfs && git lfs install`); without it the commands below fail with `git: 'lfs' is not a git command`. After updating submodules, pull LFS objects:
+The `moveit_pro_sam2` and `moveit_pro_sam3` submodules contain optional perception models used by ML demonstration Objectives. Initialize them only when those Objectives are needed:
+
 ```bash
-git submodule foreach --recursive git lfs pull
+git submodule update --init src/moveit_pro_sam2 src/moveit_pro_sam3
 ```
 
 ## Robot Configs
@@ -33,19 +34,17 @@ git submodule foreach --recursive git lfs pull
 - `vla_sim`
 - `moveit_pro_franka_configs/franka_base_config`
 - `moveit_pro_kinova_configs/kinova_gen3_base_config`
-- `moveit_pro_kinova_configs/kinova_gen3_site_config`
 - `moveit_pro_kinova_configs/kinova_sim`
 - `moveit_pro_kinova_configs/space_satellite_sim`
 - `moveit_pro_kinova_configs/space_satellite_sim_camera_cal`
 - `moveit_pro_ur_configs/mock_sim`
 - `moveit_pro_ur_configs/multi_arm_sim`
 - `moveit_pro_ur_configs/picknik_ur_base_config`
-- `moveit_pro_ur_configs/picknik_ur_site_config`
 
-## Updating Submodules
+The hardware-only `kinova_gen3_site_config` and `picknik_ur_site_config` configurations are not included. They bring up physical Kinova and Universal Robots hardware, respectively, while the retained base and simulation configurations provide the descriptions and interfaces needed by this workspace.
 
-To pull the latest commits for all submodules:
-```bash
-git submodule update --remote --recursive
-git submodule foreach --recursive git lfs pull
-```
+## Updating vendored dependencies
+
+Each `UPSTREAM.yaml` file under `src/external_dependencies` records the exact upstream commit and retained paths. Refresh a dependency from that commit, preserve its license files, reapply the documented pruning, and validate every config that consumes the package.
+
+The optional ML model submodules can be advanced independently when their demonstration Objectives need a newer model package.

@@ -30,6 +30,10 @@ robotiq_gripper_controller:
     stall_timeout: 0.05
     goal_tolerance: 0.02
 
+robotiq_activation_controller:
+  ros__parameters:
+    simulation_only: true
+
 joint_trajectory_admittance_controller:
   ros__parameters:
     planning_group_name: manipulator

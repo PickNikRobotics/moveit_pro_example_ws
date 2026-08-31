@@ -1,0 +1,50 @@
+<?xml version="1.0" ?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>phoebe_sim</name>
+  <version>8.3.0</version>
+
+  <description>
+    MoveIt Pro simulation configuration package for the dual UR5e + Ridgeback
+    system.
+  </description>
+
+  <maintainer email="paul.gesel@picknik.ai">Paul Gesel</maintainer>
+  <maintainer email="david.yackzan@picknik.ai">David Yackzan</maintainer>
+
+  <license>BSD-3-Clause</license>
+  <license>BSD-2-Clause</license>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <exec_depend>moveit_studio_agent</exec_depend>
+  <exec_depend>launch</exec_depend>
+  <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>xacro</exec_depend>
+
+  <exec_depend>clearpath_mecanum_drive_controller</exec_depend>
+  <exec_depend>force_torque_sensor_broadcaster</exec_depend>
+  <exec_depend>gripper_controllers</exec_depend>
+  <exec_depend>joint_state_broadcaster</exec_depend>
+  <exec_depend>joint_trajectory_admittance_controller</exec_depend>
+  <exec_depend>joint_trajectory_controller</exec_depend>
+  <exec_depend>joint_velocity_controller</exec_depend>
+  <exec_depend>velocity_force_controller</exec_depend>
+
+  <exec_depend>clearpath_controller_interface</exec_depend>
+  <exec_depend>clearpath_manipulators_description</exec_depend>
+  <exec_depend>clearpath_platform_description</exec_depend>
+  <exec_depend>clearpath_sensors_description</exec_depend>
+  <exec_depend>ewellix_description</exec_depend>
+  <exec_depend>picknik_accessories</exec_depend>
+  <exec_depend>phoebe_description</exec_depend>
+  <exec_depend>ridgeback_description</exec_depend>
+  <exec_depend>robotiq_controllers</exec_depend>
+  <exec_depend>robotiq_description</exec_depend>
+  <exec_depend>ur_description</exec_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

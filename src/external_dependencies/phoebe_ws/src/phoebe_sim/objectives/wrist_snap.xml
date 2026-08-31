@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Take Wrist Camera Snapshot">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Take Wrist Camera Snapshot"
+    _description="Capture and visualise a pointcloud with the wrist camera"
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <!--Do not clear snapshots first, so we can take multiple snapshots from different angles-->
+      <Action
+        ID="GetPointCloud"
+        topic_name="/camera/left_wrist_mounted_camera/depth/color/points"
+        message_timeout_sec="15"
+        message_out="{point_cloud}"
+        publisher_timeout_sec="5.000000"
+      />
+      <Action
+        ID="SendPointCloudToUI"
+        pcd_topic="/pcd_pointcloud_captures"
+        point_cloud="{point_cloud}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Take Wrist Camera Snapshot">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Basic Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Multi-tip Path Re-Orient Bottle">
+  <!--//////////-->
+  <BehaviorTree ID="Multi-tip Path Re-Orient Bottle" _description="">
+    <Control ID="Sequence">
+      <Control ID="Sequence">
+        <Action
+          ID="CreatePoseStamped"
+          reference_frame="left_grasp_link"
+          pose_stamped="{pose_stamped}"
+        />
+        <Action
+          ID="AddPoseStampedToVector"
+          input="{pose_stamped}"
+          vector="{pose_stamped_vector}"
+        />
+        <Action
+          ID="VisualizePose"
+          marker_lifetime="0.000000"
+          marker_name="pose"
+          marker_size="0.100000"
+          pose="{pose_stamped}"
+        />
+        <Action
+          ID="CreatePoseStamped"
+          reference_frame="left_grasp_link"
+          pose_stamped="{pose_stamped}"
+          position_xyz="0;0;0"
+          orientation_xyzw="0.0;0.0;0.707;0.707"
+        />
+        <Action
+          ID="AddPoseStampedToVector"
+          input="{pose_stamped}"
+          vector="{pose_stamped_vector}"
+        />
+        <Action
+          ID="BreakpointSubscriber"
+          breakpoint_topic="/moveit_pro_breakpoint"
+        />
+      </Control>
+      <Control ID="Fallback">
+        <Action
+          ID="PlanCartesianPath"
+          blending_radius="0.020000"
+          debug_solution="{debug_solution}"
+          ik_cartesian_space_density="0.010000"
+          ik_joint_space_density="0.100000"
+          joint_trajectory_msg="{joint_trajectory_msg}"
+          path="{pose_stamped_vector}"
+          cartesian_constraint="[{constraint_type: position_and_orientation}]"
+          tip_links="left_grasp_link;right_grasp_link"
+          trajectory_timing="[{mode: time_optimal}]"
+          max_optimizer_iterations="1"
+          tip_offset="0;0;0;0;0;0"
+          planning_group_name="arms_only"
+        />
+        <Action
+          ID="WaitForUserTrajectoryApproval"
+          solution="{debug_solution}"
+          cartesian_path_links="left_grasp_link"
+        />
+      </Control>
+      <Action
+        ID="SwitchController"
+        activate_controllers="arms_only_joint_trajectory_admittance_controller"
+      />
+      <Action
+        ID="ExecuteTrajectory"
+        execution_pipeline="jtac"
+        controller_action_name="/arms_only_joint_trajectory_admittance_controller/follow_joint_trajectory"
+        goal_duration_tolerance="-1.000000"
+        goal_position_tolerance="0.000000"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Multi-tip Path Re-Orient Bottle">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Advanced Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

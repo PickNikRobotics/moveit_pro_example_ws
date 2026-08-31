@@ -1,0 +1,699 @@
+<mujoco model="trainer and hatch">
+  <compiler angle="radian" meshdir="assets" />
+
+  <asset>
+    <mesh
+      name="ivr_hatch_frame_visual"
+      file="trainer_hatch/visual/ivr_hatch_frame_no_left.stl"
+    />
+    <mesh
+      name="trainer_frame_visual"
+      file="trainer_hatch/visual/ivr_tasktrainer_frame.stl"
+    />
+    <mesh
+      name="hatch_4060_frame_visual"
+      file="trainer_hatch/visual/hatch_4060_frame.stl"
+    />
+    <mesh
+      name="hatch_4060_frame"
+      file="trainer_hatch/collision/hatch_4060_frame.stl"
+    />
+    <mesh
+      name="hatch_4060_collision"
+      file="trainer_hatch/collision/hatch_4060_collision.stl"
+    />
+    <mesh
+      name="hatch_4060_visual"
+      file="trainer_hatch/visual/hatch_4060_face.stl"
+    />
+    <mesh name="crank_wheel" file="trainer_hatch/collision/crank_wheel.stl" />
+    <mesh name="crank_handle" file="trainer_hatch/collision/crank_handle.stl" />
+    <mesh name="grab_handle" file="trainer_hatch/collision/grab_handle.stl" />
+    <mesh
+      name="front_left_face"
+      file="trainer_hatch/collision/front_left_face.stl"
+    />
+    <mesh name="cubby_1" file="trainer_hatch/collision/cubby_1.stl" />
+    <mesh name="cubby_2" file="trainer_hatch/collision/cubby_2.stl" />
+    <mesh
+      name="front_right_face"
+      file="trainer_hatch/collision/front_right_face.stl"
+    />
+    <mesh
+      name="cabinet_door_1"
+      file="trainer_hatch/collision/cabinet_door_1.stl"
+    />
+    <mesh
+      name="round_latch_housing"
+      file="trainer_hatch/collision/round_latch_housing.stl"
+    />
+    <mesh
+      name="round_latch_handle"
+      file="trainer_hatch/collision/round_latch_handle.stl"
+    />
+    <mesh
+      name="cabinet_door_2"
+      file="trainer_hatch/collision/cabinet_door_2.stl"
+    />
+    <mesh
+      name="push_latch_housing"
+      file="trainer_hatch/collision/push_latch_housing.stl"
+    />
+    <mesh
+      name="push_latch_button"
+      file="trainer_hatch/collision/push_latch_button.stl"
+    />
+    <mesh
+      name="push_latch_handle"
+      file="trainer_hatch/collision/push_latch_handle.stl"
+    />
+    <mesh
+      name="cabinet_door_3"
+      file="trainer_hatch/collision/cabinet_door_3.stl"
+    />
+    <mesh
+      name="side_bottom_face"
+      file="trainer_hatch/collision/side_bottom_face.stl"
+    />
+    <mesh
+      name="side_top_face"
+      file="trainer_hatch/collision/side_top_face.stl"
+    />
+    <mesh
+      name="cabinet_door_4"
+      file="trainer_hatch/collision/cabinet_door_4.stl"
+    />
+    <mesh
+      name="paddle_latch_housing"
+      file="trainer_hatch/collision/paddle_latch_housing.stl"
+    />
+    <mesh
+      name="paddle_latch_handle"
+      file="trainer_hatch/collision/paddle_latch_handle.stl"
+    />
+    <mesh
+      name="drawer_1_face"
+      file="trainer_hatch/collision/drawer_1_face.stl"
+    />
+    <mesh
+      name="drawer_2_face"
+      file="trainer_hatch/collision/drawer_2_face.stl"
+    />
+    <mesh
+      name="recessed_latch_housing"
+      file="trainer_hatch/collision/recessed_latch_housing.stl"
+    />
+    <mesh
+      name="recessed_latch_handle"
+      file="trainer_hatch/collision/recessed_latch_handle.stl"
+    />
+  </asset>
+
+  <worldbody>
+    <!--Hatch Frame/Structure-->
+    <geom
+      class="visual"
+      pos="0.0 1.845 0.0"
+      quat="-0.707527 0 0 0.706686"
+      rgba="0.85 0.85 0.85 1"
+      mesh="ivr_hatch_frame_visual"
+    />
+    <geom
+      size="10 10 0.005"
+      pos="0 0 -0.005"
+      type="box"
+      rgba="1 1 1 0.075"
+      group="3"
+    />
+    <geom
+      size="10 10 0.005"
+      pos="0 0 2.75"
+      type="box"
+      rgba="1 1 1 0.075"
+      group="3"
+    />
+    <geom
+      size="0.3375 0.6535 0.02"
+      pos="0.641617 1.51472 0.02"
+      quat="-0.706686 0 0 0.707527"
+      type="box"
+      group="3"
+    />
+    <geom
+      size="0.05 0.6535 0.24765"
+      pos="0.641959 1.80222 0.24765"
+      quat="-0.706686 0 0 0.707527"
+      type="box"
+      group="3"
+    />
+    <geom
+      size="0.05 0.6535 0.24765"
+      pos="0.641272 1.22422 0.24765"
+      quat="-0.706686 0 0 0.707527"
+      type="box"
+      group="3"
+    />
+    <geom
+      size="0.3375 0.05 1.0541"
+      pos="0.0281174 1.51545 1.0541"
+      quat="-0.706686 0 0 0.707527"
+      type="box"
+      group="3"
+    />
+    <geom
+      size="0.3375 0.05 0.24765"
+      pos="1.25812 1.51399 0.24765"
+      quat="-0.706686 0 0 0.707527"
+      type="box"
+      group="3"
+    />
+    <geom
+      size="0.05 0.05 1.0541"
+      pos="1.25777 1.22299 1.0541"
+      quat="-0.706686 0 0 0.707527"
+      type="box"
+      group="3"
+    />
+    <geom
+      size="0.05 0.6535 0.0985"
+      pos="0.641259 1.21322 2.0115"
+      quat="-0.706686 0 0 0.707527"
+      type="box"
+      group="3"
+    />
+    <geom
+      size="0.3375 0.6535 0.24765"
+      pos="0.641617 1.51472 0.25765"
+      quat="-0.706686 0 0 0.707527"
+      type="box"
+      group="3"
+      rgba="0.85 0.85 0.85 1"
+    />
+    <geom
+      class="collision"
+      pos="1.23282 1.26719 0.7113"
+      quat="-0.707527 0 0 -0.706686"
+      type="mesh"
+      rgba="0.85 0.85 0.85 1"
+      mesh="hatch_4060_frame"
+    />
+    <geom
+      class="visual"
+      pos="1.23282 1.26719 0.7113"
+      quat="-0.707527 0 0 -0.706686"
+      rgba="0.85 0.85 0.85 1"
+      mesh="hatch_4060_frame_visual"
+    />
+    <!-- Need to do convex decomp if I want to add this back in or the hatch door will be in collision with the frame -->
+    <!--    <geom class="collision" pos="0.0447126 1.17493 0.716" quat="-0.706686 0 0 0.707527" rgba="0.85 0.85 0.85 1" mesh="hatch_4060_frame"/>-->
+    <geom
+      class="visual"
+      pos="0.0447126 1.17493 0.716"
+      quat="-0.706686 0 0 0.707527"
+      rgba="0.85 0.85 0.85 1"
+      mesh="hatch_4060_frame_visual"
+    />
+    <!--IVR Trainer Frame-->
+    <geom
+      class="visual"
+      pos="-2.1 2.442 0.0"
+      quat="-0.707 0 0 0.707"
+      rgba="0.85 0.85 0.85 1"
+      mesh="trainer_frame_visual"
+    />
+    <geom
+      size="0.635 0.448 0.235"
+      pos="-1.65196 1.80407 0.235"
+      quat="-0.706686 0 0 0.707527"
+      type="box"
+      group="3"
+    />
+    <geom
+      size="0.635 0.448 0.05"
+      pos="-1.65196 1.815 1.57"
+      quat="-0.706686 0 0 0.707527"
+      type="box"
+      group="3"
+    />
+    <geom
+      size="0.635 0.05 0.8"
+      pos="-2.04996 1.815 0.8"
+      quat="-0.706686 0 0 0.707527"
+      type="box"
+      group="3"
+    />
+    <geom
+      size="0.635 0.025 0.8"
+      pos="-1.65496 1.815 0.8"
+      quat="-0.706686 0 0 0.707527"
+      type="box"
+      group="3"
+    />
+    <geom
+      size="0.405 0.05 0.8"
+      pos="-1.24968 2.03359 0.8"
+      quat="-0.706686 0 0 0.707527"
+      type="box"
+      group="3"
+    />
+    <geom
+      size="0.07 0.05 0.8"
+      pos="-1.24062 1.24458 0.8"
+      quat="-0.706686 0 0 0.707527"
+      type="box"
+      group="3"
+    />
+    <geom
+      size="0.0635 0.4475 0.025"
+      pos="-1.65328 1.11457 0.5019"
+      quat="-0.706686 0 0 0.707527"
+      type="box"
+      group="3"
+      rgba="0.85 0.85 0.85 1"
+    />
+    <!--IVR Trainer Bench-->
+    <geom
+      size="0.354 0.025 0.025"
+      pos="-2.07612 0.824571 0.5019"
+      quat="-0.706686 0 0 0.707527"
+      type="box"
+      rgba="0.85 0.85 0.85 1"
+    />
+    <geom
+      size="0.354 0.025 0.025"
+      pos="-1.23077 0.823566 0.5019"
+      quat="-0.706686 0 0 0.707527"
+      type="box"
+      rgba="0.85 0.85 0.85 1"
+    />
+    <geom
+      size="0.025 0.4475 0.025"
+      pos="-1.65402 0.491869 0.5019"
+      quat="-0.706686 0 0 0.707527"
+      type="box"
+      rgba="0.85 0.85 0.85 1"
+    />
+
+    <geom
+      pos="-2.02069 1.18951 0.457"
+      quat="-0.706686 0 0 0.707527"
+      type="mesh"
+      rgba="0.85 0.85 0.85 1"
+      mesh="front_left_face"
+    />
+    <geom
+      pos="-2.02069 1.18951 0.982"
+      quat="-0.706686 0 0 0.707527"
+      type="mesh"
+      rgba="0.85 0.85 0.85 1"
+      mesh="cubby_1"
+    />
+    <geom
+      pos="-2.02069 1.18951 1.332"
+      quat="-0.706686 0 0 0.707527"
+      type="mesh"
+      rgba="0.85 0.85 0.85 1"
+      mesh="cubby_2"
+    />
+    <geom
+      pos="-1.63569 1.18905 0.457"
+      quat="-0.706686 0 0 0.707527"
+      type="mesh"
+      rgba="0.85 0.85 0.85 1"
+      mesh="front_right_face"
+    />
+    <geom
+      pos="-1.21317 1.62655 0.04"
+      quat="-0.706686 0 0 0.707527"
+      type="mesh"
+      rgba="0.85 0.85 0.85 1"
+      mesh="side_bottom_face"
+    />
+    <geom
+      pos="-1.21317 1.62655 0.548419"
+      quat="-0.706686 0 0 0.707527"
+      type="mesh"
+      rgba="0.85 0.85 0.85 1"
+      mesh="side_top_face"
+    />
+    <!--Hatch door-->
+    <body
+      name="hatch_face"
+      pos="1.2584 1.09079 0.7617"
+      quat="-0.706686 0 0 0.707527"
+    >
+      <inertial
+        pos="-0.0414437 -0.947764 0.613416"
+        quat="0.875941 0.464726 0.049766 -0.119502"
+        mass="1.22599"
+        diaginertia="1.15523 1.14551 1.01644"
+      />
+      <joint
+        name="hatch_outer_frame_face_joint"
+        pos="0 0 0"
+        axis="0 0 1"
+        range="0 1.65806"
+        actuatorfrcrange="-10 10"
+      />
+      <geom
+        class="collision"
+        rgba="0.85 0.85 0.85 1"
+        mesh="hatch_4060_collision"
+      />
+      <geom class="visual" rgba="0.85 0.85 0.85 1" mesh="hatch_4060_visual" />
+      <geom
+        pos="-0.07 -1.0273 0.6887"
+        quat="0 0 0.707107 0.707107"
+        type="mesh"
+        rgba="0 0 1 1"
+        mesh="grab_handle"
+      />
+      <geom
+        pos="-0.058 -0.9016 0.7971"
+        quat="1 0 0 0"
+        type="mesh"
+        rgba="0 0 1 1"
+        mesh="grab_handle"
+      />
+      <geom
+        pos="-0.058 -1.078 0.6957"
+        quat="0.707107 0.707107 0 0"
+        type="mesh"
+        rgba="0 0 1 1"
+        mesh="grab_handle"
+      />
+      <body
+        name="external_rotary_wheel"
+        pos="-0.17161 -0.9474 0.4325"
+        quat="0.707107 0 -0.707107 0"
+      >
+        <joint
+          name="external_rotary_joint"
+          pos="0 0 0"
+          axis="0 0 1"
+          range="0 6.28"
+          actuatorfrcrange="-10 10"
+        />
+        <geom type="mesh" rgba="0 0 1 1" mesh="crank_wheel" />
+        <body name="external_rotary_handle" pos="0 0.053975 0.0155">
+          <joint
+            name="external_rotary_handle_joint"
+            pos="0 0 0"
+            axis="1 0 0"
+            range="0 1.57"
+            actuatorfrcrange="-10 10"
+          />
+          <geom
+            pos="0 0 0.00355"
+            quat="1 0 0 0"
+            type="mesh"
+            rgba="0 0 1 1"
+            mesh="crank_handle"
+          />
+        </body>
+      </body>
+      <body
+        name="internal_rotary_wheel"
+        pos="0.04431 -0.9474 0.4265"
+        quat="0.707107 0 0.707107 0"
+      >
+        <joint
+          name="internal_rotary_joint"
+          pos="0 0 0"
+          axis="0 0 1"
+          range="0 6.28"
+          actuatorfrcrange="-10 10"
+        />
+        <geom type="mesh" rgba="0 0 1 1" mesh="crank_wheel" />
+        <body name="internal_rotary_handle" pos="0 0.053975 0.0155">
+          <joint
+            name="internal_rotary_handle_joint"
+            pos="0 0 0"
+            axis="1 0 0"
+            range="0 1.57"
+            actuatorfrcrange="-10 10"
+          />
+          <geom
+            pos="0 0 0.00355"
+            quat="1 0 0 0"
+            type="mesh"
+            rgba="0 0 1 1"
+            mesh="crank_handle"
+          />
+        </body>
+      </body>
+    </body>
+    <body
+      name="bench_lid"
+      pos="-2.10085 1.0516 0.5244"
+      quat="-0.706686 0 0 0.707527"
+    >
+      <site name="bench_lid_site" />
+      <joint
+        name="bench_lid_joint"
+        pos="0 0 0"
+        axis="0 -1 0"
+        range="0 1.65806"
+        actuatorfrcrange="-10 10"
+      />
+      <geom
+        size="0.3015 0.46 0.01625"
+        pos="0.309 0.46 0.025"
+        type="box"
+        rgba="0 0 1 1"
+      />
+    </body>
+    <body
+      name="cabinet_1"
+      pos="-1.28991 1.17164 1.17"
+      quat="-0.706686 0 0 0.707527"
+    >
+      <joint
+        name="cabinet_1_joint"
+        pos="0 0 0"
+        axis="0 0 1"
+        range="0 3.14"
+        actuatorfrcrange="-10 10"
+      />
+      <geom
+        pos="-0.010675 -0.00366 0"
+        quat="1 0 0 0"
+        type="mesh"
+        rgba="0 0 1 1"
+        mesh="cabinet_door_1"
+      />
+      <geom
+        pos="-0.00547 -0.28855 0.16622"
+        quat="0 1 0 0"
+        type="mesh"
+        rgba="0.85 0.85 0.85 1"
+        mesh="round_latch_housing"
+      />
+      <body
+        name="round_latch_handle"
+        pos="-0.00547 -0.26735 0.16972"
+        quat="0 1 0 0"
+      >
+        <joint
+          name="round_latch_joint"
+          pos="0 0 0"
+          axis="0 0 -1"
+          range="0 3.14"
+          actuatorfrcrange="-10 10"
+        />
+        <geom type="mesh" rgba="0 0 1 1" mesh="round_latch_handle" />
+      </body>
+    </body>
+    <body
+      name="cabinet_2"
+      pos="-1.63751 1.17205 0.836"
+      quat="-0.706686 0 0 0.707527"
+    >
+      <joint
+        name="cabinet_2_joint"
+        pos="0 0 0"
+        axis="0 0 -1"
+        range="0 3.14"
+        actuatorfrcrange="-10 10"
+      />
+      <geom
+        pos="-0.010675 0.00366 0"
+        quat="1 0 0 0"
+        type="mesh"
+        rgba="0 0 1 1"
+        mesh="cabinet_door_2"
+      />
+      <geom
+        pos="-0.0075 0.2185 0.134"
+        quat="1 0 0 0"
+        type="mesh"
+        rgba="0.85 0.85 0.85 1"
+        mesh="push_latch_housing"
+      />
+      <body
+        name="push_latch_button"
+        pos="-0.02 0.247 0.1385"
+        quat="0.980785 0 0 0.19509"
+      >
+        <joint
+          name="push_latch_button_joint"
+          pos="0 0 0"
+          axis="-1 0 0"
+          type="slide"
+          range="0 0.005"
+          actuatorfrcrange="-10 10"
+        />
+        <geom type="mesh" rgba="0 0 1 1" mesh="push_latch_button" />
+      </body>
+      <body name="push_latch_handle" pos="-0.0105 0.2975 0.1385">
+        <joint
+          name="push_latch_handle_joint"
+          pos="0 0 0"
+          axis="0 0 1"
+          range="0 1.0472"
+          actuatorfrcrange="-10 10"
+        />
+        <geom type="mesh" rgba="0 0 1 1" mesh="push_latch_handle" />
+      </body>
+    </body>
+    <body
+      name="cabinet_3"
+      pos="-1.28991 1.17164 0.464"
+      quat="-0.706686 0 0 0.707527"
+    >
+      <joint
+        name="cabinet_3_joint"
+        pos="0 0 0"
+        axis="0 0 1"
+        range="0 3.14159"
+        actuatorfrcrange="-10 10"
+      />
+      <geom
+        pos="-0.010675 -0.00366 0"
+        type="mesh"
+        rgba="0 0 1 1"
+        mesh="cabinet_door_3"
+      />
+    </body>
+    <body
+      name="cabinet_4"
+      pos="-1.19616 1.62833 1.03242"
+      quat="-0.706686 0 0 0.707527"
+    >
+      <joint
+        name="cabinet_4_joint"
+        pos="0 0 0"
+        axis="0 0 1"
+        range="0 3.14"
+        actuatorfrcrange="-10 10"
+      />
+      <geom
+        pos="0.00305 -0.0106 0"
+        quat="1 0 0 0"
+        type="mesh"
+        rgba="0 0 1 1"
+        mesh="cabinet_door_4"
+      />
+      <geom
+        pos="0.20735 -0.007 0.13435"
+        quat="1 0 0 0"
+        type="mesh"
+        rgba="0.85 0.85 0.85 1"
+        mesh="paddle_latch_housing"
+      />
+      <body name="paddle_latch_handle" pos="0.27123 -0.010531 0.142">
+        <joint
+          name="paddle_latch_handle_joint"
+          pos="0 0 0"
+          axis="0 0 -1"
+          range="0 0.785375"
+          actuatorfrcrange="-10 10"
+        />
+        <geom type="mesh" rgba="0 0 1 1" mesh="paddle_latch_handle" />
+      </body>
+    </body>
+    <body
+      name="drawer_1_face"
+      pos="-1.21018 1.61554 0.831419"
+      quat="-0.706686 0 0 0.707527"
+    >
+      <joint
+        name="drawer_1_joint"
+        pos="0 0 0"
+        axis="0 1 0"
+        type="slide"
+        range="0 0.305"
+        actuatorfrcrange="-10 10"
+      />
+      <geom type="mesh" rgba="0 0 1 1" mesh="drawer_1_face" />
+      <geom
+        size="0.0065 0.1525 0.048"
+        pos="0.2865 -0.1525 0.04365"
+        type="box"
+        rgba="0 0 1 1"
+      />
+      <geom
+        size="0.0065 0.1525 0.048"
+        pos="0.0065 -0.1525 0.04365"
+        type="box"
+        rgba="0 0 1 1"
+      />
+      <geom
+        size="0.1465 0.1525 0.0065"
+        pos="0.1465 -0.1525 0.00215"
+        type="box"
+        rgba="0 0 1 1"
+      />
+    </body>
+    <body
+      name="drawer_2_face"
+      pos="-1.21018 1.61554 0.634419"
+      quat="-0.706686 0 0 0.707527"
+    >
+      <joint
+        name="drawer_2_joint"
+        pos="0 0 0"
+        axis="0 1 0"
+        type="slide"
+        range="0 0.2921"
+        actuatorfrcrange="-10 10"
+      />
+      <geom type="mesh" rgba="0 0 1 1" mesh="drawer_2_face" />
+      <geom
+        pos="0.1148 0.003175 0.0165"
+        quat="1 0 0 0"
+        type="mesh"
+        rgba="0.85 0.85 0.85 1"
+        mesh="recessed_latch_housing"
+      />
+      <geom
+        size="0.0065 0.1525 0.048"
+        pos="0.2865 -0.1525 0.04365"
+        type="box"
+        rgba="0 0 1 1"
+      />
+      <geom
+        size="0.0065 0.1525 0.048"
+        pos="0.0065 -0.1525 0.04365"
+        type="box"
+        rgba="0 0 1 1"
+      />
+      <geom
+        size="0.1465 0.1525 0.0065"
+        pos="0.1465 -0.1525 0.00215"
+        type="box"
+        rgba="0 0 1 1"
+      />
+      <body name="recessed_latch_handle" pos="0.1656 0.001397 0.022977">
+        <joint
+          name="recessed_latch_handle_joint"
+          pos="0 0 0"
+          axis="-1 0 0"
+          range="0 1.5708"
+          actuatorfrcrange="-10 10"
+        />
+        <geom type="mesh" rgba="0 0 1 1" mesh="recessed_latch_handle" />
+      </body>
+    </body>
+  </worldbody>
+</mujoco>

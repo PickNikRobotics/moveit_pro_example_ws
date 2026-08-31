@@ -828,6 +828,27 @@ jobs:
       - name: Check .gitmodules file for Git-over-SSH URLs
         run: "! grep 'git@' .gitmodules"
 
+  validate-workspace-dependencies:
+    name: Validate workspace dependencies
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          lfs: true
+      - name: Verify Git LFS object integrity
+        run: git lfs fsck --objects
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: Install dependency policy test requirements
+        run: python3 -m pip install pytest==9.0.3
+      - name: Test dependency policy validator
+        run: python3 -m pytest bin/tests/test_validate_workspace_dependencies.py -v
+      - name: Validate dependency policy
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 bin/validate_workspace_dependencies.py --verify-upstream
+
   validate_objectives:
     runs-on: ubuntu-22.04
     steps:
@@ -845,6 +866,7 @@ jobs:
       - integration-test
       - integration-status
       - ensure-no-ssh-in-gitmodules
+      - validate-workspace-dependencies
       - validate_objectives
     if: ${{ !cancelled() }}
     runs-on: ubuntu-22.04
@@ -855,6 +877,7 @@ jobs:
           INTEGRATION_TEST: ${{ needs.integration-test.result }}
           INTEGRATION_STATUS: ${{ needs.integration-status.result }}
           NO_SSH: ${{ needs['ensure-no-ssh-in-gitmodules'].result }}
+          WORKSPACE_DEPENDENCIES: ${{ needs['validate-workspace-dependencies'].result }}
           VALIDATE_OBJECTIVES: ${{ needs.validate_objectives.result }}
         with:
           script: |
@@ -862,6 +885,7 @@ jobs:
               'integration-test': process.env.INTEGRATION_TEST,
               'integration-status': process.env.INTEGRATION_STATUS,
               'ensure-no-ssh-in-gitmodules': process.env.NO_SSH,
+              'validate-workspace-dependencies': process.env.WORKSPACE_DEPENDENCIES,
               'validate_objectives': process.env.VALIDATE_OBJECTIVES,
             };
             // `skipped` is acceptable (e.g., integration-test is skipped on

@@ -38,8 +38,6 @@
   <exec_depend>slam_toolbox</exec_depend>
   <exec_depend>ur_description</exec_depend>
   <exec_depend>velocity_force_controller</exec_depend>
-  <exec_depend>moveit_pro_sam2</exec_depend>
-  <exec_depend>moveit_pro_sam3</exec_depend>
 
   <!-- test_base_geometry.py resolves ridgeback_description's share directory. -->
   <test_depend>ridgeback_description</test_depend>
