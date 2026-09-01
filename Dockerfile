@@ -59,6 +59,91 @@ RUN usermod -aG dialout,video ${USERNAME}
 RUN groupadd realtime && \
     usermod -a -G realtime ${USERNAME}
 
+# Install nav2_mppi_controller 1.3.13 from the ros2-testing apt repository.
+#
+# The base image resolves every ROS package from a dated snapshot of the Jazzy
+# archive (snapshots.ros.org, see moveit_pro's Dockerfile), which still carries
+# nav2 1.3.12. hangar_sim needs the MPPI `open_loop` parameter (moveit_pro issue
+# #21202), which upstream added in nav2 1.3.13 (ros-navigation/navigation2#6336),
+# and 1.3.13 has so far only reached ros2-testing. This replaces the PickNik-built
+# package pin that moveit_pro#21347 tried.
+#
+# The repository is configured only for the duration of this RUN, following the
+# base image's own pattern for one-off sources (add, install, hold, remove):
+#
+# - `Package: *` from packages.ros.org is pinned to -1, which apt treats as
+#   "never install", so every dependency, nav2 or otherwise, resolves from the
+#   snapshot. The one build named below is pinned to 1001 so apt accepts it.
+# - `apt-mark hold` is what keeps the package at 1.3.13 afterwards; the rosdep
+#   pass later in this stage and any apt run in a derived image leave it alone.
+# - The source, the preferences file, and the key are removed at the end, so no
+#   derived image inherits a pre-release repository or a pin on packages.ros.org.
+#
+# Only nav2_mppi_controller needs to move. Between 1.3.12 and 1.3.13 the only
+# header change in a package MPPI links against is nav2_costmap_2d's
+# costmap_2d_publisher.hpp, which gained a member; MPPI reaches that class only
+# through Costmap2DROS's unique_ptr, and costmap_2d_ros.hpp is unchanged.
+# nav2_core changed only its package.xml, so the pluginlib vtable matches, and
+# the deb's ROS dependencies are unversioned. Re-check on any version bump with
+#   nm -DC --undefined-only /opt/ros/jazzy/lib/libmppi_controller.so | grep nav2
+# which today lists only Costmap2D accessors and FootprintCollisionChecker.
+#
+# The build IDs below are exact, per arch, and hand-copied from the index.
+# ros2-testing keeps only its newest build of a version, so an upstream rebuild
+# of nav2 makes this RUN fail at `apt-get install` until the IDs are refreshed.
+# That is deliberate: it is the only signal that the pinned build changed.
+# Remove this block and docker/keys/ once the base image's snapshot carries
+# nav2 >= 1.3.13. The image does not export ROS_DISTRO, so the block sources the
+# overlay to read it and refuses to build on anything but jazzy.
+#
+# Key: Open Robotics apt signing key, fingerprint
+# C1CF 6E31 E6BA DE88 68B1 72B4 F42E D6FB AB17 C654, exported ASCII-armored from
+# https://raw.githubusercontent.com/ros/rosdistro/master/ros.key.
+COPY docker/keys/ros-archive-keyring.asc /tmp/ros2-testing-archive-keyring.asc
+# hadolint ignore=SC1091
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    . /opt/overlay_ws/install/setup.sh && \
+    if [ "${ROS_DISTRO}" != "jazzy" ]; then \
+        echo "ERROR: the nav2_mppi_controller ros2-testing install is written for jazzy/noble," \
+             "got ROS_DISTRO='${ROS_DISTRO}'. Drop or retarget this block for other distros." >&2; \
+        exit 1; \
+    fi && \
+    case "$(dpkg --print-architecture)" in \
+        amd64) NAV2_MPPI_VERSION="1.3.13-1noble.20260831.141656" ;; \
+        arm64) NAV2_MPPI_VERSION="1.3.13-1noble.20260831.142352" ;; \
+        *) echo "ERROR: no pinned nav2_mppi_controller build for $(dpkg --print-architecture)" >&2; exit 1 ;; \
+    esac && \
+    gpg --dearmor --yes -o /usr/share/keyrings/ros2-testing-archive-keyring.gpg /tmp/ros2-testing-archive-keyring.asc && \
+    printf '%s\n' \
+        'Types: deb' \
+        'URIs: http://packages.ros.org/ros2-testing/ubuntu' \
+        'Suites: noble' \
+        'Components: main' \
+        'Signed-By: /usr/share/keyrings/ros2-testing-archive-keyring.gpg' \
+        > /etc/apt/sources.list.d/ros2-testing.sources && \
+    printf '%s\n' \
+        'Package: *' \
+        'Pin: origin "packages.ros.org"' \
+        'Pin-Priority: -1' \
+        '' \
+        'Package: ros-jazzy-nav2-mppi-controller' \
+        "Pin: version ${NAV2_MPPI_VERSION}" \
+        'Pin-Priority: 1001' \
+        > /etc/apt/preferences.d/nav2-mppi-ros2-testing.pref && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends "ros-jazzy-nav2-mppi-controller=${NAV2_MPPI_VERSION}" && \
+    installed="$(dpkg-query -W -f='${Version}' ros-jazzy-nav2-mppi-controller)" && \
+    if [ "${installed}" != "${NAV2_MPPI_VERSION}" ]; then \
+        echo "ERROR: ros-jazzy-nav2-mppi-controller is ${installed}, expected ${NAV2_MPPI_VERSION}" >&2; \
+        exit 1; \
+    fi && \
+    apt-mark hold ros-jazzy-nav2-mppi-controller && \
+    rm /etc/apt/sources.list.d/ros2-testing.sources \
+       /etc/apt/preferences.d/nav2-mppi-ros2-testing.pref \
+       /usr/share/keyrings/ros2-testing-archive-keyring.gpg \
+       /tmp/ros2-testing-archive-keyring.asc
+
 # Install additional dependencies
 # You can also add any necessary apt-get install, pip install, etc. commands at this point.
 # NOTE: The /opt/overlay_ws folder contains MoveIt Pro binary packages and the source file.
