@@ -21,6 +21,8 @@ controller_manager:
       type: velocity_force_controller/VelocityForceController
     arm_only_velocity_force_controller:
       type: velocity_force_controller/VelocityForceController
+    mobile_base_velocity_force_controller:
+      type: velocity_force_controller/VelocityForceController
     joint_velocity_controller:
       type: joint_velocity_controller/JointVelocityController
     arm_only_joint_velocity_controller:
@@ -377,6 +379,26 @@ velocity_force_controller:
     # Timeout in seconds after which the controller will stop motion if no new commands are received.
     command_timeout: 0.2
     # Padding (in radians) to add to joint position limits as a safety margin.
+    joint_limit_position_tolerance: 0.02
+
+mobile_base_velocity_force_controller:
+  ros__parameters:
+    command_joints:
+      - platform_velocity_controller/linear_x_joint
+      - platform_velocity_controller/linear_y_joint
+      - platform_velocity_controller/rotational_yaw_joint
+    command_interfaces:
+      - velocity
+    planning_group_name: mobile_base
+    sensor_frame: ridgeback_base_link
+    ee_frame: ridgeback_base_link
+    state_publish_rate: 50
+    jacobian_damping: 0.0001
+    command_timeout: 0.1
+    max_joint_velocity: [0.175, 0.175, 0.5235987755982988]
+    max_joint_acceleration: [0.2, 0.2, 0.3490658503988659]
+    max_cartesian_velocity: [0.175, 0.175, 0.001, 0.001, 0.001, 0.5235987755982988]
+    max_cartesian_acceleration: [0.2, 0.2, 0.001, 0.001, 0.001, 0.3490658503988659]
     joint_limit_position_tolerance: 0.02
 
 arm_only_velocity_force_controller:
