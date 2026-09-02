@@ -125,6 +125,13 @@ controller_server:
       vy_max: 0.5
       wz_max: 1.9
       iteration_count: 1
+      # Seed each rollout from the last commanded velocity instead of the
+      # reported odometry. The odometry in this simulation lags enough to pin
+      # the commanded speed near a third of vx_max (moveit_pro issue #21202).
+      # Jazzy-only: the parameter arrived in nav2_mppi_controller 1.3.13, which
+      # the workspace Dockerfile installs. Humble's nav2 1.1.20 predates it, and
+      # the lag was only observed on Jazzy.
+      open_loop: true
       prune_distance: 1.7
       transform_tolerance: 0.1
       temperature: 0.3
