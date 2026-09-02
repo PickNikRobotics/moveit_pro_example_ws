@@ -90,10 +90,15 @@ HUMBLE_ONLY_KEYS = {
     "behavior_server.ros__parameters.footprint_topic",
 }
 
+# `open_loop` is not a rename: nav2_mppi_controller added it in 1.3.13, which
+# only the Jazzy image carries. Humble's 1.1.20 predates the parameter and would
+# ignore it, and the lag it corrects (moveit_pro issue #21202) was only observed
+# on Jazzy.
 JAZZY_ONLY_KEYS = {
     "controller_server.ros__parameters.progress_checker_plugins",
     "behavior_server.ros__parameters.local_costmap_topic",
     "behavior_server.ros__parameters.local_footprint_topic",
+    "controller_server.ros__parameters.FollowPath.open_loop",
 }
 
 
