@@ -295,6 +295,7 @@ skip_objectives = {
     # rate even with the 0.003 s scene timestep and CPU pinning. See PR #615.
     "Push Button With a Trajectory",
     "Record Square Trajectory",
+    "Run pi0.5 Policy",  # Wiring demo only: needs an external ~15 GB libtorch checkpoint export not present in CI.
     "Scan Scene - Multiple Point Clouds",
     "Stack Objects with ICP",  # Skipped because there is no primary ui to switch to in ci
     "Stitch Multiple Point Clouds Together",
