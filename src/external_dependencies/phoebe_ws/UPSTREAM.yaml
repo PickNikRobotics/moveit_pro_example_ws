@@ -10,7 +10,7 @@ vendored_paths:
   - src/ewellix_description
   - src/phoebe_bridgeback_description
   - src/phoebe_sim
-pruned_paths:
+pruning_notes:
   - development workspace files
   - unused l2g.onnx model
   - RViz launch and configuration files
@@ -32,7 +32,15 @@ apache_paths:
   - src/phoebe_sim/description/assets/trainer_hatch
 apache_excluded_paths:
   - src/phoebe_sim/description/assets/trainer_hatch/collision/cylinder_mockup_full_length.stl
+  - src/ewellix_description
+  - src/phoebe_bridgeback_description
+  - src/phoebe_sim/CMakeLists.txt
+  - src/phoebe_sim/package.xml
+  - src/phoebe_sim/config
+  - src/phoebe_sim/objectives
 notes:
+  - COPYING is the license source of truth; only src/phoebe_sim/description/assets/trainer_hatch is Apache-2.0 (NASA JSC Surface Robotics Mockups).
+  - The other apache_excluded_paths entries are BSD-3-Clause, listed so every modified path carries an explicit license classification.
   - lunar_sim inherits the phoebe_sim robot configuration and MuJoCo assets.
   - phoebe_sim uses only the Ewellix TLT500 long lift meshes.
   - Binary files matching workspace Git LFS patterns are stored as LFS objects; checked-out bytes match upstream.

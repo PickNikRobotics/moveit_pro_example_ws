@@ -828,9 +828,46 @@ jobs:
       - name: Check .gitmodules file for Git-over-SSH URLs
         run: "! grep 'git@' .gitmodules"
 
+  # Structural checks only: manifest shape and path confinement. It reaches no
+  # network, so it runs on every PR. It does not compare file contents against
+  # anything; each manifest's upstream commit is the provenance record, and
+  # verify-upstream-snapshots below is what checks the files against it.
   validate-workspace-dependencies:
     name: Validate workspace dependencies
     runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: Install dependency policy test requirements
+        run: python3 -m pip install pytest==9.0.3
+      - name: Test dependency policy validator
+        run: python3 -m pytest bin/tests/test_validate_workspace_dependencies.py -v
+      - name: Validate dependency policy
+        run: python3 bin/validate_workspace_dependencies.py
+
+  # Fetches all eight pinned upstream repositories and compares every retained
+  # file. This stays off the PR gate because it would make merging depend on
+  # third-party hosts being reachable, with no retry, for changes that cannot
+  # affect the result. A failure here means real drift or an unreachable
+  # upstream, which someone should act on rather than have block unrelated work.
+  # Keyed to the same weekly cron as integration-test-weekly, not the 6-hourly
+  # one: drift moves slowly and each run fetches eight external repositories.
+  # Deliberately not run on push, which would turn an unreachable upstream into
+  # a red main.
+  verify-upstream-snapshots:
+    name: Verify vendored upstream snapshots
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'schedule' && github.event.schedule == '0 6 * * 0')
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -840,14 +877,91 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.12"
-      - name: Install dependency policy test requirements
-        run: python3 -m pip install pytest==9.0.3
-      - name: Test dependency policy validator
-        run: python3 -m pytest bin/tests/test_validate_workspace_dependencies.py -v
-      - name: Validate dependency policy
+      - name: Validate dependency policy against pinned upstreams
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: python3 bin/validate_workspace_dependencies.py --verify-upstream
+
+  # Without this, a scheduled failure reaches nobody, and taking --verify-upstream
+  # off the PR gate only makes sense if someone learns when it fails. Mirrors
+  # weekly-failure-issue, with its own title so the two dedupe separately.
+  upstream-drift-issue:
+    # The App token below does the issue writes, so this job needs nothing from
+    # the workflow's own GITHUB_TOKEN.
+    permissions: {}
+    needs: verify-upstream-snapshots
+    if: >-
+      always() && needs.verify-upstream-snapshots.result != 'success' &&
+      needs.verify-upstream-snapshots.result != 'skipped'
+    runs-on: ubuntu-22.04
+    steps:
+      # example_ws has issues disabled, so this has to be filed on moveit_pro,
+      # which the workflow's own GITHUB_TOKEN cannot write to. Same reason
+      # weekly-failure-issue mints a cross-repo App token.
+      - name: Generate cross-repo App token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.SISTER_REPOS_APP_CLIENT_ID }}
+          private-key: ${{ secrets.SISTER_REPOS_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: |
+            moveit_pro_example_ws
+            moveit_pro
+      - name: Open or update the drift issue
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            const issueOwner = 'PickNikRobotics';
+            const issueRepo = 'moveit_pro';
+            const title = 'Vendored upstream snapshots no longer match their pinned commits';
+            // An unassigned issue in a shared tracker goes unread. Change this
+            // when the vendored-dependency owner changes.
+            const assignees = ['JWhitleyWork'];
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = [
+              `\`validate_workspace_dependencies.py --verify-upstream\` failed on ${new Date().toISOString()}.`,
+              '',
+              'Either a vendored tree in `example_ws` drifted from the commit its',
+              '`UPSTREAM.yaml` pins, or one of the eight pinned upstream repositories',
+              'was unreachable. The run output names which manifest and which path.',
+              '',
+              `- [Workflow run](${runUrl})`,
+            ].join('\n');
+            // Dedupe on an exact open-issue title; search title matching is fuzzy.
+            // On a search error, create anyway: a duplicate beats a dropped signal.
+            let existing;
+            try {
+              const found = await github.rest.search.issuesAndPullRequests({
+                q: `repo:${issueOwner}/${issueRepo} is:issue is:open in:title "${title}"`,
+              });
+              existing = found.data.items.find((i) => i.title === title);
+            } catch (e) {
+              core.warning(`Issue dedupe search failed (${e.message}); creating a new issue.`);
+              existing = undefined;
+            }
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner: issueOwner, repo: issueRepo, issue_number: existing.number, body,
+              });
+              core.info(`Commented on existing issue #${existing.number}.`);
+            } else {
+              // Assignment is best-effort: if a login is no longer valid the
+              // issue must still land rather than throw.
+              let created;
+              try {
+                created = await github.rest.issues.create({
+                  owner: issueOwner, repo: issueRepo, title, body, assignees,
+                });
+              } catch (e) {
+                core.warning(`Create with assignees failed (${e.message}); retrying unassigned.`);
+                created = await github.rest.issues.create({
+                  owner: issueOwner, repo: issueRepo, title, body,
+                });
+              }
+              core.info(`Opened issue #${created.data.number}.`);
+            }
 
   validate_objectives:
     runs-on: ubuntu-22.04

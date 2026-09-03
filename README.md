@@ -12,7 +12,7 @@ git lfs install
 git clone <repo-url>
 ```
 
-Robot descriptions and simulation assets are vendored under `src/external_dependencies`; each vendored source has an `UPSTREAM.yaml` file recording its repository, commit, and pruned paths. No source submodules are required for simulation.
+Robot descriptions and simulation assets are vendored under `src/external_dependencies`. Each vendored source has an `UPSTREAM.yaml` recording the upstream repository, the exact commit the files came from, which paths were retained, and which of them PickNik modified. No source submodules are required for simulation.
 
 The `moveit_pro_sam2` and `moveit_pro_sam3` submodules contain optional perception models used by ML demonstration Objectives. Initialize them only when those Objectives are needed:
 
@@ -45,6 +45,15 @@ The hardware-only `kinova_gen3_site_config` and `picknik_ur_site_config` configu
 
 ## Updating vendored dependencies
 
-Each `UPSTREAM.yaml` file under `src/external_dependencies` records the exact upstream commit and retained paths. Refresh a dependency from that commit, preserve its license files, reapply the documented pruning, and validate every config that consumes the package.
+Each `UPSTREAM.yaml` under `src/external_dependencies` records the exact upstream commit and retained paths. To refresh one: check the tree out at the new commit, preserve its license files, reapply the pruning described in `pruning_notes`, and validate every config that consumes the package.
+
+Then update `commit` and the retained-path lists, and check the result:
+
+```bash
+python3 bin/validate_workspace_dependencies.py                    # structure, runs on every PR
+python3 bin/validate_workspace_dependencies.py --verify-upstream  # fetches the pinned commit and compares files
+```
+
+The second one needs network access. CI runs it weekly rather than per PR, so run it yourself after a re-vendor.
 
 The optional ML model submodules can be advanced independently when their demonstration Objectives need a newer model package.
