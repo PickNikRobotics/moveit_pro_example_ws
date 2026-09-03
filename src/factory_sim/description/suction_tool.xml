@@ -21,7 +21,7 @@
           type="cylinder"
           size="0.01 0.03"
           pos="0 0 0.03"
-          margin="0.01"
+          margin="0"
           gap="0.01"
           rgba=".1 .1 .1 1"
         />
@@ -30,7 +30,7 @@
             class="collision"
             type="cylinder"
             size="0.01 0.005"
-            margin="0.01"
+            margin="0"
             gap="0.01"
           />
           <site name="suction_cup_tool_tip" />
