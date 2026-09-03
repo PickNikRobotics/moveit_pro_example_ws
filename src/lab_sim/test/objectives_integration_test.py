@@ -260,6 +260,7 @@ SIM_RESETTER.register("lab_sim", _controller_safe_mujoco_reset)
 # Looping objectives to cancel partway through
 cancel_objectives = {
     "3 Waypoints Pick and Place",
+    "3 Waypoints Pick and Place with AprilTags",
     "Classical Pick and Place",
     "Cycle Between Waypoints",
     "Get AprilTag Pose from Image",
