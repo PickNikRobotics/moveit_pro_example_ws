@@ -16,12 +16,19 @@
   >
     <Control ID="Sequence">
       <!--
-        Reset the picked_box output port at the very top so the invariant
-        "picked_box reflects what happened on THIS Subtree invocation, not the
-        previous one" holds even if a step BEFORE the pick loop (waypoint motion,
-        point-cloud capture, image fetch, etc.) fails.
+        Reset both at the very top so the invariant "these reflect what happened
+        on THIS Subtree invocation, not the previous one" holds even if a step
+        BEFORE the pick loop (waypoint motion, point-cloud capture, image fetch)
+        fails. `graspable_candidate_count` counts detections that cleared the
+        box-height gate below; the pick loop's Fallback reads it to tell "every
+        detection was a rejected false positive" (SUCCESS, nothing picked) apart
+        from "a real box failed to pick" (FAILURE). Its load-bearing reset is
+        the one inside the loop.
       -->
-      <Action ID="Script" code="picked_box := false" />
+      <Action
+        ID="Script"
+        code="picked_box := false; graspable_candidate_count := 0"
+      />
       <Action
         ID="MoveGripperAction"
         position="0.0"
@@ -95,11 +102,10 @@
       />
       <Control ID="Sequence">
         <!--
-          SAM3 text-prompt segmentation. SAM3 produces high-quality per-detection
-          masks directly from a text prompt, so no point-prompt refinement step is
-          needed. The Behavior returns SUCCESS with `mask_count == 0` when nothing
-          is detected, which the `_skipIf` below uses to bypass the pick loop and
-          let the Subtree exit cleanly with `picked_box=false`.
+          SAM3 masks directly from a text prompt, so no point-prompt refinement
+          step is needed. Returns SUCCESS with `mask_count == 0` when nothing is
+          detected, which the `_skipIf` below uses to bypass the pick loop and
+          exit cleanly with `picked_box=false`.
         -->
         <Action
           ID="GetMasks2DFromExemplar"
@@ -112,14 +118,17 @@
           mask_count="{mask_count}"
         />
         <!--
-          Drop both oversized false positives (SAM3 occasionally returns a
-          single mask covering most of the image — e.g., the cart frame, which
-          measured ~26,285 px in calibration) and tiny edge-fragment detections
-          (~778 px in calibration). Real boxes in this scene measured
-          3,949–20,643 px; thresholds sit ~2x outside that range on the low
+          Drop oversized false positives (SAM3 occasionally returns one mask
+          covering most of the image — the cart frame measured ~26,285 px in
+          calibration) and tiny edge fragments (~778 px). Real boxes measured
+          3,949–20,643 px; the thresholds sit ~2x outside that range on the low
           end and ~12% inside the cart-vs-largest-real gap on the high end.
           Re-run "Calibrate SAM3 Mask Areas" if the camera, lens, or scale
           changes.
+
+          Pixel area is viewpoint-dependent, so this filter alone cannot
+          separate the cart from a box at every scan pose; the box-height gate
+          on the generated grasps below is the viewpoint-independent backstop.
         -->
         <Action
           ID="FilterMasks2DByArea"
@@ -142,364 +151,450 @@
         />
         <!--
           Skip the pick pipeline entirely when SAM3 found nothing — `picked_box`
-          stays false from the reset at the top, the Subtree returns SUCCESS,
-          and the parent Objective treats it as "scanned and found nothing"
-          rather than a real pick error. The Inverter+ForEach+Inverter pattern
-          below short-circuits on the first successful pick and silently retries
-          on per-mask failure; the Subtree only returns FAILURE if every detected
-          object failed to pick. Non-recoverable per-mask faults (e.g. controller
-          deactivation, execution abort) are currently indistinguishable from
-          recoverable ones (e.g. unreachable IK) inside this loop — see
-          PickNikRobotics/moveit_pro#19238 for the follow-up to differentiate.
+          stays false from the reset at the top, so the parent Objective treats
+          the SUCCESS as "scanned and found nothing" rather than a pick error.
+
+          Inside, Inverter+ForEach+Inverter short-circuits on the first
+          successful pick and silently retries on per-mask failure, so FAILURE
+          means every detection reached the pick pipeline and failed there. The
+          enclosing Fallback carves out the one case where that is not a real
+          error: if the box-height gate rejected every detection, nothing
+          reached the pipeline at all, and the second branch turns that cycle
+          back into "found nothing".
+
+          Known gap: non-recoverable per-mask faults (controller deactivation,
+          execution abort) are indistinguishable from recoverable ones
+          (unreachable IK) inside this loop.
         -->
-        <Decorator ID="Inverter" _skipIf="mask_count == 0">
-          <Control ID="Sequence">
-            <Action
-              ID="GetMasks3DFromMasks2D"
-              camera_info="{camera_info}"
-              masks2d="{masks2d}"
-              point_cloud="{point_cloud_cropped}"
-              masks3d="{masks3d}"
-            />
-            <Decorator
-              ID="ForEach"
-              vector_in="{masks3d}"
-              index="{index}"
-              out="{mask3d}"
-            >
-              <Control ID="Sequence">
-                <Action
-                  ID="GetPointCloudFromMask3D"
-                  mask3d="{mask3d}"
-                  point_cloud="{point_cloud_cropped}"
-                  point_cloud_fragment="{point_cloud_fragment}"
-                />
-                <Action
-                  ID="SendPointCloudToUI"
-                  pcd_topic="/pcd_pointcloud_captures"
-                  point_cloud="{point_cloud_fragment}"
-                />
-              </Control>
-            </Decorator>
-            <Action
-              ID="GetGraspableObjectsFromMasks3D"
-              base_frame="world"
-              masks3d="{masks3d}"
-              minimum_face_area="0.0003"
-              plane_inlier_threshold="0.01"
-              point_cloud="{point_cloud_cropped}"
-              graspable_objects="{graspable_objects}"
-              face_separation_threshold="0.2"
-            />
-            <Decorator
-              ID="ForEach"
-              vector_in="{graspable_objects}"
-              index="{index}"
-              out="{graspable_object}"
-            >
-              <Decorator ID="Inverter">
+        <Control ID="Fallback" _skipIf="mask_count == 0">
+          <Decorator ID="Inverter">
+            <Control ID="Sequence">
+              <!--
+                Per-cycle reset, immediately before this cycle's detections are
+                built; this is the load-bearing one.
+              -->
+              <Action ID="Script" code="graspable_candidate_count := 0" />
+              <Action
+                ID="GetMasks3DFromMasks2D"
+                camera_info="{camera_info}"
+                masks2d="{masks2d}"
+                point_cloud="{point_cloud_cropped}"
+                masks3d="{masks3d}"
+              />
+              <Decorator
+                ID="ForEach"
+                vector_in="{masks3d}"
+                index="{index}"
+                out="{mask3d}"
+              >
                 <Control ID="Sequence">
-                  <!--
-                    `grasp_link` sits exactly at the suction-cup tip plane
-                    (vacuum_urdf.xacro places it at the collision-mesh tip), so
-                    the end-effector-to-TCP offset must be zero: the generated
-                    grasp puts the TCP on the box face, and any positive z here
-                    holds the cup tips that far above the surface. The previous
-                    0.045 offset likely compensated for a low box-top bias in
-                    the pre-SAM3 perception chain; SAM3 reads the top surface
-                    to within a few millimeters, so with 0.045 the cups hovered
-                    45 mm above the box and the vacuum never sealed.
+                  <Action
+                    ID="GetPointCloudFromMask3D"
+                    mask3d="{mask3d}"
+                    point_cloud="{point_cloud_cropped}"
+                    point_cloud_fragment="{point_cloud_fragment}"
+                  />
+                  <Action
+                    ID="SendPointCloudToUI"
+                    pcd_topic="/pcd_pointcloud_captures"
+                    point_cloud="{point_cloud_fragment}"
+                  />
+                </Control>
+              </Decorator>
+              <Action
+                ID="GetGraspableObjectsFromMasks3D"
+                base_frame="world"
+                masks3d="{masks3d}"
+                minimum_face_area="0.0003"
+                plane_inlier_threshold="0.01"
+                point_cloud="{point_cloud_cropped}"
+                graspable_objects="{graspable_objects}"
+                face_separation_threshold="0.2"
+              />
+              <Decorator
+                ID="ForEach"
+                vector_in="{graspable_objects}"
+                index="{index}"
+                out="{graspable_object}"
+              >
+                <Decorator ID="Inverter">
+                  <Control ID="Sequence">
+                    <!--
+                      `grasp_link` sits exactly at the suction-cup tip plane
+                      (vacuum_urdf.xacro places it at the collision-mesh tip),
+                      so the end-effector-to-TCP offset must be zero: the
+                      generated grasp puts the TCP on the box face, and any
+                      positive z holds the cup tips that far above it. SAM3 reads
+                      the top surface to within a few millimeters, so with the
+                      previous 0.045 the cups hovered 45 mm up and the vacuum
+                      never sealed.
 
-                    Assumptions this zero offset leans on: SAM3's small bias
-                    reads the top HIGH (an under-read would command the cups
-                    into the surface — the approach is a fixed-distance
-                    Cartesian move with no force feedback, absorbed only by
-                    cup compliance in sim), and gripper-box contact stays
-                    collision-legal because the box lives in the octomap,
-                    which SetupMTCSetCollisionRule allows against the gripper.
-                    The reference_frame on this pose is inert — the value is
-                    consumed as a relative end-effector-to-TCP transform.
-                  -->
-                  <Action
-                    ID="CreatePoseStamped"
-                    reference_frame="world"
-                    pose_stamped="{ee_to_tcp}"
-                    position_xyz="0;0;0"
-                    orientation_xyzw="0;0;0;1"
-                  />
-                  <Action
-                    ID="GetCurrentPlanningScene"
-                    planning_scene_msg="{planning_scene}"
-                  />
-                  <Action
-                    ID="GenerateVacuumGraspPoses"
-                    ee_to_tcp_tf="{ee_to_tcp}"
-                    end_effector_group_name="gripper"
-                    generate_centroid_grasps="true"
-                    grasp_poses="{grasp_poses}"
-                    num_orientation_samples="8"
-                    padding_dimension="0.01"
-                    planning_scene_msg="{planning_scene}"
-                    samples_per_plane="2"
-                    target_object="{graspable_object}"
-                    ui_grasp_link="grasp_link"
-                  />
-                  <!--
-                    Discard the box-yaw component from every generated grasp.
+                      Assumptions this zero offset leans on: SAM3's small bias
+                      reads the top HIGH (an under-read would command the cups
+                      into the surface — the approach is a fixed-distance
+                      Cartesian move with no force feedback, absorbed only by
+                      cup compliance in sim), and gripper-box contact stays
+                      collision-legal because the box lives in the octomap,
+                      which SetupMTCSetCollisionRule allows against the gripper.
+                      The reference_frame on this pose is inert — the value is
+                      consumed as a relative end-effector-to-TCP transform.
+                    -->
+                    <Action
+                      ID="CreatePoseStamped"
+                      reference_frame="world"
+                      pose_stamped="{ee_to_tcp}"
+                      position_xyz="0;0;0"
+                      orientation_xyzw="0;0;0;1"
+                    />
+                    <Action
+                      ID="GetCurrentPlanningScene"
+                      planning_scene_msg="{planning_scene}"
+                    />
+                    <Action
+                      ID="GenerateVacuumGraspPoses"
+                      ee_to_tcp_tf="{ee_to_tcp}"
+                      end_effector_group_name="gripper"
+                      generate_centroid_grasps="true"
+                      grasp_poses="{grasp_poses}"
+                      num_orientation_samples="8"
+                      padding_dimension="0.01"
+                      planning_scene_msg="{planning_scene}"
+                      samples_per_plane="2"
+                      target_object="{graspable_object}"
+                      ui_grasp_link="grasp_link"
+                    />
+                    <!--
+                      Discard the box-yaw component from every generated grasp.
+                      `GenerateVacuumGraspPoses` builds each grasp as
+                      `R_world_to_object * (face/position/flip/wrist samples)`,
+                      so the box's detected yaw rotates every candidate in world
+                      frame, and SAM3's yaw is noisy and arbitrary for a
+                      rotationally-symmetric cube — it would make the wrist angle
+                      drift with detection noise. The vacuum gripper is
+                      rotationally symmetric about its approach axis, so
+                      overwriting with a fixed straight-down quaternion (matching
+                      the outer Objective's `place_pose`) costs nothing at the
+                      cup.
 
-                    `GenerateVacuumGraspPoses` builds each grasp as
-                    `R_world_to_object * (face/position/flip/wrist samples)`, so
-                    the box's detected yaw rotates every candidate orientation in
-                    world frame. SAM3's per-detection yaw is noisy and arbitrary
-                    for a rotationally-symmetric brown cube, so letting it
-                    rotate the gripper makes the wrist angle drift with
-                    detection noise instead of staying consistent across picks.
+                      Tradeoff: this collapses the 20 wrist-angle samples to one
+                      orientation per (face, position, flip), so candidates that
+                      only succeeded at a non-trivial wrist angle now fail IK.
+                      The centroid grasp and the bidirectional flip variant
+                      remain, which has sufficed for top-face picks of cubes.
+                    -->
+                    <Action
+                      ID="ResetPoseStampedVector"
+                      vector="{leveled_grasp_poses}"
+                    />
+                    <Decorator
+                      ID="ForEach"
+                      vector_in="{grasp_poses}"
+                      index="{grasp_index}"
+                      out="{grasp_pose}"
+                    >
+                      <Control ID="Sequence">
+                        <Action
+                          ID="OverridePoseOrientation"
+                          input_pose="{grasp_pose}"
+                          orientation_xyzw="0;1.0;0;0"
+                          output_pose="{leveled_grasp_pose}"
+                        />
+                        <Action
+                          ID="PushBackVector"
+                          input_vector="{leveled_grasp_poses}"
+                          element="{leveled_grasp_pose}"
+                          output_vector="{leveled_grasp_poses}"
+                        />
+                      </Control>
+                    </Decorator>
+                    <!--
+                      Box-height gate on this detection's grasps.
 
-                    We overwrite each grasp's orientation with a fixed
-                    "gripper pointing straight down" quaternion (matching the
-                    outer Objective's `place_pose`). The vacuum gripper is
-                    rotationally symmetric about its approach axis, so the pick
-                    is unaffected. Tradeoff: this collapses the 20 wrist-angle
-                    samples to one orientation per (face, position, flip), so
-                    candidates that previously succeeded only at a non-trivial
-                    wrist angle will now fail IK. The centroid-grasp sample and
-                    the bidirectional flip variant remain, which has been
-                    sufficient for top-face picks of cubes in hangar_sim.
-                  -->
-                  <Action
-                    ID="ResetPoseStampedVector"
-                    vector="{leveled_grasp_poses}"
-                  />
-                  <Decorator
-                    ID="ForEach"
-                    vector_in="{grasp_poses}"
-                    index="{grasp_index}"
-                    out="{grasp_pose}"
-                  >
-                    <Control ID="Sequence">
-                      <Action
-                        ID="OverridePoseOrientation"
-                        input_pose="{grasp_pose}"
-                        orientation_xyzw="0;1.0;0;0"
-                        output_pose="{leveled_grasp_pose}"
-                      />
-                      <Action
-                        ID="PushBackVector"
-                        input_vector="{leveled_grasp_poses}"
-                        element="{leveled_grasp_pose}"
-                        output_vector="{leveled_grasp_poses}"
-                      />
+                      SAM3 intermittently masks the yellow maintenance cart, and
+                      neither `confidence_threshold` nor the pixel-area filter
+                      above rejects it reliably, because mask area depends on the
+                      scan viewpoint. Face height does not, and the two are
+                      cleanly separated: every box here is a 0.25 m cube on the
+                      hangar floor (hangar.xml spawns each `collision_box_N` at
+                      z=0.125), so a real box top sits at world z=0.250, while
+                      the cart's grasp measured z=0.351 — 101 mm higher.
+
+                      `ee_to_tcp` above is zero, so a grasp pose's position is
+                      exactly where the suction cups land. Keep only grasps in a
+                      +/-50 mm band about the box-top height: that rejects the
+                      cart with 51 mm of margin while leaving 50 mm for
+                      perception error on a real box, generous given SAM3 reads
+                      the top surface to within a few millimetres. Grasps on a
+                      box's side faces fall outside the band too; they are
+                      leveled to point straight down above and would fail IK
+                      anyway, while the top-face centroid grasp survives. X and Y
+                      are left effectively unbounded (100 m) so boxes may sit
+                      anywhere the robot can reach.
+
+                      Update `position_xyz` if the box size or the surface they
+                      rest on ever changes.
+                    -->
+                    <Action
+                      ID="CreatePoseStamped"
+                      reference_frame="world"
+                      pose_stamped="{box_top_band_pose}"
+                      position_xyz="0;0;0.25"
+                    />
+                    <Action
+                      ID="CropPosesInBox"
+                      poses="{leveled_grasp_poses}"
+                      crop_box_centroid_pose="{box_top_band_pose}"
+                      crop_box_size="100;100;0.1"
+                      poses_cropped="{leveled_grasp_poses}"
+                    />
+                    <Action
+                      ID="GetSizeOfVector"
+                      vector_in="{leveled_grasp_poses}"
+                      vector_size="{leveled_grasp_count}"
+                    />
+                    <!--
+                      Nothing left in the band: this detection is not a box. Fail
+                      the Sequence so the enclosing Inverter lets the ForEach
+                      move on to the next detection, exactly as a failed pick
+                      would — but before any MTC planning runs, which is where
+                      the multi-minute stall came from. The counter is
+                      incremented only past this point, so a cycle that rejects
+                      everything is reported as "found nothing" rather than as a
+                      pick error.
+                    -->
+                    <Action
+                      ID="ScriptCondition"
+                      code="leveled_grasp_count > 0"
+                    />
+                    <Action
+                      ID="Script"
+                      code="graspable_candidate_count := graspable_candidate_count + 1"
+                    />
+                    <Action
+                      ID="InitializeMTCTask"
+                      task="{task}"
+                      task_id=""
+                      timeout="-1.000000"
+                    />
+                    <Action ID="SetupMTCCurrentState" task="{task}" />
+                    <Action
+                      ID="SetupMTCSetCollisionRule"
+                      allow_collision="true"
+                      name_a="gripper"
+                      name_b="&lt;octomap&gt;"
+                      task="{task}"
+                    />
+                    <Action
+                      ID="SetupMTCConnectWithProRRT"
+                      acceleration_scale_factor="1.000000"
+                      link_padding="0.000000"
+                      max_iterations="5000"
+                      planning_group_name="manipulator"
+                      seed="0"
+                      task="{task}"
+                      trajectory_sampling_rate="100"
+                      velocity_scale_factor="1.000000"
+                    />
+                    <Action
+                      ID="SetupMTCMoveAlongFrameAxis"
+                      acceleration_scale="1.000000"
+                      axis_frame="grasp_link"
+                      axis_x="0.000000"
+                      axis_y="0.000000"
+                      axis_z="1.000000"
+                      hand_frame="grasp_link"
+                      ignore_environment_collisions="false"
+                      max_distance="0.2"
+                      min_distance="0.05"
+                      planning_group_name="manipulator"
+                      task="{task}"
+                      velocity_scale="1.000000"
+                    />
+                    <!--`manipulator` is the whole-body group, so a solve relocates the base metres
+                        from the seed with the arm low in its envelope; 0.01 s leaves pose_ik too few
+                        restarts and it returns nothing for any generated grasp about half the time.-->
+                    <Action
+                      ID="SetupMTCBatchPoseIK"
+                      end_effector_group="moveit_ee"
+                      end_effector_link="grasp_link"
+                      ik_group="manipulator"
+                      ik_timeout_s="0.05"
+                      max_ik_solutions="8"
+                      monitored_stage="allow collision (gripper, &lt;octomap&gt;)"
+                      target_poses="{leveled_grasp_poses}"
+                      task="{task}"
+                    />
+                    <Control ID="Parallel" success_count="2" failure_count="1">
+                      <Control ID="Sequence">
+                        <Action
+                          ID="PlanMTCTask"
+                          solution="{solution}"
+                          task="{task}"
+                        />
+                        <SubTree
+                          ID="Execute MTC Solution (JTC)"
+                          solution="{solution}"
+                          goal_duration_tolerance="-1.0"
+                        />
+                      </Control>
+                      <Control ID="Sequence" name="TopLevelSequence">
+                        <Action
+                          ID="LoadPointCloudFromFile"
+                          color="0;255;0"
+                          file_path="box.stl"
+                          point_cloud="{box_mesh}"
+                          frame_id="world"
+                          num_sampled_points="50000"
+                          scale="1.000000"
+                        />
+                        <Action
+                          ID="GetCentroidFromPointCloud"
+                          point_cloud="{point_cloud_fragment}"
+                          output_pose="{point_cloud_fragment_center}"
+                        />
+                        <Action
+                          ID="TransformPointCloud"
+                          input_cloud="{box_mesh}"
+                          transform_pose="{point_cloud_fragment_center}"
+                          output_cloud="{box_mesh}"
+                        />
+                        <Action
+                          ID="RegisterPointClouds"
+                          target_point_cloud="{point_cloud_fragment}"
+                          target_pose_in_base_frame="{target_pose}"
+                          base_point_cloud="{box_mesh}"
+                          max_correspondence_distance="0.05"
+                          max_iterations="40"
+                        />
+                        <Action
+                          ID="TransformPointCloud"
+                          input_cloud="{box_mesh}"
+                          transform_pose="{target_pose}"
+                          output_cloud="{icp_cloud}"
+                        />
+                        <Action
+                          ID="TransformPointCloudFrame"
+                          input_cloud="{icp_cloud}"
+                          output_cloud="{icp_cloud}"
+                          target_frame="world"
+                        />
+                        <Action
+                          ID="SendPointCloudToUI"
+                          pcd_topic="/pcd_pointcloud_captures"
+                          point_cloud="{icp_cloud}"
+                        />
+                      </Control>
                     </Control>
-                  </Decorator>
-                  <Action
-                    ID="InitializeMTCTask"
-                    task="{task}"
-                    task_id=""
-                    timeout="-1.000000"
-                  />
-                  <Action ID="SetupMTCCurrentState" task="{task}" />
-                  <Action
-                    ID="SetupMTCSetCollisionRule"
-                    allow_collision="true"
-                    name_a="gripper"
-                    name_b="&lt;octomap&gt;"
-                    task="{task}"
-                  />
-                  <Action
-                    ID="SetupMTCConnectWithProRRT"
-                    acceleration_scale_factor="1.000000"
-                    link_padding="0.000000"
-                    max_iterations="5000"
-                    planning_group_name="manipulator"
-                    seed="0"
-                    task="{task}"
-                    trajectory_sampling_rate="100"
-                    velocity_scale_factor="1.000000"
-                  />
-                  <Action
-                    ID="SetupMTCMoveAlongFrameAxis"
-                    acceleration_scale="1.000000"
-                    axis_frame="grasp_link"
-                    axis_x="0.000000"
-                    axis_y="0.000000"
-                    axis_z="1.000000"
-                    hand_frame="grasp_link"
-                    ignore_environment_collisions="false"
-                    max_distance="0.2"
-                    min_distance="0.05"
-                    planning_group_name="manipulator"
-                    task="{task}"
-                    velocity_scale="1.000000"
-                  />
-                  <!--`manipulator` is the whole-body group, so a solve relocates the base metres
-                      from the seed with the arm low in its envelope; 0.01 s leaves pose_ik too few
-                      restarts and it returns nothing for any generated grasp about half the time.-->
-                  <Action
-                    ID="SetupMTCBatchPoseIK"
-                    end_effector_group="moveit_ee"
-                    end_effector_link="grasp_link"
-                    ik_group="manipulator"
-                    ik_timeout_s="0.05"
-                    max_ik_solutions="8"
-                    monitored_stage="allow collision (gripper, &lt;octomap&gt;)"
-                    target_poses="{leveled_grasp_poses}"
-                    task="{task}"
-                  />
-                  <Control ID="Parallel" success_count="2" failure_count="1">
-                    <Control ID="Sequence">
-                      <Action
-                        ID="PlanMTCTask"
-                        solution="{solution}"
-                        task="{task}"
-                      />
-                      <SubTree
-                        ID="Execute MTC Solution (JTC)"
-                        solution="{solution}"
-                        goal_duration_tolerance="-1.0"
-                      />
-                    </Control>
-                    <Control ID="Sequence" name="TopLevelSequence">
-                      <Action
-                        ID="LoadPointCloudFromFile"
-                        color="0;255;0"
-                        file_path="box.stl"
-                        point_cloud="{box_mesh}"
-                        frame_id="world"
-                        num_sampled_points="50000"
-                        scale="1.000000"
-                      />
-                      <Action
-                        ID="GetCentroidFromPointCloud"
-                        point_cloud="{point_cloud_fragment}"
-                        output_pose="{point_cloud_fragment_center}"
-                      />
-                      <Action
-                        ID="TransformPointCloud"
-                        input_cloud="{box_mesh}"
-                        transform_pose="{point_cloud_fragment_center}"
-                        output_cloud="{box_mesh}"
-                      />
-                      <Action
-                        ID="RegisterPointClouds"
-                        target_point_cloud="{point_cloud_fragment}"
-                        target_pose_in_base_frame="{target_pose}"
-                        base_point_cloud="{box_mesh}"
-                        max_correspondence_distance="0.05"
-                        max_iterations="40"
-                      />
-                      <Action
-                        ID="TransformPointCloud"
-                        input_cloud="{box_mesh}"
-                        transform_pose="{target_pose}"
-                        output_cloud="{icp_cloud}"
-                      />
-                      <Action
-                        ID="TransformPointCloudFrame"
-                        input_cloud="{icp_cloud}"
-                        output_cloud="{icp_cloud}"
-                        target_frame="world"
-                      />
-                      <Action
-                        ID="SendPointCloudToUI"
-                        pcd_topic="/pcd_pointcloud_captures"
-                        point_cloud="{icp_cloud}"
-                      />
-                    </Control>
-                  </Control>
-                  <Action
-                    ID="MoveGripperAction"
-                    timeout="10.000000"
-                    gripper_command_action_name="/vacuum_gripper/gripper_cmd"
-                    position="1.0"
-                  />
-                  <!--Lift the box straight up ~10 cm right after grasping to clear the surface before
+                    <Action
+                      ID="MoveGripperAction"
+                      timeout="10.000000"
+                      gripper_command_action_name="/vacuum_gripper/gripper_cmd"
+                      position="1.0"
+                    />
+                    <!--Lift the box straight up ~10 cm right after grasping to clear the surface before
                       transiting, so it does not drag along the ground. grasp_link points straight down at
                       the grasp, so a grasp_link-relative -Z move is world +Z (up); mirrors the standard
                       pick retreat (retract_xyz default 0;0;-0.1).-->
-                  <Action
-                    ID="CreatePoseStamped"
-                    reference_frame="grasp_link"
-                    pose_stamped="{lift_pose}"
-                    position_xyz="0;0;-0.1"
-                  />
-                  <Action ID="ResetPoseStampedVector" vector="{lift_path}" />
-                  <Action
-                    ID="PushBackVector"
-                    input_vector="{lift_path}"
-                    element="{lift_pose}"
-                    output_vector="{lift_path}"
-                  />
-                  <Action
-                    ID="PlanCartesianPath"
-                    blending_radius="0.020000"
-                    ik_cartesian_space_density="0.010000"
-                    ik_joint_space_density="0.100000"
-                    joint_trajectory_msg="{joint_trajectory_msg}"
-                    path="{lift_path}"
-                    planning_group_name="manipulator"
-                    cartesian_constraint="[{constraint_type: position_and_orientation}]"
-                    tip_links="grasp_link"
-                    trajectory_timing="[{mode: time_optimal, velocity_scale_factor: 1.0, acceleration_scale_factor: 1.0, trajectory_sampling_rate: 100}]"
-                  />
-                  <!--Execute the lift on the JTC pipeline. ExecuteTrajectory defaults to the JTAC
+                    <Action
+                      ID="CreatePoseStamped"
+                      reference_frame="grasp_link"
+                      pose_stamped="{lift_pose}"
+                      position_xyz="0;0;-0.1"
+                    />
+                    <Action ID="ResetPoseStampedVector" vector="{lift_path}" />
+                    <Action
+                      ID="PushBackVector"
+                      input_vector="{lift_path}"
+                      element="{lift_pose}"
+                      output_vector="{lift_path}"
+                    />
+                    <Action
+                      ID="PlanCartesianPath"
+                      blending_radius="0.020000"
+                      ik_cartesian_space_density="0.010000"
+                      ik_joint_space_density="0.100000"
+                      joint_trajectory_msg="{joint_trajectory_msg}"
+                      path="{lift_path}"
+                      planning_group_name="manipulator"
+                      cartesian_constraint="[{constraint_type: position_and_orientation}]"
+                      tip_links="grasp_link"
+                      trajectory_timing="[{mode: time_optimal, velocity_scale_factor: 1.0, acceleration_scale_factor: 1.0, trajectory_sampling_rate: 100}]"
+                    />
+                    <!--Execute the lift on the JTC pipeline. ExecuteTrajectory defaults to the JTAC
                       (admittance) controller, which hangar_sim does not run; this objective uses
                       joint_trajectory_controller everywhere, so target it explicitly or the lift fails
                       with "action server not available" and the cycle stalls.-->
-                  <Action
-                    ID="ExecuteTrajectory"
-                    execution_pipeline="jtc"
-                    controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
-                    joint_trajectory_msg="{joint_trajectory_msg}"
-                  />
-                  <SubTree
-                    ID="Move to Pose No Preview"
-                    _collapsed="true"
-                    target_pose="{place_pose}"
-                  />
-                  <Action
-                    ID="MoveGripperAction"
-                    position="0.0"
-                    timeout="10.000000"
-                    gripper_command_action_name="/vacuum_gripper/gripper_cmd"
-                  />
-                  <!--Box released at the loading zone: drop a persistent collision obstacle at the place
+                    <Action
+                      ID="ExecuteTrajectory"
+                      execution_pipeline="jtc"
+                      controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
+                      joint_trajectory_msg="{joint_trajectory_msg}"
+                    />
+                    <SubTree
+                      ID="Move to Pose No Preview"
+                      _collapsed="true"
+                      target_pose="{place_pose}"
+                    />
+                    <Action
+                      ID="MoveGripperAction"
+                      position="0.0"
+                      timeout="10.000000"
+                      gripper_command_action_name="/vacuum_gripper/gripper_cmd"
+                    />
+                    <!--Box released at the loading zone: drop a persistent collision obstacle at the place
                       pose (floor height) under a unique id so the whole-body base plans around every
-                      already-placed box instead of driving over them (#19973).-->
-                  <Action
-                    ID="Script"
-                    code="placed_box_id := 'placed_box_' .. placed_count"
-                  />
-                  <!--Drop the obstacle pose from the place-pose hover height (z=0.5) down to the
+                      already-placed box instead of driving over them.-->
+                    <Action
+                      ID="Script"
+                      code="placed_box_id := 'placed_box_' .. placed_count"
+                    />
+                    <!--Drop the obstacle pose from the place-pose hover height (z=0.5) down to the
                       floor where the released box actually rests. TransformPose applies the offset in
                       place_pose's body frame; place_pose points straight down (180 deg about Y), so a
                       local +0.4 z maps to world -0.4 z, leaving x/y unchanged. Output to a separate
                       pose so the parent's place motion still targets the original place_pose.-->
-                  <Action
-                    ID="TransformPose"
-                    input_pose="{place_pose}"
-                    output_pose="{placed_box_pose}"
-                    translation_xyz="0;0;0.4"
-                  />
-                  <Action
-                    ID="AddCollisionMesh"
-                    object_id="{placed_box_id}"
-                    mesh_file_path="package://hangar_sim/objectives/box.stl"
-                    pose="{placed_box_pose}"
-                    scale="1;1;1"
-                    overwrite="true"
-                  />
-                  <Action ID="Script" code="placed_count := placed_count + 1" />
-                  <!--
+                    <Action
+                      ID="TransformPose"
+                      input_pose="{place_pose}"
+                      output_pose="{placed_box_pose}"
+                      translation_xyz="0;0;0.4"
+                    />
+                    <Action
+                      ID="AddCollisionMesh"
+                      object_id="{placed_box_id}"
+                      mesh_file_path="package://hangar_sim/objectives/box.stl"
+                      pose="{placed_box_pose}"
+                      scale="1;1;1"
+                      overwrite="true"
+                    />
+                    <Action
+                      ID="Script"
+                      code="placed_count := placed_count + 1"
+                    />
+                    <!--
                       A full pick+place cycle completed. The parent Objective reads
                       picked_box to decide whether to continue the outer loop or exit
                       cleanly when both view waypoints stop yielding picks.
                     -->
-                  <Action ID="Script" code="picked_box := true" />
-                </Control>
+                    <Action ID="Script" code="picked_box := true" />
+                  </Control>
+                </Decorator>
               </Decorator>
-            </Decorator>
-          </Control>
-        </Decorator>
+            </Control>
+          </Decorator>
+          <!--
+            The pick loop above reported FAILURE, which normally means every
+            detection reached the pick pipeline and failed there. A zero
+            `graspable_candidate_count` means none of them did: the box-height
+            gate rejected them all as false positives. That is the same
+            situation as `mask_count == 0` — scanned, found nothing to pick — so
+            succeed here with `picked_box` still false and let the parent
+            Objective decide whether the scene is drained. A non-zero count
+            means a real box did reach the pipeline and failed, so the FAILURE
+            stands.
+          -->
+          <Action ID="ScriptCondition" code="graspable_candidate_count == 0" />
+        </Control>
       </Control>
     </Control>
   </BehaviorTree>
