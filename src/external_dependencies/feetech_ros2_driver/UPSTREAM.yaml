@@ -5,7 +5,7 @@ upstream:
 snapshot_path: feetech_ros2_driver
 vendored_paths:
   - feetech_ros2_driver
-pruned_paths:
+pruning_notes:
   - upstream CI, pixi, pre-commit, and formatter configuration
   - upstream changelog and documentation
 modified_paths:

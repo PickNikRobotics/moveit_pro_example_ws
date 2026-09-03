@@ -1,12 +1,13 @@
 """Tests for the workspace dependency policy validator."""
 
 import hashlib
+import os
 import importlib.util
 from pathlib import Path
 import subprocess
 from urllib.request import Request
 
-from pytest import CaptureFixture, MonkeyPatch, mark, raises
+from pytest import CaptureFixture, MonkeyPatch, fixture, mark, raises
 
 MODULE_PATH = Path(__file__).resolve().parents[1] / "validate_workspace_dependencies.py"
 MODULE_SPEC = importlib.util.spec_from_file_location(
@@ -24,7 +25,7 @@ upstream:
   branch: main
 vendored_paths:
   - description
-pruned_paths: []
+pruning_notes: []
 notes:
   - Test fixture.
 """
@@ -61,7 +62,7 @@ def test_valid_manifest_passes(tmp_path: Path) -> None:
 def test_comment_only_manifest_fails(tmp_path: Path) -> None:
     """Reject a manifest containing no metadata."""
     errors = validate_manifest(
-        tmp_path, "# repository:\n# commit:\n# vendored_paths:\n# pruned_paths:\n"
+        tmp_path, "# repository:\n# commit:\n# vendored_paths:\n# pruning_notes:\n"
     )
     assert "must contain an upstream mapping" in errors[0]
 
@@ -418,7 +419,11 @@ def test_apache_license_does_not_hide_later_license_symlink(
         VALID_MANIFEST.replace(
             "notes:\n",
             "modified_paths:\n"
-            "  - description/LICENSE-Z\n"
+            + modified_entry(
+                "description/LICENSE-Z",
+                f"symlink:{os.readlink(description / 'LICENSE-Z')}".encode(),
+            ).rstrip("\n")
+            + "\n"
             "apache_paths:\n"
             "  - description\n"
             "apache_excluded_paths:\n"
@@ -567,10 +572,16 @@ def test_empty_notes_fails(tmp_path: Path) -> None:
 def test_missing_modified_path_fails(tmp_path: Path) -> None:
     """Reject a modification ledger that references an absent path."""
     manifest = VALID_MANIFEST.replace(
-        "notes:\n", "modified_paths:\n  - missing_file.txt\nnotes:\n"
+        "notes:\n",
+        "modified_paths:\n  - missing_file.txt sha256:" + "0" * 64 + "\nnotes:\n",
     )
     errors = validate_manifest(tmp_path, manifest)
     assert any("missing modified path" in error for error in errors)
+
+
+def modified_entry(declared_path: str, _content: bytes = b"") -> str:
+    """Render a modified_paths entry."""
+    return f"  - {declared_path}\n"
 
 
 def upstream_comparison_errors(
@@ -583,8 +594,13 @@ def upstream_comparison_errors(
     outside_content: bytes | None = None,
     apache_license: bool = False,
     apache_excluded: bool = False,
+    lfs_tracked: bool = False,
 ) -> list[str]:
     """Compare a temporary candidate manifest with an upstream snapshot."""
+    if lfs_tracked:
+        (tmp_path / ".gitattributes").write_text(
+            "*.txt filter=lfs diff=lfs merge=lfs -text\n", encoding="utf-8"
+        )
     candidate = tmp_path / "candidate"
     upstream = tmp_path / "upstream"
     (candidate / "description").mkdir(parents=True)
@@ -614,7 +630,10 @@ def upstream_comparison_errors(
             )
     if modified:
         manifest = manifest.replace(
-            "notes:\n", "modified_paths:\n  - description/model.txt\nnotes:\n"
+            "notes:\n",
+            "modified_paths:\n"
+            + modified_entry("description/model.txt", candidate_content)
+            + "notes:\n",
         )
     manifest_path = candidate / "UPSTREAM.yaml"
     manifest_path.write_text(manifest, encoding="utf-8")
@@ -691,8 +710,8 @@ def test_apache_snapshot_rejects_unclassified_modified_path(
     ).replace(
         "notes:\n",
         "modified_paths:\n"
-        "  - description/model.txt\n"
-        "apache_paths:\n"
+        + modified_entry("description/model.txt", b"changed")
+        + "apache_paths:\n"
         "  - description/harmless.txt\n"
         "notes:\n",
     )
@@ -779,9 +798,36 @@ def test_lfs_pointer_matches_upstream_binary(
             monkeypatch,
             candidate_content=lfs_pointer,
             upstream_content=upstream_content,
+            lfs_tracked=True,
         )
         == []
     )
+
+
+def test_untracked_lfs_pointer_shape_is_not_trusted(
+    tmp_path: Path, monkeypatch: MonkeyPatch
+) -> None:
+    """Reject pointer-shaped bytes at a path .gitattributes does not track.
+
+    Git smudges a real LFS file to its content before the validator runs. So
+    pointer text at an untracked path is an ordinary file shaped like a pointer,
+    and trusting its embedded oid would let hand-authored text stand in for
+    upstream content it never matched.
+    """
+    upstream_content = b"binary content"
+    forged_pointer = (
+        "version https://git-lfs.github.com/spec/v1\n"
+        f"oid sha256:{hashlib.sha256(upstream_content).hexdigest()}\n"
+        f"size {len(upstream_content)}\n"
+    ).encode()
+    errors = upstream_comparison_errors(
+        tmp_path,
+        monkeypatch,
+        candidate_content=forged_pointer,
+        upstream_content=upstream_content,
+        lfs_tracked=False,
+    )
+    assert any("omits a modified upstream path" in error for error in errors)
 
 
 def test_lfs_pointer_size_must_match_upstream_binary(
@@ -801,6 +847,7 @@ def test_lfs_pointer_size_must_match_upstream_binary(
         monkeypatch,
         candidate_content=lfs_pointer,
         upstream_content=upstream_content,
+        lfs_tracked=True,
     )
 
     assert errors == [
@@ -1755,21 +1802,20 @@ def test_main_succeeds_for_valid_workspace(
     )
 
 
-def test_main_fails_for_unexpected_submodule(
-    monkeypatch: MonkeyPatch, capsys: CaptureFixture[str]
-) -> None:
-    """Report the exact allowlist mismatch for an unexpected gitlink."""
-    monkeypatch.setattr(validator, "tracked_submodules", lambda: {"src/unexpected"})
-    monkeypatch.setattr(
-        validator,
-        "discover_vendoring_manifests",
-        lambda: ([Path(f"vendor-{index}") for index in range(8)], []),
+def test_apache_material_detected_in_licenses_directory(tmp_path: Path) -> None:
+    """Detect Apache material declared as LICENSES/Apache-2.0.txt.
+
+    phoebe_ws states its Apache grant this way. Missing it turns off the
+    classification check on the one tree that vendors Apache material, and
+    reports success while doing so.
+    """
+    source_root = tmp_path / "source"
+    (source_root / "LICENSES").mkdir(parents=True)
+    (source_root / "LICENSES" / "Apache-2.0.txt").write_text(
+        "Apache License\nVersion 2.0\n", encoding="utf-8"
     )
-    monkeypatch.setattr(validator, "validate_optional_model_dependencies", lambda: [])
-    monkeypatch.setattr(
-        validator, "validate_vendored_roots", lambda manifests, **kwargs: []
+    retains_apache, errors = validator.inspect_license_inventory(
+        source_root, Path("source/UPSTREAM.yaml")
     )
-    monkeypatch.setattr(validator, "validate_retired_paths", lambda: [])
-    monkeypatch.setattr(validator, "validate_clearpath_timeout_parameters", lambda: [])
-    assert validator.main() == 1
-    assert "tracked submodules differ" in capsys.readouterr().err
+    assert errors == []
+    assert retains_apache

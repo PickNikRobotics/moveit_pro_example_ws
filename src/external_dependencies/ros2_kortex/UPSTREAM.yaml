@@ -7,7 +7,7 @@ vendored_paths:
   - kortex_description/CMakeLists.txt
   - kortex_description/package.xml
   - kortex_description/arms/gen3/7dof/meshes
-pruned_paths:
+pruning_notes:
   - kortex_api
   - kortex_bringup
   - kortex_driver
