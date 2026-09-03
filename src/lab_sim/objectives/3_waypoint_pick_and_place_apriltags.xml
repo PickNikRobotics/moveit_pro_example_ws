@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="3 Waypoints Pick and Place with AprilTags"
+>
+  <BehaviorTree
+    ID="3 Waypoints Pick and Place with AprilTags"
+    _description="Repeatedly moves one AprilTag-labeled medicine bottle between the table and the sorting tray. Every pickup re-detects tag 2, so grasp targets follow the bottle instead of accumulating drift. Loops until cancelled or perception/planning fails."
+    _favorite="true"
+  >
+    <Control ID="Sequence">
+      <!--Start from a clear, open, collision-safe configuration.-->
+      <SubTree ID="Clear Previous Obstacles" _collapsed="true" />
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        waypoint_name="3 Waypoint Mid Point"
+        joint_group_name="manipulator"
+      />
+      <SubTree ID="Open Gripper" _collapsed="true" />
+
+      <!--The tray does not move, so the place pose is fixed rather than detected.
+          Scanning the tray from Look at Tray with the bottle in hand does not
+          reliably find the tray tag, and a scan with an empty gripper means an
+          extra trip to an empty tray before the first pick. This pose was recorded
+          from ComputeTrayPlacePositionsUsingAprilTags slot 0 on the default
+          keyframe, already raised 0.095m for the bottle's length below the grasp
+          point (see the git history for the detection-based version).
+          Orientation is gripper-down. Reset Simulation restores the tray if it
+          gets bumped.-->
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="world"
+        position_xyz="0.99;0.6364;0.547"
+        pose_stamped="{tray_place_pose_flat}"
+      />
+      <Action
+        ID="TransformPose"
+        input_pose="{tray_place_pose_flat}"
+        output_pose="{tray_place_pose}"
+        quaternion_xyzw="1.0;0.0;0.0;0.0"
+        translation_xyz="0;0;0"
+      />
+
+      <Decorator ID="KeepRunningUntilFailure">
+        <Control ID="Sequence">
+          <!--Detect tag 2 on the table and pick it at its current pose.-->
+          <Control ID="Sequence" name="Detect and pick from table">
+            <SubTree ID="Clear Previous Obstacles" _collapsed="true" />
+            <SubTree ID="Look at Table" _collapsed="true" />
+            <SubTree ID="Take Wrist Camera Snapshot" _collapsed="true" />
+            <SubTree
+              ID="Take Wrist Camera Image"
+              _collapsed="true"
+              wrist_camera_image="{table_image}"
+              wrist_camera_info="{table_camera_info}"
+            />
+            <Action
+              ID="DetectAprilTags"
+              image="{table_image}"
+              camera_info="{table_camera_info}"
+              detections="{table_detections}"
+              apriltag_family_name="36h11"
+              max_hamming="0"
+              n_threads="1"
+              quad_decimate="2.0"
+              quad_sigma="0.0"
+              refine_edges="true"
+              tag_size="0.0288"
+            />
+            <Action
+              ID="GetDetectionPose"
+              detection_pose="{table_detection_pose}"
+              detections="{table_detections}"
+              target_id="2"
+              target_label=""
+            />
+            <Action
+              ID="TransformPoseFrame"
+              input_pose="{table_detection_pose}"
+              output_pose="{table_detection_pose_world}"
+              target_frame_id="world"
+            />
+            <Action
+              ID="TransformPose"
+              input_pose="{table_detection_pose_world}"
+              output_pose="{table_grasp_pose}"
+              quaternion_xyzw="1;0;0;0"
+              translation_xyz="0;0;-0.015"
+              visualize_pose="true"
+              marker_text="Table grasp"
+              marker_lifetime="0.0"
+              marker_size="0.1"
+            />
+            <SubTree
+              ID="Pick from Pose"
+              _collapsed="true"
+              grasp_pose="{table_grasp_pose}"
+              approach_distance="0.1"
+              retract_xyz="0;0;-0.1"
+            />
+          </Control>
+
+          <!--Place it in the tray, at a slot computed from the tray's own tag 1.-->
+          <Control ID="Sequence" name="Place in tray">
+            <SubTree
+              ID="Move to Waypoint"
+              _collapsed="true"
+              waypoint_name="3 Waypoint Mid Point"
+              joint_group_name="manipulator"
+            />
+            <SubTree
+              ID="Place at Pose"
+              _collapsed="true"
+              place_pose="{tray_place_pose}"
+              approach_distance="0.1"
+              retract_xyz="0;0;-0.1"
+            />
+          </Control>
+
+          <!--Detect tag 2 again, now in the tray, and pick it back out.-->
+          <Control ID="Sequence" name="Detect and pick from tray">
+            <SubTree ID="Clear Previous Obstacles" _collapsed="true" />
+            <SubTree
+              ID="Move to Waypoint"
+              _collapsed="true"
+              waypoint_name="Look at Tray"
+              joint_group_name="manipulator"
+            />
+            <SubTree ID="Take Wrist Camera Snapshot" _collapsed="true" />
+            <SubTree
+              ID="Take Wrist Camera Image"
+              _collapsed="true"
+              wrist_camera_image="{tray_bottle_image}"
+              wrist_camera_info="{tray_bottle_camera_info}"
+            />
+            <Action
+              ID="DetectAprilTags"
+              image="{tray_bottle_image}"
+              camera_info="{tray_bottle_camera_info}"
+              detections="{tray_bottle_detections}"
+              apriltag_family_name="36h11"
+              max_hamming="0"
+              n_threads="1"
+              quad_decimate="2.0"
+              quad_sigma="0.0"
+              refine_edges="true"
+              tag_size="0.0288"
+            />
+            <Action
+              ID="GetDetectionPose"
+              detection_pose="{tray_detection_pose}"
+              detections="{tray_bottle_detections}"
+              target_id="2"
+              target_label=""
+            />
+            <Action
+              ID="TransformPoseFrame"
+              input_pose="{tray_detection_pose}"
+              output_pose="{tray_detection_pose_world}"
+              target_frame_id="world"
+            />
+            <Action
+              ID="TransformPose"
+              input_pose="{tray_detection_pose_world}"
+              output_pose="{tray_grasp_pose}"
+              quaternion_xyzw="1;0;0;0"
+              translation_xyz="0;0;-0.015"
+              visualize_pose="true"
+              marker_text="Tray grasp"
+              marker_lifetime="0.0"
+              marker_size="0.1"
+            />
+            <SubTree
+              ID="Pick from Pose"
+              _collapsed="true"
+              grasp_pose="{tray_grasp_pose}"
+              approach_distance="0.1"
+              retract_xyz="0;0;-0.1"
+            />
+          </Control>
+
+          <!--Return it to the original table spot. Open loop is fine here: the next
+              pass re-detects the tag, so a small placement error does not accumulate.-->
+          <Control ID="Sequence" name="Place on table">
+            <SubTree
+              ID="Move to Waypoint"
+              _collapsed="true"
+              waypoint_name="3 Waypoint Mid Point"
+              joint_group_name="manipulator"
+            />
+            <!--Place back at the pose it was picked from this pass, using the same
+                approach/retract as the tray place. Releasing from a joint waypoint
+                drops the bottle and it topples, hiding the tag from the next scan.-->
+            <SubTree
+              ID="Place at Pose"
+              _collapsed="true"
+              place_pose="{table_grasp_pose}"
+              approach_distance="0.1"
+              retract_xyz="0;0;-0.1"
+            />
+            <SubTree
+              ID="Move to Waypoint"
+              _collapsed="true"
+              waypoint_name="3 Waypoint Mid Point"
+              joint_group_name="manipulator"
+            />
+          </Control>
+        </Control>
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+
+  <TreeNodesModel>
+    <SubTree ID="3 Waypoints Pick and Place with AprilTags">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Basic Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

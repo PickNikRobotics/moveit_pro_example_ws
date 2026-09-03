@@ -937,7 +937,7 @@
         type="box"
         size="0.018 0.018 0.003"
         pos="0 0 0.065"
-        material="apriltag_material1"
+        material="apriltag_material3"
         contype="0"
         conaffinity="0"
       />
