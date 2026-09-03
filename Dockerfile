@@ -77,8 +77,6 @@ RUN usermod -aG dialout,video ${USERNAME}
 RUN groupadd realtime && \
     usermod -a -G realtime ${USERNAME}
 
-<<<<<<< HEAD
-=======
 # Install nav2_mppi_controller 1.3.13 from PickNik's release bucket.
 #
 # The base image resolves every ROS package from a dated snapshot of the Jazzy
@@ -174,7 +172,6 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     done && \
     rm -f "${ldd_out}"
 
->>>>>>> 0e45115 (fix(docker): install nav2_mppi_controller 1.3.13 from PickNik's release bucket)
 # Install additional dependencies
 # You can also add any necessary apt-get install, pip install, etc. commands at this point.
 # NOTE: The /opt/overlay_ws folder contains MoveIt Pro binary packages and the source file.
