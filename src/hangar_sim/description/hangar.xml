@@ -1,5 +1,32 @@
 <mujoco>
   <compiler angle="radian" meshdir="assets" autolimits="true" />
+
+  <default>
+    <!-- Structural collision meshes the lidars have to see.
+
+         The TIM571s are THREE_D_LIDAR cameras now, so they measure by rendering,
+         and the render pass skips group 3, which is what class="collision" is.
+         These 32 are the perimeter walls and box obstacles: unlike the other 45
+         collision_* meshes, they have no visual counterpart at the 0.175 m scan
+         plane, so leaving them in group 3 cost each unit roughly half its beams.
+         Promoting them makes the camera see what mj_ray saw (811/811 beams agree,
+         ranges to 0.009 mm), which is what keeps maps/ and the AMCL tuning valid.
+
+         Side effect: they are now visible to every camera too, but only in the
+         far field: the nearest surface that moves is 7.19 m out, so
+         manipulation perception is unaffected. contype/conaffinity are stated,
+         not inherited, to make clear this changes appearance only, not
+         collision. -->
+    <default class="collision_scannable">
+      <geom
+        type="mesh"
+        group="2"
+        contype="1"
+        conaffinity="1"
+        material="walls"
+      />
+    </default>
+  </default>
   <visual>
     <headlight diffuse="0.5 0.5 0.5" ambient="0.6 0.6 0.6" specular="0 0 0" />
     <rgba haze="0.15 0.25 0.35 1" />
@@ -384,7 +411,7 @@
       quat="0.9604685306549072 0.0 0.0 -0.27838853001594543"
     >
       <geom
-        class="collision"
+        class="collision_scannable"
         type="mesh"
         name="collision_Cube_004 geom"
         mesh="collision_Cube_004"
@@ -1641,7 +1668,7 @@
       quat="1.0 0.0 0.0 0.0"
     >
       <geom
-        class="collision"
+        class="collision_scannable"
         type="mesh"
         name="collision_Plane geom"
         mesh="collision_Plane"
@@ -1653,7 +1680,7 @@
       quat="1.0 0.0 0.0 0.0"
     >
       <geom
-        class="collision"
+        class="collision_scannable"
         type="mesh"
         name="collision_Plane.001 geom"
         mesh="collision_Plane.001"
@@ -1665,7 +1692,7 @@
       quat="1.0 0.0 0.0 0.0"
     >
       <geom
-        class="collision"
+        class="collision_scannable"
         type="mesh"
         name="collision_Plane.002 geom"
         mesh="collision_Plane.002"
@@ -1677,7 +1704,7 @@
       quat="1.0 0.0 0.0 0.0"
     >
       <geom
-        class="collision"
+        class="collision_scannable"
         type="mesh"
         name="collision_Plane.003 geom"
         mesh="collision_Plane.003"
@@ -1689,7 +1716,7 @@
       quat="1.0 0.0 0.0 0.0"
     >
       <geom
-        class="collision"
+        class="collision_scannable"
         type="mesh"
         name="collision_Plane.004 geom"
         mesh="collision_Plane.004"
@@ -1701,7 +1728,7 @@
       quat="1.0 0.0 0.0 0.0"
     >
       <geom
-        class="collision"
+        class="collision_scannable"
         type="mesh"
         name="collision_Plane.005 geom"
         mesh="collision_Plane.005"
@@ -1713,7 +1740,7 @@
       quat="1.0 0.0 0.0 0.0"
     >
       <geom
-        class="collision"
+        class="collision_scannable"
         type="mesh"
         name="collision_Plane.006 geom"
         mesh="collision_Plane.006"
@@ -1725,7 +1752,7 @@
       quat="1.0 0.0 0.0 0.0"
     >
       <geom
-        class="collision"
+        class="collision_scannable"
         type="mesh"
         name="collision_Plane.007 geom"
         mesh="collision_Plane.007"
@@ -1737,7 +1764,7 @@
       quat="1.0 0.0 0.0 0.0"
     >
       <geom
-        class="collision"
+        class="collision_scannable"
         type="mesh"
         name="collision_Plane.008 geom"
         mesh="collision_Plane.008"
@@ -1749,7 +1776,7 @@
       quat="1.0 0.0 0.0 0.0"
     >
       <geom
-        class="collision"
+        class="collision_scannable"
         type="mesh"
         name="collision_Plane.009 geom"
         mesh="collision_Plane.009"
@@ -1761,7 +1788,7 @@
       quat="1.0 0.0 0.0 0.0"
     >
       <geom
-        class="collision"
+        class="collision_scannable"
         type="mesh"
         name="collision_Cube geom"
         mesh="collision_Cube"
@@ -1786,7 +1813,7 @@
       quat="1.0 0.0 0.0 0.0"
     >
       <geom
-        class="collision"
+        class="collision_scannable"
         type="mesh"
         name="collision_Cube.001 geom"
         mesh="collision_Cube.001"
@@ -1798,7 +1825,7 @@
       quat="1.0 0.0 0.0 0.0"
     >
       <geom
-        class="collision"
+        class="collision_scannable"
         type="mesh"
         name="collision_Cube.002 geom"
         mesh="collision_Cube.002"
@@ -1810,7 +1837,7 @@
       quat="1.0 0.0 0.0 0.0"
     >
       <geom
-        class="collision"
+        class="collision_scannable"
         type="mesh"
         name="collision_Cube.004 geom"
         mesh="collision_Cube.004"
@@ -1822,7 +1849,7 @@
       quat="1.0 0.0 0.0 0.0"
     >
       <geom
-        class="collision"
+        class="collision_scannable"
         type="mesh"
         name="collision_Cube.005 geom"
         mesh="collision_Cube.005"
@@ -1834,7 +1861,7 @@
       quat="1.0 0.0 0.0 0.0"
     >
       <geom
-        class="collision"
+        class="collision_scannable"
         type="mesh"
         name="collision_Cube.006 geom"
         mesh="collision_Cube.006"
@@ -1846,7 +1873,7 @@
       quat="1.0 0.0 0.0 0.0"
     >
       <geom
-        class="collision"
+        class="collision_scannable"
         type="mesh"
         name="collision_Cube.007 geom"
         mesh="collision_Cube.007"
@@ -1858,7 +1885,7 @@
       quat="1.0 0.0 0.0 0.0"
     >
       <geom
-        class="collision"
+        class="collision_scannable"
         type="mesh"
         name="collision_Cube.008 geom"
         mesh="collision_Cube.008"
@@ -1870,7 +1897,7 @@
       quat="1.0 0.0 0.0 0.0"
     >
       <geom
-        class="collision"
+        class="collision_scannable"
         type="mesh"
         name="collision_Cube.009 geom"
         mesh="collision_Cube.009"
@@ -1882,7 +1909,7 @@
       quat="1.0 0.0 0.0 0.0"
     >
       <geom
-        class="collision"
+        class="collision_scannable"
         type="mesh"
         name="collision_Cube.010 geom"
         mesh="collision_Cube.010"
@@ -1894,7 +1921,7 @@
       quat="1.0 0.0 0.0 0.0"
     >
       <geom
-        class="collision"
+        class="collision_scannable"
         type="mesh"
         name="collision_Cube.011 geom"
         mesh="collision_Cube.011"
@@ -1906,7 +1933,7 @@
       quat="1.0 0.0 0.0 0.0"
     >
       <geom
-        class="collision"
+        class="collision_scannable"
         type="mesh"
         name="collision_Cube.012 geom"
         mesh="collision_Cube.012"
@@ -1918,7 +1945,7 @@
       quat="1.0 0.0 0.0 0.0"
     >
       <geom
-        class="collision"
+        class="collision_scannable"
         type="mesh"
         name="collision_Cube.013 geom"
         mesh="collision_Cube.013"
@@ -1930,7 +1957,7 @@
       quat="1.0 0.0 0.0 0.0"
     >
       <geom
-        class="collision"
+        class="collision_scannable"
         type="mesh"
         name="collision_Cube.014 geom"
         mesh="collision_Cube.014"
@@ -1942,7 +1969,7 @@
       quat="1.0 0.0 0.0 0.0"
     >
       <geom
-        class="collision"
+        class="collision_scannable"
         type="mesh"
         name="collision_Cube.015 geom"
         mesh="collision_Cube.015"
@@ -1980,7 +2007,7 @@
       quat="1.0 0.0 0.0 0.0"
     >
       <geom
-        class="collision"
+        class="collision_scannable"
         type="mesh"
         name="collision_Plane.010 geom"
         mesh="collision_Plane.010"
@@ -1992,7 +2019,7 @@
       quat="1.0 0.0 0.0 0.0"
     >
       <geom
-        class="collision"
+        class="collision_scannable"
         type="mesh"
         name="collision_Plane.011 geom"
         mesh="collision_Plane.011"
@@ -2004,7 +2031,7 @@
       quat="1.0 0.0 0.0 0.0"
     >
       <geom
-        class="collision"
+        class="collision_scannable"
         type="mesh"
         name="collision_Plane.012 geom"
         mesh="collision_Plane.012"
@@ -2276,7 +2303,7 @@
       quat="1.0 0.0 0.0 0.0"
     >
       <geom
-        class="collision"
+        class="collision_scannable"
         type="mesh"
         name="collision_SM_Room_426.003 geom"
         mesh="collision_SM_Room_426.003"
@@ -2289,7 +2316,7 @@
       quat="1.0 0.0 0.0 0.0"
     >
       <geom
-        class="collision"
+        class="collision_scannable"
         type="mesh"
         name="collision_SM_Room_426.004 geom"
         mesh="collision_SM_Room_426.004"
@@ -2522,7 +2549,7 @@
       quat="4.371138828673793e-08 0.0 0.0 -1.0"
     >
       <geom
-        class="collision"
+        class="collision_scannable"
         type="mesh"
         name="collision_Cube_002_001 geom"
         mesh="collision_Cube_002_001"
