@@ -1,0 +1,44 @@
+<mujoco model="bottle">
+  <compiler angle="radian" meshdir="assets" />
+
+  <asset>
+    <mesh
+      name="cylinder"
+      file="trainer_hatch/collision/cylinder_mockup_full_length.stl"
+      scale="0.001 0.001 0.001"
+    />
+  </asset>
+
+  <worldbody>
+    <!-- bottle mockup -->
+    <body
+      name="bottle"
+      pos="0.57 0 0.6"
+      quat="0.707107 0 0 -0.707107"
+      gravcomp="0"
+    >
+      <freejoint />
+      <inertial mass="0.5" pos="0 0 0.15" diaginertia="0.001 0.001 0.0005" />
+      <!-- <site name="bottle_top" pos="0 0 0.365" quat="0 0 0.707107 0.707107" group="0"/> -->
+      <!-- <site name="bottle_base" pos="0 0 0" quat="0 0 0.707107 0.707107" group="0"/> -->
+      <site
+        name="bottle_neck_grasp"
+        pos="0 0 0.34"
+        quat="0 0 0.707107 0.707107"
+        group="0"
+      />
+      <site
+        name="bottle_bottom_grasp"
+        pos="0 0 0.2"
+        quat="0 0 0.707107 0.707107"
+        group="0"
+      />
+      <geom
+        type="mesh"
+        mesh="cylinder"
+        rgba="0.5 0.5 0.5 1"
+        friction="0.7 0.005 0.0001"
+      />
+    </body>
+  </worldbody>
+</mujoco>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Log message example">
+  <!--//////////-->
+  <BehaviorTree ID="Log message example" _description="" _favorite="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="Script" code="foo:=&quot;bar&quot;" />
+      <Action ID="Script" code="message='Ideal time step is '..foo" />
+      <Action ID="LogMessage" message="{message}" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Log message example">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="User Input" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

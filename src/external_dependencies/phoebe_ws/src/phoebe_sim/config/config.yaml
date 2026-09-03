@@ -1,0 +1,118 @@
+hardware:
+  # If the MoveIt Pro Agent should launch the ros2 controller node.
+  # [Optional, default=True]
+  launch_control_node: True
+
+  # If the MoveIt Pro Agent should launch the robot state publisher.
+  # This should be false if you are launching the robot state publisher as part of drivers.
+  # [Optional, default=True]
+  launch_robot_state_publisher: True
+
+  robot_description:
+    urdf:
+      package: "phoebe_sim"
+      path: "description/phoebe_sim.urdf.xacro"
+    srdf:
+      package: "phoebe_sim"
+      path: "config/moveit/phoebe_sim.srdf"
+    urdf_params:
+      - mujoco_model: "description/dual_arm_scene.xml"
+
+moveit_params:
+  joint_group_name: "manipulator"
+  joint_limits:
+    package: "phoebe_sim"
+    path: "config/moveit/joint_limits.yaml"
+  kinematics:
+    package: "phoebe_sim"
+    path: "config/moveit/pose_ik_distance.yaml"
+  pose_jog:
+    package: "phoebe_sim"
+    path: "config/moveit/pose_jog.yaml"
+  joint_jog:
+    package: "phoebe_sim"
+    path: "config/moveit/joint_jog.yaml"
+
+  publish:
+    planning_scene: True
+    geometry_updates: True
+    state_updates: True
+    transforms_updates: True
+
+  trajectory_execution:
+    manage_controllers: True
+    allowed_execution_duration_scaling: 2.0
+    allowed_goal_duration_margin: 5.0
+    allowed_start_tolerance: 0.01
+
+# Configuration for launching ros2_control processes.
+# [Required, if using ros2_control]
+ros2_control:
+  config:
+    package: "phoebe_sim"
+    path: "config/control/dual_arm.ros2_control.yaml"
+  controllers_active_at_startup:
+    - "joint_state_broadcaster"
+    - "left_robotiq_gripper_controller"
+    - "right_robotiq_gripper_controller"
+    - "left_force_torque_sensor_broadcaster"
+    - "right_force_torque_sensor_broadcaster"
+    - "joint_trajectory_admittance_controller"
+    - "platform_velocity_controller"
+  # Load but do not start these controllers so they can be activated later if needed.
+  controllers_inactive_at_startup:
+    - "left_manipulator_joint_trajectory_controller"
+    - "right_manipulator_joint_trajectory_controller"
+    - "lift_joint_trajectory_controller"
+    - "base_velocity_force_controller"
+    - "left_velocity_force_controller"
+    - "right_velocity_force_controller"
+    - "base_left_velocity_force_controller"
+    - "base_right_velocity_force_controller"
+    - "arms_only_joint_trajectory_admittance_controller"
+    - "left_manipulator_joint_trajectory_admittance_controller"
+    - "right_manipulator_joint_trajectory_admittance_controller"
+    - "joint_velocity_controller"
+    - "left_joint_velocity_controller"
+    - "right_joint_velocity_controller"
+
+objectives:
+  # List of plugins for loading custom behaviors.
+  # [Required]
+  behavior_loader_plugins:
+    # This plugin will load the core MoveIt Pro Behaviors.
+    # Add additional plugin loaders as needed.
+    core:
+      - "moveit_pro::behaviors::CoreBehaviorsLoader"
+      - "moveit_pro::behaviors::MTCCoreBehaviorsLoader"
+      - "moveit_pro::behaviors::NavBehaviorsLoader"
+      - "moveit_pro::behaviors::VisionBehaviorsLoader"
+      - "moveit_pro::behaviors::ConverterBehaviorsLoader"
+      - "moveit_pro::behaviors::MPCBehaviorsLoader"
+      - "moveit_pro::behaviors::MujocoBehaviorsLoader"
+  # Specify source folder for objectives
+  # [Required]
+  objective_library_paths:
+    core_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/core"
+    motion_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/motion"
+    perception_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/perception"
+    mujoco_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/mujoco"
+    visualization_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/visualization"
+    sim_objectives:
+      package_name: "phoebe_sim"
+      relative_path: "objectives"
+  # Specify the location of the saved waypoints file.
+  # [Required]
+  waypoints_file:
+    package_name: "phoebe_sim"
+    relative_path: "waypoints/waypoints.yaml"

@@ -1,0 +1,807 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:macro name="clearpath_r100" params="
+    parent_link
+    generate_ros2_control_tag:='false'
+    ">
+    <!-- Clearpath R100 Mobile Base -->
+    <!-- Clearpath materials -->
+    <material name="clearpath_dark_grey">
+      <color rgba="0.2 0.2 0.2 1.0"/>
+    </material>
+    <material name="clearpath_medium_grey">
+      <color rgba="0.6 0.6 0.6 1.0"/>
+    </material>
+    <material name="clearpath_light_grey">
+      <color rgba="0.8 0.8 0.8 1.0"/>
+    </material>
+    <material name="clearpath_yellow">
+      <color rgba="0.8 0.8 0.0 1.0"/>
+    </material>
+    <material name="clearpath_black">
+      <color rgba="0.15 0.15 0.15 1.0"/>
+    </material>
+    <material name="clearpath_white">
+      <color rgba="1.0 1.0 1.0 1.0"/>
+    </material>
+    <material name="clearpath_red">
+      <color rgba="1.0 0.0 0.0 1.0"/>
+    </material>
+    <material name="clearpath_aluminum">
+      <color rgba="0.5 0.5 0.5 1"/>
+    </material>
+    <material name="clearpath_plastic">
+      <color rgba="0.1 0.1 0.1   1"/>
+    </material>
+    <!-- Chassis -->
+    <joint name="base_link_joint" type="fixed">
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <parent link="${parent_link}"/>
+      <child link="chassis_link"/>
+    </joint>
+    <link name="chassis_link">
+      <visual>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <geometry>
+          <mesh filename="package://clearpath_platform_description/meshes/r100/body.stl"/>
+        </geometry>
+        <material name="clearpath_black"/>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0"/>
+        <geometry>
+          <mesh filename="package://clearpath_platform_description/meshes/r100/body-collision.stl"/>
+        </geometry>
+      </collision>
+      <inertial>
+        <origin rpy="1.5707963267948966 0 1.5707963267948966" xyz="0.012 0.002 0.067"/>
+        <mass value="165.304"/>
+        <inertia ixx="4.4744" ixy="0.03098" ixz="0.003647" iyy="7.1624" iyz="0.1228" izz="4.6155"/>
+      </inertial>
+    </link>
+    <!-- Covers -->
+    <joint name="right_side_cover_link_joint" type="fixed">
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <parent link="chassis_link"/>
+      <child link="right_side_cover_link"/>
+    </joint>
+    <joint name="left_side_cover_link_joint" type="fixed">
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <parent link="chassis_link"/>
+      <child link="left_side_cover_link"/>
+    </joint>
+    <link name="left_side_cover_link">
+      <visual>
+        <origin rpy="0 0 3.141592653589793" xyz="0 0 0"/>
+        <geometry>
+          <mesh filename="package://clearpath_platform_description/meshes/r100/side-cover.stl"/>
+        </geometry>
+        <material name="clearpath_yellow"/>
+      </visual>
+    </link>
+    <link name="right_side_cover_link">
+      <visual>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <geometry>
+          <mesh filename="package://clearpath_platform_description/meshes/r100/side-cover.stl"/>
+        </geometry>
+        <material name="clearpath_yellow"/>
+      </visual>
+    </link>
+    <joint name="front_cover_link_joint" type="fixed">
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <parent link="chassis_link"/>
+      <child link="front_cover_link"/>
+    </joint>
+    <link name="front_cover_link">
+      <visual>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <geometry>
+          <mesh filename="package://clearpath_platform_description/meshes/r100/end-cover.stl"/>
+        </geometry>
+        <material name="clearpath_black"/>
+      </visual>
+    </link>
+    <joint name="rear_cover_link_joint" type="fixed">
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <parent link="chassis_link"/>
+      <child link="rear_cover_link"/>
+    </joint>
+    <link name="rear_cover_link">
+      <visual>
+        <origin rpy="0 0 3.141592653589793" xyz="0 0 0"/>
+        <geometry>
+          <mesh filename="package://clearpath_platform_description/meshes/r100/end-cover.stl"/>
+        </geometry>
+        <material name="clearpath_black"/>
+      </visual>
+    </link>
+    <!-- Ligths -->
+    <joint name="front_lights_link_joint" type="fixed">
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <parent link="chassis_link"/>
+      <child link="front_lights_link"/>
+    </joint>
+    <joint name="rear_lights_link_joint" type="fixed">
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <parent link="chassis_link"/>
+      <child link="rear_lights_link"/>
+    </joint>
+    <link name="front_lights_link">
+      <visual>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <geometry>
+          <mesh filename="package://clearpath_platform_description/meshes/r100/lights.stl"/>
+        </geometry>
+        <material name="clearpath_white"/>
+      </visual>
+    </link>
+    <link name="rear_lights_link">
+      <visual>
+        <origin rpy="0 0 3.141592653589793" xyz="0 0 0"/>
+        <geometry>
+          <mesh filename="package://clearpath_platform_description/meshes/r100/lights.stl"/>
+        </geometry>
+        <material name="clearpath_red"/>
+      </visual>
+    </link>
+    <!-- Axle -->
+    <joint name="axle_joint" type="fixed">
+      <origin rpy="0 0 0" xyz="0 0 0.05"/>
+      <parent link="chassis_link"/>
+      <child link="axle_link"/>
+    </joint>
+    <link name="axle_link">
+      <visual>
+        <origin rpy="0 1.5707963267948966 0" xyz="0 0 0"/>
+        <geometry>
+          <mesh filename="package://clearpath_platform_description/meshes/r100/axle.stl"/>
+        </geometry>
+        <material name="clearpath_black"/>
+      </visual>
+    </link>
+    <!-- Riser -->
+    <joint name="riser_link_joint" type="fixed">
+      <origin rpy="0 0 0" xyz="0 0 0.22"/>
+      <parent link="chassis_link"/>
+      <child link="riser_link"/>
+    </joint>
+    <link name="riser_link">
+      <visual>
+        <origin rpy="0 0 0.7853981633974483" xyz="0 0 0.0275"/>
+        <geometry>
+          <box size="0.493 0.493 0.055"/>
+        </geometry>
+        <material name="clearpath_light_grey"/>
+      </visual>
+      <collision>
+        <origin rpy="0 0 0.7853981633974483" xyz="0 0 0.0275"/>
+        <geometry>
+          <box size="0.493 0.493 0.055"/>
+        </geometry>
+      </collision>
+    </link>
+    <!-- Top Plate -->
+    <joint name="top_link_joint" type="fixed">
+      <origin rpy="0 0 0" xyz="0 0 -0.22000000000000003"/>
+      <parent link="riser_link"/>
+      <child link="top_link"/>
+    </joint>
+    <link name="top_link">
+      <visual>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <geometry>
+          <mesh filename="package://clearpath_platform_description/meshes/r100/top.stl"/>
+        </geometry>
+        <material name="clearpath_black"/>
+      </visual>
+      <collision>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <geometry>
+          <mesh filename="package://clearpath_platform_description/meshes/r100/top.stl"/>
+        </geometry>
+      </collision>
+    </link>
+    <link name="front_rocker_link">
+      <visual>
+        <origin rpy="1.5707963267948966 0 1.5707963267948966" xyz="0 0 0"/>
+        <geometry>
+          <mesh filename="package://clearpath_platform_description/meshes/r100/rocker.stl"/>
+        </geometry>
+        <material name="clearpath_black"/>
+      </visual>
+      <inertial>
+        <origin rpy="1.5707963267948966 0 1.5707963267948966" xyz="0 0 0"/>
+        <mass value="10.267"/>
+        <inertia ixx="0.0288" ixy="2.20484e-6" ixz="-1.3145e-5" iyy="0.4324" iyz="1.8944e-3" izz="0.4130"/>
+      </inertial>
+    </link>
+    <joint name="front_rocker" type="fixed">
+      <parent link="axle_link"/>
+      <child link="front_rocker_link"/>
+      <origin rpy="0 0 0" xyz="0.319 0 0"/>
+      <axis xyz="1 0 0"/>
+      <limit effort="0" lower="-0.08726" upper="0.08726" velocity="0"/>
+    </joint>
+    <link name="front_left_wheel_link">
+      <visual>
+        <origin rpy="1.5707963267948966 0 0" xyz="0 0 0"/>
+        <geometry>
+          <mesh filename="package://clearpath_platform_description/meshes/r100/wheel.stl"/>
+        </geometry>
+        <material name="clearpath_black"/>
+      </visual>
+      <collision>
+        <origin rpy="1.5707963267948966 0 0" xyz="0 0 0"/>
+        <geometry>
+          <cylinder length="0.079" radius="0.0759"/>
+        </geometry>
+      </collision>
+      <inertial>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <mass value="2.5"/>
+        <inertia ixx="0.0049007145833333335" ixy="0" ixz="0" iyy="0.0072010124999999986" iyz="0" izz="0.0049007145833333335"/>
+      </inertial>
+    </link>
+    <joint name="front_left_wheel_joint" type="continuous">
+      <parent link="front_rocker_link"/>
+      <child link="front_left_wheel_link"/>
+      <origin rpy="0 0 0" xyz="0 0.27549999999999997 0"/>
+      <axis xyz="0 1 0"/>
+    </joint>
+    <link name="front_right_wheel_link">
+      <visual>
+        <origin rpy="1.5707963267948966 0 0" xyz="0 0 0"/>
+        <geometry>
+          <mesh filename="package://clearpath_platform_description/meshes/r100/wheel.stl"/>
+        </geometry>
+        <material name="clearpath_black"/>
+      </visual>
+      <collision>
+        <origin rpy="1.5707963267948966 0 0" xyz="0 0 0"/>
+        <geometry>
+          <cylinder length="0.079" radius="0.0759"/>
+        </geometry>
+      </collision>
+      <inertial>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <mass value="2.5"/>
+        <inertia ixx="0.0049007145833333335" ixy="0" ixz="0" iyy="0.0072010124999999986" iyz="0" izz="0.0049007145833333335"/>
+      </inertial>
+    </link>
+    <joint name="front_right_wheel_joint" type="continuous">
+      <parent link="front_rocker_link"/>
+      <child link="front_right_wheel_link"/>
+      <origin rpy="0 0 0" xyz="0 -0.27549999999999997 0"/>
+      <axis xyz="0 1 0"/>
+    </joint>
+    <link name="rear_rocker_link">
+      <visual>
+        <origin rpy="1.5707963267948966 0 1.5707963267948966" xyz="0 0 0"/>
+        <geometry>
+          <mesh filename="package://clearpath_platform_description/meshes/r100/rocker.stl"/>
+        </geometry>
+        <material name="clearpath_black"/>
+      </visual>
+      <inertial>
+        <origin rpy="1.5707963267948966 0 1.5707963267948966" xyz="0 0 0"/>
+        <mass value="10.267"/>
+        <inertia ixx="0.0288" ixy="2.20484e-6" ixz="-1.3145e-5" iyy="0.4324" iyz="1.8944e-3" izz="0.4130"/>
+      </inertial>
+    </link>
+    <joint name="rear_rocker" type="fixed">
+      <parent link="axle_link"/>
+      <child link="rear_rocker_link"/>
+      <origin rpy="0 0 0" xyz="-0.319 0 0"/>
+      <axis xyz="1 0 0"/>
+      <limit effort="0" velocity="0"/>
+    </joint>
+    <link name="rear_left_wheel_link">
+      <visual>
+        <origin rpy="1.5707963267948966 0 0" xyz="0 0 0"/>
+        <geometry>
+          <mesh filename="package://clearpath_platform_description/meshes/r100/wheel.stl"/>
+        </geometry>
+        <material name="clearpath_black"/>
+      </visual>
+      <collision>
+        <origin rpy="1.5707963267948966 0 0" xyz="0 0 0"/>
+        <geometry>
+          <cylinder length="0.079" radius="0.0759"/>
+        </geometry>
+      </collision>
+      <inertial>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <mass value="2.5"/>
+        <inertia ixx="0.0049007145833333335" ixy="0" ixz="0" iyy="0.0072010124999999986" iyz="0" izz="0.0049007145833333335"/>
+      </inertial>
+    </link>
+    <joint name="rear_left_wheel_joint" type="continuous">
+      <parent link="rear_rocker_link"/>
+      <child link="rear_left_wheel_link"/>
+      <origin rpy="0 0 0" xyz="0 0.27549999999999997 0"/>
+      <axis xyz="0 1 0"/>
+    </joint>
+    <link name="rear_right_wheel_link">
+      <visual>
+        <origin rpy="1.5707963267948966 0 0" xyz="0 0 0"/>
+        <geometry>
+          <mesh filename="package://clearpath_platform_description/meshes/r100/wheel.stl"/>
+        </geometry>
+        <material name="clearpath_black"/>
+      </visual>
+      <collision>
+        <origin rpy="1.5707963267948966 0 0" xyz="0 0 0"/>
+        <geometry>
+          <cylinder length="0.079" radius="0.0759"/>
+        </geometry>
+      </collision>
+      <inertial>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <mass value="2.5"/>
+        <inertia ixx="0.0049007145833333335" ixy="0" ixz="0" iyy="0.0072010124999999986" iyz="0" izz="0.0049007145833333335"/>
+      </inertial>
+    </link>
+    <joint name="rear_right_wheel_joint" type="continuous">
+      <parent link="rear_rocker_link"/>
+      <child link="rear_right_wheel_link"/>
+      <origin rpy="0 0 0" xyz="0 -0.27549999999999997 0"/>
+      <axis xyz="0 1 0"/>
+    </joint>
+    <!-- Internal IMU -->
+    <link name="imu_0_link">
+      <inertial>
+        <mass value="0.001"/>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <inertia ixx="1e-09" ixy="0.0" ixz="0.0" iyy="1e-09" iyz="0.0" izz="1e-09"/>
+      </inertial>
+    </link>
+    <joint name="imu_0_joint" type="fixed">
+      <parent link="chassis_link"/>
+      <child link="imu_0_link"/>
+      <origin rpy="0 0 0" xyz="0.2085 -0.2902 0.1681"/>
+    </joint>
+    <!-- Mounting Hardpoints -->
+    <link name="default_mount"/>
+    <joint name="default_mount_joint" type="fixed">
+      <parent link="riser_link"/>
+      <child link="default_mount"/>
+      <origin rpy="0 0 0" xyz="0 0 0.06"/>
+    </joint>
+    <xacro:if value="${generate_ros2_control_tag}">
+      <ros2_control name="r100_hardware" type="system">
+        <hardware>
+          <plugin>clearpath_hardware_interfaces/PumaHardware</plugin>
+        </hardware>
+        <joint name="front_left_wheel_joint">
+          <command_interface name="velocity"/>
+          <state_interface name="position"/>
+          <state_interface name="velocity"/>
+        </joint>
+        <joint name="front_right_wheel_joint">
+          <command_interface name="velocity"/>
+          <state_interface name="position"/>
+          <state_interface name="velocity"/>
+        </joint>
+        <joint name="rear_left_wheel_joint">
+          <command_interface name="velocity"/>
+          <state_interface name="position"/>
+          <state_interface name="velocity"/>
+        </joint>
+        <joint name="rear_right_wheel_joint">
+          <command_interface name="velocity"/>
+          <state_interface name="position"/>
+          <state_interface name="velocity"/>
+        </joint>
+      </ros2_control>
+    </xacro:if>
+    <!-- Lidars -->
+    <link name="lidar2d_0_link">
+      <visual>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <geometry>
+          <!-- Origin of this mesh is the base of the bracket. -->
+          <mesh filename="package://clearpath_sensors_description/meshes/hokuyo_ust.stl"/>
+        </geometry>
+        <material name="clearpath_dark_grey"/>
+      </visual>
+    </link>
+    <link name="lidar2d_0_laser">
+      <inertial>
+        <mass value="1.1"/>
+        <origin xyz="0 0 0"/>
+        <inertia ixx="0.00307156543804" ixy="0.0" ixz="0.0" iyy="0.0031284904152700005" iyz="0.0" izz="0.00196432421427"/>
+      </inertial>
+    </link>
+    <joint name="lidar2d_0_joint" type="fixed">
+      <origin rpy="0.0 0.0 0.0" xyz="0.3922 0.0 0.1856"/>
+      <parent link="chassis_link"/>
+      <child link="lidar2d_0_link"/>
+    </joint>
+    <joint name="lidar2d_0_laser_joint" type="fixed">
+      <!-- This offset is from the base of the bracket to the LIDAR's focal point. -->
+      <origin rpy="0 0 0" xyz="0 0 0.0474"/>
+      <parent link="lidar2d_0_link"/>
+      <child link="lidar2d_0_laser"/>
+    </joint>
+    <link name="lidar2d_1_link">
+      <visual>
+        <origin rpy="0 0 0" xyz="0 0 0"/>
+        <geometry>
+          <!-- Origin of this mesh is the base of the bracket. -->
+          <mesh filename="package://clearpath_sensors_description/meshes/hokuyo_ust.stl"/>
+        </geometry>
+        <material name="clearpath_dark_grey"/>
+      </visual>
+    </link>
+    <link name="lidar2d_1_laser">
+      <inertial>
+        <mass value="1.1"/>
+        <origin xyz="0 0 0"/>
+        <inertia ixx="0.00307156543804" ixy="0.0" ixz="0.0" iyy="0.0031284904152700005" iyz="0.0" izz="0.00196432421427"/>
+      </inertial>
+    </link>
+    <joint name="lidar2d_1_joint" type="fixed">
+      <origin rpy="0.0 0.0 3.14159" xyz="-0.3922 0.0 0.1856"/>
+      <parent link="chassis_link"/>
+      <child link="lidar2d_1_link"/>
+    </joint>
+    <joint name="lidar2d_1_laser_joint" type="fixed">
+      <!-- This offset is from the base of the bracket to the LIDAR's focal point. -->
+      <origin rpy="0 0 0" xyz="0 0 0.0474"/>
+      <parent link="lidar2d_1_link"/>
+      <child link="lidar2d_1_laser"/>
+    </joint>
+    <!-- Mounting rails for lifts -->
+    <link name="lift_rails">
+      <visual>
+        <geometry>
+          <mesh filename="package://phoebe_description/meshes/lift_rails.STL"/>
+        </geometry>
+        <material name="clearpath_dark_grey"/>
+      </visual>
+      <collision>
+        <origin xyz="0.000 -0.000 0.020"/>
+        <geometry>
+          <box size="0.220 0.730 0.040"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="lift_rails_joint" type="fixed">
+      <parent link="default_mount"/>
+      <child link="lift_rails"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </joint>
+    <!-- Rear shelf -->
+    <link name="rear_shelf">
+      <visual>
+        <geometry>
+          <mesh filename="package://phoebe_description/meshes/shelf.STL"/>
+        </geometry>
+        <material name="clearpath_dark_grey"/>
+      </visual>
+      <collision>
+        <origin xyz="-0.289 0.000 0.113"/>
+        <geometry>
+          <box size="0.379 0.790 0.226"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="rear_shelf_joint" type="fixed">
+      <parent link="default_mount"/>
+      <child link="rear_shelf"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </joint>
+    <!-- Front shelf -->
+    <link name="front_shelf">
+      <visual>
+        <geometry>
+          <mesh filename="package://phoebe_description/meshes/shelf.STL"/>
+        </geometry>
+        <material name="clearpath_dark_grey"/>
+      </visual>
+      <collision>
+        <origin xyz="-0.289 0.000 0.113"/>
+        <geometry>
+          <box size="0.379 0.790 0.226"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="front_shelf_joint" type="fixed">
+      <parent link="default_mount"/>
+      <child link="front_shelf"/>
+      <origin rpy="0 0 3.141592653589793" xyz="0 0 0"/>
+    </joint>
+    <!-- Monitor hinge base -->
+    <link name="monitor_hinge_base">
+      <visual>
+        <geometry>
+          <mesh filename="package://phoebe_description/meshes/monitor_hinge_base.STL"/>
+        </geometry>
+        <material name="clearpath_dark_grey"/>
+      </visual>
+      <collision>
+        <origin xyz="0.000 0.000 -0.003"/>
+        <geometry>
+          <box size="0.040 0.450 0.036"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="monitor_hinge_base_joint" type="fixed">
+      <parent link="default_mount"/>
+      <child link="monitor_hinge_base"/>
+      <origin rpy="0 0 0" xyz="-0.4 0 0.24635"/>
+    </joint>
+    <!-- Monitor hinge top -->
+    <link name="monitor_hinge_top">
+      <visual>
+        <geometry>
+          <mesh filename="package://phoebe_description/meshes/monitor_hinge_top.STL"/>
+        </geometry>
+        <material name="clearpath_dark_grey"/>
+      </visual>
+      <collision>
+        <origin xyz="-0.013 0.000 0.000"/>
+        <geometry>
+          <box size="0.055 0.450 0.040"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="monitor_hinge_top_joint" type="fixed">
+      <parent link="monitor_hinge_base"/>
+      <child link="monitor_hinge_top"/>
+      <origin rpy="0 0.74 0" xyz="0 0 0"/>
+    </joint>
+    <!-- Left monitor -->
+    <link name="left_monitor">
+      <visual>
+        <geometry>
+          <mesh filename="package://phoebe_description/meshes/monitor.STL"/>
+        </geometry>
+        <material name="clearpath_dark_grey"/>
+      </visual>
+      <collision>
+        <origin xyz="-0.015 0.000 -0.008"/>
+        <geometry>
+          <box size="0.071 0.260 0.176"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="left_monitor_joint" type="fixed">
+      <parent link="monitor_hinge_top"/>
+      <child link="left_monitor"/>
+      <origin rpy="0 0 0" xyz="-0.04 0.18 0.01"/>
+    </joint>
+    <!-- Right monitor -->
+    <link name="right_monitor">
+      <visual>
+        <geometry>
+          <mesh filename="package://phoebe_description/meshes/monitor.STL"/>
+        </geometry>
+        <material name="clearpath_dark_grey"/>
+      </visual>
+      <collision>
+        <origin xyz="-0.015 0.000 -0.008"/>
+        <geometry>
+          <box size="0.071 0.260 0.176"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="right_monitor_joint" type="fixed">
+      <parent link="monitor_hinge_top"/>
+      <child link="right_monitor"/>
+      <origin rpy="0 0 0" xyz="-0.04 -0.18 0.01"/>
+    </joint>
+    <!-- Rear UR Control Box -->
+    <link name="rear_ur_control_box">
+      <visual>
+        <geometry>
+          <mesh filename="package://phoebe_description/meshes/ur_control_box.STL"/>
+        </geometry>
+        <material name="clearpath_aluminum"/>
+      </visual>
+      <collision>
+        <origin xyz="0.090 -0.107 0.098"/>
+        <geometry>
+          <box size="0.199 0.502 0.195"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="rear_ur_control_box_joint" type="fixed">
+      <parent link="default_mount"/>
+      <child link="rear_ur_control_box"/>
+      <origin rpy="0 0 0" xyz="-0.44274 0.13 0"/>
+    </joint>
+    <!-- Front UR Control Box -->
+    <link name="front_ur_control_box">
+      <visual>
+        <geometry>
+          <mesh filename="package://phoebe_description/meshes/ur_control_box.STL"/>
+        </geometry>
+        <material name="clearpath_aluminum"/>
+      </visual>
+      <collision>
+        <origin xyz="0.090 -0.107 0.098"/>
+        <geometry>
+          <box size="0.199 0.502 0.195"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="front_ur_control_box_joint" type="fixed">
+      <parent link="default_mount"/>
+      <child link="front_ur_control_box"/>
+      <origin rpy="0 0 3.141592653589793" xyz="0.44274 -0.13 0"/>
+    </joint>
+    <!-- Rear Ewellix SCU -->
+    <link name="rear_scu">
+      <visual>
+        <geometry>
+          <mesh filename="package://phoebe_description/meshes/scu.STL"/>
+        </geometry>
+        <material name="clearpath_aluminum"/>
+      </visual>
+      <collision>
+        <origin xyz="0.000 0.002 0.043"/>
+        <geometry>
+          <box size="0.140 0.365 0.087"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="rear_scu_joint" type="fixed">
+      <parent link="default_mount"/>
+      <child link="rear_scu"/>
+      <origin rpy="0 0 0" xyz="-0.18187 0 0"/>
+    </joint>
+    <!-- Front Ewellix SCU -->
+    <link name="front_scu">
+      <visual>
+        <geometry>
+          <mesh filename="package://phoebe_description/meshes/scu.STL"/>
+        </geometry>
+        <material name="clearpath_aluminum"/>
+      </visual>
+      <collision>
+        <origin xyz="0.000 0.002 0.043"/>
+        <geometry>
+          <box size="0.140 0.365 0.087"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="front_scu_joint" type="fixed">
+      <parent link="default_mount"/>
+      <child link="front_scu"/>
+      <origin rpy="0 0 3.141592653589793" xyz="0.18187 0 0"/>
+    </joint>
+    <!-- Autec wireless e-stop MVRCAN receiver -->
+    <link name="autec_receiver">
+      <visual>
+        <geometry>
+          <mesh filename="package://phoebe_description/meshes/autec_receiver.STL"/>
+        </geometry>
+        <material name="clearpath_yellow"/>
+      </visual>
+      <collision>
+        <origin xyz="0.008 0.000 0.031"/>
+        <geometry>
+          <box size="0.255 0.142 0.062"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="autec_receiver_joint" type="fixed">
+      <parent link="default_mount"/>
+      <child link="autec_receiver"/>
+      <origin rpy="0 0 0" xyz="-0.26 -0.29909 0"/>
+    </joint>
+    <!-- Right wifi antenna -->
+    <link name="right_wifi_antenna">
+      <visual>
+        <geometry>
+          <mesh filename="package://phoebe_description/meshes/wifi_antenna.STL"/>
+        </geometry>
+        <material name="clearpath_dark_grey"/>
+      </visual>
+      <collision>
+        <origin xyz="-0.003 0.000 0.089"/>
+        <geometry>
+          <cylinder length="0.229" radius="0.033"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="right_wifi_antenna_joint" type="fixed">
+      <parent link="default_mount"/>
+      <child link="right_wifi_antenna"/>
+      <origin rpy="0 0 0" xyz="-0.086 -0.384 0.22"/>
+    </joint>
+    <!-- Left wifi antenna -->
+    <link name="left_wifi_antenna">
+      <visual>
+        <geometry>
+          <mesh filename="package://phoebe_description/meshes/wifi_antenna.STL"/>
+        </geometry>
+        <material name="clearpath_dark_grey"/>
+      </visual>
+      <collision>
+        <origin xyz="-0.003 0.000 0.089"/>
+        <geometry>
+          <cylinder length="0.229" radius="0.033"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="left_wifi_antenna_joint" type="fixed">
+      <parent link="default_mount"/>
+      <child link="left_wifi_antenna"/>
+      <origin rpy="0 0 0" xyz="-0.086 0.384 0.22"/>
+    </joint>
+    <!-- Autec wireless e-stop antenna -->
+    <link name="autec_antenna">
+      <visual>
+        <geometry>
+          <mesh filename="package://phoebe_description/meshes/autec_antenna.STL"/>
+        </geometry>
+        <material name="clearpath_dark_grey"/>
+      </visual>
+      <collision>
+        <origin xyz="0.002 0.000 0.049"/>
+        <geometry>
+          <cylinder length="0.147" radius="0.037"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="autec_antenna_joint" type="fixed">
+      <parent link="default_mount"/>
+      <child link="autec_antenna"/>
+      <origin rpy="0 0 0" xyz="0.0845 -0.384 0.22"/>
+    </joint>
+    <!-- Left arm mount plate -->
+    <link name="left_arm_mount_plate">
+      <visual>
+        <geometry>
+          <mesh filename="package://phoebe_description/meshes/arm_mount.STL"/>
+        </geometry>
+        <material name="clearpath_dark_grey"/>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://phoebe_description/meshes/arm_mount_collision.STL"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="left_arm_mount_plate_joint" type="fixed">
+      <parent link="lift_left_mount"/>
+      <child link="left_arm_mount_plate"/>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+    </joint>
+    <!-- Right arm mount plate -->
+    <link name="right_arm_mount_plate">
+      <visual>
+        <geometry>
+          <mesh filename="package://phoebe_description/meshes/arm_mount.STL"/>
+        </geometry>
+        <material name="clearpath_dark_grey"/>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://phoebe_description/meshes/arm_mount_collision.STL"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="right_arm_mount_plate_joint" type="fixed">
+      <parent link="lift_right_mount"/>
+      <child link="right_arm_mount_plate"/>
+      <origin rpy="0 0 3.141592653589793" xyz="0 0 0"/>
+    </joint>
+    <!-- Dual UR5e mounting links -->
+    <link name="left_arm_mount_plate_2"> </link>
+    <joint name="left_arm_mount_joint" type="fixed">
+      <parent link="left_arm_mount_plate"/>
+      <child link="left_arm_mount_plate_2"/>
+      <origin rpy="-0.7853981633974483 0 0" xyz="0 0.01628 0.09117"/>
+    </joint>
+    <link name="right_arm_mount_plate_2"> </link>
+    <joint name="right_arm_mount_joint" type="fixed">
+      <parent link="right_arm_mount_plate"/>
+      <child link="right_arm_mount_plate_2"/>
+      <origin rpy="0.7853981633974483 0 3.141592653589793" xyz="0 0.01628 0.09117"/>
+    </joint>
+  </xacro:macro>
+</robot>

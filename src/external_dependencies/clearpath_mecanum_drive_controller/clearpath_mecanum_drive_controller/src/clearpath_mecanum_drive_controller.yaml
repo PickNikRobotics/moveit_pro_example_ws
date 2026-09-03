@@ -1,0 +1,185 @@
+# Modified by PickNik Inc., 2026.
+clearpath_mecanum_drive_controller:
+  use_stamped_vel: {
+    type: bool,
+    default_value: true,
+    description: "Use stamp from input velocity message to calculate how old the command actually is.",
+    read_only: true,
+  }
+
+  reference_timeout: {
+    type: double,
+    default_value: 0.0,
+    description: "Timeout for controller references after which they will be reset. This is especially useful for controllers that can cause unwanted and dangerous behavior if reference is not reset, e.g., velocity controllers. If value is 0 the reference is reset after each run.",
+    read_only: true,
+    validation: {
+      "clearpath_mecanum_drive_controller::finite_non_negative": null
+    }
+  }
+
+  command_timeout: {
+    type: double,
+    default_value: 1.0,
+    description: "Timeout for controller command before sending stop signal.",
+    read_only: true,
+    validation: {
+      "clearpath_mecanum_drive_controller::finite_positive": null
+    }
+  }
+
+  command_joint_names: {
+    type: string_array,
+    default_value: [],
+    description: "Name of the wheels joints.",
+    read_only: true,
+  }
+
+  state_joint_names: {
+    type: string_array,
+    default_value: [],
+    description: "(optional) Specifies joints for reading states. This parameter is only relevant when state joints are different then command joint, i.e., when a following controller is used.",
+    read_only: true,
+  }
+
+  reference_joint_names: {
+    type: string_array,
+    default_value: ["linear/x", "linear/y", "angular/z"],
+    description: "The names of the reference joints to be exported for controller chaining.",
+    read_only: true,
+    validation: {
+      fixed_size<>: 3
+    }
+  }
+
+  interface_name: {
+    type: string,
+    default_value: "",
+    description: "Name of the interface used by the controller for sending commands, reading states and getting references.",
+    read_only: true,
+  }
+
+  kinematics:
+    base_frame_offset:
+      x: {
+        type: double,
+        default_value: 0.0,
+        description: "Base frame offset along X axis of base_frame (base_link frame)." ,
+        read_only: true,
+        validation: {
+          "clearpath_mecanum_drive_controller::finite": null
+        }
+      }
+      y: {
+        type: double,
+        default_value: 0.0,
+        description: "Base frame offset along Y axis of base_frame (base_link frame)." ,
+        read_only: true,
+        validation: {
+          "clearpath_mecanum_drive_controller::finite": null
+        }
+      }
+      theta: {
+        type: double,
+        default_value: 0.0,
+        description: "Base frame offset along Theta axis of base_frame (base_link frame).",
+        read_only: true,
+        validation: {
+          "clearpath_mecanum_drive_controller::finite": null
+        }
+      }
+
+    wheels_radius: {
+      type: double,
+      default_value: 0.0,
+      description: "Wheel's radius.",
+      read_only: true,
+    }
+
+    sum_of_robot_center_projection_on_X_Y_axis: {
+      type: double,
+      default_value: 0.0,
+      description: "Wheels geometric param used in mecanum wheels' IK. lx and ly represent the distance from the robot's center to the wheels projected on
+      the x and y axis with origin at robots center respectively, sum_of_robot_center_projection_on_X_Y_axis = lx+ly",
+      read_only: true,
+    }
+
+  linear:
+    x:
+      has_velocity_limits: {type: bool, default_value: false, description: "Whether to limit the X velocity reference.", read_only: true}
+      has_acceleration_limits: {type: bool, default_value: false, description: "Whether to limit the X acceleration reference.", read_only: true}
+      max_velocity: {type: double, default_value: 0.0, description: "Maximum X velocity.", read_only: true}
+      min_velocity: {type: double, default_value: 0.0, description: "Minimum X velocity.", read_only: true}
+      max_acceleration: {type: double, default_value: 0.0, description: "Maximum X acceleration.", read_only: true}
+      min_acceleration: {type: double, default_value: 0.0, description: "Minimum X acceleration.", read_only: true}
+
+    y:
+      has_velocity_limits: {type: bool, default_value: false, description: "Whether to limit the Y velocity reference.", read_only: true}
+      has_acceleration_limits: {type: bool, default_value: false, description: "Whether to limit the Y acceleration reference.", read_only: true}
+      max_velocity: {type: double, default_value: 0.0, description: "Maximum Y velocity.", read_only: true}
+      min_velocity: {type: double, default_value: 0.0, description: "Minimum Y velocity.", read_only: true}
+      max_acceleration: {type: double, default_value: 0.0, description: "Maximum Y acceleration.", read_only: true}
+      min_acceleration: {type: double, default_value: 0.0, description: "Minimum Y acceleration.", read_only: true}
+
+  angular:
+    z:
+      has_velocity_limits: {type: bool, default_value: false, description: "Whether to limit the yaw velocity reference.", read_only: true}
+      has_acceleration_limits: {type: bool, default_value: false, description: "Whether to limit the yaw acceleration reference.", read_only: true}
+      max_velocity: {type: double, default_value: 0.0, description: "Maximum yaw velocity.", read_only: true}
+      min_velocity: {type: double, default_value: 0.0, description: "Minimum yaw velocity.", read_only: true}
+      max_acceleration: {type: double, default_value: 0.0, description: "Maximum yaw acceleration.", read_only: true}
+      min_acceleration: {type: double, default_value: 0.0, description: "Minimum yaw acceleration.", read_only: true}
+
+  base_frame_id: {
+    type: string,
+    default_value: "base_link",
+    description: "Base frame_id set to value of base_frame_id.",
+    read_only: true,
+
+  }
+  odom_frame_id: {
+    type: string,
+    default_value: "odom",
+    description: "Odometry frame_id set to value of odom_frame_id.",
+    read_only: true,
+  }
+  enable_odom_tf: {
+    type: bool,
+    default_value: true,
+    description: "Publishing to tf is enabled or disabled?",
+    read_only: true,
+  }
+
+  twist_covariance_diagonal: {
+    type: double_array,
+    default_value: [0.1, 0.1, 0.1, 0.1, 0.1, 0.1],
+    description: "Diagonal values of twist covariance matrix.",
+    read_only: true,
+    validation: {
+      fixed_size<>: 6,
+      "clearpath_mecanum_drive_controller::finite_non_negative_array": null
+    }
+  }
+
+  pose_covariance_diagonal: {
+    type: double_array,
+    default_value: [0.1, 0.1, 0.1, 0.1, 0.1, 0.1],
+    description: "Diagonal values of pose covariance matrix.",
+    read_only: true,
+    validation: {
+      fixed_size<>: 6,
+      "clearpath_mecanum_drive_controller::finite_non_negative_array": null
+    }
+  }
+  body_frame_control: {
+    type: bool,
+    default_value: true,
+    description: "Specify if the velocity control is in the body frame or world frame.",
+    read_only: true,
+  }
+  body_frame_yaw_joint: {
+    type: string,
+    default_value: "",
+    description: "Specify the position state interface used for body-frame yaw. This must be set if and only if
+    body_frame_control is false (world-frame control).",
+    read_only: true,
+  }

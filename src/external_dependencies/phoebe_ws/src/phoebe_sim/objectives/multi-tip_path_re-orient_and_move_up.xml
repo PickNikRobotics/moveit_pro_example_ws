@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Multi-tip Path Re-Orient and Move Up"
+>
+  <BehaviorTree
+    ID="Multi-tip Path Re-Orient and Move Up"
+    _description="Example of Re-Orientation for a bottle and then moving it up. "
+    _favorite="false"
+  >
+    <Control ID="Sequence">
+      <SubTree ID="Multi-tip Path Re-Orient Bottle" _collapsed="false" />
+      <SubTree ID="Multi-tip Path Move Up Bottle" _collapsed="false" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Multi-tip Path Re-Orient and Move Up">
+      <MetadataFields>
+        <Metadata subcategory="Application - Advanced Examples" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

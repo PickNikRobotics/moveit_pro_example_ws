@@ -1,0 +1,84 @@
+Licensing and third-party materials
+=======================================
+
+phoebe_ws is a multi-license repository.
+
+PickNik-authored material
+-------------------------
+
+Unless a file or directory is identified below or carries its own license
+notice, material authored by PickNik Inc. is licensed under the BSD 3-Clause
+License in LICENSE.
+
+Third-party material in this repository
+---------------------------------------
+
+The following material remains under its upstream license and is not relicensed
+by the repository-level BSD 3-Clause License:
+
+* `src/phoebe_sim/description/assets/trainer_hatch/**`, except
+  `collision/cylinder_mockup_full_length.stl`
+
+  These assets are derived from the NASA JSC Surface Robotics Mockups
+  Description project and are licensed under Apache-2.0. See
+  `LICENSES/Apache-2.0.txt` and NOTICE.
+
+* `src/phoebe_sim/description/assets/base_*.obj`
+* `src/phoebe_sim/description/assets/forearm_*.obj`
+* `src/phoebe_sim/description/assets/shoulder_*.obj`
+* `src/phoebe_sim/description/assets/upperarm_*.obj`
+* `src/phoebe_sim/description/assets/wrist*.obj`
+
+  These Universal Robots model assets are derived from the MuJoCo Menagerie
+  UR5e model and are licensed under BSD-3-Clause. See
+  `LICENSES/Universal-Robots-BSD-3-Clause.txt`.
+
+* `src/phoebe_bridgeback_description/xacro/ur5e.macro.xacro`
+* `src/phoebe_bridgeback_description/xacro/clearpath_r100.macro.xacro`
+
+  These robot-description macros are derived from Clearpath Robotics robot
+  description packages and are licensed under BSD-3-Clause. See
+  `LICENSES/Clearpath-BSD-3-Clause.txt`.
+
+* `src/phoebe_sim/description/assets/robotiq_2f85/**`
+
+  These Robotiq model assets are derived from the MuJoCo Menagerie Robotiq
+  2F-85 model and are licensed under BSD-2-Clause. See
+  `LICENSES/Robotiq-BSD-2-Clause.txt`.
+
+* `src/phoebe_bridgeback_description/xacro/robotiq_2f85.macro.xacro`
+
+  This macro is derived from PickNik Robotics' `ros2_robotiq_gripper` package
+  and is licensed under BSD-3-Clause. See
+  `LICENSES/PickNik-Robotiq-BSD-3-Clause.txt`.
+
+* `src/ewellix_description/**`
+* `src/phoebe_bridgeback_description/xacro/ewellix_tlt500.macro.xacro`
+* `src/phoebe_sim/description/assets/ewellix_lift_base_500mm.stl`
+* `src/phoebe_sim/description/assets/ewellix_lift_top_500mm.stl`
+
+  These Ewellix materials are licensed under BSD-3-Clause by Clearpath
+  Robotics. See `src/ewellix_description/LICENSE` and
+  `LICENSES/Ewellix-BSD-3-Clause.txt`.
+
+* `src/phoebe_sim/description/assets/ridgeback/**`
+* `src/phoebe_sim/description/assets/body.stl`
+* `src/phoebe_sim/description/assets/top.stl`
+* `src/phoebe_sim/description/assets/omni_wheel_*.stl`
+
+  These Ridgeback assets are licensed under BSD-3-Clause by Clearpath
+  Robotics Inc. See the adjacent `LICENSE.txt` in the Ridgeback directory.
+
+Git submodules
+--------------
+
+Directories recorded as Git submodules in `.gitmodules` are separate works.
+Each submodule is governed by the license in its own repository; the
+repository-level LICENSE does not relicense submodule contents.
+
+Trademark notice
+----------------
+
+Names and trademarks of NASA, Universal Robots, Robotiq, Clearpath Robotics,
+Ewellix, and other third parties remain the property of their respective
+owners. No trademark rights are granted by this repository.

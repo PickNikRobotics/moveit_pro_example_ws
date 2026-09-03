@@ -1,0 +1,143 @@
+<?xml version="1.0" ?>
+<robot name="phoebe" xmlns:xacro="http://wiki.ros.org/xacro">
+  <!-- Args that users may need to change. -->
+  <xacro:arg name="mujoco_model" default=""/>
+  <xacro:arg name="mujoco_model_package" default="phoebe_sim"/>
+
+  <!-- Mobile base joints -->
+  <link name="world"/>
+  <link name="virtual_rail_link_1"/>
+  <joint name="linear_x_joint" type="prismatic">
+    <axis xyz="1 0 0"/>
+    <parent link="world"/>
+    <child link="virtual_rail_link_1"/>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <limit acceleration="10.0" effort="1000.0" lower="-100.0" upper="100.0" velocity="0.2"/>
+    <dynamics damping="20.0" friction="500.0"/>
+  </joint>
+  <link name="virtual_rail_link_2"/>
+  <joint name="linear_y_joint" type="prismatic">
+    <axis xyz="0 1 0"/>
+    <parent link="virtual_rail_link_1"/>
+    <child link="virtual_rail_link_2"/>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <limit acceleration="10.0" effort="1000.0" lower="-100.0" upper="100.0" velocity="0.2"/>
+    <dynamics damping="20.0" friction="500.0"/>
+  </joint>
+  <link name="base_link"/>
+  <joint name="rotational_yaw_joint" type="continuous">
+    <axis xyz="0 0 1"/>
+    <parent link="virtual_rail_link_2"/>
+    <child link="base_link"/>
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <limit effort="150.0" velocity="0.2"/>
+    <dynamics damping="0" friction="0"/>
+  </joint>
+  <ros2_control name="clearpath_controller_interface" type="system">
+    <hardware>
+      <plugin>clearpath_controller_interface/ClearpathControllerInterface</plugin>
+      <param name="odom_topic">/platform_velocity_controller/odom</param>
+      <param name="cmd_vel_topic">/platform_velocity_controller/cmd_vel_unstamped</param>
+      <param name="max_linear_velocity">0.2</param>
+      <param name="max_angular_velocity">0.2</param>
+      <param name="cmd_pub_rate">50</param>
+      <param name="active_on_startup">true</param>
+    </hardware>
+    <joint name="linear_x_joint"/>
+    <joint name="linear_y_joint"/>
+    <joint name="rotational_yaw_joint"/>
+  </ros2_control>
+
+  <!-- Mobile base -->
+  <xacro:include filename="$(find phoebe_description)/xacro/clearpath_r100.macro.xacro"/>
+  <xacro:clearpath_r100
+      parent_link="base_link"
+      generate_ros2_control_tag="false"
+  >
+  </xacro:clearpath_r100>
+
+  <!-- Lifts -->
+  <xacro:include filename="$(find phoebe_description)/xacro/ewellix_tlt500.macro.xacro"/>
+  <!-- Left lift -->
+  <xacro:ewellix_tlt500
+      parent_link="default_mount"
+      prefix="lift_left_"
+      generate_ros2_control_tag="false"
+  >
+    <origin rpy="0.0 0.0 0.0" xyz="0.0 0.2 0.04"/>
+  </xacro:ewellix_tlt500>
+  <!-- Right lift -->
+  <xacro:ewellix_tlt500
+      parent_link="default_mount"
+      prefix="lift_right_"
+      generate_ros2_control_tag="false"
+  >
+    <origin rpy="0.0 0.0 0.0" xyz="0.0 -0.2 0.04"/>
+  </xacro:ewellix_tlt500>
+
+  <!-- Arms -->
+  <xacro:include filename="$(find phoebe_description)/xacro/ur5e.macro.xacro"/>
+  <!-- Left arm -->
+  <xacro:ur5e
+      parent_link="left_arm_mount_plate_2"
+      prefix="left_"
+      generate_ros2_control_tag="false"
+  >
+    <origin rpy="0 0 -0.7853981633974483" xyz="0 0 0"/>
+  </xacro:ur5e>
+  <!-- Right arm -->
+  <xacro:ur5e
+      parent_link="right_arm_mount_plate_2"
+      prefix="right_"
+      generate_ros2_control_tag="false"
+  >
+    <origin rpy="0 0 -2.356194490192345" xyz="0 0 0"/>
+  </xacro:ur5e>
+
+  <!-- Grippers -->
+  <xacro:include filename="$(find phoebe_description)/xacro/robotiq_2f85.macro.xacro"/>
+  <!-- Left gripper -->
+  <xacro:robotiq_2f85
+      parent_link="left_realsense_camera_adapter_tool0"
+      prefix="left_"
+      generate_ros2_control_tag="false"
+  >
+  </xacro:robotiq_2f85>
+  <!-- Right gripper -->
+  <xacro:robotiq_2f85
+      parent_link="right_realsense_camera_adapter_tool0"
+      prefix="right_"
+      generate_ros2_control_tag="false"
+  >
+  </xacro:robotiq_2f85>
+
+  <!-- <link name="mobile_base_ee_link"/>
+  <joint name="mobile_base_ee_joint" type="fixed">
+    <origin rpy="0 0 0" xyz="0.0 0.0 0.5"/>
+    <parent link="chassis_link"/>
+    <child link="mobile_base_ee_link"/>
+  </joint>
+
+  <link name="mobile_base_ee_child_link"/>
+  <joint name="mobile_base_ee_child_joint" type="fixed">
+    <origin rpy="0 0 0" xyz="0.0 0.0 0.0"/>
+    <parent link="mobile_base_ee_link"/>
+    <child link="mobile_base_ee_child_link"/>
+  </joint> -->
+
+  <ros2_control name="ur_mujoco_control" type="system">
+    <hardware>
+      <plugin>picknik_mujoco_ros/MujocoSystem</plugin>
+      <param name="mujoco_model">$(arg mujoco_model)</param>
+      <param name="mujoco_model_package">$(arg mujoco_model_package)</param>
+      <param name="mujoco_viewer">false</param>
+      <param name="render_publish_rate">60</param>
+      <param name="tf_publish_rate">60</param>
+      <param name="lidar_publish_rate">10</param>
+      <param name="ignore_joint_validation">linear_x_joint linear_y_joint rotational_yaw_joint</param>
+      <param name="publish_odom">true</param>
+      <param name="odom_child_frame">ridgeback_base_link</param>
+      <param name="odom_zero_z">true</param>
+    </hardware>
+  </ros2_control>
+</robot>

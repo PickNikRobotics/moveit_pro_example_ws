@@ -278,6 +278,11 @@ skip_objectives = {
     "Grasp Planning",
     "Joint Diagnostic",
     "ML Find Bottles on Table from Image Exemplar",  # Skipped because it looks for a file on a home path
+    # These objectives require the optional moveit_pro_sam3 model submodule.
+    # The dependency-policy validator deliberately prevents lab_sim from making
+    # that package mandatory, so it is outside the config package's CI build
+    # closure unless a user explicitly initializes and builds the ML models.
+    "ML Segment Bottles from File",
     "ML Segment Image",
     "ML Segment Image Loop",
     "ML Segment Point Cloud",  # Requires GPU for ONNX inference; falls back to CPU and times out waiting for /wrist_camera/points on CI runners without a camera warmup delay.
@@ -286,6 +291,7 @@ skip_objectives = {
     "MPC Pose Tracking With Point Cloud Avoidance",
     "Octomap Example",  # Requires user input to clear the octomap.
     "Pick 1 Pill Bottle with ML",
+    "Pick 1 Pill Bottle with SAM3",
     "Pick All Bottles with AprilTags",
     "Pick All Pill Bottles",
     "Pick up Object",

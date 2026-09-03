@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Record Admittance Trajectory">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Record Admittance Trajectory"
+    _description=""
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="SwitchController"
+        activate_controllers="right_manipulator_joint_trajectory_admittance_controller"
+      />
+      <Action
+        ID="CallTriggerService"
+        service_name="/right_joint_trajectory_admittance_controller/zero_fts"
+      />
+      <Action
+        ID="GetCurrentPlanningScene"
+        planning_scene_msg="{planning_scene}"
+      />
+      <Action
+        ID="GetJointState"
+        joint_state="{joint_state}"
+        planning_scene="{planning_scene}"
+        planning_group_name="right_manipulator"
+      />
+      <Action
+        ID="CreateStationaryTrajectory"
+        joint_state="{joint_state}"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+        trajectory_duration="50.000000"
+      />
+      <Action
+        ID="SetAdmittanceParameters"
+        admittance_parameters_msg="{admittance_parameters_msg}"
+        config_file_name="jtac_parameters.yaml"
+      />
+      <Action
+        ID="ExecuteTrajectory"
+        execution_pipeline="jtac"
+        absolute_force_torque_threshold="45;45;45;10;10;10"
+        admittance_parameters_msg="{admittance_parameters_msg}"
+        controller_action_name="/right_manipulator_joint_trajectory_admittance_controller/follow_joint_trajectory"
+        goal_duration_tolerance="-1.000000"
+        goal_position_tolerance="0.001000"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+        path_position_tolerance="1.000000"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Record Admittance Trajectory">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Motion - Execute" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

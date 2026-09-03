@@ -1,0 +1,31 @@
+upstream:
+  repository: https://github.com/PickNikRobotics/clearpath_mecanum_drive_controller.git
+  commit: 0670acc8ce870668a6a7b5ecf163bdf795ab7592
+  branch: main-picknik
+vendored_paths:
+  - LICENSE
+  - clearpath_mecanum_drive_controller
+pruned_paths:
+  - upstream controller behavior tests (the plugin-load regression is retained)
+  - upstream changelog and documentation
+modified_paths:
+  - clearpath_mecanum_drive_controller/CMakeLists.txt
+  - clearpath_mecanum_drive_controller/include/clearpath_mecanum_drive_controller/clearpath_mecanum_drive_controller.hpp
+  - clearpath_mecanum_drive_controller/include/clearpath_mecanum_drive_controller/odometry.hpp
+  - clearpath_mecanum_drive_controller/include/clearpath_mecanum_drive_controller/parameter_validators.hpp
+  - clearpath_mecanum_drive_controller/include/clearpath_mecanum_drive_controller/reference_validation.hpp
+  - clearpath_mecanum_drive_controller/package.xml
+  - clearpath_mecanum_drive_controller/src/clearpath_mecanum_drive_controller.cpp
+  - clearpath_mecanum_drive_controller/src/clearpath_mecanum_drive_controller.yaml
+  - clearpath_mecanum_drive_controller/src/odometry.cpp
+  - clearpath_mecanum_drive_controller/test/installed_header_consumer/CMakeLists.txt
+  - clearpath_mecanum_drive_controller/test/installed_header_consumer/main.cpp
+  - clearpath_mecanum_drive_controller/test/reference_validation_test.cpp
+  - clearpath_mecanum_drive_controller/test/run_installed_header_consumer.cmake
+  - clearpath_mecanum_drive_controller/test/test_load_mecanum_drive_controller.cpp
+apache_paths:
+  - .
+notes:
+  - This PickNik fork contains the frame-transform support required by hangar_sim.
+  - PickNik adds focused regression coverage for finite, invalid, and idle controller references.
+  - Binary files matching workspace Git LFS patterns are stored as LFS objects; checked-out bytes match upstream.

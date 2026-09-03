@@ -1,0 +1,105 @@
+<mujoco model="r100-0599">
+  <compiler angle="radian" />
+
+  <option integrator="implicitfast" />
+
+  <default>
+    <default class="visual">
+      <geom
+        type="mesh"
+        contype="0"
+        conaffinity="0"
+        group="2"
+        rgba="0.75294 0.75294 0.75294 1"
+      />
+    </default>
+    <default class="collision">
+      <geom type="mesh" group="3" />
+    </default>
+  </default>
+
+  <asset>
+    <mesh name="plate" file="plate.obj" />
+    <mesh name="base" file="base.obj" />
+    <mesh name="lower" file="lower.obj" />
+    <mesh name="upper" file="upper.obj" />
+    <mesh name="plate_collision" file="plate.stl" />
+    <mesh name="base_collision" file="base.stl" />
+    <mesh name="base_collision2" file="base2.stl" />
+    <mesh name="lower_collision" file="lower.stl" />
+    <mesh name="upper_collision" file="upper.stl" />
+  </asset>
+
+  <worldbody>
+    <body name="lift_left_plate_link" pos="0 0.2 0.04" gravcomp="1">
+      <geom class="visual" mesh="plate" />
+      <geom class="collision" mesh="plate_collision" />
+      <body name="lift_left_base_link" pos="0 0.0 0.015" gravcomp="1">
+        <geom class="visual" pos="0.0 0.0 -0.0151" mesh="base" />
+        <geom class="collision" pos="0.0 0.0 -0.0151" mesh="base_collision" />
+        <geom class="collision" pos="0.0 0.0 -0.0151" mesh="base_collision2" />
+        <body name="lift_left_lower_link" pos="0 0.0 0.0" gravcomp="1">
+          <inertial
+            pos="0 0 0.2415"
+            mass="10"
+            diaginertia="0.21276 0.21276 0.0367043"
+          />
+          <joint
+            name="lift_left_lower_joint"
+            pos="0 0 0"
+            axis="0 0 1"
+            type="slide"
+            range="0 0.25"
+          />
+          <geom class="visual" pos="0 0 -0.2721" mesh="lower" />
+          <geom
+            class="collision"
+            pos="0.0 0.0 -0.2721"
+            mesh="lower_collision"
+          />
+          <body name="lift_left_upper_link" pos="0 0.0 0.025" gravcomp="1">
+            <inertial
+              pos="0 0 0.245"
+              mass="10"
+              diaginertia="0.213951 0.213951 0.027735"
+            />
+            <joint
+              name="lift_left_upper_joint"
+              pos="0 0 0"
+              axis="0 0 1"
+              type="slide"
+              range="0 0.25"
+            />
+            <geom class="visual" pos="0 0 -0.5151" mesh="upper" />
+            <geom
+              class="collision"
+              pos="0.0 0.0 -0.5151"
+              mesh="upper_collision"
+            />
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+  <equality>
+    <joint
+      joint1="lift_left_lower_joint"
+      joint2="lift_left_upper_joint"
+      polycoef="0 1.0 0 0 0"
+    />
+  </equality>
+  <contact>
+    <exclude body1="lift_left_plate_link" body2="lift_left_lower_link" />
+    <exclude body1="lift_left_base_link" body2="lift_left_upper_link" />
+    <exclude body1="lift_left_base_link" body2="lift_left_lower_link" />
+  </contact>
+  <actuator>
+    <position
+      name="lift_left_upper_actuator"
+      joint="lift_left_upper_joint"
+      kp="75000"
+      dampratio="1.0"
+      ctrlrange="0 0.25"
+    />
+  </actuator>
+</mujoco>
