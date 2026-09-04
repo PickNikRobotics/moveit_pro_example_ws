@@ -4,12 +4,12 @@ upstream:
   branch: jazzy
 vendored_paths:
   - LICENSE
-  - CMakeLists.txt
-  - CHANGELOG.rst
-  - package.xml
-  - launch
-  - urdf
-  - meshes
+  - clearpath_platform_description/CMakeLists.txt
+  - clearpath_platform_description/CHANGELOG.rst
+  - clearpath_platform_description/package.xml
+  - clearpath_platform_description/launch
+  - clearpath_platform_description/urdf
+  - clearpath_platform_description/meshes
 pruned_paths:
   - other clearpath_common packages (clearpath_control, clearpath_desktop, clearpath_generic_base, clearpath_platform_msgs, clearpath_sensors, etc.) unused by this workspace
   - test and CI configuration files

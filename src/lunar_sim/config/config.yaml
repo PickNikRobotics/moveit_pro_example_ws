@@ -93,14 +93,14 @@ objectives:
       - "moveit_pro::behaviors::MTCCoreBehaviorsLoader"
       - "moveit_pro::behaviors::ConverterBehaviorsLoader"
       - "moveit_pro::behaviors::VisionBehaviorsLoader"
+    lunar_sim:
+      - "lunar_sim_behaviors::LunarSimBehaviorsLoader"
   # Specify source folder for objectives
   # [Required]
   objective_library_paths:
     core_objectives:
       package_name: "moveit_pro_objectives"
       relative_path: "objectives/core"
-    # This config adds no custom Objectives, but the last entry must resolve to a
-    # package source directory inside the user workspace, so keep it in-workspace.
     lunar_sim_objectives:
       package_name: "lunar_sim"
       relative_path: "objectives"

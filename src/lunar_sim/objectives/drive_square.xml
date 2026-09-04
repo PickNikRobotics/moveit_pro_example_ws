@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Drive Square">
+  <BehaviorTree ID="Drive Square" _description="" _favorite="false">
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Decorator ID="Repeat" num_cycles="4">
+        <Control ID="Sequence">
+          <Action
+            ID="CreateTwistStamped"
+            reference_frame="footprint"
+            twist_stamped="{forward_twist}"
+            linear_velocity_xyz="0.3;0;0"
+            angular_velocity_xyz="0;0;0"
+          />
+          <Decorator ID="Repeat" num_cycles="20">
+            <Control ID="Sequence">
+              <Action
+                ID="PublishTwistStamped"
+                message="{forward_twist}"
+                topic="/cmd_vel"
+                queue_size="1"
+                use_best_effort="false"
+              />
+              <Action ID="WaitForDuration" delay_duration="0.1" />
+            </Control>
+          </Decorator>
+          <Action
+            ID="CreateTwistStamped"
+            reference_frame="footprint"
+            twist_stamped="{turn_twist}"
+            linear_velocity_xyz="0;0;0"
+            angular_velocity_xyz="0;0;0.6"
+          />
+          <Decorator ID="Repeat" num_cycles="27">
+            <Control ID="Sequence">
+              <Action
+                ID="PublishTwistStamped"
+                message="{turn_twist}"
+                topic="/cmd_vel"
+                queue_size="1"
+                use_best_effort="false"
+              />
+              <Action ID="WaitForDuration" delay_duration="0.1" />
+            </Control>
+          </Decorator>
+        </Control>
+      </Decorator>
+      <Action
+        ID="CreateTwistStamped"
+        reference_frame="footprint"
+        twist_stamped="{stop_twist}"
+        linear_velocity_xyz="0;0;0"
+        angular_velocity_xyz="0;0;0"
+      />
+      <Action
+        ID="PublishTwistStamped"
+        message="{stop_twist}"
+        topic="/cmd_vel"
+        queue_size="1"
+        use_best_effort="false"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Drive Square">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Mobile Base" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

@@ -5,7 +5,7 @@ environment assets, mock hardware. Built for fast iteration, decoupled from a fu
 environment.
 
 The robot description composes the real A300 platform body from
-[`clearpath_platform_description`](../external_dependencies/clearpath_platform_description)
+[`clearpath_platform_description`](../external_dependencies/clearpath_common/clearpath_platform_description)
 (vendored from [`clearpathrobotics/clearpath_common@jazzy`](https://github.com/clearpathrobotics/clearpath_common),
 BSD-licensed) with a `mock_components/GenericSystem` ros2_control block and a stock
 [`diff_drive_controller`](https://control.ros.org/jazzy/doc/ros2_controllers/diff_drive_controller/doc/userdoc.html)
