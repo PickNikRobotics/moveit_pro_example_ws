@@ -12,13 +12,14 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <build_depend>moveit_pro_package</build_depend>
-  <!-- Not used directly; forces find_package ordering ahead of moveit_pro_behavior, whose exported
-       CMake target links this without declaring it as a dependency of its own Config.cmake. -->
-  <build_depend>moveit_studio_internal_msgs</build_depend>
 
   <depend>geometry_msgs</depend>
   <depend>moveit_pro_behavior</depend>
   <depend>moveit_pro_behavior_interface</depend>
+  <!-- Not used directly; moveit_pro_behavior's exported CMake target links this without declaring
+       it as a dependency of its own Config.cmake, so this package brings it into scope and
+       re-exports it (see CMakeLists.txt) for downstream find_package(lunar_sim_behaviors). -->
+  <depend>moveit_studio_internal_msgs</depend>
   <depend>pluginlib</depend>
 
   <test_depend>ament_lint_auto</test_depend>

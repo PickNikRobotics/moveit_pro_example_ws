@@ -28,9 +28,9 @@
             reference_frame="footprint"
             twist_stamped="{turn_twist}"
             linear_velocity_xyz="0;0;0"
-            angular_velocity_xyz="0;0;0.6"
+            angular_velocity_xyz="0;0;0.5235988"
           />
-          <Decorator ID="Repeat" num_cycles="27">
+          <Decorator ID="Repeat" num_cycles="10">
             <Control ID="Sequence">
               <Action
                 ID="PublishTwistStamped"

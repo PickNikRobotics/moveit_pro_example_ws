@@ -4,14 +4,14 @@ project(lunar_sim_behaviors)
 find_package(moveit_pro_package REQUIRED)
 moveit_pro_package()
 
-# moveit_pro_behavior's exported CMake target links moveit_studio_internal_msgs without declaring
-# it as a find_package dependency of its own Config.cmake, so it must already be in scope here.
-find_package(moveit_studio_internal_msgs REQUIRED)
-
 set(THIS_PACKAGE_INCLUDE_DEPENDS
   geometry_msgs
   moveit_pro_behavior
   moveit_pro_behavior_interface
+  # moveit_pro_behavior's exported CMake target links moveit_studio_internal_msgs without declaring
+  # it as a find_package dependency of its own Config.cmake, so this package brings it into scope
+  # for both its own build and downstream find_package(lunar_sim_behaviors) consumers.
+  moveit_studio_internal_msgs
   pluginlib)
 foreach(package IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${package} REQUIRED)
