@@ -12,6 +12,9 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <build_depend>moveit_pro_package</build_depend>
+  <!-- Not used directly; forces find_package ordering ahead of moveit_pro_behavior, whose exported
+       CMake target links this without declaring it as a dependency of its own Config.cmake. -->
+  <build_depend>moveit_studio_internal_msgs</build_depend>
 
   <depend>geometry_msgs</depend>
   <depend>moveit_pro_behavior</depend>
