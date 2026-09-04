@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Collect the Red Block Pick">
+  <!--
+    The scripted counterpart to recording by hand in Trainer: the Objective opens
+    the recording, performs the demonstration, and keeps the episode only if the
+    pick succeeded.
+
+    The scene reset sits ahead of RecordEpisode so the controller switch it
+    performs, and the teleport that follows, land outside the recorded window.
+  -->
+  <BehaviorTree
+    ID="Collect the Red Block Pick"
+    _description="Record one scripted demonstration of picking up the red block and convert it to a LeRobot dataset."
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="root">
+      <SubTree ID="Reset MuJoCo Sim" _collapsed="true" />
+      <Control ID="Fallback" name="RecordWithCleanup">
+        <Control ID="Sequence" name="RecordAndConvert">
+          <Action
+            ID="RecordEpisode"
+            name="Start Trainer recording"
+            dataset_name="red_block_pick"
+            task="Pick up the red block."
+            config_name="vla_sim"
+            num_episodes="1"
+          />
+          <!--Let the recording settle before motion begins.-->
+          <Action
+            ID="WaitForDuration"
+            name="Let recording settle"
+            delay_duration="2.0"
+          />
+          <SubTree ID="Pick the Red Block" _collapsed="true" />
+          <Action ID="SaveEpisode" name="Keep successful demonstration" />
+          <!--Saving rolls the bag to a fresh split. Hold long enough for that
+               split to take frames, so the converter reads a finalized file.-->
+          <Action
+            ID="WaitForDuration"
+            name="Let episode finish saving"
+            delay_duration="1.0"
+          />
+          <Action ID="StopRecording" name="Finish recording session" />
+          <Action
+            ID="ConvertDataset"
+            name="Convert to LeRobot dataset"
+            dataset_name="red_block_pick"
+          />
+        </Control>
+        <!--Cleanup, not a forced success: if the pick fails before SaveEpisode,
+             StopRecording discards the unsaved attempt and AlwaysFailure
+             preserves the Objective's failed result, so a failed pick is never
+             labeled as a successful demonstration.-->
+        <Control ID="Sequence" name="DiscardFailedAttempt">
+          <Action ID="StopRecording" name="Discard unsaved attempt" />
+          <Action ID="AlwaysFailure" />
+        </Control>
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Collect the Red Block Pick">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - VLA Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
