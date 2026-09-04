@@ -1,9 +1,3 @@
-// Copyright 2026 PickNik Inc.
-// All rights reserved.
-//
-// Unauthorized copying of this code base via any medium is strictly prohibited.
-// Proprietary and confidential.
-
 #include <lunar_sim_behaviors/publish_twist_stamped.hpp>
 #include <moveit_pro_behavior_interface/metadata_fields.hpp>
 
