@@ -20,7 +20,7 @@
                 queue_size="1"
                 use_best_effort="false"
               />
-              <Action ID="WaitForDuration" delay_duration="0.1" />
+              <Action ID="WaitForDuration" delay_duration="0.3" />
             </Control>
           </Decorator>
           <Action
@@ -39,7 +39,7 @@
                 queue_size="1"
                 use_best_effort="false"
               />
-              <Action ID="WaitForDuration" delay_duration="0.1" />
+              <Action ID="WaitForDuration" delay_duration="0.3" />
             </Control>
           </Decorator>
         </Control>
