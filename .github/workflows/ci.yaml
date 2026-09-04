@@ -831,6 +831,8 @@ jobs:
   validate-workspace-dependencies:
     name: Validate workspace dependencies
     runs-on: ubuntu-22.04
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -843,11 +845,21 @@ jobs:
       - name: Install dependency policy test requirements
         run: python3 -m pip install pytest==9.0.3
       - name: Test dependency policy validator
-        run: python3 -m pytest bin/tests/test_validate_workspace_dependencies.py -v
+        run: python3 -m pytest bin/tests -v
       - name: Validate dependency policy
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: python3 bin/validate_workspace_dependencies.py --verify-upstream
+      # Drift is a report, not a gate. A failed lookup exits 1 and shows "?"
+      # in its row; pipefail lets that reach continue-on-error, which marks
+      # the step with a warning instead of failing the PR.
+      - name: Report vendored dependency drift
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -o pipefail
+          python3 bin/vendored_dependency.py status --markdown | tee -a "$GITHUB_STEP_SUMMARY"
 
   validate_objectives:
     runs-on: ubuntu-22.04
