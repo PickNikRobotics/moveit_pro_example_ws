@@ -831,6 +831,8 @@ jobs:
   validate-workspace-dependencies:
     name: Validate workspace dependencies
     runs-on: ubuntu-22.04
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -843,11 +845,137 @@ jobs:
       - name: Install dependency policy test requirements
         run: python3 -m pip install pytest==9.0.3
       - name: Test dependency policy validator
-        run: python3 -m pytest bin/tests/test_validate_workspace_dependencies.py -v
+        run: python3 -m pytest bin/tests -v
       - name: Validate dependency policy
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: python3 bin/validate_workspace_dependencies.py --verify-upstream
+      # Drift is a report, not a gate. A failed lookup exits 1 and shows "?"
+      # in its row; pipefail lets that reach continue-on-error, which marks
+      # the step with a warning instead of failing the PR.
+      - name: Report vendored dependency drift
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -o pipefail
+          python3 bin/vendored_dependency.py status --markdown | tee -a "$GITHUB_STEP_SUMMARY"
+
+  # File (or update) a moveit_pro issue once a week when any source under
+  # src/external_dependencies has fallen behind the upstream branch it pins.
+  # Runs only on the Sunday schedule so drift lands in triage without gating
+  # any PR; the table comes from bin/vendored_dependency.py, the same command
+  # validate-workspace-dependencies publishes in its job summary. Dedupes by
+  # title like weekly-failure-issue above: an open issue gets a fresh comment.
+  # Manual dispatch also runs it so the issue-filing path can be exercised
+  # before a Sunday, the same way integration-test-weekly allows.
+  vendored-drift-issue:
+    name: File vendored dependency drift issue
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'schedule' && github.event.schedule == '0 6 * * 0')
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: Report vendored dependency drift
+        id: drift
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          # A failed lookup exits 1 but still prints every row it could
+          # resolve, so keep going: one flaky compare must not suppress the
+          # report for the sources that did resolve. The script writes
+          # drifted= / resolved= / unresolved= to GITHUB_OUTPUT itself.
+          python3 bin/vendored_dependency.py status --markdown > drift.md || echo "::warning::Some drift lookups failed; see the step log."
+          cat drift.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Fail when no lookup succeeded
+        if: steps.drift.outputs.resolved == '0'
+        run: |
+          echo "::error::No vendored dependency lookup succeeded, so the drift report is empty. Check the token and the upstream repositories."
+          exit 1
+      # The token is minted for the running repo's owner and the script
+      # writes to PickNikRobotics/moveit_pro; the two agree only in the base
+      # repo, which is the only place the schedule runs.
+      - name: Generate cross-repo App token
+        if: steps.drift.outputs.drifted == 'true'
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.SISTER_REPOS_APP_CLIENT_ID }}
+          private-key: ${{ secrets.SISTER_REPOS_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: moveit_pro
+          permission-issues: write
+      - name: Open or update drift issue
+        if: steps.drift.outputs.drifted == 'true'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            const fs = require('fs');
+            const issueOwner = 'PickNikRobotics';
+            const issueRepo = 'moveit_pro';
+            const title = 'Vendored example_ws dependencies have drifted from upstream';
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const when = new Date().toISOString().slice(0, 10);
+            // Drop the script's own heading; the issue title carries it.
+            const table = fs.readFileSync('drift.md', 'utf8').replace(/^## [^\n]*\n\n/, '').trim();
+            const body = [
+              `As of ${when}, these sources under \`src/external_dependencies\` in moveit_pro_example_ws are behind the upstream branch they pin:`,
+              '',
+              table,
+              '',
+              'Refresh one source per PR with `bin/vendored_dependency.py update <source>` (see "Updating vendored dependencies" in the example_ws README), or close this issue if the current pins are intentional.',
+              '',
+              `- [Workflow run](${runUrl})`,
+            ].join('\n');
+            // Unlike weekly-failure-issue, a dedupe failure fails the step
+            // instead of risking a duplicate: drift recurs every week, so the
+            // next run retries and nothing is lost.
+            let existing;
+            try {
+              const found = await github.rest.search.issuesAndPullRequests({
+                q: `repo:${issueOwner}/${issueRepo} is:issue is:open in:title "${title}"`,
+              });
+              existing = found.data.items.find((i) => i.title === title);
+            } catch (e) {
+              core.setFailed(`Issue dedupe search failed (${e.message}); not creating an issue this run.`);
+              return;
+            }
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner: issueOwner,
+                repo: issueRepo,
+                issue_number: existing.number,
+                body,
+              });
+              core.info(`Commented on existing ${issueOwner}/${issueRepo} issue #${existing.number}.`);
+              return;
+            }
+            // The example_ws label is how moveit_pro's tracker filters these,
+            // so an unlabeled issue is worse than none: fail with the cause.
+            let created;
+            try {
+              created = await github.rest.issues.create({
+                owner: issueOwner,
+                repo: issueRepo,
+                title,
+                body,
+                labels: ['example_ws'],
+              });
+            } catch (e) {
+              if (e?.status === 422) {
+                core.setFailed(`Issue create rejected (${e.message}); check that the example_ws label exists in ${issueOwner}/${issueRepo}.`);
+                return;
+              }
+              throw e;
+            }
+            core.info(`Opened ${issueOwner}/${issueRepo} issue #${created.data.number}.`);
 
   validate_objectives:
     runs-on: ubuntu-22.04
