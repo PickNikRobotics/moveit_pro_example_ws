@@ -1,13 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Collect the Red Block Pick">
-  <!--
-    The scripted counterpart to recording by hand in Trainer: the Objective opens
-    the recording, performs the demonstration, and keeps the episode only if the
-    pick succeeded.
-
-    The scene reset sits ahead of RecordEpisode so the controller switch it
-    performs, and the teleport that follows, land outside the recorded window.
-  -->
+  <!--The reset sits ahead of RecordEpisode so its controller switch, and the
+       teleport that follows, land outside the recorded window.-->
   <BehaviorTree
     ID="Collect the Red Block Pick"
     _description="Record one scripted demonstration of picking up the red block and convert it to a LeRobot dataset."
@@ -33,8 +27,8 @@
           />
           <SubTree ID="Pick the Red Block" _collapsed="true" />
           <Action ID="SaveEpisode" name="Keep successful demonstration" />
-          <!--Saving rolls the bag to a fresh split. Hold long enough for that
-               split to take frames, so the converter reads a finalized file.-->
+          <!--Let the saved episode finish updating in Trainer before the
+               session closes.-->
           <Action
             ID="WaitForDuration"
             name="Let episode finish saving"
@@ -47,11 +41,8 @@
             dataset_name="red_block_pick"
           />
         </Control>
-        <!--Cleanup, not a forced success: if a Behavior fails before
-             SaveEpisode, StopRecording discards the unsaved attempt and
-             AlwaysFailure preserves the Objective's failed result. Whether the
-             cube actually came with the gripper is a question for the playback
-             step, which is where the guide has the reader look.-->
+        <!--Cleanup, not a forced success: StopRecording discards the unsaved
+             attempt and AlwaysFailure preserves the failed result.-->
         <Control ID="Sequence" name="DiscardFailedAttempt">
           <Action ID="StopRecording" name="Discard unsaved attempt" />
           <Action ID="AlwaysFailure" />
