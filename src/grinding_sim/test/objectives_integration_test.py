@@ -58,6 +58,8 @@ skip_objectives: set[str] = {
     "Teleoperate",  # DoTeleoperateAction rejects the goal with no UI subscribed.
     "Marker Visualization Example",  # GetTextFromUser server unavailable headless.
     "Register Machined Part",  # Registration flow exceeds the fixture timeout headless.
+    # Runs the same registration subtree before it grinds, so it inherits that timeout.
+    "Grind and Record Coverage",
 }
 
 
