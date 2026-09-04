@@ -38,6 +38,11 @@ than with what the Objective actually commanded.
 
 This node assembles the trajectory controller's reference setpoint with the
 latched gripper command and republishes the pair as `/joint_commands`.
+
+Pro's `quest_oculus` package fills the same gap for Cartesian teleoperation,
+reading the velocity_force_controller's setpoint instead. It shares this topic
+but stays silent until an operator enables the headset, so the two do not
+overlap unless a scripted Objective is recorded during Quest teleoperation.
 """
 
 from __future__ import annotations

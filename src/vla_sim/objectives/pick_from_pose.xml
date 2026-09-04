@@ -4,6 +4,11 @@
     Copied from lab_sim, with `end_effector_group` set to this configuration's
     SRDF group name. `approach_distance` runs along `grasp_link`'s own axis, so a
     top-down grasp pose makes both the approach and the retract vertical.
+
+    `max_ik_solutions` is raised from lab_sim's 4 because joints 1, 3, 5 and 7 of
+    a Gen3 are continuous. With a narrow candidate set the solutions for a yawed
+    grasp all landed a full turn away on joint_3, and the controller rejected the
+    trajectory for starting 2*pi from where the arm actually was.
   -->
   <BehaviorTree
     ID="Pick from Pose"
@@ -57,7 +62,7 @@
         end_effector_link="grasp_link"
         ik_group="manipulator"
         ik_timeout_s="0.01"
-        max_ik_solutions="4"
+        max_ik_solutions="16"
         monitored_stage="current state"
         target_poses="{grasp_pose_vector}"
         task="{mtc_task}"

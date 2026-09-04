@@ -32,11 +32,11 @@
         transform_stamped="{cube_transform}"
         pose_stamped="{cube_pose}"
       />
-      <!--Point the tool straight down at the cube: 180 degrees about y.-->
+      <!--Straight down at the cube, yawed a quarter turn about world Z.-->
       <Action
         ID="OverridePoseOrientation"
         input_pose="{cube_pose}"
-        orientation_xyzw="0;1;0;0"
+        orientation_xyzw="0.7071068;-0.7071068;0;0"
         output_pose="{grasp_pose}"
       />
       <Action
