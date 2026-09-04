@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Select Region and Record Coverage">
+  <BehaviorTree
+    ID="Select Region and Record Coverage"
+    _description="Sweep a coverage path over a region you draw, then paint the treated surface into the 3D view. Re-run it to watch the history accumulate."
+  >
+    <Control ID="Sequence" name="root">
+      <!-- 1. Show the wrist camera view, and activate the controller ExecuteTrajectory uses. The sweep
+           runs at a standoff and never contacts the surface, so compliance is unused; the admittance
+           controller would only add its 0.5 rad path tolerance, aborting whenever the simulator falls
+           behind realtime. -->
+      <Action
+        ID="SwitchUIPrimaryView"
+        primary_view_name="/wrist_camera/color"
+      />
+      <Action
+        ID="SwitchController"
+        activate_controllers="joint_trajectory_controller"
+      />
+
+      <!-- Close the gripper so a pointed tool, not open fingers, sweeps the surface. -->
+      <SubTree ID="Close Gripper" _collapsed="true" />
+
+      <!-- 2. Take up the viewing pose before prompting. The operator then draws on the same view every
+           run, and the sweep is planned from a configuration that can reach what they drew. -->
+      <SubTree ID="Move to Waypoint" waypoint_name="Look at Table" />
+
+      <!-- 3. User draws a bounding box on the wrist camera image. -->
+      <Action
+        ID="GetRegionFromUser"
+        region_name="selected_region"
+        prompt="Draw a box over the area to cover"
+        region="{selected_region}"
+      />
+
+      <!-- 4. Wrist camera cloud + intrinsics (camera_info denormalizes the region into pixels). -->
+      <Action
+        ID="GetPointCloud"
+        topic_name="/wrist_camera/points"
+        message_out="{point_cloud}"
+        message_timeout_sec="5.0"
+      />
+      <Action
+        ID="GetCameraInfo"
+        topic_name="/wrist_camera/camera_info"
+        message_out="{camera_info}"
+        message_timeout_sec="5.0"
+      />
+
+      <!-- 5. Rasterize the normalized region into a mask (lab_sim_behaviors). -->
+      <Action
+        ID="GetMask2DFromRegion"
+        region="{selected_region}"
+        camera_info="{camera_info}"
+        masks2d="{masks2d}"
+      />
+
+      <!-- 6. Lift the 2D mask onto the cloud -> 3D mask(s). -->
+      <Action
+        ID="GetMasks3DFromMasks2D"
+        masks2d="{masks2d}"
+        point_cloud="{point_cloud}"
+        camera_info="{camera_info}"
+        masks3d="{masks3d}"
+      />
+
+      <!-- Reference pose to disambiguate the OBB orientation: 180 deg about the optical X axis points
+           the reference +Z back toward the camera, which is the outward surface normal
+           GenerateSurfaceCoveragePath assumes. -->
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="wrist_camera_optical_frame"
+        orientation_xyzw="1;0;0;0"
+        pose_stamped="{region_reference_pose}"
+      />
+
+      <!-- 7-10. One mask in, one out: recover the 3D region, fit a box, sweep it, plan, execute, record. -->
+      <Decorator
+        ID="ForEachUntilSuccess"
+        index="{index}"
+        out="{mask3d}"
+        vector_in="{masks3d}"
+      >
+        <Control ID="Sequence">
+          <Action
+            ID="GetPointCloudFromMask3D"
+            mask3d="{mask3d}"
+            point_cloud="{point_cloud}"
+            point_cloud_fragment="{region_cloud}"
+          />
+          <Action
+            ID="GetOrientedBoundingBoxFromPointCloud"
+            point_cloud="{region_cloud}"
+            reference_pose="{region_reference_pose}"
+            box_center_pose="{region_pose}"
+            box_dimensions="{region_dimensions}"
+          />
+          <Action
+            ID="GenerateSurfaceCoveragePath"
+            region_pose="{region_pose}"
+            region_dimensions="{region_dimensions}"
+            line_spacing="0.03"
+            point_spacing="0.02"
+            standoff="0.04"
+            margin="0.0"
+            coverage_path="{coverage_path}"
+          />
+          <Action
+            ID="VisualizePath"
+            path="{coverage_path}"
+            marker_name="coverage_path"
+            line_color_rgb="0;255;0"
+            line_width="0.005"
+            marker_lifetime="0"
+          />
+          <Action
+            ID="PlanCartesianPath"
+            path="{coverage_path}"
+            planning_group_name="manipulator"
+            tip_links="grasp_link"
+            blending_radius="0.001"
+            joint_trajectory_msg="{coverage_trajectory}"
+          />
+          <SubTree
+            ID="Wait for Joint Trajectory Approval"
+            _collapsed="true"
+            joint_trajectory_msg="{coverage_trajectory}"
+          />
+          <Action
+            ID="ExecuteTrajectory"
+            joint_trajectory_msg="{coverage_trajectory}"
+          />
+
+          <!-- Mark the part of the wrist camera cloud the tool just passed over. The whole cloud goes
+               in, not just the selected region, so the painted patch reads against untouched surface.
+               footprint_range must clear the 0.04 standoff above; the 0.02 radius overlaps the 0.03
+               line spacing, so the sweep paints a continuous band rather than stripes. Reading and
+               writing coverage_cloud accumulates across runs. -->
+          <Action
+            ID="RecordSurfaceCoverage"
+            target_cloud="{point_cloud}"
+            tool_path="{coverage_path}"
+            footprint_radius="0.02"
+            footprint_range="0.08"
+            output_frame_id="world"
+            merge_voxel_size="0.005"
+            previous_coverage="{coverage_cloud}"
+            coverage_cloud="{coverage_cloud}"
+          />
+
+          <!-- Latched, so the Surface Coverage layer keeps showing the history after the Objective
+               ends and after a browser reload. -->
+          <Action
+            ID="SendPointCloudToUI"
+            point_cloud="{coverage_cloud}"
+            pcd_topic="/moveit_pro_ui/surface_coverage"
+          />
+        </Control>
+      </Decorator>
+
+      <!-- Return the arm to Home. The painted surface is recorded in the world frame, so it stays put
+           while the arm and its camera move away. -->
+      <SubTree ID="Move to Waypoint" waypoint_name="Home" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Select Region and Record Coverage">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Basic Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

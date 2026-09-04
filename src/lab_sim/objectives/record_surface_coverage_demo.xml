@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Record Surface Coverage Demo">
+  <BehaviorTree
+    ID="Record Surface Coverage Demo"
+    _description="Sweep two patches of the bench in one run and watch the treated surface accumulate in the 3D view."
+  >
+    <Control ID="Sequence" name="root">
+      <!-- The sweep runs at a standoff and never contacts the surface, so compliance is unused. The
+           admittance controller would only add its 0.5 rad path tolerance, aborting the sweep whenever
+           the simulator falls behind realtime. -->
+      <Action
+        ID="SwitchController"
+        activate_controllers="joint_trajectory_controller"
+      />
+      <SubTree ID="Close Gripper" _collapsed="true" />
+
+      <!-- 180 deg about the optical X axis points the reference +Z back toward the camera, which is
+           the outward surface normal GenerateSurfaceCoveragePath assumes. -->
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="wrist_camera_optical_frame"
+        orientation_xyzw="1;0;0;0"
+        pose_stamped="{region_reference_pose}"
+      />
+
+      <!-- Sweep 1: a patch of bench 0.597 m ahead of the wrist camera. The viewing pose is what puts
+           these fixed optical-frame offsets on the bench. -->
+      <SubTree ID="Move to Waypoint" waypoint_name="Look at Table" />
+      <Action
+        ID="GetPointCloud"
+        topic_name="/wrist_camera/points"
+        message_out="{point_cloud}"
+        message_timeout_sec="5.0"
+      />
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="wrist_camera_optical_frame"
+        position_xyz="0.05;-0.10;0.597"
+        pose_stamped="{crop_center}"
+      />
+      <Action
+        ID="CropPointsInSphere"
+        point_cloud="{point_cloud}"
+        crop_sphere_centroid_pose="{crop_center}"
+        crop_sphere_radius="0.08"
+        point_cloud_cropped="{region_cloud}"
+      />
+      <Action
+        ID="GetOrientedBoundingBoxFromPointCloud"
+        point_cloud="{region_cloud}"
+        reference_pose="{region_reference_pose}"
+        box_center_pose="{region_pose}"
+        box_dimensions="{region_dimensions}"
+      />
+      <Action
+        ID="GenerateSurfaceCoveragePath"
+        region_pose="{region_pose}"
+        region_dimensions="{region_dimensions}"
+        line_spacing="0.03"
+        point_spacing="0.02"
+        standoff="0.04"
+        margin="0.0"
+        coverage_path="{coverage_path}"
+      />
+      <Action
+        ID="PlanCartesianPath"
+        path="{coverage_path}"
+        planning_group_name="manipulator"
+        tip_links="grasp_link"
+        blending_radius="0.001"
+        joint_trajectory_msg="{coverage_trajectory}"
+      />
+      <Action
+        ID="ExecuteTrajectory"
+        joint_trajectory_msg="{coverage_trajectory}"
+      />
+      <!-- footprint_range must clear the 0.04 standoff the sweep was planned with; the 0.02 radius
+           overlaps the 0.03 line spacing, so the sweep paints a continuous band rather than stripes. -->
+      <Action
+        ID="RecordSurfaceCoverage"
+        target_cloud="{point_cloud}"
+        tool_path="{coverage_path}"
+        footprint_radius="0.02"
+        footprint_range="0.08"
+        output_frame_id="world"
+        merge_voxel_size="0.005"
+        previous_coverage="{coverage_cloud}"
+        coverage_cloud="{coverage_cloud}"
+      />
+      <Action
+        ID="SendPointCloudToUI"
+        point_cloud="{coverage_cloud}"
+        pcd_topic="/moveit_pro_ui/surface_coverage"
+      />
+
+      <!-- Sweep 2: a patch of bench 0.600 m ahead of the wrist camera. Returning to the viewing pose
+           first keeps these fixed optical-frame offsets meaningful after the previous sweep moved the arm. -->
+      <SubTree ID="Move to Waypoint" waypoint_name="Look at Table" />
+      <Action
+        ID="GetPointCloud"
+        topic_name="/wrist_camera/points"
+        message_out="{point_cloud}"
+        message_timeout_sec="5.0"
+      />
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="wrist_camera_optical_frame"
+        position_xyz="-0.15;-0.15;0.600"
+        pose_stamped="{crop_center}"
+      />
+      <Action
+        ID="CropPointsInSphere"
+        point_cloud="{point_cloud}"
+        crop_sphere_centroid_pose="{crop_center}"
+        crop_sphere_radius="0.08"
+        point_cloud_cropped="{region_cloud}"
+      />
+      <Action
+        ID="GetOrientedBoundingBoxFromPointCloud"
+        point_cloud="{region_cloud}"
+        reference_pose="{region_reference_pose}"
+        box_center_pose="{region_pose}"
+        box_dimensions="{region_dimensions}"
+      />
+      <Action
+        ID="GenerateSurfaceCoveragePath"
+        region_pose="{region_pose}"
+        region_dimensions="{region_dimensions}"
+        line_spacing="0.03"
+        point_spacing="0.02"
+        standoff="0.04"
+        margin="0.0"
+        coverage_path="{coverage_path}"
+      />
+      <Action
+        ID="PlanCartesianPath"
+        path="{coverage_path}"
+        planning_group_name="manipulator"
+        tip_links="grasp_link"
+        blending_radius="0.001"
+        joint_trajectory_msg="{coverage_trajectory}"
+      />
+      <Action
+        ID="ExecuteTrajectory"
+        joint_trajectory_msg="{coverage_trajectory}"
+      />
+      <Action
+        ID="RecordSurfaceCoverage"
+        target_cloud="{point_cloud}"
+        tool_path="{coverage_path}"
+        footprint_radius="0.02"
+        footprint_range="0.08"
+        output_frame_id="world"
+        merge_voxel_size="0.005"
+        previous_coverage="{coverage_cloud}"
+        coverage_cloud="{coverage_cloud}"
+      />
+      <Action
+        ID="SendPointCloudToUI"
+        point_cloud="{coverage_cloud}"
+        pcd_topic="/moveit_pro_ui/surface_coverage"
+      />
+
+      <!-- Back to Home. The coverage is recorded in the world frame, so both patches stay on the
+           bench while the arm and its camera move away. -->
+      <SubTree ID="Move to Waypoint" waypoint_name="Home" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Record Surface Coverage Demo">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Basic Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
