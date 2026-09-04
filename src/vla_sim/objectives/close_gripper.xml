@@ -6,17 +6,24 @@
     _favorite="false"
   >
     <Control ID="Sequence" name="root">
-      <!--The recorded `action` gets its gripper channel from here: a
-           GripperCommand goal is not observable on any topic.-->
-      <Action
-        ID="SetRos2Parameter"
-        node_name="/joint_command_bridge"
-        parameter_name="gripper_command_position"
-        parameter_value="0.7"
-        parameter_type="double"
-        response_timeout="5.000000"
-        wait_for_server_available_timeout="3.000000"
-      />
+      <!--
+        The recorded `action` gets its gripper channel from here: a
+        GripperCommand goal is not observable on any topic. Wrapped so that a
+        stack running without the bridge still moves the gripper - teleoperation
+        drives it through this Objective, and a recording side-channel must not
+        be able to stop the robot.
+      -->
+      <Decorator ID="ForceSuccess">
+        <Action
+          ID="SetRos2Parameter"
+          node_name="/joint_command_bridge"
+          parameter_name="gripper_command_position"
+          parameter_value="0.7"
+          parameter_type="double"
+          response_timeout="1.000000"
+          wait_for_server_available_timeout="0.500000"
+        />
+      </Decorator>
       <Action
         ID="MoveGripperAction"
         gripper_command_action_name="/robotiq_gripper_controller/gripper_cmd"

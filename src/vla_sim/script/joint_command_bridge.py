@@ -52,9 +52,9 @@ from sensor_msgs.msg import JointState
 # and the arm should be labelled with the pose it is holding.
 REFERENCE_TIMEOUT_S = 0.5
 
-# The arm joints, in the order the trajectory controller reports them. The layout
-# is fixed here so the stream publishes from the first tick; the controller stays
-# silent until a trajectory runs, several frames into an episode.
+# The arm joints, in the order the trajectory controller reports them. Fixing the
+# layout here rather than adopting the controller's keeps the recorded channel
+# order stable across a session, whatever order the controller reports in.
 DEFAULT_ARM_JOINT_NAMES = [f"joint_{index}" for index in range(1, 8)]
 
 
@@ -107,8 +107,10 @@ class JointCommandBridge(Node):
         # Latched by the gripper Objectives through SetRos2Parameter. float()
         # keeps the declared type DOUBLE, which is what SetRos2Parameter sends.
         self.declare_parameter("gripper_command_position", float(0.0))
-        # Conversion resamples every stream onto the dataset's 1/fps grid.
-        publish_rate = float(self._param("publish_rate", 10.0))
+        # Conversion nearest-time-syncs this stream against the camera stream
+        # within 50 ms before resampling, so publish well inside that window
+        # rather than at a 10 Hz period whose worst case sits exactly on it.
+        publish_rate = float(self._param("publish_rate", 30.0))
         if publish_rate <= 0.0:
             raise ValueError(f"publish_rate must be > 0, got {publish_rate}")
 
@@ -149,21 +151,19 @@ class JointCommandBridge(Node):
     def _on_controller_state(self, msg: JointTrajectoryControllerState) -> None:
         self._reference = dict(zip(msg.joint_names, msg.reference.positions))
         self._reference_stamp = self._now()
-        if msg.joint_names and list(msg.joint_names) != self._arm_joint_names:
-            # The configured layout stands for the whole episode; report and keep
-            # the channel order stable.
-            self.get_logger().error(
-                f"{self._controller_state_topic} reports {list(msg.joint_names)}, not "
-                f"the configured arm_joint_names {self._arm_joint_names}; recorded "
-                "channels will not match the controller. Fix arm_joint_names.",
-                throttle_duration_sec=30.0,
-            )
 
     def _on_joint_states(self, msg: JointState) -> None:
         self._measured = dict(zip(msg.name, msg.position))
         self._measured_stamp = self._now()
 
     def _publish(self) -> None:
+        if not self._reference:
+            # No trajectory has run, so there is no commanded stream to mirror.
+            # Falling back to the measured position here would hand a
+            # hand-teleoperated recording an `action` column that is a copy of
+            # its own observations; conversion refuses an empty action topic
+            # precisely so that mislabelling cannot happen silently.
+            return
         positions = assemble_joint_command(
             joint_order=self._joint_order,
             gripper_joint=self._gripper_joint,

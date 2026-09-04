@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Pick the Red Block">
   <!--
-    A scripted stand-in for a teleoperated demonstration. It reaches the phases an
-    oracle policy does - approach from above, descend to the grasp, close, lift -
-    reading the cube's pose out of the simulation rather than out of perception.
+    A scripted stand-in for a teleoperated demonstration, reaching the same phases
+    an oracle policy does: approach from above, descend to the grasp, close, lift.
+    It reads the cube's pose out of the simulation rather than out of perception.
 
     `cube_red_tf` is a MuJoCo site on the cube's centroid, which picknik_mujoco_ros
     publishes to TF whenever `tf_publish_rate` is set. Its orientation is the cube's
@@ -16,7 +16,7 @@
   -->
   <BehaviorTree
     ID="Pick the Red Block"
-    _description="Pick up the red block from its simulated pose, without recording."
+    _description="Pick up the red block from its simulated pose, failing if the cube does not come with the gripper."
     _favorite="true"
   >
     <Control ID="Sequence" name="root">
@@ -32,7 +32,7 @@
         transform_stamped="{cube_transform}"
         pose_stamped="{cube_pose}"
       />
-      <!--Point the tool straight down at the cube: 180 degrees about x.-->
+      <!--Point the tool straight down at the cube: 180 degrees about y.-->
       <Action
         ID="OverridePoseOrientation"
         input_pose="{cube_pose}"
@@ -54,6 +54,43 @@
         approach_distance="0.12"
         retract_xyz="0;0;-0.12"
       />
+      <!--
+        Every Behavior above succeeds whether or not the cube came with the
+        gripper, so without this the Objective reports a demonstration it did
+        not perform. A missed grasp leaves the cube within a millimetre or two
+        of where it started, which the tolerance clears by an order of
+        magnitude. The rotation tolerance sits above pi, the most AngleAxis
+        reports, so displacement decides on its own.
+      -->
+      <Control ID="Sequence" name="confirm_the_cube_came_along">
+        <!--ExecuteTrajectory returns while the arm is still rising.-->
+        <Action ID="WaitForDuration" delay_duration="0.5" />
+        <Action
+          ID="GetLatestTransform"
+          target_frame_id="world"
+          source_frame_id="cube_red_tf"
+          transform="{lifted_transform}"
+        />
+        <Action
+          ID="ConvertTransformStampedToPoseStamped"
+          transform_stamped="{lifted_transform}"
+          pose_stamped="{lifted_pose}"
+        />
+        <Action
+          ID="CalculatePoseOffset"
+          source_pose="{cube_pose}"
+          destination_pose="{lifted_pose}"
+          source_to_destination_pose="{lift_offset}"
+        />
+        <Decorator ID="Inverter">
+          <Action
+            ID="IsPoseNearIdentity"
+            pose="{lift_offset}"
+            position_tolerance="0.02"
+            rotation_tolerance="3.15"
+          />
+        </Decorator>
+      </Control>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>

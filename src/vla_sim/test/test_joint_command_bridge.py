@@ -80,6 +80,18 @@ def test_gripper_never_takes_the_controller_reference() -> None:
     assert result == [1.0, 2.0, 0.6]
 
 
+def test_gripper_never_takes_the_measured_position() -> None:
+    """The command leads the jaws; labelling with where they are erases the close."""
+    result = assemble_joint_command(
+        joint_order=ORDER,
+        gripper_joint=GRIPPER,
+        reference={},
+        measured={"joint_a": 0.5, "joint_b": 0.6, GRIPPER: 0.012},
+        gripper_command=0.7,
+    )
+    assert result == [0.5, 0.6, 0.7]
+
+
 def test_order_follows_joint_order_not_controller_order() -> None:
     """A positional copy of the controller's vector would train on permuted labels."""
     result = assemble_joint_command(

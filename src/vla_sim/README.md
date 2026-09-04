@@ -9,9 +9,18 @@ and serving instructions live.
 ## Collecting training data
 
 `Pick the Red Block` is a scripted demonstration: it reads the cube's pose from
-the simulation, then approaches, grasps, and lifts it. `Collect the Red Block
+the simulation, then approaches, grasps, and lifts it. It ends by checking that
+the cube moved with the gripper, so a jaw that closes beside the cube fails
+rather than reporting a demonstration it did not perform. `Collect the Red Block
 Pick` wraps that Objective in Trainer's recording Behaviors, keeping the episode
 only if the pick succeeds and converting the dataset to LeRobot v3.0.
+
+Open Trainer once before the first run: `RecordEpisode` names a saved Training
+Config, and a stack that has never opened the panel has none, which fails the
+recording with `Training config 'vla_sim' not found`. `ConvertDataset` starts a
+background job and succeeds when the job is accepted rather than when it
+finishes, so read the outcome in the **Convert** tab, and let one conversion
+finish before collecting again.
 
 Conversion labels `action` from a `sensor_msgs/JointState` command topic, and
 nothing outside of teleoperation publishes one. `script/joint_command_bridge.py`

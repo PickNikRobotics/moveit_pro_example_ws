@@ -40,7 +40,7 @@ def generate_launch_description():
                 package="vla_sim",
                 executable="joint_command_bridge.py",
                 name="joint_command_bridge",
-                output="log",
+                output="both",
             ),
         ]
     )
