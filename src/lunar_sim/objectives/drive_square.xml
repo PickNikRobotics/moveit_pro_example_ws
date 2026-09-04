@@ -4,15 +4,15 @@
     <Control ID="Sequence" name="TopLevelSequence">
       <Decorator ID="Repeat" num_cycles="4">
         <Control ID="Sequence">
-          <Action
-            ID="CreateTwistStamped"
-            reference_frame="footprint"
-            twist_stamped="{forward_twist}"
-            linear_velocity_xyz="0.3;0;0"
-            angular_velocity_xyz="0;0;0"
-          />
           <Decorator ID="Repeat" num_cycles="20">
             <Control ID="Sequence">
+              <Action
+                ID="CreateTwistStamped"
+                reference_frame="footprint"
+                twist_stamped="{forward_twist}"
+                linear_velocity_xyz="0.3;0;0"
+                angular_velocity_xyz="0;0;0"
+              />
               <Action
                 ID="PublishTwistStamped"
                 message="{forward_twist}"
@@ -23,15 +23,15 @@
               <Action ID="WaitForDuration" delay_duration="0.3" />
             </Control>
           </Decorator>
-          <Action
-            ID="CreateTwistStamped"
-            reference_frame="footprint"
-            twist_stamped="{turn_twist}"
-            linear_velocity_xyz="0;0;0"
-            angular_velocity_xyz="0;0;0.5235988"
-          />
           <Decorator ID="Repeat" num_cycles="10">
             <Control ID="Sequence">
+              <Action
+                ID="CreateTwistStamped"
+                reference_frame="footprint"
+                twist_stamped="{turn_twist}"
+                linear_velocity_xyz="0;0;0"
+                angular_velocity_xyz="0;0;0.5235988"
+              />
               <Action
                 ID="PublishTwistStamped"
                 message="{turn_twist}"
