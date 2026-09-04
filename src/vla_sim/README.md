@@ -9,11 +9,11 @@ and serving instructions live.
 ## Collecting training data
 
 `Pick the Red Block` is a scripted demonstration: it reads the cube's pose from
-the simulation, then approaches, grasps, and lifts it. It ends by checking that
-the cube moved with the gripper, so a jaw that closes beside the cube fails
-rather than reporting a demonstration it did not perform. `Collect the Red Block
-Pick` wraps that Objective in Trainer's recording Behaviors, keeping the episode
-only if the pick succeeds and converting the dataset to LeRobot v3.0.
+the simulation, then approaches, grasps, and lifts it. `Collect the Red Block
+Pick` wraps that Objective in Trainer's recording Behaviors, discarding the
+attempt if a Behavior fails and converting the dataset to LeRobot v3.0. Review
+the episode in playback before trusting it: the tree cannot tell a grasp from a
+jaw that closed beside the cube.
 
 Open Trainer once before the first run: `RecordEpisode` names a saved Training
 Config, and a stack that has never opened the panel has none, which fails the

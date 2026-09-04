@@ -47,10 +47,11 @@
             dataset_name="red_block_pick"
           />
         </Control>
-        <!--Cleanup, not a forced success: if the pick fails before SaveEpisode,
-             StopRecording discards the unsaved attempt and AlwaysFailure
-             preserves the Objective's failed result, so a failed pick is never
-             labeled as a successful demonstration.-->
+        <!--Cleanup, not a forced success: if a Behavior fails before
+             SaveEpisode, StopRecording discards the unsaved attempt and
+             AlwaysFailure preserves the Objective's failed result. Whether the
+             cube actually came with the gripper is a question for the playback
+             step, which is where the guide has the reader look.-->
         <Control ID="Sequence" name="DiscardFailedAttempt">
           <Action ID="StopRecording" name="Discard unsaved attempt" />
           <Action ID="AlwaysFailure" />
