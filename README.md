@@ -45,6 +45,6 @@ The hardware-only `kinova_gen3_site_config` and `picknik_ur_site_config` configu
 
 ## Updating vendored dependencies
 
-Each `UPSTREAM.yaml` file under `src/external_dependencies` records the exact upstream commit and retained paths. Refresh a dependency from that commit, preserve its license files, reapply the documented pruning, and validate every config that consumes the package.
+Each `UPSTREAM.yaml` file under `src/external_dependencies` records the exact upstream commit and retained paths. Run `bin/vendored_dependency.py status` to see how many commits each pinned upstream branch has moved past its recorded commit; CI publishes the same table in the job summary of the `Validate workspace dependencies` job. Run `bin/vendored_dependency.py update <source>` (optionally `--to <commit>`) to refresh one source: it re-vendors the retained paths at the new commit, carries over every local difference from the pinned commit (edits and pruned files alike) as a three-way merge, updates `commit:` in `UPSTREAM.yaml`, and then checks that `modified_paths` still matches. Conflicts are left as ordinary conflict markers to resolve by hand. A run that stops early has already rewritten the source and its pin; the message names the `git restore` command that discards it. Refresh one source per PR, and build and run the configs that consume it before committing.
 
 The optional ML model submodules can be advanced independently when their demonstration Objectives need a newer model package.
