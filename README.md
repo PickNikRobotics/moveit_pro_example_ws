@@ -27,7 +27,6 @@ git submodule update --init src/moveit_pro_sam2 src/moveit_pro_sam3
 - `factory_sim`
 - `grinding_sim`
 - `hangar_sim`
-- `husky_a300_mock`
 - `kitchen_sim`
 - `lab_sim`
 - `lunar_sim`

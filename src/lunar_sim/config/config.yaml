@@ -1,16 +1,111 @@
+###############################################################
 #
-#  Lunar simulation configuration.
-#  Inherits from phoebe_sim and overrides the MuJoCo scene
-#  with a lunar environment.
+#  This configures the robot to work with MoveIt Pro
 #
+###############################################################
 
-based_on_package: "phoebe_sim"
 runtime_launch_file:
   package: "lunar_sim"
   path: "launch/runtime.launch.xml"
 
+# Baseline hardware configuration parameters for MoveIt Pro.
+# [Required]
 hardware:
+  # If the MoveIt Pro Agent should launch the ros2 controller node.
+  # [Optional, default=True]
+  launch_control_node: True
+
+  # If the MoveIt Pro Agent should launch the robot state publisher.
+  # [Optional, default=True]
+  launch_robot_state_publisher: True
+
+  # Parameters used to configure the robot description through XACRO.
+  # A URDF and SRDF are both required.
+  # [Required]
   robot_description:
-    urdf_params:
-      - mujoco_model_package: lunar_sim
-      - mujoco_model: mjcf/scene.xml
+    urdf:
+      package: "lunar_sim"
+      path: "description/husky_a300_blank_world.xacro"
+    srdf:
+      package: "lunar_sim"
+      path: "config/moveit/husky_a300.srdf"
+
+# Sets ROS global params for launch.
+# [Optional]
+ros_global_params:
+  # Whether or not to use simulated time.
+  # [Optional, default=False]
+  use_sim_time: False
+
+# Configuration files for MoveIt.
+# [Required]
+moveit_params:
+  # Used by the Waypoint Manager to save joint states from this joint group.
+  joint_group_name: "base"
+
+  kinematics:
+    package: "lunar_sim"
+    path: "config/moveit/kinematics.yaml"
+  pose_jog:
+    package: "lunar_sim"
+    path: "config/moveit/pose_jog.yaml"
+  joint_jog:
+    package: "lunar_sim"
+    path: "config/moveit/joint_jog.yaml"
+
+  publish:
+    planning_scene: True
+    geometry_updates: True
+    state_updates: True
+    transforms_updates: True
+
+# Configuration for launching ros2_control processes.
+# [Required, if using ros2_control]
+ros2_control:
+  config:
+    package: "lunar_sim"
+    path: "config/control/husky_a300.ros2_control.yaml"
+  # MoveIt Pro will load and activate these controllers at start up to ensure they are available.
+  # [Optional, default=[]]
+  controllers_active_at_startup:
+    - "joint_state_broadcaster"
+    - "platform_velocity_controller"
+  controllers_inactive_at_startup: []
+  controllers_not_managed: []
+  # platform_velocity_controller's topics are namespaced under its own controller name (Jazzy
+  # default). Remap them to the plain /cmd_vel and /odom names Nav2 expects, so no rework is
+  # needed downstream.
+  # [Optional, default=[]]
+  controller_shared_topics:
+    /cmd_vel:
+      - "/platform_velocity_controller/cmd_vel"
+    /odom:
+      - "/platform_velocity_controller/odom"
+
+# Configuration for loading behaviors and objectives.
+# [Required]
+objectives:
+  # List of plugins for loading custom behaviors.
+  # [Required]
+  behavior_loader_plugins:
+    core:
+      - "moveit_pro::behaviors::CoreBehaviorsLoader"
+      - "moveit_pro::behaviors::MTCCoreBehaviorsLoader"
+      - "moveit_pro::behaviors::ConverterBehaviorsLoader"
+      - "moveit_pro::behaviors::VisionBehaviorsLoader"
+  # Specify source folder for objectives
+  # [Required]
+  objective_library_paths:
+    core_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/core"
+    # This config adds no custom Objectives, but the last entry must resolve to a
+    # package source directory inside the user workspace, so keep it in-workspace.
+    lunar_sim_objectives:
+      package_name: "lunar_sim"
+      relative_path: "objectives"
+  # Specify the location of the saved waypoints file.
+  # [Required]
+  waypoints_file:
+    package_name: "lunar_sim"
+    relative_path: "waypoints/waypoints.yaml"

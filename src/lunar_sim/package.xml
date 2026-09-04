@@ -4,8 +4,8 @@
   <version>9.5.0</version>
 
   <description>
-    MuJoCo simulation configuration package for the dual-arm mobile robot
-    in a lunar environment.
+    Minimal MoveIt Pro configuration for a Clearpath Husky A300 in a blank
+    world, for fast iteration decoupled from a full simulated environment.
   </description>
 
   <maintainer email="support@picknik.ai">MoveIt Pro Maintainer</maintainer>
@@ -14,16 +14,22 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <depend>clearpath_platform_description</depend>
+  <exec_depend>controller_manager</exec_depend>
+  <exec_depend>diff_drive_controller</exec_depend>
+  <exec_depend>hardware_interface</exec_depend>
+  <exec_depend>joint_state_broadcaster</exec_depend>
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
   <exec_depend>moveit_studio_agent</exec_depend>
-  <exec_depend>phoebe_sim</exec_depend>
+  <exec_depend>moveit_pro_behavior</exec_depend>
+  <exec_depend>moveit_pro_objectives</exec_depend>
 
-  <test_depend>ament_lint_auto</test_depend>
-  <test_depend>ament_clang_format</test_depend>
-  <test_depend>ament_clang_tidy</test_depend>
   <test_depend>ament_cmake_copyright</test_depend>
   <test_depend>ament_cmake_lint_cmake</test_depend>
-  <test_depend>picknik_ament_copyright</test_depend>
   <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>picknik_ament_copyright</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

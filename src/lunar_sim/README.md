@@ -1,4 +1,4 @@
-# husky_a300_mock
+# lunar_sim
 
 A minimal MoveIt Pro configuration for a Clearpath Husky A300 in a blank world: no sensors, no
 environment assets, mock hardware. Built for fast iteration, decoupled from a full simulated
