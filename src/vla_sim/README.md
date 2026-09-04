@@ -8,28 +8,23 @@ and serving instructions live.
 
 ## Collecting training data
 
-`Pick the Red Block` is a scripted demonstration: it reads the cube's pose from
-the simulation, then approaches, grasps, and lifts it. `Collect the Red Block
-Pick` wraps that Objective in Trainer's recording Behaviors, discarding the
-attempt if a Behavior fails and converting the dataset to LeRobot v3.0. Review
-the episode in playback before trusting it: the tree cannot tell a grasp from a
-jaw that closed beside the cube.
+`Pick the Red Block` reads the cube's pose from the simulation, then approaches,
+grasps, and lifts it. `Collect the Red Block Pick` wraps that Objective in
+Trainer's recording Behaviors and converts the dataset to LeRobot v3.0. Nothing
+checks that the cube came with the gripper, so review the episode in playback
+before trusting it.
 
-Open Trainer once before the first run: `RecordEpisode` names a saved Training
-Config, and a stack that has never opened the panel has none, which fails the
-recording with `Training config 'vla_sim' not found`. `ConvertDataset` starts a
-background job and succeeds when the job is accepted rather than when it
-finishes, so read the outcome in the **Convert** tab, and let one conversion
-finish before collecting again.
+Open Trainer once before the first run, or `RecordEpisode` fails with
+`Training config 'vla_sim' not found`. `ConvertDataset` succeeds when the
+conversion job is accepted rather than when it finishes: read the outcome in the
+**Convert** tab, and let one conversion finish before collecting again.
 
-Conversion labels `action` from a `sensor_msgs/JointState` command topic, and
-nothing outside of teleoperation publishes one. `script/joint_command_bridge.py`
-fills that gap, republishing the trajectory controller's setpoint and the latched
-gripper command as `/joint_commands`; the gripper Objectives latch their command
-through a parameter, since a `GripperCommand` goal is not observable on any
-topic. Without the bridge the dataset converts only with **Action source: Next
-state**, which labels each frame with the next frame's measured position rather
-than with what the Objective commanded.
+Conversion labels `action` from a `sensor_msgs/JointState` command topic, which
+`script/joint_command_bridge.py` publishes as `/joint_commands` from the
+trajectory controller's setpoint and the latched gripper command. Point the
+Training Config's command topic elsewhere and episodes convert only with
+**Action source: Next state**, labelling each frame with the next frame's
+measured position instead of what the Objective commanded.
 
 ## Hardware requirements
 

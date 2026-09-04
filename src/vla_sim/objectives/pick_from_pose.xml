@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Pick from Pose">
   <!--
-    Copied from lab_sim, with `end_effector_group` set to this configuration's
-    SRDF group name. `approach_distance` runs along `grasp_link`'s own axis, so a
-    top-down grasp pose makes both the approach and the retract vertical.
+    `approach_distance` runs along `grasp_link`'s own axis, so a top-down grasp
+    pose makes both the approach and the retract vertical.
 
-    `max_ik_solutions` is raised from lab_sim's 4 because joints 1, 3, 5 and 7 of
-    a Gen3 are continuous. With a narrow candidate set the solutions for a yawed
-    grasp all landed a full turn away on joint_3, and the controller rejected the
-    trajectory for starting 2*pi from where the arm actually was.
+    Joints 1, 3, 5 and 7 of a Gen3 are continuous, so a narrow `max_ik_solutions`
+    can leave only solutions a full turn from the arm's current pose, which the
+    controller rejects.
   -->
   <BehaviorTree
     ID="Pick from Pose"
@@ -70,10 +68,9 @@
       <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
       <SubTree ID="Execute MTC Solution" solution="{mtc_solution}" />
       <!--
-        ExecuteMTCSolution returns when the trajectory's time is up, and the
-        admittance controller is still catching up to the last few centimetres.
-        Closing on that lag grasps air, so let the arm settle onto the pose
-        first, then let the jaws finish before the retract pulls away.
+        ExecuteMTCSolution returns on trajectory time, with the admittance
+        controller still catching up the last few centimetres. Closing on that
+        lag grasps air, and retracting on it pulls away mid-close.
       -->
       <Action ID="WaitForDuration" delay_duration="{settle_duration}" />
       <SubTree ID="Close Gripper" _collapsed="true" />

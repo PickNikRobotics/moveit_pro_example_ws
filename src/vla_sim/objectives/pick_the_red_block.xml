@@ -1,18 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Pick the Red Block">
   <!--
-    A scripted stand-in for a teleoperated demonstration, reaching the same phases
-    an oracle policy does: approach from above, descend to the grasp, close, lift.
-    It reads the cube's pose out of the simulation rather than out of perception.
-
     `cube_red_tf` is a MuJoCo site on the cube's centroid, which picknik_mujoco_ros
-    publishes to TF whenever `tf_publish_rate` is set. Its orientation is the cube's
-    own, which is not a grasp, so a top-down one replaces it before the pick plans
-    against the pose.
+    publishes to TF whenever `tf_publish_rate` is set. It carries the cube's own
+    orientation, which is not a grasp, so a top-down one replaces it.
 
-    The Objective does not reset the scene, so run **Reset MuJoCo Sim** between
-    attempts. **Collect the Red Block Pick** resets on its own, ahead of the
-    recording window.
+    Nothing here resets the scene: run **Reset MuJoCo Sim** between attempts.
+    **Collect the Red Block Pick** resets on its own.
   -->
   <BehaviorTree
     ID="Pick the Red Block"
@@ -47,7 +41,6 @@
         marker_size="0.100000"
         pose="{grasp_pose}"
       />
-      <!--Approach and retract along the tool's own axis, so both are vertical.-->
       <SubTree
         ID="Pick from Pose"
         _collapsed="true"

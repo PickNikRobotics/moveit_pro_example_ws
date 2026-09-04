@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Collect the Red Block Pick">
-  <!--The reset sits ahead of RecordEpisode so its controller switch, and the
-       teleport that follows, land outside the recorded window.-->
   <BehaviorTree
     ID="Collect the Red Block Pick"
     _description="Record one scripted demonstration of picking up the red block and convert it to a LeRobot dataset."
