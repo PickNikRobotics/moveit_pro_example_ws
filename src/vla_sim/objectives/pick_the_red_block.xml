@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Pick the Red Block">
+  <!--
+    `cube_red_tf` is a MuJoCo site on the cube's centroid, which picknik_mujoco_ros
+    publishes to TF whenever `tf_publish_rate` is set. It carries the cube's own
+    orientation, which is not a grasp, so a top-down one replaces it.
+
+    Nothing here resets the scene: run **Reset MuJoCo Sim** between attempts.
+    **Collect the Red Block Pick** resets on its own.
+  -->
+  <BehaviorTree
+    ID="Pick the Red Block"
+    _description="Pick up the red block from its simulated pose, without recording."
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="root">
+      <SubTree ID="Open Gripper" _collapsed="true" />
+      <Action ID="SwitchUIPrimaryView" primary_view_name="Visualization" />
+      <Action
+        ID="GetLatestTransform"
+        target_frame_id="world"
+        source_frame_id="cube_red_tf"
+        transform="{cube_transform}"
+      />
+      <Action
+        ID="ConvertTransformStampedToPoseStamped"
+        transform_stamped="{cube_transform}"
+        pose_stamped="{cube_pose}"
+      />
+      <!--Straight down at the cube, yawed a quarter turn about world Z.-->
+      <Action
+        ID="OverridePoseOrientation"
+        input_pose="{cube_pose}"
+        orientation_xyzw="0.7071068;0.7071068;0;0"
+        output_pose="{grasp_pose}"
+      />
+      <Action
+        ID="VisualizePose"
+        marker_lifetime="0.000000"
+        marker_name="Red Block Grasp"
+        marker_size="0.100000"
+        pose="{grasp_pose}"
+      />
+      <SubTree
+        ID="Pick from Pose"
+        _collapsed="true"
+        grasp_pose="{grasp_pose}"
+        approach_distance="0.12"
+        retract_xyz="0;0;-0.12"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Pick the Red Block">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - VLA Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
