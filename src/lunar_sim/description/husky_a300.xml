@@ -150,17 +150,25 @@
       <!-- MuJoCo's <include> splices in only the included file's children, discarding its
            own wrapping element - so the real body name/pos live here, and each *_wheel_link.xml
            file's outer <body> tag is a throwaway wrapper (just satisfies "one root element" for
-           valid standalone XML). -->
+           valid standalone XML).
+
+           Right-side y is NOT the left side's mirrored sign: FK through the vendored xacro chain
+           (a300.urdf.xacro's chassis_suspension_mount_y=0.192 -> suspension_beam.urdf.xacro's
+           side-conditional spacer_offset (+/-0.0159) -> its own front/rear_mount_joint, whose
+           y=0.0095 is a literal, non-side-conditional offset applied in both beams' unrotated local
+           frames, so it does NOT flip sign with side -> motor.urdf.xacro's side-conditional
+           translation_y (+/-0.0655)) gives left=+0.2829 but right=-0.2639, not -0.2829: the
+           un-mirrored 0.0095 term breaks the naive left/right symmetry by 19 mm. -->
       <body name="front_left_wheel_link" pos="0.256 0.2829 0.02913">
         <include file="front_left_wheel_link.xml" />
       </body>
-      <body name="front_right_wheel_link" pos="0.256 -0.2829 0.02913">
+      <body name="front_right_wheel_link" pos="0.256 -0.2639 0.02913">
         <include file="front_right_wheel_link.xml" />
       </body>
       <body name="rear_left_wheel_link" pos="-0.256 0.2829 0.02913">
         <include file="rear_left_wheel_link.xml" />
       </body>
-      <body name="rear_right_wheel_link" pos="-0.256 -0.2829 0.02913">
+      <body name="rear_right_wheel_link" pos="-0.256 -0.2639 0.02913">
         <include file="rear_right_wheel_link.xml" />
       </body>
     </body>

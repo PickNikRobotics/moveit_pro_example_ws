@@ -20,6 +20,15 @@ named `platform_velocity_controller`, matching the real robot's controller namin
 setup. `open_loop` is now `false`: MuJoCo reports real per-wheel position/velocity state from
 physics, so `/odom` reflects that feedback instead of integrating the commanded velocity.
 
+**Known limitation:** `wheel_separation_multiplier: 1.75` is a real-hardware pavement-slip
+calibration constant carried over unchanged for controller-config parity with the physical robot.
+Under the old `open_loop: true` mock setup it only affected a command -> twist -> command round
+trip and canceled out; under real closed-loop feedback it doesn't, since MuJoCo's simulated
+wheel-ground contact has no reason to reproduce the same slip ratio. `/odom`'s reported angular
+velocity/yaw is systematically off from the geometrically-correct value for the simulated chassis
+by roughly that multiplier. Not corrected here - fixing it means picking a simulated-track-width
+constant, which is a calibration decision, not a MuJoCo-migration bug.
+
 The four `outdoor` wheel joints (`front_left_wheel_joint` etc., named to match
 `clearpath_platform_description/urdf/a300/drivetrain/wheels/outdoor.urdf.xacro`) each carry a
 MuJoCo velocity actuator (`kv=500`) on a hinge with `armature=1.0`; wheel collision is a primitive
@@ -31,6 +40,13 @@ outdoor_left,outdoor_right}.stl` are byte-identical copies of the vendored meshe
 paths don't survive a colcon install split across package share directories, so they're copied
 into this package rather than referenced cross-package - see hangar_sim's own `description/assets`
 for the same pattern).
+
+The ground plane's color map (`description/assets/lunar_regolith_moon01_2k.png`) is
+[Poly Haven's "Moon 01"](https://polyhaven.com/a/moon_01) diffuse map, downloaded at 4K and
+resized to 2K PNG (MuJoCo's `<texture file="...">` loader only accepts PNG, not JPEG) to keep the
+file small; Poly Haven textures are CC0 (public domain). Only the color map is used - MuJoCo's
+`<texture type="2d">` is diffuse-only, so the normal/AO/roughness maps in the same asset are not
+needed.
 
 ## Roadmap
 
@@ -48,7 +64,9 @@ The vendored description also publishes a `base_footprint` link, but upstream's
 `base_footprint_joint` places it 0.30 m above the ground plane rather than on it, so it is unused
 here. The correction lives in `description/husky_a300_mujoco.xacro`, which adds `footprint` as
 `base_link`'s parent at the FK-measured offset (0.13597 m below `base_link`) while keeping the
-vendored package byte-identical to upstream.
+vendored package byte-identical to upstream. The correction can't reuse the name `base_footprint`
+- URDF requires unique link names, and `check_urdf` rejects the duplicate - hence the
+otherwise-unconventional `footprint` name.
 
 The 3D Visualizer's fixed frame is a different thing and is `odom`: with no localization there is
 nothing above `odom` in the TF tree, so `config/frontend_settings.yaml` sets `referenceFrame: odom`

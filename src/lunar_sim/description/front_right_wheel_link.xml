@@ -9,6 +9,9 @@
     damping="0.5"
     armature="1.0"
   />
+  <!-- Upstream outdoor.urdf.xacro applies rpy="0 0 pi" to the right-side visual mesh origin
+       (outdoor_right.stl is a distinct, mirrored mesh, not just a renamed copy of outdoor_left) -
+       quat="0 0 0 1" reproduces that 180 deg yaw here. -->
   <geom
     name="front_right_wheel_visual"
     mesh="outdoor_right"
@@ -17,6 +20,7 @@
     contype="0"
     conaffinity="0"
     group="2"
+    quat="0 0 0 1"
   />
   <geom
     name="front_right_wheel_collision"

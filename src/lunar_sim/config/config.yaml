@@ -38,7 +38,12 @@ hardware:
 ros_global_params:
   # Whether or not to use simulated time.
   # [Optional, default=False]
-  use_sim_time: True
+  # False: picknik_mujoco_ros/MujocoSystem never publishes /clock (it is wall-clock-paced, not
+  # sim-time-paced - see mujoco_system.cpp), so with this True and nothing else publishing /clock,
+  # every node's ROS time stalls at t=0, breaking TF and /odom timestamps. Every other MuJoCo-backed
+  # config in this workspace (hangar_sim, kinova_sim, factory_sim, vla_sim, grinding_sim) leaves
+  # this False for the same reason.
+  use_sim_time: False
 
 # Configuration files for MoveIt.
 # [Required]
