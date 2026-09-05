@@ -1,0 +1,91 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="husky_a300">
+  <!-- A300 platform body from clearpathrobotics/clearpath_common's clearpath_platform_description
+       package (BSD-licensed), vendored under ../../external_dependencies and kept byte-identical to
+       upstream. This file supplies its own mock ros2_control block below, so
+       use_platform_controllers:=false keeps the upstream ros2_control include out of the build. -->
+  <xacro:arg name="use_platform_controllers" default="false" />
+  <!-- a300.urdf.xacro declares this arg with a default that resolves $(find clearpath_control), a
+       package this config never uses (no Gazebo) and does not vendor. Declaring it first wins: xacro
+       only applies an <xacro:arg> default for a name it has not already seen, so the upstream
+       default is never evaluated. -->
+  <xacro:arg name="gazebo_controllers" default="unused" />
+  <xacro:include filename="$(find clearpath_platform_description)/urdf/common.urdf.xacro" />
+  <xacro:include filename="$(find clearpath_platform_description)/urdf/a300/a300.urdf.xacro" />
+  <xacro:a300 control="diff_4wd" front_wheels="outdoor" rear_wheels="outdoor" />
+
+  <!-- FRAME NAMING: the ground-contact frame on this robot is "footprint", NOT "base_footprint".
+       Anything that needs a REP-105 ground frame - TF consumers, Nav2, the
+       platform_velocity_controller's base_frame_id - must use "footprint". (The 3D Visualizer's
+       fixed frame is a separate setting and is "odom"; see config/frontend_settings.yaml.)
+
+       Why the unconventional name: upstream a300.urdf.xacro defines a base_footprint_joint
+       (chassis_link -> base_footprint) whose origin adds the wheel radius instead of subtracting
+       the wheel-center height, placing base_footprint 0.30 m above the ground plane. FK on the
+       URDF this file generates: base_link at z=0, front wheel centers at z=0.0291, wheel
+       radius=0.1651, so ground contact is 0.13597 m below base_link. base_footprint stays in the
+       published TF tree at z=+0.30107 and is unused by this configuration.
+
+       That joint lives in the vendored package, which is kept byte-identical to upstream, so it is
+       corrected here instead of edited in place. The correction cannot reuse the name
+       base_footprint - URDF requires unique link names, and check_urdf rejects the duplicate - so
+       the corrected frame is named "footprint" and becomes base_link's parent. -->
+  <link name="footprint" />
+  <joint name="footprint_joint" type="fixed">
+    <parent link="footprint" />
+    <child link="base_link" />
+    <origin xyz="0 0 0.13597" rpy="0 0 0" />
+  </joint>
+
+  <!-- Attachments: the standard A300 accessory kit (front/rear bumper, sensor enclosure, sensor
+       arch), for visual/body fidelity with the real robot. No sensors are mounted - sensors are out
+       of scope for this configuration. -->
+  <xacro:include filename="$(find clearpath_platform_description)/urdf/a300/attachments/bumper.urdf.xacro" />
+  <xacro:bumper name="front_bumper" model="default" parent_link="front_bumper_mount" extension="0.0">
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+  </xacro:bumper>
+  <xacro:bumper name="rear_bumper" model="default" parent_link="rear_bumper_mount" extension="0.0">
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+  </xacro:bumper>
+
+  <xacro:include filename="$(find clearpath_platform_description)/urdf/a300/attachments/amp_enclosure.urdf.xacro" />
+  <xacro:amp_enclosure name="enclosure" model="amp_enclosure" parent_link="base_link">
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+  </xacro:amp_enclosure>
+
+  <xacro:include filename="$(find clearpath_platform_description)/urdf/a300/attachments/amp_sensor_arch.urdf.xacro" />
+  <xacro:amp_sensor_arch name="sensor_arch" model="amp_sensor_arch" parent_link="enclosure_antenna_mount">
+    <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
+  </xacro:amp_sensor_arch>
+
+  <!-- Mock hardware: command velocity in, integrated position/velocity state out. No physics, no
+       sensors - this is the "blank world", fast-iteration counterpart to a full MuJoCo simulation.
+       Wheel joint names match clearpath_platform_description/urdf/a300/drivetrain/wheels/outdoor.urdf.xacro
+       (front_left_wheel_joint etc.), the same names the real robot's drivetrain.urdf.xacro claims. -->
+  <ros2_control name="husky_a300_hardware" type="system">
+    <hardware>
+      <plugin>mock_components/GenericSystem</plugin>
+      <param name="calculate_dynamics">true</param>
+    </hardware>
+    <joint name="front_left_wheel_joint">
+      <command_interface name="velocity" />
+      <state_interface name="position" />
+      <state_interface name="velocity" />
+    </joint>
+    <joint name="front_right_wheel_joint">
+      <command_interface name="velocity" />
+      <state_interface name="position" />
+      <state_interface name="velocity" />
+    </joint>
+    <joint name="rear_left_wheel_joint">
+      <command_interface name="velocity" />
+      <state_interface name="position" />
+      <state_interface name="velocity" />
+    </joint>
+    <joint name="rear_right_wheel_joint">
+      <command_interface name="velocity" />
+      <state_interface name="position" />
+      <state_interface name="velocity" />
+    </joint>
+  </ros2_control>
+</robot>

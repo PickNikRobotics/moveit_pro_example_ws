@@ -1,0 +1,7 @@
+# diff_drive_controller is a kinematics controller, not a per-joint velocity controller, so the
+# "base" group's wheel joints are not joint-joggable - Nav2 drives the base directly via /cmd_vel.
+# An empty planning_groups/controllers pair crashes MoveIt Pro's launch (evaluates to an untyped
+# empty parameter tuple), so this points at "base" inertly instead - Joint Jog is never invoked
+# for this robot.
+planning_groups: ["base"]
+controllers: ["platform_velocity_controller"]
