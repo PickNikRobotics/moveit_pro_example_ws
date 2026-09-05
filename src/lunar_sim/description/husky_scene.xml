@@ -1,0 +1,77 @@
+<mujoco model="lunar sim scene">
+  <compiler angle="radian" meshdir="assets" autolimits="true" />
+
+  <option integrator="implicitfast" timestep="0.003" />
+
+  <include file="husky_a300.xml" />
+
+  <visual>
+    <headlight
+      diffuse="0.4 0.4 0.4"
+      ambient="0.05 0.05 0.05"
+      specular="0 0 0"
+    />
+    <rgba haze="0.05 0.05 0.05 1" />
+    <global offwidth="1280" offheight="720" azimuth="120" elevation="-20" />
+  </visual>
+
+  <!-- Dark space skybox + regolith ground, carried over from the pre-869 Phoebe-based
+       lunar_sim scene (src/lunar_sim/mjcf/scene.xml on main before that PR removed it). -->
+  <asset>
+    <texture
+      type="skybox"
+      builtin="gradient"
+      rgb1="0.02 0.02 0.05"
+      rgb2="0 0 0"
+      width="512"
+      height="3072"
+    />
+    <texture
+      type="2d"
+      name="regolith"
+      builtin="flat"
+      rgb1="0.55 0.55 0.50"
+      rgb2="0.45 0.45 0.40"
+      width="512"
+      height="512"
+    />
+    <material
+      name="regolith_ground"
+      texture="regolith"
+      texuniform="true"
+      texrepeat="8 8"
+      reflectance="0.05"
+    />
+  </asset>
+
+  <worldbody>
+    <!-- Reduced lighting to simulate lunar conditions -->
+    <light
+      pos="5 -5 10"
+      dir="-0.5 0.5 -1"
+      directional="true"
+      diffuse="0.9 0.9 0.85"
+    />
+
+    <!-- Flat regolith plane. Finite (not the old infinite plane) so wheel contact matches
+         hangar_sim's precedent; 50x50 m comfortably bounds the ~1.8 m Dead Reckon Square. -->
+    <geom
+      name="ground_plane"
+      type="plane"
+      size="50 50 0.1"
+      pos="0 0 0"
+      material="regolith_ground"
+      contype="1"
+      conaffinity="1"
+    />
+
+    <camera
+      name="scene_camera"
+      pos="-3 -3 2"
+      mode="targetbody"
+      target="chassis_link"
+      fovy="45"
+      resolution="1280 720"
+    />
+  </worldbody>
+</mujoco>

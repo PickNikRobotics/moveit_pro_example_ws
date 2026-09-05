@@ -25,17 +25,20 @@ hardware:
   robot_description:
     urdf:
       package: "lunar_sim"
-      path: "description/husky_a300_blank_world.xacro"
+      path: "description/husky_a300_mujoco.xacro"
     srdf:
       package: "lunar_sim"
       path: "config/moveit/husky_a300.srdf"
+    urdf_params:
+      - mujoco_model: "description/husky_scene.xml"
+      - mujoco_viewer: false  # set to true locally to open the MuJoCo viewer window
 
 # Sets ROS global params for launch.
 # [Optional]
 ros_global_params:
   # Whether or not to use simulated time.
   # [Optional, default=False]
-  use_sim_time: False
+  use_sim_time: True
 
 # Configuration files for MoveIt.
 # [Required]

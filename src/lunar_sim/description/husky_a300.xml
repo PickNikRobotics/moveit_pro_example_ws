@@ -1,0 +1,84 @@
+<mujoco model="husky_a300">
+  <compiler angle="radian" meshdir="assets" autolimits="true" />
+
+  <option integrator="implicitfast" />
+
+  <asset>
+    <material name="husky_dark_grey" rgba="0.15 0.15 0.15 1" />
+    <material name="husky_chassis_yellow" rgba="0.85 0.65 0.05 1" />
+    <mesh name="chassis_collision" file="chassis_collision.stl" />
+    <mesh name="outdoor_left" file="outdoor_left.stl" />
+    <mesh name="outdoor_right" file="outdoor_right.stl" />
+  </asset>
+
+  <!-- Wheel offsets relative to chassis_link (==base_link for the diff_4wd control mode
+       clearpath_platform_description uses here, chassis_x/y/z all 0) are the FK sum of
+       a300.urdf.xacro's suspension-mount chain: chassis_suspension_mount(0, 0.192, 0.03763)
+       -> suspension_beam spacer(0, +-0.0159, 0) -> beam front/rear mount(+-0.256, 0.0095,
+       -0.0085) -> motor_mount(0, +-0.0655, 0). Sum: x=+-0.256, y=+-0.2829, z=0.02913 - matching
+       the URDF's own FK (front wheel centers at z=0.0291 above base_link, see README.md).
+       See a300_outdoor_wheel_radius=0.1651 in
+       clearpath_platform_description/urdf/a300/drivetrain/wheels/outdoor.urdf.xacro. -->
+  <worldbody>
+    <body name="chassis_link" pos="0 0 0.13597">
+      <freejoint />
+      <inertial pos="0 0 0.1148" mass="70" diaginertia="1.1409 4.6217 5.1478" />
+      <geom
+        name="chassis"
+        mesh="chassis_collision"
+        material="husky_chassis_yellow"
+        type="mesh"
+        contype="1"
+        conaffinity="1"
+        group="2"
+      />
+
+      <!-- MuJoCo's <include> splices in only the included file's children, discarding its
+           own wrapping element - so the real body name/pos live here, and each *_wheel_link.xml
+           file's outer <body> tag is a throwaway wrapper (just satisfies "one root element" for
+           valid standalone XML). -->
+      <body name="front_left_wheel_link" pos="0.256 0.2829 0.02913">
+        <include file="front_left_wheel_link.xml" />
+      </body>
+      <body name="front_right_wheel_link" pos="0.256 -0.2829 0.02913">
+        <include file="front_right_wheel_link.xml" />
+      </body>
+      <body name="rear_left_wheel_link" pos="-0.256 0.2829 0.02913">
+        <include file="rear_left_wheel_link.xml" />
+      </body>
+      <body name="rear_right_wheel_link" pos="-0.256 -0.2829 0.02913">
+        <include file="rear_right_wheel_link.xml" />
+      </body>
+    </body>
+  </worldbody>
+
+  <!-- kv=500 with the wheel joints' armature=1.0 (see front_left_wheel_link.xml) gives
+       tau = armature/kv = 0.002 s, below husky_scene.xml's 0.003 s timestep. See CLAUDE.md's
+       "Velocity actuators: armature/kv time-constant must stay below the timestep". -->
+  <actuator>
+    <velocity
+      name="front_left_wheel"
+      joint="front_left_wheel_joint"
+      ctrlrange="-15 15"
+      kv="500"
+    />
+    <velocity
+      name="front_right_wheel"
+      joint="front_right_wheel_joint"
+      ctrlrange="-15 15"
+      kv="500"
+    />
+    <velocity
+      name="rear_left_wheel"
+      joint="rear_left_wheel_joint"
+      ctrlrange="-15 15"
+      kv="500"
+    />
+    <velocity
+      name="rear_right_wheel"
+      joint="rear_right_wheel_joint"
+      ctrlrange="-15 15"
+      kv="500"
+    />
+  </actuator>
+</mujoco>

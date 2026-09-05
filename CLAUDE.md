@@ -17,6 +17,30 @@ Each joint type contributes to qpos:
 
 After adding or removing bodies with joints, **remove the keyframe** and let MuJoCo use body `pos=` attributes for initial positions.
 
+### `<include>` inside a `<body>` discards the included file's own wrapping element
+
+When an included file's root element is itself a `<body>` (e.g. one file per wheel, mirroring `hangar_sim/description/*_wheel_link.xml`), MuJoCo's compiler splices in only that root element's **children** — the wrapping `<body>`'s own `name`/`pos` are silently discarded, not nested. Two wheel bodies written this way collapse into one, and their `<inertial>` tags collide: `Schema violation: unique element 'inertial' found N times`.
+
+The real body (with its real `name`/`pos`) must be declared inline at the include site; the included file's own root element is just a throwaway wrapper to satisfy "one root element" for valid standalone XML:
+
+```xml
+<!-- in the parent file -->
+<body name="front_left_wheel_link" pos="0.256 0.2829 0.02913">
+  <include file="front_left_wheel_link.xml" />
+</body>
+```
+
+```xml
+<!-- front_left_wheel_link.xml -->
+<body>
+  <inertial .../>
+  <joint name="front_left_wheel_joint" .../>
+  <geom .../>
+</body>
+```
+
+Verified against MuJoCo 3.6.0 (`picknikciuser/moveit-pro:main-jazzy-amd64-cuda13.2-cudnn9`'s bundled Python bindings) with a minimal `mj_name2id`/body-count check; see `src/lunar_sim/description/husky_a300.xml` for a real usage.
+
 ### Velocity actuators: `armature/kv` time-constant must stay below the timestep
 
 A `<velocity kv="...">` actuator on a joint with `armature="..."` behaves like a first-order servo with time-constant `τ = armature / kv`. If `τ` is larger than the scene `timestep`, the servo cannot inject enough velocity correction per step to overcome external load, and the joint effectively **stops responding to commands** — it stays pinned near zero even at full command. The per-step velocity correction scales as `kv · timestep / armature`, so halving the timestep halves the authority.
