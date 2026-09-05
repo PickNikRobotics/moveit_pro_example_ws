@@ -35,12 +35,18 @@
       width="512"
       height="512"
     />
+    <!-- Matte: regolith is a diffuse dust surface, not the wet-looking mirror MuJoCo's default
+         planar reflection gives a nonzero-reflectance plane. reflectance=0 turns that off;
+         specular/shininess=0 kill the remaining highlight, inherited unchanged from the old
+         Phoebe scene's material where they didn't matter as much on a smaller ground patch. -->
     <material
       name="regolith_ground"
       texture="regolith"
       texuniform="true"
       texrepeat="8 8"
-      reflectance="0.05"
+      reflectance="0"
+      specular="0"
+      shininess="0"
     />
   </asset>
 
