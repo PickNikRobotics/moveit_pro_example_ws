@@ -3,6 +3,8 @@
 
 from pathlib import Path, PureWindowsPath
 import argparse
+import fnmatch
+import functools
 import hashlib
 import json
 import os
@@ -42,11 +44,17 @@ LFS_POINTER_OID = re.compile(
     rb"oid sha256:([0-9a-f]{64})\nsize ([0-9]+)\n?\Z"
 )
 PICKNIK_MODIFICATION_NOTICE = b"Modified by PickNik Inc."
+# franka_description carries the full license title. phoebe_ws writes only the
+# SPDX identifier, in a LICENSES/ directory. Match both.
+APACHE_LICENSE_MARKERS = (b"Apache License", b"Apache-2.0")
 ALLOWED_MANIFEST_KEYS = {
     "upstream",
     "snapshot_path",
     "vendored_paths",
-    "pruned_paths",
+    # Free-text rationale for what was dropped, not machine-checked paths.
+    # Nothing reconciles deletions against upstream, so entries here are
+    # documentation only.
+    "pruning_notes",
     "modified_paths",
     "apache_paths",
     "apache_excluded_paths",
@@ -241,6 +249,29 @@ def is_normalized_manifest_path(value: str, *, allow_root: bool = False) -> bool
     return "." not in parts or (allow_root and parts == ["."])
 
 
+def parse_modified_entries(
+    values: object, relative_path: Path
+) -> tuple[list[str], list[str]]:
+    """Read modified_paths, rejecting a path declared more than once."""
+    paths: list[str] = []
+    errors: list[str] = []
+    if values is not None and not isinstance(values, list):
+        errors.append(f"{relative_path} must contain a modified_paths list")
+        return paths, errors
+    if not isinstance(values, list):
+        return paths, errors
+    for value in values:
+        if not isinstance(value, str):
+            errors.append(f"{relative_path} modified_paths entries must be strings")
+            continue
+        entry = value.strip()
+        if entry in paths:
+            errors.append(f"{relative_path} declares {entry} in modified_paths twice")
+            continue
+        paths.append(entry)
+    return paths, errors
+
+
 def validate_manifest_path_list(
     path: Path,
     relative_path: Path,
@@ -401,7 +432,9 @@ def inspect_license_inventory(
     errors: list[str] = []
     for license_path in root.rglob("*"):
         if not (
-            license_path.name.startswith("LICENSE") or license_path.name == "COPYING"
+            license_path.name.startswith("LICENSE")
+            or license_path.name == "COPYING"
+            or license_path.parent.name == "LICENSES"
         ):
             continue
         relative_license = license_path.relative_to(root).as_posix()
@@ -415,7 +448,8 @@ def inspect_license_inventory(
             continue
         try:
             with license_path.open("rb") as license_file:
-                if b"Apache License" in license_file.read(64 * 1024):
+                license_head = license_file.read(64 * 1024)
+                if any(marker in license_head for marker in APACHE_LICENSE_MARKERS):
                     retains_apache_material = True
         except OSError as error:
             errors.append(
@@ -472,7 +506,7 @@ def validate_vendor_manifest(path: Path) -> list[str]:
         elif not snapshot_root.is_dir():
             errors.append(f"{relative_path} snapshot_path is not a directory")
 
-    for key in ("vendored_paths", "pruned_paths", "notes"):
+    for key in ("vendored_paths", "pruning_notes", "notes"):
         value = manifest.get(key)
         if not isinstance(value, list):
             errors.append(f"{relative_path} must contain a {key} list")
@@ -513,11 +547,16 @@ def validate_vendor_manifest(path: Path) -> list[str]:
                 )
     modified_paths = manifest.get("modified_paths")
     if modified_paths is not None:
-        errors.extend(
-            validate_manifest_path_list(
-                path, relative_path, modified_paths, key="modified_paths"
-            )
+        modified_path_values, entry_errors = parse_modified_entries(
+            modified_paths, relative_path
         )
+        errors.extend(entry_errors)
+        if not entry_errors:
+            errors.extend(
+                validate_manifest_path_list(
+                    path, relative_path, modified_path_values, key="modified_paths"
+                )
+            )
     apache_paths = manifest.get("apache_paths")
     if apache_paths is not None:
         errors.extend(
@@ -586,7 +625,7 @@ def validate_vendor_manifest(path: Path) -> list[str]:
         and isinstance(apache_paths, list)
     ):
         declared_modified_paths = {
-            Path(item) for item in modified_paths if isinstance(item, str)
+            Path(entry_path) for entry_path in modified_path_values
         }
         declared_apache_paths = {
             Path(item) for item in apache_paths if isinstance(item, str)
@@ -612,26 +651,94 @@ def validate_vendor_manifest(path: Path) -> list[str]:
     return errors
 
 
-def effective_file_digest(path: Path) -> tuple[str, int]:
-    """Return content digest and size, resolving Git LFS pointer metadata."""
+@functools.cache
+def lfs_tracked_patterns(repository_root: Path) -> tuple[str, ...]:
+    """Return the .gitattributes patterns that route files through Git LFS."""
+    attributes = repository_root / ".gitattributes"
+    if not attributes.is_file():
+        return ()
+    try:
+        contents = attributes.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return ()
+    patterns = []
+    for line in contents.splitlines():
+        entry = line.strip()
+        if not entry or entry.startswith("#") or "filter=lfs" not in entry:
+            continue
+        patterns.append(entry.split()[0])
+    return tuple(patterns)
+
+
+def path_is_lfs_tracked(repository_relative_path: Path) -> bool:
+    """Return whether .gitattributes routes this path through Git LFS."""
+    posix_path = repository_relative_path.as_posix()
+    return any(
+        fnmatch.fnmatch(posix_path, pattern)
+        or fnmatch.fnmatch(repository_relative_path.name, pattern)
+        for pattern in lfs_tracked_patterns(REPOSITORY_ROOT)
+    )
+
+
+def file_is_lfs_tracked(path: Path) -> bool:
+    """Return whether .gitattributes routes this file through Git LFS.
+
+    Paths outside the repository have no .gitattributes entry, so this returns
+    False and their pointer-shaped bytes stay untrusted.
+    """
+    try:
+        repository_relative_path = path.relative_to(REPOSITORY_ROOT)
+    except ValueError:
+        return False
+    return path_is_lfs_tracked(repository_relative_path)
+
+
+def effective_file_digest(
+    path: Path, *, trust_lfs_pointer: bool = True
+) -> tuple[str, int]:
+    """Return content digest and size, resolving Git LFS pointer metadata.
+
+    A Git LFS pointer records the sha256 of the smudged content, so a pointer and
+    the content it stands for hash identically. That is what lets this compare a
+    skip-smudge upstream fetch against a smudged local checkout.
+
+    It also means this treats pointer-shaped text as proof of content equality.
+    Pass trust_lfs_pointer=False wherever the bytes are not guaranteed to be a
+    real pointer, which is the candidate tree unless .gitattributes routes that
+    path through LFS.
+    """
     if path.is_symlink():
         link_content = f"symlink:{os.readlink(path)}".encode()
         return hashlib.sha256(link_content).hexdigest(), len(link_content)
     content = path.read_bytes()
-    if match := LFS_POINTER_OID.fullmatch(content):
+    if trust_lfs_pointer and (match := LFS_POINTER_OID.fullmatch(content)):
         return match.group(1).decode(), int(match.group(2))
     return hashlib.sha256(content).hexdigest(), len(content)
 
 
-def snapshot_files(root: Path) -> dict[Path, tuple[str, int]]:
-    """Return effective content identities for a source snapshot."""
-    return {
-        path.relative_to(root): effective_file_digest(path)
-        for path in root.rglob("*")
-        if (path.is_file() or path.is_symlink())
-        and not path.relative_to(root).is_relative_to(Path(".git"))
-        and path.name != "UPSTREAM.yaml"
-    }
+def snapshot_files(
+    root: Path, *, verify_lfs_tracking: bool = False
+) -> dict[Path, tuple[str, int]]:
+    """Return effective content identities for a source snapshot.
+
+    Set verify_lfs_tracking for a tree inside this repository, where
+    .gitattributes decides which files git smudges from a pointer. The upstream
+    fetch sets GIT_LFS_SKIP_SMUDGE=1, so every pointer there is genuine.
+    """
+    snapshot: dict[Path, tuple[str, int]] = {}
+    for path in root.rglob("*"):
+        relative_path = path.relative_to(root)
+        if not (path.is_file() or path.is_symlink()):
+            continue
+        if relative_path.is_relative_to(Path(".git")) or path.name == "UPSTREAM.yaml":
+            continue
+        trust_lfs_pointer = True
+        if verify_lfs_tracking:
+            trust_lfs_pointer = file_is_lfs_tracked(path)
+        snapshot[relative_path] = effective_file_digest(
+            path, trust_lfs_pointer=trust_lfs_pointer
+        )
+    return snapshot
 
 
 def path_is_declared(path: Path, declared_paths: set[Path]) -> bool:
@@ -646,7 +753,11 @@ def validate_upstream_snapshot(manifest_path: Path, upstream_root: Path) -> list
     relative_manifest = manifest_path.relative_to(REPOSITORY_ROOT)
     manifest = parse_vendor_manifest(manifest_path)
     vendored_values = manifest[VENDORED_PATHS_KEY]
-    modified_values = manifest.get("modified_paths", [])
+    modified_values, modified_entry_errors = parse_modified_entries(
+        manifest.get("modified_paths", []), relative_manifest
+    )
+    if modified_entry_errors:
+        return modified_entry_errors
     apache_values = manifest.get("apache_paths", [])
     apache_excluded_values = manifest.get("apache_excluded_paths", [])
     if (
@@ -678,7 +789,7 @@ def validate_upstream_snapshot(manifest_path: Path, upstream_root: Path) -> list
         upstream_root, relative_manifest, upstream_retained_paths
     ):
         return symlink_errors
-    candidate_files = snapshot_files(manifest_path.parent)
+    candidate_files = snapshot_files(manifest_path.parent, verify_lfs_tracking=True)
     upstream_files = snapshot_files(upstream_root)
 
     errors = [
@@ -1098,13 +1209,18 @@ def validate_vendored_roots(
         ]
     errors: list[str] = []
     budget = UpstreamValidationBudget() if verify_upstream else None
+    budget_exhausted = False
     for manifest in manifests:
+        # Structural validation needs no network, so it runs for every manifest
+        # even after the upstream budget is spent. Stopping at the exhausted
+        # manifest would report one failure per CI run.
         manifest_errors = validate_vendor_manifest(manifest)
         errors.extend(manifest_errors)
-        if verify_upstream and not manifest_errors:
+        if verify_upstream and not manifest_errors and not budget_exhausted:
             errors.extend(fetch_and_validate_upstream(manifest, budget))
-            if budget is not None and budget.exhaustion_error is not None:
-                break
+            budget_exhausted = (
+                budget is not None and budget.exhaustion_error is not None
+            )
     return errors
 
 

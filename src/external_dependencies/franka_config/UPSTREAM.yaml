@@ -16,7 +16,7 @@ vendored_paths:
   - franka_description/meshes/robots/fr3
   - franka_description/meshes/accessories/fr3_duo_mount
   - franka_description/meshes/robot_ee/franka_hand_white
-pruned_paths:
+pruning_notes:
   - non-FR3 robot descriptions and meshes
   - unused end effectors, SRDF macros, standalone robot wrappers, documentation, visualization scripts, and tests
 modified_paths:
