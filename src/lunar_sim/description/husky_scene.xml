@@ -44,7 +44,7 @@
     <texture
       type="2d"
       name="regolith"
-      file="assets/lunar_regolith_ground031_2k.png"
+      file="assets/lunar_regolith_as15-86-11671_2k.png"
     />
     <!-- Matte: regolith is a diffuse dust surface, not the wet-looking mirror MuJoCo's default
          planar reflection gives a nonzero-reflectance plane. reflectance=0 turns that off;

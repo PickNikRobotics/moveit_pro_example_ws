@@ -107,9 +107,10 @@ the geom's own size.
 MuJoCo's built-in texture loader for `<texture type="2d" file="...">` accepts PNG (or its own
 custom binary format) - a `.jpg`/`.jpeg` file fails the model load with `Non-PNG texture, assuming
 custom binary file format, unexpected file size`, not a clearer "unsupported format" error.
-Photoreal ground/wall textures are often distributed as JPEG (e.g. ambientCG, Poly Haven); convert
-to PNG before wiring into a scene - see `src/lunar_sim/description/assets/lunar_regolith_ground031_2k.png`
-and the texture's provenance note in `src/lunar_sim/README.md`.
+Photoreal ground/wall textures are often distributed as JPEG (e.g. ambientCG, Poly Haven, or a NASA
+mission-photo scan); convert to PNG before wiring into a scene - see
+`src/lunar_sim/description/assets/lunar_regolith_as15-86-11671_2k.png` and the texture's
+provenance note in `src/lunar_sim/README.md`.
 
 Separately: this repo's root `.gitattributes` LFS-tracks every `*.jpg`/`*.png`/`*.jpeg` with no
 per-file exceptions (confirmed against every existing image asset in the repo, down to 19 KB

@@ -41,27 +41,36 @@ paths don't survive a colcon install split across package share directories, so 
 into this package rather than referenced cross-package - see hangar_sim's own `description/assets`
 for the same pattern).
 
-The ground plane's color map (`description/assets/lunar_regolith_ground031_2k.png`) is
-[ambientCG's "Ground031"](https://ambientcg.com/view?id=Ground031) color map (CC0/public domain),
-downloaded at 2K JPEG and converted to PNG (MuJoCo's `<texture file="...">` loader only accepts
-PNG, not JPEG). Only the color map is used - MuJoCo's `<texture type="2d">` is diffuse-only, so
-the normal/AO/roughness maps in the same asset are not needed.
+The ground plane's color map (`description/assets/lunar_regolith_as15-86-11671_2k.png`) is built
+from a real lunar surface photograph rather than a terrestrial stand-in: **NASA Apollo 15
+Hasselblad frame AS15-86-11671** (Station 7, Spur Crater, EVA-2 - the "Genesis Rock" in-situ
+documentation photo, taken with the 60mm lens at a sun elevation of 31 degrees). Public domain,
+NASA/JSC; archive.org identifier
+[`AS15-86-11671`](https://archive.org/details/AS15-86-11671), collection
+`johnsonspacecentermediaarchive`.
 
-An earlier pass used Poly Haven's "Moon 01" (also CC0) - a real lunar photometric diffuse map, but
-one built for planetary-scale rendering: at the ~3-4 m tile size this ground plane actually needs,
-its albedo variation is too low-frequency to read as anything but flat grey, with no visible
-rover-scale rocks/clods. Ground031's dry-cracked-soil photo scan has embedded pebbles/rocks at the
-right scale to still show real surface detail when tiled this large, so it was substituted in.
-Ground031's source photo carries a warm/mixed color cast (and stray blue-green mineral tints on
-some pebbles) unsuited to a neutral lunar grey - the shipped PNG is desaturated to a luminance-only
-image and reprocessed to a neutral, slightly warm-grey albedo (~0.47-0.51) rather than used as
-downloaded.
+Earlier attempts used terrestrial CC0 photo scans (ambientCG/Poly Haven gravel, sand, and
+desiccated-mudflat sets) at the right tile-scale detail but didn't read as lunar on inspection -
+they're photographs of Earth ground, not the Moon. AS15-86-11671 is a genuine ~1-2 m wide,
+straight-down shot of undisturbed regolith (cropped clear of the gnomon, the rock sample, and any
+footprints), so it carries real lunar grain and lighting instead of an approximation.
 
-**Honest caveat:** Ground031 is a dry, desiccation-cracked mudflat, not a lunar dust photo - up
-close (see the ground-level render) its polygonal crack network reads as an Earth desert lakebed
-more than fine regolith. It was chosen for tile-scale rock/pebble detail that Moon 01 lacked, not
-for a perfect lunar match; swapping to a less crack-dominated CC0 gravel/rock set is a reasonable
-follow-up if the desiccation-crack look reads wrong in practice.
+Processing (see `inpaint_reseau.py`/`prep_base2.py`/`stamp_craterlets.py`, kept out of this PR -
+not a reproducible build step since it starts from a manually-inspected external download and
+several by-eye crop/threshold choices; steps below are exact):
+1. Crop a 1650x1650 square clear of the gnomon, the rock fragment, and the footprint/scuff area.
+2. Remove the Hasselblad reseau-plate fiducial grid lines (thin calibration lines etched across
+   the whole frame by the camera, not scene content): detect them as sharp, image-spanning spikes
+   in the column/row median profile, then replace each line band with a same-width band of real
+   texture shifted in from just outside it (not a blur/diffusion fill, which flattens the grain
+   into a visible soft stripe).
+3. Flat-field (divide out a heavily-blurred illumination estimate) and desaturate to a neutral,
+   slightly warm-grey albedo (~0.49), matching every prior lunar_sim texture round.
+4. Make it seamless via toroidal offset-and-blend tiling, resized to 2048px (kept high-resolution
+   so ground-level close-ups still show real grain instead of blurring to mush).
+5. Bake in sparse 10-45cm soft craterlets (raised rim, short cast shadow) and 3-12cm small rocks,
+   both shaded consistent with `husky_scene.xml`'s sun direction (~74 degree elevation) - verified
+   against the chassis's own cast shadow in a rendered frame.
 
 ## Roadmap
 
