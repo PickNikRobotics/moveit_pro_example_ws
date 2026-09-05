@@ -20,9 +20,21 @@
     <mesh name="bumper" file="bumper.obj" />
     <!-- Vendored attachment STLs (already MuJoCo-compatible, no conversion needed), millimeter
          scale per their own URDF mesh tags. -->
-    <mesh name="observer_enclosure" file="observer_enclosure.stl" scale="0.001 0.001 0.001" />
-    <mesh name="observer_access_panels" file="observer_access_panels.stl" scale="0.001 0.001 0.001" />
-    <mesh name="observer_arch" file="observer_arch.stl" scale="0.001 0.001 0.001" />
+    <mesh
+      name="observer_enclosure"
+      file="observer_enclosure.stl"
+      scale="0.001 0.001 0.001"
+    />
+    <mesh
+      name="observer_access_panels"
+      file="observer_access_panels.stl"
+      scale="0.001 0.001 0.001"
+    />
+    <mesh
+      name="observer_arch"
+      file="observer_arch.stl"
+      scale="0.001 0.001 0.001"
+    />
   </asset>
 
   <!-- Wheel offsets relative to chassis_link (==base_link for the diff_4wd control mode
