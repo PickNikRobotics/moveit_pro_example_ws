@@ -54,7 +54,7 @@ rover-scale rocks/clods. Ground031's dry-cracked-soil photo scan has embedded pe
 right scale to still show real surface detail when tiled this large, so it was substituted in.
 Ground031's source photo carries a warm/mixed color cast (and stray blue-green mineral tints on
 some pebbles) unsuited to a neutral lunar grey - the shipped PNG is desaturated to a luminance-only
-image and regraded to a neutral, slightly warm-grey albedo (~0.47-0.51) rather than used as
+image and reprocessed to a neutral, slightly warm-grey albedo (~0.47-0.51) rather than used as
 downloaded.
 
 **Honest caveat:** Ground031 is a dry, desiccation-cracked mudflat, not a lunar dust photo - up

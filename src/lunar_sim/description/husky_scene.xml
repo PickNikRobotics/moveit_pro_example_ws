@@ -40,7 +40,7 @@
     <!-- Photoreal ground color map, replacing the earlier flat two-tone procedural texture; see
          src/lunar_sim/README.md for source/licence provenance. Color map only, no normal/AO/
          roughness maps loaded - MuJoCo's <texture type="2d"> is diffuse-only. Desaturated/
-         regraded to a neutral grey albedo (no source tint survives) - see README for why. -->
+         reprocessed to a neutral grey albedo (no source tint survives) - see README for why. -->
     <texture
       type="2d"
       name="regolith"
