@@ -92,6 +92,20 @@ which can reveal rendering artifacts (e.g. directional-light shadow-map aliasing
 frustum's edge, see `src/lunar_sim/description/husky_scene.xml`) that were not visible from the
 starting pose. Verify renders at more than one point along the objective, not just at rest.
 
+### `<texture file="...">` only loads PNG, not JPEG
+
+MuJoCo's built-in texture loader for `<texture type="2d" file="...">` accepts PNG (or its own
+custom binary format) - a `.jpg`/`.jpeg` file fails the model load with `Non-PNG texture, assuming
+custom binary file format, unexpected file size`, not a clearer "unsupported format" error.
+Photoreal ground/wall textures are often distributed as JPEG (e.g. ambientCG, Poly Haven); convert
+to PNG before wiring into a scene - see `src/lunar_sim/description/assets/lunar_regolith_moon01_2k.png`
+and the texture's provenance note in `src/lunar_sim/README.md`.
+
+Separately: this repo's root `.gitattributes` LFS-tracks every `*.jpg`/`*.png`/`*.jpeg` with no
+per-file exceptions (confirmed against every existing image asset in the repo, down to 19 KB
+thumbnails) - a new texture/image asset should go through the normal `git add` + LFS flow like any
+other, not a one-off `.gitattributes` carve-out.
+
 ### MuJoCo documentation
 
 Refer to [docs.picknik.ai](https://docs.picknik.ai) for MuJoCo configuration guides:
