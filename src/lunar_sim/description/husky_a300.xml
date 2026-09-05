@@ -9,6 +9,20 @@
     <mesh name="chassis_collision" file="chassis_collision.stl" />
     <mesh name="outdoor_left" file="outdoor_left.stl" />
     <mesh name="outdoor_right" file="outdoor_right.stl" />
+    <!-- Visual-only body meshes, converted from the vendored chassis.dae/livery.dae/
+         status_lights.dae/attachments/bumper.dae (COLLADA has no native MuJoCo loader) via
+         trimesh+pycollada, geometry only - see CLAUDE.md's "Vendored A300 visual meshes" note.
+         Each keeps the source mesh's own local frame, so it drops onto chassis_link with the
+         same pos/quat math as the URDF composes it (see the geoms below). -->
+    <mesh name="chassis_visual" file="chassis.obj" />
+    <mesh name="livery" file="livery.obj" />
+    <mesh name="status_lights" file="status_lights.obj" />
+    <mesh name="bumper" file="bumper.obj" />
+    <!-- Vendored attachment STLs (already MuJoCo-compatible, no conversion needed), millimeter
+         scale per their own URDF mesh tags. -->
+    <mesh name="observer_enclosure" file="observer_enclosure.stl" scale="0.001 0.001 0.001" />
+    <mesh name="observer_access_panels" file="observer_access_panels.stl" scale="0.001 0.001 0.001" />
+    <mesh name="observer_arch" file="observer_arch.stl" scale="0.001 0.001 0.001" />
   </asset>
 
   <!-- Wheel offsets relative to chassis_link (==base_link for the diff_4wd control mode
@@ -23,14 +37,102 @@
     <body name="chassis_link" pos="0 0 0.13597">
       <freejoint />
       <inertial pos="0 0 0.1148" mass="70" diaginertia="1.1409 4.6217 5.1478" />
+      <!-- Collision proxy only (not rendered - see husky_scene.xml's scene_option.geomgroup[3]=0
+           convention, matching hangar_sim's visual/group=2 vs collision/group=3 split). The
+           detailed visual meshes below sit at the same pose and would z-fight with this if both
+           were shown. -->
       <geom
-        name="chassis"
+        name="chassis_collision"
         mesh="chassis_collision"
-        material="husky_chassis_yellow"
         type="mesh"
         contype="1"
         conaffinity="1"
+        group="3"
+      />
+      <!-- Visual body: chassis.dae/livery.dae/status_lights.dae are layered in the URDF at
+           chassis_link's own origin (identity), so no pos/quat is needed here either. -->
+      <geom
+        name="chassis_visual"
+        mesh="chassis_visual"
+        material="husky_chassis_yellow"
+        type="mesh"
+        contype="0"
+        conaffinity="0"
         group="2"
+      />
+      <geom
+        name="livery"
+        mesh="livery"
+        material="husky_dark_grey"
+        type="mesh"
+        contype="0"
+        conaffinity="0"
+        group="2"
+      />
+      <geom
+        name="status_lights"
+        mesh="status_lights"
+        material="husky_dark_grey"
+        type="mesh"
+        contype="0"
+        conaffinity="0"
+        group="2"
+      />
+      <!-- Bumpers: bumper.dae's own local-frame vertices already land at the front-bumper pose
+           relative to chassis_link (its URDF visual origin exactly cancels the front mount
+           offset - see CLAUDE.md), so the front instance needs no transform. The rear instance
+           reuses the same asset 180 deg about Z, which by the same cancellation lands it at the
+           mirrored pose - both verified against husky_a300.xml's own front/rear FK derivation. -->
+      <geom
+        name="front_bumper"
+        mesh="bumper"
+        material="husky_dark_grey"
+        type="mesh"
+        contype="0"
+        conaffinity="0"
+        group="2"
+      />
+      <geom
+        name="rear_bumper"
+        mesh="bumper"
+        material="husky_dark_grey"
+        type="mesh"
+        contype="0"
+        conaffinity="0"
+        group="2"
+        quat="0 0 0 1"
+      />
+      <!-- Sensor enclosure + access panels: identity offset from chassis_link (amp_enclosure is
+           mounted on base_link with no origin in husky_a300_mujoco.xacro's macro call). -->
+      <geom
+        name="enclosure"
+        mesh="observer_enclosure"
+        material="husky_dark_grey"
+        type="mesh"
+        contype="0"
+        conaffinity="0"
+        group="2"
+      />
+      <geom
+        name="access_panels"
+        mesh="observer_access_panels"
+        material="husky_chassis_yellow"
+        type="mesh"
+        contype="0"
+        conaffinity="0"
+        group="2"
+      />
+      <!-- Sensor arch: mounted on the enclosure's antenna frame, (-0.4028, 0, 0.4074593) from
+           chassis_link (enclosure_antenna_mount's own offset, per amp_enclosure.urdf.xacro). -->
+      <geom
+        name="sensor_arch"
+        mesh="observer_arch"
+        material="husky_chassis_yellow"
+        type="mesh"
+        contype="0"
+        conaffinity="0"
+        group="2"
+        pos="-0.4028 0 0.4074593"
       />
 
       <!-- MuJoCo's <include> splices in only the included file's children, discarding its

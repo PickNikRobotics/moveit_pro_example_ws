@@ -45,12 +45,17 @@
   </asset>
 
   <worldbody>
-    <!-- Reduced lighting to simulate lunar conditions -->
+    <!-- Reduced lighting to simulate lunar conditions. castshadow=false: a directional light's
+         shadow map spread across the 50x50 m ground_plane below has too little resolution per
+         texel at this range, and at this light's near-grazing angle over the plane the result is
+         shadow acne (speckled dark pixels far from the robot) rather than a visible shadow edge
+         worth the cost of raising shadowsize to fix. -->
     <light
       pos="5 -5 10"
       dir="-0.5 0.5 -1"
       directional="true"
       diffuse="0.9 0.9 0.85"
+      castshadow="false"
     />
 
     <!-- Flat regolith plane. Finite (not the old infinite plane) so wheel contact matches

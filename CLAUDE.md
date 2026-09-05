@@ -51,6 +51,36 @@ The two coupled numbers live in different files: the actuator `kv` is in the `<v
 
 Rule of thumb when changing a sim `timestep`: for every velocity actuator, check `armature/kv < timestep`. The symptom of violation is a joint that ignores commands (pinned), not one that oscillates.
 
+### Vendored A300 visual meshes: converting DAE to OBJ for MuJoCo
+
+MuJoCo has no COLLADA (`.dae`) loader, but `clearpath_platform_description`'s A300 visual
+meshes (`chassis.dae`, `livery.dae`, `status_lights.dae`, `attachments/bumper.dae`) are only
+shipped as DAE - unlike the wheel/collision meshes, which are already STL. The vendored files
+are kept byte-identical to upstream (never edit them); convert to OBJ and commit the result into
+the consuming package's own `description/assets/` instead (same reasoning as the STL-copy note
+above: cross-package MuJoCo mesh paths don't survive a colcon install split).
+
+`trimesh` is already present in the `picknikciuser/moveit-pro` runtime image, but its DAE loader
+needs `pycollada`, which is not. Installing it into a `--rm` container only touches that
+container's throwaway layer, not the image itself:
+
+```
+docker run --rm --entrypoint bash picknikciuser/moveit-pro:<tag> -c \
+  "pip install --break-system-packages --no-cache-dir pycollada && python3 -c '
+import trimesh
+mesh = trimesh.load(\"chassis.dae\", force=\"scene\").dump(concatenate=True)
+mesh.export(\"chassis.obj\", include_texture=False)
+'"
+```
+
+`include_texture=False` skips emitting a companion `.mtl` - apply color via a plain MuJoCo
+`<material>` on the geom instead of trying to carry over per-face COLLADA materials. The
+converted mesh keeps the DAE's own local-frame vertices, so it drops onto its parent body with
+whatever `pos`/`quat` the URDF's visual `<origin>` implies - work that out from the xacro rather
+than eyeballing it against a render; see `src/lunar_sim/description/husky_a300.xml`'s bumper
+comment for a worked example (a mount-frame offset and a visual-origin counter-offset that cancel
+to a plain identity transform).
+
 ### MuJoCo documentation
 
 Refer to [docs.picknik.ai](https://docs.picknik.ai) for MuJoCo configuration guides:
