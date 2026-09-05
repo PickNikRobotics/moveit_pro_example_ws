@@ -92,13 +92,23 @@ which can reveal rendering artifacts (e.g. directional-light shadow-map aliasing
 frustum's edge, see `src/lunar_sim/description/husky_scene.xml`) that were not visible from the
 starting pose. Verify renders at more than one point along the objective, not just at rest.
 
+### `texrepeat` with `texuniform="true"` is repeats-per-metre, not repeats-over-the-whole-geom
+
+With `texuniform="true"` on a `<material>`, `texrepeat="R R"` means the texture repeats R times
+per metre of world space, not R times across the whole geom - the opposite of the more intuitive
+"total tiles across this surface" reading. A 20x20 m ground plane with `texrepeat="8 8"` therefore
+tiles every `1/8 = 0.125 m`, not every `20/8 = 2.5 m`; the smaller tile shows as an obvious
+repeating grid at any zoom that puts more than a couple tiles in frame. To get a target tile size
+of `S` metres, use `texrepeat="${1/S} ${1/S}"` (e.g. `0.3 0.3` for a ~3.3 m tile), independent of
+the geom's own size.
+
 ### `<texture file="...">` only loads PNG, not JPEG
 
 MuJoCo's built-in texture loader for `<texture type="2d" file="...">` accepts PNG (or its own
 custom binary format) - a `.jpg`/`.jpeg` file fails the model load with `Non-PNG texture, assuming
 custom binary file format, unexpected file size`, not a clearer "unsupported format" error.
 Photoreal ground/wall textures are often distributed as JPEG (e.g. ambientCG, Poly Haven); convert
-to PNG before wiring into a scene - see `src/lunar_sim/description/assets/lunar_regolith_moon01_2k.png`
+to PNG before wiring into a scene - see `src/lunar_sim/description/assets/lunar_regolith_ground031_2k.png`
 and the texture's provenance note in `src/lunar_sim/README.md`.
 
 Separately: this repo's root `.gitattributes` LFS-tracks every `*.jpg`/`*.png`/`*.jpeg` with no

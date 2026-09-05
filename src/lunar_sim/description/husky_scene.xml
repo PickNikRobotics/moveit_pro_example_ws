@@ -39,11 +39,12 @@
     />
     <!-- Photoreal ground color map, replacing the earlier flat two-tone procedural texture; see
          src/lunar_sim/README.md for source/licence provenance. Color map only, no normal/AO/
-         roughness maps loaded - MuJoCo's <texture type="2d"> is diffuse-only. -->
+         roughness maps loaded - MuJoCo's <texture type="2d"> is diffuse-only. Desaturated/
+         regraded to a neutral grey albedo (no source tint survives) - see README for why. -->
     <texture
       type="2d"
       name="regolith"
-      file="assets/lunar_regolith_moon01_2k.png"
+      file="assets/lunar_regolith_ground031_2k.png"
     />
     <!-- Matte: regolith is a diffuse dust surface, not the wet-looking mirror MuJoCo's default
          planar reflection gives a nonzero-reflectance plane. reflectance=0 turns that off;
@@ -53,7 +54,7 @@
       name="regolith_ground"
       texture="regolith"
       texuniform="true"
-      texrepeat="8 8"
+      texrepeat="0.3 0.3"
       reflectance="0"
       specular="0"
       shininess="0"
@@ -102,7 +103,7 @@
 
     <!-- Low, close, fixed shot of the ground plane for inspecting texture tiling/detail up
          close, independent of robot pose - quat hand-computed to look from (1.2, -0.6, 0.3)
-         toward (2.8, -0.9, 0) so it grazes across a couple of the 2.5 m texture tiles. -->
+         toward (2.8, -0.9, 0) so it grazes across part of one of the ~3.3 m texture tiles. -->
     <camera
       name="ground_detail_camera"
       pos="1.2 -0.6 0.3"

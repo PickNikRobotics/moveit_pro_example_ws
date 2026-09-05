@@ -41,12 +41,27 @@ paths don't survive a colcon install split across package share directories, so 
 into this package rather than referenced cross-package - see hangar_sim's own `description/assets`
 for the same pattern).
 
-The ground plane's color map (`description/assets/lunar_regolith_moon01_2k.png`) is
-[Poly Haven's "Moon 01"](https://polyhaven.com/a/moon_01) diffuse map, downloaded at 4K and
-resized to 2K PNG (MuJoCo's `<texture file="...">` loader only accepts PNG, not JPEG) to keep the
-file small; Poly Haven textures are CC0 (public domain). Only the color map is used - MuJoCo's
-`<texture type="2d">` is diffuse-only, so the normal/AO/roughness maps in the same asset are not
-needed.
+The ground plane's color map (`description/assets/lunar_regolith_ground031_2k.png`) is
+[ambientCG's "Ground031"](https://ambientcg.com/view?id=Ground031) color map (CC0/public domain),
+downloaded at 2K JPEG and converted to PNG (MuJoCo's `<texture file="...">` loader only accepts
+PNG, not JPEG). Only the color map is used - MuJoCo's `<texture type="2d">` is diffuse-only, so
+the normal/AO/roughness maps in the same asset are not needed.
+
+An earlier pass used Poly Haven's "Moon 01" (also CC0) - a real lunar photometric diffuse map, but
+one built for planetary-scale rendering: at the ~3-4 m tile size this ground plane actually needs,
+its albedo variation is too low-frequency to read as anything but flat grey, with no visible
+rover-scale rocks/clods. Ground031's dry-cracked-soil photo scan has embedded pebbles/rocks at the
+right scale to still show real surface detail when tiled this large, so it was substituted in.
+Ground031's source photo carries a warm/mixed color cast (and stray blue-green mineral tints on
+some pebbles) unsuited to a neutral lunar grey - the shipped PNG is desaturated to a luminance-only
+image and regraded to a neutral, slightly warm-grey albedo (~0.47-0.51) rather than used as
+downloaded.
+
+**Honest caveat:** Ground031 is a dry, desiccation-cracked mudflat, not a lunar dust photo - up
+close (see the ground-level render) its polygonal crack network reads as an Earth desert lakebed
+more than fine regolith. It was chosen for tile-scale rock/pebble detail that Moon 01 lacked, not
+for a perfect lunar match; swapping to a less crack-dominated CC0 gravel/rock set is a reasonable
+follow-up if the desiccation-crack look reads wrong in practice.
 
 ## Roadmap
 
