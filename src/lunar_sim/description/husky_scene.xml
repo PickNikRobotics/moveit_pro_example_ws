@@ -13,6 +13,17 @@
     />
     <rgba haze="0.05 0.05 0.05 1" />
     <global offwidth="1280" offheight="720" azimuth="120" elevation="-20" />
+    <!-- Directional-light shadow tuning: past the edge of the shadow frustum (roughly
+         model.stat.extent * shadowclip - here ~10 m * 5 = 50 m), a lit surface still renders but
+         samples the shadow map out of its valid range, aliasing into speckle. scene_camera's
+         pos is fixed in world space (mode="targetbody" only rotates it to face the robot, see
+         CLAUDE.md), so which part of the ground plane it grazes toward changes as the robot
+         drives away from the origin over the Dead Reckon Square - shadowclip needs enough margin
+         to keep the whole 10 m ground_plane below (not just the small area right under the
+         robot) inside the frustum for the whole run, not just at the origin. shadowsize=8192
+         keeps per-texel resolution sharp across that frustum. -->
+    <quality shadowsize="8192" />
+    <map shadowclip="5.0" />
   </visual>
 
   <!-- Dark space skybox + regolith ground, carried over from the pre-869 Phoebe-based
@@ -51,25 +62,30 @@
   </asset>
 
   <worldbody>
-    <!-- Reduced lighting to simulate lunar conditions. castshadow=false: a directional light's
-         shadow map spread across the 50x50 m ground_plane below has too little resolution per
-         texel at this range, and at this light's near-grazing angle over the plane the result is
-         shadow acne (speckled dark pixels far from the robot) rather than a visible shadow edge
-         worth the cost of raising shadowsize to fix. -->
+    <!-- Reduced lighting to simulate lunar conditions. The hard shadow a lunar scene needs (and
+         that will matter more once a crater rim exists) wants a low sun, but MuJoCo's shadow
+         mapping has no slope-scaled bias: at this light's original, lower angle
+         (dir="-0.5 0.5 -1", ~55 deg elevation) the shadow map's self-shadowing bias broke down at
+         the plane's more grazing viewing angles and speckled, regardless of shadowsize/shadowclip
+         (see the <visual> block above for those). dir="-0.2 0.2 -1" (~74 deg elevation) is as low
+         as this light goes clean - a compromise against the lunar look, not the primary fix. -->
     <light
       pos="5 -5 10"
-      dir="-0.5 0.5 -1"
+      dir="-0.2 0.2 -1"
       directional="true"
       diffuse="0.9 0.9 0.85"
-      castshadow="false"
+      castshadow="true"
     />
 
     <!-- Flat regolith plane. Finite (not the old infinite plane) so wheel contact matches
-         hangar_sim's precedent; 50x50 m comfortably bounds the ~1.8 m Dead Reckon Square. -->
+         hangar_sim's precedent; 20x20 m comfortably bounds the ~1.8 m Dead Reckon Square while
+         staying safely inside the shadow frustum above (see the <light> and <visual> comments) -
+         a wider plane just means more of it sits outside the frustum, sampling the shadow map out
+         of range and speckling, for no benefit the objective actually needs. -->
     <geom
       name="ground_plane"
       type="plane"
-      size="50 50 0.1"
+      size="10 10 0.1"
       pos="0 0 0"
       material="regolith_ground"
       contype="1"

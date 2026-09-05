@@ -81,6 +81,17 @@ than eyeballing it against a render; see `src/lunar_sim/description/husky_a300.x
 comment for a worked example (a mount-frame offset and a visual-origin counter-offset that cancel
 to a plain identity transform).
 
+### `mode="targetbody"` only rotates a camera, it doesn't move it
+
+A `<camera mode="targetbody" target="...">` continuously re-aims to face the target body, but its
+`pos` is still a fixed point in world space - unlike a camera attached to a moving body, it does
+not follow the target around. For a scene camera meant to frame a mobile base throughout an
+objective (not just at its starting pose), remember the viewing angle toward the rest of the
+scene - the ground plane, in particular - changes as the base drives away from that fixed point,
+which can reveal rendering artifacts (e.g. directional-light shadow-map aliasing past the shadow
+frustum's edge, see `src/lunar_sim/description/husky_scene.xml`) that were not visible from the
+starting pose. Verify renders at more than one point along the objective, not just at rest.
+
 ### MuJoCo documentation
 
 Refer to [docs.picknik.ai](https://docs.picknik.ai) for MuJoCo configuration guides:
