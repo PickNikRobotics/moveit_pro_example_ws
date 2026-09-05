@@ -2,7 +2,7 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="husky_a300">
   <!-- A300 platform body from clearpathrobotics/clearpath_common's clearpath_platform_description
        package (BSD-licensed), vendored under ../../external_dependencies and kept byte-identical to
-       upstream. This file supplies its own mock ros2_control block below, so
+       upstream. This file supplies its own MuJoCo ros2_control block below, so
        use_platform_controllers:=false keeps the upstream ros2_control include out of the build. -->
   <xacro:arg name="use_platform_controllers" default="false" />
   <!-- a300.urdf.xacro declares this arg with a default that resolves $(find clearpath_control), a
@@ -14,22 +14,8 @@
   <xacro:include filename="$(find clearpath_platform_description)/urdf/a300/a300.urdf.xacro" />
   <xacro:a300 control="diff_4wd" front_wheels="outdoor" rear_wheels="outdoor" />
 
-  <!-- FRAME NAMING: the ground-contact frame on this robot is "footprint", NOT "base_footprint".
-       Anything that needs a REP-105 ground frame - TF consumers, Nav2, the
-       platform_velocity_controller's base_frame_id - must use "footprint". (The 3D Visualizer's
-       fixed frame is a separate setting and is "odom"; see config/frontend_settings.yaml.)
-
-       Why the unconventional name: upstream a300.urdf.xacro defines a base_footprint_joint
-       (chassis_link -> base_footprint) whose origin adds the wheel radius instead of subtracting
-       the wheel-center height, placing base_footprint 0.30 m above the ground plane. FK on the
-       URDF this file generates: base_link at z=0, front wheel centers at z=0.0291, wheel
-       radius=0.1651, so ground contact is 0.13597 m below base_link. base_footprint stays in the
-       published TF tree at z=+0.30107 and is unused by this configuration.
-
-       That joint lives in the vendored package, which is kept byte-identical to upstream, so it is
-       corrected here instead of edited in place. The correction cannot reuse the name
-       base_footprint - URDF requires unique link names, and check_urdf rejects the duplicate - so
-       the corrected frame is named "footprint" and becomes base_link's parent. -->
+  <!-- FRAME NAMING: see README.md for the full footprint-vs-base_footprint explanation.
+       Unchanged by the MuJoCo migration. -->
   <link name="footprint" />
   <joint name="footprint_joint" type="fixed">
     <parent link="footprint" />
@@ -58,14 +44,19 @@
     <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
   </xacro:amp_sensor_arch>
 
-  <!-- Mock hardware: command velocity in, integrated position/velocity state out. No physics, no
-       sensors - this is the "blank world", fast-iteration counterpart to a full MuJoCo simulation.
-       Wheel joint names match clearpath_platform_description/urdf/a300/drivetrain/wheels/outdoor.urdf.xacro
-       (front_left_wheel_joint etc.), the same names the real robot's drivetrain.urdf.xacro claims. -->
+  <!-- MuJoCo hardware: real physics, driven by description/husky_scene.xml (see that file and
+       husky_a300.xml for the body/wheel/actuator model). Wheel joint names match
+       clearpath_platform_description/urdf/a300/drivetrain/wheels/outdoor.urdf.xacro
+       (front_left_wheel_joint etc.), same names the mock hardware block used, and the same
+       names the MJCF wheel joints in husky_a300.xml declare. -->
+  <xacro:arg name="mujoco_model" default="description/husky_scene.xml" />
+  <xacro:arg name="mujoco_viewer" default="false" />
   <ros2_control name="husky_a300_hardware" type="system">
     <hardware>
-      <plugin>mock_components/GenericSystem</plugin>
-      <param name="calculate_dynamics">true</param>
+      <plugin>picknik_mujoco_ros/MujocoSystem</plugin>
+      <param name="mujoco_model">$(arg mujoco_model)</param>
+      <param name="mujoco_model_package">lunar_sim</param>
+      <param name="mujoco_viewer">$(arg mujoco_viewer)</param>
     </hardware>
     <joint name="front_left_wheel_joint">
       <command_interface name="velocity" />

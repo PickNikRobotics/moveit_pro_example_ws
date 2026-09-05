@@ -26,7 +26,7 @@ platform_velocity_controller:
 
     publish_rate: 50.0
     odom_frame_id: odom
-    # base_link sits above true ground contact (see husky_a300_blank_world.xacro's footprint_joint
+    # base_link sits above true ground contact (see husky_a300_mujoco.xacro's footprint_joint
     # comment), so the controller publishes odom->footprint - the REP105 ground frame the xacro
     # wrapper adds as base_link's parent - not odom->base_link directly.
     base_frame_id: footprint
@@ -34,9 +34,10 @@ platform_velocity_controller:
     # sensor port lands; until then keep the controller's own TF so it is not broken mid-port.
     enable_odom_tf: true
 
-    # Mock hardware has no independent wheel-slip dynamics to feed back, so run open loop:
-    # command velocity integrates directly into published odometry.
-    open_loop: true
+    # MuJoCo hardware reports real wheel position/velocity state from physics (see
+    # husky_a300_mujoco.xacro), so odometry is computed from that feedback rather than by
+    # integrating the commanded velocity open-loop as the old mock hardware did.
+    open_loop: false
 
     cmd_vel_timeout: 0.5
 
