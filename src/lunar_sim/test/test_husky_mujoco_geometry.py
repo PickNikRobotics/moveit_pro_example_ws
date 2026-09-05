@@ -56,7 +56,9 @@ HUSKY_A300 = DESCRIPTION / "husky_a300.xml"
 HUSKY_SCENE = DESCRIPTION / "husky_scene.xml"
 
 CLEARPATH_A300_URDF = (
-    Path(get_package_share_directory("clearpath_platform_description")) / "urdf" / "a300"
+    Path(get_package_share_directory("clearpath_platform_description"))
+    / "urdf"
+    / "a300"
 )
 
 TOLERANCE_M = 1e-4
@@ -81,11 +83,16 @@ def _outdoor_wheel_radius_width() -> tuple[float, float]:
 def test_wheel_collision_cylinder_matches_vendored_radius_and_width():
     radius, width = _outdoor_wheel_radius_width()
     for wheel_file in DESCRIPTION.glob("*_wheel_link.xml"):
-        match = re.search(r'type="cylinder"\s+size="([-0-9.eE]+) ([-0-9.eE]+)"', wheel_file.read_text())
+        match = re.search(
+            r'type="cylinder"\s+size="([-0-9.eE]+) ([-0-9.eE]+)"',
+            wheel_file.read_text(),
+        )
         assert match, f"{wheel_file.name} has no cylinder collision geom"
         got_radius, got_half_width = float(match.group(1)), float(match.group(2))
         assert got_radius == pytest.approx(radius, abs=TOLERANCE_M), wheel_file.name
-        assert got_half_width == pytest.approx(width / 2, abs=TOLERANCE_M), wheel_file.name
+        assert got_half_width == pytest.approx(
+            width / 2, abs=TOLERANCE_M
+        ), wheel_file.name
 
 
 def test_velocity_actuators_stay_below_the_timestep():
@@ -102,14 +109,18 @@ def test_velocity_actuators_stay_below_the_timestep():
     for wheel_file in DESCRIPTION.glob("*_wheel_link.xml"):
         joint_text = wheel_file.read_text()
         match = re.search(
-            r'<joint\s+name="(\w+_wheel_joint)"[^/]*armature="([-0-9.eE]+)"', joint_text, re.DOTALL
+            r'<joint\s+name="(\w+_wheel_joint)"[^/]*armature="([-0-9.eE]+)"',
+            joint_text,
+            re.DOTALL,
         )
         assert match, f"{wheel_file.name} has no wheel joint with an armature"
         armatures[match.group(1)] = float(match.group(2))
 
     kvs = {
         m.group(1): float(m.group(2))
-        for m in re.finditer(r'joint="(\w+_wheel_joint)"[^/]*kv="([-0-9.eE]+)"', a300_text, re.DOTALL)
+        for m in re.finditer(
+            r'joint="(\w+_wheel_joint)"[^/]*kv="([-0-9.eE]+)"', a300_text, re.DOTALL
+        )
     }
     assert armatures and armatures.keys() == kvs.keys(), (armatures, kvs)
     for joint, armature in armatures.items():
