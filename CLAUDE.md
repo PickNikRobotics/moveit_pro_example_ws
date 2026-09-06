@@ -65,11 +65,11 @@ needs `pycollada`, which is not. Installing it into a `--rm` container only touc
 container's throwaway layer, not the image itself:
 
 ```
-docker run --rm --entrypoint bash picknikciuser/moveit-pro:<tag> -c \
+docker run --rm --mount type=bind,src=$PWD,dst=/work --entrypoint bash picknikciuser/moveit-pro:<tag> -c \
   "pip install --break-system-packages --no-cache-dir pycollada && python3 -c '
 import trimesh
-mesh = trimesh.load(\"chassis.dae\", force=\"scene\").dump(concatenate=True)
-mesh.export(\"chassis.obj\", include_texture=False)
+mesh = trimesh.load(\"/work/chassis.dae\", force=\"scene\").dump(concatenate=True)
+mesh.export(\"/work/chassis.obj\", include_texture=False)
 '"
 ```
 
@@ -84,8 +84,10 @@ to a plain identity transform).
 ### `mode="targetbody"` only rotates a camera, it doesn't move it
 
 A `<camera mode="targetbody" target="...">` continuously re-aims to face the target body, but its
-`pos` is still a fixed point in world space - unlike a camera attached to a moving body, it does
-not follow the target around. For a scene camera meant to frame a mobile base throughout an
+`pos` is still a fixed point in its parent body's frame - world-fixed only when the camera is a
+direct child of `<worldbody>` (as in this repo's scene cameras); one nested under a moving body
+would still be dragged along by that body, just no longer re-oriented independently. Either way,
+for a scene camera meant to frame a mobile base throughout an
 objective (not just at its starting pose), remember the viewing angle toward the rest of the
 scene - the ground plane, in particular - changes as the base drives away from that fixed point,
 which can reveal rendering artifacts (e.g. directional-light shadow-map aliasing past the shadow
@@ -102,11 +104,12 @@ repeating grid at any zoom that puts more than a couple tiles in frame. To get a
 of `S` metres, use `texrepeat="${1/S} ${1/S}"` (e.g. `0.3 0.3` for a ~3.3 m tile), independent of
 the geom's own size.
 
-### `<texture file="...">` only loads PNG, not JPEG
+### `<texture file="...">` doesn't load JPEG
 
-MuJoCo's built-in texture loader for `<texture type="2d" file="...">` accepts PNG (or its own
-custom binary format) - a `.jpg`/`.jpeg` file fails the model load with `Non-PNG texture, assuming
-custom binary file format, unexpected file size`, not a clearer "unsupported format" error.
+MuJoCo 3.6's built-in texture loader for `<texture type="2d" file="...">` accepts PNG, KTX, or its
+own custom binary format - a `.jpg`/`.jpeg` file fails the model load with `Non-PNG texture,
+assuming custom binary file format, unexpected file size`, not a clearer "unsupported format"
+error.
 Photoreal ground/wall textures are often distributed as JPEG (e.g. ambientCG, Poly Haven, or a NASA
 mission-photo scan); convert to PNG before wiring into a scene - see
 `src/lunar_sim/description/assets/lunar_regolith_as15-86-11671_2k.png` and the texture's

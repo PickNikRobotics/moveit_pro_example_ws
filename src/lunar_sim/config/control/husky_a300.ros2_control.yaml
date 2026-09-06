@@ -9,9 +9,32 @@ controller_manager:
       type: diff_drive_controller/DiffDriveController
 
 # Husky A300 is a 4-wheel skid-steer base: two wheels per side driven together. Controller name
-# and calibration values match the real robot's controllers_a300.yaml, not the URDF geometry:
-# wheel_separation/wheel_radius here are the loaded rolling-radius calibration (0.562/0.1625),
-# not the wheel's physical dimensions (0.1651 in the URDF).
+# and wheel_separation match the real robot's controllers_a300.yaml (0.562, the loaded
+# rolling-radius calibration, not the wheel's physical dimensions - 0.1651 in the URDF).
+#
+# wheel_radius and wheel_separation_multiplier below are instead calibrated against MuJoCo
+# ground truth (the chassis freejoint pose, not this controller's own odometry - odometry is
+# computed from wheel feedback via these SAME parameters, so it round-trips to the commanded
+# twist by construction and can't detect a miscalibration). The real robot's
+# wheel_separation_multiplier=1.75 compensates for skid-steer scrub friction on pavement; under
+# MuJoCo's regolith-plane friction the scrub resistance during an in-place turn is much higher
+# (measured, not assumed), so a much larger multiplier is needed to reach the commanded yaw
+# rate, not a smaller one. Straight-line motion needed no separate correction beyond a ~1.2%
+# wheel_radius bump - rolling resistance, not scrub, dominates there.
+#
+# Calibration method (standalone MuJoCo, no ros2_control): settle the chassis, command the exact
+# wheel velocities this controller would issue for Dead Reckon Square's v=0.3 m/s / w=0.5235988
+# rad/s (30 deg/s) segments, measure the true chassis displacement/yaw from data.xpos/xquat on
+# chassis_link over the objective's own segment durations (6s straight, 3s turn), then solve for
+# the (wheel_radius, wheel_separation_multiplier) pair that makes commanded twist match measured
+# motion. wheel_radius came out via straight-line distance (0.1625 -> 1.822 m over 6 s vs. a 1.8 m
+# target => 0.1625*1.822/1.8 = 0.1645). wheel_separation_multiplier was then found by bisection on
+# the in-place-turn angle (0.562*1.75 achieved only ~59-61 deg in 3 s, not 90; 0.562*2.57 achieves
+# ~90 deg, verified both as a single corner and across a full 4-corner square - see
+# src/lunar_sim/README.md). The turn angle is noticeably sensitive to small multiplier changes
+# (stick-slip friction at the wheel-ground contact, not measurement noise - repeated runs at a
+# fixed multiplier reproduce identically) - +-2-3 deg of residual error around 90 deg is the
+# practical floor for this contact model, not a sign of an unconverged fit.
 platform_velocity_controller:
   ros__parameters:
     left_wheel_names: ["front_left_wheel_joint", "rear_left_wheel_joint"]
@@ -19,8 +42,10 @@ platform_velocity_controller:
     wheels_per_side: 2
 
     wheel_separation: 0.562
-    wheel_separation_multiplier: 1.75
-    wheel_radius: 0.1625
+    # Real hardware: 1.75. MuJoCo (see comment above): 2.57.
+    wheel_separation_multiplier: 2.57
+    # Real hardware: 0.1625. MuJoCo (see comment above): 0.1645.
+    wheel_radius: 0.1645
     left_wheel_radius_multiplier: 1.0
     right_wheel_radius_multiplier: 1.0
 

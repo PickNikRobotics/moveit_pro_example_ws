@@ -12,22 +12,31 @@ BSD-licensed) with a `picknik_mujoco_ros/MujocoSystem` ros2_control block
 (`description/husky_a300_mujoco.xacro`, physics model in `description/husky_scene.xml` /
 `husky_a300.xml`) and a stock
 [`diff_drive_controller`](https://control.ros.org/jazzy/doc/ros2_controllers/diff_drive_controller/doc/userdoc.html)
-named `platform_velocity_controller`, matching the real robot's controller naming and calibration
-(`wheel_separation: 0.562`, `wheel_separation_multiplier: 1.75`, `wheel_radius: 0.1625`,
-`wheels_per_side: 2`). `/cmd_vel` (`geometry_msgs/TwistStamped`) and `/odom`
-(`nav_msgs/Odometry`) are remapped to those plain top-level topic names from
-`platform_velocity_controller`'s own namespaced topics, unchanged from the earlier mock-hardware
-setup. `open_loop` is now `false`: MuJoCo reports real per-wheel position/velocity state from
-physics, so `/odom` reflects that feedback instead of integrating the commanded velocity.
+named `platform_velocity_controller`, matching the real robot's controller naming
+(`wheel_separation: 0.562`, `wheels_per_side: 2`) but with `wheel_radius` and
+`wheel_separation_multiplier` calibrated against MuJoCo rather than carried over from the real
+robot. `/cmd_vel` (`geometry_msgs/TwistStamped`) and `/odom` (`nav_msgs/Odometry`) are remapped to
+those plain top-level topic names from `platform_velocity_controller`'s own namespaced topics,
+unchanged from the earlier mock-hardware setup. `open_loop` is now `false`: MuJoCo reports real
+per-wheel position/velocity state from physics, so `/odom` reflects that feedback instead of
+integrating the commanded velocity.
 
-**Known limitation:** `wheel_separation_multiplier: 1.75` is a real-hardware pavement-slip
-calibration constant carried over unchanged for controller-config parity with the physical robot.
-Under the old `open_loop: true` mock setup it only affected a command -> twist -> command round
-trip and canceled out; under real closed-loop feedback it doesn't, since MuJoCo's simulated
-wheel-ground contact has no reason to reproduce the same slip ratio. `/odom`'s reported angular
-velocity/yaw is systematically off from the geometrically-correct value for the simulated chassis
-by roughly that multiplier. Not corrected here - fixing it means picking a simulated-track-width
-constant, which is a calibration decision, not a MuJoCo-migration bug.
+**Skid-steer calibration:** the real robot's `wheel_separation_multiplier: 1.75` compensates for
+pavement scrub friction during a skid-steer turn; it does not carry over to MuJoCo's
+regolith-plane contact model, which has different (measured: higher) turning resistance. Using
+1.75 unchanged under real closed-loop feedback (`open_loop: false`) makes commanded and true
+motion diverge - `/odom` reports the *commanded* twist, not the chassis's *true* motion, since
+both are computed from the same wheel encoders via the same (wrong) parameters and round-trip by
+construction; only the MuJoCo chassis pose itself (freejoint `xpos`/`xquat`, not `/odom`) exposes
+the error. Measured directly: a 3 s, 0.5235988 rad/s (30 deg/s) commanded turn achieved only
+~59-61 deg of true chassis rotation with `wheel_separation_multiplier: 1.75`. Recalibrated against
+that ground truth (see `husky_a300.ros2_control.yaml`'s comment for the method):
+`wheel_radius: 0.1645` (was 0.1625, straight-line rolling resistance) and
+`wheel_separation_multiplier: 2.57` (was 1.75, in-place-turn scrub resistance) bring a single
+corner to ~90 deg (measured 89.9 deg) and hold across a full 4-corner Dead Reckon Square (each
+corner within ~2-5 deg of 90 deg; the turn is intrinsically stick-slip-sensitive to the
+multiplier at the ~0.1% level, so a few degrees of residual error per corner is the practical
+floor of this contact model, not an unconverged fit).
 
 The four `outdoor` wheel joints (`front_left_wheel_joint` etc., named to match
 `clearpath_platform_description/urdf/a300/drivetrain/wheels/outdoor.urdf.xacro`) each carry a
