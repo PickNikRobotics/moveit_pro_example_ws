@@ -33,6 +33,5 @@ apache_paths:
 apache_excluded_paths:
   - src/phoebe_sim/description/assets/trainer_hatch/collision/cylinder_mockup_full_length.stl
 notes:
-  - lunar_sim inherits the phoebe_sim robot configuration and MuJoCo assets.
   - phoebe_sim uses only the Ewellix TLT500 long lift meshes.
   - Binary files matching workspace Git LFS patterns are stored as LFS objects; checked-out bytes match upstream.

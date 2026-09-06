@@ -1,0 +1,85 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 100 # Hz
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    platform_velocity_controller:
+      type: diff_drive_controller/DiffDriveController
+
+# Husky A300 is a 4-wheel skid-steer base: two wheels per side driven together. Controller name
+# and wheel_separation match the real robot's controllers_a300.yaml (0.562, the loaded
+# rolling-radius calibration, not the wheel's physical dimensions - 0.1651 in the URDF).
+#
+# wheel_radius and wheel_separation_multiplier below are instead calibrated against MuJoCo
+# ground truth (the chassis freejoint pose, not this controller's own odometry - odometry is
+# computed from wheel feedback via these SAME parameters, so it round-trips to the commanded
+# twist by construction and can't detect a miscalibration). The real robot's
+# wheel_separation_multiplier=1.75 compensates for skid-steer scrub friction on pavement; under
+# MuJoCo's regolith-plane friction the scrub resistance during an in-place turn is much higher
+# (measured, not assumed), so a much larger multiplier is needed to reach the commanded yaw
+# rate, not a smaller one. Straight-line motion needed no separate correction beyond a ~1.2%
+# wheel_radius bump - rolling resistance, not scrub, dominates there.
+#
+# Calibration method (standalone MuJoCo, no ros2_control): settle the chassis, command the exact
+# wheel velocities this controller would issue for Dead Reckon Square's v=0.3 m/s / w=0.5235988
+# rad/s (30 deg/s) segments, measure the true chassis displacement/yaw from data.xpos/xquat on
+# chassis_link over the objective's own segment durations (6s straight, 3s turn), then solve for
+# the (wheel_radius, wheel_separation_multiplier) pair that makes commanded twist match measured
+# motion. wheel_radius came out via straight-line distance (0.1625 -> 1.822 m over 6 s vs. a 1.8 m
+# target => 0.1625*1.822/1.8 = 0.1645). wheel_separation_multiplier was then found by bisection on
+# the in-place-turn angle (0.562*1.75 achieved only ~59-61 deg in 3 s, not 90; 0.562*2.57 achieves
+# ~90 deg, verified both as a single corner and across a full 4-corner square - see
+# src/lunar_sim/README.md). The turn angle is noticeably sensitive to small multiplier changes
+# (stick-slip friction at the wheel-ground contact, not measurement noise - repeated runs at a
+# fixed multiplier reproduce identically) - +-2-3 deg of residual error around 90 deg is the
+# practical floor for this contact model, not a sign of an unconverged fit.
+platform_velocity_controller:
+  ros__parameters:
+    left_wheel_names: ["front_left_wheel_joint", "rear_left_wheel_joint"]
+    right_wheel_names: ["front_right_wheel_joint", "rear_right_wheel_joint"]
+    wheels_per_side: 2
+
+    wheel_separation: 0.562
+    # Real hardware: 1.75. MuJoCo (see comment above): 2.57.
+    wheel_separation_multiplier: 2.57
+    # Real hardware: 0.1625. MuJoCo (see comment above): 0.1645.
+    wheel_radius: 0.1645
+    left_wheel_radius_multiplier: 1.0
+    right_wheel_radius_multiplier: 1.0
+
+    publish_rate: 50.0
+    odom_frame_id: odom
+    # base_link sits above true ground contact (see husky_a300_mujoco.xacro's footprint_joint
+    # comment), so the controller publishes odom->footprint - the REP105 ground frame the xacro
+    # wrapper adds as base_link's parent - not odom->base_link directly.
+    base_frame_id: footprint
+    # A state estimator (fuse, matching hangar_sim's config) will own odom->footprint once the
+    # sensor port lands; until then keep the controller's own TF so it is not broken mid-port.
+    enable_odom_tf: true
+
+    # MuJoCo hardware reports real wheel position/velocity state from physics (see
+    # husky_a300_mujoco.xacro), so odometry is computed from that feedback rather than by
+    # integrating the commanded velocity open-loop as the old mock hardware did.
+    open_loop: false
+
+    cmd_vel_timeout: 0.5
+
+    linear.x.has_velocity_limits: true
+    linear.x.has_acceleration_limits: true
+    linear.x.max_velocity: 0.8
+    # Asymmetric accel/decel limits carried from the real robot. Sign convention is the
+    # controller's: max_acceleration/max_deceleration_reverse are >= 0, the other two <= 0.
+    linear.x.max_acceleration: 2.0
+    linear.x.max_deceleration: -4.0
+    linear.x.max_acceleration_reverse: -2.0
+    linear.x.max_deceleration_reverse: 4.0
+
+    angular.z.has_velocity_limits: true
+    angular.z.has_acceleration_limits: true
+    angular.z.max_velocity: 2.0
+    angular.z.max_acceleration: 4.0
+    angular.z.max_deceleration: -4.0
+    angular.z.max_acceleration_reverse: -4.0
+    angular.z.max_deceleration_reverse: 4.0

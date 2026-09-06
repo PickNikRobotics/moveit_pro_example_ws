@@ -1,0 +1,18 @@
+upstream:
+  repository: https://github.com/clearpathrobotics/clearpath_common.git
+  commit: 811baf06a32747be0653ea18db2c8868860d193f
+  branch: jazzy
+vendored_paths:
+  - LICENSE
+  - clearpath_platform_description/CMakeLists.txt
+  - clearpath_platform_description/CHANGELOG.rst
+  - clearpath_platform_description/package.xml
+  - clearpath_platform_description/launch
+  - clearpath_platform_description/urdf
+  - clearpath_platform_description/meshes
+pruned_paths:
+  - other clearpath_common packages (clearpath_control, clearpath_desktop, clearpath_generic_base, clearpath_platform_msgs, clearpath_sensors, etc.) unused by this workspace
+  - test and CI configuration files
+notes:
+  - Byte-identical vendor of the clearpath_platform_description package from clearpath_common; not modified in this workspace.
+  - Binary files matching workspace Git LFS patterns are stored as LFS objects; checked-out bytes match upstream.
