@@ -1,0 +1,206 @@
+<mujoco model="husky_a300">
+  <compiler angle="radian" meshdir="assets" autolimits="true" />
+
+  <option integrator="implicitfast" />
+
+  <asset>
+    <material name="husky_dark_grey" rgba="0.15 0.15 0.15 1" />
+    <material name="husky_chassis_yellow" rgba="0.85 0.65 0.05 1" />
+    <mesh name="chassis_collision" file="chassis_collision.stl" />
+    <mesh name="outdoor_left" file="outdoor_left.stl" />
+    <mesh name="outdoor_right" file="outdoor_right.stl" />
+    <!-- Visual-only body meshes, converted from the vendored chassis.dae/livery.dae/
+         status_lights.dae/attachments/bumper.dae (COLLADA has no native MuJoCo loader) via
+         trimesh+pycollada, geometry only - see CLAUDE.md's "Vendored A300 visual meshes" note.
+         Each keeps the source mesh's own local frame, so it drops onto chassis_link with the
+         same pos/quat math as the URDF composes it (see the geoms below). -->
+    <mesh name="chassis_visual" file="chassis.obj" />
+    <mesh name="livery" file="livery.obj" />
+    <mesh name="status_lights" file="status_lights.obj" />
+    <mesh name="bumper" file="bumper.obj" />
+    <!-- Vendored attachment STLs (already MuJoCo-compatible, no conversion needed), millimeter
+         scale per their own URDF mesh tags. -->
+    <mesh
+      name="observer_enclosure"
+      file="observer_enclosure.stl"
+      scale="0.001 0.001 0.001"
+    />
+    <mesh
+      name="observer_access_panels"
+      file="observer_access_panels.stl"
+      scale="0.001 0.001 0.001"
+    />
+    <mesh
+      name="observer_arch"
+      file="observer_arch.stl"
+      scale="0.001 0.001 0.001"
+    />
+  </asset>
+
+  <!-- Wheel offsets relative to chassis_link (==base_link for the diff_4wd control mode
+       clearpath_platform_description uses here, chassis_x/y/z all 0) are the FK sum of
+       a300.urdf.xacro's suspension-mount chain: chassis_suspension_mount(0, 0.192, 0.03763)
+       -> suspension_beam spacer(0, +-0.0159, 0) -> beam front/rear mount(+-0.256, 0.0095,
+       -0.0085) -> motor_mount(0, +-0.0655, 0). Sum: x=+-0.256, y=+-0.2829, z=0.02913 - matching
+       the URDF's own FK (front wheel centers at z=0.0291 above base_link, see README.md).
+       See a300_outdoor_wheel_radius=0.1651 in
+       clearpath_platform_description/urdf/a300/drivetrain/wheels/outdoor.urdf.xacro. -->
+  <worldbody>
+    <body name="chassis_link" pos="0 0 0.13597">
+      <freejoint />
+      <inertial pos="0 0 0.1148" mass="70" diaginertia="1.1409 4.6217 5.1478" />
+      <!-- Collision proxy only (not rendered - see husky_scene.xml's scene_option.geomgroup[3]=0
+           convention, matching hangar_sim's visual/group=2 vs collision/group=3 split). The
+           detailed visual meshes below sit at the same pose and would z-fight with this if both
+           were shown. -->
+      <geom
+        name="chassis_collision"
+        mesh="chassis_collision"
+        type="mesh"
+        contype="1"
+        conaffinity="1"
+        group="3"
+      />
+      <!-- Visual body: chassis.dae/livery.dae/status_lights.dae are layered in the URDF at
+           chassis_link's own origin (identity), so no pos/quat is needed here either. -->
+      <geom
+        name="chassis_visual"
+        mesh="chassis_visual"
+        material="husky_chassis_yellow"
+        type="mesh"
+        contype="0"
+        conaffinity="0"
+        group="2"
+      />
+      <geom
+        name="livery"
+        mesh="livery"
+        material="husky_dark_grey"
+        type="mesh"
+        contype="0"
+        conaffinity="0"
+        group="2"
+      />
+      <geom
+        name="status_lights"
+        mesh="status_lights"
+        material="husky_dark_grey"
+        type="mesh"
+        contype="0"
+        conaffinity="0"
+        group="2"
+      />
+      <!-- Bumpers: bumper.dae's own local-frame vertices already land at the front-bumper pose
+           relative to chassis_link (its URDF visual origin exactly cancels the front mount
+           offset - see CLAUDE.md), so the front instance needs no transform. The rear instance
+           reuses the same asset 180 deg about Z, which by the same cancellation lands it at the
+           mirrored pose - both verified against husky_a300.xml's own front/rear FK derivation. -->
+      <geom
+        name="front_bumper"
+        mesh="bumper"
+        material="husky_dark_grey"
+        type="mesh"
+        contype="0"
+        conaffinity="0"
+        group="2"
+      />
+      <geom
+        name="rear_bumper"
+        mesh="bumper"
+        material="husky_dark_grey"
+        type="mesh"
+        contype="0"
+        conaffinity="0"
+        group="2"
+        quat="0 0 0 1"
+      />
+      <!-- Sensor enclosure + access panels: identity offset from chassis_link (amp_enclosure is
+           mounted on base_link with no origin in husky_a300_mujoco.xacro's macro call). -->
+      <geom
+        name="enclosure"
+        mesh="observer_enclosure"
+        material="husky_dark_grey"
+        type="mesh"
+        contype="0"
+        conaffinity="0"
+        group="2"
+      />
+      <geom
+        name="access_panels"
+        mesh="observer_access_panels"
+        material="husky_chassis_yellow"
+        type="mesh"
+        contype="0"
+        conaffinity="0"
+        group="2"
+      />
+      <!-- Sensor arch: mounted on the enclosure's antenna frame, (-0.4028, 0, 0.4074593) from
+           chassis_link (enclosure_antenna_mount's own offset, per amp_enclosure.urdf.xacro). -->
+      <geom
+        name="sensor_arch"
+        mesh="observer_arch"
+        material="husky_chassis_yellow"
+        type="mesh"
+        contype="0"
+        conaffinity="0"
+        group="2"
+        pos="-0.4028 0 0.4074593"
+      />
+
+      <!-- MuJoCo's <include> splices in only the included file's children, discarding its
+           own wrapping element - so the real body name/pos live here, and each *_wheel_link.xml
+           file's outer <body> tag is a throwaway wrapper (just satisfies "one root element" for
+           valid standalone XML).
+
+           Right-side y is NOT the left side's mirrored sign: FK through the vendored xacro chain
+           (a300.urdf.xacro's chassis_suspension_mount_y=0.192 -> suspension_beam.urdf.xacro's
+           side-conditional spacer_offset (+/-0.0159) -> its own front/rear_mount_joint, whose
+           y=0.0095 is a literal, non-side-conditional offset applied in both beams' unrotated local
+           frames, so it does NOT flip sign with side -> motor.urdf.xacro's side-conditional
+           translation_y (+/-0.0655)) gives left=+0.2829 but right=-0.2639, not -0.2829: the
+           un-mirrored 0.0095 term breaks the naive left/right symmetry by 19 mm. -->
+      <body name="front_left_wheel_link" pos="0.256 0.2829 0.02913">
+        <include file="front_left_wheel_link.xml" />
+      </body>
+      <body name="front_right_wheel_link" pos="0.256 -0.2639 0.02913">
+        <include file="front_right_wheel_link.xml" />
+      </body>
+      <body name="rear_left_wheel_link" pos="-0.256 0.2829 0.02913">
+        <include file="rear_left_wheel_link.xml" />
+      </body>
+      <body name="rear_right_wheel_link" pos="-0.256 -0.2639 0.02913">
+        <include file="rear_right_wheel_link.xml" />
+      </body>
+    </body>
+  </worldbody>
+
+  <!-- kv=500 with the wheel joints' armature=1.0 (see front_left_wheel_link.xml) gives
+       tau = armature/kv = 0.002 s, below husky_scene.xml's 0.003 s timestep. See CLAUDE.md's
+       "Velocity actuators: armature/kv time-constant must stay below the timestep". -->
+  <actuator>
+    <velocity
+      name="front_left_wheel"
+      joint="front_left_wheel_joint"
+      ctrlrange="-15 15"
+      kv="500"
+    />
+    <velocity
+      name="front_right_wheel"
+      joint="front_right_wheel_joint"
+      ctrlrange="-15 15"
+      kv="500"
+    />
+    <velocity
+      name="rear_left_wheel"
+      joint="rear_left_wheel_joint"
+      ctrlrange="-15 15"
+      kv="500"
+    />
+    <velocity
+      name="rear_right_wheel"
+      joint="rear_right_wheel_joint"
+      ctrlrange="-15 15"
+      kv="500"
+    />
+  </actuator>
+</mujoco>

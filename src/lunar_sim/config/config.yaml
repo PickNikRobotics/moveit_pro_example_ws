@@ -25,16 +25,24 @@ hardware:
   robot_description:
     urdf:
       package: "lunar_sim"
-      path: "description/husky_a300_blank_world.xacro"
+      path: "description/husky_a300_mujoco.xacro"
     srdf:
       package: "lunar_sim"
       path: "config/moveit/husky_a300.srdf"
+    urdf_params:
+      - mujoco_model: "description/husky_scene.xml"
+      - mujoco_viewer: false  # set to true locally to open the MuJoCo viewer window
 
 # Sets ROS global params for launch.
 # [Optional]
 ros_global_params:
   # Whether or not to use simulated time.
   # [Optional, default=False]
+  # False: picknik_mujoco_ros/MujocoSystem never publishes /clock (it is wall-clock-paced, not
+  # sim-time-paced - see mujoco_system.cpp), so with this True and nothing else publishing /clock,
+  # every node's ROS time stalls at t=0, breaking TF and /odom timestamps. Every other MuJoCo-backed
+  # config in this workspace (hangar_sim, kinova_sim, factory_sim, vla_sim, grinding_sim) leaves
+  # this False for the same reason.
   use_sim_time: False
 
 # Configuration files for MoveIt.

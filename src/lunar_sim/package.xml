@@ -4,8 +4,8 @@
   <version>9.5.0</version>
 
   <description>
-    Minimal MoveIt Pro configuration for a Clearpath Husky A300 in a blank
-    world, for fast iteration decoupled from a full simulated environment.
+    MoveIt Pro configuration for a Clearpath Husky A300 running under MuJoCo
+    physics on a flat lunar regolith plane.
   </description>
 
   <maintainer email="support@picknik.ai">MoveIt Pro Maintainer</maintainer>
@@ -25,10 +25,13 @@
   <exec_depend>moveit_studio_agent</exec_depend>
   <exec_depend>moveit_pro_behavior</exec_depend>
   <exec_depend>moveit_pro_objectives</exec_depend>
+  <exec_depend>picknik_mujoco_ros</exec_depend>
 
   <test_depend>ament_cmake_copyright</test_depend>
   <test_depend>ament_cmake_lint_cmake</test_depend>
+  <test_depend>ament_cmake_pytest</test_depend>
   <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_index_python</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>picknik_ament_copyright</test_depend>
 
