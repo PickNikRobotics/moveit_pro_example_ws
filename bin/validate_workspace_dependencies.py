@@ -63,10 +63,6 @@ CLEARPATH_PARAMETER_SCHEMA = Path(
 )
 CLEARPATH_CONTROLLER_CONFIGS = {
     Path("src/hangar_sim/config/control/picknik_ur.ros2_control.yaml"),
-    Path(
-        "src/external_dependencies/phoebe_ws/src/phoebe_sim/config/control/"
-        "dual_arm.ros2_control.yaml"
-    ),
 }
 UPSTREAM_FETCH_TIMEOUT_SECONDS = 300
 UPSTREAM_GIT_OPERATION_TIMEOUT_SECONDS = 300
