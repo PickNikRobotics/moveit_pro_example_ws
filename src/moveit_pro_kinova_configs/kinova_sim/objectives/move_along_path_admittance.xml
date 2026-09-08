@@ -8,6 +8,11 @@
     _hardcoded="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree
+        ID="Move to Named Waypoint"
+        _collapsed="true"
+        waypoint_name="View Satellite"
+      />
       <Control ID="Sequence">
         <Action
           ID="SwitchController"
