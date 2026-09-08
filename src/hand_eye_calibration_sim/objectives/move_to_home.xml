@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Move to Home">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Move to Home"
+    _description="Moves the robot to the Home waypoint, where the wrist camera sees the world board and the scene cameras see the board on the wrist."
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree
+        ID="Move to Named Waypoint"
+        _collapsed="true"
+        waypoint_name="Home"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Move to Home">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Motion - Execute" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
