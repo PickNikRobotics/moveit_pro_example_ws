@@ -34,10 +34,14 @@
           delay_duration="1.0"
         />
         <Action ID="StopRecording" name="Finish recording session" />
+        <!--The robot performs the task on its own, so nothing is recorded on
+             the commanded-joint topic; label actions with the next recorded
+             joint state instead of refusing the episode.-->
         <Action
           ID="ConvertDataset"
           name="Convert to LeRobot dataset"
           dataset_name="behavior_bottle_pick"
+          action_source="next_state"
         />
       </Control>
       <!--Cleanup, not a forced success: if the task fails before SaveEpisode,
