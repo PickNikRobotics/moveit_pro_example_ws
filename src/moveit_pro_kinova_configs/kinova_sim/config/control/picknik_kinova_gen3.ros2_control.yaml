@@ -38,6 +38,8 @@ robotiq_gripper_controller:
     joint: robotiq_85_left_knuckle_joint
     allow_stalling: true
     stall_timeout: 0.05
+    # MuJoCo contact jitter keeps the blocked knuckle's velocity near 0.012 rad/s, so the 0.001 rad/s default never detects a stall and a blocked close runs until MoveGripperAction times out. A free-air close approaches its goal at goal_tolerance * kp / kv of the MuJoCo gripper actuator (0.02 rad/s at kv=100, 0.1 at kv=20), so keep this value at or below that and rely on stall_timeout to keep a normal close from reporting a stall.
+    stall_velocity_threshold: 0.02
     goal_tolerance: 0.02
 
 force_torque_sensor_broadcaster:
