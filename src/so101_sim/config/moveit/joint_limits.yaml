@@ -1,0 +1,51 @@
+# Positions are the upstream LeRobot calibration limits (radians); velocity and
+# acceleration are the conservative values ported from the SO-101 fork PR.
+joint_limits:
+  shoulder_pan:
+    has_position_limits: true
+    min_position: -1.91986
+    max_position: 1.91986
+    has_velocity_limits: true
+    max_velocity: 1.20
+    has_acceleration_limits: true
+    max_acceleration: 2.50
+  shoulder_lift:
+    has_position_limits: true
+    min_position: -1.74533
+    max_position: 1.74533
+    has_velocity_limits: true
+    max_velocity: 1.20
+    has_acceleration_limits: true
+    max_acceleration: 2.50
+  elbow_flex:
+    has_position_limits: true
+    min_position: -1.69
+    max_position: 1.69
+    has_velocity_limits: true
+    max_velocity: 1.20
+    has_acceleration_limits: true
+    max_acceleration: 2.50
+  wrist_flex:
+    has_position_limits: true
+    min_position: -1.65806
+    max_position: 1.65806
+    has_velocity_limits: true
+    max_velocity: 1.20
+    has_acceleration_limits: true
+    max_acceleration: 2.50
+  wrist_roll:
+    has_position_limits: true
+    min_position: -2.74385
+    max_position: 2.84121
+    has_velocity_limits: true
+    max_velocity: 1.20
+    has_acceleration_limits: true
+    max_acceleration: 2.50
+  gripper:
+    has_position_limits: true
+    min_position: -0.174533
+    max_position: 1.74533
+    has_velocity_limits: true
+    max_velocity: 1.20
+    has_acceleration_limits: true
+    max_acceleration: 2.50
