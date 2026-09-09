@@ -1,0 +1,2002 @@
+<mujocoinclude>
+  <geom
+    name="rock_0000"
+    type="mesh"
+    mesh="rock_1_5"
+    pos="7.8090 6.7113 0.0317"
+    quat="-0.292366 0.000000 0.000000 0.956307"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0001"
+    type="mesh"
+    mesh="rock_4_4"
+    pos="1.1350 -9.4362 -0.0072"
+    quat="-0.241935 0.000000 0.000000 0.970292"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0002"
+    type="mesh"
+    mesh="rock_3_1"
+    pos="-0.9729 8.4792 -0.0268"
+    quat="-0.796613 0.000000 0.000000 0.604490"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0003"
+    type="mesh"
+    mesh="rock_3_3"
+    pos="7.7242 3.9808 -0.0189"
+    quat="-0.921186 0.000000 0.000000 0.389123"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0004"
+    type="mesh"
+    mesh="rock_3_6"
+    pos="1.3917 7.6868 0.0245"
+    quat="0.172186 0.000000 0.000000 0.985065"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0005"
+    type="mesh"
+    mesh="rock_1_7"
+    pos="2.4046 -9.4289 0.0039"
+    quat="-0.997515 0.000000 0.000000 0.070460"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0006"
+    type="mesh"
+    mesh="rock_0_4"
+    pos="-7.3682 -7.8486 -0.0214"
+    quat="-0.775546 0.000000 0.000000 0.631291"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0007"
+    type="mesh"
+    mesh="rock_4_6"
+    pos="-5.4291 -0.2250 -0.0164"
+    quat="-0.317056 0.000000 0.000000 0.948407"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0008"
+    type="mesh"
+    mesh="rock_3_4"
+    pos="1.8284 -3.6194 0.0207"
+    quat="0.345041 0.000000 0.000000 0.938588"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0009"
+    type="mesh"
+    mesh="rock_4_2"
+    pos="7.0561 -0.6135 0.0192"
+    quat="-0.785691 0.000000 0.000000 0.618619"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0010"
+    type="mesh"
+    mesh="rock_1_6"
+    pos="-2.1129 1.6032 -0.0250"
+    quat="-0.812106 0.000000 0.000000 0.583510"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0011"
+    type="mesh"
+    mesh="rock_2_4"
+    pos="-1.8212 6.8184 -0.0114"
+    quat="-0.999998 0.000000 0.000000 0.002230"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0012"
+    type="mesh"
+    mesh="rock_5_4"
+    pos="0.2090 -7.1638 0.0008"
+    quat="0.985588 0.000000 0.000000 0.169163"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0013"
+    type="mesh"
+    mesh="rock_4_0"
+    pos="8.1107 0.9955 -0.0010"
+    quat="-0.238002 0.000000 0.000000 0.971265"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0014"
+    type="mesh"
+    mesh="rock_4_5"
+    pos="0.2841 -3.7561 0.0180"
+    quat="0.074666 0.000000 0.000000 0.997209"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0015"
+    type="mesh"
+    mesh="rock_0_7"
+    pos="6.9646 -2.6770 0.0004"
+    quat="-0.979413 0.000000 0.000000 0.201865"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0016"
+    type="mesh"
+    mesh="rock_4_7"
+    pos="-0.8666 -1.7025 0.0528"
+    quat="-0.072234 0.000000 0.000000 0.997388"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0017"
+    type="mesh"
+    mesh="rock_5_5"
+    pos="-5.5408 3.7177 0.0082"
+    quat="0.961603 0.000000 0.000000 0.274443"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0018"
+    type="mesh"
+    mesh="rock_3_4"
+    pos="9.6298 -4.7898 0.0069"
+    quat="-0.994184 0.000000 0.000000 0.107694"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0019"
+    type="mesh"
+    mesh="rock_4_6"
+    pos="-2.4308 8.5394 -0.0118"
+    quat="0.070728 0.000000 0.000000 0.997496"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0020"
+    type="mesh"
+    mesh="rock_5_5"
+    pos="6.3577 4.4245 0.0211"
+    quat="0.732621 0.000000 0.000000 0.680636"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0021"
+    type="mesh"
+    mesh="rock_5_5"
+    pos="0.6599 6.0900 0.0280"
+    quat="0.649443 0.000000 0.000000 0.760410"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0022"
+    type="mesh"
+    mesh="rock_3_6"
+    pos="-4.7381 -8.7486 0.0056"
+    quat="0.991694 0.000000 0.000000 0.128620"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0023"
+    type="mesh"
+    mesh="rock_0_6"
+    pos="-8.3276 1.4403 -0.0122"
+    quat="-0.748673 0.000000 0.000000 0.662940"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0024"
+    type="mesh"
+    mesh="rock_0_1"
+    pos="0.8060 -2.0762 -0.0007"
+    quat="0.970122 0.000000 0.000000 0.242618"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0025"
+    type="mesh"
+    mesh="rock_5_3"
+    pos="3.4530 3.7148 -0.0380"
+    quat="0.119930 0.000000 0.000000 0.992782"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0026"
+    type="mesh"
+    mesh="rock_0_6"
+    pos="4.8705 -8.8359 -0.0188"
+    quat="0.896490 0.000000 0.000000 0.443063"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0027"
+    type="mesh"
+    mesh="rock_1_5"
+    pos="-6.5455 8.1366 0.0128"
+    quat="0.040218 0.000000 0.000000 0.999191"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0028"
+    type="mesh"
+    mesh="rock_2_1"
+    pos="7.5148 5.1537 -0.0327"
+    quat="-0.132759 0.000000 0.000000 0.991148"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0029"
+    type="mesh"
+    mesh="rock_3_7"
+    pos="-9.3908 2.4100 0.0274"
+    quat="0.435021 0.000000 0.000000 0.900420"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0030"
+    type="mesh"
+    mesh="rock_5_6"
+    pos="-5.3372 -4.9869 -0.0228"
+    quat="-0.854818 0.000000 0.000000 0.518927"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0031"
+    type="mesh"
+    mesh="rock_0_5"
+    pos="7.3991 -0.4263 0.0230"
+    quat="-0.736398 0.000000 0.000000 0.676549"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0032"
+    type="mesh"
+    mesh="rock_4_4"
+    pos="-3.1642 -7.2679 0.0313"
+    quat="0.497049 0.000000 0.000000 0.867723"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0033"
+    type="mesh"
+    mesh="rock_5_6"
+    pos="7.9603 2.7718 0.0172"
+    quat="0.237967 0.000000 0.000000 0.971273"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0034"
+    type="mesh"
+    mesh="rock_0_5"
+    pos="-9.0443 -8.1283 -0.0054"
+    quat="0.915066 0.000000 0.000000 0.403304"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0035"
+    type="mesh"
+    mesh="rock_4_6"
+    pos="7.8913 -1.0215 0.0229"
+    quat="0.727009 0.000000 0.000000 0.686628"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0036"
+    type="mesh"
+    mesh="rock_5_3"
+    pos="4.3989 5.8731 0.0021"
+    quat="-0.940060 0.000000 0.000000 0.341009"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0037"
+    type="mesh"
+    mesh="rock_3_5"
+    pos="5.6324 -5.1482 -0.0033"
+    quat="-0.995294 0.000000 0.000000 0.096906"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0038"
+    type="mesh"
+    mesh="rock_4_3"
+    pos="1.2177 -1.0223 0.0427"
+    quat="-0.921179 0.000000 0.000000 0.389139"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0039"
+    type="mesh"
+    mesh="rock_0_5"
+    pos="5.6478 -7.5103 0.0013"
+    quat="0.939614 0.000000 0.000000 0.342236"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0040"
+    type="mesh"
+    mesh="rock_3_3"
+    pos="-3.0699 -9.0150 0.0406"
+    quat="-0.913314 0.000000 0.000000 0.407256"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0041"
+    type="mesh"
+    mesh="rock_0_5"
+    pos="-2.9521 -7.6966 0.0335"
+    quat="0.204099 0.000000 0.000000 0.978950"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0042"
+    type="mesh"
+    mesh="rock_1_6"
+    pos="-9.1267 -9.0355 -0.0006"
+    quat="-0.913334 0.000000 0.000000 0.407211"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0043"
+    type="mesh"
+    mesh="rock_2_4"
+    pos="-5.6549 -0.5371 -0.0269"
+    quat="0.999986 0.000000 0.000000 0.005249"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0044"
+    type="mesh"
+    mesh="rock_4_2"
+    pos="8.0677 1.6846 0.0268"
+    quat="-0.985381 0.000000 0.000000 0.170364"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0045"
+    type="mesh"
+    mesh="rock_0_7"
+    pos="-4.8606 -2.3685 -0.0264"
+    quat="-0.638423 0.000000 0.000000 0.769686"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0046"
+    type="mesh"
+    mesh="rock_4_5"
+    pos="-0.8161 -2.9049 0.0009"
+    quat="-0.153005 0.000000 0.000000 0.988225"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0047"
+    type="mesh"
+    mesh="rock_4_4"
+    pos="-0.4689 3.8193 -0.0068"
+    quat="-0.902759 0.000000 0.000000 0.430148"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0048"
+    type="mesh"
+    mesh="rock_2_1"
+    pos="8.2853 8.6322 -0.0180"
+    quat="0.894361 0.000000 0.000000 0.447345"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0049"
+    type="mesh"
+    mesh="rock_0_5"
+    pos="-0.8027 5.3094 -0.0205"
+    quat="0.479251 0.000000 0.000000 0.877678"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0050"
+    type="mesh"
+    mesh="rock_5_6"
+    pos="0.0492 -9.5081 -0.0275"
+    quat="0.629202 0.000000 0.000000 0.777242"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0051"
+    type="mesh"
+    mesh="rock_3_7"
+    pos="4.7706 0.5274 0.0167"
+    quat="0.991497 0.000000 0.000000 0.130132"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0052"
+    type="mesh"
+    mesh="rock_0_6"
+    pos="-1.3654 6.2213 -0.0033"
+    quat="0.994762 0.000000 0.000000 0.102221"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0053"
+    type="mesh"
+    mesh="rock_5_6"
+    pos="-9.1550 4.6020 -0.0050"
+    quat="-0.952701 0.000000 0.000000 0.303910"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0054"
+    type="mesh"
+    mesh="rock_5_6"
+    pos="1.7279 6.4951 0.0353"
+    quat="0.882807 0.000000 0.000000 0.469736"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0055"
+    type="mesh"
+    mesh="rock_2_6"
+    pos="-6.2051 6.9125 -0.0271"
+    quat="-0.628959 0.000000 0.000000 0.777438"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0056"
+    type="mesh"
+    mesh="rock_5_3"
+    pos="6.2665 -3.2887 -0.0286"
+    quat="-0.171176 0.000000 0.000000 0.985240"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0057"
+    type="mesh"
+    mesh="rock_0_6"
+    pos="3.9753 -5.3783 0.0031"
+    quat="-0.010565 0.000000 0.000000 0.999944"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0058"
+    type="mesh"
+    mesh="rock_2_2"
+    pos="-2.0924 -5.1083 0.0049"
+    quat="0.125827 0.000000 0.000000 0.992052"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0059"
+    type="mesh"
+    mesh="rock_2_4"
+    pos="9.0796 7.2061 -0.0272"
+    quat="-0.623117 0.000000 0.000000 0.782129"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0060"
+    type="mesh"
+    mesh="rock_3_7"
+    pos="-4.4389 -5.5373 0.0253"
+    quat="-0.434796 0.000000 0.000000 0.900529"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0061"
+    type="mesh"
+    mesh="rock_0_4"
+    pos="-3.7168 0.8321 0.0026"
+    quat="-0.451202 0.000000 0.000000 0.892422"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0062"
+    type="mesh"
+    mesh="rock_1_5"
+    pos="2.7553 9.5979 0.0080"
+    quat="0.417564 0.000000 0.000000 0.908647"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0063"
+    type="mesh"
+    mesh="rock_5_2"
+    pos="0.3843 -4.5173 0.0240"
+    quat="0.999703 0.000000 0.000000 0.024366"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0064"
+    type="mesh"
+    mesh="rock_2_6"
+    pos="-7.9404 -2.9024 -0.0267"
+    quat="0.052607 0.000000 0.000000 0.998615"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0065"
+    type="mesh"
+    mesh="rock_3_4"
+    pos="9.0090 0.4999 -0.0201"
+    quat="-0.918977 0.000000 0.000000 0.394312"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0066"
+    type="mesh"
+    mesh="rock_1_3"
+    pos="6.1731 -1.2413 0.0007"
+    quat="-0.055484 0.000000 0.000000 0.998460"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0067"
+    type="mesh"
+    mesh="rock_5_7"
+    pos="-7.1204 -1.1467 0.0046"
+    quat="-0.629746 0.000000 0.000000 0.776801"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0068"
+    type="mesh"
+    mesh="rock_3_6"
+    pos="-6.1283 8.0284 0.0196"
+    quat="-0.652881 0.000000 0.000000 0.757460"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0069"
+    type="mesh"
+    mesh="rock_2_5"
+    pos="-0.4810 9.0717 -0.0068"
+    quat="0.365569 0.000000 0.000000 0.930784"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0070"
+    type="mesh"
+    mesh="rock_2_3"
+    pos="-2.1800 5.2754 -0.0338"
+    quat="-0.230892 0.000000 0.000000 0.972979"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0071"
+    type="mesh"
+    mesh="rock_3_5"
+    pos="4.3376 1.4237 -0.0082"
+    quat="0.342393 0.000000 0.000000 0.939557"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0072"
+    type="mesh"
+    mesh="rock_5_4"
+    pos="-7.7710 -1.1260 0.0276"
+    quat="-0.995589 0.000000 0.000000 0.093820"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0073"
+    type="mesh"
+    mesh="rock_3_5"
+    pos="-7.9033 -3.8884 -0.0209"
+    quat="-0.999910 0.000000 0.000000 0.013390"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0074"
+    type="mesh"
+    mesh="rock_5_2"
+    pos="-3.8047 -8.3369 -0.0011"
+    quat="-0.936079 0.000000 0.000000 0.351791"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0075"
+    type="mesh"
+    mesh="rock_4_3"
+    pos="-5.1605 7.4077 0.0171"
+    quat="-0.136853 0.000000 0.000000 0.990591"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0076"
+    type="mesh"
+    mesh="rock_3_4"
+    pos="-4.5259 -7.3128 0.0560"
+    quat="-0.059074 0.000000 0.000000 0.998254"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0077"
+    type="mesh"
+    mesh="rock_1_4"
+    pos="3.0288 -4.1131 0.0443"
+    quat="-0.766651 0.000000 0.000000 0.642064"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0078"
+    type="mesh"
+    mesh="rock_1_3"
+    pos="-1.8797 8.2303 0.0204"
+    quat="-0.943069 0.000000 0.000000 0.332598"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0079"
+    type="mesh"
+    mesh="rock_0_6"
+    pos="-2.2899 1.9351 -0.0335"
+    quat="0.539656 0.000000 0.000000 0.841885"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0080"
+    type="mesh"
+    mesh="rock_1_3"
+    pos="1.4869 -1.4904 0.0273"
+    quat="0.360911 0.000000 0.000000 0.932600"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0081"
+    type="mesh"
+    mesh="rock_4_1"
+    pos="-5.9573 0.3718 0.0149"
+    quat="0.777110 0.000000 0.000000 0.629364"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0082"
+    type="mesh"
+    mesh="rock_0_3"
+    pos="3.0822 -2.6386 0.0539"
+    quat="0.992837 0.000000 0.000000 0.119473"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0083"
+    type="mesh"
+    mesh="rock_4_7"
+    pos="1.5441 -2.3811 0.0218"
+    quat="-0.795478 0.000000 0.000000 0.605982"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0084"
+    type="mesh"
+    mesh="rock_2_3"
+    pos="-8.4634 0.0951 0.0344"
+    quat="-0.598751 0.000000 0.000000 0.800935"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0085"
+    type="mesh"
+    mesh="rock_0_6"
+    pos="8.2563 -7.7654 -0.0185"
+    quat="0.959952 0.000000 0.000000 0.280164"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0086"
+    type="mesh"
+    mesh="rock_0_4"
+    pos="9.4094 9.6408 -0.0196"
+    quat="-0.147818 0.000000 0.000000 0.989015"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0087"
+    type="mesh"
+    mesh="rock_2_4"
+    pos="-7.2331 -1.8653 -0.0106"
+    quat="-0.232717 0.000000 0.000000 0.972544"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0088"
+    type="mesh"
+    mesh="rock_4_4"
+    pos="-9.3869 -1.0815 0.0277"
+    quat="-0.945840 0.000000 0.000000 0.324632"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0089"
+    type="mesh"
+    mesh="rock_3_1"
+    pos="-4.9596 3.5249 -0.0235"
+    quat="-0.512370 0.000000 0.000000 0.858765"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0090"
+    type="mesh"
+    mesh="rock_5_2"
+    pos="5.0776 -2.9635 -0.0280"
+    quat="-0.452205 0.000000 0.000000 0.891914"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0091"
+    type="mesh"
+    mesh="rock_1_6"
+    pos="-8.6372 -4.7668 0.0175"
+    quat="-0.996537 0.000000 0.000000 0.083149"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0092"
+    type="mesh"
+    mesh="rock_0_7"
+    pos="0.0599 7.9474 -0.0145"
+    quat="-0.925265 0.000000 0.000000 0.379322"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0093"
+    type="mesh"
+    mesh="rock_2_3"
+    pos="-4.6940 0.9150 0.0302"
+    quat="0.895721 0.000000 0.000000 0.444617"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0094"
+    type="mesh"
+    mesh="rock_5_2"
+    pos="-6.7831 -2.6761 -0.0223"
+    quat="0.870056 0.000000 0.000000 0.492952"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0095"
+    type="mesh"
+    mesh="rock_3_2"
+    pos="6.2696 9.3100 -0.0172"
+    quat="-0.243368 0.000000 0.000000 0.969934"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0096"
+    type="mesh"
+    mesh="rock_4_6"
+    pos="-2.4182 0.2942 -0.0041"
+    quat="-0.985011 0.000000 0.000000 0.172491"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0097"
+    type="mesh"
+    mesh="rock_4_7"
+    pos="-8.3469 -9.3693 0.0205"
+    quat="-0.999891 0.000000 0.000000 0.014774"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0098"
+    type="mesh"
+    mesh="rock_2_5"
+    pos="-7.9337 1.3411 -0.0150"
+    quat="0.727583 0.000000 0.000000 0.686019"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0099"
+    type="mesh"
+    mesh="rock_0_6"
+    pos="7.3305 8.0591 -0.0065"
+    quat="0.489544 0.000000 0.000000 0.871979"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0100"
+    type="mesh"
+    mesh="rock_5_3"
+    pos="-2.2277 7.9517 0.0235"
+    quat="0.946659 0.000000 0.000000 0.322236"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0101"
+    type="mesh"
+    mesh="rock_1_7"
+    pos="6.9720 6.0861 0.0215"
+    quat="0.304955 0.000000 0.000000 0.952367"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0102"
+    type="mesh"
+    mesh="rock_2_7"
+    pos="-6.5893 -0.6813 -0.0029"
+    quat="-0.523296 0.000000 0.000000 0.852151"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0103"
+    type="mesh"
+    mesh="rock_1_6"
+    pos="-3.8672 9.6929 0.0212"
+    quat="-0.999965 0.000000 0.000000 0.008318"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0104"
+    type="mesh"
+    mesh="rock_4_3"
+    pos="2.1495 -3.3521 0.0414"
+    quat="0.994604 0.000000 0.000000 0.103749"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0105"
+    type="mesh"
+    mesh="rock_4_1"
+    pos="3.0277 2.6287 0.0175"
+    quat="0.775611 0.000000 0.000000 0.631211"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0106"
+    type="mesh"
+    mesh="rock_2_2"
+    pos="-5.4065 -8.5652 0.0233"
+    quat="-0.686692 0.000000 0.000000 0.726949"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0107"
+    type="mesh"
+    mesh="rock_2_4"
+    pos="4.5311 8.6059 -0.0215"
+    quat="-0.792365 0.000000 0.000000 0.610047"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0108"
+    type="mesh"
+    mesh="rock_0_3"
+    pos="5.3326 6.5421 -0.0043"
+    quat="0.021102 0.000000 0.000000 0.999777"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0109"
+    type="mesh"
+    mesh="rock_3_2"
+    pos="-0.5772 4.5394 0.0139"
+    quat="0.610281 0.000000 0.000000 0.792185"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0110"
+    type="mesh"
+    mesh="rock_4_5"
+    pos="0.8524 9.6647 -0.0009"
+    quat="-0.573378 0.000000 0.000000 0.819291"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0111"
+    type="mesh"
+    mesh="rock_3_7"
+    pos="2.4607 3.6108 -0.0250"
+    quat="-0.656024 0.000000 0.000000 0.754740"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0112"
+    type="mesh"
+    mesh="rock_5_4"
+    pos="7.9135 9.1000 -0.0209"
+    quat="-0.247970 0.000000 0.000000 0.968768"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0113"
+    type="mesh"
+    mesh="rock_2_7"
+    pos="0.5867 5.6526 0.0194"
+    quat="0.502553 0.000000 0.000000 0.864546"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0114"
+    type="mesh"
+    mesh="rock_1_4"
+    pos="6.0361 -8.9882 -0.0085"
+    quat="-0.830565 0.000000 0.000000 0.556921"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0115"
+    type="mesh"
+    mesh="rock_4_0"
+    pos="-2.9594 1.8640 -0.0138"
+    quat="0.111175 0.000000 0.000000 0.993801"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0116"
+    type="mesh"
+    mesh="rock_1_5"
+    pos="-7.9449 1.9400 -0.0159"
+    quat="-0.998664 0.000000 0.000000 0.051675"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0117"
+    type="mesh"
+    mesh="rock_2_7"
+    pos="-5.9367 -3.5283 -0.0232"
+    quat="0.047200 0.000000 0.000000 0.998885"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0118"
+    type="mesh"
+    mesh="rock_1_5"
+    pos="8.3547 3.9552 -0.0359"
+    quat="-0.833349 0.000000 0.000000 0.552747"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0119"
+    type="mesh"
+    mesh="rock_2_6"
+    pos="-2.4964 -8.5853 0.0135"
+    quat="0.569776 0.000000 0.000000 0.821800"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0120"
+    type="mesh"
+    mesh="rock_2_4"
+    pos="4.7563 0.9733 0.0021"
+    quat="0.778177 0.000000 0.000000 0.628045"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0121"
+    type="mesh"
+    mesh="rock_1_2"
+    pos="-1.2373 -2.5601 0.0200"
+    quat="0.961329 0.000000 0.000000 0.275402"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0122"
+    type="mesh"
+    mesh="rock_4_1"
+    pos="-2.7994 7.2830 -0.0235"
+    quat="0.948373 0.000000 0.000000 0.317158"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0123"
+    type="mesh"
+    mesh="rock_4_4"
+    pos="7.8349 -7.4873 -0.0240"
+    quat="0.992310 0.000000 0.000000 0.123780"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0124"
+    type="mesh"
+    mesh="rock_1_7"
+    pos="-8.5259 7.3974 0.0574"
+    quat="0.960221 0.000000 0.000000 0.279241"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0125"
+    type="mesh"
+    mesh="rock_2_6"
+    pos="4.3769 8.1971 -0.0249"
+    quat="-0.998420 0.000000 0.000000 0.056200"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0126"
+    type="mesh"
+    mesh="rock_5_2"
+    pos="1.7714 -4.4687 0.0222"
+    quat="0.233204 0.000000 0.000000 0.972428"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0127"
+    type="mesh"
+    mesh="rock_1_6"
+    pos="3.8406 7.6098 -0.0054"
+    quat="-0.737269 0.000000 0.000000 0.675599"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0128"
+    type="mesh"
+    mesh="rock_4_2"
+    pos="-4.5049 -2.6336 -0.0037"
+    quat="-0.387846 0.000000 0.000000 0.921724"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0129"
+    type="mesh"
+    mesh="rock_3_6"
+    pos="-0.2995 -4.1930 0.0108"
+    quat="0.951360 0.000000 0.000000 0.308082"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0130"
+    type="mesh"
+    mesh="rock_1_7"
+    pos="-7.1616 0.6434 0.0124"
+    quat="-0.207346 0.000000 0.000000 0.978268"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0131"
+    type="mesh"
+    mesh="rock_4_6"
+    pos="-2.9266 9.4926 0.0385"
+    quat="-0.999236 0.000000 0.000000 0.039078"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0132"
+    type="mesh"
+    mesh="rock_2_6"
+    pos="-3.5659 -1.6547 0.0128"
+    quat="-0.972028 0.000000 0.000000 0.234865"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0133"
+    type="mesh"
+    mesh="rock_4_5"
+    pos="-4.6176 6.3993 -0.0010"
+    quat="-0.954487 0.000000 0.000000 0.298252"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0134"
+    type="mesh"
+    mesh="rock_5_1"
+    pos="6.1810 -7.0111 -0.0134"
+    quat="0.237510 0.000000 0.000000 0.971385"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0135"
+    type="mesh"
+    mesh="rock_1_0"
+    pos="-6.9019 2.3695 0.0036"
+    quat="0.951109 0.000000 0.000000 0.308855"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0136"
+    type="mesh"
+    mesh="rock_0_3"
+    pos="-2.5699 4.2175 -0.0423"
+    quat="0.660166 0.000000 0.000000 0.751120"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0137"
+    type="mesh"
+    mesh="rock_5_1"
+    pos="4.7512 -1.6503 -0.0072"
+    quat="0.997277 0.000000 0.000000 0.073753"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0138"
+    type="mesh"
+    mesh="rock_2_6"
+    pos="-1.5526 1.2298 -0.0015"
+    quat="0.741420 0.000000 0.000000 0.671042"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0139"
+    type="mesh"
+    mesh="rock_1_4"
+    pos="-0.6920 9.6330 -0.0234"
+    quat="0.941045 0.000000 0.000000 0.338281"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0140"
+    type="mesh"
+    mesh="rock_4_2"
+    pos="-1.4397 8.0807 0.0240"
+    quat="-0.772338 0.000000 0.000000 0.635212"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0141"
+    type="mesh"
+    mesh="rock_3_7"
+    pos="6.6771 -1.7086 -0.0215"
+    quat="-0.721257 0.000000 0.000000 0.692668"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0142"
+    type="mesh"
+    mesh="rock_4_4"
+    pos="-2.9954 8.7702 -0.0029"
+    quat="-0.413673 0.000000 0.000000 0.910425"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0143"
+    type="mesh"
+    mesh="rock_2_6"
+    pos="-8.5527 4.0319 -0.0507"
+    quat="-0.798602 0.000000 0.000000 0.601860"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0144"
+    type="mesh"
+    mesh="rock_2_6"
+    pos="-1.0709 -4.3656 0.0175"
+    quat="0.339462 0.000000 0.000000 0.940620"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0145"
+    type="mesh"
+    mesh="rock_3_7"
+    pos="-5.9338 -4.9645 0.0343"
+    quat="-0.323783 0.000000 0.000000 0.946131"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0146"
+    type="mesh"
+    mesh="rock_4_2"
+    pos="7.5079 9.1957 -0.0309"
+    quat="0.596111 0.000000 0.000000 0.802902"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0147"
+    type="mesh"
+    mesh="rock_5_5"
+    pos="-3.3966 -1.1718 -0.0056"
+    quat="-0.525573 0.000000 0.000000 0.850749"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0148"
+    type="mesh"
+    mesh="rock_3_3"
+    pos="4.3764 4.3709 0.0036"
+    quat="-0.969190 0.000000 0.000000 0.246316"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0149"
+    type="mesh"
+    mesh="rock_0_5"
+    pos="-5.2007 -9.1223 -0.0001"
+    quat="-0.534046 0.000000 0.000000 0.845456"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0150"
+    type="mesh"
+    mesh="rock_0_3"
+    pos="-4.6718 8.6160 0.0105"
+    quat="0.967078 0.000000 0.000000 0.254481"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0151"
+    type="mesh"
+    mesh="rock_5_4"
+    pos="-1.2502 -7.1131 -0.0282"
+    quat="0.065786 0.000000 0.000000 0.997834"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0152"
+    type="mesh"
+    mesh="rock_0_7"
+    pos="2.5190 -7.5490 0.0659"
+    quat="-0.866742 0.000000 0.000000 0.498757"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0153"
+    type="mesh"
+    mesh="rock_0_7"
+    pos="-4.7190 -0.7227 -0.0171"
+    quat="-0.010114 0.000000 0.000000 0.999949"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0154"
+    type="mesh"
+    mesh="rock_2_6"
+    pos="9.5498 -5.7372 0.0065"
+    quat="-0.147186 0.000000 0.000000 0.989109"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0155"
+    type="mesh"
+    mesh="rock_2_5"
+    pos="-8.2780 -4.1761 0.0181"
+    quat="0.895922 0.000000 0.000000 0.444211"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0156"
+    type="mesh"
+    mesh="rock_0_2"
+    pos="6.3209 3.2737 0.0156"
+    quat="0.070193 0.000000 0.000000 0.997533"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0157"
+    type="mesh"
+    mesh="rock_0_7"
+    pos="0.3744 8.3515 0.0021"
+    quat="-0.994217 0.000000 0.000000 0.107391"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0158"
+    type="mesh"
+    mesh="rock_1_5"
+    pos="5.7513 6.9027 -0.0155"
+    quat="-0.567293 0.000000 0.000000 0.823516"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0159"
+    type="mesh"
+    mesh="rock_2_3"
+    pos="-3.9209 2.8726 -0.0265"
+    quat="0.631736 0.000000 0.000000 0.775183"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0160"
+    type="mesh"
+    mesh="rock_2_2"
+    pos="0.3819 7.0860 0.0020"
+    quat="0.916796 0.000000 0.000000 0.399357"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0161"
+    type="mesh"
+    mesh="rock_1_4"
+    pos="-2.4348 -9.1008 0.0376"
+    quat="0.867711 0.000000 0.000000 0.497069"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0162"
+    type="mesh"
+    mesh="rock_5_1"
+    pos="3.5364 -5.2200 -0.0032"
+    quat="0.984780 0.000000 0.000000 0.173806"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0163"
+    type="mesh"
+    mesh="rock_4_4"
+    pos="0.0253 9.2684 0.0164"
+    quat="-0.277767 0.000000 0.000000 0.960648"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0164"
+    type="mesh"
+    mesh="rock_5_3"
+    pos="5.2808 3.2690 0.0341"
+    quat="-0.983669 0.000000 0.000000 0.179990"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0165"
+    type="mesh"
+    mesh="rock_1_6"
+    pos="7.0423 5.0149 -0.0188"
+    quat="0.970030 0.000000 0.000000 0.242987"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0166"
+    type="mesh"
+    mesh="rock_3_0"
+    pos="-8.7595 9.5692 0.0447"
+    quat="0.988609 0.000000 0.000000 0.150506"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0167"
+    type="mesh"
+    mesh="rock_0_2"
+    pos="-6.2328 -3.7236 -0.0252"
+    quat="-0.176891 0.000000 0.000000 0.984230"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0168"
+    type="mesh"
+    mesh="rock_4_4"
+    pos="-4.2931 0.4044 -0.0092"
+    quat="0.815366 0.000000 0.000000 0.578946"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0169"
+    type="mesh"
+    mesh="rock_3_7"
+    pos="-1.7572 2.9261 -0.0370"
+    quat="0.254422 0.000000 0.000000 0.967093"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0170"
+    type="mesh"
+    mesh="rock_3_7"
+    pos="7.6593 4.4442 -0.0366"
+    quat="0.827568 0.000000 0.000000 0.561366"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0171"
+    type="mesh"
+    mesh="rock_4_5"
+    pos="3.5683 -3.9426 0.0169"
+    quat="-0.473782 0.000000 0.000000 0.880642"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0172"
+    type="mesh"
+    mesh="rock_2_0"
+    pos="-5.8201 -6.9981 0.0203"
+    quat="-0.999505 0.000000 0.000000 0.031463"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0173"
+    type="mesh"
+    mesh="rock_4_4"
+    pos="9.1218 4.7415 -0.0164"
+    quat="0.997492 0.000000 0.000000 0.070782"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0174"
+    type="mesh"
+    mesh="rock_5_5"
+    pos="-2.7978 -3.6742 0.0118"
+    quat="-0.954928 0.000000 0.000000 0.296837"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0175"
+    type="mesh"
+    mesh="rock_1_2"
+    pos="5.7223 3.0084 0.0129"
+    quat="0.107120 0.000000 0.000000 0.994246"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0176"
+    type="mesh"
+    mesh="rock_0_2"
+    pos="-7.9754 4.0161 -0.0303"
+    quat="-0.054283 0.000000 0.000000 0.998526"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0177"
+    type="mesh"
+    mesh="rock_3_6"
+    pos="9.0815 7.7144 -0.0350"
+    quat="0.636289 0.000000 0.000000 0.771451"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0178"
+    type="mesh"
+    mesh="rock_3_3"
+    pos="3.3005 2.0191 0.0224"
+    quat="0.919241 0.000000 0.000000 0.393696"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0179"
+    type="mesh"
+    mesh="rock_1_2"
+    pos="-6.1521 4.4649 0.0599"
+    quat="-0.859116 0.000000 0.000000 0.511782"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0180"
+    type="mesh"
+    mesh="rock_0_7"
+    pos="-4.0643 2.4076 -0.0209"
+    quat="0.582095 0.000000 0.000000 0.813121"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0181"
+    type="mesh"
+    mesh="rock_0_6"
+    pos="9.5205 4.5640 -0.0174"
+    quat="-0.179591 0.000000 0.000000 0.983741"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0182"
+    type="mesh"
+    mesh="rock_0_6"
+    pos="0.2711 4.5738 0.0150"
+    quat="0.996158 0.000000 0.000000 0.087574"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0183"
+    type="mesh"
+    mesh="rock_0_4"
+    pos="3.1033 6.0049 -0.0057"
+    quat="0.999842 0.000000 0.000000 0.017796"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0184"
+    type="mesh"
+    mesh="rock_5_5"
+    pos="-2.7048 -3.0317 -0.0153"
+    quat="-0.023399 0.000000 0.000000 0.999726"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0185"
+    type="mesh"
+    mesh="rock_1_5"
+    pos="-4.6421 -6.4127 0.0056"
+    quat="0.778918 0.000000 0.000000 0.627126"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0186"
+    type="mesh"
+    mesh="rock_0_7"
+    pos="3.2714 0.3513 -0.0008"
+    quat="-0.073669 0.000000 0.000000 0.997283"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0187"
+    type="mesh"
+    mesh="rock_1_6"
+    pos="-4.4179 7.3224 -0.1592"
+    quat="-0.974241 0.000000 0.000000 0.225510"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0188"
+    type="mesh"
+    mesh="rock_5_6"
+    pos="-3.4457 -5.3031 0.0634"
+    quat="0.803501 0.000000 0.000000 0.595304"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0189"
+    type="mesh"
+    mesh="rock_1_5"
+    pos="2.2068 8.8654 -0.0063"
+    quat="-0.373639 0.000000 0.000000 0.927574"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0190"
+    type="mesh"
+    mesh="rock_5_5"
+    pos="5.0954 -5.8236 0.0282"
+    quat="-0.835274 0.000000 0.000000 0.549835"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0191"
+    type="mesh"
+    mesh="rock_2_2"
+    pos="-1.0538 -0.6033 0.0203"
+    quat="-0.999968 0.000000 0.000000 0.007980"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0192"
+    type="mesh"
+    mesh="rock_1_3"
+    pos="-1.0734 -4.0080 -0.0055"
+    quat="-0.914711 0.000000 0.000000 0.404109"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0193"
+    type="mesh"
+    mesh="rock_5_2"
+    pos="5.9842 -0.4339 -0.0045"
+    quat="-0.462765 0.000000 0.000000 0.886481"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0194"
+    type="mesh"
+    mesh="rock_4_6"
+    pos="3.2493 -8.0041 0.0149"
+    quat="0.211720 0.000000 0.000000 0.977330"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0195"
+    type="mesh"
+    mesh="rock_4_1"
+    pos="-2.8034 0.7308 -0.0019"
+    quat="0.767323 0.000000 0.000000 0.641261"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0196"
+    type="mesh"
+    mesh="rock_1_6"
+    pos="4.5762 -4.6618 0.0157"
+    quat="-0.925562 0.000000 0.000000 0.378595"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0197"
+    type="mesh"
+    mesh="rock_4_5"
+    pos="5.0658 -2.5401 -0.0444"
+    quat="0.988313 0.000000 0.000000 0.152438"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0198"
+    type="mesh"
+    mesh="rock_1_2"
+    pos="8.5004 -0.7984 0.0134"
+    quat="0.864082 0.000000 0.000000 0.503352"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="rock_0199"
+    type="mesh"
+    mesh="rock_0_4"
+    pos="-6.4496 1.8743 0.0184"
+    quat="0.763758 0.000000 0.000000 0.645503"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+</mujocoinclude>
