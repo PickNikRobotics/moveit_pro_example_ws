@@ -315,6 +315,7 @@
   </equality>
 
   <actuator>
+    <!-- kv=20 matches the vla_sim copy of this actuator (the shared picknik_accessories model uses 25). It was chosen empirically: at the 3 ms timestep the including scenes set, kv=100 puts the finger linkage in a timestep-rate limit cycle against a held object, which keeps the knuckle velocity above the GripperActionController stall_velocity_threshold (config/control/picknik_kinova_gen3.ros2_control.yaml) so MoveGripperAction never completes. The response is not monotone in kv, so re-validate rather than interpolate. -->
     <position
       class="2f85"
       name="robotiq_85_left_knuckle_joint"
@@ -322,7 +323,7 @@
       forcerange="-5 5"
       ctrlrange="0 .8"
       kp="100"
-      kv="100"
+      kv="20"
     />
   </actuator>
 
