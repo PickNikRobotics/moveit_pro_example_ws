@@ -20,40 +20,74 @@
            string in its binary: that path is NOT taken with this configuration. Reading the
            strings suggested beluga global-initialises and broadcasts from an unconverged cloud,
            and running it showed the opposite. That trap is why the relabel below exists.-->
+      <!--A 6 DOF marker, not a click. GetPoseFromUser returns the ray hit for position and,
+           with is_normal, the clicked FACE NORMAL for orientation - which on a floor is not a
+           heading at all. Heading is the axis this Objective exists to pin down, and it cannot be
+           recovered afterwards: a forced no-motion update SELECTS among the particles the seed
+           scattered, so a seed pointing the wrong way stays pointing the wrong way. The marker
+           returns exactly the pose the operator places, heading included.
+
+           Four things this Behavior does that cost a round each if forgotten, all of them recorded
+           in meta_ws's navigate_to_imarker_pose.xml: it takes a LIST, so the seed pose is wrapped
+           in a one-element vector and read back at index 0; it handles exactly one pose and
+           rejects more; the prompt must contain NO semicolon, because the port is a string list
+           and splits on it; and it always returns poses in 'world'.-->
       <Action
-        ID="GetPoseFromUser"
-        name="Ask the operator where the robot is"
-        is_normal="true"
-        pose_prompt="Click the robot's current location on the map"
-        user_pose="{clicked_pose}"
-        view_name="Visualization"
+        ID="CreatePoseStamped"
+        name="Where the marker first appears"
+        reference_frame="world"
+        position_xyz="0.000000;0.000000;0.000000"
+        orientation_xyzw="0.000000;0.000000;0.000000;1.000000"
+        pose_stamped="{marker_seed_pose}"
       />
-      <!--The UI returns the click in the planning frame - 'world' on this robot, hardcoded in the
-           UI's pose-utils.ts - and the seed has to be in 'map'. The route between them is
-           world -> odom -> map, and its only non-static link is the map -> odom edge described
-           above. Running the click through that edge is exactly what must not happen here: before
-           the seed, the edge carries a uniform-cloud mean, so TransformPoseFrame would not fail,
-           it would succeed and place the seed tens of metres from where the operator pointed.
+      <Action ID="ResetVector" name="ResetVector" vector="{marker_poses}" />
+      <Action
+        ID="PushBackVector"
+        name="Wrap it in the one-element list the marker takes"
+        input_vector="{marker_poses}"
+        element="{marker_seed_pose}"
+        output_vector="{marker_poses}"
+      />
+      <Action
+        ID="AdjustPoseWithIMarker"
+        name="Ask the operator to place the robot"
+        prompts="Drag the marker onto the robot, then rotate it so its X axis points the way the robot is facing"
+        initial_poses="{marker_poses}"
+        adjusted_poses="{adjusted_poses}"
+      />
+      <Action
+        ID="GetElementOfVector"
+        name="Read the placed pose back out"
+        vector_in="{adjusted_poses}"
+        index="0"
+        element="{clicked_pose}"
+      />
+      <!--The UI returns the click in the planning frame - 'world' on this robot, hardcoded in
+           the UI's pose-utils.ts - and the seed has to be in 'map'. The route between them is
+           world -> odom -> map, whose only non-static link is the map -> odom edge described
+           above, and at cold boot that edge DOES NOT EXIST. TransformPoseFrame would not place
+           the seed badly; it would fail outright, and this Objective would die before it ever
+           seeded the filter - leaving nothing that could create the edge it needed. That is a
+           deadlock, and it was measured, not argued.
 
            So the click is RELABELLED rather than transformed. mj_world -> map and odom -> world
            are both static identities (robot_drivers_to_persist_sim.launch.py), so world
-           coordinates ARE map coordinates whenever map -> odom is identity. The relabel is done by
-           its own node, in the open, so that nothing about it is hidden: SeedLocalizationAtPose
-           keeps refusing any pose that is not already in 'map', and that guard is worth keeping.
+           coordinates ARE map coordinates while map -> odom is identity, which is its value
+           before any correction exists. The relabel is done by its own node, in the open, so
+           nothing about it is hidden: SeedLocalizationAtPose keeps refusing any pose that is not
+           already in 'map', and that guard is worth keeping.
 
-           TWO ASSUMPTIONS, NEITHER OBSERVED IN SIMULATION. Both are the reason this is written out
-           rather than buried.
+           NOT A CONTRADICTION OF meta_ws's navigate_to_imarker_pose.xml, which uses
+           TransformPoseFrame for the same conversion. That Objective sets a NAVIGATION goal, by
+           which point the robot is localized and map -> odom exists and means something, so the
+           transform is right there. This one SEEDS, at cold boot, before the edge exists. Same
+           conversion, opposite precondition.
 
-           First, this is exact at cold boot, when map -> odom is identity. It is NOT exact when
-           this Objective is re-run after the robot has driven and map -> odom carries a real
-           correction: the click is then off by that accumulated correction. For the bumped-robot
+           The remaining limit, stated because it is real: the relabel is exact while map -> odom
+           is identity. Re-running this after the robot has driven, when that edge carries a real
+           correction, would put the click off by exactly that correction. For the bumped-robot
            case use "Refine Localization In Place", which seeds from the filter's own estimate and
-           never crosses frames at all.
-
-           Second, this is only the right call if the UI does not itself render the click through
-           the same map -> odom the transform would have undone. If it does, the round trip would
-           have cancelled and TransformPoseFrame was already correct. Settle this against the
-           simulator before trusting either path after the robot has moved.-->
+           never crosses frames at all.-->
       <Action
         ID="ReinterpretPoseFrame"
         name="Read the click as map coordinates without transforming it"

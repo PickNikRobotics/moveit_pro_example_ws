@@ -297,19 +297,29 @@
         to an occupied cell.
       </input_port>
       <input_port name="min_inlier_fraction" default="0.6" type="double">
-        Accept only if at least this fraction of scored beams fit the map. CALIBRATED ON
-        hangar_map with the shipped scoring code, against the grid map_server actually publishes:
-        the true pose scores 87.0%, a pose 0.10 m / 1 deg off scores 69.6%, and the strongest
-        alias found anywhere on the map scores 34.8% - a separation of 52 points.
+        Accept only if at least this fraction of scored beams fit the
+        map. CALIBRATED ON
+        hangar_map with the shipped scoring code, against the grid map_server
+        actually publishes:
+        the true pose scores 87.0%, a pose 0.10 m / 1 deg off scores 69.6%, and
+        the strongest
+        alias found anywhere on the map scores 34.8% - a separation of 52
+        points.
 
-        0.6 rather than the 0.8 meta_ws uses. 0.8 sits only 7 points under the true pose AND above
-        the 69.6% a 0.10 m error scores, while the refinement itself returns about 6.5 cm, so 0.8
-        would reject the refinements this loop legitimately produces. 0.6 still clears the
+        0.6 rather than the 0.8 meta_ws uses. 0.8 sits only 7 points under the
+        true pose AND above
+        the 69.6% a 0.10 m error scores, while the refinement itself returns
+        about 6.5 cm, so 0.8
+        would reject the refinements this loop legitimately produces. 0.6 still
+        clears the
         strongest alias by 25 points.
 
-        Note the granularity: only 23 of the 60 selected beams survive the range filters on this
-        robot's merged scan, so this fraction moves in steps of about 4.3 points. Re-measure with
-        `ros2 run hangar_sim_behaviors calibrate_scan_match_gate` after every map rebuild.
+        Note the granularity: only 23 of the 60 selected beams survive the range
+        filters on this
+        robot's merged scan, so this fraction moves in steps of about 4.3
+        points. Re-measure with
+        `ros2 run hangar_sim_behaviors calibrate_scan_match_gate` after every
+        map rebuild.
       </input_port>
       <!--Output ports need defaults: the parser treats a default-less subtree-model port as
            mandatory, so a caller that does not remap every one of these fails at tree creation,

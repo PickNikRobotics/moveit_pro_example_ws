@@ -100,10 +100,10 @@ skip_objectives = {
     # never arrives.
     "Navigate to Clicked Point",  # GetPoseFromUser + WaitForUserPathApproval.
     "Navigate to Clicked Point with Replanning",  # GetPoseFromUser.
-    # Asks the operator to click the robot's pose on the map. The localized_robot
+    # Asks the operator to place a 6 DOF marker on the robot. The localized_robot
     # fixture below seeds the filter the same way headlessly, so the rest of the suite
     # still gets the map -> odom edge this would otherwise provide.
-    "Localize Robot",  # GetPoseFromUser.
+    "Localize Robot",  # AdjustPoseWithIMarker needs an operator to place the marker.
     # Runs headless (it seeds from the estimate the filter already holds, not from a
     # click), but its pass/fail is decided by min_inlier_fraction 0.80 and
     # inlier_distance 0.15, which are INHERITED FROM meta_ws and have NOT been measured
