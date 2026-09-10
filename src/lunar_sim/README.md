@@ -10,8 +10,10 @@ as an image stream at the xacro's `render_publish_rate` of 10 Hz; the robot itse
 The base spawns at `husky_scene.xml`'s `default` keyframe rather than the world origin
 (`config.yaml`'s `mujoco_keyframe`); that keyframe's own comment records the pose and why it was
 picked. `Dead Reckon Square` is open-loop and never resets itself, so after a run - or any drift -
-the `Reset Simulation` objective (`objectives/reset_simulation.xml`, the same thing the UI's
-built-in sim-reset control does) puts the base back on that start pose.
+the stock `Reset MuJoCo Sim` objective (from `moveit_pro_objectives`' `objectives/mujoco` library,
+loaded in `config.yaml`; it deactivates the controllers around the keyframe reset so
+`platform_velocity_controller` never sees the wheels teleport) puts the base back on that start
+pose.
 
 The robot description composes the real A300 platform body from
 [`clearpath_platform_description`](../external_dependencies/clearpath_common/clearpath_platform_description)
@@ -35,10 +37,12 @@ regolith-plane contact model, which has different (measured: higher) turning res
 1.75 unchanged under real closed-loop feedback (`open_loop: false`) makes commanded and true
 motion diverge - `/odom` reports the *commanded* twist, not the chassis's *true* motion, since
 both are computed from the same wheel encoders via the same (wrong) parameters and round-trip by
-construction; only the MuJoCo chassis pose itself (freejoint `xpos`/`xquat`, not `/odom`) exposes
-the error. Measured directly: a 3 s, 0.5235988 rad/s (30 deg/s) commanded turn achieved only
-~59-61 deg of true chassis rotation with `wheel_separation_multiplier: 1.75`. Recalibrated against
-that ground truth (see `husky_a300.ros2_control.yaml`'s comment for the method):
+construction; only the MuJoCo chassis pose itself (freejoint `xpos`/`xquat` read from MuJoCo
+directly - not `/odom`, and not TF either, since MuJoCo broadcasts no `mj_world` edge for this
+robot, see the xacro's TF-ownership comment) exposes the error. Measured directly: a 3 s,
+0.5235988 rad/s (30 deg/s) commanded turn achieved only ~59-61 deg of true chassis rotation with
+`wheel_separation_multiplier: 1.75`. Recalibrated against that ground truth (see
+`husky_a300.ros2_control.yaml`'s comment for the method):
 `wheel_radius: 0.1645` (was 0.1625, straight-line rolling resistance) and
 `wheel_separation_multiplier: 2.57` (was 1.75, in-place-turn scrub resistance) bring a single
 corner to ~90 deg (measured 89.9 deg) and hold across a full 4-corner Dead Reckon Square (each
@@ -100,7 +104,11 @@ lock onto - with feathered (blended) edges between placements, and finally bakes
 soft craterlets and 3-12cm rocks shaded consistent with `husky_scene.xml`'s sun direction (~74
 degree elevation - verified against the chassis's own cast shadow in a rendered frame). Re-run it
 with `--plane-m`/`--px-per-m` to regenerate at a different plane size or resolution (default: 20m
-plane, ~2.4mm/px, matching the ground plane's current size).
+plane, ~2.4mm/px, matching the ground plane's current size). That is finer than the fixed
+`scene_camera` can show (roughly 9 mm per rendered pixel at its range); the detail is there for the
+planned robot-mounted cameras, which will look at the ground from wheel height for visual-odometry
+evaluation against the simulation's ground truth - if the clone weight of the 81 MB asset matters
+more than that, re-run the generator with a lower `--px-per-m` and replace the asset.
 `verify_ground_colormap.py` checks the output has no periodic repeat (FFT autocorrelation +
 template matching, adapted from the same check used on `generate_terrain.py`'s heightfield); a
 downsample-to-256px std, printed by the generator itself, checks there's no residual low-frequency
@@ -139,6 +147,7 @@ the earlier flat-plane scene had, so a second asset of this size would need the 
 
 This is layer 2 (procedural crater heightfield + scattered rocks) of a lunar-environment stack,
 built on layer 1's MuJoCo migration. Moon-base structures are a later layer, not started here.
+Nav2 is also a later layer: this configuration intentionally ships no navigation stack yet.
 
 ## Frames
 

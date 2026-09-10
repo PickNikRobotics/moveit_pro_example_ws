@@ -1,6 +1,8 @@
 <mujoco model="husky_a300">
   <compiler angle="radian" meshdir="assets" autolimits="true" />
 
+  <!-- No timestep here on purpose: it lives in husky_scene.xml, which includes this file. A
+       timestep set here would silently override the scene's. -->
   <option integrator="implicitfast" />
 
   <asset>
@@ -51,8 +53,9 @@
     <body name="chassis_link" pos="0 0 0.13597">
       <freejoint />
       <inertial pos="0 0 0.1148" mass="70" diaginertia="1.1409 4.6217 5.1478" />
-      <!-- Collision proxy only (not rendered - see husky_scene.xml's scene_option.geomgroup[3]=0
-           convention, matching hangar_sim's visual/group=2 vs collision/group=3 split). The
+      <!-- Collision proxy only. Geom group 3 is hidden by MuJoCo's own default visualization
+           options (mjv_defaultOption enables geom groups 0-2 only); nothing in husky_scene.xml
+           sets geomgroup. Same visual/group=2 vs collision/group=3 split as hangar_sim. The
            detailed visual meshes below sit at the same pose and would z-fight with this if both
            were shown. -->
       <geom
