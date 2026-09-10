@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Localize Robot and Refine">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Localize Robot and Refine"
+    _description="Tell the localizer where the robot is, then tighten that estimate without moving the robot. Use this instead of Localize Robot when the robot is standing still and you want the best estimate the click can buy before the first navigation goal."
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="GetPoseFromUser"
+        name="Ask the operator where the robot is"
+        is_normal="true"
+        pose_prompt="Click the robot's current location on the map, dragging to set its heading"
+        user_pose="{clicked_pose}"
+        view_name="Visualization"
+      />
+      <!--The UI returns the click in the planning frame ('world' here), which sits under 'odom'
+           and so drifts relative to 'map'. See Localize Robot for why this conversion is required
+           rather than incidental.-->
+      <Action
+        ID="TransformPoseFrame"
+        name="Convert the click into the map frame"
+        input_pose="{clicked_pose}"
+        output_pose="{initial_pose}"
+        target_frame_id="map"
+      />
+      <!--The robot must be STATIONARY for this. A forced no-motion update consumes whatever
+           odometry has accumulated since the last one, which is only harmless while the base is
+           still. If the refinement is rejected the subtree restores the click above, so the worst
+           case here is exactly the outcome of running Localize Robot on its own.-->
+      <SubTree
+        ID="Refine Localization In Place"
+        name="Refine without moving"
+        seed_pose="{initial_pose}"
+        xy_std_dev="0.5"
+        yaw_std_dev="0.26"
+        num_updates="20"
+        drift_limit="1.2"
+        yaw_drift_limit="0.52"
+        inlier_distance="0.15"
+        min_inlier_fraction="0.8"
+        refined_pose="{refined_pose}"
+        refined_transform="{refined_transform}"
+        seed_to_refined="{seed_to_refined}"
+        inlier_fraction="{inlier_fraction}"
+        median_residual="{median_residual}"
+        beams_used="{beams_used}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Localize Robot and Refine">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Navigation" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

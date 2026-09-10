@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Refine Localization In Place">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Refine Localization In Place"
+    _description="Seeds the localizer with a pose and then tightens it WITHOUT moving the robot, by forcing repeated no-motion filter updates. Accepts the result only if the refined pose still explains the live scan and has not wandered outside the seeded region; otherwise it puts the seed back and fails, so a rejected refinement is never left in the filter."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="root">
+      <!--Seed. The scatter this creates is the ONLY source of candidate poses for everything that
+           follows: a forced no-motion update reweights and resamples particles but cannot move
+           one, because at zero odometry delta beluga's OmnidirectionalDriveModel derives all three
+           of its noise sigmas from the translation and rotation deltas, so all three are exactly
+           zero and the sampler returns each state unchanged. xy_std_dev therefore sets BOTH the
+           resolution of the answer and how far the answer can land from the click (~4 sigma).-->
+      <Action
+        ID="SeedLocalizationAtPose"
+        name="Seed the filter at the clicked pose"
+        pose="{seed_pose}"
+        xy_std_dev="{xy_std_dev}"
+        yaw_std_dev="{yaw_std_dev}"
+        initial_pose_topic="/initialpose"
+      />
+      <!--Everything after the seed lives inside this Fallback's first branch, so ANY post-seed
+           failure - the settle wait, the refinement loop, either gate - falls through to the
+           branch that puts the seed back before failing. The subtree must never exit with the
+           filter holding anything other than a pose that passed both gates, or the click itself.-->
+      <Control ID="Fallback" name="Refine and verify, or put the seed back and fail">
+        <Control ID="Sequence" name="Refine and verify">
+          <!--AMCL applies the seed in its own callback and takes one filter update on the next
+               scan. One 10 Hz scan period, plus margin.-->
+          <Action
+            ID="WaitForDuration"
+            name="Let the filter consume the seed"
+            delay_duration="0.300000"
+          />
+
+          <!--The refinement loop. Each call sets amcl's force_update flag, and the next scan then
+               runs a full sensor update and resample with the robot stationary. The wait
+               guarantees a FRESH scan per call: without it several calls collapse onto the same
+               10 Hz frame and the extra ones do nothing. Convergence is complete well before the
+               shipped count; the rest is margin, and past that point further calls only shrink the
+               reported covariance without moving the estimate.
+
+               /request_nomotion_update is std_srvs/Empty, so CallTriggerService cannot reach it.
+               Note beluga advertises a second Empty service, /reinitialize_global_localization -
+               do NOT reach for it here. It scatters particles uniformly over the whole map, which
+               is precisely the wrong-aisle failure the click-bounded design exists to prevent.-->
+          <Control ID="Fallback" name="Refine, or say the refinement did not complete">
+            <Decorator ID="Repeat" name="Refine in place" num_cycles="{num_updates}">
+              <Control ID="Sequence">
+                <Action
+                  ID="CallEmptyService"
+                  name="Force one filter update"
+                  service_name="/request_nomotion_update"
+                  response_timeout="2.000000"
+                  wait_for_server_available_timeout="3.000000"
+                />
+                <Action ID="WaitForDuration" delay_duration="0.150000" />
+              </Control>
+            </Decorator>
+            <Control ID="Sequence" name="Refinement did not complete">
+              <Action
+                ID="LogMessage"
+                log_level="error"
+                message="Refinement FAILED: the forced no-motion update service did not respond, so the filter may hold a partially refined, unverified pose. Check that localization is running and responsive, then run again."
+              />
+              <Action ID="AlwaysFailure" name="Fall through to the restore" />
+            </Control>
+          </Control>
+
+          <Control ID="Fallback" name="Gate, or say the result was rejected">
+            <Control ID="Sequence" name="Verify">
+              <!--Read the result. map -> ridgeback_base_link is the pose everything downstream
+                   actually uses, and with the robot stationary it is the filter's estimate; reading
+                   it here rather than /amcl_pose means the gate scores the transform the planner
+                   will plan against, not a parallel message that could disagree.-->
+              <Action
+                ID="GetLatestTransform"
+                name="Read the refined pose"
+                target_frame_id="map"
+                source_frame_id="ridgeback_base_link"
+                transform="{refined_transform}"
+              />
+              <Action
+                ID="ConvertTransformStampedToPoseStamped"
+                transform_stamped="{refined_transform}"
+                pose_stamped="{refined_pose}"
+              />
+
+              <!--Gate 1, the drift limit. This is NOT a correctness test. It bounds how far this
+                   Objective may move the robot's belief from where the operator pointed without
+                   asking again. It matters more here than it did on meta_ws: hangar_sim runs with
+                   recovery_alpha_slow/fast non-zero, so beluga MAY inject particles drawn uniformly
+                   over the whole map during the loop. The 4-sigma bound the seed would otherwise
+                   guarantee is therefore not structural here, and this limit is what enforces it.
+                   See the PR body; zeroing the recovery alphas is the better fix and belongs in
+                   nav2_params.yaml's amcl block, not here.-->
+              <Action
+                ID="CalculatePoseOffset"
+                name="Measure how far the belief moved"
+                source_pose="{seed_pose}"
+                destination_pose="{refined_pose}"
+                source_to_destination_pose="{seed_to_refined}"
+              />
+              <Control ID="Fallback" name="Within the drift limit, or say so">
+                <Action
+                  ID="IsPoseNearIdentity"
+                  name="Check the refinement stayed near the click"
+                  pose="{seed_to_refined}"
+                  position_tolerance="{drift_limit}"
+                  rotation_tolerance="{yaw_drift_limit}"
+                />
+                <Control ID="Sequence" name="Drifted too far">
+                  <Action
+                    ID="LogMessage"
+                    log_level="error"
+                    message="Refinement REJECTED: it settled further from your click than this Objective is allowed to move the robot's belief unasked. Click closer to where the robot actually is and run again."
+                  />
+                  <Action ID="AlwaysFailure" name="Fall through to the restore" />
+                </Control>
+              </Control>
+
+              <!--Gate 2, the acceptance test: does this pose actually explain the live scan against
+                   the map? This is the gate, because it measures something confidence cannot -- fit
+                   to the map rather than how far the particle set has collapsed. Do NOT replace it
+                   with a covariance threshold: covariance falls as the particle set depletes, so it
+                   shrinks whether the surviving pose is right or wrong.
+
+                   The port values here mirror the amcl block of nav2_params.yaml. If that block
+                   changes, change these with it, or the gate stops measuring this filter.-->
+              <Action
+                ID="ScanMatchResidual"
+                name="Check the pose against the map"
+                pose="{refined_pose}"
+                scan_topic="/scan_merged"
+                map_topic="/map"
+                min_range="0.000000"
+                max_range="25.000000"
+                max_beams="60"
+                max_obstacle_distance="2.000000"
+                inlier_distance="{inlier_distance}"
+                min_inlier_fraction="{min_inlier_fraction}"
+                timeout="5.000000"
+                inlier_fraction="{inlier_fraction}"
+                median_residual="{median_residual}"
+                beams_used="{beams_used}"
+              />
+            </Control>
+            <Control ID="Sequence" name="Rejected">
+              <Action
+                ID="LogMessage"
+                log_level="error"
+                message="Refinement REJECTED: the refined pose does not explain the live scan well enough to keep. Click closer to the robot and run again; if the same spot keeps failing, the area looks the same from more than one standpoint and the robot must be driven a short distance."
+              />
+              <Action ID="AlwaysFailure" name="Fall through to the restore" />
+            </Control>
+          </Control>
+
+          <Action
+            ID="LogMessage"
+            log_level="info"
+            message="Refinement accepted; the localizer is holding the refined pose."
+          />
+        </Control>
+
+        <Control ID="Sequence" name="Put the seed back and fail">
+          <Action
+            ID="LogMessage"
+            log_level="error"
+            message="Restoring your clicked pose so the filter is left exactly as a click-only localization would leave it."
+          />
+          <!--Restore. A rejected or interrupted refinement must NOT be left in the filter: it can
+               sit metres from where the operator pointed, and nothing downstream could tell.
+               Putting the click back makes the worst case identical to running Localize Robot on
+               its own, which is what makes this a strict improvement rather than a new risk. If
+               this restore call itself fails, the Sequence fails and the subtree still exits
+               FAILURE rather than pretending the filter is in a known state.
+
+               seed_pose must stay the CLICK for this to work, so the caller must not remap
+               refined_pose onto the same blackboard entry as seed_pose.-->
+          <Action
+            ID="SeedLocalizationAtPose"
+            name="Restore the clicked pose"
+            pose="{seed_pose}"
+            xy_std_dev="{xy_std_dev}"
+            yaw_std_dev="{yaw_std_dev}"
+            initial_pose_topic="/initialpose"
+          />
+          <Action ID="AlwaysFailure" name="Fail the Objective" />
+        </Control>
+      </Control>
+    </Control>
+  </BehaviorTree>
+
+  <TreeNodesModel>
+    <SubTree ID="Refine Localization In Place">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Navigation" />
+      </MetadataFields>
+      <input_port
+        name="seed_pose"
+        default="{initial_pose}"
+        type="geometry_msgs::msg::PoseStamped"
+      >Pose to seed the filter with, in the map frame. Normally the operator's click, already
+        converted out of the planning frame.</input_port>
+      <input_port name="xy_std_dev" default="0.5" type="double">
+        Radius of the local scatter, in metres. Sets BOTH the resolution of the answer and how far
+        the answer can land from the seed (~4 sigma). Do not exceed 1.0: the scatter must stay far
+        smaller than the distance to repeated structure that looks the same, or the global search
+        this design avoids comes back.
+      </input_port>
+      <input_port name="yaw_std_dev" default="0.26" type="double">
+        Heading spread of the seed, in radians (0.26 = 15 degrees). Do not widen it.
+      </input_port>
+      <input_port name="num_updates" default="20" type="int">
+        Forced no-motion updates. Convergence is complete well before this; beyond it the estimate
+        stops moving and only the reported covariance keeps shrinking. Adding iterations does not
+        buy accuracy -- accuracy comes from the seed's density.
+      </input_port>
+      <input_port name="drift_limit" default="1.2" type="double">
+        Reject if the refined pose ends further than this from the seed, in metres. Not a
+        correctness test but a limit on how far this Objective may move the robot's belief from
+        where the operator pointed. 1.2 m is 2.4 * the default xy_std_dev; scale it with xy_std_dev
+        if you change the spread.
+      </input_port>
+      <input_port name="yaw_drift_limit" default="0.52" type="double">
+        Reject if the refined heading ends further than this from the seed, in radians (0.52 = 30
+        degrees, 2 * the default yaw_std_dev).
+      </input_port>
+      <input_port name="inlier_distance" default="0.15" type="double">
+        A scan beam counts as fitting the map if its endpoint lands this close to an occupied cell.
+      </input_port>
+      <input_port name="min_inlier_fraction" default="0.8" type="double">
+        Accept only if at least this fraction of scored beams fit the map. Calibrated against
+        hangar_map -- see the PR body for the table. Re-measure with
+        `ros2 run hangar_sim_behaviors calibrate_scan_match_gate` after every map rebuild: a
+        threshold measured on a different map is not a gate.
+      </input_port>
+      <!--Output ports need defaults: the parser treats a default-less subtree-model port as
+           mandatory, so a caller that does not remap every one of these fails at tree creation,
+           before a single tick. Reading the XML does not catch that; instantiating the tree does.-->
+      <output_port
+        name="refined_pose"
+        default="{refined_pose}"
+        type="geometry_msgs::msg::PoseStamped"
+      />
+      <output_port
+        name="refined_transform"
+        default="{refined_transform}"
+        type="geometry_msgs::msg::TransformStamped"
+      />
+      <output_port
+        name="seed_to_refined"
+        default="{seed_to_refined}"
+        type="geometry_msgs::msg::PoseStamped"
+      />
+      <output_port name="inlier_fraction" default="{inlier_fraction}" type="double" />
+      <output_port name="median_residual" default="{median_residual}" type="double" />
+      <output_port name="beams_used" default="{beams_used}" type="int" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

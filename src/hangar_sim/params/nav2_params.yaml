@@ -1,13 +1,26 @@
 amcl:
   ros__parameters:
     use_sim_time: True
-    # Self-seed the particle filter at the robot's spawn pose (map origin) on
-    # activation, so localization starts without a manual 2D pose estimate.
-    # beluga_amcl is 2D: only x, y, yaw are declared (no z). The covariances set
-    # the initial spread (~0.5 m position, ~15 deg yaw) so the seed is not
-    # overconfident; beluga's default covariance is near-zero. The SetInitialPose
-    # Behavior re-seeds at the robot's current pose at each navigation Objective.
-    set_initial_pose: true
+    # Do NOT self-seed. A robot does not power on at a known pose, so a config that
+    # hands the filter one is a simulator convenience that hides the real startup
+    # path: on hardware the same config would assert a pose nobody measured, and
+    # nothing downstream could tell the difference between that and a real fix.
+    #
+    # The "Localize Robot" Objective seeds the filter from an operator's click
+    # instead, and "Localize Robot and Refine" tightens that seed before the robot
+    # moves. Until one of them runs, AMCL publishes no map -> odom transform at all.
+    #
+    # That last sentence has teeth in this workspace: map -> odom is the only link
+    # between the MuJoCo scene frames (cameras under mj_world -> map) and MoveIt's
+    # planning frame (world under odom), so with the filter unseeded, every
+    # point-cloud Objective fails its transform, not just the navigation ones.
+    # The integration test seeds the filter once in a fixture for exactly this
+    # reason -- see localized_robot in test/objectives_integration_test.py.
+    #
+    # beluga_amcl is 2D: only x, y and yaw are declared (no z). The initial_pose
+    # block below is left in place, unused while set_initial_pose is false, so the
+    # spawn pose it records stays with the config it belongs to.
+    set_initial_pose: false
     initial_pose:
       x: 0.0
       y: 0.0

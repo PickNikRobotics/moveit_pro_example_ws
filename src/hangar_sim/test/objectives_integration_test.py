@@ -28,6 +28,7 @@
 
 """Integration tests for the hangar_sim objective library."""
 
+import math
 import time
 from pathlib import Path
 
@@ -35,6 +36,7 @@ import pytest
 import rclpy
 import tf2_ros
 from tf2_msgs.msg import TFMessage
+from geometry_msgs.msg import PoseWithCovarianceStamped
 from nav_msgs.msg import Odometry
 import yaml
 from rclpy.time import Time
@@ -98,6 +100,11 @@ skip_objectives = {
     # never arrives.
     "Navigate to Clicked Point",  # GetPoseFromUser + WaitForUserPathApproval.
     "Navigate to Clicked Point with Replanning",  # GetPoseFromUser.
+    # Both ask the operator to click the robot's pose on the map. The localized_robot
+    # fixture below seeds the filter the same way headlessly, so the rest of the suite
+    # still gets the map -> odom edge these would otherwise provide.
+    "Localize Robot",  # GetPoseFromUser.
+    "Localize Robot and Refine",  # GetPoseFromUser.
     "Find and Spray Plane",  # Ungated WaitForMTCSolutionApproval.
     "Solution - Find and Spray Plane",  # Ungated WaitForMTCSolutionApproval.
     "Solution - Spray Plane",  # Ungated WaitForMTCSolutionApproval.
@@ -252,6 +259,98 @@ def wait_for_controllers_loaded(
         )
     finally:
         node.destroy_client(client)
+
+
+# --- Localization seed ---
+#
+# AMCL runs with ``set_initial_pose: false`` (see params/nav2_params.yaml), because
+# a robot does not power on at a known pose. In production an operator supplies the
+# seed by running the "Localize Robot" Objective and clicking on the map; headless
+# CI has nobody to click, so this fixture does the same thing programmatically.
+#
+# This is not only about the navigation Objectives, which CI skips anyway. AMCL's
+# map -> odom transform is the ONLY link between the MuJoCo scene frames (cameras
+# under mj_world -> map) and MoveIt's planning frame (world under odom). With the
+# filter unseeded that edge never appears, the TF tree is in two pieces, and every
+# point-cloud Objective in the suite fails its transform.
+#
+# The pose comes from nav2_params.yaml's ``initial_pose`` block rather than being
+# repeated here, so the spawn pose has one home. The spreads match what "Localize
+# Robot" seeds with, so CI exercises the same filter state an operator would get.
+_NAV2_PARAMS_PATH = Path(__file__).parent.parent / "params" / "nav2_params.yaml"
+INITIAL_POSE_TOPIC = "/initialpose"
+LOCALIZATION_SEED_TIMEOUT_S = 180.0
+SEED_XY_STD_DEV = 0.5
+SEED_YAW_STD_DEV = 0.26
+MAP_FRAME = "map"
+ODOM_FRAME = "odom"
+
+
+def _spawn_pose_from_nav2_params() -> tuple[float, float, float]:
+    """Read the recorded spawn pose (x, y, yaw) from nav2_params.yaml."""
+    with _NAV2_PARAMS_PATH.open("r", encoding="utf-8") as params_file:
+        initial_pose = yaml.safe_load(params_file)["amcl"]["ros__parameters"][
+            "initial_pose"
+        ]
+    return (
+        float(initial_pose["x"]),
+        float(initial_pose["y"]),
+        float(initial_pose["yaw"]),
+    )
+
+
+@pytest.fixture(scope="module", autouse=True)
+def localized_robot(
+    execute_objective_resource: ExecuteObjectiveResource,
+) -> None:
+    """Seed the particle filter and block until ``map -> odom`` appears.
+
+    Defined after ``wait_for_controllers_loaded`` and before ``wait_for_robot_tf``
+    on purpose: pytest runs module-scoped autouse fixtures in definition order, and
+    every later fixture and Objective that resolves a frame across the
+    mj_world/world boundary needs this edge to exist first. Keep it here.
+
+    The seed is republished on a slow retry rather than sent once. AMCL subscribes
+    to /initialpose with volatile QoS, so a message published before its
+    subscription is matched is dropped with no error anywhere.
+    """
+    node = execute_objective_resource.node
+    x, y, yaw = _spawn_pose_from_nav2_params()
+
+    seed = PoseWithCovarianceStamped()
+    seed.header.frame_id = MAP_FRAME
+    seed.pose.pose.position.x = x
+    seed.pose.pose.position.y = y
+    seed.pose.pose.orientation.z = math.sin(yaw / 2.0)
+    seed.pose.pose.orientation.w = math.cos(yaw / 2.0)
+    seed.pose.covariance[0] = SEED_XY_STD_DEV**2
+    seed.pose.covariance[7] = SEED_XY_STD_DEV**2
+    seed.pose.covariance[35] = SEED_YAW_STD_DEV**2
+
+    publisher = node.create_publisher(PoseWithCovarianceStamped, INITIAL_POSE_TOPIC, 1)
+    buffer = tf2_ros.Buffer()
+    # spin_thread=False to match the other fixtures' single-threaded spin model.
+    tf2_ros.TransformListener(buffer, node, spin_thread=False)
+
+    deadline = time.monotonic() + LOCALIZATION_SEED_TIMEOUT_S
+    next_publish = 0.0
+    try:
+        while time.monotonic() < deadline:
+            if time.monotonic() >= next_publish:
+                seed.header.stamp = node.get_clock().now().to_msg()
+                publisher.publish(seed)
+                next_publish = time.monotonic() + 2.0
+            rclpy.spin_once(node, timeout_sec=0.1)
+            if buffer.can_transform(MAP_FRAME, ODOM_FRAME, Time()):
+                return
+        pytest.fail(
+            f"{MAP_FRAME} -> {ODOM_FRAME} did not appear within "
+            f"{LOCALIZATION_SEED_TIMEOUT_S:.1f}s after seeding {INITIAL_POSE_TOPIC}. "
+            "Without it the MuJoCo scene frames and MoveIt's planning frame are in "
+            "separate TF trees and every point-cloud Objective fails."
+        )
+    finally:
+        node.destroy_publisher(publisher)
 
 
 # Fixed and end-effector frames the Cartesian objectives visualize and plan
