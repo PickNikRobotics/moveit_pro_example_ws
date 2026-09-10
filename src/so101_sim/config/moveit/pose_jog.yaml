@@ -1,7 +1,4 @@
 # Planning groups to use in PoseJog, and their corresponding VFC controllers.
 # The number of elements in `planning_groups` and `controllers` must match.
-# NOTE: this phase ships joint_state_broadcaster + one joint_trajectory_controller
-# only, so no velocity_force_controller is loaded and pose jogging is inert until
-# phase two adds one.
 planning_groups: ['manipulator']
 controllers: ['velocity_force_controller']

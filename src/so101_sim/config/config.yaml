@@ -88,7 +88,9 @@ ros2_control:
     - "joint_trajectory_controller"
   # Load but do not start these controllers so they can be activated later if needed.
   # [Optional, default=[]]
-  controllers_inactive_at_startup: []
+  controllers_inactive_at_startup:
+    - "joint_velocity_controller"
+    - "velocity_force_controller"
   # Any controllers here will not be spawned by MoveIt Pro.
   # [Optional, default=[]]
   controllers_not_managed: []
