@@ -229,6 +229,51 @@ Tear a deployment down with `moveit_pro down --instance <name>`; there is no `st
 happen. Start exactly one `moveit_pro run` per instance and let it finish coming up — a second
 launch during startup kills the runtime container with `Endpoint reservation ... was superseded`,
 leaving drivers healthy, `/do_objective` absent, and no obvious error.
+## Simulated sensors, controllers and state estimation
+
+### Controllers publish at the controller-manager rate, not their `publish_rate`
+
+`publish_rate: 50.0` in `config/control/picknik_ur.ros2_control.yaml` is not honoured: measured on a
+live stack, `platform_velocity_controller_nav2/odom` arrives at ~390 Hz and
+`imu_sensor_broadcaster/imu` at ~410 Hz — the controller manager's 600 Hz update rate, minus
+overruns. Anything that accumulates per-message state from those topics has to throttle for itself.
+`hangar_sim`'s fuse config does this with `throttle_period` on both sensor models; without it the
+fixed-lag smoother takes ~200 stamps per 0.5 s window, falls progressively behind (overrun grows
+from ms to minutes), and keeps publishing a frozen `odom_filtered` rather than failing.
+
+### An empty YAML list aborts a ROS 2 node — omit the key instead
+
+`orientation_dimensions: []` in a params file makes `rclcpp` throw
+`parameter_value_from failed ... No parameter value set` at startup, because an empty YAML sequence
+carries no type. To select "none of these", delete the key and let the node's own default apply.
+
+### The simulator's real-time factor is set by host load, and it inflates wheel odometry
+
+The MuJoCo loop does not keep real time, and the wheel `velocity` state interface is per *sim*
+second while the controller integrates it against a wall clock (`use_sim_time` is false throughout
+this stack). Wheel odometry therefore over-reports travel by exactly `1/RTF - 1`: ~2.4 % on an idle
+host, but 25-45 % measured on a host at load average ~35. Any localization or odometry number taken
+from this sim is meaningless without the RTF it was measured at. Measure it as
+`(delta wheel qpos / delta t_wall) / mean(wheel qvel)` over a window where the wheels are turning.
+It is a simulator artefact, absent on hardware; do not tune it away.
+
+### Driving user-input Objectives without the Desktop App
+
+Objectives that prompt the user (`GetPoseFromUser`, `WaitForUserPathApproval`) do not use the
+same-named services — those exist but are vestigial. moveit_pro's `UIRequestResponseClient` speaks
+JSON (`moveit_studio_agent_msgs/msg/Json`) over
+`/moveit_pro_ui/<interaction>/{request,response,cancel}`; the request topic is latched
+(transient_local, depth 1) and the behavior's "is a UI connected?" test is literally the subscriber
+count on it. A headless stand-in therefore has to *subscribe* to the request topic, then answer with
+`{"request_id": ..., "response": {...}}`. Run the Objective itself with a
+`moveit_studio_sdk_msgs/action/DoObjectiveSequence` goal on `/do_objective`.
+
+### `Reset MuJoCo Sim` resets the simulator, not the estimators
+
+It teleports the robot to the keyframe but leaves fuse's graph and AMCL's particle filter where they
+were, so with `use_fuse:=true` the estimate stays stale by however much drift had accumulated and
+the next `ComputePathToPose` plans from the wrong place. Restart the drivers container for a
+genuinely clean localization state.
 
 ## Config inheritance (`based_on_package`)
 
