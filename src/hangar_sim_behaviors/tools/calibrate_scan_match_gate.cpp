@@ -168,30 +168,6 @@ Scored strongestAlias(const localization::DistanceField& field, const calibratio
   return refined;
 }
 
-/// The worst score over a ring of poses offset from the truth by exactly this much.
-Scored worstOverOffsetRing(const localization::DistanceField& field, const calibration::ScanSample& sample,
-                           const SweepSettings& settings, double offset_m, double offset_yaw)
-{
-  Scored worst;
-  worst.inlier_fraction = 2.0;
-  constexpr int kBearings = 16;
-  for (int bearing_index = 0; bearing_index < kBearings; ++bearing_index)
-  {
-    const double bearing = 2.0 * M_PI * static_cast<double>(bearing_index) / static_cast<double>(kBearings);
-    for (const double yaw_sign : { -1.0, 1.0 })
-    {
-      const auto candidate =
-          score(field, sample, settings, sample.truth_x + offset_m * std::cos(bearing),
-                sample.truth_y + offset_m * std::sin(bearing), wrapAngle(sample.truth_yaw + yaw_sign * offset_yaw));
-      if (candidate.inlier_fraction < worst.inlier_fraction)
-      {
-        worst = candidate;
-      }
-    }
-  }
-  return worst;
-}
-
 /// The BEST score over that same ring -- the number a threshold has to reject, not merely beat.
 Scored bestOverOffsetRing(const localization::DistanceField& field, const calibration::ScanSample& sample,
                           const SweepSettings& settings, double offset_m, double offset_yaw)
