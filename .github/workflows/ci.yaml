@@ -11,10 +11,16 @@ on:
         default: ''
   repository_dispatch:
     # Fired by the paired moveit_pro repo when a PR there finishes its image
-    # push. The payload carries `image_ref` (full GHCR reference with `{0}`
-    # placeholder for ros_distro), `image_tag`, `base_branch`, `moveit_pro_sha`,
-    # and `moveit_pro_pr` so this workflow can run the integration suite
-    # against the just-built image and post a commit status back to that PR.
+    # push. The payload carries `image_ref` (a full image reference with a
+    # `{0}` placeholder for ros_distro), `image_tag`, `base_branch`,
+    # `moveit_pro_sha` and `moveit_pro_pr`, so this workflow can run the
+    # integration suite against the just-built image and post a commit status
+    # back to that PR.
+    #
+    # Which registry `image_ref` names depends on the sender, and always will:
+    # moveit_pro `main` points at the private `moveit-pro-ci` ECR repository
+    # after moveit_pro#22374, while its v9.4, v10.0 and v10.1 lines keep sending
+    # a Docker Hub branch tag. This job takes `image_ref` verbatim either way.
     types: [moveit_pro_pr]
   # Run lab_sim/hangar_sim every 6 hours Mon-Fri, and the remaining example
   # sims once a week (Sunday 06:00 UTC). The weekly cron is deliberately off
@@ -39,11 +45,13 @@ jobs:
   #   - `pull_request`: image_tag = PR base ref; checkout uses the PR head
   #     by default (no explicit `git_ref`). If the PR body contains a
   #     `needs: moveit_pro/#N` token, also fetch that moveit_pro PR's head
-  #     SHA so we can pull its private GHCR image as `image_ref` and post
+  #     SHA so we can pull its private ECR image as `image_ref` and post
   #     the rollup status back to the moveit_pro PR.
   #   - `repository_dispatch`: every value comes from the payload, including
-  #     `git_ref` (the version-paired example_ws branch to check out) since
-  #     the dispatch event itself has no PR context.
+  #     `git_ref`, since the dispatch event itself has no PR context. moveit_pro
+  #     sends the paired example_ws PR's head SHA there when its own body
+  #     carries a `needs: moveit_pro_example_ws/#N` token, and the version-paired
+  #     example_ws branch to check out when it does not.
   #   - everything else (push, schedule, workflow_dispatch): image_tag = the
   #     triggering ref's branch name.
   resolve:
@@ -90,6 +98,7 @@ jobs:
         env:
           MOVEIT_PRO_PR_FROM_BODY: ${{ steps.detect_needs.outputs.moveit_pro_pr }}
           DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
+          CONTAINER_REGISTRY_URL: ${{ vars.CONTAINER_REGISTRY_URL }}
         with:
           # Falls back to the default GITHUB_TOKEN when the App token wasn't
           # minted (no paired PR, not a dispatch). The default is sufficient
@@ -102,6 +111,23 @@ jobs:
             // which is the same default the reusable workflow falls back to; that
             // var is not defined in this repo, so default to the known owner.
             const dockerhubUsername = process.env.DOCKERHUB_USERNAME || 'picknikciuser';
+            // Private ECR registry holding moveit_pro's per-PR and per-branch CI
+            // images. moveit_pro publishes these under vars.CONTAINER_REGISTRY_URL;
+            // that variable is not defined in this repo, so default to the known
+            // registry the same way dockerhubUsername does above. Defining the
+            // repository variable overrides the default without a code change.
+            // The account id here is the same one the lfs_cache_s3_bucket literal
+            // carries further down this file. Update both together, or define
+            // CONTAINER_REGISTRY_URL as a repository variable and drop this default.
+            const containerRegistryUrl =
+              process.env.CONTAINER_REGISTRY_URL || '682033501538.dkr.ecr.us-east-1.amazonaws.com';
+            // The ECR repository moveit_pro's `pr-image` job retags its validated
+            // candidate into, as `pr-<moveit_pro PR number>-<distro>-amd64`.
+            // Nothing logs in to pull it: the picknik-16-amd64-gpu runner pod
+            // carries amazon-ecr-credential-helper wired to a pull-only IRSA role,
+            // so the `container:` image in the reusable integration workflow
+            // resolves without a credentials block.
+            const ciImageRepository = 'moveit-pro-ci';
             let image_ref = '';
             let image_tag = '';
             // Per-distro CUDA image-suffix MAP (a JSON object keyed by ros_distro).
@@ -139,15 +165,48 @@ jobs:
             let moveit_pro_sha = '';
             let moveit_pro_pr_number = '';
 
-            // Mirror moveit_pro's setup_docker_cache "Compute image tag" step
-            // exactly (`echo $TAG | tr '/' '_'`): only the slash is rewritten,
-            // to an underscore. A broader sanitize (e.g. slash -> dash) produces
-            // a tag that does not match the published image and 404s the pull.
-            const sanitizeBranch = (s) => s.replace(/\//g, '_');
+            // `integration-status` posts the required `example_ws / integration`
+            // status to the moveit_pro PR from `moveit_pro_sha` alone, and on a
+            // repository_dispatch that is the ONLY target it has. It runs under
+            // always(), so it still runs when this step fails, but a failure that
+            // returned before publishing these leaves it with nothing to post:
+            // the moveit_pro PR then sits on the `pending` status its own dispatch
+            // job wrote, forever, with the evidence in a repository its author is
+            // not watching. Publish them from every exit path, including the
+            // failing ones. Outputs written before core.setFailed still land in
+            // GITHUB_OUTPUT.
+            const publishPairingOutputs = () => {
+              core.setOutput('moveit_pro_sha', moveit_pro_sha);
+              core.setOutput('moveit_pro_pr_number', moveit_pro_pr_number);
+            };
 
             if (event === 'repository_dispatch') {
               const p = context.payload.client_payload || {};
+              // Read the pairing identity first so the guard below can still
+              // report the failure back to the moveit_pro PR.
+              moveit_pro_sha = p.moveit_pro_sha || '';
+              moveit_pro_pr_number = String(p.moveit_pro_pr || '');
               image_ref = p.image_ref || '';
+              // No fallback for a dispatch. Every sender puts a full reference
+              // in image_ref, so an empty one is a broken payload rather than a
+              // case to guess at, and after moveit_pro#22374 the main line's
+              // `image_tag` is `pr-<number>`, which names no Docker Hub tag to
+              // guess with. Fail with the reason instead of 404ing later on a
+              // composed reference.
+              if (image_ref === '') {
+                publishPairingOutputs();
+                core.setFailed('repository_dispatch payload carries no image_ref.');
+                return;
+              }
+              // image_ref selects the image; image_tag does not. It is still not
+              // inert: the reusable workflow sets MOVEIT_DOCKER_TAG from it and
+              // builds the ccache key and every restore-key prefix out of it, so
+              // it names a cache namespace. The `p.base_branch` leg only applies
+              // to a payload that omitted image_tag, which no sender does. Note
+              // it is a poor last resort for a paired dispatch specifically:
+              // base_branch is the paired example_ws PR's head SHA when a pairing
+              // exists, which would give a 40-hex namespace nothing hits twice,
+              // and the base branch name when it does not.
               image_tag = p.image_tag || p.base_branch || 'main';
               // moveit_pro owns the distro<->CUDA suffix coupling (its build
               // matrix exclusion anchors) and is the single source of truth.
@@ -166,24 +225,90 @@ jobs:
                 image_ref_has_suffix = true;
               }
               git_ref = p.base_branch || '';
-              moveit_pro_sha = p.moveit_pro_sha || '';
-              moveit_pro_pr_number = String(p.moveit_pro_pr || '');
             } else if (event === 'pull_request') {
               image_tag = context.payload.pull_request.base.ref;
               const needsPr = process.env.MOVEIT_PRO_PR_FROM_BODY;
               if (needsPr) {
-                const { data: pr } = await github.rest.pulls.get({
-                  owner: 'PickNikRobotics',
-                  repo: 'moveit_pro',
-                  pull_number: parseInt(needsPr, 10),
-                });
+                // Normalize before composing a tag out of it. detect_needs
+                // extracts with `grep -oE '[0-9]+'`, so a body reading
+                // `needs: moveit_pro/#022374` yields '022374' and would compose
+                // `pr-022374-...` against a producer that writes `pr-22374-...`.
+                const needsPrNumber = Number.parseInt(needsPr, 10);
+                // The lookup itself is the one statement here that can throw:
+                // a stale or mistyped number 404s, and the App token can hit a
+                // rate limit or lose its moveit_pro grant. Letting that
+                // propagate would leave the run red with no pairing output
+                // published at all, which is the same dead end publishPairingOutputs
+                // exists to prevent. Name the cause and publish what is known.
+                moveit_pro_pr_number = String(needsPrNumber);
+                let pr;
+                try {
+                  ({ data: pr } = await github.rest.pulls.get({
+                    owner: 'PickNikRobotics',
+                    repo: 'moveit_pro',
+                    pull_number: needsPrNumber,
+                  }));
+                } catch (error) {
+                  publishPairingOutputs();
+                  core.setFailed(
+                    `Could not look up paired moveit_pro PR #${needsPrNumber}: ${error.message}. ` +
+                    'Check that the number in the needs: token is right and still open.'
+                  );
+                  return;
+                }
                 moveit_pro_sha = pr.head.sha;
-                moveit_pro_pr_number = needsPr;
-                // Pull the paired moveit_pro PR's customer image from Docker Hub
-                // — that is where moveit_pro publishes it (the GHCR moveit-pro
-                // retag is gone). Suffix-free per-arch template (`…-{0}-amd64`);
-                // the active distro's suffix is baked on below.
-                image_ref = `${dockerhubUsername}/moveit-pro:${sanitizeBranch(pr.head.ref)}-{0}-amd64`;
+                // Mirror the two pairing checks moveit_pro applies from its side
+                // (validatePairedPullRequest in .github/scripts/dispatch_example_ws.cjs).
+                // Without them this path composes a tag for an image that is never
+                // written and fails deep inside `container:` on a GPU runner with
+                // no explanation.
+                // Failing rather than falling through to the base-branch image
+                // is deliberate. The prescribed merge order lands the moveit_pro
+                // PR first, so this fires routinely, but the base-branch image
+                // does not carry that PR's change until a full run rebuilds it.
+                // Falling through would pass against an image missing the very
+                // thing the pairing exists to test.
+                if (pr.state !== 'open') {
+                  publishPairingOutputs();
+                  core.setFailed(
+                    `Paired moveit_pro PR #${needsPrNumber} is not open. If it merged, drop the ` +
+                    'needs: token from this PR body so the base-branch image is used instead.'
+                  );
+                  return;
+                }
+                // A cross-release-line pairing is the case that regressed with the
+                // move to ECR: only moveit_pro branches running the new pipeline
+                // retag into moveit-pro-ci, so an example_ws PR on main pointing at
+                // a moveit_pro PR that targets v10.1 now resolves a tag nobody
+                // writes. It used to resolve, because Docker Hub carried a
+                // branch-named tag for every line.
+                if (pr.base.ref !== context.payload.pull_request.base.ref) {
+                  publishPairingOutputs();
+                  core.setFailed(
+                    `Paired moveit_pro PR #${needsPrNumber} targets ${pr.base.ref}; ` +
+                    `expected ${context.payload.pull_request.base.ref}.`
+                  );
+                  return;
+                }
+                // Pull the paired moveit_pro PR's image from the private ECR
+                // repository its `pr-image` job retags into. The tag is keyed on
+                // the PR number, not the branch: moveit_pro no longer publishes a
+                // branch-named tag for a pull request anywhere, so there is
+                // nothing left to sanitize. This must stay byte-identical to the
+                // template moveit_pro sends on the dispatch path
+                // (.github/scripts/dispatch_example_ws.cjs, buildDispatchPayload),
+                // so both paths pull the same image. The identity stops at the
+                // suffix: the dispatch path takes the CUDA suffix from the payload
+                // (moveit_pro's source of truth) while this path appends the local
+                // gpu_image_suffixes literal, so the next CUDA migration has to
+                // update this file too or the two paths diverge. Suffix-free
+                // per-arch template (`…-{0}-amd64`); the suffix is baked on below.
+                //
+                // Backporting this to a release branch of example_ws requires the
+                // paired moveit_pro line to have the `pr-image` ECR retag. The
+                // v9.4 / v10.0 / v10.1 lines do not, and there is no Docker Hub
+                // fallback left on this path.
+                image_ref = `${containerRegistryUrl}/${ciImageRepository}:pr-${needsPrNumber}-{0}-amd64`;
               }
             } else {
               // push, schedule, workflow_dispatch. A `workflow_dispatch` input
@@ -210,14 +335,67 @@ jobs:
             // image_tag=v9.4, so the old `image_tag === 'main'` gate left the
             // -amd64 off and the pull 404'd. Always append -amd64 here.
             //
-            // repository_dispatch is excluded: its payload always carries
-            // image_ref, so it never reaches this fallback.
+            // The base-branch default deliberately stays on Docker Hub rather
+            // than moving to the fresher `moveit-pro-ci:branch-<base>` image.
+            // This default has to resolve for every base this file serves, and
+            // the comment above establishes that includes release branches
+            // running with image_tag=v9.4. `moveit-pro-ci:branch-<sanitized>`
+            // exists only for branches whose pipeline has run under moveit_pro's
+            // new publish-runtime.yaml; its v9.4 / v10.0 / v10.1 lines write no
+            // ECR branch tag at all. Docker Hub is the only registry carrying a
+            // tag for every base, and moveit_pro's full runs keep those current.
+            //
+            // Note this is NOT about fork pull requests lacking credentials: the
+            // ECR pull rides the runner pod's own identity, not the trigger's, so
+            // a fork run landing on picknik-16-amd64-gpu would pull ECR fine. The
+            // lfs_cache_s3_bucket gate further down is the one that really turns
+            // on OIDC.
+            //
+            // repository_dispatch is excluded: it returned above when its payload
+            // carried no image_ref, so it never reaches this fallback.
             if (image_ref === '') {
-              const archSegment = event !== 'repository_dispatch' ? '-amd64' : '';
-              image_ref = `${dockerhubUsername}/moveit-pro:${image_tag}-{0}${archSegment}`;
+              image_ref = `${dockerhubUsername}/moveit-pro:${image_tag}-{0}-amd64`;
             }
             if (!image_ref_has_suffix) {
               image_ref = `${image_ref}${gpu_image_suffix}`;
+            }
+
+            // This value becomes the `container:` image of a job on a self-hosted
+            // GPU runner, so pin it to an approved repository the way moveit_pro's
+            // lane-e2e.yaml pins its own composed backend image. The dispatch path
+            // is the one that earns this: there image_ref arrives verbatim in the
+            // client payload. What this pins is the repository, nothing finer: a
+            // digest-suffixed reference such as `<repo>:tag@sha256:...` passes,
+            // and that is fine, since a digest resolves within the repository the
+            // name already pinned.
+            //
+            // Three image shapes can reach here, and the list covers all three.
+            // moveit-studio is the pre-rename Docker Hub repository: the
+            // moveit_pro v9.4 line and every branch descended from it compose
+            // `<user>/moveit-studio:...`, where the v10.0 and v10.1 lines compose
+            // `<user>/moveit-pro:...` and main composes the ECR reference after
+            // moveit_pro#22374. A repository_dispatch always runs this file from
+            // the default branch, so v9.4 pairings execute this check, and
+            // dropping moveit-studio would break every one of them. Counting
+            // branches is the wrong instinct here; a new release line adds no
+            // shape and needs no edit.
+            //
+            // Both defaults these entries are built from must match moveit_pro's
+            // own `vars.DOCKERHUB_USERNAME` and `vars.CONTAINER_REGISTRY_URL`.
+            // They are no longer only about references this file composes: they
+            // now decide whether a legitimate payload is accepted, so a
+            // divergence refuses every dispatch.
+            const approvedRepositories = [
+              `${containerRegistryUrl}/${ciImageRepository}`,
+              `${dockerhubUsername}/moveit-pro`,
+              `${dockerhubUsername}/moveit-studio`,
+            ];
+            if (!approvedRepositories.some((repo) => image_ref.startsWith(`${repo}:`))) {
+              publishPairingOutputs();
+              core.setFailed(
+                `Refusing image outside ${approvedRepositories.join(', ')}: '${image_ref}'`
+              );
+              return;
             }
 
             core.info(`event=${event}`);
@@ -231,8 +409,7 @@ jobs:
             core.setOutput('image_ref', image_ref);
             core.setOutput('image_tag', image_tag);
             core.setOutput('git_ref', git_ref);
-            core.setOutput('moveit_pro_sha', moveit_pro_sha);
-            core.setOutput('moveit_pro_pr_number', moveit_pro_pr_number);
+            publishPairingOutputs();
 
   integration-test:
     needs: resolve
