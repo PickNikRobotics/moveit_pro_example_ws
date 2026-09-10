@@ -46,10 +46,10 @@ When a live joint source is added (phase two), it publishes into the same
 | Path | What it is |
 |---|---|
 | `description/so101.urdf.xacro` | The arm, with a `hardware_interface: mock \| real` switch. Meshes are the upstream LeRobot description; see `description/assets/NOTICE.md`. |
-| `config/control/so101.ros2_control.yaml` | `joint_state_broadcaster` plus **one** `joint_trajectory_controller` over all six joints, gripper included. |
+| `config/control/so101.ros2_control.yaml` | `joint_state_broadcaster`, a `joint_trajectory_controller` over all six joints (gripper included), and the two teleop jog controllers — `joint_velocity_controller` and `velocity_force_controller` — over the five arm joints. |
 | `config/moveit/` | SRDF, joint limits, IK (`PoseIKPlugin`, `optimize_distance` — the SO-101 is 5-DOF and cannot hit arbitrary 6-DOF poses), and the jog configs. |
 | `script/so101_arm_bridge.py` | The joint source. `--fake` publishes a sine; `--real` is a phase-two stub. |
-| `objectives/` | `Mirror SO101 Follower`, `Move SO101 to Waypoint`, `Close Gripper`, `Open Gripper`. |
+| `objectives/` | `Mirror SO101 Follower`, `Move SO101 to Waypoint`, `Close Gripper`, `Open Gripper`, and a `Teleoperate` override that points the core teleop tree at this config's `joint_trajectory_controller` (there is no admittance controller here). |
 
 There is no `GripperActionController`. It would claim the gripper joint's
 position command interface, and `ros2_control` would then refuse the trajectory
@@ -58,9 +58,14 @@ jaw. `Close Gripper` and `Open Gripper` move the gripper joint group through the
 trajectory controller instead. Both Objectives must exist under exactly those
 names or the teleoperation gripper controls silently do nothing.
 
-Jogging is configured (`config/moveit/{pose,joint}_jog.yaml`) but inert: it needs
-a `velocity_force_controller` and a `joint_velocity_controller`, and neither is
-loaded in this phase.
+Jogging works. `config/moveit/{pose,joint}_jog.yaml` name a
+`velocity_force_controller` and a `joint_velocity_controller`; both are declared
+in `config/control/so101.ros2_control.yaml` over the five arm joints and listed
+under `controllers_inactive_at_startup`, so MoveIt Pro activates one for a jog
+and switches back to the trajectory controller for a plan. Both command the
+joints' `position` interface, the same one the trajectory controller claims, so
+`ros2_control` refuses to run a jog controller and the trajectory controller at
+once — the switch is exclusive by construction, not by convention.
 
 ## Safe bring-up order
 

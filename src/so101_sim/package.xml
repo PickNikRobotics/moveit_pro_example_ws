@@ -18,6 +18,8 @@
   <exec_depend>action_msgs</exec_depend>
   <exec_depend>joint_state_broadcaster</exec_depend>
   <exec_depend>joint_trajectory_controller</exec_depend>
+  <exec_depend>joint_velocity_controller</exec_depend>
+  <exec_depend>velocity_force_controller</exec_depend>
   <exec_depend>moveit_pro_behavior</exec_depend>
   <exec_depend>moveit_studio_agent</exec_depend>
   <exec_depend>rclpy</exec_depend>

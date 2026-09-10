@@ -73,7 +73,14 @@ user's global config at the worktree.
 
 Inside the containers, `ros2 node list` and friends return nothing until you run
 `ros2 daemon stop` once: the daemon that survives from an earlier deployment
-holds a participant that finds nothing on the current graph.
+holds a participant that finds nothing on the current graph. A `docker exec`
+also needs `CYCLONEDDS_URI=file:///home/<user>/.ros/cyclonedds.xml` passed
+explicitly (`docker exec -e CYCLONEDDS_URI=...`) — the container's entrypoint
+generates and exports that file only for its own PID 1 process tree, and
+`docker exec` does not inherit env exported after container start, so a bare
+exec's `ros2` CLI joins the wrong (default) CycloneDDS config and never
+discovers the app's participants over the loopback-only, no-multicast peer
+list that config sets up.
 
 ## One trajectory controller, several planning groups
 
