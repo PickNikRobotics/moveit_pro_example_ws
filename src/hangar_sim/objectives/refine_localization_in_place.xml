@@ -3,7 +3,7 @@
   <!--//////////-->
   <BehaviorTree
     ID="Refine Localization In Place"
-    _description="Tighten the current localization estimate without moving the robot and without asking for a click. Use it when the robot has been bumped, nudged or pushed and the estimate has slipped, but is still roughly right. If the robot has been moved far enough that the estimate is no longer close, run Localize Robot instead."
+    _description="Tighten the current localization estimate without moving the robot and without asking for a click. Use it when the robot has been bumped, nudged or pushed and the estimate has slipped, but is still roughly right. If the robot has been moved far enough that the estimate is no longer close, run Localize Robot instead. If the robot is not localized at all yet, this first asks you to place it on the map, since there is nothing to tighten until then."
     _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
@@ -40,7 +40,14 @@
             pose_stamped="{initial_pose}"
           />
         </Control>
-        <Control ID="Sequence" name="There is no estimate yet, so make one">
+        <!--Gated on a UI actually being attached. IsUserAvailable checks for the /trajectory_bridge
+             node and returns FAILURE when there is none. That matters most here: this is the one
+             Objective of this feature the headless suite executes, and without the gate a transient
+             failure of the transform read above would drop into a branch that blocks on the marker
+             prompt inside Localize Robot until the objective timeout expires, instead of ending in
+             under a second with a legible message.-->
+        <Control ID="Sequence" name="An operator is here, so make an estimate to refine">
+          <Action ID="IsUserAvailable" />
           <Action
             ID="LogMessage"
             log_level="warn"
@@ -64,6 +71,14 @@
             transform_stamped="{current_transform}"
             pose_stamped="{initial_pose}"
           />
+        </Control>
+        <Control ID="Sequence" name="Unseeded, and nobody to ask">
+          <Action
+            ID="LogMessage"
+            log_level="error"
+            message="Nothing to refine: the particle filter has not been seeded, so map -> ridgeback_base_link does not resolve and there is no estimate to tighten. No user interface is attached, so the localization marker cannot be presented here. Run the &quot;Localize Robot&quot; Objective from an operator station first."
+          />
+          <Action ID="AlwaysFailure" name="Stop rather than refine nothing" />
         </Control>
       </Control>
       <!--The SAME subtree Localize Robot calls, referenced rather than copied.-->

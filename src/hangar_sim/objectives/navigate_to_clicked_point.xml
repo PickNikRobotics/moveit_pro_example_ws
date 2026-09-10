@@ -3,7 +3,7 @@
   <!--//////////-->
   <BehaviorTree
     ID="Navigate to Clicked Point"
-    _description="Navigate to a point clicked by the user in the UI"
+    _description="Navigate to a point clicked by the user in the UI. If the robot is not localized yet, this first asks you to place it on the map, then drives."
     _favorite="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
@@ -25,13 +25,27 @@
            correct, because it cannot navigate without knowing where it is.-->
       <Control ID="Fallback" name="Re-seed from the current estimate, or localize first">
         <Action ID="SetInitialPose" robot_frame_id="ridgeback_base_link" />
-        <Control ID="Sequence" name="The filter has no estimate to re-seed from">
+        <!--Gated on a UI actually being attached. IsUserAvailable checks for the /trajectory_bridge
+             node and returns FAILURE when there is none, so this branch is skipped in under a
+             second on a headless run rather than blocking on the marker prompt inside Localize
+             Robot until the objective timeout expires. With an operator present the branch runs
+             and localizes in place, which is the whole point of it.-->
+        <Control ID="Sequence" name="An operator is here, so localize before navigating">
+          <Action ID="IsUserAvailable" />
           <Action
             ID="LogMessage"
             log_level="warn"
             message="Asking you to localize before navigating: the particle filter has not been seeded yet, so map -> ridgeback_base_link does not resolve and the robot's current pose cannot be read. Place the marker on the robot to localize it, and this Objective will continue on its own."
           />
           <SubTree ID="Localize Robot" />
+        </Control>
+        <Control ID="Sequence" name="Unseeded, and nobody to ask">
+          <Action
+            ID="LogMessage"
+            log_level="error"
+            message="Cannot navigate: the particle filter has not been seeded, so map -> ridgeback_base_link does not resolve and the robot's current pose cannot be read. No user interface is attached, so the localization marker cannot be presented here. Run the &quot;Localize Robot&quot; Objective from an operator station first."
+          />
+          <Action ID="AlwaysFailure" name="Stop before planning blind" />
         </Control>
       </Control>
       <Action

@@ -39,9 +39,23 @@ amcl:
     # to have been seeded already: SetInitialPose reads map -> ridgeback_base_link,
     # and with no map -> odom edge there is nothing for it to resolve through. It
     # used to succeed at cold boot only because that transform was the simulator's,
-    # which is the crutch this change removes. Both nav Objectives say so and fail
-    # with the remedy rather than an opaque transform error; the operator order is
-    # "Localize Robot", then navigate, the same order hardware needs.
+    # which is the crutch this change removes.
+    #
+    # So each of those Objectives -- and "Refine Localization In Place", which opens
+    # on the same lookup -- wraps that first node in a three-branch Fallback rather
+    # than letting it fail opaquely. An already-seeded filter takes the first branch
+    # and runs exactly as before. On a cold boot WITH an operator attached, the
+    # second branch logs why and runs the "Localize Robot" subtree inline, so the
+    # run stops for the marker once and then continues on its own; it does not fail,
+    # and it does not send the operator to a different Objective. HEADLESS, the
+    # second branch is skipped -- it is gated on IsUserAvailable, which reports no
+    # /trajectory_bridge -- and the third branch logs that the filter is unseeded
+    # with no UI to prompt, then fails. That keeps a headless run from blocking on a
+    # marker nobody can answer, which matters because "Refine Localization In Place"
+    # is the one Objective of this feature the integration suite executes.
+    #
+    # Either way the operator order is "Localize Robot", then navigate -- the same
+    # order hardware needs.
     #
     # beluga_amcl is 2D: only x, y and yaw are declared (no z). The initial_pose
     # block below is left in place, unused while set_initial_pose is false, so the

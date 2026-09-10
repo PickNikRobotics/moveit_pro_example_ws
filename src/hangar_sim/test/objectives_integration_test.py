@@ -279,8 +279,12 @@ def _run_objective_with_overrides(
         f"{response.error_code.val}: '{response.error_code.message}'. "
         f"The override namespace was resolved from the shipped Objective XML and "
         f"the port name is checked by the server, so this is the tree itself "
-        f"failing: with the fit-to-map gate report-only for this run, suspect the "
-        f"seed, the forced no-motion loop, or the drift gate."
+        f"failing. Check the log for the cold-boot branch first: if the opening "
+        f"transform read lost map -> ridgeback_base_link, the tree reports an "
+        f"unseeded filter with no UI attached and fails there, which means the "
+        f"localized_robot fixture's seed did not survive, not that the refinement "
+        f"regressed. Otherwise, with the fit-to-map gate report-only for this run, "
+        f"suspect the seed, the forced no-motion loop, or the drift gate."
     )
 
 # Action servers the hangar_sim tree types need before any objective runs.
