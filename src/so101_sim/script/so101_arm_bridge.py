@@ -37,7 +37,11 @@ the mock hardware echoes straight back out as `/joint_states`.
 
 Two sources are foreseen:
 
-* ``--fake`` (this phase) - a slow sine, so the twin moves with no arm plugged in.
+* ``--fake`` (this phase) - a small sine about the arm's current pose, so the
+  twin moves with no arm plugged in. Because it is small and centred on wherever
+  the arm already is, it doubles as the wiggle test: a joint-by-joint "is
+  everything alive and moving the right way" diagnostic that is safe to run on
+  the powered follower, in the spirit of lab_sim's joint diagnostic.
 * ``--real`` (phase two) - the Feetech STS3215 bus over USB, read through
   LeRobot's ``SO101Follower``. Stubbed out here behind the same interface.
 
@@ -57,6 +61,7 @@ from action_msgs.msg import GoalStatus, GoalStatusArray
 from rclpy.executors import ExternalShutdownException
 from rclpy.node import Node
 from builtin_interfaces.msg import Duration
+from sensor_msgs.msg import JointState
 from std_srvs.srv import Trigger
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
@@ -71,13 +76,29 @@ JOINT_NAMES = [
     "gripper",
 ]
 
-# Radians. Comfortably inside the URDF limits so the sine never trips a
-# joint-limit rejection, and centered on an extended, arm-out pose: a wider
-# swing on shoulder_lift/elbow_flex folds the wrist back onto the shoulder,
-# which is a self-collision, and MoveIt then refuses to plan from the twin's
-# current state for as long as the sine sits in that region.
-FAKE_AMPLITUDE = [0.8, 0.2, 0.25, 0.35, 1.0, 0.6]
-FAKE_CENTER = [0.0, 0.6, -0.6, 0.0, 0.0, 0.7]
+# Radians. The sine is a wiggle about wherever the arm already is, not a sweep
+# through a fixed pose: small enough to be safe on a powered follower, big
+# enough to see. A wider swing would need the self-collision envelope thought
+# through again - folding the wrist back over the shoulder makes MoveIt refuse
+# to plan from the twin's current state - which is exactly what staying near
+# the current pose avoids.
+WIGGLE_AMPLITUDE_RAD = 0.1
+
+# Per-joint phase step, so the joints do not move in lockstep and each one's
+# motion is readable as its own during the wiggle test.
+PHASE_STEP_RAD = 0.7
+
+# The URDF's joint limits, mirrored here because the wiggle is centred on a
+# measured pose: a joint already parked at its limit would otherwise be
+# commanded past it. Keep in sync with description/so101.urdf.xacro.
+JOINT_LIMITS = {
+    "shoulder_pan": (-1.91986, 1.91986),
+    "shoulder_lift": (-1.74533, 1.74533),
+    "elbow_flex": (-1.69, 1.69),
+    "wrist_flex": (-1.65806, 1.65806),
+    "wrist_roll": (-2.74385, 2.84121),
+    "gripper": (-0.174533, 1.74533),
+}
 
 
 def to_radians(degrees, signs, offsets):
@@ -111,19 +132,39 @@ def order_like(names, values):
     return [lookup[n] for n in JOINT_NAMES]
 
 
-def fake_positions(elapsed_s, period_s):
-    """A slow sine, phase-shifted per joint so the whole arm visibly moves.
+def fake_positions(elapsed_s, period_s, center, amplitude=WIGGLE_AMPLITUDE_RAD):
+    """A small sine about ``center``, phase-shifted per joint.
+
+    ``center`` is the arm's measured pose when mirroring started, so the twin
+    never jumps on the first published point and the motion stays a wiggle
+    around wherever the arm is standing. The per-joint phase offset means the
+    joints do not move in lockstep, which is what makes this readable as a
+    diagnostic: each joint's motion is visibly its own.
 
     Every joint shares one period, so the motion is a single closed curve that
-    one period of sampling covers completely. FAKE_CENTER is that curve's
-    center, which the phase offsets mean is not where it starts:
-    ``elapsed_s == 0`` is the pose config/initial_positions.yaml puts the mock
-    hardware in, so the twin does not jump when mirroring begins.
+    one period of sampling covers completely. ``elapsed_s == 0`` sits at the
+    phase offset rather than at ``center``, so callers pin ``elapsed_s`` to the
+    moment they sampled ``center``.
+
+    Results are clamped to JOINT_LIMITS: the centre is measured, so a joint
+    parked at its limit would otherwise be commanded past it.
     """
-    return [
-        center + amplitude * math.sin(2.0 * math.pi * elapsed_s / period_s + i * 0.7)
-        for i, (center, amplitude) in enumerate(zip(FAKE_CENTER, FAKE_AMPLITUDE))
-    ]
+    if len(center) != len(JOINT_NAMES):
+        raise ValueError(f"expected {len(JOINT_NAMES)} centers, got {len(center)}")
+    positions = []
+    for i, (name, middle) in enumerate(zip(JOINT_NAMES, center)):
+        lower, upper = JOINT_LIMITS[name]
+        phase = i * PHASE_STEP_RAD
+        # Subtracting sin(phase) makes every joint start at exactly `center` at
+        # elapsed_s == 0 - a plain sin(wt + phase) starts a whole amplitude away
+        # for most joints, which on a powered arm is a snap, not a wiggle. The
+        # halving keeps the excursion within `amplitude` either side, since the
+        # subtracted term widens the range to [-2, 2].
+        raw = middle + amplitude * 0.5 * (
+            math.sin(2.0 * math.pi * elapsed_s / period_s + phase) - math.sin(phase)
+        )
+        positions.append(min(max(raw, lower), upper))
+    return positions
 
 
 class So101ArmBridge(Node):
@@ -139,6 +180,12 @@ class So101ArmBridge(Node):
         # visibly lags the arm.
         self.point_dt_s = self.declare_parameter("point_dt_s", 0.04).value
         self.sine_period_s = self.declare_parameter("sine_period_s", 12.0).value
+        # How far each joint swings either side of the pose it started from.
+        # Small by default so the wiggle test is safe to run on the powered
+        # follower; raise it for a more visible sim demo.
+        self.wiggle_amplitude_rad = self.declare_parameter(
+            "wiggle_amplitude_rad", WIGGLE_AMPLITUDE_RAD
+        ).value
         # How long a single ~/mirror tick keeps mirroring alive. Long enough to
         # ride out a slow Behavior Tree tick, short enough that stopping the
         # Objective visibly stops the twin.
@@ -161,7 +208,27 @@ class So101ArmBridge(Node):
             self.declare_parameter("joint_offsets_deg", [0.0] * len(JOINT_NAMES)).value
         )
 
+        joint_states_topic = self.declare_parameter(
+            "joint_states_topic", "/joint_states"
+        ).value
+        # How old the last /joint_states sample may be and still be trusted as
+        # the wiggle's centre. A stale sample means the broadcaster died or the
+        # bus went quiet, and centring on where the arm was seconds ago is how
+        # you get a lurch instead of a wiggle.
+        self.joint_states_timeout_s = self.declare_parameter(
+            "joint_states_timeout_s", 2.0
+        ).value
+
         self.publisher = self.create_publisher(JointTrajectory, topic, 10)
+        # The wiggle is centred on the arm's own pose, so the node has to know
+        # where the arm is before it may command anything. Until a /joint_states
+        # message carrying all six joints arrives, publish_once() stays quiet.
+        self.latest_positions = None
+        self.latest_positions_time = None
+        self.wiggle_center = None
+        self.create_subscription(
+            JointState, joint_states_topic, self.on_joint_states, 10
+        )
         # The trajectory controller has one owner at a time. A stream of topic
         # messages restarts its trajectory on every tick, so an action goal
         # from a plan would be accepted and then never converge. Yield the
@@ -173,23 +240,38 @@ class So101ArmBridge(Node):
         self.last_mirror_tick = None
         self.create_service(Trigger, "~/mirror", self.on_mirror_tick)
         self.start_time = self.get_clock().now()
-        # The sine's phase is pinned to the mock hardware's start pose once,
-        # for the first Mirror start. Later restarts continue from wall clock:
-        # the twin is then holding a pose the sine has already reached, and
-        # rewinding to the start pose would snap it back.
-        self.sine_phase_pinned = False
         self.timer = self.create_timer(1.0 / publish_rate_hz, self.publish_once)
         self.get_logger().info(
             f"so101_arm_bridge ready to publish {self.source} joint states to "
-            f"{topic} at {publish_rate_hz} Hz; run the Mirror SO101 Follower "
-            "Objective to start mirroring"
+            f"{topic} at {publish_rate_hz} Hz, wiggling "
+            f"{self.wiggle_amplitude_rad} rad about the pose the arm is in when "
+            "mirroring starts; run the Mirror SO101 Follower Objective to start "
+            "mirroring"
         )
+
+    def on_joint_states(self, message):
+        """Keep the latest complete measured pose, in JOINT_NAMES order."""
+        try:
+            self.latest_positions = order_like(
+                list(message.name), list(message.position)
+            )
+            self.latest_positions_time = self.get_clock().now()
+        except (KeyError, ValueError):
+            # A broadcaster publishing a subset (or a differently sized message)
+            # is not an error worth logging every tick - just keep the last
+            # complete pose.
+            return
 
     def read_positions(self):
         """Return the six joint positions in JOINT_NAMES order, in radians."""
         if self.source == "fake":
             elapsed = (self.get_clock().now() - self.start_time).nanoseconds * 1e-9
-            return fake_positions(elapsed, self.sine_period_s)
+            return fake_positions(
+                elapsed,
+                self.sine_period_s,
+                self.wiggle_center,
+                self.wiggle_amplitude_rad,
+            )
         # Phase two: open the Feetech bus through LeRobot's SO101Follower on
         # self.port, read get_observation(), then
         #   order_like(names, degrees) -> to_radians(..., self.joint_signs,
@@ -212,11 +294,33 @@ class So101ArmBridge(Node):
         return message
 
     def on_mirror_tick(self, request, response):
+        """Keep mirroring alive; re-centre the wiggle on each fresh start.
+
+        Every start samples the arm's pose again, because the arm has usually
+        moved since the last run - a plan executed, or a person pushed it. The
+        clock restarts with it so the sine begins at that sampled pose.
+        """
         del request
         now = self.get_clock().now()
-        if not self.sine_phase_pinned:
+        if not self.mirroring():
+            if self.latest_positions is None:
+                response.success = False
+                response.message = (
+                    "no /joint_states yet; cannot centre the wiggle on the "
+                    "arm's current pose"
+                )
+                return response
+            age_s = (now - self.latest_positions_time).nanoseconds * 1e-9
+            if age_s > self.joint_states_timeout_s:
+                response.success = False
+                response.message = (
+                    f"last /joint_states is {age_s:.1f} s old, older than "
+                    f"joint_states_timeout_s ({self.joint_states_timeout_s} s); "
+                    "refusing to centre the wiggle on a stale pose"
+                )
+                return response
+            self.wiggle_center = list(self.latest_positions)
             self.start_time = now
-            self.sine_phase_pinned = True
         self.last_mirror_tick = now
         response.success = True
         response.message = "mirroring"
@@ -244,7 +348,7 @@ class So101ArmBridge(Node):
         self.goal_active = active
 
     def publish_once(self):
-        if self.goal_active or not self.mirroring():
+        if self.goal_active or not self.mirroring() or self.wiggle_center is None:
             return
         self.publisher.publish(self.build_message(self.read_positions()))
 
@@ -259,7 +363,8 @@ def main(argv=None):
         action="store_const",
         const="fake",
         default="fake",
-        help="publish a slow sine instead of reading an arm (the default)",
+        help="wiggle about the arm's current pose instead of reading an arm "
+        "(the default)",
     )
     source.add_argument(
         "--real",

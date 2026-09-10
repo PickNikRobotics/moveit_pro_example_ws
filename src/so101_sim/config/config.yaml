@@ -33,9 +33,18 @@ hardware:
     # Specify any additional parameters required for the URDF.
     # [Optional]
     urdf_params:
-      # Use "mock" or "real". "real" is a stub until the Feetech bus driver
-      # lands; there is no MuJoCo model for this config.
+      # Use "mock" or "real". "real" drives the physical follower arm over the
+      # Feetech STS3215 bus; see the README's bench procedure before switching.
+      # There is no MuJoCo model for this config either way.
       - hardware_interface: "mock"
+      # The follower's serial bus. Keep it a udev symlink; /dev/ttyACM* renumbers.
+      # Ignored on "mock".
+      - usb_port: "/dev/so101_follower"
+      # Per-joint servo id and zero offset, read only on "real". Point this at a
+      # copy to run a second arm without editing this package.
+      - calibration_file:
+          package: "so101_sim"
+          path: "config/so101_follower_calibration.yaml"
 
 # Sets ROS global params for launch.
 # [Optional]

@@ -37,14 +37,18 @@ import time
 import pytest
 import rclpy
 import yaml
+from rclpy.duration import Duration
 from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
+from sensor_msgs.msg import JointState
 from std_srvs.srv import Trigger
 from trajectory_msgs.msg import JointTrajectory
 
 sys.path.insert(0, str(Path(__file__).parents[1] / "script"))
 from so101_arm_bridge import (  # noqa: E402
+    JOINT_LIMITS,
     JOINT_NAMES,
+    WIGGLE_AMPLITUDE_RAD,
     So101ArmBridge,
     fake_positions,
     order_like,
@@ -85,46 +89,62 @@ def test_order_like_rejects_a_missing_joint():
         order_like(JOINT_NAMES, [0.0])
 
 
-def test_fake_positions_stay_inside_the_urdf_limits():
-    limits = {
-        "shoulder_pan": (-1.91986, 1.91986),
-        "shoulder_lift": (-1.74533, 1.74533),
-        "elbow_flex": (-1.69, 1.69),
-        "wrist_flex": (-1.65806, 1.65806),
-        "wrist_roll": (-2.74385, 2.84121),
-        "gripper": (-0.174533, 1.74533),
-    }
+def test_fake_positions_wiggle_about_the_measured_center():
+    """The wiggle stays within one amplitude of wherever the arm was."""
     period = 12.0
+    center = mock_start_positions()
     moved = [False] * len(JOINT_NAMES)
-    first = fake_positions(0.0, period)
-    # The mock hardware is configured to start where the sine does, or the
-    # twin jumps on the first published point.
-    assert first == pytest.approx(mock_start_positions())
     for step in range(241):
-        positions = fake_positions(step * period / 240.0, period)
+        positions = fake_positions(step * period / 240.0, period, center)
         for index, name in enumerate(JOINT_NAMES):
-            lower, upper = limits[name]
-            assert lower <= positions[index] <= upper, name
-            if abs(positions[index] - first[index]) > 0.1:
+            offset = positions[index] - center[index]
+            assert abs(offset) <= WIGGLE_AMPLITUDE_RAD + 1e-9, name
+            # A quarter amplitude is a "this joint is clearly alive" bar that
+            # does not pin the test to the exact phase geometry; the smallest
+            # per-joint peak is half an amplitude.
+            if abs(offset) > WIGGLE_AMPLITUDE_RAD / 4.0:
                 moved[index] = True
     assert all(moved), "every joint should visibly move over one sine period"
 
 
-def test_fake_positions_stay_out_of_the_self_collision_fold():
-    """Guard the envelope that made MoveIt refuse to plan from the twin's state.
+def test_fake_positions_start_exactly_at_the_measured_center():
+    """The first published point must BE the measured pose, not merely near it.
 
-    Folding the wrist back over the shoulder is a self-collision, and while the
-    sine sits in that region every plan from the current state is rejected. The
-    fold needs shoulder_lift and elbow_flex to swing to the same side; keeping
-    them on opposite sides keeps the arm reaching outward.
+    A plain sin(wt + phase) starts a whole amplitude away for every joint whose
+    phase offset is not zero, which on a powered arm is a snap rather than a
+    wiggle. Equality here is the no-jump guarantee; "within an amplitude" is
+    not good enough and silently permitted the bug this test now pins.
     """
-    period = 12.0
+    center = mock_start_positions()
+    assert fake_positions(0.0, 12.0, center) == pytest.approx(center, abs=1e-12)
+
+
+def test_fake_positions_start_at_center_for_any_period_and_amplitude():
+    center = [0.3] * len(JOINT_NAMES)
+    for period in (4.0, 12.0, 30.0):
+        for amplitude in (0.01, 0.1, 0.5):
+            assert fake_positions(0.0, period, center, amplitude) == pytest.approx(
+                center, abs=1e-12
+            )
+
+
+def test_fake_positions_clamp_a_center_at_the_joint_limit():
+    """A joint parked on its limit must not be commanded past it."""
+    center = [JOINT_LIMITS[name][1] for name in JOINT_NAMES]
     for step in range(241):
-        positions = fake_positions(step * period / 240.0, period)
-        shoulder_lift = positions[JOINT_NAMES.index("shoulder_lift")]
-        elbow_flex = positions[JOINT_NAMES.index("elbow_flex")]
-        assert shoulder_lift > 0.1, shoulder_lift
-        assert elbow_flex < -0.1, elbow_flex
+        positions = fake_positions(step * 12.0 / 240.0, 12.0, center)
+        for index, name in enumerate(JOINT_NAMES):
+            lower, upper = JOINT_LIMITS[name]
+            assert lower <= positions[index] <= upper, name
+
+
+def test_fake_positions_reject_a_wrong_sized_center():
+    with pytest.raises(ValueError):
+        fake_positions(0.0, 12.0, [0.0] * (len(JOINT_NAMES) - 1))
+
+
+def test_joint_limits_cover_every_joint():
+    assert set(JOINT_LIMITS) == set(JOINT_NAMES)
 
 
 @pytest.fixture
@@ -136,12 +156,23 @@ def ros_context():
 
 def tick_mirroring(bridge):
     """Stand in for the Mirror Objective's ~/mirror service tick."""
-    bridge.on_mirror_tick(Trigger.Request(), Trigger.Response())
+    return bridge.on_mirror_tick(Trigger.Request(), Trigger.Response())
+
+
+def feed_joint_states(bridge, positions=None):
+    """Stand in for joint_state_broadcaster, which centres the wiggle."""
+    message = JointState()
+    message.name = list(JOINT_NAMES)
+    message.position = list(mock_start_positions() if positions is None else positions)
+    bridge.on_joint_states(message)
 
 
 def test_the_bridge_is_silent_until_mirroring_is_requested(ros_context):
     received = []
     bridge = So101ArmBridge(source="fake")
+    # Feed a pose, so what this proves is the mirror gate rather than the
+    # bridge simply not knowing where the arm is.
+    feed_joint_states(bridge)
     listener = Node("test_silence_listener")
     listener.create_subscription(
         JointTrajectory,
@@ -175,6 +206,7 @@ def test_fake_mode_publishes_a_usable_trajectory(ros_context):
     executor.add_node(bridge)
     executor.add_node(listener)
 
+    feed_joint_states(bridge)
     deadline = time.monotonic() + 5.0
     while time.monotonic() < deadline and len(received) < 2:
         tick_mirroring(bridge)
@@ -220,6 +252,7 @@ def test_bridge_yields_while_a_trajectory_goal_is_active(ros_context):
     executor = SingleThreadedExecutor()
     executor.add_node(bridge)
     executor.add_node(listener)
+    feed_joint_states(bridge)
 
     def spin(seconds):
         deadline = time.monotonic() + seconds
@@ -250,12 +283,12 @@ def test_bridge_yields_while_a_trajectory_goal_is_active(ros_context):
     bridge.destroy_node()
 
 
-def test_mirroring_starts_the_sine_at_the_mock_start_state(ros_context):
+def test_mirroring_starts_the_wiggle_at_the_measured_pose(ros_context):
     """The twin must not snap when the Mirror Objective starts.
 
-    The mock hardware sits at its configured start pose until something drives
-    it, so the first point published after the first ever mirror start has to be
-    that same pose however long the bridge has been up before it.
+    The wiggle is centred on the pose measured at that moment, so however long
+    the bridge has been up, the first point published after a mirror start is
+    within one amplitude of where the arm actually is.
     """
     received = []
     bridge = So101ArmBridge(source="fake")
@@ -270,13 +303,15 @@ def test_mirroring_starts_the_sine_at_the_mock_start_state(ros_context):
     executor.add_node(bridge)
     executor.add_node(listener)
 
-    # Age the node up to where an unpinned sine sits near its peak, so a
-    # missing reset misses the start pose by far more than the tolerance below.
+    # Age the node, so a start that failed to reset the clock would sit at an
+    # arbitrary point of the sine rather than at the pose just measured.
     deadline = time.monotonic() + 3.0
     while time.monotonic() < deadline:
         executor.spin_once(timeout_sec=0.02)
     assert received == []
 
+    pose = mock_start_positions()
+    feed_joint_states(bridge, pose)
     tick_mirroring(bridge)
     deadline = time.monotonic() + 2.0
     while time.monotonic() < deadline and not received:
@@ -288,9 +323,55 @@ def test_mirroring_starts_the_sine_at_the_mock_start_state(ros_context):
     bridge.destroy_node()
 
     assert received, "mirroring should start publishing once ticked"
-    assert received[0].points[0].positions == pytest.approx(
-        mock_start_positions(), abs=0.1
+    first = received[0].points[0].positions
+    for index, name in enumerate(JOINT_NAMES):
+        assert abs(first[index] - pose[index]) <= WIGGLE_AMPLITUDE_RAD + 1e-6, name
+
+
+def test_mirroring_refuses_without_a_measured_pose(ros_context):
+    """No /joint_states means no centre, and commanding a guess is unsafe."""
+    bridge = So101ArmBridge(source="fake")
+    response = tick_mirroring(bridge)
+    assert not response.success
+    assert bridge.wiggle_center is None
+    bridge.publish_once()  # must be a no-op rather than raise
+    bridge.destroy_node()
+
+
+def test_mirroring_refuses_a_stale_pose(ros_context):
+    """A sample older than joint_states_timeout_s must not become the centre.
+
+    A stale sample means the broadcaster died or the bus went quiet; centring
+    on where the arm was seconds ago is how a wiggle becomes a lurch.
+    """
+    bridge = So101ArmBridge(source="fake")
+    feed_joint_states(bridge)
+    # Backdate the sample well past the default timeout.
+    bridge.latest_positions_time = bridge.get_clock().now() - Duration(
+        seconds=int(bridge.joint_states_timeout_s) + 5
     )
+    response = tick_mirroring(bridge)
+    assert not response.success
+    assert "stale" in response.message
+    assert bridge.wiggle_center is None
+    bridge.destroy_node()
+
+
+def test_mirroring_recenters_on_a_later_start(ros_context):
+    """A second run centres on wherever the arm ended up, not the first pose."""
+    bridge = So101ArmBridge(source="fake")
+    first_pose = mock_start_positions()
+    feed_joint_states(bridge, first_pose)
+    tick_mirroring(bridge)
+    assert bridge.wiggle_center == pytest.approx(first_pose)
+
+    # Let the mirror tick go stale, so the next tick counts as a fresh start.
+    bridge.last_mirror_tick = None
+    moved = [value + 0.3 for value in first_pose]
+    feed_joint_states(bridge, moved)
+    tick_mirroring(bridge)
+    assert bridge.wiggle_center == pytest.approx(moved)
+    bridge.destroy_node()
 
 
 def test_real_source_is_still_a_stub(ros_context):
