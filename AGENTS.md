@@ -1,5 +1,7 @@
 # AI Code Assistant Instructions for MoveIt Pro Example Workspace
 
+> This file is the canonical source of repository-wide instructions for every AI assistant. The `CLAUDE.md` beside it, plus `.cursorrules` and `.github/copilot-instructions.md`, are symlinks to it (the same convention as the moveit_pro repository). Edit `AGENTS.md`; never replace a symlink with a copy.
+
 ## MuJoCo Scene Files
 
 ### Keyframe qpos must match model DOF count
