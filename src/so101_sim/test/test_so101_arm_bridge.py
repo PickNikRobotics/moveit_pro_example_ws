@@ -36,6 +36,7 @@ import time
 
 import pytest
 import rclpy
+import yaml
 from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
 from std_srvs.srv import Trigger
@@ -43,13 +44,19 @@ from trajectory_msgs.msg import JointTrajectory
 
 sys.path.insert(0, str(Path(__file__).parents[1] / "script"))
 from so101_arm_bridge import (  # noqa: E402
-    FAKE_CENTER,
     JOINT_NAMES,
     So101ArmBridge,
     fake_positions,
     order_like,
     to_radians,
 )
+
+
+def mock_start_positions():
+    """The pose config/initial_positions.yaml puts the mock hardware in."""
+    path = Path(__file__).parents[1] / "config" / "initial_positions.yaml"
+    initial = yaml.safe_load(path.read_text())["initial_positions"]
+    return [initial[name] for name in JOINT_NAMES]
 
 
 def test_to_radians_applies_offset_then_sign():
@@ -90,8 +97,9 @@ def test_fake_positions_stay_inside_the_urdf_limits():
     period = 12.0
     moved = [False] * len(JOINT_NAMES)
     first = fake_positions(0.0, period)
-    # The mock hardware starts at FAKE_CENTER, so the sine has to as well.
-    assert first == pytest.approx(FAKE_CENTER)
+    # The mock hardware is configured to start where the sine does, or the
+    # twin jumps on the first published point.
+    assert first == pytest.approx(mock_start_positions())
     for step in range(241):
         positions = fake_positions(step * period / 240.0, period)
         for index, name in enumerate(JOINT_NAMES):
@@ -245,9 +253,9 @@ def test_bridge_yields_while_a_trajectory_goal_is_active(ros_context):
 def test_mirroring_starts_the_sine_at_the_mock_start_state(ros_context):
     """The twin must not snap when the Mirror Objective starts.
 
-    The mock hardware sits at FAKE_CENTER until something drives it, so the
-    first point published after the first ever mirror start has to be that same
-    pose however long the bridge has been up before it.
+    The mock hardware sits at its configured start pose until something drives
+    it, so the first point published after the first ever mirror start has to be
+    that same pose however long the bridge has been up before it.
     """
     received = []
     bridge = So101ArmBridge(source="fake")
@@ -263,7 +271,7 @@ def test_mirroring_starts_the_sine_at_the_mock_start_state(ros_context):
     executor.add_node(listener)
 
     # Age the node up to where an unpinned sine sits near its peak, so a
-    # missing reset misses FAKE_CENTER by far more than the tolerance below.
+    # missing reset misses the start pose by far more than the tolerance below.
     deadline = time.monotonic() + 3.0
     while time.monotonic() < deadline:
         executor.spin_once(timeout_sec=0.02)
@@ -280,7 +288,9 @@ def test_mirroring_starts_the_sine_at_the_mock_start_state(ros_context):
     bridge.destroy_node()
 
     assert received, "mirroring should start publishing once ticked"
-    assert received[0].points[0].positions == pytest.approx(FAKE_CENTER, abs=0.1)
+    assert received[0].points[0].positions == pytest.approx(
+        mock_start_positions(), abs=0.1
+    )
 
 
 def test_real_source_is_still_a_stub(ros_context):

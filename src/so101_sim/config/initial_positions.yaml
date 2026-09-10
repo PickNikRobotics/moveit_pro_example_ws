@@ -1,9 +1,10 @@
-# Joint positions the mock hardware starts at, in radians. These match the
-# center of the bridge's fake sine, so the twin does not jump when it starts.
+# Joint positions the mock hardware starts at, in radians. These are the
+# bridge's fake sine at elapsed 0, so the twin does not jump when mirroring
+# begins. They are not the sine's center: each joint carries a phase offset.
 initial_positions:
   shoulder_pan: 0.0
-  shoulder_lift: 0.6
-  elbow_flex: -0.6
-  wrist_flex: 0.0
-  wrist_roll: 0.0
-  gripper: 0.7
+  shoulder_lift: 0.728843537
+  elbow_flex: -0.353637568
+  wrist_flex: 0.302123278
+  wrist_roll: 0.33498815
+  gripper: 0.489530063

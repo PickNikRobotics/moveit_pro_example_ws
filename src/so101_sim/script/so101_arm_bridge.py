@@ -115,18 +115,13 @@ def fake_positions(elapsed_s, period_s):
     """A slow sine, phase-shifted per joint so the whole arm visibly moves.
 
     Every joint shares one period, so the motion is a single closed curve that
-    one period of sampling covers completely. Each joint's constant phase term
-    is subtracted, which puts ``elapsed_s == 0`` exactly at FAKE_CENTER, where
-    the mock hardware sits before anything drives it, and shifts that joint's
-    envelope by ``-amplitude * sin(phase)``.
+    one period of sampling covers completely. FAKE_CENTER is that curve's
+    center, which the phase offsets mean is not where it starts:
+    ``elapsed_s == 0`` is the pose config/initial_positions.yaml puts the mock
+    hardware in, so the twin does not jump when mirroring begins.
     """
     return [
-        center
-        + amplitude
-        * (
-            math.sin(2.0 * math.pi * elapsed_s / period_s + i * 0.7)
-            - math.sin(i * 0.7)
-        )
+        center + amplitude * math.sin(2.0 * math.pi * elapsed_s / period_s + i * 0.7)
         for i, (center, amplitude) in enumerate(zip(FAKE_CENTER, FAKE_AMPLITUDE))
     ]
 
@@ -178,9 +173,10 @@ class So101ArmBridge(Node):
         self.last_mirror_tick = None
         self.create_service(Trigger, "~/mirror", self.on_mirror_tick)
         self.start_time = self.get_clock().now()
-        # The sine's phase is pinned to FAKE_CENTER once, for the first Mirror
-        # start. Later restarts continue from wall clock: the twin is then
-        # holding wherever the sine left it, and rewinding would snap it back.
+        # The sine's phase is pinned to the mock hardware's start pose once,
+        # for the first Mirror start. Later restarts continue from wall clock:
+        # the twin is then holding a pose the sine has already reached, and
+        # rewinding to the start pose would snap it back.
         self.sine_phase_pinned = False
         self.timer = self.create_timer(1.0 / publish_rate_hz, self.publish_once)
         self.get_logger().info(
