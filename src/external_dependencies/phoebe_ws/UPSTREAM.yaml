@@ -28,6 +28,7 @@ modified_paths:
   - src/phoebe_sim/CMakeLists.txt
   - src/phoebe_sim/package.xml
   - src/phoebe_sim/config/control/dual_arm.ros2_control.yaml
+  - src/phoebe_sim/config/moveit/joint_limits.yaml
 apache_paths:
   - src/phoebe_sim/description/assets/trainer_hatch
 apache_excluded_paths:
