@@ -15,23 +15,30 @@
  *   ros2 run hangar_sim_behaviors calibrate_scan_match_gate /tmp/calib/grid.txt /tmp/calib/scans.txt
  *
  * It reports:
- *   - the WORST score any true pose gets (the ceiling a threshold must sit below);
+ *   - the WORST score any true pose gets;
  *   - the score of deliberately wrong poses on rings from 0.10 m out to the drift limit -- the ones
  *     beyond the refinement's own output are what a threshold must REJECT, the tightest one is a
  *     near-miss it must ACCEPT, and those pull the threshold in opposite directions;
  *   - the STRONGEST alias found anywhere on the map -- the best-scoring pose that is nowhere near
  *     the truth, found by sweeping the whole free space rather than by guessing where to look;
- *   - the separation between the true-pose ceiling and the worst offender the gate can admit,
- *     which is the margin the threshold lives in.
+ *   - the band between the worst pose that must be rejected and the tightest one that must be
+ *     accepted, which is the window the threshold has to live in.
  *
  * The rings matter as much as the map-wide sweep, because that sweep only starts at
  * `alias_keepout_m`. Everything closer than that is the region the drift gate is explicitly allowed
  * to move the belief into, so a band computed from the sweep alone names a safe threshold over
  * poses it never evaluated.
  *
- * A narrow separation is a finding to report, not a number to split the difference on. It means the
- * map has structure that repeats, and the honest response is a tighter click and a shorter drive,
- * not a lower threshold.
+ * WHAT THIS IS NOT. It is a SAMPLE, not a proof. The rings visit six discrete radii, sixteen
+ * bearings and three yaw values at one magnitude per ring, so most of the accept region is never
+ * evaluated: a pose 0.90 m out with a 20 degree heading error is inside the drift limit, the gate
+ * can accept it, and no ring and no alias candidate scores it. Read the output as evidence about a
+ * lattice of poses plus a swept search beyond the keepout, and do not read a clean band as a
+ * guarantee that nothing admissible scores higher.
+ *
+ * A narrow band is a finding to report, not a number to split the difference on. It means the map
+ * has structure that repeats, and the honest response is a tighter click and a shorter drive, not a
+ * lower threshold.
  */
 
 #include <hangar_sim_behaviors/calibration_io.hpp>
@@ -73,12 +80,15 @@ struct SweepSettings
   double inlier_distance = localization::kInlierDistance;
   /// MINIMUM distance from the truth for a map-wide sweep candidate to count as an alias.
   ///
-  /// This is a floor, not a ceiling: `strongestAlias` skips everything CLOSER than this, so the
-  /// map-wide sweep says nothing about the region inside it. That region is not unimportant -- it
-  /// is precisely the region the shipped drift gate admits, since the gate may move the belief up
-  /// to kDriftLimit from the seed. The offset rings below are what cover it, and their maximum is
-  /// folded into the reported band. Setting this to kDriftLimit and calling the accept region
-  /// covered would be exactly backwards.
+  /// The VALUE is fine. This is a floor on how far away a candidate has to be before the sweep is
+  /// willing to call it an alias rather than a rediscovery of the truth, and kDriftLimit is a
+  /// sensible floor: past the drift limit, a pose is unambiguously somewhere else.
+  ///
+  /// What does NOT follow from the value is any claim of coverage. Because it is a floor,
+  /// `strongestAlias` skips everything CLOSER than this, so the map-wide sweep says nothing at all
+  /// about the region inside it -- which is exactly the region the drift gate admits. The offset
+  /// rings are what sample that region, and their maximum is folded into the reported band. Read
+  /// this field as "where the alias search begins", never as "everything inside is accounted for".
   double alias_keepout_m = localization::kDriftLimit;
   /// Coarse sweep stride over the map, metres, and its yaw stride, radians.
   double coarse_stride_m = 0.40;
@@ -395,7 +405,7 @@ int main(int argc, char** argv)
             << settings.max_obstacle_distance << " m\n"
             << "alias sweep: every free cell at least " << settings.alias_keepout_m
             << " m from the truth. That is a FLOOR, so the sweep says nothing about\n"
-            << "  anything nearer; the offset rings below cover the region inside it, out to the drift limit\n"
+            << "  anything nearer; the offset rings below SAMPLE the region inside it, out to the drift limit\n"
             << "samples: " << samples.size() << "\n\n";
 
   double worst_true = 1.0;
@@ -472,7 +482,10 @@ int main(int argc, char** argv)
     }
   }
 
-  const double separation = worst_true - worst_reject;
+  // The window is bounded by the two CONSTRAINTS, not by the true pose. The tightest must-accept
+  // ring is the real ceiling: a threshold above it rejects refinements the loop legitimately
+  // returns, even though it still sits comfortably under the true pose's score.
+  const double separation = tightest_accept - worst_reject;
   std::cout << "\n" << "worst true pose            " << percent(worst_true) << "  (" << worst_true_label << ")\n";
   for (std::size_t i = 0; i < kOffsetRings.size(); ++i)
   {
@@ -487,7 +500,7 @@ int main(int argc, char** argv)
     // would read as a measured result for a sweep that never accepted a single candidate.
     std::cout << "strongest alias on the map none found\n\n"
                  "NOTHING SCORED. No candidate anywhere in the free space beat zero, so there is no alias\n"
-                 "measurement and no separation to report. That is a data problem, not a map finding: check\n"
+                 "measurement and no band to report. That is a data problem, not a map finding: check\n"
                  "that the scan samples carry usable returns inside the range filters and that the grid and\n"
                  "the scans came from the same run.\n";
     return EXIT_FAILURE;
@@ -496,33 +509,32 @@ int main(int argc, char** argv)
   std::cout << "strongest alias on the map " << percent(best_alias) << "  (" << best_alias_label << " at " << std::fixed
             << std::setprecision(2) << best_alias_pose->x << ", " << best_alias_pose->y << ", yaw "
             << best_alias_pose->yaw << ")\n"
-            << "separation                 " << std::setprecision(1) << (separation * 100.0) << " points\n\n";
+            << "window                     " << std::setprecision(1) << (separation * 100.0) << " points\n\n";
 
   if (separation <= 0.0)
   {
-    std::cout << "NO THRESHOLD SEPARATES THEM. Somewhere on this map a wrong pose explains the scan at least as\n"
-                 "well as the right one. Do not pick a number out of the overlap: that is a map finding, and the\n"
-                 "answer is a tighter click bound or a short drive, not a lower gate.\n";
+    std::cout << "NO THRESHOLD SATISFIES BOTH CONSTRAINTS. The tightest pose the gate must ACCEPT ("
+              << percent(tightest_accept) << ", " << tightest_accept_label << ")\n"
+              << "scores no better than the worst pose it must REJECT (" << percent(worst_reject) << ", "
+              << worst_reject_label << ").\n"
+              << "Do not pick a number out of the overlap: that is a map and scan-density finding, and the answer\n"
+                 "is a tighter click bound or a short drive, not a lower gate.\n";
     return EXIT_SUCCESS;
   }
 
-  std::cout << "A threshold must sit strictly between " << percent(worst_reject) << " and " << percent(worst_true)
-            << ".\n"
-            << "The lower edge is the worst offender anywhere the gate can admit one: " << worst_reject_label
-            << ".\n"
-            << "It folds in BOTH the map-wide alias sweep (which starts " << std::fixed << std::setprecision(2)
-            << settings.alias_keepout_m << " m out) and the offset rings inside\n"
-            << "that keepout, which run to the drift limit -- so nothing the drift gate can accept is unscored.\n\n"
-            << "Read the ring rows, do not average them. Keep the threshold ABOVE the largest ring marked must be\n"
-            << "REJECTED, and BELOW the smallest marked must be ACCEPTED -- those are opposite constraints, not a\n"
-            << "single direction. Here that is above " << percent(worst_reject) << " and below "
-            << percent(tightest_accept) << " (" << tightest_accept_label << ").\n";
-
-  if (tightest_accept <= worst_reject)
-  {
-    std::cout << "\nTHOSE TWO CONSTRAINTS DO NOT LEAVE A GAP on this map: a near-miss the refinement legitimately\n"
-                 "returns scores no better than a pose the gate has to reject. No threshold satisfies both. That\n"
-                 "is a map and scan-density finding for its own ticket, not a number to split.\n";
-  }
+  std::cout << "A threshold must sit strictly between " << percent(worst_reject) << " and "
+            << percent(tightest_accept) << ".\n"
+            << "Lower edge: the worst pose that must be REJECTED (" << worst_reject_label
+            << "). Upper edge: the tightest pose\n"
+            << "that must be ACCEPTED (" << tightest_accept_label
+            << "). Those are opposite constraints, not a single direction,\n"
+            << "so read the ring rows rather than averaging them. Note the true pose's own score is NOT the upper\n"
+               "edge: a threshold under it can still reject the near-misses this refinement legitimately returns.\n\n"
+            << "The lower edge folds in BOTH the map-wide alias sweep (which starts " << std::fixed
+            << std::setprecision(2) << settings.alias_keepout_m << " m out) and the offset\n"
+            << "rings inside that keepout, which run to the drift limit. Those rings are a SAMPLE of the accept\n"
+               "region -- six radii, sixteen bearings, three yaw values each -- not a proof about all of it. A\n"
+               "pose at an unsampled offset and heading inside the drift limit can be admitted without appearing\n"
+               "anywhere above.\n";
   return EXIT_SUCCESS;
 }

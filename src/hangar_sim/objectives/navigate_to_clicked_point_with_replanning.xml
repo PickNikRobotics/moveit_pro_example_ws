@@ -10,7 +10,27 @@
     _favorite="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
-      <Action ID="SetInitialPose" robot_frame_id="ridgeback_base_link" />
+      <!--Seeding from TF is what this Behavior does: it reads map -> ridgeback_base_link and hands
+           that pose to the filter. That only ever worked at cold boot because the transform was
+           coming from the simulator, and amcl was self-seeding at the spawn pose on activation.
+           With set_initial_pose false the filter starts holding nothing, map -> odom does not
+           exist, and this lookup has nothing to resolve through.
+
+           So this Objective did not stop working - it stopped being CARRIED BY GROUND TRUTH, which
+           is the crutch this whole capability exists to remove. The order is localize, then
+           navigate, and that is the order on hardware too. The branch below turns what would
+           otherwise be an opaque transform failure on the very first node into the instruction.-->
+      <Control ID="Fallback" name="Re-seed from the current estimate, or say what is missing">
+        <Action ID="SetInitialPose" robot_frame_id="ridgeback_base_link" />
+        <Control ID="Sequence" name="The filter has no estimate to re-seed from">
+          <Action
+            ID="LogMessage"
+            log_level="error"
+            message="Cannot navigate: the particle filter has not been seeded, so map -> ridgeback_base_link does not resolve and the robot's current pose cannot be read. Run the &quot;Localize Robot&quot; Objective first, then run this one."
+          />
+          <Action ID="AlwaysFailure" name="Stop before planning blind" />
+        </Control>
+      </Control>
       <Action
         ID="CreatePoseStamped"
         reference_frame="base_link"

@@ -323,48 +323,57 @@
         map. CALIBRATED ON
         hangar_map with the shipped scoring code, against the grid map_server
         actually publishes:
-        the true pose scores 87.0%. Deliberately wrong poses, best over each
-        ring, out to the
-        drift limit this Objective is allowed to move the belief by: 0.10 m
-        87.0%, 0.25 m 52.2%,
-        0.50 m 43.5%, 0.75 m 52.2%, 1.00 m 47.8%, 1.15 m 39.1%; and the
-        strongest alias anywhere
-        beyond that, from the map-wide sweep, 47.8%.
+        the true pose scores 87.0%. These are the figures calibrate_scan_match_gate
+        prints, so a
+        re-calibration can be compared against them row for row. Mind the two
+        statistics: a ring
+        the gate must REJECT is quoted at its BEST, because that is what a
+        threshold has to beat,
+        and the one ring it must ACCEPT is quoted at its WORST, because that is
+        what a threshold
+        has to stay under.
 
-        THE HONEST BAND IS 52.2% TO 87.0%, and its lower edge is a RING rather
-        than the alias: the
-        worst wrong pose the drift gate can admit scores 52.2%, above the 47.8%
-        alias. Earlier
-        revisions of this text published 34.8% and then 47.8% as the number to
-        clear; both came
-        from an alias sweep whose keepout is a FLOOR, so by construction it
-        never scored the region
-        inside the drift limit - the region the gate actually admits.
+        0.10 m ring, WORST, must be ACCEPTED: 69.6%. Then the rings that must be
+        REJECTED, at their
+        best: 0.25 m 52.2%, 0.50 m 43.5%, 0.75 m 52.2%, 1.00 m 47.8%, 1.15 m
+        39.1%. And the
+        strongest alias anywhere beyond the sweep's keepout, 47.8%.
 
-        0.6 rather than the 0.8 meta_ws uses, and it is squeezed from both
-        sides. The gate must
-        ACCEPT a 0.10 m / 1 deg near-miss, which scores 69.6% - and the
-        refinement itself returns
-        about 6.5 cm - while it must REJECT a 0.25 m wrong pose at 52.2%. That
-        is a 17-point
-        window and 0.6 splits it, keeping about 8 points of margin over the
-        worst admissible wrong
-        pose. 0.8 sits above the 69.6% near-miss, so it would reject the
-        refinements this loop
-        legitimately produces. The window is narrow here; the driven multi-pose
-        campaign should
-        re-examine it rather than treat 0.6 as settled.
+        THE HONEST BAND IS 52.2% TO 69.6% - a 17-point window that 0.6 splits.
+        Neither edge is the
+        true pose. The lower edge is a RING rather than the alias, because the
+        worst wrong pose the
+        drift gate can admit scores 52.2% against the alias's 47.8%. The upper
+        edge is the
+        near-miss the gate MUST accept, not the 87.0% the true pose scores -
+        which is exactly why
+        0.8 is wrong here: it looks safe under 87.0% while sitting above the
+        69.6% a legitimate
+        refinement returns, so every run would end in the restore branch below.
+        The refinement
+        itself returns about 6.5 cm. The window is narrow here; the driven
+        multi-pose campaign
+        should re-examine it rather than treat 0.6 as settled.
 
-        One limit to know rather than discover: a 0.10 m PURE translation with
+        Two limits to know rather than discover. First, the blind spot, which is
+        why the 0.10 m
+        ring has two numbers: its BEST member is a pure 0.10 m translation with
         the heading still
-        correct scores 87.0%, the same as the true pose, because 0.10 m is
-        inside inlier_distance.
-        This gate cannot see an error smaller than inlier_distance, and the
-        refinement's ~6.5 cm is
-        inside that blind spot. That is how a likelihood field works, not a
-        fault here - what makes
-        those centimetres trustworthy is the density of the seed, not this
-        check.
+        correct, and that scores 87.0%, the same as the true pose, because
+        0.10 m is inside
+        inlier_distance. This gate cannot see an error smaller than
+        inlier_distance, and the
+        refinement's ~6.5 cm is inside that blind spot - that is how a
+        likelihood field works, not a
+        fault here, and what makes those centimetres trustworthy is the density
+        of the seed, not
+        this check. Second, the band is a SAMPLE, not a proof: the rings visit
+        six radii, sixteen
+        bearings and three yaw values each, while the region the drift gate
+        admits is continuous,
+        so a pose at an unsampled offset and heading inside the drift limit can
+        be admitted
+        without appearing above.
 
         Note the granularity: only 23 of the 60 selected beams survive the range
         filters on this

@@ -53,33 +53,48 @@ inline constexpr std::int8_t kOccupiedValue = 100;
  * @name Acceptance contract
  *
  * MEASURED on hangar_map with this robot's merged scan, using this same scoring code against the
- * grid map_server actually publishes. The true pose scores 87.0%. Deliberately wrong poses, best
- * over each ring, out to the drift limit the gate is allowed to move the belief by:
+ * grid map_server actually publishes. These are the figures `calibrate_scan_match_gate` prints, so
+ * a re-calibration after a map rebuild can be compared against them row for row. Note the two
+ * statistics: a ring the gate must REJECT is reported at its BEST, because that is what a threshold
+ * has to beat, and the one ring it must ACCEPT is reported at its WORST, because that is what a
+ * threshold has to stay under.
  *
- *   0.10 m  87.0%      0.25 m  52.2%      0.50 m  43.5%
- *   0.75 m  52.2%      1.00 m  47.8%      1.15 m  39.1%
+ *   true pose                                   87.0%
+ *   0.10 m ring, WORST   must be ACCEPTED       69.6%
+ *   0.25 m ring, best    must be REJECTED       52.2%
+ *   0.50 m ring, best    must be REJECTED       43.5%
+ *   0.75 m ring, best    must be REJECTED       52.2%
+ *   1.00 m ring, best    must be REJECTED       47.8%
+ *   1.15 m ring, best    must be REJECTED       39.1%
+ *   strongest alias anywhere beyond the keepout 47.8%
  *
- * and the strongest alias anywhere beyond that, from the map-wide sweep, 47.8%.
+ * THE HONEST BAND IS THEREFORE 52.2% TO 69.6%, a 17-point window, and 0.60 splits it. Both edges
+ * are constraints, and neither is the true pose: the lower edge is a RING rather than the alias,
+ * because the worst wrong pose the drift gate can admit scores 52.2% against the alias's 47.8%; and
+ * the upper edge is the near-miss the gate must accept, NOT the 87.0% the true pose scores. That
+ * distinction is the whole reason 0.80 is wrong here -- it sits under 87.0% and looks safe, while
+ * being above the 69.6% a legitimate refinement returns, so every run would end in the restore
+ * branch. Earlier revisions of this comment published 34.8%, then 47.8%, then 52.2-87.0%; the first
+ * two came from an alias sweep whose keepout is a FLOOR and so never scored the region the gate
+ * admits, and the third used the true pose as the upper edge.
  *
- * THE HONEST BAND IS THEREFORE 52.2% TO 87.0%. The lower edge is a RING, not the alias: the worst
- * wrong pose the drift gate can admit scores 52.2%, higher than the 47.8% alias. 0.60 keeps about
- * 8 points of margin over it. Earlier revisions of this comment published 34.8%/52.2 points and
- * then 47.8%/39.1 points; both came from an alias sweep with a keepout FLOOR, which by construction
- * never scored the region inside the drift limit -- the region the gate actually admits.
+ * THE SQUEEZE. Anything above 69.6% starts rejecting refinements the loop legitimately returns;
+ * anything below 52.2% starts admitting poses it must reject. That window is NARROW on hangar_sim
+ * -- narrower than meta_ws's -- and the driven multi-pose campaign should re-examine it rather than
+ * treat 0.60 as settled.
  *
- * THE SQUEEZE, and it is the most useful thing this calibration produced. The gate must ACCEPT a
- * 0.10 m / 1 deg near-miss, which scores 69.6%, and must REJECT a 0.25 m wrong pose, which scores
- * 52.2%. That is a 17-point window, and 0.60 splits it. Anything higher starts rejecting
- * refinements the loop legitimately returns; anything lower starts admitting poses it must reject.
- * That window is NARROW on hangar_sim -- narrower than meta_ws's -- and the driven multi-pose
- * campaign should re-examine it rather than treat 0.60 as settled.
+ * THE STRUCTURAL BLIND SPOT, and why the 0.10 m ring has two numbers. Its worst member is the
+ * 69.6% above, with a 1 deg heading error. Its BEST member is a 0.10 m PURE translation with the
+ * heading still correct, and that scores 87.0% -- identical to the true pose, because 0.10 m is
+ * inside kInlierDistance. So the gate cannot detect an error smaller than kInlierDistance at all,
+ * and the refinement returns about 6.5 cm, which is inside that blind spot. This is a property of
+ * the likelihood-field design, not a defect of this implementation: what makes those 6.5 cm
+ * trustworthy is the density of the seed the filter selected from, not this gate. Do not read a
+ * pass here as a measurement of the remaining error.
  *
- * THE STRUCTURAL BLIND SPOT. A 0.10 m PURE translation with the heading still correct scores 87.0%,
- * identical to the true pose, because 0.10 m is inside kInlierDistance. So the gate cannot detect
- * an error smaller than kInlierDistance at all, and the refinement returns about 6.5 cm, which is
- * inside that blind spot. This is a property of the likelihood-field design, not a defect of this
- * implementation: what makes those 6.5 cm trustworthy is the density of the seed the filter
- * selected from, not this gate. Do not read a pass here as a measurement of the remaining error.
+ * AND THE BAND IS A SAMPLE, NOT A PROOF. The rings visit six radii, sixteen bearings and three yaw
+ * values each; the accept region is continuous. A pose at an unsampled offset and heading inside
+ * the drift limit can be admitted without appearing in the table above.
  *
  * Two things about that measurement are worth carrying. Only 23 of the 60 selected beams survive
  * the range filters on this robot, so the fraction moves in steps of about 4.3 points -- the gate
@@ -93,11 +108,11 @@ inline constexpr double kInlierDistance = 0.15;
 /**
  * @brief Accept a refined pose only at or above this inlier fraction.
  *
- * 0.60, not the 0.80 meta_ws uses. 0.80 sits only 7 points under the true pose here AND above the
- * 69.6% a 0.10 m / 1 deg error scores, while the refinement itself returns about 6.5 cm -- so 0.80
- * would reject the refinements this loop legitimately produces. 0.60 clears the worst wrong pose
- * the drift gate can admit by about 8 points: 52.2, then 60, then the near-miss it must accept at
- * 69.6, then the true pose at 87.0.
+ * 0.60, not the 0.80 meta_ws uses. 0.80 sits above the 69.6% a 0.10 m / 1 deg near-miss scores,
+ * while the refinement itself returns about 6.5 cm -- so 0.80 would reject the refinements this
+ * loop legitimately produces, however comfortable it looks against the true pose's 87.0%. 0.60 sits
+ * inside the measured window with about 8 points over the worst admissible wrong pose and about 10
+ * under the tightest near-miss: 52.2, then 60, then 69.6.
  */
 inline constexpr double kMinInlierFraction = 0.60;
 /** @} */

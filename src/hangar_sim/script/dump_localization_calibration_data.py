@@ -47,20 +47,27 @@ substitute a TF lookup of map -> ridgeback_base_link here: that chain runs throu
 map -> odom estimate, so it would be scoring the localizer against itself.
 
 PRECONDITION FOR A DRIVEN MULTI-POSE CAMPAIGN -- read this before capturing on the move. A sample
-pairs the latest cached /scan_merged with the latest cached virtual-rail joint state. There is no
-stamp comparison between the two and no stationarity check, so the pairing is exact only while the
-base is standing still. That is why the shipped one-pose calibration is unaffected. It does not
-survive driving: at ~0.5 m/s a scan one 10 Hz frame plus one timer period old puts the robot tens
-of centimetres from the pose recorded beside it -- well outside the 0.15 m inlier band -- so the
-true-pose score comes back depressed and whoever reads the report sets the threshold LOWER than the
-map warrants, which is the direction that lets a wrong pose through.
+pairs the latest cached /scan_merged with the latest cached virtual-rail joint state, with no stamp
+comparison between the two, so the pairing is exact only while the base is standing still. Capturing
+in motion does not survive that: at ~0.5 m/s a scan one 10 Hz frame plus one timer period old puts
+the robot tens of centimetres from the pose recorded beside it -- well outside the 0.15 m inlier
+band -- so the true-pose score comes back depressed and whoever reads the report sets the threshold
+LOWER than the map warrants, which is the direction that lets a wrong pose through.
 
-The driven multi-pose campaign the gate still owes must therefore either stop the base at each
-sample and capture only while stationary, or add stamp synchronisation here first: gate capture on
-the virtual-rail joint velocities being near zero, or reject a sample whose scan stamp and
-joint-state stamp differ by more than one frame. Do not run it against this script as written.
+The shipped defaults are built to match that precondition rather than contradict it. `--samples`
+defaults to 1, so the documented invocation captures a single stationary pose and stops; asking for
+more is an explicit choice. And capture is GATED ON STATIONARITY: a sample is refused while any
+virtual-rail joint is moving faster than `--max-capture-speed`, read from the velocity the same
+JointState messages already carry. That closes the fast half of the gap on its own -- a stationary
+base cannot produce a scan that is stale relative to its recorded pose.
 
-    ros2 run hangar_sim dump_localization_calibration_data.py --output-dir /tmp/calib --samples 40
+What the guard does NOT do is compare stamps, so it still assumes the two streams are roughly
+current with each other. A driven campaign wanting samples while the base is in motion needs that
+stamp synchronisation added first: reject a sample whose scan stamp and joint-state stamp differ by
+more than one frame. Raising `--samples` and driving between captures, with the guard stopping the
+base at each one, is the supported way to take more.
+
+    ros2 run hangar_sim dump_localization_calibration_data.py --output-dir /tmp/calib
 """
 
 import argparse
@@ -94,6 +101,7 @@ class CalibrationCapture(Node):
         self._grid = None
         self._scan = None
         self._truth = None
+        self._truth_speed = None
         self._samples = []
         self._last_sample_position = None
 
@@ -120,15 +128,22 @@ class CalibrationCapture(Node):
 
     def _on_joint_state(self, message):
         try:
-            values = [
-                message.position[message.name.index(joint)]
-                for joint in GROUND_TRUTH_JOINTS
-            ]
+            indices = [message.name.index(joint) for joint in GROUND_TRUTH_JOINTS]
+            values = [message.position[index] for index in indices]
         except (ValueError, IndexError):
             # Other publishers put partial joint states on this topic; a message without the
             # virtual-rail joints is not an error, it just is not the one we want.
             return
         self._truth = tuple(values)
+        # A message that carries no velocity cannot clear the stationarity guard, so report it as
+        # moving rather than as stopped. Failing closed here costs a re-run; failing open silently
+        # biases the whole calibration.
+        try:
+            self._truth_speed = max(
+                abs(message.velocity[index]) for index in indices
+            )
+        except (ValueError, IndexError):
+            self._truth_speed = None
 
     def _maybe_capture(self):
         if self._grid is None or self._scan is None or self._truth is None:
@@ -143,6 +158,26 @@ class CalibrationCapture(Node):
             )
             return
         if len(self._samples) >= self._args.samples:
+            return
+
+        # Stationarity guard. A sample pairs the latest cached scan with the latest cached joint
+        # state and never compares their stamps, so it is only exact while the base is still. The
+        # error runs the unsafe way: a scan taken before the recorded pose depresses the TRUE
+        # pose's score, which drags the reported band down and leads whoever reads it to set
+        # min_inlier_fraction lower than the map warrants.
+        if self._truth_speed is None or self._truth_speed > self._args.max_capture_speed:
+            self.get_logger().info(
+                "not capturing: base is moving (%s > %.3f); this script pairs the latest scan with "
+                "the latest pose without comparing stamps, so a sample taken in motion would record "
+                "a scan that does not belong to the pose beside it"
+                % (
+                    "no joint velocity reported"
+                    if self._truth_speed is None
+                    else "%.3f" % self._truth_speed,
+                    self._args.max_capture_speed,
+                ),
+                throttle_duration_sec=5.0,
+            )
             return
 
         x, y, yaw = self._truth
@@ -229,7 +264,25 @@ def main():
     parser.add_argument("--output-dir", default="/tmp/hangar_localization_calibration")
     parser.add_argument("--map-topic", default="/map")
     parser.add_argument("--scan-topic", default="/scan_merged")
-    parser.add_argument("--samples", type=int, default=20)
+    parser.add_argument(
+        "--samples",
+        type=int,
+        default=1,
+        help=(
+            "poses to capture. Defaults to 1 because a sample is only valid while the base is "
+            "stationary; raising it means driving between captures, and the stationarity guard "
+            "will hold each capture until the base has stopped"
+        ),
+    )
+    parser.add_argument(
+        "--max-capture-speed",
+        type=float,
+        default=0.01,
+        help=(
+            "refuse to record a sample while any virtual-rail joint moves faster than this "
+            "(m/s or rad/s). Keeps the scan and the recorded truth pose from drifting apart"
+        ),
+    )
     parser.add_argument(
         "--interval", type=float, default=0.5, help="seconds between capture attempts"
     )
