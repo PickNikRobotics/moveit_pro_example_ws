@@ -43,6 +43,7 @@ from trajectory_msgs.msg import JointTrajectory
 
 sys.path.insert(0, str(Path(__file__).parents[1] / "script"))
 from so101_arm_bridge import (  # noqa: E402
+    FAKE_CENTER,
     JOINT_NAMES,
     So101ArmBridge,
     fake_positions,
@@ -237,6 +238,46 @@ def test_bridge_yields_while_a_trajectory_goal_is_active(ros_context):
     executor.shutdown()
     listener.destroy_node()
     bridge.destroy_node()
+
+
+def test_mirroring_starts_the_sine_at_the_mock_start_state(ros_context):
+    """The twin must not snap when the Mirror Objective starts.
+
+    The mock hardware sits at FAKE_CENTER until something drives it, so the
+    first point published after a not-mirroring -> mirroring transition has to
+    be that same pose however long the bridge has been up.
+    """
+    received = []
+    bridge = So101ArmBridge(source="fake")
+    listener = Node("test_mirror_start_listener")
+    listener.create_subscription(
+        JointTrajectory,
+        "/joint_trajectory_controller/joint_trajectory",
+        received.append,
+        10,
+    )
+    executor = SingleThreadedExecutor()
+    executor.add_node(bridge)
+    executor.add_node(listener)
+
+    # Age the node well past the point where an unreset sine has swung away.
+    deadline = time.monotonic() + 0.5
+    while time.monotonic() < deadline:
+        executor.spin_once(timeout_sec=0.02)
+    assert received == []
+
+    tick_mirroring(bridge)
+    deadline = time.monotonic() + 2.0
+    while time.monotonic() < deadline and not received:
+        tick_mirroring(bridge)
+        executor.spin_once(timeout_sec=0.01)
+
+    executor.shutdown()
+    listener.destroy_node()
+    bridge.destroy_node()
+
+    assert received, "mirroring should start publishing once ticked"
+    assert received[0].points[0].positions == pytest.approx(FAKE_CENTER, abs=0.1)
 
 
 def test_real_source_is_still_a_stub(ros_context):

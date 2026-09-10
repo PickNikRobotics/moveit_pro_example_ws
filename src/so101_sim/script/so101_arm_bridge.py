@@ -112,9 +112,17 @@ def order_like(names, values):
 
 
 def fake_positions(elapsed_s, period_s):
-    """A slow sine, phase-shifted per joint so the whole arm visibly moves."""
+    """A slow sine that starts every joint at FAKE_CENTER and de-phases them.
+
+    Each joint runs at a slightly different period so the whole arm visibly
+    moves rather than swinging as one rigid shape. Spreading the periods rather
+    than the starting phases keeps ``elapsed_s == 0`` equal to FAKE_CENTER,
+    which is where the mock hardware sits when mirroring begins.
+    """
     return [
-        center + amplitude * math.sin(2.0 * math.pi * elapsed_s / period_s + i * 0.7)
+        center
+        + amplitude
+        * math.sin(2.0 * math.pi * elapsed_s * (1.0 + 0.1 * i) / period_s)
         for i, (center, amplitude) in enumerate(zip(FAKE_CENTER, FAKE_AMPLITUDE))
     ]
 
@@ -122,8 +130,8 @@ def fake_positions(elapsed_s, period_s):
 class So101ArmBridge(Node):
     """Publish follower joint positions as single-point trajectories."""
 
-    def __init__(self, source="fake", parameter_overrides=None):
-        super().__init__("so101_arm_bridge", parameter_overrides=parameter_overrides)
+    def __init__(self, source="fake"):
+        super().__init__("so101_arm_bridge")
 
         self.source = source
         publish_rate_hz = self.declare_parameter("publish_rate_hz", 50.0).value
@@ -201,7 +209,10 @@ class So101ArmBridge(Node):
 
     def on_mirror_tick(self, request, response):
         del request
-        self.last_mirror_tick = self.get_clock().now()
+        now = self.get_clock().now()
+        if not self.mirroring():
+            self.start_time = now
+        self.last_mirror_tick = now
         response.success = True
         response.message = "mirroring"
         return response
