@@ -25,6 +25,7 @@ add_library(
   src/calibration_io.cpp
   src/call_empty_service.cpp
   src/localization_gates.cpp
+  src/project_pose_to_plane.cpp
   src/scan_match_residual.cpp
   src/seed_localization_at_pose.cpp
   src/register_behaviors.cpp)

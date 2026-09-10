@@ -125,11 +125,29 @@
                    buying the kidnapped-robot recovery whoever set them expected, for the same
                    reason - that is a config finding for its own ticket, not a change to make from
                    inside this Objective, and NOT something to fix by widening this gate.-->
+              <!--Both sides are flattened first, with the SAME projection SeedLocalizationAtPose
+                   applies before it publishes. The filter is 2D and only ever received x, y and
+                   yaw, so the pose that was actually seeded is the flattened one; measuring the
+                   raw pose against a planar estimate would charge the gate for whatever z, roll
+                   and pitch the pose picker returned off the click surface, and reject a good
+                   refinement with a message blaming drift.-->
+              <Action
+                ID="ProjectPoseToPlane"
+                name="Flatten the seed as the filter received it"
+                pose="{seed_pose}"
+                planar_pose="{planar_seed_pose}"
+              />
+              <Action
+                ID="ProjectPoseToPlane"
+                name="Flatten the refined pose the same way"
+                pose="{refined_pose}"
+                planar_pose="{planar_refined_pose}"
+              />
               <Action
                 ID="CalculatePoseOffset"
                 name="Measure how far the belief moved"
-                source_pose="{seed_pose}"
-                destination_pose="{refined_pose}"
+                source_pose="{planar_seed_pose}"
+                destination_pose="{planar_refined_pose}"
                 source_to_destination_pose="{seed_to_refined}"
               />
               <Control ID="Fallback" name="Within the drift limit, or say so">
@@ -280,10 +298,10 @@
       </input_port>
       <input_port name="min_inlier_fraction" default="0.8" type="double">
         Accept only if at least this fraction of scored beams fit the
-        map. Calibrated against
-        hangar_map -- see the PR body for the table. Re-measure with
-        `ros2 run hangar_sim_behaviors calibrate_scan_match_gate` after every
-        map rebuild: a
+        map. PROVISIONAL: inherited from meta_ws and not yet measured against
+        hangar_map. Measure it with
+        `ros2 run hangar_sim_behaviors calibrate_scan_match_gate`, and re-measure
+        after every map rebuild: a
         threshold measured on a different map is not a gate.
       </input_port>
       <!--Output ports need defaults: the parser treats a default-less subtree-model port as

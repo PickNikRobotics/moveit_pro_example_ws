@@ -9,6 +9,7 @@
 #include <moveit_pro_behavior_interface/shared_resources_node_loader.hpp>
 
 #include <hangar_sim_behaviors/call_empty_service.hpp>
+#include <hangar_sim_behaviors/project_pose_to_plane.hpp>
 #include <hangar_sim_behaviors/scan_match_residual.hpp>
 #include <hangar_sim_behaviors/seed_localization_at_pose.hpp>
 
@@ -23,6 +24,7 @@ public:
                          const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources) override
   {
     moveit_pro::behaviors::registerBehavior<CallEmptyService>(factory, "CallEmptyService", shared_resources);
+    moveit_pro::behaviors::registerBehavior<ProjectPoseToPlane>(factory, "ProjectPoseToPlane", shared_resources);
     moveit_pro::behaviors::registerBehavior<ScanMatchResidual>(factory, "ScanMatchResidual", shared_resources);
     moveit_pro::behaviors::registerBehavior<SeedLocalizationAtPose>(factory, "SeedLocalizationAtPose", shared_resources);
   }

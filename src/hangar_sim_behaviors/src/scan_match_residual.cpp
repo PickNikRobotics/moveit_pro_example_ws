@@ -154,12 +154,13 @@ BT::NodeStatus ScanMatchResidual::tick()
     return BT::NodeStatus::FAILURE;
   }
 
-  const bool map_changed = !field_.valid() || map_topic != cached_map_topic_ ||
-                           max_obstacle_distance != cached_max_obstacle_distance_ ||
-                           map.info.width != cached_map_info_.width || map.info.height != cached_map_info_.height ||
-                           map.info.resolution != cached_map_info_.resolution ||
-                           map.info.origin.position.x != cached_map_info_.origin.position.x ||
-                           map.info.origin.position.y != cached_map_info_.origin.position.y;
+  const bool map_changed =
+      !field_.valid() || map_topic != cached_map_topic_ ||
+      max_obstacle_distance != cached_max_obstacle_distance_ || map.info.width != cached_map_info_.width ||
+      map.info.height != cached_map_info_.height || map.info.resolution != cached_map_info_.resolution ||
+      map.info.origin.position.x != cached_map_info_.origin.position.x ||
+      map.info.origin.position.y != cached_map_info_.origin.position.y ||
+      map.info.origin.orientation != cached_map_info_.origin.orientation || map.data != cached_map_data_;
   if (map_changed)
   {
     const localization::GridInfo info{
@@ -175,6 +176,7 @@ BT::NodeStatus ScanMatchResidual::tick()
       return BT::NodeStatus::FAILURE;
     }
     cached_map_info_ = map.info;
+    cached_map_data_ = map.data;
     cached_map_topic_ = map_topic;
     cached_max_obstacle_distance_ = max_obstacle_distance;
   }

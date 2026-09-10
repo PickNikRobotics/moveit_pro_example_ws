@@ -12,8 +12,10 @@
 #include <moveit_pro_behavior_interface/shared_resources_node.hpp>
 #include <nav_msgs/msg/map_meta_data.hpp>
 
+#include <cstdint>
 #include <memory>
 #include <string>
+#include <vector>
 
 namespace hangar_sim_behaviors
 {
@@ -72,11 +74,16 @@ private:
    * @brief Cached so a repeated measurement does not redo the wavefront over a million cells.
    *
    * The map is latched and rarely changes, but it does change when a new one is deployed, so the
-   * cache is keyed on the grid's own metadata and on the truncation distance rather than assumed
-   * permanent.
+   * cache is keyed on the grid's pose and size, on the truncation distance, and on the cell data
+   * itself rather than assumed permanent. The cells have to be part of the key: a map re-saved with
+   * edited occupancy but the same geometry is byte-different where it matters and identical
+   * everywhere the metadata can see, so a metadata-only key would keep scoring against obstacles
+   * that no longer exist, with no error to notice. Comparing the cells costs one pass over the grid
+   * against the wavefront's several, and only a real change pays for the rebuild.
    */
   localization::DistanceField field_;
   nav_msgs::msg::MapMetaData cached_map_info_;
+  std::vector<std::int8_t> cached_map_data_;
   std::string cached_map_topic_;
   double cached_max_obstacle_distance_ = 0.0;
 };

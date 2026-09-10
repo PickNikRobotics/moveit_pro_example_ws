@@ -5,6 +5,7 @@
 // Proprietary and confidential.
 
 #include <hangar_sim_behaviors/localization_gates.hpp>
+#include <hangar_sim_behaviors/planar_pose.hpp>
 #include <hangar_sim_behaviors/seed_localization_at_pose.hpp>
 
 #include <fmt/format.h>
@@ -142,17 +143,11 @@ BT::NodeStatus SeedLocalizationAtPose::tick()
   geometry_msgs::msg::PoseWithCovarianceStamped seed;
   seed.header.frame_id = kMapFrame;
   seed.header.stamp = node->now();
-  seed.pose.pose.position.x = pose.pose.position.x;
-  seed.pose.pose.position.y = pose.pose.position.y;
-  seed.pose.pose.position.z = 0.0;
-
   // Project to the plane. An operator's click carries whatever roll and pitch the click surface had;
   // feeding that through would leave the filter a quaternion whose yaw is not the yaw that was meant.
-  const double yaw = tf2::getYaw(pose.pose.orientation);
-  seed.pose.pose.orientation.x = 0.0;
-  seed.pose.pose.orientation.y = 0.0;
-  seed.pose.pose.orientation.z = std::sin(yaw * 0.5);
-  seed.pose.pose.orientation.w = std::cos(yaw * 0.5);
+  // Anything that later measures against this seed must project the same way -- see ProjectPoseToPlane.
+  seed.pose.pose = localization::projectToPlane(pose.pose);
+  const double yaw = tf2::getYaw(seed.pose.pose.orientation);
 
   seed.pose.covariance[kCovarianceXX] = xy_std_dev * xy_std_dev;
   seed.pose.covariance[kCovarianceYY] = xy_std_dev * xy_std_dev;

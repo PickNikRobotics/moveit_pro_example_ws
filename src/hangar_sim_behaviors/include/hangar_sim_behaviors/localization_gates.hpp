@@ -52,14 +52,15 @@ inline constexpr std::int8_t kOccupiedValue = 100;
 /**
  * @name Acceptance contract
  *
- * Calibrated on `hangar_sim/maps/hangar_map.pgm` and this robot's merged scan. See the PR body for
- * the table. A gate whose threshold was measured on a different map is not a gate: re-measure these
+ * INHERITED FROM meta_ws and NOT yet measured against `hangar_sim/maps/hangar_map.pgm` with this
+ * robot's merged scan. A gate whose threshold was measured on a different map is not a gate, so
+ * these are provisional until `calibrate_scan_match_gate` has been run here -- and re-measure them
  * whenever the map is rebuilt.
  * @{
  */
 /// A beam is an inlier if its endpoint lands this close to an occupied cell, metres.
 inline constexpr double kInlierDistance = 0.15;
-/// Accept a refined pose only at or above this inlier fraction. CALIBRATED -- see the PR body.
+/// Accept a refined pose only at or above this inlier fraction. PROVISIONAL: inherited, not measured.
 inline constexpr double kMinInlierFraction = 0.80;
 /** @} */
 

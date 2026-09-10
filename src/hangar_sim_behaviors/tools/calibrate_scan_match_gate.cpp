@@ -99,6 +99,12 @@ std::vector<std::pair<double, double>> freePositions(const calibration::GridDump
 {
   std::vector<std::pair<double, double>> positions;
   const int step = std::max(1, static_cast<int>(std::lround(stride / grid.info.resolution)));
+  // Cell centre out of the grid's own frame and back into the map frame -- the exact inverse of the
+  // rotate-then-floor DistanceField::at does. Every map this workspace ships has origin_yaw == 0,
+  // but the two halves of this tool have to agree on the convention or the sweep stands its
+  // candidates somewhere other than the cells it says it is scoring.
+  const double cos_yaw = std::cos(grid.info.origin_yaw);
+  const double sin_yaw = std::sin(grid.info.origin_yaw);
   for (int row = 0; row < grid.info.height; row += step)
   {
     for (int column = 0; column < grid.info.width; column += step)
@@ -111,8 +117,10 @@ std::vector<std::pair<double, double>> freePositions(const calibration::GridDump
       {
         continue;
       }
-      positions.emplace_back(grid.info.origin_x + (static_cast<double>(column) + 0.5) * grid.info.resolution,
-                             grid.info.origin_y + (static_cast<double>(row) + 0.5) * grid.info.resolution);
+      const double local_x = (static_cast<double>(column) + 0.5) * grid.info.resolution;
+      const double local_y = (static_cast<double>(row) + 0.5) * grid.info.resolution;
+      positions.emplace_back(grid.info.origin_x + cos_yaw * local_x - sin_yaw * local_y,
+                             grid.info.origin_y + sin_yaw * local_x + cos_yaw * local_y);
     }
   }
   return positions;

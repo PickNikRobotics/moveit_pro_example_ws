@@ -103,12 +103,20 @@ skip_objectives = {
     # Asks the operator to click the robot's pose on the map. The localized_robot
     # fixture below seeds the filter the same way headlessly, so the rest of the suite
     # still gets the map -> odom edge this would otherwise provide.
-    #
-    # "Refine Localization In Place" is deliberately NOT skipped: it seeds from the
-    # estimate the filter already holds rather than from a click, so it runs headless
-    # and exercises the whole refinement path -- the forced-update loop, the drift
-    # gate and the fit-to-map gate -- against the seed the fixture applied.
     "Localize Robot",  # GetPoseFromUser.
+    # Runs headless (it seeds from the estimate the filter already holds, not from a
+    # click), but its pass/fail is decided by min_inlier_fraction 0.80 and
+    # inlier_distance 0.15, which are INHERITED FROM meta_ws and have NOT been measured
+    # against hangar_map. Enabling this before that calibration would let CI go red on a
+    # threshold nobody measured rather than on a regression, so it stays skipped until
+    # `ros2 run hangar_sim_behaviors calibrate_scan_match_gate` has been run on this map
+    # and the thresholds set from the result.
+    #
+    # Travelling with that same follow-up: the module-scoped localized_robot fixture
+    # below seeds the filter once and does not re-verify the estimate after each
+    # per-test MuJoCo keyframe reset teleports the robot, so re-enabling this test also
+    # needs the fixture to re-establish (or re-check) the estimate per test.
+    "Refine Localization In Place",
     "Find and Spray Plane",  # Ungated WaitForMTCSolutionApproval.
     "Solution - Find and Spray Plane",  # Ungated WaitForMTCSolutionApproval.
     "Solution - Spray Plane",  # Ungated WaitForMTCSolutionApproval.

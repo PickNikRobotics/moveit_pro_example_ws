@@ -7,8 +7,10 @@ amcl:
     # nothing downstream could tell the difference between that and a real fix.
     #
     # The "Localize Robot" Objective seeds the filter from an operator's click
-    # instead, and "Localize Robot and Refine" tightens that seed before the robot
-    # moves. Until one of them runs, AMCL publishes no map -> odom transform at all.
+    # instead, and tightens that seed in place before the robot moves. "Refine
+    # Localization In Place" runs that same refinement on its own, seeded from the
+    # estimate the filter already holds, for the bumped-robot case. Until "Localize
+    # Robot" runs, AMCL publishes no map -> odom transform at all.
     #
     # That last sentence has teeth in this workspace: map -> odom is the only link
     # between the MuJoCo scene frames (cameras under mj_world -> map) and MoveIt's
