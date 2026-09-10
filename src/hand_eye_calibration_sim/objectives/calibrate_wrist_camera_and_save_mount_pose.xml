@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Calibrate Wrist Camera and Save Mount Pose"
+>
+  <BehaviorTree
+    ID="Calibrate Wrist Camera and Save Mount Pose"
+    _description="Calibrate the wrist camera with the Calibrate Eye In Hand Camera Objective. Convert the calibrated optical frame pose into the pose of the camera's mount link and save it as a URDF origin line. Paste that line into the mount joint of your robot description."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="root">
+      <SubTree
+        ID="Calibrate Eye In Hand Camera"
+        _collapsed="true"
+        calibrated_camera_pose="{calibrated_camera_pose}"
+      />
+      <!-- Where the mount link sits relative to the optical frame in the current robot description. The camera model sets this offset. Calibration does not change it. -->
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="{camera_mount_frame}"
+        pose_stamped="{mount_pose}"
+        name="Mount link pose"
+      />
+      <Action
+        ID="TransformPoseFrame"
+        input_pose="{mount_pose}"
+        target_frame_id="{camera_optical_frame}"
+        output_pose="{mount_in_optical}"
+        name="Mount link in the current optical frame"
+      />
+      <!-- The calibrated optical frame, expressed in the current optical frame. -->
+      <Action
+        ID="TransformPoseFrame"
+        input_pose="{calibrated_camera_pose}"
+        target_frame_id="{camera_optical_frame}"
+        output_pose="{calibrated_optical_in_current}"
+        name="Calibrated optical frame in the current optical frame"
+      />
+      <!-- Move the mount link by the same correction, then express it in the parent link of the mount joint. -->
+      <Action
+        ID="TransformPoseWithPose"
+        input_pose="{mount_in_optical}"
+        transform_pose="{calibrated_optical_in_current}"
+        output_pose="{calibrated_mount_in_optical}"
+        name="Apply the calibration to the mount link"
+      />
+      <Action
+        ID="TransformPoseFrame"
+        input_pose="{calibrated_mount_in_optical}"
+        target_frame_id="{mount_parent_frame}"
+        output_pose="{calibrated_mount_pose}"
+        name="Calibrated mount link in its parent link"
+      />
+      <Action
+        ID="VisualizePose"
+        pose="{calibrated_mount_pose}"
+        marker_name="calibrated_camera_mount"
+        marker_text="camera mount"
+      />
+      <Action
+        ID="SavePoseForUrdf"
+        calibration_pose_stamped="{calibrated_mount_pose}"
+        file_name="{output_file}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Calibrate Wrist Camera and Save Mount Pose">
+      <MetadataFields>
+        <Metadata subcategory="Perception - Camera Calibration" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+      <input_port
+        name="camera_optical_frame"
+        default="wrist_mounted_camera_color_optical_frame"
+        type="std::string"
+      >
+        Optical frame of the calibrated camera in the robot description.
+      </input_port>
+      <input_port
+        name="camera_mount_frame"
+        default="wrist_mounted_camera_bottom_screw_frame"
+        type="std::string"
+      >
+        Child link of the mount joint whose origin you want to update.
+      </input_port>
+      <input_port
+        name="mount_parent_frame"
+        default="d415_mount_link"
+        type="std::string"
+      >
+        Parent link of the mount joint. The saved origin is in this link's
+        frame.
+      </input_port>
+      <input_port
+        name="output_file"
+        default="calibrated_wrist_camera_mount_pose.txt"
+        type="std::string"
+      >
+        File name for the saved URDF origin line, relative to the objectives
+        folder of the robot configuration package.
+      </input_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>
