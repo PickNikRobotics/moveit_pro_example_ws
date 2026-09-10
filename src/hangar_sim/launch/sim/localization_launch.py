@@ -82,7 +82,7 @@ def generate_launch_description():
         if not os.path.exists(map_file):
             raise RuntimeError(
                 f"Map file not found: {map_file}\n"
-                "Run SLAM first (slam:=True) to build a map, or provide a map path via map:=<path>."
+                "Build a map first: set slam to true in config.yaml urdf_params and run the Build Map Objective, or provide a map path via map:=<path>."
             )
         return []
 

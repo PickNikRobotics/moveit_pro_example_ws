@@ -50,7 +50,19 @@ from launch_ros.actions import Node
 from launch_ros.actions import PushRosNamespace
 from launch_ros.descriptions import ParameterFile
 from launch_ros.substitutions import FindPackageShare
+from moveit_studio_utils_py.system_config import SystemConfigParser
 from nav2_common.launch import RewrittenYaml, ReplaceString
+
+
+def _slam_from_config():
+    """Return config.yaml's urdf_params `slam` value, so operators switch to mapping without editing this file."""
+    urdf_params = (
+        SystemConfigParser().get_hardware_config().robot_description.urdf_params
+    )
+    for param in urdf_params:
+        if "slam" in param:
+            return str(param["slam"])
+    raise RuntimeError("config.yaml urdf_params has no 'slam'.")
 
 
 def _warn_unsupported_localization(context, *args, **kwargs):
@@ -173,7 +185,9 @@ def generate_launch_description():
     )
 
     declare_slam_cmd = DeclareLaunchArgument(
-        "slam", default_value="False", description="Whether run a SLAM"
+        "slam",
+        default_value=_slam_from_config(),
+        description="Build a map with slam_toolbox in place of beluga_amcl. Defaults to config.yaml's urdf_params slam.",
     )
 
     declare_localization_cmd = DeclareLaunchArgument(
