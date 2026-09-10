@@ -11,14 +11,17 @@ amcl:
     # Localization In Place" runs that same refinement on its own, seeded from the
     # estimate the filter already holds, for the bumped-robot case.
     #
-    # What runs here is beluga_amcl, not nav2_amcl, and it does NOT withhold the
-    # transform until seeded the way nav2_amcl does. beluga global-initialises on
-    # map receipt -- it carries both the "about initial pose" and the "distributed
-    # across the map" initialisation paths -- and with tf_broadcast true it
-    # broadcasts map -> odom from that unconverged uniform cloud. So the edge is
-    # present from startup and is not evidence of anything: it is the mean of
-    # particles spread over every free cell, and it means nothing until a seed has
-    # been consumed.
+    # Until one of those runs, beluga publishes NOTHING -- no /amcl_pose, and no
+    # map -> odom transform at all. Measured in simulation rather than inferred:
+    # with this setting the node reports lifecycle state ACTIVE, consumes 356
+    # /scan_merged messages, and still emits zero /amcl_pose while map -> odom
+    # raises ConnectivityException. Publishing a seed makes the edge appear at once.
+    #
+    # beluga's binary does carry a "distributed across the map" initialisation
+    # string, which reads like it global-initialises and broadcasts from an
+    # unconverged cloud. It does not do that here. Reading the strings gave the
+    # opposite answer to running it, which is worth remembering before trusting a
+    # symbol dump about startup behaviour.
     #
     # That distinction has teeth in this workspace: map -> odom is the only link
     # between the MuJoCo scene frames (cameras under mj_world -> map) and MoveIt's

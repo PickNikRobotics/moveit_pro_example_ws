@@ -52,16 +52,29 @@ inline constexpr std::int8_t kOccupiedValue = 100;
 /**
  * @name Acceptance contract
  *
- * INHERITED FROM meta_ws and NOT yet measured against `hangar_sim/maps/hangar_map.pgm` with this
- * robot's merged scan. A gate whose threshold was measured on a different map is not a gate, so
- * these are provisional until `calibrate_scan_match_gate` has been run here -- and re-measure them
- * whenever the map is rebuilt.
+ * MEASURED on hangar_map with this robot's merged scan, using this same scoring code against the
+ * grid map_server actually publishes: the true pose scores 87.0%, a pose 0.10 m / 1 deg off scores
+ * 69.6%, and the strongest alias found anywhere on the map scores 34.8%. That is a 52-point
+ * separation, against the ~21 points meta_ws measured on theirs.
+ *
+ * Two things about that measurement are worth carrying. Only 23 of the 60 selected beams survive
+ * the range filters on this robot, so the fraction moves in steps of about 4.3 points -- the gate
+ * is coarse here in a way it was not on meta_ws's denser scan. And every sample came from ONE
+ * stationary pose, so "the true pose" is the only true pose measured; a driven multi-pose campaign
+ * is still owed. Re-measure with `calibrate_scan_match_gate` whenever the map is rebuilt.
  * @{
  */
 /// A beam is an inlier if its endpoint lands this close to an occupied cell, metres.
 inline constexpr double kInlierDistance = 0.15;
-/// Accept a refined pose only at or above this inlier fraction. PROVISIONAL: inherited, not measured.
-inline constexpr double kMinInlierFraction = 0.80;
+/**
+ * @brief Accept a refined pose only at or above this inlier fraction.
+ *
+ * 0.60, not the 0.80 meta_ws uses. 0.80 sits only 7 points under the true pose here AND above the
+ * 69.6% a 0.10 m error scores, while the refinement itself returns about 6.5 cm -- so 0.80 would
+ * reject the refinements this loop legitimately produces. 0.60 still clears the strongest alias on
+ * the map by 25 points.
+ */
+inline constexpr double kMinInlierFraction = 0.60;
 /** @} */
 
 /**

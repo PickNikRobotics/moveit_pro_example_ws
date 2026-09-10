@@ -10,13 +10,16 @@
       <!--AMCL runs with set_initial_pose: false, because in production a robot does not power on
            at a known pose. This Objective is what gives the filter its first real pose.
 
-           This config runs beluga_amcl, NOT nav2_amcl, and the two differ here in a way that
-           matters below. beluga global-initialises on map receipt - it carries both the "about
-           initial pose" and the "distributed across the map" initialisation paths - and with
-           tf_broadcast true it DOES broadcast map -> odom from that unconverged uniform cloud. So
-           the edge exists from startup. It is not a measurement: it is the mean of particles
-           spread over every free cell of the map, and on hangar_map that mean sits tens of metres
-           from the robot. The edge only starts meaning something once a seed has been consumed.-->
+           Until it runs, beluga publishes NOTHING: no /amcl_pose, and no map -> odom transform
+           at all. Measured in simulation, not inferred - with set_initial_pose false the node
+           reports lifecycle state ACTIVE, consumes 356 /scan_merged messages, and still emits
+           zero /amcl_pose while map -> odom raises ConnectivityException. Seeding it makes the
+           edge appear immediately.
+
+           Do not be misled by beluga carrying a "distributed across the map" initialisation
+           string in its binary: that path is NOT taken with this configuration. Reading the
+           strings suggested beluga global-initialises and broadcasts from an unconverged cloud,
+           and running it showed the opposite. That trap is why the relabel below exists.-->
       <Action
         ID="GetPoseFromUser"
         name="Ask the operator where the robot is"
