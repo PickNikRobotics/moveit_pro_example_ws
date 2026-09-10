@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Request Teleoperation">
+  <!-- Overrides core's Request Teleoperation (same precedent as hangar_sim's own copy). The Husky
+       A300 has no arm, so none of core's teleoperation branches apply: no joint or Cartesian jog,
+       no waypoint, interactive-marker or joint-slider moves, no gripper. Those branches are also
+       what pulls the objectives/motion library in, which this config deliberately does not load.
+       Only the UI handshake remains, so `Teleoperate` still builds and runs on this robot. -->
+  <BehaviorTree
+    ID="Request Teleoperation"
+    _description="Teleoperation handshake with the web UI for an armless mobile base: none of the arm teleoperation modes apply, so this tree drives nothing. Used as a subtree by Teleoperate."
+    _favorite="false"
+    _hardcoded="false"
+  >
+    <Action
+      ID="DoTeleoperateAction"
+      enable_user_interaction="{enable_user_interaction}"
+      user_interaction_prompt="{user_interaction_prompt}"
+      initial_teleop_mode="{initial_teleop_mode}"
+      require_user_approval="{require_user_approval}"
+    />
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Request Teleoperation">
+      <MetadataFields>
+        <Metadata subcategory="User Input" />
+        <Metadata runnable="false" />
+      </MetadataFields>
+      <input_port name="enable_user_interaction" default="false" type="bool">
+        Enable interactive user prompts during teleoperation mode selection
+      </input_port>
+      <input_port
+        name="user_interaction_prompt"
+        default="Press Abort to return FAILURE, Continue for SUCCESS"
+        type="std::string"
+      />
+      <input_port name="initial_teleop_mode" default="3" type="int" />
+      <input_port name="require_user_approval" default="true" type="bool">
+        Whether trajectory previews from Interactive Marker teleop must be
+        approved before execution. Set to false to skip the approval prompt.
+      </input_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>

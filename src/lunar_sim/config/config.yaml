@@ -108,10 +108,16 @@ objectives:
       - "lunar_sim_behaviors::LunarSimBehaviorsLoader"
   # Specify source folder for objectives
   # [Required]
+  # core + mujoco only: objectives/motion is arm planning and this robot has no arm. core's
+  # Request Teleoperation would pull motion subtrees in, so objectives/request_teleoperation.xml
+  # overrides it with an arm-free version (same precedent as hangar_sim).
   objective_library_paths:
     core_objectives:
       package_name: "moveit_pro_objectives"
       relative_path: "objectives/core"
+    mujoco_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/mujoco"
     lunar_sim_objectives:
       package_name: "lunar_sim"
       relative_path: "objectives"

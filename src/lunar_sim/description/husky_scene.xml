@@ -167,8 +167,8 @@
        generate_terrain.py's own rock-free keepout box.
        Dead Reckon Square itself stays open-loop with no reset of its own (the captain's call - a
        reset belongs to the operator, not baked into the drive objective); this key exists so the
-       MoveIt Pro UI's own sim-reset control and the "Reset Simulation" objective
-       (objectives/reset_simulation.xml) can put the base back here on request. qpos is
+       MoveIt Pro UI's own sim-reset control and the stock "Reset MuJoCo Sim" objective
+       (moveit_pro_objectives' objectives/mujoco library) can put the base back here on request. qpos is
        [x y z qw qx qy qz] for
        chassis_link's freejoint, then one value per wheel joint in husky_a300.xml's include order
        (front_left, front_right, rear_left, rear_right) - 7 + 4 = 11 values total, matching this
