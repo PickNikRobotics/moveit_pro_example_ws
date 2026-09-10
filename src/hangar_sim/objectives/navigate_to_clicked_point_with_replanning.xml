@@ -28,11 +28,19 @@
            correct, because it cannot navigate without knowing where it is.-->
       <Control ID="Fallback" name="Re-seed from the current estimate, or localize first">
         <Action ID="SetInitialPose" robot_frame_id="ridgeback_base_link" />
-        <!--Gated on a UI actually being attached. IsUserAvailable checks for the /trajectory_bridge
-             node and returns FAILURE when there is none, so this branch is skipped in under a
-             second on a headless run rather than blocking on the marker prompt inside Localize
-             Robot until the objective timeout expires. With an operator present the branch runs
-             and localizes in place, which is the whole point of it.-->
+        <!--Gated on a UI actually being attached. Note what IsUserAvailable actually tests: it
+             asks whether anything SUBSCRIBES to /failure_reason_collector, and returns FAILURE
+             when nothing does. Its own class docstring still says it looks for a
+             /trajectory_bridge node; that is stale, and believing it would send someone grepping
+             for a node that never existed here. So the headless fast-fail rests specifically on
+             nothing subscribing to /failure_reason_collector, which is checkable at runtime and
+             was checked: on the running headless simulator that topic had 0 subscribers and 1
+             publisher, and no trajectory_bridge node existed at all.
+
+             The effect is that this branch is skipped in under a second on a headless run rather
+             than blocking on the marker prompt inside Localize Robot until the objective timeout
+             expires. With an operator present the branch runs and localizes in place, which is
+             the whole point of it.-->
         <Control ID="Sequence" name="An operator is here, so localize before navigating">
           <Action ID="IsUserAvailable" />
           <Action
@@ -42,7 +50,16 @@
           />
           <SubTree ID="Localize Robot" />
         </Control>
-        <Control ID="Sequence" name="Unseeded, and nobody to ask">
+        <!--This branch is reached on ANY failure of the one above, including one that happened
+             long after the operator answered the marker, so it re-tests the condition rather than
+             assuming it. Without the Inverter, an operator whose Localize Robot run was rejected
+             by the fit-to-map gate would be told "no user interface is attached" seconds after
+             placing a marker, with the gate's real message buried above it. With it, that case
+             fails here immediately and the last thing logged is the gate's own accurate reason.-->
+        <Control ID="Sequence" name="Unseeded, and genuinely nobody to ask">
+          <Decorator ID="Inverter" name="Only when no UI is attached">
+            <Action ID="IsUserAvailable" />
+          </Decorator>
           <Action
             ID="LogMessage"
             log_level="error"

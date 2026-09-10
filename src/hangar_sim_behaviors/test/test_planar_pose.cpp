@@ -34,13 +34,22 @@ geometry_msgs::msg::Pose makePose(double x, double y, double z, double roll, dou
 /// x, y and yaw survive; the axes the 2D filter never received do not.
 namespace
 {
-/// Yaw read back independently of the code under test, so a bug in yawOf cannot hide itself here.
-/// Deliberately not tf2::getYaw: that resolves through an inline in tf2_geometry_msgs.hpp rather
-/// than tf2/utils.hpp, so whether it links depends on include order in a repository that sorts
-/// includes, and the failure lands on whatever links the library rather than here.
-double readBackYaw(const geometry_msgs::msg::Quaternion& q)
+/**
+ * @brief Assert a flattened quaternion is exactly the rotation of @p yaw about z.
+ *
+ * No yaw is EXTRACTED here, deliberately. An earlier version of this file read the yaw back with
+ * the same atan2 expression yawOf uses, so a sign or transposed term would have been duplicated on
+ * both sides and every comparison would still have passed. Instead the input pose is built from a
+ * yaw this test chose, and the output is checked against sin(yaw/2) and cos(yaw/2) computed from
+ * that same known value -- the closed form projectToPlane is required to produce. The checking side
+ * therefore shares no code with the code under test.
+ */
+void expectPlanarYaw(const geometry_msgs::msg::Quaternion& q, double yaw)
 {
-  return std::atan2(2.0 * (q.w * q.z + q.x * q.y), 1.0 - 2.0 * (q.y * q.y + q.z * q.z));
+  EXPECT_DOUBLE_EQ(q.x, 0.0);
+  EXPECT_DOUBLE_EQ(q.y, 0.0);
+  EXPECT_NEAR(q.z, std::sin(yaw * 0.5), 1e-9);
+  EXPECT_NEAR(q.w, std::cos(yaw * 0.5), 1e-9);
 }
 }  // namespace
 
@@ -51,9 +60,7 @@ TEST(PlanarPose, KeepsPlanarComponentsAndDropsTheRest)
   EXPECT_DOUBLE_EQ(planar.position.x, 1.25);
   EXPECT_DOUBLE_EQ(planar.position.y, -3.5);
   EXPECT_DOUBLE_EQ(planar.position.z, 0.0);
-  EXPECT_DOUBLE_EQ(planar.orientation.x, 0.0);
-  EXPECT_DOUBLE_EQ(planar.orientation.y, 0.0);
-  EXPECT_NEAR(readBackYaw(planar.orientation), 0.7, 1e-9);
+  expectPlanarYaw(planar.orientation, 0.7);
 }
 
 /// Flattening twice changes nothing, so a pose that is already planar is passed through untouched.
@@ -65,7 +72,11 @@ TEST(PlanarPose, IsIdempotent)
   EXPECT_DOUBLE_EQ(twice.position.x, once.position.x);
   EXPECT_DOUBLE_EQ(twice.position.y, once.position.y);
   EXPECT_DOUBLE_EQ(twice.position.z, once.position.z);
-  EXPECT_NEAR(readBackYaw(twice.orientation), readBackYaw(once.orientation), 1e-12);
+  // -1.3 is the yaw makePose was given, so both passes are checked against the same known value
+  // rather than against each other -- a second pass that quietly rotated the pose would have to
+  // land back on that exact closed form to escape.
+  expectPlanarYaw(once.orientation, -1.3);
+  expectPlanarYaw(twice.orientation, -1.3);
 }
 
 /**
@@ -83,7 +94,9 @@ TEST(PlanarPose, TiltAndHeightDoNotSurviveIntoTheComparison)
       hangar_sim_behaviors::localization::projectToPlane(makePose(5.0, 6.0, 0.0, 0.0, 0.0, 0.35));
 
   EXPECT_DOUBLE_EQ(clicked_on_a_tilted_face.position.z, filter_estimate.position.z);
-  EXPECT_NEAR(readBackYaw(clicked_on_a_tilted_face.orientation), readBackYaw(filter_estimate.orientation), 1e-9);
+  // Both flatten to the yaw makePose was given, 0.35, whatever roll, pitch and height they carried.
+  expectPlanarYaw(clicked_on_a_tilted_face.orientation, 0.35);
+  expectPlanarYaw(filter_estimate.orientation, 0.35);
   EXPECT_NEAR(clicked_on_a_tilted_face.orientation.x, filter_estimate.orientation.x, 1e-12);
   EXPECT_NEAR(clicked_on_a_tilted_face.orientation.y, filter_estimate.orientation.y, 1e-12);
   EXPECT_NEAR(clicked_on_a_tilted_face.orientation.z, filter_estimate.orientation.z, 1e-12);

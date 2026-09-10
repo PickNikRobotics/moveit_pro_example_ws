@@ -48,11 +48,20 @@ amcl:
     # second branch logs why and runs the "Localize Robot" subtree inline, so the
     # run stops for the marker once and then continues on its own; it does not fail,
     # and it does not send the operator to a different Objective. HEADLESS, the
-    # second branch is skipped -- it is gated on IsUserAvailable, which reports no
-    # /trajectory_bridge -- and the third branch logs that the filter is unseeded
-    # with no UI to prompt, then fails. That keeps a headless run from blocking on a
-    # marker nobody can answer, which matters because "Refine Localization In Place"
-    # is the one Objective of this feature the integration suite executes.
+    # second branch is skipped and the third logs that the filter is unseeded with no
+    # UI to prompt, then fails. That keeps a headless run from blocking on a marker
+    # nobody can answer, which matters because "Refine Localization In Place" is the
+    # one Objective of this feature the integration suite executes.
+    #
+    # Both of those branches turn on IsUserAvailable, and it is worth knowing what
+    # that Behavior actually tests: whether anything SUBSCRIBES to
+    # /failure_reason_collector. Its class docstring still claims it looks for a
+    # /trajectory_bridge node, which is stale. So the headless fast-fail rests on
+    # nothing subscribing to /failure_reason_collector -- checkable at runtime, and
+    # checked: on the running headless simulator that topic had 0 subscribers and 1
+    # publisher, and no trajectory_bridge node existed at all. The third branch
+    # re-tests the same condition through an Inverter, so a failure that happens
+    # after an operator really did answer the marker is not mislabelled as "no UI".
     #
     # Either way the operator order is "Localize Robot", then navigate -- the same
     # order hardware needs.
