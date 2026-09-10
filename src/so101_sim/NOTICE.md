@@ -2,11 +2,14 @@
 
 ## Robot description meshes
 
-The SO-101 arm and camera-mount STL files under `description/assets/` are
-vendored from a third party under the Apache License 2.0. Their provenance,
-upstream commit and the list of files are recorded in
-[`description/assets/NOTICE.md`](description/assets/NOTICE.md), and the license
-text is `description/assets/LICENSE`.
+The STL files under `description/assets/` are vendored from two unrelated third
+parties, both under the Apache License 2.0: the SO-101 arm and camera-mount
+meshes from [`danwahl/vla-test`](https://github.com/danwahl/vla-test), and the
+soft fin-ray gripper meshes from
+[`Vector-Wangel/XLeRobot`](https://github.com/Vector-Wangel/XLeRobot). Their
+provenance, upstream commits and the list of files are recorded in
+[`description/assets/NOTICE.md`](description/assets/NOTICE.md);
+`description/assets/LICENSE` is the license text as carried by `vla-test`.
 
 ## MoveIt-layer configuration
 
