@@ -31,13 +31,15 @@ import os
 from ament_index_python.packages import get_package_share_directory
 
 from launch import LaunchDescription
+import launch.logging
 from launch.actions import (
     DeclareLaunchArgument,
     GroupAction,
     IncludeLaunchDescription,
+    OpaqueFunction,
     SetEnvironmentVariable,
 )
-from launch.conditions import IfCondition
+from launch.conditions import IfCondition, UnlessCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import (
     LaunchConfiguration,
@@ -67,6 +69,47 @@ def _urdf_param(name, default):
         if name in param:
             return param[name]
     return default
+
+
+def _warn_unsupported_localization(context, *args, **kwargs):
+    """Warn on the one unsupported point in the slam x use_fuse x localization cube.
+
+    Ownership of map -> odom, and of odom -> world, across the three flags:
+
+      slam  use_fuse  localization | map -> odom      odom -> world       verdict
+      ------------------------------------------------------------------------------
+      true  *         *            | slam_toolbox     static / drift      supported
+      false false     true         | beluga AMCL      static identity     supported (no drift
+                                   |                                      to correct: odom == world)
+      false false     false        | static identity  static identity     supported (pure truth)
+      false true      true         | beluga AMCL      odom_world_drift    supported -- the target
+      false true      false        | static identity  odom_world_drift    UNSUPPORTED
+
+    The last row is the hole: odom_world_drift injects fuse's estimate error into odom -> base and
+    nothing is left to correct it, so the robot's pose in the map free-runs away from the truth
+    while every node reports healthy. launch has no LogWarn action, so evaluate the combination
+    here and log at WARNING via an OpaqueFunction -- LogInfo would blend into normal launch output
+    and defeat the point.
+
+    (PR #790 warned on a different row, use_fuse:=false + localization:=true, because its
+    amcl_odom_gate was the sole map -> odom publisher and only launched with fuse. There is no gate
+    here and amcl.tf_broadcast stays true, so beluga always publishes its own correction and that
+    row is fine.)
+    """
+    if (
+        LaunchConfiguration("slam").perform(context).lower() == "false"
+        and LaunchConfiguration("use_fuse").perform(context).lower() == "true"
+        and LaunchConfiguration("localization").perform(context).lower() == "false"
+    ):
+        launch.logging.get_logger("hangar_sim").warning(
+            "UNSUPPORTED: use_fuse:=true with localization:=false and slam:=false -- "
+            "odom_world_drift makes odom -> ridgeback_base_link resolve to fuse's estimate, but "
+            "map -> odom is a static identity, so nothing corrects the estimate's drift and the "
+            "robot's pose in the map free-runs. Use localization:=true (default) to let "
+            "beluga_amcl correct it, slam:=true to let slam_toolbox correct it, or use_fuse:=false "
+            "for the intentional ground-truth fallback."
+        )
+    return []
 
 
 def generate_launch_description():
@@ -207,8 +250,12 @@ def generate_launch_description():
 
     declare_use_fuse_cmd = DeclareLaunchArgument(
         "use_fuse",
-        default_value="false",
-        description="Whether to launch the fuse state estimator",
+        default_value="true",
+        description=(
+            "Launch the fuse state estimator and the odom_world_drift publisher, so navigation "
+            "runs on the estimated base pose. Set false to fall back to the simulator's ground "
+            "truth (odom -> world becomes a static identity)."
+        ),
     )
 
     # Specify the actions
@@ -307,6 +354,11 @@ def generate_launch_description():
     )
 
     # Static map->odom TF fallback: only used when neither SLAM nor AMCL is publishing it.
+    # Unaffected by use_fuse -- amcl.tf_broadcast stays true, so beluga publishes its own
+    # correction whenever localization is on, with or without fuse. (This is where PR #790's
+    # topology differed: its amcl_odom_gate was the sole map->odom publisher and only launched
+    # with fuse, which forced this condition to depend on use_fuse too. No gate here.)
+    # See _warn_unsupported_localization for the full ownership matrix.
     # Compare lowercased strings rather than `not <bareword>` so this still works
     # when slam/localization are passed as ROS-style lowercase booleans.
     static_tf_map_to_odom = Node(
@@ -337,12 +389,35 @@ def generate_launch_description():
     # MuJoCo broadcast a competing odom->ridgeback_base_link TF — removed in this
     # change.) The UI (pose-utils.ts) hardcodes 'world' for user-clicked poses, so
     # this link also keeps nav2 goals transformable to 'map'.
+    #
+    # Identity only while fuse is off, when odom and world genuinely coincide. With use_fuse:=true
+    # odom_world_drift below owns this edge instead and makes it live, so that odom -> base
+    # resolves to fuse's estimate while world -> base stays MuJoCo truth.
     static_tf_odom_to_world = Node(
+        condition=UnlessCondition(LaunchConfiguration("use_fuse")),
         package="tf2_ros",
         executable="static_transform_publisher",
         name="static_tf_odom_to_world",
         output="log",
         arguments=["0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "odom", "world"],
+    )
+
+    # The live odom -> world edge that replaces the identity above when fuse is on: every cycle it
+    # reads fuse's estimate off /odom_filtered and MuJoCo's ground truth off /odom and publishes
+    # the difference. That is the whole node -- see src/odom_world_drift.cpp for why it cannot be
+    # configuration. use_sim_time is passed through for the same reason every other node here gets
+    # it; the launch default is false, and this node's 50 Hz tick runs on whichever clock results.
+    odom_world_drift = Node(
+        condition=IfCondition(LaunchConfiguration("use_fuse")),
+        package="hangar_sim",
+        executable="odom_world_drift",
+        name="odom_world_drift",
+        # "both": its stale-estimate warning is operator-facing signal, and log-only would route it
+        # to ~/.ros/log/ on the container filesystem, where post-mortem never finds it.
+        output="both",
+        respawn=LaunchConfiguration("use_respawn"),
+        respawn_delay=2.0,
+        parameters=[{"use_sim_time": use_sim_time}],
     )
 
     # QoS relay to bridge BEST_EFFORT odom and IMU to RELIABLE for fuse
@@ -483,11 +558,21 @@ def generate_launch_description():
         package="fuse_optimizers",
         executable="fixed_lag_smoother_node",
         name="state_estimator",
+        respawn=LaunchConfiguration("use_respawn"),
+        respawn_delay=2.0,
         parameters=[
-            PathJoinSubstitution([hangar_sim_pkg, "config", "fuse", "fuse.yaml"])
+            PathJoinSubstitution([hangar_sim_pkg, "config", "fuse", "fuse.yaml"]),
+            {"use_sim_time": use_sim_time},
         ],
         output="screen",
         condition=IfCondition(LaunchConfiguration("use_fuse")),
+    )
+
+    # Loud guard for the one unsupported corner of the slam x use_fuse x localization cube --
+    # fuse's estimate driving odom -> base with nothing publishing a correction for it. The
+    # docstring carries the full matrix.
+    warn_unsupported_localization = OpaqueFunction(
+        function=_warn_unsupported_localization
     )
 
     # Create the launch description and populate
@@ -520,7 +605,9 @@ def generate_launch_description():
 
     ld.add_action(static_tf_world_to_map)
     ld.add_action(static_tf_odom_to_world)
+    ld.add_action(odom_world_drift)
     ld.add_action(static_tf_map_to_odom)
+    ld.add_action(warn_unsupported_localization)
     ld.add_action(sensor_qos_relay)
     if enable_vo:
         ld.add_action(forward_stereo_publisher)

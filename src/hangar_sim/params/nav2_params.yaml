@@ -55,7 +55,10 @@ bt_navigator:
     use_sim_time: True
     global_frame: map
     robot_base_frame: ridgeback_base_link
-    odom_topic: /odom
+    # fuse's estimate, not MuJoCo's ground-truth /odom. With use_fuse:=true (the default) the
+    # whole navigation stack has to read the same estimate the TF tree resolves odom -> base to,
+    # or the BT's velocity checks disagree with where the controller thinks the robot is.
+    odom_topic: /odom_filtered
     bt_loop_duration: 10
     default_server_timeout: 20
     wait_for_service_timeout: 1000
@@ -81,6 +84,10 @@ bt_navigator_navigate_to_pose_rclcpp_node:
 controller_server:
   ros__parameters:
     use_sim_time: True
+    # Not inherited from bt_navigator: without this key controller_server falls through to nav2's
+    # own "odom" default, and it is what MPPI seeds each rollout from. (velocity_smoother has an
+    # odom_topic too, but that block runs feedback: "OPEN_LOOP" and never reads it.)
+    odom_topic: /odom_filtered
     controller_frequency: 20.0
     min_x_velocity_threshold: 0.001
     min_y_velocity_threshold: 0.5
