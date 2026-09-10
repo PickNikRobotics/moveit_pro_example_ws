@@ -103,12 +103,28 @@
 
               <!--Gate 1, the drift limit. This is NOT a correctness test. It bounds how far this
                    Objective may move the robot's belief from where the operator pointed without
-                   asking again. It matters more here than it did on meta_ws: hangar_sim runs with
-                   recovery_alpha_slow/fast non-zero, so beluga MAY inject particles drawn uniformly
-                   over the whole map during the loop. The 4-sigma bound the seed would otherwise
-                   guarantee is therefore not structural here, and this limit is what enforces it.
-                   See the PR body; zeroing the recovery alphas is the better fix and belongs in
-                   nav2_params.yaml's amcl block, not here.-->
+                   asking again.
+
+                   It is a backstop, not the thing that makes the refinement bounded. Unlike
+                   meta_ws, hangar_sim leaves recovery_alpha_slow/fast non-zero, and beluga's
+                   injected particles are drawn uniformly over EVERY free cell of the map with a
+                   uniform heading - so if injection fired inside this loop it would draw over the
+                   whole map and the seed's ~4 sigma bound would be gone.
+
+                   Traced through beluga, it does not fire here. amcl_core runs
+                   `normalize` immediately before the recovery estimator, and normalize divides by
+                   the total weight, so the estimator's input is exactly 1/N every update. It
+                   therefore measures how the particle COUNT is moving, not how well the scan fits.
+                   A converging in-place refinement only depletes the set, N falls, 1/N rises, the
+                   fast average leads the slow one, and `1 - fast/slow` clamps to zero. Injection
+                   needs N to GROW, which is the opposite of converging.
+
+                   Two consequences worth keeping in view. This gate still earns its place, because
+                   the argument above is about the usual case and a transient N increase right
+                   after a bad seed can still inject. And separately: those alphas are probably not
+                   buying the kidnapped-robot recovery whoever set them expected, for the same
+                   reason - that is a config finding for its own ticket, not a change to make from
+                   inside this Objective, and NOT something to fix by widening this gate.-->
               <Action
                 ID="CalculatePoseOffset"
                 name="Measure how far the belief moved"
@@ -138,7 +154,7 @@
               </Control>
 
               <!--Gate 2, the acceptance test: does this pose actually explain the live scan against
-                   the map? This is the gate, because it measures something confidence cannot -- fit
+                   the map? This is the gate, because it measures something confidence cannot: fit
                    to the map rather than how far the particle set has collapsed. Do NOT replace it
                    with a covariance threshold: covariance falls as the particle set depletes, so it
                    shrinks whether the surviving pose is right or wrong.
