@@ -90,6 +90,8 @@ def test_fake_positions_stay_inside_the_urdf_limits():
     period = 12.0
     moved = [False] * len(JOINT_NAMES)
     first = fake_positions(0.0, period)
+    # The mock hardware starts at FAKE_CENTER, so the sine has to as well.
+    assert first == pytest.approx(FAKE_CENTER)
     for step in range(241):
         positions = fake_positions(step * period / 240.0, period)
         for index, name in enumerate(JOINT_NAMES):
@@ -244,8 +246,8 @@ def test_mirroring_starts_the_sine_at_the_mock_start_state(ros_context):
     """The twin must not snap when the Mirror Objective starts.
 
     The mock hardware sits at FAKE_CENTER until something drives it, so the
-    first point published after a not-mirroring -> mirroring transition has to
-    be that same pose however long the bridge has been up.
+    first point published after the first ever mirror start has to be that same
+    pose however long the bridge has been up before it.
     """
     received = []
     bridge = So101ArmBridge(source="fake")
@@ -260,8 +262,9 @@ def test_mirroring_starts_the_sine_at_the_mock_start_state(ros_context):
     executor.add_node(bridge)
     executor.add_node(listener)
 
-    # Age the node well past the point where an unreset sine has swung away.
-    deadline = time.monotonic() + 0.5
+    # Age the node up to where an unpinned sine sits near its peak, so a
+    # missing reset misses FAKE_CENTER by far more than the tolerance below.
+    deadline = time.monotonic() + 3.0
     while time.monotonic() < deadline:
         executor.spin_once(timeout_sec=0.02)
     assert received == []

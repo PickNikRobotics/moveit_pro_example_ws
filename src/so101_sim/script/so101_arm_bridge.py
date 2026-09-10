@@ -112,17 +112,21 @@ def order_like(names, values):
 
 
 def fake_positions(elapsed_s, period_s):
-    """A slow sine that starts every joint at FAKE_CENTER and de-phases them.
+    """A slow sine, phase-shifted per joint so the whole arm visibly moves.
 
-    Each joint runs at a slightly different period so the whole arm visibly
-    moves rather than swinging as one rigid shape. Spreading the periods rather
-    than the starting phases keeps ``elapsed_s == 0`` equal to FAKE_CENTER,
-    which is where the mock hardware sits when mirroring begins.
+    Every joint shares one period, so the motion is a single closed curve that
+    one period of sampling covers completely. Each joint's constant phase term
+    is subtracted, which puts ``elapsed_s == 0`` exactly at FAKE_CENTER, where
+    the mock hardware sits before anything drives it, and shifts that joint's
+    envelope by ``-amplitude * sin(phase)``.
     """
     return [
         center
         + amplitude
-        * math.sin(2.0 * math.pi * elapsed_s * (1.0 + 0.1 * i) / period_s)
+        * (
+            math.sin(2.0 * math.pi * elapsed_s / period_s + i * 0.7)
+            - math.sin(i * 0.7)
+        )
         for i, (center, amplitude) in enumerate(zip(FAKE_CENTER, FAKE_AMPLITUDE))
     ]
 
@@ -174,6 +178,10 @@ class So101ArmBridge(Node):
         self.last_mirror_tick = None
         self.create_service(Trigger, "~/mirror", self.on_mirror_tick)
         self.start_time = self.get_clock().now()
+        # The sine's phase is pinned to FAKE_CENTER once, for the first Mirror
+        # start. Later restarts continue from wall clock: the twin is then
+        # holding wherever the sine left it, and rewinding would snap it back.
+        self.sine_phase_pinned = False
         self.timer = self.create_timer(1.0 / publish_rate_hz, self.publish_once)
         self.get_logger().info(
             f"so101_arm_bridge ready to publish {self.source} joint states to "
@@ -210,8 +218,9 @@ class So101ArmBridge(Node):
     def on_mirror_tick(self, request, response):
         del request
         now = self.get_clock().now()
-        if not self.mirroring():
+        if not self.sine_phase_pinned:
             self.start_time = now
+            self.sine_phase_pinned = True
         self.last_mirror_tick = now
         response.success = True
         response.message = "mirroring"
