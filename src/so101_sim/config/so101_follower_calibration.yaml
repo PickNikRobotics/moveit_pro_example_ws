@@ -1,0 +1,39 @@
+# Feetech STS3215 bus identity and zero for the SO-101 *follower* arm.
+#
+# Read by description/so101.urdf.xacro when hardware_interface:=real, and
+# ignored on mock. Point the `calibration_file` xacro arg at a copy of this
+# file to run a second arm without editing the config package.
+#
+# id      Servo ID on the bus, 1-253. The LeRobot SO-101 convention is 1..6
+#         from the base outward; `scripts/so101/setup_motors.py` in the
+#         end-to-end repo writes them in that order.
+# offset  Raw encoder tick (0-4095, 4096 ticks per revolution) that the driver
+#         reports as 0 rad, and adds back to every position command. 2048 is a
+#         servo whose EEPROM homing offset has already been calibrated so that
+#         its mechanical zero reads mid-scale, which is what LeRobot
+#         calibration produces. Substitute the per-motor `homing_offset` from
+#         a LeRobot calibration only if you skipped writing it to EEPROM:
+#         offset = 2048 + homing_offset.
+#
+# There is no per-joint sign here because feetech_ros2_driver 0.2.2 has no sign
+# knob; see the "No per-joint sign" bullet under "Known gaps in the driver" in
+# the README.
+joints:
+  shoulder_pan:
+    id: 1
+    offset: 2048
+  shoulder_lift:
+    id: 2
+    offset: 2048
+  elbow_flex:
+    id: 3
+    offset: 2048
+  wrist_flex:
+    id: 4
+    offset: 2048
+  wrist_roll:
+    id: 5
+    offset: 2048
+  gripper:
+    id: 6
+    offset: 2048

@@ -67,9 +67,55 @@ The user image tag is `moveit-pro-<svc>:<version>-<distro>-${MOVEIT_HOST_USER_WO
 and that variable defaults to the workspace directory's basename. Every worktree
 of this repo shares that basename, so a plain `moveit_pro build` from a worktree
 overwrites the images built from the primary checkout. Set
-`MOVEIT_HOST_USER_WORKSPACE_NAME` to something unique for the worktree, and pass
-`-w "$PWD"` to `build` and `run`, which also keeps the CLI from repointing the
-user's global config at the worktree.
+`MOVEIT_HOST_USER_WORKSPACE_NAME` to something unique for the worktree.
+
+That value becomes a Docker image tag, so it has to be tag-safe: match
+`[\w][\w.-]{0,127}` — letters, digits, underscore, then more of those plus `.`
+and `-`. In particular **no slashes**, so a branch name like
+`fm/captain-so101` cannot be used verbatim; flatten it (`fm-captain-so101`).
+An unsafe value fails at `docker build` with an invalid-reference error rather
+than at the CLI, which is a confusing place to learn it.
+
+`-w "$PWD"` is not enough on its own to make the build read *this* worktree. The
+docker build context comes from `MOVEIT_HOST_USER_WORKSPACE` in
+`~/.config/moveit_pro/moveit_pro_config.9.yaml`, which still points wherever the
+last `run` left it — quite possibly another lane's worktree, which then builds
+silently and wrongly. Exporting the variable does not fix it either: the CLI
+aborts on a config/environment mismatch. Give the CLI its own config instead:
+
+```bash
+export MOVEIT_HOST_USER_WORKSPACE_NAME=<unique>
+export MOVEIT_PRO_CONFIG_DIR="/tmp/mpcfg-$MOVEIT_HOST_USER_WORKSPACE_NAME"
+cp -rT ~/.config/moveit_pro "$MOVEIT_PRO_CONFIG_DIR"  # license key and port book
+workspace_path="$(printf '%s' "$PWD" | sed 's/[\\&|]/\\&/g')"
+sed -i "s|^MOVEIT_HOST_USER_WORKSPACE: .*|MOVEIT_HOST_USER_WORKSPACE: $workspace_path|" \
+  "$MOVEIT_PRO_CONFIG_DIR/moveit_pro_config.9.yaml"
+```
+
+The config dir has to be per-lane too. A path every worktree shares means the
+next lane's `cp -rT` restores the global copy under you, and your build silently
+follows its `sed` to that lane's workspace.
+
+Copying rather than starting empty carries over the port reservations that
+existed at copy time, so `moveit_pro run --instance lane-a` starts from a book
+that already knows about everyone else's deployments instead of handing out
+port 3000 again.
+
+Give each concurrent worktree its own instance name — `--instance lane-a` in
+one, `--instance lane-b` in the next — and never reuse a name another lane is
+running, since the name is the registry key. Be aware of the limit of the copy:
+the CLI allocates ports from `instance_ports.yaml` inside
+`$MOVEIT_PRO_CONFIG_DIR`, which is now a per-lane copy, so two lanes that each
+start a *new* instance after copying can still pick the same block — the copy
+prevents collisions with what already existed, not with a sibling lane racing
+you. Symlinking the file back to the shared one does not fix it: the CLI writes
+the registry with `os.replace`, which replaces the symlink with a regular file
+on the first reservation. Stagger `moveit_pro run` between lanes, or check
+`~/.config/moveit_pro/instance_ports.yaml` before starting, and confirm the
+ports the banner prints.
+
+The banner's "Your example workspace is at version <branch>" line names the
+branch it actually read — check it before trusting a build.
 
 Inside the containers, `ros2 node list` and friends return nothing until you run
 `ros2 daemon stop` once: the daemon that survives from an earlier deployment

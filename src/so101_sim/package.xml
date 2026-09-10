@@ -5,7 +5,8 @@
 
   <description>
     A MoveIt Pro configuration for a LeRobot SO-101 follower arm, fitted with
-    the XLeRobot soft fin-ray gripper, running on mock hardware.
+    the XLeRobot soft fin-ray gripper, running on mock hardware or on the
+    physical arm over the Feetech STS3215 serial bus.
   </description>
 
   <maintainer email="support@picknik.ai">MoveIt Pro Maintainer</maintainer>
@@ -16,6 +17,11 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <exec_depend>action_msgs</exec_depend>
+  <!-- ros2_control hardware interface for the Feetech STS3215 bus, used by
+       the `real` branch of description/so101.urdf.xacro. Released on Jazzy,
+       so rosdep installs ros-jazzy-feetech-ros2-driver from the image's
+       pinned snapshot; nothing is vendored. -->
+  <exec_depend>feetech_ros2_driver</exec_depend>
   <exec_depend>joint_state_broadcaster</exec_depend>
   <exec_depend>joint_trajectory_controller</exec_depend>
   <exec_depend>joint_velocity_controller</exec_depend>
@@ -23,6 +29,7 @@
   <exec_depend>moveit_pro_behavior</exec_depend>
   <exec_depend>moveit_studio_agent</exec_depend>
   <exec_depend>rclpy</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>std_srvs</exec_depend>
   <exec_depend>trajectory_msgs</exec_depend>
   <exec_depend>xacro</exec_depend>

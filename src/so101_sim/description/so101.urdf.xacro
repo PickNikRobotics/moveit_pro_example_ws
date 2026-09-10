@@ -20,6 +20,24 @@
     value="${xacro.load_yaml('$(arg initial_positions_file)')['initial_positions']}"
   />
 
+  <!--
+    Feetech STS3215 bus, used only when hardware_interface:=real.
+
+    `usb_port` is the follower bus; keep it a udev symlink rather than a
+    /dev/ttyACM* that renumbers (config/udev/99-so101.rules). The baud rate is
+    not an argument: feetech_ros2_driver hardwires 1 Mbaud, which is the SO-101
+    factory setting.
+  -->
+  <xacro:arg name="usb_port" default="/dev/so101_follower" />
+  <xacro:arg
+    name="calibration_file"
+    default="$(find so101_sim)/config/so101_follower_calibration.yaml"
+  />
+  <xacro:property
+    name="calibration"
+    value="${xacro.load_yaml('$(arg calibration_file)')['joints']}"
+  />
+
   <!-- The arm is bolted to the bench; `world` is the planning frame. -->
   <link name="world" />
   <joint name="world_to_so101" type="fixed">
@@ -594,6 +612,15 @@
 
   <xacro:macro name="so101_joint" params="name lower upper">
     <joint name="${name}">
+      <!--
+        Servo identity and zero, from config/so101_follower_calibration.yaml.
+        The driver reads `id` to address the servo and treats `offset` as the
+        raw tick that means 0 rad. Absent on mock, where they mean nothing.
+      -->
+      <xacro:if value="${'$(arg hardware_interface)' == 'real'}">
+        <param name="id">${calibration[name]['id']}</param>
+        <param name="offset">${calibration[name]['offset']}</param>
+      </xacro:if>
       <command_interface name="position">
         <param name="min">${lower}</param>
         <param name="max">${upper}</param>
@@ -602,7 +629,18 @@
         <param name="initial_value">${initial_positions[name]}</param>
       </state_interface>
       <state_interface name="velocity" />
-      <state_interface name="effort" />
+      <!--
+        Mock only. feetech_ros2_driver overrides export_state_interfaces() and
+        exports position and velocity alone, and ros2_control's
+        validate_storage() rejects a hardware component whose URDF declares a
+        state interface it did not export ("Discrepancy between robot
+        description file (urdf) and actually exported HW interfaces"). An
+        effort declaration on the real branch is therefore fatal at load, not
+        inert; that is also why joint_state_broadcaster does not ask for one.
+      -->
+      <xacro:if value="${'$(arg hardware_interface)' == 'mock'}">
+        <state_interface name="effort" />
+      </xacro:if>
     </joint>
   </xacro:macro>
 
@@ -615,7 +653,16 @@
       </hardware>
     </xacro:if>
     <xacro:if value="${'$(arg hardware_interface)' == 'real'}">
-      <!-- Phase two: a Feetech STS3215 bus hardware interface goes here. -->
+      <hardware>
+        <!--
+          One serial bus, six STS3215 servos daisy-chained, position command
+          and position/velocity feedback. The plugin ships as the Jazzy binary
+          ros-jazzy-feetech-ros2-driver; `feetech_ros2_driver` is an
+          exec_depend so rosdep installs it into the workspace image.
+        -->
+        <plugin>feetech_ros2_driver/FeetechHardwareInterface</plugin>
+        <param name="usb_port">$(arg usb_port)</param>
+      </hardware>
     </xacro:if>
     <!-- Limits are the upstream LeRobot calibration, in radians. -->
     <xacro:so101_joint name="shoulder_pan" lower="-1.91986" upper="1.91986" />
