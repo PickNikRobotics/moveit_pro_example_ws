@@ -21,10 +21,6 @@ amcl:
     alpha4: 0.05
     alpha5: 0.05
     base_frame_id: "ridgeback_base_link"
-    beam_skip_distance: 0.5
-    beam_skip_error_threshold: 0.9
-    beam_skip_threshold: 0.3
-    do_beamskip: false
     global_frame_id: "map"
     lambda_short: 0.1
     laser_likelihood_max_dist: 2.0

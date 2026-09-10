@@ -209,6 +209,36 @@ Every objective XML file must include a `MetadataFields` block inside the `TreeN
 
 Teleoperation drives the gripper by looking up Objectives named exactly `"Close Gripper"` / `"Open Gripper"` (the `Request Teleoperation` SubTree in moveit_pro core). If a config package doesn't provide those overrides in its `objectives/` directory, the lookup falls back to moveit_pro's core placeholder, which logs `[ERROR] LogMessage Error: This robot configuration does not have a \`Close Gripper\` Objective configured to override this default.` on every BT tick for as long as the control is held, and the gripper never moves — even if some other Objective in the same config already drives the gripper directly via `MoveGripperAction` (that path bypasses the named-Objective lookup entirely). Any new config with a gripper needs both files; see `moveit_pro_kinova_configs/kinova_gen3_base_config/objectives/{close,open}_gripper.xml` for the reference pattern.
 
+## Running MoveIt Pro from a git worktree
+
+The user image tag is `moveit-pro-<svc>:<version>-<distro>-${MOVEIT_HOST_USER_WORKSPACE_NAME}`,
+and that variable defaults to the workspace directory's basename. Every worktree
+of this repo shares that basename, so a plain `moveit_pro build` from a worktree
+overwrites the images built from the primary checkout. Set
+`MOVEIT_HOST_USER_WORKSPACE_NAME` to something unique for the worktree, and pass
+`-w "$PWD"` to `build` and `run`, which also keeps the CLI from repointing the
+user's global config at the worktree.
+
+Inside the containers, `ros2 node list` and friends return nothing until you run
+`ros2 daemon stop` once: the daemon that survives from an earlier deployment
+holds a participant that finds nothing on the current graph.
+
+## One trajectory controller, several planning groups
+
+When a config puts every joint on a single `joint_trajectory_controller` (the
+right call when something other than MoveIt also drives the arm, since a second
+controller claiming a joint's command interface locks the first one out), every
+goal a planning group sends names a subset of the controller's joints and
+`allow_partial_joints_goal` must be true, or the controller rejects all of them
+with "Joints on incoming trajectory don't match the controller joints."
+
+That controller has one owner at a time. A node publishing on its topic
+interface restarts the trajectory on every message, so an action goal from a
+plan is accepted and then never converges — or aborts on a path tolerance the
+still-moving robot violated. Such a publisher has to yield: gate it on a
+heartbeat the driving Objective ticks, and on the controller's
+`follow_joint_trajectory/_action/status`. `so101_sim` does both.
+
 ## Maintaining this file
 
 Keep this file for knowledge useful to almost every future agent session in this project.

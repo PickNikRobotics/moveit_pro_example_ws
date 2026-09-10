@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<launch>
+  <include
+    file="$(find-pkg-share moveit_studio_agent)/launch/studio_agent_bridge.launch.xml"
+  />
+  <!--
+    Feeds the mock hardware through joint_trajectory_controller. Fake mode
+    publishes a slow sine, so the twin moves with no arm plugged in; the real
+    Feetech bus source lands in phase two behind the same node.
+  -->
+  <node
+    pkg="so101_sim"
+    exec="so101_arm_bridge.py"
+    name="so101_arm_bridge"
+    args="--fake"
+    output="both"
+    emulate_tty="true"
+  />
+</launch>

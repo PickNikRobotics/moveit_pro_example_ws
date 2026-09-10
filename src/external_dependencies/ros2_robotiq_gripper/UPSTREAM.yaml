@@ -20,7 +20,10 @@ modified_paths:
   - robotiq_controllers/src/reactivation.cpp
   - robotiq_controllers/test/reactivation_test.cpp
   - robotiq_description/config/robotiq_controllers.yaml
+  - robotiq_description/urdf/2f_85.ros2_control.xacro
+  - robotiq_description/urdf/2f_140.ros2_control.xacro
 notes:
+  - The 2f_85/2f_140 ros2_control xacros port upstream PR #54: mock/Isaac simulation joints carry state interfaces only, because ros2_control on Jazzy derives mimic joints from the URDF and rejects command interfaces on them.
   - PickNik ports the retained activation controller to ROS 2 Jazzy while preserving Humble compatibility.
   - The retained controller preserves the reactivation service as a deterministic simulation no-op without hardware command interfaces and fails lifecycle activation unless simulation_only is explicitly true.
   - Binary files matching workspace Git LFS patterns are stored as LFS objects; checked-out bytes match upstream.

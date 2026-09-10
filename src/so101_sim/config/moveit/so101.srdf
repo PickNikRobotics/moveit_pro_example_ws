@@ -1,0 +1,103 @@
+<?xml version="1.0" ?>
+<robot name="so101">
+  <group name="manipulator">
+    <chain base_link="base_link" tip_link="gripper_frame_link" />
+  </group>
+  <group name="gripper">
+    <!-- `gripper` is a single revolute jaw on the stock SO-101; there is no
+         mimic joint and no second jaw. -->
+    <link name="moving_jaw_so101_v1_link" />
+    <link name="gripper_frame_link" />
+    <joint name="gripper" />
+  </group>
+  <end_effector
+    name="so101_gripper"
+    parent_link="gripper_link"
+    parent_group="manipulator"
+    group="gripper"
+  />
+  <group_state name="home" group="manipulator">
+    <joint name="shoulder_pan" value="0.0" />
+    <joint name="shoulder_lift" value="0.728843537" />
+    <joint name="elbow_flex" value="-0.353637568" />
+    <joint name="wrist_flex" value="0.302123278" />
+    <joint name="wrist_roll" value="0.33498815" />
+  </group_state>
+  <group_state name="ready" group="manipulator">
+    <joint name="shoulder_pan" value="0.3" />
+    <joint name="shoulder_lift" value="0.75" />
+    <joint name="elbow_flex" value="-0.4" />
+    <joint name="wrist_flex" value="0.2" />
+    <joint name="wrist_roll" value="0.0" />
+  </group_state>
+  <group_state name="open" group="gripper">
+    <joint name="gripper" value="1.5" />
+  </group_state>
+  <group_state name="closed" group="gripper">
+    <joint name="gripper" value="0.0" />
+  </group_state>
+  <!--
+    Derived by sampling 400 random configurations plus the zero pose against the
+    collision meshes with MoveIt's 0.01 m link padding: "Adjacent" and "Always"
+    pairs are in contact in every sample, "Never" pairs in none. Every other
+    pair really can collide and is deliberately left enabled.
+  -->
+  <disable_collisions
+    link1="overhead_camera_mount_link"
+    link2="base_link"
+    reason="Adjacent"
+  />
+  <disable_collisions link1="base_link" link2="shoulder_link" reason="Adjacent" />
+  <disable_collisions link1="shoulder_link" link2="upper_arm_link" reason="Adjacent" />
+  <disable_collisions link1="upper_arm_link" link2="lower_arm_link" reason="Adjacent" />
+  <disable_collisions link1="lower_arm_link" link2="wrist_link" reason="Adjacent" />
+  <disable_collisions link1="wrist_link" link2="gripper_link" reason="Adjacent" />
+  <disable_collisions
+    link1="gripper_link"
+    link2="moving_jaw_so101_v1_link"
+    reason="Adjacent"
+  />
+  <disable_collisions
+    link1="gripper_link"
+    link2="camera_wrist_mount_link"
+    reason="Adjacent"
+  />
+  <!-- The arm mount plate sits under the shoulder, and the wrist camera
+       bracket wraps the wrist and the jaw: in contact in every configuration. -->
+  <disable_collisions
+    link1="overhead_camera_mount_link"
+    link2="shoulder_link"
+    reason="Always"
+  />
+  <disable_collisions
+    link1="camera_wrist_mount_link"
+    link2="wrist_link"
+    reason="Always"
+  />
+  <disable_collisions
+    link1="camera_wrist_mount_link"
+    link2="moving_jaw_so101_v1_link"
+    reason="Always"
+  />
+  <disable_collisions
+    link1="moving_jaw_so101_v1_link"
+    link2="wrist_link"
+    reason="Always"
+  />
+  <!-- The forearm cannot reach the hand it carries. -->
+  <disable_collisions
+    link1="lower_arm_link"
+    link2="gripper_link"
+    reason="Never"
+  />
+  <disable_collisions
+    link1="lower_arm_link"
+    link2="camera_wrist_mount_link"
+    reason="Never"
+  />
+  <disable_collisions
+    link1="lower_arm_link"
+    link2="moving_jaw_so101_v1_link"
+    reason="Never"
+  />
+</robot>
