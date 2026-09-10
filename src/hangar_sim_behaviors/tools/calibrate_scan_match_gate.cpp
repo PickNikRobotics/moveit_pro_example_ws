@@ -14,12 +14,20 @@
  *   ros2 run hangar_sim dump_localization_calibration_data.py --output-dir /tmp/calib
  *   ros2 run hangar_sim_behaviors calibrate_scan_match_gate /tmp/calib/grid.txt /tmp/calib/scans.txt
  *
- * It reports three numbers that matter and one that decides:
- *   - the WORST score any true pose gets (the floor a threshold must sit below);
- *   - the score of deliberately wrong poses at a few offsets (what a threshold must reject);
+ * It reports:
+ *   - the WORST score any true pose gets (the ceiling a threshold must sit below);
+ *   - the score of deliberately wrong poses on rings from 0.10 m out to the drift limit -- the ones
+ *     beyond the refinement's own output are what a threshold must REJECT, the tightest one is a
+ *     near-miss it must ACCEPT, and those pull the threshold in opposite directions;
  *   - the STRONGEST alias found anywhere on the map -- the best-scoring pose that is nowhere near
  *     the truth, found by sweeping the whole free space rather than by guessing where to look;
- *   - the separation between the first and the third, which is the margin the threshold lives in.
+ *   - the separation between the true-pose ceiling and the worst offender the gate can admit,
+ *     which is the margin the threshold lives in.
+ *
+ * The rings matter as much as the map-wide sweep, because that sweep only starts at
+ * `alias_keepout_m`. Everything closer than that is the region the drift gate is explicitly allowed
+ * to move the belief into, so a band computed from the sweep alone names a safe threshold over
+ * poses it never evaluated.
  *
  * A narrow separation is a finding to report, not a number to split the difference on. It means the
  * map has structure that repeats, and the honest response is a tighter click and a shorter drive,
@@ -30,6 +38,7 @@
 #include <hangar_sim_behaviors/localization_gates.hpp>
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <cstdlib>
 #include <fstream>
@@ -62,15 +71,14 @@ struct SweepSettings
   double max_range = localization::kLaserMaxRange;
   double max_obstacle_distance = localization::kMaxObstacleDistance;
   double inlier_distance = localization::kInlierDistance;
-  /// A candidate this close to the truth is treated as the truth rather than an alias.
+  /// MINIMUM distance from the truth for a map-wide sweep candidate to count as an alias.
   ///
-  /// Tied to the shipped drift gate on purpose. The gate is explicitly allowed to move the belief
-  /// up to kDriftLimit from the seed, so every pose inside that radius is a pose the gate CAN
-  /// accept and therefore a pose the sweep has to score. A keepout wider than the drift limit
-  /// would report a safe threshold band over a region it never evaluated: a wrong pose sitting
-  /// between the drift limit and the keepout could outscore the band's lower edge and still be
-  /// accepted in production. "This close to the truth is the truth" only holds at inlier_distance
-  /// scale anyway, not at metres.
+  /// This is a floor, not a ceiling: `strongestAlias` skips everything CLOSER than this, so the
+  /// map-wide sweep says nothing about the region inside it. That region is not unimportant -- it
+  /// is precisely the region the shipped drift gate admits, since the gate may move the belief up
+  /// to kDriftLimit from the seed. The offset rings below are what cover it, and their maximum is
+  /// folded into the reported band. Setting this to kDriftLimit and calling the accept region
+  /// covered would be exactly backwards.
   double alias_keepout_m = localization::kDriftLimit;
   /// Coarse sweep stride over the map, metres, and its yaw stride, radians.
   double coarse_stride_m = 0.40;
@@ -201,28 +209,68 @@ std::optional<Scored> strongestAlias(const localization::DistanceField& field, c
   return refined;
 }
 
-/// The BEST score over that same ring -- the number a threshold has to reject, not merely beat.
-Scored bestOverOffsetRing(const localization::DistanceField& field, const calibration::ScanSample& sample,
-                          const SweepSettings& settings, double offset_m, double offset_yaw)
+/**
+ * @brief A ring of deliberately-wrong poses at a fixed offset from the truth.
+ *
+ * `must_reject` says which end of the band the ring constrains. A ring the gate has to REJECT sets
+ * a floor the threshold must sit above, and the number that matters there is the BEST the ring can
+ * score. A ring the gate has to ACCEPT -- the near-miss the refinement itself legitimately returns
+ * -- sets a ceiling the threshold must sit below, and there the number that matters is the WORST.
+ * Taking the best of a must-accept ring would publish a ceiling looser than the gate can honour.
+ */
+struct OffsetRing
 {
-  Scored best;
+  double offset_m;
+  double offset_yaw;
+  bool must_reject;
+  const char* label;
+};
+
+/**
+ * @brief Score one ring, reducing with `keep_best` or its opposite.
+ *
+ * Includes the ZERO-yaw member alongside the +/- yaw ones. A pure translation with the heading
+ * still correct routinely outscores the same offset with a yaw error, so a ring that only tried
+ * +/- yaw under-reported what a wrong pose at that radius can look like -- and it is the maximum
+ * over the ring that a rejecting threshold has to beat.
+ */
+Scored reduceOverOffsetRing(const localization::DistanceField& field, const calibration::ScanSample& sample,
+                            const SweepSettings& settings, const OffsetRing& ring, bool keep_best)
+{
+  std::optional<Scored> chosen;
   constexpr int kBearings = 16;
   for (int bearing_index = 0; bearing_index < kBearings; ++bearing_index)
   {
     const double bearing = 2.0 * M_PI * static_cast<double>(bearing_index) / static_cast<double>(kBearings);
-    for (const double yaw_sign : { -1.0, 1.0 })
+    for (const double yaw_sign : { -1.0, 0.0, 1.0 })
     {
-      const auto candidate =
-          score(field, sample, settings, sample.truth_x + offset_m * std::cos(bearing),
-                sample.truth_y + offset_m * std::sin(bearing), wrapAngle(sample.truth_yaw + yaw_sign * offset_yaw));
-      if (candidate.inlier_fraction > best.inlier_fraction)
+      const auto candidate = score(field, sample, settings, sample.truth_x + ring.offset_m * std::cos(bearing),
+                                   sample.truth_y + ring.offset_m * std::sin(bearing),
+                                   wrapAngle(sample.truth_yaw + yaw_sign * ring.offset_yaw));
+      const bool better = !chosen.has_value() || (keep_best ? candidate.inlier_fraction > chosen->inlier_fraction :
+                                                              candidate.inlier_fraction < chosen->inlier_fraction);
+      if (better)
       {
-        best = candidate;
+        chosen = candidate;
       }
     }
   }
-  return best;
+  return chosen.value_or(Scored{});
 }
+
+/**
+ * @brief The rings, spanning from inside the refinement's own output out to the drift limit.
+ *
+ * The outer rings exist because the map-wide alias sweep starts at `alias_keepout_m` and so never
+ * scores the region the drift gate admits. Without them the report named a safe band over poses it
+ * had not evaluated: a wrong pose 0.9 m from the truth is inside the drift limit, so the gate can
+ * accept it, and nothing in the report spoke to it.
+ */
+constexpr std::array<OffsetRing, 6> kOffsetRings = {
+  OffsetRing{ 0.10, 1.0 * M_PI / 180.0, false, "0.10m" },  OffsetRing{ 0.25, 3.0 * M_PI / 180.0, true, "0.25m" },
+  OffsetRing{ 0.50, 5.0 * M_PI / 180.0, true, "0.50m" },   OffsetRing{ 0.75, 7.0 * M_PI / 180.0, true, "0.75m" },
+  OffsetRing{ 1.00, 9.0 * M_PI / 180.0, true, "1.00m" },   OffsetRing{ 1.15, 10.0 * M_PI / 180.0, true, "1.15m" },
+};
 
 std::string percent(double fraction)
 {
@@ -346,8 +394,8 @@ int main(int argc, char** argv)
             << " m, range [" << settings.min_range << ", " << settings.max_range << "] m, field truncated at "
             << settings.max_obstacle_distance << " m\n"
             << "alias sweep: every free cell at least " << settings.alias_keepout_m
-            << " m from the truth -- the shipped drift limit, so the sweep reaches to the far edge of what the\n"
-            << "  drift gate can still accept rather than stopping short of it\n"
+            << " m from the truth. That is a FLOOR, so the sweep says nothing about\n"
+            << "  anything nearer; the offset rings below cover the region inside it, out to the drift limit\n"
             << "samples: " << samples.size() << "\n\n";
 
   double worst_true = 1.0;
@@ -355,25 +403,28 @@ int main(int argc, char** argv)
   double best_alias = 0.0;
   std::string best_alias_label;
   std::optional<Scored> best_alias_pose;
-  double best_near_miss_10cm = 0.0;
-  double best_near_miss_25cm = 0.0;
-  double best_near_miss_50cm = 0.0;
+  // One reduced figure per ring: the best a must-reject ring managed, the worst a must-accept ring
+  // managed. Both are the number that constrains the threshold from that ring's side.
+  std::array<double, kOffsetRings.size()> ring_result{};
+  for (std::size_t i = 0; i < kOffsetRings.size(); ++i)
+  {
+    ring_result[i] = kOffsetRings[i].must_reject ? 0.0 : 1.0;
+  }
 
-  std::cout << std::left << std::setw(22) << "sample" << std::setw(10) << "beams" << std::setw(10) << "truth"
-            << std::setw(12) << "0.10m/1deg" << std::setw(12) << "0.25m/3deg" << std::setw(12) << "0.50m/5deg"
-            << "best alias\n";
-  std::cout << std::string(90, '-') << "\n";
+  std::cout << std::left << std::setw(22) << "sample" << std::setw(8) << "beams" << std::setw(9) << "truth";
+  for (const auto& ring : kOffsetRings)
+  {
+    std::cout << std::setw(9) << ring.label;
+  }
+  std::cout << "best alias\n";
+  std::cout << std::string(105, '-') << "\n";
 
   for (const auto& sample : samples)
   {
     const auto truth = score(field, sample, settings, sample.truth_x, sample.truth_y, sample.truth_yaw);
-    // The worst a wrong pose can look is not what a gate must beat; the BEST is. Report that.
-    const auto near_10 = bestOverOffsetRing(field, sample, settings, 0.10, 1.0 * M_PI / 180.0);
-    const auto near_25 = bestOverOffsetRing(field, sample, settings, 0.25, 3.0 * M_PI / 180.0);
-    const auto near_50 = bestOverOffsetRing(field, sample, settings, 0.50, 5.0 * M_PI / 180.0);
     const auto alias = strongestAlias(field, grid, sample, settings);
 
-    if (truth.inlier_fraction < worst_true)
+    if (worst_true_label.empty() || truth.inlier_fraction < worst_true)
     {
       worst_true = truth.inlier_fraction;
       worst_true_label = sample.label;
@@ -384,22 +435,51 @@ int main(int argc, char** argv)
       best_alias_label = sample.label;
       best_alias_pose = alias;
     }
-    best_near_miss_10cm = std::max(best_near_miss_10cm, near_10.inlier_fraction);
-    best_near_miss_25cm = std::max(best_near_miss_25cm, near_25.inlier_fraction);
-    best_near_miss_50cm = std::max(best_near_miss_50cm, near_50.inlier_fraction);
 
-    std::cout << std::left << std::setw(22) << sample.label << std::setw(10) << truth.beams_used << std::setw(10)
-              << percent(truth.inlier_fraction) << std::setw(12) << percent(near_10.inlier_fraction) << std::setw(12)
-              << percent(near_25.inlier_fraction) << std::setw(12) << percent(near_50.inlier_fraction)
-              << (alias.has_value() ? percent(alias->inlier_fraction) : std::string("none")) << "\n";
+    std::cout << std::left << std::setw(22) << sample.label << std::setw(8) << truth.beams_used << std::setw(9)
+              << percent(truth.inlier_fraction);
+    for (std::size_t i = 0; i < kOffsetRings.size(); ++i)
+    {
+      const auto scored = reduceOverOffsetRing(field, sample, settings, kOffsetRings[i], kOffsetRings[i].must_reject);
+      ring_result[i] = kOffsetRings[i].must_reject ? std::max(ring_result[i], scored.inlier_fraction) :
+                                                     std::min(ring_result[i], scored.inlier_fraction);
+      std::cout << std::setw(9) << percent(scored.inlier_fraction);
+    }
+    std::cout << (alias.has_value() ? percent(alias->inlier_fraction) : std::string("none")) << "\n";
   }
 
-  const double separation = worst_true - best_alias;
-  std::cout << "\n"
-            << "worst true pose            " << percent(worst_true) << "  (" << worst_true_label << ")\n"
-            << "best pose 0.10 m / 1 deg   " << percent(best_near_miss_10cm) << "\n"
-            << "best pose 0.25 m / 3 deg   " << percent(best_near_miss_25cm) << "\n"
-            << "best pose 0.50 m / 5 deg   " << percent(best_near_miss_50cm) << "\n";
+  // The floor a threshold must clear is the worst offender anywhere it can be admitted: the
+  // strongest alias beyond the keepout, OR the strongest must-reject ring inside it. Leaving the
+  // rings out published a band over poses the drift gate can accept but nothing had scored.
+  double worst_reject = best_alias;
+  const char* worst_reject_label = "strongest alias";
+  double tightest_accept = worst_true;
+  const char* tightest_accept_label = "worst true pose";
+  for (std::size_t i = 0; i < kOffsetRings.size(); ++i)
+  {
+    if (kOffsetRings[i].must_reject)
+    {
+      if (ring_result[i] > worst_reject)
+      {
+        worst_reject = ring_result[i];
+        worst_reject_label = kOffsetRings[i].label;
+      }
+    }
+    else if (ring_result[i] < tightest_accept)
+    {
+      tightest_accept = ring_result[i];
+      tightest_accept_label = kOffsetRings[i].label;
+    }
+  }
+
+  const double separation = worst_true - worst_reject;
+  std::cout << "\n" << "worst true pose            " << percent(worst_true) << "  (" << worst_true_label << ")\n";
+  for (std::size_t i = 0; i < kOffsetRings.size(); ++i)
+  {
+    std::cout << (kOffsetRings[i].must_reject ? "best pose  " : "worst pose ") << std::left << std::setw(15)
+              << kOffsetRings[i].label << "  " << percent(ring_result[i])
+              << (kOffsetRings[i].must_reject ? "  must be REJECTED\n" : "  must be ACCEPTED\n");
+  }
 
   if (!best_alias_pose.has_value())
   {
@@ -423,17 +503,26 @@ int main(int argc, char** argv)
     std::cout << "NO THRESHOLD SEPARATES THEM. Somewhere on this map a wrong pose explains the scan at least as\n"
                  "well as the right one. Do not pick a number out of the overlap: that is a map finding, and the\n"
                  "answer is a tighter click bound or a short drive, not a lower gate.\n";
+    return EXIT_SUCCESS;
   }
-  else
+
+  std::cout << "A threshold must sit strictly between " << percent(worst_reject) << " and " << percent(worst_true)
+            << ".\n"
+            << "The lower edge is the worst offender anywhere the gate can admit one: " << worst_reject_label
+            << ".\n"
+            << "It folds in BOTH the map-wide alias sweep (which starts " << std::fixed << std::setprecision(2)
+            << settings.alias_keepout_m << " m out) and the offset rings inside\n"
+            << "that keepout, which run to the drift limit -- so nothing the drift gate can accept is unscored.\n\n"
+            << "Read the ring rows, do not average them. Keep the threshold ABOVE the largest ring marked must be\n"
+            << "REJECTED, and BELOW the smallest marked must be ACCEPTED -- those are opposite constraints, not a\n"
+            << "single direction. Here that is above " << percent(worst_reject) << " and below "
+            << percent(tightest_accept) << " (" << tightest_accept_label << ").\n";
+
+  if (tightest_accept <= worst_reject)
   {
-    std::cout << "A threshold must sit strictly between " << percent(best_alias) << " and " << percent(worst_true)
-              << ".\n"
-              << "That band was measured over every free cell at least " << std::fixed << std::setprecision(2)
-              << settings.alias_keepout_m
-              << " m from the truth, which is the shipped drift limit -- so it now covers\n"
-              << "poses out to the far edge of what the drift gate can still accept. Nearer poses are NOT folded\n"
-              << "in: they are the near-misses this refinement legitimately returns, so read them from the\n"
-              << "offset-ring columns above and keep the threshold BELOW them.\n";
+    std::cout << "\nTHOSE TWO CONSTRAINTS DO NOT LEAVE A GAP on this map: a near-miss the refinement legitimately\n"
+                 "returns scores no better than a pose the gate has to reject. No threshold satisfies both. That\n"
+                 "is a map and scan-density finding for its own ticket, not a number to split.\n";
   }
   return EXIT_SUCCESS;
 }

@@ -323,31 +323,48 @@
         map. CALIBRATED ON
         hangar_map with the shipped scoring code, against the grid map_server
         actually publishes:
-        the true pose scores 87.0%, a pose 0.10 m / 1 deg off scores 69.6%, a
-        pose 0.25 m / 3 deg
-        off scores 30.4%, and the strongest alias found anywhere on the map
-        scores 47.8%, at
-        (1.28, -0.02) - a separation of 39.1 points.
+        the true pose scores 87.0%. Deliberately wrong poses, best over each
+        ring, out to the
+        drift limit this Objective is allowed to move the belief by: 0.10 m
+        87.0%, 0.25 m 52.2%,
+        0.50 m 43.5%, 0.75 m 52.2%, 1.00 m 47.8%, 1.15 m 39.1%; and the
+        strongest alias anywhere
+        beyond that, from the map-wide sweep, 47.8%.
 
-        That alias figure was re-measured after calibrate_scan_match_gate
-        narrowed its alias
-        keepout from 2.0 m to the drift limit, 1.2 m. The stronger alias sits
-        1.28 m from the
-        truth, inside the 1.2-2.0 m annulus the old keepout skipped, which is
-        exactly the region
-        the narrowing was made to cover: the drift gate can accept a pose
-        anywhere within 1.2 m of
-        the seed. The earlier table read 34.8% and 52.2 points, which described
-        a sweep that never
-        scored this pose.
+        THE HONEST BAND IS 52.2% TO 87.0%, and its lower edge is a RING rather
+        than the alias: the
+        worst wrong pose the drift gate can admit scores 52.2%, above the 47.8%
+        alias. Earlier
+        revisions of this text published 34.8% and then 47.8% as the number to
+        clear; both came
+        from an alias sweep whose keepout is a FLOOR, so by construction it
+        never scored the region
+        inside the drift limit - the region the gate actually admits.
 
-        0.6 rather than the 0.8 meta_ws uses. 0.8 sits only 7 points under the
-        true pose AND above
-        the 69.6% a 0.10 m error scores, while the refinement itself returns
-        about 6.5 cm, so 0.8
-        would reject the refinements this loop legitimately produces. 0.6 still
-        clears the
-        re-measured strongest alias by about 12 points.
+        0.6 rather than the 0.8 meta_ws uses, and it is squeezed from both
+        sides. The gate must
+        ACCEPT a 0.10 m / 1 deg near-miss, which scores 69.6% - and the
+        refinement itself returns
+        about 6.5 cm - while it must REJECT a 0.25 m wrong pose at 52.2%. That
+        is a 17-point
+        window and 0.6 splits it, keeping about 8 points of margin over the
+        worst admissible wrong
+        pose. 0.8 sits above the 69.6% near-miss, so it would reject the
+        refinements this loop
+        legitimately produces. The window is narrow here; the driven multi-pose
+        campaign should
+        re-examine it rather than treat 0.6 as settled.
+
+        One limit to know rather than discover: a 0.10 m PURE translation with
+        the heading still
+        correct scores 87.0%, the same as the true pose, because 0.10 m is
+        inside inlier_distance.
+        This gate cannot see an error smaller than inlier_distance, and the
+        refinement's ~6.5 cm is
+        inside that blind spot. That is how a likelihood field works, not a
+        fault here - what makes
+        those centimetres trustworthy is the density of the seed, not this
+        check.
 
         Note the granularity: only 23 of the 60 selected beams survive the range
         filters on this

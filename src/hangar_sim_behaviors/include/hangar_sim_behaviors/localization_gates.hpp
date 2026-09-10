@@ -53,16 +53,33 @@ inline constexpr std::int8_t kOccupiedValue = 100;
  * @name Acceptance contract
  *
  * MEASURED on hangar_map with this robot's merged scan, using this same scoring code against the
- * grid map_server actually publishes: the true pose scores 87.0%, a pose 0.10 m / 1 deg off scores
- * 69.6%, a pose 0.25 m / 3 deg off scores 30.4%, and the strongest alias found anywhere on the map
- * scores 47.8%, at (1.28, -0.02). That is a 39.1-point separation, against the ~21 points meta_ws
- * measured on theirs.
+ * grid map_server actually publishes. The true pose scores 87.0%. Deliberately wrong poses, best
+ * over each ring, out to the drift limit the gate is allowed to move the belief by:
  *
- * The alias figure was re-measured after `calibrate_scan_match_gate` narrowed its alias keepout
- * from 2.0 m to the drift limit, 1.2 m. The stronger alias sits 1.28 m from the truth -- inside the
- * 1.2-2.0 m annulus the old keepout skipped, which is exactly the region the narrowing was made to
- * cover, because the drift gate can accept a pose anywhere within 1.2 m of the seed. The earlier
- * table read 34.8% and 52.2 points; those numbers described a sweep that never scored this pose.
+ *   0.10 m  87.0%      0.25 m  52.2%      0.50 m  43.5%
+ *   0.75 m  52.2%      1.00 m  47.8%      1.15 m  39.1%
+ *
+ * and the strongest alias anywhere beyond that, from the map-wide sweep, 47.8%.
+ *
+ * THE HONEST BAND IS THEREFORE 52.2% TO 87.0%. The lower edge is a RING, not the alias: the worst
+ * wrong pose the drift gate can admit scores 52.2%, higher than the 47.8% alias. 0.60 keeps about
+ * 8 points of margin over it. Earlier revisions of this comment published 34.8%/52.2 points and
+ * then 47.8%/39.1 points; both came from an alias sweep with a keepout FLOOR, which by construction
+ * never scored the region inside the drift limit -- the region the gate actually admits.
+ *
+ * THE SQUEEZE, and it is the most useful thing this calibration produced. The gate must ACCEPT a
+ * 0.10 m / 1 deg near-miss, which scores 69.6%, and must REJECT a 0.25 m wrong pose, which scores
+ * 52.2%. That is a 17-point window, and 0.60 splits it. Anything higher starts rejecting
+ * refinements the loop legitimately returns; anything lower starts admitting poses it must reject.
+ * That window is NARROW on hangar_sim -- narrower than meta_ws's -- and the driven multi-pose
+ * campaign should re-examine it rather than treat 0.60 as settled.
+ *
+ * THE STRUCTURAL BLIND SPOT. A 0.10 m PURE translation with the heading still correct scores 87.0%,
+ * identical to the true pose, because 0.10 m is inside kInlierDistance. So the gate cannot detect
+ * an error smaller than kInlierDistance at all, and the refinement returns about 6.5 cm, which is
+ * inside that blind spot. This is a property of the likelihood-field design, not a defect of this
+ * implementation: what makes those 6.5 cm trustworthy is the density of the seed the filter
+ * selected from, not this gate. Do not read a pass here as a measurement of the remaining error.
  *
  * Two things about that measurement are worth carrying. Only 23 of the 60 selected beams survive
  * the range filters on this robot, so the fraction moves in steps of about 4.3 points -- the gate
@@ -77,9 +94,10 @@ inline constexpr double kInlierDistance = 0.15;
  * @brief Accept a refined pose only at or above this inlier fraction.
  *
  * 0.60, not the 0.80 meta_ws uses. 0.80 sits only 7 points under the true pose here AND above the
- * 69.6% a 0.10 m error scores, while the refinement itself returns about 6.5 cm -- so 0.80 would
- * reject the refinements this loop legitimately produces. 0.60 still clears the strongest alias on
- * the map by about 12 points: 47.8, then 60, then the true pose at 87.0.
+ * 69.6% a 0.10 m / 1 deg error scores, while the refinement itself returns about 6.5 cm -- so 0.80
+ * would reject the refinements this loop legitimately produces. 0.60 clears the worst wrong pose
+ * the drift gate can admit by about 8 points: 52.2, then 60, then the near-miss it must accept at
+ * 69.6, then the true pose at 87.0.
  */
 inline constexpr double kMinInlierFraction = 0.60;
 /** @} */
