@@ -75,9 +75,9 @@ struct SweepSettings
 Scored score(const localization::DistanceField& field, const calibration::ScanSample& sample,
              const SweepSettings& settings, double x, double y, double yaw)
 {
-  const auto stats = localization::computeScanResidual(field, sample.geometry, sample.ranges, settings.max_beams,
-                                                       settings.min_range, settings.max_range,
-                                                       settings.inlier_distance, x, y, yaw);
+  const auto stats =
+      localization::computeScanResidual(field, sample.geometry, sample.ranges, settings.max_beams, settings.min_range,
+                                        settings.max_range, settings.inlier_distance, x, y, yaw);
   return Scored{ x, y, yaw, stats.inlier_fraction, stats.beams_used };
 }
 
@@ -336,9 +336,9 @@ int main(int argc, char** argv)
             << "best pose 0.10 m / 1 deg   " << percent(best_near_miss_10cm) << "\n"
             << "best pose 0.25 m / 3 deg   " << percent(best_near_miss_25cm) << "\n"
             << "best pose 0.50 m / 5 deg   " << percent(best_near_miss_50cm) << "\n"
-            << "strongest alias on the map " << percent(best_alias) << "  (" << best_alias_label << " at "
-            << std::fixed << std::setprecision(2) << best_alias_pose.x << ", " << best_alias_pose.y << ", yaw "
-            << best_alias_pose.yaw << ")\n"
+            << "strongest alias on the map " << percent(best_alias) << "  (" << best_alias_label << " at " << std::fixed
+            << std::setprecision(2) << best_alias_pose.x << ", " << best_alias_pose.y << ", yaw " << best_alias_pose.yaw
+            << ")\n"
             << "separation                 " << std::setprecision(1) << (separation * 100.0) << " points\n\n";
 
   if (separation <= 0.0)

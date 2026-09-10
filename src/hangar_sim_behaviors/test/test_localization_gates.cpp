@@ -82,8 +82,8 @@ struct TestGrid
     {
       return true;  // Treat the outside of the grid as a wall so a ray always terminates.
     }
-    return data[static_cast<std::size_t>(row) * static_cast<std::size_t>(info.width) +
-                static_cast<std::size_t>(column)] == kOccupied;
+    return data[static_cast<std::size_t>(row) * static_cast<std::size_t>(info.width) + static_cast<std::size_t>(column)] ==
+           kOccupied;
   }
 };
 

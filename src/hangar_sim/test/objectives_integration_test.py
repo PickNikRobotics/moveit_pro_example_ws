@@ -100,11 +100,15 @@ skip_objectives = {
     # never arrives.
     "Navigate to Clicked Point",  # GetPoseFromUser + WaitForUserPathApproval.
     "Navigate to Clicked Point with Replanning",  # GetPoseFromUser.
-    # Both ask the operator to click the robot's pose on the map. The localized_robot
+    # Asks the operator to click the robot's pose on the map. The localized_robot
     # fixture below seeds the filter the same way headlessly, so the rest of the suite
-    # still gets the map -> odom edge these would otherwise provide.
+    # still gets the map -> odom edge this would otherwise provide.
+    #
+    # "Refine Localization In Place" is deliberately NOT skipped: it seeds from the
+    # estimate the filter already holds rather than from a click, so it runs headless
+    # and exercises the whole refinement path -- the forced-update loop, the drift
+    # gate and the fit-to-map gate -- against the seed the fixture applied.
     "Localize Robot",  # GetPoseFromUser.
-    "Localize Robot and Refine",  # GetPoseFromUser.
     "Find and Spray Plane",  # Ungated WaitForMTCSolutionApproval.
     "Solution - Find and Spray Plane",  # Ungated WaitForMTCSolutionApproval.
     "Solution - Spray Plane",  # Ungated WaitForMTCSolutionApproval.

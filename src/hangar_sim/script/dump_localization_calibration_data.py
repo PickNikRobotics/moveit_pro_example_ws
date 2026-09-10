@@ -173,7 +173,9 @@ class CalibrationCapture(Node):
         # handles but this workspace has never shipped.
         yaw = 2.0 * math.atan2(info.origin.orientation.z, info.origin.orientation.w)
         with open(grid_path, "w") as handle:
-            handle.write("# hangar_sim occupancy grid, captured from %s\n" % self._args.map_topic)
+            handle.write(
+                "# hangar_sim occupancy grid, captured from %s\n" % self._args.map_topic
+            )
             handle.write("width %d\n" % info.width)
             handle.write("height %d\n" % info.height)
             handle.write("resolution %.10g\n" % info.resolution)
@@ -240,7 +242,9 @@ def main():
         pass
 
     if not node._samples or node._grid is None:
-        node.get_logger().error("captured nothing; is the sim up and localization running?")
+        node.get_logger().error(
+            "captured nothing; is the sim up and localization running?"
+        )
         node.destroy_node()
         rclpy.shutdown()
         return 1

@@ -164,9 +164,8 @@ DistanceField buildDistanceField(const GridInfo& info, const std::vector<std::in
   field.info = info;
   field.max_distance = max_distance;
   field.distance.resize(cell_count);
-  std::transform(squared.begin(), squared.end(), field.distance.begin(), [max_distance](double value) {
-    return static_cast<float>(std::min(std::sqrt(value), max_distance));
-  });
+  std::transform(squared.begin(), squared.end(), field.distance.begin(),
+                 [max_distance](double value) { return static_cast<float>(std::min(std::sqrt(value), max_distance)); });
   return field;
 }
 

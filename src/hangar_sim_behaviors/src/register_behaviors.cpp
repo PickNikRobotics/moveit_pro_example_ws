@@ -24,8 +24,7 @@ public:
   {
     moveit_pro::behaviors::registerBehavior<CallEmptyService>(factory, "CallEmptyService", shared_resources);
     moveit_pro::behaviors::registerBehavior<ScanMatchResidual>(factory, "ScanMatchResidual", shared_resources);
-    moveit_pro::behaviors::registerBehavior<SeedLocalizationAtPose>(factory, "SeedLocalizationAtPose",
-                                                                    shared_resources);
+    moveit_pro::behaviors::registerBehavior<SeedLocalizationAtPose>(factory, "SeedLocalizationAtPose", shared_resources);
   }
 };
 }  // namespace hangar_sim_behaviors

@@ -3,8 +3,8 @@
   <!--//////////-->
   <BehaviorTree
     ID="Localize Robot"
-    _description="Tell the localizer where the robot is. Prompts for a click on the map, then seeds the particle filter with that pose. Run this once after startup, before navigating, and again any time the robot is moved without driving."
-    _favorite="false"
+    _description="Tell the localizer where the robot is: click the robot's location on the map, then the estimate is tightened in place before the robot moves. Run this once after startup, before navigating, and again any time the robot is moved without driving."
+    _favorite="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <!--AMCL runs with set_initial_pose: false, because in production a robot does not power on
@@ -14,7 +14,7 @@
         ID="GetPoseFromUser"
         name="Ask the operator where the robot is"
         is_normal="true"
-        pose_prompt="Click the robot's current location on the map, dragging to set its heading"
+        pose_prompt="Click the robot's current location on the map"
         user_pose="{clicked_pose}"
         view_name="Visualization"
       />
@@ -30,20 +30,31 @@
         output_pose="{initial_pose}"
         target_frame_id="map"
       />
-      <!--0.5 m is not a claim that the click is good to half a metre. It is the spread this filter
-           takes cleanly, and it is also what sets the resolution of any refinement that follows:
-           5000 particles over 0.5 m sit a few centimetres apart, and a refinement can only ever
-           select among the poses this scatter drew.
+      <!--Seeding and refining are one operator action, not two. The subtree below seeds from this
+           click and then tightens the estimate without moving the base; if the result does not
+           explain the live scan it puts this click back, so the worst case here is exactly what a
+           click-only localization would have left in the filter.
 
-           Do NOT widen yaw_std_dev. Heading is the axis a click is worst at, and a cloud spread
-           wide in yaw is exactly how a filter converges facing the wrong way.-->
-      <Action
-        ID="SeedLocalizationAtPose"
-        name="Seed the particle filter at the clicked pose"
-        pose="{initial_pose}"
-        xy_std_dev="0.500000"
-        yaw_std_dev="0.260000"
-        initial_pose_topic="/initialpose"
+           The refinement is the SAME subtree "Refine Localization In Place" runs on its own. Keep
+           it that way: two copies of a tree that gates a safety-relevant belief is two things to
+           keep in step.-->
+      <SubTree
+        ID="Refine Localization In Place Subtree"
+        name="Tighten the estimate without moving"
+        seed_pose="{initial_pose}"
+        xy_std_dev="0.5"
+        yaw_std_dev="0.26"
+        num_updates="20"
+        drift_limit="1.2"
+        yaw_drift_limit="0.52"
+        inlier_distance="0.15"
+        min_inlier_fraction="0.8"
+        refined_pose="{refined_pose}"
+        refined_transform="{refined_transform}"
+        seed_to_refined="{seed_to_refined}"
+        inlier_fraction="{inlier_fraction}"
+        median_residual="{median_residual}"
+        beams_used="{beams_used}"
       />
     </Control>
   </BehaviorTree>

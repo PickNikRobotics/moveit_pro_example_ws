@@ -92,8 +92,8 @@ BT::NodeStatus SeedLocalizationAtPose::tick()
       getInput<double>(kPortYawStdDev), getInput<std::string>(kPortTopic), getInput<double>(kPortSubscriberTimeout));
   if (!ports.has_value())
   {
-    getBehaviorContext()->logger->publishFailureMessage(
-        name(), "SeedLocalizationAtPose: missing required input: " + ports.error());
+    getBehaviorContext()->logger->publishFailureMessage(name(), "SeedLocalizationAtPose: missing required input: " +
+                                                                    ports.error());
     return BT::NodeStatus::FAILURE;
   }
   const auto& [pose, xy_std_dev, yaw_std_dev, topic, subscriber_timeout] = ports.value();
@@ -122,8 +122,8 @@ BT::NodeStatus SeedLocalizationAtPose::tick()
     return std::static_pointer_cast<rclcpp::PublisherBase>(
         node->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>(topic, rclcpp::QoS(1).reliable()));
   });
-  auto publisher = std::static_pointer_cast<rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>>(
-      publisher_base);
+  auto publisher =
+      std::static_pointer_cast<rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>>(publisher_base);
 
   const auto deadline = std::chrono::steady_clock::now() + std::chrono::duration<double>(subscriber_timeout);
   while (publisher->get_subscription_count() == 0)

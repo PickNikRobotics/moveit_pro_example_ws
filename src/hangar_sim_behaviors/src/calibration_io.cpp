@@ -69,11 +69,10 @@ GridDump readGridDump(std::istream& input)
 
   if (dump.info.width <= 0 || dump.info.height <= 0)
   {
-    throw std::runtime_error(fmt::format("grid dimensions must be positive, got {} x {}", dump.info.width,
-                                         dump.info.height));
+    throw std::runtime_error(
+        fmt::format("grid dimensions must be positive, got {} x {}", dump.info.width, dump.info.height));
   }
-  const auto expected =
-      static_cast<std::size_t>(dump.info.width) * static_cast<std::size_t>(dump.info.height);
+  const auto expected = static_cast<std::size_t>(dump.info.width) * static_cast<std::size_t>(dump.info.height);
   dump.data.reserve(expected);
   int value = 0;
   while (input >> value)
@@ -129,8 +128,8 @@ std::vector<ScanSample> readScanSamples(std::istream& input)
       std::string token;
       if (!(stream >> token))
       {
-        throw std::runtime_error(fmt::format("sample '{}' promised {} ranges but carries {}", sample.label, count,
-                                             sample.ranges.size()));
+        throw std::runtime_error(
+            fmt::format("sample '{}' promised {} ranges but carries {}", sample.label, count, sample.ranges.size()));
       }
       // "inf" and "nan" are written literally so a no-return stays a no-return through the round
       // trip; writing them as a large finite number would quietly turn them into scored beams.

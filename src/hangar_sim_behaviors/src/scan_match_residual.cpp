@@ -149,9 +149,8 @@ BT::NodeStatus ScanMatchResidual::tick()
   if (!waitForOneMessage(node, map_topic, rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable(), timeout, map))
   {
     getBehaviorContext()->logger->publishFailureMessage(
-        name(),
-        fmt::format("ScanMatchResidual: no map on '{}' within {:.1f} s. Is map_server up and activated?", map_topic,
-                    timeout));
+        name(), fmt::format("ScanMatchResidual: no map on '{}' within {:.1f} s. Is map_server up and activated?",
+                            map_topic, timeout));
     return BT::NodeStatus::FAILURE;
   }
 
@@ -163,12 +162,10 @@ BT::NodeStatus ScanMatchResidual::tick()
                            map.info.origin.position.y != cached_map_info_.origin.position.y;
   if (map_changed)
   {
-    const localization::GridInfo info{ static_cast<int>(map.info.width),
-                                       static_cast<int>(map.info.height),
-                                       map.info.resolution,
-                                       map.info.origin.position.x,
-                                       map.info.origin.position.y,
-                                       tf2::getYaw(map.info.origin.orientation) };
+    const localization::GridInfo info{
+      static_cast<int>(map.info.width), static_cast<int>(map.info.height), map.info.resolution,
+      map.info.origin.position.x,       map.info.origin.position.y,        tf2::getYaw(map.info.origin.orientation)
+    };
     field_ = localization::buildDistanceField(info, map.data, max_obstacle_distance);
     if (!field_.valid())
     {
@@ -192,9 +189,9 @@ BT::NodeStatus ScanMatchResidual::tick()
 
   const localization::ScanGeometry geometry{ scan.angle_min, scan.angle_increment, scan.range_min, scan.range_max };
   const double yaw = tf2::getYaw(pose.pose.orientation);
-  const auto stats = localization::computeScanResidual(field_, geometry, scan.ranges, max_beams, min_range, max_range,
-                                                       inlier_distance, pose.pose.position.x, pose.pose.position.y,
-                                                       yaw);
+  const auto stats =
+      localization::computeScanResidual(field_, geometry, scan.ranges, max_beams, min_range, max_range, inlier_distance,
+                                        pose.pose.position.x, pose.pose.position.y, yaw);
 
   setOutput(kPortInlierFraction, stats.inlier_fraction);
   setOutput(kPortMedianResidual, stats.median_residual);
