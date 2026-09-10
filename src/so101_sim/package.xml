@@ -4,8 +4,8 @@
   <version>9.5.0</version>
 
   <description>
-    A MoveIt Pro configuration for a stock LeRobot SO-101 follower arm, running
-    on mock hardware.
+    A MoveIt Pro configuration for a LeRobot SO-101 follower arm, fitted with
+    the XLeRobot soft fin-ray gripper, running on mock hardware.
   </description>
 
   <maintainer email="support@picknik.ai">MoveIt Pro Maintainer</maintainer>

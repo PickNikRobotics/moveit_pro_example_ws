@@ -36,6 +36,9 @@
   <material name="sts3215">
     <color rgba="0.1 0.1 0.1 1.0"/>
   </material>
+  <material name="tpu_fin">
+    <color rgba="0.12 0.12 0.13 1.0"/>
+  </material>
   
   <!-- Link overhead camera mount --> 
   <link name="overhead_camera_mount_link">
@@ -389,18 +392,37 @@
         <mesh filename="package://so101_sim/description/assets/sts3215_03a_v1.stl"/>
       </geometry>
     </collision>
-    <!-- Part wrist_roll_follower_so101_v1 -->
+    <!-- Part soft_fin_fixed_jaw: the XLeRobot fin-gripper replacement for
+         wrist_roll_follower_so101_v1. Same servo bracket and the same mesh
+         frame as the stock part, so this keeps the stock part's origin; the
+         moulded fixed finger is gone, replaced by the fork below. -->
     <visual>
       <origin xyz="8.32667e-17 -0.000218214 0.000949706" rpy="-3.14159 -5.55112e-17 0"/>
       <geometry>
-        <mesh filename="package://so101_sim/description/assets/wrist_roll_follower_so101_v1.stl"/>
+        <mesh filename="package://so101_sim/description/assets/soft_fin_fixed_jaw.stl"/>
       </geometry>
       <material name="3d_printed"><color rgba="0.05 0.05 0.05 1.0"/></material>
     </visual>
     <collision>
       <origin xyz="8.32667e-17 -0.000218214 0.000949706" rpy="-3.14159 -5.55112e-17 0"/>
       <geometry>
-        <mesh filename="package://so101_sim/description/assets/wrist_roll_follower_so101_v1.stl"/>
+        <mesh filename="package://so101_sim/description/assets/soft_fin_fixed_jaw_collision.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part soft_fin_finger, fixed side. The finger mesh is stored in a frame
+         built from its own screw pair, so this origin is just the fixed jaw's
+         two-bore frame. -->
+    <visual>
+      <origin xyz="-0.02275 0.000781901 -0.0425503" rpy="2.66224e-06 -0.0806329 -2.14431e-07"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/soft_fin_finger.stl"/>
+      </geometry>
+      <material name="tpu_fin"><color rgba="0.12 0.12 0.13 1.0"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.02275 0.000781901 -0.0425503" rpy="2.66224e-06 -0.0806329 -2.14431e-07"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/soft_fin_finger.stl"/>
       </geometry>
     </collision>
 </link>
@@ -477,18 +499,35 @@
       <mass value="0.012"/>
       <inertia ixx="6.61427e-06" ixy="-3.19807e-07" ixz="-5.90717e-09" iyy="1.89032e-06" iyz="-1.09945e-07" izz="5.28738e-06"/>
     </inertial>
-    <!-- Part moving_jaw_so101_v1 -->
+    <!-- Part soft_fin_moving_jaw: the XLeRobot fin-gripper replacement for
+         moving_jaw_so101_v1. Same pivot yoke and mesh frame as the stock part,
+         so this keeps the stock part's origin; the moulded blade is gone,
+         replaced by the fork below. -->
     <visual>
       <origin xyz="-5.55112e-17 -5.55112e-17 0.0189" rpy="9.53145e-17 6.93889e-18 1.24077e-24"/>
       <geometry>
-        <mesh filename="package://so101_sim/description/assets/moving_jaw_so101_v1.stl"/>
+        <mesh filename="package://so101_sim/description/assets/soft_fin_moving_jaw.stl"/>
       </geometry>
       <material name="3d_printed"><color rgba="0.05 0.05 0.05 1.0"/></material>
     </visual>
     <collision>
       <origin xyz="-5.55112e-17 -5.55112e-17 0.0189" rpy="9.53145e-17 6.93889e-18 1.24077e-24"/>
       <geometry>
-        <mesh filename="package://so101_sim/description/assets/moving_jaw_so101_v1.stl"/>
+        <mesh filename="package://so101_sim/description/assets/soft_fin_moving_jaw_collision.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part soft_fin_finger, moving side: the moving jaw's two-bore frame. -->
+    <visual>
+      <origin xyz="-0.00115 -0.0222 0.0181" rpy="1.5708 -1.07812e-17 3.10121"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/soft_fin_finger.stl"/>
+      </geometry>
+      <material name="tpu_fin"><color rgba="0.12 0.12 0.13 1.0"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.00115 -0.0222 0.0181" rpy="1.5708 -1.07812e-17 3.10121"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/soft_fin_finger.stl"/>
       </geometry>
     </collision>
 </link>

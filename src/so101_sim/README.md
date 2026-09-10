@@ -1,7 +1,7 @@
 # so101_sim
 
-A MoveIt Pro configuration for a stock LeRobot SO-101 follower arm on **mock
-hardware**. It brings up a digital twin of the arm in the MoveIt Pro UI, driven
+A MoveIt Pro configuration for a LeRobot SO-101 follower arm, fitted with the
+XLeRobot soft fin-ray gripper, on **mock hardware**. It brings up a digital twin of the arm in the MoveIt Pro UI, driven
 by a joint source outside the Runtime. There is no MuJoCo model and no physics.
 
 Run it:
@@ -45,7 +45,7 @@ When a live joint source is added (phase two), it publishes into the same
 
 | Path | What it is |
 |---|---|
-| `description/so101.urdf.xacro` | The arm, with a `hardware_interface: mock \| real` switch. Meshes are the upstream LeRobot description; see `description/assets/NOTICE.md`. |
+| `description/so101.urdf.xacro` | The arm, with a `hardware_interface: mock \| real` switch. The arm meshes are the upstream LeRobot description and the gripper meshes are XLeRobot's soft fin-ray parts; both are recorded in `description/assets/NOTICE.md`. |
 | `config/control/so101.ros2_control.yaml` | `joint_state_broadcaster`, a `joint_trajectory_controller` over all six joints (gripper included), and the two teleop jog controllers — `joint_velocity_controller` and `velocity_force_controller` — over the five arm joints. |
 | `config/moveit/` | SRDF, joint limits, IK (`PoseIKPlugin`, `optimize_distance` — the SO-101 is 5-DOF and cannot hit arbitrary 6-DOF poses), and the jog configs. |
 | `script/so101_arm_bridge.py` | The joint source. `--fake` publishes a sine; `--real` is a phase-two stub. |
