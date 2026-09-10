@@ -46,6 +46,20 @@ values ARE the base pose in the map frame -- independent of anything the localiz
 substitute a TF lookup of map -> ridgeback_base_link here: that chain runs through AMCL's own
 map -> odom estimate, so it would be scoring the localizer against itself.
 
+PRECONDITION FOR A DRIVEN MULTI-POSE CAMPAIGN -- read this before capturing on the move. A sample
+pairs the latest cached /scan_merged with the latest cached virtual-rail joint state. There is no
+stamp comparison between the two and no stationarity check, so the pairing is exact only while the
+base is standing still. That is why the shipped one-pose calibration is unaffected. It does not
+survive driving: at ~0.5 m/s a scan one 10 Hz frame plus one timer period old puts the robot tens
+of centimetres from the pose recorded beside it -- well outside the 0.15 m inlier band -- so the
+true-pose score comes back depressed and whoever reads the report sets the threshold LOWER than the
+map warrants, which is the direction that lets a wrong pose through.
+
+The driven multi-pose campaign the gate still owes must therefore either stop the base at each
+sample and capture only while stationary, or add stamp synchronisation here first: gate capture on
+the virtual-rail joint velocities being near zero, or reject a sample whose scan stamp and
+joint-state stamp differ by more than one frame. Do not run it against this script as written.
+
     ros2 run hangar_sim dump_localization_calibration_data.py --output-dir /tmp/calib --samples 40
 """
 

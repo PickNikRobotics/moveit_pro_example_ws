@@ -31,6 +31,7 @@
 import math
 import time
 from pathlib import Path
+from xml.etree import ElementTree
 
 import pytest
 import rclpy
@@ -179,17 +180,59 @@ EXECUTE_TIMEOUT_OVERRIDES_S = {
 # The drift gate is deliberately left alone, so the run still asserts that the
 # refinement stayed inside the seeded region.
 REFINE_LOCALIZATION_OBJECTIVE = "Refine Localization In Place"
-# The `name` attribute of the SubTree node in the Objective XML. The objective server
-# resolves `behavior_namespaces` against subtree instance names, and an override with
-# no namespace targets only the root tree -- which does not wire this port. Keep this
-# string in step with objectives/refine_localization_in_place.xml.
-REFINE_SUBTREE_NAMESPACE = "Tighten the estimate without moving"
-# objective id -> list of (subtree instance name, port name, YAML value).
-REPORT_ONLY_GATE_OVERRIDES: dict[str, list[tuple[str, str, str]]] = {
-    REFINE_LOCALIZATION_OBJECTIVE: [
-        (REFINE_SUBTREE_NAMESPACE, "min_inlier_fraction", "-1.0"),
-    ],
+REFINE_SUBTREE_ID = "Refine Localization In Place Subtree"
+_OBJECTIVES_DIR = Path(__file__).parent.parent / "objectives"
+# objective id -> list of (port name, YAML value), all scoped to the subtree below.
+REPORT_ONLY_GATE_OVERRIDES: dict[str, list[tuple[str, str]]] = {
+    REFINE_LOCALIZATION_OBJECTIVE: [("min_inlier_fraction", "-1.0")],
 }
+# objective id -> (Objective XML file, ID of the SubTree node the override targets).
+OVERRIDE_SUBTREE_BY_ID: dict[str, tuple[str, str]] = {
+    REFINE_LOCALIZATION_OBJECTIVE: (
+        "refine_localization_in_place.xml",
+        REFINE_SUBTREE_ID,
+    ),
+}
+
+
+def _subtree_instance_name(objective_xml: str, subtree_id: str) -> str:
+    """Resolve the namespace a parameter override must carry to reach ``subtree_id``.
+
+    The objective server matches ``behavior_namespaces`` against subtree INSTANCE
+    names -- the SubTree node's ``name`` attribute, falling back to its ``ID`` when
+    the attribute is absent -- and an override whose namespace matches nothing is
+    warned about and skipped, leaving the goal to run with the shipped defaults. Read
+    the name out of the Objective XML rather than repeating it here so a rename
+    cannot silently retarget the override at nothing; if the SubTree reference is
+    gone or renamed, fail here with a message that says so instead.
+
+    The Objective XML is the interface being addressed, not evidence of behaviour:
+    it is where the runtime looks up this exact identifier. What the run proves is
+    asserted on the objective's result, below.
+    """
+    path = _OBJECTIVES_DIR / objective_xml
+    root = ElementTree.parse(path).getroot()
+    names = [
+        node.get("name", subtree_id)
+        for tree in root.findall("BehaviorTree")
+        for node in tree.iter("SubTree")
+        if node.get("ID") == subtree_id
+    ]
+    if not names:
+        pytest.fail(
+            f"No SubTree node with ID {subtree_id!r} in {path}, so a parameter "
+            f"override has no namespace to target. The objective server SKIPS an "
+            f"override whose namespace matches no subtree -- it does not error -- "
+            f"so leaving this unresolved would silently run the shipped production "
+            f"gate while this test believed it was overridden."
+        )
+    if len(set(names)) != 1:
+        pytest.fail(
+            f"{path} references {subtree_id!r} under more than one instance name "
+            f"({sorted(set(names))}); an override would reach all of them. Name the "
+            f"intended one explicitly before relying on this."
+        )
+    return names[0]
 
 
 def _double_override(namespace: str, name: str, value: str) -> BehaviorParameter:
@@ -206,7 +249,7 @@ def _double_override(namespace: str, name: str, value: str) -> BehaviorParameter
 
 def _run_objective_with_overrides(
     objective_id: str,
-    overrides: list[tuple[str, str, str]],
+    overrides: list[tuple[str, str]],
     resource: ExecuteObjectiveResource,
     objective_wait_time: float,
 ) -> None:
@@ -215,10 +258,12 @@ def _run_objective_with_overrides(
     ``run_objective`` does not expose ``parameter_overrides``, so this mirrors its
     non-cancel branch. Keep the assertions in step with it.
     """
+    objective_xml, subtree_id = OVERRIDE_SUBTREE_BY_ID[objective_id]
+    namespace = _subtree_instance_name(objective_xml, subtree_id)
     request = ExecuteObjective.Request()
     request.objective_name = objective_id
     request.parameter_overrides = [
-        _double_override(namespace, name, value) for namespace, name, value in overrides
+        _double_override(namespace, name, value) for name, value in overrides
     ]
     future = resource.call_execute_objective_async(request)
     response = resource.spin_until_future_complete(
@@ -232,11 +277,10 @@ def _run_objective_with_overrides(
     assert response.error_code.val == MoveItErrorCodes.SUCCESS, (
         f"Objective '{objective_id}' returned error_code "
         f"{response.error_code.val}: '{response.error_code.message}'. "
-        f"If the message names an unknown parameter override, the namespace in "
-        f"REPORT_ONLY_GATE_OVERRIDES no longer matches the SubTree node's name "
-        f"attribute in the Objective XML; if it does not, the tree itself failed "
-        f"(the fit-to-map gate is report-only for this run, so a failure here is "
-        f"the seed, the no-motion loop, or the drift gate)."
+        f"The override namespace was resolved from the shipped Objective XML and "
+        f"the port name is checked by the server, so this is the tree itself "
+        f"failing: with the fit-to-map gate report-only for this run, suspect the "
+        f"seed, the forced no-motion loop, or the drift gate."
     )
 
 # Action servers the hangar_sim tree types need before any objective runs.

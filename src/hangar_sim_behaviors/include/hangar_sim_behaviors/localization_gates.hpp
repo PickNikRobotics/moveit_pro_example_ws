@@ -54,8 +54,15 @@ inline constexpr std::int8_t kOccupiedValue = 100;
  *
  * MEASURED on hangar_map with this robot's merged scan, using this same scoring code against the
  * grid map_server actually publishes: the true pose scores 87.0%, a pose 0.10 m / 1 deg off scores
- * 69.6%, and the strongest alias found anywhere on the map scores 34.8%. That is a 52-point
- * separation, against the ~21 points meta_ws measured on theirs.
+ * 69.6%, a pose 0.25 m / 3 deg off scores 30.4%, and the strongest alias found anywhere on the map
+ * scores 47.8%, at (1.28, -0.02). That is a 39.1-point separation, against the ~21 points meta_ws
+ * measured on theirs.
+ *
+ * The alias figure was re-measured after `calibrate_scan_match_gate` narrowed its alias keepout
+ * from 2.0 m to the drift limit, 1.2 m. The stronger alias sits 1.28 m from the truth -- inside the
+ * 1.2-2.0 m annulus the old keepout skipped, which is exactly the region the narrowing was made to
+ * cover, because the drift gate can accept a pose anywhere within 1.2 m of the seed. The earlier
+ * table read 34.8% and 52.2 points; those numbers described a sweep that never scored this pose.
  *
  * Two things about that measurement are worth carrying. Only 23 of the 60 selected beams survive
  * the range filters on this robot, so the fraction moves in steps of about 4.3 points -- the gate
@@ -72,7 +79,7 @@ inline constexpr double kInlierDistance = 0.15;
  * 0.60, not the 0.80 meta_ws uses. 0.80 sits only 7 points under the true pose here AND above the
  * 69.6% a 0.10 m error scores, while the refinement itself returns about 6.5 cm -- so 0.80 would
  * reject the refinements this loop legitimately produces. 0.60 still clears the strongest alias on
- * the map by 25 points.
+ * the map by about 12 points: 47.8, then 60, then the true pose at 87.0.
  */
 inline constexpr double kMinInlierFraction = 0.60;
 /** @} */

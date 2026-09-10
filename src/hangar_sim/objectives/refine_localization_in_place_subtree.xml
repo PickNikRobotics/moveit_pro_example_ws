@@ -232,9 +232,21 @@
           />
           <!--Restore. A rejected or interrupted refinement must NOT be left in the filter: it can
                sit metres from where the operator pointed, and nothing downstream could tell.
-               Putting the click back makes the worst case identical to running Localize Robot on
-               its own, which is what makes this a strict improvement rather than a new risk. If
-               this restore call itself fails, the Sequence fails and the subtree still exits
+               Putting the seed back makes the worst case identical to running Localize Robot on
+               its own - AT COLD BOOT. That is where the "strict improvement rather than a new
+               risk" claim inherited from meta_ws holds, and only there.
+
+               It does NOT hold when this runs over an estimate that was already good, and that
+               was measured in simulation rather than argued. A filter sitting at 9.4 cm error,
+               given a seed 1.0 m off, went to 93.6 cm; the refinement recovered it to 4.4 cm; and
+               re-seeding that same bad pose - exactly what this branch does on gate rejection -
+               left the filter at 95.6 cm. So on a re-run the restore can replace a good estimate
+               with the bad input it was handed. Reaching for "Refine Localization In Place"
+               instead avoids it, because that Objective seeds from the filter's own estimate, so
+               its restore puts back what was already there. Making the restore itself safe on a
+               re-run is follow-up work, not a change to make from here.
+
+               If this restore call itself fails, the Sequence fails and the subtree still exits
                FAILURE rather than pretending the filter is in a known state.
 
                seed_pose must stay the CLICK for this to work, so the caller must not remap
@@ -311,10 +323,23 @@
         map. CALIBRATED ON
         hangar_map with the shipped scoring code, against the grid map_server
         actually publishes:
-        the true pose scores 87.0%, a pose 0.10 m / 1 deg off scores 69.6%, and
-        the strongest
-        alias found anywhere on the map scores 34.8% - a separation of 52
-        points.
+        the true pose scores 87.0%, a pose 0.10 m / 1 deg off scores 69.6%, a
+        pose 0.25 m / 3 deg
+        off scores 30.4%, and the strongest alias found anywhere on the map
+        scores 47.8%, at
+        (1.28, -0.02) - a separation of 39.1 points.
+
+        That alias figure was re-measured after calibrate_scan_match_gate
+        narrowed its alias
+        keepout from 2.0 m to the drift limit, 1.2 m. The stronger alias sits
+        1.28 m from the
+        truth, inside the 1.2-2.0 m annulus the old keepout skipped, which is
+        exactly the region
+        the narrowing was made to cover: the drift gate can accept a pose
+        anywhere within 1.2 m of
+        the seed. The earlier table read 34.8% and 52.2 points, which described
+        a sweep that never
+        scored this pose.
 
         0.6 rather than the 0.8 meta_ws uses. 0.8 sits only 7 points under the
         true pose AND above
@@ -322,7 +347,7 @@
         about 6.5 cm, so 0.8
         would reject the refinements this loop legitimately produces. 0.6 still
         clears the
-        strongest alias by 25 points.
+        re-measured strongest alias by about 12 points.
 
         Note the granularity: only 23 of the 60 selected beams survive the range
         filters on this

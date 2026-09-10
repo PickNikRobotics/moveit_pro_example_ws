@@ -32,6 +32,7 @@ namespace
 using hangar_sim_behaviors::localization::buildDistanceField;
 using hangar_sim_behaviors::localization::computeScanResidual;
 using hangar_sim_behaviors::localization::GridInfo;
+using hangar_sim_behaviors::localization::kMinInlierFraction;
 using hangar_sim_behaviors::localization::ScanGeometry;
 using hangar_sim_behaviors::localization::takeEvenlyIndices;
 
@@ -323,7 +324,8 @@ TEST(ScanResidual, ADisplacedPoseFitsTheMapWorse)
   const auto displaced = computeScanResidual(field, geometry, ranges, 60, 0.0, 25.0, 0.15, x + 0.5, y, 0.0);
 
   EXPECT_LT(displaced.inlier_fraction, truth.inlier_fraction);
-  EXPECT_LT(displaced.inlier_fraction, 0.8) << "a 0.5 m error must not clear the shipped threshold";
+  EXPECT_LT(displaced.inlier_fraction, kMinInlierFraction)
+      << "a 0.5 m error must not clear the shipped threshold";
 }
 
 TEST(ScanResidual, ARotatedPoseFitsTheMapWorse)
