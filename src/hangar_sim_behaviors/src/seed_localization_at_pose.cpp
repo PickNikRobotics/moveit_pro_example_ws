@@ -18,7 +18,6 @@
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <rclcpp/publisher.hpp>
 #include <rclcpp/qos.hpp>
-#include <tf2/utils.hpp>
 
 #include <chrono>
 #include <cmath>
@@ -147,7 +146,7 @@ BT::NodeStatus SeedLocalizationAtPose::tick()
   // feeding that through would leave the filter a quaternion whose yaw is not the yaw that was meant.
   // Anything that later measures against this seed must project the same way -- see ProjectPoseToPlane.
   seed.pose.pose = localization::projectToPlane(pose.pose);
-  const double yaw = tf2::getYaw(seed.pose.pose.orientation);
+  const double yaw = localization::yawOf(seed.pose.pose.orientation);
 
   seed.pose.covariance[kCovarianceXX] = xy_std_dev * xy_std_dev;
   seed.pose.covariance[kCovarianceYY] = xy_std_dev * xy_std_dev;

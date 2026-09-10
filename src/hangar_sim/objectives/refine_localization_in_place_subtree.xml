@@ -300,7 +300,8 @@
         Accept only if at least this fraction of scored beams fit the
         map. PROVISIONAL: inherited from meta_ws and not yet measured against
         hangar_map. Measure it with
-        `ros2 run hangar_sim_behaviors calibrate_scan_match_gate`, and re-measure
+        `ros2 run hangar_sim_behaviors calibrate_scan_match_gate`, and
+        re-measure
         after every map rebuild: a
         threshold measured on a different map is not a gate.
       </input_port>

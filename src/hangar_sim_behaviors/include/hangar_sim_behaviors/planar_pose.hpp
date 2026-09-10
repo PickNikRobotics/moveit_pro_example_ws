@@ -7,7 +7,6 @@
 #pragma once
 
 #include <geometry_msgs/msg/pose.hpp>
-#include <tf2/utils.hpp>
 
 #include <cmath>
 
@@ -23,6 +22,21 @@
 namespace hangar_sim_behaviors::localization
 {
 /**
+ * @brief Yaw of a message quaternion, without going through tf2.
+ *
+ * tf2::getYaw resolves via tf2::fromMsg, which is an inline in tf2_geometry_msgs.hpp rather than in
+ * tf2/utils.hpp. Getting that to link depends on include ORDER, because two-phase lookup needs the
+ * definition visible before the template that calls it -- and this repository sorts includes. The
+ * failure is also badly placed: object files compile and the shared library links, and only an
+ * executable linking that library fails. Two lines of atan2 remove the dependency and the ordering
+ * hazard together, and yaw is the only rotation a 2D localizer carries.
+ */
+inline double yawOf(const geometry_msgs::msg::Quaternion& q)
+{
+  return std::atan2(2.0 * (q.w * q.z + q.x * q.y), 1.0 - 2.0 * (q.y * q.y + q.z * q.z));
+}
+
+/**
  * @brief Drop everything the 2D localizer does not carry: keep x, y and yaw, zero z, roll and pitch.
  *
  * A pose picked off a surface carries whatever roll and pitch that surface had, and whatever height
@@ -36,7 +50,7 @@ inline geometry_msgs::msg::Pose projectToPlane(const geometry_msgs::msg::Pose& p
   planar.position.y = pose.position.y;
   planar.position.z = 0.0;
 
-  const double yaw = tf2::getYaw(pose.orientation);
+  const double yaw = yawOf(pose.orientation);
   planar.orientation.x = 0.0;
   planar.orientation.y = 0.0;
   planar.orientation.z = std::sin(yaw * 0.5);

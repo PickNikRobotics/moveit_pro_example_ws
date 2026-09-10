@@ -4,6 +4,7 @@
 // Unauthorized copying of this code base via any medium is strictly prohibited.
 // Proprietary and confidential.
 
+#include <hangar_sim_behaviors/planar_pose.hpp>
 #include <hangar_sim_behaviors/scan_match_residual.hpp>
 #include <hangar_sim_behaviors/wait_for_one_message.hpp>
 
@@ -16,7 +17,6 @@
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <nav_msgs/msg/occupancy_grid.hpp>
 #include <sensor_msgs/msg/laser_scan.hpp>
-#include <tf2/utils.hpp>
 
 #include <algorithm>
 #include <cmath>
@@ -155,18 +155,20 @@ BT::NodeStatus ScanMatchResidual::tick()
   }
 
   const bool map_changed =
-      !field_.valid() || map_topic != cached_map_topic_ ||
-      max_obstacle_distance != cached_max_obstacle_distance_ || map.info.width != cached_map_info_.width ||
-      map.info.height != cached_map_info_.height || map.info.resolution != cached_map_info_.resolution ||
+      !field_.valid() || map_topic != cached_map_topic_ || max_obstacle_distance != cached_max_obstacle_distance_ ||
+      map.info.width != cached_map_info_.width || map.info.height != cached_map_info_.height ||
+      map.info.resolution != cached_map_info_.resolution ||
       map.info.origin.position.x != cached_map_info_.origin.position.x ||
       map.info.origin.position.y != cached_map_info_.origin.position.y ||
       map.info.origin.orientation != cached_map_info_.origin.orientation || map.data != cached_map_data_;
   if (map_changed)
   {
-    const localization::GridInfo info{
-      static_cast<int>(map.info.width), static_cast<int>(map.info.height), map.info.resolution,
-      map.info.origin.position.x,       map.info.origin.position.y,        tf2::getYaw(map.info.origin.orientation)
-    };
+    const localization::GridInfo info{ static_cast<int>(map.info.width),
+                                       static_cast<int>(map.info.height),
+                                       map.info.resolution,
+                                       map.info.origin.position.x,
+                                       map.info.origin.position.y,
+                                       localization::yawOf(map.info.origin.orientation) };
     field_ = localization::buildDistanceField(info, map.data, max_obstacle_distance);
     if (!field_.valid())
     {
@@ -190,7 +192,7 @@ BT::NodeStatus ScanMatchResidual::tick()
   }
 
   const localization::ScanGeometry geometry{ scan.angle_min, scan.angle_increment, scan.range_min, scan.range_max };
-  const double yaw = tf2::getYaw(pose.pose.orientation);
+  const double yaw = localization::yawOf(pose.pose.orientation);
   const auto stats =
       localization::computeScanResidual(field_, geometry, scan.ranges, max_beams, min_range, max_range, inlier_distance,
                                         pose.pose.position.x, pose.pose.position.y, yaw);
