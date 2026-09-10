@@ -31,6 +31,7 @@ git submodule update --init src/moveit_pro_sam2 src/moveit_pro_sam3
 - `lab_sim`
 - `lunar_sim`
 - `phoebe_sim`
+- `so101_sim`
 - `vla_sim`
 - `moveit_pro_franka_configs/franka_base_config`
 - `moveit_pro_kinova_configs/kinova_gen3_base_config`

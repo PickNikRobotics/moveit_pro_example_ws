@@ -95,21 +95,20 @@ def to_radians(degrees, signs, offsets):
     return [math.radians((d - o) * s) for d, o, s in zip(degrees, offsets, signs)]
 
 
-def order_like(names, values, wanted=None):
-    """Reorder ``values`` from ``names`` into ``wanted`` (default JOINT_NAMES).
+def order_like(names, values):
+    """Reorder ``values`` from ``names`` into JOINT_NAMES order.
 
     The bus and the controller both speak in joint names, but not necessarily in
     the same order, and a silently transposed pair is the kind of bug that only
     shows up as a robot bending the wrong way.
     """
-    wanted = JOINT_NAMES if wanted is None else wanted
     if len(names) != len(values):
         raise ValueError(f"{len(names)} names but {len(values)} values")
     lookup = dict(zip(names, values))
-    missing = [n for n in wanted if n not in lookup]
+    missing = [n for n in JOINT_NAMES if n not in lookup]
     if missing:
         raise KeyError(f"missing joints: {missing}")
-    return [lookup[n] for n in wanted]
+    return [lookup[n] for n in JOINT_NAMES]
 
 
 def fake_positions(elapsed_s, period_s):

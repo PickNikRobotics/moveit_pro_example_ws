@@ -22,9 +22,12 @@ messages restarts its trajectory on every tick, so a plan's goal would be
 accepted and then hang forever, or abort on a path tolerance the moving twin
 violated. The Objective keeps mirroring alive by ticking the bridge's
 `~/mirror` `Trigger` service in a loop; one second without a tick and the bridge
-goes quiet. As a second guard, the bridge also stays quiet while a
-`follow_joint_trajectory` goal is live, so an execution that starts anyway still
-wins.
+goes quiet. That heartbeat gate is the primary guard: **stop the Mirror
+Objective before planning or executing a motion.** The bridge also skips a
+publish while it believes a `follow_joint_trajectory` goal is live, but that is
+best-effort only — the flag is set from `GoalStatusArray` messages, so a goal
+started while the Mirror Objective is still publishing can lose the race with a
+20 ms bridge tick.
 
 ## Execution to hardware is out of scope
 
