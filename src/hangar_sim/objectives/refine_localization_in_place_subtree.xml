@@ -24,10 +24,20 @@
         yaw_std_dev="{yaw_std_dev}"
         initial_pose_topic="/initialpose"
       />
-      <!--Everything after the seed lives inside this Fallback's first branch, so ANY post-seed
-           failure - the settle wait, the refinement loop, either gate - falls through to the
-           branch that puts the seed back before failing. The subtree must never exit with the
-           filter holding anything other than a pose that passed both gates, or the click itself.-->
+      <!--Everything after the seed lives inside this Fallback's first branch, so any post-seed
+           FAILURE - the settle wait, the refinement loop, either gate - falls through to the
+           branch that puts the seed back before failing. So on every FAILURE path the filter is
+           left holding either a pose that passed both gates or the seed itself.
+
+           CANCELLATION IS NOT COVERED, because a BT halt is not a failure. If the operator
+           cancels while the Repeat loop or ScanMatchResidual is running, this Fallback is halted
+           and the restore SeedLocalizationAtPose never ticks, so the filter is left holding a
+           partially refined, ungated pose. What makes that tolerable rather than dangerous is
+           the same bound the rest of this subtree rests on: a forced no-motion update can only
+           SELECT among the particles the seed scattered, so the leftover pose sits within
+           roughly 4 * xy_std_dev of the seed - comparable to a sloppy seed, not to an arbitrary
+           wrong pose. Do not read the FAILURE guarantee above as an invariant over cancellation;
+           the tree does not enforce one.-->
       <Control
         ID="Fallback"
         name="Refine and verify, or put the seed back and fail"

@@ -62,8 +62,16 @@ struct SweepSettings
   double max_range = localization::kLaserMaxRange;
   double max_obstacle_distance = localization::kMaxObstacleDistance;
   double inlier_distance = localization::kInlierDistance;
-  /// A candidate this close to the truth is the truth, not an alias.
-  double alias_keepout_m = 2.0;
+  /// A candidate this close to the truth is treated as the truth rather than an alias.
+  ///
+  /// Tied to the shipped drift gate on purpose. The gate is explicitly allowed to move the belief
+  /// up to kDriftLimit from the seed, so every pose inside that radius is a pose the gate CAN
+  /// accept and therefore a pose the sweep has to score. A keepout wider than the drift limit
+  /// would report a safe threshold band over a region it never evaluated: a wrong pose sitting
+  /// between the drift limit and the keepout could outscore the band's lower edge and still be
+  /// accepted in production. "This close to the truth is the truth" only holds at inlier_distance
+  /// scale anyway, not at metres.
+  double alias_keepout_m = localization::kDriftLimit;
   /// Coarse sweep stride over the map, metres, and its yaw stride, radians.
   double coarse_stride_m = 0.40;
   double coarse_yaw_stride = M_PI / 18.0;  // 10 degrees
@@ -337,6 +345,9 @@ int main(int argc, char** argv)
             << "settings: max_beams " << settings.max_beams << ", inlier_distance " << settings.inlier_distance
             << " m, range [" << settings.min_range << ", " << settings.max_range << "] m, field truncated at "
             << settings.max_obstacle_distance << " m\n"
+            << "alias sweep: every free cell at least " << settings.alias_keepout_m
+            << " m from the truth -- the shipped drift limit, so the sweep reaches to the far edge of what the\n"
+            << "  drift gate can still accept rather than stopping short of it\n"
             << "samples: " << samples.size() << "\n\n";
 
   double worst_true = 1.0;
@@ -416,7 +427,13 @@ int main(int argc, char** argv)
   else
   {
     std::cout << "A threshold must sit strictly between " << percent(best_alias) << " and " << percent(worst_true)
-              << ".\n";
+              << ".\n"
+              << "That band was measured over every free cell at least " << std::fixed << std::setprecision(2)
+              << settings.alias_keepout_m
+              << " m from the truth, which is the shipped drift limit -- so it now covers\n"
+              << "poses out to the far edge of what the drift gate can still accept. Nearer poses are NOT folded\n"
+              << "in: they are the near-misses this refinement legitimately returns, so read them from the\n"
+              << "offset-ring columns above and keep the threshold BELOW them.\n";
   }
   return EXIT_SUCCESS;
 }

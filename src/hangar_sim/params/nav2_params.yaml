@@ -25,11 +25,13 @@ amcl:
     #
     # That distinction has teeth in this workspace: map -> odom is the only link
     # between the MuJoCo scene frames (cameras under mj_world -> map) and MoveIt's
-    # planning frame (world under odom), so until the filter is seeded every
-    # point-cloud Objective resolves through a meaningless edge, not just the
-    # navigation ones. The integration test seeds the filter once in a fixture for
-    # exactly this reason, and waits for the seed to be taken up rather than for
-    # the edge to appear -- see localized_robot in
+    # planning frame (world under odom). With no such edge the TF tree is in two
+    # disconnected pieces, so until the filter is seeded every point-cloud
+    # Objective fails its transform lookup outright -- not just the navigation
+    # ones, and not with a pose that is merely wrong. The integration test seeds
+    # the filter once in a fixture for exactly this reason, and waits for the
+    # map -> odom edge to appear, because with no edge before the seed the edge
+    # appearing IS the evidence the seed was consumed -- see localized_robot in
     # test/objectives_integration_test.py.
     #
     # beluga_amcl is 2D: only x, y and yaw are declared (no z). The initial_pose

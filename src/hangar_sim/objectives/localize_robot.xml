@@ -70,12 +70,11 @@
            seeded the filter - leaving nothing that could create the edge it needed. That is a
            deadlock, and it was measured, not argued.
 
-           So the click is RELABELLED rather than transformed. mj_world -> map and odom -> world
-           are both static identities (robot_drivers_to_persist_sim.launch.py), so world
-           coordinates ARE map coordinates while map -> odom is identity, which is its value
-           before any correction exists. The relabel is done by its own node, in the open, so
-           nothing about it is hidden: SeedLocalizationAtPose keeps refusing any pose that is not
-           already in 'map', and that guard is worth keeping.
+           So the pose is RELABELLED rather than transformed. mj_world -> map and odom -> world
+           are both static identities (robot_drivers_to_persist_sim.launch.py). The relabel is
+           done by its own node, in the open, so nothing about it is hidden:
+           SeedLocalizationAtPose keeps refusing any pose that is not already in 'map', and that
+           guard is worth keeping.
 
            NOT A CONTRADICTION OF meta_ws's navigate_to_imarker_pose.xml, which uses
            TransformPoseFrame for the same conversion. That Objective sets a NAVIGATION goal, by
@@ -83,11 +82,34 @@
            transform is right there. This one SEEDS, at cold boot, before the edge exists. Same
            conversion, opposite precondition.
 
-           The remaining limit, stated because it is real: the relabel is exact while map -> odom
-           is identity. Re-running this after the robot has driven, when that edge carries a real
-           correction, would put the click off by exactly that correction. For the bumped-robot
-           case use "Refine Localization In Place", which seeds from the filter's own estimate and
-           never crosses frames at all.-->
+           WHAT THE RELABEL DEPENDS ON. It is exact if and only if the UI does not itself express
+           the pose by transforming through map -> odom. If the marker pose is a raw world-frame
+           pose, relabelling it is exact; if the UI already routed it through map -> odom, the
+           relabel re-applies that edge and lands off by it. Which branch holds has NOT been
+           observed - it needs the MoveIt Pro Desktop App, which cannot be driven headlessly - so
+           do not read either branch as settled here. The marker switch does not change this:
+           AdjustPoseWithIMarker also returns poses in 'world' through the same UI.
+
+           Two things that WERE measured, in simulation:
+
+           (a) How wrong the relabel can be is bounded by |map -> odom|, because that edge is the
+           only thing relabelling can re-apply. Driving the base 1.69 m and rotating it 81.5 deg
+           from a converged estimate moved |map -> odom| from 1.2 cm / 0.92 deg to 6.7 cm /
+           0.02 deg. Read that with its caveat in the same breath: hangar_sim's odometry is
+           MuJoCo ground truth through the virtual-rail joints, so AMCL has almost nothing to
+           correct. On hardware with dead-reckoned odometry that edge grows much larger, so
+           6.7 cm is NOT a hardware bound.
+
+           (b) The restore hazard is real. A good estimate sitting at 9.4 cm error, given a seed
+           1.0 m off, went to 93.6 cm; the refinement recovered it to 4.4 cm; and re-seeding that
+           same bad pose - exactly what the subtree's restore branch does on gate rejection -
+           left the filter at 95.6 cm. So on rejection the restore replaces a good estimate with
+           the bad input: 9.4 cm becomes 95.6 cm.
+
+           Together those make re-running THIS Objective after the robot has driven a KNOWN
+           LIMITATION, not a supported path. For the bumped-robot case use "Refine Localization
+           In Place", which seeds from the filter's own estimate and never crosses frames at all.
+           Fixing the limitation is follow-up work, not something to attempt from inside here.-->
       <Action
         ID="ReinterpretPoseFrame"
         name="Read the click as map coordinates without transforming it"
