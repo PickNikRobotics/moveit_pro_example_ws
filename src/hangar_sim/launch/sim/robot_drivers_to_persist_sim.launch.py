@@ -50,7 +50,19 @@ from launch_ros.actions import Node
 from launch_ros.actions import PushRosNamespace
 from launch_ros.descriptions import ParameterFile
 from launch_ros.substitutions import FindPackageShare
+from moveit_studio_utils_py.system_config import SystemConfigParser
 from nav2_common.launch import RewrittenYaml, ReplaceString
+
+
+def _slam_from_config():
+    """Return config.yaml's urdf_params `slam` value, so operators switch to mapping without editing this file."""
+    urdf_params = (
+        SystemConfigParser().get_hardware_config().robot_description.urdf_params
+    )
+    for param in urdf_params:
+        if "slam" in param:
+            return str(param["slam"])
+    return "False"
 
 
 def _warn_unsupported_localization(context, *args, **kwargs):
@@ -173,7 +185,9 @@ def generate_launch_description():
     )
 
     declare_slam_cmd = DeclareLaunchArgument(
-        "slam", default_value="False", description="Whether run a SLAM"
+        "slam",
+        default_value=_slam_from_config(),
+        description="Build a map with slam_toolbox in place of beluga_amcl. Defaults to config.yaml's urdf_params slam.",
     )
 
     declare_localization_cmd = DeclareLaunchArgument(
@@ -284,6 +298,37 @@ def generate_launch_description():
                     "use_respawn": use_respawn,
                     "params_file": params_file,
                 }.items(),
+            ),
+            # The Objective starts this idle SLAM node through its existing Nav2 lifecycle interface.
+            IncludeLaunchDescription(
+                PythonLaunchDescriptionSource(
+                    os.path.join(
+                        get_package_share_directory("slam_toolbox"),
+                        "launch",
+                        "online_sync_launch.py",
+                    )
+                ),
+                condition=IfCondition(PythonExpression(["not ", slam])),
+                launch_arguments={
+                    "autostart": "false",
+                    "use_lifecycle_manager": "true",
+                    "use_sim_time": use_sim_time,
+                    "slam_params_file": params_file,
+                }.items(),
+            ),
+            Node(
+                condition=IfCondition(PythonExpression(["not ", slam])),
+                package="nav2_lifecycle_manager",
+                executable="lifecycle_manager",
+                name="lifecycle_manager_mapping",
+                parameters=[
+                    {
+                        "autostart": False,
+                        "node_names": ["slam_toolbox"],
+                        "use_sim_time": use_sim_time,
+                    }
+                ],
+                output="screen",
             ),
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(

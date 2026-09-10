@@ -82,7 +82,7 @@ def generate_launch_description():
         if not os.path.exists(map_file):
             raise RuntimeError(
                 f"Map file not found: {map_file}\n"
-                "Run SLAM first (slam:=True) to build a map, or provide a map path via map:=<path>."
+                "Provide an existing map with map:=<path>. To map without an existing map, launch with slam:=True."
             )
         return []
 
