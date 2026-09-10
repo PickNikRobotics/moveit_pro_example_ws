@@ -1,5 +1,5 @@
-- description: Folded rest pose. Values are the mock hardware start state, not a taught
-    hardware pose.
+- description: The pose the mock hardware starts in, which is the bridge's fake sine
+    at elapsed 0, not a taught hardware pose.
   favorite: true
   joint_group_names:
   - gripper

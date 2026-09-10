@@ -18,10 +18,10 @@
   />
   <group_state name="home" group="manipulator">
     <joint name="shoulder_pan" value="0.0" />
-    <joint name="shoulder_lift" value="0.6" />
-    <joint name="elbow_flex" value="-0.6" />
-    <joint name="wrist_flex" value="0.0" />
-    <joint name="wrist_roll" value="0.0" />
+    <joint name="shoulder_lift" value="0.728843537" />
+    <joint name="elbow_flex" value="-0.353637568" />
+    <joint name="wrist_flex" value="0.302123278" />
+    <joint name="wrist_roll" value="0.33498815" />
   </group_state>
   <group_state name="ready" group="manipulator">
     <joint name="shoulder_pan" value="0.3" />
