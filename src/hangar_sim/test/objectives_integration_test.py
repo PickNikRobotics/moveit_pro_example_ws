@@ -296,6 +296,45 @@ SEED_XY_STD_DEV = 0.5
 SEED_YAW_STD_DEV = 0.26
 MAP_FRAME = "map"
 ODOM_FRAME = "odom"
+# How close to identity map -> odom has to sit before the seed counts as taken up.
+# The robot is at the spawn pose this fixture seeds, and mj_world -> map and
+# odom -> world are both static identities, so a consumed seed drives map -> odom
+# to identity within the few centimetres the base settles by. The uniform cloud it
+# has to be told apart from puts that edge tens of metres out (hangar_map spans
+# ~50 x ~62 m from origin -25.1, -2.9, so its free-space mean is nowhere near the
+# origin), so these bounds are loose against settling and still decisive.
+SEED_APPLIED_XY_TOLERANCE_M = 0.25
+SEED_APPLIED_YAW_TOLERANCE_RAD = 0.15
+
+
+def _seed_has_been_applied(buffer: tf2_ros.Buffer) -> bool:
+    """Report whether ``map -> odom`` looks like a consumed seed rather than a uniform cloud.
+
+    ``can_transform`` is not evidence. beluga_amcl global-initialises on map
+    receipt and broadcasts ``map -> odom`` from that unconverged cloud with
+    ``tf_broadcast`` true, so the edge is already there before anything is
+    published to ``/initialpose`` -- waiting for it to appear returns
+    immediately and every later fixture then resolves frames through a mean
+    over the whole map.
+    """
+    try:
+        transform = buffer.lookup_transform(MAP_FRAME, ODOM_FRAME, Time()).transform
+    except tf2_ros.TransformException:
+        # Not there yet, or it expired between the check and the lookup. Either way
+        # the caller just polls again.
+        return False
+    translation = math.hypot(transform.translation.x, transform.translation.y)
+    # Angle of the shortest rotation carried by the quaternion.
+    rotation = 2.0 * math.atan2(
+        math.sqrt(
+            transform.rotation.x**2 + transform.rotation.y**2 + transform.rotation.z**2
+        ),
+        abs(transform.rotation.w),
+    )
+    return (
+        translation <= SEED_APPLIED_XY_TOLERANCE_M
+        and rotation <= SEED_APPLIED_YAW_TOLERANCE_RAD
+    )
 
 
 def _spawn_pose_from_nav2_params() -> tuple[float, float, float]:
@@ -315,16 +354,20 @@ def _spawn_pose_from_nav2_params() -> tuple[float, float, float]:
 def localized_robot(
     execute_objective_resource: ExecuteObjectiveResource,
 ) -> None:
-    """Seed the particle filter and block until ``map -> odom`` appears.
+    """Seed the particle filter and block until the seed has actually been taken up.
 
     Defined after ``wait_for_controllers_loaded`` and before ``wait_for_robot_tf``
     on purpose: pytest runs module-scoped autouse fixtures in definition order, and
     every later fixture and Objective that resolves a frame across the
-    mj_world/world boundary needs this edge to exist first. Keep it here.
+    mj_world/world boundary needs this edge to mean something first. Keep it here.
 
     The seed is republished on a slow retry rather than sent once. AMCL subscribes
     to /initialpose with volatile QoS, so a message published before its
     subscription is matched is dropped with no error anywhere.
+
+    The wait is on ``_seed_has_been_applied``, not on the edge existing: beluga
+    publishes ``map -> odom`` from its startup cloud, so ``can_transform`` succeeds
+    long before the seed is consumed.
     """
     node = execute_objective_resource.node
     x, y, yaw = _spawn_pose_from_nav2_params()
@@ -353,13 +396,15 @@ def localized_robot(
                 publisher.publish(seed)
                 next_publish = time.monotonic() + 2.0
             rclpy.spin_once(node, timeout_sec=0.1)
-            if buffer.can_transform(MAP_FRAME, ODOM_FRAME, Time()):
+            if _seed_has_been_applied(buffer):
                 return
         pytest.fail(
-            f"{MAP_FRAME} -> {ODOM_FRAME} did not appear within "
-            f"{LOCALIZATION_SEED_TIMEOUT_S:.1f}s after seeding {INITIAL_POSE_TOPIC}. "
-            "Without it the MuJoCo scene frames and MoveIt's planning frame are in "
-            "separate TF trees and every point-cloud Objective fails."
+            f"{MAP_FRAME} -> {ODOM_FRAME} did not settle to identity within "
+            f"{LOCALIZATION_SEED_TIMEOUT_S:.1f}s after seeding {INITIAL_POSE_TOPIC}, so the "
+            "filter never took up the seed. Until it does that edge carries beluga's "
+            "startup cloud rather than an estimate, and every Objective that resolves a "
+            "frame across the MuJoCo/planning boundary resolves it through a pose that "
+            "means nothing."
         )
     finally:
         node.destroy_publisher(publisher)

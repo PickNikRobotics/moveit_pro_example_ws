@@ -9,15 +9,25 @@ amcl:
     # The "Localize Robot" Objective seeds the filter from an operator's click
     # instead, and tightens that seed in place before the robot moves. "Refine
     # Localization In Place" runs that same refinement on its own, seeded from the
-    # estimate the filter already holds, for the bumped-robot case. Until "Localize
-    # Robot" runs, AMCL publishes no map -> odom transform at all.
+    # estimate the filter already holds, for the bumped-robot case.
     #
-    # That last sentence has teeth in this workspace: map -> odom is the only link
+    # What runs here is beluga_amcl, not nav2_amcl, and it does NOT withhold the
+    # transform until seeded the way nav2_amcl does. beluga global-initialises on
+    # map receipt -- it carries both the "about initial pose" and the "distributed
+    # across the map" initialisation paths -- and with tf_broadcast true it
+    # broadcasts map -> odom from that unconverged uniform cloud. So the edge is
+    # present from startup and is not evidence of anything: it is the mean of
+    # particles spread over every free cell, and it means nothing until a seed has
+    # been consumed.
+    #
+    # That distinction has teeth in this workspace: map -> odom is the only link
     # between the MuJoCo scene frames (cameras under mj_world -> map) and MoveIt's
-    # planning frame (world under odom), so with the filter unseeded, every
-    # point-cloud Objective fails its transform, not just the navigation ones.
-    # The integration test seeds the filter once in a fixture for exactly this
-    # reason -- see localized_robot in test/objectives_integration_test.py.
+    # planning frame (world under odom), so until the filter is seeded every
+    # point-cloud Objective resolves through a meaningless edge, not just the
+    # navigation ones. The integration test seeds the filter once in a fixture for
+    # exactly this reason, and waits for the seed to be taken up rather than for
+    # the edge to appear -- see localized_robot in
+    # test/objectives_integration_test.py.
     #
     # beluga_amcl is 2D: only x, y and yaw are declared (no z). The initial_pose
     # block below is left in place, unused while set_initial_pose is false, so the

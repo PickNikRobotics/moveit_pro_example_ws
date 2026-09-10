@@ -35,6 +35,8 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <optional>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -126,12 +128,20 @@ std::vector<std::pair<double, double>> freePositions(const calibration::GridDump
   return positions;
 }
 
-/// The best-scoring pose anywhere on the map that is at least alias_keepout_m from the truth.
-Scored strongestAlias(const localization::DistanceField& field, const calibration::GridDump& grid,
-                      const calibration::ScanSample& sample, const SweepSettings& settings)
+/**
+ * @brief The best-scoring pose anywhere on the map that is at least alias_keepout_m from the truth.
+ *
+ * @return Nothing when no candidate was ever accepted -- a sample whose returns are all NaN, or all
+ *         outside the range filters, scores every candidate at zero. Reporting the zero-initialised
+ *         placeholder instead would name a pose at the map-frame origin that the sweep never stood
+ *         at, and the local refinement would then hunt a 0.8 m box around a point that need not
+ *         even be on the grid.
+ */
+std::optional<Scored> strongestAlias(const localization::DistanceField& field, const calibration::GridDump& grid,
+                                     const calibration::ScanSample& sample, const SweepSettings& settings)
 {
   const auto positions = freePositions(grid, settings.coarse_stride_m);
-  Scored best;
+  std::optional<Scored> best;
   for (const auto& [x, y] : positions)
   {
     const double dx = x - sample.truth_x;
@@ -143,29 +153,36 @@ Scored strongestAlias(const localization::DistanceField& field, const calibratio
     for (double yaw = -M_PI; yaw < M_PI; yaw += settings.coarse_yaw_stride)
     {
       const auto candidate = score(field, sample, settings, x, y, yaw);
-      if (candidate.inlier_fraction > best.inlier_fraction)
+      // A pose that explains none of the scan is not an alias, it is just a pose. Requiring a
+      // positive score is what makes "nothing came back" distinguishable from "the strongest
+      // wrong pose on this map happens to score zero", which no real map and scan produce.
+      if (candidate.inlier_fraction > 0.0 && (!best.has_value() || candidate.inlier_fraction > best->inlier_fraction))
       {
         best = candidate;
       }
     }
   }
+  if (!best.has_value())
+  {
+    return std::nullopt;
+  }
 
   // Refine locally: the coarse stride can miss the peak by a fifth of a metre, which on this
   // measurement is the difference between a comfortable margin and a reported one.
-  Scored refined = best;
+  Scored refined = *best;
   for (double dx = -settings.fine_span_m; dx <= settings.fine_span_m; dx += settings.fine_stride_m)
   {
     for (double dy = -settings.fine_span_m; dy <= settings.fine_span_m; dy += settings.fine_stride_m)
     {
-      const double x = best.x + dx;
-      const double y = best.y + dy;
+      const double x = best->x + dx;
+      const double y = best->y + dy;
       if (std::hypot(x - sample.truth_x, y - sample.truth_y) < settings.alias_keepout_m)
       {
         continue;
       }
       for (double dyaw = -settings.fine_yaw_span; dyaw <= settings.fine_yaw_span; dyaw += settings.fine_yaw_stride)
       {
-        const auto candidate = score(field, sample, settings, x, y, wrapAngle(best.yaw + dyaw));
+        const auto candidate = score(field, sample, settings, x, y, wrapAngle(best->yaw + dyaw));
         if (candidate.inlier_fraction > refined.inlier_fraction)
         {
           refined = candidate;
@@ -205,23 +222,75 @@ std::string percent(double fraction)
   std::snprintf(buffer, sizeof(buffer), "%.1f%%", fraction * 100.0);
   return buffer;
 }
+
+/// Parse a positive number from the command line, refusing the silent zero std::ato* returns.
+template <typename Number>
+bool parsePositive(const char* text, const char* what, Number& out)
+{
+  try
+  {
+    const double value = std::stod(text);
+    if (!(value > 0.0))
+    {
+      std::cerr << what << " must be greater than zero, got '" << text << "'\n";
+      return false;
+    }
+    out = static_cast<Number>(value);
+    return true;
+  }
+  catch (const std::exception&)
+  {
+    std::cerr << what << " is not a number: '" << text << "'\n";
+    return false;
+  }
+}
 }  // namespace
 
 int main(int argc, char** argv)
 {
+  // The scoring constants in localization_gates.hpp are the defaults, but the numbers the shipped
+  // gate actually runs with are the input-port defaults of the "Refine Localization In Place
+  // Subtree" Objective, which is their single home. When those are re-measured they change there,
+  // not here, so a re-measurement has to be able to pass them in -- otherwise this tool quietly
+  // reports a band for a gate that is no longer the one shipping, which is the exact failure it
+  // exists to prevent.
   if (argc < 3)
   {
-    std::cerr << "usage: calibrate_scan_match_gate <grid.txt> <scans.txt> [max_beams]\n"
-                 "  grid.txt   occupancy grid as captured from /map\n"
-                 "  scans.txt  scan samples with their MuJoCo ground-truth poses\n"
-                 "  max_beams  override the beam count (default mirrors amcl's max_beams)\n";
+    std::cerr << "usage: calibrate_scan_match_gate <grid.txt> <scans.txt>\n"
+                 "                                 [max_beams] [inlier_distance] [max_obstacle_distance]\n"
+                 "  grid.txt               occupancy grid as captured from /map\n"
+                 "  scans.txt              scan samples with their MuJoCo ground-truth poses\n"
+                 "  max_beams              beams scored per pose\n"
+                 "  inlier_distance        endpoint-to-obstacle distance counted as a fit, metres\n"
+                 "  max_obstacle_distance  distance at which the likelihood field saturates, metres\n"
+                 "\n"
+                 "The three overrides default to the constants in localization_gates.hpp. Pass the\n"
+                 "values from the ScanMatchResidual ports in refine_localization_in_place_subtree.xml\n"
+                 "whenever they differ, or this measures a gate that is not the one shipping.\n";
     return EXIT_FAILURE;
   }
 
   SweepSettings settings;
-  if (argc >= 4)
+  if (argc >= 4 && !parsePositive(argv[3], "max_beams", settings.max_beams))
   {
-    settings.max_beams = std::atoi(argv[3]);
+    return EXIT_FAILURE;
+  }
+  if (argc >= 5 && !parsePositive(argv[4], "inlier_distance", settings.inlier_distance))
+  {
+    return EXIT_FAILURE;
+  }
+  if (argc >= 6 && !parsePositive(argv[5], "max_obstacle_distance", settings.max_obstacle_distance))
+  {
+    return EXIT_FAILURE;
+  }
+  // The field saturates at max_obstacle_distance, so an inlier band at or above it calls every
+  // beam an inlier and every pose on the map scores 100%. That is not a gate, and the separation
+  // this tool would print for it is meaningless rather than merely wrong.
+  if (settings.inlier_distance >= settings.max_obstacle_distance)
+  {
+    std::cerr << "inlier_distance (" << settings.inlier_distance << " m) must be below max_obstacle_distance ("
+              << settings.max_obstacle_distance << " m); above it every beam counts as a fit.\n";
+    return EXIT_FAILURE;
   }
 
   calibration::GridDump grid;
@@ -274,7 +343,7 @@ int main(int argc, char** argv)
   std::string worst_true_label;
   double best_alias = 0.0;
   std::string best_alias_label;
-  Scored best_alias_pose;
+  std::optional<Scored> best_alias_pose;
   double best_near_miss_10cm = 0.0;
   double best_near_miss_25cm = 0.0;
   double best_near_miss_50cm = 0.0;
@@ -298,9 +367,9 @@ int main(int argc, char** argv)
       worst_true = truth.inlier_fraction;
       worst_true_label = sample.label;
     }
-    if (alias.inlier_fraction > best_alias)
+    if (alias.has_value() && (!best_alias_pose.has_value() || alias->inlier_fraction > best_alias))
     {
-      best_alias = alias.inlier_fraction;
+      best_alias = alias->inlier_fraction;
       best_alias_label = sample.label;
       best_alias_pose = alias;
     }
@@ -311,7 +380,7 @@ int main(int argc, char** argv)
     std::cout << std::left << std::setw(22) << sample.label << std::setw(10) << truth.beams_used << std::setw(10)
               << percent(truth.inlier_fraction) << std::setw(12) << percent(near_10.inlier_fraction) << std::setw(12)
               << percent(near_25.inlier_fraction) << std::setw(12) << percent(near_50.inlier_fraction)
-              << percent(alias.inlier_fraction) << "\n";
+              << (alias.has_value() ? percent(alias->inlier_fraction) : std::string("none")) << "\n";
   }
 
   const double separation = worst_true - best_alias;
@@ -319,10 +388,23 @@ int main(int argc, char** argv)
             << "worst true pose            " << percent(worst_true) << "  (" << worst_true_label << ")\n"
             << "best pose 0.10 m / 1 deg   " << percent(best_near_miss_10cm) << "\n"
             << "best pose 0.25 m / 3 deg   " << percent(best_near_miss_25cm) << "\n"
-            << "best pose 0.50 m / 5 deg   " << percent(best_near_miss_50cm) << "\n"
-            << "strongest alias on the map " << percent(best_alias) << "  (" << best_alias_label << " at " << std::fixed
-            << std::setprecision(2) << best_alias_pose.x << ", " << best_alias_pose.y << ", yaw " << best_alias_pose.yaw
-            << ")\n"
+            << "best pose 0.50 m / 5 deg   " << percent(best_near_miss_50cm) << "\n";
+
+  if (!best_alias_pose.has_value())
+  {
+    // Not "0%": nothing was found at all. Printing a fraction here, with a pose to go beside it,
+    // would read as a measured result for a sweep that never accepted a single candidate.
+    std::cout << "strongest alias on the map none found\n\n"
+                 "NOTHING SCORED. No candidate anywhere in the free space beat zero, so there is no alias\n"
+                 "measurement and no separation to report. That is a data problem, not a map finding: check\n"
+                 "that the scan samples carry usable returns inside the range filters and that the grid and\n"
+                 "the scans came from the same run.\n";
+    return EXIT_FAILURE;
+  }
+
+  std::cout << "strongest alias on the map " << percent(best_alias) << "  (" << best_alias_label << " at " << std::fixed
+            << std::setprecision(2) << best_alias_pose->x << ", " << best_alias_pose->y << ", yaw "
+            << best_alias_pose->yaw << ")\n"
             << "separation                 " << std::setprecision(1) << (separation * 100.0) << " points\n\n";
 
   if (separation <= 0.0)

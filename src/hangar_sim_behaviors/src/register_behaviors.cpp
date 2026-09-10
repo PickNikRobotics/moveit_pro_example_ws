@@ -10,6 +10,7 @@
 
 #include <hangar_sim_behaviors/call_empty_service.hpp>
 #include <hangar_sim_behaviors/project_pose_to_plane.hpp>
+#include <hangar_sim_behaviors/reinterpret_pose_frame.hpp>
 #include <hangar_sim_behaviors/scan_match_residual.hpp>
 #include <hangar_sim_behaviors/seed_localization_at_pose.hpp>
 
@@ -25,6 +26,7 @@ public:
   {
     moveit_pro::behaviors::registerBehavior<CallEmptyService>(factory, "CallEmptyService", shared_resources);
     moveit_pro::behaviors::registerBehavior<ProjectPoseToPlane>(factory, "ProjectPoseToPlane", shared_resources);
+    moveit_pro::behaviors::registerBehavior<ReinterpretPoseFrame>(factory, "ReinterpretPoseFrame", shared_resources);
     moveit_pro::behaviors::registerBehavior<ScanMatchResidual>(factory, "ScanMatchResidual", shared_resources);
     moveit_pro::behaviors::registerBehavior<SeedLocalizationAtPose>(factory, "SeedLocalizationAtPose", shared_resources);
   }

@@ -35,6 +35,8 @@ TEST(BehaviorTests, test_load_behavior_plugins)
   EXPECT_NO_THROW((void)factory.instantiateTreeNode("test_behavior_name", "CallEmptyService", BT::NodeConfiguration()));
   EXPECT_NO_THROW(
       (void)factory.instantiateTreeNode("test_behavior_name", "ProjectPoseToPlane", BT::NodeConfiguration()));
+  EXPECT_NO_THROW(
+      (void)factory.instantiateTreeNode("test_behavior_name", "ReinterpretPoseFrame", BT::NodeConfiguration()));
   EXPECT_NO_THROW((void)factory.instantiateTreeNode("test_behavior_name", "ScanMatchResidual", BT::NodeConfiguration()));
   EXPECT_NO_THROW(
       (void)factory.instantiateTreeNode("test_behavior_name", "SeedLocalizationAtPose", BT::NodeConfiguration()));

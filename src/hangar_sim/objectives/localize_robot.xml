@@ -8,8 +8,15 @@
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <!--AMCL runs with set_initial_pose: false, because in production a robot does not power on
-           at a known pose. Until this Objective runs, the particle filter is unseeded, AMCL
-           publishes no map -> odom transform at all, and navigation cannot localize.-->
+           at a known pose. This Objective is what gives the filter its first real pose.
+
+           This config runs beluga_amcl, NOT nav2_amcl, and the two differ here in a way that
+           matters below. beluga global-initialises on map receipt - it carries both the "about
+           initial pose" and the "distributed across the map" initialisation paths - and with
+           tf_broadcast true it DOES broadcast map -> odom from that unconverged uniform cloud. So
+           the edge exists from startup. It is not a measurement: it is the mean of particles
+           spread over every free cell of the map, and on hangar_map that mean sits tens of metres
+           from the robot. The edge only starts meaning something once a seed has been consumed.-->
       <Action
         ID="GetPoseFromUser"
         name="Ask the operator where the robot is"
@@ -19,16 +26,37 @@
         view_name="Visualization"
       />
       <!--The UI returns the click in the planning frame - 'world' on this robot, hardcoded in the
-           UI's pose-utils.ts - and 'world' sits under 'odom', which drifts relative to 'map'. The
-           seed needs map coordinates and cannot tell the difference, so convert explicitly rather
-           than relying on the two happening to coincide. They coincide exactly once: at startup,
-           before anything has moved, which is the one time you would not notice the bug.-->
+           UI's pose-utils.ts - and the seed has to be in 'map'. The route between them is
+           world -> odom -> map, and its only non-static link is the map -> odom edge described
+           above. Running the click through that edge is exactly what must not happen here: before
+           the seed, the edge carries a uniform-cloud mean, so TransformPoseFrame would not fail,
+           it would succeed and place the seed tens of metres from where the operator pointed.
+
+           So the click is RELABELLED rather than transformed. mj_world -> map and odom -> world
+           are both static identities (robot_drivers_to_persist_sim.launch.py), so world
+           coordinates ARE map coordinates whenever map -> odom is identity. The relabel is done by
+           its own node, in the open, so that nothing about it is hidden: SeedLocalizationAtPose
+           keeps refusing any pose that is not already in 'map', and that guard is worth keeping.
+
+           TWO ASSUMPTIONS, NEITHER OBSERVED IN SIMULATION. Both are the reason this is written out
+           rather than buried.
+
+           First, this is exact at cold boot, when map -> odom is identity. It is NOT exact when
+           this Objective is re-run after the robot has driven and map -> odom carries a real
+           correction: the click is then off by that accumulated correction. For the bumped-robot
+           case use "Refine Localization In Place", which seeds from the filter's own estimate and
+           never crosses frames at all.
+
+           Second, this is only the right call if the UI does not itself render the click through
+           the same map -> odom the transform would have undone. If it does, the round trip would
+           have cancelled and TransformPoseFrame was already correct. Settle this against the
+           simulator before trusting either path after the robot has moved.-->
       <Action
-        ID="TransformPoseFrame"
-        name="Convert the click into the map frame"
+        ID="ReinterpretPoseFrame"
+        name="Read the click as map coordinates without transforming it"
         input_pose="{clicked_pose}"
+        frame_id="map"
         output_pose="{initial_pose}"
-        target_frame_id="map"
       />
       <!--Seeding and refining are one operator action, not two. The subtree below seeds from this
            click and then tightens the estimate without moving the base; if the result does not
