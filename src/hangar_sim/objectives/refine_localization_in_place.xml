@@ -16,19 +16,56 @@
            the robot within roughly 4 * xy_std_dev of where the filter already thinks it is. A bump
            of a few tens of centimetres is inside that. A robot carried across the building is not,
            and the gate in the subtree will reject the result rather than pretend otherwise.-->
-      <Action
-        ID="GetLatestTransform"
-        name="Read the current estimate"
-        target_frame_id="map"
-        source_frame_id="ridgeback_base_link"
-        transform="{current_transform}"
-      />
-      <Action
-        ID="ConvertTransformStampedToPoseStamped"
-        name="Use it as the seed"
-        transform_stamped="{current_transform}"
-        pose_stamped="{initial_pose}"
-      />
+      <!--Reading that estimate presumes there IS one. map -> ridgeback_base_link resolves through
+           the map -> odom edge, and with set_initial_pose false that edge does not exist until the
+           filter has been seeded, so a cold-boot run of this Objective would otherwise die on its
+           very first node with a raw "cannot find transform" and no remedy named.
+
+           The reasoning for the second branch is stronger here than it is in the navigation
+           Objectives: with no seed there is nothing to refine at all, so localizing IS the remedy
+           rather than a detour. An already-seeded filter never reaches it.-->
+      <Control ID="Fallback" name="Read the current estimate, or localize first">
+        <Control ID="Sequence" name="Read the estimate the filter already holds">
+          <Action
+            ID="GetLatestTransform"
+            name="Read the current estimate"
+            target_frame_id="map"
+            source_frame_id="ridgeback_base_link"
+            transform="{current_transform}"
+          />
+          <Action
+            ID="ConvertTransformStampedToPoseStamped"
+            name="Use it as the seed"
+            transform_stamped="{current_transform}"
+            pose_stamped="{initial_pose}"
+          />
+        </Control>
+        <Control ID="Sequence" name="There is no estimate yet, so make one">
+          <Action
+            ID="LogMessage"
+            log_level="warn"
+            message="Nothing to refine yet: the particle filter has not been seeded, so map -> ridgeback_base_link does not resolve and there is no estimate to tighten. Place the marker on the robot to localize it, and this Objective will continue on its own."
+          />
+          <SubTree ID="Localize Robot" />
+          <!--Re-read after localizing so the seed this Objective refines is populated the same way
+               the first branch populates it. Localize Robot has already refined once; running the
+               subtree below on the result is the ordinary in-place refinement, seeded from the
+               estimate the filter now holds.-->
+          <Action
+            ID="GetLatestTransform"
+            name="Read the estimate localizing just produced"
+            target_frame_id="map"
+            source_frame_id="ridgeback_base_link"
+            transform="{current_transform}"
+          />
+          <Action
+            ID="ConvertTransformStampedToPoseStamped"
+            name="Use it as the seed"
+            transform_stamped="{current_transform}"
+            pose_stamped="{initial_pose}"
+          />
+        </Control>
+      </Control>
       <!--The SAME subtree Localize Robot calls, referenced rather than copied.-->
       <SubTree
         ID="Refine Localization In Place Subtree"

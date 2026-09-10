@@ -15,17 +15,23 @@
 
            So this Objective did not stop working - it stopped being CARRIED BY GROUND TRUTH, which
            is the crutch this whole capability exists to remove. The order is localize, then
-           navigate, and that is the order on hardware too. The branch below turns what would
-           otherwise be an opaque transform failure on the very first node into the instruction.-->
-      <Control ID="Fallback" name="Re-seed from the current estimate, or say what is missing">
+           navigate, and that is the order on hardware too.
+
+           The Fallback is CONDITIONAL, not unconditional. An already-seeded filter takes the first
+           branch and proceeds exactly as before, with no extra prompt; only a cold-boot run reaches
+           the second branch, and that branch localizes the robot here rather than sending the
+           operator away to a different Objective. The cost is one extra interaction on the first
+           run after boot: the Objective stops and waits for the marker before it drives, which is
+           correct, because it cannot navigate without knowing where it is.-->
+      <Control ID="Fallback" name="Re-seed from the current estimate, or localize first">
         <Action ID="SetInitialPose" robot_frame_id="ridgeback_base_link" />
         <Control ID="Sequence" name="The filter has no estimate to re-seed from">
           <Action
             ID="LogMessage"
-            log_level="error"
-            message="Cannot navigate: the particle filter has not been seeded, so map -> ridgeback_base_link does not resolve and the robot's current pose cannot be read. Run the &quot;Localize Robot&quot; Objective first, then run this one."
+            log_level="warn"
+            message="Asking you to localize before navigating: the particle filter has not been seeded yet, so map -> ridgeback_base_link does not resolve and the robot's current pose cannot be read. Place the marker on the robot to localize it, and this Objective will continue on its own."
           />
-          <Action ID="AlwaysFailure" name="Stop before planning blind" />
+          <SubTree ID="Localize Robot" />
         </Control>
       </Control>
       <Action
