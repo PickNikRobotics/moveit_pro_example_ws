@@ -63,11 +63,18 @@
       <param name="mujoco_model_package">lunar_sim</param>
       <param name="mujoco_viewer">$(arg mujoco_viewer)</param>
       <param name="mujoco_keyframe">$(arg mujoco_keyframe)</param>
-      <!-- With publish_mj_world_tf left at its default (true) and no odom_frame set,
-           MujocoSystem broadcasts mj_world -> chassis_link, the base body it resolves by walking
-           the URDF root. chassis_link therefore has two TF publishers, that one and
-           robot_state_publisher via a300.urdf.xacro's chassis_joint. Deliberate: this is the
-           configuration the live instance has run against. -->
+      <!-- TF ownership, same shape as hangar_sim: robot_state_publisher owns every link below
+           footprint (footprint -> base_link -> chassis_link -> wheels ...) and
+           platform_velocity_controller owns odom -> footprint. There is no world frame in this
+           sim; odom is the root. MuJoCo must therefore not broadcast mj_world -> chassis_link
+           (that 60 Hz edge would beat the static base_link -> chassis_link and split the tree in
+           two): publish_mj_world_tf=false suppresses it, odom_frame names the odometry root, and
+           base_link_name stops the site TF fill-in at the chassis body instead of walking up to
+           the MJCF worldbody. Ground truth for the Dead Reckon Square calibration comes from the
+           chassis freejoint pose read from MuJoCo directly, not from TF. -->
+      <param name="publish_mj_world_tf">false</param>
+      <param name="odom_frame">odom</param>
+      <param name="base_link_name">chassis_link</param>
       <param name="tf_publish_rate">60</param>
       <param name="render_publish_rate">10</param>
     </hardware>
