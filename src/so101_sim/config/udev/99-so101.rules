@@ -1,0 +1,14 @@
+# SO-101 leader/follower USB-serial adapters -> stable /dev names.
+#
+# Both adapters use the WCH CH343 chip (1a86:55d3), so only the serial number
+# tells them apart. THE TWO SERIALS BELOW ARE THE REFERENCE BENCH'S ADAPTERS.
+# Replace them with your own before installing; the README has the one-line
+# `udevadm info` recipe that prints them.
+#
+# Install:
+#   sudo cp 99-so101.rules /etc/udev/rules.d/
+#   sudo udevadm control --reload-rules && sudo udevadm trigger
+#
+# Captured 2026-05-22 from the bench laptop.
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="55d3", ATTRS{serial}=="5B41532176", SYMLINK+="so101_leader"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="55d3", ATTRS{serial}=="5B41532842", SYMLINK+="so101_follower"

@@ -1,0 +1,6 @@
+# MPPI publishes its chosen trajectory on /optimal_trajectory, not the
+# /local_plan that DWB uses, so point the Local Plan overlay there. It stays
+# silent unless FollowPath.visualize is true. Note it is stamped in odom while
+# /plan is in map, so an AMCL correction shifts the two overlays against
+# each other.
+nav2LocalPlanTopic: /optimal_trajectory

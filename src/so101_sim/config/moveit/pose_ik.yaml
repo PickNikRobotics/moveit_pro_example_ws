@@ -1,0 +1,7 @@
+# The SO-101 is a 5-DOF arm and cannot reach arbitrary 6-DOF poses, so the IK
+# solver optimizes for the closest reachable pose instead of failing.
+manipulator:
+  kinematics_solver: pose_ik_plugin/PoseIKPlugin
+  target_tolerance: 0.002
+  solve_mode: "optimize_distance"
+  optimization_timeout: 0.01

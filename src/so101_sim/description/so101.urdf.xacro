@@ -1,0 +1,675 @@
+<?xml version="1.0" ?>
+<!--
+  Stock LeRobot SO-101 follower arm.
+
+  Links, joints, inertials and meshes are the upstream SO-ARM100/LeRobot
+  description as vendored by danwahl/vla-test; see description/assets/NOTICE.md.
+  Changes made here: mesh paths rewritten to package:// URIs, the ROS 1
+  <transmission> blocks dropped, the coacd convex collision decomposition
+  collapsed back onto the visual meshes, a `world` link added, and a
+  ros2_control block with a mock/real switch appended.
+-->
+<robot name="so101" xmlns:xacro="http://wiki.ros.org/xacro">
+  <xacro:arg name="hardware_interface" default="mock" />
+  <xacro:arg
+    name="initial_positions_file"
+    default="$(find so101_sim)/config/initial_positions.yaml"
+  />
+  <xacro:property
+    name="initial_positions"
+    value="${xacro.load_yaml('$(arg initial_positions_file)')['initial_positions']}"
+  />
+
+  <!--
+    Feetech STS3215 bus, used only when hardware_interface:=real.
+
+    `usb_port` is the follower bus; keep it a udev symlink rather than a
+    /dev/ttyACM* that renumbers (config/udev/99-so101.rules). The baud rate is
+    not an argument: feetech_ros2_driver hardwires 1 Mbaud, which is the SO-101
+    factory setting.
+  -->
+  <xacro:arg name="usb_port" default="/dev/so101_follower" />
+  <xacro:arg
+    name="calibration_file"
+    default="$(find so101_sim)/config/so101_follower_calibration.yaml"
+  />
+  <xacro:property
+    name="calibration"
+    value="${xacro.load_yaml('$(arg calibration_file)')['joints']}"
+  />
+
+  <!-- The arm is bolted to the bench; `world` is the planning frame. -->
+  <link name="world" />
+  <joint name="world_to_so101" type="fixed">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+    <parent link="world" />
+    <child link="overhead_camera_mount_link" />
+  </joint>
+
+
+  <!-- Materials -->
+  <material name="3d_printed">
+    <color rgba="0.05 0.05 0.05 1.0"/>
+  </material>
+  <material name="sts3215">
+    <color rgba="0.1 0.1 0.1 1.0"/>
+  </material>
+  <material name="tpu_fin">
+    <color rgba="0.12 0.12 0.13 1.0"/>
+  </material>
+  
+  <!-- Link overhead camera mount --> 
+  <link name="overhead_camera_mount_link">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="1"/>
+      <inertia ixx="1" ixy="0" ixz="0" iyy="1" iyz="0" izz="1"/>
+    </inertial>
+    <!-- Part arm_base -->
+    <visual>
+      <origin xyz="0 0 0" rpy="1.5708 0 1.5708"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/arm_base.stl"/>
+      </geometry>
+      <material name="3d_printed"><color rgba="0.05 0.05 0.05 1.0"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="1.5708 0 1.5708"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/arm_base.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part cam_mount_bottom -->
+    <visual>
+      <origin xyz="0 0 0" rpy="1.5708 0 1.5708"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/cam_mount_bottom.stl"/>
+      </geometry>
+      <material name="3d_printed"><color rgba="0.05 0.05 0.05 1.0"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="1.5708 0 1.5708"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/cam_mount_bottom.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part cam_mount_middle -->
+    <visual>
+      <origin xyz="0 0 0" rpy="1.5708 0 1.5708"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/cam_mount_middle.stl"/>
+      </geometry>
+      <material name="3d_printed"><color rgba="0.05 0.05 0.05 1.0"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="1.5708 0 1.5708"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/cam_mount_middle.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part cam_mount_top -->
+    <visual>
+      <origin xyz="0 0 0" rpy="1.5708 0 1.5708"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/cam_mount_top.stl"/>
+      </geometry>
+      <material name="3d_printed"><color rgba="0.05 0.05 0.05 1.0"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="1.5708 0 1.5708"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/cam_mount_top.stl"/>
+      </geometry> 
+    </collision>
+  </link>
+
+  <!-- Top camera frame (dummy link + fixed joint) -->
+  <link name="top_camera_frame_link">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="1e-9"/>
+      <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+    </inertial>
+  </link>
+  
+  <joint name="top_camera_frame_fixed_joint" type="fixed">
+    <origin xyz="0.033526 0.11597 0.550304 " rpy="-2.70526401 0 -1.5708"/>
+    <parent link="overhead_camera_mount_link"/>
+    <child link="top_camera_frame_link"/>
+    <axis xyz="0 0 0"/>
+  </joint>
+  
+  <!-- Joint from overhead_camera_mount_link to base_link -->
+  <joint name="overhead_camera_mount_fixed_joint" type="fixed">
+    <origin xyz="0.00636471 9.94414e-05 0.0072" rpy="0 0 0"/>
+    <parent link="overhead_camera_mount_link"/>
+    <child link="base_link"/>
+    <axis xyz="0 0 0"/>
+  </joint>
+
+  <!-- Link base -->
+  <link name="base_link">
+    <inertial>
+      <origin xyz="0.0137179 -5.19711e-05 0.0334843" rpy="0 0 0"/>
+      <mass value="0.147"/>
+      <inertia ixx="0.000114686" ixy="-4.59787e-07" ixz="4.97151e-06" iyy="0.000136117" iyz="9.75275e-08" izz="0.000130364"/>
+    </inertial>
+    <!-- Part base_motor_holder_so101_v1 -->
+    <visual>
+      <origin xyz="-0.00636471 -9.94414e-05 -0.0024" rpy="1.5708 -1.67685e-15 1.5708"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/base_motor_holder_so101_v1.stl"/>
+      </geometry>
+      <material name="3d_printed"><color rgba="0.05 0.05 0.05 1.0"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.00636471 -9.94414e-05 -0.0024" rpy="1.5708 -1.67685e-15 1.5708"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/base_motor_holder_so101_v1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part base_so101_v2 -->
+    <visual>
+      <origin xyz="-0.00636471 -8.97657e-09 -0.0024" rpy="1.5708 -2.78073e-29 1.5708"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/base_so101_v2.stl"/>
+      </geometry>
+      <material name="3d_printed"><color rgba="0.05 0.05 0.05 1.0"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.00636471 -8.97657e-09 -0.0024" rpy="1.5708 -2.78073e-29 1.5708"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/base_so101_v2.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part sts3215_03a_v1 -->
+    <visual>
+      <origin xyz="0.0263353 -8.97657e-09 0.0437" rpy="-8.21148e-16 7.84513e-18 1.249e-15"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/sts3215_03a_v1.stl"/>
+      </geometry>
+      <material name="sts3215"><color rgba="0.1 0.1 0.1 1.0"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.0263353 -8.97657e-09 0.0437" rpy="-8.21148e-16 7.84513e-18 1.249e-15"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/sts3215_03a_v1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part waveshare_mounting_plate_so101_v2 -->
+    <visual>
+      <origin xyz="-0.0309827 -0.000199441 0.0474" rpy="1.5708 -1.35493e-14 1.5708"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/waveshare_mounting_plate_so101_v2.stl"/>
+      </geometry>
+      <material name="3d_printed"><color rgba="0.05 0.05 0.05 1.0"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.0309827 -0.000199441 0.0474" rpy="1.5708 -1.35493e-14 1.5708"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/waveshare_mounting_plate_so101_v2.stl"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- Link shoulder -->
+  <link name="shoulder_link">
+    <inertial>
+      <origin xyz="-0.0307604 -1.66727e-05 -0.0252713" rpy="0 0 0"/>
+      <mass value="0.100006"/>
+      <inertia ixx="8.3759e-05" ixy="7.55525e-08" ixz="-1.16342e-06" iyy="8.10403e-05" iyz="1.54663e-07" izz="2.39783e-05"/>
+    </inertial>
+    <!-- Part sts3215_03a_v1_2 -->
+    <visual>
+      <origin xyz="-0.0303992 0.000422241 -0.0417" rpy="1.5708 1.5708 0"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/sts3215_03a_v1.stl"/>
+      </geometry>
+      <material name="sts3215"><color rgba="0.1 0.1 0.1 1.0"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.0303992 0.000422241 -0.0417" rpy="1.5708 1.5708 0"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/sts3215_03a_v1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part motor_holder_so101_base_v1 -->
+    <visual>
+      <origin xyz="-0.0675992 -0.000177759 0.0158499" rpy="1.5708 -1.5708 0"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/motor_holder_so101_base_v1.stl"/>
+      </geometry>
+      <material name="3d_printed"><color rgba="0.05 0.05 0.05 1.0"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.0675992 -0.000177759 0.0158499" rpy="1.5708 -1.5708 0"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/motor_holder_so101_base_v1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part rotation_pitch_so101_v1 -->
+    <visual>
+      <origin xyz="0.0122008 2.22413e-05 0.0464" rpy="-1.5708 2.35221e-33 0"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/rotation_pitch_so101_v1.stl"/>
+      </geometry>
+      <material name="3d_printed"><color rgba="0.05 0.05 0.05 1.0"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.0122008 2.22413e-05 0.0464" rpy="-1.5708 2.35221e-33 0"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/rotation_pitch_so101_v1.stl"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- Link upper_arm -->
+  <link name="upper_arm_link">
+    <inertial>
+      <origin xyz="-0.0898471 -0.00838224 0.0184089" rpy="0 0 0"/>
+      <mass value="0.103"/>
+      <inertia ixx="4.08002e-05" ixy="-1.97819e-05" ixz="-4.03016e-08" iyy="0.000147318" iyz="8.97326e-09" izz="0.000142487"/>
+    </inertial>
+    <!-- Part sts3215_03a_v1_3 -->
+    <visual>
+      <origin xyz="-0.11257 -0.0155 0.0187" rpy="-3.14159 -5.27356e-16 -1.5708"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/sts3215_03a_v1.stl"/>
+      </geometry>
+      <material name="sts3215"><color rgba="0.1 0.1 0.1 1.0"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.11257 -0.0155 0.0187" rpy="-3.14159 -5.27356e-16 -1.5708"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/sts3215_03a_v1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part upper_arm_so101_v1 -->
+    <visual>
+      <origin xyz="-0.065085 0.012 0.0182" rpy="3.14159 -0 -1.30911e-30"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/upper_arm_so101_v1.stl"/>
+      </geometry>
+      <material name="3d_printed"><color rgba="0.05 0.05 0.05 1.0"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.065085 0.012 0.0182" rpy="3.14159 -0 -1.30911e-30"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/upper_arm_so101_v1.stl"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- Link lower_arm -->
+  <link name="lower_arm_link">
+    <inertial>
+      <origin xyz="-0.0980701 0.00324376 0.0182831" rpy="0 0 0"/>
+      <mass value="0.104"/>
+      <inertia ixx="2.87438e-05" ixy="7.41152e-06" ixz="1.26409e-06" iyy="0.000159844" iyz="-4.90188e-08" izz="0.00014529"/>
+    </inertial>
+    <!-- Part under_arm_so101_v1 -->
+    <visual>
+      <origin xyz="-0.0648499 -0.032 0.0182" rpy="3.14159 -0 6.67202e-31"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/under_arm_so101_v1.stl"/>
+      </geometry>
+      <material name="3d_printed"><color rgba="0.05 0.05 0.05 1.0"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.0648499 -0.032 0.0182" rpy="3.14159 -0 6.67202e-31"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/under_arm_so101_v1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part motor_holder_so101_wrist_v1 -->
+    <visual>
+      <origin xyz="-0.0648499 -0.032 0.018" rpy="-3.14159 -2.55351e-15 -1.83387e-30"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/motor_holder_so101_wrist_v1.stl"/>
+      </geometry>
+      <material name="3d_printed"><color rgba="0.05 0.05 0.05 1.0"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.0648499 -0.032 0.018" rpy="-3.14159 -2.55351e-15 -1.83387e-30"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/motor_holder_so101_wrist_v1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part sts3215_03a_v1_4 -->
+    <visual>
+      <origin xyz="-0.1224 0.0052 0.0187" rpy="-3.14159 -7.88861e-31 -3.14159"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/sts3215_03a_v1.stl"/>
+      </geometry>
+      <material name="sts3215"><color rgba="0.1 0.1 0.1 1.0"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.1224 0.0052 0.0187" rpy="-3.14159 -7.88861e-31 -3.14159"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/sts3215_03a_v1.stl"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- Link wrist -->
+  <link name="wrist_link">
+    <inertial>
+      <origin xyz="-0.000103312 -0.0386143 0.0281156" rpy="0 0 0"/>
+      <mass value="0.079"/>
+      <inertia ixx="3.68263e-05" ixy="1.7893e-08" ixz="-5.28128e-08" iyy="2.5391e-05" iyz="3.6412e-06" izz="2.1e-05"/>
+    </inertial>
+    <!-- Part sts3215_03a_no_horn_v1 -->
+    <visual>
+      <origin xyz="8.32667e-17 -0.0424 0.0306" rpy="1.5708 1.5708 0"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/sts3215_03a_no_horn_v1.stl"/>
+      </geometry>
+      <material name="sts3215"><color rgba="0.1 0.1 0.1 1.0"/></material>
+    </visual>
+    <collision>
+      <origin xyz="8.32667e-17 -0.0424 0.0306" rpy="1.5708 1.5708 0"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/sts3215_03a_no_horn_v1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part wrist_roll_pitch_so101_v2 -->
+    <visual>
+      <origin xyz="0 -0.028 0.0181" rpy="-1.5708 -1.5708 0"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/wrist_roll_pitch_so101_v2.stl"/>
+      </geometry>
+      <material name="3d_printed"><color rgba="0.05 0.05 0.05 1.0"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0 -0.028 0.0181" rpy="-1.5708 -1.5708 0"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/wrist_roll_pitch_so101_v2.stl"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- Link gripper -->
+  <link name="gripper_link">
+    <inertial>
+      <origin xyz="0.000213627 0.000245138 -0.025187" rpy="0 0 0"/>
+      <mass value="0.087"/>
+      <inertia ixx="2.75087e-05" ixy="-3.35241e-07" ixz="-5.7352e-06" iyy="4.33657e-05" iyz="-5.17847e-08" izz="3.45059e-05"/>
+    </inertial>
+    <!-- Part sts3215_03a_v1_5 -->
+    <visual>
+      <origin xyz="0.0077 0.0001 -0.0234" rpy="-1.5708 -5.19179e-17 -1.66533e-16"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/sts3215_03a_v1.stl"/>
+      </geometry>
+      <material name="sts3215"><color rgba="0.1 0.1 0.1 1.0"/></material>
+    </visual>
+    <collision>
+      <origin xyz="0.0077 0.0001 -0.0234" rpy="-1.5708 -5.19179e-17 -1.66533e-16"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/sts3215_03a_v1.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part soft_fin_fixed_jaw: the XLeRobot fin-gripper replacement for
+         wrist_roll_follower_so101_v1. Same servo bracket and the same mesh
+         frame as the stock part, so this keeps the stock part's origin; the
+         moulded fixed finger is gone, replaced by the fork below. -->
+    <visual>
+      <origin xyz="8.32667e-17 -0.000218214 0.000949706" rpy="-3.14159 -5.55112e-17 0"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/soft_fin_fixed_jaw.stl"/>
+      </geometry>
+      <material name="3d_printed"><color rgba="0.05 0.05 0.05 1.0"/></material>
+    </visual>
+    <collision>
+      <origin xyz="8.32667e-17 -0.000218214 0.000949706" rpy="-3.14159 -5.55112e-17 0"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/soft_fin_fixed_jaw_collision.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part soft_fin_finger, fixed side. The finger mesh is stored in a frame
+         built from its own screw pair, so this origin is just the fixed jaw's
+         two-bore frame. -->
+    <visual>
+      <origin xyz="-0.02275 0.000781901 -0.0425503" rpy="2.66224e-06 -0.0806329 -2.14431e-07"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/soft_fin_finger.stl"/>
+      </geometry>
+      <material name="tpu_fin"><color rgba="0.12 0.12 0.13 1.0"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.02275 0.000781901 -0.0425503" rpy="2.66224e-06 -0.0806329 -2.14431e-07"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/soft_fin_finger.stl"/>
+      </geometry>
+    </collision>
+</link>
+
+  <!-- Link camera wrist mount -->
+  <link name="camera_wrist_mount_link">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="1e-9"/>
+      <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+    </inertial>
+    <!-- Part camera_wrist_mount -->
+    <visual>
+      <origin xyz="8.32667e-17 -0.000218214 0.000949706" rpy="-3.14159 -5.55112e-17 0"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/camera_wrist_mount.stl"/>
+      </geometry>
+      <material name="3d_printed"><color rgba="0.05 0.05 0.05 1.0"/></material>
+    </visual>
+    <collision>
+      <origin xyz="8.32667e-17 -0.000218214 0.000949706" rpy="-3.14159 -5.55112e-17 0"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/camera_wrist_mount.stl"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- Joint from gripper to camera wrist mount -->
+  <joint name="camera_wrist_mount_fixed_joint" type="fixed">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <parent link="gripper_link"/>
+    <child link="camera_wrist_mount_link"/>
+    <axis xyz="0 0 0"/>
+  </joint>
+  
+  <!-- Wrist camera frame (dummy link + fixed joint) -->
+  <link name="wrist_camera_frame_link">
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="1e-9"/>
+      <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+    </inertial>
+  </link>
+  
+  <joint name="wrist_camera_frame_fixed_joint" type="fixed">
+    <origin xyz="0.0025 0.072010214 -0.000859294" rpy="2.704208 -0.067216 0.031395"/>
+    <parent link="camera_wrist_mount_link"/>
+    <child link="wrist_camera_frame_link"/>
+    <axis xyz="0 0 0"/>
+  </joint>
+
+  <!-- Gripper frame (dummy link + fixed joint) -->
+  <link name="gripper_frame_link">
+    <origin xyz="0 0 0" rpy="0 -0 0"/>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="1e-9"/>
+      <inertia ixx="0" ixy="0" ixz="0" iyy="0" iyz="0" izz="0"/>
+    </inertial>
+  </link>
+
+  <joint name="gripper_frame_joint" type="fixed">
+    <origin xyz="-0.0079 -0.000218121 -0.0981274" rpy="0 3.14159 0"/>
+    <parent link="gripper_link"/>
+    <child link="gripper_frame_link"/>
+    <axis xyz="0 0 0"/>
+  </joint>
+
+  <!-- Link moving_jaw_so101_v1 -->
+  <link name="moving_jaw_so101_v1_link">
+    <inertial>
+      <origin xyz="-0.00157495 -0.0300244 0.0192755" rpy="0 0 0"/>
+      <mass value="0.012"/>
+      <inertia ixx="6.61427e-06" ixy="-3.19807e-07" ixz="-5.90717e-09" iyy="1.89032e-06" iyz="-1.09945e-07" izz="5.28738e-06"/>
+    </inertial>
+    <!-- Part soft_fin_moving_jaw: the XLeRobot fin-gripper replacement for
+         moving_jaw_so101_v1. Same pivot yoke and mesh frame as the stock part,
+         so this keeps the stock part's origin; the moulded blade is gone,
+         replaced by the fork below. -->
+    <visual>
+      <origin xyz="-5.55112e-17 -5.55112e-17 0.0189" rpy="9.53145e-17 6.93889e-18 1.24077e-24"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/soft_fin_moving_jaw.stl"/>
+      </geometry>
+      <material name="3d_printed"><color rgba="0.05 0.05 0.05 1.0"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-5.55112e-17 -5.55112e-17 0.0189" rpy="9.53145e-17 6.93889e-18 1.24077e-24"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/soft_fin_moving_jaw_collision.stl"/>
+      </geometry>
+    </collision>
+    <!-- Part soft_fin_finger, moving side: the moving jaw's two-bore frame. -->
+    <visual>
+      <origin xyz="-0.00115 -0.0222 0.0181" rpy="1.5708 -1.07812e-17 3.10121"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/soft_fin_finger.stl"/>
+      </geometry>
+      <material name="tpu_fin"><color rgba="0.12 0.12 0.13 1.0"/></material>
+    </visual>
+    <collision>
+      <origin xyz="-0.00115 -0.0222 0.0181" rpy="1.5708 -1.07812e-17 3.10121"/>
+      <geometry>
+        <mesh filename="package://so101_sim/description/assets/soft_fin_finger.stl"/>
+      </geometry>
+    </collision>
+</link>
+
+  <!-- Joint from gripper to moving_jaw_so101_v1 -->
+  <joint name="gripper" type="revolute">
+    <origin xyz="0.0202 0.0188 -0.0234" rpy="1.5708 -5.24284e-08 -1.41553e-15"/>
+    <parent link="gripper_link"/>
+    <child link="moving_jaw_so101_v1_link"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="10" velocity="10" lower="-0.174533" upper="1.74533"/>
+  </joint>
+
+
+  <!-- Joint from wrist to gripper -->
+  <joint name="wrist_roll" type="revolute">
+    <origin xyz="5.55112e-17 -0.0611 0.0181" rpy="1.5708 1.6194795 3.14159"/>
+    <parent link="wrist_link"/>
+    <child link="gripper_link"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="10" velocity="10" lower="-2.74385" upper="2.84121"/>
+  </joint>
+
+
+  <!-- Joint from lower_arm to wrist -->
+  <joint name="wrist_flex" type="revolute">
+    <origin xyz="-0.1349 0.0052 3.62355e-17" rpy="4.02456e-15 8.67362e-16 -1.5708"/>
+    <parent link="lower_arm_link"/>
+    <child link="wrist_link"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="10" velocity="10" lower="-1.65806" upper="1.65806"/>
+  </joint>
+
+
+  <!-- Joint from upper_arm to lower_arm -->
+  <!-- Note: 5-degree calibration offset applied to joint limits -->
+  <joint name="elbow_flex" type="revolute">
+    <origin xyz="-0.11257 -0.028 1.73763e-16" rpy="-3.63608e-16 8.74301e-16 1.5708"/>
+    <parent link="upper_arm_link"/>
+    <child link="lower_arm_link"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="10" velocity="10" lower="-1.69" upper="1.69"/>
+  </joint>
+
+
+  <!-- Joint from shoulder to upper_arm -->
+  <joint name="shoulder_lift" type="revolute">
+    <origin xyz="-0.0303992 -0.0182778 -0.0542" rpy="-1.5708 -1.5708 0"/>
+    <parent link="shoulder_link"/>
+    <child link="upper_arm_link"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="10" velocity="10" lower="-1.74533" upper="1.74533"/>
+  </joint>
+
+
+  <!-- Joint from base to shoulder -->
+  <joint name="shoulder_pan" type="revolute">
+    <origin xyz="0.0388353 -8.97657e-09 0.0624" rpy="3.14159 4.18253e-17 -3.14159"/>
+    <parent link="base_link"/>
+    <child link="shoulder_link"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="10" velocity="10" lower="-1.91986" upper="1.91986"/>
+  </joint>
+
+  <xacro:macro name="so101_joint" params="name lower upper">
+    <joint name="${name}">
+      <!--
+        Servo identity and zero, from config/so101_follower_calibration.yaml.
+        The driver reads `id` to address the servo and treats `offset` as the
+        raw tick that means 0 rad. Absent on mock, where they mean nothing.
+      -->
+      <xacro:if value="${'$(arg hardware_interface)' == 'real'}">
+        <param name="id">${calibration[name]['id']}</param>
+        <param name="offset">${calibration[name]['offset']}</param>
+      </xacro:if>
+      <command_interface name="position">
+        <param name="min">${lower}</param>
+        <param name="max">${upper}</param>
+      </command_interface>
+      <state_interface name="position">
+        <param name="initial_value">${initial_positions[name]}</param>
+      </state_interface>
+      <state_interface name="velocity" />
+      <!--
+        Mock only. feetech_ros2_driver overrides export_state_interfaces() and
+        exports position and velocity alone, and ros2_control's
+        validate_storage() rejects a hardware component whose URDF declares a
+        state interface it did not export ("Discrepancy between robot
+        description file (urdf) and actually exported HW interfaces"). An
+        effort declaration on the real branch is therefore fatal at load, not
+        inert; that is also why joint_state_broadcaster does not ask for one.
+      -->
+      <xacro:if value="${'$(arg hardware_interface)' == 'mock'}">
+        <state_interface name="effort" />
+      </xacro:if>
+    </joint>
+  </xacro:macro>
+
+  <ros2_control name="so101" type="system">
+    <xacro:if value="${'$(arg hardware_interface)' == 'mock'}">
+      <hardware>
+        <!-- Echoes command to state. The twin's joint values arrive over the
+             joint_trajectory_controller topic, not from a serial port. -->
+        <plugin>mock_components/GenericSystem</plugin>
+      </hardware>
+    </xacro:if>
+    <xacro:if value="${'$(arg hardware_interface)' == 'real'}">
+      <hardware>
+        <!--
+          One serial bus, six STS3215 servos daisy-chained, position command
+          and position/velocity feedback. The plugin ships as the Jazzy binary
+          ros-jazzy-feetech-ros2-driver; `feetech_ros2_driver` is an
+          exec_depend so rosdep installs it into the workspace image.
+        -->
+        <plugin>feetech_ros2_driver/FeetechHardwareInterface</plugin>
+        <param name="usb_port">$(arg usb_port)</param>
+      </hardware>
+    </xacro:if>
+    <!-- Limits are the upstream LeRobot calibration, in radians. -->
+    <xacro:so101_joint name="shoulder_pan" lower="-1.91986" upper="1.91986" />
+    <xacro:so101_joint name="shoulder_lift" lower="-1.74533" upper="1.74533" />
+    <xacro:so101_joint name="elbow_flex" lower="-1.69" upper="1.69" />
+    <xacro:so101_joint name="wrist_flex" lower="-1.65806" upper="1.65806" />
+    <xacro:so101_joint name="wrist_roll" lower="-2.74385" upper="2.84121" />
+    <xacro:so101_joint name="gripper" lower="-0.174533" upper="1.74533" />
+  </ros2_control>
+</robot>

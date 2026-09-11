@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Close Gripper">
+  <BehaviorTree
+    ID="Close Gripper"
+    _description="Close the SO-101 jaw. Teleoperation looks this Objective up by name, and without it the gripper controls silently do nothing."
+  >
+    <!--
+      The gripper is one of the six joints owned by joint_trajectory_controller,
+      so the jaw moves like any other joint and there is no
+      GripperActionController to send a gripper command to. A second claimant on
+      the gripper's position command interface would lock the mirroring bridge
+      out of the jaw.
+    -->
+    <Control ID="Sequence" name="root">
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        waypoint_name="Gripper Closed"
+        joint_group_name="gripper"
+        velocity_scale_factor="0.50"
+        acceleration_scale_factor="0.50"
+        link_padding="0.0"
+        seed="0"
+        keep_orientation="false"
+        controller_names="joint_trajectory_controller"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        execution_pipeline="jtc"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Close Gripper">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="SO-101" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

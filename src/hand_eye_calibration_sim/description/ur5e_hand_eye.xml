@@ -1,14 +1,12 @@
 <!-- Copy of picknik_accessories mujoco_assets/ur5e/ur5e.xml with one addition:
-     the flange_board body inside wrist_3_link, a ChArUco board plate rigidly
+     the wrist board body inside wrist_3_link, a ChArUco board plate rigidly
      attached to the wrist for eye-to-hand calibration. MJCF includes are
      textual, so a body cannot be injected into the shared ur5e include from
      the scene file; a rigid child is required (a weld constraint is soft and
      would corrupt the calibration ground truth). Keep everything except
-     the flange_board body, the robotiq include path, and the
-     wrist_camera_optical_frame euler (pinned to exactly camera + pi here)
-     identical to the shared ur5e.xml when updating. The including scene
-     must define the charuco_flange_material asset the flange_board geom
-     references. -->
+     the wrist board body and the robotiq include path identical to the
+     shared ur5e.xml when updating. The including scene must define the
+     material asset the wrist board geom references. -->
 <ur5e_body>
   <body
     gravcomp="1"
@@ -148,27 +146,23 @@
                     class="visual"
                   />
                 </body>
-                <!-- The camera frame according to REP 103 -->
-                <!-- Positive X points to right of camera -->
-                <!-- Positive Y points up towards the top of the camera -->
-                <!-- Positive Z points to behind the camera -->
+                <!-- Wrist camera in MuJoCo's camera frame: +x right, +y up, looking along -z. Sits at the
+                     center of the D415 body on the camera adapter, pitched 6 degrees toward the gripper
+                     (euler x = pi/2 - 6 deg). -->
                 <camera
                   name="wrist_camera"
-                  pos="0.0 0.2 0.05"
+                  pos="0 0.151402 0.078437"
                   fovy="58"
                   mode="fixed"
                   resolution="1280 720"
-                  euler="1.57 0.0 0.0"
+                  euler="1.4660765717 0 0"
                 />
-                <!-- The camera optical frame is the <camera> pose rotated
-                     exactly 180 degrees about its x-axis: 1.57 - pi, not the
-                     shared model's -1.57, which falls 0.0016 rad short of the
-                     flip and would bias the calibration ground truth by
-                     ~0.09 degrees against the rendered optics. -->
+                <!-- REP 103 optical frame of the wrist camera: the camera pose rotated 180 degrees about x,
+                     so +z looks forward and +y points down. -->
                 <site
                   name="wrist_camera_optical_frame"
-                  pos="0.0 0.2 0.05"
-                  euler="-1.5715926536 0 0"
+                  pos="0 0.151402 0.078437"
+                  euler="-1.6755160819 0 0"
                 />
                 <!-- ChArUco board plate rigidly mounted to the wrist for
                      eye-to-hand calibration. The plate rides above the wrist
@@ -179,24 +173,24 @@
                      +Y side, so one collection pass serves both calibration
                      modes.
                      Physical size 0.150 x 0.120 m (5 x 4 squares of 0.030 m),
-                     matching assets/charuco_flange_board.png. Contact is
+                     matching assets/charuco_arm_board.png. Contact is
                      disabled: the plate is a calibration target, not a
                      manipulation surface. -->
                 <body
-                  name="flange_board"
+                  name="arm_board"
                   gravcomp="1"
                   pos="0 0.14 0.16"
                   euler="0.6435 0 0"
                 >
                   <geom
-                    name="flange_board_plate"
+                    name="arm_board_plate"
                     type="box"
                     size="0.075 0.06 0.004"
-                    material="charuco_flange_material"
+                    material="charuco_arm_board_material"
                     contype="0"
                     conaffinity="0"
                   />
-                  <site name="flange_board_top" pos="0 0 0.004" />
+                  <site name="arm_board_top" pos="0 0 0.004" />
                 </body>
                 <include file="robotiq_2f85/robotiq2f85.xml" />
               </body>

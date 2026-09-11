@@ -1,0 +1,143 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 50
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+    joint_trajectory_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+    joint_velocity_controller:
+      type: joint_velocity_controller/JointVelocityController
+    velocity_force_controller:
+      type: velocity_force_controller/VelocityForceController
+
+joint_state_broadcaster:
+  ros__parameters:
+    use_local_topics: false
+    joints:
+      - shoulder_pan
+      - shoulder_lift
+      - elbow_flex
+      - wrist_flex
+      - wrist_roll
+      - gripper
+    # No effort: feetech_ros2_driver exports position and velocity only, and a
+    # broadcaster that asks for an interface the hardware does not export fails
+    # to activate. The URDF declares effort on the mock branch only, for the
+    # same reason one layer down: ros2_control refuses to load a component
+    # whose URDF declares an interface the driver did not export. Dropping it
+    # here turns mock's constant 0.0 effort array into NaN, which says the same
+    # thing.
+    interfaces:
+      - position
+      - velocity
+
+# One trajectory controller owns all six joints, gripper included. A separate
+# GripperActionController would claim the gripper's position command interface
+# and ros2_control would then refuse this controller's claim on it, so the
+# mirroring bridge could no longer drive the jaw.
+joint_trajectory_controller:
+  ros__parameters:
+    joints:
+      - shoulder_pan
+      - shoulder_lift
+      - elbow_flex
+      - wrist_flex
+      - wrist_roll
+      - gripper
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
+    state_publish_rate: 50.0
+    action_monitor_rate: 20.0
+    # The `manipulator` planning group is the five arm joints and `gripper` is
+    # the sixth on its own, so every goal this config sends names a subset of
+    # the controller's joints. Rejecting partial goals rejects all of them.
+    allow_partial_joints_goal: true
+    constraints:
+      # Disabled: feetech_ros2_driver decodes Present Speed as an unsigned word,
+      # so a joint moving negative reports roughly +50.27 rad/s and the
+      # stopped-velocity check can abort a goal whose positions are all in band.
+      # Mock's velocity state is synthetic, so nothing real is lost there.
+      stopped_velocity_tolerance: 0.0
+      goal_time: 3.0
+      shoulder_pan:
+        trajectory: 0.15
+        goal: 0.06
+      shoulder_lift:
+        trajectory: 0.15
+        goal: 0.06
+      elbow_flex:
+        trajectory: 0.15
+        goal: 0.08
+      wrist_flex:
+        trajectory: 0.15
+        goal: 0.06
+      wrist_roll:
+        trajectory: 0.15
+        goal: 0.06
+      gripper:
+        trajectory: 0.20
+        goal: 0.08
+
+# The two teleop controllers below run over the five arm joints only ("manipulator");
+# the gripper stays exclusively owned by joint_trajectory_controller.
+joint_velocity_controller:
+  ros__parameters:
+    planning_group_name: manipulator
+    max_joint_velocity:
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+    max_joint_acceleration:
+      - 2.0
+      - 2.0
+      - 2.0
+      - 2.0
+      - 2.0
+    command_interfaces: ["position"]
+    joint_limit_position_tolerance: 0.02
+    command_timeout: 0.2
+    state_publish_rate: 20
+
+velocity_force_controller:
+  ros__parameters:
+    planning_group_name: manipulator
+    ee_frame: gripper_frame_link
+    sensor_frame: gripper_frame_link
+    # No force/torque sensor on the SO-101; leave disabled.
+    ft_sensor_name: ""
+    command_interfaces: ["position"]
+    max_joint_velocity:
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+      - 1.0
+    max_joint_acceleration:
+      - 2.0
+      - 2.0
+      - 2.0
+      - 2.0
+      - 2.0
+    max_cartesian_velocity:
+      - 0.25
+      - 0.25
+      - 0.25
+      - 1.0
+      - 1.0
+      - 1.0
+    max_cartesian_acceleration:
+      - 2.0
+      - 2.0
+      - 2.0
+      - 4.0
+      - 4.0
+      - 4.0
+    state_publish_rate: 10
+    jacobian_damping: 0.005
+    command_timeout: 0.2
+    joint_limit_position_tolerance: 0.02
