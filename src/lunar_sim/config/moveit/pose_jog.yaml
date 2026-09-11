@@ -1,8 +1,9 @@
 # The base has no arm and no IK-capable group, so MoveIt Pro's Cartesian Pose Jog Behavior does not
-# apply here. This config is still read, though: `request_teleoperation.xml`'s Pose tab branch
-# reports these planning_groups/controllers to the Desktop App, whose jog pad, gamepad, and Quest
-# headset then publish VelocityForceCommand on /pose_jog/base for `TeleoperateBase` to forward to
-# /cmd_vel. An empty planning_groups/controllers pair would also crash MoveIt Pro's launch
-# (evaluates to an untyped empty parameter tuple).
+# apply here. This config is still read, though: the Desktop App fetches it over REST to choose
+# the /pose_jog/<planning_group> topic its jog pad, gamepad, and Quest headset publish
+# VelocityForceCommand on, and `request_teleoperation.xml`'s `TeleoperateBase` subscribes to the
+# same /pose_jog/base name to forward those commands to /cmd_vel. An empty
+# planning_groups/controllers pair would also crash MoveIt Pro's launch (evaluates to an untyped
+# empty parameter tuple).
 planning_groups: ["base"]
 controllers: ["platform_velocity_controller"]

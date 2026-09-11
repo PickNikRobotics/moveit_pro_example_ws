@@ -58,8 +58,10 @@ geometry_msgs::msg::Twist clampTwistCommand(const moveit_pro_controllers_msgs::m
                                             const double max_linear_velocity, const double max_angular_velocity)
 {
   geometry_msgs::msg::Twist twist;
-  twist.linear.x = std::clamp(command.twist.linear.x, -max_linear_velocity, max_linear_velocity);
-  twist.angular.z = std::clamp(command.twist.angular.z, -max_angular_velocity, max_angular_velocity);
+  twist.linear.x = std::clamp(command.twist.linear.x * static_cast<double>(command.velocity_controlled_axes.x),
+                              -max_linear_velocity, max_linear_velocity);
+  twist.angular.z = std::clamp(command.twist.angular.z * static_cast<double>(command.velocity_controlled_axes.rz),
+                               -max_angular_velocity, max_angular_velocity);
   return twist;
 }
 

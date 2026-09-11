@@ -40,6 +40,8 @@ moveit_pro_controllers_msgs::msg::VelocityForceCommand makeCommand(double linear
   moveit_pro_controllers_msgs::msg::VelocityForceCommand command;
   command.twist.linear.x = linear_x;
   command.twist.angular.z = angular_z;
+  command.velocity_controlled_axes.x = true;
+  command.velocity_controlled_axes.rz = true;
   return command;
 }
 
@@ -84,6 +86,21 @@ TEST(TeleoperateBaseTwistMapping, DropsAllOtherAxes)
   EXPECT_DOUBLE_EQ(twist.linear.z, 0.0);
   EXPECT_DOUBLE_EQ(twist.angular.x, 0.0);
   EXPECT_DOUBLE_EQ(twist.angular.y, 0.0);
+}
+
+TEST(TeleoperateBaseTwistMapping, DisabledAxisFlagZeroesComponent)
+{
+  auto command = makeCommand(0.5, 1.5);
+  command.velocity_controlled_axes.x = false;
+  const auto linear_disabled = clampTwistCommand(command, 0.8, 2.0);
+  EXPECT_DOUBLE_EQ(linear_disabled.linear.x, 0.0);
+  EXPECT_DOUBLE_EQ(linear_disabled.angular.z, 1.5);
+
+  command = makeCommand(0.5, 1.5);
+  command.velocity_controlled_axes.rz = false;
+  const auto angular_disabled = clampTwistCommand(command, 0.8, 2.0);
+  EXPECT_DOUBLE_EQ(angular_disabled.linear.x, 0.5);
+  EXPECT_DOUBLE_EQ(angular_disabled.angular.z, 0.0);
 }
 
 }  // namespace
