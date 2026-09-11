@@ -59,6 +59,38 @@ Serving a different checkpoint also takes two edits in
 match what the checkpoint was trained on: set `image_names` to its camera names,
 which the server rejects the request for if they differ, and set `dt` to 1/`fps`.
 
+## Quantized checkpoints
+
+`int8: true` quantizes on every load, from a checkpoint whose full-width weights
+have to be downloaded and held first. `quantize_checkpoint.py` does it once and
+writes the result as a checkpoint of its own, a little over half the size.
+
+It runs in the server's image but not in the running container, which mounts
+`/models` read-only. From the workspace root:
+
+```bash
+docker run --rm --entrypoint python \
+  --user "$(id -u):$(id -g)" \
+  -v "$PWD/src/vla_sim/docker:/app:ro" \
+  -v "$PWD/src/vla_sim/models:/models" \
+  -v "$PWD/src/vla_sim/hf_cache:/hf" \
+  -e HF_HOME=/hf -e HF_TOKEN="$HF_TOKEN" -e HOME=/tmp -e USER=vla \
+  moveit_pro-inference_server:latest \
+  quantize_checkpoint.py \
+    --checkpoint PickNikRobotics/pi05_kinova_gen3_cube_stack_sim \
+    --out /models/pi05_kinova_gen3_cube_stack_sim_int8
+```
+
+`/models` is `../models/`, so serving the result is a matter of pointing the
+`vla_serving.yaml` checkpoint at the directory it wrote. The server reads what
+the weights file says it is, so `int8` no longer applies to that checkpoint, and
+`/health` reports `int8` either way.
+
+The weights are torchao tensor subclasses in a prototype format, so only this
+server reads them, and only against the torchao the image pins; the file records
+the version that wrote it. Keep the source checkpoint, since the quantized one
+can always be written again from it.
+
 ## Environment
 
 Set these in the workspace `.env`; all are optional.

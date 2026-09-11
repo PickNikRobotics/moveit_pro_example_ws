@@ -27,10 +27,11 @@ fps: 10.0
 device: auto
 
 # Hold the pi0.5 language backbone and vision tower at eight bits, most of the
-# weights: roughly 3 GiB less GPU memory for a little more time per chunk. false
+# weights: about a third less GPU memory for a little more time per chunk. false
 # loads every weight at full width, and a policy family other than pi0.5 ignores
-# this without saying so. What it costs in success rate is unmeasured on this
-# checkpoint.
+# this without saying so. What eight bits costs in success rate is unmeasured.
+# A checkpoint quantized ahead of time (docker/README.md) is already eight bits
+# and is served as written, whatever this says.
 int8: false
 
 # Trained observation.state width: 7 arm joints plus 1 gripper. 0 trusts
