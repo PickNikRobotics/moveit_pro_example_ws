@@ -189,29 +189,51 @@
 
                    The port values here mirror the amcl block of nav2_params.yaml. If that block
                    changes, change these with it, or the gate stops measuring this filter.-->
-              <Action
-                ID="ScanMatchResidual"
-                name="Check the pose against the map"
-                pose="{refined_pose}"
-                scan_topic="/scan_merged"
-                map_topic="/map"
-                min_range="0.000000"
-                max_range="25.000000"
-                max_beams="60"
-                max_obstacle_distance="2.000000"
-                inlier_distance="{inlier_distance}"
-                min_inlier_fraction="{min_inlier_fraction}"
-                timeout="5.000000"
-                inlier_fraction="{inlier_fraction}"
-                median_residual="{median_residual}"
-                beams_used="{beams_used}"
-              />
+              <!--The scan-fit message belongs HERE, on the node that measured it, not on the
+                   catch-all below. The drift gate above fails the enclosing Sequence before this
+                   node ever ticks, so a drift rejection reaching a scan-fit message would tell the
+                   operator their pose does not explain the scan when no fit was ever measured, and
+                   would send them to drive the robot when the right move is to click closer.-->
+              <Control ID="Fallback" name="It explains the scan, or say that it does not">
+                <Action
+                  ID="ScanMatchResidual"
+                  name="Check the pose against the map"
+                  pose="{refined_pose}"
+                  scan_topic="/scan_merged"
+                  map_topic="/map"
+                  min_range="0.000000"
+                  max_range="25.000000"
+                  max_beams="60"
+                  max_obstacle_distance="2.000000"
+                  inlier_distance="{inlier_distance}"
+                  min_inlier_fraction="{min_inlier_fraction}"
+                  timeout="5.000000"
+                  inlier_fraction="{inlier_fraction}"
+                  median_residual="{median_residual}"
+                  beams_used="{beams_used}"
+                />
+                <Control ID="Sequence" name="Does not explain the scan">
+                  <Action
+                    ID="LogMessage"
+                    log_level="error"
+                    message="Refinement REJECTED: the refined pose does not explain the live scan well enough to keep. Click closer to the robot and run again; if the same spot keeps failing, the area looks the same from more than one standpoint and the robot must be driven a short distance."
+                  />
+                  <Action
+                    ID="AlwaysFailure"
+                    name="Fall through to the restore"
+                  />
+                </Control>
+              </Control>
             </Control>
+            <!--Neutral on purpose. Whatever failed above - the drift gate, the fit-to-map gate, a
+                 transform read, a projection - has already logged its own cause and its own remedy,
+                 and this branch cannot tell which one it was. Naming a specific cause here would be
+                 a guess, and it would be the LAST line the operator reads.-->
             <Control ID="Sequence" name="Rejected">
               <Action
                 ID="LogMessage"
                 log_level="error"
-                message="Refinement REJECTED: the refined pose does not explain the live scan well enough to keep. Click closer to the robot and run again; if the same spot keeps failing, the area looks the same from more than one standpoint and the robot must be driven a short distance."
+                message="Refinement REJECTED; the localizer is being put back the way you left it. See the error just above this one for which check failed and what to do about it."
               />
               <Action ID="AlwaysFailure" name="Fall through to the restore" />
             </Control>

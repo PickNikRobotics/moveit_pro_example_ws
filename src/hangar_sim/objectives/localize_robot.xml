@@ -110,10 +110,18 @@
            LIMITATION, not a supported path. For the bumped-robot case use "Refine Localization
            In Place", which seeds from the filter's own estimate and never crosses frames at all.
            Fixing the limitation is follow-up work, not something to attempt from inside here.-->
+      <!--expected_input_frame_id pins the one assumption this whole relabel rests on. The identity
+           chain that makes it valid is mj_world -> map and odom -> world, so it holds for a pose in
+           'world' and for nothing else. Since which frame the UI actually returns has NOT been
+           observed, the check is what turns a UI revision returning some other frame into a loud
+           refusal rather than a seed placed silently somewhere the operator never pointed -
+           SeedLocalizationAtPose's own map-frame guard cannot catch that, because by then the pose
+           already says 'map'.-->
       <Action
         ID="ReinterpretPoseFrame"
         name="Read the click as map coordinates without transforming it"
         input_pose="{clicked_pose}"
+        expected_input_frame_id="world"
         frame_id="map"
         output_pose="{initial_pose}"
       />

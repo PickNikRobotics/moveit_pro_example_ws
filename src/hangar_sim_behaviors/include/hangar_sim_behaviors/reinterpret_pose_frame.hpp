@@ -32,11 +32,19 @@ namespace hangar_sim_behaviors
  *
  * Prefer `TransformPoseFrame` in every case where the transform exists and means something.
  *
- * | Data Port Name | Port Type | Object Type                     |
- * | -------------- | --------- | ------------------------------- |
- * | input_pose     | Input     | geometry_msgs::msg::PoseStamped |
- * | frame_id       | Input     | std::string                     |
- * | output_pose    | Output    | geometry_msgs::msg::PoseStamped |
+ * Set `expected_input_frame_id` wherever the caller knows which frame the pose must arrive in. The
+ * identity assumption is made about a specific PAIR of frames, so a pose arriving in some other
+ * frame does not inherit it; relabelling it anyway yields a pose that is silently somewhere else,
+ * and no downstream frame check can catch that, because the pose already carries the target frame's
+ * name by then. With the port set the Behavior refuses instead. Left empty, it relabels whatever
+ * arrives, which keeps it usable where the caller genuinely does not care.
+ *
+ * | Data Port Name          | Port Type | Object Type                     |
+ * | ----------------------- | --------- | ------------------------------- |
+ * | input_pose              | Input     | geometry_msgs::msg::PoseStamped |
+ * | frame_id                | Input     | std::string                     |
+ * | expected_input_frame_id | Input     | std::string                     |
+ * | output_pose             | Output    | geometry_msgs::msg::PoseStamped |
  */
 class ReinterpretPoseFrame final : public moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>
 {
