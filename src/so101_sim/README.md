@@ -85,7 +85,7 @@ shutdown, so `on_deactivate` never runs and the servos keep whatever torque
 state they had: **after a stop the arm stays rigid.** To make it limp,
 deactivate the component first
 (`ros2 control set_hardware_component_state so101 inactive`) or cut bus power.
-The diff against the tag is the two files under `modified_paths` in
+The diff against the tag is the files under `modified_paths` in
 `UPSTREAM.yaml`.
 
 Upstream `main` is deliberately not tracked: it moves the joint configuration to
@@ -161,15 +161,15 @@ Real limits of `feetech_ros2_driver` 0.2.2, not of this config:
   invalid or absent `usb_port` therefore terminates `ros2_control_node` outright
   rather than failing initialization cleanly, and will keep doing so until the
   driver handles the failed-open path upstream.
-- **`on_activate` can seed zeros.** It calls `read()` and discards the return,
-  then assigns `hw_positions_ = state_hw_positions_`. `state_hw_positions_` is
-  resized to `0.0`, and `read()` returns ERROR early without touching it when
-  `sync_read` fails. So a failed read at activation leaves the command at zero,
-  the vendored `on_activate` then turns torque on, and the first `write()`
-  sends tick 2048 to every servo at the driver's hardcoded speed 2400. The
-  vendored change keeps this upstream behaviour as is. Low probability:
-  `on_init` has just completed six `read_model_number` round-trips on the same
-  bus.
+- **Upstream `on_activate` could seed zeros — fixed in the vendored copy.**
+  Upstream calls `read()` and discards the return, then assigns
+  `hw_positions_ = state_hw_positions_`. `state_hw_positions_` is resized to
+  `0.0`, and `read()` returns ERROR early without touching it when `sync_read`
+  fails, so a failed read at activation would have seeded a zero command and
+  the first `write()` would have sent tick 2048 to every servo at the driver's
+  hardcoded speed 2400. The vendored `on_activate` returns ERROR on a failed
+  read, before seeding the command or enabling torque; the component stays
+  inactive and limp, and the controller manager logs the failed activation.
 
 ### Bench procedure
 
@@ -267,12 +267,13 @@ driver does at bring-up before you close the loop:
   torque off) or be ready to cut bus power. A restart without a power cycle
   is fine: the next activation reads the held pose and continues from it.
 - `on_activate` reads present position and seeds the command from it *before*
-  enabling torque, so there is no jump when the controller starts — **provided
-  that read succeeded.** The driver discards `read()`'s return value here, so a
-  failed or timed-out `sync_read` seeds the command with zeros instead (see
-  *Known gaps in the driver* above), and nothing reports it. Confirm
-  `/joint_states` matches the arm's physical pose before you command anything;
-  that check is what tells the two cases apart.
+  enabling torque, so there is no jump when the controller starts. If that
+  read fails, activation fails and torque stays off (upstream would have
+  seeded zeros instead; see *Known gaps in the driver*). Torque is enabled one
+  servo at a time and each servo's status packet is checked, so a servo that
+  does not answer or reports a fault also fails the activation, with the servo
+  id in the log. Still confirm `/joint_states` matches the arm's physical pose
+  before you command anything.
 - The first activation is the one that proves the lifecycle on the bench.
   Watch for: limp before `moveit_pro run`; the arm going rigid at the pose it
   is resting in when the controller manager logs the `so101` component

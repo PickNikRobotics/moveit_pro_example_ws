@@ -181,15 +181,19 @@ hardware_interface::return_type FeetechHardwareInterface::write(const rclcpp::Ti
 CallbackReturn FeetechHardwareInterface::set_torque(const std::vector<uint8_t>& ids,
                                                     const bool enable,
                                                     const std::string_view caller) {
-  if (ids.empty()) {
-    return CallbackReturn::SUCCESS;
+  // One write per servo rather than a broadcast sync_write: each write is
+  // acknowledged with a status packet, so a servo that missed the command or
+  // reports a fault fails the transition instead of being silently skipped.
+  // Every servo is still attempted, so a torque-off pass reaches the rest of
+  // the bus even when one servo does not answer.
+  auto status = CallbackReturn::SUCCESS;
+  for (const auto id : ids) {
+    if (const auto result = communication_protocol_->set_torque(id, enable); !result) {
+      spdlog::error("FeetechHardwareInterface::{} [id={}] -> {}", caller, id, result.error());
+      status = CallbackReturn::ERROR;
+    }
   }
-  const auto parameters = std::vector(ids.size(), std::experimental::make_array(static_cast<uint8_t>(enable ? 1 : 0)));
-  if (const auto result = communication_protocol_->sync_write(ids, SMS_STS_TORQUE_ENABLE, parameters); !result) {
-    spdlog::error("FeetechHardwareInterface::{} -> {}", caller, result.error());
-    return CallbackReturn::ERROR;
-  }
-  return CallbackReturn::SUCCESS;
+  return status;
 }
 
 CallbackReturn FeetechHardwareInterface::on_configure(const rclcpp_lifecycle::State& /* previous_state */) {
@@ -198,8 +202,14 @@ CallbackReturn FeetechHardwareInterface::on_configure(const rclcpp_lifecycle::St
 }
 
 CallbackReturn FeetechHardwareInterface::on_activate(const rclcpp_lifecycle::State& /* previous_state */) {
-  // Time/Duration are not used
-  read(rclcpp::Time{}, rclcpp::Duration::from_seconds(0));
+  // Time/Duration are not used. A failed read leaves state_hw_positions_ at
+  // its zero-initialised value; seeding the command from that and enabling
+  // torque would send tick 2048 to every servo on the first write(), so abort
+  // the activation instead.
+  if (read(rclcpp::Time{}, rclcpp::Duration::from_seconds(0)) != hardware_interface::return_type::OK) {
+    spdlog::error("FeetechHardwareInterface::on_activate -> initial read failed, torque left off");
+    return CallbackReturn::ERROR;
+  }
   // Set the initial command to current joint positions
   hw_positions_ = state_hw_positions_;
   // torque on for the commanded joints only, after the command is seeded so

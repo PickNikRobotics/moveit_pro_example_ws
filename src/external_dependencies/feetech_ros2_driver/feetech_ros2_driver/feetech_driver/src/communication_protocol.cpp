@@ -35,6 +35,14 @@ Result CommunicationProtocol::read_response(const uint8_t id) {
       return tl::make_unexpected(fmt::format(
           "CommunicationProtocol::read_response [calculated_checksum={} != checksum={}]", checksum, buffer[3]));
     }
+    // PickNik addition: buffer[2] is the servo's working-status byte (voltage,
+    // temperature, current, overload flags). Upstream ignored it, so a servo
+    // that acknowledged a write while reporting a fault still counted as
+    // success.
+    if (buffer[2] != 0) {
+      return tl::make_unexpected(
+          fmt::format("CommunicationProtocol::read_response [id={} working status=0x{:02x}]", id, buffer[2]));
+    }
     return {};
   });
 }
