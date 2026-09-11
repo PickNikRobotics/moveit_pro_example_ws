@@ -1,0 +1,192 @@
+<mujoco model="lunar sim scene">
+  <compiler angle="radian" meshdir="assets" autolimits="true" />
+
+  <option integrator="implicitfast" timestep="0.003" />
+
+  <include file="husky_a300.xml" />
+
+  <visual>
+    <headlight
+      diffuse="0.4 0.4 0.4"
+      ambient="0.05 0.05 0.05"
+      specular="0 0 0"
+    />
+    <rgba haze="0.05 0.05 0.05 1" />
+    <global offwidth="1280" offheight="720" azimuth="120" elevation="-20" />
+    <!-- Directional-light shadow tuning: past the edge of the shadow frustum (roughly
+         model.stat.extent * shadowclip - here ~10 m * 5 = 50 m), a lit surface still renders but
+         samples the shadow map out of its valid range, aliasing into speckle. chase_camera's
+         pos is fixed in world space (mode="targetbody" only rotates it to face the robot, see
+         AGENTS.md), so which part of the ground plane it grazes toward changes as the robot
+         drives away from the start pose over the Dead Reckon Square - shadowclip needs enough
+         margin to keep the whole 10 m ground_plane below (not just the small area right under
+         the robot) inside the frustum for the whole run, not just at the start pose. shadowsize=8192
+         keeps per-texel resolution sharp across that frustum. -->
+    <quality shadowsize="8192" />
+    <map shadowclip="5.0" />
+  </visual>
+
+  <!-- Dark space skybox + regolith ground, carried over from the pre-869 Phoebe-based
+       lunar_sim scene (src/lunar_sim/mjcf/scene.xml on main before that PR removed it). -->
+  <asset>
+    <texture
+      type="skybox"
+      builtin="gradient"
+      rgb1="0.02 0.02 0.05"
+      rgb2="0 0 0"
+      width="512"
+      height="3072"
+    />
+    <!-- Photoreal ground color map, covering the whole 20x20 m plane with no repeat - see
+         src/lunar_sim/README.md and generate_ground_colormap.py for source/licence provenance and
+         how to regenerate. Color map only, no normal/AO/roughness maps loaded - MuJoCo's
+         <texture type="2d"> is diffuse-only. Desaturated/reprocessed to a neutral grey albedo (no
+         source tint survives) - see README for why. -->
+    <texture
+      type="2d"
+      name="regolith"
+      file="assets/lunar_regolith_untiled.png"
+    />
+    <!-- Matte: regolith is a diffuse dust surface, not the wet-looking mirror MuJoCo's default
+         planar reflection gives a nonzero-reflectance plane. reflectance=0 turns that off;
+         specular/shininess=0 kill the remaining highlight, inherited unchanged from the old
+         Phoebe scene's material where they didn't matter as much on a smaller ground patch.
+         texrepeat with texuniform="true" is repeats *per metre* of world space, not repeats
+         across the whole geom (see AGENTS.md's texrepeat entry), so covering the 20 m plane
+         exactly once needs 1/20 = 0.05 on both axes. The texture image spans the whole plane at
+         ~2.4mm/px (see generate_ground_colormap.py), so at 0.05 it is drawn once, not tiled - no
+         repeat pitch exists anywhere on the plane, unlike the single-photo texrepeat="0.3 0.3"
+         (~3.3 m tile) tiling this replaced. -->
+    <material
+      name="regolith_ground"
+      texture="regolith"
+      texuniform="true"
+      texrepeat="0.05 0.05"
+      reflectance="0"
+      specular="0"
+      shininess="0"
+    />
+    <!-- Procedurally generated cratered heightfield, see generate_terrain.py (offline, seeded,
+         committed output - nothing here is computed at load time). size="10 10 elevation_z base":
+         matches the plane's old 10 m half-extents; elevation_z/base and the ground geom's pos.z
+         below must be regenerated together - re-run generate_terrain.py and copy its printed
+         "hfield size attr" / "ground geom pos attr" lines here if the seed or generator params
+         change. -->
+    <hfield
+      name="lunar_hfield"
+      file="lunar_hfield.png"
+      size="10 10 0.286 0.1"
+    />
+    <include file="rocks_assets_generated.xml" />
+  </asset>
+
+  <worldbody>
+    <!-- Reduced lighting to simulate lunar conditions. The hard shadow a lunar scene needs (and
+         that will matter more once a crater rim exists) wants a low sun, but MuJoCo's shadow
+         mapping has no slope-scaled bias: at this light's original, lower angle
+         (dir="-0.5 0.5 -1", ~55 deg elevation) the shadow map's self-shadowing bias broke down at
+         the plane's more grazing viewing angles and speckled, regardless of shadowsize/shadowclip
+         (see the <visual> block above for those). dir="-0.2 0.2 -1" (~74 deg elevation) is as low
+         as this light goes clean - a compromise against the lunar look, not the primary fix. -->
+    <light
+      pos="5 -5 10"
+      dir="-0.2 0.2 -1"
+      directional="true"
+      diffuse="0.9 0.9 0.85"
+      castshadow="true"
+    />
+
+    <!-- Cratered regolith heightfield (layer 2), replacing the earlier flat plane. Finite
+         (matching the old plane's 20x20 m footprint) so wheel contact matches hangar_sim's
+         precedent and the ground comfortably bounds the ~1.8 m Dead Reckon Square while staying
+         safely inside the shadow frustum above (see the <light> and <visual> comments). pos.z
+         must equal generate_terrain.py's printed z_min for its own seed/params - see the
+         <hfield> asset comment. -->
+    <geom
+      name="ground_plane"
+      type="hfield"
+      hfield="lunar_hfield"
+      pos="0 0 -0.2095"
+      material="regolith_ground"
+      contype="1"
+      conaffinity="1"
+    />
+    <!-- Scattered rock library, see generate_terrain.py. Excluded from the Dead Reckon Square's
+         footprint plus margin so the calibration recheck isolates the heightfield's effect. -->
+    <include file="rocks_geoms_generated.xml" />
+
+    <!-- Chase shot that keeps the chassis framed from behind/above regardless of where the
+         Dead Reckon Square carries it - render-only (mode="targetbody" cameras are exempt from
+         MujocoSystem's fixed-camera streaming requirement, see AGENTS.md), used by
+         validate_and_render.py for the settled/driving comparison renders. Not the camera
+         streamed to the UI - that's scene_camera below. -->
+    <camera
+      name="chase_camera"
+      pos="-3 -3 2"
+      mode="targetbody"
+      target="chassis_link"
+      fovy="45"
+      resolution="1280 720"
+    />
+
+    <!-- Mast-mounted overview camera: the one sensor this config streams (published as
+         /scene_camera/color and /scene_camera/depth once render_publish_rate > 0), so it's
+         framed to be worth seeing on startup - elevated and set back from the Dead Reckon
+         Square's start corner, looking down across the start area and the ~1.8 m square the
+         demo route traces (centered near (0.6, 1.4) from the default keyframe
+         above, turning left each corner - see dead_reckon_square.xml). Fixed-mode (not targetbody) so
+         it streams a stable, unmoving surveillance view rather than one that tracks the robot.
+         This quat's optical axis (forward=-Z_cam, up=+Y_cam, right=+X_cam, world_up=+Z - MuJoCo's
+         camera convention) meets the ground at about (0.94, 1.02), roughly half a metre off the
+         square's centre. Kept as-is: at ~8.3 m range with fovy=45 the whole square is still well
+         inside frame, and this framing is the approved one. -->
+    <camera
+      name="scene_camera"
+      pos="-1 -5 5"
+      quat="0.8891448573329286 0.43052491403723997 -0.06761209939110185 -0.13963640316035458"
+      fovy="45"
+      resolution="1280 720"
+    />
+    <!-- picknik_mujoco_ros/MujocoSystem requires a <camera_name>_optical_frame site for every
+         fixed-mode camera in the model (it publishes all of them once render_publish_rate > 0,
+         not just ones referenced from the URDF) - site pose is the camera pose with y/z flipped
+         (rotated 180 deg about the camera's local x-axis) to convert MuJoCo's camera convention
+         to the ROS optical-frame convention, same relationship as scene_camera_optical_frame in
+         factory_sim/description/scene.xml. -->
+    <site
+      name="scene_camera_optical_frame"
+      pos="-1 -5 5"
+      quat="-0.43052491403723997 0.8891448573329286 -0.13963640316035458 0.06761209939110185"
+    />
+  </worldbody>
+
+  <!-- Dead Reckon Square's start pose: world (-0.30, 0.50), heading 0 deg (identity quat), on a
+       flatter, rock-free patch found by the terrain study - the origin placement's square
+       clipped a crater rim (35 deg local slope) and, over many un-reset runs in one session,
+       drift had carried the base into an unrelated rock cluster well outside
+       generate_terrain.py's own rock-free keepout box.
+       Dead Reckon Square itself stays open-loop with no reset of its own (the captain's call - a
+       reset belongs to the operator, not baked into the drive objective); this key exists so the
+       MoveIt Pro UI's own sim-reset control and the stock "Reset MuJoCo Sim" objective
+       (moveit_pro_objectives' objectives/mujoco library) can put the base back here on request. qpos is
+       [x y z qw qx qy qz] for
+       chassis_link's freejoint, then one value per wheel joint in husky_a300.xml's include order
+       (front_left, front_right, rear_left, rear_right) - 7 + 4 = 11 values total, matching this
+       model's nq (see AGENTS.md's keyframe qpos-size pitfall). z is the local heightfield
+       elevation at (-0.30, 0.50) (0.017057 m, read back from assets/lunar_hfield.png through
+       generate_terrain.py's own row-flip convention with this <hfield>'s elevation_z 0.286 and the
+       ground geom's pos.z -0.2095) plus 0.13597, the chassis_link-to-wheel-bottom offset
+       (husky_a300.xml puts the wheel bodies at +0.02913 under chassis_link and their collision
+       cylinders have radius 0.1651). Note this is NOT chassis_link's own pos.z (0.13597), which
+       is the flat-plane clearance measured from z=0 and buries the wheels by the local elevation
+       anywhere the terrain rises above zero (~12.6 mm at the origin). Referencing the local
+       elevation removes that systematic offset, but it does not level the four wheels: they stand
+       on different cells of a rough field, so sampling the committed hfield under each contact
+       gives -7.8 mm (front right, still embedded) to +28.0 mm (rear left) about the chassis-centre
+       datum. The solver settles that spread out over the first steps. Referencing the maximum of
+       the four wheel cells instead would clear every wheel, at the cost of hanging the base up to
+       36 mm above the terrain at the operator-visible spawn pose. -->
+  <keyframe>
+    <key name="default" qpos="-0.30 0.50 0.15303 1 0 0 0 0 0 0 0" />
+  </keyframe>
+</mujoco>

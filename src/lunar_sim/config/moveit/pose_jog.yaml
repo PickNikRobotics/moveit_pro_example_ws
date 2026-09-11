@@ -1,0 +1,7 @@
+# The base has no arm and no IK-capable group, so Cartesian pose jogging does not apply here -
+# the base is only ever driven by the `Dead Reckon Square` objective's open-loop /cmd_vel
+# commands. An empty planning_groups/controllers pair crashes MoveIt Pro's launch (evaluates to
+# an untyped empty parameter tuple), so this points at "base" inertly instead - Pose Jog is never
+# invoked for this robot.
+planning_groups: ["base"]
+controllers: ["platform_velocity_controller"]
