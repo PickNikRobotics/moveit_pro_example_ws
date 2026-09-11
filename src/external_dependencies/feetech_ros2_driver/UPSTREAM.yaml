@@ -1,0 +1,17 @@
+upstream:
+  repository: https://github.com/JafarAbdi/feetech_ros2_driver.git
+  commit: e424839f0fb23cc0b0ade8d6e5ea166e30811356
+  branch: main
+snapshot_path: feetech_ros2_driver
+vendored_paths:
+  - feetech_ros2_driver
+pruned_paths:
+  - upstream CI, pixi, pre-commit, and formatter configuration
+  - upstream changelog and documentation
+modified_paths:
+  - feetech_ros2_driver/include/feetech_ros2_driver/feetech_ros2_driver.hpp
+  - feetech_ros2_driver/src/feetech_ros2_driver.cpp
+notes:
+  - Pinned to upstream tag 0.2.2 (the exact source of the ros-jazzy-feetech-ros2-driver 0.2.2 binary), plus one change; upstream main is deliberately not tracked (it moves the joint configuration to YAML and has no release).
+  - The change makes servo torque follow the ros2_control lifecycle for so101_sim's real branch, off at on_configure, on at on_activate for joints with a command interface, off at on_deactivate. Upstream 0.2.2 only ever turns torque off.
+  - Building this package in the workspace shadows the apt binary, rosdep --ignore-src no longer installs ros-jazzy-feetech-ros2-driver, and colcon-defaults.yaml lists the package under allow-overriding for images that already carry it.

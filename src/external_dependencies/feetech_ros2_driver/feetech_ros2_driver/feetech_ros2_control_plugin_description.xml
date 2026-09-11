@@ -1,0 +1,10 @@
+<?xml version="1.0" ?>
+<library path="feetech_ros2_driver">
+  <class
+    name="feetech_ros2_driver/FeetechHardwareInterface"
+    type="feetech_ros2_driver::FeetechHardwareInterface"
+    base_class_type="hardware_interface::SystemInterface"
+  >
+    <description>Feetech Hardware Interface</description>
+  </class>
+</library>

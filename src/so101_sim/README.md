@@ -66,28 +66,56 @@ at a time: MoveIt Pro deactivates `joint_trajectory_controller` to activate a
 jog controller, because `ros2_control` will not let two controllers claim the
 same position command interface.
 
-The driver is not vendored. `feetech_ros2_driver` 0.2.2 is released for Jazzy,
-so `<exec_depend>feetech_ros2_driver</exec_depend>` in `package.xml` is enough:
-the workspace `Dockerfile`'s existing `rosdep install` pass pulls
-`ros-jazzy-feetech-ros2-driver` from the base image's pinned apt snapshot. No
-`Dockerfile` edit and no `src/external_dependencies/` entry.
+The driver is vendored. `src/external_dependencies/feetech_ros2_driver` is the
+exact source of the `ros-jazzy-feetech-ros2-driver` 0.2.2 binary (the `0.2.2`
+tag, pinned in its `UPSTREAM.yaml`) plus one change: servo torque follows the
+`ros2_control` lifecycle. Upstream 0.2.2 only ever turns torque *off* —
+`on_init` for joints without a command interface, `on_deactivate` for all of
+them — and nothing turns it on, so whether the arm held anything depended on
+the torque state the servos happened to power up or be left in, and a
+trajectory sent to torque-off servos "executed" without moving them. The
+vendored copy adds `on_configure`, which writes `TORQUE_ENABLE=0` to every servo
+on the bus, and has `on_activate` write `TORQUE_ENABLE=1` to the joints that
+declare a command interface once it has seeded the command from the present
+position. `on_deactivate` is untouched. The effect is: the arm is limp from
+power-on through configure, rigid while the hardware component is active, and
+limp again only when the component is deactivated. `moveit_pro down` does not
+deactivate it — it stops the drivers container without a `ros2_control`
+shutdown, so `on_deactivate` never runs and the servos keep whatever torque
+state they had: **after a stop the arm stays rigid.** To make it limp,
+deactivate the component first
+(`ros2 control set_hardware_component_state so101 inactive`) or cut bus power.
+The diff against the tag is the two files under `modified_paths` in
+`UPSTREAM.yaml`.
 
-Upstream never bumped `package.xml` past 0.2.2, so a later deb cut from `main`
-would still be labelled 0.2.2. The pinned snapshot currently resolves to the
-0.2.2 *tag* source. The check that does not depend on the install layout is the
-compiled library's strings:
+Upstream `main` is deliberately not tracked: it moves the joint configuration to
+YAML, changes what `offset` means, and has no release. Do not bump the vendored
+copy to it without redoing the calibration recipe below — `main` ignores
+`offset`, hardcodes the zero at tick 2048, and expects `homing_offset` instead,
+so the recipe would leave every commanded position off by `homing_offset`
+ticks.
+
+Because the package is built in the workspace, `rosdep install --ignore-src`
+no longer installs the apt deb, and `colcon-defaults.yaml` lists
+`feetech_ros2_driver` under `allow-overriding` so an image that already carries
+the deb builds the overlay instead of refusing. The plugin the controller
+manager loads must be the workspace copy — the torque lifecycle exists nowhere
+else. From inside the container, with the workspace sourced:
 
 ```bash
-strings /opt/ros/jazzy/lib/libfeetech_ros2_driver.so | grep -e homing_offset \
-  -e "does not specify an offset parameter"
+ros2 pkg prefix feetech_ros2_driver   # $USER_WS/install/feetech_ros2_driver, not /opt/ros/jazzy
+strings "$(ros2 pkg prefix feetech_ros2_driver)/lib/libfeetech_ros2_driver.so" \
+  | grep -e FeetechHardwareInterface12on_configure -e FeetechHardwareInterface10set_torque \
+         -e homing_offset -e "does not specify an offset parameter"
 ```
 
-The 0.2.2 tag matches only the second: it has no `homing_offset` anywhere. A
-post-PR-#27 build cut from `main` inverts that. If the snapshot advances,
-re-check before trusting the
-`offset` recipe below: `main` ignores `offset`, hardcodes the zero at tick 2048,
-and expects `homing_offset` instead, so the recipe would leave every commanded
-position off by `homing_offset` ticks.
+The vendored copy matches the two mangled `FeetechHardwareInterface::...`
+symbols and the `offset` message and has no `homing_offset`; the apt 0.2.2
+binary matches neither mangled symbol (it carries only the base
+`LifecycleNodeInterface::on_configure` vtable reference, so a bare
+`grep on_configure` would pass on both); a build cut from `main` has
+`homing_offset`. `test/test_hardware_plugin.py` asserts the first
+half of this — the prefix resolves outside `/opt/ros` — at `colcon test`.
 
 ### What the URDF exposes
 
@@ -134,13 +162,14 @@ Real limits of `feetech_ros2_driver` 0.2.2, not of this config:
   rather than failing initialization cleanly, and will keep doing so until the
   driver handles the failed-open path upstream.
 - **`on_activate` can seed zeros.** It calls `read()` and discards the return,
-  then assigns `hw_positions_ = state_hw_positions_` and returns SUCCESS
-  unconditionally. `state_hw_positions_` is resized to `0.0`, and `read()`
-  returns ERROR early without touching it when `sync_read` fails. So a failed
-  read at activation leaves the command at zero, and the first `write()` sends tick 2048 to every
-  servo at the driver's hardcoded speed 2400 — with torque on, since the servos
-  powered up that way. Low probability: `on_init` has just completed six
-  `read_model_number` round-trips on the same bus.
+  then assigns `hw_positions_ = state_hw_positions_`. `state_hw_positions_` is
+  resized to `0.0`, and `read()` returns ERROR early without touching it when
+  `sync_read` fails. So a failed read at activation leaves the command at zero,
+  the vendored `on_activate` then turns torque on, and the first `write()`
+  sends tick 2048 to every servo at the driver's hardcoded speed 2400. The
+  vendored change keeps this upstream behaviour as is. Low probability:
+  `on_init` has just completed six `read_model_number` round-trips on the same
+  bus.
 
 ### Bench procedure
 
@@ -221,22 +250,35 @@ xacro description/so101.urdf.xacro hardware_interface:=real | grep '<plugin>'
 **4. First power-on.** Follow *Safe bring-up order* below, and know what the
 driver does at bring-up before you close the loop:
 
-- The driver never enables torque. `on_init` only calls `set_torque(id, false)`,
-  and only for joints that declare no command interface — all six follower
-  joints declare one, so it leaves them alone. The arm is stiff at first
-  bring-up because an STS3215 powers up with `TORQUE_ENABLE` already set.
-- `on_activate` reads present position and seeds the command from it, so there
-  is no jump when the controller starts — **provided that read succeeded.** The
-  driver discards `read()`'s return value here, so a failed or timed-out
-  `sync_read` seeds the command with zeros instead (see *Known gaps in the
-  driver* above), and nothing reports it. Confirm `/joint_states` matches the
-  arm's physical pose before you command anything; that check is what tells the
-  two cases apart.
-- **Power-cycle the arm between MoveIt Pro runs.** `on_deactivate` writes
-  `TORQUE_ENABLE=0` to all six servos and nothing re-enables it, so a stopped
-  instance leaves the arm limp. Restarting without a power cycle writes Goal
-  Position into torque-off servos: the arm does not move and the trajectory
-  aborts on goal tolerance.
+- **Torque follows the lifecycle.** The arm is limp until the controller
+  manager activates the hardware component, rigid while it is active, and limp
+  again only when the component is deactivated. `on_configure` writes
+  `TORQUE_ENABLE=0` to all six servos whatever state they powered up in,
+  `on_activate` writes `TORQUE_ENABLE=1` to the six commanded joints, and
+  `on_deactivate` writes `TORQUE_ENABLE=0` again. So **rest the arm on the bench
+  before `moveit_pro run`**: nothing holds it up until activation. Do not count
+  on the servos' power-up torque state either way. No power cycle is needed
+  between runs — the next activation re-enables torque.
+- **`moveit_pro down` leaves the arm rigid.** Stopping the instance kills the
+  drivers container without running `on_deactivate`, so the servos keep the
+  torque they had. Do not expect the arm to go limp when the instance stops.
+  Before you stop, either deactivate the component
+  (`ros2 control set_hardware_component_state so101 inactive`, which does turn
+  torque off) or be ready to cut bus power. A restart without a power cycle
+  is fine: the next activation reads the held pose and continues from it.
+- `on_activate` reads present position and seeds the command from it *before*
+  enabling torque, so there is no jump when the controller starts — **provided
+  that read succeeded.** The driver discards `read()`'s return value here, so a
+  failed or timed-out `sync_read` seeds the command with zeros instead (see
+  *Known gaps in the driver* above), and nothing reports it. Confirm
+  `/joint_states` matches the arm's physical pose before you command anything;
+  that check is what tells the two cases apart.
+- The first activation is the one that proves the lifecycle on the bench.
+  Watch for: limp before `moveit_pro run`; the arm going rigid at the pose it
+  is resting in when the controller manager logs the `so101` component
+  reaching `active` (before any controller is spawned), with no motion at the
+  transition; still rigid after `moveit_pro down`; limp only after
+  `ros2 control set_hardware_component_state so101 inactive` or bus power off.
 
 **Power the servo bus before you start the instance.** The unpowered-first
 smoke test is a `mock` procedure only; on `real` it cannot work. The CH343
@@ -289,8 +331,9 @@ serial port is opened.
 
 The leader is a second, torque-off bus at `/dev/so101_leader`. The driver
 already has the mechanism: `on_init` actively disables torque for joints that
-declare no `<command_interface>`, so a state-only `<ros2_control>` block reads a
-limp arm without fighting it. The shape that fits the two-package split is:
+declare no `<command_interface>`, and the vendored `on_activate` enables torque
+only for joints that declare one, so a state-only `<ros2_control>` block reads a
+limp arm without fighting it and stays limp through activation. The shape that fits the two-package split is:
 
 - a second `<ros2_control name="so101_leader" type="system">` in the base
   config's URDF, same plugin, `usb_port` `/dev/so101_leader`, six `leader_*`
@@ -316,6 +359,7 @@ instead of generating a sine. That work belongs with the `so101_base_config` /
 | `config/moveit/` | SRDF, joint limits, IK (`PoseIKPlugin`, `optimize_distance` — the SO-101 is 5-DOF and cannot hit arbitrary 6-DOF poses), and the jog configs. |
 | `config/so101_follower_calibration.yaml` | Per-joint servo `id` and zero `offset`, read only when `hardware_interface:=real`. |
 | `config/udev/99-so101.rules` | Stable `/dev/so101_{leader,follower}` symlinks for the two CH343 adapters. |
+| `../external_dependencies/feetech_ros2_driver/` | The `real` branch's hardware interface: upstream 0.2.2 plus the torque lifecycle, see *Real hardware* above. |
 | `script/so101_arm_bridge.py` | The wiggle-test joint source. `--fake` publishes a small sine about the measured pose; `--real` is still a stub. Its `--real` docstring and the `joint_signs` / `joint_offsets_deg` parameters describe the superseded pre-`ros2_control` design and are removed in Stage 2. |
 | `objectives/` | `Mirror SO101 Follower`, `Move SO101 to Waypoint`, `Close Gripper`, `Open Gripper`, and a `Teleoperate` override that points the core teleop tree at this config's `joint_trajectory_controller` (there is no admittance controller here). |
 
@@ -344,10 +388,13 @@ accessible and clear the robot's workspace before any live test.
 
 1. On `mock`, with the arm unpowered, confirm the twin appears and moves under
    the fake source.
-2. Power the arm, then switch to `real` and restart the instance. `real` needs
-   the bus live before startup; an instance that starts against an unpowered
-   arm leaves the hardware component uninitialized and cannot recover without a
-   restart.
+2. Rest the arm on the bench, power it, then switch to `real` and restart the
+   instance. `real` needs the bus live before startup; an instance that starts
+   against an unpowered arm leaves the hardware component uninitialized and
+   cannot recover without a restart. The arm stays limp until the hardware
+   component activates, so it must be somewhere it can rest. It does not go
+   limp when the instance stops: deactivate the component or cut bus power
+   for that.
 3. Compare `/joint_states` against each joint's actual pose, one joint at a
    time — not a whole-arm glance — and confirm the gripper before you ever run
    `Close Gripper`. A wrong `offset` raises no error anywhere; the arm simply

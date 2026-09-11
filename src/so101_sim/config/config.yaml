@@ -35,6 +35,11 @@ hardware:
     urdf_params:
       # Use "mock" or "real". "real" drives the physical follower arm over the
       # Feetech STS3215 bus; see the README's bench procedure before switching.
+      # On "real" the arm is limp from power-on until the hardware component
+      # activates, so it must be resting on the bench before `moveit_pro run`.
+      # It goes limp again only on a lifecycle deactivate; `moveit_pro down`
+      # leaves torque on, so the arm stays rigid after a stop unless you
+      # deactivate the component first or cut bus power.
       # There is no MuJoCo model for this config either way.
       - hardware_interface: "mock"
       # The follower's serial bus. Keep it a udev symlink; /dev/ttyACM* renumbers.

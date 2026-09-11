@@ -656,9 +656,10 @@
       <hardware>
         <!--
           One serial bus, six STS3215 servos daisy-chained, position command
-          and position/velocity feedback. The plugin ships as the Jazzy binary
-          ros-jazzy-feetech-ros2-driver; `feetech_ros2_driver` is an
-          exec_depend so rosdep installs it into the workspace image.
+          and position/velocity feedback. The plugin is the workspace's
+          vendored feetech_ros2_driver (src/external_dependencies), upstream
+          0.2.2 plus a torque lifecycle: off at configure, on at activate for
+          the joints with a command interface, off at deactivate.
         -->
         <plugin>feetech_ros2_driver/FeetechHardwareInterface</plugin>
         <param name="usb_port">$(arg usb_port)</param>

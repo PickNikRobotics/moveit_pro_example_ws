@@ -4,6 +4,7 @@ build:
   symlink-install: true
   allow-overriding:
     - ewellix_description
+    - feetech_ros2_driver
     - franka_description
     - kortex_description
     - robotiq_description
