@@ -97,7 +97,7 @@
              by the fit-to-map gate would be told "no user interface is attached" seconds after
              placing a marker, with the gate's real message buried above it. With it, that case
              fails here immediately and the last thing logged is the gate's own accurate reason.-->
-        <Control ID="Sequence" name="Unseeded, and genuinely nobody to ask">
+        <Control ID="Sequence" name="Pose unreadable, and nobody to ask">
           <Decorator ID="Inverter" name="Only when no UI is attached">
             <Action ID="IsUserAvailable" />
           </Decorator>

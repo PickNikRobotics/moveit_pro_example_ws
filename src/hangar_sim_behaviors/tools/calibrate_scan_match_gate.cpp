@@ -122,33 +122,61 @@ double wrapAngle(double angle)
   return angle;
 }
 
+/// Map-frame centre of a grid cell. Every map this workspace ships has origin_yaw == 0, but the two
+/// directions of this mapping have to agree on the convention or the sweep stands its candidates
+/// somewhere other than the cells it says it is scoring.
+std::pair<double, double> cellCentre(const calibration::GridDump& grid, int column, int row)
+{
+  const double cos_yaw = std::cos(grid.info.origin_yaw);
+  const double sin_yaw = std::sin(grid.info.origin_yaw);
+  const double local_x = (static_cast<double>(column) + 0.5) * grid.info.resolution;
+  const double local_y = (static_cast<double>(row) + 0.5) * grid.info.resolution;
+  return { grid.info.origin_x + cos_yaw * local_x - sin_yaw * local_y,
+           grid.info.origin_y + sin_yaw * local_x + cos_yaw * local_y };
+}
+
+/**
+ * @brief Can the robot actually stand here? True only for a KNOWN-FREE cell inside the grid.
+ *
+ * The one rule for where a candidate pose may be placed, so that every part of this tool agrees.
+ * Standing the robot in a wall or in unknown space invents aliases no click could ever produce,
+ * and since the reported band is what an operator sets min_inlier_fraction from, an invented alias
+ * mis-sets the shipped gate. The rotate-then-floor here is the exact inverse of `cellCentre`.
+ */
+bool isKnownFree(const calibration::GridDump& grid, double x, double y)
+{
+  const double cos_yaw = std::cos(grid.info.origin_yaw);
+  const double sin_yaw = std::sin(grid.info.origin_yaw);
+  const double relative_x = x - grid.info.origin_x;
+  const double relative_y = y - grid.info.origin_y;
+  const double local_x = cos_yaw * relative_x + sin_yaw * relative_y;
+  const double local_y = -sin_yaw * relative_x + cos_yaw * relative_y;
+  const int column = static_cast<int>(std::floor(local_x / grid.info.resolution));
+  const int row = static_cast<int>(std::floor(local_y / grid.info.resolution));
+  if (column < 0 || column >= grid.info.width || row < 0 || row >= grid.info.height)
+  {
+    return false;
+  }
+  const auto index =
+      static_cast<std::size_t>(row) * static_cast<std::size_t>(grid.info.width) + static_cast<std::size_t>(column);
+  return grid.data[index] == 0;
+}
+
 /// Cells the sweep may stand on: free, and not inside a wall.
 std::vector<std::pair<double, double>> freePositions(const calibration::GridDump& grid, double stride)
 {
   std::vector<std::pair<double, double>> positions;
   const int step = std::max(1, static_cast<int>(std::lround(stride / grid.info.resolution)));
-  // Cell centre out of the grid's own frame and back into the map frame -- the exact inverse of the
-  // rotate-then-floor DistanceField::at does. Every map this workspace ships has origin_yaw == 0,
-  // but the two halves of this tool have to agree on the convention or the sweep stands its
-  // candidates somewhere other than the cells it says it is scoring.
-  const double cos_yaw = std::cos(grid.info.origin_yaw);
-  const double sin_yaw = std::sin(grid.info.origin_yaw);
   for (int row = 0; row < grid.info.height; row += step)
   {
     for (int column = 0; column < grid.info.width; column += step)
     {
-      const auto index =
-          static_cast<std::size_t>(row) * static_cast<std::size_t>(grid.info.width) + static_cast<std::size_t>(column);
-      // Only known-free cells. Standing the robot in unknown space would invent aliases that no
-      // click could ever produce.
-      if (grid.data[index] != 0)
+      const auto [x, y] = cellCentre(grid, column, row);
+      if (!isKnownFree(grid, x, y))
       {
         continue;
       }
-      const double local_x = (static_cast<double>(column) + 0.5) * grid.info.resolution;
-      const double local_y = (static_cast<double>(row) + 0.5) * grid.info.resolution;
-      positions.emplace_back(grid.info.origin_x + cos_yaw * local_x - sin_yaw * local_y,
-                             grid.info.origin_y + sin_yaw * local_x + cos_yaw * local_y);
+      positions.emplace_back(x, y);
     }
   }
   return positions;
@@ -202,7 +230,10 @@ std::optional<Scored> strongestAlias(const localization::DistanceField& field, c
     {
       const double x = best->x + dx;
       const double y = best->y + dy;
-      if (std::hypot(x - sample.truth_x, y - sample.truth_y) < settings.alias_keepout_m)
+      // The SAME free-cell rule the coarse sweep applies. Without it the refinement could walk a
+      // candidate into a wall or into unknown space and report it as the strongest alias on the
+      // map -- a pose the robot cannot occupy and no click could produce.
+      if (!isKnownFree(grid, x, y) || std::hypot(x - sample.truth_x, y - sample.truth_y) < settings.alias_keepout_m)
       {
         continue;
       }

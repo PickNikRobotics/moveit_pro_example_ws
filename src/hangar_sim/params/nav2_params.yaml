@@ -79,9 +79,14 @@ amcl:
     # Either way the operator order is "Localize Robot", then navigate -- the same
     # order hardware needs.
     #
-    # beluga_amcl is 2D: only x, y and yaw are declared (no z). The initial_pose
-    # block below is left in place, unused while set_initial_pose is false, so the
-    # spawn pose it records stays with the config it belongs to.
+    # beluga_amcl is 2D: only x, y and yaw are declared (no z). DO NOT DELETE the
+    # initial_pose block below because this setting is false: amcl no longer reads
+    # it, but the integration suite does. `_spawn_pose_from_nav2_params` in
+    # test/objectives_integration_test.py reads x, y and yaw straight out of it and
+    # seeds the filter with them, and the `localized_robot` fixture that does so is
+    # autouse and module-scoped -- so removing the block does not relax a config,
+    # it raises a KeyError that fails every Objective in the suite for a reason
+    # that looks nothing like the cause.
     set_initial_pose: false
     initial_pose:
       x: 0.0

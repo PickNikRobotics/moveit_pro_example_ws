@@ -80,6 +80,13 @@ inline constexpr std::int8_t kOccupiedValue = 100;
  * 87.0% upper edge is holding a number measured over less of the region the gate can admit, or
  * bounded by the wrong constraint.
  *
+ * ONE CAVEAT ON THE ALIAS ROW SPECIFICALLY. 47.8% was measured before the calibration tool applied
+ * its known-free-cell rule to the local refinement as well as to the coarse sweep, so that figure
+ * may have come from a refined candidate standing somewhere the robot cannot. Re-measuring can only
+ * move it DOWN, since the fix removes candidates rather than adding them, and it does not touch the
+ * shipped band either way: the lower edge is the 0.25 m must-reject ring at 52.2%, which already
+ * sits above 47.8%. Treat the alias row as an upper bound until the next re-calibration.
+ *
  * THE HONEST BAND IS THEREFORE 52.2% TO 69.6%, a 17-point window, and 0.60 splits it. Both edges
  * are constraints, and neither is the true pose: the lower edge is a RING rather than the alias,
  * because the worst wrong pose the drift gate can admit scores 52.2% against the alias's 47.8%; and
