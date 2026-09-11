@@ -168,8 +168,8 @@ container's user already is.
 
 **2. Servo IDs and calibration.** With the arm on the bench and free to move:
 
-- Set the IDs 1..6 from the base outward with the end-to-end repo's
-  `scripts/so101/setup_motors.py`. That order is what
+- Set the IDs 1..6 from the base outward with LeRobot's motor-setup tooling
+  (`lerobot setup-motors`). That order is what
   `config/so101_follower_calibration.yaml` assumes.
 - Run the LeRobot calibration. Its half-turn homing writes each motor's homing
   offset to EEPROM as `present_position - 2047`, so tick 2048 ends up meaning
@@ -357,9 +357,9 @@ once — the switch is exclusive by construction, not by convention.
 
 ## Safe bring-up order
 
-Lifted from the SO-101 fork PR's own bring-up notes; follow it every time a
-real arm is attached. MoveIt Pro's Stop control is a cooperative
-software stop, not a safety-rated emergency stop. Keep physical power isolation
+Follow this order every time a real arm is attached. MoveIt Pro's Stop
+control is a cooperative software stop, not a safety-rated emergency stop.
+Keep physical power isolation
 accessible and clear the robot's workspace before any live test.
 
 1. On `so101_sim` (mock), with the arm unpowered, confirm the twin appears and

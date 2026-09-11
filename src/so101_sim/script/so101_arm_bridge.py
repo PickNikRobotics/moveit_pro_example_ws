@@ -90,7 +90,7 @@ PHASE_STEP_RAD = 0.7
 
 # The URDF's joint limits, mirrored here because the wiggle is centred on a
 # measured pose: a joint already parked at its limit would otherwise be
-# commanded past it. Keep in sync with description/so101.urdf.xacro.
+# commanded past it. Keep in sync with so101_base_config/description/so101.urdf.xacro.
 JOINT_LIMITS = {
     "shoulder_pan": (-1.91986, 1.91986),
     "shoulder_lift": (-1.74533, 1.74533),
