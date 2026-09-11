@@ -56,12 +56,13 @@ cancel_objectives: set[str] = set()
 skip_objectives: set[str] = {
     "Teleoperate",  # Waits on UI teleoperation input.
     "Marker Visualization Example",  # GetTextFromUser server unavailable headless.
-    # Hand-eye calibration Objectives from moveit_pro_objectives: they move through
-    # taught `calibration_*` waypoints and detect a ChArUco board, which only
+    # Hand-eye calibration Objectives from moveit_pro_objectives: they generate or
+    # move through `calibration_*` waypoints and detect a ChArUco board, which only
     # hand_eye_calibration_sim provides.
     "Calibrate Eye In Hand Camera",
     "Calibrate Eye To Hand Camera",
     "Calibrate Multiple Cameras",
+    "Generate Calibration Waypoints",
     "Writing Demo",  # Long-running drawing objective times out on the CI backend.
     "Find Green Block",  # ML text-prompt segmentation.
     "Find Red Block",  # ML text-prompt segmentation.
