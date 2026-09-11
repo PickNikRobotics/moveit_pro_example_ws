@@ -6,13 +6,14 @@
   <!--
     Sine source for the Mirror SO101 Follower Objective, feeding
     joint_trajectory_controller so the twin moves with no arm plugged in. It
-    launches unconditionally in fake mode on both hardware_interface branches,
+    launches unconditionally in fake mode, not gated on hardware_interface,
     and that is deliberate: the sine is a small wiggle (wiggle_amplitude_rad,
     0.1 rad by default) about whatever pose the arm is measured in when
-    mirroring starts, so on the real branch the same Objective doubles as the
-    wiggle test - a joint-by-joint "is everything alive and moving the right
-    way" check, like lab_sim's joint diagnostic. Planned motion still goes
-    through the Feetech ros2_control hardware interface, not this node.
+    mirroring starts, so with this overlay's hardware_interface override
+    flipped to "real" the same Objective doubles as the wiggle test - a
+    joint-by-joint "is everything alive and moving the right way" check, like
+    lab_sim's joint diagnostic. Planned motion still goes through the Feetech
+    ros2_control hardware interface, not this node.
   -->
   <node
     pkg="so101_sim"
