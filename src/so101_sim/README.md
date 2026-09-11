@@ -104,18 +104,21 @@ else. From inside the container, with the workspace sourced:
 
 ```bash
 ros2 pkg prefix feetech_ros2_driver   # $USER_WS/install/feetech_ros2_driver, not /opt/ros/jazzy
-strings "$(ros2 pkg prefix feetech_ros2_driver)/lib/libfeetech_ros2_driver.so" \
-  | grep -e FeetechHardwareInterface12on_configure -e FeetechHardwareInterface10set_torque \
-         -e homing_offset -e "does not specify an offset parameter"
+lib="$(ros2 pkg prefix feetech_ros2_driver)/lib/libfeetech_ros2_driver.so"
+strings "$lib" | grep -Fq FeetechHardwareInterface12on_configure &&
+  strings "$lib" | grep -Fq FeetechHardwareInterface10set_torque &&
+  strings "$lib" | grep -Fq "does not specify an offset parameter" &&
+  ! strings "$lib" | grep -Fq homing_offset &&
+  echo "vendored driver" || echo "WRONG DRIVER"
 ```
 
-The vendored copy matches the two mangled `FeetechHardwareInterface::...`
-symbols and the `offset` message and has no `homing_offset`; the apt 0.2.2
-binary matches neither mangled symbol (it carries only the base
-`LifecycleNodeInterface::on_configure` vtable reference, so a bare
-`grep on_configure` would pass on both); a build cut from `main` has
-`homing_offset`. `test/test_hardware_plugin.py` asserts the first
-half of this — the prefix resolves outside `/opt/ros` — at `colcon test`.
+Every line must hold for the check to pass: the vendored copy defines both
+mangled `FeetechHardwareInterface::...` symbols, keeps the 0.2.2 `offset`
+message, and has no `homing_offset`. The apt 0.2.2 binary fails the first two
+(it carries only the base `LifecycleNodeInterface::on_configure` vtable
+reference, so a bare `grep on_configure` would pass on both — hence the mangled
+names); a build cut from `main` fails the last. `test/test_hardware_plugin.py`
+asserts only that the prefix resolves outside `/opt/ros`, at `colcon test`.
 
 ### What the URDF exposes
 

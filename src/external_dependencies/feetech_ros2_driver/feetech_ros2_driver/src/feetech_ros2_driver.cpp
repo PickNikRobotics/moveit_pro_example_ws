@@ -220,7 +220,14 @@ CallbackReturn FeetechHardwareInterface::on_activate(const rclcpp_lifecycle::Sta
       commanded_joint_ids.push_back(joint_ids_[i]);
     }
   }
-  return set_torque(commanded_joint_ids, true, "on_activate");
+  if (set_torque(commanded_joint_ids, true, "on_activate") != CallbackReturn::SUCCESS) {
+    // set_torque attempts every servo, so some may now hold torque. ros2_control
+    // does not call on_deactivate after a failed activation; undo it here so a
+    // failed activation leaves the arm limp, the same as before it started.
+    std::ignore = set_torque(commanded_joint_ids, false, "on_activate");
+    return CallbackReturn::ERROR;
+  }
+  return CallbackReturn::SUCCESS;
 }
 
 CallbackReturn FeetechHardwareInterface::on_deactivate(const rclcpp_lifecycle::State& /* previous_state */) {
