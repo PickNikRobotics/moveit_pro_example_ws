@@ -173,24 +173,24 @@
                      +Y side, so one collection pass serves both calibration
                      modes.
                      Physical size 0.150 x 0.120 m (5 x 4 squares of 0.030 m),
-                     matching assets/charuco_flange_board.png. Contact is
+                     matching assets/charuco_arm_board.png. Contact is
                      disabled: the plate is a calibration target, not a
                      manipulation surface. -->
                 <body
-                  name="flange_board"
+                  name="arm_board"
                   gravcomp="1"
                   pos="0 0.14 0.16"
                   euler="0.6435 0 0"
                 >
                   <geom
-                    name="flange_board_plate"
+                    name="arm_board_plate"
                     type="box"
                     size="0.075 0.06 0.004"
-                    material="charuco_flange_material"
+                    material="charuco_arm_board_material"
                     contype="0"
                     conaffinity="0"
                   />
-                  <site name="flange_board_top" pos="0 0 0.004" />
+                  <site name="arm_board_top" pos="0 0 0.004" />
                 </body>
                 <include file="robotiq_2f85/robotiq2f85.xml" />
               </body>

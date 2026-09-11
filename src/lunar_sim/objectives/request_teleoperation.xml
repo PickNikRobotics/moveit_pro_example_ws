@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Request Teleoperation">
+  <!-- Overrides core's Request Teleoperation (same precedent as hangar_sim's own copy). The Husky
+       A300 has no arm, so none of core's teleoperation branches apply: no joint or Cartesian jog,
+       no waypoint, interactive-marker or joint-slider moves, no gripper. Those branches are also
+       what pulls the objectives/motion library in, which this config deliberately does not load.
+       Base driving over /cmd_vel is not wired up yet either, so instead of accepting the UI
+       handshake and silently doing nothing, this tree fails on purpose with a message that
+       reaches the failure toast. `Teleoperate` still builds, so the Teleoperation workspace can
+       start it by name; it just fails at once until base teleoperation lands in a follow-up. -->
+  <BehaviorTree
+    ID="Request Teleoperation"
+    _description="Fails on purpose: the Husky A300 has no arm, none of the arm teleoperation modes apply, and base driving over /cmd_vel is not wired up yet. Used as a subtree by Teleoperate so it fails visibly instead of silently doing nothing."
+    _favorite="false"
+    _hardcoded="false"
+  >
+    <Decorator ID="ForceFailure">
+      <Action
+        ID="LogMessage"
+        log_level="error"
+        message="Teleoperation is not wired for this base yet: the Husky A300 has no arm and the Desktop App teleop modes drive arms only. Base driving over /cmd_vel lands in a follow-up."
+      />
+    </Decorator>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Request Teleoperation">
+      <MetadataFields>
+        <Metadata subcategory="User Input" />
+        <Metadata runnable="false" />
+      </MetadataFields>
+      <input_port name="enable_user_interaction" default="false" type="bool">
+        Enable interactive user prompts during teleoperation mode selection
+      </input_port>
+      <input_port
+        name="user_interaction_prompt"
+        default="Press Abort to return FAILURE, Continue for SUCCESS"
+        type="std::string"
+      />
+      <input_port name="initial_teleop_mode" default="3" type="int" />
+      <input_port name="require_user_approval" default="true" type="bool">
+        Whether trajectory previews from Interactive Marker teleop must be
+        approved before execution. Set to false to skip the approval prompt.
+      </input_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>

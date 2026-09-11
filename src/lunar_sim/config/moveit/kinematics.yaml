@@ -1,0 +1,2 @@
+# The "base" group has no IK-capable chain (wheel joints only), so no solver is configured.
+{}
