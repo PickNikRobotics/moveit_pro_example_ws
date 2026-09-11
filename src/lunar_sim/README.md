@@ -4,8 +4,9 @@ A MoveIt Pro configuration for a Clearpath Husky A300 running under MuJoCo physi
 procedurally cratered lunar regolith heightfield. The only sensor is `husky_scene.xml`'s
 mast-mounted, world-fixed `scene_camera`, an overview of the start area and demo route published
 as an image stream at the xacro's `render_publish_rate` of 10 Hz; the robot itself carries none
-(see the roadmap below). No Nav2 stack either - the only way to drive the base is the
-`Dead Reckon Square` objective's open-loop `/cmd_vel` commands.
+(see the roadmap below). No Nav2 stack either - the base is driven only by open-loop `/cmd_vel`
+commands, from the `Dead Reckon Square` objective or the Desktop App's Pose tab (see
+[Teleoperation](#teleoperation)).
 
 The base spawns at `husky_scene.xml`'s `default` keyframe rather than the world origin
 (`config.yaml`'s `mujoco_keyframe`); that keyframe's own comment records the pose and why it was

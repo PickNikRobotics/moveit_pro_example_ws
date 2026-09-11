@@ -94,14 +94,15 @@ BT::NodeStatus TeleoperateBase::onStart()
 {
   has_new_command_ = false;
 
-  const auto ports = moveit_pro::behaviors::getRequiredInputs(
-      getInput<std::string>(kPortIdPlanningGroup), getInput<std::string>(kPortIdCmdVelTopic),
-      getInput<std::string>(kPortIdFrameId), getInput<double>(kPortIdMaxLinearVelocity),
-      getInput<double>(kPortIdMaxAngularVelocity));
+  const auto ports = moveit_pro::behaviors::getRequiredInputs(getInput<std::string>(kPortIdPlanningGroup),
+                                                              getInput<std::string>(kPortIdCmdVelTopic),
+                                                              getInput<std::string>(kPortIdFrameId),
+                                                              getInput<double>(kPortIdMaxLinearVelocity),
+                                                              getInput<double>(kPortIdMaxAngularVelocity));
   if (!ports.has_value())
   {
-    getBehaviorContext()->logger->publishFailureMessage(
-        name(), "Failed to get required value from input data port: " + ports.error());
+    getBehaviorContext()->logger->publishFailureMessage(name(), "Failed to get required value from input data port: " +
+                                                                    ports.error());
     return BT::NodeStatus::FAILURE;
   }
   const auto& [planning_group, cmd_vel_topic, frame_id, max_linear_velocity, max_angular_velocity] = ports.value();

@@ -48,9 +48,9 @@ namespace lunar_sim_behaviors
  * so a disabled axis yields zero regardless of the commanded value. Pure function, no ROS dependency, so it can be
  * unit tested directly.
  */
-[[nodiscard]] geometry_msgs::msg::Twist clampTwistCommand(
-    const moveit_pro_controllers_msgs::msg::VelocityForceCommand& command, double max_linear_velocity,
-    double max_angular_velocity);
+[[nodiscard]] geometry_msgs::msg::Twist
+clampTwistCommand(const moveit_pro_controllers_msgs::msg::VelocityForceCommand& command, double max_linear_velocity,
+                  double max_angular_velocity);
 
 /**
  * @brief Drives a differential-drive base's `/cmd_vel` from the same VelocityForceCommand stream the Desktop App's

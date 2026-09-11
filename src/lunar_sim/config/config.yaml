@@ -83,8 +83,9 @@ ros2_control:
   controllers_not_managed: []
   # platform_velocity_controller's topics are namespaced under its own controller name (Jazzy
   # default). Remap them to the plain names each end already uses: /cmd_vel, which the
-  # `Dead Reckon Square` objective publishes to, and /odom, which the controller itself publishes
-  # (see husky_a300.ros2_control.yaml's odom_frame_id/publish_rate). No rework downstream.
+  # `Dead Reckon Square` and `Request Teleoperation` objectives publish to, and /odom, which the
+  # controller itself publishes (see husky_a300.ros2_control.yaml's odom_frame_id/publish_rate).
+  # No rework downstream.
   # [Optional, default=[]]
   controller_shared_topics:
     /cmd_vel:
