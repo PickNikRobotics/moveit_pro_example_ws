@@ -30,6 +30,7 @@
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_index_python</test_depend>
   <test_depend>ament_lint_auto</test_depend>
+  <test_depend>moveit_studio_utils_py</test_depend>
   <test_depend>picknik_ament_copyright</test_depend>
   <test_depend>python3-yaml</test_depend>
   <test_depend>rclpy</test_depend>

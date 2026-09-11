@@ -29,59 +29,63 @@
 # POSSIBILITY OF SUCH DAMAGE.
 """Fail loudly if so101_sim stops inheriting from so101_base_config.
 
-This does not re-implement MoveIt Pro's `SystemConfigParser` merge; it checks
-the two things that make the overlay an overlay: `based_on_package` still
-names `so101_base_config`, that package is actually installed alongside this
-one (the `<depend>` in package.xml is real, not just a string in a comment),
-and the override this overlay exists for - forcing mock hardware - is still
-present.
+Runs the overlay through `load_system_config`, the same loader `moveit_pro run`
+uses, and asserts on the merged result the Agent actually gets: the base
+package's robot description with only `hardware_interface` overridden, and
+both packages' Objective libraries with the overlay's last.
 """
 
 from pathlib import Path
 
-import yaml
-from ament_index_python.packages import get_package_share_directory
+import pytest
+from moveit_studio_utils_py.system_config import load_system_config
 
 
-def load_yaml(package_name, relative_path):
-    path = Path(get_package_share_directory(package_name)) / relative_path
-    return yaml.safe_load(path.read_text())
+@pytest.fixture(scope="module")
+def loaded(tmp_path_factory):
+    # user_ws only needs to exist; a src/ tree is optional.
+    return load_system_config("so101_sim", tmp_path_factory.mktemp("user_ws"))
 
 
-def urdf_param(urdf_params, key):
-    for entry in urdf_params:
-        if key in entry:
-            return entry[key]
-    raise KeyError(key)
+@pytest.fixture(scope="module")
+def config(loaded):
+    return loaded[0]
 
 
-def test_overlay_is_based_on_so101_base_config():
-    overlay = load_yaml("so101_sim", "config/config.yaml")
-    assert overlay["based_on_package"] == "so101_base_config"
+def test_inheritance_chain_is_base_then_overlay(loaded):
+    assert loaded[2] == ["so101_base_config", "so101_sim"]
 
 
-def test_so101_base_config_is_installed_and_resolvable():
-    # Raises PackageNotFoundError if so101_sim's <depend> on so101_base_config
-    # ever gets dropped from package.xml, or so101_base_config fails to build.
-    base_share = Path(get_package_share_directory("so101_base_config"))
-    assert (base_share / "config" / "config.yaml").exists()
+def test_robot_description_comes_from_the_base_package(config):
+    robot_description = config.hardware.robot_description
+    assert robot_description.urdf.package == "so101_base_config"
+    assert robot_description.srdf.package == "so101_base_config"
 
 
-def test_overlay_forces_mock_hardware():
-    overlay = load_yaml("so101_sim", "config/config.yaml")
-    urdf_params = overlay["hardware"]["robot_description"]["urdf_params"]
-    assert urdf_param(urdf_params, "hardware_interface") == "mock"
+def test_overlay_forces_mock_and_keeps_the_rest_of_urdf_params(config):
+    params = {
+        key: value
+        for entry in config.hardware.robot_description.urdf_params
+        for key, value in entry.items()
+    }
+    assert params["hardware_interface"] == "mock"
+    assert {"usb_port", "calibration_file"} <= params.keys()
+    assert params["calibration_file"].package == "so101_base_config"
 
 
-def test_base_config_defaults_are_still_there_for_the_overlay_to_inherit():
-    """The overlay only overrides `hardware_interface`; everything else it
-    relies on - waypoints, Objectives, the udev-backed calibration file - must
-    still come from the base package's own config.yaml."""
-    base = load_yaml("so101_base_config", "config/config.yaml")
-    assert "based_on_package" not in base
-    urdf_params = base["hardware"]["robot_description"]["urdf_params"]
-    assert urdf_param(urdf_params, "usb_port") == "/dev/so101_follower"
-    waypoints_file = base["objectives"]["waypoints_file"]
-    assert waypoints_file["package_name"] == "so101_base_config"
-    base_share = Path(get_package_share_directory("so101_base_config"))
-    assert (base_share / waypoints_file["relative_path"]).exists()
+def test_runtime_launch_file_is_the_overlays(config):
+    assert config.runtime_launch_file.package == "so101_sim"
+
+
+def test_objective_libraries_from_both_packages_and_overlay_last(config):
+    libraries = config.objectives.objective_library_paths
+    assert list(libraries)[-2:] == ["so101_objectives", "so101_sim_objectives"]
+    assert libraries["so101_objectives"].package_name == "so101_base_config"
+    assert libraries["so101_sim_objectives"].package_name == "so101_sim"
+    for library in libraries.values():
+        assert library.share_path.is_dir()
+
+
+def test_waypoints_come_from_the_base_package(config):
+    assert config.objectives.waypoints_file.package_name == "so101_base_config"
+    assert Path(config.waypoints_file_path).is_file()
