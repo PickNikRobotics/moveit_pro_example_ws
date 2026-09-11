@@ -29,7 +29,6 @@ at run time with
 
     The ONNX model path could not be resolved: Package 'moveit_pro_clipseg' was not found
 
-- kitchen_sim: Segment Image from Prompt
 - lab_sim: ML Segment Image, ML Segment Image Loop, ML Segment Point Cloud,
   AddBottlesToPlanningScene
 - hangar_sim: Segment Image from Text Prompt, ML Move Boxes to Loading Zone,
@@ -40,8 +39,9 @@ To restore them, build a ROS package that installs CLIP and CLIPSeg ONNX models
 to `share/<your_package>/models/` and set `model_package` (and the
 `clip_model_path` / `clipseg_model_path` ports) on those Objectives to point at
 it. To move off CLIPSeg entirely, see the SAM3 equivalents in `lab_sim`
-(`ML Find Objects on Table`, `ML Segment Bottles from File`) and MoveIt Pro
-10.0, where these Objectives were migrated to `GetMasks2DFromExemplar`.
+(`ML Find Objects on Table`, `ML Segment Bottles from File`), `kitchen_sim`
+(`Segment Image from Prompt`), and MoveIt Pro 10.0, where these Objectives
+were migrated to `GetMasks2DFromExemplar`.
 
 ## Robot Configs
 
