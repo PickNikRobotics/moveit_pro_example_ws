@@ -53,7 +53,7 @@ inline constexpr std::int8_t kOccupiedValue = 100;
  * @name Acceptance contract
  *
  * MEASURED on hangar_map with this robot's merged scan, using this same scoring code against the
- * grid map_server actually publishes. These are the figures `calibrate_scan_match_gate` prints, so
+ * grid map_server actually publishes. These are the figures the offline calibration tool printed, so
  * a re-calibration after a map rebuild can be compared against them row for row. Note the two
  * statistics: a ring the gate must REJECT is reported at its BEST, because that is what a threshold
  * has to beat, and the one ring it must ACCEPT is reported at its WORST, because that is what a
@@ -117,7 +117,10 @@ inline constexpr std::int8_t kOccupiedValue = 100;
  * the range filters on this robot, so the fraction moves in steps of about 4.3 points -- the gate
  * is coarse here in a way it was not on meta_ws's denser scan. And every sample came from ONE
  * stationary pose, so "the true pose" is the only true pose measured; a driven multi-pose campaign
- * is still owed. Re-measure with `calibrate_scan_match_gate` whenever the map is rebuilt.
+ * is still owed. Re-measure whenever the map is rebuilt. The tool that produced these numbers,
+ * `calibrate_scan_match_gate`, is not shipped in this branch -- it was removed to keep the change
+ * tight -- but it remains in this branch's history at cffa2b17 (cffa2b176eb73db7587f0c64607202d20ad0335e), which is
+ * where to restore it from rather than rewriting it.
  * @{
  */
 /// A beam is an inlier if its endpoint lands this close to an occupied cell, metres.

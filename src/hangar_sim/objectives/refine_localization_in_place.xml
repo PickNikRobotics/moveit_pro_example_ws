@@ -35,8 +35,14 @@
            rejection the restore writes the operator's new pose back, and a filter measured at
            9.4 cm error ended at 95.6 cm that way. Distinguishing the two cases is follow-up work;
            until then the messages say what was observed and warn about the replacement.-->
-      <Control ID="Fallback" name="Read the current estimate, or localize first">
-        <Control ID="Sequence" name="Read the estimate the filter already holds">
+      <Control
+        ID="Fallback"
+        name="Read the current estimate, or localize first"
+      >
+        <Control
+          ID="Sequence"
+          name="Read the estimate the filter already holds"
+        >
           <Action
             ID="GetLatestTransform"
             name="Read the current estimate"
@@ -65,7 +71,10 @@
              drop into a branch that blocks on the marker prompt inside Localize Robot until the
              objective timeout expires, instead of ending in under a second with a legible
              message.-->
-        <Control ID="Sequence" name="An operator is here, so make an estimate to refine">
+        <Control
+          ID="Sequence"
+          name="An operator is here, so make an estimate to refine"
+        >
           <Action ID="IsUserAvailable" />
           <Action
             ID="LogMessage"

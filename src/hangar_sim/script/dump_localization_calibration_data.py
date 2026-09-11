@@ -27,7 +27,12 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-"""Capture what `calibrate_scan_match_gate` needs to re-measure the fit-to-map gate.
+"""Capture what the offline calibration tool needs to re-measure the fit-to-map gate.
+
+That tool, `calibrate_scan_match_gate`, is NOT shipped in this branch -- it was removed to
+keep the change tight -- but it remains in this branch's history at cffa2b17
+(cffa2b176eb73db7587f0c64607202d20ad0335e). Restore it from there rather than rewriting it; this script writes the two
+files it consumes.
 
 Writes two files:
 
@@ -139,9 +144,7 @@ class CalibrationCapture(Node):
         # moving rather than as stopped. Failing closed here costs a re-run; failing open silently
         # biases the whole calibration.
         try:
-            self._truth_speed = max(
-                abs(message.velocity[index]) for index in indices
-            )
+            self._truth_speed = max(abs(message.velocity[index]) for index in indices)
         except (ValueError, IndexError):
             self._truth_speed = None
 
@@ -165,15 +168,20 @@ class CalibrationCapture(Node):
         # error runs the unsafe way: a scan taken before the recorded pose depresses the TRUE
         # pose's score, which drags the reported band down and leads whoever reads it to set
         # min_inlier_fraction lower than the map warrants.
-        if self._truth_speed is None or self._truth_speed > self._args.max_capture_speed:
+        if (
+            self._truth_speed is None
+            or self._truth_speed > self._args.max_capture_speed
+        ):
             self.get_logger().info(
                 "not capturing: base is moving (%s > %.3f); this script pairs the latest scan with "
                 "the latest pose without comparing stamps, so a sample taken in motion would record "
                 "a scan that does not belong to the pose beside it"
                 % (
-                    "no joint velocity reported"
-                    if self._truth_speed is None
-                    else "%.3f" % self._truth_speed,
+                    (
+                        "no joint velocity reported"
+                        if self._truth_speed is None
+                        else "%.3f" % self._truth_speed
+                    ),
                     self._args.max_capture_speed,
                 ),
                 throttle_duration_sec=5.0,

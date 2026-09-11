@@ -333,7 +333,8 @@
         map. CALIBRATED ON
         hangar_map with the shipped scoring code, against the grid map_server
         actually publishes:
-        the true pose scores 87.0%. These are the figures calibrate_scan_match_gate
+        the true pose scores 87.0%. These are the figures the offline
+        calibration tool
         prints, so a
         re-calibration can be compared against them row for row. Mind the two
         statistics: a ring
@@ -389,7 +390,7 @@
         filters on this
         robot's merged scan, so this fraction moves in steps of about 4.3
         points. Re-measure with
-        `ros2 run hangar_sim_behaviors calibrate_scan_match_gate` after every
+        the offline calibration tool after every
         map rebuild.
       </input_port>
       <!--Output ports need defaults: the parser treats a default-less subtree-model port as

@@ -287,6 +287,7 @@ def _run_objective_with_overrides(
         f"suspect the seed, the forced no-motion loop, or the drift gate."
     )
 
+
 # Action servers the hangar_sim tree types need before any objective runs.
 # hangar_sim drives a vacuum gripper through ros2_control's
 # GripperActionController (config/control/picknik_ur.ros2_control.yaml), which

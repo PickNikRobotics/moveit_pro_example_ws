@@ -22,7 +22,6 @@ endforeach()
 add_library(
   hangar_sim_behaviors
   SHARED
-  src/calibration_io.cpp
   src/call_empty_service.cpp
   src/localization_gates.cpp
   src/project_pose_to_plane.cpp
@@ -47,13 +46,6 @@ install(
 
 install(DIRECTORY include/ DESTINATION include)
 
-# Offline re-calibration of the fit-to-map gate's threshold. It links the shipped
-# scoring library rather than reimplementing it, so what it measures is what
-# ScanMatchResidual will do. See tools/calibrate_scan_match_gate.cpp for how to run it.
-add_executable(calibrate_scan_match_gate tools/calibrate_scan_match_gate.cpp)
-target_link_libraries(calibrate_scan_match_gate hangar_sim_behaviors)
-ament_target_dependencies(calibrate_scan_match_gate ${THIS_PACKAGE_INCLUDE_DEPENDS})
-install(TARGETS calibrate_scan_match_gate DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
   moveit_pro_behavior_test(hangar_sim_behaviors)
