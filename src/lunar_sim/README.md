@@ -170,8 +170,29 @@ frame above `odom` is MuJoCo's `mj_world`, published as identity so the world-fi
 `scene_camera_optical_frame` resolves in `odom`, and `config/frontend_settings.yaml` sets
 `referenceFrame: odom` to override the frontend's `world` default.
 
-The Pose Jog and Joint Jog UI panels are wired to the `base` group only to avoid a MoveIt Pro
-launch crash on an empty jog config; neither is functionally usable on this robot (no IK-capable
-group, no per-joint velocity controller).
+## Teleoperation
+
+The Pose Jog and Joint Jog UI panels are wired to the `base` group to avoid a MoveIt Pro launch
+crash on an empty jog config. Joint Jog stays unusable on this armless base (no per-joint velocity
+controller), but Pose Jog drives the Husky base: the Pose tab's jog pad, a connected gamepad, and
+the Quest headset all publish a `VelocityForceCommand` on `/pose_jog/base`, and the
+`TeleoperateBase` Behavior (`lunar_sim_behaviors`) forwards `linear.x`/`angular.z` from that stream
+into a `TwistStamped` on `/cmd_vel` for `platform_velocity_controller`.
+
+The Pose tab's controls are labeled for an end-effector, since that is what the panel is designed
+for; on this base the labels map to driving as follows:
+
+- Jog pad: `X +` drives forward, `X -` reverses; `Roll +` turns left, `Roll -` turns right. The
+  `Y`, `Z`, `Pitch`, and `Yaw` buttons do nothing.
+- Gamepad: the left stick left/right drives forward/reverse; the bumpers turn left/right. The right
+  stick and triggers do nothing.
+
+The Joint, IMarker, and Waypoints tabs do nothing on this base - they operate on wheel joints or
+wheel-link poses, which have no meaningful teleoperation behavior for a differential-drive base.
+
+Speed is capped in two places: the Pose tab's speed slider (0.25 m/s max by default, since this
+config has no Cartesian velocity limit parameter for the slider to read), and the
+`TeleoperateBase` Behavior's own clamp ports (0.8 m/s linear, 2.0 rad/s angular, matching
+`platform_velocity_controller`'s limits).
 
 For detailed documentation see: [MoveIt Pro Documentation](https://docs.picknik.ai/)

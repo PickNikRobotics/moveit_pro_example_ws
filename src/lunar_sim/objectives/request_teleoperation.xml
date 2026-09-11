@@ -4,23 +4,49 @@
        A300 has no arm, so none of core's teleoperation branches apply: no joint or Cartesian jog,
        no waypoint, interactive-marker or joint-slider moves, no gripper. Those branches are also
        what pulls the objectives/motion library in, which this config deliberately does not load.
-       Base driving over /cmd_vel is not wired up yet either, so instead of accepting the UI
-       handshake and silently doing nothing, this tree fails on purpose with a message that
-       reaches the failure toast. `Teleoperate` still builds, so the Teleoperation workspace can
-       start it by name; it just fails at once until base teleoperation lands in a follow-up. -->
+       Instead, the Pose tab's mode (CARTESIAN_JOG, teleop_mode 2) drives TeleoperateBase, which
+       forwards the same VelocityForceCommand stream the jog pad, gamepad, and Quest headset already
+       publish on /pose_jog/base into a TwistStamped on /cmd_vel for platform_velocity_controller.
+       See src/lunar_sim/README.md for the resulting (arm-shaped) control layout. -->
   <BehaviorTree
     ID="Request Teleoperation"
-    _description="Fails on purpose: the Husky A300 has no arm, none of the arm teleoperation modes apply, and base driving over /cmd_vel is not wired up yet. Used as a subtree by Teleoperate so it fails visibly instead of silently doing nothing."
+    _description="Drives the Husky A300 base over /cmd_vel from the Pose tab's jog pad, gamepad, or Quest headset input. The Joint, IMarker, and Waypoints tabs do nothing on this armless base."
     _favorite="false"
     _hardcoded="false"
   >
-    <Decorator ID="ForceFailure">
-      <Action
-        ID="LogMessage"
-        log_level="error"
-        message="Teleoperation is not wired for this base yet: the Husky A300 has no arm and the Desktop App teleop modes drive arms only. Base driving over /cmd_vel lands in a follow-up."
-      />
-    </Decorator>
+    <Control ID="Sequence">
+      <Action ID="Script" code="teleop_mode := 0" />
+      <Control ID="Parallel" success_count="1" failure_count="1">
+        <Action
+          ID="DoTeleoperateAction"
+          enable_user_interaction="{enable_user_interaction}"
+          user_interaction_prompt="{user_interaction_prompt}"
+          initial_teleop_mode="{initial_teleop_mode}"
+          current_teleop_mode="{teleop_mode}"
+          planning_groups="{planning_groups}"
+          controllers="{controllers}"
+          tip_links="{tip_links}"
+          skip_collision_checks="{skip_collision_checks}"
+          velocity_scale_factor="{velocity_scale_factor}"
+          require_user_approval="{require_user_approval}"
+        />
+        <Decorator ID="RepeatUnlessFailureEachTick" num_cycles="-1">
+          <Control ID="Sequence">
+            <!-- Pose tab: jog pad, gamepad, and Quest all publish /pose_jog/base. -->
+            <Decorator ID="ForceSuccess" _while="teleop_mode == 2">
+              <Action
+                ID="TeleoperateBase"
+                planning_group="base"
+                cmd_vel_topic="/cmd_vel"
+                frame_id="footprint"
+                max_linear_velocity="0.8"
+                max_angular_velocity="2.0"
+              />
+            </Decorator>
+          </Control>
+        </Decorator>
+      </Control>
+    </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Request Teleoperation">

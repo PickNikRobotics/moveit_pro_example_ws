@@ -1,7 +1,8 @@
-# The base has no arm and no IK-capable group, so Cartesian pose jogging does not apply here -
-# the base is only ever driven by the `Dead Reckon Square` objective's open-loop /cmd_vel
-# commands. An empty planning_groups/controllers pair crashes MoveIt Pro's launch (evaluates to
-# an untyped empty parameter tuple), so this points at "base" inertly instead - Pose Jog is never
-# invoked for this robot.
+# The base has no arm and no IK-capable group, so MoveIt Pro's Cartesian Pose Jog Behavior does not
+# apply here. This config is still read, though: `request_teleoperation.xml`'s Pose tab branch
+# reports these planning_groups/controllers to the Desktop App, whose jog pad, gamepad, and Quest
+# headset then publish VelocityForceCommand on /pose_jog/base for `TeleoperateBase` to forward to
+# /cmd_vel. An empty planning_groups/controllers pair would also crash MoveIt Pro's launch
+# (evaluates to an untyped empty parameter tuple).
 planning_groups: ["base"]
 controllers: ["platform_velocity_controller"]

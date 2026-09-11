@@ -1,8 +1,7 @@
 # diff_drive_controller is a kinematics controller, not a per-joint velocity controller, so the
-# "base" group's wheel joints are not joint-joggable - the base is only ever driven by the
-# `Dead Reckon Square` objective's open-loop /cmd_vel commands.
-# An empty planning_groups/controllers pair crashes MoveIt Pro's launch (evaluates to an untyped
-# empty parameter tuple), so this points at "base" inertly instead - Joint Jog is never invoked
-# for this robot.
+# "base" group's wheel joints are not joint-joggable; unlike Pose Jog, Joint Jog stays unusable on
+# this base (see src/lunar_sim/README.md). An empty planning_groups/controllers pair crashes
+# MoveIt Pro's launch (evaluates to an untyped empty parameter tuple), so this points at "base"
+# inertly instead - Joint Jog is never invoked for this robot.
 planning_groups: ["base"]
 controllers: ["platform_velocity_controller"]
