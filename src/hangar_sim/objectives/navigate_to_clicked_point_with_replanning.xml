@@ -20,12 +20,24 @@
            is the crutch this whole capability exists to remove. The order is localize, then
            navigate, and that is the order on hardware too.
 
-           The Fallback is CONDITIONAL, not unconditional. An already-seeded filter takes the first
-           branch and proceeds exactly as before, with no extra prompt; only a cold-boot run reaches
-           the second branch, and that branch localizes the robot here rather than sending the
-           operator away to a different Objective. The cost is one extra interaction on the first
-           run after boot: the Objective stops and waits for the marker before it drives, which is
-           correct, because it cannot navigate without knowing where it is.-->
+           The Fallback is CONDITIONAL, not unconditional. A filter with a live estimate takes the
+           first branch and proceeds exactly as before, with no extra prompt; only a run that cannot
+           read the robot's pose reaches the second branch, and that branch localizes the robot here
+           rather than sending the operator away to a different Objective. The cost is one extra
+           interaction on the first run after boot: the Objective stops and waits for the marker
+           before it drives, which is correct, because it cannot navigate without knowing where it
+           is.
+
+           KNOWN LIMITATION, and the reason the messages below name a symptom rather than a cause.
+           SetInitialPose fails on ANY unavailable map -> ridgeback_base_link, and this tree cannot
+           tell "the filter was never seeded" from "a good estimate went briefly unavailable" -
+           amcl restarting, stalling or pausing longer than the TF buffer window produces the same
+           observation. Nothing in the tree carries the history that would separate them. That
+           matters because the second case routes an already-localized robot into Localize Robot,
+           which localize_robot.xml records as a known limitation: on gate rejection the restore
+           writes the operator's new pose back, and a filter measured at 9.4 cm error ended at
+           95.6 cm that way. Distinguishing the two cases is follow-up work; until then the
+           messages say what was observed and warn about the replacement.-->
       <Control ID="Fallback" name="Re-seed from the current estimate, or localize first">
         <Action ID="SetInitialPose" robot_frame_id="ridgeback_base_link" />
         <!--Gated on a UI actually being attached. Note what IsUserAvailable actually tests: it
@@ -46,7 +58,7 @@
           <Action
             ID="LogMessage"
             log_level="warn"
-            message="Asking you to localize before navigating: the particle filter has not been seeded yet, so map -> ridgeback_base_link does not resolve and the robot's current pose cannot be read. Place the marker on the robot to localize it, and this Objective will continue on its own."
+            message="Asking you to localize before navigating: map -> ridgeback_base_link did not resolve, so the robot's current pose cannot be read. Either the particle filter has not been seeded yet, or an estimate it did have has become unavailable - this Objective cannot tell which. Place the marker on the robot to localize it, and navigation will continue on its own. NOTE: if the robot was in fact already localized, placing the marker REPLACES that estimate with the pose you place."
           />
           <SubTree ID="Localize Robot" />
         </Control>
@@ -63,7 +75,7 @@
           <Action
             ID="LogMessage"
             log_level="error"
-            message="Cannot navigate: the particle filter has not been seeded, so map -> ridgeback_base_link does not resolve and the robot's current pose cannot be read. No user interface is attached, so the localization marker cannot be presented here. Run the &quot;Localize Robot&quot; Objective from an operator station first."
+            message="Cannot navigate: map -> ridgeback_base_link did not resolve, so the robot's current pose cannot be read. Either the particle filter has not been seeded yet, or an estimate it did have has become unavailable - this Objective cannot tell which. No user interface is attached, so the localization marker cannot be presented here. Run the &quot;Localize Robot&quot; Objective from an operator station - noting that if the robot was already localized, that replaces its estimate with the pose you place."
           />
           <Action ID="AlwaysFailure" name="Stop before planning blind" />
         </Control>

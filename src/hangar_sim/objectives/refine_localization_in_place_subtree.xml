@@ -216,7 +216,7 @@
                   <Action
                     ID="LogMessage"
                     log_level="error"
-                    message="Refinement REJECTED: the refined pose does not explain the live scan well enough to keep. Click closer to the robot and run again; if the same spot keeps failing, the area looks the same from more than one standpoint and the robot must be driven a short distance."
+                    message="Refinement REJECTED: the fit-to-map check did not pass. See the error just above this one for what it found and what to do about it - it distinguishes a pose that scored below the threshold from a check that could not run at all."
                   />
                   <Action
                     ID="AlwaysFailure"
@@ -250,7 +250,7 @@
           <Action
             ID="LogMessage"
             log_level="error"
-            message="Restoring your clicked pose so the filter is left exactly as a click-only localization would leave it."
+            message="Putting the pose you supplied back into the filter."
           />
           <!--Restore. A rejected or interrupted refinement must NOT be left in the filter: it can
                sit metres from where the operator pointed, and nothing downstream could tell.

@@ -23,7 +23,18 @@
 
            The reasoning for the second branch is stronger here than it is in the navigation
            Objectives: with no seed there is nothing to refine at all, so localizing IS the remedy
-           rather than a detour. An already-seeded filter never reaches it.-->
+           rather than a detour.
+
+           KNOWN LIMITATION, and the reason the messages below name a symptom rather than a cause.
+           GetLatestTransform fails on ANY unavailable map -> ridgeback_base_link, and this tree
+           cannot tell "the filter was never seeded" from "a good estimate went briefly
+           unavailable" - amcl restarting, stalling or pausing longer than the TF buffer window
+           produces the same observation. Nothing in the tree carries the history that would
+           separate them. That matters because the second case routes an already-localized robot
+           into Localize Robot, which localize_robot.xml records as a known limitation: on gate
+           rejection the restore writes the operator's new pose back, and a filter measured at
+           9.4 cm error ended at 95.6 cm that way. Distinguishing the two cases is follow-up work;
+           until then the messages say what was observed and warn about the replacement.-->
       <Control ID="Fallback" name="Read the current estimate, or localize first">
         <Control ID="Sequence" name="Read the estimate the filter already holds">
           <Action
@@ -59,7 +70,7 @@
           <Action
             ID="LogMessage"
             log_level="warn"
-            message="Nothing to refine yet: the particle filter has not been seeded, so map -> ridgeback_base_link does not resolve and there is no estimate to tighten. Place the marker on the robot to localize it, and this Objective will continue on its own."
+            message="Nothing to refine yet: map -> ridgeback_base_link did not resolve, so there is no estimate to tighten. Either the particle filter has not been seeded yet, or an estimate it did have has become unavailable - this Objective cannot tell which. Place the marker on the robot to localize it, and refinement will continue on its own. NOTE: if the robot was in fact already localized, placing the marker REPLACES that estimate with the pose you place."
           />
           <SubTree ID="Localize Robot" />
           <!--Re-read after localizing so the seed this Objective refines is populated the same way
@@ -93,7 +104,7 @@
           <Action
             ID="LogMessage"
             log_level="error"
-            message="Nothing to refine: the particle filter has not been seeded, so map -> ridgeback_base_link does not resolve and there is no estimate to tighten. No user interface is attached, so the localization marker cannot be presented here. Run the &quot;Localize Robot&quot; Objective from an operator station first."
+            message="Nothing to refine: map -> ridgeback_base_link did not resolve, so there is no estimate to tighten. Either the particle filter has not been seeded yet, or an estimate it did have has become unavailable - this Objective cannot tell which. No user interface is attached, so the localization marker cannot be presented here. Run the &quot;Localize Robot&quot; Objective from an operator station - noting that if the robot was already localized, that replaces its estimate with the pose you place."
           />
           <Action ID="AlwaysFailure" name="Stop rather than refine nothing" />
         </Control>
