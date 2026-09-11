@@ -81,6 +81,6 @@ def test_branch_names_a_registered_plugin(hardware_interface, plugin):
 
 def test_real_branch_resolves_to_the_vendored_driver():
     # The workspace overlay must shadow any apt ros-jazzy-feetech-ros2-driver:
-    # the torque lifecycle so101_sim relies on exists only in the vendored copy.
+    # the torque lifecycle this config relies on exists only in the vendored copy.
     share = Path(get_package_share_directory("feetech_ros2_driver"))
     assert not share.is_relative_to("/opt/ros"), share

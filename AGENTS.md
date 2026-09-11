@@ -209,6 +209,12 @@ Every objective XML file must include a `MetadataFields` block inside the `TreeN
 
 Teleoperation drives the gripper by looking up Objectives named exactly `"Close Gripper"` / `"Open Gripper"` (the `Request Teleoperation` SubTree in moveit_pro core). If a config package doesn't provide those overrides in its `objectives/` directory, the lookup falls back to moveit_pro's core placeholder, which logs `[ERROR] LogMessage Error: This robot configuration does not have a \`Close Gripper\` Objective configured to override this default.` on every BT tick for as long as the control is held, and the gripper never moves — even if some other Objective in the same config already drives the gripper directly via `MoveGripperAction` (that path bypasses the named-Objective lookup entirely). Any new config with a gripper needs both files; see `moveit_pro_kinova_configs/kinova_gen3_base_config/objectives/{close,open}_gripper.xml` for the reference pattern.
 
+## Config inheritance (`based_on_package`)
+
+`based_on_package` in `config.yaml` merges the child over the parent (`SystemConfigParser.merge` in `moveit_studio_utils_py/system_config.py`). Dicts merge key-by-key, recursively. A list of scalars is replaced wholesale. A list of single-key dicts — which is how `urdf_params` and every other MoveIt Pro list-of-options field is shaped — merges **by key**: an override entry like `- hardware_interface: "mock"` finds the parent's entry with that same key and replaces only its value, leaving every other `urdf_params` entry (`usb_port`, `calibration_file`, ...) inherited untouched. You do not need to repeat the whole list to override one xacro arg.
+
+`so101_base_config` + `so101_sim` (real arm vs. mock overlay) and `picknik_ur_base_config` + `mock_sim`/`multi_arm_sim` are the two base/overlay pairs in this workspace; `lab_sim` and `hangar_sim` also inherit from `picknik_ur_base_config` but fully re-declare `hardware.robot_description` (own URDF/SRDF) rather than overriding a single xacro arg — a heavier-weight variant of the same mechanism, used when the child's description differs structurally rather than by one hardware toggle.
+
 ## Running MoveIt Pro from a git worktree
 
 The user image tag is `moveit-pro-<svc>:<version>-<distro>-${MOVEIT_HOST_USER_WORKSPACE_NAME}`,
