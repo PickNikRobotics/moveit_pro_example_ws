@@ -38,8 +38,9 @@ regolith-plane contact model, which has different (measured: higher) turning res
 motion diverge - `/odom` reports the *commanded* twist, not the chassis's *true* motion, since
 both are computed from the same wheel encoders via the same (wrong) parameters and round-trip by
 construction; only the MuJoCo chassis pose itself (freejoint `xpos`/`xquat` read from MuJoCo
-directly - not `/odom`, and not TF either, since MuJoCo broadcasts no `mj_world` edge for this
-robot, see the xacro's TF-ownership comment) exposes the error. Measured directly: a 3 s,
+directly - not `/odom`, and not TF either, since MuJoCo's only world edge is the identity
+`mj_world -> odom`, so TF carries the same wheel odometry, see the xacro's TF-ownership comment)
+exposes the error. Measured directly: a 3 s,
 0.5235988 rad/s (30 deg/s) commanded turn achieved only ~59-61 deg of true chassis rotation with
 `wheel_separation_multiplier: 1.75`. Recalibrated against that ground truth (see
 `husky_a300.ros2_control.yaml`'s comment for the method):
@@ -164,9 +165,10 @@ vendored package byte-identical to upstream. The correction can't reuse the name
 - URDF requires unique link names, and `check_urdf` rejects the duplicate - hence the
 otherwise-unconventional `footprint` name.
 
-The 3D Visualizer's fixed frame is a different thing and is `odom`: with no localization there is
-nothing above `odom` in the TF tree, so `config/frontend_settings.yaml` sets `referenceFrame: odom`
-to override the frontend's `world` default.
+The 3D Visualizer's fixed frame is a different thing and is `odom`: with no localization the only
+frame above `odom` is MuJoCo's `mj_world`, published as identity so the world-fixed
+`scene_camera_optical_frame` resolves in `odom`, and `config/frontend_settings.yaml` sets
+`referenceFrame: odom` to override the frontend's `world` default.
 
 The Pose Jog and Joint Jog UI panels are wired to the `base` group only to avoid a MoveIt Pro
 launch crash on an empty jog config; neither is functionally usable on this robot (no IK-capable
