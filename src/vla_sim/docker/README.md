@@ -22,6 +22,23 @@ The first run builds the image and downloads the checkpoint into `../hf_cache/`;
 later runs reuse both. Then run **Stack Cubes with the VLA Policy** in the web
 UI, and **Reset MuJoCo Sim** between attempts.
 
+Only a *missing* image is built that way, and `moveit_pro build` skips this
+service because its compose profile is off by default, so nothing rebuilds the
+image when this directory changes. The scripts here are mounted rather than read
+from the image, so one that needs a package the existing image predates fails at
+import. After editing the Dockerfile or its pinned versions, drop the image and
+let the next run build it:
+
+```bash
+moveit_pro down
+docker rmi moveit_pro-inference_server:latest
+```
+
+Compose names the image after its project and this service, so the tag above is
+what the launcher builds; `docker images` confirms it. `moveit_pro down` first
+because Docker refuses to remove an image a container still references, and a
+stopped container counts.
+
 Model loading takes a minute or more. To keep the model warm across restarts of
 the stack, run the server on its own in one terminal and the stack, without
 `--with-inference-server`, in another:

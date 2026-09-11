@@ -23,16 +23,28 @@ ARG TORCH_INDEX=
 ARG TORCH_VERSION=2.11.0
 ARG TORCHVISION_VERSION=0.26.0
 ARG TORCHAO_VERSION=0.17.0
-RUN if [ -n "$TORCH_INDEX" ]; then \
-      pip install --no-cache-dir --index-url "$TORCH_INDEX" \
+# This layer moves gigabytes of CUDA wheels, which pip's defaults are not sized
+# for: a read that stalls past the default timeout fails the layer, and a failed
+# layer restarts from zero rather than from where it stopped. Set on the command
+# rather than with ENV, which would carry build tuning into the served image.
+#
+# The cache mount does what --no-cache-dir was doing: it keeps downloaded wheels
+# out of the image, but outside it rather than deleted, so editing a version
+# above costs only the wheels that changed. It is not part of any layer, so the
+# image is the same size either way, and `docker build --no-cache` still starts
+# from an empty one.
+RUN --mount=type=cache,target=/root/.cache/pip \
+    export PIP_DEFAULT_TIMEOUT=120 PIP_RETRIES=10 \
+    && if [ -n "$TORCH_INDEX" ]; then \
+      pip install --index-url "$TORCH_INDEX" \
         --extra-index-url https://pypi.org/simple \
         "torch==$TORCH_VERSION" "torchvision==$TORCHVISION_VERSION"; \
     fi \
-    && pip install --no-cache-dir "lerobot[pi,smolvla]==0.6.0" \
+    && pip install "lerobot[pi,smolvla]==0.6.0" \
       "torch==$TORCH_VERSION" "torchvision==$TORCHVISION_VERSION" \
       "torchao==$TORCHAO_VERSION"
 
-COPY vla_inference_server.py /app/vla_inference_server.py
+COPY vla_inference_server.py quantize_checkpoint.py /app/
 WORKDIR /app
 
 # Non-root default for a bare `docker run` (the compose service overrides the
