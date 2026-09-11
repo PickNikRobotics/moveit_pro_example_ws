@@ -189,41 +189,29 @@
 
                    The port values here mirror the amcl block of nav2_params.yaml. If that block
                    changes, change these with it, or the gate stops measuring this filter.-->
-              <!--The scan-fit message belongs HERE, on the node that measured it, not on the
-                   catch-all below. The drift gate above fails the enclosing Sequence before this
-                   node ever ticks, so a drift rejection reaching a scan-fit message would tell the
-                   operator their pose does not explain the scan when no fit was ever measured, and
-                   would send them to drive the robot when the right move is to click closer.-->
-              <Control ID="Fallback" name="It explains the scan, or say that it does not">
-                <Action
-                  ID="ScanMatchResidual"
-                  name="Check the pose against the map"
-                  pose="{refined_pose}"
-                  scan_topic="/scan_merged"
-                  map_topic="/map"
-                  min_range="0.000000"
-                  max_range="25.000000"
-                  max_beams="60"
-                  max_obstacle_distance="2.000000"
-                  inlier_distance="{inlier_distance}"
-                  min_inlier_fraction="{min_inlier_fraction}"
-                  timeout="5.000000"
-                  inlier_fraction="{inlier_fraction}"
-                  median_residual="{median_residual}"
-                  beams_used="{beams_used}"
-                />
-                <Control ID="Sequence" name="Does not explain the scan">
-                  <Action
-                    ID="LogMessage"
-                    log_level="error"
-                    message="Refinement REJECTED: the fit-to-map check did not pass. See the error just above this one for what it found and what to do about it - it distinguishes a pose that scored below the threshold from a check that could not run at all."
-                  />
-                  <Action
-                    ID="AlwaysFailure"
-                    name="Fall through to the restore"
-                  />
-                </Control>
-              </Control>
+              <!--No wrapper and no message of its own. ScanMatchResidual publishes a specific
+                   failure for each way it can fail - below threshold, no map, no scan, a malformed
+                   grid, no beams surviving the range filters - so anything added here would be a
+                   second hop to reach a reason the operator has already read. Its FAILURE fails
+                   this Sequence and the neutral notice below points back at it. The drift gate
+                   above still needs its own message, because IsPoseNearIdentity publishes none.-->
+              <Action
+                ID="ScanMatchResidual"
+                name="Check the pose against the map"
+                pose="{refined_pose}"
+                scan_topic="/scan_merged"
+                map_topic="/map"
+                min_range="0.000000"
+                max_range="25.000000"
+                max_beams="60"
+                max_obstacle_distance="2.000000"
+                inlier_distance="{inlier_distance}"
+                min_inlier_fraction="{min_inlier_fraction}"
+                timeout="5.000000"
+                inlier_fraction="{inlier_fraction}"
+                median_residual="{median_residual}"
+                beams_used="{beams_used}"
+              />
             </Control>
             <!--Neutral on purpose. Whatever failed above - the drift gate, the fit-to-map gate, a
                  transform read, a projection - has already logged its own cause and its own remedy,

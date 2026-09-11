@@ -68,15 +68,25 @@ inline constexpr std::int8_t kOccupiedValue = 100;
  *   1.15 m ring, best    must be REJECTED       39.1%
  *   strongest alias anywhere beyond the keepout 47.8%
  *
+ * WHY EARLIER FIGURES DIFFER, because they are still in the ticket and the PR history. This table
+ * was measured twice more, and both times the margin shrank and got more honest. The first sweep
+ * ran with alias_keepout_m = 2.0 m and reported the strongest alias at 34.8% with a 52.2-point
+ * separation -- but a keepout is a FLOOR, so it had skipped every candidate closer than 2.0 m.
+ * Dropping it to the 1.2 m drift limit found a stronger alias at 47.8%, sitting 1.28 m from truth,
+ * inside the annulus the first sweep never scored. Then folding in offset rings INSIDE the accept
+ * region showed the binding constraint is not the alias at all, but the 0.25 m must-reject ring at
+ * 52.2%. A third revision then published the band as 52.2-87.0%, which used the true pose as the
+ * upper edge instead of the near-miss the gate must accept. Anyone holding 34.8%, 47.8% or an
+ * 87.0% upper edge is holding a number measured over less of the region the gate can admit, or
+ * bounded by the wrong constraint.
+ *
  * THE HONEST BAND IS THEREFORE 52.2% TO 69.6%, a 17-point window, and 0.60 splits it. Both edges
  * are constraints, and neither is the true pose: the lower edge is a RING rather than the alias,
  * because the worst wrong pose the drift gate can admit scores 52.2% against the alias's 47.8%; and
  * the upper edge is the near-miss the gate must accept, NOT the 87.0% the true pose scores. That
  * distinction is the whole reason 0.80 is wrong here -- it sits under 87.0% and looks safe, while
  * being above the 69.6% a legitimate refinement returns, so every run would end in the restore
- * branch. Earlier revisions of this comment published 34.8%, then 47.8%, then 52.2-87.0%; the first
- * two came from an alias sweep whose keepout is a FLOOR and so never scored the region the gate
- * admits, and the third used the true pose as the upper edge.
+ * branch.
  *
  * THE SQUEEZE. Anything above 69.6% starts rejecting refinements the loop legitimately returns;
  * anything below 52.2% starts admitting poses it must reject. That window is NARROW on hangar_sim

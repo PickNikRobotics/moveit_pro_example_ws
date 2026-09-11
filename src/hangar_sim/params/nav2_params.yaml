@@ -43,15 +43,28 @@ amcl:
     #
     # So each of those Objectives -- and "Refine Localization In Place", which opens
     # on the same lookup -- wraps that first node in a three-branch Fallback rather
-    # than letting it fail opaquely. An already-seeded filter takes the first branch
-    # and runs exactly as before. On a cold boot WITH an operator attached, the
-    # second branch logs why and runs the "Localize Robot" subtree inline, so the
-    # run stops for the marker once and then continues on its own; it does not fail,
-    # and it does not send the operator to a different Objective. HEADLESS, the
-    # second branch is skipped and the third logs that the filter is unseeded with no
-    # UI to prompt, then fails. That keeps a headless run from blocking on a marker
-    # nobody can answer, which matters because "Refine Localization In Place" is the
-    # one Objective of this feature the integration suite executes.
+    # than letting it fail opaquely. A filter whose estimate resolves takes the first
+    # branch and runs exactly as before. When it does NOT resolve and an operator is
+    # attached, the second branch says so and runs the "Localize Robot" subtree
+    # inline, so the run stops for the marker once and then continues on its own; it
+    # does not fail, and it does not send the operator to a different Objective.
+    # HEADLESS, the second branch is skipped and the third reports the same
+    # unresolved transform with no UI to prompt, then fails. That keeps a headless
+    # run from blocking on a marker nobody can answer, which matters because "Refine
+    # Localization In Place" is the one Objective of this feature the integration
+    # suite executes.
+    #
+    # NOTE WHAT THOSE BRANCHES DO NOT CLAIM. SetInitialPose and GetLatestTransform
+    # both fail on ANY unavailable map -> ridgeback_base_link, so the tree cannot
+    # tell a filter that was never seeded from one whose good estimate went briefly
+    # unavailable -- amcl restarting, stalling or pausing past the TF buffer window
+    # looks identical, and nothing in the tree carries the history that would
+    # separate them. Every message on these paths therefore states the observed
+    # symptom (the transform did not resolve), offers both possibilities, and warns
+    # that if the robot WAS already localized, re-localizing replaces that estimate
+    # with the pose the operator places. That warning is not hypothetical: measured
+    # on this branch, a filter at 9.4 cm error left at 95.6 cm after a rejected seed
+    # was restored over it. Distinguishing the two cases is follow-up work.
     #
     # Both of those branches turn on IsUserAvailable, and it is worth knowing what
     # that Behavior actually tests: whether anything SUBSCRIBES to
