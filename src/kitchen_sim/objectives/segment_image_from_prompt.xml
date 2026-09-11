@@ -29,7 +29,7 @@
         masks="{masks2d}"
         masks_visualization_topic="/masks_visualization"
         opacity="0.500000"
-        bounding_box_labels="stove"
+        bounding_box_detection_class="burner"
       />
       <Action
         ID="SwitchUIPrimaryView"
