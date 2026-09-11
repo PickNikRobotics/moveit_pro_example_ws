@@ -40,32 +40,37 @@ ORDER = ["joint_a", "joint_b", GRIPPER]
 REFERENCE = {"joint_a": 1.0, "joint_b": 2.0}
 
 
-def test_reference_wins_for_arm_when_fresh() -> None:
+def test_arm_takes_the_controller_setpoint() -> None:
     """The setpoint leads the measured position, and that lead is the learning signal."""
     result = assemble_joint_command(
         joint_order=ORDER,
         gripper_joint=GRIPPER,
         reference=REFERENCE,
-        measured={"joint_a": 9.0, "joint_b": 9.0},
         gripper_command=0.6,
     )
     assert result == [1.0, 2.0, 0.6]
 
 
-def test_falls_back_to_measured_when_reference_is_empty() -> None:
-    """A gripper dwell is labelled with the held pose, not the last goal's setpoint.
+def test_the_last_setpoint_is_held_between_goals() -> None:
+    """A dwell is labelled with the pose the Objective commanded and is still holding.
 
-    The node empties the reference once it goes stale, so an empty one is how a
-    dwell reaches this function.
+    The controller reports a setpoint only while a goal executes, so the node keeps
+    publishing the latest one rather than substituting the measured position.
     """
-    result = assemble_joint_command(
+    latched = dict(REFERENCE)
+    first = assemble_joint_command(
         joint_order=ORDER,
         gripper_joint=GRIPPER,
-        reference={},
-        measured={"joint_a": 0.5, "joint_b": 0.6},
+        reference=latched,
         gripper_command=0.6,
     )
-    assert result == [0.5, 0.6, 0.6]
+    second = assemble_joint_command(
+        joint_order=ORDER,
+        gripper_joint=GRIPPER,
+        reference=latched,
+        gripper_command=0.6,
+    )
+    assert first == second == [1.0, 2.0, 0.6]
 
 
 def test_gripper_never_takes_the_controller_reference() -> None:
@@ -74,22 +79,20 @@ def test_gripper_never_takes_the_controller_reference() -> None:
         joint_order=ORDER,
         gripper_joint=GRIPPER,
         reference={**REFERENCE, GRIPPER: 0.123},
-        measured={},
         gripper_command=0.6,
     )
     assert result == [1.0, 2.0, 0.6]
 
 
-def test_gripper_never_takes_the_measured_position() -> None:
+def test_gripper_tracks_the_latched_command() -> None:
     """The command leads the jaws; labelling with where they are erases the close."""
     result = assemble_joint_command(
         joint_order=ORDER,
         gripper_joint=GRIPPER,
-        reference={},
-        measured={"joint_a": 0.5, "joint_b": 0.6, GRIPPER: 0.012},
+        reference=REFERENCE,
         gripper_command=0.7,
     )
-    assert result == [0.5, 0.6, 0.7]
+    assert result == [1.0, 2.0, 0.7]
 
 
 def test_order_follows_joint_order_not_controller_order() -> None:
@@ -98,31 +101,17 @@ def test_order_follows_joint_order_not_controller_order() -> None:
         joint_order=["joint_b", "joint_a", GRIPPER],
         gripper_joint=GRIPPER,
         reference=REFERENCE,
-        measured={},
         gripper_command=0.6,
     )
     assert result == [2.0, 1.0, 0.6]
 
 
-def test_a_joint_with_no_source_publishes_nothing() -> None:
-    """Padding the vector would label a channel the robot never reported."""
+def test_a_joint_with_no_setpoint_publishes_nothing() -> None:
+    """Padding the vector would label a channel the controller never reported."""
     result = assemble_joint_command(
         joint_order=ORDER,
         gripper_joint=GRIPPER,
         reference={"joint_a": 1.0},
-        measured={},
         gripper_command=0.6,
     )
     assert result is None
-
-
-def test_a_partial_reference_is_completed_from_measured() -> None:
-    """Each joint resolves by name, so a short controller vector cannot shift channels."""
-    result = assemble_joint_command(
-        joint_order=ORDER,
-        gripper_joint=GRIPPER,
-        reference={"joint_a": 1.0},
-        measured={"joint_a": 9.0, "joint_b": 0.6},
-        gripper_command=0.6,
-    )
-    assert result == [1.0, 0.6, 0.6]

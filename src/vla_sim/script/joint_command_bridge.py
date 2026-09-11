@@ -30,19 +30,16 @@
 
 """Publish the commanded joint vector Trainer labels `action` from.
 
-Conversion labels `action` from a `sensor_msgs/JointState` command topic, and
-nothing in the MoveIt Pro tree publishes one outside of teleoperation. Without
-it a scripted collection Objective converts only with **Action source: Next
-state**, which labels each frame with the next frame's measured position rather
-than with what the Objective actually commanded.
+Conversion labels `action` from a `sensor_msgs/JointState` command topic. Without
+one, a scripted collection Objective converts only with `action_source` set to
+`next_state`, which labels each frame with the next frame's measured position
+rather than with what the Objective actually commanded.
 
 This node assembles the trajectory controller's reference setpoint with the
-latched gripper command and republishes the pair as `/joint_commands`.
-
-Pro's `quest_oculus` package fills the same gap for Cartesian teleoperation,
-reading the velocity_force_controller's setpoint instead. It shares this topic
-but stays silent until an operator enables the headset, so the two do not
-overlap unless a scripted Objective is recorded during Quest teleoperation.
+latched gripper command and republishes the pair as `/joint_commands`. The
+trajectory controller reports a setpoint only while a goal executes, so the last
+one is held between goals: a dwell is labelled with the pose the Objective
+commanded and is still holding.
 """
 
 from __future__ import annotations
@@ -51,11 +48,6 @@ import rclpy
 from control_msgs.msg import JointTrajectoryControllerState
 from rclpy.node import Node
 from sensor_msgs.msg import JointState
-
-# joint_trajectory_admittance_controller publishes ~/controller_state only while
-# a goal executes, so a reference older than this means no trajectory is running
-# and the arm should be labelled with the pose it is holding.
-REFERENCE_TIMEOUT_S = 0.5
 
 # The arm joints, in the order the trajectory controller reports them. Fixing the
 # layout here rather than adopting the controller's keeps the recorded channel
@@ -67,16 +59,17 @@ def assemble_joint_command(
     joint_order: list[str],
     gripper_joint: str,
     reference: dict[str, float],
-    measured: dict[str, float],
     gripper_command: float,
 ) -> list[float] | None:
     """One position per name in ``joint_order``, or None if a joint has no source.
 
-    Arm joints take the controller's setpoint when the caller passes a fresh one,
-    otherwise their measured position, so a dwell is labelled with the pose the
-    arm is holding. The gripper takes the latched command: its ``GripperCommand``
-    goal is not observable on any topic, and it shares the arm's radian scale
-    through the ``split`` tendon in ``description/mujoco/gen3_7dof.xml``.
+    Arm joints take the controller's latest setpoint. The gripper takes the
+    latched command: its ``GripperCommand`` goal is not observable on any topic,
+    and it shares the arm's radian scale through the ``split`` tendon in
+    ``description/mujoco/gen3_7dof.xml``.
+
+    Measured positions are deliberately not a fallback. An action labelled with
+    the arm's own observation teaches the policy to command where it already is.
     """
     positions: list[float] = []
     for joint in joint_order:
@@ -84,8 +77,6 @@ def assemble_joint_command(
             positions.append(float(gripper_command))
         elif joint in reference:
             positions.append(float(reference[joint]))
-        elif joint in measured:
-            positions.append(float(measured[joint]))
         else:
             return None
     return positions
@@ -99,7 +90,6 @@ class JointCommandBridge(Node):
             "controller_state_topic",
             "/joint_trajectory_admittance_controller/controller_state",
         )
-        self._joint_states_topic = self._param("joint_states_topic", "/joint_states")
         self._joint_command_topic = self._param(
             "joint_command_topic", "/joint_commands"
         )
@@ -122,9 +112,6 @@ class JointCommandBridge(Node):
         # ExecutePolicy's layout: the planning group's order, gripper last.
         self._joint_order = self._arm_joint_names + [self._gripper_joint]
         self._reference: dict[str, float] = {}
-        self._reference_stamp = 0.0
-        self._measured: dict[str, float] = {}
-        self._measured_stamp = 0.0
 
         self._publisher = self.create_publisher(
             JointState, self._joint_command_topic, 10
@@ -135,9 +122,6 @@ class JointCommandBridge(Node):
             self._on_controller_state,
             10,
         )
-        self.create_subscription(
-            JointState, self._joint_states_topic, self._on_joint_states, 10
-        )
         self.create_timer(1.0 / publish_rate, self._publish)
         self.get_logger().info(
             f"bridging {self._controller_state_topic} -> {self._joint_command_topic} "
@@ -147,40 +131,22 @@ class JointCommandBridge(Node):
     def _param(self, name: str, default):
         return self.declare_parameter(name, default).value
 
-    def _now(self) -> float:
-        return self.get_clock().now().nanoseconds * 1e-9
-
-    def _is_fresh(self, stamp: float) -> bool:
-        return self._now() - stamp < REFERENCE_TIMEOUT_S
-
     def _on_controller_state(self, msg: JointTrajectoryControllerState) -> None:
         self._reference = dict(zip(msg.joint_names, msg.reference.positions))
-        self._reference_stamp = self._now()
-
-    def _on_joint_states(self, msg: JointState) -> None:
-        self._measured = dict(zip(msg.name, msg.position))
-        self._measured_stamp = self._now()
 
     def _publish(self) -> None:
         if not self._reference:
-            # No trajectory has run, so there is no commanded stream to mirror.
-            # Falling back to the measured position here would hand a
-            # hand-teleoperated recording an `action` column that is a copy of
-            # its own observations; conversion refuses an empty action topic
-            # precisely so that mislabelling cannot happen silently.
+            # No trajectory has run, so there is no commanded pose to hold yet.
             return
         positions = assemble_joint_command(
             joint_order=self._joint_order,
             gripper_joint=self._gripper_joint,
-            reference=self._reference if self._is_fresh(self._reference_stamp) else {},
-            # Held to the same freshness as the setpoint: the fallback labels a
-            # dwell with the pose the arm is holding, which a stale reading is not.
-            measured=self._measured if self._is_fresh(self._measured_stamp) else {},
+            reference=self._reference,
             gripper_command=self.get_parameter("gripper_command_position").value,
         )
         if positions is None:
             self.get_logger().warning(
-                "no fresh setpoint or measured position for some joint in "
+                "no setpoint for some joint in "
                 f"{self._joint_order}; not publishing {self._joint_command_topic}.",
                 throttle_duration_sec=10.0,
             )
