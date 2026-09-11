@@ -26,6 +26,9 @@ if(BUILD_TESTING)
   ament_add_pytest_test(
           so101_arm_bridge_test test/test_so101_arm_bridge.py
           TIMEOUT 60)
+  ament_add_pytest_test(
+          so101_hardware_plugin_test test/test_hardware_plugin.py
+          TIMEOUT 60)
 endif()
 
 ament_package()

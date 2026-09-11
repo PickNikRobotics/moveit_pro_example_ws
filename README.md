@@ -12,7 +12,7 @@ git lfs install
 git clone <repo-url>
 ```
 
-Robot descriptions and simulation assets are vendored under `src/external_dependencies`; each vendored source has an `UPSTREAM.yaml` file recording its repository, commit, and pruned paths. No source submodules are required for simulation.
+Robot descriptions, simulation assets, and the `so101_sim` hardware driver are vendored under `src/external_dependencies`; each vendored source has an `UPSTREAM.yaml` file recording its repository, commit, and pruned paths. No source submodules are required for simulation.
 
 The `moveit_pro_sam2` and `moveit_pro_sam3` submodules contain optional perception models used by ML demonstration Objectives. Initialize them only when those Objectives are needed:
 

@@ -3,6 +3,7 @@ build:
   # Enable this for bidirectional syncing from the UI
   symlink-install: true
   allow-overriding:
+    - feetech_ros2_driver
     - franka_description
     - kortex_description
     - robotiq_description

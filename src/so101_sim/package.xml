@@ -18,9 +18,10 @@
 
   <exec_depend>action_msgs</exec_depend>
   <!-- ros2_control hardware interface for the Feetech STS3215 bus, used by
-       the `real` branch of description/so101.urdf.xacro. Released on Jazzy,
-       so rosdep installs ros-jazzy-feetech-ros2-driver from the image's
-       pinned snapshot; nothing is vendored. -->
+       the `real` branch of description/so101.urdf.xacro. Built from the
+       vendored copy in src/external_dependencies/feetech_ros2_driver (the
+       0.2.2 release plus the torque lifecycle), which shadows the Jazzy
+       binary. -->
   <exec_depend>feetech_ros2_driver</exec_depend>
   <exec_depend>joint_state_broadcaster</exec_depend>
   <exec_depend>joint_trajectory_controller</exec_depend>
@@ -41,6 +42,7 @@
   <test_depend>ament_cmake_lint_cmake</test_depend>
   <test_depend>ament_cmake_pytest</test_depend>
   <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_index_python</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>picknik_ament_copyright</test_depend>
   <test_depend>python3-yaml</test_depend>
