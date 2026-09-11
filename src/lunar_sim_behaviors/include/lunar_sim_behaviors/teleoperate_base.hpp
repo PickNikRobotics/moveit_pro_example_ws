@@ -28,6 +28,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include <mutex>
 #include <string>
 
@@ -94,7 +95,24 @@ public:
   // Publishes one zero twist, then drops the subscription and publisher.
   void onHalted() override;
 
+  // Test-only seam for the regression test in test_teleoperate_base_ros.cpp: lets a test simulate a subscription
+  // callback landing with a generation from a previous (halted) activation, without a real ROS timing race.
+  void handleCommandForTesting(std::uint64_t callback_generation,
+                               const moveit_pro_controllers_msgs::msg::VelocityForceCommand& command)
+  {
+    handleCommand(callback_generation, command);
+  }
+  std::uint64_t activationGenerationForTesting() const
+  {
+    return activation_generation_;
+  }
+
 private:
+  // Applies a command received by the subscription callback, unless it belongs to a since-superseded
+  // activation (a callback still in flight from a previous onStart/onHalted cycle).
+  void handleCommand(std::uint64_t callback_generation,
+                     const moveit_pro_controllers_msgs::msg::VelocityForceCommand& command);
+
   std::string frame_id_;
   double max_linear_velocity_ = 0.0;
   double max_angular_velocity_ = 0.0;
@@ -105,6 +123,9 @@ private:
   std::mutex command_mutex_;
   moveit_pro_controllers_msgs::msg::VelocityForceCommand latest_command_;
   bool has_new_command_ = false;
+  // Bumped on every onStart, so a callback from a previous activation can recognize itself as stale and
+  // no-op instead of racing a fresh onStart's state reset.
+  std::uint64_t activation_generation_ = 0;
 };
 
 }  // namespace lunar_sim_behaviors

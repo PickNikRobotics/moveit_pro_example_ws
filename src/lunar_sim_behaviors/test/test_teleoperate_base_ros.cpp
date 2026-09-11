@@ -35,6 +35,7 @@
 
 #include <behaviortree_cpp/bt_factory.h>
 #include <geometry_msgs/msg/twist_stamped.hpp>
+#include <lunar_sim_behaviors/teleoperate_base.hpp>
 #include <moveit_pro_behavior_interface/shared_resources_node_loader.hpp>
 #include <moveit_pro_controllers_msgs/msg/velocity_force_command.hpp>
 #include <pluginlib/class_loader.hpp>
@@ -180,6 +181,55 @@ TEST_F(TeleoperateBaseRosTest, ForwardsRestampedClampedTwistAndZeroesOnHalt)
   EXPECT_DOUBLE_EQ(zero.twist.linear.x, 0.0);
   EXPECT_DOUBLE_EQ(zero.twist.angular.z, 0.0);
   EXPECT_LT((behavior_node_->now() - rclcpp::Time(zero.header.stamp)).seconds(), 1.0);
+}
+
+// Regression test for a callback still in flight from a halted activation landing after a restart: it must not
+// resurrect latest_command_/has_new_command_ for the new activation, and must never reach /cmd_vel.
+TEST_F(TeleoperateBaseRosTest, StaleGenerationCallbackIsIgnoredAfterRestart)
+{
+  ASSERT_EQ(tree_.tickOnce(), BT::NodeStatus::RUNNING);
+  auto* const behavior = dynamic_cast<lunar_sim_behaviors::TeleoperateBase*>(tree_.rootNode());
+  ASSERT_NE(behavior, nullptr);
+  const std::uint64_t stale_generation = behavior->activationGenerationForTesting();
+
+  // Halting on its own publishes one zero twist; that is the baseline the stale callback must not add to.
+  tree_.haltTree();
+  const auto halt_deadline = std::chrono::steady_clock::now() + 5s;
+  while (receivedCount() < 1 && std::chrono::steady_clock::now() < halt_deadline)
+  {
+    std::this_thread::sleep_for(10ms);
+  }
+  const std::size_t baseline_count = receivedCount();
+  ASSERT_EQ(baseline_count, 1u);
+
+  ASSERT_EQ(tree_.tickOnce(), BT::NodeStatus::RUNNING);
+  EXPECT_NE(behavior->activationGenerationForTesting(), stale_generation);
+
+  moveit_pro_controllers_msgs::msg::VelocityForceCommand stale_command;
+  stale_command.velocity_controlled_axes.x = true;
+  stale_command.twist.linear.x = 0.5;
+  // Simulates a callback from the pre-restart subscription delivering after the restart already happened.
+  behavior->handleCommandForTesting(stale_generation, stale_command);
+
+  EXPECT_FALSE(tickUntilReceived(baseline_count + 1, 300ms));
+  EXPECT_EQ(receivedCount(), baseline_count);
+}
+
+// Regression test for invalid velocity limit ports: a negative, NaN, or infinite max must fail onStart instead of
+// being handed to std::clamp, which requires lower <= upper and finite bounds.
+TEST_F(TeleoperateBaseRosTest, RejectsInvalidVelocityLimits)
+{
+  BT::BehaviorTreeFactory factory;
+  plugin_->registerBehaviors(factory, shared_resources_);
+  for (const std::string max_linear_velocity : { "-0.1", "nan", "inf" })
+  {
+    const std::string xml = "<root BTCPP_format=\"4\"><BehaviorTree ID=\"Test\">"
+                            "<Action ID=\"TeleoperateBase\" planning_group=\"base\" cmd_vel_topic=\"/cmd_vel\" "
+                            "frame_id=\"footprint\" max_linear_velocity=\"" +
+                            max_linear_velocity + "\" max_angular_velocity=\"2.0\" /></BehaviorTree></root>";
+    BT::Tree tree = factory.createTreeFromText(xml);
+    EXPECT_EQ(tree.tickOnce(), BT::NodeStatus::FAILURE) << "max_linear_velocity=" << max_linear_velocity;
+  }
 }
 
 int main(int argc, char** argv)

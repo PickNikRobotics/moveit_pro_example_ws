@@ -29,6 +29,7 @@
 #include <lunar_sim_behaviors/teleoperate_base.hpp>
 
 #include <algorithm>
+#include <cmath>
 
 #include <fmt/format.h>
 
@@ -92,7 +93,12 @@ BT::KeyValueVector TeleoperateBase::metadata()
 
 BT::NodeStatus TeleoperateBase::onStart()
 {
-  has_new_command_ = false;
+  std::uint64_t generation = 0;
+  {
+    const std::scoped_lock lock(command_mutex_);
+    has_new_command_ = false;
+    generation = ++activation_generation_;
+  }
 
   const auto ports = moveit_pro::behaviors::getRequiredInputs(getInput<std::string>(kPortIdPlanningGroup),
                                                               getInput<std::string>(kPortIdCmdVelTopic),
@@ -106,6 +112,13 @@ BT::NodeStatus TeleoperateBase::onStart()
     return BT::NodeStatus::FAILURE;
   }
   const auto& [planning_group, cmd_vel_topic, frame_id, max_linear_velocity, max_angular_velocity] = ports.value();
+  if (!std::isfinite(max_linear_velocity) || max_linear_velocity < 0.0 || !std::isfinite(max_angular_velocity) ||
+      max_angular_velocity < 0.0)
+  {
+    getBehaviorContext()->logger->publishFailureMessage(
+        name(), "max_linear_velocity and max_angular_velocity must be finite and non-negative.");
+    return BT::NodeStatus::FAILURE;
+  }
   frame_id_ = frame_id;
   max_linear_velocity_ = max_linear_velocity;
   max_angular_velocity_ = max_angular_velocity;
@@ -114,16 +127,27 @@ BT::NodeStatus TeleoperateBase::onStart()
   command_subscription_ =
       getBehaviorContext()->node->create_subscription<moveit_pro_controllers_msgs::msg::VelocityForceCommand>(
           command_topic, kQoSProfile,
-          [this](const moveit_pro_controllers_msgs::msg::VelocityForceCommand::SharedPtr msg) {
-            const std::scoped_lock lock(command_mutex_);
-            latest_command_ = *msg;
-            has_new_command_ = true;
+          [this, generation](const moveit_pro_controllers_msgs::msg::VelocityForceCommand::SharedPtr msg) {
+            handleCommand(generation, *msg);
           });
 
   cmd_vel_publisher_ =
       getBehaviorContext()->node->create_publisher<geometry_msgs::msg::TwistStamped>(cmd_vel_topic, kQoSProfile);
 
   return BT::NodeStatus::RUNNING;
+}
+
+void TeleoperateBase::handleCommand(const std::uint64_t callback_generation,
+                                    const moveit_pro_controllers_msgs::msg::VelocityForceCommand& command)
+{
+  const std::scoped_lock lock(command_mutex_);
+  if (callback_generation != activation_generation_)
+  {
+    // A callback still in flight from a halted/superseded activation; drop it rather than resurrect stale state.
+    return;
+  }
+  latest_command_ = command;
+  has_new_command_ = true;
 }
 
 BT::NodeStatus TeleoperateBase::onRunning()
