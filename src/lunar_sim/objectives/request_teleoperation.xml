@@ -4,20 +4,23 @@
        A300 has no arm, so none of core's teleoperation branches apply: no joint or Cartesian jog,
        no waypoint, interactive-marker or joint-slider moves, no gripper. Those branches are also
        what pulls the objectives/motion library in, which this config deliberately does not load.
-       Only the UI handshake remains, so `Teleoperate` still builds and runs on this robot. -->
+       Base driving over /cmd_vel is not wired up yet either, so instead of accepting the UI
+       handshake and silently doing nothing, this tree fails on purpose with a message that
+       reaches the failure toast. `Teleoperate` still builds, so the Teleoperation workspace can
+       start it by name; it just fails at once until base teleoperation lands in a follow-up. -->
   <BehaviorTree
     ID="Request Teleoperation"
-    _description="Teleoperation handshake with the web UI for an armless mobile base: none of the arm teleoperation modes apply, so this tree drives nothing. Used as a subtree by Teleoperate."
+    _description="Fails on purpose: the Husky A300 has no arm, none of the arm teleoperation modes apply, and base driving over /cmd_vel is not wired up yet. Used as a subtree by Teleoperate so it fails visibly instead of silently doing nothing."
     _favorite="false"
     _hardcoded="false"
   >
-    <Action
-      ID="DoTeleoperateAction"
-      enable_user_interaction="{enable_user_interaction}"
-      user_interaction_prompt="{user_interaction_prompt}"
-      initial_teleop_mode="{initial_teleop_mode}"
-      require_user_approval="{require_user_approval}"
-    />
+    <Decorator ID="ForceFailure">
+      <Action
+        ID="LogMessage"
+        log_level="error"
+        message="Teleoperation is not wired for this base yet: the Husky A300 has no arm and the Desktop App teleop modes drive arms only. Base driving over /cmd_vel lands in a follow-up."
+      />
+    </Decorator>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Request Teleoperation">
