@@ -1,0 +1,12 @@
+find_package(ament_cmake_gtest REQUIRED)
+
+ament_add_gtest(test_behavior_plugins test_behavior_plugins.cpp)
+ament_target_dependencies(test_behavior_plugins ${THIS_PACKAGE_INCLUDE_DEPENDS})
+
+ament_add_gtest(test_planar_pose test_planar_pose.cpp)
+target_link_libraries(test_planar_pose hangar_sim_behaviors)
+ament_target_dependencies(test_planar_pose ${THIS_PACKAGE_INCLUDE_DEPENDS})
+
+ament_add_gtest(test_localization_gates test_localization_gates.cpp)
+target_link_libraries(test_localization_gates hangar_sim_behaviors)
+ament_target_dependencies(test_localization_gates ${THIS_PACKAGE_INCLUDE_DEPENDS})

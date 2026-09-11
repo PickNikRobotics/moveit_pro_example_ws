@@ -28,19 +28,25 @@
 
 """Integration tests for the hangar_sim objective library."""
 
+import math
 import time
 from pathlib import Path
+from xml.etree import ElementTree
 
 import pytest
 import rclpy
 import tf2_ros
 from tf2_msgs.msg import TFMessage
+from geometry_msgs.msg import PoseWithCovarianceStamped
 from nav_msgs.msg import Odometry
 import yaml
 from rclpy.time import Time
 from rclpy.qos import qos_profile_sensor_data
 from control_msgs.action import GripperCommand
 from controller_manager_msgs.srv import ListControllers
+from moveit_msgs.msg import MoveItErrorCodes
+from moveit_studio_sdk_msgs.msg import BehaviorParameter, BehaviorParameterDescription
+from moveit_studio_sdk_msgs.srv import ExecuteObjective
 from moveit_pro_test_utils.objective_test_fixture import (
     DEFAULT_OBJECTIVE_WAIT_S,
     EndStateSpec,
@@ -98,6 +104,14 @@ skip_objectives = {
     # never arrives.
     "Navigate to Clicked Point",  # GetPoseFromUser + WaitForUserPathApproval.
     "Navigate to Clicked Point with Replanning",  # GetPoseFromUser.
+    # Asks the operator to place a 6 DOF marker on the robot. The localized_robot
+    # fixture below seeds the filter the same way headlessly, so the rest of the suite
+    # still gets the map -> odom edge this would otherwise provide.
+    "Localize Robot",  # AdjustPoseWithIMarker needs an operator to place the marker.
+    # NOT skipped: "Refine Localization In Place" seeds from the estimate the filter
+    # already holds rather than from an operator marker, so it is the one runnable
+    # Objective in this feature the headless suite can execute. It runs with a
+    # test-scoped parameter override -- see REPORT_ONLY_GATE_OVERRIDES below.
     "Find and Spray Plane",  # Ungated WaitForMTCSolutionApproval.
     "Solution - Find and Spray Plane",  # Ungated WaitForMTCSolutionApproval.
     "Solution - Spray Plane",  # Ungated WaitForMTCSolutionApproval.
@@ -140,6 +154,139 @@ EXECUTE_TIMEOUT_OVERRIDES_S = {
     "Plan Path Along Surface": 180.0,
     "Plan Path Along Surface 3 Passes": 180.0,
 }
+
+# --- Test-scoped parameter overrides ---
+#
+# ExecuteObjective.Request carries `parameter_overrides`, which the bridge forwards
+# into the DoObjective goal and the objective server writes onto the named subtree's
+# blackboard before the first tick. That is the injection point used here, so nothing
+# in the shipped Objective XML is weakened: the production
+# min_inlier_fraction (0.60, calibrated on hangar_map -- the value and the measured
+# table live on the subtree's input_port, and the same number is
+# `kMinInlierFraction` in hangar_sim_behaviors/localization_gates.hpp) stays exactly
+# as it ships. Overriding it in the shipped tree instead would disable the fit-to-map
+# gate in production, which is the whole safety mechanism of this feature.
+#
+# What CI is for here is that the tree seeds, loops, gates and terminates cleanly --
+# not that a particular map scores above a particular number. The gate threshold is
+# calibrated from ONE stationary pose (a driven multi-pose campaign is follow-up
+# work), and the value CI's arbitrary post-keyframe-reset pose scores is not part of
+# that calibration, so asserting on it would make the suite red on the map rather
+# than on a regression. A negative min_inlier_fraction puts ScanMatchResidual in its
+# documented report-only mode: it still reads the scan and the map, still scores the
+# refined pose, and still publishes inlier_fraction / median_residual / beams_used --
+# it just does not turn the score into FAILURE.
+#
+# The drift gate is deliberately left alone, so the run still asserts that the
+# refinement stayed inside the seeded region.
+REFINE_LOCALIZATION_OBJECTIVE = "Refine Localization In Place"
+REFINE_SUBTREE_ID = "Refine Localization In Place Subtree"
+_OBJECTIVES_DIR = Path(__file__).parent.parent / "objectives"
+# objective id -> list of (port name, YAML value), all scoped to the subtree below.
+REPORT_ONLY_GATE_OVERRIDES: dict[str, list[tuple[str, str]]] = {
+    REFINE_LOCALIZATION_OBJECTIVE: [("min_inlier_fraction", "-1.0")],
+}
+# objective id -> (Objective XML file, ID of the SubTree node the override targets).
+OVERRIDE_SUBTREE_BY_ID: dict[str, tuple[str, str]] = {
+    REFINE_LOCALIZATION_OBJECTIVE: (
+        "refine_localization_in_place.xml",
+        REFINE_SUBTREE_ID,
+    ),
+}
+
+
+def _subtree_instance_name(objective_xml: str, subtree_id: str) -> str:
+    """Resolve the namespace a parameter override must carry to reach ``subtree_id``.
+
+    The objective server matches ``behavior_namespaces`` against subtree INSTANCE
+    names -- the SubTree node's ``name`` attribute, falling back to its ``ID`` when
+    the attribute is absent -- and an override whose namespace matches nothing is
+    warned about and skipped, leaving the goal to run with the shipped defaults. Read
+    the name out of the Objective XML rather than repeating it here so a rename
+    cannot silently retarget the override at nothing; if the SubTree reference is
+    gone or renamed, fail here with a message that says so instead.
+
+    The Objective XML is the interface being addressed, not evidence of behaviour:
+    it is where the runtime looks up this exact identifier. What the run proves is
+    asserted on the objective's result, below.
+    """
+    path = _OBJECTIVES_DIR / objective_xml
+    root = ElementTree.parse(path).getroot()
+    names = [
+        node.get("name", subtree_id)
+        for tree in root.findall("BehaviorTree")
+        for node in tree.iter("SubTree")
+        if node.get("ID") == subtree_id
+    ]
+    if not names:
+        pytest.fail(
+            f"No SubTree node with ID {subtree_id!r} in {path}, so a parameter "
+            f"override has no namespace to target. The objective server SKIPS an "
+            f"override whose namespace matches no subtree -- it does not error -- "
+            f"so leaving this unresolved would silently run the shipped production "
+            f"gate while this test believed it was overridden."
+        )
+    if len(set(names)) != 1:
+        pytest.fail(
+            f"{path} references {subtree_id!r} under more than one instance name "
+            f"({sorted(set(names))}); an override would reach all of them. Name the "
+            f"intended one explicitly before relying on this."
+        )
+    return names[0]
+
+
+def _double_override(namespace: str, name: str, value: str) -> BehaviorParameter:
+    """Build a double-valued parameter override scoped to one subtree instance."""
+    override = BehaviorParameter()
+    override.description.name = name
+    override.description.type = BehaviorParameterDescription.TYPE_DOUBLE
+    # The server parses `string_value` as YAML against the resolved port type, so the
+    # double goes over the wire as text regardless of `description.type`.
+    override.string_value = value
+    override.behavior_namespaces = [namespace]
+    return override
+
+
+def _run_objective_with_overrides(
+    objective_id: str,
+    overrides: list[tuple[str, str]],
+    resource: ExecuteObjectiveResource,
+    objective_wait_time: float,
+) -> None:
+    """Execute an objective with parameter overrides and assert it succeeds.
+
+    ``run_objective`` does not expose ``parameter_overrides``, so this mirrors its
+    non-cancel branch. Keep the assertions in step with it.
+    """
+    objective_xml, subtree_id = OVERRIDE_SUBTREE_BY_ID[objective_id]
+    namespace = _subtree_instance_name(objective_xml, subtree_id)
+    request = ExecuteObjective.Request()
+    request.objective_name = objective_id
+    request.parameter_overrides = [
+        _double_override(namespace, name, value) for name, value in overrides
+    ]
+    future = resource.call_execute_objective_async(request)
+    response = resource.spin_until_future_complete(
+        future, timeout_sec=objective_wait_time
+    )
+    if response is None:
+        pytest.fail(
+            f"Objective '{objective_id}' did not return within "
+            f"{objective_wait_time:.1f}s."
+        )
+    assert response.error_code.val == MoveItErrorCodes.SUCCESS, (
+        f"Objective '{objective_id}' returned error_code "
+        f"{response.error_code.val}: '{response.error_code.message}'. "
+        f"The override namespace was resolved from the shipped Objective XML and "
+        f"the port name is checked by the server, so this is the tree itself "
+        f"failing. Check the log for the cold-boot branch first: if the opening "
+        f"transform read lost map -> ridgeback_base_link, the tree reports an "
+        f"unseeded filter with no UI attached and fails there, which means the "
+        f"localized_robot fixture's seed did not survive, not that the refinement "
+        f"regressed. Otherwise, with the fit-to-map gate report-only for this run, "
+        f"suspect the seed, the forced no-motion loop, or the drift gate."
+    )
+
 
 # Action servers the hangar_sim tree types need before any objective runs.
 # hangar_sim drives a vacuum gripper through ros2_control's
@@ -252,6 +399,108 @@ def wait_for_controllers_loaded(
         )
     finally:
         node.destroy_client(client)
+
+
+# --- Localization seed ---
+#
+# AMCL runs with ``set_initial_pose: false`` (see params/nav2_params.yaml), because
+# a robot does not power on at a known pose. In production an operator supplies the
+# seed by running the "Localize Robot" Objective and clicking on the map; headless
+# CI has nobody to click, so this fixture does the same thing programmatically.
+#
+# This is not only about the navigation Objectives, which CI skips anyway. AMCL's
+# map -> odom transform is the ONLY link between the MuJoCo scene frames (cameras
+# under mj_world -> map) and MoveIt's planning frame (world under odom). With the
+# filter unseeded that edge never appears, the TF tree is in two pieces, and every
+# point-cloud Objective in the suite fails its transform.
+#
+# The pose comes from nav2_params.yaml's ``initial_pose`` block rather than being
+# repeated here, so the spawn pose has one home. The spreads match what "Localize
+# Robot" seeds with, so CI exercises the same filter state an operator would get.
+_NAV2_PARAMS_PATH = Path(__file__).parent.parent / "params" / "nav2_params.yaml"
+INITIAL_POSE_TOPIC = "/initialpose"
+LOCALIZATION_SEED_TIMEOUT_S = 180.0
+SEED_XY_STD_DEV = 0.5
+SEED_YAW_STD_DEV = 0.26
+MAP_FRAME = "map"
+ODOM_FRAME = "odom"
+
+
+def _spawn_pose_from_nav2_params() -> tuple[float, float, float]:
+    """Read the recorded spawn pose (x, y, yaw) from nav2_params.yaml."""
+    with _NAV2_PARAMS_PATH.open("r", encoding="utf-8") as params_file:
+        initial_pose = yaml.safe_load(params_file)["amcl"]["ros__parameters"][
+            "initial_pose"
+        ]
+    return (
+        float(initial_pose["x"]),
+        float(initial_pose["y"]),
+        float(initial_pose["yaw"]),
+    )
+
+
+@pytest.fixture(scope="module", autouse=True)
+def localized_robot(
+    execute_objective_resource: ExecuteObjectiveResource,
+) -> None:
+    """Seed the particle filter and block until the seed has actually been taken up.
+
+    Defined after ``wait_for_controllers_loaded`` and before ``wait_for_robot_tf``
+    on purpose: pytest runs module-scoped autouse fixtures in definition order, and
+    every later fixture and Objective that resolves a frame across the
+    mj_world/world boundary needs this edge to mean something first. Keep it here.
+
+    The seed is republished on a slow retry rather than sent once. AMCL subscribes
+    to /initialpose with volatile QoS, so a message published before its
+    subscription is matched is dropped with no error anywhere.
+
+    Waiting for the edge to exist IS the evidence the seed was consumed. Measured in
+    simulation: with ``set_initial_pose: false`` beluga reports lifecycle state ACTIVE,
+    consumes hundreds of ``/scan_merged`` messages, and still publishes zero
+    ``/amcl_pose`` while ``map -> odom`` raises ConnectivityException. The edge appears
+    only once a seed has been taken up, so ``can_transform`` cannot succeed early.
+    (Beluga's binary carries a "distributed across the map" initialisation string that
+    reads like it would publish from an unconverged startup cloud. It does not do that
+    here -- reading the strings gave the opposite answer to running it.)
+    """
+    node = execute_objective_resource.node
+    x, y, yaw = _spawn_pose_from_nav2_params()
+
+    seed = PoseWithCovarianceStamped()
+    seed.header.frame_id = MAP_FRAME
+    seed.pose.pose.position.x = x
+    seed.pose.pose.position.y = y
+    seed.pose.pose.orientation.z = math.sin(yaw / 2.0)
+    seed.pose.pose.orientation.w = math.cos(yaw / 2.0)
+    seed.pose.covariance[0] = SEED_XY_STD_DEV**2
+    seed.pose.covariance[7] = SEED_XY_STD_DEV**2
+    seed.pose.covariance[35] = SEED_YAW_STD_DEV**2
+
+    publisher = node.create_publisher(PoseWithCovarianceStamped, INITIAL_POSE_TOPIC, 1)
+    buffer = tf2_ros.Buffer()
+    # spin_thread=False to match the other fixtures' single-threaded spin model.
+    tf2_ros.TransformListener(buffer, node, spin_thread=False)
+
+    deadline = time.monotonic() + LOCALIZATION_SEED_TIMEOUT_S
+    next_publish = 0.0
+    try:
+        while time.monotonic() < deadline:
+            if time.monotonic() >= next_publish:
+                seed.header.stamp = node.get_clock().now().to_msg()
+                publisher.publish(seed)
+                next_publish = time.monotonic() + 2.0
+            rclpy.spin_once(node, timeout_sec=0.1)
+            if buffer.can_transform(MAP_FRAME, ODOM_FRAME, Time()):
+                return
+        pytest.fail(
+            f"{MAP_FRAME} -> {ODOM_FRAME} never appeared within "
+            f"{LOCALIZATION_SEED_TIMEOUT_S:.1f}s after seeding {INITIAL_POSE_TOPIC}, so the "
+            "filter never took up the seed. Without that edge the MuJoCo scene frames and "
+            "MoveIt's planning frame are in separate TF trees and every point-cloud "
+            "Objective fails its transform."
+        )
+    finally:
+        node.destroy_publisher(publisher)
 
 
 # Fixed and end-effector frames the Cartesian objectives visualize and plan
@@ -434,6 +683,15 @@ def test_all_objectives(
     expected_end_state_by_id = _expected_end_state_by_id(
         objective_id, execute_objective_resource
     )
+    overrides = REPORT_ONLY_GATE_OVERRIDES.get(objective_id)
+    if overrides is not None and not should_cancel:
+        _run_objective_with_overrides(
+            objective_id,
+            overrides,
+            execute_objective_resource,
+            EXECUTE_TIMEOUT_OVERRIDES_S.get(objective_id, DEFAULT_OBJECTIVE_WAIT_S),
+        )
+        return
     try:
         run_objective(
             objective_id,
