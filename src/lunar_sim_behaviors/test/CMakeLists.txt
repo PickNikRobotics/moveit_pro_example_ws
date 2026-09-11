@@ -6,3 +6,6 @@ ament_target_dependencies(test_behavior_plugins ${THIS_PACKAGE_INCLUDE_DEPENDS})
 ament_add_gtest(test_teleoperate_base_twist_mapping test_teleoperate_base_twist_mapping.cpp)
 target_link_libraries(test_teleoperate_base_twist_mapping lunar_sim_behaviors)
 ament_target_dependencies(test_teleoperate_base_twist_mapping ${THIS_PACKAGE_INCLUDE_DEPENDS})
+
+ament_add_gtest(test_teleoperate_base_ros test_teleoperate_base_ros.cpp)
+ament_target_dependencies(test_teleoperate_base_ros ${THIS_PACKAGE_INCLUDE_DEPENDS})
