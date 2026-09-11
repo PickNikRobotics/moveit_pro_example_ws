@@ -34,14 +34,14 @@ at run time with
   AddBottlesToPlanningScene
 - hangar_sim: Segment Image from Text Prompt, ML Move Boxes to Loading Zone,
   Move Boxes Looping
-- dual_arm_sim: Sort Blocks, Find Red Block, Find Green Block
 
 To restore them, build a ROS package that installs CLIP and CLIPSeg ONNX models
 to `share/<your_package>/models/` and set `model_package` (and the
 `clip_model_path` / `clipseg_model_path` ports) on those Objectives to point at
 it. To move off CLIPSeg entirely, see the SAM3 equivalents in `lab_sim`
-(`ML Find Objects on Table`, `ML Segment Bottles from File`) and MoveIt Pro
-10.0, where these Objectives were migrated to `GetMasks2DFromExemplar`.
+(`ML Find Objects on Table`, `ML Segment Bottles from File`), `dual_arm_sim`
+(`Find Red Block`, `Find Green Block`, `Sort Blocks`), and MoveIt Pro 10.0,
+where these Objectives were migrated to `GetMasks2DFromExemplar`.
 
 ## Robot Configs
 
