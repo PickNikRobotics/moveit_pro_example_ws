@@ -64,6 +64,7 @@ import hmac
 import json
 import math
 import os
+import shutil
 import threading
 import time
 import traceback
@@ -74,12 +75,22 @@ import cv2
 import numpy as np
 import torch
 import yaml
-from huggingface_hub import hf_hub_download
+from huggingface_hub import hf_hub_download, snapshot_download
 from huggingface_hub.errors import GatedRepoError, RepositoryNotFoundError
+from safetensors import safe_open
+from safetensors.torch import load_file, save_file
 
+from lerobot.configs.policies import PreTrainedConfig
 from lerobot.configs.types import RTCAttentionSchedule
 from lerobot.policies.factory import get_policy_class, make_pre_post_processors
 from lerobot.policies.rtc.configuration_rtc import RTCConfig
+
+import torchao
+from torchao.prototype.safetensors.safetensors_support import (
+    flatten_tensor_state_dict,
+    unflatten_tensor_state_dict,
+)
+from torchao.quantization import Int8Tensor, Int8WeightOnlyConfig, quantize_
 
 # pi0.5 checkpoints save a processor pipeline that references
 # 'relative_actions_processor', an alias lerobot does not always auto-register;
@@ -110,6 +121,24 @@ REQUEST_SOCKET_TIMEOUT_SECONDS = 30
 # The per-config model-serving YAML, mounted read-only from the workspace's
 # src/vla_sim/config/. Overridable with --config for a standalone `docker run`.
 DEFAULT_CONFIG_PATH = "/vla_config/vla_serving.yaml"
+
+# The two modules int8 quantizes, named by prefix. Both run once per chunk and
+# hand the action expert a cache, so they sit the far side of the model from the
+# commands.
+INT8_MODULE_PREFIXES = (
+    "paligemma.model.language_model",
+    "paligemma.model.vision_tower",
+)
+
+# The weights file every LeRobot checkpoint carries, and the two metadata keys
+# quantize_checkpoint.py adds to one it has already quantized. A quantized file
+# holds torchao tensor subclasses under names of its own, so the marker is what
+# keeps it from reaching a loader that would take it for an ordinary checkpoint;
+# the torchao version travels with it because the format is a prototype.
+MODEL_WEIGHTS_FILE = "model.safetensors"
+QUANTIZATION_KEY = "vla_quantization"
+TORCHAO_VERSION_KEY = "vla_torchao_version"
+INT8_MARKER = "int8"
 
 
 def load_serving_config(path: str) -> dict:
@@ -313,13 +342,222 @@ def request_camera_names(slot_keys: list, native_map: dict) -> list:
     return [slot_to_native.get(slot, slot) for slot in slot_keys]
 
 
+def trim_vocabulary_heads(model) -> None:
+    """Drop pi0.5's two vocabulary heads, weights no chunk ever reads.
+
+    Actions leave through action_out_proj, so nothing between an observation and
+    a chunk reaches either head. This also decides the shape a quantized
+    checkpoint is written in, which is why the load path runs it on the skeleton
+    before handing it that checkpoint's tensors.
+    """
+    model.paligemma_with_expert.paligemma.lm_head = None
+    model.paligemma_with_expert.gemma_expert.lm_head = None
+
+
+def quantize_int8(model) -> None:
+    """Hold the language backbone and the vision tower at eight bits, in place."""
+    # version=2 gives each output channel its own scale rather than one for the
+    # whole tensor. Inductor's config is declined because it turns on TF32 for
+    # every float32 matmul in the process.
+    quantize_(
+        model.paligemma_with_expert,
+        Int8WeightOnlyConfig(version=2, set_inductor_config=False),
+        filter_fn=lambda module, name: (
+            isinstance(module, torch.nn.Linear)
+            and name.startswith(INT8_MODULE_PREFIXES)
+        ),
+    )
+
+
+def resolve_weights_file(checkpoint: str) -> str:
+    """The local path to a checkpoint's model.safetensors, fetching it for a hub id.
+
+    A hub fetch lands in the same cache lerobot's own load reads from, so asking
+    for the file here costs a lookup rather than a second copy of it. A local
+    directory that has no such file returns "", leaving the complaint to
+    lerobot's own load, which names what it wanted; the alternative is this
+    asking the hub for a repo named after a local path.
+    """
+    path = Path(checkpoint).expanduser()
+    if path.is_dir():
+        local = path / MODEL_WEIGHTS_FILE
+        return str(local) if local.is_file() else ""
+    return hf_hub_download(repo_id=checkpoint, filename=MODEL_WEIGHTS_FILE)
+
+
+def read_weights_metadata(weights_file: str) -> dict:
+    """A safetensors file's metadata header, read without its tensors."""
+    with safe_open(weights_file, framework="pt") as weights:
+        return weights.metadata() or {}
+
+
+def read_quantization(weights_file: str) -> str:
+    """The quantization a weights file declares, or "" for an ordinary one."""
+    return read_weights_metadata(weights_file).get(QUANTIZATION_KEY, "")
+
+
+def resolve_quantization(weights_file: str) -> str:
+    """The quantization this server will load a weights file at.
+
+    INT8_MARKER for a pre-quantized checkpoint, "" for an ordinary full-width
+    one. Anything else raises here, rather than reaching a loader that fails
+    much later and deep inside torch on names from a format it cannot read.
+    """
+    declared = read_quantization(weights_file)
+    if declared and declared != INT8_MARKER:
+        raise ValueError(
+            f"'{weights_file}' declares {QUANTIZATION_KEY} '{declared}', which "
+            f"this server cannot load: it reads '{INT8_MARKER}' and ordinary "
+            f"full-width checkpoints. Serve the full-width checkpoint this was "
+            f"written from, or use an image that knows '{declared}'"
+        )
+    return declared
+
+
+def load_full_policy(checkpoint: str, policy_type: str, policy_config, int8: bool):
+    """Load a full-width checkpoint on the cpu, trimmed and quantized if asked.
+
+    The server and quantize_checkpoint.py both reach their weights through here,
+    which is what makes a written checkpoint the one the server would otherwise
+    have built for itself at load time.
+
+    An already-quantized checkpoint is refused rather than read: lerobot reports
+    a state-dict mismatch and carries on, leaving every weight at the value the
+    constructor gave it, and quantizing those writes a checkpoint of the right
+    size and shape holding nothing that was ever trained.
+    """
+    weights_file = resolve_weights_file(checkpoint)
+    if weights_file and resolve_quantization(weights_file):
+        raise ValueError(
+            f"'{checkpoint}' already carries {INT8_MARKER} weights, which this "
+            f"path cannot read. Serve it as it is, or start again from the "
+            f"full-width checkpoint it was written from"
+        )
+    policy = get_policy_class(policy_type).from_pretrained(
+        checkpoint, config=policy_config
+    )
+    if policy_type == "pi05":
+        trim_vocabulary_heads(policy.model)
+        if int8:
+            quantize_int8(policy.model)
+    return policy
+
+
+def assign_quantized_weights(module, weights_file: str) -> None:
+    """Hand a quantized weights file's own tensors to a full-width skeleton.
+
+    The tensors are assigned rather than copied (assign=True), which is what
+    lets an int8 weight stay int8: a copy has to match the dtype the skeleton
+    was built with, and would quietly undo the quantization.
+    """
+    metadata = read_weights_metadata(weights_file)
+    state_dict, leftover = unflatten_tensor_state_dict(
+        load_file(weights_file), metadata
+    )
+    if leftover:
+        raise ValueError(
+            f"'{weights_file}' carries {len(leftover)} tensor(s) its metadata "
+            f"does not account for, starting with '{sorted(leftover)[0]}'. It "
+            f"names torchao {metadata.get(TORCHAO_VERSION_KEY, '(none)')} and "
+            f"this image has {torchao.__version__}, which is the likeliest "
+            f"reason; write the checkpoint again with this image to be sure"
+        )
+    module.load_state_dict(state_dict, assign=True, strict=True)
+
+
+def load_quantized_policy(policy_type: str, policy_config, weights_file: str):
+    """Build a policy around an already-quantized checkpoint's own tensors.
+
+    Six small buffers (rope frequencies, vision position ids, an embedding
+    scale) are non-persistent, so no checkpoint carries them and constructing
+    the skeleton is what supplies them.
+    """
+    if policy_type != "pi05":
+        raise ValueError(
+            f"'{weights_file}' is a quantized checkpoint, which only pi0.5 "
+            f"writes, but the checkpoint declares policy type '{policy_type}'"
+        )
+    policy = get_policy_class(policy_type)(policy_config)
+    # Nothing here is trained, and the skeleton is built with gradients on, so
+    # this holds autograd off the assigned tensors once instead of at every
+    # later call site.
+    policy.requires_grad_(False)
+    trim_vocabulary_heads(policy.model)
+    assign_quantized_weights(policy, weights_file)
+    return policy
+
+
+def save_quantized_checkpoint(policy, source_checkpoint: str, out_dir: str) -> list:
+    """Write a loaded policy out as a checkpoint of the size it is now.
+
+    torchao's flattening takes each quantized tensor apart into the plain
+    tensors safetensors can hold, plus the metadata to put it back together.
+    Everything else the source carries is copied across untouched: the
+    processors are read from the same directory as the weights, and without them
+    the checkpoint loads into a policy that cannot normalize an observation.
+
+    It is written beside the destination and moved into place at the end, so an
+    interrupted run leaves no half-checkpoint under the name a config points at.
+    """
+    out = Path(out_dir)
+    if out.exists():
+        raise FileExistsError(f"'{out}' already exists; move it aside first")
+
+    state_dict = policy.state_dict()
+    if not any(isinstance(tensor, Int8Tensor) for tensor in state_dict.values()):
+        raise ValueError(
+            f"writing '{out}' would mark full-width weights as {INT8_MARKER}, "
+            f"which is what the server reads to decide how to load them; "
+            f"quantize the policy first"
+        )
+
+    staging = out.with_name(out.name + ".partial")
+    if staging.exists():
+        shutil.rmtree(staging)
+    staging.mkdir(parents=True)
+    # A checkpoint is written once to be served many times, by whichever user
+    # the container runs as, and neither way a file arrives here lands readable
+    # on its own: safetensors writes 0600 whatever the umask is, and a copy
+    # carries the mode of whatever wrote the source.
+    staging.chmod(0o755)
+
+    tensors, metadata = flatten_tensor_state_dict(state_dict)
+    metadata[QUANTIZATION_KEY] = INT8_MARKER
+    metadata[TORCHAO_VERSION_KEY] = torchao.__version__
+    save_file(tensors, str(staging / MODEL_WEIGHTS_FILE), metadata=metadata)
+
+    source = Path(source_checkpoint).expanduser()
+    if not source.is_dir():
+        source = Path(
+            snapshot_download(
+                repo_id=source_checkpoint, ignore_patterns=[MODEL_WEIGHTS_FILE]
+            )
+        )
+    copied = []
+    for path in sorted(source.iterdir()):
+        if path.name == MODEL_WEIGHTS_FILE:
+            continue
+        if path.is_dir():
+            shutil.copytree(path, staging / path.name)
+        else:
+            shutil.copy(path, staging / path.name)
+        copied.append(path.name)
+    for path in staging.rglob("*"):
+        path.chmod(0o755 if path.is_dir() else 0o644)
+
+    staging.rename(out)
+    return copied
+
+
 class PolicyRunner:
     """Owns the loaded policy and serializes inference calls.
 
     Loading passes policy_cfg by keyword and overrides the device on both
     processors, which merged pi0.5 checkpoints need: their config declares a
     padded 32-dim state while the saved normalizer stats carry the trained
-    width.
+    width. It loads on the cpu, trims pi0.5's unused vocabulary heads and
+    quantizes when asked, before moving to the serving device. A checkpoint that
+    was quantized ahead of time skips both steps and is loaded as written.
     """
 
     def __init__(
@@ -330,6 +568,7 @@ class PolicyRunner:
         guidance_horizon: int,
         rtc_schedule: str,
         state_dim: int,
+        int8: bool = False,
     ):
         self.device = device
         self.state_dim = state_dim
@@ -339,9 +578,30 @@ class PolicyRunner:
         # Resolve before the slow checkpoint load so a schedule typo fails fast.
         schedule = resolve_rtc_schedule(rtc_schedule)
 
-        self.policy = get_policy_class(policy_type).from_pretrained(checkpoint)
+        # Loaded on the cpu and moved once the trimming below has run: building on
+        # the gpu first would peak at the untrimmed size, which is the size this is
+        # here to stay under.
+        policy_config = PreTrainedConfig.from_pretrained(checkpoint)
+        policy_config.device = "cpu"
+        weights_file = resolve_weights_file(checkpoint)
+        prequantized = (
+            bool(weights_file) and resolve_quantization(weights_file) == INT8_MARKER
+        )
+        if prequantized:
+            log(f"checkpoint carries {INT8_MARKER} weights; loading them as they are")
+            self.policy = load_quantized_policy(
+                policy_type, policy_config, weights_file
+            )
+        else:
+            if int8 and policy_type == "pi05":
+                log("quantizing the language backbone and vision tower to int8")
+            self.policy = load_full_policy(checkpoint, policy_type, policy_config, int8)
         self.policy.to(device)
+        # The config named the load device, and something downstream reading it
+        # would otherwise be told the weights are still on the host.
+        policy_config.device = device
         self.policy.eval()
+        self.int8 = prequantized or (int8 and policy_type == "pi05")
 
         # infer() passes the horizon per call on every RTC request, so the
         # config's own execution_horizon never applies; only the enable and
@@ -523,6 +783,9 @@ def load_policy(state: ServerState, args: argparse.Namespace) -> None:
                 f"WARNING: policy family '{policy_type}' is untested with this "
                 f"server (tested: {', '.join(TESTED_POLICY_TYPES)}); loading best-effort"
             )
+        # Which width actually gets served depends on what the checkpoint
+        # carries, which is not known until it is opened, so PolicyRunner is
+        # what reports it rather than this line.
         log(
             f"loading {policy_type} checkpoint '{args.checkpoint}' on '{device}' "
             f"(torch {torch.__version__}) ..."
@@ -534,6 +797,7 @@ def load_policy(state: ServerState, args: argparse.Namespace) -> None:
             args.guidance_horizon,
             args.rtc_schedule,
             args.state_dim,
+            args.int8,
         )
 
         image_features = [
@@ -719,6 +983,7 @@ def make_handler(state: ServerState):
                 health["detail"] = state.detail
             elif state.status == "ready":
                 health["device"] = state.runner.device
+                health["int8"] = state.runner.int8
             self._send(200, health)
 
         def _authorized(self) -> bool:
@@ -826,6 +1091,16 @@ def parse_args() -> argparse.Namespace:
             config_errors.append(f"{name}: '{value}' is not a number")
             return builtin
 
+    def flag_default(name: str, builtin: bool):
+        # Parks the same way a bad number does. bool() would take any non-empty
+        # string as True, so a quoted `int8: "false"` would serve the opposite of
+        # what the operator wrote.
+        value = resolve_default(config.get(name), builtin)
+        if isinstance(value, bool):
+            return value
+        config_errors.append(f"{name}: '{value}' is not true or false")
+        return builtin
+
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--config",
@@ -855,6 +1130,13 @@ def parse_args() -> argparse.Namespace:
         "--device",
         default=str(resolve_default(config.get("device"), "auto")),
         help="torch device: auto | cpu | cuda",
+    )
+    parser.add_argument(
+        "--int8",
+        action=argparse.BooleanOptionalAction,
+        default=flag_default("int8", False),
+        help="hold the pi0.5 backbone and vision tower at eight bits; "
+        "other policy families are unaffected",
     )
     parser.add_argument("--port", type=int, default=8973)
     parser.add_argument(

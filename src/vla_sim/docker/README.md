@@ -22,6 +22,23 @@ The first run builds the image and downloads the checkpoint into `../hf_cache/`;
 later runs reuse both. Then run **Stack Cubes with the VLA Policy** in the web
 UI, and **Reset MuJoCo Sim** between attempts.
 
+Only a *missing* image is built that way, and `moveit_pro build` skips this
+service because its compose profile is off by default, so nothing rebuilds the
+image when this directory changes. The scripts here are mounted rather than read
+from the image, so one that needs a package the existing image predates fails at
+import. After editing the Dockerfile or its pinned versions, drop the image and
+let the next run build it:
+
+```bash
+moveit_pro down
+docker rmi moveit_pro-inference_server:latest
+```
+
+Compose names the image after its project and this service, so the tag above is
+what the launcher builds; `docker images` confirms it. `moveit_pro down` first
+because Docker refuses to remove an image a container still references, and a
+stopped container counts.
+
 Model loading takes a minute or more. To keep the model warm across restarts of
 the stack, run the server on its own in one terminal and the stack, without
 `--with-inference-server`, in another:
@@ -41,6 +58,38 @@ Serving a different checkpoint also takes two edits in
 `../objectives/stack_cubes_with_the_vla_policy.xml`, because the request has to
 match what the checkpoint was trained on: set `image_names` to its camera names,
 which the server rejects the request for if they differ, and set `dt` to 1/`fps`.
+
+## Quantized checkpoints
+
+`int8: true` quantizes on every load, from a checkpoint whose full-width weights
+have to be downloaded and held first. `quantize_checkpoint.py` does it once and
+writes the result as a checkpoint of its own, a little over half the size.
+
+It runs in the server's image but not in the running container, which mounts
+`/models` read-only. From the workspace root:
+
+```bash
+docker run --rm --entrypoint python \
+  --user "$(id -u):$(id -g)" \
+  -v "$PWD/src/vla_sim/docker:/app:ro" \
+  -v "$PWD/src/vla_sim/models:/models" \
+  -v "$PWD/src/vla_sim/hf_cache:/hf" \
+  -e HF_HOME=/hf -e HF_TOKEN="$HF_TOKEN" -e HOME=/tmp -e USER=vla \
+  moveit_pro-inference_server:latest \
+  quantize_checkpoint.py \
+    --checkpoint PickNikRobotics/pi05_kinova_gen3_cube_stack_sim \
+    --out /models/pi05_kinova_gen3_cube_stack_sim_int8
+```
+
+`/models` is `../models/`, so serving the result is a matter of pointing the
+`vla_serving.yaml` checkpoint at the directory it wrote. The server reads what
+the weights file says it is, so `int8` no longer applies to that checkpoint, and
+`/health` reports `int8` either way.
+
+The weights are torchao tensor subclasses in a prototype format, so only this
+server reads them, and only against the torchao the image pins; the file records
+the version that wrote it. Keep the source checkpoint, since the quantized one
+can always be written again from it.
 
 ## Environment
 

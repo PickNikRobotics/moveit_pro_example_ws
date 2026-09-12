@@ -52,23 +52,43 @@ import yaml
 from lerobot.configs.types import RTCAttentionSchedule
 from lerobot.processor import RenameObservationsProcessorStep
 
+from safetensors import safe_open
+from safetensors.torch import load_file, save_file
+import torchao
+from torchao.prototype.safetensors.safetensors_support import (
+    flatten_tensor_state_dict,
+    unflatten_tensor_state_dict,
+)
+from torchao.quantization import Int8Tensor, Int8WeightOnlyConfig, quantize_
+
 from vla_inference_server import (
+    INT8_MARKER,
+    MODEL_WEIGHTS_FILE,
+    QUANTIZATION_KEY,
     REQUEST_SOCKET_TIMEOUT_SECONDS,
+    TORCHAO_VERSION_KEY,
     ServerState,
     apply_frontend_key,
+    assign_quantized_weights,
     decode_image_b64,
     hub_access_error_message,
+    load_full_policy,
     load_policy,
     load_serving_config,
     make_handler,
     native_camera_map,
     parse_args,
+    read_quantization,
+    read_weights_metadata,
     request_camera_names,
     resolve_default,
     resolve_device,
     resolve_fps,
+    resolve_quantization,
     resolve_rtc_horizon,
     resolve_rtc_schedule,
+    resolve_weights_file,
+    save_quantized_checkpoint,
 )
 
 
@@ -209,6 +229,361 @@ class TestParseArgsCoercion(unittest.TestCase):
         self.assertIn("state_dim", args.config_error)
         self.assertEqual(args.fps, 0.0)
         self.assertEqual(args.state_dim, 0)
+
+    def test_non_boolean_int8_parks_in_config_error(self) -> None:
+        """A quoted or misspelled int8 lands in config_error with the flag off.
+        Coercing it with bool() would read every non-empty string as true, so the
+        server would quantize the policy the operator asked to leave alone."""
+        # GIVEN a serving config whose int8 is a string rather than a boolean
+        with tempfile.NamedTemporaryFile("w", suffix=".yaml", delete=False) as f:
+            f.write('int8: "false"\n')
+            path = f.name
+        try:
+            # WHEN parsing arguments against that config
+            with patch("sys.argv", ["vla_inference_server.py", "--config", path]):
+                args = parse_args()
+        finally:
+            os.unlink(path)
+
+        # THEN the value is reported and the flag stays off
+        self.assertIn("int8", args.config_error)
+        self.assertFalse(args.int8)
+
+    def test_boolean_int8_is_honored(self) -> None:
+        """A real YAML boolean reaches the flag, so the knob works as documented."""
+        # GIVEN a serving config asking for int8
+        with tempfile.NamedTemporaryFile("w", suffix=".yaml", delete=False) as f:
+            f.write("int8: true\n")
+            path = f.name
+        try:
+            # WHEN parsing arguments against that config
+            with patch("sys.argv", ["vla_inference_server.py", "--config", path]):
+                args = parse_args()
+        finally:
+            os.unlink(path)
+
+        # THEN the flag is on and nothing is reported
+        self.assertTrue(args.int8)
+        self.assertEqual(args.config_error, "")
+
+
+class TestReadQuantization(unittest.TestCase):
+    """read_quantization: the marker that decides which loader a file goes to.
+
+    An ordinary checkpoint and a quantized one are both model.safetensors, and
+    handing the second to the loader written for the first fails deep inside
+    torch on a name it does not recognize. The marker is read before either
+    loader runs.
+    """
+
+    def test_ordinary_weights_declare_nothing(self) -> None:
+        """A file written without our metadata reads as unquantized, not as unknown."""
+        # GIVEN a weights file saved the way lerobot saves one
+        with tempfile.TemporaryDirectory() as directory:
+            path = os.path.join(directory, MODEL_WEIGHTS_FILE)
+            save_file({"weight": torch.zeros(2, 2)}, path)
+
+            # WHEN its quantization is read
+            # THEN it declares none
+            self.assertEqual(read_quantization(path), "")
+
+    def test_marked_weights_declare_int8(self) -> None:
+        """The marker survives the round trip through safetensors' metadata."""
+        # GIVEN a weights file carrying the marker
+        with tempfile.TemporaryDirectory() as directory:
+            path = os.path.join(directory, MODEL_WEIGHTS_FILE)
+            save_file(
+                {"weight": torch.zeros(2, 2)},
+                path,
+                metadata={QUANTIZATION_KEY: INT8_MARKER},
+            )
+
+            # WHEN its quantization is read
+            # THEN it is the one that was written
+            self.assertEqual(read_quantization(path), INT8_MARKER)
+
+    def test_unquantized_weights_resolve_to_the_ordinary_loader(self) -> None:
+        """Declaring nothing resolves to "", which is the full-width path."""
+        # GIVEN a weights file saved the way lerobot saves one
+        with tempfile.TemporaryDirectory() as directory:
+            path = os.path.join(directory, MODEL_WEIGHTS_FILE)
+            save_file({"weight": torch.zeros(2, 2)}, path)
+
+            # WHEN the loader to use is resolved
+            # THEN it is the ordinary one
+            self.assertEqual(resolve_quantization(path), "")
+
+    def test_an_unreadable_quantization_is_refused(self) -> None:
+        """A marker this server does not know raises instead of falling through.
+
+        Falling through hands a file in some other format to the full-width
+        loader, which fails much later and deep inside torch. The marker exists
+        to route the file, so an unroutable one is an error here.
+        """
+        # GIVEN a weights file declaring a quantization this server cannot read
+        with tempfile.TemporaryDirectory() as directory:
+            path = os.path.join(directory, MODEL_WEIGHTS_FILE)
+            save_file(
+                {"weight": torch.zeros(2, 2)},
+                path,
+                metadata={QUANTIZATION_KEY: "int4"},
+            )
+
+            # WHEN the loader to use is resolved
+            with self.assertRaises(ValueError) as caught:
+                resolve_quantization(path)
+
+            # THEN the error names what was declared and what is readable
+            message = str(caught.exception)
+            self.assertIn("int4", message)
+            self.assertIn(INT8_MARKER, message)
+
+    def test_local_checkpoint_resolves_without_the_hub(self) -> None:
+        """A local directory resolves to its own file, so an offline host still loads."""
+        # GIVEN a checkpoint directory on disk
+        with tempfile.TemporaryDirectory() as directory:
+            path = os.path.join(directory, MODEL_WEIGHTS_FILE)
+            save_file({"weight": torch.zeros(2, 2)}, path)
+
+            # WHEN the weights file is resolved from the directory
+            # THEN it is that file, with no hub lookup
+            self.assertEqual(resolve_weights_file(directory), path)
+
+    def test_directory_without_weights_resolves_to_nothing(self) -> None:
+        """A directory missing its weights file defers, rather than asking the hub.
+
+        Treating the path as a repo id gets an HF validation error about
+        alphanumeric characters, where lerobot's own load names the file it
+        could not find.
+        """
+        # GIVEN a checkpoint directory with no weights in it
+        with tempfile.TemporaryDirectory() as directory:
+            # WHEN the weights file is resolved from it
+            # THEN nothing is resolved and nothing is fetched
+            self.assertEqual(resolve_weights_file(directory), "")
+
+
+class TestQuantizedRoundTrip(unittest.TestCase):
+    """Saving quantized weights and loading them back into a fresh model.
+
+    Two assumptions the pre-quantized checkpoint rests on, neither of them
+    obvious: torchao's flattening is a prototype API, and assign=True is what
+    keeps an int8 weight int8, where an ordinary load would copy it into the
+    skeleton's own full-width tensor and quietly undo the quantization. Two
+    small linear layers exercise both in milliseconds, where a real pi0.5
+    checkpoint costs minutes.
+    """
+
+    @staticmethod
+    def build_model() -> torch.nn.Module:
+        torch.manual_seed(0)
+        return torch.nn.Sequential(torch.nn.Linear(64, 32), torch.nn.Linear(32, 8))
+
+    @staticmethod
+    def build_quantized() -> torch.nn.Module:
+        model = TestQuantizedRoundTrip.build_model()
+        quantize_(model, Int8WeightOnlyConfig(version=2, set_inductor_config=False))
+        return model
+
+    @staticmethod
+    def write_source(directory: str) -> str:
+        """A source checkpoint: full-width weights plus the sidecars beside them."""
+        source = os.path.join(directory, "source")
+        os.makedirs(source)
+        for name in ("config.json", "policy_preprocessor.json"):
+            with open(os.path.join(source, name), "w") as f:
+                f.write("{}")
+        save_file({"old": torch.ones(9, 9)}, os.path.join(source, MODEL_WEIGHTS_FILE))
+        return source
+
+    def test_int8_weights_survive_save_and_load(self) -> None:
+        """The loaded model is still quantized and answers exactly as the saved one did."""
+        # GIVEN a quantized model and what it makes of a fixed input
+        model = self.build_quantized()
+        sample = torch.randn(4, 64)
+        with torch.no_grad():
+            expected = model(sample)
+
+        with tempfile.TemporaryDirectory() as directory:
+            source = self.write_source(directory)
+            out = os.path.join(directory, "out")
+
+            # WHEN it is written out and read back into a full-width skeleton
+            save_quantized_checkpoint(model, source, out)
+            skeleton = self.build_model()
+            skeleton.requires_grad_(False)
+            assign_quantized_weights(skeleton, os.path.join(out, MODEL_WEIGHTS_FILE))
+
+            # THEN the weights are still int8, and the answers are unchanged
+            self.assertIsInstance(skeleton[0].weight, Int8Tensor)
+            self.assertEqual(skeleton[0].weight.qdata.dtype, torch.int8)
+            with torch.no_grad():
+                self.assertTrue(torch.equal(skeleton(sample), expected))
+
+    def test_copying_weights_instead_of_assigning_them_is_refused(self) -> None:
+        """An ordinary load raises rather than quietly dequantizing.
+
+        assign=True is the whole mechanism, so what happens without it is worth
+        pinning: the failure is loud, not a model that silently serves at full
+        width.
+        """
+        with tempfile.TemporaryDirectory() as directory:
+            # GIVEN a written quantized checkpoint
+            out = os.path.join(directory, "out")
+            save_quantized_checkpoint(
+                self.build_quantized(), self.write_source(directory), out
+            )
+            written = os.path.join(out, MODEL_WEIGHTS_FILE)
+            state_dict, _ = unflatten_tensor_state_dict(
+                load_file(written), read_weights_metadata(written)
+            )
+
+            # WHEN its tensors are copied into a skeleton rather than assigned
+            # THEN the load fails
+            skeleton = self.build_model()
+            with self.assertRaises(Exception):
+                skeleton.load_state_dict(state_dict, assign=False, strict=True)
+
+    def test_tensors_the_metadata_misses_name_the_torchao_versions(self) -> None:
+        """A file whose metadata does not cover its tensors fails with both versions."""
+        with tempfile.TemporaryDirectory() as directory:
+            # GIVEN a weights file carrying a tensor its metadata omits
+            model = self.build_quantized()
+            tensors, metadata = flatten_tensor_state_dict(model.state_dict())
+            tensors["unaccounted"] = torch.zeros(2, 2)
+            metadata[TORCHAO_VERSION_KEY] = "0.0.1"
+            path = os.path.join(directory, MODEL_WEIGHTS_FILE)
+            save_file(tensors, path, metadata=metadata)
+
+            # WHEN it is assigned into a skeleton
+            with self.assertRaises(ValueError) as caught:
+                assign_quantized_weights(self.build_model(), path)
+
+            # THEN the error names the tensor and both torchao versions
+            message = str(caught.exception)
+            self.assertIn("unaccounted", message)
+            self.assertIn("0.0.1", message)
+            self.assertIn(torchao.__version__, message)
+
+    def test_saving_keeps_the_checkpoint_whole(self) -> None:
+        """Everything but the weights is carried across, and the old weights are not.
+
+        The processors load from the same directory as the weights, so a
+        checkpoint that arrives without them loads into a policy that cannot
+        normalize an observation.
+        """
+        with tempfile.TemporaryDirectory() as directory:
+            # GIVEN a source checkpoint with the files a policy needs beside its weights
+            source = self.write_source(directory)
+
+            # WHEN a quantized policy is written out against it
+            out = os.path.join(directory, "out")
+            copied = save_quantized_checkpoint(self.build_quantized(), source, out)
+
+            # THEN the sidecars came along, the weights are the new ones, and
+            # the file says what it is
+            self.assertEqual(copied, ["config.json", "policy_preprocessor.json"])
+            written = os.path.join(out, MODEL_WEIGHTS_FILE)
+            self.assertNotIn("old", load_file(written))
+            self.assertEqual(read_quantization(written), INT8_MARKER)
+            self.assertEqual(
+                read_weights_metadata(written)[TORCHAO_VERSION_KEY],
+                torchao.__version__,
+            )
+
+    def test_everything_written_is_readable_by_another_user(self) -> None:
+        """Weights and sidecars alike land 0644, not at whatever wrote them.
+
+        safetensors writes 0600 whatever the umask is, and a copy carries the
+        source's mode, so a checkpoint served by a container running as a
+        different uid needs both made readable.
+        """
+        with tempfile.TemporaryDirectory() as directory:
+            # GIVEN a source checkpoint whose sidecar is readable only by its owner
+            source = self.write_source(directory)
+            os.chmod(os.path.join(source, "config.json"), 0o600)
+
+            # WHEN a quantized policy is written out against it
+            out = os.path.join(directory, "out")
+            save_quantized_checkpoint(self.build_quantized(), source, out)
+
+            # THEN the directory is traversable and every file in it is readable
+            self.assertEqual(os.stat(out).st_mode & 0o777, 0o755)
+            for name in os.listdir(out):
+                self.assertEqual(
+                    os.stat(os.path.join(out, name)).st_mode & 0o777,
+                    0o644,
+                    f"{name} is not readable by the serving user",
+                )
+
+    def test_full_width_weights_are_not_marked_quantized(self) -> None:
+        """Saving an unquantized policy is refused, so the marker stays a fact.
+
+        The server reads the marker to decide how to load, and reports it on
+        /health, so a checkpoint that claims int8 without being int8 serves at
+        full width while saying otherwise.
+        """
+        with tempfile.TemporaryDirectory() as directory:
+            # GIVEN a model that was never quantized
+            source = self.write_source(directory)
+            out = os.path.join(directory, "out")
+
+            # WHEN it is written out as a quantized checkpoint
+            # THEN the write is refused, and nothing is left behind
+            with self.assertRaises(ValueError):
+                save_quantized_checkpoint(self.build_model(), source, out)
+            self.assertFalse(os.path.exists(out))
+
+    def test_writing_over_an_existing_checkpoint_is_refused(self) -> None:
+        """An existing destination is left alone rather than half-overwritten."""
+        with tempfile.TemporaryDirectory() as directory:
+            # GIVEN a destination that already exists
+            source = self.write_source(directory)
+            out = os.path.join(directory, "out")
+            os.makedirs(out)
+
+            # WHEN a quantized policy is written to it
+            # THEN the write is refused
+            with self.assertRaises(FileExistsError):
+                save_quantized_checkpoint(self.build_quantized(), source, out)
+
+    def test_quantizing_a_quantized_checkpoint_is_refused(self) -> None:
+        """A written checkpoint is not a source the full-width loader can read.
+
+        lerobot reports the state-dict mismatch and carries on, so without this
+        the second pass would quantize untrained weights and write a checkpoint
+        that looks entirely valid.
+        """
+        with tempfile.TemporaryDirectory() as directory:
+            # GIVEN a checkpoint this server has already quantized
+            source = self.write_source(directory)
+            out = os.path.join(directory, "out")
+            save_quantized_checkpoint(self.build_quantized(), source, out)
+
+            # WHEN it is handed back to the full-width loader
+            # THEN the read is refused before any weight is touched
+            with self.assertRaises(ValueError) as caught:
+                load_full_policy(out, "pi05", None, int8=True)
+            self.assertIn(INT8_MARKER, str(caught.exception))
+
+    def test_subdirectories_in_the_source_are_carried_across(self) -> None:
+        """A nested processor directory comes along instead of being dropped."""
+        with tempfile.TemporaryDirectory() as directory:
+            # GIVEN a source checkpoint with a nested directory
+            source = self.write_source(directory)
+            os.makedirs(os.path.join(source, "tokenizer"))
+            with open(os.path.join(source, "tokenizer", "vocab.json"), "w") as f:
+                f.write("{}")
+
+            # WHEN a quantized policy is written out against it
+            out = os.path.join(directory, "out")
+            copied = save_quantized_checkpoint(self.build_quantized(), source, out)
+
+            # THEN the directory and its contents came too
+            self.assertIn("tokenizer", copied)
+            self.assertTrue(
+                os.path.isfile(os.path.join(out, "tokenizer", "vocab.json"))
+            )
 
 
 class TestLoadPolicyMissingCheckpoint(unittest.TestCase):
@@ -424,6 +799,7 @@ class FakeRunner:
         native_map: dict | None = None,
     ) -> None:
         self.device = "cpu"
+        self.int8 = False
         self._infer_error = infer_error
         # Like PolicyRunner, derived once at construction.
         self.request_names = request_camera_names(
