@@ -84,3 +84,35 @@ def test_real_branch_resolves_to_the_vendored_driver():
     # the torque lifecycle this config relies on exists only in the vendored copy.
     share = Path(get_package_share_directory("feetech_ros2_driver"))
     assert not share.is_relative_to("/opt/ros"), share
+
+
+def joint_params(hardware_interface, joint_name):
+    """Every <param name="..."> under the named <ros2_control> <joint> in the compiled URDF."""
+    doc = xacro.process_file(
+        str(URDF), mappings={"hardware_interface": hardware_interface}
+    )
+    (ros2_control,) = doc.getElementsByTagName("ros2_control")
+    (joint,) = [
+        node
+        for node in ros2_control.getElementsByTagName("joint")
+        if node.getAttribute("name") == joint_name
+    ]
+    return {
+        param.getAttribute("name"): param.firstChild.data
+        for param in joint.getElementsByTagName("param")
+    }
+
+
+def test_real_branch_writes_the_calibration_files_p_cofficient():
+    # config/so101_follower_calibration.yaml sets p_cofficient: 32 on every
+    # joint to restore the STS3215 factory gain LeRobot's calibration
+    # otherwise leaves at 16 - see fix-request-4 item 2. A regression here
+    # (a typo'd param name, or the xacro:if guard misfiring) would silently
+    # go back to writing nothing, leaving the servo's stored gain alone.
+    assert joint_params("real", "shoulder_lift")["p_cofficient"] == "32"
+
+
+def test_mock_branch_has_no_pid_params():
+    # p_cofficient etc. mean nothing on mock and must not appear there.
+    params = joint_params("mock", "shoulder_lift")
+    assert "p_cofficient" not in params

@@ -282,6 +282,48 @@ exec's `ros2` CLI joins the wrong (default) CycloneDDS config and never
 discovers the app's participants over the loopback-only, no-multicast peer
 list that config sets up.
 
+## `colcon build`/`test` on one package without the moveit_pro CLI
+
+For a change scoped to one or two packages, skip `moveit_pro build`/`run`
+entirely (both are heavyweight and, per the git-worktree section above, race
+other lanes on shared config/port state). Build and test directly against an
+already-built `moveit-pro-base:<version>` image tagged from a prior `moveit_pro
+build` (`docker images | grep moveit-pro-base`); it already carries the
+proprietary overlay workspace, so nothing needs installing:
+
+```bash
+USER_WS="$(docker run --rm --entrypoint sh moveit-pro-base:<tag> -c 'echo $USER_WS')"
+docker run --rm -v "$PWD:$USER_WS" -w "$USER_WS" \
+  --entrypoint bash moveit-pro-base:<tag> -lc '
+    source /opt/ros/jazzy/setup.bash
+    source /opt/overlay_ws/install/setup.bash   # moveit_studio_utils_py and friends
+    colcon build --packages-up-to <pkg1> <pkg2>
+    source install/setup.bash
+    colcon test --packages-select <pkg1> <pkg2>
+    colcon test-result --all --verbose
+  '
+```
+
+Two non-obvious parts:
+- The image's default entrypoint (`/ros_entrypoint.sh`) tries to create a
+  `moveit-pro-user` matching the mounted volume's UID/GID and aborts with
+  `Failed to create user moveit-pro-user` when that collides with an existing
+  one - override the entrypoint (`--entrypoint bash`) rather than debug it for
+  a one-off build/test.
+- `/opt/ros/jazzy/setup.bash` alone is not enough: `moveit_studio_utils_py`
+  (used by `system_config.load_system_config`, see *Config inheritance* above)
+  and other proprietary packages live in the separate overlay workspace at
+  `/opt/overlay_ws/install/setup.bash`. Skipping it fails imports with
+  `ModuleNotFoundError`, not a clearer "wrong workspace" message.
+
+Mount the workspace at the image's baked `USER_WS` specifically
+(`/home/<builder's username>/user_ws` - the Dockerfile derives it from whoever
+ran `moveit_pro build`, so read it out of the image as above rather than
+assuming it). It is the image's working directory, so `colcon build`'s
+`install/`, `build/`, and `log/` land in your own worktree at the paths a
+plain `colcon build` there would use anyway, and stay usable across container
+runs.
+
 ## One trajectory controller, several planning groups
 
 When a config puts every joint on a single `joint_trajectory_controller` (the
@@ -296,7 +338,8 @@ interface restarts the trajectory on every message, so an action goal from a
 plan is accepted and then never converges — or aborts on a path tolerance the
 still-moving robot violated. Such a publisher has to yield: gate it on a
 heartbeat the driving Objective ticks, and on the controller's
-`follow_joint_trajectory/_action/status`. `so101_sim` does both.
+`follow_joint_trajectory/_action/status`. `so101_base_config`'s
+`script/so101_arm_bridge.py` does both.
 
 ## Maintaining this file
 

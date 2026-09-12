@@ -35,6 +35,11 @@
   <!-- Nothing launches the cameras yet; declared now so the wrist and top USB
        cameras in phase three do not need another image rebuild. -->
   <exec_depend>usb_cam</exec_depend>
+  <!-- script/so101_arm_bridge.py and script/verify_calibration.py. -->
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>std_srvs</exec_depend>
+  <exec_depend>trajectory_msgs</exec_depend>
 
   <test_depend>ament_cmake_copyright</test_depend>
   <test_depend>ament_cmake_lint_cmake</test_depend>
@@ -43,6 +48,8 @@
   <test_depend>ament_index_python</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>picknik_ament_copyright</test_depend>
+  <test_depend>python3-yaml</test_depend>
+  <test_depend>rclpy</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

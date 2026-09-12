@@ -5,9 +5,11 @@
 #include <spdlog/spdlog.h>
 #include <sys/types.h>
 
+#include <chrono>
 #include <experimental/array>
 #include <feetech_driver/serial_port.hpp>
 #include <numeric>
+#include <thread>
 
 namespace feetech_driver {
 
@@ -24,9 +26,26 @@ enum class Mode {
   kAsynchronous,
 };
 
+// PickNik addition: read_response's plain string Result cannot tell a caller
+// whether a failure means "the servo answered with a well-formed status
+// packet that reported a fault" (is_fault=true) versus "no valid reply came
+// back at all" (missing reply, bad checksum, malformed packet - is_fault
+// stays false). set_torque needs that distinction to tolerate a torque-off
+// acknowledgement from a faulted servo without masking a real comms failure.
+struct ServoReplyError {
+  std::string message;
+  bool is_fault = false;
+};
+using StatusResult = tl::expected<void, ServoReplyError>;
+
 class CommunicationProtocol {
  public:
   explicit CommunicationProtocol(std::unique_ptr<SerialPort> /*serial_port*/);
+
+  // See SerialPort::set_timeout - an EEPROM write's reply needs a longer
+  // window than the 10 ms default; restore it after.
+  void set_reply_timeout(const std::chrono::milliseconds timeout) { serial_port_->set_timeout(timeout); }
+  [[nodiscard]] std::chrono::milliseconds reply_timeout() const { return serial_port_->timeout(); }
 
   Result ping(int id);
 
@@ -115,7 +134,7 @@ class CommunicationProtocol {
     });
   }
 
-  Result set_torque(uint8_t id, bool enable);
+  StatusResult set_torque(uint8_t id, bool enable);
   Result calbration_offset(uint8_t id);
 
   Result set_maximum_angle_limit(uint8_t id, int angle);
@@ -230,14 +249,56 @@ class CommunicationProtocol {
   /// @param parameters Additional control information that needs to be supplemented
   template <std::size_t N>
   Result write(const uint8_t id, const uint8_t memory_address, const std::array<uint8_t, N>& parameters) {
-    return write_buffer(id, memory_address, parameters, kInstructionWrite).and_then([&] { return read_response(id); });
+    return write_with_retry(id, memory_address, parameters, kInstructionWrite)
+        .map_error([](auto&& error) { return std::move(error.message); });
   }
 
  private:
   std::unique_ptr<SerialPort> serial_port_;
 
   Result read_response(uint8_t id);
+  StatusResult read_response_status(uint8_t id);
   Result check_head();
+
+  // PickNik addition: an adapter can drop the very first packet sent right
+  // after the port opens - seen both on the bench (LeRobot's own first WRITE
+  // failing twice while a read stress test was clean) and in production
+  // (on_init's first p_cofficient write timing out with no reply, aborting
+  // hardware init). Retry a no-reply/bad-packet failure (is_fault false) a
+  // few times with a short pause; a fault reply (is_fault true) means the
+  // servo did answer, so it is never retried. Every register write and
+  // write_position go through write() above; set_torque uses this directly
+  // since it needs the StatusResult, not the plain-string Result.
+  template <std::size_t N>
+  StatusResult write_with_retry(const uint8_t id,
+                                const uint8_t memory_address,
+                                const std::array<uint8_t, N>& parameters,
+                                const uint8_t instruction) {
+    static constexpr int kMaxAttempts = 3;
+    static constexpr auto kRetryDelay = std::chrono::milliseconds(5);
+    ServoReplyError last_error;
+    for (int attempt = 1; attempt <= kMaxAttempts; ++attempt) {
+      if (const auto write_result = write_buffer(id, memory_address, parameters, instruction); !write_result) {
+        last_error = ServoReplyError{.message = write_result.error()};
+      } else if (auto status = read_response_status(id); status) {
+        if (attempt > 1) {
+          spdlog::warn(
+              "CommunicationProtocol::write [id={}] succeeded on attempt {}/{}", id, attempt, kMaxAttempts);
+        }
+        return status;
+      } else {
+        last_error = std::move(status.error());
+        if (last_error.is_fault) {
+          // The servo answered - nothing to gain by retrying.
+          break;
+        }
+      }
+      if (attempt < kMaxAttempts) {
+        std::this_thread::sleep_for(kRetryDelay);
+      }
+    }
+    return tl::make_unexpected(last_error);
+  }
 
   template <std::size_t N>
   Result write_buffer(const uint8_t id,

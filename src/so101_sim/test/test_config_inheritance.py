@@ -32,7 +32,8 @@
 Runs the overlay through `load_system_config`, the same loader `moveit_pro run`
 uses, and asserts on the merged result the Agent actually gets: the base
 package's robot description with only `hardware_interface` overridden, and
-both packages' Objective libraries with the overlay's last.
+everything else - including the runtime launch file and the Objective
+library, so101_sim adds neither - inherited unchanged.
 """
 
 from pathlib import Path
@@ -73,15 +74,15 @@ def test_overlay_forces_mock_and_keeps_the_rest_of_urdf_params(config):
     assert params["calibration_file"].package == "so101_base_config"
 
 
-def test_runtime_launch_file_is_the_overlays(config):
-    assert config.runtime_launch_file.package == "so101_sim"
+def test_runtime_launch_file_comes_from_the_base_package(config):
+    assert config.runtime_launch_file.package == "so101_base_config"
 
 
-def test_objective_libraries_from_both_packages_and_overlay_last(config):
+def test_objective_library_is_inherited_unchanged(config):
     libraries = config.objectives.objective_library_paths
-    assert list(libraries)[-2:] == ["so101_objectives", "so101_sim_objectives"]
+    assert list(libraries)[-1] == "so101_objectives"
+    assert "so101_sim_objectives" not in libraries
     assert libraries["so101_objectives"].package_name == "so101_base_config"
-    assert libraries["so101_sim_objectives"].package_name == "so101_sim"
     for library in libraries.values():
         assert library.share_path.is_dir()
 

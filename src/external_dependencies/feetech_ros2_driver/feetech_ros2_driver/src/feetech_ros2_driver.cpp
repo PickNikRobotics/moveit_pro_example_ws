@@ -1,6 +1,7 @@
 #include <fmt/ranges.h>
 
 #include <algorithm>
+#include <chrono>
 #include <feetech_driver/common.hpp>
 #include <feetech_driver/communication_protocol.hpp>
 #include <feetech_ros2_driver/feetech_ros2_driver.hpp>
@@ -55,14 +56,30 @@ CallbackReturn FeetechHardwareInterface::on_init(const hardware_interface::Hardw
       return 0;
     }();
 
+    // These addresses are EEPROM (the servo commits to flash before it
+    // replies), unlike every other register this driver writes, which is
+    // SRAM and answers within the control loop's 10 ms timeout. Read first
+    // and skip the write when the servo already holds the value - it spares
+    // an EEPROM write cycle on every restart, and makes a restart with
+    // nothing to change fast and reply-timeout-free.
     for (const auto& [parameter_name, address] : {std::pair{"p_cofficient", SMS_STS_P_COEF},
                                                   {"d_cofficient", SMS_STS_D_COEF},
                                                   {"i_cofficient", SMS_STS_I_COEF}}) {
       if (const auto param_it = joint_params.find(parameter_name); param_it != joint_params.end()) {
-        const auto result = communication_protocol_->write(
-            joint_ids_[i], address, std::experimental::make_array(static_cast<uint8_t>(std::stoi(param_it->second))));
-        if (!result) {
-          spdlog::error("FeetechHardwareInterface::on_init -> {}", result.error());
+        const auto desired = static_cast<uint8_t>(std::stoi(param_it->second));
+        std::array<uint8_t, 1> current{};
+        if (const auto read_result = communication_protocol_->read(joint_ids_[i], address, &current);
+            read_result && current[0] == desired) {
+          continue;
+        }
+        static constexpr auto kEepromReplyTimeout = std::chrono::milliseconds(100);
+        const auto previous_timeout = communication_protocol_->reply_timeout();
+        communication_protocol_->set_reply_timeout(kEepromReplyTimeout);
+        const auto write_result = communication_protocol_->write(
+            joint_ids_[i], address, std::experimental::make_array(desired));
+        communication_protocol_->set_reply_timeout(previous_timeout);
+        if (!write_result) {
+          spdlog::error("FeetechHardwareInterface::on_init -> {}", write_result.error());
           return CallbackReturn::ERROR;
         }
       }
@@ -188,10 +205,21 @@ CallbackReturn FeetechHardwareInterface::set_torque(const std::vector<uint8_t>& 
   // the bus even when one servo does not answer.
   auto status = CallbackReturn::SUCCESS;
   for (const auto id : ids) {
-    if (const auto result = communication_protocol_->set_torque(id, enable); !result) {
-      spdlog::error("FeetechHardwareInterface::{} [id={}] -> {}", caller, id, result.error());
-      status = CallbackReturn::ERROR;
+    const auto result = communication_protocol_->set_torque(id, enable);
+    if (result) {
+      continue;
     }
+    // PickNik addition: a torque-off write that a faulted servo still
+    // acknowledged (is_fault) did turn torque off - the transition should not
+    // fail and leave the servo rigid while it reports overload/overheat/etc.
+    // Torque-on keeps failing on a fault: a faulted servo should not be told
+    // to hold. A missing/malformed reply (is_fault=false) always fails.
+    if (!enable && result.error().is_fault) {
+      spdlog::warn("FeetechHardwareInterface::{} [id={}] -> {}", caller, id, result.error().message);
+      continue;
+    }
+    spdlog::error("FeetechHardwareInterface::{} [id={}] -> {}", caller, id, result.error().message);
+    status = CallbackReturn::ERROR;
   }
   return status;
 }

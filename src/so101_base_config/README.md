@@ -7,13 +7,14 @@ arm** over the Feetech STS3215 serial bus when `hardware_interface` is set to
 `real`), and the MoveIt configuration. There is no MuJoCo model and no physics
 either way.
 
-This is the package a real-arm deployment points MoveIt Pro at. For a
-ready-to-run mock overlay with a digital-twin wiggle-test bridge, see
-[`so101_sim`](../so101_sim/README.md), which inherits this package via
-`based_on_package` and only forces `hardware_interface: "mock"`.
+This is the package a real-arm deployment points MoveIt Pro at. It also owns
+the wiggle-test bridge and its `Mirror SO101 Follower` Objective (see
+*What is here* below) — the same joint-by-joint bring-up check on mock and on
+the real follower. For a ready-to-run mock overlay that forces
+`hardware_interface: "mock"` and otherwise changes nothing, see
+[`so101_sim`](../so101_sim/README.md).
 
-Run it directly (mock hardware, no bridge — the twin sits still until you
-command a plan or teleop through it):
+Run it directly:
 
 ```bash
 moveit_pro run --config so101_base_config
@@ -142,6 +143,24 @@ Real limits of `feetech_ros2_driver` 0.2.2, not of this config:
   hardcoded speed 2400. The vendored `on_activate` returns ERROR on a failed
   read, before seeding the command or enabling torque; the component stays
   inactive and limp, and the controller manager logs the failed activation.
+- **`on_deactivate` tolerates a faulted servo's torque-off acknowledgement.**
+  A servo in overload/overheat/etc. still answers a torque-off write with a
+  status packet, just one whose working-status byte is nonzero;
+  `read_response` treats that as an `is_fault` error, and `set_torque` in
+  `feetech_ros2_driver.cpp` logs it as a warning (not an error) specifically
+  for a torque-off ack, since torque was, in fact, turned off. A missing or
+  malformed reply still fails the transition, and torque-on still fails on
+  any fault (a faulted servo should not be told to hold). No unit test
+  covers this — the driver's protocol layer has no test harness — so verify
+  it on the bench the next time a servo faults mid-session: `ros2 control
+  set_hardware_component_state so101 inactive` should succeed and leave the
+  arm limp even while a servo is reporting overload.
+- **The adapter can drop the very first packet after the port opens.** A
+  no-reply/bad-packet failure on a register write is retried up to 3 attempts
+  total with a short pause; a fault reply is never retried, since the servo
+  did answer. Seen both here (`on_init`'s first `p_cofficient` write timing
+  out with no reply, aborting hardware init) and in LeRobot's own calibration
+  CLI on the same bench.
 
 ### Bench procedure
 
@@ -166,12 +185,16 @@ ls -l /dev/so101_follower /dev/so101_leader
 You must also be in the `dialout` group (`groups | grep dialout`); the
 container's user already is.
 
-**2. Servo IDs and calibration.** With the arm on the bench and free to move:
+**2. Servo IDs and calibration.** With the arm on the bench, supported (torque
+drops during calibration) and free to move:
 
 - Set the IDs 1..6 from the base outward with LeRobot's motor-setup tooling
   (`lerobot setup-motors`). That order is what
   `config/so101_follower_calibration.yaml` assumes.
-- Run the LeRobot calibration. Its half-turn homing writes each motor's homing
+- Run the LeRobot calibration — `script/calibrate_so101.py` wraps both the
+  follower's and the leader's end to end and is safe to use offline; see
+  *Calibrating a new arm* below for what it does and what to pre-install
+  before travelling. Whichever way you run it, its half-turn homing writes each motor's homing
   offset to EEPROM as `present_position - 2047`, so tick 2048 ends up meaning
   *the pose the arm was held in while homing ran* — not the URDF's zero. Hold
   every joint at its URDF-zero pose during homing, or `offset: 2048` is wrong
@@ -180,12 +203,12 @@ container's user already is.
   so homing with the jaw half open puts every gripper command roughly 512 ticks
   out. Leave `offset: 2048` when homing was done at URDF zero. If you skip the
   EEPROM write, put `2048 + homing_offset` in `offset` instead, per motor.
-- If the per-joint check in *Safe bring-up order* step 3 shows a joint reporting
-  the wrong angle, correct that motor's `offset` by the error in ticks:
-  `offset += (reported - actual) * 4096 / (2 * pi)`, where `reported` is the
-  joint's angle in `/joint_states` and `actual` is the pose the joint is really
-  in, both in radians; round to whole ticks. Raising `offset` lowers the
-  reported angle.
+- If the `Verify Calibration` Objective (*Safe bring-up order* step 6) reports
+  a joint off by more than a tick or two, correct that motor's `offset` by the
+  reported error: `offset += error_ticks`, rounded to a whole tick. Raising
+  `offset` lowers the reported angle. The same formula, spelled out:
+  `error_ticks = reported_rad * 4096 / (2 * pi)`, where `reported_rad` is the
+  joint's angle in `/joint_states` while it is held at URDF zero.
 
 **3. Point the config at real hardware.**
 
@@ -238,6 +261,18 @@ driver does at bring-up before you close the loop:
   (`ros2 control set_hardware_component_state so101 inactive`, which does turn
   torque off) or be ready to cut bus power. A restart without a power cycle
   is fine: the next activation reads the held pose and continues from it.
+- **Deactivating only the component, with `joint_trajectory_controller` left
+  active, does not relax the arm the way you would expect.** The controller's
+  last hold target survives the component going inactive, and re-activating
+  the component drives the arm straight back to that old target instead of
+  wherever it was moved to by hand in between. To hand-pose the arm, deactivate
+  the controller *first*, then the component:
+  `ros2 control set_controller_state joint_trajectory_controller inactive` then
+  `ros2 control set_hardware_component_state so101 inactive`. To lock it again,
+  reverse the order - activate the component, then the controller (which
+  re-seeds its hold target from the current state on activation):
+  `ros2 control set_hardware_component_state so101 active` then
+  `ros2 control set_controller_state joint_trajectory_controller active`.
 - `on_activate` reads present position and seeds the command from it *before*
   enabling torque, so there is no jump when the controller starts. If that
   read fails, activation fails and torque stays off (upstream would have
@@ -286,46 +321,274 @@ So: with the arm powered, the instance started and the component confirmed,
 check `/joint_states` against the arm's actual pose — commanding nothing. Only
 then run one small waypoint.
 
-> **The `so101_sim` overlay's `Mirror SO101 Follower` Objective is the wiggle
-> test on real hardware — run it deliberately.** It moves every powered joint
-> about 0.1 rad either side of the pose the arm is standing in, which is the
-> point: it is how you confirm each servo is alive, responds, and turns the way
-> the URDF says. Have the power switch in reach the first time, check the arm
-> is clear of obstacles and of itself, and confirm `/joint_states` matches the
-> real pose (bench step 4) before starting it — the wiggle is centred on what
-> `/joint_states` reports, so a calibration error puts the centre somewhere
-> other than where the arm actually is. Stop the Objective before planning or
-> executing a motion. This config does not include the wiggle-test bridge
-> itself; run `so101_sim` (with `hardware_interface` overridden back to
-> `"real"` in its `config.yaml`, or from a config that inherits this one and
-> adds the bridge) to get it.
+> **`Mirror SO101 Follower` is the first commanded motion on real hardware —
+> run it deliberately, not as an afterthought.** See *Wiggle test* under
+> *What is here* below for what it does (a self-wiggle without the leader, or
+> leader-driven mirroring with it) and why it is safe on a powered arm. Have
+> the power switch in reach the first time, check the arm is clear of
+> obstacles and of itself, and confirm `/joint_states` matches the real pose
+> (`Verify Calibration`, below) before starting it — both the wiggle's centre
+> and the mirrored pose are anchored to what `/joint_states` reports, so a
+> calibration error puts either one somewhere other than where the arm
+> actually is. Stop the Objective before planning or executing a motion.
 
 **5. Falling back to mock.** Set `hardware_interface` back to `mock`. Nothing
 else changes — same controllers, same Objectives, same waypoints — and no
 serial port is opened.
 
-### The leader arm is not wired up yet
+## Cameras
 
-The leader is a second, torque-off bus at `/dev/so101_leader`. The driver
-already has the mechanism: `on_init` actively disables torque for joints that
-declare no `<command_interface>`, and the vendored `on_activate` enables torque
-only for joints that declare one, so a state-only `<ros2_control>` block reads a
-limp arm without fighting it and stays limp through activation. The shape that
-fits here is:
+The wrist and scene USB cameras run unconditionally from
+`launch/so101_drivers.launch.py` — the *drivers* container's launch file
+(`config.yaml`'s `hardware.additional_driver_launch_file`), not the
+Agent/runtime one, because only the drivers container bind-mounts the host's
+`/dev`; the runtime container never sees a `/dev/v4l/by-id/*` path, only
+whatever `/dev/videoN` numbering it happens to enumerate on its own, which is
+exactly the unstable numbering the paragraph below rules out. On mock and on
+real hardware alike, each is a `usb_cam_node_exe` node in its own topic
+namespace, 640x480 at 30 fps: the wrist camera (Innomaker U20CAM) on
+`/wrist_camera/image_raw` + `/wrist_camera/camera_info`, the scene camera
+(Logitech C920) on `/scene_camera/image_raw` + `/scene_camera/camera_info`.
+The app's camera panes and the data-collection tab pick up any
+`sensor_msgs/Image` topic on the graph automatically; nothing else needs
+registering once the node is running.
 
-- a second `<ros2_control name="so101_leader" type="system">` in this
-  package's URDF, same plugin, `usb_port` `/dev/so101_leader`, six `leader_*`
-  joints with state interfaces only;
-- a second `joint_state_broadcaster` for it with `use_local_topics: true`, so
-  the leader's joints publish on the controller's own topic instead of
-  polluting `/joint_states` with names the robot model does not have;
-- `so101_sim`'s `Mirror SO101 Follower` reading that topic in place of the fake
-  sine, keeping the same heartbeat gate.
+Device paths are by-id (`/dev/v4l/by-id/...`), never `/dev/videoN` — that
+numbering is not stable across replug or reboot. Find a new camera's own path
+with:
 
-It is not implemented here because a leader needs a new controller in
-`config/control/so101.ros2_control.yaml`, a new entry in `config/config.yaml`'s
-startup list, and a rewrite of `so101_sim`'s `script/so101_arm_bridge.py` to
-read a topic instead of generating a sine.
+```bash
+ls -l /dev/v4l/by-id/
+udevadm info --query=all --name=/dev/video0 | grep ID_SERIAL
+```
+
+and override the checked-in defaults with the `wrist_camera_device` /
+`scene_camera_device` launch arguments if a bench's cameras differ.
+`so101_drivers.launch.py` resolves that by-id path to its real `/dev/videoN`
+before handing it to usb_cam — `usb_cam` 0.8.1 cannot follow the by-id
+symlink itself, since it is relative (`../../video4`) and usb_cam's own
+resolution turns that into `/dev/../../video4`.
+
+Neither camera has a URDF frame or a static transform to the robot
+(maintainer's call) — each publishes under its own free-floating `frame_id`
+(`wrist_camera` / `scene_camera`). On a machine without these two devices
+plugged in — a developer laptop running `so101_sim`, say — the two
+`usb_cam_node_exe` nodes fail to open their device and exit; the rest of the
+instance is unaffected.
+
+**Brightness is set explicitly, and the two cameras do not share a scale.**
+The Innomaker U20CAM's (wrist) `brightness` control is signed, `-64..64`;
+the Logitech C920's (scene) is unsigned, `0..255`. Both cameras power on at
+the numeric value `50`, which is opposite ends of usable on their two
+scales — on the wrist camera that is nearly full-bright (blown out), on the
+scene camera it is nearly black. `so101_drivers.launch.py` sets
+`wrist_camera_brightness` (default `0`, this scale's midpoint) and
+`scene_camera_brightness` (default `128`, this scale's midpoint) as launch
+arguments passed straight through to each `usb_cam_node_exe`'s `brightness`
+parameter, and both cameras run with `autoexposure` on. Check or tune a
+camera live with the vendor's own controls (`v4l2-utils`, install if not
+already present):
+
+```bash
+v4l2-ctl --device=/dev/v4l/by-id/<camera's-by-id-path> --list-ctrls | grep brightness
+v4l2-ctl --device=/dev/v4l/by-id/<camera's-by-id-path> --set-ctrl=brightness=<value>
+```
+
+A swapped camera (a different unit, even the same model) needs this
+rechecked — `--list-ctrls` also prints the control's actual min/max, so a
+default from a different unit's scale is easy to catch before it ships.
+
+### Leader-driven mirroring on real hardware
+
+The leader is a second, torque-off bus, `/dev/so101_leader`, that never goes
+through `ros2_control` — `feetech_ros2_driver` only ever talks to the
+follower. Instead, `script/so101_arm_bridge.py` opens the leader port itself
+and reads it directly: the runtime image has neither `pyserial` nor
+`scservo_sdk`, so it hand-rolls the Feetech `READ_DATA` packet over the raw
+tty (present-position register, address 56, 2 bytes) rather than pulling in a
+bus SDK. Like the cameras above, this `so101_arm_bridge` instance runs from
+`launch/so101_drivers.launch.py` in the *drivers* container — `/dev/so101_leader`
+is a udev symlink to a host device, and only the drivers container's `/dev`
+bind-mount can see it; the runtime container cannot open it by that name at
+all. `launch/so101_arm_bridge.launch.py` picks the bridge's mode from
+`hardware_interface` with no hand edit — `--real` when it is `"real"`,
+`--fake` otherwise — so once real hardware is configured, `Mirror SO101
+Follower` mirrors the leader's pose onto the follower instead of running the
+self-wiggle; see *Wiggle test* below for what changes. That `auto` resolution
+is `so101_arm_bridge`'s own launch argument default, not a hardwired rule — a
+second, always-`--fake` instance runs alongside it under a `source=fake`
+override (this one back in `runtime.launch.xml`, since it needs no host
+device), backing the separate `Wiggle SO101 Follower` Objective.
+
+Both arms were LeRobot-calibrated with the same URDF-zero homing pose, so tick
+2048 is URDF zero on both and every non-gripper joint uses the same formula as
+the follower driver's own calibration (`rad = (tick - 2048) * 2*pi/4096`,
+`so101_arm_bridge.py`'s `LEADER_TICK_ZERO`/`LEADER_RAD_PER_TICK`). The leader
+trigger and the follower gripper are different mechanisms with different
+travel, so the gripper is scaled by fraction of trigger travel onto the URDF
+gripper range instead (`LEADER_TRIGGER_TICKS_CLOSED`/`_OPEN`,
+`leader_trigger_to_gripper_radians`). A bad reply from a servo — timeout, wrong
+id, a checksum mismatch, or a bus I/O error such as an unplugged port — skips
+that whole sample rather than publish a guess; the bridge logs it at most once
+a second and keeps gliding toward the last known good pose (`poll_leader`,
+`leader_poll_rate_hz`, default 25 Hz). That leniency is bounded: a bench
+incident where a leader servo tripped an overload mid-motion showed that
+"keep the last good pose" is not enough on its own, since the follower kept
+creeping toward that now-stale target instead of stopping. Once
+`leader_timeout_s` (0.5 s by default) passes with no good read, the bridge
+stops publishing altogether — the controller holds wherever it is — logs once,
+and resumes automatically the next time a read succeeds.
+
+Real-mode motion glides rather than jumps: on the bench, commanding the
+follower straight to a freshly-read leader pose moved far too fast, so the
+commanded target instead moves toward the leader's pose by at most
+`real_slew_rate_rad_s` (4.0 rad/s by default) every publish tick, converging
+over a few tenths of a second rather than snapping. The leader's `wrist_roll`
+also reads about 96° (1.68 rad) off from the follower's own homing on the
+bench arms; `leader_offset_rad` (radians, one per joint, default `0.0` except
+`wrist_roll`'s `1.68`) is added to the leader reading before clamping to
+correct for it. The proper fix is re-homing that leader servo (*Calibrating a
+new arm* above); once it reads true, set this parameter's `wrist_roll` entry
+back to `0.0`.
+
+**The leader must be plugged in and powered before the instance starts, the
+same rule as the follower's own bus.** `so101_arm_bridge` opens
+`leader_port` once at startup; if it cannot (leader unplugged, wrong port,
+no `dialout`), the node logs the error and exits non-zero rather than
+silently doing nothing — `Mirror SO101 Follower`'s service call then fails
+visibly instead of hanging.
+
+**The leader board runs on 5 V — never power it from the 12 V brick.** Its
+1/345 gear-ratio `shoulder_lift` servo has an 8.0 V max and faults on 12 V.
+LeRobot does not surface that as an over-voltage error: it reports any
+error-status reply from a faulted servo as "motor not found", which reads like
+a wiring or port problem rather than the wrong power supply. Tell the two
+supplies apart by the label on the brick, not by looks.
+
+**The leader cannot hold its own weight against gravity on 5 V.** Bench
+testing tripped an overload fault on `shoulder_lift` the moment torque was
+enabled with the arm in a gravity-loaded pose — the same 8.0 V-max servo, now
+failing to hold rather than failing to move. In normal operation the leader's
+torque stays off and the operator holds the arm by hand; never enable torque
+on the leader while it is unsupported in the air.
+
+**Telling 7.4 V servos from 12 V servos:** every STS3215 in the kit carries a
+printed label with its rated voltage (`7.4V` or `12V`) and its internal gear
+ratio (`1/345`, `1/191`, `1/147`). That label is the only reliable way to tell
+the two sets apart — most 7.4 V units accept a 12 V bus electrically, and only
+the 1/345 unit faults, so a mixed-up arm can look fine right up to the joint
+that does not. The leader arm is the 7.4 V set: `shoulder_pan` 1/191,
+`shoulder_lift` 1/345, `elbow_flex` 1/191, `wrist_flex` 1/147, `wrist_roll`
+1/147, `gripper` 1/147. The follower arm is the 12 V set, 1/345 on every
+joint. (Source: the LeRobot SO-101 assembly page,
+<https://huggingface.co/docs/lerobot/so101>.)
+
+### Tuning the mirror
+
+Four `--real`-mode node parameters, each also a launch argument of the same
+name on `so101_drivers.launch.py` (forwarded to `so101_arm_bridge.launch.py`,
+same shape as the camera arguments above):
+
+| Parameter | Default | What it does |
+| --- | --- | --- |
+| `real_slew_rate_rad_s` | `4.0` rad/s | How fast the commanded target may glide toward the leader's pose each publish tick, see *Leader-driven mirroring on real hardware* above. |
+| `leader_wrist_roll_offset_rad` | `1.68` rad | The bench `wrist_roll` homing correction, one entry of the `leader_offset_rad` node parameter, at `wrist_roll`'s fixed position; every other joint's offset stays `0.0`. Re-homing that leader servo (*Calibrating a new arm* below) is the proper fix; once it reads true, this should go back to `0.0`. |
+| `leader_timeout_s` | `0.5` s | How long the leader bus may go without a good read before the follower stops moving, see *Leader-driven mirroring on real hardware* above. |
+| `leader_port` | `/dev/so101_leader` | The leader's Feetech bus device, a udev symlink; see `config/udev/99-so101.rules`. |
+
+**How to actually change one, primary path: edit `config/so101_drivers.yaml`
+and restart the instance.** That file holds every `so101_drivers.launch.py`
+knob (the four above, plus `wrist_camera_device`, `scene_camera_device`,
+`wrist_camera_brightness`, `scene_camera_brightness`) with a comment on each;
+the launch file reads it for its `DeclareLaunchArgument` defaults. `config/`
+is installed via colcon's symlink-install (`colcon-defaults.yaml`), so a
+restart is enough to pick up an edit, no rebuild needed.
+
+**Bench path: override a launch argument directly on the command line**, for
+a one-off change without touching the YAML (inside the drivers container,
+where the leader and camera devices are reachable):
+
+```bash
+ros2 launch so101_base_config so101_drivers.launch.py \
+  real_slew_rate_rad_s:=6.0 leader_timeout_s:=1.0
+```
+
+A `moveit_pro run` instance includes `additional_driver_launch_file`
+(`so101_drivers.launch.py`) with no launch arguments of its own -
+`moveit_studio_agent`'s launch description does not forward any, so this
+override applies only when the file is run this way, standalone, not when a
+full instance includes it.
+
+### Calibrating a new arm
+
+`script/calibrate_so101.py` wraps LeRobot's own
+`lerobot.scripts.lerobot_calibrate` for both the follower and the leader, meant
+to work with no network access on site. It installs nothing itself — build the
+venv it expects before travelling:
+
+```bash
+python3 -m venv ~/lerobot-venv
+~/lerobot-venv/bin/pip install 'lerobot[feetech] @ git+https://github.com/huggingface/lerobot@a656a982afe4132eb48a729f06118c115631ac02'
+```
+
+That git ref — which reports itself as lerobot 0.5.2 — is what the bench was
+verified against; it is not a PyPI release. The released 0.5.1 lacks the
+feetech motor-position overflow fix (huggingface/lerobot#3373, merged
+2026-04-13), so its wheels leave STS3215 motors in multi-turn mode and the
+calibration homing offsets come out inconsistent. A released tag past that ref
+(0.6.x) should carry the fix but was not verified on this bench.
+
+Then, with that venv's `python3` on `PATH` (or invoked directly), calibrate one
+arm at a time — support the arm on something first, calibration drops servo
+torque:
+
+```bash
+python3 script/calibrate_so101.py follower   # default port /dev/so101_follower
+python3 script/calibrate_so101.py leader     # default port /dev/so101_leader
+```
+
+Each run prints the homing pose to hold before it execs LeRobot's own
+interactive `lerobot_calibrate` — answer LeRobot's own prompts as they appear;
+this script only wraps it, it does not automate them. The homing pose
+overrides LeRobot's own suggestion for the gripper: hold every joint at
+mid-range, wrist roll neutral (LeRobot's range-of-motion sweep does not move
+it, so there is nothing further to check there), and the gripper
+**NEAR-CLOSED** — not the "roughly half-open" LeRobot itself prompts for. This
+URDF's gripper zero is the near-closed end of travel; homing with the jaw half
+open puts every gripper command about 512 ticks off (the same gotcha as bench
+step 2 above).
+
+After the run, the script checks the calibration JSON landed under
+`~/.cache/huggingface/lerobot/calibration/robots/so_follower/<id>.json` (or
+`.../teleoperators/so_leader/<id>.json` for the leader) and fails loudly if it
+did not. If a file for that id already exists, LeRobot's own tool asks
+"use existing calibration?" before it starts — answer `c` to recalibrate from
+scratch rather than reuse it.
+
+The Feetech bus needs the operator in the `dialout` group; the script checks
+`groups` and warns if not (`sudo usermod -aG dialout $USER`, then log out and
+back in). If `lerobot` is not importable, the script fails with a message
+naming the venv command above rather than trying to `pip install` anything
+itself.
+
+LeRobot's calibration `connect()` writes P_Coefficient=16 into every follower
+servo as a side effect of connecting, not a deliberate SO-101 tuning choice —
+the STS3215 factory default is 32. At P=16, the loaded joints (especially
+`shoulder_lift` and `elbow_flex`, which carry the extended arm's weight)
+settle noticeably short of a commanded goal and lag a moving trajectory; see
+the `trajectory`/`goal` tolerance comments in `config/control/so101.ros2_control.yaml`.
+`config/so101_follower_calibration.yaml` restores the factory gain as a
+documented `p_cofficient: 32` entry per joint (also accepts `i_cofficient`,
+`d_cofficient` the same way): the driver writes whichever of the three are
+present into the servo's **EEPROM** (register 21 for P) at every startup, so
+this is a persistent hardware change, not a runtime-only one, and re-running
+`lerobot_calibrate` will overwrite it back to 16 the next time you calibrate.
+Re-run the calibration script and then re-apply this file (or just leave it
+checked in and rebuild) to restore 32 after any recalibration. Gain writes are
+EEPROM (the servo commits to flash before it acknowledges), so they take
+noticeably longer to acknowledge than the SRAM writes (torque, position) the
+driver otherwise sends; `on_init` only pays that cost when a joint's stored
+gain does not already match the calibration file.
 
 ## What is here
 
@@ -334,10 +597,102 @@ read a topic instead of generating a sine.
 | `description/so101.urdf.xacro` | The arm, with a `hardware_interface: mock \| real` switch. The arm meshes are the upstream LeRobot description and the gripper meshes are XLeRobot's soft fin-ray parts; both are recorded in `description/assets/NOTICE.md`. |
 | `config/control/so101.ros2_control.yaml` | `joint_state_broadcaster`, one `joint_trajectory_controller` over all six joints (gripper included), and the two teleop jog controllers — `joint_velocity_controller` and `velocity_force_controller` — over the five arm joints. The trajectory controller commands position and reads position/velocity, the set both hardware interfaces offer. |
 | `config/moveit/` | SRDF, joint limits, IK (`PoseIKPlugin`, `optimize_distance` — the SO-101 is 5-DOF and cannot hit arbitrary 6-DOF poses), and the jog configs. |
-| `config/so101_follower_calibration.yaml` | Per-joint servo `id` and zero `offset`, read only when `hardware_interface:=real`. |
+| `config/so101_follower_calibration.yaml` | Per-joint servo `id`, zero `offset`, and optional PID gains (`p_cofficient` et al.), read only when `hardware_interface:=real`. |
 | `config/udev/99-so101.rules` | Stable `/dev/so101_{leader,follower}` symlinks for the two CH343 adapters. |
 | `../external_dependencies/feetech_ros2_driver/` | The `real` branch's hardware interface: upstream 0.2.2 plus the torque lifecycle, see *Real hardware* above. |
-| `objectives/` | `Move SO101 to Waypoint`, `Close Gripper`, `Open Gripper`, and a `Teleoperate` override that points the core teleop tree at this config's `joint_trajectory_controller` (there is no admittance controller here). The wiggle-test `Mirror SO101 Follower` Objective and its bridge live in the `so101_sim` overlay, not here. |
+| `objectives/` | `Move SO101 to Waypoint`, `Close Gripper`, `Open Gripper`, a `Teleoperate` override that points the core teleop tree at this config's `joint_trajectory_controller` (there is no admittance controller here), `Mirror SO101 Follower` and `Wiggle SO101 Follower` (below), and `Verify Calibration` (below). |
+| `script/so101_arm_bridge.py` | The joint source behind `Mirror SO101 Follower`: `--fake` publishes a small sine about the arm's measured pose (the wiggle test); `--real` mirrors the *leader* arm's pose onto the follower instead (`leader_port`, default `/dev/so101_leader`) — unrelated to this package's own follower connection, which always goes through `ros2_control`. See *Leader-driven mirroring on real hardware* above. |
+| `launch/so101_arm_bridge.launch.py` | Picks `--fake`/`--real` from `hardware_interface` in `config.yaml` (or is forced by its own `source` launch argument) and launches the bridge under `node_name` - no hand edit needed. |
+| `launch/so101_drivers.launch.py` | The drivers-container launch file (`config.yaml`'s `hardware.additional_driver_launch_file`): the leader-mirroring `so101_arm_bridge` instance and both `usb_cam` nodes - everything that opens a host device by its udev name. See *Cameras* and *Leader-driven mirroring on real hardware* above. |
+| `launch/runtime.launch.xml` | The Agent/runtime-container launch file: the always-fake `so101_arm_bridge` instance backing `Wiggle SO101 Follower`, and `Verify Calibration`'s node - neither needs a host device. |
+| `script/verify_calibration.py` | The node behind `Verify Calibration` (below). |
+| `script/calibrate_so101.py` | Offline wrapper around LeRobot's own calibration, see *Calibrating a new arm* above. |
+
+### Wiggle test: `Mirror SO101 Follower`
+
+`so101_arm_bridge.py` runs unconditionally (`launch/runtime.launch.xml`
+includes `launch/so101_arm_bridge.launch.py`) and publishes single-point
+trajectories to `joint_trajectory_controller`. On mock, `Mirror SO101
+Follower`'s `auto`-resolved instance is the **wiggle test**: each joint swings
+`wiggle_amplitude_rad` (0.1 rad, about 6°, by default) either side of the pose
+the arm is measured in when mirroring starts, read once from `/joint_states` —
+the same joint-by-joint "is everything alive and moving the right way"
+diagnostic as `lab_sim`'s. Raise `wiggle_amplitude_rad` for a livelier sim
+demo; the amplitude is clamped to the URDF joint limits, so a joint already
+parked on a limit is never commanded past it. On real hardware with
+`hardware_interface: "real"`, that same `auto` instance instead reads the
+leader's Feetech bus and mirrors its pose onto the follower — see
+*Leader-driven mirroring on real hardware* above; if the leader is not
+connected, the node exits rather than falling back to the wiggle (see
+*Safe bring-up order* below, step 5). The follower's own `/joint_states` gate below still
+applies, since mirroring should not start until the follower's own pose is
+known, whichever source drives it. A second Objective, `Wiggle SO101
+Follower`, ticks a second, always-`--fake` `so101_arm_bridge` instance
+(`node_name`/`source` launch arguments in
+`launch/so101_arm_bridge.launch.py`), so the joint-by-joint wiggle stays
+runnable on real hardware — leader connected or not — even while `Mirror
+SO101 Follower` is mirroring it.
+
+Mirroring will not start until a **complete** `JointState` has arrived — one
+carrying all six joints. A message naming only a subset is ignored rather than
+partially applied, because a centre assembled from a partial pose would put
+the missing joints at whatever the last full sample said. The sample must also
+be fresh: older than `joint_states_timeout_s` (2.0 s by default) and the
+`~/mirror` tick returns failure instead of centring on a stale pose, since a
+stale sample means the broadcaster died or the bus went quiet.
+
+The Objective's first step switches controllers - activating
+`joint_trajectory_controller` and deactivating the two jog controllers - since
+a Teleoperate jog mode can leave `joint_trajectory_controller` inactive, which
+would otherwise make the bridge's publishes go nowhere. Mirroring is off until
+the `Mirror SO101 Follower` Objective asks for it, and stops when the
+Objective is stopped. The trajectory controller has one owner at a time: a
+stream of topic messages restarts its trajectory on every tick,
+so a plan's goal would be accepted and then hang forever, or abort on a path
+tolerance the moving twin violated. The Objective keeps mirroring alive by
+ticking the bridge's `~/mirror` `Trigger` service in a loop; one second
+without a tick and the bridge goes quiet. That heartbeat gate is the primary
+guard: **stop the Mirror Objective before planning or executing a motion.**
+The bridge also skips a publish while it believes a `follow_joint_trajectory`
+goal is live, but that is best-effort only — the flag is set from
+`GoalStatusArray` messages, so a goal started while the Mirror Objective is
+still publishing can lose the race with a 20 ms bridge tick.
+
+### `Verify Calibration`
+
+Run this after calibrating (*Calibrating a new arm* above), with the arm held
+at its **URDF-zero
+pose** — every joint at mid-travel; the gripper **NEAR-CLOSED**, which is URDF
+zero for this gripper, not half-open. `verify_calibration.py` reads one
+complete `/joint_states` message and reports each joint's Feetech `offset`
+error in servo ticks to its own node log — the Objective log in the UI only
+shows the preamble, so read the numbers from the runtime container:
+
+```bash
+docker logs moveit_pro_<instance>-runtime-1 2>&1 | grep -A 7 "Verify Calibration:"
+```
+
+where `<instance>` is the `--instance` name given to `moveit_pro run` (e.g.
+`--instance so101` → `moveit_pro_so101-runtime-1`; `docker ps` lists the exact
+name). `moveit_pro logs` opens the same output in a viewer window if a display
+is handy. The Objective fails rather than reporting if no complete
+`/joint_states` has arrived, or if the last one is older than
+`joint_states_timeout_s` (2.0 s by default, the same gate the wiggle test
+uses) — a stale sample means the broadcaster died or the bus went quiet, and
+numbers from an old pose would look just like good ones. `feetech_ros2_driver`
+reports
+position as `(tick - offset) * 2*pi/4096`, so held at URDF zero the reported
+radians *are* the offset error, and converting back to ticks
+(`* 4096/(2*pi)`) gives exactly how far `config/so101_follower_calibration.yaml`
+is wrong — the same formula *Bench procedure* step 2 uses for the manual
+correction, printed next to the six numbers:
+`offset += error_ticks` (round to a whole tick); raising `offset` lowers the
+reported angle.
+
+This also runs on mock, which is how the tick math is tested with no arm
+attached: mock starts at `config/initial_positions.yaml` and reports it
+verbatim, so the expected errors there are that pose's radians converted to
+ticks (`test/test_verify_calibration.py`).
 
 There is no `GripperActionController`. It would claim the gripper joint's
 position command interface, and `ros2_control` would then refuse the trajectory
@@ -357,33 +712,68 @@ once — the switch is exclusive by construction, not by convention.
 
 ## Safe bring-up order
 
-Follow this order every time a real arm is attached. MoveIt Pro's Stop
-control is a cooperative software stop, not a safety-rated emergency stop.
-Keep physical power isolation
-accessible and clear the robot's workspace before any live test.
+Follow this order every time a real arm is attached — the first time on a
+newly assembled arm, and every time after. MoveIt Pro's Stop control is a
+cooperative software stop, not a safety-rated emergency stop. Keep physical
+power isolation accessible and clear the robot's workspace before any live
+test.
 
-1. On `so101_sim` (mock), with the arm unpowered, confirm the twin appears and
-   moves under the fake source.
-2. Rest the arm on the bench, power it, then switch to `real` and restart the
-   instance. `real` needs the bus live before startup; an instance that starts
-   against an unpowered arm leaves the hardware component uninitialized and
-   cannot recover without a restart. The arm stays limp until the hardware
-   component activates, so it must be somewhere it can rest. It does not go
-   limp when the instance stops: deactivate the component or cut bus power
-   for that.
-3. Compare `/joint_states` against each joint's actual pose, one joint at a
-   time — not a whole-arm glance — and confirm the gripper before you ever run
+1. **Assemble** the arm and, on mock (`so101_sim`), with no arm attached,
+   confirm the twin appears and moves under `Mirror SO101 Follower`'s fake
+   source — this is the same Objective the real arm uses later, so this step
+   also proves the Objective itself works before hardware is in the loop.
+2. **Install the udev rule** (bench step 1) so `/dev/so101_{follower,leader}`
+   exist and are stable, then confirm `groups | grep dialout`. The calibration
+   script's default ports are those symlinks, so this comes first.
+3. **Calibrate**, one arm at a time, with `script/calibrate_so101.py`
+   (*Calibrating a new arm* above). Support the arm on the bench first —
+   calibration drops servo torque.
+4. **Point the config at real hardware**: set `hardware_interface: "real"`
+   under `urdf_params` in `config/config.yaml` (bench step 3), then run a
+   uniquely-named `moveit_pro build all` — see the workspace docs on running
+   from a worktree if more than one lane is building at once.
+5. **First power-on.** Rest the arm on the bench, **power the servo bus before
+   starting the instance** (an instance that starts against an unpowered bus
+   leaves the hardware component uninitialized and cannot recover without a
+   restart — bench step 4), **and have the leader plugged in and powered too**
+   (its own 5 V supply, never the 12 V brick) — `so101_arm_bridge` opens
+   `leader_port` at startup on `hardware_interface: "real"` and exits if it
+   cannot, taking `Mirror SO101 Follower` down with it. Then start the
+   instance. The arm is limp until the hardware component activates and stays
+   rigid after that even once `moveit_pro down` stops the instance —
+   `on_deactivate` never runs on a plain stop, so deactivate the component
+   (`ros2 control set_hardware_component_state so101 inactive`) or cut bus
+   power to make it limp again.
+6. **Compare `/joint_states` against the real pose with `Verify Calibration`
+   before commanding anything.** The six numbers land in the runtime
+   container's log, not the Objective log in the UI:
+   `docker logs moveit_pro_<instance>-runtime-1 2>&1 | grep -A 7 "Verify Calibration:"`
+   (see *`Verify Calibration`* above). Read them one joint at a time — not a
+   whole-arm glance — and confirm the gripper before you ever run
    `Close Gripper`. A wrong `offset` raises no error anywhere; the arm simply
    goes to the wrong pose, and for the gripper that is the jaw driving past its
-   mechanical stop at the driver's hardcoded speed 2400. The correction is in
-   bench step 2.
-4. Confirm the camera panes, when cameras are added, without commanding motion.
-5. Only after explicit authorization, test bounded gripper, waypoint and jog
+   mechanical stop at the driver's hardcoded speed 2400. If a joint is off,
+   correct it per bench step 2 and re-run `Verify Calibration` before
+   proceeding.
+7. **Run `Mirror SO101 Follower`.** With the leader plugged in, this mirrors
+   the leader's pose onto the follower — move the leader gently and confirm
+   every follower joint (including the gripper) turns the way the URDF says
+   before planning or executing anything. Stop the Objective when done.
+8. Confirm the wrist and scene camera panes show a live image, without
+   commanding motion (*Cameras* above).
+9. Only after explicit authorization, test bounded gripper, waypoint and jog
    motions in that order.
 
 If a waypoint produces clicking, stop the attempt and inspect the physical joint
 and its tracking error. Do not raise path tolerances to make a stalled joint look
 like a success.
+
+Uncalibrated STS3215 servos in position mode will not cross the 4095/0 tick
+boundary — commanding a joint whose true path crosses that wrap point instead
+drives it the long way around, or stalls it. This is why the calibration and
+`Verify Calibration` steps above come before any commanded motion, not just
+before planning: the boundary check requires the joint to already read the
+right angle.
 
 ## Waypoints are not taught poses
 
@@ -393,8 +783,6 @@ them on the bench before trusting any of them.
 
 ## Later phases
 
-- **Phase three** — the wrist and top USB cameras. `usb_cam` is already an
-  `exec_depend` and is installed in the image, but nothing launches it yet.
 - **Phase four** — Trainer recording of demonstrations. Note that a named
   training config is not a workspace file: the Trainer stores them as JSON under
   its own data directory, so `RecordEpisode(config_name="so101_sim")` fails with

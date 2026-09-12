@@ -19,32 +19,47 @@ Expected<int> CommunicationProtocol::read_word(const uint8_t id, const uint8_t m
 }
 
 Result CommunicationProtocol::read_response(const uint8_t id) {
+  return read_response_status(id).map_error([](auto&& error) { return std::move(error.message); });
+}
+
+// PickNik addition: same wire parsing as read_response, but keeps the
+// distinction between "the servo replied and reported a fault" (is_fault
+// true) and "no valid reply came back" (missing/short read, id/length/
+// checksum mismatch - is_fault stays false). set_torque needs that
+// distinction; every other caller goes through read_response above, which
+// collapses it back to a plain message for backwards compatibility.
+StatusResult CommunicationProtocol::read_response_status(const uint8_t id) {
   if (id == kBroadcastId) {
     return {};
   }
+  if (const auto head = check_head(); !head) {
+    return tl::make_unexpected(ServoReplyError{.message = head.error()});
+  }
   std::array<uint8_t, 4> buffer{};
-  return check_head().and_then([&] { return serial_port_->read(&buffer); }).and_then([&]() -> Result {
-    if (buffer[0] != id) {
-      return tl::make_unexpected(fmt::format("buffer[0][={}] != id[={}]", buffer[0], id));
-    }
-    if (buffer[1] != 2) {
-      return tl::make_unexpected(fmt::format("buffer[1][={}] != 2", buffer[1]));
-    }
-    const auto checksum = ~(buffer[0] + buffer[1] + buffer[2]);
-    if (static_cast<std::byte>(checksum) != static_cast<std::byte>(buffer[3])) {
-      return tl::make_unexpected(fmt::format(
-          "CommunicationProtocol::read_response [calculated_checksum={} != checksum={}]", checksum, buffer[3]));
-    }
-    // PickNik addition: buffer[2] is the servo's working-status byte (voltage,
-    // temperature, current, overload flags). Upstream ignored it, so a servo
-    // that acknowledged a write while reporting a fault still counted as
-    // success.
-    if (buffer[2] != 0) {
-      return tl::make_unexpected(
-          fmt::format("CommunicationProtocol::read_response [id={} working status=0x{:02x}]", id, buffer[2]));
-    }
-    return {};
-  });
+  if (const auto read_result = serial_port_->read(&buffer); !read_result) {
+    return tl::make_unexpected(ServoReplyError{.message = read_result.error()});
+  }
+  if (buffer[0] != id) {
+    return tl::make_unexpected(ServoReplyError{.message = fmt::format("buffer[0][={}] != id[={}]", buffer[0], id)});
+  }
+  if (buffer[1] != 2) {
+    return tl::make_unexpected(ServoReplyError{.message = fmt::format("buffer[1][={}] != 2", buffer[1])});
+  }
+  const auto checksum = ~(buffer[0] + buffer[1] + buffer[2]);
+  if (static_cast<std::byte>(checksum) != static_cast<std::byte>(buffer[3])) {
+    return tl::make_unexpected(ServoReplyError{.message = fmt::format(
+        "CommunicationProtocol::read_response [calculated_checksum={} != checksum={}]", checksum, buffer[3])});
+  }
+  // buffer[2] is the servo's working-status byte (voltage, temperature,
+  // current, overload flags). Upstream ignored it, so a servo that
+  // acknowledged a write while reporting a fault still counted as success.
+  if (buffer[2] != 0) {
+    return tl::make_unexpected(
+        ServoReplyError{.message = fmt::format("CommunicationProtocol::read_response [id={} working status=0x{:02x}]",
+                                               id, buffer[2]),
+                        .is_fault = true});
+  }
+  return {};
 }
 
 Result CommunicationProtocol::check_head() {
@@ -110,8 +125,9 @@ Expected<int> CommunicationProtocol::read_speed(const uint8_t id) {
   });
 }
 
-Result CommunicationProtocol::set_torque(const uint8_t id, const bool enable) {
-  return write(id, SMS_STS_TORQUE_ENABLE, std::experimental::make_array(static_cast<uint8_t>(enable ? 1 : 0)));
+StatusResult CommunicationProtocol::set_torque(const uint8_t id, const bool enable) {
+  return write_with_retry(
+      id, SMS_STS_TORQUE_ENABLE, std::experimental::make_array(static_cast<uint8_t>(enable ? 1 : 0)), kInstructionWrite);
 }
 
 Result CommunicationProtocol::calbration_offset(const uint8_t id) {

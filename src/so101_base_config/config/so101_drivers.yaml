@@ -1,0 +1,39 @@
+# Tunable defaults for launch/so101_drivers.launch.py, one entry per launch
+# argument it declares - see "Tuning the mirror" in the README. config/ is
+# installed via colcon's symlink-install (colcon-defaults.yaml), so editing
+# this file and restarting the instance picks up a new value; no rebuild is
+# needed. A launch argument passed at invocation (ros2 launch ...
+# <arg>:=<value>) still overrides whatever default is listed here.
+
+# --real mode: rad/s the commanded target may glide toward the leader's pose
+# each publish tick. See "Leader-driven mirroring on real hardware".
+real_slew_rate_rad_s: 4.0
+
+# --real mode: wrist_roll's leader_offset_rad entry, correcting a leader
+# servo homed off from the follower. Every other joint's offset stays 0.0.
+# Re-homing that leader servo is the proper fix; once it reads true, this
+# should go back to 0.0.
+leader_wrist_roll_offset_rad: 1.68
+
+# --real mode: seconds the leader bus may go without a good read before the
+# follower stops moving.
+leader_timeout_s: 0.5
+
+# --real mode: the leader's Feetech bus device - a udev symlink, stable
+# across replug/reboot. See config/udev/99-so101.rules.
+leader_port: "/dev/so101_leader"
+
+# Wrist camera (Innomaker U20CAM), by-id path - never /dev/videoN, which is
+# not stable across replug/reboot. See "Cameras" in the README.
+wrist_camera_device: "/dev/v4l/by-id/usb-Innomaker_Innomaker-U20CAM-1080p-S1_SN0001-video-index0"
+
+# Scene camera (Logitech C920), by-id path.
+scene_camera_device: "/dev/v4l/by-id/usb-046d_HD_Pro_Webcam_C920_FCBE4AFF-video-index0"
+
+# Wrist camera brightness - signed control, -64..64. 0 is this scale's
+# midpoint; the camera's own power-on default (50) is nearly full-bright.
+wrist_camera_brightness: 0
+
+# Scene camera brightness - unsigned control, 0..255. 128 is this scale's
+# midpoint; the camera's own power-on default (50) is nearly black.
+scene_camera_brightness: 128

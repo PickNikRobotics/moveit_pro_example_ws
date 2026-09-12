@@ -1,6 +1,42 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <launch>
+  <!--
+    This is the Agent/runtime container's own launch file - it does not see
+    the host's udev-named devices (no /dev bind-mount here), only whatever
+    numeric /dev/ttyACM*/videoN nodes the container happens to enumerate. The
+    Mirror SO101 Follower source (which opens the leader's Feetech bus by its
+    udev symlink) and both USB cameras (opened by /dev/v4l/by-id path) run in
+    the drivers container instead, via config.yaml's
+    hardware.additional_driver_launch_file -> launch/so101_drivers.launch.py.
+  -->
   <include
     file="$(find-pkg-share moveit_studio_agent)/launch/studio_agent_bridge.launch.xml"
+  />
+  <!--
+    A second, always-fake instance backing Wiggle SO101 Follower, so the
+    wiggle test stays runnable on real hardware even while the auto instance
+    in the drivers container is in its real (leader-mirroring) source - see
+    the README's Wiggle test section. Its own node name gives it its own
+    ~/mirror trigger-service address, distinct from that other instance. It
+    needs no host device (a self-sine about the measured pose), so it runs
+    here rather than in the drivers container.
+  -->
+  <include
+    file="$(find-pkg-share so101_base_config)/launch/so101_arm_bridge.launch.py"
+  >
+    <arg name="source" value="fake" />
+    <arg name="node_name" value="so101_arm_bridge_wiggle" />
+  </include>
+  <!--
+    Backs the Verify Calibration Objective: reports each joint's Feetech
+    offset error, in servo ticks, while the arm is held at URDF zero. Harmless
+    on mock, where it is how the tick math is tested without an arm attached.
+  -->
+  <node
+    pkg="so101_base_config"
+    exec="verify_calibration.py"
+    name="verify_calibration"
+    output="both"
+    emulate_tty="true"
   />
 </launch>

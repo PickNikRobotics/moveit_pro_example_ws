@@ -55,6 +55,8 @@ joint_trajectory_controller:
     # the sixth on its own, so every goal this config sends names a subset of
     # the controller's joints. Rejecting partial goals rejects all of them.
     allow_partial_joints_goal: true
+    # Bench-confirmed: a planned move's final point carries a rounding-level nonzero velocity that Jazzy's JTC rejects by default.
+    allow_nonzero_velocity_at_trajectory_end: true
     constraints:
       # Disabled: feetech_ros2_driver decodes Present Speed as an unsigned word,
       # so a joint moving negative reports roughly +50.27 rad/s and the
@@ -65,12 +67,29 @@ joint_trajectory_controller:
       shoulder_pan:
         trajectory: 0.15
         goal: 0.06
+      # shoulder_lift and elbow_flex carry the extended arm's weight, so
+      # under gravity load the STS3215's own position servo settles with a
+      # steady-state error a tighter tolerance aborts as a failed goal, even
+      # though the joint has stopped moving and is as close to the target as
+      # its current gain lets it get. The root cause was LeRobot's
+      # calibration leaving P=16 on every follower servo instead of the
+      # factory 32; the gain is now restored to 32 via
+      # config/so101_follower_calibration.yaml (p_cofficient), which the
+      # driver writes to EEPROM at every on_init. `goal` stays at the P=16
+      # value until re-measured on the bench with the restored gain.
+      #
+      # `trajectory` (path tolerance, the in-motion lag budget under load) is
+      # widened for the same reason: bench-measured 0.151550 rad on
+      # shoulder_lift at P=16 with max_acceleration 10
+      # (config/moveit/joint_limits.yaml) while teaching a pose - tracking lag
+      # under gravity, not a stall. Expected to shrink now that P=32 is
+      # restored, but left wide at 0.25 until re-measured.
       shoulder_lift:
-        trajectory: 0.15
-        goal: 0.06
+        trajectory: 0.25
+        goal: 0.12
       elbow_flex:
-        trajectory: 0.15
-        goal: 0.08
+        trajectory: 0.25
+        goal: 0.12
       wrist_flex:
         trajectory: 0.15
         goal: 0.06
