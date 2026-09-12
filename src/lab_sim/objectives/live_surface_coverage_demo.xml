@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Live Surface Coverage Demo">
+  <BehaviorTree
+    ID="Live Surface Coverage Demo"
+    _description="Watch the treated surface fill in while the tool sweeps, recorded from where the tool actually goes."
+  >
+    <Control ID="Sequence" name="root">
+      <Action
+        ID="SwitchController"
+        activate_controllers="joint_trajectory_controller"
+      />
+      <SubTree ID="Close Gripper" _collapsed="true" />
+
+      <!-- 180 deg about the optical X axis points the reference +Z back toward the camera, which is
+           the outward surface normal GenerateSurfaceCoveragePath assumes. -->
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="wrist_camera_optical_frame"
+        orientation_xyzw="1;0;0;0"
+        pose_stamped="{region_reference_pose}"
+      />
+
+      <SubTree ID="Move to Waypoint" waypoint_name="Look at Table" />
+      <Action
+        ID="GetPointCloud"
+        topic_name="/wrist_camera/points"
+        message_out="{point_cloud}"
+        message_timeout_sec="5.0"
+      />
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="wrist_camera_optical_frame"
+        position_xyz="0.05;-0.10;0.597"
+        pose_stamped="{crop_center}"
+      />
+      <Action
+        ID="CropPointsInSphere"
+        point_cloud="{point_cloud}"
+        crop_sphere_centroid_pose="{crop_center}"
+        crop_sphere_radius="0.08"
+        point_cloud_cropped="{region_cloud}"
+      />
+      <Action
+        ID="GetOrientedBoundingBoxFromPointCloud"
+        point_cloud="{region_cloud}"
+        reference_pose="{region_reference_pose}"
+        box_center_pose="{region_pose}"
+        box_dimensions="{region_dimensions}"
+      />
+      <Action
+        ID="GenerateSurfaceCoveragePath"
+        region_pose="{region_pose}"
+        region_dimensions="{region_dimensions}"
+        line_spacing="0.03"
+        point_spacing="0.02"
+        standoff="0.04"
+        margin="0.0"
+        coverage_path="{coverage_path}"
+      />
+      <Action
+        ID="PlanCartesianPath"
+        path="{coverage_path}"
+        planning_group_name="manipulator"
+        tip_links="grasp_link"
+        blending_radius="0.001"
+        joint_trajectory_msg="{coverage_trajectory}"
+      />
+
+      <!-- The sweep and the recording run together. A Parallel is what makes the session end whether
+           the sweep succeeds or fails; a Sequence would leave the Runtime sampling forever. -->
+      <Control ID="Parallel" success_count="1" failure_count="1">
+        <Action
+          ID="ExecuteTrajectory"
+          joint_trajectory_msg="{coverage_trajectory}"
+        />
+        <Action
+          ID="AccumulateSurfaceCoverage"
+          target_cloud="{point_cloud}"
+          tool_frame="grasp_link"
+          footprint_radius="0.02"
+          footprint_range="0.08"
+          sample_rate_hz="10.0"
+          covered_points="{covered_points}"
+        />
+      </Control>
+
+      <Action ID="LogMessage" message="Live coverage recorded." />
+      <SubTree ID="Move to Waypoint" waypoint_name="Home" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Live Surface Coverage Demo">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Basic Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
