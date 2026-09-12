@@ -5,8 +5,8 @@
 # file to run a second arm without editing the config package.
 #
 # id      Servo ID on the bus, 1-253. The LeRobot SO-101 convention is 1..6
-#         from the base outward; `scripts/so101/setup_motors.py` in the
-#         end-to-end repo writes them in that order.
+#         from the base outward; LeRobot's setup-motors tool writes IDs in
+#         that order.
 # offset  Raw encoder tick (0-4095, 4096 ticks per revolution) that the driver
 #         reports as 0 rad, and adds back to every position command. 2048 is a
 #         servo whose EEPROM homing offset has already been calibrated so that

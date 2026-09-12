@@ -4,39 +4,25 @@
   <version>9.5.0</version>
 
   <description>
-    A MoveIt Pro configuration for a LeRobot SO-101 follower arm, fitted with
-    the XLeRobot soft fin-ray gripper, running on mock hardware or on the
-    physical arm over the Feetech STS3215 serial bus.
+    A thin overlay of so101_base_config that forces mock hardware and adds
+    the wiggle-test bridge, so the LeRobot SO-101 follower arm's digital twin
+    moves with no arm plugged in.
   </description>
 
   <maintainer email="support@picknik.ai">MoveIt Pro Maintainer</maintainer>
 
   <license>BSD-3-Clause</license>
-  <license file="description/assets/LICENSE">Apache-2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <depend>so101_base_config</depend>
+
   <exec_depend>action_msgs</exec_depend>
-  <!-- ros2_control hardware interface for the Feetech STS3215 bus, used by
-       the `real` branch of description/so101.urdf.xacro. Built from the
-       vendored copy in src/external_dependencies/feetech_ros2_driver (the
-       0.2.2 release plus the torque lifecycle), which shadows the Jazzy
-       binary. -->
-  <exec_depend>feetech_ros2_driver</exec_depend>
-  <exec_depend>joint_state_broadcaster</exec_depend>
-  <exec_depend>joint_trajectory_controller</exec_depend>
-  <exec_depend>joint_velocity_controller</exec_depend>
-  <exec_depend>velocity_force_controller</exec_depend>
-  <exec_depend>moveit_pro_behavior</exec_depend>
   <exec_depend>moveit_studio_agent</exec_depend>
   <exec_depend>rclpy</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>std_srvs</exec_depend>
   <exec_depend>trajectory_msgs</exec_depend>
-  <exec_depend>xacro</exec_depend>
-  <!-- Nothing launches the cameras yet; declared now so the wrist and top USB
-       cameras in phase three do not need another image rebuild. -->
-  <exec_depend>usb_cam</exec_depend>
 
   <test_depend>ament_cmake_copyright</test_depend>
   <test_depend>ament_cmake_lint_cmake</test_depend>
@@ -44,6 +30,7 @@
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_index_python</test_depend>
   <test_depend>ament_lint_auto</test_depend>
+  <test_depend>moveit_studio_utils_py</test_depend>
   <test_depend>picknik_ament_copyright</test_depend>
   <test_depend>python3-yaml</test_depend>
   <test_depend>rclpy</test_depend>

@@ -37,6 +37,7 @@ import time
 import pytest
 import rclpy
 import yaml
+from ament_index_python.packages import get_package_share_directory
 from rclpy.duration import Duration
 from rclpy.executors import SingleThreadedExecutor
 from rclpy.node import Node
@@ -57,8 +58,12 @@ from so101_arm_bridge import (  # noqa: E402
 
 
 def mock_start_positions():
-    """The pose config/initial_positions.yaml puts the mock hardware in."""
-    path = Path(__file__).parents[1] / "config" / "initial_positions.yaml"
+    """The pose so101_base_config's config/initial_positions.yaml puts the mock hardware in."""
+    path = (
+        Path(get_package_share_directory("so101_base_config"))
+        / "config"
+        / "initial_positions.yaml"
+    )
     initial = yaml.safe_load(path.read_text())["initial_positions"]
     return [initial[name] for name in JOINT_NAMES]
 
