@@ -571,6 +571,17 @@ back in). If `lerobot` is not importable, the script fails with a message
 naming the venv command above rather than trying to `pip install` anything
 itself.
 
+The bench's WCH CH343 adapters can drop the first reply to a bus WRITE (the
+same failure mode as the driver's own first-packet retry, see *Known gaps in
+the driver* above), which surfaces as `lerobot_calibrate` failing to connect
+with `Incorrect status packet`. By default `script/calibrate_so101.py` runs
+`lerobot_calibrate` through a small shim that monkeypatches LeRobot's own
+`MotorsBus._write`/`_sync_write` to floor their retry count at 5 before
+calling LeRobot's unmodified CLI — nothing else about the calibration changes,
+since the retry happens inside LeRobot's own bus layer. Pass
+`--bus-write-retries N` to change the floor, or `--bus-write-retries 0` to run
+the stock `lerobot_calibrate` invocation unwrapped.
+
 LeRobot's calibration `connect()` writes P_Coefficient=16 into every follower
 servo as a side effect of connecting, not a deliberate SO-101 tuning choice —
 the STS3215 factory default is 32. At P=16, the loaded joints (especially
