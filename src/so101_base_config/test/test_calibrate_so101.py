@@ -61,7 +61,24 @@ def test_parse_args_rejects_an_unknown_arm():
         calibrate_so101.parse_args(["gripper"])
 
 
-def test_run_calibration_uses_defaults_and_execs_lerobot(monkeypatch, tmp_path):
+def test_parse_args_defaults_bus_write_retries_to_five():
+    args = calibrate_so101.parse_args(["follower"])
+    assert args.bus_write_retries == 5
+
+
+def test_parse_args_accepts_a_bus_write_retries_override():
+    args = calibrate_so101.parse_args(["follower", "--bus-write-retries", "0"])
+    assert args.bus_write_retries == 0
+
+
+def test_parse_args_rejects_a_negative_bus_write_retries():
+    with pytest.raises(SystemExit):
+        calibrate_so101.parse_args(["follower", "--bus-write-retries", "-1"])
+
+
+def test_run_calibration_uses_defaults_and_execs_lerobot_through_the_retry_shim(
+    monkeypatch, tmp_path
+):
     subdir = tmp_path / "robots" / "so_follower"
     monkeypatch.setitem(calibrate_so101.ARMS["follower"], "calibration_subdir", subdir)
 
@@ -77,6 +94,37 @@ def test_run_calibration_uses_defaults_and_execs_lerobot(monkeypatch, tmp_path):
     monkeypatch.setattr("builtins.input", lambda *_: "")
 
     calibrate_so101.run_calibration("follower", "/dev/so101_follower", "so101_follower")
+
+    assert commands[0] == [
+        calibrate_so101.sys.executable,
+        "-c",
+        calibrate_so101.BUS_WRITE_RETRY_SHIM.format(retries=5),
+        "--robot.type=so101_follower",
+        "--robot.port=/dev/so101_follower",
+        "--robot.id=so101_follower",
+    ]
+
+
+def test_run_calibration_with_zero_bus_write_retries_uses_the_stock_invocation(
+    monkeypatch, tmp_path
+):
+    subdir = tmp_path / "robots" / "so_follower"
+    monkeypatch.setitem(calibrate_so101.ARMS["follower"], "calibration_subdir", subdir)
+
+    commands = []
+
+    def fake_run(cmd, check):
+        assert check
+        subdir.mkdir(parents=True)
+        (subdir / "so101_follower.json").write_text("{}")
+        commands.append(cmd)
+
+    monkeypatch.setattr(calibrate_so101.subprocess, "run", fake_run)
+    monkeypatch.setattr("builtins.input", lambda *_: "")
+
+    calibrate_so101.run_calibration(
+        "follower", "/dev/so101_follower", "so101_follower", bus_write_retries=0
+    )
 
     assert commands[0] == [
         calibrate_so101.sys.executable,
