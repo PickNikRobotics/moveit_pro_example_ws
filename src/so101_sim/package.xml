@@ -4,9 +4,9 @@
   <version>9.5.0</version>
 
   <description>
-    A thin overlay of so101_base_config that forces mock hardware and adds
-    the wiggle-test bridge, so the LeRobot SO-101 follower arm's digital twin
-    moves with no arm plugged in.
+    A thin overlay of so101_base_config that forces mock hardware. Everything
+    else - including the wiggle-test bridge and its Mirror SO101 Follower
+    Objective - is inherited from the base package unchanged.
   </description>
 
   <maintainer email="support@picknik.ai">MoveIt Pro Maintainer</maintainer>
@@ -17,13 +17,6 @@
 
   <depend>so101_base_config</depend>
 
-  <exec_depend>action_msgs</exec_depend>
-  <exec_depend>moveit_studio_agent</exec_depend>
-  <exec_depend>rclpy</exec_depend>
-  <exec_depend>sensor_msgs</exec_depend>
-  <exec_depend>std_srvs</exec_depend>
-  <exec_depend>trajectory_msgs</exec_depend>
-
   <test_depend>ament_cmake_copyright</test_depend>
   <test_depend>ament_cmake_lint_cmake</test_depend>
   <test_depend>ament_cmake_pytest</test_depend>
@@ -32,8 +25,6 @@
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>moveit_studio_utils_py</test_depend>
   <test_depend>picknik_ament_copyright</test_depend>
-  <test_depend>python3-yaml</test_depend>
-  <test_depend>rclpy</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

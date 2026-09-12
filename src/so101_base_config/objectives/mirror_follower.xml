@@ -2,7 +2,7 @@
 <root BTCPP_format="4" main_tree_to_execute="Mirror SO101 Follower">
   <BehaviorTree
     ID="Mirror SO101 Follower"
-    _description="Wiggle test: so101_arm_bridge drives joint_trajectory_controller for as long as this Objective runs, sweeping each joint about 0.1 rad either side of the pose the arm is measured in when it starts. On mock the twin moves with no arm plugged in; on real hardware it is a joint-by-joint check that every servo is alive and moving the right way."
+    _description="so101_arm_bridge drives joint_trajectory_controller for as long as this Objective runs. On mock and on real hardware in --fake mode, it is the wiggle test: each joint sweeps about 0.1 rad either side of the pose the arm is measured in when it starts, a joint-by-joint check that every servo is alive and moving the right way. On real hardware with the leader connected (--real), it instead mirrors the leader arm's pose onto the follower."
     _favorite="true"
   >
     <!--
@@ -10,12 +10,21 @@
       stops on its own when this Objective is stopped. That is deliberate: the
       trajectory controller has one owner at a time, and a plan and the bridge
       would otherwise fight over it. Stop this Objective before pressing Plan.
+
+      Teleoperate's jog modes leave a velocity controller active and
+      joint_trajectory_controller inactive; switch back before ticking the
+      bridge, or its trajectory points go nowhere.
     -->
     <Control ID="Sequence" name="root">
       <Action
+        ID="SwitchController"
+        activate_controllers="joint_trajectory_controller"
+        deactivate_controllers="joint_velocity_controller;velocity_force_controller"
+      />
+      <Action
         ID="LogMessage"
         log_level="info"
-        message="Wiggling the SO-101 follower about its current pose. Stop this Objective before planning or executing."
+        message="Mirroring the SO-101 follower. Stop this Objective before planning or executing."
       />
       <Decorator ID="KeepRunningUntilFailure">
         <Control ID="Sequence" name="Keep the bridge mirroring">

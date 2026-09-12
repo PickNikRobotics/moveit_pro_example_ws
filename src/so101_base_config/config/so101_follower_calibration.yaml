@@ -18,22 +18,41 @@
 # There is no per-joint sign here because feetech_ros2_driver 0.2.2 has no sign
 # knob; see the "No per-joint sign" bullet under "Known gaps in the driver" in
 # the README.
+#
+# p_cofficient, i_cofficient, d_cofficient (optional, per joint)
+#         STS3215 position-loop PID gains (EEPROM registers 21/22/23; spelling
+#         matches the driver's own parameter name, a typo carried from
+#         upstream). Factory default is P=32. LeRobot's calibration connect()
+#         writes P=16 into every follower servo as a side effect (not a
+#         deliberate SO-101 tuning choice) - at P=16 the loaded joints stop
+#         noticeably short of commanded goals and lag a moving trajectory. Set
+#         to 32 below to restore the factory gain. The driver writes whichever
+#         of these three are present here into the servo's EEPROM at every
+#         on_init (feetech_ros2_driver.cpp); omitting a joint's entry leaves
+#         that servo's currently-stored value alone. See README "Calibrating a
+#         new arm" for how to change this on the bench.
 joints:
   shoulder_pan:
     id: 1
     offset: 2048
+    p_cofficient: 32
   shoulder_lift:
     id: 2
     offset: 2048
+    p_cofficient: 32
   elbow_flex:
     id: 3
     offset: 2048
+    p_cofficient: 32
   wrist_flex:
     id: 4
     offset: 2048
+    p_cofficient: 32
   wrist_roll:
     id: 5
     offset: 2048
+    p_cofficient: 32
   gripper:
     id: 6
     offset: 2048
+    p_cofficient: 32

@@ -9,6 +9,6 @@
 #   sudo cp 99-so101.rules /etc/udev/rules.d/
 #   sudo udevadm control --reload-rules && sudo udevadm trigger
 #
-# Captured 2026-05-22 from the bench laptop.
-SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="55d3", ATTRS{serial}=="5B41532176", SYMLINK+="so101_leader"
-SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="55d3", ATTRS{serial}=="5B41532842", SYMLINK+="so101_follower"
+# Captured 2026-09-10 from the workstation the arms now live on.
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="55d3", ATTRS{serial}=="5B41533808", SYMLINK+="so101_leader"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="55d3", ATTRS{serial}=="5B41532169", SYMLINK+="so101_follower"

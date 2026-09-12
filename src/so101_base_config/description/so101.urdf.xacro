@@ -620,6 +620,21 @@
       <xacro:if value="${'$(arg hardware_interface)' == 'real'}">
         <param name="id">${calibration[name]['id']}</param>
         <param name="offset">${calibration[name]['offset']}</param>
+        <!--
+          Optional PID gains, EEPROM-written by the driver at every on_init
+          when present (feetech_ros2_driver.cpp, ~line 58). Absent when the
+          calibration entry does not carry them, leaving the servo's stored
+          value alone - see config/so101_follower_calibration.yaml.
+        -->
+        <xacro:if value="${'p_cofficient' in calibration[name]}">
+          <param name="p_cofficient">${calibration[name]['p_cofficient']}</param>
+        </xacro:if>
+        <xacro:if value="${'i_cofficient' in calibration[name]}">
+          <param name="i_cofficient">${calibration[name]['i_cofficient']}</param>
+        </xacro:if>
+        <xacro:if value="${'d_cofficient' in calibration[name]}">
+          <param name="d_cofficient">${calibration[name]['d_cofficient']}</param>
+        </xacro:if>
       </xacro:if>
       <command_interface name="position">
         <param name="min">${lower}</param>

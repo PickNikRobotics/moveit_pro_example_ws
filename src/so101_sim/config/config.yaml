@@ -1,26 +1,15 @@
 ###############################################################
 #
-#  This overlays so101_base_config to force mock hardware and add the
-#  wiggle-test / Mirror SO101 Follower bridge.
+#  This overlays so101_base_config to force mock hardware. Everything else -
+#  the runtime launch file, the wiggle-test bridge and Mirror SO101 Follower
+#  Objective, the description, controllers - is inherited unchanged.
 #
 ###############################################################
 
 based_on_package: "so101_base_config"
-
-runtime_launch_file:
-  package: "so101_sim"
-  path: "launch/runtime.launch.xml"
 
 hardware:
   robot_description:
     urdf_params:
       # Force mock regardless of the base config's default.
       - hardware_interface: "mock"
-
-objectives:
-  objective_library_paths:
-    # You must use a unique key for each package.
-    # so101_base_config uses "so101_objectives".
-    so101_sim_objectives:
-      package_name: "so101_sim"
-      relative_path: "objectives"

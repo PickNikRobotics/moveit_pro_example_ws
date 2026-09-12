@@ -51,6 +51,16 @@ hardware:
           package: "so101_base_config"
           path: "config/so101_follower_calibration.yaml"
 
+  # Launch file for the drivers container, the only one that bind-mounts the
+  # host's /dev - anything that opens a device by its udev name (the
+  # leader's Feetech bus, both USB cameras' /dev/v4l/by-id paths) has to run
+  # here rather than in runtime_launch_file above. See the README's Cameras
+  # and Leader-driven mirroring sections.
+  # [Optional]
+  additional_driver_launch_file:
+    package: "so101_base_config"
+    path: "launch/so101_drivers.launch.py"
+
 # Sets ROS global params for launch.
 # [Optional]
 ros_global_params:

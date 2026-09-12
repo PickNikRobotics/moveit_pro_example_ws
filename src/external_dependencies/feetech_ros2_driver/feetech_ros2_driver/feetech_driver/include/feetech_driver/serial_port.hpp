@@ -20,6 +20,14 @@ class SerialPort {
   Result flashInputBuffer() noexcept;
   Result flashOutputBuffer() noexcept;
 
+  // PickNik addition: an EEPROM write's acknowledgement (the servo commits to
+  // flash before replying) can arrive after the 10 ms control-loop timeout
+  // below; a caller writing an EEPROM register raises this around that one
+  // call and restores it after, rather than raising it globally and risking a
+  // lost SRAM (position) reply stalling the control loop.
+  void set_timeout(const std::chrono::milliseconds timeout) noexcept { timeout_ = timeout; }
+  [[nodiscard]] std::chrono::milliseconds timeout() const noexcept { return timeout_; }
+
   Result read_byte(uint8_t* byte) {
     try {
       port_.ReadByte(*byte, static_cast<std::size_t>(timeout_.count()));

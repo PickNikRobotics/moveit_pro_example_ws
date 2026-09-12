@@ -27,10 +27,11 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-"""Check the bridge's fake source and its name/unit conversion helpers."""
+"""Check the bridge's fake and real sources and its unit-conversion helpers."""
 
 from pathlib import Path
 import math
+import os
 import sys
 import time
 
@@ -49,11 +50,20 @@ sys.path.insert(0, str(Path(__file__).parents[1] / "script"))
 from so101_arm_bridge import (  # noqa: E402
     JOINT_LIMITS,
     JOINT_NAMES,
+    LEADER_OFFSET_RAD_DEFAULT,
+    LEADER_TRIGGER_TICKS_CLOSED,
+    LEADER_TRIGGER_TICKS_OPEN,
     WIGGLE_AMPLITUDE_RAD,
+    LeaderBus,
     So101ArmBridge,
+    build_read_present_position_packet,
     fake_positions,
+    leader_tick_to_radians,
+    leader_trigger_to_gripper_radians,
     order_like,
-    to_radians,
+    parse_present_position_response,
+    read_leader_pose_rad,
+    slew_toward,
 )
 
 
@@ -66,17 +76,6 @@ def mock_start_positions():
     )
     initial = yaml.safe_load(path.read_text())["initial_positions"]
     return [initial[name] for name in JOINT_NAMES]
-
-
-def test_to_radians_applies_offset_then_sign():
-    # 90 deg with a 10 deg offset and a flipped sign is -80 deg.
-    assert to_radians([90.0], [-1.0], [10.0]) == pytest.approx([math.radians(-80.0)])
-    assert to_radians([0.0] * 6, [1.0] * 6, [0.0] * 6) == [0.0] * 6
-
-
-def test_to_radians_rejects_mismatched_calibration():
-    with pytest.raises(ValueError):
-        to_radians([0.0, 0.0], [1.0], [0.0, 0.0])
 
 
 def test_order_like_reorders_by_name():
@@ -279,9 +278,17 @@ def test_bridge_yields_while_a_trajectory_goal_is_active(ros_context):
     spin(0.5)
     assert received == [], "the bridge must not publish while a goal is executing"
 
+    # The goal moved the arm - a plan executed while the bridge yielded.
+    moved_pose = [p + 0.2 for p in mock_start_positions()]
+    feed_joint_states(bridge, moved_pose)
+
     publish_status(GoalStatus.STATUS_SUCCEEDED)
     spin(0.5)
     assert received, "the bridge must resume once the goal finishes"
+    assert received[0].points[0].positions == pytest.approx(moved_pose, abs=1e-3), (
+        "the first resumed trajectory must start at the post-goal pose, not "
+        "wherever the wiggle was centred before the goal took over"
+    )
 
     executor.shutdown()
     listener.destroy_node()
@@ -379,8 +386,319 @@ def test_mirroring_recenters_on_a_later_start(ros_context):
     bridge.destroy_node()
 
 
-def test_real_source_is_still_a_stub(ros_context):
-    bridge = So101ArmBridge(source="real")
-    with pytest.raises(NotImplementedError):
-        bridge.read_positions()
+def encode_status_packet(servo_id, tick, error=0):
+    """Build a Feetech present-position status (reply) packet by hand.
+
+    Independent of build_read_present_position_packet (which builds the
+    request, not the reply), so this is not a tautological check of the
+    parser against its own encoder.
+    """
+    body = bytes([servo_id, 4, error, tick & 0xFF, (tick >> 8) & 0xFF])
+    return b"\xff\xff" + body + bytes([(~sum(body)) & 0xFF])
+
+
+def test_build_read_present_position_packet_roundtrips_with_a_status_reply():
+    request = build_read_present_position_packet(3)
+    assert request == bytes(
+        [0xFF, 0xFF, 3, 4, 0x02, 56, 2, (~(3 + 4 + 0x02 + 56 + 2)) & 0xFF]
+    )
+    assert parse_present_position_response(encode_status_packet(3, 2500), 3) == 2500
+
+
+def test_parse_present_position_response_rejects_a_bad_checksum():
+    packet = bytearray(encode_status_packet(3, 2500))
+    packet[-1] ^= 0xFF
+    assert parse_present_position_response(bytes(packet), 3) is None
+
+
+def test_parse_present_position_response_rejects_the_wrong_id():
+    assert parse_present_position_response(encode_status_packet(3, 2500), 4) is None
+
+
+def test_parse_present_position_response_rejects_a_servo_error():
+    assert (
+        parse_present_position_response(encode_status_packet(3, 2500, error=1), 3)
+        is None
+    )
+
+
+def test_parse_present_position_response_rejects_a_short_packet():
+    assert (
+        parse_present_position_response(encode_status_packet(3, 2500)[:-1], 3) is None
+    )
+
+
+def test_leader_tick_to_radians_zero_is_urdf_zero():
+    assert leader_tick_to_radians(2048) == pytest.approx(0.0)
+    assert leader_tick_to_radians(2048 + 1024) == pytest.approx(math.pi / 2.0)
+
+
+def test_leader_trigger_to_gripper_radians_spans_the_urdf_range():
+    lower, upper = JOINT_LIMITS["gripper"]
+    assert leader_trigger_to_gripper_radians(
+        LEADER_TRIGGER_TICKS_CLOSED
+    ) == pytest.approx(lower)
+    assert leader_trigger_to_gripper_radians(
+        LEADER_TRIGGER_TICKS_OPEN
+    ) == pytest.approx(upper)
+
+
+def non_blocking_read_fn(fd):
+    """A pipe's blocking read would hang forever with no writer; a real tty's
+    VMIN=0/VTIME>0 setup (open_leader_port) never blocks like that, so this
+    mirrors that instead of the fake fd hanging the test suite."""
+    os.set_blocking(fd, False)
+
+    def read(n):
+        try:
+            return os.read(fd, n)
+        except BlockingIOError:
+            return b""
+
+    return read
+
+
+def test_leader_bus_reads_present_position_over_a_fake_file_descriptor():
+    """A real fd pair (os.pipe), not a mock, stands in for the leader's tty."""
+    request_r, request_w = os.pipe()
+    response_r, response_w = os.pipe()
+    try:
+        os.write(response_w, encode_status_packet(servo_id=3, tick=2500))
+        bus = LeaderBus(
+            read_fn=non_blocking_read_fn(response_r),
+            write_fn=lambda data: os.write(request_w, data),
+        )
+        assert bus.read_present_position(3) == 2500
+        assert os.read(request_r, 64) == build_read_present_position_packet(3)
+    finally:
+        for fd in (request_r, request_w, response_r, response_w):
+            os.close(fd)
+
+
+def test_leader_bus_times_out_on_no_reply():
+    request_r, request_w = os.pipe()
+    response_r, response_w = os.pipe()
+    try:
+        bus = LeaderBus(
+            read_fn=non_blocking_read_fn(response_r),
+            write_fn=lambda data: os.write(request_w, data),
+            timeout_s=0.05,
+        )
+        assert bus.read_present_position(3) is None
+    finally:
+        for fd in (request_r, request_w, response_r, response_w):
+            os.close(fd)
+
+
+class FakeLeaderBus:
+    """A leader bus with canned per-servo ticks, for testing above the wire protocol."""
+
+    def __init__(self, ticks_by_id):
+        self.ticks_by_id = ticks_by_id
+
+    def read_present_position(self, servo_id):
+        return self.ticks_by_id.get(servo_id)
+
+
+def test_read_leader_pose_rad_maps_and_clamps_every_joint():
+    ticks = {index + 1: 2048 for index in range(len(JOINT_NAMES) - 1)}
+    ticks[len(JOINT_NAMES)] = LEADER_TRIGGER_TICKS_CLOSED  # gripper
+    positions = read_leader_pose_rad(FakeLeaderBus(ticks))
+    for name, position in zip(JOINT_NAMES, positions):
+        lower, upper = JOINT_LIMITS[name]
+        assert lower <= position <= upper
+    assert positions[JOINT_NAMES.index("gripper")] == pytest.approx(
+        JOINT_LIMITS["gripper"][0]
+    )
+
+
+def test_read_leader_pose_rad_skips_the_whole_sample_on_one_bad_joint():
+    ticks = {index + 1: 2048 for index in range(len(JOINT_NAMES))}
+    del ticks[2]  # shoulder_lift's read failed
+    assert read_leader_pose_rad(FakeLeaderBus(ticks)) is None
+
+
+def test_slew_toward_moves_by_at_most_max_step_without_overshoot():
+    assert slew_toward([0.0], [1.0], 0.3) == pytest.approx([0.3])
+    assert slew_toward([0.9], [1.0], 0.3) == pytest.approx(
+        [1.0]
+    )  # closes the gap exactly
+    assert slew_toward([1.0], [0.0], 0.3) == pytest.approx([0.7])
+    assert slew_toward([0.0, 1.0], [1.0, 0.0], 0.3) == pytest.approx([0.3, 0.7])
+
+
+def test_read_leader_pose_rad_applies_the_leader_offset_before_clamping():
+    ticks = {index + 1: 2048 for index in range(len(JOINT_NAMES))}
+    without_offset = read_leader_pose_rad(FakeLeaderBus(ticks))
+    with_offset = read_leader_pose_rad(FakeLeaderBus(ticks), {"wrist_roll": 0.5})
+    index = JOINT_NAMES.index("wrist_roll")
+    assert with_offset[index] == pytest.approx(without_offset[index] + 0.5)
+    for i in range(len(JOINT_NAMES)):
+        if i != index:
+            assert with_offset[i] == pytest.approx(without_offset[i])
+
+
+def test_real_source_mirrors_the_leader(ros_context):
+    """With a leader_bus injected, --real publishes the leader's mapped pose.
+
+    This checks the bridge's plumbing (poll -> latest_leader_positions ->
+    slew -> publish), not the mapping math - covered by the
+    read_leader_pose_rad tests above - so the follower is started already at
+    the (offset-applied) target: with zero initial error, one slew step
+    lands exactly on it, regardless of the configured slew rate.
+    """
+    received = []
+    ticks = {index + 1: 2048 for index in range(len(JOINT_NAMES))}
+    offset = dict(zip(JOINT_NAMES, LEADER_OFFSET_RAD_DEFAULT))
+    expected = read_leader_pose_rad(FakeLeaderBus(ticks), offset)
+    bridge = So101ArmBridge(source="real", leader_bus=FakeLeaderBus(ticks))
+    listener = Node("test_real_listener")
+    listener.create_subscription(
+        JointTrajectory,
+        "/joint_trajectory_controller/joint_trajectory",
+        received.append,
+        10,
+    )
+    executor = SingleThreadedExecutor()
+    executor.add_node(bridge)
+    executor.add_node(listener)
+
+    feed_joint_states(bridge, expected)
+    bridge.poll_leader()
+    deadline = time.monotonic() + 3.0
+    while time.monotonic() < deadline and not received:
+        tick_mirroring(bridge)
+        executor.spin_once(timeout_sec=0.02)
+
+    executor.shutdown()
+    listener.destroy_node()
     bridge.destroy_node()
+
+    assert received, "real mode should publish once the leader has been polled"
+    assert received[0].points[0].positions == pytest.approx(expected)
+
+
+def test_real_source_glides_instead_of_jumping_to_the_leader_pose(ros_context):
+    """One read_positions() call moves at most real_slew_max_step_rad per joint."""
+    ticks = {index + 1: 2048 for index in range(len(JOINT_NAMES))}
+    bridge = So101ArmBridge(source="real", leader_bus=FakeLeaderBus(ticks))
+    start_pose = [0.5] * len(JOINT_NAMES)
+    feed_joint_states(bridge, start_pose)
+    tick_mirroring(bridge)
+    bridge.poll_leader()
+    target = bridge.latest_leader_positions
+    assert all(
+        abs(t - s) > bridge.real_slew_max_step_rad for s, t in zip(start_pose, target)
+    ), "test needs every joint further from start than one slew step"
+
+    first = bridge.read_positions()
+    for s, t, f in zip(start_pose, target, first):
+        assert f == pytest.approx(
+            s + math.copysign(bridge.real_slew_max_step_rad, t - s)
+        )
+
+    for _ in range(500):  # far more steps than needed to close any of the gaps above
+        bridge.read_positions()
+    assert bridge.read_positions() == pytest.approx(target)
+    bridge.destroy_node()
+
+
+def test_real_source_publishes_nothing_before_the_first_leader_read(ros_context):
+    bridge = So101ArmBridge(source="real", leader_bus=FakeLeaderBus({}))
+    feed_joint_states(bridge)
+    tick_mirroring(bridge)
+    assert bridge.read_positions() is None
+    bridge.publish_once()  # must be a no-op rather than raise
+    bridge.destroy_node()
+
+
+def test_poll_leader_keeps_the_last_good_target_on_a_failed_read(ros_context):
+    good_ticks = {index + 1: 2048 for index in range(len(JOINT_NAMES))}
+    bridge = So101ArmBridge(source="real", leader_bus=FakeLeaderBus(good_ticks))
+    bridge.poll_leader()
+    first_target = bridge.latest_leader_positions
+    assert first_target is not None
+
+    bridge.leader_bus = FakeLeaderBus({})  # every joint now fails to read
+    bridge.poll_leader()
+    assert bridge.latest_leader_positions == pytest.approx(first_target)
+    bridge.destroy_node()
+
+
+def test_poll_leader_stops_motion_once_reads_have_been_stale_too_long(ros_context):
+    """A single failed read keeps slewing toward the last good sample, but a
+    leader that stays unreadable past leader_timeout_s must stop the
+    follower outright rather than keep chasing a stale target forever."""
+    good_ticks = {index + 1: 2048 for index in range(len(JOINT_NAMES))}
+    bridge = So101ArmBridge(source="real", leader_bus=FakeLeaderBus(good_ticks))
+    bridge.leader_timeout_s = 0.05
+    feed_joint_states(bridge)
+    tick_mirroring(bridge)
+    bridge.poll_leader()
+    assert bridge.read_positions() is not None
+    assert bridge.leader_stale is False
+
+    bridge.leader_bus = FakeLeaderBus({})  # every joint now fails to read
+    time.sleep(0.1)
+    bridge.poll_leader()
+    assert bridge.leader_stale is True
+    assert bridge.read_positions() is None
+    bridge.publish_once()  # must be a no-op, not publish the stale target
+
+    bridge.leader_bus = FakeLeaderBus(good_ticks)  # leader recovers
+    bridge.poll_leader()
+    assert bridge.leader_stale is False
+    assert bridge.read_positions() is not None
+    bridge.destroy_node()
+
+
+def test_poll_leader_survives_a_bus_os_error_after_motion_has_started(ros_context):
+    """An unplugged port (or a leader servo fault that knocks the bus out)
+    raises OSError from the raw fd read/write once motion is already
+    underway. That must not crash poll_leader(), and it must count toward
+    leader_timeout_s the same as a timed-out or bad-checksum reply."""
+    good_ticks = {index + 1: 2048 for index in range(len(JOINT_NAMES))}
+    bridge = So101ArmBridge(source="real", leader_bus=FakeLeaderBus(good_ticks))
+    bridge.leader_timeout_s = 0.05
+    feed_joint_states(bridge)
+    tick_mirroring(bridge)
+    bridge.poll_leader()
+    assert bridge.latest_leader_positions is not None
+
+    def raising_write(data):
+        raise OSError(6, "no such device or address")
+
+    bridge.leader_bus = LeaderBus(read_fn=lambda n: b"", write_fn=raising_write)
+    time.sleep(0.1)
+    bridge.poll_leader()  # must not raise
+    assert bridge.leader_stale is True
+    assert bridge.read_positions() is None
+    bridge.destroy_node()
+
+
+def test_leader_bus_read_present_position_returns_none_on_a_write_os_error():
+    """An unplugged port raises OSError on write; the bus must treat that
+    like any other bad reply rather than let it escape to the caller."""
+
+    def raising_write(data):
+        raise OSError(6, "no such device or address")
+
+    bus = LeaderBus(read_fn=lambda n: b"", write_fn=raising_write)
+    assert bus.read_present_position(3) is None
+
+
+def test_leader_bus_read_present_position_returns_none_on_a_read_os_error():
+    request_r, request_w = os.pipe()
+    try:
+
+        def raising_read(n):
+            raise OSError(5, "input/output error")
+
+        bus = LeaderBus(
+            read_fn=raising_read,
+            write_fn=lambda data: os.write(request_w, data),
+        )
+        assert bus.read_present_position(3) is None
+    finally:
+        os.close(request_r)
+        os.close(request_w)
