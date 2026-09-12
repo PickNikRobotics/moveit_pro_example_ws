@@ -61,7 +61,6 @@ best-effort only — the flag is set from `GoalStatusArray` messages, so a goal
 started while the Mirror Objective is still publishing can lose the race with a
 20 ms bridge tick.
 
-
 ## What is here
 
 | Path | What it is |
@@ -78,9 +77,5 @@ STS3215 bus bench procedure, known driver gaps, torque lifecycle, and safe
 bring-up order. This overlay's own `hardware_interface: "mock"` override has to
 be reverted (or run `so101_base_config` directly, or a real-hardware config
 that inherits it) to reach real hardware — `so101_sim` always forces mock.
-
-## Waypoints are not taught poses
-
-`so101_base_config`'s `waypoints/so101_waypoints.yaml` holds poses picked to be
-reachable and visible in simulation. None of them has been validated against a
-physical arm; re-teach them on the bench before trusting any of them.
+The inherited waypoints are sim-picked, not bench-taught; see
+[Waypoints are not taught poses](../so101_base_config/README.md#waypoints-are-not-taught-poses).
