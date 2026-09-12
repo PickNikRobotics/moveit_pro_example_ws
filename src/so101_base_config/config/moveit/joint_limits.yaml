@@ -1,5 +1,5 @@
 # Positions are the upstream LeRobot calibration limits (radians); velocity and
-# acceleration are the conservative values ported from the SO-101 fork PR.
+# acceleration are conservative values from bring-up testing on the real arm.
 joint_limits:
   shoulder_pan:
     has_position_limits: true
