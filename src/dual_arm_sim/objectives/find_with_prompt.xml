@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Find with prompt">
   <!--//////////-->
-  <BehaviorTree ID="Find with prompt" _description="" _favorite="false">
+  <BehaviorTree
+    ID="Find with prompt"
+    _description="Segments the scene with the given text prompt and reports the centroid of the first mask in the detector's output order, which is not a ranking. Fails when no detection passes confidence_threshold."
+    _favorite="false"
+  >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree
         ID="Segment Point Cloud from Text Prompt Subtree"
@@ -9,17 +13,21 @@
         camera_topic_name="/scene_camera/camera_info"
         image_topic_name="/scene_camera/color"
         masks_visualization_topic="/masks_visualization"
-        model_package="moveit_pro_clipseg"
+        model_package="moveit_pro_sam3"
         points_topic_name="/scene_camera/points"
-        clip_model_path="models/clip.onnx"
-        clipseg_model_path="models/clipseg.onnx"
-        erosion_size="5"
-        prompts="{prompt}"
-        threshold="0.28"
+        text_prompt="{prompt}"
+        confidence_threshold="0.5"
         masks3d="{masks3d}"
         point_cloud="{point_cloud}"
         point_cloud_vector="{point_cloud_vector}"
+        mask_count="{mask_count}"
         use_latest_transform="true"
+      />
+      <Action
+        ID="LogMessage"
+        _skipIf="mask_count > 0"
+        log_level="error"
+        message="Find with prompt: no detection passed confidence_threshold for the requested prompt, so there is nothing to locate. Check the prompt port and the camera view."
       />
       <Action
         ID="GetElementOfVector"
