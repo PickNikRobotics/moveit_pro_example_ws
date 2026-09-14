@@ -2,7 +2,7 @@
 <root BTCPP_format="4" main_tree_to_execute="Sort Blocks">
   <BehaviorTree
     ID="Sort Blocks"
-    _description="Clears colored blocks off the table by color, right arm for red and left for green. A CLIPSeg no-masks error is expected when a color runs out of blocks."
+    _description="Clears colored blocks off the table by color, right arm for red and left for green. An error is expected when a color runs out of blocks: segmentation returns no masks, and the downstream point cloud lookup then fails on the empty result."
     _favorite="true"
   >
     <Control ID="Sequence">
