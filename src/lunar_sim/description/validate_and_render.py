@@ -29,7 +29,9 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 """Phase-1 validation: MJCF smoke test, Dead Reckon Square calibration recheck
-(RECORDED STATE - freejoint chassis pose, not /odom), and comparison renders.
+(RECORDED STATE - freejoint chassis pose, not /odom; fails on any boulder
+contact), comparison renders, and the sensor sheet (camera/optical-site frame
+checks, lidar tiling and scan-line returns, labelled mast/mount/boulder views).
 
 Run inside the picknikciuser/moveit-pro container (has MuJoCo 3.6 + PIL):
   docker run --rm --entrypoint python3 \
@@ -50,7 +52,7 @@ import sys
 import math
 import mujoco
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageDraw
 
 WHEEL_RADIUS = 0.1645
 WHEEL_SEPARATION = 0.562
@@ -142,6 +144,16 @@ def dead_reckon_square(model, data):
     reset_to_keyframe(model, data)
     chassis_id = require_id(model, mujoco.mjtObj.mjOBJ_BODY, "chassis_link")
     aid = wheel_actuator_ids(model)
+    boulder_ids = {
+        require_id(model, mujoco.mjtObj.mjOBJ_GEOM, name)
+        for name in ("boulder_east", "boulder_north", "boulder_west", "boulder_south")
+    }
+
+    def step_clear_route():
+        mujoco.mj_step(model, data)
+        for contact in data.contact:
+            if contact.geom1 in boulder_ids or contact.geom2 in boulder_ids:
+                raise AssertionError("Dead Reckon Square touched a boulder")
 
     def set_wheels(l, r):
         data.ctrl[aid["front_left_wheel_joint"]] = l
@@ -151,7 +163,7 @@ def dead_reckon_square(model, data):
 
     set_wheels(0, 0)
     for _ in range(2000):
-        mujoco.mj_step(model, data)
+        step_clear_route()
 
     w_straight = V_CMD / WHEEL_RADIUS
     L = WHEEL_SEPARATION * MULTIPLIER
@@ -165,16 +177,16 @@ def dead_reckon_square(model, data):
     for _ in range(4):
         set_wheels(w_straight, w_straight)
         for _ in range(n_straight):
-            mujoco.mj_step(model, data)
+            step_clear_route()
         corners.append(data.xpos[chassis_id][:2].copy())
         set_wheels(-wheel_diff_turn, wheel_diff_turn)
         for _ in range(n_turn):
-            mujoco.mj_step(model, data)
+            step_clear_route()
         yaws.append(quat_to_yaw(data.xquat[chassis_id]))
 
     set_wheels(0, 0)
     for _ in range(200):
-        mujoco.mj_step(model, data)
+        step_clear_route()
     final_xy = data.xpos[chassis_id][:2].copy()
     closure_error = float(np.linalg.norm(final_xy - start_xy))
     # quat_to_yaw wraps to (-180, 180]; unwrap each per-corner diff into the same
@@ -190,7 +202,130 @@ def dead_reckon_square(model, data):
         "closure_error_m": closure_error,
         "corner_turns_deg": diffs,
         "corners_xy": [c.tolist() for c in corners],
+        "boulder_contacts": 0,
     }
+
+
+def sensor_sheet(scene_path, out_prefix):
+    """Check compiled sensor frames and render a labelled inspection sheet."""
+    model, data = load(scene_path)
+    for _ in range(2000):
+        mujoco.mj_step(model, data)
+    renderer = mujoco.Renderer(model, height=720, width=1280)
+    for name in ("scene_camera", "lidar_front", "lidar_rear"):
+        cam = require_id(model, mujoco.mjtObj.mjOBJ_CAMERA, name)
+        site = require_id(model, mujoco.mjtObj.mjOBJ_SITE, name + "_optical_frame")
+        np.testing.assert_allclose(data.cam_xpos[cam], data.site_xpos[site], atol=1e-12)
+        np.testing.assert_allclose(
+            data.cam_xmat[cam].reshape(3, 3) @ np.diag([1, -1, -1]),
+            data.site_xmat[site].reshape(3, 3),
+            atol=1e-12,
+        )
+    # Re-derive picknik_mujoco_ros's tile count from the compiled cameras for the
+    # report (the tiling always fits the buffer by construction); the beam density
+    # check is the one that can fail.
+    offwidth, offheight = model.vis.global_.offwidth, model.vis.global_.offheight
+    tiling = {}
+    for name in ("lidar_front", "lidar_rear"):
+        cam = require_id(model, mujoco.mjtObj.mjOBJ_CAMERA, name)
+        fovy = math.radians(model.cam_fovy[cam])
+        fov_x = math.radians(model.cam_user[cam][1])
+        beams = int(model.cam_resolution[cam][0])
+        focal = offheight / (2 * math.tan(fovy / 2))
+        tile_fov = 2 * math.atan(offwidth / (2 * focal))
+        tiles = math.ceil(fov_x / tile_fov)
+        assert math.atan(1 / focal) < fov_x / (
+            beams - 1
+        ), f"{name} beams are denser than rendered pixels"
+        tiling[name] = tiles
+
+    panels = []
+    renderer.update_scene(data, camera="scene_camera")
+    panels.append(
+        (
+            Image.fromarray(renderer.render()),
+            "Scene camera: original world-fixed pose and framing",
+        )
+    )
+    mast_view = mujoco.MjvCamera()
+    mast_view.lookat[:] = [-1, -5, 2.5]
+    mast_view.distance = 8
+    mast_view.azimuth = 135
+    mast_view.elevation = -10
+    renderer.update_scene(data, camera=mast_view)
+    panels.append(
+        (
+            Image.fromarray(renderer.render()),
+            "Scene camera mast: fixed base, post, bracket and housing",
+        )
+    )
+
+    for body, offset, azimuth, distance, elevation, title in (
+        (
+            "lidar_front_link",
+            0.0,
+            135,
+            1.2,
+            -20,
+            "Front lidar at the A300 enclosure nose mount",
+        ),
+        (
+            "lidar_rear_link",
+            0.0,
+            180,
+            1.2,
+            -10,
+            "Rear lidar hangs below the existing A300 sensor arch",
+        ),
+        (
+            "chassis_link",
+            0.45,
+            100,
+            10.0,
+            -65,
+            "Four boulders around the route: east, north, west, south",
+        ),
+    ):
+        camera = mujoco.MjvCamera()
+        camera.lookat[:] = data.xpos[
+            require_id(model, mujoco.mjtObj.mjOBJ_BODY, body)
+        ] + [0, 0, offset]
+        camera.distance = distance
+        camera.azimuth = azimuth
+        camera.elevation = elevation
+        renderer.update_scene(data, camera=camera)
+        panels.append((Image.fromarray(renderer.render()), title))
+
+    # The renderer's near clip (znear * extent, about 0.28 m here) already hides the
+    # housing caps. This central-render axial-depth smoke check is not a radial
+    # range check of the published tiled cloud. The rear scanner faces open terrain
+    # and sky; only the front one is required to see something.
+    near_clip = model.vis.map.znear * model.stat.extent
+    returns = {}
+    for name in ("lidar_front", "lidar_rear"):
+        cam = require_id(model, mujoco.mjtObj.mjOBJ_CAMERA, name)
+        range_min, range_max = model.cam_user[cam][2:4]
+        renderer.enable_depth_rendering()
+        renderer.update_scene(data, camera=name)
+        scan_line = renderer.render()[offheight // 2]
+        renderer.disable_depth_rendering()
+        in_range = (scan_line >= max(range_min, near_clip)) & (scan_line <= range_max)
+        returns[name] = int(in_range.sum())
+    assert (
+        returns["lidar_front"] > 0
+    ), "front lidar central render has no in-range axial depth"
+    print(
+        f"[sensors] camera/site frames match, tiles={tiling}, near_clip={near_clip:.3f} m,"
+        f" in-range central axial-depth samples={returns}"
+    )
+    sheet = Image.new("RGB", (1280, 3 * 400), "#20252b")
+    draw = ImageDraw.Draw(sheet)
+    for i, (image, title) in enumerate(panels):
+        x, y = (i % 2) * 640, (i // 2) * 400
+        sheet.paste(image.resize((640, 360)), (x, y + 40))
+        draw.text((x + 12, y + 14), title, fill="white")
+    sheet.save(f"{out_prefix}_sensor_sheet.png")
+    renderer.close()
 
 
 def render(scene_path, out_prefix):
@@ -234,6 +369,7 @@ def main():
         json.dump(stats, f, indent=2)
 
     render(new_scene, out_prefix)
+    sensor_sheet(new_scene, out_prefix)
     if old_scene:
         render(old_scene, out_prefix + "_OLDFLAT")
     print("DONE")
