@@ -9,11 +9,8 @@
     _description="Move boxes to loading zone from waypoint"
     waypoint_name="View Boxes"
     place_pose="{place_pose}"
-    threshold="{threshold}"
-    prompt="{prompt}"
-    negative_prompts="{negative_prompts}"
-    prompts="{prompts}"
-    erosion_size="0"
+    confidence_threshold="{confidence_threshold}"
+    text_prompt="{text_prompt}"
     _favorite="false"
   >
     <Control ID="Sequence">
@@ -92,17 +89,33 @@
         publisher_timeout_sec="5.000000"
       />
       <Control ID="Sequence">
+        <!--SAM3 text-prompt segmentation returns one mask per detected instance and succeeds with
+            zero masks when nothing passes confidence_threshold; an empty scene then fails this
+            Sequence at the inverted ForEach below, which is what the outer retry loop expects.-->
         <Action
-          ID="GetMasks2DFromTextQuery"
-          image="{image}"
+          ID="GetMasks2DFromExemplar"
+          model_package="moveit_pro_sam3"
+          encoder_model_path="models/sam3_vision_encoder.onnx"
+          decoder_model_path="models/sam3_decoder.onnx"
+          geometry_encoder_model_path="models/sam3_geometry_encoder.onnx"
+          text_encoder_model_path="models/sam3_text_encoder.onnx"
+          confidence_threshold="{confidence_threshold}"
+          target_image="{image}"
+          text_prompt="{text_prompt}"
           masks2d="{clip_masks2d}"
-          threshold="{threshold}"
-          clipseg_model_path="models/clipseg.onnx"
-          clip_model_path="models/clip.onnx"
-          model_package="moveit_pro_clipseg"
-          prompts="{prompts}"
-          negative_prompts="{negative_prompts}"
-          erosion_size="{erosion_size}"
+        />
+        <!--Gate the SAM3 masks that seed the point refinement below: drop oversized false positives
+            (SAM3 occasionally returns one mask over most of the image, such as the cart frame) and
+            tiny edge fragments. The refined masks from GetMasks2DFromPointQuery are not filtered
+            again. Real boxes measure roughly 4,000 to 21,000 mask pixels on this wrist camera at the
+            View Boxes standoff, and the band with its margins passes the boxes seen from View Boxes 2
+            as well; re-measure if the camera, lens, or standoffs change.-->
+        <Action
+          ID="FilterMasks2DByArea"
+          masks="{clip_masks2d}"
+          min_area="2000"
+          max_area="23000"
+          filtered_masks="{clip_masks2d}"
         />
         <Action
           ID="PublishMask2D"
@@ -358,12 +371,12 @@
         <Metadata runnable="false" />
         <Metadata subcategory="Application - Advanced Examples" />
       </MetadataFields>
-      <inout_port name="erosion_size" default="0" />
-      <inout_port name="negative_prompts" default="{negative_prompts}" />
+      <inout_port
+        name="confidence_threshold"
+        default="{confidence_threshold}"
+      />
       <inout_port name="place_pose" default="{place_pose}" />
-      <inout_port name="prompt" default="{prompt}" />
-      <inout_port name="prompts" default="{prompts}" />
-      <inout_port name="threshold" default="{threshold}" />
+      <inout_port name="text_prompt" default="{text_prompt}" />
       <inout_port name="waypoint_name" default="View Boxes" />
     </SubTree>
   </TreeNodesModel>
