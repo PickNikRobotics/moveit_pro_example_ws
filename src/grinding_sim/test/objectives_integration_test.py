@@ -65,6 +65,8 @@ skip_objectives: set[str] = {
     "Calibrate Multiple Cameras",
     "Generate Calibration Waypoints",
     "Register Machined Part",  # Registration flow exceeds the fixture timeout headless.
+    # Runs the same registration subtree before it grinds, so it inherits that timeout.
+    "Grind and Record Coverage",
 }
 
 
