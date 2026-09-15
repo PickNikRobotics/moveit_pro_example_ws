@@ -48,14 +48,13 @@ def content_matches(local: bytes, upstream: bytes) -> bool:
 
 
 def check_ledger(path: Path, local: bytes, upstream: bytes, manifest: dict) -> None:
-    if (not content_matches(local, upstream)) != (
-        path.as_posix() in manifest.get("modified_paths", [])
-    ):
+    modified = not content_matches(local, upstream)
+    if modified != (path.as_posix() in manifest.get("modified_paths", [])):
         raise ValueError(
             f"modified_paths disagrees at {path}; reconcile the ledger manually (including absorbed patches)"
         )
     if (
-        not content_matches(local, upstream)
+        modified
         and validator.path_is_declared(
             path, {Path(p) for p in manifest.get("apache_paths", [])}
         )
@@ -199,10 +198,10 @@ def refresh_one(manifest_path: Path, *, dry_run: bool = False) -> None:
             inventories.append(inventory)
         # Only directories present upstream at the old pin and entirely absent
         # locally prove prior subtree pruning. New siblings remain ambiguous.
+        old_ancestors = {parent for path in inventories[0] for parent in path.parents}
         pruned = {
             parent
-            for path in inventories[0]
-            for parent in path.parents
+            for parent in old_ancestors
             if validator.path_is_declared(parent, boundaries)
             and not (manifest_path.parent / snapshot / parent).exists()
         }

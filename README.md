@@ -46,9 +46,9 @@ The hardware-only `kinova_gen3_site_config` and `picknik_ur_site_config` configu
 
 ## Updating vendored dependencies
 
-Each `UPSTREAM.yaml` under `src/external_dependencies` records the upstream repository, branch, exact commit, retained paths, and local modifications. Refresh these snapshots explicitly from the repository root. You need Python 3.10+, Git, Git LFS, network access to the configured repositories, and temporary disk space for upstream Git history, fetched LFS assets, and a staged dependency copy. Commit or stash changes in the dependencies you select first, including untracked and ignored files. Run `git lfs pull` if your checkout still contains LFS pointers instead of asset bytes.
+Run from the repository root with Python 3.10+, Git, Git LFS, network access, and space for temporary upstream copies. Selected dependencies must have no uncommitted, untracked, or ignored files. Run `git lfs pull` first if assets are still LFS pointers.
 
-Preview all dependencies, then apply only the one you want:
+Preview all dependencies, then refresh one:
 
 ```bash
 python3 bin/validate_workspace_dependencies.py --refresh-from-upstream all --dry-run
@@ -56,41 +56,22 @@ python3 bin/validate_workspace_dependencies.py --refresh-from-upstream feetech_r
 python3 bin/validate_workspace_dependencies.py --refresh-from-upstream feetech_ros2_driver
 ```
 
-`feetech_ros2_driver` is the **dependency directory name** under `src/external_dependencies`, not a robot config or its dependency graph. The example may report `already current`; it is not a promise that a newer eligible tag exists. To apply every eligible refresh instead:
+Use a directory name under `src/external_dependencies`, not a robot config. Replace it with `all` to refresh every eligible dependency. `--dry-run` checks without writing; apply fetches tags again, so check the reported tag and commit. These commands never commit, push, create a PR, or update optional ML submodules.
+
+The selected release is the highest stable `MAJOR.MINOR.PATCH` tag (optional `v` prefix) reachable from the branch in `UPSTREAM.yaml` and containing the current pin. Prereleases, build suffixes, downgrades, and ambiguous versions are rejected. There is no branch-HEAD fallback: forks without an eligible tag need manual review.
+
+Local patches and pruning are preserved where they can be merged safely. Conflicts, uncertain file selection, unsupported binary changes, and required license or manifest corrections stop that dependency before writing. Follow the reported diagnostic rather than bypassing it. In `all` mode, other dependencies can still succeed; any failure returns a nonzero exit code. An interruption during writing can leave a partial update.
+
+Review and validate the changes:
 
 ```bash
-python3 bin/validate_workspace_dependencies.py --refresh-from-upstream all
-```
-
-These commands fetch upstream data and change only local vendored files and the manifest's `commit` field. They never commit, push, create a PR, or update the optional ML submodules. `--dry-run` performs the same selection and merge checks without writing the snapshot. A later apply fetches tags again, so review the reported tag and commit.
-
-### Which tag is selected?
-
-The refresher selects the highest numeric `MAJOR.MINOR.PATCH` tag, optionally prefixed with `v`, whose commit is both reachable from the configured branch and contains the current pinned commit in its ancestry. Annotated and lightweight tags work. Prereleases, build suffixes, and other naming conventions are excluded. The version cannot be lower than the highest stable tag reachable from the current pin. Equal versions with different eligible commits are ambiguous and require manual selection.
-
-This is deliberately stricter than choosing the newest tag by date or following branch HEAD. In particular, a tag predating PickNik fork commits cannot replace those patches. A pin already at the selected tag is unchanged. If there is no eligible tag, the dependency is left untouched with an error explaining that it needs manual review. There is **no branch-HEAD fallback**. Forks such as `main-picknik` or `ros2-fix-deps` may have no qualifying release.
-
-### Local patches, pruning, and manual cases
-
-For an unchanged retained-file inventory (excluding demonstrably already-pruned subtrees), the refresher uses Git's three-way text merge with the old upstream pin as the base. It preserves committed local additions and existing pruned files, honors `snapshot_path`, and keeps manifest comments and annotations byte-for-byte except for the commit field. It checks the modification ledger before and after merging, and validates the complete proposed snapshot and manifest in temporary staging before writing. Incoming license changes that need new metadata stop the refresh for manual review.
-
-The manifest's `pruning_notes` are prose, not executable selection rules. Changes wholly inside an old upstream directory that is entirely absent locally stay pruned. Other added, deleted, renamed, or mode/type-changed upstream paths inside a retained boundary require a **manual refresh**, rather than guessing which new files to include or silently dropping files. Other manual cases include merge conflicts, symlinks, divergent local binary patches, unsupported LFS-to-ordinary-file transitions, and patches absorbed upstream that need a `modified_paths` correction. Changed upstream LFS assets can update unmodified local assets: Git LFS fetches actual bytes into temporary storage, and the refresher verifies their SHA-256 and size against the selected pointer. Missing or invalid objects stop the dependency; pointers are never installed. Unchanged bytes are not rewritten.
-
-Clean CRLF checkout conversion is not normalized automatically. Use an LF checkout after reviewing `core.autocrlf` and text/EOL attributes, or refresh manually; do not record checkout conversion as a local patch.
-
-A selection, merge, LFS retrieval, or proposed-validation error leaves that dependency untouched. Writes are not crash-atomic: an interruption or write-time disk failure can leave a partial update. In `all` mode, independent successful dependencies can still be refreshed; the command exits nonzero if any dependency fails. Inspect each reported result. For a manual refresh, check out the chosen upstream commit separately, preserve licenses and notices, reapply local patches and pruning, and update the manifest's commit and path declarations. Do not change branches merely to bypass a missing tag or discard fork patches.
-
-### Review and publish the local changes
-
-```bash
-git diff --stat
 git diff -- src/external_dependencies
 python3 bin/validate_workspace_dependencies.py                    # offline structure check
-python3 bin/validate_workspace_dependencies.py --verify-upstream  # read-only comparison with each pinned upstream commit
+python3 bin/validate_workspace_dependencies.py --verify-upstream  # read-only network comparison
 git diff --check
 ```
 
-Review release notes, license changes, and any provenance notes that mention an older release, then build and test every robot config that consumes the changed packages. The refresher does not prove runtime compatibility. After review and validation, commit and push through your normal PR workflow, for example for a single dependency:
+Review release notes and licenses, update stale provenance notes, and test every robot config that uses the changed packages. Then commit and push, for example:
 
 ```bash
 git add src/external_dependencies/feetech_ros2_driver
@@ -98,4 +79,4 @@ git commit -m "Refresh vendored Feetech driver dependency"
 git push
 ```
 
-`--verify-upstream` needs network access but does not refresh files. CI checks structure only; it does not compare vendored contents, schedule refreshes, or create upstream-verification issues. The optional ML model submodules can be advanced independently when their demonstration Objectives need a newer model package.
+CI checks structure only. Upstream comparison and refresh are user-triggered.

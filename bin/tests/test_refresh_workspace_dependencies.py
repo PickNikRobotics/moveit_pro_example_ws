@@ -2,6 +2,7 @@
 
 from pathlib import Path
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -22,6 +23,12 @@ def commit(root):
     git(root, "add", ".")
     git(root, "commit", "-qm", "fixture")
     return git(root, "rev-parse", "HEAD")
+
+
+def set_pin(manifest, sha):
+    manifest.write_text(
+        re.sub(r"commit: [0-9a-f]+", f"commit: {sha}", manifest.read_text())
+    )
 
 
 @pytest.fixture
@@ -77,11 +84,7 @@ def test_no_downgrade_or_loss_of_fork_commits(fixture):
     fork = commit(upstream)
     (dep / "pkg/file.txt").write_text("fork patch\n")
     manifest = dep / "UPSTREAM.yaml"
-    import re
-
-    manifest.write_text(
-        re.sub(r"commit: [0-9a-f]+", f"commit: {fork}", manifest.read_text())
-    )
+    set_pin(manifest, fork)
     commit(workspace)
     before = manifest.read_bytes()
     result = refresh(workspace, "demo")
@@ -167,10 +170,9 @@ def test_pruned_files_stay_absent_and_local_additions_survive(fixture):
     (upstream / "pkg/pruned.txt").write_text("prune me\n")
     old = commit(upstream)
     manifest = dep / "UPSTREAM.yaml"
-    import re
-
+    set_pin(manifest, old)
     manifest.write_text(
-        re.sub(r"commit: [0-9a-f]+", f"commit: {old}", manifest.read_text()).replace(
+        manifest.read_text().replace(
             "modified_paths: []", "modified_paths:\n  - pkg/local.txt"
         )
     )
@@ -223,11 +225,7 @@ def test_upstream_lfs_pointer_never_replaces_local_asset_bytes(fixture, changed)
     old = commit(upstream)
     (dep / "pkg/mesh.bin").write_bytes(payload)
     manifest = dep / "UPSTREAM.yaml"
-    import re
-
-    manifest.write_text(
-        re.sub(r"commit: [0-9a-f]+", f"commit: {old}", manifest.read_text())
-    )
+    set_pin(manifest, old)
     commit(workspace)
     if changed:
         (upstream / "pkg/mesh.bin").write_text(pointer(b"new mesh"))
@@ -295,11 +293,7 @@ def test_numeric_version_never_decreases_after_untagged_pin(fixture):
     old = commit(upstream)
     (dep / "pkg/file.txt").write_text("pinned\n")
     manifest = dep / "UPSTREAM.yaml"
-    import re
-
-    manifest.write_text(
-        re.sub(r"commit: [0-9a-f]+", f"commit: {old}", manifest.read_text())
-    )
+    set_pin(manifest, old)
     commit(workspace)
     (upstream / "pkg/file.txt").write_text("lower version\n")
     commit(upstream)
@@ -384,12 +378,9 @@ def test_snapshot_policy_errors_block_refresh(fixture, kind):
         (upstream / "pkg/LICENSE").write_text("Apache License\n")
         old = commit(upstream)
         manifest = dep / "UPSTREAM.yaml"
-        import re
-
+        set_pin(manifest, old)
         manifest.write_text(
-            re.sub(
-                r"commit: [0-9a-f]+", f"commit: {old}", manifest.read_text()
-            ).replace(
+            manifest.read_text().replace(
                 "modified_paths: []",
                 "modified_paths:\n  - pkg/file.txt\napache_paths:\n  - pkg",
             )
@@ -492,17 +483,13 @@ def test_edits_made_during_fetch_are_not_overwritten(fixture, monkeypatch):
 
 @pytest.mark.parametrize("change", ["addition", "deletion", "mode"])
 def test_inventory_changes_in_absent_old_subtree_are_ignored(fixture, change):
-    import re
-
     upstream, workspace, dep = fixture
     docs = upstream / "pkg/docs"
     docs.mkdir()
     (docs / "old.txt").write_text("omitted\n")
     old = commit(upstream)
     manifest = dep / "UPSTREAM.yaml"
-    manifest.write_text(
-        re.sub(r"commit: [0-9a-f]+", f"commit: {old}", manifest.read_text())
-    )
+    set_pin(manifest, old)
     commit(workspace)
     if change == "addition":
         (docs / "new.txt").write_text("also omitted\n")
@@ -521,16 +508,12 @@ def test_inventory_changes_in_absent_old_subtree_are_ignored(fixture, change):
 
 @pytest.mark.parametrize("dry_run", [False, True])
 def test_incoming_license_requires_metadata_before_any_write(fixture, dry_run):
-    import re
-
     upstream, workspace, dep = fixture
     (upstream / "pkg/LICENSE").write_text("BSD-3-Clause\n")
     old = commit(upstream)
     shutil.copy2(upstream / "pkg/LICENSE", dep / "pkg/LICENSE")
     manifest = dep / "UPSTREAM.yaml"
-    manifest.write_text(
-        re.sub(r"commit: [0-9a-f]+", f"commit: {old}", manifest.read_text())
-    )
+    set_pin(manifest, old)
     commit(workspace)
     (upstream / "pkg/LICENSE").write_text("Apache License\n")
     (upstream / "pkg/file.txt").write_text("updated\n")
@@ -549,7 +532,6 @@ def test_incoming_license_requires_metadata_before_any_write(fixture, dry_run):
 @pytest.mark.parametrize("failure", [None, "sha", "size", "missing", "local-patch"])
 def test_real_lfs_store_refresh(fixture, failure, dry_run):
     import hashlib
-    import re
 
     upstream, workspace, dep = fixture
     git(upstream, "lfs", "install", "--local")
@@ -561,9 +543,7 @@ def test_real_lfs_store_refresh(fixture, failure, dry_run):
     old = commit(upstream)
     (dep / "pkg/mesh.bin").write_bytes(payload)
     manifest = dep / "UPSTREAM.yaml"
-    manifest.write_text(
-        re.sub(r"commit: [0-9a-f]+", f"commit: {old}", manifest.read_text())
-    )
+    set_pin(manifest, old)
     if failure == "local-patch":
         (dep / "pkg/mesh.bin").write_bytes(b"local binary patch\x00")
         manifest.write_text(
