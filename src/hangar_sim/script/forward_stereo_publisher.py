@@ -73,10 +73,10 @@ class ForwardStereoPublisher(Node):
             "right_frame_id", "forward_stereo_right_optical_frame"
         ).value
         left_source_topic = self.declare_parameter(
-            "left_source_topic", "/forward_stereo_left/color"
+            "left_source_topic", "/forward_stereo/left/image_raw"
         ).value
         right_source_topic = self.declare_parameter(
-            "right_source_topic", "/forward_stereo_right/color"
+            "right_source_topic", "/forward_stereo/right/image_raw"
         ).value
         left_image_topic = self.declare_parameter(
             "left_image_topic", "/forward_stereo/left/image_rect"
