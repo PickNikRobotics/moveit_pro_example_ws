@@ -29,10 +29,10 @@ at run time with
 
     The ONNX model path could not be resolved: Package 'moveit_pro_clipseg' was not found
 
-- lab_sim: ML Segment Image, ML Segment Image Loop, ML Segment Point Cloud
+- lab_sim: ML Segment Image, ML Segment Image Loop
 - hangar_sim: Segment Image from Text Prompt
 
-To restore them, build a ROS package that installs CLIP and CLIPSeg ONNX models to `share/<your_package>/models/` and set `model_package` (and the `clip_model_path` / `clipseg_model_path` ports) on those Objectives to point at it. To move off CLIPSeg entirely, see the SAM3 equivalents in `lab_sim` (`ML Find Objects on Table`, `ML Segment Bottles from File`, `AddBottlesToPlanningScene`), `kitchen_sim` (`Segment Image from Prompt`), `dual_arm_sim` (`Find Red Block`, `Find Green Block`, `Sort Blocks`), `hangar_sim` (`ML Move Boxes to Loading Zone`), and MoveIt Pro 10.0, where these Objectives were migrated to `GetMasks2DFromExemplar`.
+To restore them, build a ROS package that installs CLIP and CLIPSeg ONNX models to `share/<your_package>/models/` and set `model_package` (and the `clip_model_path` / `clipseg_model_path` ports) on those Objectives to point at it. To move off CLIPSeg entirely, see the SAM3 equivalents in `lab_sim` (`ML Find Objects on Table`, `ML Segment Bottles from File`, `AddBottlesToPlanningScene`, `ML Segment Point Cloud`), `kitchen_sim` (`Segment Image from Prompt`), `dual_arm_sim` (`Find Red Block`, `Find Green Block`, `Sort Blocks`), `hangar_sim` (`ML Move Boxes to Loading Zone`), and MoveIt Pro 10.0, where these Objectives were migrated to `GetMasks2DFromExemplar`.
 
 ## Robot Configs
 
