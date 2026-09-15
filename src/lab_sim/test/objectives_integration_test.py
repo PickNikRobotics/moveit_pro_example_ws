@@ -260,6 +260,7 @@ SIM_RESETTER.register("lab_sim", _controller_safe_mujoco_reset)
 # Looping objectives to cancel partway through
 cancel_objectives = {
     "3 Waypoints Pick and Place",
+    "3 Waypoints Pick and Place with AprilTags",
     "Classical Pick and Place",
     "Cycle Between Waypoints",
     "Get AprilTag Pose from Image",
@@ -274,6 +275,13 @@ cancel_objectives = {
 # Objectives to skip entirely from integration testing
 skip_objectives = {
     "AddBottlesToPlanningScene",
+    # Hand-eye calibration Objectives from moveit_pro_objectives: they generate or
+    # move through `calibration_*` waypoints and detect a ChArUco board, which only
+    # hand_eye_calibration_sim provides.
+    "Calibrate Eye In Hand Camera",
+    "Calibrate Eye To Hand Camera",
+    "Calibrate Multiple Cameras",
+    "Generate Calibration Waypoints",
     "Collect Training Data with Behaviors",  # Requires setup for data collection (recording infrastructure not available in CI)
     "Grasp Planning",
     "Joint Diagnostic",

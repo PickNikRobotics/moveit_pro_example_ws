@@ -49,11 +49,24 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import pytest
+import yaml
 from ament_index_python.packages import get_package_share_directory
 
 DESCRIPTION = Path(__file__).resolve().parent.parent / "description"
 MJCF = DESCRIPTION / "ur5e_ridgeback.xml"
 XACRO = DESCRIPTION / "ur5e_ridgeback.xacro"
+CONTROL_YAML = (
+    Path(__file__).resolve().parent.parent
+    / "config"
+    / "control"
+    / "picknik_ur.ros2_control.yaml"
+)
+
+# Both mecanum controller instances drive the same four wheels.
+MECANUM_CONTROLLERS = (
+    "platform_velocity_controller",
+    "platform_velocity_controller_nav2",
+)
 RIDGEBACK_XACRO = (
     Path(get_package_share_directory("ridgeback_description"))
     / "urdf"
@@ -170,6 +183,59 @@ def _static_ride_height() -> float:
     """
     ring, radius, count = _roller_ring()
     return ring * math.cos(math.pi / count) + radius
+
+
+def _rolling_radius() -> float:
+    """Radius of a circle with the roller hull's perimeter — the rolling radius.
+
+    One turn of the wheel lays down the hull's perimeter on the floor, so wheel
+    odometry and the drive-side `1/wheels_radius` both need `perimeter / 2pi`,
+    which is neither of the other two radii the ring produces. The hull of N equal
+    circles of radius `r` centred on a ring of radius `a` is N common external
+    tangents — each as long as a centre-polygon edge, `2*a*sin(pi/N)` — joined by
+    arcs that together sweep one full turn of radius `r`.
+    """
+    ring, radius, count = _roller_ring()
+    perimeter = count * 2 * ring * math.sin(math.pi / count) + 2 * math.pi * radius
+    return perimeter / (2 * math.pi)
+
+
+def _configured_wheels_radius(controller: str) -> float:
+    parameters = yaml.safe_load(CONTROL_YAML.read_text())[controller]["ros__parameters"]
+    radius = parameters.get("kinematics.wheels_radius")
+    assert (
+        radius is not None
+    ), f"{controller} has no kinematics.wheels_radius in {CONTROL_YAML.name}"
+    return float(radius)
+
+
+@pytest.mark.parametrize("controller", MECANUM_CONTROLLERS)
+def test_controller_wheels_radius_is_the_rolling_radius(controller: str) -> None:
+    """The one radius of the three that wheel odometry and the drive IK may use.
+
+    Held to 0.1 mm: tight enough to tell the rolling radius apart from the peak
+    (0.27 mm above it) and from the static ride height (0.54 mm below it), loose
+    enough for the value to stay written to four decimals.
+    """
+    ring, radius, count = _roller_ring()
+    configured = _configured_wheels_radius(controller)
+    assert configured == pytest.approx(_rolling_radius(), abs=1e-4), (
+        f"{controller} uses kinematics.wheels_radius = {configured:.4f} m, but the "
+        f"roller hull rolls at {_rolling_radius():.6f} m. The other two radii the "
+        f"ring produces — the {ring + radius:.6f} m peak and the "
+        f"{ring * math.cos(math.pi / count) + radius:.6f} m static ride height — are "
+        f"not interchangeable with it: odometry and the drive-side 1/wheels_radius "
+        f"both scale directly with this number."
+    )
+
+
+def test_both_mecanum_controllers_agree_on_the_wheels() -> None:
+    """They swap in for each other at runtime, so the base must not change speed."""
+    radii = {c: _configured_wheels_radius(c) for c in MECANUM_CONTROLLERS}
+    assert len(set(radii.values())) == 1, (
+        f"the mecanum controllers disagree on the wheel radius: {radii}. Switching "
+        f"between them would change how fast the base drives."
+    )
 
 
 def _mjcf_wheel_heights() -> dict[str, float]:

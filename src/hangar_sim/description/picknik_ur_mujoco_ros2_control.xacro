@@ -3,15 +3,16 @@
   <xacro:macro name="picknik_ur_mujoco_ros2_control" params="mujoco_model mujoco_viewer:=false publish_odom:=true">
 
     <ros2_control name="ur_mujoco_control" type="system">
-      <!-- Per-LiDAR topic routing. Sensor names match the MJCF site-name prefix
-           (the portion before the '-' in replicated rangefinder site names).
-           Each LiDAR publishes to its own topic so Nav2's obstacle layer can
-           treat them as independent observation sources. -->
+      <!-- Sensor names match the MJCF <camera> names. These publish an organized
+           PointCloud2, never a LaserScan, so the override is points_topic rather
+           than the <rangefinder> path's topic. lidar_flattener converts each
+           cloud back into /scan_{front,rear}, leaving every consumer unchanged.
+           Names are absolute so they stay out of this node's namespace. -->
       <sensor name="lidar_front">
-        <param name="topic">/scan_front</param>
+        <param name="points_topic">/lidar_front/points</param>
       </sensor>
       <sensor name="lidar_rear">
-        <param name="topic">/scan_rear</param>
+        <param name="points_topic">/lidar_rear/points</param>
       </sensor>
       <!-- Move the plugin's per-camera monocular camera_info off the ROS sibling
            name of the stereo source images. That info carries the same K and
@@ -32,7 +33,12 @@
           <param name="mujoco_model_package">hangar_sim</param>
           <param name="render_publish_rate">20</param>
           <param name="tf_publish_rate">60</param>
-          <param name="lidar_publish_rate">10</param>
+          <!-- 10 Hz is the cadence the <rangefinder> path published scans at, kept
+               so /scan_{front,rear} stay on their old timing. Note this does not
+               bound render cost: the 3 tiles per scanner render on the render
+               timer regardless, taking the scene from 3 offscreen renders per tick
+               to 9. Not yet profiled. -->
+          <param name="point_cloud_publish_rate">10</param>
           <param name="publish_odom">${publish_odom}</param>
           <param name="odom_child_frame">ridgeback_base_link</param>
           <param name="odom_rate">150</param>
@@ -47,7 +53,7 @@
           <param name="odom_publish_tf">false</param>
           <param name="odom_frame">odom</param>
           <param name="publish_mj_world_tf">false</param>
-          <!-- Stop the lidar TF fill-in chain at the robot's base instead of walking to
+          <!-- Stop the site TF fill-in chain at the robot's base instead of walking to
                the MJCF worldbody. Without this, MuJoCo broadcasts
                base_platform -> ridgeback_base_link, a second parent for a frame that
                robot_state_publisher already publishes. -->

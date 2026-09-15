@@ -21,10 +21,6 @@ amcl:
     alpha4: 0.05
     alpha5: 0.05
     base_frame_id: "ridgeback_base_link"
-    beam_skip_distance: 0.5
-    beam_skip_error_threshold: 0.9
-    beam_skip_threshold: 0.3
-    do_beamskip: false
     global_frame_id: "map"
     lambda_short: 0.1
     laser_likelihood_max_dist: 2.0
@@ -138,7 +134,10 @@ controller_server:
       # above are inactive; they are retained for an easy switch to motion_model
       # "Omni" if holonomic strafing is wanted later.
       motion_model: "DiffDrive"
-      visualize: false
+      # The only switch that makes MPPI publish /optimal_trajectory, which the
+      # Desktop App draws as the Local Plan overlay. Its /trajectories markers
+      # are built only while something subscribes; `ros2 param set` toggles it live.
+      visualize: true
       TrajectoryVisualizer:
         trajectory_step: 5
         time_step: 3

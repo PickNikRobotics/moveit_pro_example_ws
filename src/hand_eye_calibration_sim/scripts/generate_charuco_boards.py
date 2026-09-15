@@ -30,7 +30,7 @@
 """Generate the ChArUco board textures used by the hand_eye_calibration_sim scene.
 
 Regenerates description/assets/charuco_world_board.png and
-description/assets/charuco_flange_board.png. The board parameters here are the
+description/assets/charuco_arm_board.png. The board parameters here are the
 single source of truth for the physical boards in the scene; the MJCF plate
 geoms must stay dimensioned to squares_x * square_length_m by
 squares_y * square_length_m.
@@ -69,7 +69,7 @@ BOARDS = [
         "marker_length_m": 0.026,
     },
     {
-        "filename": "charuco_flange_board.png",
+        "filename": "charuco_arm_board.png",
         "dictionary": cv2.aruco.DICT_5X5_50,
         "squares_x": 5,
         "squares_y": 4,

@@ -1,0 +1,33 @@
+<!-- Outdoor wheel geometry from clearpath_platform_description/urdf/a300/drivetrain/wheels/outdoor.urdf.xacro:
+     radius=0.1651, width=0.1143, mass=2.5. Visual mesh is the vendored outdoor_left.stl
+     (copied byte-identical into ../assets, see husky_a300_mujoco.xacro comment); collision
+     is a primitive cylinder, matching upstream's own URDF collision choice (not the visual
+     mesh) for cheap, well-behaved wheel-ground contact. zaxis="0 1 0" aligns the cylinder's
+     axis with the hinge axis below without needing a quat. -->
+<body>
+  <inertial pos="0 0 0" mass="2.5" diaginertia="0.019759 0.034073 0.019759" />
+  <joint
+    name="front_left_wheel_joint"
+    type="hinge"
+    pos="0 0 0"
+    axis="0 1 0"
+    damping="0.5"
+    armature="1.0"
+  />
+  <geom
+    name="front_left_wheel_visual"
+    mesh="outdoor_left"
+    material="husky_dark_grey"
+    type="mesh"
+    contype="0"
+    conaffinity="0"
+    group="2"
+  />
+  <geom
+    name="front_left_wheel_collision"
+    type="cylinder"
+    size="0.1651 0.05715"
+    zaxis="0 1 0"
+    group="3"
+  />
+</body>

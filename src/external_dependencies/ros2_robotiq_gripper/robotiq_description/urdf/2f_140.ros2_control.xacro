@@ -49,46 +49,31 @@
             <!-- When simulating we need to include the rest of the gripper joints -->
             <xacro:if value="${use_fake_hardware or sim_isaac or sim_ignition}">
                 <joint name="${prefix}left_inner_knuckle_joint">
-                    <param name="mimic">${prefix}finger_joint</param>
-                    <param name="multiplier">-1</param>
                     <xacro:unless value="${sim_ignition}">
-                        <command_interface name="position"/>
                         <state_interface name="position"/>
                         <state_interface name="velocity"/>
                     </xacro:unless>
                 </joint>
                 <joint name="${prefix}left_inner_finger_joint">
-                    <param name="mimic">${prefix}finger_joint</param>
-                    <param name="multiplier">1</param>
                     <xacro:unless value="${sim_ignition}">
-                        <command_interface name="position"/>
                         <state_interface name="position"/>
                         <state_interface name="velocity"/>
                     </xacro:unless>
                 </joint>
                 <joint name="${prefix}right_outer_knuckle_joint">
-                    <param name="mimic">${prefix}finger_joint</param>
-                    <param name="multiplier">-1</param>
                     <xacro:unless value="${sim_ignition}">
-                        <command_interface name="position"/>
                         <state_interface name="position"/>
                         <state_interface name="velocity"/>
                     </xacro:unless>
                 </joint>
                 <joint name="${prefix}right_inner_knuckle_joint">
-                    <param name="mimic">${prefix}finger_joint</param>
-                    <param name="multiplier">-1</param>
                     <xacro:unless value="${sim_ignition}">
-                        <command_interface name="position"/>
                         <state_interface name="position"/>
                         <state_interface name="velocity"/>
                     </xacro:unless>
                 </joint>
                 <joint name="${prefix}right_inner_finger_joint">
-                    <param name="mimic">${prefix}finger_joint</param>
-                    <param name="multiplier">1</param>
                     <xacro:unless value="${sim_ignition}">
-                        <command_interface name="position"/>
                         <state_interface name="position"/>
                         <state_interface name="velocity"/>
                     </xacro:unless>

@@ -1,0 +1,40 @@
+<mujoco>
+  <!-- Untextured engineering materials, not measured spectral reflectances.
+       No external meshes or textures. See moon_base_provenance.md. -->
+  <material
+    name="moon_base_blanket"
+    rgba="0.72 0.72 0.69 1"
+    specular="0.08"
+    shininess="0.1"
+  />
+  <material
+    name="moon_base_metal"
+    rgba="0.38 0.39 0.40 1"
+    specular="0.15"
+    shininess="0.2"
+  />
+  <material
+    name="moon_base_dark"
+    rgba="0.09 0.10 0.11 1"
+    specular="0.05"
+    shininess="0.1"
+  />
+  <material
+    name="moon_base_cells"
+    rgba="0.025 0.04 0.075 1"
+    specular="0.2"
+    shininess="0.3"
+  />
+  <material
+    name="moon_base_insulation"
+    rgba="0.48 0.32 0.10 1"
+    specular="0.15"
+    shininess="0.2"
+  />
+  <material
+    name="moon_base_pad"
+    rgba="0.24 0.24 0.23 1"
+    specular="0"
+    shininess="0"
+  />
+</mujoco>

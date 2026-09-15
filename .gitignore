@@ -16,3 +16,8 @@ src/vla_sim/hf_cache/*
 # Machine-local launcher/workspace settings and secrets (HF_TOKEN etc.).
 .env
 .env.*
+
+# rosout.ndjson is written into the working directory by any rclpy node that runs
+# outside a launch session -- the lidar_flattener tests instantiate LidarFlattener
+# directly, so pytest drops one inside src/hangar_sim/.
+rosout.ndjson

@@ -50,7 +50,11 @@ def test_forward_stereo_model_matches_calibration():
     root = ET.parse(MODEL).getroot()
     size = root.find("size")
     assert size is not None
-    assert size.attrib["nuser_cam"] == "1"
+    # 4, not 1: the two TIM571s are DEPTH_TYPE=THREE_D_LIDAR cameras and read
+    # user[1..3] as (FOV_X, RANGE_MIN, RANGE_MAX), which picknik_mujoco_ros only
+    # applies when nuser_cam is exactly 4. MuJoCo zero-pads the shorter user="1"
+    # on these stereo cameras, so they stay RGB_ONLY (asserted below).
+    assert size.attrib["nuser_cam"] == "4"
     cameras = {camera.attrib["name"]: camera for camera in root.iter("camera")}
     sites = {
         site.attrib["name"]: site for site in root.iter("site") if "name" in site.attrib
@@ -94,12 +98,30 @@ def test_forward_stereo_model_matches_calibration():
         int(global_visual.attrib["offwidth"]),
         int(global_visual.attrib["offheight"]),
     )
-    camera_resolutions = {
-        tuple(int(value) for value in camera.attrib["resolution"].split())
-        for document_root in (scene_root, root)
-        for camera in document_root.iter("camera")
-    }
-    assert camera_resolutions == {offscreen_resolution}
+
+    # picknik_mujoco_ros throws unless a camera's resolution equals the offscreen
+    # buffer -- it renders straight into that buffer -- with one exemption: a
+    # THREE_D_LIDAR camera (user[0] == 2) is rendered as several yaw-stepped tiles
+    # and stitched, so it declares its beam grid instead. Partition on that rather
+    # than dropping the check, so a plain camera can still not drift off the buffer.
+    def depth_type(camera):
+        user = camera.attrib.get("user", "0").split()
+        return int(float(user[0]))
+
+    def resolution(camera):
+        return tuple(int(value) for value in camera.attrib["resolution"].split())
+
+    cameras_by_kind = {"lidar": set(), "image": set()}
+    for document_root in (scene_root, root):
+        for camera in document_root.iter("camera"):
+            kind = "lidar" if depth_type(camera) == 2 else "image"
+            cameras_by_kind[kind].add(resolution(camera))
+
+    assert cameras_by_kind["image"] == {offscreen_resolution}
+    # 811 beams over the TIM571's 270 deg aperture is an increment of exactly
+    # 1/3 deg, its datasheet angular resolution; 3 elevation rows so row 1 is the
+    # elevation-0 row script/lidar_flattener.py reads.
+    assert cameras_by_kind["lidar"] == {(811, 3)}
 
 
 def test_right_projection_translation_uses_ros_stereo_convention():

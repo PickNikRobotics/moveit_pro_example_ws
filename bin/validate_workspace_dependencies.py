@@ -42,8 +42,8 @@ LFS_POINTER_OID = re.compile(
     rb"oid sha256:([0-9a-f]{64})\nsize ([0-9]+)\n?\Z"
 )
 PICKNIK_MODIFICATION_NOTICE = b"Modified by PickNik Inc."
-# franka_description carries the full license title. phoebe_ws writes only the
-# SPDX identifier, in a LICENSES/ directory. Match both.
+# Recognize both the full license title and SPDX-only grants, including
+# license texts stored under a LICENSES/ directory.
 APACHE_LICENSE_MARKERS = (b"Apache License", b"Apache-2.0")
 ALLOWED_MANIFEST_KEYS = {
     "upstream",
@@ -69,10 +69,6 @@ CLEARPATH_PARAMETER_SCHEMA = Path(
 )
 CLEARPATH_CONTROLLER_CONFIGS = {
     Path("src/hangar_sim/config/control/picknik_ur.ros2_control.yaml"),
-    Path(
-        "src/external_dependencies/phoebe_ws/src/phoebe_sim/config/control/"
-        "dual_arm.ros2_control.yaml"
-    ),
 }
 UPSTREAM_FETCH_TIMEOUT_SECONDS = 300
 UPSTREAM_GIT_OPERATION_TIMEOUT_SECONDS = 300

@@ -348,6 +348,72 @@ def generate_launch_description():
         output="log",
     )
 
+    # The two TIM571s are DEPTH_TYPE=THREE_D_LIDAR cameras in the MJCF, so
+    # picknik_mujoco_ros publishes them as organized PointCloud2 on
+    # /lidar_{front,rear}/points and never as a LaserScan. This node reads the
+    # elevation-0 row of each cloud and republishes it as the /scan_{front,rear}
+    # LaserScan the filter chains below, dual_laser_merger, AMCL, slam_toolbox and
+    # both costmap obstacle layers already consume. Topic names, message types,
+    # frames and the 0 to 270 deg angular window are all unchanged from the
+    # <rangefinder> path, so nothing downstream needed touching.
+    lidar_flattener = Node(
+        package="hangar_sim",
+        executable="lidar_flattener.py",
+        name="lidar_flattener",
+        parameters=[{"use_sim_time": use_sim_time}],
+        output="log",
+    )
+
+    # The frame each flattened scan is published in: z-up, X at the scan's angle_min
+    # (beam 0), which is what params/laser_filter_params.yaml computes its self-hit
+    # arcs against. MuJoCo used to broadcast these itself, as a by-product of the
+    # <rangefinder> path; a camera gets no such frame, so they are published here.
+    #
+    # Static, and parented straight to ridgeback_base_link rather than to the
+    # lidar_*_mount bodies, for two reasons. The mounts are fixed in the MJCF, so
+    # the offsets below are exact and cannot drift. And the plugin only puts those
+    # mount bodies on /tf at tf_publish_rate, arriving before every link carries its
+    # real pose: a scan frame resolved through that chain can latch a wrong mount for
+    # the rest of the session and publish beams that keep their ranges but land at
+    # wrong bearings, which reads as a map that will not close rather than as a
+    # sensor fault. Values are read out of description/ur5e_ridgeback.xml:
+    # lidar_front_mount at (+0.45, 0, 0.15) with the fan centered on +X, so beam 0
+    # sits at -135 deg; lidar_rear_mount at (-0.45, 0, 0.15) with the fan centered on
+    # -X, so beam 0 sits at +45 deg.
+    static_tf_lidar_front_ros = Node(
+        package="tf2_ros",
+        executable="static_transform_publisher",
+        name="static_tf_lidar_front_ros",
+        output="log",
+        arguments=[
+            "0.45",
+            "0.0",
+            "0.15",
+            "-2.3561945",
+            "0.0",
+            "0.0",
+            "ridgeback_base_link",
+            "lidar_front_ROS",
+        ],
+    )
+
+    static_tf_lidar_rear_ros = Node(
+        package="tf2_ros",
+        executable="static_transform_publisher",
+        name="static_tf_lidar_rear_ros",
+        output="log",
+        arguments=[
+            "-0.45",
+            "0.0",
+            "0.15",
+            "0.7853982",
+            "0.0",
+            "0.0",
+            "ridgeback_base_link",
+            "lidar_rear_ROS",
+        ],
+    )
+
     # Angular bounds filter: clips chassis self-hitting beams (±93° to ±135°).
     # One filter instance per lidar; each publishes its filtered scan to
     # /scan_{front,rear}_filtered for Nav2 to consume as an independent
@@ -433,6 +499,9 @@ def generate_launch_description():
     ld.add_action(static_tf_map_to_odom)
     ld.add_action(sensor_qos_relay)
     ld.add_action(forward_stereo_publisher)
+    ld.add_action(lidar_flattener)
+    ld.add_action(static_tf_lidar_front_ros)
+    ld.add_action(static_tf_lidar_rear_ros)
     ld.add_action(laser_filter_front_node)
     ld.add_action(laser_filter_rear_node)
     ld.add_action(fuse_state_estimator)

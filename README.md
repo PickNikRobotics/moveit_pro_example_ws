@@ -1,6 +1,6 @@
 # MoveIt Pro Example Workspace
 
-This simulation-only workspace contains reference materials for using MoveIt Pro, including example robot configurations, simulated environments, and reusable behaviors. Hardware robot configurations, drivers, and hardware-only dependencies are intentionally excluded to reduce build time and avoid maintaining complex dependencies that the simulation examples do not use.
+This workspace contains reference materials for using MoveIt Pro, including example robot configurations, simulated environments, and reusable behaviors. Most robot configurations are simulation-only, and hardware-only dependencies are intentionally excluded to reduce build time and avoid maintaining complex dependencies that the simulation examples do not use. This workspace now also includes the hardware-capable `so101_base_config`, whose driver dependency is vendored under `src/external_dependencies`.
 
 ## Cloning
 
@@ -12,7 +12,7 @@ git lfs install
 git clone <repo-url>
 ```
 
-Robot descriptions and simulation assets are vendored under `src/external_dependencies`. Each vendored source has an `UPSTREAM.yaml` recording the upstream repository, the exact commit the files came from, which paths were retained, and which of them PickNik modified. No source submodules are required for simulation.
+Robot descriptions and simulation assets are vendored under `src/external_dependencies`, along with `feetech_ros2_driver`, the hardware driver `so101_base_config` uses to command real SO-101 hardware. Each vendored source has an `UPSTREAM.yaml` recording the upstream repository, the exact commit the files came from, which paths were retained, and which of them PickNik modified. No source submodules are required for simulation.
 
 The `moveit_pro_sam2` and `moveit_pro_sam3` submodules contain optional perception models used by ML demonstration Objectives. Initialize them only when those Objectives are needed:
 
@@ -30,7 +30,8 @@ git submodule update --init src/moveit_pro_sam2 src/moveit_pro_sam3
 - `kitchen_sim`
 - `lab_sim`
 - `lunar_sim`
-- `phoebe_sim`
+- `so101_base_config`
+- `so101_sim`
 - `vla_sim`
 - `moveit_pro_franka_configs/franka_base_config`
 - `moveit_pro_kinova_configs/kinova_gen3_base_config`
