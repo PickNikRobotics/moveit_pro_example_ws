@@ -1859,6 +1859,26 @@ def test_main_succeeds_for_valid_workspace(
     )
 
 
+def test_main_fails_for_unexpected_submodule(
+    monkeypatch: MonkeyPatch, capsys: CaptureFixture[str]
+) -> None:
+    """Report the exact allowlist mismatch for an unexpected gitlink."""
+    monkeypatch.setattr(validator, "tracked_submodules", lambda: {"src/unexpected"})
+    monkeypatch.setattr(
+        validator,
+        "discover_vendoring_manifests",
+        lambda: ([Path(f"vendor-{index}") for index in range(8)], []),
+    )
+    monkeypatch.setattr(validator, "validate_optional_model_dependencies", lambda: [])
+    monkeypatch.setattr(
+        validator, "validate_vendored_roots", lambda manifests, **kwargs: []
+    )
+    monkeypatch.setattr(validator, "validate_retired_paths", lambda: [])
+    monkeypatch.setattr(validator, "validate_clearpath_timeout_parameters", lambda: [])
+    assert validator.main() == 1
+    assert "tracked submodules differ" in capsys.readouterr().err
+
+
 @mark.parametrize("license_text", ["Apache License\nVersion 2.0\n", "Apache-2.0\n"])
 def test_apache_material_detected_in_licenses_directory(
     tmp_path: Path, license_text: str
