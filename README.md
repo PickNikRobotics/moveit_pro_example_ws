@@ -58,3 +58,42 @@ python3 bin/validate_workspace_dependencies.py --verify-upstream  # fetches the 
 The second command needs network access. Run it manually after re-vendoring. CI checks structure only; it does not compare vendored contents or create upstream-verification issues.
 
 The optional ML model submodules can be advanced independently when their demonstration Objectives need a newer model package.
+
+### Optional quick refresh
+
+For eligible upstream releases, the command below is a quicker alternative to the manual workflow above.
+
+Run from the repository root with Python 3.10+, Git, Git LFS, network access, and space for temporary upstream copies. Selected dependencies must have no uncommitted, untracked, or ignored files. Run `git lfs pull` first if assets are still LFS pointers.
+
+Preview all dependencies, then refresh one:
+
+```bash
+python3 bin/validate_workspace_dependencies.py --refresh-from-upstream all --dry-run
+python3 bin/validate_workspace_dependencies.py --refresh-from-upstream feetech_ros2_driver --dry-run
+python3 bin/validate_workspace_dependencies.py --refresh-from-upstream feetech_ros2_driver
+```
+
+Use a directory name under `src/external_dependencies`, not a robot config. Replace it with `all` to refresh every eligible dependency. `--dry-run` checks without writing; apply fetches tags again, so check the reported tag and commit. These commands never commit, push, create a PR, or update optional ML submodules.
+
+The selected release is the highest stable `MAJOR.MINOR.PATCH` tag (optional `v` prefix) reachable from the branch in `UPSTREAM.yaml` and containing the current pin. Prereleases, build suffixes, downgrades, and ambiguous versions are rejected. There is no branch-HEAD fallback: forks without an eligible tag need manual review.
+
+Local patches and pruning are preserved where they can be merged safely. Conflicts, uncertain file selection, unsupported binary changes, and required license or manifest corrections stop that dependency before writing. Follow the reported diagnostic rather than bypassing it. In `all` mode, other dependencies can still succeed; any failure returns a nonzero exit code. An interruption during writing can leave a partial update.
+
+Review and validate the changes:
+
+```bash
+git diff -- src/external_dependencies
+python3 bin/validate_workspace_dependencies.py                    # offline structure check
+python3 bin/validate_workspace_dependencies.py --verify-upstream  # read-only network comparison
+git diff --check
+```
+
+Review release notes and licenses, update stale provenance notes, and test every robot config that uses the changed packages. Then commit and push, for example:
+
+```bash
+git add src/external_dependencies/feetech_ros2_driver
+git commit -m "Refresh vendored Feetech driver dependency"
+git push
+```
+
+CI checks structure only. Upstream comparison and refresh are user-triggered.

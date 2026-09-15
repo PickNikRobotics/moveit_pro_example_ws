@@ -1313,5 +1313,32 @@ if __name__ == "__main__":
         action="store_true",
         help="fetch pinned upstream branches and verify the modification ledgers",
     )
+    argument_parser.add_argument(
+        "--refresh-from-upstream",
+        metavar="all|DEPENDENCY",
+        help="refresh local vendored snapshots from stable upstream tags (never pushes)",
+    )
+    argument_parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="preview a refresh without changing workspace files",
+    )
     arguments = argument_parser.parse_args()
+    if arguments.dry_run and not arguments.refresh_from_upstream:
+        argument_parser.error("--dry-run requires --refresh-from-upstream")
+    if arguments.refresh_from_upstream:
+        if arguments.verify_upstream:
+            argument_parser.error(
+                "choose either --verify-upstream or --refresh-from-upstream"
+            )
+        sys.dont_write_bytecode = True
+        from refresh_workspace_dependencies import main as refresh_main
+
+        sys.exit(
+            refresh_main(
+                REPOSITORY_ROOT,
+                arguments.refresh_from_upstream,
+                dry_run=arguments.dry_run,
+            )
+        )
     sys.exit(main(verify_upstream=arguments.verify_upstream))
