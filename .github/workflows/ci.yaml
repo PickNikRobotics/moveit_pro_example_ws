@@ -1136,6 +1136,8 @@ jobs:
                   owner: issueOwner, repo: issueRepo, title, body, assignees,
                 });
               } catch (e) {
+                // A transport/server failure may already have created the issue.
+                if (e.status !== 422) throw e;
                 core.warning(`Create with assignees failed (${e.message}); retrying unassigned.`);
                 created = await github.rest.issues.create({
                   owner: issueOwner, repo: issueRepo, title, body,
