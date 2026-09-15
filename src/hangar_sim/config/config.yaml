@@ -70,6 +70,9 @@ objectives:
       - "moveit_pro::behaviors::VisionBehaviorsLoader"
       - "moveit_pro::behaviors::ConverterBehaviorsLoader"
       - "moveit_pro::behaviors::MujocoBehaviorsLoader"
+      # SLAM Behaviors live in their own package so that only configurations
+      # which build maps depend on slam_toolbox.
+      - "moveit_pro::behaviors::SlamBehaviorsLoader"
   # Specify source folder for objectives
   # [Required]
   objective_library_paths:
