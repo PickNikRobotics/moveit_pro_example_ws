@@ -67,6 +67,40 @@ const github = {rest: {issues: {createComment: async ({body}) => console.log(bod
         assert "https://github.com/Example/workspace/actions/runs/123" in result.stdout
 
 
+@mark.parametrize("status, expected_calls", [(422, 2), (500, 1), (0, 1)])
+def test_drift_issue_does_not_retry_ambiguous_creation(status, expected_calls):
+    """Only validation rejection makes an unassigned retry safe."""
+    workflow = (ROOT / ".github/workflows/ci.yaml").read_text()
+    job = workflow.split("  upstream-drift-issue:", 1)[1].split(
+        "\n  validate_objectives:", 1
+    )[0]
+    script = textwrap.dedent(job.split("          script: |\n", 1)[1])
+    harness = """
+const context = {serverUrl: 'https://github.com', repo: {owner: 'Example', repo: 'workspace'}, runId: 123};
+const core = {info: () => {}, warning: () => {}};
+let calls = 0;
+const github = {rest: {
+  search: {issuesAndPullRequests: async () => ({data: {items: []}})},
+  issues: {create: async () => {
+    calls++;
+    if (calls === 1) throw Object.assign(new Error('creation failed'), {status: Number(process.env.ERROR_STATUS)});
+    return {data: {number: 1}};
+  }}
+}};
+(async () => { SCRIPT })().catch(() => {}).finally(() => console.log(calls));
+""".replace(
+        "SCRIPT", script
+    )
+    result = subprocess.run(
+        ["node", "-e", harness],
+        capture_output=True,
+        text=True,
+        check=True,
+        env={**os.environ, "ERROR_STATUS": str(status)},
+    )
+    assert int(result.stdout) == expected_calls
+
+
 def test_drift_issue_only_reports_failures_with_issue_scoped_token():
     workflow = (ROOT / ".github/workflows/ci.yaml").read_text()
     job = workflow.split("  upstream-drift-issue:", 1)[1].split(
