@@ -281,6 +281,33 @@ genuinely clean localization state.
 
 `so101_sim` over `so101_base_config` is the one overlay in this workspace that relies on this: it inherits the base description untouched and overrides a single xacro arg. Every other overlay that touches the description (`mock_sim`, `lab_sim`, `hangar_sim`, `kitchen_sim`, ...) redeclares `hardware.robot_description` wholesale with its own URDF/SRDF — the heavier-weight form, used when the child's description differs structurally rather than by one hardware toggle. `behavior_hub_catalog` (over `lab_sim`) declares no `hardware:` block at all and inherits the description untouched. `src/so101_sim/test/test_config_inheritance.py` shows how to assert the merged result through the real loader (`load_system_config`).
 
+## `Dockerfile:12`'s rolling base tag is not what `moveit_pro build` uses
+
+`Dockerfile:12` defaults `MOVEIT_PRO_BASE_IMAGE` to
+`picknikciuser/moveit-pro:${MOVEIT_DOCKER_TAG:-main}-${MOVEIT_ROS_DISTRO:-jazzy}` — a **rolling**
+tag, which reads as "any two builds may sit on different base images". Through the CLI it does not:
+`moveit_pro` sets `MOVEIT_DOCKER_TAG` to the version of the **installed CLI**
+(`moveit_pro_configuration.py`'s `moveit_version` -> `moveit_pro_installed_version()`), so the
+build resolves an immutable release tag such as
+`picknikciuser/moveit-pro:10.1.0-rc5-jazzy-cuda13.2-cudnn9`. The rolling `main-jazzy` default only
+applies to a bare `docker build -f Dockerfile .`.
+
+Two consequences:
+
+- A measurement taken through `moveit_pro build` is reproducible against the same CLI version, and
+  `docker pull picknikciuser/moveit-pro:main-jazzy` moving underneath you changes nothing. Do not
+  treat the rolling tag's drift as a confound without first checking which tag was actually used.
+- Conversely, **upgrading the `moveit_pro` CLI silently changes the base image**, and with it the
+  simulator, controllers and the `fuse`/`beluga`/`nav2` debs. That, not the repo's own history, is
+  what makes two runs incomparable.
+
+Read the resolved base out of the build log rather than inferring it from the Dockerfile — the
+`load metadata for` / `FROM ...@sha256:` lines name the exact tag and digest:
+
+```bash
+grep -E "FROM docker.io/picknikciuser/moveit-pro" build.log
+```
+
 ## Running MoveIt Pro from a git worktree
 
 The user image tag is `moveit-pro-<svc>:<version>-<distro>-${MOVEIT_HOST_USER_WORKSPACE_NAME}`,
