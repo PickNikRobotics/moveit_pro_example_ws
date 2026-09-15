@@ -86,7 +86,7 @@
         ID="Move to Joint State"
         _collapsed="false"
         joint_group_name="manipulator"
-        link_padding="0.00"
+        collision_check_params="[{override_scene_link_padding: true, link_padding: 0.0}]"
         target_joint_state="{solution}"
       />
     </Control>

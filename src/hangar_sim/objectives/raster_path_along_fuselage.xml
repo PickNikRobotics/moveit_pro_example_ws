@@ -32,7 +32,7 @@
         acceleration_scale_factor="1.0"
         controller_names="joint_trajectory_controller"
         joint_group_name="manipulator"
-        link_padding="0.0"
+        collision_check_params="[{override_scene_link_padding: true, link_padding: 0.0}]"
         seed="0"
         velocity_scale_factor="1.0"
         waypoint_name="Look at Plane"

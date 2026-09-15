@@ -19,7 +19,7 @@
         joint_group_name="gripper"
         velocity_scale_factor="0.50"
         acceleration_scale_factor="0.50"
-        link_padding="0.0"
+        collision_check_params="[{override_scene_link_padding: true, link_padding: 0.0}]"
         seed="0"
         keep_orientation="false"
         controller_names="joint_trajectory_controller"
