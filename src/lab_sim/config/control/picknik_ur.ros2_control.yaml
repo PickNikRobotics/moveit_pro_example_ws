@@ -94,7 +94,8 @@ robotiq_gripper_controller:
     joint: robotiq_85_left_knuckle_joint
     allow_stalling: true
     stall_timeout: 0.05
-    stall_velocity_threshold: 0.004
+    # Simulated contact chatter reaches about 0.025 rad/s while the fingers hold an object, so the stall check needs a threshold above that. A free-moving finger travels at about 4 rad/s per radian of error, so it is still faster than this when goal_tolerance ends a normal goal; keep the threshold below 4 x goal_tolerance. Tuned for the MuJoCo model, not hardware.
+    stall_velocity_threshold: 0.05
     goal_tolerance: 0.02
 
 force_torque_sensor_broadcaster:
