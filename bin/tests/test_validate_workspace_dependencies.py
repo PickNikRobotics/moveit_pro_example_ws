@@ -1,13 +1,12 @@
 """Tests for the workspace dependency policy validator."""
 
 import hashlib
-import os
 import importlib.util
 from pathlib import Path
 import subprocess
 from urllib.request import Request
 
-from pytest import CaptureFixture, MonkeyPatch, fixture, mark, raises
+from pytest import CaptureFixture, MonkeyPatch, mark, raises
 
 MODULE_PATH = Path(__file__).resolve().parents[1] / "validate_workspace_dependencies.py"
 MODULE_SPEC = importlib.util.spec_from_file_location(
@@ -419,11 +418,7 @@ def test_apache_license_does_not_hide_later_license_symlink(
         VALID_MANIFEST.replace(
             "notes:\n",
             "modified_paths:\n"
-            + modified_entry(
-                "description/LICENSE-Z",
-                f"symlink:{os.readlink(description / 'LICENSE-Z')}".encode(),
-            ).rstrip("\n")
-            + "\n"
+            "  - description/LICENSE-Z\n"
             "apache_paths:\n"
             "  - description\n"
             "apache_excluded_paths:\n"
@@ -573,15 +568,10 @@ def test_missing_modified_path_fails(tmp_path: Path) -> None:
     """Reject a modification ledger that references an absent path."""
     manifest = VALID_MANIFEST.replace(
         "notes:\n",
-        "modified_paths:\n  - missing_file.txt sha256:" + "0" * 64 + "\nnotes:\n",
+        "modified_paths:\n  - missing_file.txt\nnotes:\n",
     )
     errors = validate_manifest(tmp_path, manifest)
     assert any("missing modified path" in error for error in errors)
-
-
-def modified_entry(declared_path: str, _content: bytes = b"") -> str:
-    """Render a modified_paths entry."""
-    return f"  - {declared_path}\n"
 
 
 def upstream_comparison_errors(
@@ -632,9 +622,7 @@ def upstream_comparison_errors(
     if modified:
         manifest = manifest.replace(
             "notes:\n",
-            "modified_paths:\n"
-            + modified_entry("description/model.txt", candidate_content)
-            + "notes:\n",
+            "modified_paths:\n" "  - description/model.txt\n" "notes:\n",
         )
     manifest_path = candidate / "UPSTREAM.yaml"
     manifest_path.write_text(manifest, encoding="utf-8")
@@ -712,8 +700,8 @@ def test_apache_snapshot_rejects_unclassified_modified_path(
     ).replace(
         "notes:\n",
         "modified_paths:\n"
-        + modified_entry("description/model.txt", b"changed")
-        + "apache_paths:\n"
+        "  - description/model.txt\n"
+        "apache_paths:\n"
         "  - description/harmless.txt\n"
         "notes:\n",
     )
@@ -922,17 +910,19 @@ def test_upstream_budget_keeps_later_structural_checks(monkeypatch):
     assert fetched == manifests[:1]
 
 
-def test_dependency_policy_ci_fetches_and_verifies_lfs_objects() -> None:
-    """Require provenance CI to materialize and verify every retained LFS object."""
+def test_dependency_policy_ci_is_offline() -> None:
+    """Keep upstream comparison manual rather than a scheduled or PR gate."""
     workflow = (validator.REPOSITORY_ROOT / ".github/workflows/ci.yaml").read_text(
         encoding="utf-8"
     )
-    dependency_job = workflow.split("  verify-upstream-snapshots:", 1)[1].split(
-        "\n  upstream-drift-issue:", 1
+    dependency_job = workflow.split("  validate-workspace-dependencies:", 1)[1].split(
+        "\n  validate_objectives:", 1
     )[0]
-
-    assert "lfs: true" in dependency_job
-    assert "git lfs fsck --objects" in dependency_job
+    assert "run: python3 bin/validate_workspace_dependencies.py\n" in dependency_job
+    assert "--verify-upstream" not in workflow
+    assert "  verify-upstream-snapshots:" not in workflow
+    assert "  upstream-drift-issue:" not in workflow
+    assert "lfs: true" not in dependency_job
 
 
 class FakeMetadataResponse:

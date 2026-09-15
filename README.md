@@ -58,6 +58,6 @@ python3 bin/validate_workspace_dependencies.py                    # structure, r
 python3 bin/validate_workspace_dependencies.py --verify-upstream  # fetches the pinned commit and compares files
 ```
 
-The second one needs network access. CI runs it weekly rather than per PR, so run it yourself after a re-vendor.
+The second command needs network access. Run it manually after re-vendoring. The PR dependency-policy check validates structure only; upstream drift reporting is non-blocking, and the weekly refresh jobs remain separate from the PR gate.
 
 The `moveit_pro_sam2` submodule can be advanced independently when its demonstration Objectives need a newer model package.
