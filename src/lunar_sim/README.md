@@ -1,12 +1,10 @@
 # lunar_sim
 
 A MoveIt Pro configuration for a Clearpath Husky A300 running under MuJoCo physics on a
-procedurally cratered lunar regolith heightfield. The only sensor is `husky_scene.xml`'s
-mast-mounted, world-fixed `scene_camera`, an overview of the start area and demo route published
-as an image stream at the xacro's `render_publish_rate` of 10 Hz; the robot itself carries none
-(see the roadmap below). No Nav2 stack either - the base is driven only by open-loop `/cmd_vel`
-commands, from the `Dead Reckon Square` objective or the Desktop App's Pose tab (see
-[Teleoperation](#teleoperation)).
+procedurally cratered lunar regolith heightfield. A world-fixed camera on a visible mast
+overlooks the demo route, and front and rear image-based lidars ride on the rover.
+The base uses open-loop `/cmd_vel` commands from the `Dead Reckon Square` objective or
+the Desktop App's Pose tab. See [Teleoperation](#teleoperation). There is no Nav2 stack.
 
 The base spawns at `husky_scene.xml`'s `default` keyframe rather than the world origin
 (`config.yaml`'s `mujoco_keyframe`); that keyframe's own comment records the pose and why it was
@@ -144,6 +142,79 @@ VRAM once uploaded, the upper end if the driver builds a full mipmap chain). The
 (~1M vertices) and the 48 small rock meshes add well under 100 MB combined. That puts the total
 around 550-640 MB - still inside the 1 GB budget, but the colour map has spent most of the headroom
 the earlier flat-plane scene had, so a second asset of this size would need the budget revisited.
+
+## Camera mast and lidar sensors
+
+The fixed `scene_camera` keeps its original position `-1 -5 5`, orientation and field of view.
+A 4.9 m post, ground base, bracket and camera housing now make its support visible.
+The post sits behind the optical center, clear of the overview image.
+
+MujocoSystem publishes these topics at a configured 10 Hz:
+
+| Sensor | Topics | Frame |
+| --- | --- | --- |
+| Scene camera | `/scene_camera/color`, `/scene_camera/depth`, `/scene_camera/camera_info` | `scene_camera_optical_frame` |
+| Front lidar | `/lidar_front/points` | `lidar_front_optical_frame` |
+| Rear lidar | `/lidar_rear/points` | `lidar_rear_optical_frame` |
+
+Live checks on the shared development host measured about 7.2 Hz front lidar, 6.0 Hz
+rear lidar and 5.6 Hz scene images. The configured rate is a ceiling, not a guaranteed
+throughput. Both lidar clouds contain finite returns within the configured range.
+At the starting pose, the rear scanner sees mostly open sky, so its cloud is sparse.
+
+The lidar positions follow the vendored Clearpath A300 accessory mounts:
+
+- Front: `enclosure_front_lidar_mount` in
+  [`amp_enclosure.urdf.xacro`](../external_dependencies/clearpath_common/clearpath_platform_description/urdf/a300/attachments/amp_enclosure.urdf.xacro),
+  at chassis coordinates `0.4 0 0.2708593`. A bracket offsets the scan center 50 mm forward
+  and 50 mm up to `0.45 0 0.3208593`, looking along rover +X.
+- Rear: `sensor_arch_lidar_mount` in
+  [`amp_sensor_arch.urdf.xacro`](../external_dependencies/clearpath_common/clearpath_platform_description/urdf/a300/attachments/amp_sensor_arch.urdf.xacro).
+  The arch attaches to `enclosure_antenna_mount`. The composed mount position is
+  `-0.2728 0 0.7100193`; the scan center hangs 60 mm below it at
+  `-0.2728 0 0.6500193`, looking along rover -X.
+
+Each scanner uses a MuJoCo depth camera with `user="2 270 0.05 25"`, a 270-degree sweep
+and range limits of 0.05 to 25 m. The renderer's near clip (`znear` times the model
+extent, about 0.28 m) is the effective minimum range: anything closer, including the
+housing caps, is not rendered. `fovy="70"` tiles the sweep into three renders within
+the scene's 1280x720 offscreen buffer. `resolution="811 3"` selects 811 horizontal beams
+and three vertical rows, but the upstream projection places the outer rows at plus and
+minus 35 degrees, on the render image boundary, and drops them. Each cloud is therefore
+effectively one horizontal scan line at the mount height. The camera's optical site flips
+local Y and Z into ROS optical coordinates. The chassis and arch cause real
+self-occlusion beyond the near clip. The housings have no collision or added mass,
+preserving the existing lumped chassis dynamics.
+
+This requires image-based lidar support in `picknik_mujoco_ros`, introduced by MoveIt Pro
+PR 22320. The main runtime image's installed 10.2.0 package provides `THREE_D_LIDAR = 2`.
+See the [MuJoCo configuration guide](https://docs.picknik.ai/how_to/configuration_tutorials/create_robot_sim_config/migrate_to_mujoco_config/)
+for the camera user fields and `point_cloud_publish_rate`.
+
+## Route boulders
+
+Four large boulders surround the demo route, in addition to the 200 small scattered rocks.
+They reuse four committed procedural rock meshes at larger scales and the existing Apollo
+ground material. The lower part of each mesh is buried in the sampled terrain height.
+See `description/boulders_assets.xml`, `description/boulders_geoms.xml` and
+[`boulders_provenance.txt`](description/assets/boulders_provenance.txt) for scales,
+placements and how the assets were made. Nothing is generated at runtime.
+
+`description/validate_and_render.py` checks the compiled camera/site transforms, the
+lidar tiling derived from the compiled camera parameters, and the front central render's
+axial depth. Radial ranges are checked separately in live point clouds. It also records chassis
+positions and turns during the demo square and rejects any boulder contact. The before/after square results match:
+0.6290 m closure error and turns of 112.42, 89.72, 94.06 and 41.22 degrees on the current
+terrain. These are an unchanged open-loop baseline, not a claim of accurate square tracking.
+
+The live `Dead Reckon Square` objective also completed all 80 forward commands and 40
+turn commands, with 7.370 m of wheel-odometry travel and 6.365 rad of accumulated yaw.
+A separate Pose Jog check through `Request Teleoperation` forwarded 40 commands at
+0.2 m/s, recorded 0.905 m of odometry displacement, and published a zero twist on
+completion. These odometry checks verify the command paths; the chassis freejoint
+comparison above checks physical route regression.
+
+![Labelled views of the camera mast, lidar mounts and four route boulders](description/assets/sensor_sheet.png)
 
 ## Roadmap
 

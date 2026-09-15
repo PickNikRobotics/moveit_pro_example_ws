@@ -1,0 +1,44 @@
+<mujocoinclude>
+  <!-- Fixed obstacles around the demo circuit. Centers lie at the committed heightfield's
+       surface, leaving the lower portion buried like the existing small rocks. Positions
+       are explicit, not part of the seeded small-rock scatter or runtime generation. -->
+  <geom
+    name="boulder_east"
+    type="mesh"
+    mesh="boulder_east"
+    pos="3.3 0.5 -0.00762"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="boulder_north"
+    type="mesh"
+    mesh="boulder_north"
+    pos="2.8 3.5 -0.02332"
+    euler="0 0 0.7"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="boulder_west"
+    type="mesh"
+    mesh="boulder_west"
+    pos="-2.3 2.1 -0.01210"
+    euler="0 0 -0.5"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="boulder_south"
+    type="mesh"
+    mesh="boulder_south"
+    pos="-1.2 -1.2 0.04510"
+    euler="0 0 1.2"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+</mujocoinclude>
