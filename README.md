@@ -19,18 +19,6 @@ Several submodules (notably `picknik_accessories`) use git LFS. Install [git-lfs
 git submodule foreach --recursive git lfs pull
 ```
 
-## CLIPSeg models are no longer bundled
-
-Starting with the 9.4 patch release that includes this change, this workspace
-no longer vendors the `moveit_pro_clipseg` submodule.
-The `GetMasks2DFromTextQuery` Behavior still exists in MoveIt Pro 9.4, but the
-example configs no longer ship weights for it, so the following Objectives fail
-at run time with
-
-    The ONNX model path could not be resolved: Package 'moveit_pro_clipseg' was not found
-
-To restore them, build a ROS package that installs CLIP and CLIPSeg ONNX models to `share/<your_package>/models/` and set `model_package` (and the `clip_model_path` / `clipseg_model_path` ports) on those Objectives to point at it. To move off CLIPSeg entirely, see the SAM3 equivalents in `lab_sim` (`ML Find Objects on Table`, `ML Segment Bottles from File`, `AddBottlesToPlanningScene`, `ML Segment Point Cloud`, `ML Segment Image`, `ML Segment Image Loop`), `kitchen_sim` (`Segment Image from Prompt`), `dual_arm_sim` (`Find Red Block`, `Find Green Block`, `Sort Blocks`), `hangar_sim` (`ML Move Boxes to Loading Zone`, `Segment Image from Text Prompt`), and MoveIt Pro 10.0, where these Objectives were migrated to `GetMasks2DFromExemplar`.
-
 ## Robot Configs
 
 - `april_tag_sim`
