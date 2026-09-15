@@ -35,7 +35,7 @@
         controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
         controller_names="platform_velocity_controller;joint_trajectory_controller"
         joint_group_name="manipulator"
-        link_padding="0.0"
+        collision_check_params="[{override_scene_link_padding: true, link_padding: 0.0}]"
         velocity_scale_factor="1.0"
         waypoint_name="{waypoint_name}"
         seed="0"
@@ -311,7 +311,6 @@
                   <Action
                     ID="SetupMTCConnectWithProRRT"
                     acceleration_scale_factor="1.000000"
-                    link_padding="0.000000"
                     max_iterations="5000"
                     planning_group_name="manipulator"
                     seed="0"

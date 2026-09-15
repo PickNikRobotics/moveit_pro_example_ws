@@ -63,7 +63,7 @@
         ID="SetupMTCPlanToRobotState"
         acceleration_scale_factor="1"
         joint_state="{midpoint_move}"
-        link_padding="0.0100000"
+        collision_check_params="[{override_scene_link_padding: true, link_padding: 0.01}]"
         max_iterations="5000"
         planning_group_name="manipulator"
         seed="0"
@@ -74,7 +74,7 @@
       <Action
         ID="SetupMTCPlanToPose"
         ik_frame="tool0"
-        link_padding="0.0100000"
+        collision_check_params="[{override_scene_link_padding: true, link_padding: 0.01}]"
         max_iterations="5000"
         monitored_stage="current state"
         planning_group_name="manipulator"

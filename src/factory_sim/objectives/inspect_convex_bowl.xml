@@ -61,7 +61,6 @@
           ID="SetupMTCPlanToPose"
           acceleration_scale_factor="0.5"
           ik_frame="tool0"
-          link_padding="0.000000"
           max_iterations="5000"
           monitored_stage="current state"
           planning_group_name="manipulator"

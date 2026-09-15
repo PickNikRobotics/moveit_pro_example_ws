@@ -45,7 +45,7 @@
         ID="SetupMTCPlanToPose"
         acceleration_scale_factor="0.5"
         ik_frame="tool0"
-        link_padding="0.001000"
+        collision_check_params="[{override_scene_link_padding: true, link_padding: 0.001}]"
         max_iterations="5000"
         monitored_stage="current state"
         planning_group_name="manipulator"
