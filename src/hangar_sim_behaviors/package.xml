@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<package format="3">
+  <name>hangar_sim_behaviors</name>
+  <version>9.5.0</version>
+  <description>
+    Localization Behaviors for the hangar_sim configuration: a generic
+    std_srvs/Empty service caller and the fit-to-map gate used by the
+    "Refine Localization In Place" Objective.
+  </description>
+
+  <maintainer email="support@picknik.ai">MoveIt Pro Maintainer</maintainer>
+  <author email="support@picknik.ai">MoveIt Pro Maintainer</author>
+
+  <license>BSD-3-Clause</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <build_depend>moveit_pro_package</build_depend>
+
+  <depend>geometry_msgs</depend>
+  <depend>moveit_pro_behavior</depend>
+  <depend>moveit_pro_behavior_interface</depend>
+  <depend>nav_msgs</depend>
+  <depend>pluginlib</depend>
+  <depend>rclcpp</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_srvs</depend>
+  <depend>tf2</depend>
+  <depend>tf2_geometry_msgs</depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_cmake_gtest</test_depend>
+  <test_depend>ament_clang_format</test_depend>
+  <test_depend>ament_clang_tidy</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

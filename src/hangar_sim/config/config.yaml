@@ -70,6 +70,11 @@ objectives:
       - "moveit_pro::behaviors::VisionBehaviorsLoader"
       - "moveit_pro::behaviors::ConverterBehaviorsLoader"
       - "moveit_pro::behaviors::MujocoBehaviorsLoader"
+    # Localization Behaviors this config's navigation Objectives need and core does
+    # not provide: a generic std_srvs/Empty service caller, the fit-to-map gate, and
+    # a seed-from-an-arbitrary-pose (core's SetInitialPose only seeds from TF).
+    hangar_sim:
+      - "hangar_sim_behaviors::HangarSimBehaviorsLoader"
   # Specify source folder for objectives
   # [Required]
   objective_library_paths:

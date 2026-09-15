@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Refine Localization In Place">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Refine Localization In Place"
+    _description="Tighten the current localization estimate without moving the robot and without asking for a click. Use it when the robot has been bumped, nudged or pushed and the estimate has slipped, but is still roughly right. If the robot has been moved far enough that the estimate is no longer close, run Localize Robot instead. If the robot is not localized at all yet, this first asks you to place it on the map, since there is nothing to tighten until then."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <!--The seed for the bumped-robot case is the estimate the robot already holds, not a click.
+           map -> ridgeback_base_link is that estimate, and it is also the transform everything
+           downstream plans against.
+
+           This is why the objective is bounded rather than a recovery: a forced no-motion update
+           SELECTS among the poses the seed scattered and cannot invent one, so this can only find
+           the robot within roughly 4 * xy_std_dev of where the filter already thinks it is. A bump
+           of a few tens of centimetres is inside that. A robot carried across the building is not,
+           and the gate in the subtree will reject the result rather than pretend otherwise.-->
+      <!--Reading that estimate presumes there IS one. map -> ridgeback_base_link resolves through
+           the map -> odom edge, and with set_initial_pose false that edge does not exist until the
+           filter has been seeded, so a cold-boot run of this Objective would otherwise die on its
+           very first node with a raw "cannot find transform" and no remedy named.
+
+           The reasoning for the second branch is stronger here than it is in the navigation
+           Objectives: with no seed there is nothing to refine at all, so localizing IS the remedy
+           rather than a detour.
+
+           KNOWN LIMITATION, and the reason the messages below name a symptom rather than a cause.
+           GetLatestTransform fails on ANY unavailable map -> ridgeback_base_link, and this tree
+           cannot tell "the filter was never seeded" from "a good estimate went briefly
+           unavailable" - amcl restarting, stalling or pausing longer than the TF buffer window
+           produces the same observation. Nothing in the tree carries the history that would
+           separate them. That matters because the second case routes an already-localized robot
+           into Localize Robot, which localize_robot.xml records as a known limitation: on gate
+           rejection the restore writes the operator's new pose back, and a filter measured at
+           9.4 cm error ended at 95.6 cm that way. Distinguishing the two cases is follow-up work;
+           until then the messages say what was observed and warn about the replacement.-->
+      <Control
+        ID="Fallback"
+        name="Read the current estimate, or localize first"
+      >
+        <Control
+          ID="Sequence"
+          name="Read the estimate the filter already holds"
+        >
+          <Action
+            ID="GetLatestTransform"
+            name="Read the current estimate"
+            target_frame_id="map"
+            source_frame_id="ridgeback_base_link"
+            transform="{current_transform}"
+          />
+          <Action
+            ID="ConvertTransformStampedToPoseStamped"
+            name="Use it as the seed"
+            transform_stamped="{current_transform}"
+            pose_stamped="{initial_pose}"
+          />
+        </Control>
+        <!--Gated on a UI actually being attached. Note what IsUserAvailable actually tests: it
+             asks whether anything SUBSCRIBES to /failure_reason_collector, and returns FAILURE
+             when nothing does. Its own class docstring still says it looks for a
+             /trajectory_bridge node; that is stale, and believing it would send someone grepping
+             for a node that never existed here. The headless fast-fail therefore rests
+             specifically on nothing subscribing to /failure_reason_collector, which is checkable
+             at runtime and was checked: on the running headless simulator that topic had 0
+             subscribers and 1 publisher, and no trajectory_bridge node existed at all.
+
+             That matters most here: this is the one Objective of this feature the headless suite
+             executes, and without the gate a transient failure of the transform read above would
+             drop into a branch that blocks on the marker prompt inside Localize Robot until the
+             objective timeout expires, instead of ending in under a second with a legible
+             message.-->
+        <Control
+          ID="Sequence"
+          name="An operator is here, so make an estimate to refine"
+        >
+          <Action ID="IsUserAvailable" />
+          <Action
+            ID="LogMessage"
+            log_level="warn"
+            message="Nothing to refine yet: map -> ridgeback_base_link did not resolve, so there is no estimate to tighten. Either the particle filter has not been seeded yet, or an estimate it did have has become unavailable - this Objective cannot tell which. Place the marker on the robot to localize it, and refinement will continue on its own. NOTE: if the robot was in fact already localized, placing the marker REPLACES that estimate with the pose you place."
+          />
+          <SubTree ID="Localize Robot" />
+          <!--Re-read after localizing so the seed this Objective refines is populated the same way
+               the first branch populates it. Localize Robot has already refined once; running the
+               subtree below on the result is the ordinary in-place refinement, seeded from the
+               estimate the filter now holds.-->
+          <Action
+            ID="GetLatestTransform"
+            name="Read the estimate localizing just produced"
+            target_frame_id="map"
+            source_frame_id="ridgeback_base_link"
+            transform="{current_transform}"
+          />
+          <Action
+            ID="ConvertTransformStampedToPoseStamped"
+            name="Use it as the seed"
+            transform_stamped="{current_transform}"
+            pose_stamped="{initial_pose}"
+          />
+        </Control>
+        <!--This branch is reached on ANY failure of the one above, including one that happened
+             long after the operator answered the marker, so it re-tests the condition rather than
+             assuming it. Without the Inverter, an operator whose Localize Robot run was rejected
+             by the fit-to-map gate would be told "no user interface is attached" seconds after
+             placing a marker, with the gate's real message buried above it. With it, that case
+             fails here immediately and the last thing logged is the gate's own accurate reason.-->
+        <Control ID="Sequence" name="Pose unreadable, and nobody to ask">
+          <Decorator ID="Inverter" name="Only when no UI is attached">
+            <Action ID="IsUserAvailable" />
+          </Decorator>
+          <Action
+            ID="LogMessage"
+            log_level="error"
+            message="Nothing to refine: map -> ridgeback_base_link did not resolve, so there is no estimate to tighten. Either the particle filter has not been seeded yet, or an estimate it did have has become unavailable - this Objective cannot tell which. No user interface is attached, so the localization marker cannot be presented here. Run the &quot;Localize Robot&quot; Objective from an operator station - noting that if the robot was already localized, that replaces its estimate with the pose you place."
+          />
+          <Action ID="AlwaysFailure" name="Stop rather than refine nothing" />
+        </Control>
+      </Control>
+      <!--The SAME subtree Localize Robot calls, referenced rather than copied.-->
+      <SubTree
+        ID="Refine Localization In Place Subtree"
+        name="Tighten the estimate without moving"
+        seed_pose="{initial_pose}"
+        refined_pose="{refined_pose}"
+        refined_transform="{refined_transform}"
+        seed_to_refined="{seed_to_refined}"
+        inlier_fraction="{inlier_fraction}"
+        median_residual="{median_residual}"
+        beams_used="{beams_used}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Refine Localization In Place">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Navigation" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

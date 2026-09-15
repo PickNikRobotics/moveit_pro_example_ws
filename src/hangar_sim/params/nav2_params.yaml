@@ -1,13 +1,93 @@
 amcl:
   ros__parameters:
     use_sim_time: True
-    # Self-seed the particle filter at the robot's spawn pose (map origin) on
-    # activation, so localization starts without a manual 2D pose estimate.
-    # beluga_amcl is 2D: only x, y, yaw are declared (no z). The covariances set
-    # the initial spread (~0.5 m position, ~15 deg yaw) so the seed is not
-    # overconfident; beluga's default covariance is near-zero. The SetInitialPose
-    # Behavior re-seeds at the robot's current pose at each navigation Objective.
-    set_initial_pose: true
+    # Do NOT self-seed. A robot does not power on at a known pose, so a config that
+    # hands the filter one is a simulator convenience that hides the real startup
+    # path: on hardware the same config would assert a pose nobody measured, and
+    # nothing downstream could tell the difference between that and a real fix.
+    #
+    # The "Localize Robot" Objective seeds the filter from an operator's click
+    # instead, and tightens that seed in place before the robot moves. "Refine
+    # Localization In Place" runs that same refinement on its own, seeded from the
+    # estimate the filter already holds, for the bumped-robot case.
+    #
+    # Until one of those runs, beluga publishes NOTHING -- no /amcl_pose, and no
+    # map -> odom transform at all. Measured in simulation rather than inferred:
+    # with this setting the node reports lifecycle state ACTIVE, consumes 356
+    # /scan_merged messages, and still emits zero /amcl_pose while map -> odom
+    # raises ConnectivityException. Publishing a seed makes the edge appear at once.
+    #
+    # beluga's binary does carry a "distributed across the map" initialisation
+    # string, which reads like it global-initialises and broadcasts from an
+    # unconverged cloud. It does not do that here. Reading the strings gave the
+    # opposite answer to running it, which is worth remembering before trusting a
+    # symbol dump about startup behaviour.
+    #
+    # That distinction has teeth in this workspace: map -> odom is the only link
+    # between the MuJoCo scene frames (cameras under mj_world -> map) and MoveIt's
+    # planning frame (world under odom). With no such edge the TF tree is in two
+    # disconnected pieces, so until the filter is seeded every point-cloud
+    # Objective fails its transform lookup outright -- not just the navigation
+    # ones, and not with a pose that is merely wrong. The integration test seeds
+    # the filter once in a fixture for exactly this reason, and waits for the
+    # map -> odom edge to appear, because with no edge before the seed the edge
+    # appearing IS the evidence the seed was consumed -- see localized_robot in
+    # test/objectives_integration_test.py.
+    #
+    # The navigation Objectives still open with the SetInitialPose Behavior, which
+    # re-seeds the filter at the robot's current pose. That now REQUIRES the filter
+    # to have been seeded already: SetInitialPose reads map -> ridgeback_base_link,
+    # and with no map -> odom edge there is nothing for it to resolve through. It
+    # used to succeed at cold boot only because that transform was the simulator's,
+    # which is the crutch this change removes.
+    #
+    # So each of those Objectives -- and "Refine Localization In Place", which opens
+    # on the same lookup -- wraps that first node in a three-branch Fallback rather
+    # than letting it fail opaquely. A filter whose estimate resolves takes the first
+    # branch and runs exactly as before. When it does NOT resolve and an operator is
+    # attached, the second branch says so and runs the "Localize Robot" subtree
+    # inline, so the run stops for the marker once and then continues on its own; it
+    # does not fail, and it does not send the operator to a different Objective.
+    # HEADLESS, the second branch is skipped and the third reports the same
+    # unresolved transform with no UI to prompt, then fails. That keeps a headless
+    # run from blocking on a marker nobody can answer, which matters because "Refine
+    # Localization In Place" is the one Objective of this feature the integration
+    # suite executes.
+    #
+    # NOTE WHAT THOSE BRANCHES DO NOT CLAIM. SetInitialPose and GetLatestTransform
+    # both fail on ANY unavailable map -> ridgeback_base_link, so the tree cannot
+    # tell a filter that was never seeded from one whose good estimate went briefly
+    # unavailable -- amcl restarting, stalling or pausing past the TF buffer window
+    # looks identical, and nothing in the tree carries the history that would
+    # separate them. Every message on these paths therefore states the observed
+    # symptom (the transform did not resolve), offers both possibilities, and warns
+    # that if the robot WAS already localized, re-localizing replaces that estimate
+    # with the pose the operator places. That warning is not hypothetical: measured
+    # on this branch, a filter at 9.4 cm error left at 95.6 cm after a rejected seed
+    # was restored over it. Distinguishing the two cases is follow-up work.
+    #
+    # Both of those branches turn on IsUserAvailable, and it is worth knowing what
+    # that Behavior actually tests: whether anything SUBSCRIBES to
+    # /failure_reason_collector. Its class docstring still claims it looks for a
+    # /trajectory_bridge node, which is stale. So the headless fast-fail rests on
+    # nothing subscribing to /failure_reason_collector -- checkable at runtime, and
+    # checked: on the running headless simulator that topic had 0 subscribers and 1
+    # publisher, and no trajectory_bridge node existed at all. The third branch
+    # re-tests the same condition through an Inverter, so a failure that happens
+    # after an operator really did answer the marker is not mislabelled as "no UI".
+    #
+    # Either way the operator order is "Localize Robot", then navigate -- the same
+    # order hardware needs.
+    #
+    # beluga_amcl is 2D: only x, y and yaw are declared (no z). DO NOT DELETE the
+    # initial_pose block below because this setting is false: amcl no longer reads
+    # it, but the integration suite does. `_spawn_pose_from_nav2_params` in
+    # test/objectives_integration_test.py reads x, y and yaw straight out of it and
+    # seeds the filter with them, and the `localized_robot` fixture that does so is
+    # autouse and module-scoped -- so removing the block does not relax a config,
+    # it raises a KeyError that fails every Objective in the suite for a reason
+    # that looks nothing like the cause.
+    set_initial_pose: false
     initial_pose:
       x: 0.0
       y: 0.0
