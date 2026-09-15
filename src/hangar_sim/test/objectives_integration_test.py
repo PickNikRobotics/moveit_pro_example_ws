@@ -113,12 +113,13 @@ skip_objectives = {
     # reasons.
     "Teleoperate",  # DoTeleoperateAction rejects the goal with no UI subscribed.
     "Marker Visualization Example",  # GetTextFromUser server unavailable headless.
-    # Hand-eye calibration Objectives from moveit_pro_objectives: they move through
-    # taught `calibration_*` waypoints and detect a ChArUco board, which only
+    # Hand-eye calibration Objectives from moveit_pro_objectives: they generate or
+    # move through `calibration_*` waypoints and detect a ChArUco board, which only
     # hand_eye_calibration_sim provides.
     "Calibrate Eye In Hand Camera",
     "Calibrate Eye To Hand Camera",
     "Calibrate Multiple Cameras",
+    "Generate Calibration Waypoints",
     # Intermittent Jazzy CI-runner flakes. Skipped so the suite is deterministic.
     #
     # "Solution - Draw Picknik" is the suite's longest objective and sits on
