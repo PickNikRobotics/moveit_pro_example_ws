@@ -879,6 +879,49 @@ def test_effective_lfs_attributes(
     assert validator.file_is_lfs_tracked(tmp_path / relative_path) is expected
 
 
+def test_lfs_attribute_failure_identifies_path_and_cause(tmp_path, monkeypatch):
+    """Do not lose Git's actionable diagnostic when the checkout is unavailable."""
+    monkeypatch.setattr(validator, "REPOSITORY_ROOT", tmp_path)
+    with raises(OSError) as error:
+        validator.file_is_lfs_tracked(tmp_path / "vendor/model.bin")
+    assert "vendor/model.bin" in str(error.value)
+    assert "exit 128" in str(error.value)
+    assert "not a git repository" in str(error.value)
+
+
+def test_duplicate_modified_paths_are_rejected(tmp_path):
+    manifest = VALID_MANIFEST.replace(
+        "notes:\n", "modified_paths:\n  - description\n  - description\nnotes:\n"
+    )
+    assert any(
+        "in modified_paths twice" in error
+        for error in validate_manifest(tmp_path, manifest)
+    )
+
+
+def test_upstream_budget_keeps_later_structural_checks(monkeypatch):
+    manifests = [Path(name) for name in ("first", "second", "third")]
+    validated, fetched = [], []
+
+    def structural(path):
+        validated.append(path)
+        return ["bad second manifest"] if path == manifests[1] else []
+
+    def fetch(path, budget):
+        fetched.append(path)
+        budget.exhaustion_error = "budget exhausted"
+        return [budget.exhaustion_error]
+
+    monkeypatch.setattr(validator, "validate_vendor_manifest", structural)
+    monkeypatch.setattr(validator, "fetch_and_validate_upstream", fetch)
+    assert validator.validate_vendored_roots(manifests, verify_upstream=True) == [
+        "budget exhausted",
+        "bad second manifest",
+    ]
+    assert validated == manifests
+    assert fetched == manifests[:1]
+
+
 def test_dependency_policy_ci_fetches_and_verifies_lfs_objects() -> None:
     """Require provenance CI to materialize and verify every retained LFS object."""
     workflow = (validator.REPOSITORY_ROOT / ".github/workflows/ci.yaml").read_text(
@@ -1826,17 +1869,15 @@ def test_main_succeeds_for_valid_workspace(
     )
 
 
-def test_apache_material_detected_in_licenses_directory(tmp_path: Path) -> None:
-    """Detect Apache material declared as LICENSES/Apache-2.0.txt.
-
-    phoebe_ws states its Apache grant this way. Missing it turns off the
-    classification check on the one tree that vendors Apache material, and
-    reports success while doing so.
-    """
+@mark.parametrize("license_text", ["Apache License\nVersion 2.0\n", "Apache-2.0\n"])
+def test_apache_material_detected_in_licenses_directory(
+    tmp_path: Path, license_text: str
+) -> None:
+    """Detect full-title and SPDX-only Apache grants in LICENSES/."""
     source_root = tmp_path / "source"
     (source_root / "LICENSES").mkdir(parents=True)
     (source_root / "LICENSES" / "Apache-2.0.txt").write_text(
-        "Apache License\nVersion 2.0\n", encoding="utf-8"
+        license_text, encoding="utf-8"
     )
     retains_apache, errors = validator.inspect_license_inventory(
         source_root, Path("source/UPSTREAM.yaml")

@@ -1105,7 +1105,7 @@ jobs:
               `\`validate_workspace_dependencies.py --verify-upstream\` failed on ${new Date().toISOString()}.`,
               '',
               'Either a vendored tree in `example_ws` drifted from the commit its',
-              '`UPSTREAM.yaml` pins, or one of the eight pinned upstream repositories',
+              '`UPSTREAM.yaml` pins, or one of the pinned upstream repositories',
               'was unreachable. The run output names which manifest and which path.',
               '',
               `- [Workflow run](${runUrl})`,

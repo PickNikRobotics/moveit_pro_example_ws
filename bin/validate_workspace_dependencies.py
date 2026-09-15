@@ -663,7 +663,13 @@ def path_is_lfs_tracked(repository_relative_path: Path) -> bool:
         check=False,
     )
     if result.returncode:
-        raise OSError("Could not resolve Git LFS attributes with git check-attr")
+        # Git's local diagnostic has no credentials; bound it and escape control
+        # characters before including it in an error shown in CI logs.
+        detail = repr(result.stderr.decode("utf-8", errors="replace")[:512])
+        raise OSError(
+            f"{repository_relative_path}: git check-attr failed "
+            f"(exit {result.returncode}): {detail}"
+        )
     return result.stdout.split(b"\0") == [
         os.fsencode(repository_relative_path.as_posix()),
         b"filter",

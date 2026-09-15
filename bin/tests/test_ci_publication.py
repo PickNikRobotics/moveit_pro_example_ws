@@ -20,7 +20,9 @@ def test_pages_writers_share_a_repository_wide_lock():
         ("cleanup-pr-reports.yaml", "cleanup-reports"),
     ):
         workflow = (ROOT / ".github/workflows" / filename).read_text()
-        section = workflow.split(f"  {job}:", 1)[1]
+        section = re.split(
+            r"\n  [a-z][a-z0-9-]*:", workflow.split(f"  {job}:", 1)[1], maxsplit=1
+        )[0]
         match = re.search(r"group: (.+)", section)
         assert match is not None
         group = match.group(1)
