@@ -118,6 +118,7 @@
             planning_group_name="manipulator"
             tip_links="grasp_link"
             blending_radius="0.001"
+            trajectory_timing="[{mode: time_optimal}]"
             joint_trajectory_msg="{coverage_trajectory}"
           />
           <SubTree
