@@ -30,6 +30,11 @@ hardware:
       # the virtual-rail joint chain, so this can stay true with fuse enabled.
       # Rebuild hangar_sim after changing this value.
       - publish_odom: true
+      # Renders and publishes the forward stereo pair for visual odometry. Off because
+      # nothing consumes it yet: the pair costs two 1280x720 offscreen renders at 20 Hz
+      # and adds four unusable entries to the camera picker. Turning this on also starts
+      # forward_stereo_publisher. Rebuild hangar_sim after changing this value.
+      - enable_vo: false
 
   # Additional launch file included with the persistent driver process (Nav2 sim drivers).
   # [Optional, defaults to a blank launch file if not specified]
