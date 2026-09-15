@@ -3,8 +3,6 @@
 
 from pathlib import Path, PureWindowsPath
 import argparse
-import fnmatch
-import functools
 import hashlib
 import json
 import os
@@ -651,33 +649,31 @@ def validate_vendor_manifest(path: Path) -> list[str]:
     return errors
 
 
-@functools.cache
-def lfs_tracked_patterns(repository_root: Path) -> tuple[str, ...]:
-    """Return the .gitattributes patterns that route files through Git LFS."""
-    attributes = repository_root / ".gitattributes"
-    if not attributes.is_file():
-        return ()
-    try:
-        contents = attributes.read_text(encoding="utf-8")
-    except (OSError, UnicodeDecodeError):
-        return ()
-    patterns = []
-    for line in contents.splitlines():
-        entry = line.strip()
-        if not entry or entry.startswith("#") or "filter=lfs" not in entry:
-            continue
-        patterns.append(entry.split()[0])
-    return tuple(patterns)
-
-
 def path_is_lfs_tracked(repository_relative_path: Path) -> bool:
-    """Return whether .gitattributes routes this path through Git LFS."""
-    posix_path = repository_relative_path.as_posix()
-    return any(
-        fnmatch.fnmatch(posix_path, pattern)
-        or fnmatch.fnmatch(repository_relative_path.name, pattern)
-        for pattern in lfs_tracked_patterns(REPOSITORY_ROOT)
+    """Ask Git for the effective filter, including nested rules and overrides."""
+    result = subprocess.run(
+        [
+            "git",
+            "-C",
+            str(REPOSITORY_ROOT),
+            "check-attr",
+            "-z",
+            "filter",
+            "--",
+            repository_relative_path.as_posix(),
+        ],
+        capture_output=True,
+        timeout=10,
+        check=False,
     )
+    if result.returncode:
+        raise OSError("Could not resolve Git LFS attributes with git check-attr")
+    return result.stdout.split(b"\0") == [
+        os.fsencode(repository_relative_path.as_posix()),
+        b"filter",
+        b"lfs",
+        b"",
+    ]
 
 
 def file_is_lfs_tracked(path: Path) -> bool:

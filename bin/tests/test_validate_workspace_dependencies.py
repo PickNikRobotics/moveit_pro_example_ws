@@ -597,6 +597,7 @@ def upstream_comparison_errors(
     lfs_tracked: bool = False,
 ) -> list[str]:
     """Compare a temporary candidate manifest with an upstream snapshot."""
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
     if lfs_tracked:
         (tmp_path / ".gitattributes").write_text(
             "*.txt filter=lfs diff=lfs merge=lfs -text\n", encoding="utf-8"
@@ -693,6 +694,7 @@ def test_apache_snapshot_rejects_unclassified_modified_path(
     tmp_path: Path, monkeypatch: MonkeyPatch
 ) -> None:
     """Require every modification in an Apache-bearing snapshot to be classified."""
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
     candidate = tmp_path / "candidate"
     upstream = tmp_path / "upstream"
     (candidate / "description").mkdir(parents=True)
@@ -855,13 +857,35 @@ def test_lfs_pointer_size_must_match_upstream_binary(
     ]
 
 
+@mark.parametrize(
+    ("root_rule", "nested_rule", "relative_path", "expected"),
+    [
+        ("", "*.bin filter=lfs\n", "vendor/model.bin", True),
+        ("*.bin filter=lfs\n*.bin -filter\n", "", "model.bin", False),
+        ("*.bin filter=lfs\n", "*.bin !filter\n", "vendor/model.bin", False),
+        ("vendor/*.bin filter=lfs\n", "", "vendor/sub/model.bin", False),
+        ("*.bin filter=lfs\n", "", "vendor/sub/model.bin", True),
+    ],
+)
+def test_effective_lfs_attributes(
+    tmp_path, monkeypatch, root_rule, nested_rule, relative_path, expected
+):
+    """Use Git's nested, override and path-separator attribute semantics."""
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    (tmp_path / ".gitattributes").write_text(root_rule)
+    (tmp_path / "vendor").mkdir()
+    (tmp_path / "vendor/.gitattributes").write_text(nested_rule)
+    monkeypatch.setattr(validator, "REPOSITORY_ROOT", tmp_path)
+    assert validator.file_is_lfs_tracked(tmp_path / relative_path) is expected
+
+
 def test_dependency_policy_ci_fetches_and_verifies_lfs_objects() -> None:
     """Require provenance CI to materialize and verify every retained LFS object."""
     workflow = (validator.REPOSITORY_ROOT / ".github/workflows/ci.yaml").read_text(
         encoding="utf-8"
     )
-    dependency_job = workflow.split("  validate-workspace-dependencies:", 1)[1].split(
-        "\n  validate_objectives:", 1
+    dependency_job = workflow.split("  verify-upstream-snapshots:", 1)[1].split(
+        "\n  upstream-drift-issue:", 1
     )[0]
 
     assert "lfs: true" in dependency_job

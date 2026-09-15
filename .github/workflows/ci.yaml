@@ -643,13 +643,12 @@ jobs:
     # hard-fail and leave a spurious red X on every external-contributor PR.
     if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && always() && (needs.render-report.result == 'success' || needs.render-report.result == 'failure')
     runs-on: ubuntu-22.04
-    # Serialize gh-pages writes per PR so this job doesn't race with the
-    # cleanup-pr-reports workflow on `pull_request: closed`. cancel-in-progress
-    # stays false — we don't want a mid-flight publish silently killed by an
-    # untimely close event.
+    # Every PR publishes to the same branch. Share the lock with cleanup and
+    # other PRs, not just runs for this PR, to avoid non-fast-forward pushes.
     concurrency:
-      group: gh-pages-pr-${{ github.event.pull_request.number }}
+      group: gh-pages-writes
       cancel-in-progress: false
+      queue: max
     permissions:
       pull-requests: write
       # contents:write is required by peaceiris/actions-gh-pages below to push
@@ -748,6 +747,7 @@ jobs:
             echo "any=true" >> "$GITHUB_OUTPUT"
           fi
       - name: Deploy to GitHub Pages
+        id: deploy
         if: steps.layout.outputs.any == 'true'
         uses: peaceiris/actions-gh-pages@84c30a85c19949d7eee79c4ff27748b70285e453 # v4.1.0
         with:
@@ -777,6 +777,7 @@ jobs:
         if: always() && steps.layout.outputs.base != ''
         uses: actions/github-script@d746ffe35508b1917358783b479e04febd2b8f71 # v9.0.0
         env:
+          DEPLOY_OUTCOME: ${{ steps.deploy.outcome }}
           BASE: ${{ steps.layout.outputs.base }}
           STATUS_MAP: ${{ steps.layout.outputs.status_map }}
         with:
@@ -802,6 +803,9 @@ jobs:
               const counts = failed > 0
                 ? `${failed} failed, ${s.passed} passed`
                 : `${s.passed} passed`;
+              if (process.env.DEPLOY_OUTCOME !== 'success') {
+                return `  - ${icon} **${distro}**: ${counts} — HTML report not published; see [run artifacts and logs](${runUrl})`;
+              }
               return `  - ${icon} **${distro}**: <a href="${pagesUrl(config, distro)}" target="_blank" rel="noopener noreferrer">view HTML report</a> — ${counts}`;
             };
             const sections = Object.entries(statusMap).map(([config, distros]) => {
@@ -846,7 +850,7 @@ jobs:
       - name: Install dependency policy test requirements
         run: python3 -m pip install pytest==9.0.3
       - name: Test dependency policy validator
-        run: python3 -m pytest bin/tests/test_validate_workspace_dependencies.py -v
+        run: python3 -m pytest bin/tests -v
       - name: Validate dependency policy
         run: python3 bin/validate_workspace_dependencies.py
 
@@ -891,8 +895,7 @@ jobs:
     permissions: {}
     needs: verify-upstream-snapshots
     if: >-
-      always() && needs.verify-upstream-snapshots.result != 'success' &&
-      needs.verify-upstream-snapshots.result != 'skipped'
+      always() && needs.verify-upstream-snapshots.result == 'failure'
     runs-on: ubuntu-22.04
     steps:
       # example_ws has issues disabled, so this has to be filed on moveit_pro,
@@ -908,6 +911,7 @@ jobs:
           repositories: |
             moveit_pro_example_ws
             moveit_pro
+          permission-issues: write
       - name: Open or update the drift issue
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
