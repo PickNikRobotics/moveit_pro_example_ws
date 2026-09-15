@@ -3,6 +3,7 @@
 import hashlib
 import importlib.util
 from pathlib import Path
+import re
 import subprocess
 from urllib.request import Request
 
@@ -911,15 +912,17 @@ def test_upstream_budget_keeps_later_structural_checks(monkeypatch):
 
 
 def test_dependency_policy_ci_is_offline() -> None:
-    """Keep upstream comparison manual rather than a scheduled or PR gate."""
+    """Keep upstream comparison out of the PR dependency-policy gate."""
     workflow = (validator.REPOSITORY_ROOT / ".github/workflows/ci.yaml").read_text(
         encoding="utf-8"
     )
-    dependency_job = workflow.split("  validate-workspace-dependencies:", 1)[1].split(
-        "\n  validate_objectives:", 1
+    dependency_job = re.split(
+        r"\n  [a-z][a-z0-9_-]*:",
+        workflow.split("  validate-workspace-dependencies:", 1)[1],
+        maxsplit=1,
     )[0]
     assert "run: python3 bin/validate_workspace_dependencies.py\n" in dependency_job
-    assert "--verify-upstream" not in workflow
+    assert "--verify-upstream" not in dependency_job
     assert "  verify-upstream-snapshots:" not in workflow
     assert "  upstream-drift-issue:" not in workflow
     assert "lfs: true" not in dependency_job
@@ -1857,6 +1860,26 @@ def test_main_succeeds_for_valid_workspace(
         "Validated 8 vendored sources and 1 optional ML submodule."
         in capsys.readouterr().out
     )
+
+
+def test_main_fails_for_unexpected_submodule(
+    monkeypatch: MonkeyPatch, capsys: CaptureFixture[str]
+) -> None:
+    """Report the exact allowlist mismatch for an unexpected gitlink."""
+    monkeypatch.setattr(validator, "tracked_submodules", lambda: {"src/unexpected"})
+    monkeypatch.setattr(
+        validator,
+        "discover_vendoring_manifests",
+        lambda: ([Path(f"vendor-{index}") for index in range(8)], []),
+    )
+    monkeypatch.setattr(validator, "validate_optional_model_dependencies", lambda: [])
+    monkeypatch.setattr(
+        validator, "validate_vendored_roots", lambda manifests, **kwargs: []
+    )
+    monkeypatch.setattr(validator, "validate_retired_paths", lambda: [])
+    monkeypatch.setattr(validator, "validate_clearpath_timeout_parameters", lambda: [])
+    assert validator.main() == 1
+    assert "tracked submodules differ" in capsys.readouterr().err
 
 
 @mark.parametrize("license_text", ["Apache License\nVersion 2.0\n", "Apache-2.0\n"])

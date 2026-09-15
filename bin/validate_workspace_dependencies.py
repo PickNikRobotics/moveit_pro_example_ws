@@ -43,8 +43,8 @@ LFS_POINTER_OID = re.compile(
     rb"oid sha256:([0-9a-f]{64})\nsize ([0-9]+)\n?\Z"
 )
 PICKNIK_MODIFICATION_NOTICE = b"Modified by PickNik Inc."
-# franka_description carries the full license title. phoebe_ws writes only the
-# SPDX identifier, in a LICENSES/ directory. Match both.
+# Recognize both the full license title and SPDX-only grants, including
+# license texts stored under a LICENSES/ directory.
 APACHE_LICENSE_MARKERS = (b"Apache License", b"Apache-2.0")
 ALLOWED_MANIFEST_KEYS = {
     "upstream",
