@@ -165,16 +165,20 @@ def refresh_one(manifest_path: Path, *, dry_run: bool = False) -> None:
                 f"containing pin {old}; review the configured branch and refresh manually"
             )
         version, tag = max(versions)
-        commits = {
-            git(repository, "rev-parse", f"refs/tags/{name}^{{commit}}")
+        tag_commits = {
+            name: git(repository, "rev-parse", f"refs/tags/{name}^{{commit}}")
             .decode()
             .strip()
             for candidate_version, name in versions
             if candidate_version == version
         }
+        commits = set(tag_commits.values())
         if len(commits) != 1:
+            choices = ", ".join(
+                f"{name}={sha}" for name, sha in sorted(tag_commits.items())
+            )
             raise ValueError(
-                "ambiguous stable version tags identify different commits; select and refresh manually"
+                f"ambiguous stable version tags: {choices}; select and refresh manually"
             )
         new = commits.pop()
         require_clean(manifest_path)

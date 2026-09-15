@@ -369,6 +369,8 @@ def test_duplicate_version_tags_with_different_commits_are_ambiguous(fixture):
     result = refresh(workspace, "demo")
     assert result.returncode == 1
     assert "ambiguous" in result.stderr
+    for tag in ("v2.0.0", "2.0.0"):
+        assert f"{tag}={git(upstream, 'rev-parse', tag)}" in result.stderr
     assert not git(workspace, "status", "--porcelain")
 
 
