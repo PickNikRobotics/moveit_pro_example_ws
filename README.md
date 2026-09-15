@@ -46,6 +46,23 @@ The hardware-only `kinova_gen3_site_config` and `picknik_ur_site_config` configu
 
 ## Updating vendored dependencies
 
+Each `UPSTREAM.yaml` under `src/external_dependencies` records the exact upstream commit and retained paths. To refresh one: check the tree out at the new commit, preserve its license files, reapply the pruning described in `pruning_notes`, and validate every config that consumes the package.
+
+Then update `commit` and the retained-path lists, and check the result:
+
+```bash
+python3 bin/validate_workspace_dependencies.py                    # structure, runs on every PR
+python3 bin/validate_workspace_dependencies.py --verify-upstream  # fetches the pinned commit and compares files
+```
+
+The second command needs network access. Run it manually after re-vendoring. CI checks structure only; it does not compare vendored contents or create upstream-verification issues.
+
+The optional ML model submodules can be advanced independently when their demonstration Objectives need a newer model package.
+
+### Optional quick refresh
+
+For eligible upstream releases, the command below is a quicker alternative to the manual workflow above.
+
 Run from the repository root with Python 3.10+, Git, Git LFS, network access, and space for temporary upstream copies. Selected dependencies must have no uncommitted, untracked, or ignored files. Run `git lfs pull` first if assets are still LFS pointers.
 
 Preview all dependencies, then refresh one:
