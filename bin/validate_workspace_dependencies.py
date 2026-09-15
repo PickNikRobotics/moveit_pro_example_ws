@@ -645,8 +645,12 @@ def validate_vendor_manifest(path: Path) -> list[str]:
     return errors
 
 
-def path_is_lfs_tracked(repository_relative_path: Path) -> bool:
-    """Ask Git for the effective filter, including nested rules and overrides."""
+def file_is_lfs_tracked(path: Path) -> bool:
+    """Resolve effective Git LFS attributes; distrust paths outside the repository."""
+    try:
+        repository_relative_path = path.relative_to(REPOSITORY_ROOT)
+    except ValueError:
+        return False
     result = subprocess.run(
         [
             "git",
@@ -676,19 +680,6 @@ def path_is_lfs_tracked(repository_relative_path: Path) -> bool:
         b"lfs",
         b"",
     ]
-
-
-def file_is_lfs_tracked(path: Path) -> bool:
-    """Return whether .gitattributes routes this file through Git LFS.
-
-    Paths outside the repository have no .gitattributes entry, so this returns
-    False and their pointer-shaped bytes stay untrusted.
-    """
-    try:
-        repository_relative_path = path.relative_to(REPOSITORY_ROOT)
-    except ValueError:
-        return False
-    return path_is_lfs_tracked(repository_relative_path)
 
 
 def effective_file_digest(
@@ -1207,18 +1198,18 @@ def validate_vendored_roots(
         ]
     errors: list[str] = []
     budget = UpstreamValidationBudget() if verify_upstream else None
-    budget_exhausted = False
     for manifest in manifests:
         # Structural validation needs no network, so it runs for every manifest
         # even after the upstream budget is spent. Stopping at the exhausted
         # manifest would report one failure per CI run.
         manifest_errors = validate_vendor_manifest(manifest)
         errors.extend(manifest_errors)
-        if verify_upstream and not manifest_errors and not budget_exhausted:
+        if (
+            budget is not None
+            and not manifest_errors
+            and budget.exhaustion_error is None
+        ):
             errors.extend(fetch_and_validate_upstream(manifest, budget))
-            budget_exhausted = (
-                budget is not None and budget.exhaustion_error is not None
-            )
     return errors
 
 

@@ -55,6 +55,6 @@ python3 bin/validate_workspace_dependencies.py                    # structure, r
 python3 bin/validate_workspace_dependencies.py --verify-upstream  # fetches the pinned commit and compares files
 ```
 
-The second one needs network access. CI runs it weekly rather than per PR, so run it yourself after a re-vendor.
+The second command needs network access. Run it manually after re-vendoring. CI checks structure only; it does not compare vendored contents or create upstream-verification issues.
 
 The optional ML model submodules can be advanced independently when their demonstration Objectives need a newer model package.
