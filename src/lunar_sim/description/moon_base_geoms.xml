@@ -1,0 +1,374 @@
+<mujoco>
+  <!-- Five fixed bodies, no joints. All geoms are visible collision geometry in group 1.
+       World +y is beyond the demo's far corner. Ground datum for each body is the
+       committed hfield PNG's centre sample minus 0.04 m; supports extend below it.
+       Coordinates, clearances, and provenance: moon_base_provenance.md. -->
+  <body name="moon_base_habitat" pos="0 6.8 -0.042010">
+    <geom
+      name="moon_base_habitat_shell"
+      type="cylinder"
+      fromto="0 -1.6 1.5 0 1.6 1.5"
+      size="1.1"
+      material="moon_base_blanket"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_habitat_front_ring"
+      type="cylinder"
+      fromto="0 -1.61 1.5 0 -1.48 1.5"
+      size="1.12"
+      material="moon_base_metal"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_habitat_rear_ring"
+      type="cylinder"
+      fromto="0 1.48 1.5 0 1.61 1.5"
+      size="1.12"
+      material="moon_base_metal"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_door_frame"
+      type="box"
+      pos="0 -1.65 1.25"
+      size="0.55 0.06 0.88"
+      material="moon_base_blanket"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_door"
+      type="box"
+      pos="0 -1.72 1.25"
+      size="0.43 0.03 0.75"
+      material="moon_base_dark"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_threshold"
+      type="box"
+      pos="0 -1.72 0.18"
+      size="0.65 0.25 0.2"
+      material="moon_base_metal"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_habitat_foot_fl"
+      type="box"
+      pos="-0.85 -1.25 0.15"
+      size="0.35 0.35 0.4"
+      material="moon_base_metal"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_habitat_foot_fr"
+      type="box"
+      pos="0.85 -1.25 0.15"
+      size="0.35 0.35 0.4"
+      material="moon_base_metal"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_habitat_foot_rl"
+      type="box"
+      pos="-0.85 1.25 0.15"
+      size="0.35 0.35 0.4"
+      material="moon_base_metal"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_habitat_foot_rr"
+      type="box"
+      pos="0.85 1.25 0.15"
+      size="0.35 0.35 0.4"
+      material="moon_base_metal"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+  </body>
+
+  <body name="moon_base_solar_array" pos="-4 6 -0.059955">
+    <geom
+      name="moon_base_solar_frame"
+      type="box"
+      pos="0 0 1.2"
+      euler="0.436332 0 0"
+      size="1.85 0.94 0.04"
+      material="moon_base_metal"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_solar_left"
+      type="box"
+      pos="-0.92 -0.02536 1.25438"
+      euler="0.436332 0 0"
+      size="0.88 0.9 0.025"
+      material="moon_base_cells"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_solar_right"
+      type="box"
+      pos="0.92 -0.02536 1.25438"
+      euler="0.436332 0 0"
+      size="0.88 0.9 0.025"
+      material="moon_base_cells"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_solar_post_l"
+      type="cylinder"
+      fromto="-1.4 0 -0.2 -1.4 0 1.2"
+      size="0.08"
+      material="moon_base_metal"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_solar_post_r"
+      type="cylinder"
+      fromto="1.4 0 -0.2 1.4 0 1.2"
+      size="0.08"
+      material="moon_base_metal"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_solar_foot_l"
+      type="box"
+      pos="-1.4 0 0"
+      size="0.35 0.5 0.25"
+      material="moon_base_metal"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_solar_foot_r"
+      type="box"
+      pos="1.4 0 0"
+      size="0.35 0.5 0.25"
+      material="moon_base_metal"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+  </body>
+
+  <body name="moon_base_antenna" pos="-2.8 8.1 -0.030794">
+    <geom
+      name="moon_base_antenna_foundation"
+      type="box"
+      pos="0 0 0.05"
+      size="0.45 0.45 0.3"
+      material="moon_base_pad"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_antenna_mast"
+      type="cylinder"
+      fromto="0 0 0.2 0 0 4.4"
+      size="0.09"
+      material="moon_base_metal"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_antenna_panel"
+      type="box"
+      pos="0 -0.13 3.7"
+      size="0.5 0.07 0.4"
+      material="moon_base_blanket"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_antenna_crossbar"
+      type="cylinder"
+      fromto="-0.7 0 4.3 0.7 0 4.3"
+      size="0.035"
+      material="moon_base_metal"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+  </body>
+
+  <body name="moon_base_landing_pad" pos="6 6.4 -0.042010">
+    <geom
+      name="moon_base_pad_slab"
+      type="cylinder"
+      pos="0 0 -0.02"
+      size="2.1 0.2"
+      material="moon_base_pad"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_pad_mark_left"
+      type="box"
+      pos="-1.85 0 0.181"
+      size="0.06 0.65 0.002"
+      material="moon_base_blanket"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_pad_mark_right"
+      type="box"
+      pos="1.85 0 0.181"
+      size="0.06 0.65 0.002"
+      material="moon_base_blanket"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+  </body>
+
+  <!-- Same sampled datum as the pad. Foot bottoms meet its top at local z=0.18. -->
+  <body name="moon_base_lander" pos="6 6.4 -0.042010">
+    <geom
+      name="moon_base_lander_deck"
+      type="cylinder"
+      pos="0 0 1.05"
+      size="0.8 0.3"
+      material="moon_base_insulation"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_lander_payload"
+      type="box"
+      pos="0 0 1.72"
+      size="0.55 0.5 0.38"
+      material="moon_base_blanket"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_lander_nozzle"
+      type="cylinder"
+      pos="0 0 0.6"
+      size="0.23 0.2"
+      material="moon_base_dark"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_lander_leg_fl"
+      type="capsule"
+      fromto="-0.5 -0.5 1.1 -1.15 -1.15 0.28"
+      size="0.07"
+      material="moon_base_metal"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_lander_leg_fr"
+      type="capsule"
+      fromto="0.5 -0.5 1.1 1.15 -1.15 0.28"
+      size="0.07"
+      material="moon_base_metal"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_lander_leg_rl"
+      type="capsule"
+      fromto="-0.5 0.5 1.1 -1.15 1.15 0.28"
+      size="0.07"
+      material="moon_base_metal"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_lander_leg_rr"
+      type="capsule"
+      fromto="0.5 0.5 1.1 1.15 1.15 0.28"
+      size="0.07"
+      material="moon_base_metal"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_lander_foot_fl"
+      type="cylinder"
+      pos="-1.15 -1.15 0.23"
+      size="0.22 0.05"
+      material="moon_base_metal"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_lander_foot_fr"
+      type="cylinder"
+      pos="1.15 -1.15 0.23"
+      size="0.22 0.05"
+      material="moon_base_metal"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_lander_foot_rl"
+      type="cylinder"
+      pos="-1.15 1.15 0.23"
+      size="0.22 0.05"
+      material="moon_base_metal"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_lander_foot_rr"
+      type="cylinder"
+      pos="1.15 1.15 0.23"
+      size="0.22 0.05"
+      material="moon_base_metal"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+  </body>
+</mujoco>

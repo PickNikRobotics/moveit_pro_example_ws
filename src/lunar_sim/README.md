@@ -148,8 +148,34 @@ the earlier flat-plane scene had, so a second asset of this size would need the 
 ## Roadmap
 
 This is layer 2 (procedural crater heightfield + scattered rocks) of a lunar-environment stack,
-built on layer 1's MuJoCo migration. Moon-base structures are a later layer, not started here.
+built on layer 1's MuJoCo migration, with [moon base structures](#moon-base) beyond the demo route.
 Nav2 is also a later layer: this configuration intentionally ships no navigation stack yet.
+
+## Moon base
+
+Five static bodies sit beyond the Dead Reckon Square's far corner: a cylindrical
+habitat with a south-facing door, a small lander on a circular landing pad, a
+tilted solar array, and an antenna mast. The habitat is centred at world x = 0,
+y = 6.8 m; the array is west of it and the lander is east. The base's collision
+geometry is also its visible geometry, all in rendered group 1, for future lidar
+and camera localization landmarks and navigation obstacles.
+
+The structures rest on the committed cratered terrain, with buried supports.
+They leave at least 2 m of clearance around the route's far corner. A future
+navigation demo can drive from the default start at -0.30, 0.50 m toward the
+habitat door, stopping near 0, 3.8 m with heading +90 degrees. This package still
+has no Nav2 stack.
+
+The two include fragments are `description/moon_base_assets.xml` and
+`description/moon_base_geoms.xml`. All new geometry uses simple MuJoCo shapes and
+untextured materials with approximate albedo. See
+[moon base provenance and placement](description/moon_base_provenance.md) for
+coordinates, ground-height sampling, and the material limitations.
+
+[Validation results and labelled renders](docs/moon_base_validation.md) record the
+unchanged square closure and turn measurements, clearance checks, and sensor rays.
+`description/validate_moon_base.py` reproduces those checks and the render sheet
+after running the existing `validate_and_render.py`.
 
 ## Frames
 

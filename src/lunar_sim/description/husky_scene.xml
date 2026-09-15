@@ -78,6 +78,7 @@
       size="10 10 0.286 0.1"
     />
     <include file="rocks_assets_generated.xml" />
+    <include file="moon_base_assets.xml" />
   </asset>
 
   <worldbody>
@@ -114,6 +115,7 @@
     <!-- Scattered rock library, see generate_terrain.py. Excluded from the Dead Reckon Square's
          footprint plus margin so the calibration recheck isolates the heightfield's effect. -->
     <include file="rocks_geoms_generated.xml" />
+    <include file="moon_base_geoms.xml" />
 
     <!-- Chase shot that keeps the chassis framed from behind/above regardless of where the
          Dead Reckon Square carries it - render-only (mode="targetbody" cameras are exempt from
