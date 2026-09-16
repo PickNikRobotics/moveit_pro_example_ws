@@ -799,7 +799,7 @@ Nav2's velocity commands are remapped to the `platform_velocity_controller_nav2`
 
 ### Transform Tree Configuration
 
-**Location**: `src/hangar_sim/launch/sim/robot_drivers_to_persist_sim.launch.py:256-272`
+**Location**: `src/hangar_sim/launch/sim/robot_drivers_to_persist_sim.launch.py` (the `static_tf_*` nodes)
 
 ```python
 # Static transform: MuJoCo world to map frame
