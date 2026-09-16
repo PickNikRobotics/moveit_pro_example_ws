@@ -125,7 +125,15 @@ controller_server:
       # Dockerfile installs; older builds ignore the parameter without error.
       open_loop: true
       prune_distance: 1.7
-      transform_tolerance: 0.1
+      # TF lookup slack, not a localization-quality knob. amcl post-dates
+      # map->odom by its own transform_tolerance (1.0 s), so a lookup normally
+      # lands comfortably behind the newest stamp. When amcl's publication
+      # stalls under load that cushion erodes, and the consumer's tolerance is
+      # what is left before tf2 raises "Lookup would require extrapolation into
+      # the future" -> "Unable to transform goal pose into costmap frame" ->
+      # FollowPath aborts. At 0.1 s the stack tolerates a ~1.1 s amcl stall; at
+      # 0.5 s, ~1.5 s. Still the tightest tolerance in the pipeline.
+      transform_tolerance: 0.5
       temperature: 0.3
       gamma: 0.015
       # The Ridgeback is a mecanum (holonomic) base, but the controller runs in
@@ -246,7 +254,7 @@ local_costmap:
           raytrace_min_range: 0.0
           obstacle_max_range: 3.5
           obstacle_min_range: 0.0
-          transform_tolerance: 0.3
+          transform_tolerance: 0.5
           inf_is_valid: false
           qos_overriding_options:
             policy_kinds: [reliability]
@@ -261,13 +269,13 @@ local_costmap:
           raytrace_min_range: 0.0
           obstacle_max_range: 3.5
           obstacle_min_range: 0.0
-          transform_tolerance: 0.3
+          transform_tolerance: 0.5
           inf_is_valid: false
           qos_overriding_options:
             policy_kinds: [reliability]
             reliability: best_effort
       always_send_full_costmap: True
-      transform_tolerance: 0.3
+      transform_tolerance: 0.5
 
 
 global_costmap:
@@ -300,7 +308,7 @@ global_costmap:
           raytrace_min_range: 0.0
           obstacle_max_range: 8.0
           obstacle_min_range: 0.0
-          transform_tolerance: 0.3
+          transform_tolerance: 0.5
           inf_is_valid: false
           qos_overriding_options:
             policy_kinds: [reliability]
@@ -315,7 +323,7 @@ global_costmap:
           raytrace_min_range: 0.0
           obstacle_max_range: 8.0
           obstacle_min_range: 0.0
-          transform_tolerance: 0.3
+          transform_tolerance: 0.5
           inf_is_valid: false
           qos_overriding_options:
             policy_kinds: [reliability]
@@ -325,7 +333,7 @@ global_costmap:
         cost_scaling_factor: 4.0
         inflation_radius: 0.7
       always_send_full_costmap: True
-      transform_tolerance: 0.3
+      transform_tolerance: 0.5
 
 map_server:
   ros__parameters:
