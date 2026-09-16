@@ -242,11 +242,23 @@ def _static_transform_publishers(module: ast.Module) -> dict[str, _StaticTransfo
             f"{DRIVERS_LAUNCH.name}: a static_transform_publisher's arguments are not "
             f"a literal list, so this check can no longer read its frames."
         )
-        values = [
-            element.value
+        # Every element must be a literal. Filtering non-literals out instead would
+        # shorten the list while the frame lookups below keep reading its tail, so a
+        # publisher whose child frame became a LaunchConfiguration would silently be
+        # read as parenting whatever string now sits last — a wrong answer rather
+        # than an error. Fail loudly instead; the frames genuinely cannot be read.
+        non_literal = [
+            ast.dump(element)
             for element in arguments.elts
-            if isinstance(element, ast.Constant)
+            if not isinstance(element, ast.Constant)
         ]
+        assert not non_literal, (
+            f"{DRIVERS_LAUNCH.name}: a static_transform_publisher's arguments contain "
+            f"non-literal elements {non_literal}, so its frames can no longer be read "
+            f"from the source. Resolve them here deliberately rather than letting this "
+            f"check draw a conclusion from a partial argument list."
+        )
+        values = [element.value for element in arguments.elts]
         transform = _StaticTransform(
             arguments=values, conditional="condition" in kwargs
         )
