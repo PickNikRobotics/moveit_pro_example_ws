@@ -77,9 +77,10 @@ The whole body planning capability requires **custom modifications** to the `cle
                                 │
                                 ▼
                 ┌───────────────────────────────────┐
-                │ odometry_joint_state_publisher.py│
+                │      joint_state_broadcaster      │
                 │                                   │
-                │ Converts /odom → /joint_states   │
+                │ Publishes /joint_states straight  │
+                │ from the MJCF joints:             │
                 │ - linear_x_joint                  │
                 │ - linear_y_joint                  │
                 │ - rotational_yaw_joint            │
@@ -370,16 +371,8 @@ MuJoCo Simulation → /odom (nav_msgs/Odometry) → odometry_joint_state_publish
 ```
 
 ### Node Configuration
-**Location**: `src/hangar_sim/launch/sim/robot_drivers_to_persist_sim.launch.py:274-280`
-
-```python
-odom_to_joint_state_repub = Node(
-    package="hangar_sim",
-    executable="odometry_joint_state_publisher.py",
-    name="odometry_joint_state_publisher",
-    output="log",
-)
-```
+Historically a `Node(package="hangar_sim", executable="odometry_joint_state_publisher.py")`
+entry in `launch/sim/robot_drivers_to_persist_sim.launch.py`. No launch file starts it today.
 
 ### Functional Description
 This node subscribes to odometry messages published by the mecanum drive controller and converts the pose information into joint states for the three virtual joints. The conversion extracts the X and Y positions directly and computes the yaw angle from the quaternion orientation. These joint states are then published on the `/joint_states` topic, where they are consumed by `robot_state_publisher` and MoveIt's planning scene monitor.
@@ -961,7 +954,7 @@ The controllers continue to publish odometry data as messages despite disabled t
 | `platform_velocity_controller` | No (`enable_odom_tf: false`) | Yes (to `/platform_velocity_controller/odom`) |
 | `platform_velocity_controller_nav2` | No (`enable_odom_tf: false`) | Yes (to `/platform_velocity_controller_nav2/odom`) |
 | `robot_state_publisher` | Yes (from URDF with joint states) | No |
-| `odometry_joint_state_publisher.py` | No | No (converts messages to joint states) |
+| `joint_state_broadcaster` | No | No (publishes the virtual joints' state on `/joint_states`) |
 
 ### Message vs Transform Distinction
 
@@ -1085,7 +1078,7 @@ For implementing whole body planning on mobile manipulator platforms:
 | Symptom | Probable Cause | Diagnostic Steps | Resolution |
 |---------|---------------|------------------|------------|
 | Mobile base unresponsive during whole body planning | Trajectory controller not activated | Query controller manager state: `ros2 control list_controllers` | Verify controller activates when executing trajectories; check action server connection |
-| Base motion in incorrect direction | Frame transformation error | Verify yaw joint in `/joint_states`; check `body_frame_yaw_joint` parameter | Confirm `odometry_joint_state_publisher.py` is running; verify parameter configuration |
+| Base motion in incorrect direction | Frame transformation error | Verify yaw joint in `/joint_states`; check `body_frame_yaw_joint` parameter | Confirm `joint_state_broadcaster` is active (`ros2 control list_controllers`); verify parameter configuration |
 | Nav2 commands not executed | Incorrect controller active state | Check controller manager state; verify command topic remapping | Activate `platform_velocity_controller_nav2`; verify `/cmd_vel` remapping |
 | Virtual joints absent from state | Joint state source failure | Monitor `/joint_states` for virtual joint messages; check node status | In simulation the virtual-rail joints come from MuJoCo via `joint_state_broadcaster` — check `ros2 control list_controllers`. On hardware, restart the odometry-to-joint-state bridge and verify odometry publication |
 | Planning failures for whole body group | Incorrect planning group configuration | Examine SRDF planning group definition; verify joint names | Use `manipulator` group for whole body; confirm SRDF includes virtual joints |
