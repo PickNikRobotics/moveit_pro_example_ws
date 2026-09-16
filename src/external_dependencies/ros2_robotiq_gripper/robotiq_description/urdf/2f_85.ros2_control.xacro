@@ -87,7 +87,7 @@
 
             <!-- Only add this with fake hardware mode -->
             <xacro:unless value="${sim_ignition or sim_isaac}">
-                <gpio name="reactivate_gripper">
+                <gpio name="${prefix}reactivate_gripper">
                     <command_interface name="reactivate_gripper_cmd" />
                     <command_interface name="reactivate_gripper_response" />
                 </gpio>

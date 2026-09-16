@@ -48,7 +48,25 @@ from launch_ros.actions import Node
 from launch_ros.actions import PushRosNamespace
 from launch_ros.descriptions import ParameterFile
 from launch_ros.substitutions import FindPackageShare
+from moveit_studio_utils_py.system_config import SystemConfigParser
 from nav2_common.launch import RewrittenYaml, ReplaceString
+
+
+def _urdf_param(name, default):
+    """Read a urdf_params value from config.yaml.
+
+    The forward stereo cameras are gated by a xacro arg, which only config.yaml can set, so
+    this launch file reads the same key rather than declaring a second switch of its own. Two
+    switches would let the cameras render with no publisher -- the exact state this removes --
+    and nothing would report the mismatch.
+    """
+    urdf_params = (
+        SystemConfigParser().get_hardware_config().robot_description.urdf_params
+    )
+    for param in urdf_params:
+        if name in param:
+            return param[name]
+    return default
 
 
 def generate_launch_description():
@@ -337,6 +355,12 @@ def generate_launch_description():
 
     hangar_sim_pkg = FindPackageShare("hangar_sim")
 
+    # Pairs and rectifies the two MuJoCo renders. Started only when the cameras exist:
+    # enable_vo gates both, so the publisher never waits on topics nobody publishes.
+    # TODO(#22640): when the stereo VO stack lands (#21469), include its launch file here
+    # under this same flag so one switch brings up the cameras, this publisher and VO.
+    enable_vo = _urdf_param("enable_vo", False)
+
     forward_stereo_publisher = Node(
         package="hangar_sim",
         executable="forward_stereo_publisher.py",
@@ -498,7 +522,8 @@ def generate_launch_description():
     ld.add_action(static_tf_odom_to_world)
     ld.add_action(static_tf_map_to_odom)
     ld.add_action(sensor_qos_relay)
-    ld.add_action(forward_stereo_publisher)
+    if enable_vo:
+        ld.add_action(forward_stereo_publisher)
     ld.add_action(lidar_flattener)
     ld.add_action(static_tf_lidar_front_ros)
     ld.add_action(static_tf_lidar_rear_ros)

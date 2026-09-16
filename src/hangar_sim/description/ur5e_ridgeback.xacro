@@ -23,6 +23,9 @@
        broadcast by MuJoCo (odom_publish_tf is false in the ros2_control macro), so this can
        stay true regardless of use_fuse. -->
   <xacro:arg name="publish_odom" default="true"/>
+  <!-- Renders and publishes the forward stereo pair. Off unless a visual odometry
+       consumer is running; see picknik_ur_mujoco_ros2_control.xacro. -->
+  <xacro:arg name="enable_vo" default="false"/>
 
   <!-- Import UR and environment macros -->
   <xacro:include filename="$(find picknik_ur_base_config)/description/picknik_ur_macro.xacro"/>
@@ -120,6 +123,6 @@
   <xacro:vacuum_urdf parent="tool0"/>
 
   <!-- MuJoCo Hardware interface -->
-  <xacro:picknik_ur_mujoco_ros2_control mujoco_model="$(arg mujoco_model)" mujoco_viewer="$(arg mujoco_viewer)" publish_odom="$(arg publish_odom)"/>
+  <xacro:picknik_ur_mujoco_ros2_control mujoco_model="$(arg mujoco_model)" mujoco_viewer="$(arg mujoco_viewer)" publish_odom="$(arg publish_odom)" enable_vo="$(arg enable_vo)"/>
 
 </robot>
