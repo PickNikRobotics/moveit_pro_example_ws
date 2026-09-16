@@ -1,0 +1,4 @@
+# Written by `moveit_pro` when Meta's SAM License is declined.
+COLCON_IGNORE
+# The build downloads the SAM3 ONNX files; they must never be committed.
+*.onnx
