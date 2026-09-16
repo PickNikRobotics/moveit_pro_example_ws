@@ -61,9 +61,37 @@ amcl:
     # on this route, so a sub-half-degree yaw correction reads as a 0.15 m step while moving the
     # robot 2 cm. At the robot, both settings sit under 0.09 m for the whole route.
     #
-    # Filter CPU was indistinguishable: the nav2 container sat at 27% of one core either way,
-    # which fits the arithmetic -- 1000 particles x 723 beams is ~723k grid lookups per update,
-    # about once a second.
+    # COST AT THE WORST-CASE POPULATION, measured rather than argued: likelihood-field cost is
+    # linear in particles x beams, so the case that matters is max_particles, not the 1000 the
+    # filter actually sits at on this route. min_particles was pinned to 5000 in a throwaway
+    # config (verified on the stack: population min = median = max = 5000 for the whole run) and
+    # the acceptance route driven once at 725 beams and once at 60. CPU is instantaneous 1-second
+    # deltas of utime+stime from /proc/<pid>/stat for the nav2 composable container, as percent
+    # of ONE core on an 8-core host -- not a lifetime average.
+    #
+    #   driving, 5000 particles, 725 beams: median 31.2%, p95 33.4%, max 33.5% of one core
+    #   driving, 5000 particles,  60 beams: median 31.4%, p95 33.4%, max 34.3%
+    #   idle, both:                         median 27.4%
+    #
+    # The two runs differ ONLY in max_beams, so the difference between them IS the beam cost:
+    # under about 2% of one core at the worst-case population, against a ~31% baseline. The
+    # naive "12x the beams" arithmetic predicts ~135% of a core; that does not happen. It
+    # reconciles at roughly 3 ns per lookup -- a ValueGrid2<float> index plus a few multiplies --
+    # so 3.6M lookups per update at ~1.67 updates/s is ~0.02 core-seconds per second.
+    #
+    # The filter kept up: AMCL correction interval median 0.60 s at both beam counts, and
+    # localization error against simulator ground truth was unchanged (median 0.11 m at both;
+    # p95 0.26 m at 725 against 0.25 m at 60; final 0.20 m against 0.14 m).
+    #
+    # Two caveats, stated rather than omitted. The ~31% is the WHOLE nav2 container -- every
+    # nav2 node plus the laser merger -- not AMCL alone; only the difference between the two
+    # runs is a clean number, because nothing else varied. And correction interval p95 rose
+    # from 0.76 s at 60 beams to 1.12 s at 725, on a single run per configuration, so treat
+    # that as an observation rather than an established effect (the median was identical).
+    #
+    # In the shipped configuration min_particles stays 1000, and the population was observed
+    # reaching 5000 for only 2-4 samples out of ~1600 per run on this route: the worst case is
+    # both affordable and rare.
     max_beams: 725
     max_particles: 5000
     min_particles: 1000

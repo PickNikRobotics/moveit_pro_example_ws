@@ -53,6 +53,7 @@ what it is; nothing here runs the merger. Re-measure the constants below if the
 
 from pathlib import Path
 
+import pytest
 import yaml
 
 PKG = Path(__file__).resolve().parent.parent
@@ -84,14 +85,19 @@ def test_max_beams_covers_every_ray_of_the_merged_scan():
 
 
 def test_amcl_laser_range_window_matches_the_merged_scan():
-    """AMCL's range gate must not be narrower than the scan the merger publishes.
+    """AMCL's range gate must match the scan the merger publishes.
 
     beluga clamps to the intersection of the two (`beluga_ros/laser_scan.hpp`), so an
-    AMCL window tighter than the merger's silently discards returns the scan did carry.
-    `laser_max_range` does double duty as the likelihood field's `max_laser_distance`,
-    the denominator of the `z_rand` background term, so it is not free to overshoot
-    either.
+    AMCL window tighter than the merger's silently discards returns the scan did carry —
+    `laser_min_range` is therefore a bound. `laser_max_range` is not: it does double duty
+    as the likelihood field's `max_laser_distance`, the denominator of the `z_rand`
+    background term, so overshooting the merger's `range_max` reweights every particle
+    just as silently. It has to be the merger's number exactly.
     """
     amcl = _amcl_params()
-    assert amcl["laser_max_range"] >= MERGED_SCAN_RANGE_MAX
+    assert amcl["laser_max_range"] == pytest.approx(MERGED_SCAN_RANGE_MAX), (
+        f"amcl laser_max_range={amcl['laser_max_range']} must equal the merged scan's "
+        f"range_max {MERGED_SCAN_RANGE_MAX}: it is also the likelihood field's "
+        "max_laser_distance and the z_rand background denominator."
+    )
     assert amcl["laser_min_range"] <= MERGED_SCAN_RANGE_MIN
