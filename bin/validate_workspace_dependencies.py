@@ -18,9 +18,10 @@ from urllib.request import Request, urlopen
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
 ALLOWED_SUBMODULES = {
     "src/moveit_pro_sam2",
-    "src/moveit_pro_sam3",
 }
-OPTIONAL_MODEL_PACKAGES = {Path(path).name for path in ALLOWED_SUBMODULES}
+# moveit_pro_sam3 is in-tree but still optional: declining Meta's SAM License
+# makes `moveit_pro` write a COLCON_IGNORE into it.
+OPTIONAL_MODEL_PACKAGES = {"moveit_pro_sam2", "moveit_pro_sam3"}
 EXTERNAL_DEPENDENCIES_ROOT = Path("src/external_dependencies")
 RETIRED_PATHS = {
     "src/external_dependencies/ros2_kortex_vision",
@@ -1192,7 +1193,8 @@ def main(*, verify_upstream: bool = False) -> int:
 
     print(
         f"Validated {len(vendoring_manifests)} vendored sources and "
-        f"{len(ALLOWED_SUBMODULES)} optional ML submodules."
+        f"{len(ALLOWED_SUBMODULES)} optional ML submodule"
+        f"{'' if len(ALLOWED_SUBMODULES) == 1 else 's'}."
     )
     return 0
 

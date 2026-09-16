@@ -1750,7 +1750,7 @@ def test_main_succeeds_for_valid_workspace(
     monkeypatch.setattr(validator, "validate_clearpath_timeout_parameters", lambda: [])
     assert validator.main() == 0
     assert (
-        "Validated 8 vendored sources and 2 optional ML submodules."
+        "Validated 8 vendored sources and 1 optional ML submodule."
         in capsys.readouterr().out
     )
 
