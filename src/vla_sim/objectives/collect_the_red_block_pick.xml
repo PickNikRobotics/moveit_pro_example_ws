@@ -52,7 +52,7 @@
     <SubTree ID="Collect the Red Block Pick">
       <MetadataFields>
         <Metadata runnable="true" />
-        <Metadata subcategory="Application - VLA Examples" />
+        <Metadata subcategory="Application - Data Recording" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>

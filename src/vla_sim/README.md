@@ -11,21 +11,11 @@ and serving instructions live.
 `Pick the Red Block` reads the cube's pose from the simulation, then approaches,
 grasps, and lifts it. `Collect the Red Block Pick` wraps that Objective in
 Trainer's recording Behaviors and converts the dataset to LeRobot v3.0. Nothing
-checks that the cube came with the gripper, so review the episode in playback
-before trusting it.
+checks that the cube came with the gripper.
 
-Open Trainer once before the first run, or `RecordEpisode` fails with
-`Training config 'vla_sim' not found`. `ConvertDataset` succeeds when the
-conversion job is accepted rather than when it finishes: read the outcome in the
-**Prepare** tab, and let one conversion finish before collecting again.
-
-Conversion labels `action` from a `sensor_msgs/JointState` command topic, which
-`script/joint_command_bridge.py` publishes as `/joint_commands` from the
-trajectory controller's setpoint and the latched gripper command. Leave
-`ConvertDataset`'s `action_source` empty to use it. Point the Training Config's
-command topic elsewhere and episodes convert only with `action_source` set to
-`next_state`, labelling each frame with the next frame's measured position
-instead of what the Objective commanded.
+`script/joint_command_bridge.py` publishes `/joint_commands` from the trajectory
+controller's setpoint and the latched gripper command. That is the topic
+conversion labels each frame's `action` from.
 
 ## Hardware requirements
 
