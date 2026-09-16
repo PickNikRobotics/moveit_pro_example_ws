@@ -77,9 +77,9 @@ cancel_objectives = {
     "Plan Path Along Surface - Loop",
 }
 
-# Objectives skipped entirely, each with the reason it cannot run headless in
-# CI. The non-runnable objectives (runnable="false" in their MetadataFields)
-# are filtered out by the fixture and need not be listed here.
+# Objectives skipped entirely, each with the reason it is not run in CI. The
+# non-runnable objectives (runnable="false" in their MetadataFields) are
+# filtered out by the fixture and need not be listed here.
 skip_objectives = {
     # ML segmentation / grasp pipelines: ONNX inference runs on CPU in CI
     # (the GPU runner backs MuJoCo's EGL render only), so these time out --
@@ -93,6 +93,9 @@ skip_objectives = {
     "Segment Image from Point",
     "Segment Image from Text Prompt",
     "Segment Point Cloud from Clicked Point",
+    # Fails by design: ValidateTrajectory rejects the intentionally-colliding
+    # demo path and the Objective ends on that failure.
+    "Cartesian Path with Collision Checking",
     # User input required: no primary UI is attached in headless CI, so these
     # block on a pose-from-user prompt or an MTC-solution/path approval that
     # never arrives.
@@ -101,9 +104,6 @@ skip_objectives = {
     "Find and Spray Plane",  # Ungated WaitForMTCSolutionApproval.
     "Solution - Find and Spray Plane",  # Ungated WaitForMTCSolutionApproval.
     "Solution - Spray Plane",  # Ungated WaitForMTCSolutionApproval.
-    # ValidateTrajectory rejects the intentionally-colliding demo path, so the
-    # tree falls back to WaitForMTCSolutionApproval, which blocks headless.
-    "Cartesian Path with Collision Checking",
     # IsUserAvailable returns FAILURE headless, so its top-level Sequence
     # fails before reaching WaitForMTCSolutionApproval.
     "Solution - Draw Square",
