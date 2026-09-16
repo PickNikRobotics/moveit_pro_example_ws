@@ -271,7 +271,9 @@ The mobile base's three planar degrees of freedom (translation in X and Y, rotat
 The virtual joints establish the following kinematic chain: `world` → `virtual_rail_link_1` → `virtual_rail_link_2` → `ridgeback_base_link`. This chain represents the mobile base's pose in the global reference frame through three sequential transformations corresponding to planar motion.
 
 ### Control Characteristics
-These joints lack direct physical actuators. Instead, their commanded velocities are transformed into mecanum wheel commands through inverse kinematics performed by the platform velocity controller. Joint state feedback is derived from odometry integration via the odometry-to-joint-state bridge.
+These joints lack direct physical actuators. Instead, their commanded velocities are transformed into mecanum wheel commands through inverse kinematics performed by the platform velocity controller. Joint state feedback comes from the matching `slide`/`hinge` joints in the MJCF by way of `joint_state_broadcaster`; see Component 3 for the republisher that used to supply it.
+
+This is also why the base pose cannot be substituted from outside: it is physics state, not a transform. [Why `world` sits under `odom`](#why-world-sits-under-odom-and-not-the-other-way-round) covers what that costs the transform tree.
 
 ---
 
@@ -319,6 +321,16 @@ The `manipulator` group defines a kinematic chain originating from `ridgeback_ba
 ---
 
 ## Component 3: Odometry-to-Joint-State Conversion
+
+> **No longer in the running system.** The virtual joints are real `slide`/`hinge`
+> joints in the MJCF (`description/ur5e_ridgeback.xml`), so `joint_state_broadcaster`
+> publishes their state directly and `odometry_joint_state_publisher.py` was dropped
+> from the launch file. The script is still installed but nothing starts it; the
+> section below is retained as a description of the pattern, not of what runs.
+>
+> It is also **not** the `odom -> world` bridge. That is a separate static transform in
+> `launch/sim/robot_drivers_to_persist_sim.launch.py` — see
+> [Why `world` sits under `odom`](#why-world-sits-under-odom-and-not-the-other-way-round).
 
 ### System Requirements
 MoveIt requires joint state information for all joints in the planning group to maintain an accurate robot state representation. For virtual joints representing the mobile base, these states must be derived from the platform's odometry.
@@ -705,8 +717,8 @@ Wheel velocity commands are written to the MuJoCo simulation interfaces, causing
 **Step 10: Odometry Integration**
 The simulation integrates wheel velocities to compute platform motion and publishes odometry messages on `/odom`.
 
-**Step 11: State Conversion**
-The `odometry_joint_state_publisher.py` node converts odometry messages to joint state messages and publishes them on `/joint_states`.
+**Step 11: State Feedback**
+`joint_state_broadcaster` publishes the three virtual joints' positions on `/joint_states`, read straight from the MJCF joints the wheels drive.
 
 **Step 12: State Update**
 MoveIt's planning scene monitor receives the joint state updates, updating the robot state representation. The `joint_trajectory_controller` uses this feedback for closed-loop trajectory tracking and error correction.
@@ -839,6 +851,35 @@ mj_world (MuJoCo simulation root)
 ```
 
 With `localization:=True` (the default), beluga_amcl publishes the dynamic `map` → `odom` correction and the static fallback is suppressed; its correction shifts the entire robot subtree (everything under `odom`), which is exactly the REP-105 localization semantics.
+
+### Why `world` sits under `odom` (and not the other way round)
+
+![The hangar is rigid to the planning root](planning-root-tree.svg)
+
+`world` is MoveIt's planning root **and** the link the hangar is welded to: 66 collision
+meshes on fixed joints, the aircraft among them (`description/hangar_urdf.xacro`, attached
+at `description/ur5e_ridgeback.xacro`). The base's three joints hang off that same root.
+The environment is therefore rigid to the planning root, and anything that moves `world`
+moves the aircraft and the boxes with it.
+
+That matters because the arm planner cannot detect it. Its whole world would have drifted
+identically, and the surface-following and box-handling objectives plan at
+`link_padding` 0.0, so nothing absorbs the error.
+
+So the localization estimate is kept **above** `world`: beluga_amcl's live `map` → `odom`
+steers navigation while the static `odom` → `world` bridge holds the planning root — and
+the environment with it — still. The bridge is a tree-shape workaround, not an estimate
+correction.
+
+The alternative considered and rejected was to re-parent the sim to the hardware tree
+shape, `map` → `odom` → `base_link`, with MuJoCo publishing wheel odometry only and
+beluga_amcl owning `map` → `odom`. That needs no bridge at all, but it puts the arm
+planner and those 66 meshes on a drifting estimate. If the meshes didn't drift with odom
+we wouldn't need this. Interim, pending a TF redesign.
+
+`test/test_planning_root_frame.py` pins the shape this argument rests on — one root for
+both the base joints and the environment, all-fixed joints below it, and exactly one
+static `odom` → `world` publisher — so a re-parent has to be deliberate.
 
 ---
 

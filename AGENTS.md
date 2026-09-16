@@ -341,6 +341,22 @@ heartbeat the driving Objective ticks, and on the controller's
 `follow_joint_trajectory/_action/status`. `so101_base_config`'s
 `script/so101_arm_bridge.py` does both.
 
+## The environment can be rigid to the planning root
+
+In `hangar_sim`, `world` is both MoveIt's planning root and the link the hangar's 66
+collision meshes are welded to, and the mobile base's three joints hang off that same
+root. So anything that moves the planning root moves the environment with it, invisibly
+to the arm planner — which is why the sim's TF tree runs `odom -> world` instead of the
+hardware shape `map -> odom -> base_link`. Before re-parenting a frame in a config whose
+description attaches scenery, check what else hangs off that link.
+`src/hangar_sim/README.md` has the argument, `test/test_planning_root_frame.py` pins the
+shape.
+
+Related trap when writing source-parsing tests over these descriptions: the xacro
+namespace is spelled two different ways across this repo's files
+(`http://wiki.ros.org/xacro` and `http://ros.org/wiki/xacro`), so a namespaced
+`ElementTree` lookup silently finds nothing in half of them. Match on the local tag name.
+
 ## Maintaining this file
 
 Keep this file for knowledge useful to almost every future agent session in this project.

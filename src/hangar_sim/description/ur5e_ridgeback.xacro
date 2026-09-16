@@ -35,9 +35,16 @@
   <xacro:include filename="$(find hangar_sim)/description/hangar_urdf.xacro"/>
   <xacro:include filename="$(find hangar_sim)/description/vacuum_urdf.xacro"/>
 
+  <!-- MoveIt's planning root, and the root the base's three joints hang off
+       (linear_x_joint below). The hangar attaches here too, so the environment is
+       rigid to the planning root: whatever moves 'world' moves the aircraft and the
+       boxes with it, and the arm planner cannot tell, because its world moved
+       identically. That is why the sim's TF tree runs odom -> world rather than the
+       hardware shape map -> odom -> base_link — see the odom -> world bridge in
+       launch/sim/robot_drivers_to_persist_sim.launch.py. -->
   <link name="world"/>
 
-  <!-- Hangar  -->
+  <!-- Hangar: 66 collision meshes on fixed joints, rigid to 'world'. -->
   <xacro:hangar_urdf parent="world"/>
 
   <!-- Gripper and UR adapter and realsense camera -->

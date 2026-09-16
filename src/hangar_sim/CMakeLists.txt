@@ -34,6 +34,11 @@ if(BUILD_TESTING)
   ament_add_pytest_test(
           base_geometry_test test/test_base_geometry.py
           TIMEOUT 30)
+  # Pins the one-root tree shape the odom -> world bridge depends on; source
+  # parsing only, no simulator.
+  ament_add_pytest_test(
+          planning_root_frame_test test/test_planning_root_frame.py
+          TIMEOUT 30)
   ament_add_pytest_test(
           forward_stereo_calibration_test test/test_forward_stereo_calibration.py
           TIMEOUT 30)

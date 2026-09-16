@@ -328,15 +328,28 @@ def generate_launch_description():
         arguments=["0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "map", "odom"],
     )
 
-    # Static TF anchoring MoveIt's planning root ('world') under the odometry frame.
-    # robot_state_publisher owns the only live chain into ridgeback_base_link
-    # (world -> virtual_rail_... -> ridgeback_base_link), so 'odom' must sit above
-    # 'world' for REP-105 semantics: AMCL's live map->odom correction then shifts the
-    # whole robot subtree, and its own odom->base lookups resolve through this link.
-    # (Previously this was mj_world->world, and the 'odom' frame only existed because
-    # MuJoCo broadcast a competing odom->ridgeback_base_link TF — removed in this
-    # change.) The UI (pose-utils.ts) hardcodes 'world' for user-clicked poses, so
-    # this link also keeps nav2 goals transformable to 'map'.
+    # The odom -> world bridge. It holds the environment still; it does not correct
+    # the estimate.
+    #
+    # 'world' is MoveIt's planning root and also the link the hangar is welded to —
+    # 66 collision meshes on fixed joints, the aircraft among them — and it is the
+    # same root the base's three real joints hang off. So moving 'world' moves the
+    # aircraft and the boxes with it, and the arm planner cannot see that anything
+    # drifted because its whole world drifted identically. The surface-following and
+    # box-handling objectives plan at link_padding 0.0, so nothing absorbs that error.
+    #
+    # Keeping this edge static puts the localization estimate above it instead: AMCL's
+    # live map -> odom steers navigation while 'world' stays put. Re-parenting the sim
+    # to match hardware (map -> odom -> base_link, MuJoCo publishing wheel odometry
+    # only, beluga_amcl owning map -> odom) needs no bridge at all, but it lands the
+    # arm planner and those 66 meshes on a drifting estimate. If the meshes didn't
+    # drift with odom we wouldn't need this. Interim, pending a TF redesign.
+    #
+    # Mechanics this edge also carries: robot_state_publisher owns the only live chain
+    # into ridgeback_base_link (world -> virtual_rail_... -> ridgeback_base_link), so
+    # 'odom' must sit above 'world' for REP-105 lookups to resolve; and the UI
+    # (pose-utils.ts) hardcodes 'world' for user-clicked poses, so this link is what
+    # keeps nav2 goals transformable to 'map'.
     static_tf_odom_to_world = Node(
         package="tf2_ros",
         executable="static_transform_publisher",
