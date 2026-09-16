@@ -43,8 +43,8 @@ if(BUILD_TESTING)
   ament_add_pytest_test(
           lidar_flattener_test test/test_lidar_flattener.py
           TIMEOUT 60)
-  # Ties amcl's max_beams to the merged scan the dual_laser_merger actually publishes;
-  # pure source parsing, no simulator.
+  # Guards amcl's beam and range settings against being narrowed below the merged scan's
+  # measured shape; reads nav2_params.yaml only, no simulator.
   ament_add_pytest_test(
           amcl_scan_coverage_test test/test_amcl_scan_coverage.py
           TIMEOUT 30)

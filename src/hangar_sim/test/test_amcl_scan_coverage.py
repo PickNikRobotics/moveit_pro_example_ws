@@ -30,10 +30,6 @@
 
 """AMCL must weight particles on the whole merged scan, not a slice of it.
 
-`max_beams` and the merged scan's ray count live in two different files with nothing
-tying them together: the count follows from the `dual_laser_merger` parameters in
-`launch/sim/localization_launch.py`, and `max_beams` sits in `params/nav2_params.yaml`.
-
 Getting this wrong is silent and expensive. beluga subsamples with `take_evenly()` over
 the *raw* ranges array, before the invalid returns are filtered out
 (`beluga_ros/laser_scan.hpp`), and the hangar scans are deliberately sparse — open space
@@ -46,46 +42,30 @@ featureless stretch where localization already has the least to work with.
 `take_evenly()` returns the whole range whenever the requested count is at least the
 range's size, so the check is a lower bound: any value at or above the ray count means
 "every ray".
+
+SCOPE, plainly: these checks read `params/nav2_params.yaml` — machine-consumed config —
+and assert AMCL's own settings against the merged scan's measured shape, recorded here
+as constants. They guard the AMCL parameters against being narrowed. They do NOT prove
+that the published `/scan_merged` carries that many rays, or that its range window is
+what it is; nothing here runs the merger. Re-measure the constants below if the
+`dual_laser_merger` configuration in `launch/sim/localization_launch.py` changes.
 """
 
-import ast
-import math
 from pathlib import Path
 
 import yaml
 
 PKG = Path(__file__).resolve().parent.parent
-LAUNCH = PKG / "launch" / "sim" / "localization_launch.py"
 NAV2_PARAMS = PKG / "params" / "nav2_params.yaml"
 
-
-def _merger_params():
-    """Pull the dual_laser_merger parameter dict out of the launch file's AST.
-
-    The launch file is not importable on its own — it builds substitutions against a
-    launch context — so read it as source, the way test_base_geometry.py reads the
-    description sources.
-    """
-    tree = ast.parse(LAUNCH.read_text())
-    for node in ast.walk(tree):
-        if not isinstance(node, ast.Call):
-            continue
-        if getattr(node.func, "id", None) != "ComposableNode":
-            continue
-        kwargs = {kw.arg: kw.value for kw in node.keywords}
-        name = kwargs.get("name")
-        if not isinstance(name, ast.Constant) or name.value != "dual_laser_merger":
-            continue
-        # parameters=[{...}] — a single literal dict of merger settings.
-        (params_dict,) = kwargs["parameters"].elts
-        out = {}
-        for key, value in zip(params_dict.keys, params_dict.values):
-            try:
-                out[key.value] = ast.literal_eval(value)
-            except ValueError:
-                pass  # LaunchConfiguration and friends; not a literal we need
-        return out
-    raise AssertionError(f"no dual_laser_merger ComposableNode found in {LAUNCH}")
+# Measured live off the running stack at the robot's spawn pose: `/scan_merged` carries
+# 723 rays, of which 283 are finite and in range. Not re-derived from the merger's
+# angle_min/angle_max/angle_increment — ceil(span / increment) + 1 gives 724, which is
+# not what the merger actually publishes.
+MERGED_SCAN_RAYS = 723
+# The same measurement's range window, i.e. the merger's range_min / range_max.
+MERGED_SCAN_RANGE_MIN = 0.05
+MERGED_SCAN_RANGE_MAX = 25.0
 
 
 def _amcl_params():
@@ -94,15 +74,9 @@ def _amcl_params():
 
 def test_max_beams_covers_every_ray_of_the_merged_scan():
     """A `max_beams` below the ray count discards finite returns, not just rays."""
-    merger = _merger_params()
-    span = merger["angle_max"] - merger["angle_min"]
-    # The merger lays out one ray per increment across the span, plus the closing ray.
-    rays = math.ceil(span / merger["angle_increment"]) + 1
-
     max_beams = _amcl_params()["max_beams"]
-    assert max_beams >= rays, (
-        f"amcl max_beams={max_beams} subsamples a {rays}-ray /scan_merged "
-        f"({math.degrees(span):.0f} deg at {merger['angle_increment']} rad). "
+    assert max_beams >= MERGED_SCAN_RAYS, (
+        f"amcl max_beams={max_beams} subsamples a {MERGED_SCAN_RAYS}-ray /scan_merged. "
         "beluga's take_evenly() runs before invalid returns are dropped, so this "
         "throws away that share of the finite returns as well — worst exactly where "
         "the scan is sparsest."
@@ -118,7 +92,6 @@ def test_amcl_laser_range_window_matches_the_merged_scan():
     the denominator of the `z_rand` background term, so it is not free to overshoot
     either.
     """
-    merger = _merger_params()
     amcl = _amcl_params()
-    assert amcl["laser_max_range"] >= merger["range_max"]
-    assert amcl["laser_min_range"] <= merger["range_min"]
+    assert amcl["laser_max_range"] >= MERGED_SCAN_RANGE_MAX
+    assert amcl["laser_min_range"] <= MERGED_SCAN_RANGE_MIN
