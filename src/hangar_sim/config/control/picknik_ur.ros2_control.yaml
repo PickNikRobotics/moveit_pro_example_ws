@@ -122,12 +122,8 @@ platform_velocity_controller_nav2:
     odom_frame_id: "odom"
     enable_odom_tf: false
 
-    # Velocity limits. Acceleration limiting is deliberately disabled: MPPI does
-    # not model it, and because FollowPath runs open_loop: true it seeds each
-    # rollout from its own last published command, so it never observes that the
-    # limiter delayed that command -- command, lag, overshoot, correct, overshoot.
-    # See ros-navigation/navigation2#6065. The max_/min_acceleration values below
-    # are left in place but inert, so re-enabling is a one-word change.
+    # Velocity limits. Acceleration limiting is off: MPPI does not model it, so
+    # the delay it adds shows up as overshoot. Values below are inert.
     # Whenever a min_* is unspecified, default to -max_*
     linear.x.has_velocity_limits: true
     linear.x.has_acceleration_limits: false
