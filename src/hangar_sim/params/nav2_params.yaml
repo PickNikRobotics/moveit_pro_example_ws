@@ -27,15 +27,75 @@ amcl:
     laser_max_range: 25.0
     laser_min_range: 0.0
     laser_model_type: "likelihood_field"
-    max_beams: 60
+    # /scan_merged carries 725 rays: a full 360 deg at angle_increment 0.0087 rad, from the
+    # dual_laser_merger configured in launch/sim/localization_launch.py.
+    #
+    # max_beams: 60 did not mean "60 beams". beluga subsamples with take_evenly() over the
+    # RAW ranges array, BEFORE the invalid returns are filtered out (beluga_ros/laser_scan.hpp),
+    # and the hangar scans are deliberately sparse -- open space plus self-hit filtering leave
+    # finite returns surrounded by inf, which is why the merger's shadow/average filters are
+    # off. So 60 meant "60 evenly spaced rays, of which only the finite ones survive": a
+    # handful of points in the featureless port lane, which is exactly where the map used to
+    # twitch. The subsampling normally guards against over-confidence from correlated beams,
+    # but this likelihood field composes beams as a SUM of pz^3 terms rather than a product
+    # (beluga/sensor/likelihood_field_model.hpp), so more beams lowers the noise on the
+    # particle weights without compounding confidence -- the weight is essentially a count of
+    # matched beams, and counting more of them is strictly better conditioned.
+    #
+    # A value >= the ray count means "every ray": take_evenly() returns the whole range.
+    # test/test_amcl_scan_coverage.py keeps this tied to the merger's own numbers.
+    #
+    # WHAT THIS ACTUALLY BOUGHT, measured, so nobody has to re-derive it: a modest reduction in
+    # the size of the AMCL correction, and nothing dramatic, because the thing it was meant to
+    # fix turned out to be much smaller than the headline number said. Two runs of the
+    # acceptance route at each setting, all at real-time factor 0.94, port-lane stretch only:
+    # map -> odom steps over 0.10 m fell from 13 and 16 to 8 and 9, and p99 from 0.109 and
+    # 0.122 m to 0.089 and 0.093 m. Largest single step did not improve.
+    #
+    # Read AGENTS.md's "The map is jumping" section before drawing conclusions from those
+    # numbers: map -> odom translation is measured at the odom origin, up to 27 m from the robot
+    # on this route, so a sub-half-degree yaw correction reads as a 0.15 m step while moving the
+    # robot 2 cm. At the robot, both settings sit under 0.09 m for the whole route.
+    #
+    # Filter CPU was indistinguishable: the nav2 container sat at 27% of one core either way,
+    # which fits the arithmetic -- 1000 particles x 725 beams is 725k grid lookups per update,
+    # about once a second.
+    max_beams: 725
     max_particles: 5000
     min_particles: 1000
     odom_frame_id: "odom"
     pf_err: 0.05
     pf_z: 0.99
+    # Thrun's random-particle recovery, LEFT AT STOCK ON PURPOSE. It is a tempting suspect for
+    # the port-lane twitch -- beluga draws these particles uniformly over the WHOLE map
+    # (MultivariateUniformDistribution, beluga_ros/amcl.hpp) and injects them with probability
+    # clamp(1 - w_fast/w_slow, 0, 1), which rises whenever the average particle weight dips, and
+    # the weight is a count of matched beams, so it dips wherever the scan finds least structure.
+    # It is not the culprit here: across 984 particle-cloud samples on three clean acceptance
+    # runs, no injection is visible at all. Injection draws uniformly from the map's ~3074 m2 of
+    # free space, so an injected particle lands within 2.1 m of the converged cloud less than 0.5%
+    # of the time -- yet the farthest particle from its own cloud's median, over every one of
+    # those samples, was 2.08 m. Not one map-wide sample appeared. The population also sits at
+    # min_particles through the featureless stretch rather than rising the way injected spread
+    # would push it. Turning it off would therefore buy nothing measurable on this route -- and it
+    # would cost the only automatic localization recovery the stack has. SetInitialPose does not
+    # provide one: it re-seeds from the current estimate ("It does not correct a wrong position",
+    # moveit_pro_behavior/behaviors/nav/set_initial_pose.hpp), and nothing here calls beluga's
+    # reinitialize_global_localization service. So a genuinely lost filter has only this.
     recovery_alpha_fast: 0.1
     recovery_alpha_slow: 0.001
     resample_interval: 1
+    # selective_resampling is deliberately NOT set here. It is the obvious next lever -- resample
+    # only once the effective sample size falls below half the population (Grisetti et al. 2007)
+    # instead of on every update -- and the reasoning for it is good: where the scan cannot tell
+    # particles apart the weights stay near-uniform, so resampling there looks like pure
+    # Monte-Carlo noise landing on map -> odom. Measured on the acceptance route it made the map
+    # WORSE, and it is the only setting tried that produced steps over 0.25 m at all: max step
+    # 0.439 m with 3 steps over 0.25 m, against 0.161-0.219 m and zero such steps across four
+    # runs of the two configurations that leave it off. Coasting without resampling lets the
+    # cloud widen while the scan is uninformative, and the eventual resample then collapses a
+    # wider cloud in one go -- a rarer but bigger jump, which is the opposite of what the map
+    # needs. Do not re-enable it without re-measuring.
     robot_model_type: "nav2_amcl::OmniMotionModel"
     save_pose_rate: 0.5
     sigma_hit: 0.2
