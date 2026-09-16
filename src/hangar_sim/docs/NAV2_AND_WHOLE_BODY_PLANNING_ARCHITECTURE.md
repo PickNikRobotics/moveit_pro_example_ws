@@ -69,12 +69,11 @@ The whole body planning capability requires **custom modifications** to the `cle
                         │ MuJoCo Sim    │
                         └───────────────┘
                                 │
-                                ▼
-                        ┌───────────────┐
-                        │  Odometry     │
-                        │  Publisher    │
-                        └───────────────┘
-                                │
+                                ├──────────────► ┌───────────────────────┐
+                                │                │  Odometry Publisher   │
+                                │                │  /odom, for Nav2 only │
+                                │                │  (never joint states) │
+                                │                └───────────────────────┘
                                 ▼
                 ┌───────────────────────────────────┐
                 │      joint_state_broadcaster      │
@@ -321,22 +320,24 @@ The `manipulator` group defines a kinematic chain originating from `ridgeback_ba
 
 ---
 
-## Component 3: Odometry-to-Joint-State Conversion
+## Component 3 (HISTORICAL): Odometry-to-Joint-State Conversion
 
 > **No longer in the running system.** The virtual joints are real `slide`/`hinge`
 > joints in the MJCF (`description/ur5e_ridgeback.xml`), so `joint_state_broadcaster`
 > publishes their state directly and `odometry_joint_state_publisher.py` was dropped
 > from the launch file. The script is still installed but nothing starts it; the
 > section below is retained as a description of the pattern, not of what runs.
+> **Everything under this heading describes the removed path.** Its prose is written
+> in the present tense as it was when the node ran; read it as a past state.
 >
 > It is also **not** the `odom -> world` bridge. That is a separate static transform in
 > `launch/sim/robot_drivers_to_persist_sim.launch.py` — see
 > [Why `world` sits under `odom`](#why-world-sits-under-odom-and-not-the-other-way-round).
 
-### System Requirements
+### Historical: System Requirements
 MoveIt requires joint state information for all joints in the planning group to maintain an accurate robot state representation. For virtual joints representing the mobile base, these states must be derived from the platform's odometry.
 
-### Implementation
+### Historical: Implementation
 **Location**: `src/hangar_sim/script/odometry_joint_state_publisher.py`
 
 ```python
@@ -364,17 +365,17 @@ class OdometryJointStateRepublisher(Node):
         self.joint_states_pub_.publish(joint_state_msg)
 ```
 
-### Data Flow Architecture
+### Historical: Data Flow Architecture
 ```
 MuJoCo Simulation → /odom (nav_msgs/Odometry) → odometry_joint_state_publisher.py
     → /joint_states (sensor_msgs/JointState) → MoveIt Robot State
 ```
 
-### Node Configuration
+### Historical: Node Configuration
 Historically a `Node(package="hangar_sim", executable="odometry_joint_state_publisher.py")`
 entry in `launch/sim/robot_drivers_to_persist_sim.launch.py`. No launch file starts it today.
 
-### Functional Description
+### Historical: Functional Description
 This node subscribes to odometry messages published by the mecanum drive controller and converts the pose information into joint states for the three virtual joints. The conversion extracts the X and Y positions directly and computes the yaw angle from the quaternion orientation. These joint states are then published on the `/joint_states` topic, where they are consumed by `robot_state_publisher` and MoveIt's planning scene monitor.
 
 ---
