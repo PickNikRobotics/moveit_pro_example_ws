@@ -117,10 +117,10 @@ def test_synchronized_pair_publishes_oak_compatible_contract(ros_context):
         ),
     ]
     left_source = probe.create_publisher(
-        Image, "/forward_stereo_left/color", qos_profile_sensor_data
+        Image, "/forward_stereo/left/image_raw", qos_profile_sensor_data
     )
     right_source = probe.create_publisher(
-        Image, "/forward_stereo_right/color", qos_profile_sensor_data
+        Image, "/forward_stereo/right/image_raw", qos_profile_sensor_data
     )
 
     def discovery_complete():
