@@ -44,7 +44,12 @@ the arm planner's world would have drifted identically to the arm. The
 exists to keep the estimate above `world` instead. These checks pin the shape that
 argument rests on, so a re-parent has to be deliberate.
 
-Pure source parsing: no xacro expansion, no simulator, no ROS.
+These parse the declarative artifacts into their own semantic models — the URDF
+link/joint graph, the launch file's `Node(...)` calls — and assert meaning in that
+model, not the presence of text. They follow `test_base_geometry.py`, which reads
+the same descriptions directly rather than expanding the xacro, because expansion
+would need the launch's full argument set and tie these assertions to launch
+configuration they do not care about. No simulator, no ROS.
 """
 
 import ast
@@ -294,10 +299,19 @@ def test_no_simulator_or_controller_publishes_odom_to_base() -> None:
     base from that edge instead of through `world`, and `world` would stop being the
     frame that holds the environment still relative to the robot.
     """
-    mujoco = CONTROL_XACRO.read_text()
-    assert '<param name="odom_publish_tf">false</param>' in mujoco, (
-        f"{CONTROL_XACRO.name} no longer sets odom_publish_tf false, so MuJoCo "
-        f"broadcasts odom -> ridgeback_base_link alongside robot_state_publisher."
+    hardware = _find_all(ET.parse(CONTROL_XACRO).getroot(), "hardware")
+    assert len(hardware) == 1, (
+        f"{CONTROL_XACRO.name} declares {len(hardware)} <hardware> blocks; this check "
+        f"reads the MuJoCo plugin's parameters from the single one."
+    )
+    params = {
+        param.get("name"): (param.text or "").strip()
+        for param in _find_all(hardware[0], "param")
+    }
+    assert params.get("odom_publish_tf", "").lower() == "false", (
+        f"{CONTROL_XACRO.name} sets odom_publish_tf = "
+        f"{params.get('odom_publish_tf')!r}; it must stay false, or MuJoCo broadcasts "
+        f"odom -> ridgeback_base_link alongside robot_state_publisher."
     )
 
     controllers = yaml.safe_load(CONTROL_YAML.read_text())
