@@ -132,7 +132,8 @@ controller_server:
       # what is left before tf2 raises "Lookup would require extrapolation into
       # the future" -> "Unable to transform goal pose into costmap frame" ->
       # FollowPath aborts. At 0.1 s the stack tolerates a ~1.1 s amcl stall; at
-      # 0.5 s, ~1.5 s. Still the tightest tolerance in the pipeline.
+      # 0.5 s, ~1.5 s. Still half of amcl's own 1.0 s; the costmaps below use
+      # the same 0.5 s so every map->odom consumer fails at the same point.
       transform_tolerance: 0.5
       temperature: 0.3
       gamma: 0.015
