@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+<package format="3">
+  <name>moveit_pro_sam3</name>
+  <version>0.1.0</version>
+  <description>
+    ROS package that downloads SAM3 ONNX models for image segmentation at build
+    time.
+  </description>
+
+  <maintainer email="david.sobek@picknik.ai">David Sobek</maintainer>
+  <license file="LICENSE">BSD-3-Clause</license>
+  <license file="models/LICENSE">SAM License</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
