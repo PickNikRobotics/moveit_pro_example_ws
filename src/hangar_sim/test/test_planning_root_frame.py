@@ -55,6 +55,7 @@ configuration they do not care about. No simulator, no ROS.
 import ast
 import xml.etree.ElementTree as ET
 from pathlib import Path
+from typing import NamedTuple
 
 import yaml
 
@@ -64,6 +65,7 @@ HANGAR_XACRO = PACKAGE / "description" / "hangar_urdf.xacro"
 CONTROL_XACRO = PACKAGE / "description" / "picknik_ur_mujoco_ros2_control.xacro"
 CONTROL_YAML = PACKAGE / "config" / "control" / "picknik_ur.ros2_control.yaml"
 DRIVERS_LAUNCH = PACKAGE / "launch" / "sim" / "robot_drivers_to_persist_sim.launch.py"
+FUSE_YAML = PACKAGE / "config" / "fuse" / "fuse.yaml"
 
 
 # The two description files spell the xacro namespace differently
@@ -93,6 +95,11 @@ MECANUM_CONTROLLERS = (
     "platform_velocity_controller",
     "platform_velocity_controller_nav2",
 )
+
+# The fuse state estimator is the third node that could broadcast the competing
+# odom -> base edge; its publisher is named here so the check reads the real one.
+FUSE_NODE = "state_estimator"
+FUSE_PUBLISHER = "filtered_publisher"
 
 
 def _robot_root() -> ET.Element:
@@ -207,9 +214,16 @@ def _launch_module() -> ast.Module:
     return ast.parse(DRIVERS_LAUNCH.read_text(), filename=str(DRIVERS_LAUNCH))
 
 
-def _static_transform_publishers(module: ast.Module) -> dict[str, list[str]]:
+class _StaticTransform(NamedTuple):
+    """A launch-declared static_transform_publisher, reduced to what a tree needs."""
+
+    arguments: list[str]
+    conditional: bool
+
+
+def _static_transform_publishers(module: ast.Module) -> dict[str, _StaticTransform]:
     """Every tf2_ros static_transform_publisher in the launch, by variable name."""
-    found: dict[str, list[str]] = {}
+    found: dict[str, _StaticTransform] = {}
     for node in ast.walk(module):
         if not isinstance(node, ast.Assign) or not isinstance(node.value, ast.Call):
             continue
@@ -233,9 +247,12 @@ def _static_transform_publishers(module: ast.Module) -> dict[str, list[str]]:
             for element in arguments.elts
             if isinstance(element, ast.Constant)
         ]
+        transform = _StaticTransform(
+            arguments=values, conditional="condition" in kwargs
+        )
         for target in node.targets:
             if isinstance(target, ast.Name):
-                found[target.id] = values
+                found[target.id] = transform
     return found
 
 
@@ -256,9 +273,9 @@ def test_the_odom_to_world_bridge_is_launched() -> None:
     module = _launch_module()
     publishers = _static_transform_publishers(module)
     bridges = {
-        name: args
-        for name, args in publishers.items()
-        if args[-2:] == ["odom", PLANNING_ROOT]
+        name: transform
+        for name, transform in publishers.items()
+        if transform.arguments[-2:] == ["odom", PLANNING_ROOT]
     }
     assert len(bridges) == 1, (
         f"expected exactly one odom -> {PLANNING_ROOT} static transform in "
@@ -266,10 +283,17 @@ def test_the_odom_to_world_bridge_is_launched() -> None:
         f"Without it the planning root has no parent and nav2 goals in "
         f"{PLANNING_ROOT!r} stop resolving to 'map'."
     )
-    name = next(iter(bridges))
+    name, bridge = next(iter(bridges.items()))
     assert name in _added_to_launch_description(module), (
         f"{name} is constructed but never added to the LaunchDescription, so the "
         f"bridge would not actually run."
+    )
+    assert not bridge.conditional, (
+        f"{name} carries a condition= keyword, so whether the planning root has a "
+        f"parent at all depends on a launch argument. The environment is welded to "
+        f"{PLANNING_ROOT!r} in every configuration, so this edge has to be "
+        f"unconditional; a condition that happens to evaluate true today is the "
+        f"re-parenting regression this check exists to catch."
     )
 
 
@@ -280,9 +304,9 @@ def test_nothing_else_in_this_launch_parents_the_planning_root() -> None:
     frame above `world` is declared; it cannot see a parent broadcast at runtime.
     """
     parents = {
-        name: args[-2]
-        for name, args in _static_transform_publishers(_launch_module()).items()
-        if args[-1:] == [PLANNING_ROOT]
+        name: transform.arguments[-2]
+        for name, transform in _static_transform_publishers(_launch_module()).items()
+        if transform.arguments[-1:] == [PLANNING_ROOT]
     }
     assert len(parents) == 1, (
         f"{len(parents)} static transforms in {DRIVERS_LAUNCH.name} publish "
@@ -322,3 +346,17 @@ def test_no_simulator_or_controller_publishes_odom_to_base() -> None:
             f"{parameters.get('enable_odom_tf')!r}; it must stay false so the "
             f"odometry it publishes stays a message and never becomes a TF edge."
         )
+
+    publisher = yaml.safe_load(FUSE_YAML.read_text())[FUSE_NODE]["ros__parameters"][
+        FUSE_PUBLISHER
+    ]
+    assert publisher.get("publish_tf") is False, (
+        f"{FUSE_YAML.name}: {FUSE_PUBLISHER} sets publish_tf = "
+        f"{publisher.get('publish_tf')!r} with world_frame_id "
+        f"{publisher.get('world_frame_id')!r} and base_link_output_frame_id "
+        f"{publisher.get('base_link_output_frame_id')!r}, which is exactly the "
+        f"competing odom -> base edge. fuse is opt-in behind the use_fuse launch "
+        f"argument, so this only breaks the tree in the runs that enable it — and "
+        f"there the base would be read off the estimate instead of through "
+        f"{PLANNING_ROOT!r}. Its estimate belongs on odom_filtered, not in TF."
+    )
