@@ -209,6 +209,39 @@ Every objective XML file must include a `MetadataFields` block inside the `TreeN
 
 Teleoperation drives the gripper by looking up Objectives named exactly `"Close Gripper"` / `"Open Gripper"` (the `Request Teleoperation` SubTree in moveit_pro core). If a config package doesn't provide those overrides in its `objectives/` directory, the lookup falls back to moveit_pro's core placeholder, which logs `[ERROR] LogMessage Error: This robot configuration does not have a \`Close Gripper\` Objective configured to override this default.` on every BT tick for as long as the control is held, and the gripper never moves — even if some other Objective in the same config already drives the gripper directly via `MoveGripperAction` (that path bypasses the named-Objective lookup entirely). Any new config with a gripper needs both files; see `moveit_pro_kinova_configs/kinova_gen3_base_config/objectives/{close,open}_gripper.xml` for the reference pattern.
 
+## "The map is jumping": measure the correction at the robot, not at the odom origin
+
+`map -> odom` is the AMCL correction, and its translation component is **where the odom frame's
+origin sits in the map** — not how far anything moved near the robot. An AMCL update is a rigid
+transform change, so a point `p` expressed in odom moves by `dt + (R(yaw_new) - R(yaw_old)) p`.
+The robot is `|odom -> base|` away from that origin, which on `hangar_sim`'s port-lane route grows
+from 0 m at spawn to about 27 m at the goal, so a yaw correction of 0.008 rad — under half a
+degree — shows up as a 0.16 m translation step while displacing the robot by 2 cm.
+
+Measured on that route: the five largest `map -> odom` steps in a run were 0.124-0.161 m and moved
+the robot 0.005-0.024 m; across runs, steps over 0.10 m averaged 0.022 m at the robot. The
+reference run's headline 0.316 m step was 0.132 m at the robot. On the second navigation
+Objective `map -> odom` swings 2.9-3.9 m and the robot moves under 0.07 m.
+
+This matters because it also manufactures a false diagnostic clue. Corrections appear to cluster
+in the featureless middle of the route and to be absent for the first minute, which reads as "the
+scan has no structure to bite on there". The lever arm grows monotonically along that same route,
+and `r(lever arm, step size)` is +0.42 to +0.52, so distance from spawn explains the pattern at
+least as well as scan sparsity.
+
+To judge whether the map looks static — which is the question anyone actually asks — recompose the
+estimate from one sample and difference it against ground truth:
+
+```python
+# both corrections applied to the SAME odom -> base pose isolates the correction's own effect
+p_old = compose(a["map_odom"], a["odom_base"])
+p_new = compose(b["map_odom"], a["odom_base"])
+visible = math.hypot(p_new[0] - p_old[0], p_new[1] - p_old[1])
+```
+
+Do not difference a TF-looked-up `map -> base` against a separately looked-up `map -> odom`: the two
+lookups resolve at different latest-common-times and smooth the step you are trying to see.
+
 ## Config inheritance (`based_on_package`)
 
 `based_on_package` in `config.yaml` merges the child over the parent (`merge()` in `moveit_studio_utils_py/system_config.py`). Dicts merge key-by-key, recursively. A list of scalars is replaced wholesale. A list of single-key dicts — which is how `urdf_params` and every other MoveIt Pro list-of-options field is shaped — merges **by key**: an override entry like `- hardware_interface: "mock"` finds the parent's entry with that same key and replaces only its value, leaving every other `urdf_params` entry (`usb_port`, `calibration_file`, ...) inherited untouched. You do not need to repeat the whole list to override one xacro arg.
@@ -281,6 +314,16 @@ generates and exports that file only for its own PID 1 process tree, and
 exec's `ros2` CLI joins the wrong (default) CycloneDDS config and never
 discovers the app's participants over the loopback-only, no-multicast peer
 list that config sets up.
+
+Tearing a deployment down is `moveit_pro down --instance <name>`; there is no `stop`
+subcommand, and `docker rm -f` on the containers does not do it — compose brings them
+straight back and you are left measuring a stack you thought you had replaced. Check
+`docker inspect <container> --format '{{.State.StartedAt}}'` when a restart is supposed to
+have happened, because "Up 5 minutes" on a container you just tried to remove is the giveaway.
+Start exactly one `moveit_pro run` per instance and let it finish coming up: a second launch
+while the first is still starting kills the runtime container with `Endpoint reservation for
+instance '<name>' was superseded`, leaving drivers healthy, `/do_objective` absent, and no
+obvious error.
 
 ## `colcon build`/`test` on one package without the moveit_pro CLI
 
