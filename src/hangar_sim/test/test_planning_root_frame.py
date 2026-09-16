@@ -256,15 +256,32 @@ def _static_transform_publishers(module: ast.Module) -> dict[str, _StaticTransfo
     return found
 
 
+# Only add_action calls that are direct statements of generate_launch_description
+# count: one nested under an `if`/`for`/`with` runs conditionally, which is the same
+# regression as a condition= keyword and must fail the same way.
 def _added_to_launch_description(module: ast.Module) -> set[str]:
+    entry_points = [
+        node
+        for node in module.body
+        if isinstance(node, ast.FunctionDef)
+        and node.name == "generate_launch_description"
+    ]
+    assert len(entry_points) == 1, (
+        f"{DRIVERS_LAUNCH.name} defines {len(entry_points)} top-level "
+        f"generate_launch_description functions; this check reads the actions added "
+        f"unconditionally in the single one."
+    )
     added: set[str] = set()
-    for node in ast.walk(module):
-        if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Attribute):
+    for statement in entry_points[0].body:
+        if not isinstance(statement, ast.Expr):
             continue
-        if node.func.attr != "add_action" or len(node.args) != 1:
+        call = statement.value
+        if not isinstance(call, ast.Call) or not isinstance(call.func, ast.Attribute):
             continue
-        if isinstance(node.args[0], ast.Name):
-            added.add(node.args[0].id)
+        if call.func.attr != "add_action" or len(call.args) != 1:
+            continue
+        if isinstance(call.args[0], ast.Name):
+            added.add(call.args[0].id)
     return added
 
 
@@ -285,8 +302,12 @@ def test_the_odom_to_world_bridge_is_launched() -> None:
     )
     name, bridge = next(iter(bridges.items()))
     assert name in _added_to_launch_description(module), (
-        f"{name} is constructed but never added to the LaunchDescription, so the "
-        f"bridge would not actually run."
+        f"{name} is never added to the LaunchDescription as an unconditional "
+        f"statement of generate_launch_description — it is either missing or added "
+        f"inside a branch, so whether the planning root has a parent depends on how "
+        f"the launch is invoked. The hangar is welded to {PLANNING_ROOT!r} in every "
+        f"configuration, so re-parenting the tree has to be a deliberate act, not a "
+        f"launch argument."
     )
     assert not bridge.conditional, (
         f"{name} carries a condition= keyword, so whether the planning root has a "
