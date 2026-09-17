@@ -65,42 +65,45 @@
         input_pose="{initial_pose}"
         target_frame_id="world"
       />
-      <Control ID="Parallel" failure_count="1" success_count="1">
-        <Action
-          ID="ForceExceedsThreshold"
-          minimum_consecutive_wrench_values="5"
-          wrench_frame_name="tool0"
-          hand_frame_name="grasp_link"
-          force_threshold="20"
-          wrench_topic_name="/force_torque_sensor_broadcaster/wrench"
-        />
-        <Control ID="Sequence" name="Sequence">
+      <!-- Bound the push when contact cannot reach the force threshold. -->
+      <Decorator ID="Timeout" name="Limit Push Duration" msec="10000">
+        <Control ID="Parallel" failure_count="1" success_count="1">
           <Action
-            ID="UnpackTwistStampedMessage"
-            name="UnpackTwistStampedMessage"
-            twist="{twist}"
-            header="{header}"
-            twist_stamped="{desired_twist}"
+            ID="ForceExceedsThreshold"
+            minimum_consecutive_wrench_values="5"
+            wrench_frame_name="tool0"
+            hand_frame_name="grasp_link"
+            force_threshold="20"
+            wrench_topic_name="/force_torque_sensor_broadcaster/wrench"
           />
-          <Action
-            ID="UnpackWrenchStampedMessage"
-            name="UnpackWrenchStampedMessage"
-            wrench="{wrench}"
-            header="{header}"
-            wrench_stamped="{desired_wrench}"
-          />
-          <Action
-            ID="PublishVelocityForceCommand"
-            force_controlled_axes="0;0;0;0;0;0"
-            wrench_gain="0.01"
-            velocity_controlled_axes="0;0;1;0;0;0"
-            publish_rate="50"
-            wrench="{wrench}"
-            twist="{twist}"
-            velocity_force_controller_command_topic="/velocity_force_controller/command"
-          />
+          <Control ID="Sequence" name="Sequence">
+            <Action
+              ID="UnpackTwistStampedMessage"
+              name="UnpackTwistStampedMessage"
+              twist="{twist}"
+              header="{header}"
+              twist_stamped="{desired_twist}"
+            />
+            <Action
+              ID="UnpackWrenchStampedMessage"
+              name="UnpackWrenchStampedMessage"
+              wrench="{wrench}"
+              header="{header}"
+              wrench_stamped="{desired_wrench}"
+            />
+            <Action
+              ID="PublishVelocityForceCommand"
+              force_controlled_axes="0;0;0;0;0;0"
+              wrench_gain="0.01"
+              velocity_controlled_axes="0;0;1;0;0;0"
+              publish_rate="50"
+              wrench="{wrench}"
+              twist="{twist}"
+              velocity_force_controller_command_topic="/velocity_force_controller/command"
+            />
+          </Control>
         </Control>
-      </Control>
+      </Decorator>
       <SubTree
         ID="Force Relaxation"
         name="Force Relaxation"
