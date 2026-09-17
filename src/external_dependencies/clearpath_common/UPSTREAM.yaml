@@ -9,7 +9,7 @@ vendored_paths:
   - clearpath_platform_description/package.xml
   - clearpath_platform_description/urdf
   - clearpath_platform_description/meshes
-pruned_paths:
+pruning_notes:
   - other clearpath_common packages (clearpath_control, clearpath_desktop, clearpath_generic_base, clearpath_platform_msgs, clearpath_sensors, etc.) unused by this workspace
   - test and CI configuration files
   - clearpath_platform_description/launch (unreferenced anywhere in this workspace)
@@ -24,4 +24,4 @@ notes:
   - Byte-identical vendor of the clearpath_platform_description package from clearpath_common except for CMakeLists.txt (see modified_paths); not otherwise modified in this workspace.
   - CMakeLists.txt: install(DIRECTORY launch meshes urdf ...) narrowed to install(DIRECTORY meshes urdf ...) since the launch/ directory was pruned (unreferenced anywhere in this workspace); a BSD-licensed file, so no PickNik change notice is required in the file itself.
   - Binary files matching workspace Git LFS patterns are stored as LFS objects; checked-out bytes match upstream.
-  - Pruned to the A300 subset needed by lunar_sim/description/husky_a300_mujoco.xacro at upstream commit 811baf06a32747be0653ea18db2c8868860d193f (unchanged from the prior vendor), computed by running xacro over that entry point against a source-built overlay (not the base image's stale install) and tracing every file it opened plus every mesh referenced in the expanded output; see pruned_paths for what was removed.
+  - Pruned to the A300 subset needed by lunar_sim/description/husky_a300_mujoco.xacro at upstream commit 811baf06a32747be0653ea18db2c8868860d193f (unchanged from the prior vendor), computed by running xacro over that entry point against a source-built overlay (not the base image's stale install) and tracing every file it opened plus every mesh referenced in the expanded output; see pruning_notes for what was removed.
