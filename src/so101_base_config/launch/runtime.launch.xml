@@ -10,7 +10,7 @@
     hardware.additional_driver_launch_file -> launch/so101_drivers.launch.py.
   -->
   <include
-    file="$(find-pkg-share moveit_studio_agent)/launch/studio_agent_bridge.launch.xml"
+    file="$(find-pkg-share moveit_studio_agent)/launch/runtime_services.launch.xml"
   />
   <!--
     A second, always-fake instance backing Wiggle SO101 Follower, so the

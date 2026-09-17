@@ -10,7 +10,7 @@
     default="$(env INFER_URL 'http://127.0.0.1:8973/infer')"
   />
   <include
-    file="$(find-pkg-share moveit_studio_agent)/launch/studio_agent_bridge.launch.xml"
+    file="$(find-pkg-share moveit_studio_agent)/launch/runtime_services.launch.xml"
   />
   <!-- Bridges ExecutePolicy's /get_action_chunk service to the inference server over
        HTTP. Lightweight (no ML dependencies), so it always runs with the config; when
