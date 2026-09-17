@@ -11,8 +11,9 @@ on:
         default: ''
   repository_dispatch:
     # Fired by the paired moveit_pro repo when a PR there finishes its image
-    # push. The payload carries `image_ref` (full GHCR reference with `{0}`
-    # placeholder for ros_distro), `image_tag`, `base_branch`, `moveit_pro_sha`,
+    # push. The payload carries `image_ref` (a full reference to the private
+    # `moveit-pro-ci` ECR repository, with a `{0}` placeholder for ros_distro),
+    # `image_tag`, `base_branch`, `moveit_pro_sha`,
     # and `moveit_pro_pr` so this workflow can run the integration suite
     # against the just-built image and post a commit status back to that PR.
     types: [moveit_pro_pr]
@@ -35,7 +36,7 @@ jobs:
   #   - `pull_request`: image_tag = PR base ref; checkout uses the PR head
   #     by default (no explicit `git_ref`). If the PR body contains a
   #     `needs: moveit_pro/#N` token, also fetch that moveit_pro PR's head
-  #     SHA so we can pull its private GHCR image as `image_ref` and post
+  #     SHA so we can pull its private ECR image as `image_ref` and post
   #     the rollup status back to the moveit_pro PR.
   #   - `repository_dispatch`: every value comes from the payload, including
   #     `git_ref` (the version-paired example_ws branch to check out) since
@@ -85,7 +86,7 @@ jobs:
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           MOVEIT_PRO_PR_FROM_BODY: ${{ steps.detect_needs.outputs.moveit_pro_pr }}
-          DOCKERHUB_USERNAME: ${{ vars.DOCKERHUB_USERNAME }}
+          CONTAINER_REGISTRY_URL: ${{ vars.CONTAINER_REGISTRY_URL }}
         with:
           # Falls back to the default GITHUB_TOKEN when the App token wasn't
           # minted (no paired PR, not a dispatch). The default is sufficient
@@ -93,11 +94,20 @@ jobs:
           github-token: ${{ steps.app-token.outputs.token || github.token }}
           script: |
             const event = context.eventName;
-            // Docker Hub org that hosts the moveit-studio customer image.
-            // moveit_pro publishes under vars.DOCKERHUB_USERNAME (picknikciuser),
-            // which is the same default the reusable workflow falls back to; that
-            // var is not defined in this repo, so default to the known owner.
-            const dockerhubUsername = process.env.DOCKERHUB_USERNAME || 'picknikciuser';
+            // Private ECR registry holding moveit_pro's per-PR and per-branch CI
+            // images. moveit_pro publishes these under vars.CONTAINER_REGISTRY_URL;
+            // that variable is not defined in this repo, so default to the known
+            // registry rather than failing on an unset variable. Defining the
+            // repository variable overrides the default without a code change.
+            const containerRegistryUrl =
+              process.env.CONTAINER_REGISTRY_URL || '682033501538.dkr.ecr.us-east-1.amazonaws.com';
+            // The ECR repository moveit_pro's `internal_binaries` job pushes its
+            // per-arch release image to, as `pr-<moveit_pro PR number>` or
+            // `branch-<sanitized ref>`. Nothing logs in to pull it: the
+            // picknik-16-amd64-gpu runner pod carries amazon-ecr-credential-helper
+            // wired to a pull-only IRSA role, so the `container:` image in the
+            // reusable integration workflow resolves without a credentials block.
+            const ciImageRepository = 'moveit-pro-ci';
             let image_ref = '';
             let image_tag = '';
             // Per-distro CUDA image-suffix MAP (a JSON object keyed by ros_distro).
@@ -135,12 +145,6 @@ jobs:
             let moveit_pro_sha = '';
             let moveit_pro_pr_number = '';
 
-            // Mirror moveit_pro's setup_docker_cache "Compute image tag" step
-            // exactly (`echo $TAG | tr '/' '_'`): only the slash is rewritten,
-            // to an underscore. A broader sanitize (e.g. slash -> dash) produces
-            // a tag that does not match the published image and 404s the pull.
-            const sanitizeBranch = (s) => s.replace(/\//g, '_');
-
             if (event === 'repository_dispatch') {
               const p = context.payload.client_payload || {};
               image_ref = p.image_ref || '';
@@ -175,11 +179,17 @@ jobs:
                 });
                 moveit_pro_sha = pr.head.sha;
                 moveit_pro_pr_number = needsPr;
-                // Pull the paired moveit_pro PR's customer image from Docker Hub
-                // — that is where moveit_pro publishes it (the GHCR moveit-studio
-                // retag is gone). Suffix-free per-arch template (`…-{0}-amd64`);
-                // the active distro's suffix is baked on below.
-                image_ref = `${dockerhubUsername}/moveit-studio:${sanitizeBranch(pr.head.ref)}-{0}-amd64`;
+                // Pull the paired moveit_pro PR's image from the private
+                // `moveit-pro-ci` ECR repository — Docker Hub carries release
+                // tags and `main` only. The tag is keyed on the PR number, not
+                // the branch, and must stay byte-identical to the template
+                // moveit_pro sends on the dispatch path so both paths pull the
+                // same image. The parse is what makes them identical: the token
+                // is hand-typed, so `needs: moveit_pro/#0123` must compose
+                // `pr-123`, the number moveit_pro writes. Suffix-free per-arch
+                // template (`…-{0}-amd64`); the active distro's suffix is baked
+                // on below.
+                image_ref = `${containerRegistryUrl}/${ciImageRepository}:pr-${parseInt(needsPr, 10)}-{0}-amd64`;
               }
             } else {
               // push, schedule, workflow_dispatch. A `workflow_dispatch` input
@@ -195,22 +205,30 @@ jobs:
             // always uses the per-arch shape — <tag>-<distro>-amd64<suffix> —
             // matching the picknik-16-amd64-gpu runner below.
             //
-            // moveit_pro no longer publishes arch-less aliases for the lines
-            // this branch targets. `main` froze its arch-less aliases on
-            // 2026-06-03 (main-jazzy-cuda12.6-cudnn9 is stuck at that date on
-            // Docker Hub). The v9.4 line publishes per-arch tags ONLY for the
-            // cuda13.2 jazzy build (internal_binaries pushes
-            // v9.4-jazzy-amd64-cuda13.2-cudnn9 straight to Docker Hub; the
-            // arch-less v9.4-jazzy-cuda13.2-cudnn9 alias is never created —
-            // verified absent on Docker Hub). A push to this branch resolves
-            // image_tag=v9.4, so the old `image_tag === 'main'` gate left the
-            // -amd64 off and the pull 404'd. Always append -amd64 here.
+            // The base-branch image comes from the same private ECR repository,
+            // under `branch-<ref>`: moveit_pro writes a Docker Hub tag only for a
+            // release tag and for `main`, so no branch tag is left to fall back
+            // on. Every branch whose CI has run publishes `branch-<ref>` there.
+            // Per-arch shape — <tag>-<distro>-amd64<suffix> — matching the
+            // picknik-16-amd64-gpu runner below.
             //
             // repository_dispatch is excluded: its payload always carries
             // image_ref, so it never reaches this fallback.
+            //
+            // `image_tag` is a raw ref here, so normalize it the way the
+            // producer does before composing a tag out of it: moveit_pro's
+            // `set_docker_cache_source` rewrites `/` to `_` and every other
+            // character outside `[A-Za-z0-9_.-]` to `_`, so a base branch like
+            // `release/9.4` is published as `branch-release_9.4`. A Docker tag
+            // cannot contain `/` at all, so skipping this composes a reference
+            // that cannot resolve. Only the fallback is normalized; `image_tag`
+            // stays raw for the cache namespace it also names.
             if (image_ref === '') {
               const archSegment = event !== 'repository_dispatch' ? '-amd64' : '';
-              image_ref = `${dockerhubUsername}/moveit-studio:${image_tag}-{0}${archSegment}`;
+              const sanitizedRef = image_tag
+                .replace(/\//g, '_')
+                .replace(/[^A-Za-z0-9_.-]/g, '_');
+              image_ref = `${containerRegistryUrl}/${ciImageRepository}:branch-${sanitizedRef}-{0}${archSegment}`;
             }
             if (!image_ref_has_suffix) {
               image_ref = `${image_ref}${gpu_image_suffix}`;
