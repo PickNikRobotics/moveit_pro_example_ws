@@ -8,8 +8,14 @@ this directory's image. Model and device selection live in
 
 ## Running it
 
-The default checkpoint resolves the gated `google/paligemma` tokenizer on first
-load, so export a token from an account that has accepted the
+For a checkpoint produced by Trainer, add the Hugging Face token once in the
+**Train** tab and choose **Configure for ExecutePolicy**. MoveIt Pro provisions
+that token to the inference server without adding it to this workspace or the
+container environment.
+
+The stock checkpoint resolves the gated `google/paligemma` tokenizer on first
+load and has no Trainer run to configure. For that checkpoint, export a token
+from an account that has accepted the
 [PaliGemma license](https://huggingface.co/google/paligemma-3b-pt-224):
 
 ```bash
@@ -48,7 +54,7 @@ Set these in the workspace `.env`; all are optional.
 
 | Variable | Effect |
 | --- | --- |
-| `HF_TOKEN` | Token for gated or private Hugging Face downloads. |
+| `HF_TOKEN` | Explicit fallback for gated or private checkpoints configured outside Trainer. |
 | `HF_HUB_OFFLINE` | `1` serves only what is already in the cache, with no network access. |
 | `VLA_HF_CACHE` | Host path for the Hugging Face cache. Defaults to `../hf_cache`. |
 | `VLA_MODELS_DIR` | Host folder mounted at `/models`, for checkpoints stored outside the workspace. Defaults to `../models`. |
@@ -57,11 +63,20 @@ Set these in the workspace `.env`; all are optional.
 ## The HTTP contract
 
 `GET /health` reports `loading` / `ready` / `error` and needs no token.
-`POST /infer` requires the deployment's `MOVEIT_FRONTEND_KEY` as a bearer
-token. The server speaks plain HTTP and publishes on `127.0.0.1` only, which is
-what keeps that token off the network. Two settings decide what code and weights
-the container runs, so point both only at sources you trust: `checkpoint`
-chooses the robot's actions, and `VLA_TORCH_INDEX` supplies the torch build.
+Authenticated `GET /status` also reports the selected checkpoint and immutable
+revision so Trainer can confirm the exact model is loaded. `POST /infer` and
+`GET /status` require the deployment's `MOVEIT_FRONTEND_KEY` as a bearer token.
+The server speaks plain HTTP and publishes on `127.0.0.1` only, which keeps that
+token off the network. Replacing `vla_serving.yaml` or the Trainer-provisioned
+credential reloads the process so the old model's GPU memory is released first.
+A reload waits for a running policy: it holds off until `/infer` has been quiet
+for one chunk of playback (at least `RELOAD_IDLE_SECONDS`), and `/status` reports
+`reloadPending: true` meanwhile.
+Only a call hung past `INFER_ABANDONED_SECONDS` is reloaded over. A pinned
+`checkpoint_revision` downloads that whole repository revision into the cache.
+Two settings decide what code and weights the container runs, so point both only
+at sources you trust: `checkpoint` chooses the robot's actions, and
+`VLA_TORCH_INDEX` supplies the torch build.
 
 ## Running the image outside compose
 

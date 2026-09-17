@@ -51,12 +51,15 @@ services:
       dockerfile: Dockerfile.vla_inference_server
       args:
         TORCH_INDEX: ${VLA_TORCH_INDEX:-}
-    # Host facts only; model knobs live in vla_serving.yaml (mounted below).
+    # Host facts only; model knobs and Trainer-provisioned Hugging Face access
+    # are owned by MoveIt Pro.
     environment:
-      # Token for gated/private Hugging Face downloads (the pi0.5 processor
-      # resolves the gated google/paligemma tokenizer even for local
-      # checkpoints; accept its license once with this token, or pre-seed the
-      # cache and set HF_HUB_OFFLINE=1).
+      # Explicit fallback for gated or private checkpoints configured outside
+      # Trainer (the stock pi0.5 processor resolves the gated google/paligemma
+      # tokenizer). The product compose file forwards the same variable; it is
+      # repeated here so a launcher without that entry still delivers the
+      # token. The two entries merge by key, and an empty value defers to the
+      # Trainer-provisioned credential.
       - HF_TOKEN=${HF_TOKEN:-}
       - HF_HUB_OFFLINE=${HF_HUB_OFFLINE:-0}
       - HF_HOME=/hf
@@ -78,8 +81,8 @@ services:
       # /models/<checkpoint-dir>. VLA_MODELS_DIR overrides the host folder
       # for checkpoints stored elsewhere.
       - ${VLA_MODELS_DIR:-${MOVEIT_HOST_USER_WORKSPACE:-.}/src/vla_sim/models}:/models:ro
-      # Model-serving config (checkpoint, fps, device, ...); edits picked up on
-      # restart, no image rebuild.
+      # Model-serving config (checkpoint, fps, device, ...); edits trigger an
+      # automatic model reload, with no image rebuild.
       - ${MOVEIT_HOST_USER_WORKSPACE:-.}/src/vla_sim/config:/vla_config:ro
       # The server script and its tests; edits take effect on restart, no
       # image rebuild, and `docker exec ... python -m unittest` reaches the
