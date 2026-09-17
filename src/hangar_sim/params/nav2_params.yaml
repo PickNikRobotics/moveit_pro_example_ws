@@ -56,9 +56,7 @@ bt_navigator:
     use_sim_time: True
     global_frame: map
     robot_base_frame: ridgeback_base_link
-    # fuse's estimate, not MuJoCo's ground-truth /odom. With use_fuse:=true (the default) the
-    # whole navigation stack has to read the same estimate the TF tree resolves odom -> base to,
-    # or the BT's velocity checks disagree with where the controller thinks the robot is.
+    # fuse's estimate, not MuJoCo ground truth: the whole stack must read what odom -> base resolves to.
     odom_topic: /odom_filtered
     bt_loop_duration: 10
     default_server_timeout: 20
@@ -85,13 +83,7 @@ bt_navigator_navigate_to_pose_rclcpp_node:
 controller_server:
   ros__parameters:
     use_sim_time: True
-    # Not inherited from bt_navigator: without this key controller_server falls through to nav2's
-    # own "odom" default. It feeds the progress checker and the velocity feedback the plugins see,
-    # so it has to name the same estimate the TF tree resolves odom -> base to. It is NOT what
-    # MPPI seeds rollouts from while FollowPath.open_loop is true (below): open loop seeds from
-    # MPPI's own last command and ignores odom. Flip open_loop to false and this topic becomes the
-    # seeding source too -- which would then be fuse's estimate, not ground truth. (velocity_smoother
-    # has an odom_topic too, but that block runs feedback: "OPEN_LOOP" and never reads it.)
+    # Not inherited from bt_navigator; without it controller_server falls back to nav2's "odom" default.
     odom_topic: /odom_filtered
     controller_frequency: 20.0
     min_x_velocity_threshold: 0.001
