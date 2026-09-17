@@ -105,6 +105,7 @@
                       controller_action_name="{controller_action_server}"
                       execution_pipeline="{execution_pipeline}"
                       link_padding="{link_padding}"
+                      collision_check_params="{collision_check_params}"
                       ik_frame="{tip_link}"
                       planning_group_name="{planning_group}"
                       max_mtc_solutions="{max_mtc_solutions}"
@@ -151,6 +152,7 @@
                       controller_names="joint_trajectory_controller;platform_velocity_controller"
                       joint_group_name="{default_planning_group}"
                       link_padding="{link_padding}"
+                      collision_check_params="{collision_check_params}"
                       execution_pipeline="{execution_pipeline}"
                     />
                     <Action
@@ -187,6 +189,7 @@
                       ID="PoseJog"
                       controller_names="{controllers}"
                       link_padding="{link_padding}"
+                      collision_check_params="{collision_check_params}"
                       planning_group_names="{planning_groups}"
                       stop_safety_factor="1.500000"
                       skip_collision_checks="{skip_collision_checks}"
@@ -232,6 +235,7 @@
                           ID="JointJog"
                           controller_name="{first_controller}"
                           link_padding="{link_padding}"
+                          collision_check_params="{collision_check_params}"
                           stop_safety_factor="1.500000"
                           skip_collision_checks="{skip_collision_checks}"
                         />
@@ -295,7 +299,23 @@
         selects; this default only covers the window before its first feedback,
         and matches the speed the UI itself starts at.
       </input_port>
-      <input_port name="link_padding" default="0.0" type="double" />
+      <input_port
+        name="collision_check_params"
+        default="[{override_scene_link_padding: true, link_padding: 0.0}]"
+        type="moveit_studio_msgs::msg::CollisionCheckParams"
+      >
+        Collision-validation parameters for the motion planning subtrees and
+        for PoseJog and JointJog, which honor only the padding fields. The
+        default overrides the scene padding with the 0 m this Objective has
+        always used (override_scene_link_padding must be true for link_padding
+        to apply).
+      </input_port>
+      <input_port name="link_padding" default="{link_padding}" type="double">
+        DEPRECATED: set override_scene_link_padding: true and link_padding in
+        collision_check_params instead. While set, this value takes precedence
+        for the planning subtrees and the jog Behaviors, and a deprecation
+        warning is logged.
+      </input_port>
       <input_port name="execution_pipeline" default="jtc" type="std::string" />
       <input_port name="require_user_approval" default="true" type="bool">
         Whether trajectory previews from Interactive Marker teleop must be

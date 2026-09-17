@@ -13,7 +13,7 @@
         controller_action_server="/joint_trajectory_admittance_controller/follow_joint_trajectory"
         controller_names="joint_trajectory_admittance_controller"
         joint_group_name="manipulator"
-        link_padding="0.0"
+        collision_check_params="[{override_scene_link_padding: true, link_padding: 0.0}]"
         seed="0"
         velocity_scale_factor="1.0"
         waypoint_name="View bowls"
@@ -122,7 +122,6 @@
         <Action
           ID="SetupMTCConnectWithProRRT"
           acceleration_scale_factor="1.000000"
-          link_padding="0.000000"
           max_iterations="5000"
           planning_group_name="manipulator"
           seed="0"

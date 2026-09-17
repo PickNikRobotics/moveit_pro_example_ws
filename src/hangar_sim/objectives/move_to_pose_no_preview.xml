@@ -24,7 +24,6 @@
         task="{move_to_pose_task}"
         monitored_stage="current state"
         acceleration_scale_factor="1.000000"
-        link_padding="0.000000"
         max_iterations="5000"
         trajectory_sampling_rate="100"
         velocity_scale_factor="1.000000"
