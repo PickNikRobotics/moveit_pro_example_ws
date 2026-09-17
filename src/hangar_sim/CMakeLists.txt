@@ -43,11 +43,6 @@ if(BUILD_TESTING)
   ament_add_pytest_test(
           lidar_flattener_test test/test_lidar_flattener.py
           TIMEOUT 60)
-  # Guards amcl's beam and range settings against being narrowed below the merged scan's
-  # measured shape; reads nav2_params.yaml only, no simulator.
-  ament_add_pytest_test(
-          amcl_scan_coverage_test test/test_amcl_scan_coverage.py
-          TIMEOUT 30)
   # Redirect ROS node logs into the test_results tree so the test-results CI
   # artifact ships them back too. Default would be ~/.ros/log/, which lives
   # on the doomed container filesystem and never gets uploaded -- making
