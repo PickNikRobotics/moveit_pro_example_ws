@@ -16,3 +16,7 @@ src/vla_sim/hf_cache/*
 # Machine-local launcher/workspace settings and secrets (HF_TOKEN etc.).
 .env
 .env.*
+
+# Nyx scene exports. nyx_export_scene writes these into the user workspace, which is this
+# repository when it is mounted as USER_WS, and a single config runs to hundreds of megabytes.
+.nyx_scenes/

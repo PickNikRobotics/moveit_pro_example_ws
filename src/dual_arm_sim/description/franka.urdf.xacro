@@ -2,10 +2,12 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="franka">
 
   <!-- Which camera renderer this config starts: mujoco (default), nyx, both, or none.
-       `nyx` and `none` set the MuJoCo camera rate to 0, which disables that renderer - its
-       image timer is gated on the rate and the point-cloud rate falls back to it. The launch
-       side reads the same variable to decide whether to start the Nyx sidecar, so one setting
-       drives both halves and they cannot contradict each other.
+       `nyx` hands the colour topics to the Nyx sidecar by unadvertising MuJoCo's, and only
+       `none` stops the render tick: depth, point clouds and camera_info come out of that same
+       tick, and the point-cloud rate falls back to the render rate, so zeroing it for `nyx`
+       would take them too. The launch side reads the same variable to decide whether to start
+       the sidecar, so one setting drives both halves and they cannot contradict each other.
+       An unrecognized value fails the description rather than silently dropping colour.
 
        render_publish_rate stays separate because it answers a different question: how fast
        MuJoCo renders when it is the renderer at all. -->
@@ -289,7 +291,11 @@
         <plugin>picknik_mujoco_ros/MujocoSystem</plugin>
         <param name="mujoco_model">$(arg mujoco_model)</param>
         <param name="mujoco_model_package">dual_arm_sim</param>
-        <param name="render_publish_rate">${$(arg render_publish_rate) if '$(arg camera_renderer)' in ('mujoco', 'both') else 0}</param>
+        <!-- The render tick keeps running when Nyx owns the colour topics: depth, point clouds
+             and camera_info come out of that same pass, so stopping it would take them too.
+             Only the colour publication moves to the other renderer. -->
+        <param name="render_publish_rate">${dict(mujoco=$(arg render_publish_rate), both=$(arg render_publish_rate), nyx=$(arg render_publish_rate), none=0)['$(arg camera_renderer)']}</param>
+        <param name="publish_camera_rgb">${dict(mujoco=True, both=True, nyx=False, none=False)['$(arg camera_renderer)']}</param>
         <param name="tf_publish_rate">60</param>
         <param name="mujoco_keyframe">default</param>
         <param name="mujoco_viewer">$(arg mujoco_viewer)</param>

@@ -6,12 +6,13 @@
 
   <!-- Nyx path-traced cameras, started only when this config asks for them. One variable
        drives both halves of the choice: the same MOVEIT_PRO_CAMERA_RENDERER the robot
-       description reads to decide the MuJoCo camera rate, so the two renderers cannot both
-       be switched on by accident or both be switched off unnoticed.
+       description reads to decide which MuJoCo camera topics exist, so the two renderers cannot
+       both be switched on by accident or both be switched off unnoticed.
 
          mujoco   MuJoCo cameras only. The default, and the only option on an image with no
                   Nyx runtime, which is every arm64 image and the amd64 CPU image.
-         nyx      Nyx only. MuJoCo's camera rate goes to 0, so nothing renders it twice.
+         nyx      Nyx only. MuJoCo stops advertising colour but keeps rendering, so depth
+                  and point clouds are unaffected and nothing renders colour twice.
          both     Both, on separate topics. Costs two renderers.
          none     Neither, for a config driven from a bag or a real camera.
 
@@ -22,6 +23,7 @@
     name="camera_renderer"
     value="$(env MOVEIT_PRO_CAMERA_RENDERER mujoco)"
   />
+  <!-- One sidecar per camera: each instance renders exactly one, and this config has two. -->
   <include
     file="$(find-pkg-share picknik_nyx_renderer)/launch/nyx_camera_sidecar.launch.py"
     if="$(eval '&quot;$(var camera_renderer)&quot; in (&quot;nyx&quot;, &quot;both&quot;)')"
@@ -34,5 +36,20 @@
       name="scene_dir"
       value="$(env USER_WS $(env HOME)/user_ws)/.nyx_scenes/factory_sim"
     />
+    <arg name="camera" value="scene_camera" />
+  </include>
+  <include
+    file="$(find-pkg-share picknik_nyx_renderer)/launch/nyx_camera_sidecar.launch.py"
+    if="$(eval '&quot;$(var camera_renderer)&quot; in (&quot;nyx&quot;, &quot;both&quot;)')"
+  >
+    <arg
+      name="mjcf"
+      value="$(find-pkg-share factory_sim)/description/scene.xml"
+    />
+    <arg
+      name="scene_dir"
+      value="$(env USER_WS $(env HOME)/user_ws)/.nyx_scenes/factory_sim"
+    />
+    <arg name="camera" value="bin_camera_left" />
   </include>
 </launch>
