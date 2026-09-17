@@ -429,6 +429,28 @@ assuming it). It is the image's working directory, so `colcon build`'s
 plain `colcon build` there would use anyway, and stay usable across container
 runs.
 
+## A `RewrittenYaml` rewrite only reaches the nodes that launch file creates
+
+`hangar_sim` builds nav2's parameters through `RewrittenYaml` in **two** places, and each one
+governs only its own nodes. `robot_drivers_to_persist_sim.launch.py`'s `configured_params` reaches
+just the two `component_container_isolated` nodes; `bt_navigator`, `controller_server`,
+`velocity_smoother` and the rest are created by the `navigation_launch.py` include, which is handed
+the **raw** `params_file` and builds its own `RewrittenYaml` from it. A `param_rewrites` entry added
+to the parent for one of those nodes therefore silently does nothing - the launch succeeds, the
+parameter reads as whatever the YAML hardcoded, and nothing warns.
+
+Rewrite a key in the launch file that creates the node, and pass any `LaunchConfiguration` it needs
+through that include's `launch_arguments` rather than reaching for one it was never given. See
+`odom_topic` in `navigation_launch.py`, driven by `use_fuse`.
+
+Parameter values are not proof that a topic works: check `ros2 topic info <topic>` for a non-zero
+**Publisher count** on the running stack. This exact trap shipped a config where `bt_navigator` and
+`controller_server` both subscribed to a `/odom_filtered` with `Publisher count: 0` - nav2 tolerated
+it and navigation still succeeded, so only the topic check found it.
+
+Note `RewrittenYaml` rewrites a key **everywhere it appears** in the file, not per-node, so one
+`odom_topic` entry also hits `velocity_smoother`'s.
+
 ## One trajectory controller, several planning groups
 
 When a config puts every joint on a single `joint_trajectory_controller` (the
