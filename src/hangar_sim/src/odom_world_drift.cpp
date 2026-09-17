@@ -26,25 +26,13 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-// Publish odom -> world, so that a lookup of odom -> ridgeback_base_link returns fuse's estimate
-// while robot_state_publisher keeps world -> ridgeback_base_link as MuJoCo ground truth:
+// Publishes odom -> world = est(odom -> base) (+) inverse(truth(world -> base)), replacing the
+// static identity when use_fuse:=true.
 //
-//     odom -> world = est(odom -> base) (+) inverse(truth(world -> base))
-//
-// ridgeback_base_link can have only one TF parent, but navigation has to read the estimate while
-// the arm planner and the 66 hangar collision meshes under 'world' keep reading truth. Publishing
-// the live difference between the two as odom -> world is what lets one transform tree carry both.
-// Replaces the static odom -> world identity whenever use_fuse:=true.
-//
-// Both inputs arrive as nav_msgs/Odometry, so there is no TF buffer here and no joint-name
-// resolution: /odom_filtered from fuse, and /odom straight from MuJoCo -- the true base pose,
-// planar, at 150 Hz (odom_planar / odom_rate in picknik_ur_mujoco_ros2_control.xacro). /odom is
-// still stamped "odom -> ridgeback_base_link" from when those two frames coincided; the pose it
-// carries is exactly the ground truth wanted here.
-//
-// Sim-only, and the difference lives in the ground plane, so this is 2D pose algebra. There is
-// deliberately no synthetic drift or noise term: MuJoCo models contact, and the estimate drifts on
-// the sim's own physics.
+// base_link can have one TF parent, but navigation needs fuse's estimate while the arm planner and
+// the hangar meshes under 'world' need MuJoCo truth. Broadcasting the live difference lets one tree
+// carry both. Inputs are /odom_filtered (fuse) and /odom (truth), so no TF buffer is needed.
+// Sim-only and planar, hence 2D pose algebra; no synthetic drift term.
 
 #include <cmath>
 #include <functional>
@@ -64,8 +52,7 @@ using std::placeholders::_1;
 constexpr double kPubPeriod = 0.02;   // 50 Hz -- keeps odom->world fresh for AMCL's motion model.
 constexpr double kEstStaleSec = 0.5;  // ~5x fuse's 10 Hz publish period.
 
-/// Planar pose (x, y, yaw), defaulting to the identity. Kept local rather than in a shared header:
-/// this is the only consumer, and tf2::Transform is full SE(3).
+/// Planar pose (x, y, yaw). Local to this file; tf2::Transform is full SE(3).
 struct Pose2
 {
   double x = 0.0, y = 0.0, yaw = 0.0;
@@ -94,15 +81,12 @@ class OdomWorldDrift : public rclcpp::Node
 public:
   OdomWorldDrift() : Node("odom_world_drift"), tf_broadcaster_(*this)
   {
-    // Only the latest sample of each input is ever used, so the small queues just absorb a
-    // scheduling burst. Best-effort on the truth input matches either publisher -- /odom has been
-    // reliable since moveit_pro#21948 and best-effort before it.
+    // Only the latest sample of each input is used; the queues just absorb scheduling bursts.
     est_sub_ =
         create_subscription<nav_msgs::msg::Odometry>("/odom_filtered", 10, std::bind(&OdomWorldDrift::onEst, this, _1));
     truth_sub_ = create_subscription<nav_msgs::msg::Odometry>("/odom", rclcpp::SensorDataQoS(),
                                                               std::bind(&OdomWorldDrift::onTruth, this, _1));
-    // Node clock, not wall clock: under use_sim_time the tick has to advance on sim time, matching
-    // the stamp publish() takes from that same clock.
+    // Node clock, not wall clock, so the tick advances on sim time under use_sim_time.
     timer_ = rclcpp::create_timer(this, get_clock(), rclcpp::Duration::from_seconds(kPubPeriod), [this] { publish(); });
   }
 
@@ -110,8 +94,7 @@ private:
   void onEst(const nav_msgs::msg::Odometry::ConstSharedPtr& m)
   {
     est_ = fromOdom(*m);
-    // Arrival time, not the sender's stamp: staleness here means how long *we* have gone without a
-    // fresh estimate.
+    // Arrival time, not the sender's stamp: staleness means how long we have gone without one.
     est_stamp_ = get_clock()->now();
   }
 
@@ -126,10 +109,8 @@ private:
     {
       return;
     }
-    // truth_ keeps advancing at 150 Hz whatever fuse is doing, so a frozen est_ (fuse crashed or
-    // stalled) would broadcast odom->world with an advancing stamp but stale content: the lookup
-    // stays "available" and AMCL silently localizes against a base that appears not to move.
-    // Withhold instead, so downstream TF lookups fail loudly.
+    // A frozen estimate would still broadcast with a fresh stamp, and AMCL would silently
+    // localize against a base that appears not to move. Withhold so lookups fail loudly instead.
     const double est_age = (get_clock()->now() - est_stamp_).seconds();
     if (est_age > kEstStaleSec)
     {
@@ -139,8 +120,7 @@ private:
                            est_age);
       return;
     }
-    // The two are the latest of each and sampled at different instants, so during motion this
-    // carries up to ~speed * 0.1 s of timing skew -- more apparent drift for AMCL to absorb.
+    // Latest-of-each, sampled at different instants: up to ~speed * 0.1 s of skew while moving.
     const Pose2 t = compose(est_.value(), invert(truth_.value()));
 
     geometry_msgs::msg::TransformStamped tf;
@@ -154,12 +134,12 @@ private:
     tf_broadcaster_.sendTransform(tf);
   }
 
-  // Everything below is touched only by the two subscriptions and the timer, which share the node's
-  // default mutually-exclusive callback group, so none of it needs locking.
+  // Touched only by the subscriptions and timer, which share one mutually-exclusive callback
+  // group, so no locking is needed.
   std::optional<Pose2> est_;    // fuse estimate, odom -> base
   rclcpp::Time est_stamp_;      // arrival time of the last est_
   std::optional<Pose2> truth_;  // MuJoCo ground truth, world -> base
-  // ROS entities last, so they stop firing callbacks before the state above destructs.
+  // ROS entities last, so callbacks stop before the state above destructs.
   tf2_ros::TransformBroadcaster tf_broadcaster_;
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr est_sub_, truth_sub_;
   rclcpp::TimerBase::SharedPtr timer_;
