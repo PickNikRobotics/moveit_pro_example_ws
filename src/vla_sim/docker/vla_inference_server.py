@@ -82,8 +82,6 @@ from lerobot.configs.types import RTCAttentionSchedule
 from lerobot.policies.factory import get_policy_class, make_pre_post_processors
 from lerobot.policies.rtc.configuration_rtc import RTCConfig
 
-from torchao.quantization import Int8WeightOnlyConfig, quantize_
-
 # pi0.5 checkpoints save a processor pipeline that references
 # 'relative_actions_processor', an alias lerobot does not always auto-register;
 # without it make_pre_post_processors raises
@@ -121,6 +119,17 @@ INT8_MODULE_PREFIXES = (
     "paligemma.model.language_model",
     "paligemma.model.vision_tower",
 )
+
+
+def trim_vocabulary_heads(model) -> None:
+    """Drop the two pi0.5 vocabulary heads, which no action chunk reads.
+
+    Actions leave the model through action_out_proj, so these ~1.5 GiB of weights
+    only ever cost memory. Dropping them is why this load is smaller than an
+    unmodified one even with int8 off.
+    """
+    model.paligemma_with_expert.paligemma.lm_head = None
+    model.paligemma_with_expert.gemma_expert.lm_head = None
 
 
 def load_serving_config(path: str) -> dict:
@@ -362,13 +371,14 @@ class PolicyRunner:
         )
         if policy_type == "pi05":
             model = self.policy.model
-            # The two vocabulary heads are ~1.5 GiB of weights no chunk ever reads,
-            # since actions leave through action_out_proj. Dropping them is why this
-            # load is smaller than an unmodified one even with int8 off.
-            model.paligemma_with_expert.paligemma.lm_head = None
-            model.paligemma_with_expert.gemma_expert.lm_head = None
+            trim_vocabulary_heads(model)
 
             if int8:
+                # Imported here rather than at module scope so that a container
+                # built before torchao was a dependency still serves at the default
+                # int8: false, and fails at model load if it is turned on.
+                from torchao.quantization import Int8WeightOnlyConfig, quantize_
+
                 # version=2 gives each output channel its own scale rather than one
                 # for the whole tensor. Inductor's config is declined because it turns
                 # on TF32 for every float32 matmul in the process.

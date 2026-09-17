@@ -69,6 +69,7 @@ from vla_inference_server import (
     resolve_fps,
     resolve_rtc_horizon,
     resolve_rtc_schedule,
+    trim_vocabulary_heads,
 )
 
 
@@ -341,6 +342,52 @@ class TestResolveRtcSchedule(unittest.TestCase):
             resolve_rtc_schedule("exp")
         self.assertIn("EXP", str(ctx.exception))
         self.assertIn("vla_serving.yaml", str(ctx.exception))
+
+
+class TestTrimVocabularyHeads(unittest.TestCase):
+    """trim_vocabulary_heads: drops the two heads and nothing else."""
+
+    @staticmethod
+    def build_model() -> torch.nn.Module:
+        """A stand-in with pi0.5's attribute path and a weight either side of it."""
+
+        def branch() -> torch.nn.Module:
+            part = torch.nn.Module()
+            part.lm_head = torch.nn.Linear(4, 8)
+            part.layers = torch.nn.Linear(4, 4)
+            return part
+
+        expert = torch.nn.Module()
+        expert.paligemma = branch()
+        expert.gemma_expert = branch()
+        model = torch.nn.Module()
+        model.paligemma_with_expert = expert
+        model.action_out_proj = torch.nn.Linear(4, 8)
+        return model
+
+    def test_both_heads_are_dropped(self) -> None:
+        model = self.build_model()
+        trim_vocabulary_heads(model)
+        self.assertIsNone(model.paligemma_with_expert.paligemma.lm_head)
+        self.assertIsNone(model.paligemma_with_expert.gemma_expert.lm_head)
+
+    def test_every_other_weight_survives_unchanged(self) -> None:
+        """The heads are the whole edit, so a chunk reads the same weights it did.
+
+        Actions leave through action_out_proj, which this reaches past; a trim
+        that touched anything on that path would change what the model commands.
+        """
+        model = self.build_model()
+        before = {
+            name: tensor.clone()
+            for name, tensor in model.state_dict().items()
+            if "lm_head" not in name
+        }
+        trim_vocabulary_heads(model)
+        after = model.state_dict()
+        self.assertEqual(sorted(after), sorted(before))
+        for name, tensor in before.items():
+            self.assertTrue(torch.equal(after[name], tensor), name)
 
 
 class TestDecodeImageB64(unittest.TestCase):
