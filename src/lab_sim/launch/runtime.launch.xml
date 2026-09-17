@@ -3,4 +3,28 @@
   <include
     file="$(find-pkg-share moveit_studio_agent)/launch/studio_agent_bridge.launch.xml"
   />
+
+  <!-- Nyx path-traced cameras, started only when this config asks for them. The same
+       MOVEIT_PRO_CAMERA_RENDERER the robot description reads to set the MuJoCo camera rate:
+         mujoco  MuJoCo cameras only. The default, and the only option on an image carrying no Nyx
+                 runtime, which is every arm64 image and the amd64 CPU image.
+         nyx     Nyx only, on <camera>/nyx_color. MuJoCo's camera and point-cloud rates go to 0.
+         both    Both, on their own topics, at the cost of running two renderers.
+       Nyx needs a scene exported ahead of time with nyx_export_scene; see
+       src/nyx_renderer/README.md in moveit_pro. The node reports a missing scene and exits. -->
+  <let
+    name="camera_renderer"
+    value="$(env MOVEIT_PRO_CAMERA_RENDERER mujoco)"
+  />
+  <include
+    file="$(find-pkg-share picknik_nyx_renderer)/launch/nyx_camera.launch.py"
+    if="$(eval '&quot;$(var camera_renderer)&quot; in (&quot;nyx&quot;, &quot;both&quot;)')"
+  >
+    <arg name="mjcf" value="$(find-pkg-share lab_sim)/description/scene.xml" />
+    <arg
+      name="scene_dir"
+      value="$(env USER_WS $(env HOME)/user_ws)/.nyx_scenes/lab_sim"
+    />
+    <arg name="camera" value="scene_camera" />
+  </include>
 </launch>
