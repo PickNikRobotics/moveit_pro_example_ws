@@ -151,17 +151,11 @@ def generate_launch_description():
         ("/cmd_vel", "/platform_velocity_controller_nav2/cmd_vel_unstamped"),
     ]
 
-    # Create our own temporary YAML files that include substitutions
-    # nav2 reads fuse's estimate when fuse runs, and MuJoCo ground truth when it does not:
-    # /odom_filtered has no publisher with use_fuse:=false.
-    odom_topic = PythonExpression(
-        ["'/odom_filtered' if '", LaunchConfiguration("use_fuse"), "'.lower() == 'true' else '/odom'"]
-    )
-    param_substitutions = {
-        "use_sim_time": use_sim_time,
-        "yaml_filename": map_yaml_file,
-        "odom_topic": odom_topic,
-    }
+    # Create our own temporary YAML files that include substitutions.
+    # odom_topic is NOT rewritten here: configured_params below reaches only the two
+    # component containers, which do not consume it. navigation_launch.py rewrites it from
+    # use_fuse where bt_navigator and controller_server are actually created.
+    param_substitutions = {"use_sim_time": use_sim_time, "yaml_filename": map_yaml_file}
 
     # Only it applies when `use_namespace` is True.
     # '<robot_namespace>' keyword shall be replaced by 'namespace' launch argument
@@ -337,6 +331,7 @@ def generate_launch_description():
                     "use_composition": use_composition,
                     "use_respawn": use_respawn,
                     "container_name": "nav2_container",
+                    "use_fuse": LaunchConfiguration("use_fuse"),
                 }.items(),
             ),
         ]
