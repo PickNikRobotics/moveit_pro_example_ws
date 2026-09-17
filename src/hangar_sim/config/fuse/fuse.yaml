@@ -56,11 +56,6 @@ state_estimator:
     # only the relative change between consecutive messages, preventing
     # accumulated drift from corrupting the estimate.
     wheel_odom_sensor:
-      # The nav2 mecanum controller instance. It is the one that is active for the whole of a
-      # navigation Objective (the Objectives' SwitchController deactivates
-      # platform_velocity_controller and activates this one), so it never goes silent while
-      # navigation is running. It is inactive at startup, which is fine: differential mode only
-      # needs two consecutive messages, and the base does not move before the first one.
       topic: /platform_velocity_controller_nav2/odom
       queue_size: 10
       pose_loss:
@@ -71,28 +66,11 @@ state_estimator:
         a: 1.0
       position_dimensions: ['x', 'y', 'z']
       linear_velocity_dimensions: ['x', 'y']
-      # orientation_dimensions and angular_velocity_dimensions are deliberately ABSENT, not set to
-      # []: the simulated IMU below is exact (a <framequat> off the imu_site, and the scene declares
-      # no sensor noise), so it owns yaw outright. Feeding wheel yaw in alongside it only adds
-      # mecanum roller slip -- measured at 0.58 % of the commanded rotation at 1 rad/s -- to an
-      # otherwise noiseless heading. They have to be omitted because rclcpp cannot infer a type for
-      # an empty YAML list; `orientation_dimensions: []` aborts the node with
-      # "parameter_value_from failed ... No parameter value set". Omitted, fuse's own empty-vector
-      # default applies (parameter_base.hpp: loadSensorConfig).
+      # yaw dimensions omitted, not []: the exact simulated IMU owns yaw, and rclcpp cannot type an empty list.
       differential: true
       independent: false
       use_twist_covariance: true
-      # Throttle to the rate the config asks the controller for (publish_rate: 50.0 in
-      # config/control/picknik_ur.ros2_control.yaml). It does not honour that: measured on the
-      # live stack, ~/odom arrives at ~390 Hz -- the controller-manager's 600 Hz update rate.
-      # Every message becomes a state variable plus a motion-model constraint inside the
-      # lag_duration window, so unthrottled the optimizer gets ~200 stamps per 0.5 s window at
-      # optimization_frequency 20 and cannot keep up: it logs
-      # "Optimization exceeded the configured duration", falls further behind every cycle
-      # (measured: 20 ms of overrun growing to 207 s over four minutes), and odom_filtered
-      # freezes on a stale graph while still publishing at 10 Hz. Navigation then steers on a
-      # pose that never changes and the base spins in place. Anything above the 20 Hz
-      # optimization rate buys no resolution anyway.
+      # ~/odom arrives at ~390 Hz, not the configured 50; unthrottled the optimizer falls behind and odom_filtered freezes.
       throttle_period: 0.02
 
     # Same settings as wheel_odom_sensor above, on the whole-body controller's topic.
@@ -122,8 +100,7 @@ state_estimator:
       orientation_dimensions: ['roll', 'pitch', 'yaw']
       angular_velocity_dimensions: ['yaw']
       queue_size: 10
-      # Same reason as the wheel sensor above: imu_sensor_broadcaster has no publish_rate set, so
-      # it publishes at the controller-manager rate (~410 Hz measured, relayed at ~300 Hz).
+      # Same reason: imu_sensor_broadcaster publishes at the controller-manager rate.
       throttle_period: 0.02
 
     # Publish filtered odometry
