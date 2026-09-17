@@ -288,9 +288,11 @@ genuinely clean localization state.
 tag, which reads as "any two builds may sit on different base images". Through the CLI it does not:
 `moveit_pro` sets `MOVEIT_DOCKER_TAG` to the version of the **installed CLI**
 (`moveit_pro_configuration.py`'s `moveit_version` -> `moveit_pro_installed_version()`), so the
-build resolves an immutable release tag such as
+build resolves a version-specific release tag such as
 `picknikciuser/moveit-pro:10.1.0-rc5-jazzy-cuda13.2-cudnn9`. The rolling `main-jazzy` default only
-applies to a bare `docker build -f Dockerfile .`.
+applies to a bare `docker build -f Dockerfile .`. A tag is not content-addressed, so the same CLI
+version selects the same tag but not necessarily the same image; pin the resolved `sha256` digest
+when a build has to be reproducible.
 
 Two consequences:
 
@@ -305,7 +307,7 @@ Read the resolved base out of the build log rather than inferring it from the Do
 `load metadata for` / `FROM ...@sha256:` lines name the exact tag and digest:
 
 ```bash
-grep -E "FROM docker.io/picknikciuser/moveit-pro" build.log
+grep -E "(load metadata for|FROM).*docker.io/picknikciuser/moveit-pro" build.log
 ```
 
 ## Running MoveIt Pro from a git worktree
