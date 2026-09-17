@@ -53,6 +53,7 @@ def generate_launch_description():
     container_name_full = (namespace, "/", container_name)
     use_respawn = LaunchConfiguration("use_respawn")
     log_level = LaunchConfiguration("log_level")
+    use_fuse = LaunchConfiguration("use_fuse")
 
     lifecycle_nodes = [
         "controller_server",
@@ -73,7 +74,18 @@ def generate_launch_description():
     remappings = [("/tf", "tf"), ("/tf_static", "tf_static")]
 
     # Create our own temporary YAML files that include substitutions
-    param_substitutions = {"use_sim_time": use_sim_time, "autostart": autostart}
+    # nav2 reads fuse's estimate when fuse runs, and MuJoCo ground truth when it does not:
+    # /odom_filtered has no publisher with use_fuse:=false. This has to be rewritten here
+    # rather than in the parent launch file, because bt_navigator and controller_server are
+    # created below from this file's own RewrittenYaml, not the parent's.
+    odom_topic = PythonExpression(
+        ["'/odom_filtered' if '", use_fuse, "'.lower() == 'true' else '/odom'"]
+    )
+    param_substitutions = {
+        "use_sim_time": use_sim_time,
+        "autostart": autostart,
+        "odom_topic": odom_topic,
+    }
 
     configured_params = ParameterFile(
         RewrittenYaml(
@@ -115,6 +127,15 @@ def generate_launch_description():
         "use_composition",
         default_value="False",
         description="Use composed bringup if True",
+    )
+
+    declare_use_fuse_cmd = DeclareLaunchArgument(
+        "use_fuse",
+        default_value="true",
+        description=(
+            "Whether the fuse state estimator is running. Selects the odometry topic nav2 "
+            "subscribes to: fuse's /odom_filtered when true, the simulator's /odom when false."
+        ),
     )
 
     declare_container_name_cmd = DeclareLaunchArgument(
@@ -315,6 +336,7 @@ def generate_launch_description():
     ld.add_action(declare_params_file_cmd)
     ld.add_action(declare_autostart_cmd)
     ld.add_action(declare_use_composition_cmd)
+    ld.add_action(declare_use_fuse_cmd)
     ld.add_action(declare_container_name_cmd)
     ld.add_action(declare_use_respawn_cmd)
     ld.add_action(declare_log_level_cmd)
