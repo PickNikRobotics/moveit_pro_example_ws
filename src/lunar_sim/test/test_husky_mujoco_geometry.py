@@ -244,3 +244,257 @@ def test_keyframe_spawn_rests_on_the_heightfield():
             f"from the terrain at ({x}, {y}) - set z to the local heightfield elevation "
             f"there plus {drop:.5f}"
         )
+
+
+def _mjcf_elements(source: Path, tag: str) -> dict[str, ET.Element]:
+    """Every named <tag> in an MJCF fragment, keyed by name."""
+    return {
+        el.get("name"): el
+        for el in ET.parse(source).getroot().iter(tag)
+        if el.get("name")
+    }
+
+
+def _vec(element: ET.Element, attr: str) -> np.ndarray:
+    value = element.get(attr)
+    assert value is not None, f"{element.get('name')!r} has no {attr!r} attribute"
+    return np.array([float(v) for v in value.split()])
+
+
+def _urdf_joint_origin_xyz(source: Path, joint_suffix: str) -> np.ndarray:
+    """The xyz of a fixed joint's <origin> in a vendored URDF/xacro file.
+
+    Matched by name suffix, not equality: these files are unexpanded xacro macros, so the
+    joint is literally named "${name}_front_camera_mount_joint" and only becomes
+    "amp_sensor_arch_..." once the macro is invoked. Parsing the raw file is deliberate -
+    it keeps this cross-check free of xacro, ROS and the invoking config."""
+    matches = [
+        joint
+        for joint in ET.parse(source).getroot().iter("joint")
+        if (joint.get("name") or "").endswith(joint_suffix)
+    ]
+    assert matches, f"{source.name} has no joint whose name ends with {joint_suffix!r}"
+    assert len(matches) == 1, (
+        f"{source.name} has {len(matches)} joints ending in {joint_suffix!r}: "
+        f"{[j.get('name') for j in matches]} - the suffix no longer identifies one mount"
+    )
+    joint = matches[0]
+    origin = joint.find("origin")
+    assert origin is not None, f"{joint.get('name')} has no <origin>"
+    rpy = origin.get("rpy", "0 0 0")
+    assert [float(v) for v in rpy.split()] == [0.0, 0.0, 0.0], (
+        f"{joint.get('name')} is no longer axis-aligned (rpy={rpy!r}); the OAK-D cameras in "
+        "husky_a300.xml assume an unrotated mount and would need their xyaxes reworked"
+    )
+    return np.array([float(v) for v in origin.get("xyz").split()])
+
+
+# The OAK-D Pro's published stereo baseline, and the profile hangar_sim pins in
+# params/forward_stereo.yaml. Shared between the two configs so captures stay comparable.
+OAKD_PRO_BASELINE_M = 0.075
+OAKD_PRO_FOVY_DEG = 50.53401584672457
+
+
+def test_oakd_pose_matches_the_vendored_front_camera_mount():
+    """The OAK-D sits on the real A300 Observer arch's own front camera mount, so its pose is
+    the composition of the arch geom's offset from chassis_link with upstream's
+    amp_sensor_arch_front_camera_mount joint origin. If Clearpath moves that mount, this fails
+    rather than leaving the config quietly describing a camera the real robot does not have
+    there."""
+    arch = _mjcf_elements(HUSKY_A300, "geom")["sensor_arch"]
+    mount_offset = _urdf_joint_origin_xyz(
+        CLEARPATH_A300_URDF / "attachments" / "amp_sensor_arch.urdf.xacro",
+        "_front_camera_mount_joint",
+    )
+    expected = _vec(arch, "pos") + mount_offset
+
+    cameras = _mjcf_elements(HUSKY_A300, "camera")
+    assert np.allclose(
+        _vec(cameras["oakd_color"], "pos"), expected, atol=TOLERANCE_M
+    ), (
+        f"oakd_color is at {_vec(cameras['oakd_color'], 'pos')}, but the vendored arch puts its "
+        f"front camera mount at {expected}"
+    )
+
+
+def test_oakd_stereo_pair_straddles_the_colour_camera_at_the_pro_baseline():
+    """The mono pair is what visual odometry consumes, so its separation has to be the real
+    device's baseline and its optical centres have to stay coplanar with the colour camera -
+    a pair that is merely near the right place yields a plausible-looking but wrong depth
+    scale, which nothing downstream can detect."""
+    cameras = _mjcf_elements(HUSKY_A300, "camera")
+    left = _vec(cameras["oakd_left"], "pos")
+    right = _vec(cameras["oakd_right"], "pos")
+    colour = _vec(cameras["oakd_color"], "pos")
+
+    assert np.isclose(
+        np.linalg.norm(left - right), OAKD_PRO_BASELINE_M, atol=TOLERANCE_M
+    ), f"stereo baseline is {np.linalg.norm(left - right)}, expected {OAKD_PRO_BASELINE_M}"
+    # Left is the +Y side: base axes are +X forward, +Y left.
+    assert left[1] > right[1], "oakd_left must sit on the +Y (left) side of oakd_right"
+    for name in ("oakd_left", "oakd_right"):
+        pos = _vec(cameras[name], "pos")
+        assert np.allclose(
+            pos[[0, 2]], colour[[0, 2]], atol=TOLERANCE_M
+        ), f"{name} is not coplanar with oakd_color: x/z {pos[[0, 2]]} vs {colour[[0, 2]]}"
+        assert np.isclose(
+            float(cameras[name].get("fovy")), OAKD_PRO_FOVY_DEG
+        ), f"{name} fovy must match the OAK-D Pro profile shared with hangar_sim"
+
+
+def test_oakd_geoms_stay_behind_the_optical_plane():
+    """Group 2 is what MuJoCo's offscreen pass renders, so any part of the device's own housing
+    placed in front of the optical centres would occlude all three camera images. The cameras
+    look along base +X, so every oakd_* geom must stay at or behind their x."""
+    optical_x = _vec(_mjcf_elements(HUSKY_A300, "camera")["oakd_color"], "pos")[0]
+
+    checked = 0
+    for name, geom in _mjcf_elements(HUSKY_A300, "geom").items():
+        if not name.startswith("oakd_"):
+            continue
+        checked += 1
+        if geom.get("type") == "box":
+            front_x = _vec(geom, "pos")[0] + _vec(geom, "size")[0]
+        else:
+            fromto = _vec(geom, "fromto")
+            front_x = max(fromto[0], fromto[3])
+        assert front_x <= optical_x + TOLERANCE_M, (
+            f"{name} reaches x={front_x}, in front of the optical plane at x={optical_x}; "
+            "it would occlude the OAK-D images"
+        )
+    assert checked, "no oakd_* geoms found - the mount geometry went missing"
+
+
+def test_every_fixed_camera_has_an_optical_frame_site():
+    """picknik_mujoco_ros/MujocoSystem requires a <camera>_optical_frame site for every
+    fixed-mode camera in the model, and publishes all of them once render_publish_rate is
+    non-zero. A missing site is a runtime failure, not a load-time one."""
+    sites = set(_mjcf_elements(HUSKY_SCENE, "site")) | set(
+        _mjcf_elements(HUSKY_A300, "site")
+    )
+    for source in (HUSKY_A300, HUSKY_SCENE):
+        for name, camera in _mjcf_elements(source, "camera").items():
+            # targetbody cameras are render-only and exempt; see husky_scene.xml's chase_camera.
+            if camera.get("mode", "fixed") != "fixed":
+                continue
+            assert (
+                f"{name}_optical_frame" in sites
+            ), f"fixed camera {name!r} in {source.name} has no {name}_optical_frame site"
+
+
+def test_far_horizon_stays_below_the_driven_ground():
+    """The far-field horizon hfield is visual only and passes underneath the driven terrain, so
+    inside that terrain's square footprint it must stay below its floor. If it rises above,
+    it pokes up through the ground the robot drives on - which reads as terrain, not as a bug,
+    so nothing else would catch it. Mirrors the guard in generate_far_terrain.py."""
+    hfields = _mjcf_elements(HUSKY_SCENE, "hfield")
+    geoms = _mjcf_elements(HUSKY_SCENE, "geom")
+
+    near_half_m, _, near_elevation_z, _ = _vec(hfields["lunar_hfield"], "size")
+    near_floor_z = _vec(geoms["ground_plane"], "pos")[2]
+
+    far_half_m, _, far_elevation_z, _ = _vec(hfields["lunar_far_hfield"], "size")
+    far_base_z = _vec(geoms["far_horizon"], "pos")[2]
+
+    assert geoms["far_horizon"].get("contype") == "0", "far horizon must not collide"
+    assert (
+        geoms["far_horizon"].get("conaffinity") == "0"
+    ), "far horizon must not collide"
+
+    png = (
+        DESCRIPTION / "assets" / hfields["lunar_far_hfield"].get("file").split("/")[-1]
+    )
+    with Image.open(png) as image:
+        # MuJoCo reads row 0 at the top; generate_far_terrain.py writes the grid flipped to
+        # match, so undo that here to get world-axis-aligned rows.
+        # 16-bit full scale, flipped on write. Divide by 65535, not the numpy dtype max: PIL
+        # returns a 16-bit PNG as mode "I" in an int32 container, which would flatten every
+        # height to the base.
+        values01 = np.flipud(np.asarray(image).astype(np.float64)) / 65535.0
+    world_z = far_base_z + values01 * far_elevation_z
+
+    axis = np.linspace(-far_half_m, far_half_m, world_z.shape[0])
+    chebyshev = np.maximum(np.abs(axis[None, :]), np.abs(axis[:, None]))
+    cell_m = 2.0 * far_half_m / world_z.shape[0]
+    inside = chebyshev < near_half_m - cell_m
+
+    assert inside.any(), "far field does not overlap the driven terrain's footprint"
+    assert world_z[inside].max() < near_floor_z, (
+        f"far horizon rises to {world_z[inside].max():.3f} m inside the driven terrain's "
+        f"footprint, at or above its {near_floor_z:.3f} m floor"
+    )
+    # And it has to actually reach the rim, or a trench rings the driven terrain.
+    assert (
+        world_z.max() > near_floor_z + near_elevation_z
+    ), "far horizon never rises above the driven terrain, so it contributes no skyline"
+
+
+def test_driven_ground_is_collision_only_and_hidden_from_rendering():
+    """The driven heightfield carries contact and must not also be rendered.
+
+    MuJoCo uses one hfield mesh for both, and this field's full resolution is what the Dead Reckon
+    Square's closure error is calibrated against, so it cannot be reduced for render cost. Instead
+    it sits in geom group 3, which MuJoCo's default visualization options exclude from rendering,
+    and ground_visual draws a downsampled twin. If this geom loses group 3 both surfaces render and
+    the render cost silently returns (measured 5.3 ms -> 134 ms per camera frame); if it loses its
+    contype/conaffinity the robot drives on nothing.
+    """
+    geoms = _mjcf_elements(HUSKY_SCENE, "geom")
+    driven = geoms["ground_plane"]
+    assert driven.get("group") == "3", (
+        "the driven ground must stay in geom group 3 so it is not rendered; "
+        "rendering it costs ~25x the visual twin"
+    )
+    assert (
+        driven.get("contype") == "1" and driven.get("conaffinity") == "1"
+    ), "the driven ground is the only colliding ground surface"
+
+
+def test_visual_ground_matches_the_driven_ground_it_stands_in_for():
+    """The render-only twin must be the current driven field, resampled.
+
+    Two ways this goes wrong silently. Declared geometry: a different hfield size or geom pos
+    floats the visible ground off the one the wheels touch. Stale content: someone regenerates
+    lunar_hfield.png and forgets generate_visual_terrain.py, so the robot is seen driving on
+    terrain that no longer exists. Both look like scenery, not like a bug.
+    """
+    geoms = _mjcf_elements(HUSKY_SCENE, "geom")
+    hfields = _mjcf_elements(HUSKY_SCENE, "hfield")
+
+    visual = geoms["ground_visual"]
+    assert visual.get("contype") == "0" and visual.get("conaffinity") == "0"
+    assert np.allclose(
+        _vec(visual, "pos"), _vec(geoms["ground_plane"], "pos"), atol=TOLERANCE_M
+    )
+    assert np.allclose(
+        _vec(hfields["lunar_hfield_visual"], "size"),
+        _vec(hfields["lunar_hfield"], "size"),
+        atol=TOLERANCE_M,
+    ), "visual and driven hfields must declare the same size"
+
+    def heights(name):
+        png = DESCRIPTION / "assets" / hfields[name].get("file").split("/")[-1]
+        with Image.open(png) as image:
+            assert (
+                image.mode == "L"
+            ), f"{png.name} is not 8-bit; the 255 scale below assumes it"
+            full = np.asarray(image).astype(np.float64)
+            # Compare on the coarse grid: upsampling the twin would test the interpolator.
+            coarse = np.asarray(image.resize((64, 64), Image.BILINEAR)).astype(
+                np.float64
+            )
+        # Normalise by the shared 8-bit full scale both fields are written at, not by each image's
+        # own max: self-normalising would let a correctly-shaped but amplitude-scaled twin pass.
+        return full, coarse / 255.0
+
+    driven_full, driven = heights("lunar_hfield")
+    visual_full, visual_h = heights("lunar_hfield_visual")
+    assert visual_full.shape[0] < driven_full.shape[0], "the twin exists to be cheaper"
+    # A resample of the same terrain agrees closely once both are reduced to a common grid;
+    # an unrelated or stale field does not.
+    # 0.02 of full scale. The committed pair differs by 0.0039, so this leaves ~5x headroom for
+    # resampling while still catching an amplitude error the old self-normalised check could not.
+    assert np.abs(driven - visual_h).max() < 0.02, (
+        "the visual twin does not match the current driven heightfield - re-run "
+        "generate_visual_terrain.py after regenerating lunar_hfield.png"
+    )
