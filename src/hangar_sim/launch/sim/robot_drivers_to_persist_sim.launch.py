@@ -152,7 +152,16 @@ def generate_launch_description():
     ]
 
     # Create our own temporary YAML files that include substitutions
-    param_substitutions = {"use_sim_time": use_sim_time, "yaml_filename": map_yaml_file}
+    # nav2 reads fuse's estimate when fuse runs, and MuJoCo ground truth when it does not:
+    # /odom_filtered has no publisher with use_fuse:=false.
+    odom_topic = PythonExpression(
+        ["'/odom_filtered' if '", LaunchConfiguration("use_fuse"), "'.lower() == 'true' else '/odom'"]
+    )
+    param_substitutions = {
+        "use_sim_time": use_sim_time,
+        "yaml_filename": map_yaml_file,
+        "odom_topic": odom_topic,
+    }
 
     # Only it applies when `use_namespace` is True.
     # '<robot_namespace>' keyword shall be replaced by 'namespace' launch argument
