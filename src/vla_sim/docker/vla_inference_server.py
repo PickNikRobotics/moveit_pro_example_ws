@@ -64,6 +64,7 @@ import hmac
 import json
 import math
 import os
+import re
 import threading
 import time
 import traceback
@@ -76,7 +77,6 @@ import torch
 import yaml
 from huggingface_hub import hf_hub_download
 from huggingface_hub.errors import GatedRepoError, RepositoryNotFoundError
-
 from lerobot.configs.types import RTCAttentionSchedule
 from lerobot.policies.factory import get_policy_class, make_pre_post_processors
 from lerobot.policies.rtc.configuration_rtc import RTCConfig
@@ -110,6 +110,7 @@ REQUEST_SOCKET_TIMEOUT_SECONDS = 30
 # The per-config model-serving YAML, mounted read-only from the workspace's
 # src/vla_sim/config/. Overridable with --config for a standalone `docker run`.
 DEFAULT_CONFIG_PATH = "/vla_config/vla_serving.yaml"
+HUB_COMMIT_PATTERN = re.compile(r"^[0-9a-f]{40}$")
 
 
 def load_serving_config(path: str) -> dict:
@@ -146,7 +147,7 @@ def resolve_default(yaml_value, builtin):
     return builtin if yaml_value is None else yaml_value
 
 
-def load_checkpoint_file(checkpoint: str, filename: str) -> dict:
+def load_checkpoint_file(checkpoint: str, filename: str, revision: str = "") -> dict:
     """Read a JSON file from a local checkpoint directory or an HF repo.
 
     A local path wins when it exists; anything else must look like an HF repo
@@ -155,6 +156,11 @@ def load_checkpoint_file(checkpoint: str, filename: str) -> dict:
     """
     path = Path(checkpoint).expanduser()
     if path.is_dir():
+        if revision:
+            raise ValueError(
+                "checkpoint_revision applies only to a Hugging Face repo id, "
+                "not a local checkpoint directory"
+            )
         file = path / filename
         if not file.is_file():
             raise FileNotFoundError(f"'{path}' has no {filename}")
@@ -164,14 +170,24 @@ def load_checkpoint_file(checkpoint: str, filename: str) -> dict:
             f"checkpoint '{checkpoint}' is neither a local directory nor a "
             "Hugging Face repo id"
         )
-    return json.loads(Path(hf_hub_download(checkpoint, filename)).read_text())
+    return json.loads(
+        Path(
+            hf_hub_download(
+                repo_id=checkpoint,
+                filename=filename,
+                revision=revision or None,
+            )
+        ).read_text()
+    )
 
 
-def resolve_policy_type(checkpoint: str, override: str) -> str:
+def resolve_policy_type(checkpoint: str, override: str, revision: str = "") -> str:
     """Read the policy family from the checkpoint's config.json unless overridden."""
     if override:
         return override
-    policy_type = load_checkpoint_file(checkpoint, "config.json").get("type", "")
+    policy_type = load_checkpoint_file(checkpoint, "config.json", revision).get(
+        "type", ""
+    )
     if not policy_type:
         raise ValueError(
             f"the config.json of '{checkpoint}' carries no 'type' field; "
@@ -181,7 +197,7 @@ def resolve_policy_type(checkpoint: str, override: str) -> str:
     return policy_type
 
 
-def resolve_fps(checkpoint: str, fps: float) -> float:
+def resolve_fps(checkpoint: str, fps: float, revision: str = "") -> float:
     """Resolve the policy's training rate, preferring the explicit value.
 
     The chunk is played at 1/fps seconds per step; a wrong value scales every
@@ -191,7 +207,7 @@ def resolve_fps(checkpoint: str, fps: float) -> float:
     if fps > 0.0:
         return fps
     try:
-        config = load_checkpoint_file(checkpoint, "train_config.json")
+        config = load_checkpoint_file(checkpoint, "train_config.json", revision)
     except (GatedRepoError, RepositoryNotFoundError):
         # The tailored HF-access advice in load_policy beats a generic
         # missing-fps message.
@@ -325,6 +341,7 @@ class PolicyRunner:
     def __init__(
         self,
         checkpoint: str,
+        checkpoint_revision: str,
         policy_type: str,
         device: str,
         guidance_horizon: int,
@@ -339,7 +356,9 @@ class PolicyRunner:
         # Resolve before the slow checkpoint load so a schedule typo fails fast.
         schedule = resolve_rtc_schedule(rtc_schedule)
 
-        self.policy = get_policy_class(policy_type).from_pretrained(checkpoint)
+        self.policy = get_policy_class(policy_type).from_pretrained(
+            checkpoint, revision=checkpoint_revision or None
+        )
         self.policy.to(device)
         self.policy.eval()
 
@@ -355,6 +374,7 @@ class PolicyRunner:
         self.pre, self.post = make_pre_post_processors(
             policy_cfg=self.policy.config,
             pretrained_path=checkpoint,
+            pretrained_revision=checkpoint_revision or None,
             preprocessor_overrides={"device_processor": {"device": device}},
             postprocessor_overrides={"device_processor": {"device": device}},
         )
@@ -511,12 +531,22 @@ def load_policy(state: ServerState, args: argparse.Namespace) -> None:
                 "set the checkpoint in vla_serving.yaml (or --checkpoint) to "
                 "a local LeRobot checkpoint directory or an HF repo id"
             )
+        if (
+            args.checkpoint_requires_hf_token
+            and not os.environ.get("HF_TOKEN", "").strip()
+        ):
+            raise ValueError(
+                "this private Trainer checkpoint requires HF_TOKEN in the inference "
+                "server environment"
+            )
         # Resolving the fps can read the checkpoint's train_config.json (a
         # download for hub checkpoints), so it happens here rather than before
         # the socket binds, and an unresolvable rate parks in the error state
         # instead of exiting into a compose restart loop.
-        state.fps = resolve_fps(args.checkpoint, args.fps)
-        policy_type = resolve_policy_type(args.checkpoint, args.policy_class)
+        state.fps = resolve_fps(args.checkpoint, args.fps, args.checkpoint_revision)
+        policy_type = resolve_policy_type(
+            args.checkpoint, args.policy_class, args.checkpoint_revision
+        )
         device = resolve_device(args.device, torch.cuda.is_available())
         if policy_type not in TESTED_POLICY_TYPES:
             log(
@@ -524,11 +554,14 @@ def load_policy(state: ServerState, args: argparse.Namespace) -> None:
                 f"server (tested: {', '.join(TESTED_POLICY_TYPES)}); loading best-effort"
             )
         log(
-            f"loading {policy_type} checkpoint '{args.checkpoint}' on '{device}' "
+            f"loading {policy_type} checkpoint '{args.checkpoint}'"
+            f"{f' at {args.checkpoint_revision}' if args.checkpoint_revision else ''} "
+            f"on '{device}' "
             f"(torch {torch.__version__}) ..."
         )
         runner = PolicyRunner(
             args.checkpoint,
+            args.checkpoint_revision,
             policy_type,
             device,
             args.guidance_horizon,
@@ -660,8 +693,7 @@ def run_inference(state: ServerState, payload: dict) -> dict:
             prev_chunk = np.asarray(prev, dtype=float)
         except (TypeError, ValueError) as exc:
             raise ValueError(
-                f"/infer payload 'prev_chunk_left_over' is not a numeric "
-                f"array ({exc})"
+                f"/infer payload 'prev_chunk_left_over' is not a numeric array ({exc})"
             ) from exc
         if prev_chunk.ndim != 2 or not np.isfinite(prev_chunk).all():
             raise ValueError(
@@ -837,6 +869,33 @@ def parse_args() -> argparse.Namespace:
         "--checkpoint",
         default=str(resolve_default(config.get("checkpoint"), "")),
         help="local LeRobot checkpoint directory or HF repo id",
+    )
+    checkpoint_revision = resolve_default(config.get("checkpoint_revision"), "")
+    if not isinstance(checkpoint_revision, str):
+        config_errors.append("checkpoint_revision must be a string")
+        checkpoint_revision = ""
+    elif checkpoint_revision and not HUB_COMMIT_PATTERN.fullmatch(checkpoint_revision):
+        config_errors.append(
+            "checkpoint_revision must be an empty value or a full 40-character "
+            "lowercase Hugging Face commit SHA"
+        )
+        checkpoint_revision = ""
+    parser.add_argument(
+        "--checkpoint-revision",
+        default=checkpoint_revision,
+        help="exact Hugging Face commit SHA for the checkpoint",
+    )
+    requires_hf_token = resolve_default(
+        config.get("checkpoint_requires_hf_token"), False
+    )
+    if not isinstance(requires_hf_token, bool):
+        config_errors.append("checkpoint_requires_hf_token must be true or false")
+        requires_hf_token = False
+    parser.add_argument(
+        "--checkpoint-requires-hf-token",
+        action="store_true",
+        default=requires_hf_token,
+        help="fail closed unless HF_TOKEN is present",
     )
     parser.add_argument(
         "--policy-class",

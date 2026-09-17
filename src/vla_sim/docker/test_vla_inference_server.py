@@ -42,8 +42,9 @@ import os
 import tempfile
 import threading
 import unittest
-from unittest.mock import patch
 from http.server import ThreadingHTTPServer
+from types import SimpleNamespace
+from unittest.mock import MagicMock, patch
 
 import cv2
 import numpy as np
@@ -51,13 +52,14 @@ import torch
 import yaml
 from lerobot.configs.types import RTCAttentionSchedule
 from lerobot.processor import RenameObservationsProcessorStep
-
 from vla_inference_server import (
     REQUEST_SOCKET_TIMEOUT_SECONDS,
+    PolicyRunner,
     ServerState,
     apply_frontend_key,
     decode_image_b64,
     hub_access_error_message,
+    load_checkpoint_file,
     load_policy,
     load_serving_config,
     make_handler,
@@ -210,6 +212,40 @@ class TestParseArgsCoercion(unittest.TestCase):
         self.assertEqual(args.fps, 0.0)
         self.assertEqual(args.state_dim, 0)
 
+    def test_trainer_handoff_fields_are_loaded_from_yaml(self) -> None:
+        """The server carries Trainer's exact revision and token requirement."""
+        revision = "a" * 40
+        with tempfile.NamedTemporaryFile("w", suffix=".yaml", delete=False) as f:
+            f.write(
+                "checkpoint: acme/model\n"
+                f"checkpoint_revision: {revision}\n"
+                "checkpoint_requires_hf_token: true\n"
+            )
+            path = f.name
+        try:
+            with patch("sys.argv", ["vla_inference_server.py", "--config", path]):
+                args = parse_args()
+        finally:
+            os.unlink(path)
+
+        self.assertEqual(args.checkpoint_revision, revision)
+        self.assertTrue(args.checkpoint_requires_hf_token)
+        self.assertEqual(args.config_error, "")
+
+    def test_invalid_checkpoint_revision_parks_in_config_error(self) -> None:
+        """A mutable branch name cannot masquerade as an immutable handoff."""
+        with tempfile.NamedTemporaryFile("w", suffix=".yaml", delete=False) as f:
+            f.write("checkpoint_revision: main\n")
+            path = f.name
+        try:
+            with patch("sys.argv", ["vla_inference_server.py", "--config", path]):
+                args = parse_args()
+        finally:
+            os.unlink(path)
+
+        self.assertIn("40-character", args.config_error)
+        self.assertEqual(args.checkpoint_revision, "")
+
 
 class TestLoadPolicyMissingCheckpoint(unittest.TestCase):
     """load_policy: an unset checkpoint parks the error state, never exits."""
@@ -229,6 +265,79 @@ class TestLoadPolicyMissingCheckpoint(unittest.TestCase):
         self.assertEqual(state.status, "error")
         self.assertIn("checkpoint", state.detail)
         self.assertIn("vla_serving.yaml", state.detail)
+
+    def test_required_hub_token_fails_closed_before_checkpoint_access(self) -> None:
+        """A private Trainer checkpoint is never loaded through anonymous Hub access."""
+        state = ServerState()
+        args = argparse.Namespace(
+            config_error="",
+            checkpoint="acme/private-model",
+            checkpoint_revision="a" * 40,
+            checkpoint_requires_hf_token=True,
+        )
+
+        with patch.dict(os.environ, {}, clear=True):
+            load_policy(state, args)
+
+        self.assertEqual(state.status, "error")
+        self.assertIn("requires HF_TOKEN", state.detail)
+
+
+class TestImmutableCheckpointLoading(unittest.TestCase):
+    """Every file and LeRobot loader uses the same Hub revision."""
+
+    def test_checkpoint_json_download_uses_the_revision(self) -> None:
+        revision = "a" * 40
+        with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
+            json.dump({"type": "pi05"}, f)
+            path = f.name
+        self.addCleanup(os.unlink, path)
+
+        with patch(
+            "vla_inference_server.hf_hub_download", return_value=path
+        ) as download:
+            result = load_checkpoint_file("acme/model", "config.json", revision)
+
+        self.assertEqual(result, {"type": "pi05"})
+        download.assert_called_once_with(
+            repo_id="acme/model", filename="config.json", revision=revision
+        )
+
+    def test_policy_and_processors_use_the_same_revision(self) -> None:
+        revision = "b" * 40
+        config = SimpleNamespace(input_features={}, rtc_config=None)
+        policy = MagicMock(config=config)
+        policy_class = SimpleNamespace(from_pretrained=MagicMock(return_value=policy))
+        pre = SimpleNamespace(steps=[])
+        post = SimpleNamespace(steps=[])
+
+        with (
+            patch("vla_inference_server.get_policy_class", return_value=policy_class),
+            patch(
+                "vla_inference_server.make_pre_post_processors",
+                return_value=(pre, post),
+            ) as processors,
+        ):
+            PolicyRunner(
+                "acme/model",
+                revision,
+                "pi05",
+                "cpu",
+                8,
+                "EXP",
+                8,
+            )
+
+        policy_class.from_pretrained.assert_called_once_with(
+            "acme/model", revision=revision
+        )
+        processors.assert_called_once_with(
+            policy_cfg=config,
+            pretrained_path="acme/model",
+            pretrained_revision=revision,
+            preprocessor_overrides={"device_processor": {"device": "cpu"}},
+            postprocessor_overrides={"device_processor": {"device": "cpu"}},
+        )
 
 
 class TestResolveFps(unittest.TestCase):
