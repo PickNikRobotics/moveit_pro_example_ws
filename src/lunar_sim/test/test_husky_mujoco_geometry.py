@@ -66,6 +66,53 @@ CLEARPATH_A300_URDF = (
 TOLERANCE_M = 1e-4
 
 
+def test_rear_camera_mount_matches_vendored_urdf():
+    """Keep full-precision mount FK, including the camera's 34.5 degree down-pitch."""
+    enclosure = ET.parse(CLEARPATH_A300_URDF / "attachments/amp_enclosure.urdf.xacro")
+    arch = ET.parse(CLEARPATH_A300_URDF / "attachments/amp_sensor_arch.urdf.xacro")
+    antenna = enclosure.find(".//joint[@name='${name}_antenna_mount_link']/origin")
+    mount = arch.find(".//joint[@name='${name}_rear_camera_mount_joint']/origin")
+    position = np.fromstring(antenna.get("xyz"), sep=" ") + np.fromstring(
+        mount.get("xyz"), sep=" "
+    )
+    # This composition assumes the unrotated enclosure/arch chain declared by
+    # husky_a300_mujoco.xacro. Fail if upstream starts rotating the antenna frame.
+    np.testing.assert_allclose(np.fromstring(antenna.get("rpy"), sep=" "), 0)
+    roll, pitch, yaw = np.fromstring(mount.get("rpy"), sep=" ")
+    cr, cp, cy = np.cos(np.array([roll, pitch, yaw]) / 2)
+    sr, sp, sy = np.sin(np.array([roll, pitch, yaw]) / 2)
+    quaternion = np.array(
+        [
+            cr * cp * cy + sr * sp * sy,
+            sr * cp * cy - cr * sp * sy,
+            cr * sp * cy + sr * cp * sy,
+            cr * cp * sy - sr * sp * cy,
+        ]
+    )
+    name = "sensor_arch_rear_camera_mount"
+    body = ET.parse(HUSKY_A300).find(
+        f".//body[@name='chassis_link']/body[@name='{name}']"
+    )
+    assert body is not None
+    np.testing.assert_allclose(
+        np.fromstring(body.get("pos"), sep=" "), position, atol=1e-12
+    )
+    got_quaternion = np.fromstring(body.get("quat", "1 0 0 0"), sep=" ")
+    np.testing.assert_allclose(got_quaternion, quaternion, atol=1e-12)
+    assert body.find(f"camera[@name='{name}']") is not None
+    assert body.find(f"site[@name='{name}_optical_frame']") is not None
+
+    # picknik_mujoco_ros/cameras.cpp throws "Camera resolution mismatch" at hardware
+    # init for any non-lidar camera whose resolution differs from the scene's
+    # offscreen buffer, so these two numbers are not independently tunable.
+    global_ = ET.parse(HUSKY_SCENE).find(".//visual/global")
+    camera = body.find(f"camera[@name='{name}']")
+    assert [int(value) for value in camera.get("resolution").split()] == [
+        int(global_.get("offwidth")),
+        int(global_.get("offheight")),
+    ]
+
+
 def _xacro_property(source: Path, name: str) -> float:
     """Vendored xacro files declare these as literal numbers; a non-literal value means
     the property moved behind an expression and this cross-check needs revisiting."""

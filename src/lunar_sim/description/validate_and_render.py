@@ -31,7 +31,8 @@
 """Phase-1 validation: MJCF smoke test, Dead Reckon Square calibration recheck
 (RECORDED STATE - freejoint chassis pose, not /odom; fails on any boulder
 contact), comparison renders, and the sensor sheet (camera/optical-site frame
-checks, lidar tiling and scan-line returns, labelled mast/mount/boulder views).
+checks, lidar tiling and scan-line returns, labelled mast/mount/boulder views and
+the rover's rear camera view).
 
 Run inside the picknikciuser/moveit-pro container (has MuJoCo 3.6 + PIL):
   docker run --rm --entrypoint python3 \
@@ -62,6 +63,8 @@ W_CMD = 0.5235988  # 30 deg/s
 
 # The keyframe husky_a300_mujoco.xacro's mujoco_keyframe arg selects at hardware init.
 KEYFRAME_NAME = "default"
+
+REAR_CAMERA = "sensor_arch_rear_camera_mount"
 
 # Actuator names track the wheel joint names in husky_a300.xml.
 WHEEL_ACTUATORS = [
@@ -211,8 +214,12 @@ def sensor_sheet(scene_path, out_prefix):
     model, data = load(scene_path)
     for _ in range(2000):
         mujoco.mj_step(model, data)
-    renderer = mujoco.Renderer(model, height=720, width=1280)
-    for name in ("scene_camera", "lidar_front", "lidar_rear"):
+    # cameras.cpp rejects a non-lidar camera whose resolution differs from the
+    # offscreen buffer, so rendering at the buffer size is what MujocoSystem
+    # publishes. It is also what the lidar scan-line index below assumes.
+    offwidth, offheight = model.vis.global_.offwidth, model.vis.global_.offheight
+    renderer = mujoco.Renderer(model, height=offheight, width=offwidth)
+    for name in ("scene_camera", "lidar_front", "lidar_rear", REAR_CAMERA):
         cam = require_id(model, mujoco.mjtObj.mjOBJ_CAMERA, name)
         site = require_id(model, mujoco.mjtObj.mjOBJ_SITE, name + "_optical_frame")
         np.testing.assert_allclose(data.cam_xpos[cam], data.site_xpos[site], atol=1e-12)
@@ -224,7 +231,6 @@ def sensor_sheet(scene_path, out_prefix):
     # Re-derive picknik_mujoco_ros's tile count from the compiled cameras for the
     # report (the tiling always fits the buffer by construction); the beam density
     # check is the one that can fail.
-    offwidth, offheight = model.vis.global_.offwidth, model.vis.global_.offheight
     tiling = {}
     for name in ("lidar_front", "lidar_rear"):
         cam = require_id(model, mujoco.mjtObj.mjOBJ_CAMERA, name)
@@ -318,7 +324,15 @@ def sensor_sheet(scene_path, out_prefix):
         f"[sensors] camera/site frames match, tiles={tiling}, near_clip={near_clip:.3f} m,"
         f" in-range central axial-depth samples={returns}"
     )
-    sheet = Image.new("RGB", (1280, 3 * 400), "#20252b")
+    # Each view is also saved on its own at full resolution.
+    # test_rear_camera_mount_matches_vendored_urdf pins the camera resolution
+    # against the same <global> buffer this renderer uses.
+    renderer.update_scene(data, camera=REAR_CAMERA)
+    image = Image.fromarray(renderer.render())
+    image.save(f"{out_prefix}_{REAR_CAMERA}.png")
+    panels.append((image, f"Rover rear camera: {REAR_CAMERA}"))
+
+    sheet = Image.new("RGB", (1280, math.ceil(len(panels) / 2) * 400), "#20252b")
     draw = ImageDraw.Draw(sheet)
     for i, (image, title) in enumerate(panels):
         x, y = (i % 2) * 640, (i // 2) * 400
