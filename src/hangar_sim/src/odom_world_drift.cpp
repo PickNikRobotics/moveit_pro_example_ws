@@ -26,13 +26,10 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-// Publishes odom -> world = est(odom -> base) (+) inverse(truth(world -> base)), replacing the
-// static identity when use_fuse:=true.
-//
-// base_link can have one TF parent, but navigation needs fuse's estimate while the arm planner and
-// the hangar meshes under 'world' need MuJoCo truth. Broadcasting the live difference lets one tree
-// carry both. Inputs are /odom_filtered (fuse) and /odom (truth), so no TF buffer is needed.
-// Sim-only and planar, hence 2D pose algebra; no synthetic drift term.
+// Publishes odom -> world = est(odom -> base) (+) inverse(truth(world -> base)), so navigation reads
+// fuse's estimate while the arm planner and the hangar meshes under 'world' keep MuJoCo truth.
+// base_link can have only one TF parent; broadcasting the difference lets one tree carry both.
+// Replaces the static identity when use_fuse:=true. Sim-only and planar, hence 2D pose algebra.
 
 #include <algorithm>
 #include <cmath>
@@ -141,17 +138,9 @@ private:
     }
   }
 
-  /// Truth at `when`, interpolated between the samples that bracket it.
-  ///
-  /// This is the whole point of the node's history buffer. Differencing the newest estimate
-  /// against the newest truth pairs two samples taken at different instants, and while the base
-  /// moves that age difference lands in the output as pure error: omega * age of spurious yaw,
-  /// refreshed on every publish. Measured on an in-place spin it was the dominant term in the
-  /// pose jitter an operator sees, about 61 ms worth, and it scaled linearly with turn rate --
-  /// the signature of a timing offset rather than an estimator fault.
-  ///
-  /// Returns nullopt when `when` is outside the buffer (beyond the small look-ahead tolerance),
-  /// so publish() withholds rather than silently extrapolating.
+  /// Truth at `when`, interpolated between the samples that bracket it. Pairing the newest of each
+  /// instead would difference two different instants, which reads as omega * age of spurious yaw.
+  /// Returns nullopt outside the buffer, so publish() withholds rather than extrapolating.
   std::optional<Pose2> truthAt(const rclcpp::Time& when) const
   {
     if (truth_hist_.empty() || when < truth_hist_.front().first)
