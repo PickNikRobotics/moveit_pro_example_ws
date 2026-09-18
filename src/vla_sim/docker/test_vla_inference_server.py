@@ -77,6 +77,7 @@ from vla_inference_server import (
     resolve_fps,
     resolve_rtc_horizon,
     resolve_rtc_schedule,
+    trim_vocabulary_heads,
     watch_runtime_inputs,
 )
 
@@ -438,6 +439,42 @@ class TestParseArgsCoercion(unittest.TestCase):
         self.assertEqual(args.fps, 0.0)
         self.assertEqual(args.state_dim, 0)
 
+    def test_non_boolean_int8_parks_in_config_error(self) -> None:
+        """A quoted or misspelled int8 lands in config_error with the flag off.
+        Coercing it with bool() would read every non-empty string as true, so the
+        server would quantize the policy the operator asked to leave alone."""
+        # GIVEN a serving config whose int8 is a string rather than a boolean
+        with tempfile.NamedTemporaryFile("w", suffix=".yaml", delete=False) as f:
+            f.write('int8: "false"\n')
+            path = f.name
+        try:
+            # WHEN parsing arguments against that config
+            with patch("sys.argv", ["vla_inference_server.py", "--config", path]):
+                args = parse_args()
+        finally:
+            os.unlink(path)
+
+        # THEN the value is reported and the flag stays off
+        self.assertIn("int8", args.config_error)
+        self.assertFalse(args.int8)
+
+    def test_boolean_int8_is_honored(self) -> None:
+        """A real YAML boolean reaches the flag, so the knob works as documented."""
+        # GIVEN a serving config asking for int8
+        with tempfile.NamedTemporaryFile("w", suffix=".yaml", delete=False) as f:
+            f.write("int8: true\n")
+            path = f.name
+        try:
+            # WHEN parsing arguments against that config
+            with patch("sys.argv", ["vla_inference_server.py", "--config", path]):
+                args = parse_args()
+        finally:
+            os.unlink(path)
+
+        # THEN the flag is on and nothing is reported
+        self.assertTrue(args.int8)
+        self.assertEqual(args.config_error, "")
+
     def test_trainer_handoff_fields_are_loaded_from_yaml(self) -> None:
         """The server carries Trainer's exact revision and token requirement."""
         revision = "a" * 40
@@ -574,6 +611,7 @@ class TestLoadPolicyMissingCheckpoint(unittest.TestCase):
                 guidance_horizon=8,
                 rtc_schedule="EXP",
                 state_dim=8,
+                int8=False,
             )
             with patch("vla_inference_server.PolicyRunner") as runner:
                 load_policy(state, args)
@@ -599,6 +637,7 @@ class TestReloadIdleWindow(unittest.TestCase):
             guidance_horizon=8,
             rtc_schedule="EXP",
             state_dim=8,
+            int8=False,
         )
         runner = MagicMock()
         runner.policy.config.input_features = {}
@@ -666,8 +705,13 @@ class TestImmutableCheckpointLoading(unittest.TestCase):
         pre = SimpleNamespace(steps=[])
         post = SimpleNamespace(steps=[])
 
+        policy_config = SimpleNamespace(device="cpu")
         with (
             patch("vla_inference_server.get_policy_class", return_value=policy_class),
+            patch(
+                "vla_inference_server.PreTrainedConfig.from_pretrained",
+                return_value=policy_config,
+            ) as read_config,
             patch(
                 "vla_inference_server.snapshot_download", return_value=snapshot
             ) as download,
@@ -687,7 +731,10 @@ class TestImmutableCheckpointLoading(unittest.TestCase):
             )
 
         download.assert_called_once_with("acme/model", revision=revision)
-        policy_class.from_pretrained.assert_called_once_with(snapshot)
+        read_config.assert_called_once_with(snapshot)
+        policy_class.from_pretrained.assert_called_once_with(
+            snapshot, config=policy_config
+        )
         processors.assert_called_once_with(
             policy_cfg=config,
             pretrained_path=snapshot,
@@ -701,8 +748,13 @@ class TestImmutableCheckpointLoading(unittest.TestCase):
         policy = MagicMock(config=config)
         policy_class = SimpleNamespace(from_pretrained=MagicMock(return_value=policy))
 
+        policy_config = SimpleNamespace(device="cpu")
         with (
             patch("vla_inference_server.get_policy_class", return_value=policy_class),
+            patch(
+                "vla_inference_server.PreTrainedConfig.from_pretrained",
+                return_value=policy_config,
+            ) as read_config,
             patch("vla_inference_server.snapshot_download") as download,
             patch(
                 "vla_inference_server.make_pre_post_processors",
@@ -712,7 +764,10 @@ class TestImmutableCheckpointLoading(unittest.TestCase):
             PolicyRunner("acme/model", "pi05", "cpu", 8, "EXP", 8)
 
         download.assert_not_called()
-        policy_class.from_pretrained.assert_called_once_with("acme/model")
+        read_config.assert_called_once_with("acme/model")
+        policy_class.from_pretrained.assert_called_once_with(
+            "acme/model", config=policy_config
+        )
         self.assertEqual(processors.call_args.kwargs["pretrained_path"], "acme/model")
 
     def test_pi05_loader_reads_weights_from_a_snapshot_directory(self) -> None:
@@ -818,6 +873,52 @@ class TestResolveRtcSchedule(unittest.TestCase):
             resolve_rtc_schedule("exp")
         self.assertIn("EXP", str(ctx.exception))
         self.assertIn("vla_serving.yaml", str(ctx.exception))
+
+
+class TestTrimVocabularyHeads(unittest.TestCase):
+    """trim_vocabulary_heads: drops the two heads and nothing else."""
+
+    @staticmethod
+    def build_model() -> torch.nn.Module:
+        """A stand-in with pi0.5's attribute path and a weight either side of it."""
+
+        def branch() -> torch.nn.Module:
+            part = torch.nn.Module()
+            part.lm_head = torch.nn.Linear(4, 8)
+            part.layers = torch.nn.Linear(4, 4)
+            return part
+
+        expert = torch.nn.Module()
+        expert.paligemma = branch()
+        expert.gemma_expert = branch()
+        model = torch.nn.Module()
+        model.paligemma_with_expert = expert
+        model.action_out_proj = torch.nn.Linear(4, 8)
+        return model
+
+    def test_both_heads_are_dropped(self) -> None:
+        model = self.build_model()
+        trim_vocabulary_heads(model)
+        self.assertIsNone(model.paligemma_with_expert.paligemma.lm_head)
+        self.assertIsNone(model.paligemma_with_expert.gemma_expert.lm_head)
+
+    def test_every_other_weight_survives_unchanged(self) -> None:
+        """The heads are the whole edit, so a chunk reads the same weights it did.
+
+        Actions leave through action_out_proj, which this reaches past; a trim
+        that touched anything on that path would change what the model commands.
+        """
+        model = self.build_model()
+        before = {
+            name: tensor.clone()
+            for name, tensor in model.state_dict().items()
+            if "lm_head" not in name
+        }
+        trim_vocabulary_heads(model)
+        after = model.state_dict()
+        self.assertEqual(sorted(after), sorted(before))
+        for name, tensor in before.items():
+            self.assertTrue(torch.equal(after[name], tensor), name)
 
 
 class TestDecodeImageB64(unittest.TestCase):
@@ -937,6 +1038,7 @@ class FakeRunner:
         native_map: dict | None = None,
     ) -> None:
         self.device = "cpu"
+        self.int8 = False
         self._infer_error = infer_error
         # Like PolicyRunner, derived once at construction.
         self.request_names = request_camera_names(
