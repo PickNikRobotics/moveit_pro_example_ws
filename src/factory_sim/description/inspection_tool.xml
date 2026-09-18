@@ -21,7 +21,7 @@
           type="cylinder"
           size="0.01 0.015"
           pos="0 0 0.015"
-          margin="0.01"
+          margin="0"
           gap="0.01"
           rgba="0 0 1 1"
         />
