@@ -209,6 +209,37 @@ Every objective XML file must include a `MetadataFields` block inside the `TreeN
 
 Teleoperation drives the gripper by looking up Objectives named exactly `"Close Gripper"` / `"Open Gripper"` (the `Request Teleoperation` SubTree in moveit_pro core). If a config package doesn't provide those overrides in its `objectives/` directory, the lookup falls back to moveit_pro's core placeholder, which logs `[ERROR] LogMessage Error: This robot configuration does not have a \`Close Gripper\` Objective configured to override this default.` on every BT tick for as long as the control is held, and the gripper never moves — even if some other Objective in the same config already drives the gripper directly via `MoveGripperAction` (that path bypasses the named-Objective lookup entirely). Any new config with a gripper needs both files; see `moveit_pro_kinova_configs/kinova_gen3_base_config/objectives/{close,open}_gripper.xml` for the reference pattern.
 
+## Localization while the base rotates
+
+### `update_min_a`/`update_min_d` are only tested when a scan arrives
+
+beluga checks its update thresholds on scan arrival, so the motion between corrections is the
+parameter **plus up to one scan's worth**, not the parameter. With the merged scan at ~7.8 Hz,
+`update_min_a: 0.2` (11.5 deg) gave a measured median of **15.6 deg** of rotation per correction
+during a 1 rad/s spin. The scan rate is also the floor: below `update_min_a` ~0.05 the filter is
+already correcting on every scan and lowering it further changes nothing. Never derive a
+correction cadence from the parameter alone — measure it.
+
+`resample_interval` is deliberately 1 in `hangar_sim/params/nav2_params.yaml`; see the comment
+there for the measurement that rejected 3.
+
+### A jerky pose during rotation is estimate *freshness*, not AMCL
+
+"The map lurches when it spins" is almost never the `map -> odom` correction. Measured on
+hangar_sim, of a 3.4 deg p95 frame-to-frame yaw jerk, beluga's correction owned 0.7 deg and the
+state estimate below it owned the rest, and halving `update_min_a` changed nothing.
+
+The mechanism is generic and worth checking for anywhere an estimate reaches TF: a consumer that
+differences a slow estimate topic against a fast one (the wheel/IMU side runs at the ~390 Hz
+controller-manager rate) **without aligning stamps** converts the estimate's age into a phantom
+yaw of `omega * age`. The signature is that the jerk scales **linearly with turn rate** — a filter
+error does not. Raising the estimate's publish rate shrinks the age and bounds the symptom;
+interpolating to the estimate's stamp at the consumer is the actual fix.
+
+To tell the two apart, decompose the error per TF link rather than looking at `map -> base` alone,
+and compare the estimate topic against truth at the estimate's own stamp — that isolates the
+estimator from everything done to its output downstream.
+
 ## Config inheritance (`based_on_package`)
 
 `based_on_package` in `config.yaml` merges the child over the parent (`merge()` in `moveit_studio_utils_py/system_config.py`). Dicts merge key-by-key, recursively. A list of scalars is replaced wholesale. A list of single-key dicts — which is how `urdf_params` and every other MoveIt Pro list-of-options field is shaped — merges **by key**: an override entry like `- hardware_interface: "mock"` finds the parent's entry with that same key and replaces only its value, leaving every other `urdf_params` entry (`usb_port`, `calibration_file`, ...) inherited untouched. You do not need to repeat the whole list to override one xacro arg.
