@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Localize Robot">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Localize Robot"
+    _description="Tell the localizer where the robot is: click the robot's location on the map, then the estimate is tightened in place before the robot moves. Run this once after startup, before navigating, and again any time the robot is moved without driving."
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <!--AMCL runs with set_initial_pose: false, because in production a robot does not power on
+           at a known pose. This Objective is what gives the filter its first real pose.
+
+           Until it runs, beluga publishes NOTHING: no /amcl_pose, and no map -> odom transform
+           at all. Measured in simulation, not inferred - with set_initial_pose false the node
+           reports lifecycle state ACTIVE, consumes 356 /scan_merged messages, and still emits
+           zero /amcl_pose while map -> odom raises ConnectivityException. Seeding it makes the
+           edge appear immediately.
+
+           Do not be misled by beluga carrying a "distributed across the map" initialisation
+           string in its binary: that path is NOT taken with this configuration. Reading the
+           strings suggested beluga global-initialises and broadcasts from an unconverged cloud,
+           and running it showed the opposite. That trap is why the relabel below exists.-->
+      <!--A 6 DOF marker, not a click. GetPoseFromUser returns the ray hit for position and,
+           with is_normal, the clicked FACE NORMAL for orientation - which on a floor is not a
+           heading at all. Heading is the axis this Objective exists to pin down, and it cannot be
+           recovered afterwards: a forced no-motion update SELECTS among the particles the seed
+           scattered, so a seed pointing the wrong way stays pointing the wrong way. The marker
+           returns exactly the pose the operator places, heading included.
+
+           Four things this Behavior does that cost a round each if forgotten, all of them recorded
+           in meta_ws's navigate_to_imarker_pose.xml: it takes a LIST, so the seed pose is wrapped
+           in a one-element vector and read back at index 0; it handles exactly one pose and
+           rejects more; the prompt must contain NO semicolon, because the port is a string list
+           and splits on it; and it always returns poses in 'world'.-->
+      <Action
+        ID="CreatePoseStamped"
+        name="Where the marker first appears"
+        reference_frame="world"
+        position_xyz="0.000000;0.000000;0.000000"
+        orientation_xyzw="0.000000;0.000000;0.000000;1.000000"
+        pose_stamped="{marker_seed_pose}"
+      />
+      <Action ID="ResetVector" name="ResetVector" vector="{marker_poses}" />
+      <Action
+        ID="PushBackVector"
+        name="Wrap it in the one-element list the marker takes"
+        input_vector="{marker_poses}"
+        element="{marker_seed_pose}"
+        output_vector="{marker_poses}"
+      />
+      <Action
+        ID="AdjustPoseWithIMarker"
+        name="Ask the operator to place the robot"
+        prompts="Drag the marker onto the robot, then rotate it so its X axis points the way the robot is facing"
+        initial_poses="{marker_poses}"
+        adjusted_poses="{adjusted_poses}"
+      />
+      <Action
+        ID="GetElementOfVector"
+        name="Read the placed pose back out"
+        vector_in="{adjusted_poses}"
+        index="0"
+        element="{clicked_pose}"
+      />
+      <!--The UI returns the click in the planning frame - 'world' on this robot, hardcoded in
+           the UI's pose-utils.ts - and the seed has to be in 'map'. The route between them is
+           world -> odom -> map, whose only non-static link is the map -> odom edge described
+           above, and at cold boot that edge DOES NOT EXIST. TransformPoseFrame would not place
+           the seed badly; it would fail outright, and this Objective would die before it ever
+           seeded the filter - leaving nothing that could create the edge it needed. That is a
+           deadlock, and it was measured, not argued.
+
+           So the pose is RELABELLED rather than transformed. mj_world -> map and odom -> world
+           are both static identities (robot_drivers_to_persist_sim.launch.py). The relabel is
+           done by its own node, in the open, so nothing about it is hidden:
+           SeedLocalizationAtPose keeps refusing any pose that is not already in 'map', and that
+           guard is worth keeping.
+
+           NOT A CONTRADICTION OF meta_ws's navigate_to_imarker_pose.xml, which uses
+           TransformPoseFrame for the same conversion. That Objective sets a NAVIGATION goal, by
+           which point the robot is localized and map -> odom exists and means something, so the
+           transform is right there. This one SEEDS, at cold boot, before the edge exists. Same
+           conversion, opposite precondition.
+
+           WHAT THE RELABEL DEPENDS ON. It is exact if and only if the UI does not itself express
+           the pose by transforming through map -> odom. If the marker pose is a raw world-frame
+           pose, relabelling it is exact; if the UI already routed it through map -> odom, the
+           relabel re-applies that edge and lands off by it. Which branch holds has NOT been
+           observed - it needs the MoveIt Pro Desktop App, which cannot be driven headlessly - so
+           do not read either branch as settled here. The marker switch does not change this:
+           AdjustPoseWithIMarker also returns poses in 'world' through the same UI.
+
+           Two things that WERE measured, in simulation:
+
+           (a) How wrong the relabel can be is bounded by |map -> odom|, because that edge is the
+           only thing relabelling can re-apply. Driving the base 1.69 m and rotating it 81.5 deg
+           from a converged estimate moved |map -> odom| from 1.2 cm / 0.92 deg to 6.7 cm /
+           0.02 deg. Read that with its caveat in the same breath: hangar_sim's odometry is
+           MuJoCo ground truth through the virtual-rail joints, so AMCL has almost nothing to
+           correct. On hardware with dead-reckoned odometry that edge grows much larger, so
+           6.7 cm is NOT a hardware bound.
+
+           (b) The restore hazard is real. A good estimate sitting at 9.4 cm error, given a seed
+           1.0 m off, went to 93.6 cm; the refinement recovered it to 4.4 cm; and re-seeding that
+           same bad pose - exactly what the subtree's restore branch does on gate rejection -
+           left the filter at 95.6 cm. So on rejection the restore replaces a good estimate with
+           the bad input: 9.4 cm becomes 95.6 cm.
+
+           Together those make re-running THIS Objective after the robot has driven a KNOWN
+           LIMITATION, not a supported path. For the bumped-robot case use "Refine Localization
+           In Place", which seeds from the filter's own estimate and never crosses frames at all.
+           Fixing the limitation is follow-up work, not something to attempt from inside here.-->
+      <!--expected_input_frame_id pins the one assumption this whole relabel rests on. The identity
+           chain that makes it valid is mj_world -> map and odom -> world, so it holds for a pose in
+           'world' and for nothing else. Since which frame the UI actually returns has NOT been
+           observed, the check is what turns a UI revision returning some other frame into a loud
+           refusal rather than a seed placed silently somewhere the operator never pointed -
+           SeedLocalizationAtPose's own map-frame guard cannot catch that, because by then the pose
+           already says 'map'.-->
+      <Action
+        ID="ReinterpretPoseFrame"
+        name="Read the click as map coordinates without transforming it"
+        input_pose="{clicked_pose}"
+        expected_input_frame_id="world"
+        frame_id="map"
+        output_pose="{initial_pose}"
+      />
+      <!--Seeding and refining are one operator action, not two. The subtree below seeds from this
+           click and then tightens the estimate without moving the base; if the result does not
+           explain the live scan it puts this click back, so the worst case here is exactly what a
+           click-only localization would have left in the filter.
+
+           The refinement is the SAME subtree "Refine Localization In Place" runs on its own. Keep
+           it that way: two copies of a tree that gates a safety-relevant belief is two things to
+           keep in step.-->
+      <SubTree
+        ID="Refine Localization In Place Subtree"
+        name="Tighten the estimate without moving"
+        seed_pose="{initial_pose}"
+        refined_pose="{refined_pose}"
+        refined_transform="{refined_transform}"
+        seed_to_refined="{seed_to_refined}"
+        inlier_fraction="{inlier_fraction}"
+        median_residual="{median_residual}"
+        beams_used="{beams_used}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Localize Robot">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Navigation" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

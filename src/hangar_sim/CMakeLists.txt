@@ -18,6 +18,7 @@ install(
 )
 
 install(PROGRAMS
+  script/dump_localization_calibration_data.py
   script/forward_stereo_publisher.py
   script/lidar_flattener.py
   script/odometry_joint_state_publisher.py
