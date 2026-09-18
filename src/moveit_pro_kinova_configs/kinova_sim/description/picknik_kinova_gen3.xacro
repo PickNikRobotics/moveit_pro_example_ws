@@ -22,9 +22,7 @@
     <xacro:arg name="wrist_realsense" default="true" />
     <xacro:arg name="mujoco_model" default="description/mujoco/scene.xml" />
 
-    <!-- Import macros for main hardware components -->
-    <xacro:include filename="$(find kortex_description)/arms/$(arg arm)/$(arg dof)dof/urdf/$(arg arm)_macro.xacro" />
-    <xacro:include filename="$(find kortex_description)/grippers/$(arg gripper)/urdf/$(arg gripper)_macro.xacro" />
+    <!-- Import the wrist camera used by this simulation configuration. -->
     <xacro:include filename="$(find picknik_accessories)/descriptions/sensors/realsense_d415.urdf.xacro"/>
 
     <!-- Import environment macros -->

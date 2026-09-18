@@ -79,7 +79,6 @@
         joint_trajectory_controller_name="joint_trajectory_admittance_controller"
         default_planning_group="manipulator"
         default_ik_frame="grasp_link"
-        link_padding="0.01"
         execution_pipeline="jtac"
       />
       <!--Compute the offset from the april tag to the specified gripper pose and save that to yaml.-->

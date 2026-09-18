@@ -1,0 +1,15 @@
+upstream:
+  repository: https://github.com/sjahr/ridgeback.git
+  commit: 3db6acb098765ff28952642fbab6dc3261efe973
+  branch: ros2
+vendored_paths:
+  - LICENSE
+  - ridgeback_description
+pruned_paths:
+  - upstream CI, repository metadata, and documentation
+  - ridgeback_control (ROS 1 controller and hardware configuration)
+  - ridgeback_msgs (ROS 1 hardware status messages)
+  - ridgeback_navigation (ROS 1 navigation configuration)
+notes:
+  - The retained Ridgeback description provides the mobile-base model and meshes used by simulation.
+  - Binary files matching workspace Git LFS patterns are stored as LFS objects; checked-out bytes match upstream.

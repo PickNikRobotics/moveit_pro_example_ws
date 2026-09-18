@@ -1,0 +1,19 @@
+upstream:
+  repository: https://github.com/PickNikRobotics/fanuc.git
+  commit: 8cbefe8793b35995ec1bb03e1b98c84d4de17e37
+  branch: ros2-descriptions
+vendored_paths:
+  - LICENSE
+  - fanuc_resources
+  - fanuc_lrmate200id_support
+pruned_paths:
+  - all other Fanuc robot support packages
+  - LR Mate 200iD variants, launch files, controller configuration, tests, and documentation unused by factory_sim
+  - fanuc_resources changelog and documentation
+modified_paths:
+  - fanuc_resources/CMakeLists.txt
+  - fanuc_lrmate200id_support/CMakeLists.txt
+  - fanuc_lrmate200id_support/package.xml
+notes:
+  - factory_sim uses only the base LR Mate 200iD macro and its visual and collision meshes.
+  - Binary files matching workspace Git LFS patterns are stored as LFS objects; checked-out bytes match upstream.

@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Dead Reckon Square">
+  <BehaviorTree
+    ID="Dead Reckon Square"
+    _description="Drives the base through a closed square using open-loop /cmd_vel commands: four ~1.8 m sides (0.3 m/s for 6 s) separated by four ~90 deg corners (0.5235988 rad/s for 3 s). There is no localization feedback, so the loop does not close exactly - expect a small residual offset between the start and end pose."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Decorator ID="Repeat" num_cycles="4">
+        <Control ID="Sequence">
+          <Decorator ID="Repeat" num_cycles="20">
+            <Control ID="Sequence">
+              <!--
+                CreateTwistStamped runs INSIDE this loop, not once before it, so every
+                PublishTwistStamped call gets a fresh header.stamp. diff_drive_controller
+                drops any cmd_vel whose stamp is older than cmd_vel_timeout (0.5s here);
+                reusing one stamped message across repeated publishes made the base stall
+                after its first ~0.5s of motion per segment.
+              -->
+              <Action
+                ID="CreateTwistStamped"
+                reference_frame="footprint"
+                twist_stamped="{forward_twist}"
+                linear_velocity_xyz="0.3;0;0"
+                angular_velocity_xyz="0;0;0"
+              />
+              <Action
+                ID="PublishTwistStamped"
+                message="{forward_twist}"
+                topic="/cmd_vel"
+                queue_size="1"
+                use_best_effort="false"
+              />
+              <Action ID="WaitForDuration" delay_duration="0.3" />
+            </Control>
+          </Decorator>
+          <Decorator ID="Repeat" num_cycles="10">
+            <Control ID="Sequence">
+              <!-- Same fresh-stamp requirement as the forward leg above. -->
+              <Action
+                ID="CreateTwistStamped"
+                reference_frame="footprint"
+                twist_stamped="{turn_twist}"
+                linear_velocity_xyz="0;0;0"
+                angular_velocity_xyz="0;0;0.5235988"
+              />
+              <Action
+                ID="PublishTwistStamped"
+                message="{turn_twist}"
+                topic="/cmd_vel"
+                queue_size="1"
+                use_best_effort="false"
+              />
+              <Action ID="WaitForDuration" delay_duration="0.3" />
+            </Control>
+          </Decorator>
+        </Control>
+      </Decorator>
+      <Action
+        ID="CreateTwistStamped"
+        reference_frame="footprint"
+        twist_stamped="{stop_twist}"
+        linear_velocity_xyz="0;0;0"
+        angular_velocity_xyz="0;0;0"
+      />
+      <Action
+        ID="PublishTwistStamped"
+        message="{stop_twist}"
+        topic="/cmd_vel"
+        queue_size="1"
+        use_best_effort="false"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Dead Reckon Square">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Mobile Base" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

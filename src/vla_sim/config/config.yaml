@@ -20,6 +20,11 @@ hardware:
   # [Optional, default=True]
   launch_robot_state_publisher: True
 
+  # Hosts the joint command bridge, on both the dev and runtime paths.
+  additional_agent_launch_file:
+    package: "vla_sim"
+    path: "launch/simulated_extras.launch.py"
+
   # Parameters used to configure the robot description through XACRO.
   # A URDF and SRDF are both required.
   # [Required]

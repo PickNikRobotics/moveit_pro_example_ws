@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format2.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>fanuc_resources</name>
+  <version>0.6.0</version>
+  <description>
+    <p>
+      Shared configuration data, 3D models and launch files for Fanuc
+      manipulators.
+    </p>
+    <p>
+      This package contains configuration data, 3D models and launch files
+      that are shared between different Fanuc robot support packages
+      within the ROS-Industrial program.
+
+      This package also contains common urdf / xacro resources used by
+      other Fanuc related packages.
+    </p>
+  </description>
+  <author>G.A. vd. Hoorn (TU Delft Robotics Institute)</author>
+  <maintainer email="g.a.vanderhoorn@tudelft.nl">G.A. vd. Hoorn (TU Delft Robotics Institute)</maintainer>
+  <license>BSD</license>
+
+  <url type="website">http://wiki.ros.org/fanuc_resources</url>
+  <url type="bugtracker">https://github.com/ros-industrial/fanuc/issues</url>
+  <url type="repository">https://github.com/ros-industrial/fanuc</url>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <export>
+    <architecture_independent />
+    <rosindex>
+      <tags>
+        <tag>urdf</tag>
+        <tag>xacro</tag>
+        <tag>colour</tag>
+        <tag>material</tag>
+        <tag>mesh</tag>
+        <tag>resources</tag>
+        <tag>fanuc</tag>
+        <tag>industrial</tag>
+        <tag>ros-industrial</tag>
+      </tags>
+    </rosindex>
+    <ros_industrial>
+      <support_level value="community" />
+    </ros_industrial>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

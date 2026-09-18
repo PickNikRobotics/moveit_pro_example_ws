@@ -5,7 +5,7 @@
   <!--//////////-->
   <BehaviorTree
     ID="Cartesian Path with Collision Checking"
-    _description="An example of planning and executing a straight line path with base and arm motion"
+    _description="Training example that shows how ValidateTrajectory catches a collision. After moving the base and arm to the Look at Plane waypoint, it plans a 5 m straight-line path that collides with the airplane, so this Objective is expected to fail with a ValidateTrajectory error. The collision is drawn in the 3D Visualizer and the path is never executed."
     _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
@@ -16,7 +16,7 @@
         controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
         controller_names="joint_trajectory_controller"
         joint_group_name="manipulator"
-        link_padding="0.0"
+        collision_check_params="[{override_scene_link_padding: true, link_padding: 0.0}]"
         velocity_scale_factor="1.0"
         waypoint_name="Look at Plane"
       />
@@ -58,18 +58,15 @@
         ID="GetCurrentPlanningScene"
         planning_scene_msg="{planning_scene}"
       />
-      <Control ID="Fallback">
-        <Action
-          ID="ValidateTrajectory"
-          cartesian_space_step="0.020000"
-          debug_solution="{debug_solution}"
-          joint_space_step="0.100000"
-          joint_trajectory_msg="{joint_trajectory_msg}"
-          planning_group_name="manipulator"
-          planning_scene_msg="{planning_scene}"
-        />
-        <Action ID="WaitForMTCSolutionApproval" solution="{debug_solution}" />
-      </Control>
+      <Action
+        ID="ValidateTrajectory"
+        cartesian_space_step="0.020000"
+        debug_solution="{debug_solution}"
+        joint_space_step="0.100000"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+        planning_group_name="manipulator"
+        planning_scene_msg="{planning_scene}"
+      />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>

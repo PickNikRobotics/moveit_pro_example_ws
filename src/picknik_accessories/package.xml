@@ -10,7 +10,7 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <depend>fanuc_lrmate200id_support</depend>
+  <build_depend>fanuc_lrmate200id_support</build_depend>
 
   <exec_depend>realsense2_description</exec_depend>
   <exec_depend>robotiq_description</exec_depend>

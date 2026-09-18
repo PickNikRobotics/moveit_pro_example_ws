@@ -1,0 +1,30 @@
+upstream:
+  repository: https://github.com/PickNikRobotics/Universal_Robots_ROS2_Description.git
+  commit: 52cb99fe6efad9e49564903cce6008af8e3a3ed2
+  branch: ros2-fix-deps
+vendored_paths:
+  - CMakeLists.txt
+  - LICENSE
+  - package.xml
+  - config/initial_positions.yaml
+  - urdf
+  - config/ur3e
+  - config/ur5e
+  - config/ur10e
+  - config/ur16e
+  - meshes/ur3e
+  - meshes/ur5e
+  - meshes/ur10e
+  - meshes/ur16e
+  - meshes/ur20
+pruned_paths:
+  - unused robot variants and their meshes
+  - documentation, tests, and development tooling
+  - RViz launch and configuration files
+modified_paths:
+  - CMakeLists.txt
+  - package.xml
+  - urdf/ur_macro.xacro
+notes:
+  - UR20 meshes remain for grinding_sim; the other variants are instantiated by shipped simulation configs.
+  - Binary files matching workspace Git LFS patterns are stored as LFS objects; checked-out bytes match upstream.

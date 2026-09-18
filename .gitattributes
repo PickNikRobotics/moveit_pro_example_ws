@@ -1,3 +1,6 @@
+# Preserve upstream whitespace in vendored dependencies.
+src/external_dependencies/** -whitespace
+
 # Add Git LFS support for common 3D file formats
 *.onnx filter=lfs diff=lfs merge=lfs -text
 *.stl filter=lfs diff=lfs merge=lfs -text

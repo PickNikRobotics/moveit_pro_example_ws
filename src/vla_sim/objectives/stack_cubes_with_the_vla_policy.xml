@@ -31,7 +31,7 @@
         dt="0.1"
         committed_action_steps="20"
         num_interpolation_points="200"
-        goal_path_tolerance="0.3"
+        goal_path_tolerance="0.5"
         policy_tracking_weight="300.0"
         policy_uses_real_time_chunking="true"
         guidance_horizon="18"

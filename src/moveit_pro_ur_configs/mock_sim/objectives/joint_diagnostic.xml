@@ -20,13 +20,13 @@
             ID="Move to Waypoint"
             waypoint_name="Wrist 2 Max"
             joint_group_name="manipulator"
-            link_padding="0.0"
+            collision_check_params="[{override_scene_link_padding: true, link_padding: 0.0}]"
           />
           <SubTree
             ID="Move to Waypoint"
             waypoint_name="Wrist 2 Min"
             joint_group_name="manipulator"
-            link_padding="0.0"
+            collision_check_params="[{override_scene_link_padding: true, link_padding: 0.0}]"
           />
         </Control>
       </Decorator>

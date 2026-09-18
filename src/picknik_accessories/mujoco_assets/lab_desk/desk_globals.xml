@@ -12,6 +12,7 @@
     <!-- Define AprilTag textures -->
     <texture name="apriltag1" type="2d" file="assets/tag36_11_00000.png" />
     <texture name="apriltag2" type="2d" file="assets/tag36_11_00001.png" />
+    <texture name="apriltag3" type="2d" file="assets/tag36_11_00002.png" />
 
     <!-- Define block materials with AprilTags -->
     <material
@@ -22,6 +23,11 @@
     <material
       name="apriltag_material2"
       texture="apriltag2"
+      texuniform="false"
+    />
+    <material
+      name="apriltag_material3"
+      texture="apriltag3"
       texuniform="false"
     />
 

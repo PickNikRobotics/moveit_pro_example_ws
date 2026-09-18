@@ -48,7 +48,25 @@ from launch_ros.actions import Node
 from launch_ros.actions import PushRosNamespace
 from launch_ros.descriptions import ParameterFile
 from launch_ros.substitutions import FindPackageShare
+from moveit_studio_utils_py.system_config import SystemConfigParser
 from nav2_common.launch import RewrittenYaml, ReplaceString
+
+
+def _urdf_param(name, default):
+    """Read a urdf_params value from config.yaml.
+
+    The forward stereo cameras are gated by a xacro arg, which only config.yaml can set, so
+    this launch file reads the same key rather than declaring a second switch of its own. Two
+    switches would let the cameras render with no publisher -- the exact state this removes --
+    and nothing would report the mismatch.
+    """
+    urdf_params = (
+        SystemConfigParser().get_hardware_config().robot_description.urdf_params
+    )
+    for param in urdf_params:
+        if name in param:
+            return param[name]
+    return default
 
 
 def generate_launch_description():
@@ -337,6 +355,12 @@ def generate_launch_description():
 
     hangar_sim_pkg = FindPackageShare("hangar_sim")
 
+    # Pairs and rectifies the two MuJoCo renders. Started only when the cameras exist:
+    # enable_vo gates both, so the publisher never waits on topics nobody publishes.
+    # TODO(#22640): when the stereo VO stack lands (#21469), include its launch file here
+    # under this same flag so one switch brings up the cameras, this publisher and VO.
+    enable_vo = _urdf_param("enable_vo", False)
+
     forward_stereo_publisher = Node(
         package="hangar_sim",
         executable="forward_stereo_publisher.py",
@@ -346,6 +370,72 @@ def generate_launch_description():
             {"use_sim_time": use_sim_time},
         ],
         output="log",
+    )
+
+    # The two TIM571s are DEPTH_TYPE=THREE_D_LIDAR cameras in the MJCF, so
+    # picknik_mujoco_ros publishes them as organized PointCloud2 on
+    # /lidar_{front,rear}/points and never as a LaserScan. This node reads the
+    # elevation-0 row of each cloud and republishes it as the /scan_{front,rear}
+    # LaserScan the filter chains below, dual_laser_merger, AMCL, slam_toolbox and
+    # both costmap obstacle layers already consume. Topic names, message types,
+    # frames and the 0 to 270 deg angular window are all unchanged from the
+    # <rangefinder> path, so nothing downstream needed touching.
+    lidar_flattener = Node(
+        package="hangar_sim",
+        executable="lidar_flattener.py",
+        name="lidar_flattener",
+        parameters=[{"use_sim_time": use_sim_time}],
+        output="log",
+    )
+
+    # The frame each flattened scan is published in: z-up, X at the scan's angle_min
+    # (beam 0), which is what params/laser_filter_params.yaml computes its self-hit
+    # arcs against. MuJoCo used to broadcast these itself, as a by-product of the
+    # <rangefinder> path; a camera gets no such frame, so they are published here.
+    #
+    # Static, and parented straight to ridgeback_base_link rather than to the
+    # lidar_*_mount bodies, for two reasons. The mounts are fixed in the MJCF, so
+    # the offsets below are exact and cannot drift. And the plugin only puts those
+    # mount bodies on /tf at tf_publish_rate, arriving before every link carries its
+    # real pose: a scan frame resolved through that chain can latch a wrong mount for
+    # the rest of the session and publish beams that keep their ranges but land at
+    # wrong bearings, which reads as a map that will not close rather than as a
+    # sensor fault. Values are read out of description/ur5e_ridgeback.xml:
+    # lidar_front_mount at (+0.45, 0, 0.15) with the fan centered on +X, so beam 0
+    # sits at -135 deg; lidar_rear_mount at (-0.45, 0, 0.15) with the fan centered on
+    # -X, so beam 0 sits at +45 deg.
+    static_tf_lidar_front_ros = Node(
+        package="tf2_ros",
+        executable="static_transform_publisher",
+        name="static_tf_lidar_front_ros",
+        output="log",
+        arguments=[
+            "0.45",
+            "0.0",
+            "0.15",
+            "-2.3561945",
+            "0.0",
+            "0.0",
+            "ridgeback_base_link",
+            "lidar_front_ROS",
+        ],
+    )
+
+    static_tf_lidar_rear_ros = Node(
+        package="tf2_ros",
+        executable="static_transform_publisher",
+        name="static_tf_lidar_rear_ros",
+        output="log",
+        arguments=[
+            "-0.45",
+            "0.0",
+            "0.15",
+            "0.7853982",
+            "0.0",
+            "0.0",
+            "ridgeback_base_link",
+            "lidar_rear_ROS",
+        ],
     )
 
     # Angular bounds filter: clips chassis self-hitting beams (±93° to ±135°).
@@ -432,7 +522,11 @@ def generate_launch_description():
     ld.add_action(static_tf_odom_to_world)
     ld.add_action(static_tf_map_to_odom)
     ld.add_action(sensor_qos_relay)
-    ld.add_action(forward_stereo_publisher)
+    if enable_vo:
+        ld.add_action(forward_stereo_publisher)
+    ld.add_action(lidar_flattener)
+    ld.add_action(static_tf_lidar_front_ros)
+    ld.add_action(static_tf_lidar_rear_ros)
     ld.add_action(laser_filter_front_node)
     ld.add_action(laser_filter_rear_node)
     ld.add_action(fuse_state_estimator)

@@ -26,7 +26,8 @@ repos:
         args: ["--unsafe"] # Fixes errors parsing custom YAML constructors like ur_description's !degrees
       - id: debug-statements
       - id: end-of-file-fixer
-        exclude: (\.(svg|stl|dae))$
+        # Vendored snapshots preserve exact upstream bytes, including missing final newlines.
+        exclude: ^src/external_dependencies/|\.(svg|stl|dae)$
       - id: mixed-line-ending
       - id: fix-byte-order-marker
 
@@ -39,7 +40,7 @@ repos:
     rev: v2.4.1
     hooks:
       - id: codespell
-        args: ["--write-changes", "-L", "atleast,inout,ether"] # Provide a comma-separated list of misspelled words that codespell should ignore (for example: '-L', 'word1,word2,word3').
+        args: ["--write-changes", "-L", "atleast,inout,ether,retuned"] # Provide a comma-separated list of misspelled words that codespell should ignore (for example: '-L', 'word1,word2,word3').
         exclude: \.(svg|pyc|stl|dae|lock)$
 
   - repo: https://github.com/pre-commit/mirrors-clang-format

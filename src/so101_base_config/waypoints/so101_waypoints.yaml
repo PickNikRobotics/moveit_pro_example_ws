@@ -1,0 +1,194 @@
+- description: Jaw closed. Used by the Close Gripper Objective; only the gripper joint
+    is planned for.
+  favorite: false
+  joint_group_names:
+  - gripper
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - shoulder_pan
+    - shoulder_lift
+    - elbow_flex
+    - wrist_flex
+    - wrist_roll
+    - gripper
+    position:
+    - 0
+    - 0.6
+    - -0.6
+    - 0
+    - 0
+    - 0
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Gripper Closed
+- description: Jaw fully open. Used by the Open Gripper Objective; only the gripper
+    joint is planned for.
+  favorite: false
+  joint_group_names:
+  - gripper
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - shoulder_pan
+    - shoulder_lift
+    - elbow_flex
+    - wrist_flex
+    - wrist_roll
+    - gripper
+    position:
+    - 0
+    - 0.6
+    - -0.6
+    - 0
+    - 0
+    - 1.5
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Gripper Open
+- description: The pose the mock hardware starts in, which is the bridge's fake sine
+    at elapsed 0, not a taught hardware pose.
+  favorite: true
+  joint_group_names:
+  - gripper
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - gripper
+    - shoulder_pan
+    - shoulder_lift
+    - elbow_flex
+    - wrist_flex
+    - wrist_roll
+    position:
+    - 0.5230874486690036
+    - -0.01227184630308513
+    - -1.3959225169759335
+    - 1.2870098810360528
+    - 0.9387962421860124
+    - 0.0030679615757712823
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Home
+- description: Reaching out over the bench. Sim-only pose.
+  favorite: false
+  joint_group_names:
+  - gripper
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - shoulder_pan
+    - shoulder_lift
+    - elbow_flex
+    - wrist_flex
+    - wrist_roll
+    - gripper
+    position:
+    - 0
+    - 0.9
+    - -0.75
+    - 0.3
+    - 0
+    - 1.2
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Reach Forward
+- description: Arm up and gripper open, clear of the bench. Re-teach on the physical
+    arm before trusting it.
+  favorite: true
+  joint_group_names:
+  - gripper
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - shoulder_pan
+    - shoulder_lift
+    - elbow_flex
+    - wrist_flex
+    - wrist_roll
+    - gripper
+    position:
+    - 0.3
+    - 0.75
+    - -0.4
+    - 0.2
+    - 0
+    - 1.2
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Ready

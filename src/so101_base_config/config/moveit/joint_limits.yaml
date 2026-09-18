@@ -1,0 +1,55 @@
+# Positions are the upstream LeRobot calibration limits (radians); velocity and
+# acceleration are conservative starting values, not yet validated on the real arm.
+# max_acceleration is 10.0 (lab_sim's value) rather than a lower "conservative"
+# figure: at 2.5, Teleoperate's jog stop-time lookahead grew to ~0.7 rad, so it
+# warned "predicted to reach a joint limit" ~33 degrees before the arm actually
+# would (bench-confirmed).
+joint_limits:
+  shoulder_pan:
+    has_position_limits: true
+    min_position: -1.91986
+    max_position: 1.91986
+    has_velocity_limits: true
+    max_velocity: 1.20
+    has_acceleration_limits: true
+    max_acceleration: 10.0
+  shoulder_lift:
+    has_position_limits: true
+    min_position: -1.74533
+    max_position: 1.74533
+    has_velocity_limits: true
+    max_velocity: 1.20
+    has_acceleration_limits: true
+    max_acceleration: 10.0
+  elbow_flex:
+    has_position_limits: true
+    min_position: -1.69
+    max_position: 1.69
+    has_velocity_limits: true
+    max_velocity: 1.20
+    has_acceleration_limits: true
+    max_acceleration: 10.0
+  wrist_flex:
+    has_position_limits: true
+    min_position: -1.65806
+    max_position: 1.65806
+    has_velocity_limits: true
+    max_velocity: 1.20
+    has_acceleration_limits: true
+    max_acceleration: 10.0
+  wrist_roll:
+    has_position_limits: true
+    min_position: -2.74385
+    max_position: 2.84121
+    has_velocity_limits: true
+    max_velocity: 1.20
+    has_acceleration_limits: true
+    max_acceleration: 10.0
+  gripper:
+    has_position_limits: true
+    min_position: -0.174533
+    max_position: 1.74533
+    has_velocity_limits: true
+    max_velocity: 1.20
+    has_acceleration_limits: true
+    max_acceleration: 10.0

@@ -1,16 +1,28 @@
 # Model-serving configuration for the vla_sim inference server, and the place to
-# swap or re-tune the policy. Edits take effect when the inference_server
-# container restarts; there is no image rebuild.
+# swap or re-tune the policy. The inference server reloads when this file is
+# replaced; there is no image rebuild.
 #
 # Each knob resolves as: a vla_inference_server.py CLI flag, then this file,
 # then a built-in default. A missing or empty file is fine; a malformed one
 # parks the server in the error state.
+
+# Versioned contract advertised to MoveIt Pro Trainer. Do not change this
+# unless the inference server stops honoring the immutable revision and token
+# fields below.
+moveit_pro_trainer_handoff_version: 1
 
 # LeRobot checkpoint to serve: a Hugging Face repo id (org/name), or a local
 # directory placed in src/vla_sim/models/, which the server reads as
 # /models/<checkpoint-dir>.
 # This chooses the robot's actions, so point it only at a source you trust.
 checkpoint: PickNikRobotics/pi05_kinova_gen3_cube_stack_sim
+
+# Optional immutable Hub commit. Empty follows the repository's default branch.
+checkpoint_revision: ""
+
+# A Trainer output is private by default. When true, the server refuses to
+# load it unless HF_TOKEN is present in the container environment.
+checkpoint_requires_hf_token: false
 
 # LeRobot policy family (pi05 | smolvla | ...). Empty reads the checkpoint's
 # config.json "type"; set it only when that field is missing.

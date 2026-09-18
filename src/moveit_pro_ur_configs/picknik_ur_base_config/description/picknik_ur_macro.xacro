@@ -21,6 +21,9 @@
     <xacro:arg name="tool_voltage" default="0" />
     <xacro:arg name="tool_device_name" default="/dev/ttyUSB0" />
     <xacro:arg name="simulation" default="" />
+    <xacro:arg name="script_filename" default="to_be_filled_by_ur_robot_driver" />
+    <xacro:arg name="output_recipe_filename" default="to_be_filled_by_ur_robot_driver" />
+    <xacro:arg name="input_recipe_filename" default="to_be_filled_by_ur_robot_driver" />
 
     <!-- Import macros for main hardware components -->
     <xacro:include filename="$(find ur_description)/urdf/ur_macro.xacro" />
@@ -76,9 +79,9 @@
       generate_ros2_control_tag="$(arg generate_ros2_control_tag)"
       tool_voltage="$(arg tool_voltage)"
       tool_device_name="$(arg tool_device_name)"
-      script_filename="$(find ur_robot_driver)/resources/ros_control.urscript"
-      output_recipe_filename="$(find ur_robot_driver)/resources/rtde_output_recipe.txt"
-      input_recipe_filename="$(find ur_robot_driver)/resources/rtde_input_recipe.txt"
+      script_filename="$(arg script_filename)"
+      output_recipe_filename="$(arg output_recipe_filename)"
+      input_recipe_filename="$(arg input_recipe_filename)"
     >
       <xacro:insert_block name="origin" />
     </xacro:ur_robot>

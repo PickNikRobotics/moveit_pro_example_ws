@@ -28,17 +28,15 @@
 
 #include "robotiq_controllers/robotiq_activation_controller.hpp"
 
-#include <tuple>
+#include "rcl_interfaces/msg/parameter_descriptor.hpp"
+#include "robotiq_controllers/internal/reactivation.hpp"
 
 namespace robotiq_controllers
 {
 controller_interface::InterfaceConfiguration RobotiqActivationController::command_interface_configuration() const
 {
   controller_interface::InterfaceConfiguration config;
-  config.type = controller_interface::interface_configuration_type::INDIVIDUAL;
-
-  config.names.emplace_back("reactivate_gripper/reactivate_gripper_cmd");
-  config.names.emplace_back("reactivate_gripper/reactivate_gripper_response");
+  config.type = controller_interface::interface_configuration_type::NONE;
 
   return config;
 }
@@ -60,14 +58,10 @@ controller_interface::return_type RobotiqActivationController::update(const rclc
 rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
 RobotiqActivationController::on_activate(const rclcpp_lifecycle::State& /*previous_state*/)
 {
-  // Check command interfaces.
-  if (command_interfaces_.size() != 2)
+  if (!get_node()->get_parameter("simulation_only").as_bool())
   {
-    RCLCPP_ERROR(get_node()->get_logger(), "Expected %d command interfaces, but got %zu.", 2,
-                 command_interfaces_.size());
-    return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::ERROR;
+    return LifecycleNodeInterface::CallbackReturn::ERROR;
   }
-
   try
   {
     // Create service for re-activating the gripper.
@@ -101,21 +95,18 @@ RobotiqActivationController::on_deactivate(const rclcpp_lifecycle::State& /*prev
 
 rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn RobotiqActivationController::on_init()
 {
+  rcl_interfaces::msg::ParameterDescriptor descriptor;
+  descriptor.read_only = true;
+  get_node()->declare_parameter<bool>("simulation_only", false, descriptor);
   return LifecycleNodeInterface::CallbackReturn::SUCCESS;
 }
 
 bool RobotiqActivationController::reactivateGripper(std_srvs::srv::Trigger::Request::SharedPtr /*req*/,
                                                     std_srvs::srv::Trigger::Response::SharedPtr resp)
 {
-  std::ignore = command_interfaces_[REACTIVATE_GRIPPER_RESPONSE].set_value(ASYNC_WAITING);
-  std::ignore = command_interfaces_[REACTIVATE_GRIPPER_CMD].set_value(1.0);
-
-  while (command_interfaces_[REACTIVATE_GRIPPER_RESPONSE].get_optional<double>().value() == ASYNC_WAITING)
-  {
-    std::this_thread::sleep_for(std::chrono::milliseconds(50));
-  }
-  resp->success = command_interfaces_[REACTIVATE_GRIPPER_RESPONSE].get_optional<double>().value();
-
+  const internal::ReactivationResult result = internal::simulated_reactivation();
+  resp->success = result.success;
+  resp->message = result.message;
   return resp->success;
 }
 }  // namespace robotiq_controllers

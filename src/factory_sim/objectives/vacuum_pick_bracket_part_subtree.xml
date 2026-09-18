@@ -7,11 +7,13 @@
   >
     <Control ID="Sequence" name="">
       <SubTree ID="Activate Vacuum" _collapsed="true" />
+      <!--The rear solid top face supports the 10 mm-radius suction cup clear of
+          the holes and recessed pockets, while improving reach for far-side parts.-->
       <Action
         ID="TransformPose"
         input_pose="{bracket_part_pose}"
         output_pose="{pick_pose}"
-        translation_xyz=".125;-0.07;0.01"
+        translation_xyz=".164;-0.080;0.01"
         name="Create pick pose for the bracket part"
       />
       <!--A suction grasp on the flat bracket face is yaw-free about the face normal, so
@@ -99,7 +101,7 @@
       <Action
         ID="SetupMTCConnectWithProRRT"
         acceleration_scale_factor="1.000000"
-        link_padding="0.0100000"
+        collision_check_params="[{override_scene_link_padding: true, link_padding: 0.01}]"
         max_iterations="5000"
         planning_group_name="manipulator"
         seed="0"

@@ -260,6 +260,7 @@ SIM_RESETTER.register("lab_sim", _controller_safe_mujoco_reset)
 # Looping objectives to cancel partway through
 cancel_objectives = {
     "3 Waypoints Pick and Place",
+    "3 Waypoints Pick and Place with AprilTags",
     "Classical Pick and Place",
     "Cycle Between Waypoints",
     "Get AprilTag Pose from Image",
@@ -274,10 +275,22 @@ cancel_objectives = {
 # Objectives to skip entirely from integration testing
 skip_objectives = {
     "AddBottlesToPlanningScene",
+    # Hand-eye calibration Objectives from moveit_pro_objectives: they generate or
+    # move through `calibration_*` waypoints and detect a ChArUco board, which only
+    # hand_eye_calibration_sim provides.
+    "Calibrate Eye In Hand Camera",
+    "Calibrate Eye To Hand Camera",
+    "Calibrate Multiple Cameras",
+    "Generate Calibration Waypoints",
     "Collect Training Data with Behaviors",  # Requires setup for data collection (recording infrastructure not available in CI)
     "Grasp Planning",
     "Joint Diagnostic",
     "ML Find Bottles on Table from Image Exemplar",  # Skipped because it looks for a file on a home path
+    # These objectives require the optional moveit_pro_sam3 model submodule.
+    # The dependency-policy validator deliberately prevents lab_sim from making
+    # that package mandatory, so it is outside the config package's CI build
+    # closure unless a user explicitly initializes and builds the ML models.
+    "ML Segment Bottles from File",
     "ML Segment Image",
     "ML Segment Image Loop",
     "ML Segment Point Cloud",  # Requires GPU for ONNX inference; falls back to CPU and times out waiting for /wrist_camera/points on CI runners without a camera warmup delay.
@@ -286,6 +299,7 @@ skip_objectives = {
     "MPC Pose Tracking With Point Cloud Avoidance",
     "Octomap Example",  # Requires user input to clear the octomap.
     "Pick 1 Pill Bottle with ML",
+    "Pick 1 Pill Bottle with SAM3",
     "Pick All Bottles with AprilTags",
     "Pick All Pill Bottles",
     "Pick up Object",

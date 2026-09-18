@@ -1,0 +1,13 @@
+canvas 8241x8241px, plane 20.00m x 20.00m, 412.1 px/m (2.43 mm/px)
+64x64 cells, 9 distinct source frames, 8 dihedral transforms each, PHYS_TILE_M=1.2, seed=869, contrast-equalized to AS15-86-11671, jittered 0.25-0.4 tile-widths off grid (v2)
+AS15-86-11671: native crop ~0.74m, placed at 1.2m (upscale 1.63x)
+AS15-87-11766: native crop ~0.56m, placed at 1.2m (upscale 2.16x)
+AS15-87-11777: native crop ~0.58m, placed at 1.2m (upscale 2.08x)
+AS17-146-22370: native crop ~0.53m, placed at 1.2m (upscale 2.25x)
+as17-137-20963: native crop ~0.55m, placed at 1.2m (upscale 2.16x)
+as17-137-20981: native crop ~0.78m, placed at 1.2m (upscale 1.54x)
+as17-137-20984: native crop ~0.60m, placed at 1.2m (upscale 2.01x)
+as17-138-21179: native crop ~0.58m, placed at 1.2m (upscale 2.09x)
+as17-142-21706: native crop ~0.50m, placed at 1.2m (upscale 2.40x)
+craterlets: 216, rocks: 504
+Source frames: NASA Apollo 15/17 Hasselblad surface photos, public domain NASA/JSC, archive.org (collection johnsonspacecentermediaarchive) - cropped to a square clear of the gnomon and any hardware (bootprints/rover tracks left in); committed under assets/ground_colormap_sources/. Excluded as near-duplicate content (same sample/station documented by a second magazine/camera as an already-selected frame): AS15-87-11769, as17-138-21049, as17-142-21699. Rejected as boulder/rock-dominated or for people/hardware in frame: AS15-86-11659, as17-134-20403, as17-137-20901, as17-137-20913, as17-140-21411, as17-146-22336, AS15-87-11778, as17-137-20972, as17-138-21030, as16-117-18825, as16-117-18826, as17-145-22157, AS12-48-7107/7128.

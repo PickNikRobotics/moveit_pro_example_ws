@@ -42,34 +42,43 @@ import os
 import tempfile
 import threading
 import unittest
-from unittest.mock import patch
 from http.server import ThreadingHTTPServer
+from types import SimpleNamespace
+from unittest.mock import MagicMock, patch
 
 import cv2
 import numpy as np
 import torch
 import yaml
 from lerobot.configs.types import RTCAttentionSchedule
+from lerobot.policies.pi05.modeling_pi05 import PI05Policy
 from lerobot.processor import RenameObservationsProcessorStep
-
+from safetensors.torch import save_file
 from vla_inference_server import (
+    INFER_ABANDONED_SECONDS,
+    RELOAD_IDLE_SECONDS,
     REQUEST_SOCKET_TIMEOUT_SECONDS,
+    PolicyRunner,
     ServerState,
     apply_frontend_key,
     decode_image_b64,
     hub_access_error_message,
+    load_checkpoint_file,
+    load_hf_token_file,
     load_policy,
     load_serving_config,
     make_handler,
     native_camera_map,
     parse_args,
     request_camera_names,
+    restart_process,
     resolve_default,
     resolve_device,
     resolve_fps,
     resolve_rtc_horizon,
     resolve_rtc_schedule,
     trim_vocabulary_heads,
+    watch_runtime_inputs,
 )
 
 
@@ -162,6 +171,225 @@ class TestLoadServingConfig(unittest.TestCase):
             load_serving_config(path)
 
 
+class TestHuggingFaceTokenFile(unittest.TestCase):
+    """The product-owned secret file is safe and environment-compatible."""
+
+    def test_owner_only_token_is_loaded_when_environment_is_absent(self) -> None:
+        with tempfile.NamedTemporaryFile("w", delete=False) as handle:
+            handle.write("hf_private_token\n")
+            path = handle.name
+        self.addCleanup(os.unlink, path)
+        os.chmod(path, 0o600)
+
+        with patch.dict(os.environ, {}, clear=True):
+            self.assertEqual(load_hf_token_file(path), "")
+            self.assertEqual(os.environ["HF_TOKEN"], "hf_private_token")
+
+    def test_environment_token_remains_an_explicit_override(self) -> None:
+        with tempfile.NamedTemporaryFile("w", delete=False) as handle:
+            handle.write("hf_file_token")
+            path = handle.name
+        self.addCleanup(os.unlink, path)
+
+        with patch.dict(os.environ, {"HF_TOKEN": "hf_environment_token"}, clear=True):
+            self.assertEqual(load_hf_token_file(path), "")
+            self.assertEqual(os.environ["HF_TOKEN"], "hf_environment_token")
+
+    def test_group_readable_token_is_rejected_without_echoing_it(self) -> None:
+        with tempfile.NamedTemporaryFile("w", delete=False) as handle:
+            handle.write("hf_must_not_escape")
+            path = handle.name
+        self.addCleanup(os.unlink, path)
+        os.chmod(path, 0o640)
+
+        with patch.dict(os.environ, {}, clear=True):
+            error = load_hf_token_file(path)
+
+        self.assertIn("owner-only", error)
+        self.assertNotIn("hf_must_not_escape", error)
+
+
+class TestAutomaticReload(unittest.TestCase):
+    """Serving input replacement triggers one process reload."""
+
+    def test_restart_reloads_a_file_token_instead_of_inheriting_it(self) -> None:
+        """A removed or replaced token file cannot leave the prior token active."""
+        with patch.dict(
+            os.environ,
+            {
+                "HF_TOKEN": "hf_old_file_token",
+                "MOVEIT_PRO_HF_TOKEN_FROM_FILE": "1",
+                "KEEP_ME": "yes",
+            },
+            clear=True,
+        ):
+            with patch("os.execve") as execve:
+                restart_process()
+
+        environment = execve.call_args.args[2]
+        self.assertNotIn("HF_TOKEN", environment)
+        self.assertNotIn("MOVEIT_PRO_HF_TOKEN_FROM_FILE", environment)
+        self.assertEqual(environment["KEEP_ME"], "yes")
+
+    def test_config_replacement_restarts_after_debounce(self) -> None:
+        with tempfile.NamedTemporaryFile("w", delete=False) as handle:
+            handle.write("checkpoint: first\n")
+            path = handle.name
+        self.addCleanup(os.unlink, path)
+        waits = 0
+
+        def replace_after_first_wait(_seconds: float) -> None:
+            nonlocal waits
+            waits += 1
+            if waits == 1:
+                replacement = f"{path}.replacement"
+                with open(replacement, "w", encoding="utf-8") as handle:
+                    handle.write("checkpoint: second\n")
+                os.replace(replacement, path)
+
+        restart = MagicMock()
+        watch_runtime_inputs([path], wait=replace_after_first_wait, restart=restart)
+
+        restart.assert_called_once_with()
+        self.assertEqual(waits, 2)
+
+    def _watch_replaced_config(self, state: ServerState, clock) -> tuple:
+        """Run the watcher over a config replaced during its first wait."""
+        with tempfile.NamedTemporaryFile("w", delete=False) as handle:
+            handle.write("checkpoint: first\n")
+            path = handle.name
+        self.addCleanup(os.unlink, path)
+        waits = 0
+
+        def replace_after_first_wait(_seconds: float) -> None:
+            nonlocal waits
+            waits += 1
+            if waits == 1:
+                replacement = f"{path}.replacement"
+                with open(replacement, "w", encoding="utf-8") as handle:
+                    handle.write("checkpoint: second\n")
+                os.replace(replacement, path)
+
+        restart = MagicMock()
+        watch_runtime_inputs(
+            [path],
+            state=state,
+            wait=replace_after_first_wait,
+            restart=restart,
+            clock=clock,
+        )
+        return restart, waits
+
+    def test_idle_window_is_pinned_to_the_reload_idle_constant(self) -> None:
+        """The server is busy until exactly RELOAD_IDLE_SECONDS after an /infer."""
+        self.assertTrue(
+            ServerState().try_begin_reload(0.0), "No inference yet means idle"
+        )
+
+        state = ServerState()
+        state.last_infer_monotonic = 100.0
+        self.assertFalse(state.try_begin_reload(100.0 + RELOAD_IDLE_SECONDS - 0.001))
+        self.assertFalse(state.reloading, "A refused reload must not block /infer")
+        self.assertTrue(state.try_begin_reload(100.0 + RELOAD_IDLE_SECONDS))
+
+    def test_in_flight_inference_holds_off_a_reload_until_abandoned(self) -> None:
+        """A live /infer blocks the reload; a hung one cannot block it forever."""
+        state = ServerState()
+        with patch("vla_inference_server.time.monotonic", return_value=100.0):
+            self.assertTrue(state.begin_infer())
+
+        self.assertFalse(
+            state.try_begin_reload(100.0 + INFER_ABANDONED_SECONDS - 0.001)
+        )
+        self.assertTrue(state.try_begin_reload(100.0 + INFER_ABANDONED_SECONDS))
+
+    def test_retries_behind_a_hung_inference_do_not_hold_off_a_reload(self) -> None:
+        """Requests queued behind a hung /infer cannot keep its reload away."""
+        state = ServerState()
+        with patch("vla_inference_server.time.monotonic", return_value=100.0):
+            self.assertTrue(state.begin_infer())
+        # A retry arrives on another handler thread just before the check.
+        retry_at = 100.0 + INFER_ABANDONED_SECONDS - 0.001
+        with patch("vla_inference_server.time.monotonic", return_value=retry_at):
+            retry = threading.Thread(target=state.begin_infer)
+            retry.start()
+            retry.join()
+        self.assertEqual(state.inflight_infers, 2)
+
+        self.assertFalse(state.try_begin_reload(retry_at))
+        self.assertTrue(state.try_begin_reload(100.0 + INFER_ABANDONED_SECONDS))
+
+    def test_finished_inference_releases_the_in_flight_count(self) -> None:
+        state = ServerState()
+        self.assertTrue(state.begin_infer())
+        state.end_infer()
+
+        self.assertEqual(state.inflight_infers, 0)
+        self.assertIsNotNone(state.last_infer_monotonic)
+
+    def test_committed_reload_refuses_new_inference(self) -> None:
+        """No /infer can start between the idle check and the process replacement."""
+        state = ServerState()
+        self.assertTrue(state.try_begin_reload(0.0))
+
+        self.assertFalse(state.begin_infer())
+        self.assertEqual(state.inflight_infers, 0)
+
+    def test_idle_server_restarts_right_after_the_debounce(self) -> None:
+        """Without a running policy the reload is as prompt as with no state."""
+        state = ServerState()
+
+        restart, waits = self._watch_replaced_config(state, clock=lambda: 0.0)
+
+        restart.assert_called_once_with()
+        self.assertEqual(waits, 2)
+        self.assertFalse(state.reload_pending)
+
+    def test_failed_process_replacement_keeps_serving_and_retries(self) -> None:
+        """An execve failure must not leave /infer refused for good."""
+        state = ServerState()
+        with tempfile.NamedTemporaryFile("w", delete=False) as handle:
+            handle.write("checkpoint: first\n")
+            path = handle.name
+        self.addCleanup(os.unlink, path)
+        waits = 0
+        reloading_after_failure = []
+
+        def wait(_seconds: float) -> None:
+            nonlocal waits
+            waits += 1
+            if waits == 1:
+                with open(path, "a", encoding="utf-8") as handle:
+                    handle.write("fps: 10.0\n")
+            if waits == 3:
+                reloading_after_failure.append(state.reloading)
+
+        restart = MagicMock(side_effect=[OSError("text file busy"), None])
+        watch_runtime_inputs(
+            [path], state=state, wait=wait, restart=restart, clock=lambda: 0.0
+        )
+
+        self.assertEqual(restart.call_count, 2)
+        self.assertEqual(reloading_after_failure, [False])
+        # Poll and debounce for the failed attempt, then again for the retry.
+        self.assertEqual(waits, 4)
+
+    def test_reload_is_deferred_until_the_running_policy_stops(self) -> None:
+        """A config replaced mid-run does not pull the model out from under it."""
+        state = ServerState()
+        state.last_infer_monotonic = 100.0
+        busy = 100.0 + RELOAD_IDLE_SECONDS - 0.001
+        idle = 100.0 + RELOAD_IDLE_SECONDS
+        # One check after the debounce, two while deferred, then the idle one.
+        times = iter([busy, busy, busy, idle])
+        restart, waits = self._watch_replaced_config(state, clock=lambda: next(times))
+
+        restart.assert_called_once_with()
+        # Poll, debounce, then one wait per busy check inside the deferral.
+        self.assertEqual(waits, 4)
+        self.assertTrue(state.reload_pending, "/status must report the deferral")
+
+
 class TestResolveDefault(unittest.TestCase):
     """resolve_default: YAML > built-in for an argparse default."""
 
@@ -247,6 +475,91 @@ class TestParseArgsCoercion(unittest.TestCase):
         self.assertTrue(args.int8)
         self.assertEqual(args.config_error, "")
 
+    def test_trainer_handoff_fields_are_loaded_from_yaml(self) -> None:
+        """The server carries Trainer's exact revision and token requirement."""
+        revision = "a" * 40
+        with tempfile.NamedTemporaryFile("w", suffix=".yaml", delete=False) as f:
+            f.write(
+                "checkpoint: acme/model\n"
+                f"checkpoint_revision: {revision}\n"
+                "checkpoint_requires_hf_token: true\n"
+            )
+            path = f.name
+        try:
+            with patch("sys.argv", ["vla_inference_server.py", "--config", path]):
+                args = parse_args()
+        finally:
+            os.unlink(path)
+
+        self.assertEqual(args.checkpoint_revision, revision)
+        self.assertTrue(args.checkpoint_requires_hf_token)
+        self.assertEqual(args.config_error, "")
+
+    def test_legacy_yaml_keeps_mutable_public_checkpoint_defaults(self) -> None:
+        """Existing serving files need no new fields and retain their behavior."""
+        with tempfile.NamedTemporaryFile("w", suffix=".yaml", delete=False) as f:
+            f.write("checkpoint: PickNikRobotics/public-model\nfps: 10.0\n")
+            path = f.name
+        try:
+            with patch("sys.argv", ["vla_inference_server.py", "--config", path]):
+                args = parse_args()
+        finally:
+            os.unlink(path)
+
+        self.assertEqual(args.checkpoint_revision, "")
+        self.assertFalse(args.checkpoint_requires_hf_token)
+        self.assertEqual(args.config_error, "")
+
+    def test_invalid_checkpoint_revision_parks_in_config_error(self) -> None:
+        """A mutable branch name cannot masquerade as an immutable handoff."""
+        with tempfile.NamedTemporaryFile("w", suffix=".yaml", delete=False) as f:
+            f.write("checkpoint_revision: main\n")
+            path = f.name
+        try:
+            with patch("sys.argv", ["vla_inference_server.py", "--config", path]):
+                args = parse_args()
+        finally:
+            os.unlink(path)
+
+        self.assertIn("40-character", args.config_error)
+        self.assertEqual(args.checkpoint_revision, "")
+
+    def test_cli_rejects_mutable_checkpoint_revision(self) -> None:
+        """The CLI cannot bypass the immutable-revision contract."""
+        with tempfile.NamedTemporaryFile("w", suffix=".yaml") as config:
+            with (
+                patch(
+                    "sys.argv",
+                    [
+                        "vla_inference_server.py",
+                        "--config",
+                        config.name,
+                        "--checkpoint-revision",
+                        "main",
+                    ],
+                ),
+                self.assertRaises(SystemExit),
+            ):
+                parse_args()
+
+    def test_cli_can_disable_yaml_hub_token_requirement(self) -> None:
+        """An explicit CLI false overrides a private-checkpoint YAML default."""
+        with tempfile.NamedTemporaryFile("w", suffix=".yaml") as config:
+            config.write("checkpoint_requires_hf_token: true\n")
+            config.flush()
+            with patch(
+                "sys.argv",
+                [
+                    "vla_inference_server.py",
+                    "--config",
+                    config.name,
+                    "--no-checkpoint-requires-hf-token",
+                ],
+            ):
+                args = parse_args()
+
+        self.assertFalse(args.checkpoint_requires_hf_token)
+
 
 class TestLoadPolicyMissingCheckpoint(unittest.TestCase):
     """load_policy: an unset checkpoint parks the error state, never exits."""
@@ -266,6 +579,224 @@ class TestLoadPolicyMissingCheckpoint(unittest.TestCase):
         self.assertEqual(state.status, "error")
         self.assertIn("checkpoint", state.detail)
         self.assertIn("vla_serving.yaml", state.detail)
+
+    def test_required_hub_token_fails_closed_before_checkpoint_access(self) -> None:
+        """A private Trainer checkpoint is never loaded through anonymous Hub access."""
+        state = ServerState()
+        args = argparse.Namespace(
+            config_error="",
+            checkpoint="acme/private-model",
+            checkpoint_revision="a" * 40,
+            checkpoint_requires_hf_token=True,
+        )
+
+        with patch.dict(os.environ, {}, clear=True):
+            load_policy(state, args)
+
+        self.assertEqual(state.status, "error")
+        self.assertIn("requires Hugging Face model access", state.detail)
+
+    def test_local_checkpoint_rejects_revision_before_metadata_resolution(self) -> None:
+        """Explicit metadata cannot let a Hub-only revision reach a local loader."""
+        state = ServerState()
+        with tempfile.TemporaryDirectory() as checkpoint:
+            args = argparse.Namespace(
+                config_error="",
+                checkpoint=checkpoint,
+                checkpoint_revision="a" * 40,
+                checkpoint_requires_hf_token=False,
+                fps=10.0,
+                policy_class="pi05",
+                device="cpu",
+                guidance_horizon=8,
+                rtc_schedule="EXP",
+                state_dim=8,
+                int8=False,
+            )
+            with patch("vla_inference_server.PolicyRunner") as runner:
+                load_policy(state, args)
+
+        self.assertEqual(state.status, "error")
+        self.assertIn("local checkpoint directory", state.detail)
+        runner.assert_not_called()
+
+
+class TestReloadIdleWindow(unittest.TestCase):
+    """load_policy sizes the reload idle window from the checkpoint's own chunk."""
+
+    def _load(self, fps: float, warmup) -> ServerState:
+        state = ServerState()
+        args = argparse.Namespace(
+            config_error="",
+            checkpoint="acme/model",
+            checkpoint_revision="",
+            checkpoint_requires_hf_token=False,
+            fps=fps,
+            policy_class="pi05",
+            device="cpu",
+            guidance_horizon=8,
+            rtc_schedule="EXP",
+            state_dim=8,
+            int8=False,
+        )
+        runner = MagicMock()
+        runner.policy.config.input_features = {}
+        runner.warmup = warmup
+        with patch("vla_inference_server.PolicyRunner", return_value=runner):
+            load_policy(state, args)
+        self.assertEqual(state.status, "ready", state.detail)
+        return state
+
+    def test_window_is_one_chunk_of_playback_but_never_below_the_floor(self) -> None:
+        """No valid commit can leave /infer quiet for longer than one chunk."""
+        cases = [
+            # fps, chunk steps, expected window
+            (5.0, 100, 20.0),
+            (10.0, 50, RELOAD_IDLE_SECONDS),
+            (50.0, 50, RELOAD_IDLE_SECONDS),
+        ]
+        for fps, chunk_steps, expected in cases:
+            with self.subTest(fps=fps, chunk_steps=chunk_steps):
+                state = self._load(fps, MagicMock(return_value=(1.0, 0.1, chunk_steps)))
+                self.assertEqual(state.reload_idle_seconds, expected)
+
+    def test_a_long_chunk_holds_off_a_reload_for_its_whole_playback(self) -> None:
+        """A 20 second chunk is still a running policy 19 seconds after /infer."""
+        state = self._load(5.0, MagicMock(return_value=(1.0, 0.1, 100)))
+        state.last_infer_monotonic = 100.0
+
+        self.assertFalse(state.try_begin_reload(100.0 + 20.0 - 0.001))
+        self.assertTrue(state.try_begin_reload(100.0 + 20.0))
+
+    def test_failed_warmup_keeps_the_floor(self) -> None:
+        """Without a measured chunk the server still serves, on the default window."""
+        state = self._load(5.0, MagicMock(side_effect=RuntimeError("padded state")))
+
+        self.assertEqual(state.reload_idle_seconds, RELOAD_IDLE_SECONDS)
+
+
+class TestImmutableCheckpointLoading(unittest.TestCase):
+    """Every checkpoint file and LeRobot loader reads the same Hub commit."""
+
+    def test_checkpoint_json_download_uses_the_revision(self) -> None:
+        revision = "a" * 40
+        with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False) as f:
+            json.dump({"type": "pi05"}, f)
+            path = f.name
+        self.addCleanup(os.unlink, path)
+
+        with patch(
+            "vla_inference_server.hf_hub_download", return_value=path
+        ) as download:
+            result = load_checkpoint_file("acme/model", "config.json", revision)
+
+        self.assertEqual(result, {"type": "pi05"})
+        download.assert_called_once_with(
+            repo_id="acme/model", filename="config.json", revision=revision
+        )
+
+    def test_policy_and_processors_load_the_pinned_snapshot(self) -> None:
+        """No LeRobot loader is handed a repo id it could resolve to another commit."""
+        revision = "b" * 40
+        snapshot = "/hf/hub/models--acme--model/snapshots/" + revision
+        config = SimpleNamespace(input_features={}, rtc_config=None)
+        policy = MagicMock(config=config)
+        policy_class = SimpleNamespace(from_pretrained=MagicMock(return_value=policy))
+        pre = SimpleNamespace(steps=[])
+        post = SimpleNamespace(steps=[])
+
+        policy_config = SimpleNamespace(device="cpu")
+        with (
+            patch("vla_inference_server.get_policy_class", return_value=policy_class),
+            patch(
+                "vla_inference_server.PreTrainedConfig.from_pretrained",
+                return_value=policy_config,
+            ) as read_config,
+            patch(
+                "vla_inference_server.snapshot_download", return_value=snapshot
+            ) as download,
+            patch(
+                "vla_inference_server.make_pre_post_processors",
+                return_value=(pre, post),
+            ) as processors,
+        ):
+            PolicyRunner(
+                "acme/model",
+                "pi05",
+                "cpu",
+                8,
+                "EXP",
+                8,
+                checkpoint_revision=revision,
+            )
+
+        download.assert_called_once_with("acme/model", revision=revision)
+        read_config.assert_called_once_with(snapshot)
+        policy_class.from_pretrained.assert_called_once_with(
+            snapshot, config=policy_config
+        )
+        processors.assert_called_once_with(
+            policy_cfg=config,
+            pretrained_path=snapshot,
+            preprocessor_overrides={"device_processor": {"device": "cpu"}},
+            postprocessor_overrides={"device_processor": {"device": "cpu"}},
+        )
+
+    def test_policy_runner_legacy_call_uses_existing_mutable_defaults(self) -> None:
+        """The original positional constructor remains valid and follows Hub HEAD."""
+        config = SimpleNamespace(input_features={}, rtc_config=None)
+        policy = MagicMock(config=config)
+        policy_class = SimpleNamespace(from_pretrained=MagicMock(return_value=policy))
+
+        policy_config = SimpleNamespace(device="cpu")
+        with (
+            patch("vla_inference_server.get_policy_class", return_value=policy_class),
+            patch(
+                "vla_inference_server.PreTrainedConfig.from_pretrained",
+                return_value=policy_config,
+            ) as read_config,
+            patch("vla_inference_server.snapshot_download") as download,
+            patch(
+                "vla_inference_server.make_pre_post_processors",
+                return_value=(SimpleNamespace(steps=[]), SimpleNamespace(steps=[])),
+            ) as processors,
+        ):
+            PolicyRunner("acme/model", "pi05", "cpu", 8, "EXP", 8)
+
+        download.assert_not_called()
+        read_config.assert_called_once_with("acme/model")
+        policy_class.from_pretrained.assert_called_once_with(
+            "acme/model", config=policy_config
+        )
+        self.assertEqual(processors.call_args.kwargs["pretrained_path"], "acme/model")
+
+    def test_pi05_loader_reads_weights_from_a_snapshot_directory(self) -> None:
+        """LeRobot's real pi0.5 weight resolution serves the directory it is given.
+
+        That loader drops `revision` on its weights download, so pinning relies
+        on a local snapshot resolving to its own model.safetensors.
+        """
+        with tempfile.TemporaryDirectory() as snapshot:
+            save_file(
+                {"model.marker": torch.tensor([979.0])},
+                os.path.join(snapshot, "model.safetensors"),
+            )
+            with (
+                patch.object(PI05Policy, "__init__", return_value=None),
+                patch.object(PI05Policy, "config", SimpleNamespace(), create=True),
+                patch.object(
+                    PI05Policy,
+                    "_fix_pytorch_state_dict_keys",
+                    side_effect=lambda state_dict, _config: state_dict,
+                ),
+                patch.object(
+                    PI05Policy, "load_state_dict", return_value=([], [])
+                ) as load,
+            ):
+                PI05Policy.from_pretrained(snapshot, config=SimpleNamespace())
+
+        load.assert_called_once()
+        self.assertEqual(load.call_args.args[0]["model.marker"].item(), 979.0)
 
 
 class TestResolveFps(unittest.TestCase):
@@ -526,6 +1057,18 @@ class FakeRunner:
         return np.array([[0.1, 0.2]]), np.array([[0.5, 0.5]])
 
 
+class ObservedState(ServerState):
+    """Signals when the handler finishes recording an /infer."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.infer_ended = threading.Event()
+
+    def end_infer(self) -> None:
+        super().end_infer()
+        self.infer_ended.set()
+
+
 class TestApplyFrontendKey(unittest.TestCase):
     """Fail-closed handling of the MOVEIT_FRONTEND_KEY environment value."""
 
@@ -564,11 +1107,15 @@ class TestHttpStateMachine(unittest.TestCase):
         self.addCleanup(httpd.shutdown)
         return http.client.HTTPConnection("127.0.0.1", httpd.server_address[1])
 
-    def _ready_state(self, runner: FakeRunner | None = None) -> ServerState:
-        state = ServerState()
+    def _ready_state(
+        self, runner: FakeRunner | None = None, state: ServerState | None = None
+    ) -> ServerState:
+        state = state or ServerState()
         # The loader thread resolves fps before flipping to "ready"; mirror that here.
         state.fps = 20.0
         state.runner = runner or FakeRunner()
+        state.checkpoint = "acme/model"
+        state.checkpoint_revision = "a" * 40
         state.status = "ready"
         return state
 
@@ -703,6 +1250,34 @@ class TestHttpStateMachine(unittest.TestCase):
 
         self.assertEqual(resp.status, 200)
         self.assertEqual(json.loads(resp.read())["status"], "ready")
+
+    def test_status_requires_token_and_reports_loaded_revision(self) -> None:
+        """The Runtime can confirm the exact model without exposing it publicly."""
+        conn = self._start(self._ready_state())
+        conn.request("GET", "/status")
+        self.assertEqual(conn.getresponse().status, 401)
+
+        conn.request("GET", "/status", headers=self._auth_header())
+        response = conn.getresponse()
+        body = json.loads(response.read())
+
+        self.assertEqual(response.status, 200)
+        self.assertEqual(body["state"], "ready")
+        self.assertEqual(body["checkpoint"], "acme/model")
+        self.assertEqual(body["checkpointRevision"], "a" * 40)
+        self.assertIs(body["reloadPending"], False)
+
+    def test_status_reports_a_deferred_reload(self) -> None:
+        """A reload waiting on the running policy is visible, not a silent stall."""
+        state = self._ready_state()
+        state.reload_pending = True
+        conn = self._start(state)
+
+        conn.request("GET", "/status", headers=self._auth_header())
+        body = json.loads(conn.getresponse().read())
+
+        self.assertIs(body["reloadPending"], True)
+        self.assertEqual(body["state"], "ready")
 
     def test_infer_malformed_json_is_400(self) -> None:
         """A body that isn't valid JSON is rejected before it reaches the policy."""
@@ -898,6 +1473,54 @@ class TestHttpStateMachine(unittest.TestCase):
 
         self.assertEqual(status, 500)
         self.assertIn("cuda OOM", body["error"])
+
+    def _assert_infer_recorded(self, runner: FakeRunner, expected_status: int) -> None:
+        state = self._ready_state(runner, ObservedState())
+        conn = self._start(state)
+
+        status, _body = self._infer(conn, self._valid_payload())
+
+        self.assertEqual(status, expected_status)
+        # The handler stamps the end after it responds; wait for that stamp.
+        self.assertTrue(state.infer_ended.wait(timeout=5.0))
+        self.assertEqual(state.inflight_infers, 0)
+        self.assertIsNotNone(state.last_infer_monotonic)
+        self.assertFalse(
+            state.try_begin_reload(state.last_infer_monotonic),
+            "A just-served /infer must hold off a reload",
+        )
+
+    def test_served_infer_holds_off_a_reload(self) -> None:
+        """A successful /infer marks the server busy for the reload watcher."""
+        self._assert_infer_recorded(FakeRunner(), 200)
+
+    def test_failed_infer_releases_the_in_flight_count(self) -> None:
+        """A policy exception cannot leave the server permanently busy."""
+        self._assert_infer_recorded(FakeRunner(RuntimeError("cuda OOM")), 500)
+
+    def test_infer_during_a_committed_reload_is_503(self) -> None:
+        """A request racing the process replacement is refused, not dropped."""
+        state = self._ready_state()
+        self.assertTrue(state.try_begin_reload(0.0))
+        conn = self._start(state)
+
+        status, body = self._infer(conn, self._valid_payload())
+
+        self.assertEqual(status, 503)
+        self.assertIn("reloading", body["error"])
+
+    def test_rejected_infer_does_not_hold_off_a_reload(self) -> None:
+        """An unauthenticated caller cannot postpone a reload indefinitely."""
+        state = self._ready_state()
+        conn = self._start(state)
+
+        conn.request("POST", "/infer", body=b"{}")
+        response = conn.getresponse()
+        response.read()
+
+        self.assertEqual(response.status, 401)
+        self.assertIsNone(state.last_infer_monotonic)
+        self.assertEqual(state.inflight_infers, 0)
 
 
 if __name__ == "__main__":

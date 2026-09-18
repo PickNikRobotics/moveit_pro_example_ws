@@ -1,0 +1,22 @@
+upstream:
+  repository: https://github.com/PickNikRobotics/ros2_kortex.git
+  commit: 732b96f99c8e62849450572f65b649c687fd875f
+  branch: main-picknik
+vendored_paths:
+  - LICENSE
+  - kortex_description/CMakeLists.txt
+  - kortex_description/package.xml
+  - kortex_description/arms/gen3/7dof/meshes
+pruned_paths:
+  - kortex_api
+  - kortex_bringup
+  - kortex_driver
+  - kortex_moveit_config
+  - unused arm and gripper variants, macros, configuration, documentation, and visualization files
+modified_paths:
+  - kortex_description/CMakeLists.txt
+  - kortex_description/package.xml
+notes:
+  - Physical Kinova hardware support is outside this simulation-only workspace.
+  - kinova_sim defines its own MuJoCo robot model and uses only the Gen3 7-DOF STL meshes from this snapshot.
+  - Binary files matching workspace Git LFS patterns are stored as LFS objects; checked-out bytes match upstream.

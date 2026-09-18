@@ -19,9 +19,9 @@
    <!-- ros2_control -->
    <xacro:arg name="headless_mode" default="false"/>
    <xacro:arg name="robot_ip" default="0.0.0.0"/>
-   <xacro:arg name="script_filename" default="$(find ur_robot_driver)/resources/ros_control.urscript"/>
-   <xacro:arg name="output_recipe_filename" default="$(find ur_robot_driver)/resources/rtde_output_recipe.txt"/>
-   <xacro:arg name="input_recipe_filename" default="$(find ur_robot_driver)/resources/rtde_input_recipe.txt"/>
+   <xacro:arg name="script_filename" default="to_be_filled_by_ur_robot_driver"/>
+   <xacro:arg name="output_recipe_filename" default="to_be_filled_by_ur_robot_driver"/>
+   <xacro:arg name="input_recipe_filename" default="to_be_filled_by_ur_robot_driver"/>
 
    <xacro:arg name="use_fake_hardware" default="True"/>
 
