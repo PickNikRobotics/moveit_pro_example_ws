@@ -44,7 +44,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
       "torch==$TORCH_VERSION" "torchvision==$TORCHVISION_VERSION" \
       "torchao==$TORCHAO_VERSION"
 
-COPY vla_inference_server.py quantize_checkpoint.py /app/
+COPY vla_inference_server.py /app/
 WORKDIR /app
 
 # Non-root default for a bare `docker run` (the compose service overrides the
