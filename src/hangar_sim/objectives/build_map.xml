@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Build Map">
+  <!--Requires slam_toolbox to already be running in mapping mode, which the persist launch starts with slam:=True. Its parameters live in the slam_toolbox block of config/../params/nav2_params.yaml.-->
+  <BehaviorTree
+    ID="Build Map"
+    _description="Teleoperate the robot to explore the hangar while slam_toolbox builds an occupancy grid, then save that map on the operator's confirmation."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <!--No SwitchController prologue is needed: the jog branches inside the subtree switch controllers themselves, and SwitchController defaults automatic_activation and automatic_deactivation to true, so it activates the downstream platform_velocity_controller and drops whatever held the wheel interfaces before.-->
+      <!--Teleop mode 1 is JOINT_JOG, which is how the base is driven here: the manipulator group carries linear_x_joint, linear_y_joint and rotational_yaw_joint, and joint_velocity_controller commands them through the platform controller. DoTeleoperateAction holds the confirmation prompt open for as long as teleoperation is active, so the operator explores and then ends this step by answering it.-->
+      <SubTree
+        ID="Request Teleoperation"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        joint_trajectory_controller_name="joint_trajectory_controller"
+        execution_pipeline="jtc"
+        enable_user_interaction="true"
+        initial_teleop_mode="1"
+        user_interaction_prompt="Drive the base to explore the hangar, turning in place so each surface passes the FRONT lidar - mapping uses the front scan only. Stop moving, then press Continue to save the map, or Abort to discard it."
+      />
+      <!--slam_toolbox resolves a relative name against its own working directory, so this writes a new map rather than overwriting maps/hangar_map.pgm in the source tree. Copy the result into the config package to start using it.-->
+      <Action
+        ID="CallSaveMapService"
+        map_name="hangar_map"
+        service_name="/slam_toolbox/save_map"
+        response_timeout="30.000000"
+        wait_for_server_available_timeout="3.000000"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Build Map">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Navigation" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
