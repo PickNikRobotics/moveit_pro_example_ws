@@ -93,7 +93,7 @@ state_estimator:
       # the estimate into the virtual-rail joint states instead of TF.
       world_frame_id: 'odom'
       publish_tf: false
-      # 100 Hz bounds the phantom yaw from odom_world_drift pairing this estimate against unaligned
-      # faster truth; only useful once PR 973 lands. Aligning stamps there is the real fix.
+      # odom_world_drift subtracts this estimate from much faster ground truth without matching
+      # their timestamps, so the estimate's age reads as fake yaw while turning; 100 Hz shrinks it.
       publish_frequency: 100.0
       predict_to_current_time: true
