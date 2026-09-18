@@ -35,30 +35,16 @@ amcl:
     pf_z: 0.99
     recovery_alpha_fast: 0.1
     recovery_alpha_slow: 0.001
-    # Deliberately 1, not the 3 the spin retune expected to need. Raising it to 3 alongside a
-    # lower update_min_a was measured on an in-place spin and made things worse, not better:
-    # 2 of 3 attempts at update_min_a 0.1 / resample_interval 3 threw a yaw excursion of
-    # 27-34 deg, against 5-8 deg for the same update_min_a at resample_interval 1.
+    # Deliberately 1: raising to 3 with a lower update_min_a measured WORSE, 27-34 deg yaw
+    # excursions on 2 of 3 spins against 5-8 deg at 1.
     resample_interval: 1
     robot_model_type: "nav2_amcl::OmniMotionModel"
     save_pose_rate: 0.5
     sigma_hit: 0.2
     tf_broadcast: true
     transform_tolerance: 1.0
-    # 0.2 rad meant the filter only re-estimated heading every 11.5 deg of rotation. Measured on
-    # an in-place spin at 1.0 rad/s it was worse than that: beluga only tests the threshold when a
-    # scan arrives (~7.8 Hz, so ~7 deg of rotation per scan), so the robot actually turned a median
-    # 15.6 deg between corrections and each correction dumped up to 2.0 deg of heading in one step.
-    # At 0.05 rad it corrects on essentially every scan: 6.1 deg of rotation per correction, worst
-    # step 0.85 deg, and the worst yaw error over a 2-revolution spin falls 8.2 -> 4.1 deg. The
-    # extra filter work is free here - the localization container stayed at 0.31-0.33 cores.
-    # The two thresholds are OR'd, so this also raises the correction cadence on any driving that
-    # changes heading, not just in-place spins. On a straight 14.2 m leg to the fuselage standoff
-    # pose the effect is much smaller than the spin's ~3x, about 1.4x, because update_min_d
-    # (unchanged at 0.25 m) still gates it: travel per correction only moves 0.261 -> 0.232 m.
-    # Nothing regressed over 3 runs per arm: position error at the robot improves slightly
-    # (rms 0.171 -> 0.136 m, max 0.251 -> 0.212 m) and no correction step exceeded 0.10 m in any
-    # of the nine runs (worst single step 0.042 m here, against 0.055 m shipped).
+    # 0.05 corrects heading every ~6 deg of rotation instead of ~15.6; worst step 0.85 deg, not 2.0.
+    # Thresholds are OR'd so route cadence rises ~1.4x too; measured no regression, CPU flat.
     update_min_a: 0.05
     update_min_d: 0.25
     z_hit: 0.5

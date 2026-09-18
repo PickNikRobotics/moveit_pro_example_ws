@@ -93,31 +93,7 @@ state_estimator:
       # the estimate into the virtual-rail joint states instead of TF.
       world_frame_id: 'odom'
       publish_tf: false
-      # 100 Hz, not 10. This is the single biggest lever on how much the map appears to lurch
-      # while the base rotates. The consumer is the odom_world_drift node
-      # (src/hangar_sim/src/odom_world_drift.cpp), which subscribes odom_filtered and /odom -
-      # the latter being the simulator's ground-truth odometry from the MuJoCo plugin, not the
-      # wheel/IMU side (wheel odometry reaches fuse on
-      # /platform_velocity_controller_nav2/odom and is not in this pairing at all) - differences
-      # the newest sample of each without aligning stamps, and publishes the odom -> world
-      # transform. /odom arrives far faster than this estimate, so the pairing gap is essentially
-      # the estimate's own age, which turns into a spurious yaw offset of omega * age. At 10 Hz
-      # that age reaches 100 ms - 5.7 deg of phantom heading at 1 rad/s, refreshed every publish,
-      # and measured as a per-frame yaw lurch of 1.7 deg median / 3.4 deg p95 through an in-place
-      # spin. At 100 Hz the same spin lurches 0.32 deg median / 1.2 deg p95, over 6 attempts,
-      # with the estimator container's CPU unchanged. This bounds the symptom rather than
-      # removing it; aligning the stamps in odom_world_drift is the actual fix. The fast side of
-      # the pairing is ground truth, so this lever is sim-only - on hardware the same mispairing
-      # has to be looked for wherever the estimate reaches TF instead.
-      # odom_world_drift is NOT on main - it lives on fm/fuse-rebase-remeasure (PR 973, still
-      # open) - and use_fuse defaults to false here, so on main today this parameter has no
-      # consumer and the higher rate is cost without benefit; the benefit is contingent on that
-      # branch landing. The cost, measured on the same route: the estimator container is
-      # unchanged at 0.130 cores, the nav2 container goes 0.341 -> 0.370 cores, RTF unaffected,
-      # and the topic carries roughly 72 kB/s of loopback traffic instead of 7.2 kB/s.
-      # That node also hard-codes kEstStaleSec = 0.5, justified there as "~5x fuse's 10 Hz
-      # publish period"; at 100 Hz the withhold guard is ~50x the nominal period, so it still
-      # works but is no longer proportional to the rate - whoever lands PR 973 should re-derive
-      # it from this rate rather than inherit 0.5 s unchanged.
+      # 100 Hz bounds the phantom yaw from odom_world_drift pairing this estimate against unaligned
+      # faster truth; only useful once PR 973 lands. Aligning stamps there is the real fix.
       publish_frequency: 100.0
       predict_to_current_time: true
