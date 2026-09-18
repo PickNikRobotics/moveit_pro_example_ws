@@ -230,11 +230,14 @@ hangar_sim, of a 3.4 deg p95 frame-to-frame yaw jerk, beluga's correction owned 
 state estimate below it owned the rest, and halving `update_min_a` changed nothing.
 
 The mechanism is generic and worth checking for anywhere an estimate reaches TF: a consumer that
-differences a slow estimate topic against a fast one (the wheel/IMU side runs at the ~390 Hz
-controller-manager rate) **without aligning stamps** converts the estimate's age into a phantom
-yaw of `omega * age`. The signature is that the jerk scales **linearly with turn rate** — a filter
-error does not. Raising the estimate's publish rate shrinks the age and bounds the symptom;
-interpolating to the estimate's stamp at the consumer is the actual fix.
+differences a slow estimate topic against a fast one **without aligning stamps** converts the
+estimate's age into a phantom yaw of `omega * age`. In hangar_sim the fast side is `/odom`, the
+MuJoCo plugin's ground-truth odometry — not the wheel/IMU side, which reaches fuse on
+`/platform_velocity_controller_nav2/odom` at 50 Hz — so that particular pairing exists only in
+sim; on hardware look for the same mispairing wherever the estimate reaches TF. The signature is
+that the jerk scales **linearly with turn rate** — a filter error does not. Raising the estimate's
+publish rate shrinks the age and bounds the symptom; interpolating to the estimate's stamp at the
+consumer is the actual fix.
 
 To tell the two apart, decompose the error per TF link rather than looking at `map -> base` alone,
 and compare the estimate topic against truth at the estimate's own stamp — that isolates the
