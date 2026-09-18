@@ -220,7 +220,7 @@ during a 1 rad/s spin. The scan rate is also the floor: below `update_min_a` ~0.
 already correcting on every scan and lowering it further changes nothing. Never derive a
 correction cadence from the parameter alone — measure it.
 
-`resample_interval` is deliberately 1 in `hangar_sim/params/nav2_params.yaml`; see the comment
+`resample_interval` is deliberately 1 in `src/hangar_sim/params/nav2_params.yaml`; see the comment
 there for the measurement that rejected 3.
 
 ### A jerky pose during rotation is estimate *freshness*, not AMCL
