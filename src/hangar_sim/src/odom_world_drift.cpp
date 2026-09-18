@@ -34,9 +34,12 @@
 // carry both. Inputs are /odom_filtered (fuse) and /odom (truth), so no TF buffer is needed.
 // Sim-only and planar, hence 2D pose algebra; no synthetic drift term.
 
+#include <algorithm>
 #include <cmath>
+#include <deque>
 #include <functional>
 #include <optional>
+#include <utility>
 
 #include <tf2_ros/transform_broadcaster.h>
 #include <geometry_msgs/msg/transform_stamped.hpp>
@@ -51,6 +54,13 @@ using std::placeholders::_1;
 
 constexpr double kPubPeriod = 0.02;   // 50 Hz -- keeps odom->world fresh for AMCL's motion model.
 constexpr double kEstStaleSec = 0.5;  // ~5x fuse's 10 Hz publish period.
+// Truth history, so the estimate is differenced against truth at ITS OWN stamp. The cap only
+// guards against an unbounded queue; neither is a tuning knob.
+constexpr double kTruthHistorySec = 1.0;
+constexpr size_t kTruthHistoryMax = 4096;
+// fuse stamps its estimate where it predicted to, which can land just ahead of the newest truth.
+// Clamp to newest within this window; beyond it the streams have diverged and we withhold.
+constexpr double kEstAheadToleranceSec = 0.05;
 
 /// Planar pose (x, y, yaw). Local to this file; tf2::Transform is full SE(3).
 struct Pose2
@@ -74,6 +84,18 @@ Pose2 compose(const Pose2& a, const Pose2& b)
   const double c = std::cos(a.yaw), s = std::sin(a.yaw);
   return { a.x + c * b.x - s * b.y, a.y + s * b.x + c * b.y, a.yaw + b.yaw };
 }
+
+double wrap(double a)
+{
+  return std::atan2(std::sin(a), std::cos(a));
+}
+
+/// Lerp between two truth samples; yaw goes through the wrapped difference so a pair straddling
+/// +/-pi does not spin the long way round.
+Pose2 lerp(const Pose2& a, const Pose2& b, double f)
+{
+  return { a.x + f * (b.x - a.x), a.y + f * (b.y - a.y), a.yaw + f * wrap(b.yaw - a.yaw) };
+}
 }  // namespace
 
 class OdomWorldDrift : public rclcpp::Node
@@ -81,7 +103,7 @@ class OdomWorldDrift : public rclcpp::Node
 public:
   OdomWorldDrift() : Node("odom_world_drift"), tf_broadcaster_(*this)
   {
-    // Only the latest sample of each input is used; the queues just absorb scheduling bursts.
+    // Only the latest estimate is used; truth is kept as a short stamped history (see truthAt).
     est_sub_ =
         create_subscription<nav_msgs::msg::Odometry>("/odom_filtered", 10, std::bind(&OdomWorldDrift::onEst, this, _1));
     truth_sub_ = create_subscription<nav_msgs::msg::Odometry>("/odom", rclcpp::SensorDataQoS(),
@@ -96,16 +118,74 @@ private:
     est_ = fromOdom(*m);
     // Arrival time, not the sender's stamp: staleness means how long we have gone without one.
     est_stamp_ = get_clock()->now();
+    // The sender's stamp, separately: this is the instant the estimate describes, and it is what
+    // truth has to be sampled at for the difference to mean anything.
+    est_msg_stamp_ = rclcpp::Time(m->header.stamp);
   }
 
   void onTruth(const nav_msgs::msg::Odometry::ConstSharedPtr& m)
   {
-    truth_ = fromOdom(*m);
+    const rclcpp::Time stamp(m->header.stamp);
+    // MuJoCo publishes truth monotonically, but a sim reset rewinds the clock; drop the history
+    // rather than interpolate across the discontinuity.
+    if (!truth_hist_.empty() && stamp < truth_hist_.back().first)
+    {
+      truth_hist_.clear();
+    }
+    truth_hist_.emplace_back(stamp, fromOdom(*m));
+    while (truth_hist_.size() > kTruthHistoryMax ||
+           (truth_hist_.size() > 1 &&
+            (stamp - truth_hist_.front().first).seconds() > kTruthHistorySec))
+    {
+      truth_hist_.pop_front();
+    }
+  }
+
+  /// Truth at `when`, interpolated between the samples that bracket it.
+  ///
+  /// This is the whole point of the node's history buffer. Differencing the newest estimate
+  /// against the newest truth pairs two samples taken at different instants, and while the base
+  /// moves that age difference lands in the output as pure error: omega * age of spurious yaw,
+  /// refreshed on every publish. Measured on an in-place spin it was the dominant term in the
+  /// pose jitter an operator sees, about 61 ms worth, and it scaled linearly with turn rate --
+  /// the signature of a timing offset rather than an estimator fault.
+  ///
+  /// Returns nullopt when `when` is outside the buffer (beyond the small look-ahead tolerance),
+  /// so publish() withholds rather than silently extrapolating.
+  std::optional<Pose2> truthAt(const rclcpp::Time& when) const
+  {
+    if (truth_hist_.empty() || when < truth_hist_.front().first)
+    {
+      return std::nullopt;
+    }
+    if (when > truth_hist_.back().first)
+    {
+      return (when - truth_hist_.back().first).seconds() <= kEstAheadToleranceSec
+                 ? std::optional<Pose2>(truth_hist_.back().second)
+                 : std::nullopt;
+    }
+    if (truth_hist_.size() < 2)
+    {
+      return truth_hist_.front().second;
+    }
+    const auto hi = std::lower_bound(truth_hist_.begin(), truth_hist_.end(), when,
+                                     [](const auto& e, const rclcpp::Time& t) { return e.first < t; });
+    if (hi == truth_hist_.begin())
+    {
+      return hi->second;
+    }
+    const auto lo = std::prev(hi);
+    const double span = (hi->first - lo->first).seconds();
+    if (span <= 0.0)
+    {
+      return lo->second;
+    }
+    return lerp(lo->second, hi->second, (when - lo->first).seconds() / span);
   }
 
   void publish()
   {
-    if (!est_.has_value() || !truth_.has_value())
+    if (!est_.has_value() || truth_hist_.empty())
     {
       return;
     }
@@ -120,8 +200,17 @@ private:
                            est_age);
       return;
     }
-    // Latest-of-each, sampled at different instants: up to ~speed * 0.1 s of skew while moving.
-    const Pose2 t = compose(est_.value(), invert(truth_.value()));
+    const auto truth_at_est = truthAt(est_msg_stamp_);
+    if (!truth_at_est.has_value())
+    {
+      // The estimate's stamp falls outside the truth history: the two streams are not overlapping
+      // (one stalled, or the clock jumped). Withhold rather than difference across the gap.
+      RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), 5000,
+                           "no truth sample bracketing the estimate's stamp -- withholding "
+                           "odom->world rather than differencing across a timing gap.");
+      return;
+    }
+    const Pose2 t = compose(est_.value(), invert(truth_at_est.value()));
 
     geometry_msgs::msg::TransformStamped tf;
     tf.header.stamp = get_clock()->now();
@@ -137,8 +226,11 @@ private:
   // Touched only by the subscriptions and timer, which share one mutually-exclusive callback
   // group, so no locking is needed.
   std::optional<Pose2> est_;    // fuse estimate, odom -> base
-  rclcpp::Time est_stamp_;      // arrival time of the last est_
-  std::optional<Pose2> truth_;  // MuJoCo ground truth, world -> base
+  rclcpp::Time est_stamp_;      // arrival time of the last est_, for the staleness guard
+  rclcpp::Time est_msg_stamp_;  // the instant the last est_ describes, for pairing with truth
+  // MuJoCo ground truth, world -> base, with stamps: a short history rather than just the latest,
+  // so the estimate can be differenced against truth from the same instant.
+  std::deque<std::pair<rclcpp::Time, Pose2>> truth_hist_;
   // ROS entities last, so callbacks stop before the state above destructs.
   tf2_ros::TransformBroadcaster tf_broadcaster_;
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr est_sub_, truth_sub_;
