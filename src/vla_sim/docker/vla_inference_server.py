@@ -30,17 +30,18 @@
 
 """LeRobot inference server for MoveIt Pro's ExecutePolicy.
 
-Serves POST /infer and GET /health over HTTP. Runs in its own container (see
-Dockerfile.vla_inference_server and the workspace docker-compose.yaml
-`inference_server` service) so torch/lerobot stay out of the MoveIt Pro
-images; the in-config adapter node (script/get_action_chunk_adapter.py)
-bridges the /get_action_chunk ROS service to this server.
+Serves POST /infer, GET /health, and GET /status over HTTP. Runs in its own
+container (see Dockerfile.vla_inference_server and the workspace
+docker-compose.yaml `inference_server` service) so torch/lerobot stay out of
+the MoveIt Pro images; the in-config adapter node
+(script/get_action_chunk_adapter.py) bridges the /get_action_chunk ROS service
+to this server.
 
-/infer requires the deployment's shared MOVEIT_FRONTEND_KEY as an
+/infer and /status require the deployment's shared MOVEIT_FRONTEND_KEY as an
 `Authorization: Bearer` token, the same key the MoveIt Pro web backend
 endpoints use; a blank or unset key parks the server in the error state (fail
-closed, matching those endpoints). /health stays token-free for health
-probes. For a bare development run, export the documented dev key first
+closed, matching those endpoints). /health stays token-free for health probes.
+For a bare development run, export the documented dev key first
 (`MOVEIT_FRONTEND_KEY=moveit-secret-key`).
 
 The socket binds before the checkpoint loads: /health reports
@@ -64,6 +65,9 @@ import hmac
 import json
 import math
 import os
+import re
+import stat
+import sys
 import threading
 import time
 import traceback
@@ -74,9 +78,8 @@ import cv2
 import numpy as np
 import torch
 import yaml
-from huggingface_hub import hf_hub_download
+from huggingface_hub import hf_hub_download, snapshot_download
 from huggingface_hub.errors import GatedRepoError, RepositoryNotFoundError
-
 from lerobot.configs.types import RTCAttentionSchedule
 from lerobot.policies.factory import get_policy_class, make_pre_post_processors
 from lerobot.policies.rtc.configuration_rtc import RTCConfig
@@ -110,6 +113,22 @@ REQUEST_SOCKET_TIMEOUT_SECONDS = 30
 # The per-config model-serving YAML, mounted read-only from the workspace's
 # src/vla_sim/config/. Overridable with --config for a standalone `docker run`.
 DEFAULT_CONFIG_PATH = "/vla_config/vla_serving.yaml"
+HUB_COMMIT_PATTERN = re.compile(r"^[0-9a-f]{40}$")
+MAX_HF_TOKEN_BYTES = 4096
+RELOAD_POLL_SECONDS = 1.0
+# A reload replaces the process, which would fail a running policy's next
+# /infer call. The reload waits until no /infer has been served for longer than
+# the gap between calls within one policy run. ExecutePolicy calls every
+# committed_action_steps * dt seconds, and a commit must be smaller than the
+# chunk, so one chunk of playback bounds that gap for any objective. This is
+# the floor, used until a warmup has measured the loaded checkpoint's chunk.
+RELOAD_IDLE_SECONDS = 5.0
+# An /infer still in flight after this long no longer holds off a reload: its
+# caller gave up (the adapter's http_timeout is 9.0, under ExecutePolicy's
+# policy_call_timeout of 10.0 in the stock objective), and a hung inference
+# must not block the reload that would replace it.
+INFER_ABANDONED_SECONDS = 30.0
+_HF_TOKEN_FILE_SOURCE_ENV = "MOVEIT_PRO_HF_TOKEN_FROM_FILE"
 
 
 def load_serving_config(path: str) -> dict:
@@ -146,7 +165,7 @@ def resolve_default(yaml_value, builtin):
     return builtin if yaml_value is None else yaml_value
 
 
-def load_checkpoint_file(checkpoint: str, filename: str) -> dict:
+def load_checkpoint_file(checkpoint: str, filename: str, revision: str = "") -> dict:
     """Read a JSON file from a local checkpoint directory or an HF repo.
 
     A local path wins when it exists; anything else must look like an HF repo
@@ -155,6 +174,11 @@ def load_checkpoint_file(checkpoint: str, filename: str) -> dict:
     """
     path = Path(checkpoint).expanduser()
     if path.is_dir():
+        if revision:
+            raise ValueError(
+                "checkpoint_revision applies only to a Hugging Face repo id, "
+                "not a local checkpoint directory"
+            )
         file = path / filename
         if not file.is_file():
             raise FileNotFoundError(f"'{path}' has no {filename}")
@@ -164,14 +188,24 @@ def load_checkpoint_file(checkpoint: str, filename: str) -> dict:
             f"checkpoint '{checkpoint}' is neither a local directory nor a "
             "Hugging Face repo id"
         )
-    return json.loads(Path(hf_hub_download(checkpoint, filename)).read_text())
+    return json.loads(
+        Path(
+            hf_hub_download(
+                repo_id=checkpoint,
+                filename=filename,
+                revision=revision or None,
+            )
+        ).read_text()
+    )
 
 
-def resolve_policy_type(checkpoint: str, override: str) -> str:
+def resolve_policy_type(checkpoint: str, override: str, revision: str = "") -> str:
     """Read the policy family from the checkpoint's config.json unless overridden."""
     if override:
         return override
-    policy_type = load_checkpoint_file(checkpoint, "config.json").get("type", "")
+    policy_type = load_checkpoint_file(checkpoint, "config.json", revision).get(
+        "type", ""
+    )
     if not policy_type:
         raise ValueError(
             f"the config.json of '{checkpoint}' carries no 'type' field; "
@@ -181,7 +215,7 @@ def resolve_policy_type(checkpoint: str, override: str) -> str:
     return policy_type
 
 
-def resolve_fps(checkpoint: str, fps: float) -> float:
+def resolve_fps(checkpoint: str, fps: float, revision: str = "") -> float:
     """Resolve the policy's training rate, preferring the explicit value.
 
     The chunk is played at 1/fps seconds per step; a wrong value scales every
@@ -191,7 +225,7 @@ def resolve_fps(checkpoint: str, fps: float) -> float:
     if fps > 0.0:
         return fps
     try:
-        config = load_checkpoint_file(checkpoint, "train_config.json")
+        config = load_checkpoint_file(checkpoint, "train_config.json", revision)
     except (GatedRepoError, RepositoryNotFoundError):
         # The tailored HF-access advice in load_policy beats a generic
         # missing-fps message.
@@ -330,6 +364,7 @@ class PolicyRunner:
         guidance_horizon: int,
         rtc_schedule: str,
         state_dim: int,
+        checkpoint_revision: str = "",
     ):
         self.device = device
         self.state_dim = state_dim
@@ -338,6 +373,13 @@ class PolicyRunner:
 
         # Resolve before the slow checkpoint load so a schedule typo fails fast.
         schedule = resolve_rtc_schedule(rtc_schedule)
+
+        # LeRobot 0.6.0's pi0.5 loader reads the config at `revision` but
+        # downloads the weights without it. A pinned checkpoint is therefore
+        # resolved to its local snapshot first, and every loader reads that
+        # directory, where no other commit's files can resolve.
+        if checkpoint_revision:
+            checkpoint = snapshot_download(checkpoint, revision=checkpoint_revision)
 
         self.policy = get_policy_class(policy_type).from_pretrained(checkpoint)
         self.policy.to(device)
@@ -452,14 +494,198 @@ class ServerState:
         self.runner: PolicyRunner | None = None
         # Resolved by the loader thread; meaningful once status is "ready".
         self.fps = 0.0
+        # The selected checkpoint is available through the authenticated
+        # /status endpoint while it loads, not through public /health.
+        self.checkpoint = ""
+        self.checkpoint_revision = ""
         # Shared secret /infer requests must present; set from
         # MOVEIT_FRONTEND_KEY in main() before serve_forever() accepts any
         # request.
         self.frontend_key = ""
+        # Inference activity, written by handler threads and read by the
+        # reload watcher.
+        self.activity_lock = threading.Lock()
+        # Start time of each in-flight /infer, keyed by its handler thread.
+        self.infer_starts: dict[int, float] = {}
+        self.last_infer_monotonic: float | None = None
+        # How long /infer must stay quiet before a reload; see RELOAD_IDLE_SECONDS.
+        self.reload_idle_seconds = RELOAD_IDLE_SECONDS
+        # True while a changed serving input waits for the running policy to
+        # stop. Advisory only: the watcher writes it and /status reads it
+        # unlocked, and nothing else depends on it.
+        self.reload_pending = False
+        # Set once the watcher commits to a reload, so no /infer starts in the
+        # moment before the process is replaced.
+        self.reloading = False
+
+    @property
+    def inflight_infers(self) -> int:
+        return len(self.infer_starts)
+
+    def begin_infer(self) -> bool:
+        """Record an /infer starting; False when a reload has been committed."""
+        with self.activity_lock:
+            if self.reloading:
+                return False
+            self.infer_starts[threading.get_ident()] = time.monotonic()
+            return True
+
+    def end_infer(self) -> None:
+        with self.activity_lock:
+            del self.infer_starts[threading.get_ident()]
+            self.last_infer_monotonic = time.monotonic()
+
+    def _idle(self, now: float) -> bool:
+        # Judged on the oldest /infer: once it outlives INFER_ABANDONED_SECONDS
+        # it is hung, and every later request is queued behind it on the
+        # runner's lock, so none of them can hold off the reload that clears it.
+        if (
+            self.infer_starts
+            and now - min(self.infer_starts.values()) < INFER_ABANDONED_SECONDS
+        ):
+            return False
+        return (
+            self.last_infer_monotonic is None
+            or now - self.last_infer_monotonic >= self.reload_idle_seconds
+        )
+
+    def try_begin_reload(self, now: float) -> bool:
+        """Commit to a reload once no live /infer is in flight or recently finished.
+
+        The idle check and the commit share one lock acquisition, so an /infer
+        cannot start between them.
+        """
+        with self.activity_lock:
+            self.reloading = self._idle(now)
+            return self.reloading
+
+    def cancel_reload(self) -> None:
+        """Accept /infer again after a committed reload failed to start."""
+        with self.activity_lock:
+            self.reloading = False
 
 
 def log(message: str) -> None:
     print(f"[vla_inference_server] {message}", flush=True)
+
+
+def load_hf_token_file(raw_path: str | None) -> str:
+    """Load an owner-only token file when HF_TOKEN is not already set.
+
+    Returns an empty string on success or absence. A non-empty result is safe
+    to expose through /health and parks model loading in the error state.
+    """
+    environment_token = os.environ.get("HF_TOKEN", "").strip()
+    if environment_token:
+        os.environ.pop(_HF_TOKEN_FILE_SOURCE_ENV, None)
+        os.environ["HF_TOKEN"] = environment_token
+        return ""
+    os.environ.pop("HF_TOKEN", None)
+    path = (raw_path or "").strip()
+    if not path:
+        return ""
+    try:
+        descriptor = os.open(
+            path, os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | os.O_CLOEXEC
+        )
+    except FileNotFoundError:
+        return ""
+    except OSError:
+        return "the Hugging Face serving credential could not be opened"
+    try:
+        with os.fdopen(descriptor, "rb") as handle:
+            metadata = os.fstat(handle.fileno())
+            if (
+                not stat.S_ISREG(metadata.st_mode)
+                or metadata.st_uid != os.geteuid()
+                or metadata.st_mode & 0o077
+            ):
+                return "the Hugging Face serving credential is not owner-only"
+            encoded = handle.read(MAX_HF_TOKEN_BYTES + 1)
+    except OSError:
+        return "the Hugging Face serving credential could not be read"
+    if len(encoded) > MAX_HF_TOKEN_BYTES:
+        return "the Hugging Face serving credential is too long"
+    try:
+        token = encoded.decode("utf-8").strip()
+    except UnicodeError:
+        return "the Hugging Face serving credential is not valid UTF-8"
+    if not token:
+        return ""
+    if any(character.isspace() for character in token):
+        return "the Hugging Face serving credential contains whitespace"
+    os.environ["HF_TOKEN"] = token
+    os.environ[_HF_TOKEN_FILE_SOURCE_ENV] = "1"
+    return ""
+
+
+def watched_file_signature(path: str) -> tuple[int, int, int] | None:
+    """Return the replacement-sensitive signature of a watched file."""
+    try:
+        metadata = os.stat(path, follow_symlinks=False)
+    except FileNotFoundError:
+        return None
+    except OSError:
+        return (-1, -1, -1)
+    return (metadata.st_ino, metadata.st_size, metadata.st_mtime_ns)
+
+
+def restart_process() -> None:
+    """Replace this process so model memory is released before reloading."""
+    environment = os.environ.copy()
+    if environment.pop(_HF_TOKEN_FILE_SOURCE_ENV, None) == "1":
+        # The file is the source of truth. Do not let the old value become an
+        # apparent explicit HF_TOKEN override in the replacement process.
+        environment.pop("HF_TOKEN", None)
+    os.execve(sys.executable, [sys.executable, *sys.argv], environment)
+
+
+def watch_runtime_inputs(
+    paths: list[str],
+    *,
+    state: ServerState | None = None,
+    wait=time.sleep,
+    restart=restart_process,
+    clock=time.monotonic,
+) -> None:
+    """Restart after the serving config or credential is atomically replaced.
+
+    With a state, the restart waits until the server is idle (see
+    RELOAD_IDLE_SECONDS) so it does not fail a running policy, and /infer is
+    refused from the moment the restart is committed.
+    """
+    baseline = [watched_file_signature(path) for path in paths]
+    while True:
+        wait(RELOAD_POLL_SECONDS)
+        current = [watched_file_signature(path) for path in paths]
+        if current != baseline:
+            # Trainer writes the token and YAML as one user action. A short
+            # debounce coalesces both replacements into one model reload.
+            wait(RELOAD_POLL_SECONDS)
+            if state is not None and not state.try_begin_reload(clock()):
+                state.reload_pending = True
+                log(
+                    "serving configuration changed; reload deferred until the "
+                    "running policy stops"
+                )
+                while not state.try_begin_reload(clock()):
+                    wait(RELOAD_POLL_SECONDS)
+            if state is not None and state.inflight_infers:
+                log(
+                    f"WARNING: reloading over {state.inflight_infers} /infer "
+                    f"call(s) hung for more than {INFER_ABANDONED_SECONDS:g}s"
+                )
+            log("serving configuration changed; reloading the model")
+            try:
+                restart()
+            except OSError as exc:
+                # The inputs still differ from the baseline, so the next poll
+                # retries; until then keep serving the loaded model.
+                if state is not None:
+                    state.cancel_reload()
+                log(f"ERROR: the reload could not replace the process: {exc}")
+                continue
+            return
 
 
 def hub_access_error_message(checkpoint: str, gated: bool, token_present: bool) -> str:
@@ -498,6 +724,8 @@ def hub_access_error_message(checkpoint: str, gated: bool, token_present: bool) 
 
 def load_policy(state: ServerState, args: argparse.Namespace) -> None:
     """Load + warm the policy in the background; on failure park in the error state."""
+    state.checkpoint = args.checkpoint
+    state.checkpoint_revision = getattr(args, "checkpoint_revision", "")
     try:
         # A malformed serving config was deferred out of parse_args so the
         # socket could bind first; surface it here like any other load failure.
@@ -511,12 +739,27 @@ def load_policy(state: ServerState, args: argparse.Namespace) -> None:
                 "set the checkpoint in vla_serving.yaml (or --checkpoint) to "
                 "a local LeRobot checkpoint directory or an HF repo id"
             )
+        if args.checkpoint_revision and Path(args.checkpoint).expanduser().is_dir():
+            raise ValueError(
+                "checkpoint_revision applies only to a Hugging Face repo id, "
+                "not a local checkpoint directory"
+            )
+        if (
+            args.checkpoint_requires_hf_token
+            and not os.environ.get("HF_TOKEN", "").strip()
+        ):
+            raise ValueError(
+                "this private Trainer checkpoint requires Hugging Face model access; "
+                "configure it from the Trainer tab"
+            )
         # Resolving the fps can read the checkpoint's train_config.json (a
         # download for hub checkpoints), so it happens here rather than before
         # the socket binds, and an unresolvable rate parks in the error state
         # instead of exiting into a compose restart loop.
-        state.fps = resolve_fps(args.checkpoint, args.fps)
-        policy_type = resolve_policy_type(args.checkpoint, args.policy_class)
+        state.fps = resolve_fps(args.checkpoint, args.fps, args.checkpoint_revision)
+        policy_type = resolve_policy_type(
+            args.checkpoint, args.policy_class, args.checkpoint_revision
+        )
         device = resolve_device(args.device, torch.cuda.is_available())
         if policy_type not in TESTED_POLICY_TYPES:
             log(
@@ -524,7 +767,9 @@ def load_policy(state: ServerState, args: argparse.Namespace) -> None:
                 f"server (tested: {', '.join(TESTED_POLICY_TYPES)}); loading best-effort"
             )
         log(
-            f"loading {policy_type} checkpoint '{args.checkpoint}' on '{device}' "
+            f"loading {policy_type} checkpoint '{args.checkpoint}'"
+            f"{f' at {args.checkpoint_revision}' if args.checkpoint_revision else ''} "
+            f"on '{device}' "
             f"(torch {torch.__version__}) ..."
         )
         runner = PolicyRunner(
@@ -534,6 +779,7 @@ def load_policy(state: ServerState, args: argparse.Namespace) -> None:
             args.guidance_horizon,
             args.rtc_schedule,
             args.state_dim,
+            checkpoint_revision=args.checkpoint_revision,
         )
 
         image_features = [
@@ -557,6 +803,9 @@ def load_policy(state: ServerState, args: argparse.Namespace) -> None:
             # least latency/dt steps yet leave at least as many uncommitted,
             # capping tolerable latency at (chunk/2)*dt.
             budget_s = (chunk_steps / 2.0) / state.fps
+            state.reload_idle_seconds = max(
+                RELOAD_IDLE_SECONDS, chunk_steps / state.fps
+            )
             if steady_s > budget_s:
                 log(
                     f"WARNING: inference takes {steady_s:.2f}s per "
@@ -660,8 +909,7 @@ def run_inference(state: ServerState, payload: dict) -> dict:
             prev_chunk = np.asarray(prev, dtype=float)
         except (TypeError, ValueError) as exc:
             raise ValueError(
-                f"/infer payload 'prev_chunk_left_over' is not a numeric "
-                f"array ({exc})"
+                f"/infer payload 'prev_chunk_left_over' is not a numeric array ({exc})"
             ) from exc
         if prev_chunk.ndim != 2 or not np.isfinite(prev_chunk).all():
             raise ValueError(
@@ -711,10 +959,32 @@ def make_handler(state: ServerState):
                 log(f"client disconnected before the {code} response was sent")
 
         def do_GET(self):
-            if self.path != "/health":
+            if self.path == "/health":
+                health = {"status": state.status}
+                if state.status == "error":
+                    health["detail"] = state.detail
+                elif state.status == "ready":
+                    health["device"] = state.runner.device
+                self._send(200, health)
+                return
+            if self.path != "/status":
                 self._send(404, {"error": "not found"})
                 return
-            health = {"status": state.status}
+            if not self._authorized():
+                self._send(
+                    401,
+                    {
+                        "error": "/status requires the deployment's "
+                        "MOVEIT_FRONTEND_KEY as an 'Authorization: Bearer' token"
+                    },
+                )
+                return
+            health = {
+                "state": state.status,
+                "checkpoint": state.checkpoint,
+                "checkpointRevision": state.checkpoint_revision,
+                "reloadPending": state.reload_pending,
+            }
             if state.status == "error":
                 health["detail"] = state.detail
             elif state.status == "ready":
@@ -782,6 +1052,15 @@ def make_handler(state: ServerState):
             except ValueError as exc:
                 self._send(400, {"error": f"bad request: {exc}"})
                 return
+            if not state.begin_infer():
+                self._send(
+                    503,
+                    {
+                        "error": "the inference server is reloading the "
+                        "model; try again shortly"
+                    },
+                )
+                return
             try:
                 self._send(200, run_inference(state, payload))
             except ValueError as exc:
@@ -791,6 +1070,8 @@ def make_handler(state: ServerState):
             except Exception as exc:
                 traceback.print_exc()
                 self._send(500, {"error": f"{type(exc).__name__}: {exc}"})
+            finally:
+                state.end_infer()
 
         def log_message(self, *args):
             pass  # quiet; call counting is done adapter-side
@@ -837,6 +1118,43 @@ def parse_args() -> argparse.Namespace:
         "--checkpoint",
         default=str(resolve_default(config.get("checkpoint"), "")),
         help="local LeRobot checkpoint directory or HF repo id",
+    )
+    checkpoint_revision = resolve_default(config.get("checkpoint_revision"), "")
+    if not isinstance(checkpoint_revision, str):
+        config_errors.append("checkpoint_revision must be a string")
+        checkpoint_revision = ""
+    elif checkpoint_revision and not HUB_COMMIT_PATTERN.fullmatch(checkpoint_revision):
+        config_errors.append(
+            "checkpoint_revision must be an empty value or a full 40-character "
+            "lowercase Hugging Face commit SHA"
+        )
+        checkpoint_revision = ""
+
+    def checkpoint_revision_arg(value: str) -> str:
+        if value and not HUB_COMMIT_PATTERN.fullmatch(value):
+            raise argparse.ArgumentTypeError(
+                "checkpoint revision must be an empty value or a full "
+                "40-character lowercase Hugging Face commit SHA"
+            )
+        return value
+
+    parser.add_argument(
+        "--checkpoint-revision",
+        type=checkpoint_revision_arg,
+        default=checkpoint_revision,
+        help="exact Hugging Face commit SHA for the checkpoint",
+    )
+    requires_hf_token = resolve_default(
+        config.get("checkpoint_requires_hf_token"), False
+    )
+    if not isinstance(requires_hf_token, bool):
+        config_errors.append("checkpoint_requires_hf_token must be true or false")
+        requires_hf_token = False
+    parser.add_argument(
+        "--checkpoint-requires-hf-token",
+        action=argparse.BooleanOptionalAction,
+        default=requires_hf_token,
+        help="fail closed unless HF_TOKEN is present",
     )
     parser.add_argument(
         "--policy-class",
@@ -911,13 +1229,26 @@ def apply_frontend_key(state: ServerState, raw_key: str | None) -> bool:
 
 
 def main() -> None:
-    # Compose forwards HF_TOKEN as an empty string when the host never set it;
-    # drop it so the Hub client sees a genuinely absent token.
-    if os.environ.get("HF_TOKEN") == "":
-        del os.environ["HF_TOKEN"]
+    token_file = os.environ.get("HF_TOKEN_FILE", "").strip()
+    token_error = load_hf_token_file(token_file)
     args = parse_args()
+    if token_error:
+        args.config_error = "; ".join(
+            part for part in (args.config_error, token_error) if part
+        )
     state = ServerState()
+    state.checkpoint = args.checkpoint
+    state.checkpoint_revision = args.checkpoint_revision
     httpd = ThreadingHTTPServer(("0.0.0.0", args.port), make_handler(state))
+    watched_paths = [args.config]
+    if token_file:
+        watched_paths.append(token_file)
+    threading.Thread(
+        target=watch_runtime_inputs,
+        args=(watched_paths,),
+        kwargs={"state": state},
+        daemon=True,
+    ).start()
     if apply_frontend_key(state, os.environ.get("MOVEIT_FRONTEND_KEY")):
         threading.Thread(target=load_policy, args=(state, args), daemon=True).start()
         log(f"listening on 0.0.0.0:{args.port}; loading model ...")
