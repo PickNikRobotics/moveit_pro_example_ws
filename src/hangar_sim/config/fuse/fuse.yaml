@@ -94,14 +94,23 @@ state_estimator:
       world_frame_id: 'odom'
       publish_tf: false
       # 100 Hz, not 10. This is the single biggest lever on how much the map appears to lurch
-      # while the base rotates. Downstream consumers pair the newest sample of this topic with
-      # the newest sample of a much faster one (the wheel/IMU side runs at the ~390 Hz
-      # controller-manager rate), without aligning stamps, so whatever age this estimate has
+      # while the base rotates. The consumer is the odom_world_drift node
+      # (src/hangar_sim/src/odom_world_drift.cpp), which subscribes odom_filtered and odom,
+      # differences the newest sample of each - the wheel/IMU side runs at the ~390 Hz
+      # controller-manager rate - without aligning stamps, and publishes the odom -> world
+      # transform. That unaligned pairing is why publish rate is the lever: whatever age this
+      # estimate has
       # when it is picked up turns into a spurious yaw offset of omega * age. At 10 Hz that age
       # reaches 100 ms - 5.7 deg of phantom heading at 1 rad/s, refreshed every publish, and
       # measured as a per-frame yaw lurch of 1.7 deg median / 3.4 deg p95 through an in-place
       # spin. At 100 Hz the same spin lurches 0.32 deg median / 1.2 deg p95, over 6 attempts,
       # with the estimator container's CPU unchanged. This bounds the symptom rather than
-      # removing it; aligning the stamps at the consumer is the actual fix.
+      # removing it; aligning the stamps in odom_world_drift is the actual fix.
+      # odom_world_drift is NOT on main - it lives on fm/fuse-rebase-remeasure (PR 973, still
+      # open) - and use_fuse defaults to false here, so on main today this parameter has no
+      # consumer and the higher rate is cost without benefit; the benefit is contingent on that
+      # branch landing. The cost, measured on the same route: the estimator container is
+      # unchanged at 0.130 cores, the nav2 container goes 0.341 -> 0.370 cores, RTF unaffected,
+      # and the topic carries roughly 72 kB/s of loopback traffic instead of 7.2 kB/s.
       publish_frequency: 100.0
       predict_to_current_time: true

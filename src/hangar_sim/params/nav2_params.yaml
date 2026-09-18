@@ -52,7 +52,13 @@ amcl:
     # At 0.05 rad it corrects on essentially every scan: 6.1 deg of rotation per correction, worst
     # step 0.85 deg, and the worst yaw error over a 2-revolution spin falls 8.2 -> 4.1 deg. The
     # extra filter work is free here - the localization container stayed at 0.31-0.33 cores.
-    # update_min_d is left alone: translation already meets its bar and was not re-measured.
+    # The two thresholds are OR'd, so this also raises the correction cadence on any driving that
+    # changes heading, not just in-place spins. On a straight 14.2 m leg to the fuselage standoff
+    # pose the effect is much smaller than the spin's ~3x, about 1.4x, because update_min_d
+    # (unchanged at 0.25 m) still gates it: travel per correction only moves 0.261 -> 0.232 m.
+    # Nothing regressed over 3 runs per arm: position error at the robot improves slightly
+    # (rms 0.171 -> 0.136 m, max 0.251 -> 0.212 m) and no correction step exceeded 0.10 m in any
+    # of the nine runs (worst single step 0.042 m here, against 0.055 m shipped).
     update_min_a: 0.05
     update_min_d: 0.25
     z_hit: 0.5
