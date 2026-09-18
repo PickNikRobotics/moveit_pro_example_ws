@@ -74,10 +74,8 @@ def generate_launch_description():
     remappings = [("/tf", "tf"), ("/tf_static", "tf_static")]
 
     # Create our own temporary YAML files that include substitutions
-    # nav2 reads fuse's estimate when fuse runs, and MuJoCo ground truth when it does not:
-    # /odom_filtered has no publisher with use_fuse:=false. This has to be rewritten here
-    # rather than in the parent launch file, because bt_navigator and controller_server are
-    # created below from this file's own RewrittenYaml, not the parent's.
+    # /odom_filtered has no publisher with use_fuse:=false, so nav2 follows the flag. It must be
+    # rewritten here: bt_navigator and controller_server are created from THIS file's RewrittenYaml.
     odom_topic = PythonExpression(
         ["'/odom_filtered' if '", use_fuse, "'.lower() == 'true' else '/odom'"]
     )

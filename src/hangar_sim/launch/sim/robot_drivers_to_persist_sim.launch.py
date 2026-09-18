@@ -152,9 +152,8 @@ def generate_launch_description():
     ]
 
     # Create our own temporary YAML files that include substitutions.
-    # odom_topic is NOT rewritten here: configured_params below reaches only the two
-    # component containers, which do not consume it. navigation_launch.py rewrites it from
-    # use_fuse where bt_navigator and controller_server are actually created.
+    # odom_topic is rewritten in navigation_launch.py instead: configured_params here reaches only
+    # the component containers, which do not consume it.
     param_substitutions = {"use_sim_time": use_sim_time, "yaml_filename": map_yaml_file}
 
     # Only it applies when `use_namespace` is True.
