@@ -123,11 +123,12 @@ private:
   void onTruth(const nav_msgs::msg::Odometry::ConstSharedPtr& m)
   {
     const rclcpp::Time stamp(m->header.stamp);
-    // MuJoCo publishes truth monotonically, but a sim reset rewinds the clock; drop the history
-    // rather than interpolate across the discontinuity.
+    // MuJoCo publishes truth monotonically, but a sim reset rewinds the clock. Drop the history
+    // AND the estimate: a pre-reset estimate paired with post-reset truth is a meaningless offset.
     if (!truth_hist_.empty() && stamp < truth_hist_.back().first)
     {
       truth_hist_.clear();
+      est_.reset();
     }
     truth_hist_.emplace_back(stamp, fromOdom(*m));
     while (truth_hist_.size() > kTruthHistoryMax ||
