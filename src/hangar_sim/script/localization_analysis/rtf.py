@@ -37,7 +37,11 @@ def truthlen(rows):
 
 
 for p in sys.argv[1:]:
-    rows = [json.loads(l) for l in open(p) if not json.loads(l).get("ev")]
+    rows = []
+    for line in open(p):
+        d = json.loads(line)
+        if not d.get("ev"):
+            rows.append(d)
     mv = [x for x in rows
           if abs(x.get("vx", 0)) + abs(x.get("vy", 0)) + abs(x.get("wz", 0)) > 0.02]
     t = truthlen(mv)

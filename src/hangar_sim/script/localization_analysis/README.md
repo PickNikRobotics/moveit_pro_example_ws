@@ -56,6 +56,13 @@ and state estimation" section of the repository's `AGENTS.md`.
    python3 rtf.py runs/<label>.jsonl
    ```
 
+`navloop_ab.py` drives the A/B by rewriting the real Objective files in place: a `baseline` start
+runs the pre-fix seed (no variance ports) and a `tight` start runs the committed one, which is the
+experiment itself. So that a run cannot leave the pre-fix seed behind, it restores `OBJ_DIR` with
+`git checkout` on every exit path -- normal completion, an exception, and SIGINT/SIGTERM -- and it
+refuses to start at all while those files carry uncommitted edits, rather than overwriting work it
+cannot put back.
+
 `navloop_ab.py`'s `--load-settle` defaults to 20 s because the observed divergences appeared
 26-29 s after their load step. `RESCUE=2.0` re-seeds the filter on truth when it has been left
 more than 2 m out, with a covariance no arm uses, so the analysis cannot confuse a rescue seed
@@ -72,5 +79,6 @@ The hardcoded paths are gone; each tool takes its locations from the environment
 - `abrun` — `HARNESS_DIR` (defaults to the script's own directory), `OUT_DIR` (defaults to
   `./runs`), `CYCLONEDDS_URI`, `INST`.
 - `loadstepper` — `HARNESS_DIR`, `WORKSPACE` (defaults to `$PWD`), `LOADSTEP_FILE`.
-- `navloop_ab.py` — `OBJ_DIR` and `LOADSTEP_FILE` (or `--loadstep-file`); the defaults are the
-  container-internal workspace paths `abrun` runs it against.
+- `navloop_ab.py` — `USER_WS` (the workspace root the container image already exports), which
+  supplies the defaults for `OBJ_DIR` and `LOADSTEP_FILE`; either can be overridden directly, and
+  `LOADSTEP_FILE` also has a `--loadstep-file` flag.

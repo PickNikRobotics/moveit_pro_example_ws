@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """What the filter actually holds when it is converged, measured on THIS stack.
 
-Reads the quiet stretches of an arm recording -- robot stopped, no re-seed within 10 s --
+Reads the quiet stretches of an arm recording -- robot stopped, no re-seed within 15 s --
 and reports the particle cloud's own spread and AMCL's own published covariance.  That is
 the number a re-seed should be asserting; anything wider manufactures doubt the filter did
 not have.
@@ -44,7 +44,7 @@ def main():
 
         def pct(v, p):
             return v[min(len(v) - 1, int(p * (len(v) - 1)))] if v else float("nan")
-        print(f"\n== settled state in {path}  ({n} samples, robot stopped, >10 s from any re-seed) ==")
+        print(f"\n== settled state in {path}  ({n} samples, robot stopped, >15 s from any re-seed) ==")
         print(f"  cloud r95        median {st.median(r95):.3f} m    p90 {pct(r95,0.9):.3f} m")
         print(f"  cloud yaw_r95    median {st.median(yr95):.2f} deg   p90 {pct(yr95,0.9):.2f} deg")
         print(f"  cloud yaw_std    median {st.median(ystd):.2f} deg   p90 {pct(ystd,0.9):.2f} deg")

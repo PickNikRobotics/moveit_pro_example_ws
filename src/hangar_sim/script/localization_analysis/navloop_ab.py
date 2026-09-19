@@ -11,7 +11,7 @@ Each start's arm is recorded by the recorder itself -- /initialpose carries the 
 that was in the file -- so the arm labels in the analysis come from the measurement, not
 from this script's bookkeeping.
 """
-import argparse, json, math, os, re, sys, threading, time
+import argparse, atexit, json, math, os, re, signal, subprocess, sys, threading, time
 
 import rclpy
 from rclpy.node import Node
@@ -33,8 +33,9 @@ LATCHED = QoSProfile(reliability=QoSReliabilityPolicy.RELIABLE,
 SENSOR = QoSProfile(reliability=ReliabilityPolicy.BEST_EFFORT,
                     history=HistoryPolicy.KEEP_LAST, depth=5)
 
-OBJ_DIR = os.environ.get("OBJ_DIR", "/home/breelynk/user_ws/src/hangar_sim/objectives")
-LOADSTEP_FILE = os.environ.get("LOADSTEP_FILE", "/home/breelynk/user_ws/log/.loadstep")
+USER_WS = os.environ.get("USER_WS", os.path.expanduser("~/user_ws"))
+OBJ_DIR = os.environ.get("OBJ_DIR", os.path.join(USER_WS, "src/hangar_sim/objectives"))
+LOADSTEP_FILE = os.environ.get("LOADSTEP_FILE", os.path.join(USER_WS, "log/.loadstep"))
 FILES = ["navigate_to_clicked_point.xml", "navigate_to_clicked_point_with_replanning.xml"]
 SHIPPED = '<Action ID="SetInitialPose" robot_frame_id="ridgeback_base_link" />'
 
@@ -45,6 +46,44 @@ WAYPOINTS = {
 }
 CYCLE = ["B", "C", "B", "A"]
 RESCUE_XY, RESCUE_YAW = 0.0100, 0.0009
+
+
+def _git(*args):
+    """git, scoped to whatever repository OBJ_DIR belongs to."""
+    return subprocess.run(("git", "-C", OBJ_DIR) + args,
+                          capture_output=True, text=True)
+
+
+def require_clean_objectives():
+    """Refuse to start if the Objectives carry uncommitted edits.
+
+    set_arm rewrites these files in place and restore_objectives puts them back with a
+    git checkout, which would discard a developer's own uncommitted work.
+    """
+    r = _git("status", "--porcelain", "--", ".")
+    if r.returncode != 0:
+        raise SystemExit(
+            f"cannot check {OBJ_DIR} with git ({r.stderr.strip()}); this tool rewrites the "
+            f"Objectives in place and restores them from git, so it needs a git checkout")
+    if r.stdout.strip():
+        raise SystemExit(
+            f"{OBJ_DIR} has uncommitted changes:\n{r.stdout.rstrip()}\n"
+            f"This tool rewrites those files in place and restores them from git, so it will "
+            f"not run while they carry uncommitted edits. Commit or stash them first.")
+
+
+def restore_objectives():
+    """Put the Objectives back to their committed bytes.
+
+    Restoring from git rather than rewriting a block keeps this tool from carrying its own
+    opinion about what the committed seed is, so it cannot reintroduce a stale version -- and
+    it also undoes the formatting damage set_arm's re-sub does on an otherwise clean run.
+    """
+    r = _git("checkout", "--", ".")
+    if r.returncode != 0:
+        print(f"WARNING: could not restore {OBJ_DIR} from git: {r.stderr.strip()}", flush=True)
+    else:
+        print(f"restored {OBJ_DIR} from git", flush=True)
 
 
 def yaw_of(q):
@@ -208,6 +247,11 @@ def main():
     a = ap.parse_args()
     arms = a.arms.split(",")
 
+    require_clean_objectives()
+    atexit.register(restore_objectives)
+    for sig in (signal.SIGINT, signal.SIGTERM):
+        signal.signal(sig, lambda signum, _frame: sys.exit(128 + signum))
+
     rclpy.init()
     n = NavAB(a.frame, a.click_delay)
     ex = MultiThreadedExecutor(num_threads=4); ex.add_node(n)
@@ -219,6 +263,17 @@ def main():
         time.sleep(0.1)
 
     fh = open(a.out, "w")
+    try:
+        run_starts(a, n, fh, arms)
+    finally:
+        fh.close()
+        restore_objectives()
+    print(f"DONE {a.starts} starts -> {a.out}", flush=True)
+    rclpy.shutdown()
+    return 0
+
+
+def run_starts(a, n, fh, arms):
     for i in range(a.starts):
         arm = arms[i % len(arms)]
         lost = n.localization_error()
@@ -272,11 +327,6 @@ def main():
         rec["end"] = dict(n.truth)
         fh.write(json.dumps(rec) + "\n"); fh.flush()
         time.sleep(a.settle)
-    fh.close()
-    set_arm("baseline", a.xy, a.yaw)
-    print(f"DONE {a.starts} starts -> {a.out}", flush=True)
-    rclpy.shutdown()
-    return 0
 
 
 if __name__ == "__main__":
