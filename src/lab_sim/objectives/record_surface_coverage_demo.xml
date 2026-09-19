@@ -5,13 +5,10 @@
     _description="Sweep two patches of the bench in one run and watch the treated surface accumulate in the 3D view."
   >
     <Control ID="Sequence" name="root">
-      <!-- The sweep runs at a standoff and never contacts the surface, so compliance is unused. The
-           admittance controller would only add its 0.5 rad path tolerance, aborting the sweep whenever
-           the simulator falls behind realtime. -->
-      <Action
-        ID="SwitchController"
-        activate_controllers="joint_trajectory_controller"
-      />
+      <!-- Every motion below names joint_trajectory_controller explicitly, rather than taking the
+           Move to Waypoint subtree's admittance default. The sweep runs at a standoff and never
+           contacts the surface, so compliance buys nothing, while the admittance controller's
+           0.5 rad path tolerance aborts the sweep when the simulator falls behind realtime. -->
       <SubTree ID="Close Gripper" _collapsed="true" />
 
       <!-- 180 deg about the optical X axis points the reference +Z back toward the camera, which is
@@ -25,7 +22,13 @@
 
       <!-- Sweep 1: a patch of bench 0.597 m ahead of the wrist camera. The viewing pose is what puts
            these fixed optical-frame offsets on the bench. -->
-      <SubTree ID="Move to Waypoint" waypoint_name="Look at Table" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Look at Table"
+        controller_names="joint_trajectory_controller"
+        execution_pipeline="jtc"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+      />
       <Action
         ID="GetPointCloud"
         topic_name="/wrist_camera/points"
@@ -68,10 +71,13 @@
         planning_group_name="manipulator"
         tip_links="grasp_link"
         blending_radius="0.001"
+        trajectory_timing="[{mode: time_optimal, velocity_scale_factor: 1.0, acceleration_scale_factor: 1.0, trajectory_sampling_rate: 100}]"
         joint_trajectory_msg="{coverage_trajectory}"
       />
       <Action
         ID="ExecuteTrajectory"
+        execution_pipeline="jtc"
+        controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
         joint_trajectory_msg="{coverage_trajectory}"
       />
       <!-- footprint_range must clear the 0.04 standoff the sweep was planned with; the 0.02 radius
@@ -95,7 +101,13 @@
 
       <!-- Sweep 2: a patch of bench 0.600 m ahead of the wrist camera. Returning to the viewing pose
            first keeps these fixed optical-frame offsets meaningful after the previous sweep moved the arm. -->
-      <SubTree ID="Move to Waypoint" waypoint_name="Look at Table" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Look at Table"
+        controller_names="joint_trajectory_controller"
+        execution_pipeline="jtc"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+      />
       <Action
         ID="GetPointCloud"
         topic_name="/wrist_camera/points"
@@ -138,10 +150,13 @@
         planning_group_name="manipulator"
         tip_links="grasp_link"
         blending_radius="0.001"
+        trajectory_timing="[{mode: time_optimal, velocity_scale_factor: 1.0, acceleration_scale_factor: 1.0, trajectory_sampling_rate: 100}]"
         joint_trajectory_msg="{coverage_trajectory}"
       />
       <Action
         ID="ExecuteTrajectory"
+        execution_pipeline="jtc"
+        controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
         joint_trajectory_msg="{coverage_trajectory}"
       />
       <Action
@@ -163,7 +178,13 @@
 
       <!-- Back to Home. The coverage is recorded in the world frame, so both patches stay on the
            bench while the arm and its camera move away. -->
-      <SubTree ID="Move to Waypoint" waypoint_name="Home" />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Home"
+        controller_names="joint_trajectory_controller"
+        execution_pipeline="jtc"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+      />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
