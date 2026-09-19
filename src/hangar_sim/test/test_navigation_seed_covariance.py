@@ -20,11 +20,21 @@ yaw_r95/1.96) gives sigma_xy 0.132 m and sigma_yaw 2.83 deg -- the committed
 quantities, since the rule being applied is that a seed must not assert a belief tighter than what
 the filter actually holds when converged.
 
-The bounds asserted here are 0.0027 rad^2 (sigma 3.0 deg) and 0.023 m^2 (sigma 0.15 m): they admit
-that settled-cloud-derived seed while rejecting the behavior defaults (0.0685 / 0.25).
+The rule is bounded in **both** directions, because a seed can be wrong either way:
 
-The purpose is that a future edit dropping back to those defaults fails here instead of silently
-reintroducing a five-fold heading doubt at the start of every navigation Objective.
+* Ceiling — 0.0027 rad^2 (sigma 3.0 deg) and 0.023 m^2 (sigma 0.15 m), just above the p90 settled
+  spread. Too wide manufactures doubt the filter did not have; the behavior defaults
+  (0.0685 / 0.25) fail here.
+* Floor — 0.00088 rad^2 (sigma 1.70 deg) and 0.0049 m^2 (sigma 0.070 m), the **median** settled
+  spread (pooled medians r95 0.171 m and yaw_r95 3.32 deg over the same n=4199). A seed at or
+  below the median converged spread asserts more confidence than the filter typically holds, and
+  that over-confident cloud cannot pull a genuinely offset pose back — the mirror image of the
+  failure being fixed. The superseded 0.0052 / 0.00085 fails here.
+
+The committed values sit at the p90, i.e. at the ceiling end of that band.
+
+The purpose is that a future edit fails here instead of silently reintroducing either a five-fold
+heading doubt or an over-confident cloud at the start of every navigation Objective.
 
 The Objective XML is a machine-consumed declarative artifact -- the behavior tree the moveit_pro
 agent loads -- so it is parsed into elements and attributes and asserted on by meaning, never
@@ -37,6 +47,8 @@ import pytest
 
 MAX_YAW_VARIANCE = 0.0027
 MAX_XY_VARIANCE = 0.023
+MIN_YAW_VARIANCE = 0.00088
+MIN_XY_VARIANCE = 0.0049
 
 OBJECTIVES_DIR = Path(__file__).resolve().parent.parent / "objectives"
 NAVIGATION_OBJECTIVES = [
@@ -75,11 +87,23 @@ def test_navigation_objective_seeds_with_a_converged_covariance(objective: str) 
             f"default of 0.0685 rad^2 (sigma 15 deg)"
         )
 
-        assert 0.0 < float(xy_variance) <= MAX_XY_VARIANCE, (
-            f"{objective}: xy_variance={xy_variance} is not a converged spread "
-            f"(expected <= {MAX_XY_VARIANCE} m^2, sigma 0.15 m)"
+        assert float(xy_variance) <= MAX_XY_VARIANCE, (
+            f"{objective}: xy_variance={xy_variance} is wider than the converged spread "
+            f"(expected <= {MAX_XY_VARIANCE} m^2, sigma 0.15 m) -- a seed this wide "
+            f"manufactures position doubt the filter did not have"
         )
-        assert 0.0 < float(yaw_variance) <= MAX_YAW_VARIANCE, (
-            f"{objective}: yaw_variance={yaw_variance} is not a converged spread "
-            f"(expected <= {MAX_YAW_VARIANCE} rad^2, sigma 3.0 deg)"
+        assert float(xy_variance) >= MIN_XY_VARIANCE, (
+            f"{objective}: xy_variance={xy_variance} is tighter than the median settled spread "
+            f"(expected >= {MIN_XY_VARIANCE} m^2, sigma 0.070 m) -- an over-confident seed "
+            f"collapses the cloud onto a pose it cannot then correct"
+        )
+        assert float(yaw_variance) <= MAX_YAW_VARIANCE, (
+            f"{objective}: yaw_variance={yaw_variance} is wider than the converged spread "
+            f"(expected <= {MAX_YAW_VARIANCE} rad^2, sigma 3.0 deg) -- a seed this wide puts the "
+            f"rotationally-ambiguous flipped hypothesis back in play"
+        )
+        assert float(yaw_variance) >= MIN_YAW_VARIANCE, (
+            f"{objective}: yaw_variance={yaw_variance} is tighter than the median settled spread "
+            f"(expected >= {MIN_YAW_VARIANCE} rad^2, sigma 1.70 deg) -- an over-confident seed "
+            f"collapses the cloud onto a heading it cannot then correct"
         )

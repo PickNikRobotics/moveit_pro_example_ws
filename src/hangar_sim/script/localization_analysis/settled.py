@@ -56,11 +56,19 @@ def main():
                   f"    p90 {math.sqrt(pct(cxx,0.9)):.3f} m")
         print(f"  |err| to truth   pos median {st.median(ed):.3f} m   "
               f"yaw median {st.median(ey):.2f} deg")
-        # what a seed matching the settled CLOUD would have to be
-        sx = st.median(r95) / 2.448          # r95 of a 2D Gaussian = 2.448 sigma
-        sy = st.median(yr95) / 1.96          # 95th pct of |N(0,s)| = 1.96 s
-        print(f"  -> a seed reproducing this cloud: xy_variance {sx**2:.4f} "
-              f"(sigma {sx:.3f} m), yaw_variance {math.radians(sy)**2:.5f} (sigma {sy:.2f} deg)")
+        # What a seed matching the settled CLOUD would have to be. r95 of a 2D Gaussian is
+        # 2.448 sigma; the 95th percentile of |N(0,s)| is 1.96 s.
+        def seed_from(rv, yv):
+            return rv / 2.448, yv / 1.96
+
+        mx, my = seed_from(st.median(r95), st.median(yr95))
+        px, py = seed_from(pct(r95, 0.9), pct(yr95, 0.9))
+        print(f"  -> seed from the MEDIAN settled cloud: xy_variance {mx**2:.4f} "
+              f"(sigma {mx:.3f} m), yaw_variance {math.radians(my)**2:.5f} (sigma {my:.2f} deg)")
+        print(f"  -> seed from the P90    settled cloud: xy_variance {px**2:.4f} "
+              f"(sigma {px:.3f} m), yaw_variance {math.radians(py)**2:.5f} (sigma {py:.2f} deg)")
+        print("     the committed seed uses the P90: the rule is that a seed must not be tighter")
+        print("     than what the filter holds when converged. The median is the test's floor.")
 
 
 if __name__ == "__main__":

@@ -63,8 +63,10 @@ and state estimation" section of the repository's `AGENTS.md`.
    ```
 
 `navloop_ab.py` drives the A/B by rewriting the real Objective files in place: a `baseline` start
-runs the pre-fix seed (no variance ports) and a `tight` start runs the committed one, which is the
-experiment itself. So that a run cannot leave the pre-fix seed behind, it reads both files' exact
+runs the pre-fix seed (no variance ports) and a `tight` start runs the committed seed, read from
+the Objective files at startup — the tool keeps no copy of the seed values, so the `tight` arm is
+whatever this repository currently ships and cannot drift from it. Every arm is rebuilt from that
+startup snapshot, so arms never accumulate one another's edits. This is the experiment itself. So that a run cannot leave the pre-fix seed behind, it reads both files' exact
 bytes at startup before writing anything and restores that snapshot on every exit path -- normal
 completion, an exception, and SIGINT/SIGTERM -- announcing on the first line that it is doing so.
 The snapshot is deliberately not a `git checkout`: this runs inside the runtime container against a
@@ -104,7 +106,9 @@ The live operator session that motivated this work is deliberately not committed
 private session data, and project memory is the wrong home for it. What the project keeps instead
 is the instrument -- the recorder, the analysis tools, and the load-stepping recipe above -- which
 is what lets anyone produce and adjudicate their own capture of the failure rather than take a
-single recording on trust.
+single recording on trust. What is committed here is the instrument — `recorder4.py`, the
+analysis tools, and the load-stepping recipe above — so that anyone can reproduce the failure and
+adjudicate it for themselves rather than depend on evidence they cannot see.
 
 ## Paths
 
@@ -115,8 +119,9 @@ The hardcoded paths are gone; each tool takes its locations from the environment
   own `USER_WS`) and `CONTAINER_LOADSTEP` for the container side of the load-step counter.
 - `loadstepper` — `HARNESS_DIR`, `WORKSPACE` (defaults to the workspace root derived from the
   harness directory, **not** `$PWD`, so running it from here still watches
-  `<workspace>/log/.loadstep`), `LOADSTEP_FILE`, `LO`/`HI`, and `GRACE` (seconds before it warns
-  that nothing has written the counter; default 180).
+  `<workspace>/log/.loadstep`), `LOADSTEP_FILE`, `LO`/`HI`, plus `WARMUP` (the same warmup passed
+  to `abrun`, default 60) and `GRACE` (the margin allowed on top of it, default 180). It reports
+  no step seen only after `WARMUP + GRACE` seconds, so a long warmup does not trip a false alarm.
 - `navloop_ab.py` — `USER_WS` (the workspace root the container image already exports), which
   supplies the defaults for `OBJ_DIR` and `LOADSTEP_FILE`; either can be overridden directly, and
   `LOADSTEP_FILE` also has a `--loadstep-file` flag.

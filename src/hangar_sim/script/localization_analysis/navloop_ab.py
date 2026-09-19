@@ -87,32 +87,29 @@ def yaw_of(q):
     return math.atan2(2.0 * (q.w * q.z + q.x * q.y), 1.0 - 2.0 * (q.y * q.y + q.z * q.z))
 
 
-def set_arm(arm, xy, yawv):
-    """Rewrite both Objectives for this arm. Idempotent: always rebuilt from the shipped form."""
-    if arm == "baseline":
-        block = SHIPPED
-    elif arm == "tight":
-        block = ('<Action\n        ID="SetInitialPose"\n'
-                 '        robot_frame_id="ridgeback_base_link"\n'
-                 f'        xy_variance="{xy}"\n        yaw_variance="{yawv}"\n      />')
-    elif arm == "noseed":
-        block = None
-    else:
+def set_arm(arm):
+    """Rewrite both Objectives for this arm, always derived from the startup snapshot.
+
+    Every arm is built from the committed bytes, never from whatever the previous start left
+    behind, so arms cannot accumulate edits. `tight` is the snapshot verbatim -- the tool holds
+    no copy of the seed values, so "tight" means "whatever this repository currently ships" by
+    construction and cannot drift from it the way a duplicated literal does. `baseline`
+    synthesises the shipped default (no variance ports), which is the experiment.
+    """
+    if arm not in ("baseline", "tight", "noseed"):
         raise SystemExit(f"unknown arm {arm}")
-    anchor = '<Control ID="Sequence" name="TopLevelSequence">\n'
     for f in FILES:
-        p = os.path.join(OBJ_DIR, f)
-        s = open(p).read()
-        # Normalise to the shipped single-line form first, re-inserting it if a previous
-        # 'noseed' start removed it, so every arm is reached from the same starting text.
-        s = re.sub(r'<Action\s+ID="SetInitialPose"[^>]*?/>', SHIPPED, s, flags=re.S)
-        if SHIPPED not in s:
-            s = s.replace(anchor, anchor + "      " + SHIPPED + "\n", 1)
-        if block is None:
-            s = s.replace("      " + SHIPPED + "\n", "", 1)
+        path = os.path.join(OBJ_DIR, f)
+        committed = _SNAPSHOT[path].decode()
+        if arm == "tight":
+            out = committed
         else:
-            s = s.replace(SHIPPED, block, 1)
-        open(p, "w").write(s)
+            block = SHIPPED if arm == "baseline" else ""
+            out = re.sub(r'[ \t]*<Action\s+ID="SetInitialPose"[^>]*?/>\n',
+                         ("      " + block + "\n") if block else "", committed, count=1,
+                         flags=re.S)
+        with open(path, "w") as fh:
+            fh.write(out)
 
 
 class NavAB(Node):
@@ -227,8 +224,6 @@ def main():
     ap.add_argument("--objective", default="Navigate to Clicked Point with Replanning")
     ap.add_argument("--starts", type=int, default=60)
     ap.add_argument("--arms", default="baseline,tight")
-    ap.add_argument("--xy", default="0.0052")
-    ap.add_argument("--yaw", default="0.00085")
     ap.add_argument("--out", required=True)
     ap.add_argument("--frame", default="map")
     ap.add_argument("--click-delay", type=float, default=4.0)
@@ -291,7 +286,7 @@ def run_starts(a, n, fh, arms):
             time.sleep(a.load_settle)
         if a.clear_costmaps:
             n.clear_costmaps()
-        set_arm(arm, a.xy, a.yaw)
+        set_arm(arm)
         time.sleep(0.5)
         wp = CYCLE[i % len(CYCLE)]
         n.goal = WAYPOINTS[wp]

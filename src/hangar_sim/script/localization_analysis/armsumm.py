@@ -74,6 +74,28 @@ def episodes(rows, thresh):
     return eps
 
 
+# navloop_ab.py's rescue seed (RESCUE_XY / RESCUE_YAW). It is deliberately a covariance no
+# Objective arm uses, precisely so the analysis can tell a rescue apart from an Objective's own
+# re-seed; this is where that promise is kept.
+RESCUE_COV = (0.0100, 0.0009)
+COV_TOL = 1e-6
+
+
+def is_rescue(e):
+    xx, aa = e.get("cov_xx"), e.get("cov_aa")
+    if xx is None or aa is None:
+        return False
+    return (abs(xx - RESCUE_COV[0]) < COV_TOL and abs(aa - RESCUE_COV[1]) < COV_TOL)
+
+
+def arm_key(e):
+    """An arm is identified by the covariance it seeded with -- the measurement, not bookkeeping."""
+    xx, aa = e.get("cov_xx"), e.get("cov_aa")
+    if xx is None or aa is None:
+        return None
+    return (round(xx, 6), round(aa, 7))
+
+
 def seed_effect(rows, evs, pre_s=6.0, post_s=4.0):
     """For each re-seed: heading spread and cloud radius just before vs just after."""
     out = []
@@ -88,7 +110,7 @@ def seed_effect(rows, evs, pre_s=6.0, post_s=4.0):
             xs = [x["cloud"][k] for x in v if k in x["cloud"]]
             return st.median(xs) if xs else float("nan")
         out.append(dict(
-            t=s,
+            t=s, wall=e.get("wall"),
             cov_xx=e.get("cov_xx"), cov_aa=e.get("cov_aa"),
             pre_yawr95=math.degrees(m(pre, "yaw_r95")), post_yawr95=math.degrees(m(post, "yaw_r95")),
             pre_r95=m(pre, "r95"), post_r95=m(post, "r95"),
@@ -160,12 +182,24 @@ def main():
         for t in (5.0, 10.0, 45.0, 90.0):
             print(f"  (at >= {t:4.0f} deg: {len(episodes(rows, t))} episodes)")
 
-        se = seed_effect(rows, evs)
-        if se:
+        se_all = seed_effect(rows, evs)
+        # An interleaved session writes several different covariances into one file. Pooling
+        # them would report a median over mixed populations under one arm's label, which is the
+        # opposite of what the A/B exists to measure -- so group by the seeded covariance and
+        # drop rescues, which are not an Objective's own seed.
+        n_rescue = len([x for x in se_all if is_rescue(x)])
+        se_arms = [x for x in se_all if not is_rescue(x) and arm_key(x) is not None]
+        groups = {}
+        for x in se_arms:
+            groups.setdefault(arm_key(x), []).append(x)
+        if n_rescue:
+            print(f"\n  ({n_rescue} rescue re-seed(s) excluded from the per-arm statistics below)")
+        for key in sorted(groups, reverse=True):
+            se = groups[key]
             widened = [s for s in se if s["post_yawr95"] > s["pre_yawr95"]]
             print(f"\n  RE-SEED EFFECT on the cloud's HEADING spread  "
-                  f"(seed sigma_yaw={math.degrees(math.sqrt(se[0]['cov_aa'])):.2f} deg, "
-                  f"sigma_xy={math.sqrt(se[0]['cov_xx']):.3f} m)")
+                  f"(seed sigma_yaw={math.degrees(math.sqrt(key[1])):.2f} deg, "
+                  f"sigma_xy={math.sqrt(key[0]):.3f} m)")
             print(f"  widened the heading spread in {len(widened)}/{len(se)} re-seeds")
             pre = [s["pre_yawr95"] for s in se]; post = [s["post_yawr95"] for s in se]
             print(f"  yaw_r95  pre  median {st.median(pre):5.2f} deg   "
@@ -177,6 +211,14 @@ def main():
                   f"ratio {st.median(po)/st.median(pr):.2f}x")
             pn = [s["pre_n"] for s in se]; pon = [s["post_n"] for s in se]
             print(f"  n        pre  median {st.median(pn):5.0f}       post median {st.median(pon):5.0f}")
+            # Attribute each start to an arm through the seed that fired inside its window,
+            # so the interleaved A/B finally reports the per-arm rate it exists to produce.
+            arm_starts = [idx for idx, wp, a, b in bounds
+                          if any(x["wall"] is not None and a <= x["wall"] < b for x in se)]
+            n_bad = len([k for k in arm_starts if hit.get(k)])
+            if len(groups) > 1 and arm_starts:
+                print(f"  excursions in this arm: {n_bad}/{len(arm_starts)} starts = "
+                      f"{100.0*n_bad/len(arm_starts):.0f}%")
 
 
 if __name__ == "__main__":
