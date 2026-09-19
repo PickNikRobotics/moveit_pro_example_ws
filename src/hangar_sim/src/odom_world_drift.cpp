@@ -131,8 +131,7 @@ private:
     }
     truth_hist_.emplace_back(stamp, fromOdom(*m));
     while (truth_hist_.size() > kTruthHistoryMax ||
-           (truth_hist_.size() > 1 &&
-            (stamp - truth_hist_.front().first).seconds() > kTruthHistorySec))
+           (truth_hist_.size() > 1 && (stamp - truth_hist_.front().first).seconds() > kTruthHistorySec))
     {
       truth_hist_.pop_front();
     }
@@ -149,9 +148,9 @@ private:
     }
     if (when > truth_hist_.back().first)
     {
-      return (when - truth_hist_.back().first).seconds() <= kEstAheadToleranceSec
-                 ? std::optional<Pose2>(truth_hist_.back().second)
-                 : std::nullopt;
+      return (when - truth_hist_.back().first).seconds() <= kEstAheadToleranceSec ?
+                 std::optional<Pose2>(truth_hist_.back().second) :
+                 std::nullopt;
     }
     if (truth_hist_.size() < 2)
     {
