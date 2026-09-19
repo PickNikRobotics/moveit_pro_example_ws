@@ -195,11 +195,16 @@ def main():
             return [idx for idx, wp, a, b in bounds
                     if any(x["wall"] is not None and a <= x["wall"] < b for x in seeds)]
 
-        seeded_starts = set()
-        # 'noseed' carries no covariance, so it is only an arm if some accepted start had no
-        # Objective seed in it. Count it before deciding whether this is a multi-arm session.
-        n_noseed = len([idx for idx, wp, a, b in bounds if idx not in set(starts_for(se_arms))])
-        multi_arm = len(groups) + (1 if n_noseed else 0) > 1
+        # The driver records the arm it ran per start; that is ground truth. Attribution by
+        # seed window is only a measurement of it, and the two can disagree -- t_accept is
+        # stamped client-side while SetInitialPose is the server's first action, so a seed can
+        # land just outside its own start's window. Never infer an arm from a missed
+        # attribution: that would manufacture a 'noseed' control in a session that ran none.
+        arm_of = {s["i"]: s.get("arm") for s in starts if s.get("accepted")}
+        has_arm_labels = any(v for v in arm_of.values())
+        seeded_starts = set(starts_for(se_arms))
+        noseed_starts = [idx for idx, wp, a, b in bounds if arm_of.get(idx) == "noseed"]
+        multi_arm = len(groups) + (1 if noseed_starts else 0) > 1
         for key in sorted(groups, reverse=True):
             se = groups[key]
             widened = [s for s in se if s["post_yawr95"] > s["pre_yawr95"]]
@@ -220,23 +225,35 @@ def main():
             # Attribute each start to an arm through the seed that fired inside its window,
             # so the interleaved A/B finally reports the per-arm rate it exists to produce.
             arm_starts = starts_for(se)
-            seeded_starts.update(arm_starts)
             n_bad = len([k for k in arm_starts if hit.get(k)])
             if multi_arm and arm_starts:
                 print(f"  excursions in this arm: {n_bad}/{len(arm_starts)} starts = "
                       f"{100.0*n_bad/len(arm_starts):.0f}%")
 
-        # The 'noseed' control emits no /initialpose at all, so it cannot be found by covariance
-        # -- it is the residual: every accepted start that no Objective seed fell inside. Without
-        # this it vanishes from the per-arm report while still inflating the pooled headline rate.
-        noseed_starts = [idx for idx, wp, a, b in bounds if idx not in seeded_starts]
+        # The 'noseed' control emits no /initialpose at all, so it cannot be found by covariance.
+        # It is reported when the driver log says it ran, and not otherwise.
         if multi_arm and noseed_starts:
             n_bad = len([k for k in noseed_starts if hit.get(k)])
             print("\n  RE-SEED EFFECT on the cloud's HEADING spread  "
                   "(seed sigma_yaw=n/a, sigma_xy=n/a -- the 'noseed' control, no re-seed fired)")
-            print(f"  widened the heading spread in 0/0 re-seeds (nothing to widen it)")
+            print("  widened the heading spread in 0/0 re-seeds (nothing to widen it)")
             print(f"  excursions in this arm: {n_bad}/{len(noseed_starts)} starts = "
                   f"{100.0*n_bad/len(noseed_starts):.0f}%")
+
+        # Where the recorded arm and the observed covariance disagree, say so rather than
+        # silently trusting either -- it means the per-arm rows above cannot be relied on.
+        if has_arm_labels:
+            missing = sorted(idx for idx, wp, a, b in bounds
+                             if arm_of.get(idx) not in (None, "noseed") and idx not in seeded_starts)
+            extra = sorted(idx for idx in noseed_starts if idx in seeded_starts)
+            if missing or extra:
+                print("\n  LABEL MISMATCH -- the per-arm rows above may misattribute these starts:")
+                if missing:
+                    print(f"    {len(missing)} start(s) recorded as a seeding arm with no seed "
+                          f"observed in their window: {missing}")
+                if extra:
+                    print(f"    {len(extra)} start(s) recorded as 'noseed' with a seed observed "
+                          f"in their window: {extra}")
 
 
 if __name__ == "__main__":

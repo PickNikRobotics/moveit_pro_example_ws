@@ -15,7 +15,8 @@ and state estimation" section of the repository's `AGENTS.md`.
 | --- | --- |
 | `recorder4.py` | Runs inside the runtime container and records the localization state (truth, `/odom`, `/odom_filtered`, `map -> odom`, the particle cloud, `/initialpose`) to a JSONL file. Every analysis tool below parses its output. |
 | `navloop_ab.py` | Drives the shipped navigation Objectives back to back over `/do_objective`, answering the UI prompts headlessly, alternating seed-covariance arms start by start inside one continuous session. |
-| `abrun` | Host-side wrapper: copies `recorder4.py` and `navloop_ab.py` into the runtime container, starts the recorder, runs the drive loop, then pulls the recording back out. |
+| `abrun` | Host-side wrapper: copies `recorder4.py`, `navloop_ab.py` and `seed_constants.py` into the runtime container, starts the recorder, runs the drive loop, then pulls the recording back out. |
+| `seed_constants.py` | The rescue seed covariance, owned in one place. `navloop_ab.py` writes it and `armsumm.py` reads it back to tell a rescue apart from an Objective's own re-seed, so widening it cannot silently reclassify rescues as an experiment arm. |
 | `load` | Puts host CPU load on the box so the simulator sits at a chosen RTF. `./load <n_burners>` / `./load off`. |
 | `loadstepper` | Watches the counter `navloop_ab.py` writes before each start and toggles the burner count, producing a deliberate load *step* per start. |
 | `rtf.py` | Recovers the real-time factor from a recording alone, by integrating the wheel-odometry path against the ground-truth path. |
@@ -24,9 +25,12 @@ and state estimation" section of the repository's `AGENTS.md`.
 | `settled.py` | Reports what the filter holds once converged — sampled stopped, but well after both a re-seed and some driving, because `beluga` only resamples while the robot moves. |
 | `adjudicate.py` | Classifies every heading excursion as a genuine particle-filter divergence or a `fuse` estimator stall. |
 
-`armsumm.py` and `recorder4.py` are dependencies, not optional extras: `adjudicate.py` imports
-`episodes`/`load` from `armsumm` and `annotate` from `hfresh`, and every analysis tool parses
-`recorder4.py`'s output format.
+`armsumm.py`, `recorder4.py` and `seed_constants.py` are dependencies, not optional extras:
+`adjudicate.py` imports `episodes`/`load` from `armsumm` and `annotate` from `hfresh`, every
+analysis tool parses `recorder4.py`'s output format, and both `navloop_ab.py` and `armsumm.py`
+import `seed_constants`. Staging the harness into the container by hand without
+`seed_constants.py` fails the driver with `ModuleNotFoundError` after the warmup, just as the
+session is meant to start driving.
 
 ## Load-stepping recipe
 
