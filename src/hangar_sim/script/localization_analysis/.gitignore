@@ -1,0 +1,6 @@
+# Session recordings. abrun writes <label>.jsonl / .starts / .drivelog here, which are
+# multi-megabyte captures of a live operator session. The README states as a decision that
+# such captures are private data and stay out of this repository; this makes that decision
+# enforceable rather than advisory, so a routine `git add -A` from this directory cannot
+# commit one. Set OUT_DIR to put captures somewhere else entirely.
+runs/

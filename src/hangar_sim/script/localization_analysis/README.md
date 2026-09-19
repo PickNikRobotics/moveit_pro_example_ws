@@ -102,8 +102,15 @@ single recording on trust.
 The hardcoded paths are gone; each tool takes its locations from the environment:
 
 - `abrun` — `HARNESS_DIR` (defaults to the script's own directory), `OUT_DIR` (defaults to
-  `./runs`), `CYCLONEDDS_URI`, `INST`.
-- `loadstepper` — `HARNESS_DIR`, `WORKSPACE` (defaults to `$PWD`), `LOADSTEP_FILE`.
+  `./runs`), `CYCLONEDDS_URI`, `INST`, plus `CONTAINER_WS` (defaults to the runtime container's
+  own `USER_WS`) and `CONTAINER_LOADSTEP` for the container side of the load-step counter.
+- `loadstepper` — `HARNESS_DIR`, `WORKSPACE` (defaults to the workspace root derived from the
+  harness directory, **not** `$PWD`, so running it from here still watches
+  `<workspace>/log/.loadstep`), `LOADSTEP_FILE`, `LO`/`HI`, and `GRACE` (seconds before it warns
+  that nothing has written the counter; default 180).
 - `navloop_ab.py` — `USER_WS` (the workspace root the container image already exports), which
   supplies the defaults for `OBJ_DIR` and `LOADSTEP_FILE`; either can be overridden directly, and
   `LOADSTEP_FILE` also has a `--loadstep-file` flag.
+
+Recordings land in `runs/` beside these tools, which is gitignored on purpose — see the decision
+above: a capture is private session data and must not be committed here.
