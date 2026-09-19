@@ -36,16 +36,22 @@ and state estimation" section of the repository's `AGENTS.md`.
    ./load 6
    ```
 
-2. Run the host-side stepper, which watches a counter the driver writes and toggles burners:
+2. Run the host-side stepper, which watches a counter the driver writes and toggles burners.
+   It prints the absolute path it is watching -- check that line:
 
    ```bash
    LO=6 HI=24 ./loadstepper &
+   # loadstepper: watching <workspace>/log/.loadstep, toggling 6 <-> 24 burners
    ```
 
-3. Drive the shipped Objectives back to back with arms interleaved, stepping load before each:
+3. Drive the shipped Objectives back to back with arms interleaved, stepping load before each.
+   `abrun` prints the container-side and host-side paths for the same counter, and the driver
+   prints the path it writes on the first step -- they must be the same file:
 
    ```bash
    LOADSTEP=1 WARMUP=60 RESCUE=2.0 ./abrun <label> 60 baseline,tight
+   # == load-step counter: container writes <USER_WS>/log/.loadstep ==
+   # == load-step counter: loadstepper must watch <workspace>/log/.loadstep (same file, host side) ==
    ```
 
 4. Adjudicate every episode as a real divergence or an estimator stall, and always report the
@@ -65,6 +71,14 @@ The snapshot is deliberately not a `git checkout`: this runs inside the runtime 
 bind-mounted worktree whose `.git` points at a host path that does not exist there, on an image that
 need not ship git. Restoring the startup bytes also means a tree with uncommitted edits is safe --
 your own edits come back, not someone's idea of the committed content.
+
+The stepper runs on the **host** while the driver runs **inside the runtime container**, so the
+two name the same bind-mounted counter by different paths: `<workspace>/log/.loadstep` on the host,
+`$USER_WS/log/.loadstep` in the container. `abrun` reads the container's `USER_WS` and passes the
+container-side path in explicitly so they cannot drift; override both with `LOADSTEP_FILE` (host)
+and `CONTAINER_LOADSTEP` (container) if your layout differs. A stepper pointed at the wrong file
+never fires and produces a steady-load run that looks like a stepped one, so `loadstepper` warns
+loudly if nothing writes its file within `GRACE` seconds (default 180).
 
 `navloop_ab.py`'s `--load-settle` defaults to 20 s because the observed divergences appeared
 26-29 s after their load step. `RESCUE=2.0` re-seeds the filter on truth when it has been left

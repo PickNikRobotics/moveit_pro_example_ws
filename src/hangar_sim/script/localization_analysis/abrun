@@ -10,7 +10,21 @@ OUT="${OUT_DIR:-$PWD/runs}"
 DDS="CYCLONEDDS_URI=${CYCLONEDDS_URI:-file://$HOME/.ros/cyclonedds.xml}"
 SRC='source /opt/ros/jazzy/setup.bash; source /opt/overlay_ws/install/setup.bash;'
 
+# The load-step counter is one file reached from two sides of the bind mount: the driver writes
+# it at the CONTAINER's $USER_WS, loadstepper watches it at the HOST worktree root. Read the
+# container's USER_WS rather than assuming it (the image bakes in whoever ran moveit_pro build)
+# and pass the container-side path in explicitly, so the two sides cannot drift apart silently.
+CONTAINER_WS="${CONTAINER_WS:-$(docker exec "$RT" sh -c 'echo $USER_WS' | tr -d '\r')}"
+CONTAINER_LOADSTEP="${CONTAINER_LOADSTEP:-$CONTAINER_WS/log/.loadstep}"
+HOST_WS="${WORKSPACE:-$(cd "$HARNESS_DIR/../../../.." && pwd)}"
+HOST_LOADSTEP="${LOADSTEP_FILE:-$HOST_WS/log/.loadstep}"
+
 mkdir -p "$OUT"
+
+if [ "${LOADSTEP:-0}" != "0" ]; then
+  echo "== load-step counter: container writes $CONTAINER_LOADSTEP =="
+  echo "== load-step counter: loadstepper must watch $HOST_LOADSTEP (same file, host side) =="
+fi
 
 docker cp "$HARNESS_DIR/recorder4.py" "$RT:/tmp/recorder4.py"
 docker cp "$HARNESS_DIR/navloop_ab.py" "$RT:/tmp/navloop_ab.py"
@@ -19,7 +33,7 @@ docker exec -d -e "$DDS" "$RT" bash -lc \
   "$SRC python3 /tmp/recorder4.py --out /tmp/${LABEL}.jsonl --duration 9000 --label $LABEL > /tmp/${LABEL}.reclog 2>&1"
 sleep "${WARMUP:-60}"
 
-docker exec -e "$DDS" "$RT" bash -lc \
+docker exec -e "$DDS" -e "LOADSTEP_FILE=$CONTAINER_LOADSTEP" "$RT" bash -lc \
   "$SRC python3 -u /tmp/navloop_ab.py --starts $STARTS --arms '$ARMS' --out /tmp/${LABEL}.starts --clear-costmaps ${CLEAR:-1} --load-step ${LOADSTEP:-0} --rescue-m ${RESCUE:-2.0}" \
   2>&1 | tee "$OUT/${LABEL}.drivelog"
 

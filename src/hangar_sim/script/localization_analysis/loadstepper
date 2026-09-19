@@ -8,14 +8,24 @@
 # it deliberately, and the interleaved arms make every step common to both.
 #
 # Watches a counter the driver writes before each start and toggles the burner count.
+#
+# This runs on the HOST while navloop_ab.py runs INSIDE the runtime container, and the two
+# rendezvous on the same file through the bind mount -- so each side names it by a different
+# path. Here it is the host worktree root; there it is $USER_WS. Do not "unify" these.
 set -uo pipefail
 HARNESS_DIR="${HARNESS_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)}"
-WS="${WORKSPACE:-$PWD}"
+# <ws>/src/hangar_sim/script/localization_analysis -> <ws>. Not $PWD: the README runs this from
+# the harness directory, which would resolve to <ws>/src/.../localization_analysis/log/.loadstep
+# while the driver writes <ws>/log/.loadstep, and the stepper would simply never fire.
+WS="${WORKSPACE:-$(cd "$HARNESS_DIR/../../../.." && pwd)}"
 F="${LOADSTEP_FILE:-$WS/log/.loadstep}"
 LO="${LO:-6}"; HI="${HI:-24}"
+GRACE="${GRACE:-180}"
 mkdir -p "$(dirname "$F")"; : > "$F"
-last=""; hi=1
-echo "loadstepper: watching $F, toggling $LO <-> $HI"
+F="$(cd "$(dirname "$F")" && pwd)/$(basename "$F")"
+last=""; hi=1; warned=0; t0=$SECONDS
+echo "loadstepper: watching $F, toggling $LO <-> $HI burners"
+echo "loadstepper: the driver in the container must write this same file via the bind mount"
 while true; do
   cur=$(cat "$F" 2>/dev/null)
   if [ -n "$cur" ] && [ "$cur" != "$last" ]; then
@@ -23,6 +33,13 @@ while true; do
     else "$HARNESS_DIR/load" "$LO" >/dev/null; hi=1; fi
     echo "$(date -u +%H:%M:%S) step $cur -> $( [ "$hi" = "0" ] && echo "$HI" || echo "$LO") burners"
     last="$cur"
+  fi
+  if [ "$warned" = "0" ] && [ -z "$last" ] && [ $((SECONDS - t0)) -gt "$GRACE" ]; then
+    echo "loadstepper: WARNING nothing has written $F in ${GRACE}s." >&2
+    echo "loadstepper: WARNING the driver is writing somewhere else, so NO load steps are" >&2
+    echo "loadstepper: WARNING happening and this run is a STEADY-load run, not a stepped one." >&2
+    echo "loadstepper: WARNING set LOADSTEP_FILE on both sides so they name the same file." >&2
+    warned=1
   fi
   sleep 1
 done

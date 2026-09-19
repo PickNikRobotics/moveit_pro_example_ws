@@ -282,6 +282,10 @@ def run_starts(a, n, fh, arms):
             try:
                 with open(a.loadstep_file, "w") as fh2:
                     fh2.write(str(i))
+                if i == 0:
+                    print(f"load-step counter -> {os.path.abspath(a.loadstep_file)} "
+                          f"(container side; loadstepper watches the same file on the host)",
+                          flush=True)
             except OSError as e:
                 print(f"load-step signal failed: {e}", flush=True)
             time.sleep(a.load_settle)
