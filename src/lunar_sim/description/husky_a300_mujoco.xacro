@@ -23,8 +23,8 @@
     <origin xyz="0 0 0.13597" rpy="0 0 0" />
   </joint>
 
-  <!-- Standard A300 accessory kit. The lidar bodies below match husky_a300.xml.
-       MujocoSystem publishes their optical-frame sites. -->
+  <!-- Standard A300 accessory kit. The arch carries an OAK-D Pro and the lidar bodies below match
+       husky_a300.xml; MujocoSystem publishes their optical-frame sites. -->
   <xacro:include filename="$(find clearpath_platform_description)/urdf/a300/attachments/bumper.urdf.xacro" />
   <xacro:bumper name="front_bumper" model="default" parent_link="front_bumper_mount" extension="0.0">
     <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
@@ -71,7 +71,20 @@
        "Reset Simulation" control and MujocoBehaviorsLoader's ResetMujocoKeyframe Behavior use by
        default - same pattern as moveit_pro_kinova_configs' space_satellite_sim.xacro. -->
   <xacro:arg name="mujoco_keyframe" default="default" />
+  <!-- Renders and publishes the OAK-D's stereo pair. Off unless a visual odometry consumer is
+       running; see the <sensor> blocks below. -->
+  <xacro:arg name="enable_vo" default="false" />
   <ros2_control name="husky_a300_hardware" type="system">
+    <!-- The stereo pair is for visual odometry and has no consumer yet; MuJoCo would render it
+         every tick regardless. camera_enabled drops it. oakd_color is never gated. -->
+    <xacro:unless value="$(arg enable_vo)">
+      <sensor name="oakd_left">
+        <param name="camera_enabled">false</param>
+      </sensor>
+      <sensor name="oakd_right">
+        <param name="camera_enabled">false</param>
+      </sensor>
+    </xacro:unless>
     <hardware>
       <plugin>picknik_mujoco_ros/MujocoSystem</plugin>
       <param name="mujoco_model">$(arg mujoco_model)</param>
@@ -93,7 +106,10 @@
       <param name="odom_frame">odom</param>
       <param name="base_link_name">chassis_link</param>
       <param name="tf_publish_rate">60</param>
-      <param name="render_publish_rate">10</param>
+      <!-- Cadence the operator sees. Raised from 10, which render cost capped the camera panes
+           near 2.5 fps before the ground split made frames cheap. Worth re-measuring now that the
+           two sweeping lidars add several offscreen renders per tick. -->
+      <param name="render_publish_rate">30</param>
       <param name="point_cloud_publish_rate">10</param>
     </hardware>
     <sensor name="lidar_front">

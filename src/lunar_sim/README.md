@@ -1,10 +1,12 @@
 # lunar_sim
 
 A MoveIt Pro configuration for a Clearpath Husky A300 running under MuJoCo physics on a
-procedurally cratered lunar regolith heightfield. A world-fixed camera on a visible mast
-overlooks the demo route, and front and rear image-based lidars ride on the rover.
-The base uses open-loop `/cmd_vel` commands from the `Dead Reckon Square` objective or
-the Desktop App's Pose tab. See [Teleoperation](#teleoperation). There is no Nav2 stack.
+procedurally cratered lunar regolith heightfield. A world-fixed `scene_camera` on a visible mast
+overlooks the demo route, front and rear image-based lidars ride on the rover, and the sensor arch
+carries an OAK-D Pro whose `oakd_color` streams the robot's own forward view. The OAK-D's stereo
+pair is modelled too but gated behind `enable_vo` - see [Cameras](#cameras). No Nav2 stack: the base
+is driven only by open-loop `/cmd_vel` commands, from the `Dead Reckon Square` objective or the
+Desktop App's Pose tab (see [Teleoperation](#teleoperation)).
 
 The base spawns at `husky_scene.xml`'s `default` keyframe rather than the world origin
 (`config.yaml`'s `mujoco_keyframe`); that keyframe's own comment records the pose and why it was
@@ -149,7 +151,7 @@ The fixed `scene_camera` keeps its original position `-1 -5 5`, orientation and 
 A 4.9 m post, ground base, bracket and camera housing now make its support visible.
 The post sits behind the optical center, clear of the overview image.
 
-MujocoSystem publishes these topics at a configured 10 Hz:
+MujocoSystem publishes these topics at the xacro's `render_publish_rate`, now 30 Hz:
 
 | Sensor | Topics | Frame |
 | --- | --- | --- |
@@ -159,7 +161,9 @@ MujocoSystem publishes these topics at a configured 10 Hz:
 
 Live checks on the shared development host measured about 7.2 Hz front lidar, 6.0 Hz
 rear lidar and 5.6 Hz scene images. The configured rate is a ceiling, not a guaranteed
-throughput. Both lidar clouds contain finite returns within the configured range.
+throughput. Those figures predate the [ground rendering split](#ground-rendering-split), which took
+a camera frame from 134 ms to 5.3 ms, and the rate rise from 10 to 30 Hz; they are due a
+re-measurement. Both lidar clouds contain finite returns within the configured range.
 At the starting pose, the rear scanner sees mostly open sky, so its cloud is sparse.
 
 The lidar positions follow the vendored Clearpath A300 accessory mounts:
@@ -177,7 +181,11 @@ The lidar positions follow the vendored Clearpath A300 accessory mounts:
 Each scanner uses a MuJoCo depth camera with `user="2 270 0.05 25"`, a 270-degree sweep
 and range limits of 0.05 to 25 m. The renderer's near clip (`znear` times the model
 extent, about 0.28 m) is the effective minimum range: anything closer, including the
-housing caps, is not rendered. `fovy="70"` tiles the sweep into three renders within
+housing caps, is not rendered. That figure holds only because `husky_scene.xml` pins
+`<statistic extent="28.29">`. MuJoCo otherwise derives extent from the model's bounding volume, and
+the 600 m far-field horizon inflates it to 849 m - which would push this minimum range from 0.28 m
+to **8.49 m**, past most of the demo route and far beyond anything a 1.8 m square drives through.
+Keep the pin whenever distant scenery is added. `fovy="70"` tiles the sweep into three renders within
 the scene's 1280x720 offscreen buffer. `resolution="811 3"` selects 811 horizontal beams
 and three vertical rows, but the upstream projection places the outer rows at plus and
 minus 35 degrees, on the render image boundary, and drops them. Each cloud is therefore
@@ -215,6 +223,200 @@ completion. These odometry checks verify the command paths; the chassis freejoin
 comparison above checks physical route regression.
 
 ![Labelled views of the camera mast, lidar mounts and four route boulders](description/assets/sensor_sheet.png)
+
+## Ground rendering split
+
+MuJoCo renders and collides the *same* `<hfield>` mesh, and the driven terrain's 1000x1000 grid is
+2.0M triangles rasterized twice per camera pass (image, then shadow map). That measured 134 ms per
+camera frame on a GTX 1080 Ti, holding the Desktop App's camera panes near 2.5 fps over three
+cameras - too choppy to record.
+
+The driven field is not the thing to reduce: its resolution is what the Dead Reckon Square's
+closure error is calibrated against, and rendering a 350x350 collision surface moved that error
+from 0.6331 m to **1.8232 m**. So it keeps full resolution and sits in **geom group 3**, which
+MuJoCo's default visualization options exclude from rendering, while `ground_visual` draws a
+downsampled twin from `description/generate_visual_terrain.py`. Same split the chassis already uses
+for `chassis_collision` vs `chassis_visual`.
+
+| | settled spawn height | closure error | render/frame |
+| --- | --- | --- | --- |
+| before | 0.14612 | 0.6331 m | 134 ms |
+| after | 0.14612 | 0.6331 m | **5.3 ms** |
+
+Physics is bit-identical; the rendered images differ by a mean of 1.32/255.
+
+### What this affects: anything that senses by rendering
+
+The visible ground is no longer exactly the collided ground. Height error between the two is mean
+0.49 mm and p99 4.5 mm, rising to 26.9 mm at the sharpest crater rims inside the demo route (53.8 mm
+anywhere on the field). So any sensor that measures the *rendered* surface reads the twin, not the
+surface the wheels contact:
+
+| Sensor path | Surface it measures | Affected |
+| --- | --- | --- |
+| RGB and depth cameras, point clouds | group 2 twin (`mjv_defaultOption` enables groups 0-2) | Yes, within the error above |
+| `lidar_front` / `lidar_rear`, and any image-based lidar (`user="2 ..."`) | Same render path, so the twin | Yes, same error |
+| Native `<rangefinder>` sensors | **Both** surfaces - MuJoCo's sensor code raycasts with `geomgroup=NULL`, so group 3 is included and the nearer surface wins | Yes, and inconsistently |
+
+Collision masks do not exclude a geom from raycasts, only from contact generation, which is why the
+rangefinder row differs from the rest. This config's own lidars are depth cameras, not
+`<rangefinder>` sensors, so they land in the second row and stay consistent with every other camera;
+the mixed-surface case does not arise as things stand.
+
+For image-based visual odometry none of this matters: both stereo cameras see the same surface, so
+the pair stays self-consistent, and VO estimates camera ego-motion rather than terrain shape. It
+would matter if something compares sensed geometry against contact physics - "the depth image puts
+the ground here, the wheel contacted there" - where the disagreement can reach ~27 mm on a rim.
+
+Three ways out if it ever does, in increasing cost: route the sensor through the depth-camera path
+so it at least agrees with the cameras; raise the twin's resolution (500x500 measured 33 ms/frame,
+still ~15 fps across two cameras, and roughly quarters the error); or drop the split entirely, which
+is deleting one `<hfield>`, one `<geom>` and moving the driven geom back to a rendered group.
+
+## Sky and far horizon
+
+The skybox is a star field (`description/assets/lunar_starfield.png`), built offline by
+`description/generate_starfield.py` and committed like the ground assets. It replaces the earlier
+`builtin="gradient"` skybox, which rendered as featureless near-black - MuJoCo's builtin skyboxes
+cannot draw stars. Stars are sampled uniformly on the sphere, given power-law magnitudes and a
+blackbody-ish colour ramp, then projected onto the six faces of a cube-map atlas; sampling on the
+sphere and projecting afterwards is what keeps density even and stars continuous across the cube
+seams instead of six unrelated fields that repeat visibly as the camera pans. `gridsize`/`gridlayout`
+in `husky_scene.xml` must match the script's `ATLAS_ROWS`/`ATLAS_COLS`/`GRID_LAYOUT`, which it
+prints on every run.
+
+Brightness is deliberately not photometric. A camera exposed for sunlit regolith would show no
+stars at all - the reason Apollo surface photographs have none - so a visible field is an artistic
+choice from the outset, and the magnitude range stops well short of the naked-eye limit because
+sub-pixel stars are the first thing video compression discards.
+
+Beyond the driven terrain, `description/assets/lunar_far_hfield.png` (from
+`description/generate_far_terrain.py`) supplies the horizon: rolling relief and a modulated ridge
+band out to 300 m. It is **visual only** - `contype="0" conaffinity="0"` disables dynamically
+generated contact pairs, so no wheel ever contacts it, and the 20x20 m driven surface above is
+untouched. Those masks do not exclude it from raycasts: a rangefinder would still detect it, and
+this config has none today. That separation is the point:
+the keyframe spawn elevation, the rock keep-out box, the Dead Reckon Square calibration and the
+shadow frustum margin are all derived from the driven terrain's 10 m half-extents, so growing
+*that* field to reach a horizon would invalidate all four.
+
+Two constraints shape it:
+
+- **It has to meet the driven terrain's rim, not merely sit beyond it.** From the OAK-D's mount
+  height the driven terrain's own 10 m rim already is the visible horizon, a few degrees below eye
+  level. Distant ridges with void between them and that rim render as a black band of sky *below*
+  the horizon line. So the field is held under the driven surface inside the footprint, ramped up
+  to meet it exactly at the rim, and only then allowed to roll.
+- **The join follows a square, not a circle.** The driven terrain is a 20x20 m hfield whose corners
+  reach 14.1 m out, so the profile is keyed on Chebyshev distance `max(|x|, |y|)`. A radial profile
+  lifts the far field at 10 m in every direction, including straight up through those corners.
+
+Ridge height is set by how much sky it may take, not by how dramatic it can be: the camera's
+half-FOV is ~25 deg, and at 42 m the skyline reached 12 deg above eye level and closed off the sky
+the stars sit in. 18 m puts it near 5 deg. The generator prints that angle on every run - it, not
+the metre figure, is the number being tuned.
+
+`husky_scene.xml` pins `<statistic extent="28.29" />` because of this field. MuJoCo otherwise
+derives `stat.extent` from the model's bounding volume and scales the camera near plane, far plane
+and shadow frustum by it; a 600 m-wide asset would drive it from 28.3 m to several hundred, pushing
+the near plane past the robot's own camera mount and stretching the shadow frustum by the same
+factor at unchanged `shadowsize`. Pinning it keeps every extent-derived quantity at the figure the
+rest of the scene was tuned against. Re-measure it if the robot, driven terrain or moon base
+changes size - not if the far field does.
+
+## Lighting and shadows
+
+A single directional light at ~28 deg elevation, casting the long hard shadows an airless scene is
+recognised by. An earlier revision held the sun near 74 deg because a lower angle was found to
+speckle: MuJoCo's shadow mapping has no slope-scaled bias, and the self-shadowing bias broke down
+at grazing viewing angles. That does not reproduce on the current scene - re-measured at 28 deg
+from both `chase_camera` and `oakd_color`, at the spawn pose and at the square's far corner, the
+ground is clean. The earlier finding was against that revision's flat ground plane; the cratered
+heightfield that replaced it does not present the same uniformly grazing surface.
+
+`shadowclip` is `0.6`, down from `5.0`. The frustum is `stat.extent * shadowclip` with
+`shadowsize="8192"` texels spread across it, so this value sets texel pitch directly. Everything
+that casts a shadow sits within 13.5 m of the origin, so the frustum only has to contain that:
+
+| `shadowclip` | frustum | texel | shadow-boundary roughness | |
+| --- | --- | --- | --- | --- |
+| 5.0 | 141.4 m | 34.5 mm | 32.20 | visibly sawtoothed edges |
+| 1.5 | 42.4 m | 10.4 mm | 29.72 | |
+| 0.6 | 17.0 m | 4.1 mm | **28.94** | smoothest, full coverage |
+| 0.3 | 8.5 m | 2.1 mm | 32.29 | frustum no longer covers 13.5 m; shadows clip |
+
+Tightening also *recovers* shadow rather than losing it: 0.6 resolves ~3% more shadowed pixels than
+5.0 from `scene_camera` and `chase_camera`, and ~16% more from `oakd_color`. The coarse frustum was
+dropping shadow detail.
+
+> **If you re-measure this:** `mujoco.Renderer` bakes visual settings into its context when it is
+> constructed. Assigning `model.vis.map.shadowclip` on an already-built `Renderer` changes nothing
+> and produces pixel-identical renders - which reads convincingly as "shadowclip has no effect".
+> Edit the XML and reload the model, or build a fresh `Renderer` per value.
+
+### Shadows and visual odometry
+
+The shadows are not only cosmetic. On a low-texture regolith surface they are a main source of
+trackable features, and two properties make them usable as such - both load-bearing rather than
+incidental:
+
+- **The light is directional and fixed**, so its shadows are static world features rather than a
+  function of where the robot is. Animating the sun for a nicer video would break this.
+- **The robot's own shadow stays out of the OAK-D's frame.** A self-shadow moves rigidly with the
+  camera, so it injects features that appear stationary in image space - a classic VO confound. At
+  this mount height and `fovy` the ground only enters frame about 2 m ahead, past where the
+  self-shadow falls.
+
+Measured across the square's four headings by differencing renders with `castshadow` on and off,
+shadowed pixels in `oakd_color` run from 0.3% of frame (heading 0) to 5.3% (heading 90), all cast
+by the moon base structures and scattered rocks, with no self-shadow contribution. Note the 17x
+swing: shadow-derived feature availability is strongly heading-dependent around the square, which
+is worth controlling for when comparing VO runs leg to leg.
+
+One caveat not yet resolved: `<headlight diffuse="0.4 0.4 0.4">` is camera-attached, so surface
+brightness shifts as the camera moves. That violates the brightness-constancy assumption direct and
+semi-direct VO methods rely on, and has no counterpart on a real rover without lamps. Lowering it
+is physically more honest for an airless body - the only real fill is regolith interreflection - but
+it would leave shadowed regions near-black and featureless. Left as-is pending a decision on which
+matters more to VO evaluation.
+
+## Cameras
+
+| Camera | Mode | Streamed | Purpose |
+| --- | --- | --- | --- |
+| `oakd_color` | fixed | yes | Robot's forward view from the sensor arch - the operator-facing shot |
+| `oakd_left` / `oakd_right` | fixed | only with `enable_vo:=true` | Mono stereo pair for visual odometry |
+| `scene_camera` | fixed | yes | World-fixed overview of the Dead Reckon Square |
+| `lidar_front` / `lidar_rear` | fixed | yes | Image-based lidars (`user="2 ..."`), published as point clouds |
+| `chase_camera` | targetbody | no | Render-only chase shot used by `validate_and_render.py` |
+
+`chase_camera` cannot be streamed, and no fixed camera can replace it: `MujocoSystem` publishes
+only `mjCAMLIGHT_FIXED` cameras (`cameras.cpp`, `extract_cameras`), so a `targetbody` camera is
+never advertised however the render rate is set, and a fixed camera cannot follow the robot. A
+third-person stream therefore has to be a fixed pose framed on the route, which is worth adding
+only when something actually consumes it - each streamed camera costs a render pass per tick.
+
+The OAK-D Pro sits on the real A300 Observer arch's own front camera mount rather than at a chosen
+vantage point: `clearpath_platform_description`'s `amp_sensor_arch.urdf.xacro` declares
+`${name}_front_camera_mount` ("front-facing camera suspended under sensor arch") at
+`(0.0775, 0, 0.40896)` from the arch link, and the arch sits at `(-0.4028, 0, 0.4074593)` from
+`chassis_link`. Composing the two puts the optical plane at `x=-0.3253, z=0.8164193` - behind the
+deck, looking forward across it, with a horizontal optical axis because the upstream mount is
+`rpy=0`. `test_husky_mujoco_geometry.py` cross-checks that composition against the vendored xacro,
+so if Clearpath moves the mount the test fails rather than leaving the config quietly describing a
+camera the real robot does not have there.
+
+`fovy` and the 0.075 m stereo baseline are the OAK-D Pro profile hangar_sim already pins in its
+`params/forward_stereo.yaml`, reused verbatim so captures from the two configs stay comparable for
+visual-odometry work. The housing is primitive geoms rather than upstream's `oakd_pro.dae`: it is
+visual only, and every geom stays at or behind the optical plane because group 2 is what MuJoCo's
+offscreen pass renders, so anything in front of the optical centres would occlude all three camera
+images. A regression test pins that margin.
+
+The stereo pair is gated behind `enable_vo` (default off), matching hangar_sim. MuJoCo renders
+every fixed MJCF camera on the render timer whether or not anything subscribes, so leaving the pair
+on costs two extra 1280x720 offscreen passes per render tick and puts image topics nobody can use
+in the operator's camera picker. `oakd_color` is never gated.
 
 ## Roadmap
 
