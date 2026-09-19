@@ -3,10 +3,11 @@
 A MoveIt Pro configuration for a Clearpath Husky A300 running under MuJoCo physics on a
 procedurally cratered lunar regolith heightfield. A world-fixed `scene_camera` on a visible mast
 overlooks the demo route, front and rear image-based lidars ride on the rover, and the sensor arch
-carries an OAK-D Pro whose `oakd_color` streams the robot's own forward view. The OAK-D's stereo
-pair is modelled too but gated behind `enable_vo` - see [Cameras](#cameras). No Nav2 stack: the base
-is driven only by open-loop `/cmd_vel` commands, from the `Dead Reckon Square` objective or the
-Desktop App's Pose tab (see [Teleoperation](#teleoperation)).
+carries an OAK-D Pro whose `oakd_color` streams the robot's own forward view plus, on the arch's
+rear mount, an RGB-D camera looking back and down at the terrain the rover has just crossed. The
+OAK-D's stereo pair is modelled too but gated behind `enable_vo` - see [Cameras](#cameras). No Nav2
+stack: the base is driven only by open-loop `/cmd_vel` commands, from the `Dead Reckon Square`
+objective or the Desktop App's Pose tab (see [Teleoperation](#teleoperation)).
 
 The base spawns at `husky_scene.xml`'s `default` keyframe rather than the world origin
 (`config.yaml`'s `mujoco_keyframe`); that keyframe's own comment records the pose and why it was
@@ -108,9 +109,11 @@ degree elevation - verified against the chassis's own cast shadow in a rendered 
 with `--plane-m`/`--px-per-m` to regenerate at a different plane size or resolution (default: 20m
 plane, ~2.4mm/px, matching the ground plane's current size). That is finer than the fixed
 `scene_camera` can show (roughly 9 mm per rendered pixel at its range); the detail is there for the
-planned robot-mounted cameras, which will look at the ground from wheel height for visual-odometry
-evaluation against the simulation's ground truth - if the clone weight of the 81 MB asset matters
-more than that, re-run the generator with a lower `--px-per-m` and replace the asset.
+rover's own arch cameras (the [OAK-D Pro](#cameras) and the
+[rear camera](#rover-rear-camera)), which look at the ground from the sensor arch for
+visual-odometry evaluation against the simulation's ground truth - if the clone weight of
+the 81 MB asset matters more than that, re-run the generator with a lower `--px-per-m` and replace
+the asset.
 `verify_ground_colormap.py` checks the output has no periodic repeat (FFT autocorrelation +
 template matching, adapted from the same check used on `generate_terrain.py`'s heightfield); a
 downsample-to-256px std, printed by the generator itself, checks there's no residual low-frequency
@@ -155,15 +158,22 @@ MujocoSystem publishes these topics at the xacro's `render_publish_rate`, now 30
 
 | Sensor | Topics | Frame |
 | --- | --- | --- |
-| Scene camera | `/scene_camera/color`, `/scene_camera/depth`, `/scene_camera/camera_info` | `scene_camera_optical_frame` |
+| Scene camera | `/scene_camera/color`, `/scene_camera/depth`, `/scene_camera/points`, `/scene_camera/camera_info` | `scene_camera_optical_frame` |
 | Front lidar | `/lidar_front/points` | `lidar_front_optical_frame` |
 | Rear lidar | `/lidar_rear/points` | `lidar_rear_optical_frame` |
+| Rear arch camera | `/sensor_arch_rear_camera_mount/color`, `/sensor_arch_rear_camera_mount/depth`, `/sensor_arch_rear_camera_mount/points`, `/sensor_arch_rear_camera_mount/camera_info` | `sensor_arch_rear_camera_mount_optical_frame` |
 
-Live checks on the shared development host measured about 7.2 Hz front lidar, 6.0 Hz
-rear lidar and 5.6 Hz scene images. The configured rate is a ceiling, not a guaranteed
-throughput. Those figures predate the [ground rendering split](#ground-rendering-split), which took
-a camera frame from 134 ms to 5.3 ms, and the rate rise from 10 to 30 Hz; they are due a
-re-measurement. Both lidar clouds contain finite returns within the configured range.
+MujocoSystem renders every fixed camera on one shared cycle, so the achieved rate is
+loop-wide rather than per-sensor. Re-measured live on the shared development host with the rear
+arch camera in that loop, every image stream now holds its configured 30 Hz - 30.00 Hz
+`/sensor_arch_rear_camera_mount/color`, 29.95 Hz its `depth`, 30.00 Hz its `camera_info`,
+30.00 Hz `/oakd_color/color`, 29.92 Hz `/scene_camera/color` - and every point cloud holds
+`point_cloud_publish_rate`'s 10 Hz: 10.00 Hz for both lidars and for
+`/sensor_arch_rear_camera_mount/points`. The comparable pre-split figures were about 7.2 Hz front
+lidar, 6.0 Hz rear lidar and 5.6 Hz scene images against a configured 10 Hz; the
+[ground rendering split](#ground-rendering-split) took a camera frame from 134 ms to 5.3 ms, which
+is what makes the higher rate reachable. The configured rate is still a ceiling rather than a
+guarantee. Both lidar clouds contain finite returns within the configured range.
 At the starting pose, the rear scanner sees mostly open sky, so its cloud is sparse.
 
 The lidar positions follow the vendored Clearpath A300 accessory mounts:
@@ -199,6 +209,59 @@ PR 22320. The main runtime image's installed 10.2.0 package provides `THREE_D_LI
 See the [MuJoCo configuration guide](https://docs.picknik.ai/how_to/configuration_tutorials/create_robot_sim_config/migrate_to_mujoco_config/)
 for the camera user fields and `point_cloud_publish_rate`.
 
+## Rover rear camera
+
+One fixed RGB-D camera rides on the A300's rear sensor-arch camera mount. The arch's
+front mount already carries the [OAK-D Pro](#cameras), so the rear mount was the one
+remaining camera position the vendored platform actually declares; nothing here is at
+a chosen vantage point.
+
+The vendored arch xacro defines a mounting frame, not a sensor model or depth
+capability. This simulation puts an ideal RealSense D435-like RGB-D camera there, a
+[Clearpath-supported option](https://docs.clearpathrobotics.com/docs/ros/config/yaml/sensors/cameras/#intel-realsense).
+It uses 1280x720 pixels and a 42.5-degree vertical field of view, approximately 69
+degrees horizontally, matching the D435's 720p color mode and its 69x42-degree color
+FOV. The resolution is not independently tunable: `cameras.cpp`'s `extract_cameras()`
+throws `Camera resolution mismatch` at hardware init for any non-lidar camera whose
+resolution differs from `husky_scene.xml`'s `<global offwidth="1280" offheight="720">`,
+which the scene camera already sets. Depth is ideal, aligned to the color optics,
+rather than a simulation of stereo matching, separate depth intrinsics, noise or
+minimum-range failures.
+
+The mount chain comes from
+[`amp_enclosure.urdf.xacro`, lines 59-64](../external_dependencies/clearpath_common/clearpath_platform_description/urdf/a300/attachments/amp_enclosure.urdf.xacro#L59-L64)
+and [`amp_sensor_arch.urdf.xacro`, lines 105-110](../external_dependencies/clearpath_common/clearpath_platform_description/urdf/a300/attachments/amp_sensor_arch.urdf.xacro#L105-L110).
+`husky_a300_mujoco.xacro` attaches the enclosure to `base_link` and the arch to
+`enclosure_antenna_mount`, both with identity transforms. Composing the arch's
+`-0.4028 0 0.4074593` translation with the rear camera mount's
+`-0.09053483924399536 0 0.39093965966919125` gives:
+
+| URDF mount / MJCF body and camera | Position relative to `chassis_link`, m | URDF roll, pitch, yaw, rad |
+| --- | --- | --- |
+| `sensor_arch_rear_camera_mount` | `-0.49333483924399535 0 0.7983989596691913` | `0 0.6021385919380436 3.14159` |
+
+The camera looks backward and down by about 34.5 degrees, so it frames the near-field
+terrain the rover has just driven over rather than the horizon. There is no additional
+mount offset. The optical site is named `<mount>_optical_frame`, with ROS optical axes
++X right, +Y down, +Z forward. Robot state publisher owns the existing URDF mount frame
+(`husky_a300_mujoco.xacro` already instantiates the arch macro, so
+`sensor_arch_rear_camera_mount` exists as a link); MujocoSystem publishes the optical
+site.
+
+The camera declares no `user=` field, so it takes `cameras.cpp`'s default `RGB_DEPTH`
+depth type and publishes four topics (no `<sensor>` block is needed in
+`husky_a300_mujoco.xacro`; `extract_cameras()` enumerates every fixed-mode MJCF camera).
+The point cloud follows `point_cloud_publish_rate`, the images `render_publish_rate`.
+
+| RGB image | Aligned depth image | Point cloud | CameraInfo |
+| --- | --- | --- | --- |
+| `/sensor_arch_rear_camera_mount/color` | `/sensor_arch_rear_camera_mount/depth` | `/sensor_arch_rear_camera_mount/points` | `/sensor_arch_rear_camera_mount/camera_info` |
+
+`description/validate_and_render.py` checks camera/optical-site alignment and adds the
+rear view to its labelled sensor sheet at its published aspect ratio. The camera body
+has no geometry, mass or joints, so the existing chassis dynamics and keyframe DOF count
+are preserved.
+
 ## Route boulders
 
 Four large boulders surround the demo route, in addition to the 200 small scattered rocks.
@@ -222,7 +285,7 @@ A separate Pose Jog check through `Request Teleoperation` forwarded 40 commands 
 completion. These odometry checks verify the command paths; the chassis freejoint
 comparison above checks physical route regression.
 
-![Labelled views of the camera mast, lidar mounts and four route boulders](description/assets/sensor_sheet.png)
+![Labelled views of the camera mast, lidar mounts, four route boulders and the rover's rear camera view](description/assets/sensor_sheet.png)
 
 ## Ground rendering split
 
@@ -386,6 +449,7 @@ matters more to VO evaluation.
 | --- | --- | --- | --- |
 | `oakd_color` | fixed | yes | Robot's forward view from the sensor arch - the operator-facing shot |
 | `oakd_left` / `oakd_right` | fixed | only with `enable_vo:=true` | Mono stereo pair for visual odometry |
+| `sensor_arch_rear_camera_mount` | fixed | yes | Rear view from the arch, pitched down at the terrain just crossed - see [Rover rear camera](#rover-rear-camera) |
 | `scene_camera` | fixed | yes | World-fixed overview of the Dead Reckon Square |
 | `lidar_front` / `lidar_rear` | fixed | yes | Image-based lidars (`user="2 ..."`), published as point clouds |
 | `chase_camera` | targetbody | no | Render-only chase shot used by `validate_and_render.py` |
