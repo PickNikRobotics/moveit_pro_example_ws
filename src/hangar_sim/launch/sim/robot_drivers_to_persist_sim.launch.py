@@ -91,6 +91,9 @@ def _warn_unsupported_localization(context, *args, **kwargs):
     here and log at WARNING via an OpaqueFunction -- LogInfo would blend into normal launch output
     and defeat the point.
 
+    On the default path odom_world_drift solely owns odom -> world and withholds while
+    /odom_filtered is silent, so world has no path: world-expressed UI goals stop transforming.
+
     (PR #790 warned on a different row, use_fuse:=false + localization:=true, because its
     amcl_odom_gate was the sole map -> odom publisher and only launched with fuse. There is no gate
     here and amcl.tf_broadcast stays true, so beluga always publishes its own correction and that
