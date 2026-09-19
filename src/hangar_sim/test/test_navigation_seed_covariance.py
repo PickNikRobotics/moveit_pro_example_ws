@@ -64,9 +64,7 @@ NAVIGATION_OBJECTIVES = [
 def set_initial_pose_actions(objective_path: Path) -> list[ET.Element]:
     root = ET.parse(objective_path).getroot()
     return [
-        action
-        for action in root.iter("Action")
-        if action.get("ID") == "SetInitialPose"
+        action for action in root.iter("Action") if action.get("ID") == "SetInitialPose"
     ]
 
 

@@ -21,19 +21,19 @@ bit-frozen while the base was turning?
 import json, math, os, statistics as st, sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from hfresh import load_rows, annotate                                # noqa: E402
-from armsumm import episodes, load                                    # noqa: E402
+from hfresh import load_rows, annotate  # noqa: E402
+from armsumm import episodes, load  # noqa: E402
 
 D = math.degrees
 THRESH = float(os.environ.get("THRESH", "20.0"))
-FROZEN_S = 1.0          # /odom_filtered unchanged this long while turning = stalled
+FROZEN_S = 1.0  # /odom_filtered unchanged this long while turning = stalled
 
 
 def fo_frozen_span(rows, i0, i1):
     """Longest stretch inside [i0,i1] where fo yaw is bit-identical while the base turns."""
     best = 0.0
     run_start, last = None, None
-    for r in rows[i0:i1 + 1]:
+    for r in rows[i0 : i1 + 1]:
         if "fo" not in r:
             continue
         y = r["fo"]["yaw"]
@@ -66,16 +66,21 @@ def ang_span(angles):
 
 def classify(rows, ep_rows, i0, i1):
     """Return (verdict, evidence) for one episode."""
-    w = rows[max(0, i0 - 5):min(len(rows), i1 + 40)]     # include the filter's reaction
+    w = rows[max(0, i0 - 5) : min(len(rows), i1 + 40)]  # include the filter's reaction
     mo = [r["mo_yaw"] for r in w if "mo_yaw" in r]
     mo_span = D(ang_span(mo))
     upd = [r.get("amcl_upd", 0) for r in w]
     d_upd = (max(upd) - min(upd)) if upd else 0
-    ed = [r["err_d"] for r in rows[i0:i1 + 1] if "err_d" in r]
+    ed = [r["err_d"] for r in rows[i0 : i1 + 1] if "err_d" in r]
     frozen = fo_frozen_span(rows, max(0, i0 - 25), i1)
-    turning = max((abs(r.get("wz", 0)) for r in rows[i0:i1 + 1]), default=0.0)
-    ev = dict(mo_span=mo_span, d_upd=d_upd, err_d=max(ed) if ed else 0.0,
-              fo_frozen=frozen, wz=turning)
+    turning = max((abs(r.get("wz", 0)) for r in rows[i0 : i1 + 1]), default=0.0)
+    ev = dict(
+        mo_span=mo_span,
+        d_upd=d_upd,
+        err_d=max(ed) if ed else 0.0,
+        fo_frozen=frozen,
+        wz=turning,
+    )
     if frozen >= FROZEN_S and turning > 0.1:
         return "STALL(fuse odom frozen)", ev
     if mo_span < 2.0:
@@ -98,13 +103,19 @@ def main(paths):
         for e in eps:
             i0, i1 = idx[e["t"]], idx[e["t_end"]]
             v, ev = classify(rows, None, i0, i1)
-            hf = max((abs(D(r["h_fresh"])) for r in rows[i0:i1 + 1] if "h_fresh" in r),
-                     default=float("nan"))
-            print(f"  t={e['t']-t0:7.1f}  peak {e['pk']:6.1f}d  h_fresh {hf:6.1f}d  "
-                  f"-> {v}")
-            print(f"       map->odom yaw moved {ev['mo_span']:5.2f}d, amcl updates {ev['d_upd']:2d}, "
-                  f"err_d max {ev['err_d']:4.2f} m, /odom_filtered frozen {ev['fo_frozen']:4.2f} s, "
-                  f"|wz| max {ev['wz']:.2f}")
+            hf = max(
+                (abs(D(r["h_fresh"])) for r in rows[i0 : i1 + 1] if "h_fresh" in r),
+                default=float("nan"),
+            )
+            print(
+                f"  t={e['t']-t0:7.1f}  peak {e['pk']:6.1f}d  h_fresh {hf:6.1f}d  "
+                f"-> {v}"
+            )
+            print(
+                f"       map->odom yaw moved {ev['mo_span']:5.2f}d, amcl updates {ev['d_upd']:2d}, "
+                f"err_d max {ev['err_d']:4.2f} m, /odom_filtered frozen {ev['fo_frozen']:4.2f} s, "
+                f"|wz| max {ev['wz']:.2f}"
+            )
             tot.setdefault(v.split("(")[0], 0)
             tot[v.split("(")[0]] += 1
     print("\n  totals:", tot)

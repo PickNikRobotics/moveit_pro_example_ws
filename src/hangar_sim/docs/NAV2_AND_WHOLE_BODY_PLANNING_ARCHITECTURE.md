@@ -358,7 +358,7 @@ MuJoCo Simulation → /odom (nav_msgs/Odometry) → odometry_joint_state_publish
 ```
 
 ### Node Configuration
-**Location**: `src/hangar_sim/launch/sim/robot_drivers_to_persist_sim.launch.py:274-280`
+**Location**: `src/hangar_sim/launch/sim/robot_drivers_to_persist_sim.launch.py`
 
 ```python
 odom_to_joint_state_repub = Node(
@@ -780,7 +780,7 @@ The trajectory and navigation controllers are activated on-demand when their res
 
 ### Command Routing Configuration
 
-**Location**: `src/hangar_sim/launch/sim/robot_drivers_to_persist_sim.launch.py:81-85`
+**Location**: `src/hangar_sim/launch/sim/robot_drivers_to_persist_sim.launch.py` (`remappings`)
 
 ```python
 remappings = [
@@ -794,7 +794,7 @@ Nav2's velocity commands are remapped to the `platform_velocity_controller_nav2`
 
 ### Transform Tree Configuration
 
-**Location**: `src/hangar_sim/launch/sim/robot_drivers_to_persist_sim.launch.py:256-272`
+**Location**: `src/hangar_sim/launch/sim/robot_drivers_to_persist_sim.launch.py` (`static_tf_world_to_map`, `static_tf_map_to_odom`, `static_tf_odom_to_world`, `odom_world_drift`)
 
 ```python
 # Static transform: MuJoCo world to map frame
@@ -811,13 +811,32 @@ static_tf_map_to_odom = Node(
     arguments=["0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "map", "odom"],
 )
 
-# Static transform anchoring MoveIt's planning root under the odometry frame
+# Static transform anchoring MoveIt's planning root under the odometry frame.
+# Only with use_fuse:=false; otherwise odom_world_drift owns this edge.
 static_tf_odom_to_world = Node(
+    condition=UnlessCondition(LaunchConfiguration("use_fuse")),
     package="tf2_ros",
     executable="static_transform_publisher",
     arguments=["0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "odom", "world"],
 )
+
+# odom -> world as the difference between fuse's estimate and MuJoCo truth.
+odom_world_drift = Node(
+    condition=IfCondition(LaunchConfiguration("use_fuse")),
+    package="hangar_sim",
+    executable="odom_world_drift",
+    name="odom_world_drift",
+)
 ```
+
+`use_fuse` defaults to **true**, so `odom_world_drift` is the shipped configuration: it publishes
+`odom` → `world` as `est(odom → base) ⊖ truth(world → base)`, which makes `odom` → `ridgeback_base_link`
+resolve to fuse's estimate while `world` → `ridgeback_base_link` stays MuJoCo truth for the arm
+planner and the scene meshes. See `src/hangar_sim/src/odom_world_drift.cpp` for the algebra and the
+conditions under which it deliberately withholds the transform, and the
+`_warn_unsupported_localization` docstring in the launch file for the supported
+`slam` × `use_fuse` × `localization` combinations. With `use_fuse:=false` the edge reverts to the
+static identity and navigation runs on ground truth.
 
 ### Frame Hierarchy
 
@@ -830,7 +849,7 @@ mj_world (MuJoCo simulation root)
   │    │
   │    └─ [beluga_amcl | static fallback] → odom
   │         │
-  │         └─ [static] → world
+  │         └─ [odom_world_drift | static identity] → world
   │              │
   │              └─ [robot_state_publisher] → ridgeback_base_link
   │                   (via world → virtual_rail_link_1 → virtual_rail_link_2 chain)
@@ -874,7 +893,7 @@ The `enable_odom_tf: false` parameter prevents the mecanum drive controllers fro
 |-----------|----------------|-----------|
 | `mj_world` → `map` | `static_transform_publisher` | Launch file configuration |
 | `map` → `odom` | `beluga_amcl` (or `static_transform_publisher` fallback) | Localization when `localization:=True`; static identity otherwise |
-| `odom` → `world` | `static_transform_publisher` | Launch file configuration (anchors the URDF root under the odometry frame) |
+| `odom` → `world` | `odom_world_drift` (or `static_transform_publisher` identity) | fuse's estimate differenced against MuJoCo truth when `use_fuse:=True` (the default); static identity otherwise |
 | `world` → … → `ridgeback_base_link` | `robot_state_publisher` | URDF virtual joint chain with joint state feedback |
 | `ridgeback_base_link` → lidar mounts | MuJoCo hardware plugin | Lidar fill-in chain, stopped at the base by the `base_link_name` hardware parameter |
 
@@ -882,7 +901,7 @@ The `enable_odom_tf: false` parameter prevents the mecanum drive controllers fro
 
 - The MuJoCo odom publisher emits `/odom` messages for Nav2 but not TF (`odom_publish_tf: false`).
 - The MuJoCo lidar fill-in chain stops at `ridgeback_base_link` (`base_link_name` hardware parameter) instead of broadcasting the ground-truth body chain (`base_platform` → `ridgeback_base_link`) up to the MJCF worldbody.
-- fuse keeps `publish_tf: false`; its estimate stays on `odom_filtered`. On real hardware the estimate feeds the virtual-rail joint states (odometry-to-joint-state bridge) rather than TF.
+- fuse keeps `publish_tf: false`; its estimate stays on `odom_filtered`. In simulation `odom_world_drift` turns that estimate into the `odom` → `world` edge *above* `robot_state_publisher`'s subtree, so the estimate still never competes for `ridgeback_base_link`. On real hardware the estimate feeds the virtual-rail joint states (odometry-to-joint-state bridge) rather than TF.
 
 ### Transform Source Analysis
 

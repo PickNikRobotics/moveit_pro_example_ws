@@ -35,8 +35,11 @@ def load_rows(path):
 
 def truth_track(rows):
     """(stamp, yaw, x, y) samples of ground truth, from each row's own truth lookup."""
-    t = [(r["est_stamp"], r["tyaw"], r["tx"], r["ty"])
-         for r in rows if "est_stamp" in r and "tyaw" in r]
+    t = [
+        (r["est_stamp"], r["tyaw"], r["tx"], r["ty"])
+        for r in rows
+        if "est_stamp" in r and "tyaw" in r
+    ]
     t.sort()
     out = []
     for s in t:
@@ -58,7 +61,11 @@ def interp(track, when):
     a, b = track[lo], track[hi]
     span = b[0] - a[0]
     f = 0.0 if span <= 0 else (when - a[0]) / span
-    return (a[1] + f * wrap(b[1] - a[1]), a[2] + f * (b[2] - a[2]), a[3] + f * (b[3] - a[3]))
+    return (
+        a[1] + f * wrap(b[1] - a[1]),
+        a[2] + f * (b[2] - a[2]),
+        a[3] + f * (b[3] - a[3]),
+    )
 
 
 def annotate(rows):
@@ -77,18 +84,28 @@ def annotate(rows):
 
 if __name__ == "__main__":
     import statistics as st
+
     D = math.degrees
     for p in sys.argv[1:]:
         rows = annotate(load_rows(p))
         h = [abs(D(r["h_fresh"])) for r in rows if "h_fresh" in r]
         e = [abs(D(r["err_yaw"])) for r in rows if "err_yaw" in r]
-        both = [(abs(D(r["h_fresh"])), abs(D(r["err_yaw"])), r.get("est_age", 0))
-                for r in rows if "h_fresh" in r and "err_yaw" in r]
+        both = [
+            (abs(D(r["h_fresh"])), abs(D(r["err_yaw"])), r.get("est_age", 0))
+            for r in rows
+            if "h_fresh" in r and "err_yaw" in r
+        ]
         fresh = [x for x in both if x[2] is not None and x[2] < 0.5]
         print(f"\n{p}: {len(h)} rows with h_fresh")
-        print(f"  |err_yaw| median {st.median(e):.2f}d  p99 {sorted(e)[int(.99*len(e))]:.2f}d  max {max(e):.2f}d")
-        print(f"  |h_fresh| median {st.median(h):.2f}d  p99 {sorted(h)[int(.99*len(h))]:.2f}d  max {max(h):.2f}d")
+        print(
+            f"  |err_yaw| median {st.median(e):.2f}d  p99 {sorted(e)[int(.99*len(e))]:.2f}d  max {max(e):.2f}d"
+        )
+        print(
+            f"  |h_fresh| median {st.median(h):.2f}d  p99 {sorted(h)[int(.99*len(h))]:.2f}d  max {max(h):.2f}d"
+        )
         if fresh:
             d = [abs(a - b) for a, b, _ in fresh]
-            print(f"  on rows where the lookup was FRESH (<0.5 s): |h_fresh - err_yaw| "
-                  f"median {st.median(d):.2f}d  p95 {sorted(d)[int(.95*len(d))]:.2f}d  (n={len(fresh)})")
+            print(
+                f"  on rows where the lookup was FRESH (<0.5 s): |h_fresh - err_yaw| "
+                f"median {st.median(d):.2f}d  p95 {sorted(d)[int(.95*len(d))]:.2f}d  (n={len(fresh)})"
+            )

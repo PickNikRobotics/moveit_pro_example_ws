@@ -229,6 +229,7 @@ Tear a deployment down with `moveit_pro down --instance <name>`; there is no `st
 happen. Start exactly one `moveit_pro run` per instance and let it finish coming up — a second
 launch during startup kills the runtime container with `Endpoint reservation ... was superseded`,
 leaving drivers healthy, `/do_objective` absent, and no obvious error.
+
 ## Simulated sensors, controllers and state estimation
 
 ### Controllers publish at the controller-manager rate, not their `publish_rate`

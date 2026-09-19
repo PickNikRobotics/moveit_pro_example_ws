@@ -42,12 +42,17 @@ for p in sys.argv[1:]:
         d = json.loads(line)
         if not d.get("ev"):
             rows.append(d)
-    mv = [x for x in rows
-          if abs(x.get("vx", 0)) + abs(x.get("vy", 0)) + abs(x.get("wz", 0)) > 0.02]
+    mv = [
+        x
+        for x in rows
+        if abs(x.get("vx", 0)) + abs(x.get("vy", 0)) + abs(x.get("wz", 0)) > 0.02
+    ]
     t = truthlen(mv)
     w = pathlen(mv, "wo")
     if t > 1.0 and w > 1.0:
-        print(f"{p}: nav odom {w:.2f} m vs truth {t:.2f} m -> inflation {100*(w/t-1):+.1f}%  "
-              f"implied RTF {t/w:.3f}  ({len(mv)} moving samples)")
+        print(
+            f"{p}: nav odom {w:.2f} m vs truth {t:.2f} m -> inflation {100*(w/t-1):+.1f}%  "
+            f"implied RTF {t/w:.3f}  ({len(mv)} moving samples)"
+        )
     else:
         print(f"{p}: not enough motion (truth {t:.2f} m, odom {w:.2f} m)")

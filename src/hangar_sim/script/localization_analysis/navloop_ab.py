@@ -20,8 +20,14 @@ from rclpy.node import Node
 from rclpy.action import ActionClient
 from rclpy.callback_groups import ReentrantCallbackGroup
 from rclpy.executors import MultiThreadedExecutor
-from rclpy.qos import (QoSProfile, QoSReliabilityPolicy, QoSDurabilityPolicy,
-                       QoSHistoryPolicy, ReliabilityPolicy, HistoryPolicy)
+from rclpy.qos import (
+    QoSProfile,
+    QoSReliabilityPolicy,
+    QoSDurabilityPolicy,
+    QoSHistoryPolicy,
+    ReliabilityPolicy,
+    HistoryPolicy,
+)
 from nav_msgs.msg import Odometry
 from moveit_studio_agent_msgs.msg import Json
 from moveit_studio_sdk_msgs.action import DoObjectiveSequence
@@ -29,16 +35,23 @@ from nav2_msgs.srv import ClearEntireCostmap
 from geometry_msgs.msg import PoseWithCovarianceStamped
 import tf2_ros
 
-LATCHED = QoSProfile(reliability=QoSReliabilityPolicy.RELIABLE,
-                     durability=QoSDurabilityPolicy.TRANSIENT_LOCAL,
-                     history=QoSHistoryPolicy.KEEP_LAST, depth=1)
-SENSOR = QoSProfile(reliability=ReliabilityPolicy.BEST_EFFORT,
-                    history=HistoryPolicy.KEEP_LAST, depth=5)
+LATCHED = QoSProfile(
+    reliability=QoSReliabilityPolicy.RELIABLE,
+    durability=QoSDurabilityPolicy.TRANSIENT_LOCAL,
+    history=QoSHistoryPolicy.KEEP_LAST,
+    depth=1,
+)
+SENSOR = QoSProfile(
+    reliability=ReliabilityPolicy.BEST_EFFORT, history=HistoryPolicy.KEEP_LAST, depth=5
+)
 
 USER_WS = os.environ.get("USER_WS", os.path.expanduser("~/user_ws"))
 OBJ_DIR = os.environ.get("OBJ_DIR", os.path.join(USER_WS, "src/hangar_sim/objectives"))
 LOADSTEP_FILE = os.environ.get("LOADSTEP_FILE", os.path.join(USER_WS, "log/.loadstep"))
-FILES = ["navigate_to_clicked_point.xml", "navigate_to_clicked_point_with_replanning.xml"]
+FILES = [
+    "navigate_to_clicked_point.xml",
+    "navigate_to_clicked_point_with_replanning.xml",
+]
 SHIPPED = '<Action ID="SetInitialPose" robot_frame_id="ridgeback_base_link" />'
 
 WAYPOINTS = {
@@ -47,7 +60,7 @@ WAYPOINTS = {
     "C": (-8.37, 10.61, math.radians(18.4)),
 }
 CYCLE = ["B", "C", "B", "A"]
-from seed_constants import RESCUE_XY, RESCUE_YAW    # noqa: E402
+from seed_constants import RESCUE_XY, RESCUE_YAW  # noqa: E402
 
 
 _SNAPSHOT = {}
@@ -67,8 +80,11 @@ def snapshot_objectives():
         path = os.path.join(OBJ_DIR, f)
         with open(path, "rb") as fh:
             _SNAPSHOT[path] = fh.read()
-    print(f"NOTE: rewriting the Objectives in {OBJ_DIR} in place for each arm; the bytes read "
-          f"at startup are restored on exit.", flush=True)
+    print(
+        f"NOTE: rewriting the Objectives in {OBJ_DIR} in place for each arm; the bytes read "
+        f"at startup are restored on exit.",
+        flush=True,
+    )
 
 
 def restore_objectives():
@@ -86,7 +102,9 @@ def restore_objectives():
 
 
 def yaw_of(q):
-    return math.atan2(2.0 * (q.w * q.z + q.x * q.y), 1.0 - 2.0 * (q.y * q.y + q.z * q.z))
+    return math.atan2(
+        2.0 * (q.w * q.z + q.x * q.y), 1.0 - 2.0 * (q.y * q.y + q.z * q.z)
+    )
 
 
 def set_arm(arm):
@@ -107,9 +125,13 @@ def set_arm(arm):
             out = committed
         else:
             block = SHIPPED if arm == "baseline" else ""
-            out = re.sub(r'[ \t]*<Action\s+ID="SetInitialPose"[^>]*?/>\n',
-                         ("      " + block + "\n") if block else "", committed, count=1,
-                         flags=re.S)
+            out = re.sub(
+                r'[ \t]*<Action\s+ID="SetInitialPose"[^>]*?/>\n',
+                ("      " + block + "\n") if block else "",
+                committed,
+                count=1,
+                flags=re.S,
+            )
         with open(path, "w") as fh:
             fh.write(out)
 
@@ -123,16 +145,25 @@ class NavAB(Node):
         self.answered = set()
         self.truth = {}
         self.pubs = {}
-        for name, handler in (("get_pose_from_user", self.answer_pose),
-                              ("wait_for_user_path_approval", self.answer_approval)):
+        for name, handler in (
+            ("get_pose_from_user", self.answer_pose),
+            ("wait_for_user_path_approval", self.answer_approval),
+        ):
             base = f"/moveit_pro_ui/{name}"
             self.pubs[name] = self.create_publisher(Json, base + "/response", 10)
             self.create_subscription(
-                Json, base + "/request",
-                (lambda m, n=name, h=handler: self.on_request(n, h, m)), LATCHED,
-                callback_group=cb)
-        self.create_subscription(Odometry, "/odom", self.on_truth, SENSOR, callback_group=cb)
-        self.ac = ActionClient(self, DoObjectiveSequence, "/do_objective", callback_group=cb)
+                Json,
+                base + "/request",
+                (lambda m, n=name, h=handler: self.on_request(n, h, m)),
+                LATCHED,
+                callback_group=cb,
+            )
+        self.create_subscription(
+            Odometry, "/odom", self.on_truth, SENSOR, callback_group=cb
+        )
+        self.ac = ActionClient(
+            self, DoObjectiveSequence, "/do_objective", callback_group=cb
+        )
         # The costmaps keep obstacles stamped from a wrong pose (a separately filed defect),
         # and after enough starts nav2 can no longer plan at all. Clearing them before every
         # start -- identically in every arm -- keeps that defect from ending the session
@@ -140,24 +171,36 @@ class NavAB(Node):
         self.ip = self.create_publisher(PoseWithCovarianceStamped, "/initialpose", 10)
         self.buf = tf2_ros.Buffer(cache_time=rclpy.duration.Duration(seconds=20))
         tf2_ros.TransformListener(self.buf, self, spin_thread=False)
-        self.clr = [self.create_client(ClearEntireCostmap,
-                                       "/global_costmap/clear_entirely_global_costmap",
-                                       callback_group=cb),
-                    self.create_client(ClearEntireCostmap,
-                                       "/local_costmap/clear_entirely_local_costmap",
-                                       callback_group=cb)]
+        self.clr = [
+            self.create_client(
+                ClearEntireCostmap,
+                "/global_costmap/clear_entirely_global_costmap",
+                callback_group=cb,
+            ),
+            self.create_client(
+                ClearEntireCostmap,
+                "/local_costmap/clear_entirely_local_costmap",
+                callback_group=cb,
+            ),
+        ]
 
     def localization_error(self):
         """How far the filter's estimate is from truth right now, or None."""
         try:
-            tr = self.buf.lookup_transform("map", "ridgeback_base_link", rclpy.time.Time(),
-                                           rclpy.duration.Duration(seconds=1.0))
+            tr = self.buf.lookup_transform(
+                "map",
+                "ridgeback_base_link",
+                rclpy.time.Time(),
+                rclpy.duration.Duration(seconds=1.0),
+            )
         except Exception:
             return None
         if not self.truth:
             return None
-        return math.hypot(tr.transform.translation.x - self.truth["x"],
-                          tr.transform.translation.y - self.truth["y"])
+        return math.hypot(
+            tr.transform.translation.x - self.truth["x"],
+            tr.transform.translation.y - self.truth["y"],
+        )
 
     def rescue(self):
         """Put the filter back on truth when it is hopelessly lost.
@@ -189,8 +232,11 @@ class NavAB(Node):
                     time.sleep(0.05)
 
     def on_truth(self, m):
-        self.truth = dict(x=m.pose.pose.position.x, y=m.pose.pose.position.y,
-                          yaw=yaw_of(m.pose.pose.orientation))
+        self.truth = dict(
+            x=m.pose.pose.position.x,
+            y=m.pose.pose.position.y,
+            yaw=yaw_of(m.pose.pose.orientation),
+        )
 
     def on_request(self, name, handler, msg):
         try:
@@ -198,24 +244,42 @@ class NavAB(Node):
         except json.JSONDecodeError:
             return
         rid = payload.get("request_id")
-        if not rid or payload.get("cleared") or "request" not in payload or rid in self.answered:
+        if (
+            not rid
+            or payload.get("cleared")
+            or "request" not in payload
+            or rid in self.answered
+        ):
             return
         self.answered.add(rid)
         time.sleep(self.click_delay)
         out = Json()
-        out.data = json.dumps({"request_id": rid, "response": handler(payload["request"])})
+        out.data = json.dumps(
+            {"request_id": rid, "response": handler(payload["request"])}
+        )
         self.pubs[name].publish(out)
 
     def answer_pose(self, request):
         x, y, yaw = self.goal
         now = self.get_clock().now().to_msg()
-        return {"status": {"success": True, "error_message": ""},
-                "pose": {"header": {"frame_id": self.frame,
-                                    "stamp": {"sec": int(now.sec), "nanosec": int(now.nanosec)}},
-                         "pose": {"position": {"x": x, "y": y, "z": 0.0},
-                                  "orientation": {"x": 0.0, "y": 0.0,
-                                                  "z": math.sin(yaw / 2.0),
-                                                  "w": math.cos(yaw / 2.0)}}}}
+        return {
+            "status": {"success": True, "error_message": ""},
+            "pose": {
+                "header": {
+                    "frame_id": self.frame,
+                    "stamp": {"sec": int(now.sec), "nanosec": int(now.nanosec)},
+                },
+                "pose": {
+                    "position": {"x": x, "y": y, "z": 0.0},
+                    "orientation": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": math.sin(yaw / 2.0),
+                        "w": math.cos(yaw / 2.0),
+                    },
+                },
+            },
+        }
 
     def answer_approval(self, request):
         return {"success": True}
@@ -248,10 +312,12 @@ def main():
 
     rclpy.init()
     n = NavAB(a.frame, a.click_delay)
-    ex = MultiThreadedExecutor(num_threads=4); ex.add_node(n)
+    ex = MultiThreadedExecutor(num_threads=4)
+    ex.add_node(n)
     threading.Thread(target=ex.spin, daemon=True).start()
     if not n.ac.wait_for_server(timeout_sec=90.0):
-        print("no /do_objective"); return 2
+        print("no /do_objective")
+        return 2
     t0 = time.time()
     while not n.truth and time.time() - t0 < 30:
         time.sleep(0.1)
@@ -274,15 +340,19 @@ def run_starts(a, n, fh, arms):
         rescued = False
         if a.rescue_m > 0 and lost is not None and lost > a.rescue_m:
             print(f"[{i}] lost by {lost:.1f} m -> rescue", flush=True)
-            n.rescue(); time.sleep(6.0); rescued = True
+            n.rescue()
+            time.sleep(6.0)
+            rescued = True
         if a.load_step:
             try:
                 with open(a.loadstep_file, "w") as fh2:
                     fh2.write(str(i))
                 if i == 0:
-                    print(f"load-step counter -> {os.path.abspath(a.loadstep_file)} "
-                          f"(container side; loadstepper watches the same file on the host)",
-                          flush=True)
+                    print(
+                        f"load-step counter -> {os.path.abspath(a.loadstep_file)} "
+                        f"(container side; loadstepper watches the same file on the host)",
+                        flush=True,
+                    )
             except OSError as e:
                 print(f"load-step signal failed: {e}", flush=True)
             time.sleep(a.load_settle)
@@ -293,8 +363,16 @@ def run_starts(a, n, fh, arms):
         wp = CYCLE[i % len(CYCLE)]
         n.goal = WAYPOINTS[wp]
         n.answered.clear()
-        rec = dict(i=i, arm=arm, wp=wp, goal=list(n.goal), start=dict(n.truth),
-                   lost_before=lost, rescued=rescued, t_send=time.time())
+        rec = dict(
+            i=i,
+            arm=arm,
+            wp=wp,
+            goal=list(n.goal),
+            start=dict(n.truth),
+            lost_before=lost,
+            rescued=rescued,
+            t_send=time.time(),
+        )
         g = DoObjectiveSequence.Goal()
         g.objective_name = a.objective
         g.objective_xml_string = ""
@@ -306,7 +384,10 @@ def run_starts(a, n, fh, arms):
         if gh is None or not gh.accepted:
             rec.update(accepted=False, result="rejected", t_end=time.time())
             print(f"[{i}] {arm} REJECTED", flush=True)
-            fh.write(json.dumps(rec) + "\n"); fh.flush(); time.sleep(a.settle); continue
+            fh.write(json.dumps(rec) + "\n")
+            fh.flush()
+            time.sleep(a.settle)
+            continue
         rec["accepted"] = True
         rec["t_accept"] = time.time()
         rf = gh.get_result_async()
@@ -314,16 +395,22 @@ def run_starts(a, n, fh, arms):
         while not rf.done() and time.time() < dl:
             time.sleep(0.05)
         if not rf.done():
-            gh.cancel_goal_async(); time.sleep(4); rec["result"] = "timeout"
+            gh.cancel_goal_async()
+            time.sleep(4)
+            rec["result"] = "timeout"
             print(f"[{i}] {arm} {wp} TIMEOUT", flush=True)
         else:
             r = rf.result()
             rec["result"] = "status=%d" % r.status
-            print(f"[{i}] {arm} {wp} status={r.status} "
-                  f"dt={time.time()-rec['t_accept']:.0f}s", flush=True)
+            print(
+                f"[{i}] {arm} {wp} status={r.status} "
+                f"dt={time.time()-rec['t_accept']:.0f}s",
+                flush=True,
+            )
         rec["t_end"] = time.time()
         rec["end"] = dict(n.truth)
-        fh.write(json.dumps(rec) + "\n"); fh.flush()
+        fh.write(json.dumps(rec) + "\n")
+        fh.flush()
         time.sleep(a.settle)
 
 
