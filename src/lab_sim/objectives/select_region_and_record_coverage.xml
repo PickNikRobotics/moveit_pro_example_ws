@@ -11,23 +11,18 @@
         primary_view_name="/wrist_camera/color"
       />
 
-      <!-- Every motion below names joint_trajectory_controller explicitly, rather than taking the
-           Move to Waypoint subtree's admittance default. The sweep runs at a standoff and never
-           contacts the surface, so compliance buys nothing, while the admittance controller's
-           0.5 rad path tolerance aborts the sweep when the simulator falls behind realtime. -->
+      <!-- The sweep runs under joint_trajectory_admittance_controller, which the Move to Waypoint
+           subtree activates by default. Compliance buys nothing at a standoff, and that controller's
+           0.5 rad path tolerance can abort a sweep when the simulator falls behind realtime. Naming
+           plain JTC on every motion avoids the aborts but more than doubles the run on a lagging
+           simulator, past the integration test's budget, so the tolerance is lived with instead. -->
 
       <!-- Close the gripper so a pointed tool, not open fingers, sweeps the surface. -->
       <SubTree ID="Close Gripper" _collapsed="true" />
 
       <!-- 2. Take up the viewing pose before prompting. The operator then draws on the same view every
            run, and the sweep is planned from a configuration that can reach what they drew. -->
-      <SubTree
-        ID="Move to Waypoint"
-        waypoint_name="Look at Table"
-        controller_names="joint_trajectory_controller"
-        execution_pipeline="jtc"
-        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-      />
+      <SubTree ID="Move to Waypoint" waypoint_name="Look at Table" />
 
       <!-- 3. User draws a bounding box on the wrist camera image. -->
       <Action
@@ -112,9 +107,18 @@
             box_center_pose="{region_pose}"
             box_dimensions="{region_dimensions}"
           />
+          <!-- The tool path needs the same frame change as the cloud, because RecordSurfaceCoverage
+               transforms it at the cloud's stamp too. It has to stay above the approval: below it the
+               lookup falls back to the latest transform and the path lands where the camera is now. -->
+          <Action
+            ID="TransformPoseFrame"
+            input_pose="{region_pose}"
+            target_frame_id="world"
+            output_pose="{region_pose_world}"
+          />
           <Action
             ID="GenerateSurfaceCoveragePath"
-            region_pose="{region_pose}"
+            region_pose="{region_pose_world}"
             region_dimensions="{region_dimensions}"
             line_spacing="0.03"
             point_spacing="0.02"
@@ -146,8 +150,6 @@
           />
           <Action
             ID="ExecuteTrajectory"
-            execution_pipeline="jtc"
-            controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
             joint_trajectory_msg="{coverage_trajectory}"
           />
 
@@ -181,13 +183,7 @@
 
       <!-- Return the arm to Home. The painted surface is recorded in the world frame, so it stays put
            while the arm and its camera move away. -->
-      <SubTree
-        ID="Move to Waypoint"
-        waypoint_name="Home"
-        controller_names="joint_trajectory_controller"
-        execution_pipeline="jtc"
-        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-      />
+      <SubTree ID="Move to Waypoint" waypoint_name="Home" />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>

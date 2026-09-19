@@ -5,10 +5,11 @@
     _description="Watch the treated surface fill in while the tool sweeps, recorded from where the tool actually goes."
   >
     <Control ID="Sequence" name="root">
-      <!-- Every motion below names joint_trajectory_controller explicitly, rather than taking the
-           Move to Waypoint subtree's admittance default. The sweep runs at a standoff and never
-           contacts the surface, so compliance buys nothing, while the admittance controller's
-           0.5 rad path tolerance aborts the sweep when the simulator falls behind realtime. -->
+      <!-- The sweep runs under joint_trajectory_admittance_controller, which the Move to Waypoint
+           subtree activates by default. Compliance buys nothing at a standoff, and that controller's
+           0.5 rad path tolerance can abort a sweep when the simulator falls behind realtime. Naming
+           plain JTC on every motion avoids the aborts but more than doubles the run on a lagging
+           simulator, past the integration test's budget, so the tolerance is lived with instead. -->
       <SubTree ID="Close Gripper" _collapsed="true" />
 
       <!-- 180 deg about the optical X axis points the reference +Z back toward the camera, which is
@@ -20,13 +21,7 @@
         pose_stamped="{region_reference_pose}"
       />
 
-      <SubTree
-        ID="Move to Waypoint"
-        waypoint_name="Look at Table"
-        controller_names="joint_trajectory_controller"
-        execution_pipeline="jtc"
-        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-      />
+      <SubTree ID="Move to Waypoint" waypoint_name="Look at Table" />
       <Action
         ID="GetPointCloud"
         topic_name="/wrist_camera/points"
@@ -78,8 +73,6 @@
       <Control ID="Parallel" success_count="1" failure_count="1">
         <Action
           ID="ExecuteTrajectory"
-          execution_pipeline="jtc"
-          controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
           joint_trajectory_msg="{coverage_trajectory}"
         />
         <Action
@@ -94,13 +87,7 @@
       </Control>
 
       <Action ID="LogMessage" message="Live coverage recorded." />
-      <SubTree
-        ID="Move to Waypoint"
-        waypoint_name="Home"
-        controller_names="joint_trajectory_controller"
-        execution_pipeline="jtc"
-        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
-      />
+      <SubTree ID="Move to Waypoint" waypoint_name="Home" />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
