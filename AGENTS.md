@@ -257,6 +257,53 @@ from this sim is meaningless without the RTF it was measured at. Measure it as
 `(delta wheel qpos / delta t_wall) / mean(wheel qvel)` over a window where the wheels are turning.
 It is a simulator artefact, absent on hardware; do not tune it away.
 
+### A localization defect only reproduces at the RTF of the session that produced it
+
+The RTF is not just a caveat on the numbers, it decides whether a bug happens at all. A heading
+divergence captured from a live session at RTF 0.76 did **not** occur once in 24 back-to-back
+navigation Objectives on an idle box at RTF 0.95, and did occur under load. Before concluding a
+localization bug is absent, measure the RTF you reproduced at against the RTF of the recording
+you are chasing.
+
+RTF can be read out of a recording with no access to the simulator: integrate the path length of
+`platform_velocity_controller_nav2/odom` and of ground-truth `/odom` over the moving samples;
+`RTF = truth_path / odom_path`. See `rtf.py` in `data/reseed-heading-flip/harness`.
+
+Sharper still: what destabilizes localization is the RTF **changing**, not being low. Every
+adjudicated divergence in that study fell within ~30 s of a step change in host load, and none in
+87 minutes of driving at steady load. A shared box supplies those steps whenever another lane
+starts or stops a deployment, which is one way a defect is real and "unreproducible" at once.
+
+### `fuse` under load publishes a FROZEN `/odom_filtered` with FRESH stamps
+
+The `throttle_period` note above says the fixed-lag smoother keeps publishing rather than failing
+when it falls behind. Downstream that looks like: `/odom_filtered` holding **exactly** the same
+yaw for 3.1 s while the base turned 40 degrees, stamps current throughout, then catching up in a
+single 92-degree jump. With `use_fuse:=true` navigation runs on that estimate, so for those
+seconds the believed heading does not move and any error against truth is just however far the
+base turned.
+
+That is indistinguishable from a real localization failure in `map -> base`, so anything counting
+heading excursions must separate them. `map -> odom` is the only part of the chain the localizer
+controls: a genuine particle-filter divergence has to move it (measured 10.9-32.4 deg, with the
+cloud reacting and position error growing), while an estimator stall leaves it alone (0.33-1.02
+deg). Testing for a bit-identical `/odom_filtered` yaw while the base turns gives the same verdict
+independently. See `adjudicate.py` beside `rtf.py`.
+
+Composing `map -> base` through `tf` is not safe under load either: that lookup came back over 1 s
+stale for 15 % of samples at RTF 0.80, against 0 % on an idle box. Compose it from `map -> odom`
+and `/odom_filtered` at one instant instead (`hfresh.py`).
+
+### `beluga` only resamples while the robot is moving
+
+`update_min_d: 0.25` / `update_min_a: 0.05` mean no measurement update until the base has moved
+25 cm or turned 0.05 rad, so a cloud keeps whatever width it was last given while the robot stands
+still. A stationary warm-up does not converge it, and "what the filter holds when converged"
+sampled at rest just after a seed returns the seed you put in — take such samples stopped but well
+after both a re-seed and some driving (`settled.py`). The same fact is why a wide re-seed matters:
+`SetInitialPose` fires at the start of a navigation Objective, the operator then takes seconds to
+click a goal, and the cloud is still at full seeded width when the base finally moves.
+
 ### Driving user-input Objectives without the Desktop App
 
 Objectives that prompt the user (`GetPoseFromUser`, `WaitForUserPathApproval`) do not use the
