@@ -60,6 +60,16 @@
   <xacro:lunar_lidar_body name="lidar_front" xyz="0.45 0 0.3208593" />
   <xacro:lunar_lidar_body name="lidar_rear" xyz="-0.2728 0 0.6500193" />
 
+  <!-- The vendored A300 declares the name "yellow" twice: rgba 1 0.6038269 0
+       in attachments/amp_enclosure.urdf.xacro (access panels) and rgba
+       0.8 0.8 0 in attachments/amp_sensor_arch.urdf.xacro (arch). The web
+       viewer keeps one entry per material name and the last one parsed wins, so
+       the arch value currently paints both parts. Declaring it last pins the
+       result, at the enclosure hue scaled to 0.55 peak so the red channel stays
+       under the tone mapper white point. urdfdom keeps the first occurrence
+       instead, so this pins the web viewer only. -->
+  <material name="yellow"><color rgba="0.55 0.332 0.0 1" /></material>
+
   <!-- MuJoCo hardware: real physics, driven by description/husky_scene.xml (see that file and
        husky_a300.xml for the body/wheel/actuator model). Wheel joint names match
        clearpath_platform_description/urdf/a300/drivetrain/wheels/outdoor.urdf.xacro
