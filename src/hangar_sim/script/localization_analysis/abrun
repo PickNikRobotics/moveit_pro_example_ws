@@ -31,7 +31,9 @@ docker cp "$HARNESS_DIR/navloop_ab.py" "$RT:/tmp/navloop_ab.py"
 
 docker exec -d -e "$DDS" "$RT" bash -lc \
   "$SRC python3 /tmp/recorder4.py --out /tmp/${LABEL}.jsonl --duration 9000 --label $LABEL > /tmp/${LABEL}.reclog 2>&1"
-sleep "${WARMUP:-60}"
+WARMUP="${WARMUP:-60}"
+echo "== driver warmup ${WARMUP}s; loadstepper should be started with WARMUP=$WARMUP =="
+sleep "$WARMUP"
 
 docker exec -e "$DDS" -e "LOADSTEP_FILE=$CONTAINER_LOADSTEP" "$RT" bash -lc \
   "$SRC python3 -u /tmp/navloop_ab.py --starts $STARTS --arms '$ARMS' --out /tmp/${LABEL}.starts --clear-costmaps ${CLEAR:-1} --load-step ${LOADSTEP:-0} --rescue-m ${RESCUE:-2.0}" \

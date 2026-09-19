@@ -47,11 +47,28 @@ def fo_frozen_span(rows, i0, i1):
     return best
 
 
+def ang_span(angles):
+    """Smallest arc containing every sample, in radians.
+
+    max - min is wrong on a circle: map->odom yaw is an atan2 output in (-pi, pi], so a
+    correction merely jittering either side of +/-pi spans ~2*pi that way and reads as a
+    ~360 deg move of a correction that never actually moved.
+    """
+    if not angles:
+        return 0.0
+    a = sorted(math.atan2(math.sin(x), math.cos(x)) for x in angles)
+    if len(a) == 1:
+        return 0.0
+    gaps = [a[i + 1] - a[i] for i in range(len(a) - 1)]
+    gaps.append(2.0 * math.pi - (a[-1] - a[0]))
+    return 2.0 * math.pi - max(gaps)
+
+
 def classify(rows, ep_rows, i0, i1):
     """Return (verdict, evidence) for one episode."""
     w = rows[max(0, i0 - 5):min(len(rows), i1 + 40)]     # include the filter's reaction
     mo = [r["mo_yaw"] for r in w if "mo_yaw" in r]
-    mo_span = D(max(mo) - min(mo)) if mo else 0.0
+    mo_span = D(ang_span(mo))
     upd = [r.get("amcl_upd", 0) for r in w]
     d_upd = (max(upd) - min(upd)) if upd else 0
     ed = [r["err_d"] for r in rows[i0:i1 + 1] if "err_d" in r]

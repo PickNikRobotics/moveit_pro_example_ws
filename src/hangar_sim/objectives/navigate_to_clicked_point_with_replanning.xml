@@ -13,8 +13,8 @@
       <Action
         ID="SetInitialPose"
         robot_frame_id="ridgeback_base_link"
-        xy_variance="0.0052"
-        yaw_variance="0.00085"
+        xy_variance="0.0175"
+        yaw_variance="0.00245"
       />
       <Action
         ID="CreatePoseStamped"

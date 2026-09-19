@@ -20,7 +20,12 @@ HARNESS_DIR="${HARNESS_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)}"
 WS="${WORKSPACE:-$(cd "$HARNESS_DIR/../../../.." && pwd)}"
 F="${LOADSTEP_FILE:-$WS/log/.loadstep}"
 LO="${LO:-6}"; HI="${HI:-24}"
+# The driver does not write its first step until abrun's WARMUP sleep has elapsed, so the
+# grace period has to clear that too or a long warmup trips a false alarm. abrun exports
+# WARMUP; GRACE is the margin allowed on top of it.
+WARMUP="${WARMUP:-60}"
 GRACE="${GRACE:-180}"
+DEADLINE=$((WARMUP + GRACE))
 mkdir -p "$(dirname "$F")"; : > "$F"
 F="$(cd "$(dirname "$F")" && pwd)/$(basename "$F")"
 last=""; hi=1; warned=0; t0=$SECONDS
@@ -34,11 +39,12 @@ while true; do
     echo "$(date -u +%H:%M:%S) step $cur -> $( [ "$hi" = "0" ] && echo "$HI" || echo "$LO") burners"
     last="$cur"
   fi
-  if [ "$warned" = "0" ] && [ -z "$last" ] && [ $((SECONDS - t0)) -gt "$GRACE" ]; then
-    echo "loadstepper: WARNING nothing has written $F in ${GRACE}s." >&2
-    echo "loadstepper: WARNING the driver is writing somewhere else, so NO load steps are" >&2
-    echo "loadstepper: WARNING happening and this run is a STEADY-load run, not a stepped one." >&2
-    echo "loadstepper: WARNING set LOADSTEP_FILE on both sides so they name the same file." >&2
+  if [ "$warned" = "0" ] && [ -z "$last" ] && [ $((SECONDS - t0)) -gt "$DEADLINE" ]; then
+    echo "loadstepper: NOTE no step seen yet after ${DEADLINE}s (warmup ${WARMUP}s + grace ${GRACE}s)." >&2
+    echo "loadstepper: NOTE watching $F." >&2
+    echo "loadstepper: NOTE if the driver is still warming up this is expected; if it has already" >&2
+    echo "loadstepper: NOTE started driving, the two sides name different files and no load steps" >&2
+    echo "loadstepper: NOTE are reaching this stepper -- set LOADSTEP_FILE on both sides." >&2
     warned=1
   fi
   sleep 1

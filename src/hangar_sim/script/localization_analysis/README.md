@@ -77,8 +77,9 @@ two name the same bind-mounted counter by different paths: `<workspace>/log/.loa
 `$USER_WS/log/.loadstep` in the container. `abrun` reads the container's `USER_WS` and passes the
 container-side path in explicitly so they cannot drift; override both with `LOADSTEP_FILE` (host)
 and `CONTAINER_LOADSTEP` (container) if your layout differs. A stepper pointed at the wrong file
-never fires and produces a steady-load run that looks like a stepped one, so `loadstepper` warns
-loudly if nothing writes its file within `GRACE` seconds (default 180).
+never fires and produces a steady-load run that looks like a stepped one, so `loadstepper`
+reports if it has seen no step after `WARMUP + GRACE` seconds (defaults 60 + 180). Pass the
+same `WARMUP` you give `abrun`, or a long warmup trips that note while the rendezvous is fine.
 
 `navloop_ab.py`'s `--load-settle` defaults to 20 s because the observed divergences appeared
 26-29 s after their load step. `RESCUE=2.0` re-seeds the filter on truth when it has been left
@@ -88,6 +89,14 @@ with an Objective's own seed.
 The honest limit: a 4x load step produced divergences at roughly 25-33% of starts, a 1.6x step
 produced none, and it still does not fire on demand. Plan for a run long enough to catch several,
 and report the RTF alongside whatever you conclude.
+
+`settled.py` selects settled samples on being stopped, more than 15 s past any re-seed, and past
+`amcl_upd` — deliberately *not* on the pose already being close to truth, since conditioning the
+measurement on the answer would bias the derived seed downward. On the two sessions measured that
+selection clause made no difference at all (identical sample counts, 2768 and 1431, and identical
+statistics; settled stationary samples essentially never exceed 5 deg of heading error — medians
+0.90 and 0.34 deg). It is gone because it was not a defensible selection, not because it moved the
+numbers.
 
 ## The captured session is not in this repository
 

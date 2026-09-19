@@ -6,15 +6,25 @@ filter already holds, but it overwrites the *covariance*, and when the ports are
 the behavior's own defaults of ``xy_variance`` 0.25 m^2 and ``yaw_variance`` 0.0685 rad^2 --
 sigma 0.5 m and sigma 15 deg.
 
-The converged filter on this configuration holds sigma_yaw 1.5-1.8 deg and sigma_xy
-0.066-0.078 m, measured both from AMCL's own published covariance and independently from the
-particle cloud's spread, across two separate sessions. The bounds asserted here are 0.0027 rad^2
-(sigma 3.0 deg) and 0.023 m^2 (sigma 0.15 m): roughly twice the measured converged spread, so
-they admit the committed values (0.00085 / 0.0052) while rejecting the behavior defaults
-(0.0685 / 0.25).
+The bound comes from the settled **particle cloud's own spread**, because that is the quantity a
+re-seed actually replaces. Two instruments are available and they do not agree: AMCL's published
+covariance reads tighter (sigma_yaw 1.49-1.84 deg, sigma_xy 0.066-0.078 m) than the particle set
+it summarises, being a weighted summary of it. The cloud spread is used here rather than treating
+the two as corroborating each other.
+
+Settled samples pooled across two independent sessions (n=4199; stopped, more than 15 s after any
+re-seed, after driving) give a 90th-percentile cloud spread of r95 = 0.324 m and yaw_r95 =
+5.55 deg. Converting with ``settled.py``'s own relations (sigma_xy = r95/2.448, sigma_yaw =
+yaw_r95/1.96) gives sigma_xy 0.132 m and sigma_yaw 2.83 deg -- the committed
+``xy_variance`` 0.0175 and ``yaw_variance`` 0.00245. The 90th percentile is used for *both*
+quantities, since the rule being applied is that a seed must not assert a belief tighter than what
+the filter actually holds when converged.
+
+The bounds asserted here are 0.0027 rad^2 (sigma 3.0 deg) and 0.023 m^2 (sigma 0.15 m): they admit
+that settled-cloud-derived seed while rejecting the behavior defaults (0.0685 / 0.25).
 
 The purpose is that a future edit dropping back to those defaults fails here instead of silently
-reintroducing a six-fold heading doubt at the start of every navigation Objective.
+reintroducing a five-fold heading doubt at the start of every navigation Objective.
 
 The Objective XML is a machine-consumed declarative artifact -- the behavior tree the moveit_pro
 agent loads -- so it is parsed into elements and attributes and asserted on by meaning, never

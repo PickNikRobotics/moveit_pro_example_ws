@@ -21,14 +21,15 @@ def main():
         # AMCL only resamples on motion (update_min_d/update_min_a), so a cloud that has
         # never driven is still at its seeded width, not converged.  Take samples that are
         # stopped, well after the most recent re-seed, and after some driving has happened.
+        # Deliberately NOT conditioned on the pose already being close to truth: selecting
+        # settled samples on the answer would bias the derived seed downward.
         def since_seed(t):
             past = [t - s for s in evs if s <= t]
             return min(past) if past else 1e9
         quiet = [r for r in rows
                  if abs(r.get("vx", 0)) + abs(r.get("vy", 0)) + abs(r.get("wz", 0)) < 0.01
                  and since_seed(r["t"]) > 15.0
-                 and r.get("amcl_upd", 0) > 5
-                 and abs(math.degrees(r.get("err_yaw", 9))) < 5.0]
+                 and r.get("amcl_upd", 0) > 5]
         if not quiet:
             print(f"{path}: no settled samples"); continue
 
