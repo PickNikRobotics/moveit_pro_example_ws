@@ -16,7 +16,7 @@ docker cp "$HARNESS_DIR/recorder4.py" "$RT:/tmp/recorder4.py"
 docker cp "$HARNESS_DIR/navloop_ab.py" "$RT:/tmp/navloop_ab.py"
 
 docker exec -d -e "$DDS" "$RT" bash -lc \
-  "$SRC python3 /tmp/recorder4.py --out /tmp/${LABEL}.json --duration 9000 --label $LABEL > /tmp/${LABEL}.reclog 2>&1"
+  "$SRC python3 /tmp/recorder4.py --out /tmp/${LABEL}.jsonl --duration 9000 --label $LABEL > /tmp/${LABEL}.reclog 2>&1"
 sleep "${WARMUP:-60}"
 
 docker exec -e "$DDS" "$RT" bash -lc \

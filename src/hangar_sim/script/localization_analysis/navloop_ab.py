@@ -11,7 +11,7 @@ Each start's arm is recorded by the recorder itself -- /initialpose carries the 
 that was in the file -- so the arm labels in the analysis come from the measurement, not
 from this script's bookkeeping.
 """
-import argparse, atexit, json, math, os, re, signal, subprocess, sys, threading, time
+import argparse, atexit, json, math, os, re, signal, sys, threading, time
 
 import rclpy
 from rclpy.node import Node
@@ -48,42 +48,39 @@ CYCLE = ["B", "C", "B", "A"]
 RESCUE_XY, RESCUE_YAW = 0.0100, 0.0009
 
 
-def _git(*args):
-    """git, scoped to whatever repository OBJ_DIR belongs to."""
-    return subprocess.run(("git", "-C", OBJ_DIR) + args,
-                          capture_output=True, text=True)
+_SNAPSHOT = {}
 
 
-def require_clean_objectives():
-    """Refuse to start if the Objectives carry uncommitted edits.
+def snapshot_objectives():
+    """Read the Objectives' exact bytes before anything writes to them.
 
-    set_arm rewrites these files in place and restore_objectives puts them back with a
-    git checkout, which would discard a developer's own uncommitted work.
+    Snapshotting rather than consulting git keeps this runnable where it is actually run --
+    inside the runtime container, against a bind-mounted worktree whose .git is a pointer to a
+    host path that does not exist there, on an image that need not ship git at all. It also
+    means the tool holds no opinion about what the Objectives should contain, so it cannot
+    reintroduce a stale version, and it restores a dirty tree's own edits rather than
+    discarding them.
     """
-    r = _git("status", "--porcelain", "--", ".")
-    if r.returncode != 0:
-        raise SystemExit(
-            f"cannot check {OBJ_DIR} with git ({r.stderr.strip()}); this tool rewrites the "
-            f"Objectives in place and restores them from git, so it needs a git checkout")
-    if r.stdout.strip():
-        raise SystemExit(
-            f"{OBJ_DIR} has uncommitted changes:\n{r.stdout.rstrip()}\n"
-            f"This tool rewrites those files in place and restores them from git, so it will "
-            f"not run while they carry uncommitted edits. Commit or stash them first.")
+    for f in FILES:
+        path = os.path.join(OBJ_DIR, f)
+        with open(path, "rb") as fh:
+            _SNAPSHOT[path] = fh.read()
+    print(f"NOTE: rewriting the Objectives in {OBJ_DIR} in place for each arm; the bytes read "
+          f"at startup are restored on exit.", flush=True)
 
 
 def restore_objectives():
-    """Put the Objectives back to their committed bytes.
-
-    Restoring from git rather than rewriting a block keeps this tool from carrying its own
-    opinion about what the committed seed is, so it cannot reintroduce a stale version -- and
-    it also undoes the formatting damage set_arm's re-sub does on an otherwise clean run.
-    """
-    r = _git("checkout", "--", ".")
-    if r.returncode != 0:
-        print(f"WARNING: could not restore {OBJ_DIR} from git: {r.stderr.strip()}", flush=True)
-    else:
-        print(f"restored {OBJ_DIR} from git", flush=True)
+    """Put the Objectives back to the exact bytes read at startup."""
+    for path, data in _SNAPSHOT.items():
+        try:
+            with open(path, "rb") as fh:
+                if fh.read() == data:
+                    continue
+            with open(path, "wb") as fh:
+                fh.write(data)
+            print(f"restored {path}", flush=True)
+        except OSError as e:
+            print(f"WARNING: could not restore {path}: {e}", flush=True)
 
 
 def yaw_of(q):
@@ -247,7 +244,7 @@ def main():
     a = ap.parse_args()
     arms = a.arms.split(",")
 
-    require_clean_objectives()
+    snapshot_objectives()
     atexit.register(restore_objectives)
     for sig in (signal.SIGINT, signal.SIGTERM):
         signal.signal(sig, lambda signum, _frame: sys.exit(128 + signum))

@@ -58,10 +58,13 @@ and state estimation" section of the repository's `AGENTS.md`.
 
 `navloop_ab.py` drives the A/B by rewriting the real Objective files in place: a `baseline` start
 runs the pre-fix seed (no variance ports) and a `tight` start runs the committed one, which is the
-experiment itself. So that a run cannot leave the pre-fix seed behind, it restores `OBJ_DIR` with
-`git checkout` on every exit path -- normal completion, an exception, and SIGINT/SIGTERM -- and it
-refuses to start at all while those files carry uncommitted edits, rather than overwriting work it
-cannot put back.
+experiment itself. So that a run cannot leave the pre-fix seed behind, it reads both files' exact
+bytes at startup before writing anything and restores that snapshot on every exit path -- normal
+completion, an exception, and SIGINT/SIGTERM -- announcing on the first line that it is doing so.
+The snapshot is deliberately not a `git checkout`: this runs inside the runtime container against a
+bind-mounted worktree whose `.git` points at a host path that does not exist there, on an image that
+need not ship git. Restoring the startup bytes also means a tree with uncommitted edits is safe --
+your own edits come back, not someone's idea of the committed content.
 
 `navloop_ab.py`'s `--load-settle` defaults to 20 s because the observed divergences appeared
 26-29 s after their load step. `RESCUE=2.0` re-seeds the filter on truth when it has been left
@@ -71,6 +74,14 @@ with an Objective's own seed.
 The honest limit: a 4x load step produced divergences at roughly 25-33% of starts, a 1.6x step
 produced none, and it still does not fire on demand. Plan for a run long enough to catch several,
 and report the RTF alongside whatever you conclude.
+
+## The captured session is not in this repository
+
+The live operator session that motivated this work is deliberately not committed here. It is
+private session data, and project memory is the wrong home for it. What the project keeps instead
+is the instrument -- the recorder, the analysis tools, and the load-stepping recipe above -- which
+is what lets anyone produce and adjudicate their own capture of the failure rather than take a
+single recording on trust.
 
 ## Paths
 

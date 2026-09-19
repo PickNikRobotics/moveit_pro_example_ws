@@ -238,7 +238,7 @@ def main():
     stop = {"v": False}
     signal.signal(signal.SIGTERM, lambda *_: stop.__setitem__("v", True))
     signal.signal(signal.SIGINT, lambda *_: stop.__setitem__("v", True))
-    fh = open(a.out + "l", "w")
+    fh = open(a.out, "w")
     end = time.time() + a.duration
     seen = seen_ev = 0
     while time.time() < end and not stop["v"]:
@@ -257,7 +257,7 @@ def main():
                              data=list(gg.data))
     fh.write(json.dumps(dict(ev="grids", cloud_src=n.cloud_src, grids=grids)) + "\n")
     fh.close()
-    print(f"WROTE {a.out}l rows={len(n.rows)} cloud_src={n.cloud_src} amcl_upd={n.upd}")
+    print(f"WROTE {a.out} rows={len(n.rows)} cloud_src={n.cloud_src} amcl_upd={n.upd}")
 
 
 if __name__ == "__main__":
