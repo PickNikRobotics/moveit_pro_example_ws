@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# One continuous session, arms alternating start by start.
+# usage: abrun <label> <total starts> [arms]
+set -euo pipefail
+LABEL="$1"; STARTS="${2:-120}"; ARMS="${3:-baseline,tight,noseed}"
+INST="${INST:-reseedflip}"
+RT="moveit_pro_${INST}-runtime-1"
+HARNESS_DIR="${HARNESS_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)}"
+OUT="${OUT_DIR:-$PWD/runs}"
+DDS="CYCLONEDDS_URI=${CYCLONEDDS_URI:-file://$HOME/.ros/cyclonedds.xml}"
+SRC='source /opt/ros/jazzy/setup.bash; source /opt/overlay_ws/install/setup.bash;'
+
+mkdir -p "$OUT"
+
+docker cp "$HARNESS_DIR/recorder4.py" "$RT:/tmp/recorder4.py"
+docker cp "$HARNESS_DIR/navloop_ab.py" "$RT:/tmp/navloop_ab.py"
+
+docker exec -d -e "$DDS" "$RT" bash -lc \
+  "$SRC python3 /tmp/recorder4.py --out /tmp/${LABEL}.json --duration 9000 --label $LABEL > /tmp/${LABEL}.reclog 2>&1"
+sleep "${WARMUP:-60}"
+
+docker exec -e "$DDS" "$RT" bash -lc \
+  "$SRC python3 -u /tmp/navloop_ab.py --starts $STARTS --arms '$ARMS' --out /tmp/${LABEL}.starts --clear-costmaps ${CLEAR:-1} --load-step ${LOADSTEP:-0} --rescue-m ${RESCUE:-2.0}" \
+  2>&1 | tee "$OUT/${LABEL}.drivelog"
+
+docker exec "$RT" bash -lc "pkill -TERM -f '[r]ecorder4.py --out /tmp/${LABEL}' || true"
+sleep 6
+docker exec "$RT" bash -lc "pkill -9 -f '[r]ecorder4.py --out /tmp/${LABEL}' || true"
+docker cp "$RT:/tmp/${LABEL}.jsonl" "$OUT/${LABEL}.jsonl"
+docker cp "$RT:/tmp/${LABEL}.starts" "$OUT/${LABEL}.starts"
+echo "== [$LABEL] wrote $OUT/${LABEL}.jsonl =="

@@ -178,8 +178,8 @@ private:
     {
       return;
     }
-    // A frozen estimate would still broadcast with a fresh stamp, and AMCL would silently
-    // localize against a base that appears not to move. Withhold so lookups fail loudly instead.
+    // Arrival-time staleness only: this catches fuse going silent, not fuse publishing a frozen
+    // estimate with fresh stamps. Withhold on silence so lookups fail loudly instead.
     const double est_age = (get_clock()->now() - est_stamp_).seconds();
     if (est_age > kEstStaleSec)
     {

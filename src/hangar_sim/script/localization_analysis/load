@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# Host CPU load, to put the simulator at the real-time factor a session is meant to match.
+# The captain's recording ran at RTF ~0.76 (nav odometry inflated +31% over truth); an idle
+# box here runs ~0.94, and AGENTS.md is explicit that a localization number without its RTF
+# means nothing.  usage: load <n_burners> | load off
+set -euo pipefail
+PIDF=/tmp/reseedflip-load.pids
+if [ "${1:-}" = "off" ]; then
+  [ -f "$PIDF" ] && xargs -r kill 2>/dev/null < "$PIDF" || true
+  rm -f "$PIDF"; echo "load off"; exit 0
+fi
+N="${1:-4}"
+[ -f "$PIDF" ] && { xargs -r kill 2>/dev/null < "$PIDF" || true; rm -f "$PIDF"; }
+: > "$PIDF"
+for i in $(seq 1 "$N"); do
+  nice -n 0 python3 -c '
+while True:
+    x = 0
+    for i in range(10**7): x += i*i
+' >/dev/null 2>&1 &
+  echo $! >> "$PIDF"
+done
+echo "load on: $N burners ($(wc -l < "$PIDF") pids)"

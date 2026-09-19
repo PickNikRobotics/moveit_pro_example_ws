@@ -58,6 +58,11 @@ if(BUILD_TESTING)
   ament_add_pytest_test(
           lidar_flattener_test test/test_lidar_flattener.py
           TIMEOUT 60)
+  # Guards the localizer re-seed covariance in the navigation Objectives against a
+  # silent return to SetInitialPose's wide defaults; no simulator needed.
+  ament_add_pytest_test(
+          navigation_seed_covariance_test test/test_navigation_seed_covariance.py
+          TIMEOUT 30)
   # Redirect ROS node logs into the test_results tree so the test-results CI
   # artifact ships them back too. Default would be ~/.ros/log/, which lives
   # on the doomed container filesystem and never gets uploaded -- making

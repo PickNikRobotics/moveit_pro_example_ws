@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+# Host side of the load-step stressor.
+#
+# Every adjudicated divergence in this study happened within ~30 s of a STEP change in host
+# load, and none in 87 minutes of steady-load driving: the trigger is a real-time factor that
+# is CHANGING, not one that is low. That is an ordinary condition on a shared box -- another
+# lane starting or stopping a deployment does exactly this -- so the stressor here reproduces
+# it deliberately, and the interleaved arms make every step common to both.
+#
+# Watches a counter the driver writes before each start and toggles the burner count.
+set -uo pipefail
+HARNESS_DIR="${HARNESS_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)}"
+WS="${WORKSPACE:-$PWD}"
+F="${LOADSTEP_FILE:-$WS/log/.loadstep}"
+LO="${LO:-6}"; HI="${HI:-24}"
+mkdir -p "$(dirname "$F")"; : > "$F"
+last=""; hi=1
+echo "loadstepper: watching $F, toggling $LO <-> $HI"
+while true; do
+  cur=$(cat "$F" 2>/dev/null)
+  if [ -n "$cur" ] && [ "$cur" != "$last" ]; then
+    if [ "$hi" = "1" ]; then "$HARNESS_DIR/load" "$HI" >/dev/null; hi=0;
+    else "$HARNESS_DIR/load" "$LO" >/dev/null; hi=1; fi
+    echo "$(date -u +%H:%M:%S) step $cur -> $( [ "$hi" = "0" ] && echo "$HI" || echo "$LO") burners"
+    last="$cur"
+  fi
+  sleep 1
+done

@@ -267,7 +267,8 @@ you are chasing.
 
 RTF can be read out of a recording with no access to the simulator: integrate the path length of
 `platform_velocity_controller_nav2/odom` and of ground-truth `/odom` over the moving samples;
-`RTF = truth_path / odom_path`. See `rtf.py` in `data/reseed-heading-flip/harness`.
+`RTF = truth_path / odom_path`. See `rtf.py` in
+`src/hangar_sim/script/localization_analysis/`.
 
 Sharper still: what destabilizes localization is the RTF **changing**, not being low. Every
 adjudicated divergence in that study fell within ~30 s of a step change in host load, and none in
@@ -288,11 +289,13 @@ heading excursions must separate them. `map -> odom` is the only part of the cha
 controls: a genuine particle-filter divergence has to move it (measured 10.9-32.4 deg, with the
 cloud reacting and position error growing), while an estimator stall leaves it alone (0.33-1.02
 deg). Testing for a bit-identical `/odom_filtered` yaw while the base turns gives the same verdict
-independently. See `adjudicate.py` beside `rtf.py`.
+independently. See `adjudicate.py` beside `rtf.py` in
+`src/hangar_sim/script/localization_analysis/`.
 
 Composing `map -> base` through `tf` is not safe under load either: that lookup came back over 1 s
 stale for 15 % of samples at RTF 0.80, against 0 % on an idle box. Compose it from `map -> odom`
-and `/odom_filtered` at one instant instead (`hfresh.py`).
+and `/odom_filtered` at one instant instead
+(`src/hangar_sim/script/localization_analysis/hfresh.py`).
 
 ### `beluga` only resamples while the robot is moving
 
@@ -300,7 +303,9 @@ and `/odom_filtered` at one instant instead (`hfresh.py`).
 25 cm or turned 0.05 rad, so a cloud keeps whatever width it was last given while the robot stands
 still. A stationary warm-up does not converge it, and "what the filter holds when converged"
 sampled at rest just after a seed returns the seed you put in — take such samples stopped but well
-after both a re-seed and some driving (`settled.py`). The same fact is why a wide re-seed matters:
+after both a re-seed and some driving
+(`src/hangar_sim/script/localization_analysis/settled.py`). The same fact is why a wide re-seed
+matters:
 `SetInitialPose` fires at the start of a navigation Objective, the operator then takes seconds to
 click a goal, and the cloud is still at full seeded width when the base finally moves.
 
