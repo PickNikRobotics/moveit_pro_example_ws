@@ -29,7 +29,11 @@ The rule is bounded in **both** directions, because a seed can be wrong either w
   spread (pooled medians r95 0.171 m and yaw_r95 3.32 deg over the same n=4199). A seed at or
   below the median converged spread asserts more confidence than the filter typically holds, and
   that over-confident cloud cannot pull a genuinely offset pose back — the mirror image of the
-  failure being fixed. The superseded 0.0052 / 0.00085 fails here.
+  failure being fixed. The superseded 0.0052 / 0.00085 pair is rejected here by the **yaw** floor
+  specifically: 0.00085 is below 0.00088, while its position half passes, since 0.0052 sits ~6%
+  above the position floor. That floor is where it is because the median settled r95 (0.171 m)
+  happens to land just below the superseded xy value; it is derived, not chosen to reject that
+  pair.
 
 The committed values sit at the p90, i.e. at the ceiling end of that band.
 

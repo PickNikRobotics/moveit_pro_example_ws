@@ -28,6 +28,7 @@ fi
 
 docker cp "$HARNESS_DIR/recorder4.py" "$RT:/tmp/recorder4.py"
 docker cp "$HARNESS_DIR/navloop_ab.py" "$RT:/tmp/navloop_ab.py"
+docker cp "$HARNESS_DIR/seed_constants.py" "$RT:/tmp/seed_constants.py"
 
 docker exec -d -e "$DDS" "$RT" bash -lc \
   "$SRC python3 /tmp/recorder4.py --out /tmp/${LABEL}.jsonl --duration 9000 --label $LABEL > /tmp/${LABEL}.reclog 2>&1"

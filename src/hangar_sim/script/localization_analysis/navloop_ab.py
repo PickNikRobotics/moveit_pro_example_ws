@@ -13,6 +13,8 @@ from this script's bookkeeping.
 """
 import argparse, atexit, json, math, os, re, signal, sys, threading, time
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 import rclpy
 from rclpy.node import Node
 from rclpy.action import ActionClient
@@ -45,7 +47,7 @@ WAYPOINTS = {
     "C": (-8.37, 10.61, math.radians(18.4)),
 }
 CYCLE = ["B", "C", "B", "A"]
-RESCUE_XY, RESCUE_YAW = 0.0100, 0.0009
+from seed_constants import RESCUE_XY, RESCUE_YAW    # noqa: E402
 
 
 _SNAPSHOT = {}

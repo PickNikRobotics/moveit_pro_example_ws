@@ -66,9 +66,11 @@ and state estimation" section of the repository's `AGENTS.md`.
 runs the pre-fix seed (no variance ports) and a `tight` start runs the committed seed, read from
 the Objective files at startup — the tool keeps no copy of the seed values, so the `tight` arm is
 whatever this repository currently ships and cannot drift from it. Every arm is rebuilt from that
-startup snapshot, so arms never accumulate one another's edits. This is the experiment itself. So that a run cannot leave the pre-fix seed behind, it reads both files' exact
-bytes at startup before writing anything and restores that snapshot on every exit path -- normal
-completion, an exception, and SIGINT/SIGTERM -- announcing on the first line that it is doing so.
+startup snapshot, so arms never accumulate one another's edits. This is the experiment itself.
+
+So that a run cannot leave the pre-fix seed behind, it reads both files' exact bytes at startup
+before writing anything and restores that snapshot on every exit path -- normal completion, an
+exception, and SIGINT/SIGTERM -- announcing on the first line that it is doing so.
 The snapshot is deliberately not a `git checkout`: this runs inside the runtime container against a
 bind-mounted worktree whose `.git` points at a host path that does not exist there, on an image that
 need not ship git. Restoring the startup bytes also means a tree with uncommitted edits is safe --
@@ -104,11 +106,9 @@ numbers.
 
 The live operator session that motivated this work is deliberately not committed here. It is
 private session data, and project memory is the wrong home for it. What the project keeps instead
-is the instrument -- the recorder, the analysis tools, and the load-stepping recipe above -- which
-is what lets anyone produce and adjudicate their own capture of the failure rather than take a
-single recording on trust. What is committed here is the instrument — `recorder4.py`, the
-analysis tools, and the load-stepping recipe above — so that anyone can reproduce the failure and
-adjudicate it for themselves rather than depend on evidence they cannot see.
+is the instrument — `recorder4.py`, the analysis tools, and the load-stepping recipe above — so
+that anyone can reproduce the failure and adjudicate it for themselves rather than take a single
+recording they cannot see on trust.
 
 ## Paths
 

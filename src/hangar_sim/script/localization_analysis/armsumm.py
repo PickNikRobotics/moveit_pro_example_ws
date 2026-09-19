@@ -13,6 +13,9 @@ HEADING spread just before against just after.
 """
 import json, math, statistics as st, sys, os
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from seed_constants import COV_TOL, RESCUE_XY, RESCUE_YAW    # noqa: E402
+
 THRESH = float(os.environ.get("THRESH", "20.0"))
 
 
@@ -74,18 +77,11 @@ def episodes(rows, thresh):
     return eps
 
 
-# navloop_ab.py's rescue seed (RESCUE_XY / RESCUE_YAW). It is deliberately a covariance no
-# Objective arm uses, precisely so the analysis can tell a rescue apart from an Objective's own
-# re-seed; this is where that promise is kept.
-RESCUE_COV = (0.0100, 0.0009)
-COV_TOL = 1e-6
-
-
 def is_rescue(e):
     xx, aa = e.get("cov_xx"), e.get("cov_aa")
     if xx is None or aa is None:
         return False
-    return (abs(xx - RESCUE_COV[0]) < COV_TOL and abs(aa - RESCUE_COV[1]) < COV_TOL)
+    return abs(xx - RESCUE_XY) < COV_TOL and abs(aa - RESCUE_YAW) < COV_TOL
 
 
 def arm_key(e):
@@ -194,6 +190,16 @@ def main():
             groups.setdefault(arm_key(x), []).append(x)
         if n_rescue:
             print(f"\n  ({n_rescue} rescue re-seed(s) excluded from the per-arm statistics below)")
+
+        def starts_for(seeds):
+            return [idx for idx, wp, a, b in bounds
+                    if any(x["wall"] is not None and a <= x["wall"] < b for x in seeds)]
+
+        seeded_starts = set()
+        # 'noseed' carries no covariance, so it is only an arm if some accepted start had no
+        # Objective seed in it. Count it before deciding whether this is a multi-arm session.
+        n_noseed = len([idx for idx, wp, a, b in bounds if idx not in set(starts_for(se_arms))])
+        multi_arm = len(groups) + (1 if n_noseed else 0) > 1
         for key in sorted(groups, reverse=True):
             se = groups[key]
             widened = [s for s in se if s["post_yawr95"] > s["pre_yawr95"]]
@@ -213,12 +219,24 @@ def main():
             print(f"  n        pre  median {st.median(pn):5.0f}       post median {st.median(pon):5.0f}")
             # Attribute each start to an arm through the seed that fired inside its window,
             # so the interleaved A/B finally reports the per-arm rate it exists to produce.
-            arm_starts = [idx for idx, wp, a, b in bounds
-                          if any(x["wall"] is not None and a <= x["wall"] < b for x in se)]
+            arm_starts = starts_for(se)
+            seeded_starts.update(arm_starts)
             n_bad = len([k for k in arm_starts if hit.get(k)])
-            if len(groups) > 1 and arm_starts:
+            if multi_arm and arm_starts:
                 print(f"  excursions in this arm: {n_bad}/{len(arm_starts)} starts = "
                       f"{100.0*n_bad/len(arm_starts):.0f}%")
+
+        # The 'noseed' control emits no /initialpose at all, so it cannot be found by covariance
+        # -- it is the residual: every accepted start that no Objective seed fell inside. Without
+        # this it vanishes from the per-arm report while still inflating the pooled headline rate.
+        noseed_starts = [idx for idx, wp, a, b in bounds if idx not in seeded_starts]
+        if multi_arm and noseed_starts:
+            n_bad = len([k for k in noseed_starts if hit.get(k)])
+            print("\n  RE-SEED EFFECT on the cloud's HEADING spread  "
+                  "(seed sigma_yaw=n/a, sigma_xy=n/a -- the 'noseed' control, no re-seed fired)")
+            print(f"  widened the heading spread in 0/0 re-seeds (nothing to widen it)")
+            print(f"  excursions in this arm: {n_bad}/{len(noseed_starts)} starts = "
+                  f"{100.0*n_bad/len(noseed_starts):.0f}%")
 
 
 if __name__ == "__main__":
