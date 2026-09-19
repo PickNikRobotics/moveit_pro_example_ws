@@ -42,7 +42,7 @@ amcl:
     sigma_hit: 0.2
     tf_broadcast: true
     transform_tolerance: 1.0
-    update_min_a: 0.2
+    update_min_a: 0.05
     update_min_d: 0.25
     z_hit: 0.5
     z_max: 0.05
@@ -55,7 +55,8 @@ bt_navigator:
     use_sim_time: True
     global_frame: map
     robot_base_frame: ridgeback_base_link
-    odom_topic: /odom
+    # Rewritten by navigation_launch.py from use_fuse: fuse's estimate, or MuJoCo's /odom when off.
+    odom_topic: /odom_filtered
     bt_loop_duration: 10
     default_server_timeout: 20
     wait_for_service_timeout: 1000
@@ -81,6 +82,8 @@ bt_navigator_navigate_to_pose_rclcpp_node:
 controller_server:
   ros__parameters:
     use_sim_time: True
+    # Rewritten by navigation_launch.py from use_fuse; not inherited from bt_navigator.
+    odom_topic: /odom_filtered
     controller_frequency: 20.0
     min_x_velocity_threshold: 0.001
     min_y_velocity_threshold: 0.5

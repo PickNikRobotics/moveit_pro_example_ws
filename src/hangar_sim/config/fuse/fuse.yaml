@@ -65,12 +65,13 @@ state_estimator:
         type: fuse_loss::HuberLoss
         a: 1.0
       position_dimensions: ['x', 'y', 'z']
-      orientation_dimensions: ['yaw']
       linear_velocity_dimensions: ['x', 'y']
-      angular_velocity_dimensions: ['yaw']
+      # yaw dimensions omitted, not []: the exact simulated IMU owns yaw, and rclcpp cannot type an empty list.
       differential: true
       independent: false
       use_twist_covariance: true
+      # ~/odom arrives at ~390 Hz, not the configured 50; unthrottled the optimizer falls behind and odom_filtered freezes.
+      throttle_period: 0.02
 
     # Same settings as wheel_odom_sensor above, on the whole-body controller's topic.
     wholebody_odom_sensor:
@@ -99,6 +100,8 @@ state_estimator:
       orientation_dimensions: ['roll', 'pitch', 'yaw']
       angular_velocity_dimensions: ['yaw']
       queue_size: 10
+      # Same reason: imu_sensor_broadcaster publishes at the controller-manager rate.
+      throttle_period: 0.02
 
     # Publish filtered odometry
     publishers:
