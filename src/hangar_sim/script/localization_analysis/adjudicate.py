@@ -136,7 +136,9 @@ def main(paths):
                 f"UNCORROBORATED, not adjudicated (no AMCL publisher in this recording):"
             )
             for e in unc:
-                print(f"       t={e['t']-t0:7.1f}  peak {e['pk']:6.1f}d  -> UNCORROBORATED")
+                print(
+                    f"       t={e['t']-t0:7.1f}  peak {e['pk']:6.1f}d  -> UNCORROBORATED"
+                )
         for e in eps:
             i0, i1 = e["i0"], e["i1"]
             v, ev = classify(rows, i0, i1)

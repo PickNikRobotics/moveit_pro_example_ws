@@ -15,7 +15,7 @@ and state estimation" section of the repository's `AGENTS.md`.
 | --- | --- |
 | `recorder4.py` | Runs inside the runtime container and records the localization state (truth, `/odom`, `/odom_filtered`, `map -> odom`, the particle cloud, `/initialpose`) to a JSONL file. Every analysis tool below parses its output. |
 | `navloop_ab.py` | Drives the shipped navigation Objectives back to back over `/do_objective`, answering the UI prompts headlessly, alternating seed-covariance arms start by start inside one continuous session. |
-| `abrun` | Host-side wrapper: copies `recorder4.py`, `navloop_ab.py` and `seed_constants.py` into the runtime container, starts the recorder, runs the drive loop, then pulls the recording back out. |
+| `abrun` | Host-side wrapper: copies `recorder4.py`, `navloop_ab.py` and `seed_constants.py` into the runtime container, starts the recorder, runs the drive loop, then pulls the recording back out. It refuses to drive unless the capture is *growing* by the end of the warmup, and stops the recorder and copies out whatever exists on every exit path, so an aborted run still leaves its evidence. |
 | `seed_constants.py` | The rescue seed covariance, owned in one place. `navloop_ab.py` writes it and `armsumm.py` reads it back to tell a rescue apart from an Objective's own re-seed, so widening it cannot silently reclassify rescues as an experiment arm. |
 | `load` | Puts host CPU load on the box so the simulator sits at a chosen RTF. `./load <n_burners>` / `./load off`. |
 | `loadstepper` | Watches the counter `navloop_ab.py` writes before each start and toggles the burner count, producing a deliberate load *step* per start. |
@@ -23,7 +23,7 @@ and state estimation" section of the repository's `AGENTS.md`.
 | `armsumm.py` | Splits a recording into per-start episodes and summarizes each arm. A dependency of `adjudicate.py`. |
 | `hfresh.py` | Composes `map -> base` from `map -> odom` and `/odom_filtered` at one instant, instead of a `tf` lookup that comes back stale under load. A dependency of `adjudicate.py`. |
 | `settled.py` | Reports what the filter holds once converged — sampled stopped, but well after both a re-seed and some driving, because `beluga` only resamples while the robot moves. |
-| `adjudicate.py` | Classifies every heading excursion as a genuine particle-filter divergence or a `fuse` estimator stall. |
+| `adjudicate.py` | Classifies every heading excursion as a genuine particle-filter divergence or a `fuse` estimator stall. An excursion with no fresh `/pose` update inside its window is reported as uncorroborated instead, not adjudicated either way. |
 
 `armsumm.py`, `recorder4.py` and `seed_constants.py` are dependencies, not optional extras:
 `adjudicate.py` imports `episodes`/`load` from `armsumm` and `annotate` from `hfresh`, every
@@ -66,11 +66,16 @@ session is meant to start driving.
    python3 rtf.py runs/<label>.jsonl
    ```
 
-`navloop_ab.py` drives the A/B by rewriting the real Objective files in place: a `baseline` start
-runs the pre-fix seed (no variance ports) and a `tight` start runs the committed seed, read from
-the Objective files at startup — the tool keeps no copy of the seed values, so the `tight` arm is
-whatever this repository currently ships and cannot drift from it. Every arm is rebuilt from that
-startup snapshot, so arms never accumulate one another's edits. This is the experiment itself.
+`navloop_ab.py` drives the A/B by rewriting the real Objective files in place. There are three
+arms, and `abrun`'s default is all three (`baseline,tight,noseed`): a `baseline` start runs the
+pre-fix seed (`SetInitialPose` with no variance ports, so the behavior's own wide defaults apply),
+a `tight` start runs the committed seed, and a `noseed` start removes the `SetInitialPose` action
+altogether — the control that re-seeds not at all. The committed seed is read from the Objective
+files at startup — the tool keeps no copy of the seed values, so the `tight` arm is whatever this
+repository currently ships and cannot drift from it. Every arm is rebuilt from that startup
+snapshot, so arms never accumulate one another's edits, and a run aborts up front if two requested
+arms would write identical Objectives (which happens when a previous run was killed hard and left
+the files rewritten) rather than comparing an arm against itself. This is the experiment itself.
 
 So that a run cannot leave the pre-fix seed behind, it reads both files' exact bytes at startup
 before writing anything and restores that snapshot on every exit path -- normal completion, an
