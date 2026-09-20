@@ -84,8 +84,10 @@ class Rec(Node):
         self.cloud_src = None
         self.cmd = (0.0, 0.0, 0.0)
         self.gobs = self.lobs = None
-        self.rows = []
-        self.events = []
+        self.rows = deque()
+        self.events = deque()
+        self.n_rows = 0
+        self.n_events = 0
         self.apose = None
         self.wodom = self.wodom0 = self.fodom = None
         self.upd = 0
@@ -209,7 +211,7 @@ class Rec(Node):
             cov_xx=m.pose.covariance[0],
             cov_yy=m.pose.covariance[7],
             cov_aa=m.pose.covariance[35],
-            n_rows=len(self.rows),
+            n_rows=self.n_rows,
         )
         g = self.truth_at(ev["stamp"]) or (
             self.truth_hist[-1][1:] if self.truth_hist else None
@@ -223,6 +225,7 @@ class Rec(Node):
                 seed_err_yaw=wrap(ev["yaw"] - g[2]),
             )
         self.events.append(ev)
+        self.n_events += 1
 
     def on_cmd(self, m):
         self.cmd = (m.linear.x, m.linear.y, m.angular.z)
@@ -381,8 +384,9 @@ class Rec(Node):
                     yaw=yaw_of(o.pose.pose.orientation),
                     stamp=rclpy.time.Time.from_msg(o.header.stamp).nanoseconds * 1e-9,
                 )
-        row["n_ip"] = len(self.events)
+        row["n_ip"] = self.n_events
         self.rows.append(row)
+        self.n_rows += 1
 
 
 def main():
@@ -401,17 +405,21 @@ def main():
     signal.signal(signal.SIGINT, lambda *_: stop.__setitem__("v", True))
     fh = open(a.out, "w")
     end = time.time() + a.duration
-    seen = seen_ev = 0
+    # Written rows are never read back, so they are dropped as they are flushed: retaining a
+    # 9000 s session's worth inside the runtime container would put hundreds of MB of pressure
+    # next to the simulator whose real-time factor the harness exists to hold steady.
     while time.time() < end and not stop["v"]:
         n.sample()
-        while seen_ev < len(n.events):
-            fh.write(json.dumps(n.events[seen_ev]) + "\n")
-            seen_ev += 1
-        while seen < len(n.rows):
-            fh.write(json.dumps(n.rows[seen]) + "\n")
-            seen += 1
+        while n.events:
+            fh.write(json.dumps(n.events.popleft()) + "\n")
+        while n.rows:
+            fh.write(json.dumps(n.rows.popleft()) + "\n")
         fh.flush()
         time.sleep(0.05)
+    while n.events:
+        fh.write(json.dumps(n.events.popleft()) + "\n")
+    while n.rows:
+        fh.write(json.dumps(n.rows.popleft()) + "\n")
     grids = {}
     for nm, gg in (("gobs", n.gobs), ("lobs", n.lobs)):
         if gg is not None:
@@ -425,7 +433,7 @@ def main():
             )
     fh.write(json.dumps(dict(ev="grids", cloud_src=n.cloud_src, grids=grids)) + "\n")
     fh.close()
-    print(f"WROTE {a.out} rows={len(n.rows)} cloud_src={n.cloud_src} amcl_upd={n.upd}")
+    print(f"WROTE {a.out} rows={n.n_rows} cloud_src={n.cloud_src} amcl_upd={n.upd}")
 
 
 if __name__ == "__main__":

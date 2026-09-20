@@ -122,13 +122,22 @@ def main(paths):
     for p in paths:
         rows, evs = load(p)
         rows = annotate(rows)
-        eps = episodes(rows, THRESH)
-        if not eps:
+        eps_all = episodes(rows, THRESH)
+        eps = [e for e in eps_all if e["corroborated"]]
+        unc = [e for e in eps_all if not e["corroborated"]]
+        if not eps and not unc:
             continue
         t0 = rows[0]["t"]
         idx = {r["t"]: i for i, r in enumerate(rows)}
         nm = os.path.basename(p).replace(".jsonl", "")
         print(f"\n--- {nm} ---")
+        if unc:
+            print(
+                f"  {len(unc)} episode(s) had no /pose sample in their window and are "
+                f"UNCORROBORATED, not adjudicated (no AMCL publisher in this recording):"
+            )
+            for e in unc:
+                print(f"       t={e['t']-t0:7.1f}  peak {e['pk']:6.1f}d  -> UNCORROBORATED")
         for e in eps:
             i0, i1 = idx[e["t"]], idx[e["t_end"]]
             v, ev = classify(rows, None, i0, i1)

@@ -88,19 +88,26 @@ def episodes(rows, thresh):
         i0, i1 = idx[0], idx[-1]
         pk = max(range(i0, i1 + 1), key=lambda i: m[i])
         agree = 0.0
+        n_ap = 0
         for i in range(i0, i1 + 1):
             ap = rows[i].get("ap") or {}
             e = ap.get("err_yaw")
             if e is None and "yaw" in ap and "tyaw" in rows[i]:
                 e = wr(ap["yaw"] - rows[i]["tyaw"])
             if e is not None:
+                n_ap += 1
                 agree = max(agree, abs(math.degrees(e)))
-        if agree < m[pk] / 2.0:
-            continue  # not corroborated -> not counted
+        # No /pose in the window is absence of evidence, not evidence against: a recording
+        # taken with localization:=false or slam:=true has no publisher for it at all, and
+        # folding that into "contradicted" would report such a session as excursion-free.
+        if n_ap and agree < m[pk] / 2.0:
+            continue  # /pose was available and disagreed -> not counted
         r = rows[pk]
         c = r.get("cloud", {})
         eps.append(
             dict(
+                corroborated=bool(n_ap),
+                ap_samples=n_ap,
                 t=rows[i0]["t"],
                 t_end=rows[i1]["t"],
                 dur=rows[i1]["t"] - rows[i0]["t"],
@@ -114,6 +121,11 @@ def episodes(rows, thresh):
             )
         )
     return eps
+
+
+def pose_sample_count(rows):
+    """How many recorded samples carry AMCL's own /pose, the only corroborating source."""
+    return len([r for r in rows if (r.get("ap") or {}).get("yaw") is not None])
 
 
 def is_rescue(e):
@@ -176,7 +188,10 @@ def main():
             print(f"{label}: no rows")
             continue
         t0 = rows[0]["t"]
-        eps = episodes(rows, THRESH)
+        n_pose = pose_sample_count(rows)
+        eps_all = episodes(rows, THRESH)
+        eps = [e for e in eps_all if e["corroborated"]]
+        unc = [e for e in eps_all if not e["corroborated"]]
         # window each start: accept -> next accept (wall clock; rows carry sim-ish t, so
         # align on the recorder's own 'wall' field)
         wall = {r["t"]: r.get("wall") for r in rows}
@@ -224,6 +239,15 @@ def main():
             f"Objective starts accepted={n_starts}"
         )
         print(
+            f"/pose samples={n_pose}/{len(rows)}"
+            + (
+                ""
+                if n_pose
+                else "  -- NO /pose IN THIS RECORDING: excursions cannot be corroborated "
+                "(no localization/AMCL publisher), so every episode below is UNCORROBORATED"
+            )
+        )
+        print(
             f"EXCURSIONS (|err_yaw| >= {THRESH:.0f} deg, corroborated by /pose): {len(eps)}  "
             f"in {bad} distinct starts  -> rate {bad}/{n_starts} = "
             f"{(100.0*bad/n_starts if n_starts else 0):.0f}% of starts"
@@ -243,8 +267,27 @@ def main():
                     f"{e['pk']:6.1f}d {e['ap']:6.1f}d {e['errpos']:6.2f}m "
                     f"{e['n'] or -1:7d} {e['r95'] or float('nan'):6.2f} {e['yawr95']:6.1f}d"
                 )
+        if unc:
+            print(
+                f"UNCORROBORATED (|err_yaw| >= {THRESH:.0f} deg with no /pose sample in the "
+                f"window -- absence of evidence, not evidence of absence): {len(unc)}"
+            )
+            print(
+                f"  {'t_rel':>8} {'dur':>5} {'peak':>7} {'errPos':>7} {'cloud n':>7} "
+                f"{'r95':>6} {'yawR95':>7}"
+            )
+            for e in unc:
+                print(
+                    f"  {e['t']-t0:8.1f} {e['dur']:5.1f} {e['pk']:6.1f}d {e['errpos']:6.2f}m "
+                    f"{e['n'] or -1:7d} {e['r95'] or float('nan'):6.2f} {e['yawr95']:6.1f}d"
+                )
         for t in (5.0, 10.0, 45.0, 90.0):
-            print(f"  (at >= {t:4.0f} deg: {len(episodes(rows, t))} episodes)")
+            at = episodes(rows, t)
+            n_unc = len([e for e in at if not e["corroborated"]])
+            print(
+                f"  (at >= {t:4.0f} deg: {len(at) - n_unc} episodes"
+                + (f", {n_unc} uncorroborated)" if n_unc else ")")
+            )
 
         se_all = seed_effect(rows, evs)
         # An interleaved session writes several different covariances into one file. Pooling

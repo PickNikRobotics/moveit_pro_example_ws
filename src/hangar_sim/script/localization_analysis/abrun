@@ -47,7 +47,7 @@ teardown() {
   docker exec "$RT" bash -lc "pkill -TERM -f '[r]ecorder4.py --out /tmp/${LABEL}' || true" || true
   sleep 6
   docker exec "$RT" bash -lc "pkill -9 -f '[r]ecorder4.py --out /tmp/${LABEL}' || true" || true
-  for ext in jsonl starts; do
+  for ext in jsonl starts reclog; do
     if docker cp "$RT:/tmp/${LABEL}.${ext}" "$OUT/${LABEL}.${ext}" 2>/dev/null; then
       echo "== [$LABEL] wrote $OUT/${LABEL}.${ext} =="
     else
@@ -60,6 +60,29 @@ teardown() {
 docker exec -d -e "$DDS" "$RT" bash -lc \
   "$SRC python3 /tmp/recorder4.py --out /tmp/${LABEL}.jsonl --duration 9000 --label $LABEL > /tmp/${LABEL}.reclog 2>&1"
 trap teardown EXIT INT TERM
+
+# A recorder that never came up (import error, unwritable --out, no rclpy in this container)
+# would otherwise cost the whole drive session before anyone found out, and the log that
+# explains it would not be among the files copied out.
+REC_CHECK="${REC_CHECK:-15}"
+rec_up=0
+for _ in $(seq 1 "$REC_CHECK"); do
+  if docker exec "$RT" bash -lc \
+    "pgrep -f '[r]ecorder4.py --out /tmp/${LABEL}' >/dev/null && [ -f /tmp/${LABEL}.jsonl ]"; then
+    rec_up=1
+    break
+  fi
+  sleep 1
+done
+if [ "$rec_up" != "1" ]; then
+  echo "== [$LABEL] recorder is not running after ${REC_CHECK}s; refusing to drive an unrecorded session =="
+  echo "---- /tmp/${LABEL}.reclog ----"
+  docker exec "$RT" bash -lc "cat /tmp/${LABEL}.reclog 2>/dev/null || echo '(no recorder log)'" || true
+  echo "---- end of recorder log ----"
+  exit 1
+fi
+echo "== [$LABEL] recorder is up =="
+
 WARMUP="${WARMUP:-60}"
 echo "== driver warmup ${WARMUP}s; loadstepper should be started with WARMUP=$WARMUP =="
 sleep "$WARMUP"
