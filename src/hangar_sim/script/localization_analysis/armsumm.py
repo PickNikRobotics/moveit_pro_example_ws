@@ -129,6 +129,8 @@ def episodes(rows, thresh):
             dict(
                 corroborated=bool(n_ap),
                 ap_samples=n_ap,
+                i0=i0,
+                i1=i1,
                 t=rows[i0]["t"],
                 t_end=rows[i1]["t"],
                 dur=rows[i1]["t"] - rows[i0]["t"],
@@ -319,19 +321,45 @@ def main():
                 + (f", {n_unc} uncorroborated)" if n_unc else ")")
             )
 
-        se_all = seed_effect(rows, evs)
         # An interleaved session writes several different covariances into one file. Pooling
         # them would report a median over mixed populations under one arm's label, which is the
         # opposite of what the A/B exists to measure -- so group by the seeded covariance and
         # drop rescues, which are not an Objective's own seed.
-        n_rescue = len([x for x in se_all if is_rescue(x)])
-        se_arms = [x for x in se_all if not is_rescue(x) and arm_key(x) is not None]
+        #
+        # Attribution follows the seeds that FIRED, taken from the /initialpose events
+        # themselves. seed_effect() additionally requires a measurable cloud on both sides of
+        # the seed, which a re-seed in the recording's first seconds or during a /particle_cloud
+        # gap does not have -- that is an unmeasurable effect, not an absent seed, and conflating
+        # the two drops the start from its arm's denominator and libels it as a label mismatch.
+        fired = [
+            dict(
+                t=e["stamp"],
+                wall=e.get("wall"),
+                cov_xx=e.get("cov_xx"),
+                cov_aa=e.get("cov_aa"),
+            )
+            for e in evs
+        ]
+        n_rescue = len([x for x in fired if is_rescue(x)])
+        fired_arms = [x for x in fired if not is_rescue(x) and arm_key(x) is not None]
         groups = {}
-        for x in se_arms:
+        for x in fired_arms:
             groups.setdefault(arm_key(x), []).append(x)
+
+        se_all = seed_effect(rows, evs)
+        se_arms = [x for x in se_all if not is_rescue(x) and arm_key(x) is not None]
+        effects = {}
+        for x in se_arms:
+            effects.setdefault(arm_key(x), []).append(x)
+        n_unmeasured = len(fired_arms) - len(se_arms)
         if n_rescue:
             print(
                 f"\n  ({n_rescue} rescue re-seed(s) excluded from the per-arm statistics below)"
+            )
+        if n_unmeasured:
+            print(
+                f"\n  ({n_unmeasured} re-seed(s) fired with no measurable cloud on both sides -- "
+                f"attributed to their arm, but excluded from the spread statistics below)"
             )
 
         def starts_for(seeds):
@@ -348,17 +376,30 @@ def main():
         # attribution: that would manufacture a 'noseed' control in a session that ran none.
         arm_of = {s["i"]: s.get("arm") for s in starts if s.get("accepted")}
         has_arm_labels = any(v for v in arm_of.values())
-        seeded_starts = set(starts_for(se_arms))
+        seeded_starts = set(starts_for(fired_arms))
         noseed_starts = [idx for idx, wp, a, b in bounds if arm_of.get(idx) == "noseed"]
         multi_arm = len(groups) + (1 if noseed_starts else 0) > 1
         for key in sorted(groups, reverse=True):
-            se = groups[key]
+            se = effects.get(key, [])
             widened = [s for s in se if s["post_yawr95"] > s["pre_yawr95"]]
             print(
                 f"\n  RE-SEED EFFECT on the cloud's HEADING spread  "
                 f"(seed sigma_yaw={math.degrees(math.sqrt(key[1])):.2f} deg, "
                 f"sigma_xy={math.sqrt(key[0]):.3f} m)"
             )
+            if not se:
+                print(
+                    f"  no measurable cloud on both sides of any of this arm's "
+                    f"{len(groups[key])} re-seed(s); spread statistics unavailable"
+                )
+                arm_starts = starts_for(groups[key])
+                n_bad = len([k for k in arm_starts if hit.get(k)])
+                if multi_arm and arm_starts:
+                    print(
+                        f"  excursions in this arm: {n_bad}/{len(arm_starts)} starts = "
+                        f"{100.0*n_bad/len(arm_starts):.0f}%"
+                    )
+                continue
             print(f"  widened the heading spread in {len(widened)}/{len(se)} re-seeds")
             pre = [s["pre_yawr95"] for s in se]
             post = [s["post_yawr95"] for s in se]
@@ -381,7 +422,7 @@ def main():
             )
             # Attribute each start to an arm through the seed that fired inside its window,
             # so the interleaved A/B finally reports the per-arm rate it exists to produce.
-            arm_starts = starts_for(se)
+            arm_starts = starts_for(groups[key])
             n_bad = len([k for k in arm_starts if hit.get(k)])
             if multi_arm and arm_starts:
                 print(

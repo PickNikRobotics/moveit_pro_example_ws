@@ -64,37 +64,56 @@ trap teardown EXIT INT TERM
 # A recorder that never came up (import error, unwritable --out, no rclpy in this container)
 # would otherwise cost the whole drive session before anyone found out, and the log that
 # explains it would not be among the files copied out.
-# The recorder opens its output before the sample loop, so the file exists within milliseconds
-# whether or not a single row is ever written -- the case when DDS discovery finds no /odom.
-# Require the capture to be GROWING, not merely present.
-REC_CHECK="${REC_CHECK:-15}"
-rec_up=0
-rec_prev=-1
-for _ in $(seq 1 "$REC_CHECK"); do
-  if ! docker exec "$RT" bash -lc "pgrep -f '[r]ecorder4.py --out /tmp/${LABEL}' >/dev/null"; then
-    break
-  fi
-  rec_size="$(docker exec "$RT" bash -lc \
-    "stat -c %s /tmp/${LABEL}.jsonl 2>/dev/null || echo -1" | tr -d '\r')"
-  if [ "$rec_size" -gt 0 ] && [ "$rec_prev" -gt 0 ] && [ "$rec_size" -gt "$rec_prev" ]; then
-    rec_up=1
-    break
-  fi
-  rec_prev="$rec_size"
-  sleep 2
-done
-if [ "$rec_up" != "1" ]; then
-  echo "== [$LABEL] recorder is not writing rows after ${REC_CHECK} polls (last size ${rec_prev} bytes); refusing to drive an unrecorded session =="
+rec_alive() {
+  docker exec "$RT" bash -lc "pgrep -f '[r]ecorder4.py --out /tmp/${LABEL}' >/dev/null"
+}
+rec_size() {
+  local s
+  s="$(docker exec "$RT" bash -lc \
+    "stat -c %s /tmp/${LABEL}.jsonl 2>/dev/null || echo -1" 2>/dev/null | tr -d '\r')"
+  case "$s" in
+    '' | *[!0-9-]*) s=-1 ;;
+  esac
+  printf '%s' "$s"
+}
+rec_fail() {
+  echo "== [$LABEL] $1; refusing to drive an unrecorded session =="
   echo "---- /tmp/${LABEL}.reclog ----"
   docker exec "$RT" bash -lc "cat /tmp/${LABEL}.reclog 2>/dev/null || echo '(no recorder log)'" || true
   echo "---- end of recorder log ----"
   exit 1
-fi
-echo "== [$LABEL] recorder is up and writing =="
+}
+
+sleep 3
+rec_alive || rec_fail "recorder exited immediately"
+
+# The recorder opens its output before the sample loop, so the file exists within milliseconds
+# whether or not a single row is ever written -- the case when DDS discovery finds no /odom.
+# Require the capture to be GROWING, measured ACROSS the warmup: discovery legitimately takes
+# tens of seconds, and the warmup is dead time that is being spent anyway, so the guard must
+# not be stricter than the wait it precedes.
+rec_base="$(rec_size)"
 
 WARMUP="${WARMUP:-60}"
 echo "== driver warmup ${WARMUP}s; loadstepper should be started with WARMUP=$WARMUP =="
 sleep "$WARMUP"
+
+REC_CHECK="${REC_CHECK:-5}"
+rec_up=0
+rec_now=-1
+for _ in $(seq 1 "$REC_CHECK"); do
+  rec_alive || break
+  rec_now="$(rec_size)"
+  if [ "$rec_now" -gt 0 ] && [ "$rec_now" -gt "$rec_base" ]; then
+    rec_up=1
+    break
+  fi
+  sleep 2
+done
+if [ "$rec_up" != "1" ]; then
+  rec_fail "recorder has not written a row across the ${WARMUP}s warmup (size ${rec_base} -> ${rec_now} bytes)"
+fi
+echo "== [$LABEL] recorder is up and writing (${rec_base} -> ${rec_now} bytes) =="
 
 docker exec -e "$DDS" -e "LOADSTEP_FILE=$CONTAINER_LOADSTEP" "$RT" bash -lc \
   "$SRC python3 -u /tmp/navloop_ab.py --starts $STARTS --arms '$ARMS' --out /tmp/${LABEL}.starts --clear-costmaps ${CLEAR:-1} --load-step ${LOADSTEP:-0} --rescue-m ${RESCUE:-2.0}" \

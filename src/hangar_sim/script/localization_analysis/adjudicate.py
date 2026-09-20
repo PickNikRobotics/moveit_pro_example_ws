@@ -93,7 +93,7 @@ def ang_span(angles):
     return 2.0 * math.pi - max(gaps)
 
 
-def classify(rows, ep_rows, i0, i1):
+def classify(rows, i0, i1):
     """Return (verdict, evidence) for one episode."""
     w = rows[max(0, i0 - 5) : min(len(rows), i1 + 40)]  # include the filter's reaction
     mo = [r["mo_yaw"] for r in w if "mo_yaw" in r]
@@ -128,7 +128,6 @@ def main(paths):
         if not eps and not unc:
             continue
         t0 = rows[0]["t"]
-        idx = {r["t"]: i for i, r in enumerate(rows)}
         nm = os.path.basename(p).replace(".jsonl", "")
         print(f"\n--- {nm} ---")
         if unc:
@@ -139,8 +138,8 @@ def main(paths):
             for e in unc:
                 print(f"       t={e['t']-t0:7.1f}  peak {e['pk']:6.1f}d  -> UNCORROBORATED")
         for e in eps:
-            i0, i1 = idx[e["t"]], idx[e["t_end"]]
-            v, ev = classify(rows, None, i0, i1)
+            i0, i1 = e["i0"], e["i1"]
+            v, ev = classify(rows, i0, i1)
             hf = max(
                 (abs(D(r["h_fresh"])) for r in rows[i0 : i1 + 1] if "h_fresh" in r),
                 default=float("nan"),
