@@ -32,8 +32,34 @@ docker cp "$HARNESS_DIR/recorder4.py" "$RT:/tmp/recorder4.py"
 docker cp "$HARNESS_DIR/navloop_ab.py" "$RT:/tmp/navloop_ab.py"
 docker cp "$HARNESS_DIR/seed_constants.py" "$RT:/tmp/seed_constants.py"
 
+# The recorder runs detached with a 9000 s duration, so anything that ends this script without
+# stopping it leaves it running for hours and the next session's recorder truncates the same
+# file underneath it. The driver can abort on its own guards well before the last start, so
+# teardown has to happen on every exit path, and a capture that explains the abort is exactly
+# the one worth keeping -- a missing file is reported, never a reason to skip the rest.
+TORN_DOWN=0
+teardown() {
+  local status=$?
+  if [ "$TORN_DOWN" = "1" ]; then
+    exit "$status"
+  fi
+  TORN_DOWN=1
+  docker exec "$RT" bash -lc "pkill -TERM -f '[r]ecorder4.py --out /tmp/${LABEL}' || true" || true
+  sleep 6
+  docker exec "$RT" bash -lc "pkill -9 -f '[r]ecorder4.py --out /tmp/${LABEL}' || true" || true
+  for ext in jsonl starts; do
+    if docker cp "$RT:/tmp/${LABEL}.${ext}" "$OUT/${LABEL}.${ext}" 2>/dev/null; then
+      echo "== [$LABEL] wrote $OUT/${LABEL}.${ext} =="
+    else
+      echo "== [$LABEL] no /tmp/${LABEL}.${ext} in $RT; nothing copied out =="
+    fi
+  done
+  exit "$status"
+}
+
 docker exec -d -e "$DDS" "$RT" bash -lc \
   "$SRC python3 /tmp/recorder4.py --out /tmp/${LABEL}.jsonl --duration 9000 --label $LABEL > /tmp/${LABEL}.reclog 2>&1"
+trap teardown EXIT INT TERM
 WARMUP="${WARMUP:-60}"
 echo "== driver warmup ${WARMUP}s; loadstepper should be started with WARMUP=$WARMUP =="
 sleep "$WARMUP"
@@ -41,10 +67,3 @@ sleep "$WARMUP"
 docker exec -e "$DDS" -e "LOADSTEP_FILE=$CONTAINER_LOADSTEP" "$RT" bash -lc \
   "$SRC python3 -u /tmp/navloop_ab.py --starts $STARTS --arms '$ARMS' --out /tmp/${LABEL}.starts --clear-costmaps ${CLEAR:-1} --load-step ${LOADSTEP:-0} --rescue-m ${RESCUE:-2.0}" \
   2>&1 | tee "$OUT/${LABEL}.drivelog"
-
-docker exec "$RT" bash -lc "pkill -TERM -f '[r]ecorder4.py --out /tmp/${LABEL}' || true"
-sleep 6
-docker exec "$RT" bash -lc "pkill -9 -f '[r]ecorder4.py --out /tmp/${LABEL}' || true"
-docker cp "$RT:/tmp/${LABEL}.jsonl" "$OUT/${LABEL}.jsonl"
-docker cp "$RT:/tmp/${LABEL}.starts" "$OUT/${LABEL}.starts"
-echo "== [$LABEL] wrote $OUT/${LABEL}.jsonl =="
