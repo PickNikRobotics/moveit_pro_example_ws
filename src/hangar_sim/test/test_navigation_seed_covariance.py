@@ -40,29 +40,34 @@ it summarises, being a weighted summary of it. The cloud spread is used here rat
 the two as corroborating each other.
 
 Settled samples pooled across two independent sessions (n=4199; stopped, more than 15 s after any
-re-seed, after driving) give a 90th-percentile cloud spread of r95 = 0.324 m and yaw_r95 =
-5.55 deg. Converting with ``settled.py``'s own relations (sigma_xy = r95/2.448, sigma_yaw =
-yaw_r95/1.96) gives sigma_xy 0.132 m and sigma_yaw 2.83 deg -- the committed
-``xy_variance`` 0.0175 and ``yaw_variance`` 0.00245. The 90th percentile is used for *both*
-quantities, since the rule being applied is that a seed must not assert a belief tighter than what
-the filter actually holds when converged.
+re-seed, after driving) give a **median** cloud spread of r95 = 0.171 m and yaw_r95 = 3.32 deg.
+Converting with ``settled.py``'s own relations (sigma_xy = r95/2.448, sigma_yaw = yaw_r95/1.96)
+gives sigma_xy 0.070 m and sigma_yaw 1.70 deg -- the committed ``xy_variance`` 0.0049 and
+``yaw_variance`` 0.00088.
 
-The rule is bounded in **both** directions, because a seed can be wrong either way:
+The **median** is used, not a higher percentile, and that is a measured choice rather than a
+stylistic one. The rule has two halves: a seed must not assert more confidence than the filter has,
+and it must not widen the filter's belief either. An earlier revision took the 90th percentile of
+the same settled spread (sigma 2.83 deg) on the first half alone; measured over 31 re-seeds that
+widened the cloud's heading spread every single time (3.49 -> 5.25 deg), which is the defect this
+change exists to remove. Only a seed at or below the median settled spread satisfies both halves.
 
-* Ceiling — 0.0027 rad^2 (sigma 3.0 deg) and 0.023 m^2 (sigma 0.15 m), just above the p90 settled
-  spread. Too wide manufactures doubt the filter did not have; the behavior defaults
-  (0.0685 / 0.25) fail here.
-* Floor — 0.00088 rad^2 (sigma 1.70 deg) and 0.0049 m^2 (sigma 0.070 m), the **median** settled
-  spread (pooled medians r95 0.171 m and yaw_r95 3.32 deg over the same n=4199). A seed at or
-  below the median converged spread asserts more confidence than the filter typically holds, and
-  that over-confident cloud cannot pull a genuinely offset pose back — the mirror image of the
-  failure being fixed. The superseded 0.0052 / 0.00085 pair is rejected here by the **yaw** floor
-  specifically: 0.00085 is below 0.00088, while its position half passes, since 0.0052 sits ~6%
-  above the position floor. That floor is where it is because the median settled r95 (0.171 m)
-  happens to land just below the superseded xy value; it is derived, not chosen to reject that
-  pair.
+The rule is bounded in **both** directions, because a seed can be wrong either way. Measured over
+367 re-seeds spanning four seed widths, a seed produces a cloud of post_yaw_r95 = 1.88 * sigma_yaw
+and post_r95 = 2.41 * sigma_xy, so both bounds are the settled cloud itself expressed as a seed:
 
-The committed values sit at the p90, i.e. at the ceiling end of that band.
+* Ceiling — 0.00095 rad^2 (sigma 1.77 deg) and 0.0050 m^2 (sigma 0.071 m): the widest seed whose
+  resulting cloud is still no wider than the pooled median settled spread (yaw_r95 3.32 deg,
+  r95 0.171 m). Anything wider widens the filter's belief, which is the defect being fixed; the
+  behavior defaults (0.0685 / 0.25) fail here by a factor of seventy.
+* Floor — 0.00087 rad^2 (sigma 1.69 deg) and 0.0046 m^2 (sigma 0.068 m): the tightest settled
+  median any single session exhibited. Below it the seed asserts confidence no session ever showed,
+  and that over-confident cloud cannot pull a genuinely offset pose back — the mirror image of the
+  failure being fixed.
+
+The committed values (0.00088 / 0.0049) sit just inside that band, and the band is narrow because
+the evidence determines the value tightly. A future re-derivation landing outside it should be
+re-examined rather than waved through, which is what this test is for.
 
 The purpose is that a future edit fails here instead of silently reintroducing either a five-fold
 heading doubt or an over-confident cloud at the start of every navigation Objective.
@@ -76,10 +81,18 @@ from pathlib import Path
 
 import pytest
 
-MAX_YAW_VARIANCE = 0.0027
-MAX_XY_VARIANCE = 0.023
-MIN_YAW_VARIANCE = 0.00088
-MIN_XY_VARIANCE = 0.0049
+# The bounds are the settled cloud itself, expressed as a seed. Measured over 367 re-seeds across
+# four seed widths, a seed produces a cloud of post_yaw_r95 = 1.88 * sigma_yaw and
+# post_r95 = 2.41 * sigma_xy, so a seed may be no wider than the value whose cloud equals the
+# POOLED MEDIAN settled spread (3.32 deg / 0.171 m) -- wider than that widens the belief -- and no
+# tighter than the value matching the most converged session's own median (1.69 deg / 0.068 m),
+# which would assert confidence no session ever exhibited.
+MAX_YAW_VARIANCE = (
+    0.00095  # sigma 1.77 deg: its cloud is exactly the median settled spread
+)
+MAX_XY_VARIANCE = 0.0050  # sigma 0.071 m: likewise
+MIN_YAW_VARIANCE = 0.00087  # sigma 1.69 deg: the tightest settled median observed
+MIN_XY_VARIANCE = 0.0046  # sigma 0.068 m: likewise
 
 OBJECTIVES_DIR = Path(__file__).resolve().parent.parent / "objectives"
 NAVIGATION_OBJECTIVES = [
@@ -118,21 +131,21 @@ def test_navigation_objective_seeds_with_a_converged_covariance(objective: str) 
 
         assert float(xy_variance) <= MAX_XY_VARIANCE, (
             f"{objective}: xy_variance={xy_variance} is wider than the converged spread "
-            f"(expected <= {MAX_XY_VARIANCE} m^2, sigma 0.15 m) -- a seed this wide "
+            f"(expected <= {MAX_XY_VARIANCE} m^2, sigma 0.071 m) -- a seed this wide "
             f"manufactures position doubt the filter did not have"
         )
         assert float(xy_variance) >= MIN_XY_VARIANCE, (
             f"{objective}: xy_variance={xy_variance} is tighter than the median settled spread "
-            f"(expected >= {MIN_XY_VARIANCE} m^2, sigma 0.070 m) -- an over-confident seed "
+            f"(expected >= {MIN_XY_VARIANCE} m^2, sigma 0.068 m) -- an over-confident seed "
             f"collapses the cloud onto a pose it cannot then correct"
         )
         assert float(yaw_variance) <= MAX_YAW_VARIANCE, (
             f"{objective}: yaw_variance={yaw_variance} is wider than the converged spread "
-            f"(expected <= {MAX_YAW_VARIANCE} rad^2, sigma 3.0 deg) -- a seed this wide puts the "
+            f"(expected <= {MAX_YAW_VARIANCE} rad^2, sigma 1.77 deg) -- a seed this wide puts the "
             f"rotationally-ambiguous flipped hypothesis back in play"
         )
         assert float(yaw_variance) >= MIN_YAW_VARIANCE, (
             f"{objective}: yaw_variance={yaw_variance} is tighter than the median settled spread "
-            f"(expected >= {MIN_YAW_VARIANCE} rad^2, sigma 1.70 deg) -- an over-confident seed "
+            f"(expected >= {MIN_YAW_VARIANCE} rad^2, sigma 1.69 deg) -- an over-confident seed "
             f"collapses the cloud onto a heading it cannot then correct"
         )

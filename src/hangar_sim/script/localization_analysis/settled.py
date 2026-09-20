@@ -126,10 +126,16 @@ def main():
             f"(sigma {px:.3f} m), yaw_variance {math.radians(py)**2:.5f} (sigma {py:.2f} deg)"
         )
         print(
-            "     the committed seed uses the P90: the rule is that a seed must not be tighter"
+            "     the committed seed uses the MEDIAN. The rule has two halves: a seed must not"
         )
         print(
-            "     than what the filter holds when converged. The median is the test's floor."
+            "     assert more confidence than the filter has, and must not widen its belief"
+        )
+        print(
+            "     either. A p90-derived seed satisfies only the first -- measured, it widened"
+        )
+        print(
+            "     the cloud at 31 of 31 re-seeds -- so the median is the value that meets both."
         )
 
 
