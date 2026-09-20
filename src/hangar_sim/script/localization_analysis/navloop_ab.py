@@ -41,6 +41,7 @@ that was in the file -- so the arm labels in the analysis come from the measurem
 from this script's bookkeeping.
 """
 import argparse, atexit, json, math, os, re, signal, sys, threading, time
+import xml.etree.ElementTree as ET
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
@@ -108,7 +109,17 @@ def snapshot_objectives():
     for f in FILES:
         path = os.path.join(OBJ_DIR, f)
         with open(path, "rb") as fh:
-            _SNAPSHOT[path] = fh.read()
+            data = fh.read()
+        seed = _seed_action(path, data)
+        missing = [k for k in ("xy_variance", "yaw_variance") if seed.get(k) is None]
+        if missing:
+            raise SystemExit(
+                f"{path}: SetInitialPose has no {', '.join(missing)}, so the snapshot is the "
+                f"shipped default -- a 'tight' arm built from it IS the 'baseline' arm and the "
+                f"A/B would compare an arm against itself. Restore the committed Objectives "
+                f"(a previous run killed with SIGKILL leaves them rewritten) and rerun."
+            )
+        _SNAPSHOT[path] = data
     print(
         f"NOTE: rewriting the Objectives in {OBJ_DIR} in place for each arm; the bytes read "
         f"at startup are restored on exit.",
@@ -136,8 +147,20 @@ def yaw_of(q):
     )
 
 
-def set_arm(arm):
-    """Rewrite both Objectives for this arm, always derived from the startup snapshot.
+def _seed_action(path, data):
+    """The first SetInitialPose Action element of an Objective, or abort."""
+    try:
+        root = ET.fromstring(data.decode())
+    except ET.ParseError as e:
+        raise SystemExit(f"{path}: not parseable as XML: {e}")
+    for el in root.iter("Action"):
+        if el.get("ID") == "SetInitialPose":
+            return el
+    raise SystemExit(f"{path}: no SetInitialPose Action, so there is no seed to vary")
+
+
+def render_arm(path, arm):
+    """The exact text this arm writes for one Objective, always from the startup snapshot.
 
     Every arm is built from the committed bytes, never from whatever the previous start left
     behind, so arms cannot accumulate edits. `tight` is the snapshot verbatim -- the tool holds
@@ -147,20 +170,50 @@ def set_arm(arm):
     """
     if arm not in ("baseline", "tight", "noseed"):
         raise SystemExit(f"unknown arm {arm}")
+    committed = _SNAPSHOT[path].decode()
+    if arm == "tight":
+        return committed
+    block = SHIPPED if arm == "baseline" else ""
+    out, hits = re.subn(
+        r'[ \t]*<Action\s+ID="SetInitialPose"[^>]*?/>\n',
+        ("      " + block + "\n") if block else "",
+        committed,
+        count=1,
+        flags=re.S,
+    )
+    if hits != 1 or out == committed:
+        raise SystemExit(
+            f"arm {arm!r}: could not rewrite the SetInitialPose action in {path} -- the "
+            f"pattern matched {hits} time(s) and the text is unchanged. The arm would write "
+            f"the committed seed while the start is labelled {arm!r}. Check whether the "
+            f"Action was reformatted (a child element instead of a self-closing tag defeats "
+            f"the match) and update the pattern."
+        )
+    return out
+
+
+def verify_arms_distinct(arms):
+    """Abort unless every requested arm writes different text from every other one."""
+    rendered = {
+        arm: tuple(render_arm(os.path.join(OBJ_DIR, f), arm) for f in FILES)
+        for arm in dict.fromkeys(arms)
+    }
+    items = list(rendered.items())
+    for i, (arm_a, text_a) in enumerate(items):
+        for arm_b, text_b in items[i + 1 :]:
+            if text_a == text_b:
+                raise SystemExit(
+                    f"arms {arm_a!r} and {arm_b!r} write identical Objectives, so the A/B "
+                    f"would compare an arm against itself while labelling half the starts "
+                    f"with the other arm's name. Refusing to run."
+                )
+
+
+def set_arm(arm):
+    """Rewrite both Objectives for this arm."""
     for f in FILES:
         path = os.path.join(OBJ_DIR, f)
-        committed = _SNAPSHOT[path].decode()
-        if arm == "tight":
-            out = committed
-        else:
-            block = SHIPPED if arm == "baseline" else ""
-            out = re.sub(
-                r'[ \t]*<Action\s+ID="SetInitialPose"[^>]*?/>\n',
-                ("      " + block + "\n") if block else "",
-                committed,
-                count=1,
-                flags=re.S,
-            )
+        out = render_arm(path, arm)
         with open(path, "w") as fh:
             fh.write(out)
 
@@ -335,6 +388,7 @@ def main():
     arms = a.arms.split(",")
 
     snapshot_objectives()
+    verify_arms_distinct(arms)
     atexit.register(restore_objectives)
     for sig in (signal.SIGINT, signal.SIGTERM):
         signal.signal(sig, lambda signum, _frame: sys.exit(128 + signum))
