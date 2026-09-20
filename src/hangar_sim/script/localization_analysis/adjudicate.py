@@ -133,7 +133,7 @@ def main(paths):
         print(f"\n--- {nm} ---")
         if unc:
             print(
-                f"  {len(unc)} episode(s) had no /pose sample in their window and are "
+                f"  {len(unc)} episode(s) had no /pose update in their window and are "
                 f"UNCORROBORATED, not adjudicated (no AMCL publisher in this recording):"
             )
             for e in unc:

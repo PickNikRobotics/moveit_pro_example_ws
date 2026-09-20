@@ -46,6 +46,11 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from seed_constants import COV_TOL, RESCUE_XY, RESCUE_YAW  # noqa: E402
 
 THRESH = float(os.environ.get("THRESH", "20.0"))
+# recorder4 caches the last /pose and re-writes it into every subsequent row, so the presence of
+# an `ap` block says nothing about whether AMCL observed that row. Only a stamp that advanced into
+# the window is evidence; beluga publishes on a measurement update, so a stamp from just before
+# the episode still counts.
+AP_GRACE_S = float(os.environ.get("AP_GRACE_S", "1.0"))
 
 
 def wr(a):
@@ -70,6 +75,28 @@ def med(v, k=5):
     return [st.median(v[max(0, i - h) : i + h + 1]) for i in range(len(v))]
 
 
+def live_ap_errors(rows, i0, i1, grace=AP_GRACE_S):
+    """Heading errors from DISTINCT /pose stamps that landed in this episode's window.
+
+    Keyed by the estimate's own stamp, so one cached message repeated across hundreds of rows
+    counts once, and only if it is no older than `grace` before the window starts.
+    """
+    t_lo = rows[i0]["t"] - grace
+    t_hi = rows[i1]["t"]
+    seen = {}
+    for i in range(i0, i1 + 1):
+        ap = rows[i].get("ap") or {}
+        stamp = ap.get("stamp")
+        if stamp is None or not (t_lo <= stamp <= t_hi) or stamp in seen:
+            continue
+        e = ap.get("err_yaw")
+        if e is None and "yaw" in ap and "tyaw" in rows[i]:
+            e = wr(ap["yaw"] - rows[i]["tyaw"])
+        if e is not None:
+            seen[stamp] = abs(math.degrees(e))
+    return seen
+
+
 def episodes(rows, thresh):
     if not rows:
         return []
@@ -87,21 +114,15 @@ def episodes(rows, thresh):
     for idx in runs:
         i0, i1 = idx[0], idx[-1]
         pk = max(range(i0, i1 + 1), key=lambda i: m[i])
-        agree = 0.0
-        n_ap = 0
-        for i in range(i0, i1 + 1):
-            ap = rows[i].get("ap") or {}
-            e = ap.get("err_yaw")
-            if e is None and "yaw" in ap and "tyaw" in rows[i]:
-                e = wr(ap["yaw"] - rows[i]["tyaw"])
-            if e is not None:
-                n_ap += 1
-                agree = max(agree, abs(math.degrees(e)))
-        # No /pose in the window is absence of evidence, not evidence against: a recording
-        # taken with localization:=false or slam:=true has no publisher for it at all, and
-        # folding that into "contradicted" would report such a session as excursion-free.
+        live = live_ap_errors(rows, i0, i1)
+        n_ap = len(live)
+        agree = max(live.values()) if live else 0.0
+        # No fresh /pose in the window is absence of evidence, not evidence against: a recording
+        # taken with localization:=false or slam:=true has no publisher for it at all, and a
+        # stationary stretch produces no update either. Folding that into "contradicted" would
+        # report such a session as excursion-free.
         if n_ap and agree < m[pk] / 2.0:
-            continue  # /pose was available and disagreed -> not counted
+            continue  # /pose updated inside the window and disagreed -> not counted
         r = rows[pk]
         c = r.get("cloud", {})
         eps.append(
@@ -123,9 +144,18 @@ def episodes(rows, thresh):
     return eps
 
 
-def pose_sample_count(rows):
-    """How many recorded samples carry AMCL's own /pose, the only corroborating source."""
-    return len([r for r in rows if (r.get("ap") or {}).get("yaw") is not None])
+def pose_update_count(rows):
+    """How many DISTINCT /pose estimates the recording saw, the only corroborating source.
+
+    Counted by stamp: rows carrying a cached repeat of the same estimate are not extra evidence.
+    """
+    return len(
+        {
+            (r.get("ap") or {})["stamp"]
+            for r in rows
+            if (r.get("ap") or {}).get("stamp") is not None
+        }
+    )
 
 
 def is_rescue(e):
@@ -188,7 +218,7 @@ def main():
             print(f"{label}: no rows")
             continue
         t0 = rows[0]["t"]
-        n_pose = pose_sample_count(rows)
+        n_pose = pose_update_count(rows)
         eps_all = episodes(rows, THRESH)
         eps = [e for e in eps_all if e["corroborated"]]
         unc = [e for e in eps_all if not e["corroborated"]]
@@ -239,7 +269,7 @@ def main():
             f"Objective starts accepted={n_starts}"
         )
         print(
-            f"/pose samples={n_pose}/{len(rows)}"
+            f"/pose updates={n_pose} distinct stamps over {len(rows)} rows"
             + (
                 ""
                 if n_pose
@@ -269,8 +299,8 @@ def main():
                 )
         if unc:
             print(
-                f"UNCORROBORATED (|err_yaw| >= {THRESH:.0f} deg with no /pose sample in the "
-                f"window -- absence of evidence, not evidence of absence): {len(unc)}"
+                f"UNCORROBORATED (|err_yaw| >= {THRESH:.0f} deg with no /pose update inside "
+                f"the window -- absence of evidence, not evidence of absence): {len(unc)}"
             )
             print(
                 f"  {'t_rel':>8} {'dur':>5} {'peak':>7} {'errPos':>7} {'cloud n':>7} "

@@ -64,24 +64,33 @@ trap teardown EXIT INT TERM
 # A recorder that never came up (import error, unwritable --out, no rclpy in this container)
 # would otherwise cost the whole drive session before anyone found out, and the log that
 # explains it would not be among the files copied out.
+# The recorder opens its output before the sample loop, so the file exists within milliseconds
+# whether or not a single row is ever written -- the case when DDS discovery finds no /odom.
+# Require the capture to be GROWING, not merely present.
 REC_CHECK="${REC_CHECK:-15}"
 rec_up=0
+rec_prev=-1
 for _ in $(seq 1 "$REC_CHECK"); do
-  if docker exec "$RT" bash -lc \
-    "pgrep -f '[r]ecorder4.py --out /tmp/${LABEL}' >/dev/null && [ -f /tmp/${LABEL}.jsonl ]"; then
+  if ! docker exec "$RT" bash -lc "pgrep -f '[r]ecorder4.py --out /tmp/${LABEL}' >/dev/null"; then
+    break
+  fi
+  rec_size="$(docker exec "$RT" bash -lc \
+    "stat -c %s /tmp/${LABEL}.jsonl 2>/dev/null || echo -1" | tr -d '\r')"
+  if [ "$rec_size" -gt 0 ] && [ "$rec_prev" -gt 0 ] && [ "$rec_size" -gt "$rec_prev" ]; then
     rec_up=1
     break
   fi
-  sleep 1
+  rec_prev="$rec_size"
+  sleep 2
 done
 if [ "$rec_up" != "1" ]; then
-  echo "== [$LABEL] recorder is not running after ${REC_CHECK}s; refusing to drive an unrecorded session =="
+  echo "== [$LABEL] recorder is not writing rows after ${REC_CHECK} polls (last size ${rec_prev} bytes); refusing to drive an unrecorded session =="
   echo "---- /tmp/${LABEL}.reclog ----"
   docker exec "$RT" bash -lc "cat /tmp/${LABEL}.reclog 2>/dev/null || echo '(no recorder log)'" || true
   echo "---- end of recorder log ----"
   exit 1
 fi
-echo "== [$LABEL] recorder is up =="
+echo "== [$LABEL] recorder is up and writing =="
 
 WARMUP="${WARMUP:-60}"
 echo "== driver warmup ${WARMUP}s; loadstepper should be started with WARMUP=$WARMUP =="
