@@ -6,7 +6,7 @@ LABEL="$1"; STARTS="${2:-120}"; ARMS="${3:-baseline,tight,noseed}"
 INST="${INST:-reseedflip}"
 RT="moveit_pro_${INST}-runtime-1"
 HARNESS_DIR="${HARNESS_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)}"
-OUT="${OUT_DIR:-$PWD/runs}"
+OUT="${OUT_DIR:-$HARNESS_DIR/runs}"
 DDS="CYCLONEDDS_URI=${CYCLONEDDS_URI:-file://$HOME/.ros/cyclonedds.xml}"
 SRC='source /opt/ros/jazzy/setup.bash; source /opt/overlay_ws/install/setup.bash;'
 
@@ -20,6 +20,8 @@ HOST_WS="${WORKSPACE:-$(cd "$HARNESS_DIR/../../../.." && pwd)}"
 HOST_LOADSTEP="${LOADSTEP_FILE:-$HOST_WS/log/.loadstep}"
 
 mkdir -p "$OUT"
+OUT="$(cd "$OUT" && pwd)"
+echo "== [$LABEL] recordings will be written to $OUT =="
 
 if [ "${LOADSTEP:-0}" != "0" ]; then
   echo "== load-step counter: container writes $CONTAINER_LOADSTEP =="

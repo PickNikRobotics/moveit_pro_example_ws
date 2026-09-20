@@ -119,7 +119,9 @@ recording they cannot see on trust.
 The hardcoded paths are gone; each tool takes its locations from the environment:
 
 - `abrun` — `HARNESS_DIR` (defaults to the script's own directory), `OUT_DIR` (defaults to
-  `./runs`), `CYCLONEDDS_URI`, `INST`, plus `CONTAINER_WS` (defaults to the runtime container's
+  `runs/` inside `HARNESS_DIR`, **not** `$PWD/runs`, so a capture always lands in the gitignored
+  directory whatever you invoke the tool from; `abrun` prints the absolute path it writes to),
+  `CYCLONEDDS_URI`, `INST`, plus `CONTAINER_WS` (defaults to the runtime container's
   own `USER_WS`) and `CONTAINER_LOADSTEP` for the container side of the load-step counter.
 - `loadstepper` — `HARNESS_DIR`, `WORKSPACE` (defaults to the workspace root derived from the
   harness directory, **not** `$PWD`, so running it from here still watches
