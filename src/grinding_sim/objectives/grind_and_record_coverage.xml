@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Grind and Record Coverage">
+  <BehaviorTree
+    ID="Grind and Record Coverage"
+    _description="Grind the machined part and watch the ground surface fill in on the 3D view while the tool works, recorded from where the tool actually went."
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="ClearSnapshot" />
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        controller_action_server="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+        controller_names="joint_trajectory_admittance_controller"
+        joint_group_name="manipulator"
+        waypoint_name="Retract"
+        name="View Workspace"
+      />
+      <SubTree
+        ID="Register Machined Part"
+        _collapsed="true"
+        registered_pose="{registered_pose}"
+      />
+
+      <!-- The target the coverage is accumulated against. Taken here rather than inside Take Snapshot
+           because a subtree blackboard is isolated: the parent cannot see what it captured. -->
+      <Action ID="SwitchUIPrimaryView" primary_view_name="Visualization" />
+      <Action
+        ID="GetPointCloud"
+        topic_name="/scene_camera/points"
+        message_out="{point_cloud}"
+        message_timeout_sec="15.0"
+      />
+      <Action
+        ID="SendPointCloudToUI"
+        point_cloud="{point_cloud}"
+        pcd_topic="/pcd_pointcloud_captures"
+      />
+
+      <Control ID="Fallback">
+        <Decorator ID="Timeout" msec="500">
+          <Action
+            ID="PublishTF"
+            pose="{registered_pose}"
+            publish_rate="50"
+            child_frame_id="registered_pose"
+          />
+        </Decorator>
+        <Action ID="AlwaysSuccess" />
+      </Control>
+
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        controller_action_server="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+        controller_names="joint_trajectory_admittance_controller"
+        joint_group_name="manipulator"
+        waypoint_name="Pre Grind"
+      />
+      <Action
+        ID="LoadPoseStampedVectorFromYaml"
+        output="{grinding_poses}"
+        file_path="cylinder_outline_poses.yaml"
+      />
+      <Action
+        ID="PlanCartesianPath"
+        blending_radius="0.003000"
+        ik_cartesian_space_density="0.010000"
+        ik_joint_space_density="0.100000"
+        path="{grinding_poses}"
+        planning_group_name="manipulator"
+        cartesian_constraint="[{constraint_type: position_and_orientation}]"
+        tip_links="grasp_link"
+        trajectory_timing="[{mode: cartesian_trapezoidal, max_translational_velocity: 0.05, max_rotational_velocity: 0.33, max_translational_acceleration: 0.1, max_rotational_acceleration: 1.0, trajectory_sampling_rate: 100}]"
+        debug_solution="{debug_solution}"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+      />
+
+      <!-- The grind and the recording run together. A Parallel is what ends the session whether the
+           pass finishes or fails; a Sequence would leave the Runtime sampling forever. -->
+      <Control ID="Parallel" success_count="1" failure_count="1">
+        <Action
+          ID="ExecuteTrajectory"
+          joint_trajectory_msg="{joint_trajectory_msg}"
+        />
+        <Action
+          ID="AccumulateSurfaceCoverage"
+          target_cloud="{point_cloud}"
+          tool_frame="grasp_link"
+          treated_color="255;40;40"
+          footprint_radius="0.015"
+          footprint_range="0.040"
+          sample_rate_hz="20.0"
+          max_tool_speed="0.12"
+          covered_points="{covered_points}"
+        />
+      </Control>
+
+      <Action ID="LogMessage" message="Ground surface recorded." />
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        controller_action_server="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+        controller_names="joint_trajectory_admittance_controller"
+        joint_group_name="manipulator"
+        waypoint_name="Approach"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Grind and Record Coverage">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Grinding" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
