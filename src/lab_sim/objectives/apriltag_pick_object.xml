@@ -6,54 +6,16 @@
     _favorite="true"
   >
     <Control ID="Sequence" name="TopLevelSequence" _collapsed="false">
-      <SubTree ID="Open Gripper" _collapsed="true" />
       <SubTree
-        ID="Clear Previous Obstacles"
-        name="Clear Previous Obstacles"
+        ID="Detect AprilTags on Table"
         _collapsed="true"
-      />
-      <SubTree ID="Look at Table" _collapsed="true" />
-      <SubTree ID="Take Wrist Camera Snapshot" _collapsed="true" />
-      <SubTree
-        ID="Take Wrist Camera Image"
-        name="Take Wrist Camera Image"
-        _collapsed="true"
-        wrist_camera_image="{image}"
-        wrist_camera_info="{camera_info}"
+        detections="{detections}"
+        detection_count="{detection_count}"
       />
       <SubTree
-        ID="Get AprilTag Pose from Image"
+        ID="Pick from AprilTag Detections"
         _collapsed="true"
-        image="{image}"
-        camera_info="{camera_info}"
-        detection_pose="{detection_pose}"
-      />
-      <Action
-        ID="TransformPose"
-        output_pose="{offset_pose}"
-        input_pose="{detection_pose}"
-        quaternion_xyzw="1;0;0;0"
-        translation_xyz="0;0;-.015"
-        marker_lifetime="0.000000"
-        marker_size="0.100000"
-        marker_text=""
-        visualize_pose="false"
-      />
-      <Action
-        ID="VisualizePose"
-        name="VisualizePose"
-        marker_text="Grasp Pose"
-        marker_name="grasp_pose"
-        marker_lifetime="0.000000"
-        marker_size="0.100000"
-        pose="{offset_pose}"
-      />
-      <SubTree
-        ID="Pick from Pose"
-        _collapsed="true"
-        grasp_pose="{offset_pose}"
-        approach_distance="0.1"
-        retract_xyz="0;0;-0.1"
+        detections="{detections}"
       />
     </Control>
   </BehaviorTree>
