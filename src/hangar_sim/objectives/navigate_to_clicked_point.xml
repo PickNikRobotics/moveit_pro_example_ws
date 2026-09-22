@@ -3,11 +3,12 @@
   <!--//////////-->
   <BehaviorTree
     ID="Navigate to Clicked Point"
-    _description="Navigate to a point clicked by the user in the UI"
+    _description="Navigate to a point clicked by the user in the UI. Asks you to localize the robot first if needed."
     _favorite="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
-      <Action ID="SetInitialPose" robot_frame_id="ridgeback_base_link" />
+      <!--Stops if the scans do not fit the map.-->
+      <SubTree ID="Refine Localization In Place" />
       <Action
         ID="CreatePoseStamped"
         reference_frame="base_link"
