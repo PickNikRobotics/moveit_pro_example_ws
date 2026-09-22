@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Localize Robot">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Localize Robot"
+    _description="Place a marker on the robot to localize it. Run after startup and whenever the robot is moved by hand."
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <!--A marker, not a click, so the operator also sets heading. It starts at the robot's odometry pose, which exists before localization.-->
+      <Action
+        ID="GetLatestTransform"
+        name="Start the marker at the robot"
+        target_frame_id="world"
+        source_frame_id="ridgeback_base_link"
+        transform="{robot_in_world}"
+      />
+      <Action
+        ID="ConvertTransformStampedToPoseStamped"
+        transform_stamped="{robot_in_world}"
+        pose_stamped="{marker_seed_pose}"
+      />
+      <Action ID="ResetVector" name="ResetVector" vector="{marker_poses}" />
+      <Action
+        ID="PushBackVector"
+        name="Wrap it in the one-element list the marker takes"
+        input_vector="{marker_poses}"
+        element="{marker_seed_pose}"
+        output_vector="{marker_poses}"
+      />
+      <Action
+        ID="AdjustPoseWithIMarker"
+        name="Ask the operator to place the robot"
+        prompts="Move the marker to where the robot really is, X axis forward"
+        initial_poses="{marker_poses}"
+        adjusted_poses="{adjusted_poses}"
+      />
+      <Action
+        ID="GetElementOfVector"
+        name="Read the placed pose back out"
+        vector_in="{adjusted_poses}"
+        index="0"
+        element="{clicked_pose}"
+      />
+      <!--Transform into map when map -> odom exists. At cold boot it does not, so relabel instead: mj_world -> map and odom -> world are static identities, so world and map coincide until the filter is seeded.-->
+      <Control ID="Fallback" name="Express the placed pose in map">
+        <Action
+          ID="TransformPoseFrame"
+          name="Transform the placed pose into map"
+          input_pose="{clicked_pose}"
+          target_frame_id="map"
+          output_pose="{initial_pose}"
+        />
+        <Action
+          ID="ReinterpretPoseFrame"
+          name="Before the first seed, read it as map coordinates"
+          input_pose="{clicked_pose}"
+          expected_input_frame_id="world"
+          frame_id="map"
+          output_pose="{initial_pose}"
+        />
+      </Control>
+      <SubTree
+        ID="Refine Localization In Place Subtree"
+        name="Refine the estimate"
+        seed_pose="{initial_pose}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Localize Robot">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Navigation" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

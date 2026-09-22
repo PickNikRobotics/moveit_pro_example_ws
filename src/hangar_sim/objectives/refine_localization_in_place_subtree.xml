@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Refine Localization In Place Subtree"
+>
+  <!--//////////-->
+  <BehaviorTree
+    ID="Refine Localization In Place Subtree"
+    _description="Seeds the localizer at a pose, refines it in place, and keeps the result only if it still fits the scan."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="root">
+      <Action ID="SetInitialPose" name="Seed the filter" pose="{seed_pose}" />
+      <!--Any failure after the seed restores it, so an unverified refinement is never kept.-->
+      <Control ID="Fallback" name="Refine and verify, or restore">
+        <Control ID="Sequence" name="Refine and verify">
+          <Action
+            ID="WaitForDuration"
+            name="Let the filter take the seed"
+            delay_duration="0.300000"
+          />
+          <!--Each call updates the filter on the next scan; the wait gives each call a fresh scan.-->
+          <Decorator
+            ID="RepeatUnlessFailureEachTick"
+            name="Refine in place"
+            num_cycles="{num_updates}"
+          >
+            <Control ID="Sequence">
+              <Action
+                ID="CallEmptyService"
+                name="Request a filter update"
+                service_name="/request_nomotion_update"
+                response_timeout="2.000000"
+              />
+              <Action ID="WaitForDuration" delay_duration="0.150000" />
+            </Control>
+          </Decorator>
+          <Action
+            ID="GetLatestTransform"
+            name="Read the refined pose"
+            target_frame_id="map"
+            source_frame_id="ridgeback_base_link"
+            transform="{refined_transform}"
+          />
+          <Action
+            ID="ConvertTransformStampedToPoseStamped"
+            transform_stamped="{refined_transform}"
+            pose_stamped="{refined_pose}"
+          />
+          <!--Each lidar must fit the map. max_range mirrors amcl laser_max_range.-->
+          <Action ID="GetOccupancyGrid" topic_name="/map" message_out="{map}" />
+          <Action
+            ID="GetLaserScan"
+            topic_name="/scan_front_filtered"
+            message_out="{front_scan}"
+          />
+          <Action
+            ID="ScanMatchResidual"
+            name="Check the front lidar against the map"
+            pose="{refined_pose}"
+            scan="{front_scan}"
+            map="{map}"
+            base_frame_id="ridgeback_base_link"
+            max_range="25.000000"
+            inlier_distance="{inlier_distance}"
+            min_inlier_fraction="{min_inlier_fraction}"
+          />
+          <Action
+            ID="GetLaserScan"
+            topic_name="/scan_rear_filtered"
+            message_out="{rear_scan}"
+          />
+          <Action
+            ID="ScanMatchResidual"
+            name="Check the rear lidar against the map"
+            pose="{refined_pose}"
+            scan="{rear_scan}"
+            map="{map}"
+            base_frame_id="ridgeback_base_link"
+            max_range="25.000000"
+            inlier_distance="{inlier_distance}"
+            min_inlier_fraction="{min_inlier_fraction}"
+          />
+          <Action
+            ID="LogMessage"
+            log_level="info"
+            message="Localization refined."
+          />
+        </Control>
+        <Control ID="Sequence" name="Restore and fail">
+          <Action
+            ID="LogMessage"
+            log_level="error"
+            message="Restoring the starting pose."
+          />
+          <Action
+            ID="SetInitialPose"
+            name="Restore the seed"
+            pose="{seed_pose}"
+          />
+          <Action ID="AlwaysFailure" />
+        </Control>
+      </Control>
+    </Control>
+  </BehaviorTree>
+
+  <TreeNodesModel>
+    <SubTree ID="Refine Localization In Place Subtree">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Navigation" />
+      </MetadataFields>
+      <input_port
+        name="seed_pose"
+        default="{initial_pose}"
+        type="geometry_msgs::msg::PoseStamped"
+      >
+        Pose to seed, in map.
+      </input_port>
+      <input_port name="num_updates" default="20" type="int">
+        Number of filter updates.
+      </input_port>
+      <input_port name="inlier_distance" default="0.15" type="double">
+        A beam fits if it lands within this distance of a wall, metres.
+      </input_port>
+      <input_port name="min_inlier_fraction" default="0.76" type="double">
+        Min fraction of beams that fit, per lidar. Measured on hangar_map (see
+        PR #933).
+      </input_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>

@@ -35,6 +35,7 @@ import pytest
 import rclpy
 import tf2_ros
 from tf2_msgs.msg import TFMessage
+from geometry_msgs.msg import PoseWithCovarianceStamped
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import Imu
 import yaml
@@ -102,6 +103,8 @@ skip_objectives = {
     # never arrives.
     "Navigate to Clicked Point",  # GetPoseFromUser + WaitForUserPathApproval.
     "Navigate to Clicked Point with Replanning",  # GetPoseFromUser.
+    # The localized_robot fixture seeds the filter headlessly instead.
+    "Localize Robot",  # AdjustPoseWithIMarker needs an operator to place the marker.
     "Find and Spray Plane",  # Ungated WaitForMTCSolutionApproval.
     "Solution - Find and Spray Plane",  # Ungated WaitForMTCSolutionApproval.
     "Solution - Spray Plane",  # Ungated WaitForMTCSolutionApproval.
@@ -255,6 +258,43 @@ def wait_for_controllers_loaded(
         )
     finally:
         node.destroy_client(client)
+
+
+# AMCL does not self-seed, as on hardware, and nothing else links the MuJoCo
+# frames to MoveIt's `world` until it is seeded. CI has no operator to run
+# "Localize Robot", so seed at the spawn pose (map origin) instead.
+LOCALIZATION_SEED_TIMEOUT_S = 180.0
+
+
+@pytest.fixture(scope="module", autouse=True)
+def localized_robot(execute_objective_resource: ExecuteObjectiveResource) -> None:
+    """Seed AMCL at the spawn pose and wait for map -> odom.
+
+    Must run before ``wait_for_robot_tf``; module autouse fixtures run in definition order.
+    """
+    node = execute_objective_resource.node
+    seed = PoseWithCovarianceStamped()
+    seed.header.frame_id = "map"
+    seed.pose.pose.orientation.w = 1.0
+    seed.pose.covariance[0] = seed.pose.covariance[7] = 0.25
+    seed.pose.covariance[35] = 0.0685
+    publisher = node.create_publisher(PoseWithCovarianceStamped, "/initialpose", 1)
+    buffer = tf2_ros.Buffer()
+    tf2_ros.TransformListener(buffer, node, spin_thread=False)
+    deadline = time.monotonic() + LOCALIZATION_SEED_TIMEOUT_S
+    try:
+        while time.monotonic() < deadline:
+            # Republish: AMCL drops a seed sent before its subscription matches.
+            seed.header.stamp = node.get_clock().now().to_msg()
+            publisher.publish(seed)
+            end = time.monotonic() + 2.0
+            while time.monotonic() < end:
+                rclpy.spin_once(node, timeout_sec=0.1)
+                if buffer.can_transform("map", "odom", Time()):
+                    return
+        pytest.fail("AMCL never published map -> odom after seeding /initialpose.")
+    finally:
+        node.destroy_publisher(publisher)
 
 
 # Fixed and end-effector frames the Cartesian objectives visualize and plan

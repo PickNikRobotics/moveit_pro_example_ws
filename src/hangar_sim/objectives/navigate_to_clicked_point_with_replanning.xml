@@ -6,11 +6,18 @@
   <!--//////////-->
   <BehaviorTree
     ID="Navigate to Clicked Point with Replanning"
-    _description="Navigate to a point clicked by the user in the UI. This Objective will repeatedly replan the path as new obstacles appear on the local costmap."
+    _description="Navigate to a point clicked by the user in the UI. This Objective will repeatedly replan the path as new obstacles appear on the local costmap. Asks you to localize the robot first if needed."
     _favorite="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
-      <Action ID="SetInitialPose" robot_frame_id="ridgeback_base_link" />
+      <!--Re-seed from the current estimate when there is one; otherwise localize first, which leaves a freshly refined estimate that needs no re-seed.-->
+      <Control
+        ID="Fallback"
+        name="Re-seed from the current estimate, or localize first"
+      >
+        <Action ID="SetInitialPose" robot_frame_id="ridgeback_base_link" />
+        <SubTree ID="Localize Robot If Needed" />
+      </Control>
       <Action
         ID="CreatePoseStamped"
         reference_frame="base_link"

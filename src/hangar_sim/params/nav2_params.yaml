@@ -1,20 +1,6 @@
 amcl:
   ros__parameters:
     use_sim_time: True
-    # Self-seed the particle filter at the robot's spawn pose (map origin) on
-    # activation, so localization starts without a manual 2D pose estimate.
-    # beluga_amcl is 2D: only x, y, yaw are declared (no z). The covariances set
-    # the initial spread (~0.5 m position, ~15 deg yaw) so the seed is not
-    # overconfident; beluga's default covariance is near-zero. The SetInitialPose
-    # Behavior re-seeds at the robot's current pose at each navigation Objective.
-    set_initial_pose: true
-    initial_pose:
-      x: 0.0
-      y: 0.0
-      yaw: 0.0
-      covariance_x: 0.25
-      covariance_y: 0.25
-      covariance_yaw: 0.0685
     alpha1: 0.05
     alpha2: 0.05
     alpha3: 0.1
