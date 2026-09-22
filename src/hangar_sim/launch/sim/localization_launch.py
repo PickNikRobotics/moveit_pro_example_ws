@@ -93,32 +93,6 @@ def generate_launch_description():
         condition=IfCondition(localization),
         target_container=container_name_full,
         composable_node_descriptions=[
-            # Both lidars reach AMCL on one topic, a scan at a time: relayed
-            # rather than merged, so no message can carry two instants.
-            ComposableNode(
-                package="topic_tools",
-                plugin="topic_tools::RelayNode",
-                name="scan_front_relay",
-                parameters=[
-                    {
-                        "use_sim_time": use_sim_time,
-                        "input_topic": "/scan_front_filtered",
-                        "output_topic": "/scan_localization",
-                    }
-                ],
-            ),
-            ComposableNode(
-                package="topic_tools",
-                plugin="topic_tools::RelayNode",
-                name="scan_rear_relay",
-                parameters=[
-                    {
-                        "use_sim_time": use_sim_time,
-                        "input_topic": "/scan_rear_filtered",
-                        "output_topic": "/scan_localization",
-                    }
-                ],
-            ),
             ComposableNode(
                 package="nav2_map_server",
                 plugin="nav2_map_server::MapServer",
