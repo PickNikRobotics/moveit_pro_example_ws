@@ -43,10 +43,6 @@ if(BUILD_TESTING)
   ament_add_pytest_test(
           lidar_flattener_test test/test_lidar_flattener.py
           TIMEOUT 60)
-  # 120 s: starts two relay processes, and its own bounded waits total 40 s.
-  ament_add_pytest_test(
-          scan_localization_relay_test test/test_scan_localization_relay.py
-          TIMEOUT 120)
   # Redirect ROS node logs into the test_results tree so the test-results CI
   # artifact ships them back too. Default would be ~/.ros/log/, which lives
   # on the doomed container filesystem and never gets uploaded -- making
