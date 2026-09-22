@@ -38,6 +38,17 @@ fps: 10.0
 # order of magnitude slower on cpu.
 device: auto
 
+# Hold the pi0.5 language backbone and vision tower at eight bits, most of the
+# weights: roughly 3 GiB less GPU memory for a little more time per chunk. false
+# loads every weight at full width, and a policy family other than pi0.5 ignores
+# this without saying so.
+#
+# On the stacking objective it has scored within noise of full width, over too
+# few attempts per arm to resolve a small difference. Torchao is imported only
+# when this is on, so an image built before it was a dependency serves at false
+# and reports an error on /health at true; docker/README.md has the rebuild.
+int8: false
+
 # Trained observation.state width: 7 arm joints plus 1 gripper. 0 trusts
 # config.json, which for this checkpoint reports its padded 32-dim
 # architecture width instead of the real one.

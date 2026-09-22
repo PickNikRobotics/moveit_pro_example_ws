@@ -80,6 +80,8 @@ import torch
 import yaml
 from huggingface_hub import hf_hub_download, snapshot_download
 from huggingface_hub.errors import GatedRepoError, RepositoryNotFoundError
+
+from lerobot.configs.policies import PreTrainedConfig
 from lerobot.configs.types import RTCAttentionSchedule
 from lerobot.policies.factory import get_policy_class, make_pre_post_processors
 from lerobot.policies.rtc.configuration_rtc import RTCConfig
@@ -129,6 +131,25 @@ RELOAD_IDLE_SECONDS = 5.0
 # must not block the reload that would replace it.
 INFER_ABANDONED_SECONDS = 30.0
 _HF_TOKEN_FILE_SOURCE_ENV = "MOVEIT_PRO_HF_TOKEN_FROM_FILE"
+
+# The two modules int8 quantizes, named by prefix. Both run once per chunk and
+# hand the action expert a cache, so they sit the far side of the model from the
+# commands.
+INT8_MODULE_PREFIXES = (
+    "paligemma.model.language_model",
+    "paligemma.model.vision_tower",
+)
+
+
+def trim_vocabulary_heads(model) -> None:
+    """Drop the two pi0.5 vocabulary heads, which no action chunk reads.
+
+    Actions leave the model through action_out_proj, so these ~1.5 GiB of weights
+    only ever cost memory. Dropping them is why this load is smaller than an
+    unmodified one even with int8 off.
+    """
+    model.paligemma_with_expert.paligemma.lm_head = None
+    model.paligemma_with_expert.gemma_expert.lm_head = None
 
 
 def load_serving_config(path: str) -> dict:
@@ -353,7 +374,9 @@ class PolicyRunner:
     Loading passes policy_cfg by keyword and overrides the device on both
     processors, which merged pi0.5 checkpoints need: their config declares a
     padded 32-dim state while the saved normalizer stats carry the trained
-    width.
+    width. A pinned revision resolves to a local snapshot first. It loads on the
+    cpu, trims pi0.5's unused vocabulary heads and quantizes when asked, before
+    moving to the serving device.
     """
 
     def __init__(
@@ -364,6 +387,7 @@ class PolicyRunner:
         guidance_horizon: int,
         rtc_schedule: str,
         state_dim: int,
+        int8: bool = False,
         checkpoint_revision: str = "",
     ):
         self.device = device
@@ -381,9 +405,41 @@ class PolicyRunner:
         if checkpoint_revision:
             checkpoint = snapshot_download(checkpoint, revision=checkpoint_revision)
 
-        self.policy = get_policy_class(policy_type).from_pretrained(checkpoint)
+        # Loaded on the cpu and moved once the trimming below has run: building on
+        # the gpu first would peak at the untrimmed size, which is the size this is
+        # here to stay under.
+        policy_config = PreTrainedConfig.from_pretrained(checkpoint)
+        policy_config.device = "cpu"
+        self.policy = get_policy_class(policy_type).from_pretrained(
+            checkpoint, config=policy_config
+        )
+        if policy_type == "pi05":
+            model = self.policy.model
+            trim_vocabulary_heads(model)
+
+            if int8:
+                # Imported here rather than at module scope so that a container
+                # built before torchao was a dependency still serves at the default
+                # int8: false, and fails at model load if it is turned on.
+                from torchao.quantization import Int8WeightOnlyConfig, quantize_
+
+                # version=2 gives each output channel its own scale rather than one
+                # for the whole tensor. Inductor's config is declined because it turns
+                # on TF32 for every float32 matmul in the process.
+                quantize_(
+                    model.paligemma_with_expert,
+                    Int8WeightOnlyConfig(version=2, set_inductor_config=False),
+                    filter_fn=lambda module, name: (
+                        isinstance(module, torch.nn.Linear)
+                        and name.startswith(INT8_MODULE_PREFIXES)
+                    ),
+                )
         self.policy.to(device)
+        # The config named the load device, and something downstream reading it
+        # would otherwise be told the weights are still on the host.
+        policy_config.device = device
         self.policy.eval()
+        self.int8 = int8 and policy_type == "pi05"
 
         # infer() passes the horizon per call on every RTC request, so the
         # config's own execution_horizon never applies; only the enable and
@@ -770,7 +826,8 @@ def load_policy(state: ServerState, args: argparse.Namespace) -> None:
             f"loading {policy_type} checkpoint '{args.checkpoint}'"
             f"{f' at {args.checkpoint_revision}' if args.checkpoint_revision else ''} "
             f"on '{device}' "
-            f"(torch {torch.__version__}) ..."
+            f"(torch {torch.__version__}"
+            f"{', int8' if args.int8 and policy_type == 'pi05' else ''}) ..."
         )
         runner = PolicyRunner(
             args.checkpoint,
@@ -779,6 +836,7 @@ def load_policy(state: ServerState, args: argparse.Namespace) -> None:
             args.guidance_horizon,
             args.rtc_schedule,
             args.state_dim,
+            args.int8,
             checkpoint_revision=args.checkpoint_revision,
         )
 
@@ -965,6 +1023,7 @@ def make_handler(state: ServerState):
                     health["detail"] = state.detail
                 elif state.status == "ready":
                     health["device"] = state.runner.device
+                    health["int8"] = state.runner.int8
                 self._send(200, health)
                 return
             if self.path != "/status":
@@ -989,6 +1048,7 @@ def make_handler(state: ServerState):
                 health["detail"] = state.detail
             elif state.status == "ready":
                 health["device"] = state.runner.device
+                health["int8"] = state.runner.int8
             self._send(200, health)
 
         def _authorized(self) -> bool:
@@ -1107,6 +1167,16 @@ def parse_args() -> argparse.Namespace:
             config_errors.append(f"{name}: '{value}' is not a number")
             return builtin
 
+    def flag_default(name: str, builtin: bool):
+        # Parks the same way a bad number does. bool() would take any non-empty
+        # string as True, so a quoted `int8: "false"` would serve the opposite of
+        # what the operator wrote.
+        value = resolve_default(config.get(name), builtin)
+        if isinstance(value, bool):
+            return value
+        config_errors.append(f"{name}: '{value}' is not true or false")
+        return builtin
+
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--config",
@@ -1173,6 +1243,13 @@ def parse_args() -> argparse.Namespace:
         "--device",
         default=str(resolve_default(config.get("device"), "auto")),
         help="torch device: auto | cpu | cuda",
+    )
+    parser.add_argument(
+        "--int8",
+        action=argparse.BooleanOptionalAction,
+        default=flag_default("int8", False),
+        help="hold the pi0.5 backbone and vision tower at eight bits; "
+        "other policy families are unaffected",
     )
     parser.add_argument("--port", type=int, default=8973)
     parser.add_argument(
