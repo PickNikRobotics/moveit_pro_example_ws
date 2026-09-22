@@ -36,6 +36,7 @@ not the ROS workspace's pytest suite (see README.md for how to run this).
 
 import argparse
 import base64
+import hashlib
 import http.client
 import json
 import os
@@ -60,7 +61,7 @@ from vla_inference_server import (
     REQUEST_SOCKET_TIMEOUT_SECONDS,
     PolicyRunner,
     ServerState,
-    apply_frontend_key,
+    apply_bearer_key,
     decode_image_b64,
     hub_access_error_message,
     load_checkpoint_file,
@@ -441,12 +442,14 @@ class TestParseArgsCoercion(unittest.TestCase):
     def test_trainer_handoff_fields_are_loaded_from_yaml(self) -> None:
         """The server carries Trainer's exact revision and token requirement."""
         revision = "a" * 40
+        text = (
+            "checkpoint: acme/model\n"
+            f"checkpoint_revision: {revision}\n"
+            "checkpoint_requires_hf_token: true\n"
+            "moveit_pro_trainer_handoff_version: 1\n"
+        )
         with tempfile.NamedTemporaryFile("w", suffix=".yaml", delete=False) as f:
-            f.write(
-                "checkpoint: acme/model\n"
-                f"checkpoint_revision: {revision}\n"
-                "checkpoint_requires_hf_token: true\n"
-            )
+            f.write(text)
             path = f.name
         try:
             with patch("sys.argv", ["vla_inference_server.py", "--config", path]):
@@ -456,7 +459,26 @@ class TestParseArgsCoercion(unittest.TestCase):
 
         self.assertEqual(args.checkpoint_revision, revision)
         self.assertTrue(args.checkpoint_requires_hf_token)
+        self.assertEqual(args.trainer_handoff_version, 1)
+        # Trainer hashes the same bytes, so /status can name the loaded file.
+        self.assertEqual(
+            args.config_revision, hashlib.sha256(text.encode()).hexdigest()
+        )
         self.assertEqual(args.config_error, "")
+
+    def test_non_integer_handoff_version_parks_in_config_error(self) -> None:
+        """A version the server cannot compare is reported, not echoed as-is."""
+        with tempfile.NamedTemporaryFile("w", suffix=".yaml", delete=False) as f:
+            f.write("moveit_pro_trainer_handoff_version: true\n")
+            path = f.name
+        try:
+            with patch("sys.argv", ["vla_inference_server.py", "--config", path]):
+                args = parse_args()
+        finally:
+            os.unlink(path)
+
+        self.assertIsNone(args.trainer_handoff_version)
+        self.assertIn("moveit_pro_trainer_handoff_version", args.config_error)
 
     def test_legacy_yaml_keeps_mutable_public_checkpoint_defaults(self) -> None:
         """Existing serving files need no new fields and retain their behavior."""
@@ -471,6 +493,7 @@ class TestParseArgsCoercion(unittest.TestCase):
 
         self.assertEqual(args.checkpoint_revision, "")
         self.assertFalse(args.checkpoint_requires_hf_token)
+        self.assertIsNone(args.trainer_handoff_version)
         self.assertEqual(args.config_error, "")
 
     def test_invalid_checkpoint_revision_parks_in_config_error(self) -> None:
@@ -967,36 +990,85 @@ class ObservedState(ServerState):
         self.infer_ended.set()
 
 
-class TestApplyFrontendKey(unittest.TestCase):
-    """Fail-closed handling of the MOVEIT_FRONTEND_KEY environment value."""
+class TestApplyBearerKey(unittest.TestCase):
+    """Fail-closed handling of the MOVEIT_INFERENCE_KEY environment value."""
 
     def test_blank_or_missing_key_parks_error_state(self) -> None:
-        """An unset or blank key parks the server so /health names the fix."""
-        for raw_key in (None, "", "   "):
-            state = ServerState()
-            self.assertFalse(apply_frontend_key(state, raw_key))
-            self.assertEqual(state.status, "error")
-            self.assertIn("MOVEIT_FRONTEND_KEY", state.detail)
-            # /health serves the detail without a token; it must never name a
-            # usable key value, only point at the docs.
-            self.assertNotIn("moveit-secret-key", state.detail)
+        """An unset or blank key parks the server so /health names the fix.
+
+        The frontend key is not a fallback, so an environment carrying only
+        that key parks the server too.
+        """
+        for environment in (
+            {},
+            {"MOVEIT_INFERENCE_KEY": ""},
+            {"MOVEIT_INFERENCE_KEY": "   "},
+            {"MOVEIT_FRONTEND_KEY": "f" * 64},
+        ):
+            with self.subTest(environment=environment):
+                state = ServerState()
+                self.assertFalse(apply_bearer_key(state, environment))
+                self.assertEqual(state.status, "error")
+                self.assertEqual(state.bearer_key, "")
+                self.assertIn("MOVEIT_INFERENCE_KEY", state.detail)
+                self.assertIn("moveit_pro run", state.detail)
+                # /health serves the detail without a token; it must never
+                # name a key value, only the commands that set one.
+                self.assertNotIn("f" * 64, state.detail)
 
     def test_valid_key_is_stored_stripped(self) -> None:
         """A usable key is stored without surrounding whitespace."""
         state = ServerState()
-        self.assertTrue(apply_frontend_key(state, "  secret-key \n"))
-        self.assertEqual(state.frontend_key, "secret-key")
+        self.assertTrue(
+            apply_bearer_key(state, {"MOVEIT_INFERENCE_KEY": "  secret-key \n"})
+        )
+        self.assertEqual(state.bearer_key, "secret-key")
         self.assertEqual(state.status, "loading")
+
+
+class TestInferenceKeyAuthentication(unittest.TestCase):
+    """Only the provisioned inference key is accepted."""
+
+    def test_only_provisioned_key_is_accepted(self) -> None:
+        """/infer and /status reject a missing or mismatched key."""
+        state = ServerState()
+        self.assertTrue(apply_bearer_key(state, {"MOVEIT_INFERENCE_KEY": "a" * 64}))
+        server = ThreadingHTTPServer(("127.0.0.1", 0), make_handler(state))
+        worker = threading.Thread(target=server.serve_forever, daemon=True)
+        worker.start()
+        self.addCleanup(worker.join)
+        self.addCleanup(server.server_close)
+        self.addCleanup(server.shutdown)
+        connection = http.client.HTTPConnection(
+            "127.0.0.1", server.server_port, timeout=2
+        )
+        self.addCleanup(connection.close)
+        for path, method in (("/infer", "POST"), ("/status", "GET")):
+            for credential in ("", "b" * 64, "a" * 64):
+                with self.subTest(path=path, credential=credential):
+                    connection.request(
+                        method,
+                        path,
+                        body="{}",
+                        headers={"Authorization": "Bearer " + credential},
+                    )
+                    response = connection.getresponse()
+                    response.read()
+                    if credential == "a" * 64:
+                        expected = 503 if method == "POST" else 200
+                    else:
+                        expected = 401
+                    self.assertEqual(response.status, expected)
 
 
 class TestHttpStateMachine(unittest.TestCase):
     """/health and /infer across the loading -> ready/error lifecycle."""
 
     # Auth key served by every test server; _infer presents it by default.
-    TEST_KEY = "test-frontend-key"
+    TEST_KEY = "test-inference-key"
 
     def _start(self, state: ServerState) -> http.client.HTTPConnection:
-        state.frontend_key = self.TEST_KEY
+        state.bearer_key = self.TEST_KEY
         httpd = ThreadingHTTPServer(("127.0.0.1", 0), make_handler(state))
         threading.Thread(target=httpd.serve_forever, daemon=True).start()
         # LIFO: shutdown() stops the serve loop first, then server_close()
@@ -1091,13 +1163,13 @@ class TestHttpStateMachine(unittest.TestCase):
         self.assertIn("checkpoint directory does not exist", body["error"])
 
     def test_infer_without_token_is_401(self) -> None:
-        """POST /infer without the shared key is rejected before any other check."""
+        """POST /infer without the inference key is rejected before any other check."""
         conn = self._start(self._ready_state())
         conn.request("POST", "/infer", body=b"{}")
         resp = conn.getresponse()
 
         self.assertEqual(resp.status, 401)
-        self.assertIn("MOVEIT_FRONTEND_KEY", json.loads(resp.read())["error"])
+        self.assertIn("MOVEIT_INFERENCE_KEY", json.loads(resp.read())["error"])
 
     def test_infer_with_wrong_token_is_401(self) -> None:
         """A mismatched key is rejected the same as a missing one."""
@@ -1151,7 +1223,10 @@ class TestHttpStateMachine(unittest.TestCase):
 
     def test_status_requires_token_and_reports_loaded_revision(self) -> None:
         """The Runtime can confirm the exact model without exposing it publicly."""
-        conn = self._start(self._ready_state())
+        state = self._ready_state()
+        state.config_revision = "c" * 64
+        state.trainer_handoff_version = 1
+        conn = self._start(state)
         conn.request("GET", "/status")
         self.assertEqual(conn.getresponse().status, 401)
 
@@ -1164,6 +1239,9 @@ class TestHttpStateMachine(unittest.TestCase):
         self.assertEqual(body["checkpoint"], "acme/model")
         self.assertEqual(body["checkpointRevision"], "a" * 40)
         self.assertIs(body["reloadPending"], False)
+        # Trainer compares these with the file it wrote and the contract it needs.
+        self.assertEqual(body["configRevision"], "c" * 64)
+        self.assertEqual(body["trainerHandoffVersion"], 1)
 
     def test_status_reports_a_deferred_reload(self) -> None:
         """A reload waiting on the running policy is visible, not a silent stall."""

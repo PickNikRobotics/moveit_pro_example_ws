@@ -30,12 +30,13 @@
 
 """GetActionChunk adapter: bridges ExecutePolicy to the inference server.
 
-Serves moveit_pro_ml_msgs/srv/GetActionChunk inside the MoveIt Pro agent
-container and forwards each request over HTTP to the `inference_server`
-container (docker/vla_inference_server.py), which owns torch and the
-checkpoint. Requests carry the deployment's shared MOVEIT_FRONTEND_KEY as a
-bearer token, the contract the server enforces on /infer. Policy-agnostic and
-lightweight: no ML dependencies, so it always runs with the config.
+Serves moveit_pro_ml_msgs/srv/GetActionChunk and forwards each request as one
+HTTP POST, over loopback plaintext or verified TLS to an external inference
+host. Each request carries MOVEIT_INFERENCE_KEY as a bearer token.
+`moveit_pro run` derives that key from the deployment's frontend key, and it
+has no authority over the Runtime's REST, MCP, or web-bridge endpoints.
+Policy-agnostic and lightweight: no ML dependencies, so it always runs with
+the config.
 
 A failed request answers with status ERROR, which fails the run, and the
 response message is what ExecutePolicy shows the operator as the reason. The
@@ -45,12 +46,18 @@ loading" from a server-reported inference error.
 
 import base64
 import ipaddress
+import json
 import os
+import socket
+import sys
+import threading
+import time
 from urllib.parse import urlsplit, urlunsplit
 
 import cv2
 import numpy as np
 import requests
+import urllib3
 
 import rclpy
 from rclpy.executors import ExternalShutdownException
@@ -64,6 +71,50 @@ DEFAULT_INFER_URL = "http://127.0.0.1:8973/infer"
 
 # Bound on server-supplied text relayed into the UI-bound response message.
 MAX_SERVER_DETAIL_CHARS = 2000
+# Ceiling on an /infer response body. A 50-step, 7-joint chunk with its RTC
+# echo measures 14 KB and a 200-step, 32-joint one 258 KB, so this leaves room
+# for a policy well past anything shipped.
+MAX_RESPONSE_BYTES = 1024 * 1024
+# Read size for the streamed body. The socket enforces the deadline, so this
+# is sized for throughput. A full 1 MiB response reads in about 3ms.
+READ_CHUNK_BYTES = 64 * 1024
+
+
+class DeadlineAdapter(requests.adapters.HTTPAdapter):
+    """One total budget across connecting and waiting for a response.
+
+    `requests` applies its connect timeout per resolved address, so a name
+    carrying several dead addresses can spend that timeout several times over.
+    With two dead addresses ahead of a live one, a 9s budget took 12.01s.
+    urllib3 subtracts the time already spent connecting from what the read is
+    allowed, which holds the total however many addresses the name carries.
+    """
+
+    def send(self, request, **kwargs):
+        """Re-express the connect/read pair as one total budget."""
+        timeout = kwargs.get("timeout")
+        if isinstance(timeout, tuple):
+            connect_s, read_s = timeout
+            kwargs["timeout"] = urllib3.Timeout(
+                total=connect_s + read_s, connect=connect_s, read=read_s
+            )
+        return super().send(request, **kwargs)
+
+
+def response_socket(resp):
+    """Return the socket under a streaming urllib3 response (a private path), or None."""
+    try:
+        return resp.raw._fp.fp.raw._sock
+    except AttributeError:
+        return None
+
+
+def shutdown_quietly(sock) -> None:
+    """Shut a socket down to wake a blocked read, ignoring an already-closed one."""
+    try:
+        sock.shutdown(socket.SHUT_RDWR)
+    except OSError:
+        pass
 
 
 def clip_detail(text: str) -> str:
@@ -84,27 +135,39 @@ def resolve_http_timeout(value: float) -> float:
 
 
 def resolve_infer_url(value: str) -> str:
-    """Require infer_url to address a server on this machine.
-
-    Requests to it carry the deployment's shared key, and the server speaks
-    plain HTTP, so a host off this machine would put that key on the wire in
-    cleartext. Every supported layout is still reachable: the agent container
-    runs with host networking, so loopback here reaches the product sidecar,
-    another container publishing to loopback, or a bare host process.
-
-    Only a literal loopback address is accepted. A name resolves at connect
-    time, not here, so a check on `localhost` would be a check on whatever the
-    resolver returns later. Only http is accepted too: the server listens
-    without TLS, so an https target could not complete a handshake with it.
-
-    @return: The address to call, rebuilt from the parts that were checked.
-    """
+    """Accept external HTTPS /infer endpoints or literal-loopback HTTP."""
     parts = urlsplit(value)
+    if parts.scheme == "https":
+        try:
+            port = parts.port
+        except ValueError:
+            raise ValueError(
+                f"the infer_url parameter has an invalid port, got {value!r}"
+            ) from None
+        if (
+            not parts.hostname
+            or parts.username is not None
+            or "\\" in value
+            or any(ord(char) <= 32 or ord(char) == 127 for char in value)
+            or parts.path != "/infer"
+            or "?" in value
+            or "#" in value
+            or port == 0
+        ):
+            raise ValueError(
+                "infer_url must be https://<host>[:port]/infer with no "
+                "credentials, query, or fragment; got host "
+                f"{parts.hostname!r}, path {parts.path!r}."
+            )
+        host = parts.hostname
+        authority = f"[{host}]" if ":" in host else host
+        if port is not None:
+            authority += f":{port}"
+        return urlunsplit(("https", authority, "/infer", "", ""))
     if parts.scheme != "http":
         raise ValueError(
-            f"the infer_url parameter must be an http URL: the inference server "
-            f"listens without TLS, and the target stays on this machine, so there "
-            f"is no network hop to encrypt. Got {value!r}"
+            "infer_url must use https, or http with a literal loopback address; "
+            f"got scheme {parts.scheme!r}, host {parts.hostname!r}."
         )
     # `urlsplit` and the HTTP client disagree about where the authority ends:
     # `urlsplit` reads `evil.example\@127.0.0.1` as credentials followed by a
@@ -126,8 +189,7 @@ def resolve_infer_url(value: str) -> str:
     if not host.is_loopback:
         raise ValueError(
             f"the infer_url parameter must stay on this machine: {host} is not a "
-            f"loopback address. Serving the policy from another host is not "
-            f"supported"
+            "loopback address. Use HTTPS for an externally managed server."
         )
     try:
         port = parts.port
@@ -146,6 +208,27 @@ def resolve_infer_url(value: str) -> str:
 
 class RequestError(Exception):
     """Operator-facing failure; the message becomes the service response message."""
+
+
+def _finite_2d(value, field: str) -> np.ndarray:
+    """Convert a response field to a finite steps x dims array, naming it on failure."""
+    try:
+        arr = np.asarray(value, dtype=float)
+    except (TypeError, ValueError) as exc:
+        raise RequestError(
+            f"/infer response's {field} is not a rectangular array of numbers "
+            f"({clip_detail(str(exc))})"
+        ) from exc
+    if arr.ndim != 2:
+        raise RequestError(
+            f"/infer response's {field} is {arr.ndim}-dimensional; it must be a "
+            "two-dimensional steps x dims array"
+        )
+    if arr.shape[1] == 0:
+        raise RequestError(f"/infer response's {field} has empty rows")
+    if not np.isfinite(arr).all():
+        raise RequestError(f"/infer response's {field} carries non-finite values")
+    return arr
 
 
 def encode_jpeg_b64(img) -> str:
@@ -174,24 +257,84 @@ class GetActionChunkAdapter(Node):
         self.infer_url = resolve_infer_url(
             self.declare_parameter("infer_url", DEFAULT_INFER_URL).value
         )
-        # Total HTTP budget, split into connect + read at the call site. Keep
-        # it strictly below the caller's service timeout (ExecutePolicy's
-        # policy_call_timeout, 10.0 in stack_cubes_with_the_vla_policy.xml): a hung server
-        # must not wedge this single-threaded node past the point the caller
-        # has already given up, or the next run's first request queues behind
-        # the stale call.
+        # Total HTTP budget, split into connect + read at the call site. An
+        # Objective's policy_call_timeout must be larger than this value. That
+        # port defaults to 3.0, below this 9.0 default, so every Objective
+        # using this adapter must set it explicitly. This node is
+        # single-threaded, so a call that outlives its caller leaves the next
+        # run's first request queued behind a stale one.
         self.http_timeout = resolve_http_timeout(
             self.declare_parameter("http_timeout", 9.0).value
         )
-        # The server authenticates /infer with the deployment's shared key
-        # (same contract as the web backend endpoints). The agent container
-        # always carries it; when it is absent the server's 401 detail flows
-        # into the objective's on-screen message, so no local check is needed.
-        self._frontend_key = os.environ.get("MOVEIT_FRONTEND_KEY", "").strip()
+        remote = self.infer_url.startswith("https:")
+        # One session for the node's lifetime, so the node reuses one
+        # connection to a remote server instead of a fresh TCP and TLS
+        # handshake per inference call. trust_env stays off, so observations
+        # and the bearer token go to infer_url or nowhere, never through a
+        # proxy or netrc entry.
+        self._session = requests.Session()
+        self._session.mount("https://", DeadlineAdapter())
+        self._session.mount("http://", DeadlineAdapter())
+        self._session.trust_env = False
+        self._session.headers["Accept-Encoding"] = "identity"
+        if remote:
+            ca_file = os.environ.get("MOVEIT_INFERENCE_CA_FILE") or ""
+            if ca_file:
+                if not os.path.isfile(ca_file) or not os.access(ca_file, os.R_OK):
+                    raise ValueError(
+                        f"The inference CA certificate at {ca_file!r} inside "
+                        "the Runtime container is not a readable file. Set "
+                        "MOVEIT_INFERENCE_CA_FILE on the host to the absolute "
+                        "path of a readable PEM file, which Compose bind-mounts "
+                        "there, or unset it when the certificate's issuer is "
+                        "publicly trusted."
+                    )
+                # trust_env is off, so requests uses this session value.
+                self._session.verify = ca_file
+            self._auth_hint = (
+                "Provision the output of `moveit_pro inference-key` as "
+                "MOVEIT_INFERENCE_KEY on the inference host."
+            )
+            self._unreachable_hint = (
+                "Check that the inference host is up, that its TLS listener is "
+                "reachable from this machine, and that infer_url names the host "
+                "its certificate covers."
+            )
+        else:
+            self._auth_hint = (
+                "Restart the inference server with `moveit_pro run "
+                "--only-inference-server` so it holds this Runtime's "
+                "MOVEIT_INFERENCE_KEY, and check that a custom server requires "
+                "that variable."
+            )
+            self._unreachable_hint = (
+                "Was MoveIt Pro started with --with-inference-server (or the "
+                "server started with --only-inference-server)? Check with "
+                "'docker ps --filter name=inference_server'."
+            )
+        # An absent key is not fatal. The request goes out without a token, and
+        # the server's 401 reaches the operator through the rejection message in
+        # _post_infer, with a hint that names the side missing the key.
+        key = os.environ.get("MOVEIT_INFERENCE_KEY", "").strip()
+        if key:
+            self._session.headers["Authorization"] = f"Bearer {key}"
+        else:
+            self._auth_hint = (
+                "MOVEIT_INFERENCE_KEY is not set in the Runtime container. Start "
+                "the Runtime through `moveit_pro run`, which sets it."
+            )
+            self.get_logger().warning(
+                "MOVEIT_INFERENCE_KEY is not set, so /infer calls to "
+                f"{self.infer_url} carry no bearer token."
+            )
         service_name = self.declare_parameter("service_name", "/get_action_chunk").value
         self.create_service(GetActionChunk, service_name, self._on_request)
         self._calls = 0
-        self.get_logger().info(f"serving '{service_name}' -> {self.infer_url}")
+        self.get_logger().info(
+            f"serving '{service_name}' -> {self.infer_url} on a "
+            f"{self.http_timeout:g}s budget. Set the Objective's "
+            f"policy_call_timeout above {self.http_timeout:g}s."
+        )
 
     def _on_request(self, request, response):
         try:
@@ -202,7 +345,9 @@ class GetActionChunkAdapter(Node):
             self.get_logger().error(response.message)
         except Exception as exc:
             response.status = GetActionChunk.Response.ERROR
-            response.message = f"adapter failed: {type(exc).__name__}: {exc}"
+            response.message = (
+                f"adapter failed: {type(exc).__name__}: {clip_detail(str(exc))}"
+            )
             self.get_logger().error(response.message)
         return response
 
@@ -266,31 +411,80 @@ class GetActionChunkAdapter(Node):
         return payload
 
     def _post_infer(self, payload: dict) -> dict:
-        """POST to the inference server; return the parsed response body."""
-        # A local container either accepts immediately or is down, so connect
-        # gets a small slice and the read keeps the rest. The read element is
-        # a between-bytes timeout, so the split bounds the hung-server case,
-        # not a slowly trickling body.
-        connect_s = min(3.0, self.http_timeout / 3.0)
-        headers = (
-            {"Authorization": f"Bearer {self._frontend_key}"}
-            if self._frontend_key
-            else {}
-        )
+        """POST to the inference server; return the parsed response body.
+
+        The call runs under one wall-clock deadline and one size cap. Neither
+        of `requests`' own timeouts bounds a call: connect applies per resolved
+        address and read applies per `recv`, so a slow or hostile server would
+        otherwise outlive the caller's service timeout and wedge this
+        single-threaded node past the point ExecutePolicy has given up.
+        DeadlineAdapter bounds connecting and a server that goes quiet before
+        answering, and _read_bounded bounds reading the answer. A peer that
+        trickles its handshake or headers is not bounded here; ExecutePolicy's
+        own timeout fails the run first.
+        """
+        deadline = time.monotonic() + self.http_timeout
+        # A reachable server accepts in well under a second on the LAN this
+        # feature targets, so connect takes a small slice and the rest goes to
+        # inference. Keeping the slice small also caps what a name resolving to
+        # several dead addresses can spend before the total cuts in.
+        connect_s = min(2.0, self.http_timeout / 4.0)
+        answered = False
         try:
-            resp = requests.post(
+            resp = self._session.post(
                 self.infer_url,
                 json=payload,
-                headers=headers,
                 timeout=(connect_s, self.http_timeout - connect_s),
+                allow_redirects=False,
+                stream=True,
             )
+            with resp:
+                answered = True
+                if resp.is_redirect:
+                    raise RequestError(
+                        f"/infer answered HTTP {resp.status_code} with a redirect "
+                        "instead of a result. Point infer_url at the inference "
+                        "endpoint itself."
+                    )
+                encoding = resp.headers.get("content-encoding", "identity")
+                if encoding != "identity":
+                    raise RequestError(
+                        f"/infer returned a {encoding}-encoded body. Configure the "
+                        "inference server to answer uncompressed JSON."
+                    )
+                declared = resp.headers.get("Content-Length", "")
+                if declared.isdigit() and int(declared) > MAX_RESPONSE_BYTES:
+                    raise RequestError(
+                        f"/infer declared a {declared} byte response, over the "
+                        f"{MAX_RESPONSE_BYTES} byte limit. Shorten the action "
+                        "chunk the inference server returns, or raise "
+                        "MAX_RESPONSE_BYTES in this adapter."
+                    )
+                body = self._read_bounded(resp, deadline)
+        except requests.exceptions.SSLError as exc:
+            raise RequestError(
+                f"/infer TLS verification failed for {self.infer_url}: "
+                f"{clip_detail(str(exc))}. Check that the certificate covers that "
+                "hostname and that MOVEIT_INFERENCE_CA_FILE contains its issuer."
+            ) from exc
         except requests.ConnectionError as exc:
+            # `requests` re-raises a mid-body read timeout as ConnectionError, so
+            # the server is only unreachable when it never answered at all.
+            if answered:
+                raise RequestError(
+                    f"/infer started a response and then stopped sending it "
+                    f"({clip_detail(str(exc))}). Check inference latency on the "
+                    "server and the network path to it."
+                ) from exc
             raise RequestError(
                 f"/infer request failed: the inference server at {self.infer_url} "
-                f"is not reachable ({exc}). Was MoveIt Pro started with "
-                "--with-inference-server (or the server started with "
-                "--only-inference-server)? Check with "
-                "'docker ps --filter name=inference_server'."
+                f"is not reachable ({clip_detail(str(exc))}). {self._unreachable_hint}"
+            ) from exc
+        except requests.Timeout as exc:
+            raise RequestError(
+                f"/infer timed out after {self.http_timeout:g}s "
+                f"({clip_detail(str(exc))}). Check inference latency on the "
+                "server and the network path to it."
             ) from exc
         except requests.RequestException as exc:
             raise RequestError(
@@ -301,52 +495,120 @@ class GetActionChunkAdapter(Node):
         # request-shape rejections with 4xx), and that detail (e.g. "still
         # loading the model") is the message the operator needs to see.
         try:
-            data = resp.json()
+            data = json.loads(body)
         except ValueError:
             data = None
+        detail = ""
         if isinstance(data, dict) and data.get("error"):
-            raise RequestError(f"/infer error: {clip_detail(str(data['error']))}")
-        if not resp.ok or not isinstance(data, dict):
-            raise RequestError(f"/infer request failed: HTTP {resp.status_code}")
+            detail = clip_detail(str(data["error"]))
+        if resp.status_code in (401, 403):
+            reason = f": {detail}" if detail else ""
+            raise RequestError(
+                f"/infer rejected the bearer credential with HTTP "
+                f"{resp.status_code}{reason}. {self._auth_hint}"
+            )
+        if detail:
+            raise RequestError(f"/infer error: {detail}")
+        if resp.status_code == 503 and self.infer_url.startswith("https:"):
+            raise RequestError(
+                "/infer request failed with HTTP 503 and carried no JSON "
+                "detail, so the TLS proxy refused the call, most likely "
+                "because another request holds its single /infer slot. Check "
+                "for a second client using this inference host."
+            )
+        if not resp.ok:
+            raise RequestError(
+                f"/infer request failed with HTTP {resp.status_code} and carried "
+                "no JSON detail. A proxy in front of the inference server may "
+                f"have answered instead of the server itself. "
+                f"{self._unreachable_hint}"
+            )
+        if not isinstance(data, dict):
+            raise RequestError(
+                f"/infer answered HTTP {resp.status_code} with a body that is not "
+                "a JSON object. Check that infer_url names the inference server "
+                "and not another service."
+            )
         return data
 
+    def _read_bounded(self, resp, deadline: float) -> bytes:
+        """Read a streamed body, stopping at the size cap or the deadline.
+
+        A timer shuts the socket down at the deadline, which wakes the blocked
+        `recv`. The read never has to return often enough to check a clock.
+        """
+        socket_ = response_socket(resp)
+        watchdog = None
+        if socket_ is None:
+            # The node's own logger, because `once` is tracked per logger
+            # object and rclpy.logging.get_logger returns a new one each call.
+            self.get_logger().warning(
+                "Could not find the response socket under this urllib3 "
+                "version, so the /infer deadline now bounds each read rather "
+                "than the whole call. A stalled server can hold this node past "
+                "the Objective's policy_call_timeout. Report this so the "
+                "socket lookup can be updated.",
+                once=True,
+            )
+        else:
+            watchdog = threading.Timer(
+                max(0.0, deadline - time.monotonic()), shutdown_quietly, (socket_,)
+            )
+            watchdog.daemon = True
+            watchdog.start()
+        body = bytearray()
+        try:
+            for chunk in resp.iter_content(chunk_size=READ_CHUNK_BYTES):
+                body.extend(chunk)
+                if len(body) > MAX_RESPONSE_BYTES:
+                    raise RequestError(
+                        f"/infer response exceeds the {MAX_RESPONSE_BYTES} byte "
+                        "limit. Shorten the action chunk the inference server "
+                        "returns, or raise MAX_RESPONSE_BYTES in this adapter."
+                    )
+        except requests.RequestException:
+            # The shutdown arrives as a transport error rather than a timeout,
+            # so compare against the deadline to pick the message.
+            if time.monotonic() >= deadline:
+                raise RequestError(self._read_timeout_message()) from None
+            raise
+        finally:
+            if watchdog is not None:
+                watchdog.cancel()
+        if time.monotonic() >= deadline:
+            raise RequestError(self._read_timeout_message())
+        return bytes(body)
+
+    def _read_timeout_message(self) -> str:
+        """Return the operator-facing reason a response body took longer than its budget."""
+        return (
+            f"/infer timed out after {self.http_timeout:g}s while reading the "
+            "response. Check inference latency on the server and the network "
+            "path to it."
+        )
+
     @staticmethod
-    def _validate_chunk(data: dict, expected_dims: int) -> list:
+    def _validate_chunk(data: dict, expected_dims: int) -> np.ndarray:
         """Check the returned chunk's shape, values, and dt; return the chunk."""
         chunk = data.get("action_chunk")
         if not chunk or "dt" not in data:
             raise RequestError(
                 "/infer response is missing a non-empty action_chunk or dt"
             )
-        if not isinstance(chunk, list) or not all(
-            isinstance(step, list) for step in chunk
-        ):
-            raise RequestError(
-                "/infer response's action_chunk is not a steps x dims array"
-            )
         dt = data["dt"]
         if not isinstance(dt, (int, float)) or not np.isfinite(dt) or dt <= 0.0:
             raise RequestError(
-                f"/infer response carries an invalid dt ({dt!r}); playback "
+                f"/infer response carries an invalid dt ({clip_detail(repr(dt))}); "
+                "playback "
                 "pacing needs a finite value > 0"
             )
-        mismatched_width = next(
-            (len(step) for step in chunk if len(step) != expected_dims), None
-        )
-        if mismatched_width is not None:
+        chunk_arr = _finite_2d(chunk, "action_chunk")
+        if chunk_arr.shape[1] != expected_dims:
             raise RequestError(
-                f"/infer chunk width {mismatched_width} does not match the observed "
-                f"joint count {expected_dims}"
+                f"/infer chunk width {chunk_arr.shape[1]} does not match the "
+                f"observed joint count {expected_dims}"
             )
-        try:
-            chunk_arr = np.asarray(chunk, dtype=float)
-        except (TypeError, ValueError) as exc:
-            raise RequestError(
-                f"/infer chunk carries non-numeric action values ({exc})"
-            ) from exc
-        if not np.isfinite(chunk_arr).all():
-            raise RequestError("/infer chunk carries non-finite action values")
-        return chunk
+        return chunk_arr
 
     def _fill_response(self, request, response) -> None:
         payload = self._build_payload(request)
@@ -370,28 +632,7 @@ class GetActionChunkAdapter(Node):
         # the next request simply arrives without one.
         raw = data.get("action_chunk_raw")
         if raw:
-            if (
-                not isinstance(raw, list)
-                or not all(
-                    isinstance(row, list) and len(row) == len(raw[0]) for row in raw
-                )
-                or not raw[0]
-            ):
-                raise RequestError(
-                    "/infer response's action_chunk_raw is not a non-empty "
-                    "rectangular steps x dims array"
-                )
-            try:
-                raw_arr = np.asarray(raw, dtype=float)
-            except (TypeError, ValueError) as exc:
-                raise RequestError(
-                    f"/infer response's action_chunk_raw carries non-numeric "
-                    f"values ({exc})"
-                ) from exc
-            if not np.isfinite(raw_arr).all():
-                raise RequestError(
-                    "/infer response's action_chunk_raw carries non-finite values"
-                )
+            raw_arr = _finite_2d(raw, "action_chunk_raw")
             arr = Float64MultiArray()
             steps, width = raw_arr.shape
             arr.layout.data_offset = 0
@@ -412,7 +653,14 @@ class GetActionChunkAdapter(Node):
 
 def main() -> None:
     rclpy.init()
-    node = GetActionChunkAdapter()
+    try:
+        node = GetActionChunkAdapter()
+    except ValueError as error:
+        # The messages name the setting and the fix, so print them instead of
+        # a traceback.
+        print(f"get_action_chunk_adapter: {error}", file=sys.stderr)
+        rclpy.try_shutdown()
+        raise SystemExit(1) from None
     try:
         rclpy.spin(node)
     # rclpy.init() installs the signal handlers, so a stack shutdown arrives as

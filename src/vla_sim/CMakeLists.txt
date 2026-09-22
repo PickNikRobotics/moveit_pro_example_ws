@@ -34,6 +34,16 @@ if(BUILD_TESTING)
     TIMEOUT 60
   )
 
+  ament_add_pytest_test(test_runtime_launch
+    test/test_runtime_launch.py
+    TIMEOUT 60
+  )
+
+  ament_add_pytest_test(test_remote_inference
+    test/test_remote_inference.py
+    TIMEOUT 60
+  )
+
   ament_add_pytest_test(test_joint_command_bridge
     test/test_joint_command_bridge.py
     TIMEOUT 60

@@ -1,0 +1,47 @@
+# Standalone GPU-host deployment. Do not merge with the local MoveIt Pro deployment.
+services:
+  inference:
+    build:
+      context: ..
+      dockerfile: Dockerfile.vla_inference_server
+    init: true
+    user: "${MOVEIT_USER_UID:-1000}:${MOVEIT_USER_GID:-1000}"
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    gpus: all
+    environment:
+      MOVEIT_INFERENCE_KEY: ${MOVEIT_INFERENCE_KEY:?Provision the output of moveit_pro inference-key}
+      # Prefer this over HF_TOKEN. A file keeps the token out of
+      # `docker inspect` and /proc/<pid>/environ on a host the robot's operator
+      # may not administer. The server reads the file only when it is a regular
+      # file owned by this uid with no group or other permissions.
+      HF_TOKEN_FILE: ${HF_TOKEN_FILE:+/run/secrets/hugging_face}
+      HF_TOKEN: ${HF_TOKEN:-}
+      HF_HOME: /hf
+      HOME: /tmp
+      USER: vla
+    volumes:
+      - ../../config:/vla_config:ro
+      - ${VLA_HF_CACHE:-../../hf_cache}:/hf
+      - ${VLA_MODELS_DIR:-../../models}:/models:ro
+      - ${HF_TOKEN_FILE:-/dev/null}:/run/secrets/hugging_face:ro
+    networks: [inference]
+
+  tls:
+    image: nginx:stable-alpine@sha256:ef8676b33d681f272ba429b27658bdd7e640963279714c96bddf1dc76307f7b6
+    entrypoint: [nginx, -g, "daemon off;"]
+    user: "${MOVEIT_USER_UID:-1000}:${MOVEIT_USER_GID:-1000}"
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    tmpfs: ["/tmp:size=64m"]
+    ports:
+      - "${INFERENCE_BIND_ADDRESS:?Set the GPU host robot-network IP}:${INFERENCE_HTTPS_PORT:-8443}:8443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ${INFERENCE_TLS_DIR:?Set an absolute directory containing fullchain.pem and privkey.pem}:/etc/inference-tls:ro
+    depends_on: [inference]
+    networks: [inference]
+
+networks:
+  inference: {}

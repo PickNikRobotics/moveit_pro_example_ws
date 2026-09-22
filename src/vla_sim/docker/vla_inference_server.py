@@ -37,12 +37,11 @@ the MoveIt Pro images; the in-config adapter node
 (script/get_action_chunk_adapter.py) bridges the /get_action_chunk ROS service
 to this server.
 
-/infer and /status require the deployment's shared MOVEIT_FRONTEND_KEY as an
-`Authorization: Bearer` token, the same key the MoveIt Pro web backend
-endpoints use; a blank or unset key parks the server in the error state (fail
-closed, matching those endpoints). /health stays token-free for health probes.
-For a bare development run, export the documented dev key first
-(`MOVEIT_FRONTEND_KEY=moveit-secret-key`).
+/infer and /status require MOVEIT_INFERENCE_KEY as an `Authorization: Bearer`
+token. `moveit_pro run` derives that inference-only key from the deployment's
+frontend key. A blank or unset key parks the server in the error state (fail
+closed). /health needs no token, and the remote TLS proxy does not forward
+/health.
 
 The socket binds before the checkpoint loads: /health reports
 loading|ready|error and /infer answers 503 (loading) or 500 (load failed) with
@@ -61,6 +60,7 @@ the error state.
 
 import argparse
 import base64
+import hashlib
 import hmac
 import json
 import math
@@ -71,6 +71,7 @@ import sys
 import threading
 import time
 import traceback
+from collections.abc import Mapping
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
@@ -128,6 +129,7 @@ RELOAD_IDLE_SECONDS = 5.0
 # policy_call_timeout of 10.0 in the stock objective), and a hung inference
 # must not block the reload that would replace it.
 INFER_ABANDONED_SECONDS = 30.0
+INFERENCE_KEY_ENV = "MOVEIT_INFERENCE_KEY"
 _HF_TOKEN_FILE_SOURCE_ENV = "MOVEIT_PRO_HF_TOKEN_FROM_FILE"
 
 
@@ -153,6 +155,18 @@ def load_serving_config(path: str) -> dict:
             f"values, not a {type(loaded).__name__}"
         )
     return loaded
+
+
+def serving_config_revision(path: str) -> str | None:
+    """The sha256 of the serving config file's bytes, or None without a file.
+
+    Trainer hashes the file it writes the same way, so /status can show
+    whether this process loaded that file or some other mount.
+    """
+    file = Path(path).expanduser()
+    if not file.is_file():
+        return None
+    return hashlib.sha256(file.read_bytes()).hexdigest()
 
 
 def resolve_default(yaml_value, builtin):
@@ -498,10 +512,12 @@ class ServerState:
         # /status endpoint while it loads, not through public /health.
         self.checkpoint = ""
         self.checkpoint_revision = ""
-        # Shared secret /infer requests must present; set from
-        # MOVEIT_FRONTEND_KEY in main() before serve_forever() accepts any
-        # request.
-        self.frontend_key = ""
+        # The serving config this process loaded, as /status reports it.
+        self.config_revision: str | None = None
+        self.trainer_handoff_version: int | None = None
+        # main() sets this from MOVEIT_INFERENCE_KEY before serve_forever()
+        # accepts a request.
+        self.bearer_key = ""
         # Inference activity, written by handler threads and read by the
         # reload watcher.
         self.activity_lock = threading.Lock()
@@ -726,6 +742,8 @@ def load_policy(state: ServerState, args: argparse.Namespace) -> None:
     """Load + warm the policy in the background; on failure park in the error state."""
     state.checkpoint = args.checkpoint
     state.checkpoint_revision = getattr(args, "checkpoint_revision", "")
+    state.config_revision = getattr(args, "config_revision", None)
+    state.trainer_handoff_version = getattr(args, "trainer_handoff_version", None)
     try:
         # A malformed serving config was deferred out of parse_args so the
         # socket could bind first; surface it here like any other load failure.
@@ -974,8 +992,7 @@ def make_handler(state: ServerState):
                 self._send(
                     401,
                     {
-                        "error": "/status requires the deployment's "
-                        "MOVEIT_FRONTEND_KEY as an 'Authorization: Bearer' token"
+                        "error": f"/status requires {INFERENCE_KEY_ENV} as a bearer token"
                     },
                 )
                 return
@@ -984,6 +1001,8 @@ def make_handler(state: ServerState):
                 "checkpoint": state.checkpoint,
                 "checkpointRevision": state.checkpoint_revision,
                 "reloadPending": state.reload_pending,
+                "configRevision": state.config_revision,
+                "trainerHandoffVersion": state.trainer_handoff_version,
             }
             if state.status == "error":
                 health["detail"] = state.detail
@@ -992,9 +1011,8 @@ def make_handler(state: ServerState):
             self._send(200, health)
 
         def _authorized(self) -> bool:
-            # Same contract as the MoveIt Pro REST auth middleware: the shared
-            # key as an `Authorization: Bearer` token, compared in constant
-            # time. /health never reaches this check.
+            # Compare against MOVEIT_INFERENCE_KEY in constant time. /health is
+            # unauthenticated.
             header = self.headers.get("Authorization", "")
             scheme, _, token = header.partition(" ")
             if scheme.lower() != "bearer" or not token.strip():
@@ -1003,7 +1021,7 @@ def make_handler(state: ServerState):
             # and header values arrive latin-1-decoded, so a crafted header
             # would otherwise drop the connection instead of getting a 401.
             return hmac.compare_digest(
-                token.strip().encode(), state.frontend_key.encode()
+                token.strip().encode(), state.bearer_key.encode()
             )
 
         def do_POST(self):
@@ -1013,11 +1031,7 @@ def make_handler(state: ServerState):
             if not self._authorized():
                 self._send(
                     401,
-                    {
-                        "error": "/infer requires the deployment's "
-                        "MOVEIT_FRONTEND_KEY as an 'Authorization: Bearer' "
-                        "token"
-                    },
+                    {"error": f"/infer requires {INFERENCE_KEY_ENV} as a bearer token"},
                 )
                 return
             if state.status == "loading":
@@ -1089,6 +1103,7 @@ def parse_args() -> argparse.Namespace:
 
     config: dict = {}
     config_errors: list = []
+    config_revision = serving_config_revision(config_path)
     try:
         config = load_serving_config(config_path)
     except Exception as exc:
@@ -1198,31 +1213,41 @@ def parse_args() -> argparse.Namespace:
         + " | ".join(schedule.name for schedule in RTCAttentionSchedule),
     )
     args = parser.parse_args()
+    # Echoed on /status so Trainer can check the running server, not just the
+    # YAML it wrote: which file this process loaded and which handoff contract
+    # that file declares.
+    args.config_revision = config_revision
+    handoff_version = config.get("moveit_pro_trainer_handoff_version")
+    if handoff_version is not None and (
+        isinstance(handoff_version, bool) or not isinstance(handoff_version, int)
+    ):
+        config_errors.append("moveit_pro_trainer_handoff_version must be an integer")
+        handoff_version = None
+    args.trainer_handoff_version = handoff_version
     args.config_error = "; ".join(config_errors)
     return args
 
 
-def apply_frontend_key(state: ServerState, raw_key: str | None) -> bool:
-    """Set the /infer auth key; park in the error state when it is blank.
+def apply_bearer_key(state: ServerState, environment: Mapping[str, str]) -> bool:
+    """Set the /infer and /status auth key; park in the error state when blank.
 
-    Fails closed like the other MOVEIT_FRONTEND_KEY consumers, but parks
-    instead of exiting so /health names the fix rather than a compose restart
-    loop hiding it.
+    Fails closed, but parks instead of exiting so /health names the fix rather
+    than a compose restart loop hiding it. Only presence is checked.
 
     @param state: The server state to receive the key or the error.
-    @param raw_key: The MOVEIT_FRONTEND_KEY environment value, or None.
+    @param environment: The process environment, read only for MOVEIT_INFERENCE_KEY.
     @return: True when the key is usable and the model load may proceed.
     """
-    key = (raw_key or "").strip()
+    key = environment.get(INFERENCE_KEY_ENV, "").strip()
     if key:
-        state.frontend_key = key
+        state.bearer_key = key
         return True
-    # /health serves this text without a token, so it points at the docs
-    # rather than naming any key value.
+    # /health serves this text without a token, so it names the two commands
+    # that set the key rather than any key value.
     state.detail = (
-        "MOVEIT_FRONTEND_KEY is required: /infer authenticates with the "
-        "deployment's shared key. Set it in the environment (see the MoveIt "
-        "Pro endpoint authentication guide), then restart"
+        f"{INFERENCE_KEY_ENV} is not set, so /infer and /status refuse every "
+        "request. Start the server through `moveit_pro run`, or set the variable "
+        "to the output of `moveit_pro inference-key`, then restart it."
     )
     state.status = "error"
     return False
@@ -1239,6 +1264,8 @@ def main() -> None:
     state = ServerState()
     state.checkpoint = args.checkpoint
     state.checkpoint_revision = args.checkpoint_revision
+    state.config_revision = args.config_revision
+    state.trainer_handoff_version = args.trainer_handoff_version
     httpd = ThreadingHTTPServer(("0.0.0.0", args.port), make_handler(state))
     watched_paths = [args.config]
     if token_file:
@@ -1249,7 +1276,7 @@ def main() -> None:
         kwargs={"state": state},
         daemon=True,
     ).start()
-    if apply_frontend_key(state, os.environ.get("MOVEIT_FRONTEND_KEY")):
+    if apply_bearer_key(state, os.environ):
         threading.Thread(target=load_policy, args=(state, args), daemon=True).start()
         log(f"listening on 0.0.0.0:{args.port}; loading model ...")
     else:

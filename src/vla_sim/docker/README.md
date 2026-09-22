@@ -64,11 +64,19 @@ Set these in the workspace `.env`; all are optional.
 
 `GET /health` reports `loading` / `ready` / `error` and needs no token.
 Authenticated `GET /status` also reports the selected checkpoint and immutable
-revision so Trainer can confirm the exact model is loaded. `POST /infer` and
-`GET /status` require the deployment's `MOVEIT_FRONTEND_KEY` as a bearer token.
-The server speaks plain HTTP and publishes on `127.0.0.1` only, which keeps that
-token off the network. Replacing `vla_serving.yaml` or the Trainer-provisioned
-credential reloads the process so the old model's GPU memory is released first.
+revision so Trainer can confirm the exact model is loaded, plus `configRevision`
+(the sha256 of the serving file this process loaded, which Trainer compares with
+the file it wrote) and `trainerHandoffVersion` (the
+`moveit_pro_trainer_handoff_version` that file declares). `POST /infer` and
+`GET /status` require `MOVEIT_INFERENCE_KEY` as a bearer token. `moveit_pro run
+--with-inference-server` and `--only-inference-server` derive it from the
+deployment's frontend key and pass it to the local inference server, and
+`moveit_pro inference-key` prints the same value for a remote host. The server
+itself speaks plain HTTP. In the local deployment it publishes on `127.0.0.1`
+only, which keeps the token off the network; off-box, a TLS proxy in front of it
+is what keeps the token off the wire. Replacing `vla_serving.yaml` or the
+Trainer-provisioned credential reloads the process so the old model's GPU
+memory is released first.
 A reload waits for a running policy: it holds off until `/infer` has been quiet
 for one chunk of playback (at least `RELOAD_IDLE_SECONDS`), and `/status` reports
 `reloadPending: true` meanwhile.
@@ -77,6 +85,35 @@ Only a call hung past `INFER_ABANDONED_SECONDS` is reloaded over. A pinned
 Two settings decide what code and weights the container runs, so point both only
 at sources you trust: `checkpoint` chooses the robot's actions, and
 `VLA_TORCH_INDEX` supplies the torch build.
+
+## Serving from another machine
+
+`remote/` holds a standalone Compose file and nginx configuration for running
+this server on a GPU host instead of the robot. Do not merge them with the
+local MoveIt Pro deployment; they are a separate stack on a separate machine.
+[Connect a VLA Policy](https://docs.picknik.ai/how_to/vla/connect_a_vla_policy/)
+carries the full procedure. What this repository adds:
+
+- nginx terminates TLS and proxies `POST /infer` and `GET /status`. `/health`
+  stays internal. Set `INFERENCE_TLS_DIR` to a directory holding
+  `fullchain.pem` and `privkey.pem`, whose Subject Alternative Name covers the
+  exact hostname or address the robot connects to. The proxy runs non-root, so
+  both files must be readable by the configured UID, or nginx fails its own
+  config test at startup.
+- Keep `MOVEIT_INFERENCE_KEY` in a protected env file on the GPU host, never in
+  a workspace `.env` under version control. Print it on the robot with
+  `moveit_pro inference-key`, which derives it from that deployment's frontend
+  key, and provision it on the GPU host. It carries no authority over the
+  Runtime's other endpoints.
+- The TLS proxy image is pinned by digest, so for a security update you bump the
+  digest in `remote/docker-compose.yaml` and recreate the `tls` service.
+- Every Objective calling this policy must set `policy_call_timeout` above the
+  adapter's `http_timeout` (9.0s by default, `MOVEIT_INFERENCE_HTTP_TIMEOUT`).
+  `policy_call_timeout` defaults to 3.0, under that budget. The adapter is
+  single-threaded, so a call that outlives its caller queues the next run's
+  first request behind a stale one. `stack_cubes_with_the_vla_policy.xml`
+  sets 10.0.
+- On the robot, `INFER_URL` points at `https://<gpu-host>:8443/infer` and `MOVEIT_INFERENCE_CA_FILE` gives the path of the certificate to trust when it is not from a public CA. Give an absolute path. Compose resolves a relative one against /opt/moveit_pro rather than your shell's directory, and a bare filename becomes a named volume; either way the adapter then refuses to start. With an HTTPS `INFER_URL`, `moveit_pro run --with-inference-server` and `--only-inference-server` exit with an error, since the local inference server has no TLS listener. Unset `INFER_URL` to use the local inference server again.
 
 ## Running the image outside compose
 
@@ -90,7 +127,7 @@ docker run --rm --user "$(id -u):$(id -g)" \
   -e HOME=/tmp -e USER=vla \
   -v "$PWD/../hf_cache:/hf" -e HF_HOME=/hf -e HF_TOKEN="$HF_TOKEN" \
   -v "$PWD/../config:/vla_config:ro" \
-  -e MOVEIT_FRONTEND_KEY=moveit-secret-key \
+  -e MOVEIT_INFERENCE_KEY="$(moveit_pro inference-key)" \
   -p 127.0.0.1:8973:8973 vla_inference_server
 ```
 

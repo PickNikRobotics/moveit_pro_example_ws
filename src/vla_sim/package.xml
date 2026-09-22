@@ -28,12 +28,16 @@
   <exec_depend>python3-numpy</exec_depend>
   <exec_depend>python3-opencv</exec_depend>
   <exec_depend>python3-requests</exec_depend>
+  <exec_depend>python3-urllib3</exec_depend>
   <exec_depend>rclpy</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>trajectory_msgs</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
+  <test_depend>python3-cryptography</test_depend>
+  <test_depend>launch</test_depend>
+  <test_depend>launch_ros</test_depend>
 
   <test_depend>ament_cmake_copyright</test_depend>
   <test_depend>ament_cmake_lint_cmake</test_depend>

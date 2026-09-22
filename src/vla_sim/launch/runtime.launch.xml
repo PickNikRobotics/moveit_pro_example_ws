@@ -1,14 +1,10 @@
 <launch>
-  <!-- URL of the inference server (the workspace docker-compose.yaml
-       `inference_server` service). The compose file sets INFER_URL from
-       MOVEIT_INFERENCE_PORT so the port stays a one-variable edit. The host
-       must be a loopback address: requests carry the deployment's shared key
-       over plain HTTP, so the adapter refuses to send them off this machine.
-       Serving the policy from another host is not supported. -->
+  <!-- HTTPS selects an externally managed server; HTTP is restricted to literal loopback addresses. -->
   <arg
     name="infer_url"
     default="$(env INFER_URL 'http://127.0.0.1:8973/infer')"
   />
+  <arg name="http_timeout" default="$(env MOVEIT_INFERENCE_HTTP_TIMEOUT 9.0)" />
   <include
     file="$(find-pkg-share moveit_studio_agent)/launch/runtime_services.launch.xml"
   />
@@ -23,5 +19,10 @@
     emulate_tty="true"
   >
     <param name="infer_url" value="$(var infer_url)" />
+    <!-- Without type="float", launch passes an integer MOVEIT_INFERENCE_HTTP_TIMEOUT
+         as an int, and the node declares http_timeout as a double, so the node
+         fails to start. Every Objective calling this adapter must set
+         policy_call_timeout above http_timeout. -->
+    <param name="http_timeout" value="$(var http_timeout)" type="float" />
   </node>
 </launch>
