@@ -27,237 +27,197 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""Pins what script/scan_localization_relay.py puts in front of AMCL.
+"""Pins the scan wiring AMCL depends on: both lidars, one topic, one scan per message.
 
-AMCL reads one topic, so the relay is what decides which lidars it sees. The checks
-below run recorded /scan_{front,rear}_filtered messages through the node and assert
-against the scans themselves -- their ray count, their angular window and the bearings
-they actually cover around the base -- rather than against the launch file's syntax.
+localization_launch.py relays /scan_front_filtered and /scan_rear_filtered onto the single
+topic AMCL subscribes to, instead of merging them into one 360-degree scan. The relays are
+read out of that launch description rather than restated here, so wiring only one of the two
+fails these tests.
 
-test/data/recorded_filtered_scans.json holds three consecutive front/rear pairs taken
-off a driving robot; a synthetic scan could be given any coverage the test wanted, so
-the coverage claim is made against recorded returns.
+What this proves: every scan published on a source topic reaches the localizer's topic
+unmodified, and both lidars' scans get there. What it does NOT prove: that the filter's
+corrections end up drawing on both sensors. Both scans of a pair share a stamp in
+simulation, so the second is gated out for lack of motion and a correction follows whichever
+arrived first -- in the recorded runs, the front lidar about 90% of the time. That the
+arrangement localizes well anyway is measured in the scan-sync-alternating-vs-merge report,
+not here.
 """
 
-import copy
 import importlib.util
-import json
 import math
 from pathlib import Path
-import xml.etree.ElementTree as ET
+import subprocess
+import time
 
+from launch import LaunchContext
+from launch.utilities import normalize_to_list_of_substitutions, perform_substitutions
+from launch_ros.actions import LoadComposableNodes
 import pytest
+import rclpy
+from rclpy.executors import SingleThreadedExecutor
 from sensor_msgs.msg import LaserScan
 import yaml
 
 
 PACKAGE_ROOT = Path(__file__).parents[1]
-MODEL = PACKAGE_ROOT / "description" / "ur5e_ridgeback.xml"
+LAUNCH = PACKAGE_ROOT / "launch" / "sim" / "localization_launch.py"
 NAV2_PARAMS = PACKAGE_ROOT / "params" / "nav2_params.yaml"
-RELAY = PACKAGE_ROOT / "script" / "scan_localization_relay.py"
-RECORDED = PACKAGE_ROOT / "test" / "data" / "recorded_filtered_scans.json"
 
-# 45 deg apiece. Coarse on purpose: a sector is called covered by any single valid
-# return in it, and an empty sector has to mean a direction the pair cannot see at
-# all rather than a stretch of hangar floor that happened to be out of range.
-SECTORS = 8
+# The fan every scan on these topics carries, fixed by the MJCF lidars and preserved by
+# script/lidar_flattener.py: 811 beams over 270 deg, starting at the sensor frame's X axis.
+BEAMS = 811
+SWEEP = math.radians(270.0)
 
 
-def load_relay_module():
-    spec = importlib.util.spec_from_file_location("scan_localization_relay", RELAY)
+def declared_relays():
+    """(input_topic, output_topic) for each relay localization_launch.py loads."""
+    spec = importlib.util.spec_from_file_location("localization_launch", LAUNCH)
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
-    return module
 
+    context = LaunchContext()
 
-def recorded_scans():
-    """The recorded messages, in the order they arrived, as LaserScans."""
-    scans = []
-    for record in json.loads(RECORDED.read_text())["scans"]:
-        scan = LaserScan()
-        scan.header.frame_id = record["frame_id"]
-        scan.header.stamp.sec = int(record["stamp"])
-        scan.header.stamp.nanosec = round((record["stamp"] % 1) * 1e9)
-        for field in (
-            "angle_min",
-            "angle_max",
-            "angle_increment",
-            "time_increment",
-            "scan_time",
-            "range_min",
-            "range_max",
-        ):
-            setattr(scan, field, record[field])
-        scan.ranges = [float(value) for value in record["ranges"]]
-        scans.append((record["topic"], scan))
-    return scans
+    def text(value):
+        return perform_substitutions(context, normalize_to_list_of_substitutions(value))
 
-
-def lidar_cameras():
-    """The two MJCF lidar cameras, keyed by name. user[0]==2 is THREE_D_LIDAR."""
-    root = ET.parse(MODEL).getroot()
-    return {
-        camera.attrib["name"]: camera
-        for camera in root.iter("camera")
-        if int(float(camera.attrib.get("user", "0").split()[0])) == 2
-    }
-
-
-def quat_rotate(quat, vector):
-    """Rotate vector by an MJCF (w, x, y, z) quaternion."""
-    w, x, y, z = quat
-    vx, vy, vz = vector
-    tx, ty, tz = 2 * (y * vz - z * vy), 2 * (z * vx - x * vz), 2 * (x * vy - y * vx)
-    return (
-        vx + w * tx + y * tz - z * ty,
-        vy + w * ty + z * tx - x * tz,
-        vz + w * tz + x * ty - y * tx,
-    )
-
-
-def sensor_frame_yaws():
-    """Yaw of each lidar_*_ROS frame (beam 0) in ridgeback_base_link, from the MJCF.
-
-    A MuJoCo camera looks down its own -Z, and the fan is centered on that view
-    direction, so beam 0 sits half a sweep clockwise of it. The mounts are unrotated
-    children of ridgeback_base_link, so the camera quat alone sets the bearing.
-    """
-    root = ET.parse(MODEL).getroot()
-    yaws = {}
-    for body in root.iter("body"):
-        for camera in body.findall("camera"):
-            if camera.attrib["name"] not in lidar_cameras():
-                continue
-            assert not {"quat", "euler", "axisangle", "xyaxes", "zaxis"} & set(
-                body.attrib
-            )
-            assert body in root.find(".//body[@name='ridgeback_base_link']")
-            quat = [float(value) for value in camera.attrib["quat"].split()]
-            view_x, view_y, _ = quat_rotate(quat, (0.0, 0.0, -1.0))
-            sweep = math.radians(float(camera.attrib["user"].split()[1]))
-            center = math.atan2(view_y, view_x)
-            yaws[camera.attrib["name"] + "_ROS"] = center - sweep / 2
-    return yaws
-
-
-def covered_sectors(scan, yaw):
-    """Which sectors around the base carry a valid return from this scan."""
-    sectors = set()
-    for beam, distance in enumerate(scan.ranges):
-        if not scan.range_min <= distance <= scan.range_max:
+    relays = []
+    for action in module.generate_launch_description().entities:
+        if not isinstance(action, LoadComposableNodes):
             continue
-        bearing = scan.angle_min + beam * scan.angle_increment + yaw
-        sectors.add(int(bearing % (2 * math.pi) / (2 * math.pi) * SECTORS))
-    return sectors
+        for node in action._LoadComposableNodes__composable_node_descriptions:
+            if text(node.package) != "topic_tools":
+                continue
+            # Only the two topics are read: the node's other parameter is a
+            # launch argument, which no bare context can resolve. launch_ros
+            # normalizes each value to its YAML encoding, so the scalar comes
+            # back as a document rather than a bare string.
+            topics = {}
+            for name, value in node.parameters[0].items():
+                key = text(name)
+                if key in ("input_topic", "output_topic"):
+                    topics[key] = yaml.safe_load(text(value))
+            relays.append((topics["input_topic"], topics["output_topic"]))
+    return relays
+
+
+def scan(frame_id, seconds):
+    """One lidar fan, shaped like the ones the filter chains publish."""
+    message = LaserScan()
+    message.header.frame_id = frame_id
+    message.header.stamp.sec = seconds
+    message.angle_min = 0.0
+    message.angle_max = SWEEP
+    message.angle_increment = SWEEP / (BEAMS - 1)
+    message.range_min = 0.05
+    message.range_max = 25.0
+    # A distinct range per beam, so a relay that reordered or truncated would show up.
+    message.ranges = [1.0 + (index % 97) * 0.01 for index in range(BEAMS)]
+    return message
 
 
 @pytest.fixture(scope="module")
-def relay():
-    """A ScanLocalizationRelay on an initialized rclpy context."""
-    import rclpy
+def relayed():
+    """Run the declared relays, publish one scan per source topic, collect the output.
 
-    module = load_relay_module()
+    The relays are the stock topic_tools components the launch file loads, run as
+    processes here because a pytest has no component container to load them into.
+    """
+    relays = declared_relays()
+    assert relays, "localization_launch.py loads no topic_tools relay"
+    output_topics = {output for _, output in relays}
+    assert len(output_topics) == 1, f"relays disagree on the output topic: {relays}"
+    output_topic = output_topics.pop()
+
+    processes = [
+        subprocess.Popen(
+            [
+                "ros2",
+                "run",
+                "topic_tools",
+                "relay",
+                "--ros-args",
+                "-p",
+                f"input_topic:={source}",
+                "-p",
+                f"output_topic:={output_topic}",
+            ],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        for source, _ in relays
+    ]
+
     rclpy.init()
-    node = module.ScanLocalizationRelay()
-    yield node
+    node = rclpy.create_node("scan_localization_probe")
+    executor = SingleThreadedExecutor()
+    executor.add_node(node)
+    received = []
+    node.create_subscription(LaserScan, output_topic, received.append, 10)
+    publishers = {
+        source: node.create_publisher(LaserScan, source, 10) for source, _ in relays
+    }
+
+    # The relays discover each source topic's type before they subscribe, so give
+    # discovery a moment rather than racing it.
+    deadline = time.time() + 30.0
+    while time.time() < deadline and any(
+        node.count_subscribers(source) == 0 for source in publishers
+    ):
+        executor.spin_once(timeout_sec=0.1)
+
+    sent = [
+        (source, scan(f"lidar_{index}_ROS", 11 + index))
+        for index, source in enumerate(publishers)
+    ]
+    for source, message in sent:
+        publishers[source].publish(message)
+
+    deadline = time.time() + 30.0
+    while time.time() < deadline and len(received) < len(sent):
+        executor.spin_once(timeout_sec=0.1)
+
+    yield sent, received
+
     node.destroy_node()
     rclpy.shutdown()
+    for process in processes:
+        process.terminate()
+        process.wait(timeout=10)
 
 
-def published_by_relay(node, scans):
-    """Run scans through the node and return what it published, in order."""
-    published = []
-    publisher = node.publisher
-    node.publisher = _Capture(published)
-    try:
-        for scan in scans:
-            node._relay(scan)
-    finally:
-        node.publisher = publisher
-    return published
+def test_every_source_scan_reaches_the_localizer_topic(relayed):
+    """A scan handed to a relay comes back out whole: same frame, stamp, fan and ranges."""
+    sent, received = relayed
+    assert len(received) == len(sent)
+
+    by_frame = {message.header.frame_id: message for message in received}
+    for _, source_scan in sent:
+        relayed_scan = by_frame[source_scan.header.frame_id]
+        assert relayed_scan.header.stamp == source_scan.header.stamp
+        assert len(relayed_scan.ranges) == BEAMS
+        assert relayed_scan.angle_min == pytest.approx(0.0)
+        assert relayed_scan.angle_max == pytest.approx(SWEEP)
+        assert relayed_scan.angle_increment == pytest.approx(SWEEP / (BEAMS - 1))
+        assert list(relayed_scan.ranges) == pytest.approx(list(source_scan.ranges))
 
 
-def test_each_recorded_scan_is_one_full_sensor_fan():
-    """Ray count and angular window, checked against the MJCF that produces them.
-
-    AMCL now scores one lidar's own fan per update instead of a combined scan, so the
-    fan is the interface: 811 beams over the MJCF's 270 deg sweep, starting at the
-    lidar_*_ROS frame's X axis.
-    """
-    cameras = lidar_cameras()
-    assert set(cameras) == {"lidar_front", "lidar_rear"}
-    beams = {int(camera.attrib["resolution"].split()[0]) for camera in cameras.values()}
-    sweeps = {
-        round(float(camera.attrib["user"].split()[1]), 6) for camera in cameras.values()
+def test_both_lidars_reach_the_localizer_topic(relayed):
+    """The coverage the merged scan used to provide: both sensors, not just the front one."""
+    sent, received = relayed
+    assert {message.header.frame_id for message in received} == {
+        source_scan.header.frame_id for _, source_scan in sent
     }
-    assert beams == {811} and sweeps == {270.0}
-
-    for _, scan in recorded_scans():
-        assert len(scan.ranges) == 811
-        assert scan.angle_min == pytest.approx(0.0)
-        assert scan.angle_max == pytest.approx(math.radians(270.0), abs=1e-4)
-        assert scan.angle_increment == pytest.approx(
-            math.radians(270.0) / 810, abs=1e-6
-        )
+    assert len(received) == 2, "one relay per lidar, so two scans should arrive"
 
 
-def test_relay_republishes_each_scan_untouched(relay):
-    """One scan in, the same scan out: nothing is combined, resampled or restamped.
-
-    A message carrying two lidars' returns is the thing this arrangement exists to
-    avoid, so the output being message-for-message identical to the input is the
-    property worth pinning.
-    """
-    recorded = recorded_scans()
-    sent = [copy.deepcopy(scan) for _, scan in recorded]
-    published = published_by_relay(relay, sent)
-
-    assert len(published) == len(recorded)
-    for (_, source), relayed in zip(recorded, published):
-        assert relayed == source
-
-
-def test_both_lidars_reach_the_localizer(relay):
-    """Both sensors stay in use; they only stop sharing a message."""
-    module = load_relay_module()
-    recorded = recorded_scans()
-    assert {topic for topic, _ in recorded} == set(module.SOURCE_TOPICS)
-
-    published = published_by_relay(relay, [scan for _, scan in recorded])
-    frames = [scan.header.frame_id for scan in published]
-    assert frames.count("lidar_front_ROS") == frames.count("lidar_rear_ROS") == 3
-
-
-def test_a_front_rear_pair_covers_every_bearing_around_the_base():
-    """The two fans together see all round the base; neither one does alone.
-
-    This is the coverage the merged 360 deg scan used to provide. It survives because
-    both lidars still feed AMCL -- the pair just arrives as two messages.
-    """
-    yaws = sensor_frame_yaws()
-    assert set(yaws) == {"lidar_front_ROS", "lidar_rear_ROS"}
-
-    by_frame = {}
-    for _, scan in recorded_scans():
-        by_frame.setdefault(scan.header.frame_id, scan)
-    front = covered_sectors(by_frame["lidar_front_ROS"], yaws["lidar_front_ROS"])
-    rear = covered_sectors(by_frame["lidar_rear_ROS"], yaws["lidar_rear_ROS"])
-
-    assert front | rear == set(range(SECTORS))
-    assert front != set(range(SECTORS))
-    assert rear != set(range(SECTORS))
-
-
-def test_amcl_reads_the_relay_topic_and_the_costmaps_do_not():
-    """The wiring: AMCL on the relayed topic, everything else on the raw filtered ones.
-
-    The costmap obstacle layers and slam_toolbox take the per-lidar scans directly and
-    are deliberately untouched by the relay.
-    """
-    module = load_relay_module()
+def test_amcl_reads_the_relayed_topic_and_the_costmaps_do_not():
+    """AMCL on the relayed topic; the costmaps and slam_toolbox on the per-lidar ones."""
+    relays = declared_relays()
+    sources = {source for source, _ in relays}
+    output_topic = {output for _, output in relays}.pop()
     params = yaml.safe_load(NAV2_PARAMS.read_text())
 
-    assert params["amcl"]["ros__parameters"]["scan_topic"] == module.LOCALIZATION_TOPIC
+    assert params["amcl"]["ros__parameters"]["scan_topic"] == output_topic
     assert (
         params["slam_toolbox"]["ros__parameters"]["scan_topic"]
         == "/scan_front_filtered"
@@ -266,16 +226,6 @@ def test_amcl_reads_the_relay_topic_and_the_costmaps_do_not():
     observed = set()
     for costmap in ("local_costmap", "global_costmap"):
         layer = params[costmap][costmap]["ros__parameters"]["obstacle_layer"]
-        for source in layer["observation_sources"].split():
-            observed.add(layer[source]["topic"])
-    assert observed == set(module.SOURCE_TOPICS)
-
-
-class _Capture:
-    """Stands in for a Publisher so the relay can run without a live graph."""
-
-    def __init__(self, sink):
-        self._sink = sink
-
-    def publish(self, message):
-        self._sink.append(message)
+        for name in layer["observation_sources"].split():
+            observed.add(layer[name]["topic"])
+    assert observed == sources

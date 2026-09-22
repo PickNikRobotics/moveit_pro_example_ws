@@ -22,7 +22,6 @@ install(PROGRAMS
   script/lidar_flattener.py
   script/odometry_joint_state_publisher.py
   script/odom_qos_relay.py
-  script/scan_localization_relay.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

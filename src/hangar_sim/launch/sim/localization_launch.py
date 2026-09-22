@@ -40,7 +40,7 @@ from launch.actions import (
 )
 from launch.conditions import IfCondition, UnlessCondition
 from launch.substitutions import LaunchConfiguration
-from launch_ros.actions import LoadComposableNodes, Node
+from launch_ros.actions import LoadComposableNodes
 from launch_ros.descriptions import ComposableNode, ParameterFile
 from nav2_common.launch import RewrittenYaml
 
@@ -93,6 +93,34 @@ def generate_launch_description():
         condition=IfCondition(localization),
         target_container=container_name_full,
         composable_node_descriptions=[
+            # Both lidars reach AMCL on the one topic it subscribes to, a scan
+            # at a time. Relayed rather than merged into a 360-degree scan, so no
+            # message can carry two instants; the per-lidar topics the costmaps
+            # and slam_toolbox read are untouched.
+            ComposableNode(
+                package="topic_tools",
+                plugin="topic_tools::RelayNode",
+                name="scan_front_relay",
+                parameters=[
+                    {
+                        "use_sim_time": use_sim_time,
+                        "input_topic": "/scan_front_filtered",
+                        "output_topic": "/scan_localization",
+                    }
+                ],
+            ),
+            ComposableNode(
+                package="topic_tools",
+                plugin="topic_tools::RelayNode",
+                name="scan_rear_relay",
+                parameters=[
+                    {
+                        "use_sim_time": use_sim_time,
+                        "input_topic": "/scan_rear_filtered",
+                        "output_topic": "/scan_localization",
+                    }
+                ],
+            ),
             ComposableNode(
                 package="nav2_map_server",
                 plugin="nav2_map_server::MapServer",
@@ -150,17 +178,6 @@ def generate_launch_description():
         ],
     )
 
-    # Both lidars reach AMCL on one topic, a scan at a time. See the node's
-    # docstring for why they are not combined into one 360-degree scan.
-    scan_localization_relay = Node(
-        condition=IfCondition(localization),
-        package="hangar_sim",
-        executable="scan_localization_relay.py",
-        name="scan_localization_relay",
-        parameters=[{"use_sim_time": use_sim_time}],
-        output="log",
-    )
-
     ld = LaunchDescription()
 
     ld.add_action(stdout_linebuf_envvar)
@@ -210,7 +227,6 @@ def generate_launch_description():
     )
 
     ld.add_action(map_check)
-    ld.add_action(scan_localization_relay)
     ld.add_action(load_localization_nodes)
     ld.add_action(load_map_server_only)
 
