@@ -1,0 +1,2976 @@
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.208781
+    y: -0.236714
+    z: 0.246412
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.171170
+    y: -0.236714
+    z: 0.187375
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.170229
+    y: -0.226812
+    z: 0.187974
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.167453
+    y: -0.217406
+    z: 0.189743
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.162982
+    y: -0.208969
+    z: 0.192591
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.157039
+    y: -0.201923
+    z: 0.196377
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.149923
+    y: -0.196621
+    z: 0.200911
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.141991
+    y: -0.193330
+    z: 0.205964
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.133639
+    y: -0.192214
+    z: 0.211285
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.125288
+    y: -0.193330
+    z: 0.216605
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.117355
+    y: -0.196621
+    z: 0.221659
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.110239
+    y: -0.201923
+    z: 0.226192
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.104296
+    y: -0.208969
+    z: 0.229978
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.099825
+    y: -0.217406
+    z: 0.232827
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.097049
+    y: -0.226812
+    z: 0.234595
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.096108
+    y: -0.236714
+    z: 0.235194
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.097049
+    y: -0.246616
+    z: 0.234595
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.099825
+    y: -0.256022
+    z: 0.232827
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.104296
+    y: -0.264460
+    z: 0.229978
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.110239
+    y: -0.271506
+    z: 0.226192
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.117355
+    y: -0.276807
+    z: 0.221659
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.125288
+    y: -0.280099
+    z: 0.216605
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.133639
+    y: -0.281214
+    z: 0.211285
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.141991
+    y: -0.280099
+    z: 0.205964
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.149923
+    y: -0.276807
+    z: 0.200911
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.157039
+    y: -0.271506
+    z: 0.196377
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.162982
+    y: -0.264460
+    z: 0.192591
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.167453
+    y: -0.256022
+    z: 0.189743
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.170229
+    y: -0.246616
+    z: 0.187974
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.171170
+    y: -0.236714
+    z: 0.187375
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.208781
+    y: -0.236714
+    z: 0.246412
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.208858
+    y: -0.141673
+    z: 0.246364
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.171247
+    y: -0.141673
+    z: 0.187326
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.170306
+    y: -0.131771
+    z: 0.187926
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.167530
+    y: -0.122365
+    z: 0.189694
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.163059
+    y: -0.113928
+    z: 0.192542
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.157116
+    y: -0.106881
+    z: 0.196328
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.150000
+    y: -0.101580
+    z: 0.200862
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.142067
+    y: -0.098289
+    z: 0.205915
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.133716
+    y: -0.097173
+    z: 0.211236
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.125364
+    y: -0.098289
+    z: 0.216556
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.117432
+    y: -0.101580
+    z: 0.221610
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.110316
+    y: -0.106881
+    z: 0.226143
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.104373
+    y: -0.113928
+    z: 0.229929
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.099902
+    y: -0.122365
+    z: 0.232778
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.097126
+    y: -0.131771
+    z: 0.234546
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.096185
+    y: -0.141673
+    z: 0.235146
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.097126
+    y: -0.151575
+    z: 0.234546
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.099902
+    y: -0.160981
+    z: 0.232778
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.104373
+    y: -0.169418
+    z: 0.229929
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.110316
+    y: -0.176464
+    z: 0.226143
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.117432
+    y: -0.181766
+    z: 0.221610
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.125364
+    y: -0.185057
+    z: 0.216556
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.133716
+    y: -0.186173
+    z: 0.211236
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.142067
+    y: -0.185057
+    z: 0.205915
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.150000
+    y: -0.181766
+    z: 0.200862
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.157116
+    y: -0.176464
+    z: 0.196328
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.163059
+    y: -0.169418
+    z: 0.192542
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.167530
+    y: -0.160981
+    z: 0.189694
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.170306
+    y: -0.151575
+    z: 0.187926
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.171247
+    y: -0.141673
+    z: 0.187326
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.208858
+    y: -0.141673
+    z: 0.246364
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.208745
+    y: -0.046777
+    z: 0.246435
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.171135
+    y: -0.046777
+    z: 0.187398
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.170194
+    y: -0.036875
+    z: 0.187997
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.167418
+    y: -0.027469
+    z: 0.189765
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.162946
+    y: -0.019032
+    z: 0.192614
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.157004
+    y: -0.011986
+    z: 0.196400
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.149888
+    y: -0.006684
+    z: 0.200933
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.141955
+    y: -0.003393
+    z: 0.205987
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.133604
+    y: -0.002277
+    z: 0.211307
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.125252
+    y: -0.003393
+    z: 0.216628
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.117320
+    y: -0.006684
+    z: 0.221681
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.110203
+    y: -0.011986
+    z: 0.226215
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.104261
+    y: -0.019032
+    z: 0.230001
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.099789
+    y: -0.027469
+    z: 0.232849
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.097014
+    y: -0.036875
+    z: 0.234618
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.096073
+    y: -0.046777
+    z: 0.235217
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.097014
+    y: -0.056679
+    z: 0.234618
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.099789
+    y: -0.066085
+    z: 0.232849
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.104261
+    y: -0.074522
+    z: 0.230001
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.110203
+    y: -0.081569
+    z: 0.226215
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.117320
+    y: -0.086870
+    z: 0.221681
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.125252
+    y: -0.090161
+    z: 0.216628
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.133604
+    y: -0.091277
+    z: 0.211307
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.141955
+    y: -0.090161
+    z: 0.205987
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.149888
+    y: -0.086870
+    z: 0.200933
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.157004
+    y: -0.081569
+    z: 0.196400
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.162947
+    y: -0.074522
+    z: 0.192614
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.167418
+    y: -0.066085
+    z: 0.189765
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.170194
+    y: -0.056679
+    z: 0.187997
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.171135
+    y: -0.046777
+    z: 0.187398
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.208745
+    y: -0.046777
+    z: 0.246435
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.208771
+    y: 0.048305
+    z: 0.246419
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.171160
+    y: 0.048305
+    z: 0.187381
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.170219
+    y: 0.058207
+    z: 0.187981
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.167443
+    y: 0.067613
+    z: 0.189749
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.162972
+    y: 0.076051
+    z: 0.192598
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.157029
+    y: 0.083097
+    z: 0.196384
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.149913
+    y: 0.088398
+    z: 0.200917
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.141980
+    y: 0.091690
+    z: 0.205971
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.133629
+    y: 0.092805
+    z: 0.211291
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.125278
+    y: 0.091690
+    z: 0.216612
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.117345
+    y: 0.088398
+    z: 0.221665
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.110229
+    y: 0.083097
+    z: 0.226199
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.104286
+    y: 0.076051
+    z: 0.229985
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.099815
+    y: 0.067613
+    z: 0.232833
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.097039
+    y: 0.058207
+    z: 0.234601
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.096098
+    y: 0.048305
+    z: 0.235201
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.097039
+    y: 0.038403
+    z: 0.234601
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.099815
+    y: 0.028997
+    z: 0.232833
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.104286
+    y: 0.020560
+    z: 0.229985
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.110229
+    y: 0.013514
+    z: 0.226199
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.117345
+    y: 0.008212
+    z: 0.221665
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.125278
+    y: 0.004921
+    z: 0.216612
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.133629
+    y: 0.003805
+    z: 0.211291
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.141980
+    y: 0.004921
+    z: 0.205971
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.149913
+    y: 0.008212
+    z: 0.200917
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.157029
+    y: 0.013514
+    z: 0.196384
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.162972
+    y: 0.020560
+    z: 0.192598
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.167443
+    y: 0.028997
+    z: 0.189749
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.170219
+    y: 0.038403
+    z: 0.187981
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.171160
+    y: 0.048305
+    z: 0.187381
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.208771
+    y: 0.048305
+    z: 0.246419
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.208869
+    y: 0.143341
+    z: 0.246356
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.171258
+    y: 0.143341
+    z: 0.187319
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.170317
+    y: 0.153243
+    z: 0.187918
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.167541
+    y: 0.162648
+    z: 0.189687
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.163070
+    y: 0.171086
+    z: 0.192535
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.157127
+    y: 0.178132
+    z: 0.196321
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.150011
+    y: 0.183434
+    z: 0.200855
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.142079
+    y: 0.186725
+    z: 0.205908
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.133727
+    y: 0.187841
+    z: 0.211229
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.125376
+    y: 0.186725
+    z: 0.216549
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.117443
+    y: 0.183434
+    z: 0.221603
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.110327
+    y: 0.178132
+    z: 0.226136
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.104384
+    y: 0.171086
+    z: 0.229922
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.099913
+    y: 0.162648
+    z: 0.232771
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.097137
+    y: 0.153243
+    z: 0.234539
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.096196
+    y: 0.143341
+    z: 0.235138
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.097137
+    y: 0.133438
+    z: 0.234539
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.099913
+    y: 0.124033
+    z: 0.232771
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.104384
+    y: 0.115595
+    z: 0.229922
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.110327
+    y: 0.108549
+    z: 0.226136
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.117443
+    y: 0.103248
+    z: 0.221603
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.125376
+    y: 0.099956
+    z: 0.216549
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.133727
+    y: 0.098841
+    z: 0.211229
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.142079
+    y: 0.099956
+    z: 0.205908
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.150011
+    y: 0.103248
+    z: 0.200855
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.157127
+    y: 0.108549
+    z: 0.196321
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.163070
+    y: 0.115595
+    z: 0.192535
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.167541
+    y: 0.124033
+    z: 0.189687
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.170317
+    y: 0.133438
+    z: 0.187918
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.171258
+    y: 0.143341
+    z: 0.187319
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.208869
+    y: 0.143341
+    z: 0.246356
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.208744
+    y: 0.238347
+    z: 0.246436
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.171133
+    y: 0.238347
+    z: 0.187398
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.170192
+    y: 0.248249
+    z: 0.187998
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.167416
+    y: 0.257655
+    z: 0.189766
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.162945
+    y: 0.266092
+    z: 0.192615
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.157002
+    y: 0.273138
+    z: 0.196401
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.149886
+    y: 0.278440
+    z: 0.200934
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.141954
+    y: 0.281731
+    z: 0.205988
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.133602
+    y: 0.282847
+    z: 0.211308
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.125251
+    y: 0.281731
+    z: 0.216629
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.117318
+    y: 0.278440
+    z: 0.221682
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.110202
+    y: 0.273138
+    z: 0.226216
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.104259
+    y: 0.266092
+    z: 0.230002
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.099788
+    y: 0.257655
+    z: 0.232850
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.097012
+    y: 0.248249
+    z: 0.234618
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.096071
+    y: 0.238347
+    z: 0.235218
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.097012
+    y: 0.228445
+    z: 0.234619
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.099788
+    y: 0.219039
+    z: 0.232850
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.104259
+    y: 0.210602
+    z: 0.230002
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.110202
+    y: 0.203555
+    z: 0.226216
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.117318
+    y: 0.198254
+    z: 0.221682
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.125251
+    y: 0.194963
+    z: 0.216629
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.133602
+    y: 0.193847
+    z: 0.211308
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.141954
+    y: 0.194963
+    z: 0.205988
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.149886
+    y: 0.198254
+    z: 0.200934
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.157002
+    y: 0.203555
+    z: 0.196401
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.162945
+    y: 0.210602
+    z: 0.192615
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.167416
+    y: 0.219039
+    z: 0.189766
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.170192
+    y: 0.228445
+    z: 0.187998
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.171133
+    y: 0.238347
+    z: 0.187398
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869
+---
+header:
+  stamp:
+    sec: 0
+    nanosec: 0
+  frame_id: registered_pose
+pose:
+  position:
+    x: 0.208744
+    y: 0.238347
+    z: 0.246436
+  orientation:
+    x: 0.678858
+    y: -0.678858
+    z: -0.197868
+    w: 0.197869

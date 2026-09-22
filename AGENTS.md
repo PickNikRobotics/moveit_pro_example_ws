@@ -209,6 +209,27 @@ Every objective XML file must include a `MetadataFields` block inside the `TreeN
 
 Teleoperation drives the gripper by looking up Objectives named exactly `"Close Gripper"` / `"Open Gripper"` (the `Request Teleoperation` SubTree in moveit_pro core). If a config package doesn't provide those overrides in its `objectives/` directory, the lookup falls back to moveit_pro's core placeholder, which logs `[ERROR] LogMessage Error: This robot configuration does not have a \`Close Gripper\` Objective configured to override this default.` on every BT tick for as long as the control is held, and the gripper never moves — even if some other Objective in the same config already drives the gripper directly via `MoveGripperAction` (that path bypasses the named-Objective lookup entirely). Any new config with a gripper needs both files; see `moveit_pro_kinova_configs/kinova_gen3_base_config/objectives/{close,open}_gripper.xml` for the reference pattern.
 
+## "The map is jumping": measure at the robot, not at the odom origin
+
+`map -> odom`'s translation is where the odom origin sits in the map, not how far anything moved
+near the robot. An AMCL update is a rigid transform, so a point moves by
+`dt + (R_new - R_old) p`, and on the port-lane route the robot is up to 27 m out: a 0.008 rad yaw
+correction reads as a 0.16 m step while displacing the robot 2 cm. It also manufactures a false
+clue, since the lever arm grows along the route and correlates with step size at +0.42 to +0.52.
+
+To judge it, apply both corrections to the *same* `odom -> base` sample and difference the
+results. Do not difference a looked-up `map -> base` against a separately looked-up `map -> odom`
+— they resolve at different times and smooth out the step.
+
+## Simulator deployment gotchas
+
+Tear a deployment down with `moveit_pro down --instance <name>`; there is no `stop`, and
+`docker rm -f` does not work because compose brings the containers straight back. Check
+`docker inspect <container> --format '{{.State.StartedAt}}'` when a restart was supposed to
+happen. Start exactly one `moveit_pro run` per instance and let it finish coming up — a second
+launch during startup kills the runtime container with `Endpoint reservation ... was superseded`,
+leaving drivers healthy, `/do_objective` absent, and no obvious error.
+
 ## Config inheritance (`based_on_package`)
 
 `based_on_package` in `config.yaml` merges the child over the parent (`merge()` in `moveit_studio_utils_py/system_config.py`). Dicts merge key-by-key, recursively. A list of scalars is replaced wholesale. A list of single-key dicts — which is how `urdf_params` and every other MoveIt Pro list-of-options field is shaped — merges **by key**: an override entry like `- hardware_interface: "mock"` finds the parent's entry with that same key and replaces only its value, leaving every other `urdf_params` entry (`usb_port`, `calibration_file`, ...) inherited untouched. You do not need to repeat the whole list to override one xacro arg.
@@ -281,6 +302,16 @@ generates and exports that file only for its own PID 1 process tree, and
 exec's `ros2` CLI joins the wrong (default) CycloneDDS config and never
 discovers the app's participants over the loopback-only, no-multicast peer
 list that config sets up.
+
+Tearing a deployment down is `moveit_pro down --instance <name>`; there is no `stop`
+subcommand, and `docker rm -f` on the containers does not do it — compose brings them
+straight back and you are left measuring a stack you thought you had replaced. Check
+`docker inspect <container> --format '{{.State.StartedAt}}'` when a restart is supposed to
+have happened, because "Up 5 minutes" on a container you just tried to remove is the giveaway.
+Start exactly one `moveit_pro run` per instance and let it finish coming up: a second launch
+while the first is still starting kills the runtime container with `Endpoint reservation for
+instance '<name>' was superseded`, leaving drivers healthy, `/do_objective` absent, and no
+obvious error.
 
 ## `colcon build`/`test` on one package without the moveit_pro CLI
 

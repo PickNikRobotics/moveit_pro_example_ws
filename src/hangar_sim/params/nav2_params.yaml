@@ -27,7 +27,8 @@ amcl:
     laser_max_range: 25.0
     laser_min_range: 0.0
     laser_model_type: "likelihood_field"
-    max_beams: 60
+    # 725 >= the 723 rays /scan_merged publishes, so every ray is used; 60 kept ~23 valid points.
+    max_beams: 725
     max_particles: 5000
     min_particles: 1000
     odom_frame_id: "odom"

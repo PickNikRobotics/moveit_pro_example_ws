@@ -3,39 +3,40 @@
 
   <option integrator="implicitfast" timestep="0.003" />
 
+  <!-- Image-based lidars need DEPTH_TYPE, FOV_X, RANGE_MIN and RANGE_MAX. -->
+  <size nuser_cam="4" />
+
+  <!-- Pinned: MuJoCo scales the camera near/far planes and the shadow frustum by model extent, and
+       the far-field horizon below inflates the derived extent 28.29 -> 849 m, which would move the
+       near plane 0.28 -> 8.49 m and blind the lidars. Keep this when adding distant scenery. -->
+  <statistic extent="28.29" />
+
   <include file="husky_a300.xml" />
 
   <visual>
+    <!-- ambient lifts shadowed ground just off black without flattening lit/shadow contrast. -->
     <headlight
       diffuse="0.4 0.4 0.4"
-      ambient="0.05 0.05 0.05"
+      ambient="0.08 0.08 0.08"
       specular="0 0 0"
     />
     <rgba haze="0.05 0.05 0.05 1" />
     <global offwidth="1280" offheight="720" azimuth="120" elevation="-20" />
-    <!-- Directional-light shadow tuning: past the edge of the shadow frustum (roughly
-         model.stat.extent * shadowclip - here ~10 m * 5 = 50 m), a lit surface still renders but
-         samples the shadow map out of its valid range, aliasing into speckle. chase_camera's
-         pos is fixed in world space (mode="targetbody" only rotates it to face the robot, see
-         AGENTS.md), so which part of the ground plane it grazes toward changes as the robot
-         drives away from the start pose over the Dead Reckon Square - shadowclip needs enough
-         margin to keep the whole 10 m ground_plane below (not just the small area right under
-         the robot) inside the frustum for the whole run, not just at the start pose. shadowsize=8192
-         keeps per-texel resolution sharp across that frustum. -->
+    <!-- shadowclip sets shadow texel pitch. Casters are all within 13.5 m; 0.6 measured smoothest.
+         To re-measure, edit this file and reload - setting it on a built Renderer does nothing. -->
     <quality shadowsize="8192" />
-    <map shadowclip="5.0" />
+    <map shadowclip="0.6" />
   </visual>
 
-  <!-- Dark space skybox + regolith ground, carried over from the pre-869 Phoebe-based
-       lunar_sim scene (src/lunar_sim/mjcf/scene.xml on main before that PR removed it). -->
+  <!-- Star field from generate_starfield.py; the gradient skybox it replaces could not draw
+       stars. gridsize/gridlayout must match what that script prints. -->
   <asset>
     <texture
       type="skybox"
-      builtin="gradient"
-      rgb1="0.02 0.02 0.05"
-      rgb2="0 0 0"
-      width="512"
-      height="3072"
+      name="starfield"
+      file="assets/lunar_starfield.png"
+      gridsize="3 4"
+      gridlayout=".U..LFRB.D.."
     />
     <!-- Photoreal ground color map, covering the whole 20x20 m plane with no repeat - see
          src/lunar_sim/README.md and generate_ground_colormap.py for source/licence provenance and
@@ -77,23 +78,35 @@
       file="lunar_hfield.png"
       size="10 10 0.286 0.1"
     />
+    <!-- Render-only twin of the field above, from generate_visual_terrain.py. Same size and geom
+         pos as the driven field - it is the same ground, sampled coarser. -->
+    <hfield
+      name="lunar_hfield_visual"
+      file="lunar_hfield_visual.png"
+      size="10 10 0.286 0.1"
+    />
+    <!-- Far-field horizon relief from generate_far_terrain.py. Visual only, so the driven ground
+         and its calibration are untouched. size/pos come from that script and change together. -->
+    <hfield
+      name="lunar_far_hfield"
+      file="lunar_far_hfield.png"
+      size="300 300 18.6886 0.1"
+    />
     <include file="rocks_assets_generated.xml" />
     <include file="moon_base_assets.xml" />
+    <include file="boulders_assets.xml" />
   </asset>
 
   <worldbody>
-    <!-- Reduced lighting to simulate lunar conditions. The hard shadow a lunar scene needs (and
-         that will matter more once a crater rim exists) wants a low sun, but MuJoCo's shadow
-         mapping has no slope-scaled bias: at this light's original, lower angle
-         (dir="-0.5 0.5 -1", ~55 deg elevation) the shadow map's self-shadowing bias broke down at
-         the plane's more grazing viewing angles and speckled, regardless of shadowsize/shadowclip
-         (see the <visual> block above for those). dir="-0.2 0.2 -1" (~74 deg elevation) is as low
-         as this light goes clean - a compromise against the lunar look, not the primary fix. -->
+    <!-- Sun at ~28 deg for long shadows. An earlier revision kept it near 74 deg to avoid shadow
+         speckle; that does not reproduce on the cratered terrain that replaced its flat plane. -->
+    <!-- 1.85 restores the 2x ground illumination the ~28 deg sun costs. A peak, not a slider:
+         past this the lit ground clips and lit-vs-shadow contrast falls again. -->
     <light
-      pos="5 -5 10"
-      dir="-0.2 0.2 -1"
+      pos="-9 -4 5"
+      dir="0.6 0.25 -0.35"
       directional="true"
-      diffuse="0.9 0.9 0.85"
+      diffuse="1.85 1.85 1.75"
       castshadow="true"
     />
 
@@ -104,6 +117,17 @@
          must equal generate_terrain.py's printed z_min for its own seed/params - see the
          <hfield> asset comment. -->
     <geom
+      name="far_horizon"
+      type="hfield"
+      hfield="lunar_far_hfield"
+      pos="0 0 -3.1361"
+      material="regolith_ground"
+      contype="0"
+      conaffinity="0"
+    />
+    <!-- Full-resolution ground, collision only. Rendering it costs 134 ms/frame, and shrinking it
+         is not an option: a 350x350 collision surface moved closure error 0.6331 -> 1.8232 m. -->
+    <geom
       name="ground_plane"
       type="hfield"
       hfield="lunar_hfield"
@@ -111,11 +135,24 @@
       material="regolith_ground"
       contype="1"
       conaffinity="1"
+      group="3"
+    />
+    <!-- Non-colliding, so it never participates in contact; pos matches ground_plane exactly. -->
+    <geom
+      name="ground_visual"
+      type="hfield"
+      hfield="lunar_hfield_visual"
+      pos="0 0 -0.2095"
+      material="regolith_ground"
+      contype="0"
+      conaffinity="0"
+      group="2"
     />
     <!-- Scattered rock library, see generate_terrain.py. Excluded from the Dead Reckon Square's
          footprint plus margin so the calibration recheck isolates the heightfield's effect. -->
     <include file="rocks_geoms_generated.xml" />
     <include file="moon_base_geoms.xml" />
+    <include file="boulders_geoms.xml" />
 
     <!-- Chase shot that keeps the chassis framed from behind/above regardless of where the
          Dead Reckon Square carries it - render-only (mode="targetbody" cameras are exempt from
@@ -131,7 +168,47 @@
       resolution="1280 720"
     />
 
-    <!-- Mast-mounted overview camera: the one sensor this config streams (published as
+    <!-- A visible world-fixed support under the existing camera. The post is set
+         behind the optical center so it does not intrude into the approved view.
+         Housing is offset along camera +Z, behind its forward -Z optical axis. -->
+    <body name="scene_camera_mast" pos="-1 -5.25 0">
+      <geom
+        name="scene_camera_mast_base"
+        type="box"
+        size="0.35 0.35 0.12"
+        pos="0 0 0.04"
+        material="husky_dark_grey"
+      />
+      <geom
+        name="scene_camera_mast_post"
+        type="cylinder"
+        size="0.065 2.45"
+        pos="0 0 2.50"
+        material="husky_chassis_yellow"
+      />
+      <geom
+        name="scene_camera_mast_bracket"
+        type="box"
+        size="0.08 0.13 0.04"
+        pos="0 0.12 4.92"
+        material="husky_dark_grey"
+      />
+    </body>
+    <body
+      name="scene_camera_housing"
+      pos="-1 -5 5"
+      quat="0.8891448573329286 0.43052491403723997 -0.06761209939110185 -0.13963640316035458"
+    >
+      <geom
+        name="scene_camera_housing"
+        type="box"
+        size="0.12 0.09 0.15"
+        pos="0 0 0.16"
+        material="husky_dark_grey"
+      />
+    </body>
+
+    <!-- Mast-mounted overview camera (published as
          /scene_camera/color and /scene_camera/depth once render_publish_rate > 0), so it's
          framed to be worth seeing on startup - elevated and set back from the Dead Reckon
          Square's start corner, looking down across the start area and the ~1.8 m square the

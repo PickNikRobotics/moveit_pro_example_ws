@@ -152,6 +152,202 @@
         pos="-0.4028 0 0.4074593"
       />
 
+      <!-- Clearpath amp_enclosure's front_lidar_mount is (0.4, 0, 0.2708593).
+           A 50 mm forward/up bracket puts the scan above the front mounting shelf.
+           The rear scanner hangs 60 mm below amp_sensor_arch's lidar_mount:
+           (-0.4028,0,0.4074593) + (0.130,0,0.30256), at the arch's underside.
+           These are A300 accessory mounts, not symmetric bumper mounts. -->
+      <body name="lidar_front_link" pos="0.45 0 0.3208593">
+        <geom
+          name="lidar_front_bracket"
+          type="box"
+          size="0.045 0.035 0.008"
+          pos="-0.025 0 -0.05"
+          material="husky_dark_grey"
+          mass="0"
+          contype="0"
+          conaffinity="0"
+        />
+        <camera
+          name="lidar_front"
+          mode="fixed"
+          xyaxes="0 -1 0 0 0 1"
+          fovy="70"
+          resolution="811 3"
+          user="2 270 0.05 25"
+        />
+        <site
+          name="lidar_front_optical_frame"
+          xyaxes="0 -1 0 0 0 -1"
+          rgba="0 0 0 0"
+        />
+        <!-- Visual-only housing caps above and below the scan plane. They sit inside
+             the renderer's near clip (vis.map.znear * stat.extent, about 0.28 m), so
+             the depth render never sees them; that clip is also the effective
+             minimum range of the scan. -->
+        <geom
+          name="lidar_front_upper"
+          type="cylinder"
+          size="0.03 0.018"
+          pos="0 0 0.024"
+          material="husky_dark_grey"
+          mass="0"
+          contype="0"
+          conaffinity="0"
+        />
+        <geom
+          name="lidar_front_lower"
+          type="cylinder"
+          size="0.03 0.018"
+          pos="0 0 -0.024"
+          material="husky_dark_grey"
+          mass="0"
+          contype="0"
+          conaffinity="0"
+        />
+      </body>
+      <body name="lidar_rear_link" pos="-0.2728 0 0.6500193">
+        <geom
+          name="lidar_rear_bracket"
+          type="cylinder"
+          size="0.02 0.009"
+          pos="0 0 0.051"
+          material="husky_dark_grey"
+          mass="0"
+          contype="0"
+          conaffinity="0"
+        />
+        <camera
+          name="lidar_rear"
+          mode="fixed"
+          xyaxes="0 1 0 0 0 1"
+          fovy="70"
+          resolution="811 3"
+          user="2 270 0.05 25"
+        />
+        <site
+          name="lidar_rear_optical_frame"
+          xyaxes="0 1 0 0 0 -1"
+          rgba="0 0 0 0"
+        />
+        <geom
+          name="lidar_rear_upper"
+          type="cylinder"
+          size="0.03 0.018"
+          pos="0 0 0.024"
+          material="husky_dark_grey"
+          mass="0"
+          contype="0"
+          conaffinity="0"
+        />
+        <geom
+          name="lidar_rear_lower"
+          type="cylinder"
+          size="0.03 0.018"
+          pos="0 0 -0.024"
+          material="husky_dark_grey"
+          mass="0"
+          contype="0"
+          conaffinity="0"
+        />
+      </body>
+
+      <!-- On the arch's real front camera mount: upstream puts it at (0.0775, 0, 0.40896) from
+           the arch, which sits at (-0.4028, 0, 0.4074593) from chassis_link. A test checks it. -->
+      <camera
+        name="oakd_color"
+        pos="-0.3253 0 0.8164193"
+        xyaxes="0 -1 0 0 0 1"
+        fovy="50.53401584672457"
+        mode="fixed"
+        resolution="1280 720"
+      />
+      <site
+        name="oakd_color_optical_frame"
+        pos="-0.3253 0 0.8164193"
+        xyaxes="0 -1 0 0 0 -1"
+      />
+      <camera
+        name="oakd_left"
+        pos="-0.3253 0.0375 0.8164193"
+        xyaxes="0 -1 0 0 0 1"
+        fovy="50.53401584672457"
+        mode="fixed"
+        resolution="1280 720"
+      />
+      <site
+        name="oakd_left_optical_frame"
+        pos="-0.3253 0.0375 0.8164193"
+        xyaxes="0 -1 0 0 0 -1"
+      />
+      <camera
+        name="oakd_right"
+        pos="-0.3253 -0.0375 0.8164193"
+        xyaxes="0 -1 0 0 0 1"
+        fovy="50.53401584672457"
+        mode="fixed"
+        resolution="1280 720"
+      />
+      <site
+        name="oakd_right_optical_frame"
+        pos="-0.3253 -0.0375 0.8164193"
+        xyaxes="0 -1 0 0 0 -1"
+      />
+
+      <!-- Visual-only housing. Everything stays at or behind the optical plane, or it would
+           occlude all three images (group 2 is what the offscreen pass renders). -->
+      <geom
+        name="oakd_housing"
+        type="box"
+        size="0.0125 0.05 0.015"
+        pos="-0.3378 0 0.8164193"
+        material="husky_dark_grey"
+        contype="0"
+        conaffinity="0"
+        group="2"
+      />
+      <geom
+        name="oakd_left_lens"
+        type="cylinder"
+        fromto="-0.3453 0.0375 0.8164193 -0.3263 0.0375 0.8164193"
+        size="0.011"
+        rgba="0.05 0.05 0.06 1"
+        contype="0"
+        conaffinity="0"
+        group="2"
+      />
+      <geom
+        name="oakd_color_lens"
+        type="cylinder"
+        fromto="-0.3453 0 0.8164193 -0.3263 0 0.8164193"
+        size="0.011"
+        rgba="0.05 0.05 0.06 1"
+        contype="0"
+        conaffinity="0"
+        group="2"
+      />
+      <geom
+        name="oakd_right_lens"
+        type="cylinder"
+        fromto="-0.3453 -0.0375 0.8164193 -0.3263 -0.0375 0.8164193"
+        size="0.011"
+        rgba="0.05 0.05 0.06 1"
+        contype="0"
+        conaffinity="0"
+        group="2"
+      />
+      <!-- The IR projector is what makes this a Pro. Cosmetic: MuJoCo projects no IR pattern. -->
+      <geom
+        name="oakd_ir_projector"
+        type="cylinder"
+        fromto="-0.3453 0.019 0.8164193 -0.3283 0.019 0.8164193"
+        size="0.007"
+        rgba="0.35 0.05 0.05 1"
+        contype="0"
+        conaffinity="0"
+        group="2"
+      />
+
       <!-- MuJoCo's <include> splices in only the included file's children, discarding its
            own wrapping element - so the real body name/pos live here, and each *_wheel_link.xml
            file's outer <body> tag is a throwaway wrapper (just satisfies "one root element" for

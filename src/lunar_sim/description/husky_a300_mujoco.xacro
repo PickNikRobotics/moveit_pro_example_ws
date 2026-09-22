@@ -23,10 +23,8 @@
     <origin xyz="0 0 0.13597" rpy="0 0 0" />
   </joint>
 
-  <!-- Attachments: the standard A300 accessory kit (front/rear bumper, sensor enclosure, sensor
-       arch), for visual/body fidelity with the real robot. No sensors are mounted on the robot -
-       the only camera in this configuration is husky_scene.xml's mast-mounted, world-fixed
-       scene_camera, published because render_publish_rate below is non-zero. -->
+  <!-- Standard A300 accessory kit. The arch carries an OAK-D Pro and the lidar bodies below match
+       husky_a300.xml; MujocoSystem publishes their optical-frame sites. -->
   <xacro:include filename="$(find clearpath_platform_description)/urdf/a300/attachments/bumper.urdf.xacro" />
   <xacro:bumper name="front_bumper" model="default" parent_link="front_bumper_mount" extension="0.0">
     <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
@@ -45,6 +43,23 @@
     <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0" />
   </xacro:amp_sensor_arch>
 
+  <!-- Positions compose the vendored enclosure_front_lidar_mount and
+       sensor_arch_lidar_mount chains, plus the brackets documented in the MJCF. -->
+  <xacro:macro name="lunar_lidar_body" params="name xyz">
+    <link name="${name}_link">
+      <visual>
+        <geometry><cylinder radius="0.03" length="0.084" /></geometry>
+        <material name="sensor_grey"><color rgba="0.15 0.15 0.15 1" /></material>
+      </visual>
+    </link>
+    <joint name="${name}_joint" type="fixed">
+      <parent link="chassis_link" /><child link="${name}_link" />
+      <origin xyz="${xyz}" />
+    </joint>
+  </xacro:macro>
+  <xacro:lunar_lidar_body name="lidar_front" xyz="0.45 0 0.3208593" />
+  <xacro:lunar_lidar_body name="lidar_rear" xyz="-0.2728 0 0.6500193" />
+
   <!-- MuJoCo hardware: real physics, driven by description/husky_scene.xml (see that file and
        husky_a300.xml for the body/wheel/actuator model). Wheel joint names match
        clearpath_platform_description/urdf/a300/drivetrain/wheels/outdoor.urdf.xacro
@@ -56,7 +71,20 @@
        "Reset Simulation" control and MujocoBehaviorsLoader's ResetMujocoKeyframe Behavior use by
        default - same pattern as moveit_pro_kinova_configs' space_satellite_sim.xacro. -->
   <xacro:arg name="mujoco_keyframe" default="default" />
+  <!-- Renders and publishes the OAK-D's stereo pair. Off unless a visual odometry consumer is
+       running; see the <sensor> blocks below. -->
+  <xacro:arg name="enable_vo" default="false" />
   <ros2_control name="husky_a300_hardware" type="system">
+    <!-- The stereo pair is for visual odometry and has no consumer yet; MuJoCo would render it
+         every tick regardless. camera_enabled drops it. oakd_color is never gated. -->
+    <xacro:unless value="$(arg enable_vo)">
+      <sensor name="oakd_left">
+        <param name="camera_enabled">false</param>
+      </sensor>
+      <sensor name="oakd_right">
+        <param name="camera_enabled">false</param>
+      </sensor>
+    </xacro:unless>
     <hardware>
       <plugin>picknik_mujoco_ros/MujocoSystem</plugin>
       <param name="mujoco_model">$(arg mujoco_model)</param>
@@ -78,8 +106,18 @@
       <param name="odom_frame">odom</param>
       <param name="base_link_name">chassis_link</param>
       <param name="tf_publish_rate">60</param>
-      <param name="render_publish_rate">10</param>
+      <!-- Cadence the operator sees. Raised from 10, which render cost capped the camera panes
+           near 2.5 fps before the ground split made frames cheap. Worth re-measuring now that the
+           two sweeping lidars add several offscreen renders per tick. -->
+      <param name="render_publish_rate">30</param>
+      <param name="point_cloud_publish_rate">10</param>
     </hardware>
+    <sensor name="lidar_front">
+      <param name="points_topic">/lidar_front/points</param>
+    </sensor>
+    <sensor name="lidar_rear">
+      <param name="points_topic">/lidar_rear/points</param>
+    </sensor>
     <joint name="front_left_wheel_joint">
       <command_interface name="velocity" />
       <state_interface name="position" />
