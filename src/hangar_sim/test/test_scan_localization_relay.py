@@ -29,18 +29,9 @@
 
 """Pins the scan wiring AMCL depends on: both lidars, one topic, one scan per message.
 
-localization_launch.py relays /scan_front_filtered and /scan_rear_filtered onto the single
-topic AMCL subscribes to, instead of merging them into one 360-degree scan. The relays are
-read out of that launch description rather than restated here, so wiring only one of the two
-fails these tests.
-
-What this proves: every scan published on a source topic reaches the localizer's topic
-unmodified, and both lidars' scans get there. What it does NOT prove: that the filter's
-corrections end up drawing on both sensors. Both scans of a pair share a stamp in
-simulation, so the second is gated out for lack of motion and a correction follows whichever
-arrived first -- in the recorded runs, the front lidar about 90% of the time. That the
-arrangement localizes well anyway is measured in the scan-sync-alternating-vs-merge report,
-not here.
+Read out of localization_launch.py, so wiring only one of the two fails. Proves the wiring
+reaches AMCL's topic unmodified, not that corrections draw on both sensors -- see the
+scan-sync-alternating-vs-merge report for that.
 """
 
 import importlib.util
@@ -63,8 +54,7 @@ PACKAGE_ROOT = Path(__file__).parents[1]
 LAUNCH = PACKAGE_ROOT / "launch" / "sim" / "localization_launch.py"
 NAV2_PARAMS = PACKAGE_ROOT / "params" / "nav2_params.yaml"
 
-# The fan every scan on these topics carries, fixed by the MJCF lidars and preserved by
-# script/lidar_flattener.py: 811 beams over 270 deg, starting at the sensor frame's X axis.
+# The fan these topics carry, set by the MJCF lidars and kept by the flattener.
 BEAMS = 811
 SWEEP = math.radians(270.0)
 
@@ -87,10 +77,8 @@ def declared_relays():
         for node in action._LoadComposableNodes__composable_node_descriptions:
             if text(node.package) != "topic_tools":
                 continue
-            # Only the two topics are read: the node's other parameter is a
-            # launch argument, which no bare context can resolve. launch_ros
-            # normalizes each value to its YAML encoding, so the scalar comes
-            # back as a document rather than a bare string.
+            # Topics only: the remaining parameter is a launch argument no bare
+            # context resolves. Values arrive YAML-encoded, hence safe_load.
             topics = {}
             for name, value in node.parameters[0].items():
                 key = text(name)
@@ -119,8 +107,7 @@ def scan(frame_id, seconds):
 def relayed():
     """Run the declared relays, publish one scan per source topic, collect the output.
 
-    The relays are the stock topic_tools components the launch file loads, run as
-    processes here because a pytest has no component container to load them into.
+    Run as processes because a pytest has no component container to load them into.
     """
     relays = declared_relays()
     assert relays, "localization_launch.py loads no topic_tools relay"
@@ -157,13 +144,20 @@ def relayed():
         source: node.create_publisher(LaserScan, source, 10) for source, _ in relays
     }
 
-    # The relays discover each source topic's type before they subscribe, so give
-    # discovery a moment rather than racing it.
-    deadline = time.time() + 30.0
+    # Relays discover each source topic's type before subscribing. Both waits stay
+    # inside the ctest timeout, so a relay that never comes up fails an assertion.
+    deadline = time.time() + 20.0
     while time.time() < deadline and any(
         node.count_subscribers(source) == 0 for source in publishers
     ):
         executor.spin_once(timeout_sec=0.1)
+
+    # A dead relay says so, rather than surfacing as scans that never arrive.
+    for process in processes:
+        assert process.poll() is None, (
+            "a topic_tools relay exited before relaying; is the topic_tools "
+            "package installed?"
+        )
 
     sent = [
         (source, scan(f"lidar_{index}_ROS", 11 + index))
@@ -172,7 +166,7 @@ def relayed():
     for source, message in sent:
         publishers[source].publish(message)
 
-    deadline = time.time() + 30.0
+    deadline = time.time() + 20.0
     while time.time() < deadline and len(received) < len(sent):
         executor.spin_once(timeout_sec=0.1)
 

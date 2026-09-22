@@ -93,10 +93,8 @@ def generate_launch_description():
         condition=IfCondition(localization),
         target_container=container_name_full,
         composable_node_descriptions=[
-            # Both lidars reach AMCL on the one topic it subscribes to, a scan
-            # at a time. Relayed rather than merged into a 360-degree scan, so no
-            # message can carry two instants; the per-lidar topics the costmaps
-            # and slam_toolbox read are untouched.
+            # Both lidars reach AMCL on one topic, a scan at a time: relayed
+            # rather than merged, so no message can carry two instants.
             ComposableNode(
                 package="topic_tools",
                 plugin="topic_tools::RelayNode",
