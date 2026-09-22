@@ -27,12 +27,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 
-"""Pins the scan wiring AMCL depends on: both lidars, one topic, one scan per message.
-
-Read out of localization_launch.py, so wiring only one of the two fails. Proves the wiring
-reaches AMCL's topic unmodified, not that corrections draw on both sensors -- see the
-scan-sync-alternating-vs-merge report for that.
-"""
+"""Pins the scan wiring: both lidars reach AMCL's topic, one scan per message, unmodified."""
 
 import importlib.util
 import math
