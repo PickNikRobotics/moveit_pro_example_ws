@@ -21,7 +21,6 @@
   <exec_depend>moveit_studio_agent</exec_depend>
   <exec_depend>moveit_pro_behavior</exec_depend>
   <exec_depend>beluga_amcl</exec_depend>
-  <exec_depend>dual_laser_merger</exec_depend>
   <exec_depend>laser_filters</exec_depend>
   <exec_depend>nav2_bringup</exec_depend>
   <exec_depend>picknik_accessories</exec_depend>
@@ -36,6 +35,7 @@
   <exec_depend>robotiq_description</exec_depend>
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>slam_toolbox</exec_depend>
+  <exec_depend>topic_tools</exec_depend>
   <exec_depend>ur_description</exec_depend>
   <exec_depend>velocity_force_controller</exec_depend>
 

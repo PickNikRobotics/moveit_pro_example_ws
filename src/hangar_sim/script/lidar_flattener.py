@@ -33,11 +33,11 @@
 Both simulated SICK TIM571s are <camera> sensors with DEPTH_TYPE=THREE_D_LIDAR, so
 picknik_mujoco_ros publishes them as an organized PointCloud2 rather than as a LaserScan.
 Everything downstream of /scan_front and /scan_rear -- the two laser_filters chains, then
-dual_laser_merger, then beluga_amcl on /scan_merged and both Nav2 costmap obstacle layers
-on the filtered scans -- is built on LaserScan, and neither AMCL nor slam_toolbox accepts a
-cloud at all. Flattening here keeps every one of those topics identical in name, type,
-frame and angular window to what the <rangefinder> path published, so nothing else in the
-package has to know which sensor model produced the scan. In particular
+beluga_amcl, slam_toolbox and both Nav2 costmap obstacle layers on the filtered scans --
+is built on LaserScan, and neither AMCL nor slam_toolbox accepts a cloud at all.
+Flattening here keeps every one of those topics identical in name, type, frame and angular
+window to what the <rangefinder> path published, so nothing else in the package has to
+know which sensor model produced the scan. In particular
 params/laser_filter_params.yaml keys its two self-hit rejection arcs off angle_min=0 and
 angle_max=4.7124 in the lidar_*_ROS frame, and those still hold.
 

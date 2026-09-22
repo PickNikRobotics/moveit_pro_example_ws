@@ -93,52 +93,29 @@ def generate_launch_description():
         condition=IfCondition(localization),
         target_container=container_name_full,
         composable_node_descriptions=[
-            # Merge the front and rear lidar scans into a single 360-degree scan
-            # for AMCL. With only the front lidar, the long featureless fuselage
-            # of the hangar airplane gives the particle filter no position lock
-            # and it can diverge; the rear lidar always sees structure the front
-            # cannot, removing that ambiguity.
+            # Both lidars reach AMCL on one topic, a scan at a time: relayed
+            # rather than merged, so no message can carry two instants.
             ComposableNode(
-                package="dual_laser_merger",
-                plugin="merger_node::MergerNode",
-                name="dual_laser_merger",
+                package="topic_tools",
+                plugin="topic_tools::RelayNode",
+                name="scan_front_relay",
                 parameters=[
                     {
                         "use_sim_time": use_sim_time,
-                        "laser_1_topic": "/scan_front_filtered",
-                        "laser_2_topic": "/scan_rear_filtered",
-                        "merged_scan_topic": "/scan_merged",
-                        "target_frame": "ridgeback_base_link",
-                        "laser_1_x_offset": 0.0,
-                        "laser_1_y_offset": 0.0,
-                        "laser_1_yaw_offset": 0.0,
-                        "laser_2_x_offset": 0.0,
-                        "laser_2_y_offset": 0.0,
-                        "laser_2_yaw_offset": 0.0,
-                        "tolerance": 0.05,
-                        # Buffer several scans per input so the approximate-time
-                        # sync still pairs front+rear when the sim falls behind
-                        # real time and lidar stamps go irregular (keeps
-                        # /scan_merged flowing instead of starving AMCL).
-                        "queue_size": 10,
-                        "angle_increment": 0.0087,
-                        "scan_time": 0.1,
-                        "range_min": 0.05,
-                        "range_max": 25.0,
-                        "min_height": -2.0,
-                        "max_height": 2.0,
-                        "angle_min": -3.141592654,
-                        "angle_max": 3.141592654,
-                        "inf_epsilon": 1.0,
-                        "use_inf": True,
-                        "allowed_radius": 0.45,
-                        # The hangar scans are sparse (open space + self-hit
-                        # filtering leave finite returns surrounded by inf). The
-                        # shadow/average filters treat those as noise and drop
-                        # ~95% of returns, leaving AMCL almost no data. Disable
-                        # them so the merged scan keeps the real returns.
-                        "enable_shadow_filter": False,
-                        "enable_average_filter": False,
+                        "input_topic": "/scan_front_filtered",
+                        "output_topic": "/scan_localization",
+                    }
+                ],
+            ),
+            ComposableNode(
+                package="topic_tools",
+                plugin="topic_tools::RelayNode",
+                name="scan_rear_relay",
+                parameters=[
+                    {
+                        "use_sim_time": use_sim_time,
+                        "input_topic": "/scan_rear_filtered",
+                        "output_topic": "/scan_localization",
                     }
                 ],
             ),
