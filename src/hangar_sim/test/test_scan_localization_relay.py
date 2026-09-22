@@ -39,7 +39,6 @@ off a driving robot; a synthetic scan could be given any coverage the test wante
 the coverage claim is made against recorded returns.
 """
 
-import ast
 import copy
 import importlib.util
 import json
@@ -56,9 +55,6 @@ PACKAGE_ROOT = Path(__file__).parents[1]
 MODEL = PACKAGE_ROOT / "description" / "ur5e_ridgeback.xml"
 NAV2_PARAMS = PACKAGE_ROOT / "params" / "nav2_params.yaml"
 RELAY = PACKAGE_ROOT / "script" / "scan_localization_relay.py"
-DRIVERS_LAUNCH = (
-    PACKAGE_ROOT / "launch" / "sim" / "robot_drivers_to_persist_sim.launch.py"
-)
 RECORDED = PACKAGE_ROOT / "test" / "data" / "recorded_filtered_scans.json"
 
 # 45 deg apiece. Coarse on purpose: a sector is called covered by any single valid
@@ -92,9 +88,7 @@ def recorded_scans():
             "range_max",
         ):
             setattr(scan, field, record[field])
-        scan.ranges = [
-            math.inf if value is None else value for value in record["ranges"]
-        ]
+        scan.ranges = [float(value) for value in record["ranges"]]
         scans.append((record["topic"], scan))
     return scans
 
@@ -109,30 +103,40 @@ def lidar_cameras():
     }
 
 
-def sensor_frame_yaws():
-    """Yaw of each lidar_*_ROS frame in ridgeback_base_link, read out of the launch file.
+def quat_rotate(quat, vector):
+    """Rotate vector by an MJCF (w, x, y, z) quaternion."""
+    w, x, y, z = quat
+    vx, vy, vz = vector
+    tx, ty, tz = 2 * (y * vz - z * vy), 2 * (z * vx - x * vz), 2 * (x * vy - y * vx)
+    return (
+        vx + w * tx + y * tz - z * ty,
+        vy + w * ty + z * tx - x * tz,
+        vz + w * tz + x * ty - y * tx,
+    )
 
-    Parsed rather than imported: the launch file pulls in the whole ROS launch stack,
-    and the point here is to read what it declares, not to run it.
+
+def sensor_frame_yaws():
+    """Yaw of each lidar_*_ROS frame (beam 0) in ridgeback_base_link, from the MJCF.
+
+    A MuJoCo camera looks down its own -Z, and the fan is centered on that view
+    direction, so beam 0 sits half a sweep clockwise of it. The mounts are unrotated
+    children of ridgeback_base_link, so the camera quat alone sets the bearing.
     """
+    root = ET.parse(MODEL).getroot()
     yaws = {}
-    for node in ast.walk(ast.parse(DRIVERS_LAUNCH.read_text())):
-        if not isinstance(node, ast.Call) or getattr(node.func, "id", None) != "Node":
-            continue
-        kwargs = {keyword.arg: keyword.value for keyword in node.keywords}
-        executable = kwargs.get("executable")
-        arguments = kwargs.get("arguments")
-        if (
-            not isinstance(executable, ast.Constant)
-            or executable.value != "static_transform_publisher"
-            or not isinstance(arguments, ast.List)
-        ):
-            continue
-        # x y z yaw pitch roll parent child
-        values = [element.value for element in arguments.elts]
-        if len(values) == 8 and values[-1].endswith("_ROS"):
-            assert values[-2] == "ridgeback_base_link"
-            yaws[values[-1]] = float(values[3])
+    for body in root.iter("body"):
+        for camera in body.findall("camera"):
+            if camera.attrib["name"] not in lidar_cameras():
+                continue
+            assert not {"quat", "euler", "axisangle", "xyaxes", "zaxis"} & set(
+                body.attrib
+            )
+            assert body in root.find(".//body[@name='ridgeback_base_link']")
+            quat = [float(value) for value in camera.attrib["quat"].split()]
+            view_x, view_y, _ = quat_rotate(quat, (0.0, 0.0, -1.0))
+            sweep = math.radians(float(camera.attrib["user"].split()[1]))
+            center = math.atan2(view_y, view_x)
+            yaws[camera.attrib["name"] + "_ROS"] = center - sweep / 2
     return yaws
 
 
