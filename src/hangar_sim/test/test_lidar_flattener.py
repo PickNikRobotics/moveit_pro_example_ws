@@ -30,8 +30,8 @@
 """Pins the contract script/lidar_flattener.py has to keep with its consumers.
 
 The flattener is the only thing standing between the MJCF's depth-camera lidars and
-params/laser_filter_params.yaml, dual_laser_merger, AMCL and both costmap obstacle layers,
-all of which were written against the <rangefinder> path. Its published window, beam order
+params/laser_filter_params.yaml, AMCL and both costmap obstacle layers, all of which were
+written against the <rangefinder> path. Its published window, beam order
 and beam count therefore are the interface, and each is checked here against the MJCF it
 has to agree with rather than against a copy of the numbers.
 """

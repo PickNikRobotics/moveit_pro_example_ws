@@ -27,7 +27,7 @@ amcl:
     laser_max_range: 25.0
     laser_min_range: 0.0
     laser_model_type: "likelihood_field"
-    # 725 >= the 723 rays /scan_merged publishes, so every ray is used; 60 kept ~23 valid points.
+    # Each lidar fan is 811 rays, so beluga subsamples evenly down to 725; 60 kept ~23 valid points.
     max_beams: 725
     max_particles: 5000
     min_particles: 1000
@@ -48,7 +48,8 @@ amcl:
     z_max: 0.05
     z_rand: 0.5
     z_short: 0.05
-    scan_topic: /scan_merged
+    # Both filtered scans, relayed onto one topic by script/scan_localization_relay.py.
+    scan_topic: /scan_localization
 
 bt_navigator:
   ros__parameters:

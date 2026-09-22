@@ -376,10 +376,10 @@ def generate_launch_description():
     # picknik_mujoco_ros publishes them as organized PointCloud2 on
     # /lidar_{front,rear}/points and never as a LaserScan. This node reads the
     # elevation-0 row of each cloud and republishes it as the /scan_{front,rear}
-    # LaserScan the filter chains below, dual_laser_merger, AMCL, slam_toolbox and
-    # both costmap obstacle layers already consume. Topic names, message types,
-    # frames and the 0 to 270 deg angular window are all unchanged from the
-    # <rangefinder> path, so nothing downstream needed touching.
+    # LaserScan the filter chains below, AMCL, slam_toolbox and both costmap
+    # obstacle layers already consume. Topic names, message types, frames and the
+    # 0 to 270 deg angular window are all unchanged from the <rangefinder> path,
+    # so nothing downstream needed touching.
     lidar_flattener = Node(
         package="hangar_sim",
         executable="lidar_flattener.py",
