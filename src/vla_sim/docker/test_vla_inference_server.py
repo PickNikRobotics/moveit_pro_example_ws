@@ -1251,6 +1251,18 @@ class TestHttpStateMachine(unittest.TestCase):
         self.assertEqual(resp.status, 200)
         self.assertEqual(json.loads(resp.read())["status"], "ready")
 
+    def test_health_reports_the_precision_it_is_serving_at(self) -> None:
+        """A probe can tell int8 from full width without holding the key: the
+        flag says what the server is serving at, not what was asked for."""
+        conn = self._start(self._ready_state())
+        conn.request("GET", "/health")
+        resp = conn.getresponse()
+
+        body = json.loads(resp.read())
+        self.assertEqual(resp.status, 200)
+        self.assertIs(body["int8"], False)
+        self.assertEqual(body["device"], "cpu")
+
     def test_status_requires_token_and_reports_loaded_revision(self) -> None:
         """The Runtime can confirm the exact model without exposing it publicly."""
         conn = self._start(self._ready_state())

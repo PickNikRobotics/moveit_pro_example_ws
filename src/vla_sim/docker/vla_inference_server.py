@@ -1023,6 +1023,7 @@ def make_handler(state: ServerState):
                     health["detail"] = state.detail
                 elif state.status == "ready":
                     health["device"] = state.runner.device
+                    health["int8"] = state.runner.int8
                 self._send(200, health)
                 return
             if self.path != "/status":
