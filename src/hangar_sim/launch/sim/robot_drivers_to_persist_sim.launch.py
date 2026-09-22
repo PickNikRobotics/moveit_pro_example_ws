@@ -225,7 +225,7 @@ def generate_launch_description():
                 remappings=remappings,
                 output="screen",
             ),
-            # Localization (map_server, AMCL, scan merger) runs in its own container so a
+            # Localization (map_server, AMCL) runs in its own container so a
             # crash in any navigation node cannot take localization down with it. The
             # map -> odom transform AMCL publishes is what connects the MuJoCo scene
             # frames (cameras under mj_world -> map) to MoveIt's planning frame
@@ -478,6 +478,37 @@ def generate_launch_description():
         output="log",
     )
 
+    # Both filtered scans on one topic, a scan at a time: relayed rather than
+    # merged, so no message can carry two instants. Launched here rather than with
+    # AMCL so /scan_interleaved also exists when slam:=true.
+    scan_front_relay = Node(
+        package="topic_tools",
+        executable="relay",
+        name="scan_front_relay",
+        parameters=[
+            {
+                "use_sim_time": use_sim_time,
+                "input_topic": "/scan_front_filtered",
+                "output_topic": "/scan_interleaved",
+            }
+        ],
+        output="log",
+    )
+
+    scan_rear_relay = Node(
+        package="topic_tools",
+        executable="relay",
+        name="scan_rear_relay",
+        parameters=[
+            {
+                "use_sim_time": use_sim_time,
+                "input_topic": "/scan_rear_filtered",
+                "output_topic": "/scan_interleaved",
+            }
+        ],
+        output="log",
+    )
+
     # Fuse state estimator for mobile base localization
     fuse_state_estimator = Node(
         package="fuse_optimizers",
@@ -529,6 +560,8 @@ def generate_launch_description():
     ld.add_action(static_tf_lidar_rear_ros)
     ld.add_action(laser_filter_front_node)
     ld.add_action(laser_filter_rear_node)
+    ld.add_action(scan_front_relay)
+    ld.add_action(scan_rear_relay)
     ld.add_action(fuse_state_estimator)
 
     return ld

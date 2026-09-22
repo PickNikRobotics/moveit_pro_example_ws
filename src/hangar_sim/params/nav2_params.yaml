@@ -48,8 +48,8 @@ amcl:
     z_max: 0.05
     z_rand: 0.5
     z_short: 0.05
-    # Both filtered scans, relayed here by localization_launch.py.
-    scan_topic: /scan_localization
+    # Both filtered scans, relayed here by robot_drivers_to_persist_sim.launch.py.
+    scan_topic: /scan_interleaved
 
 bt_navigator:
   ros__parameters:
