@@ -11,7 +11,7 @@
 
          mujoco   MuJoCo cameras only. The default, and the only option on an image with no
                   Nyx runtime, which is every arm64 image and the amd64 CPU image.
-         nyx      Nyx only. MuJoCo stops advertising colour but keeps rendering, so depth
+         nyx      Nyx only. MuJoCo stops advertising colour and camera_info but keeps rendering, so depth
                   and point clouds are unaffected and nothing renders colour twice.
          both     Both, on separate topics. Costs two renderers.
          none     Neither, for a config driven from a bag or a real camera.

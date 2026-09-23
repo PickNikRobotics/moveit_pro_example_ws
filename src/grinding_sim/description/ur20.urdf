@@ -77,9 +77,9 @@
       <plugin>picknik_mujoco_ros/MujocoSystem</plugin>
       <param name="mujoco_model">description/scene.xml</param>
       <param name="mujoco_model_package">grinding_sim</param>
-      <!-- The render tick keeps running when Nyx owns the colour topics: depth, point clouds
-           and camera_info come out of that same pass, so stopping it would take them too.
-           Only the colour publication moves to the other renderer. -->
+      <!-- The render tick keeps running when Nyx owns the colour topics: depth and point
+           clouds come out of that same pass, so stopping it would take them too. Colour and
+           camera_info move to the other renderer, which stamps camera_info to match its frames. -->
       <param name="render_publish_rate">${dict(mujoco=10, both=10, nyx=10, none=0)['$(arg camera_renderer)']}</param>
       <param name="publish_camera_rgb">${dict(mujoco=True, both=True, nyx=False, none=False)['$(arg camera_renderer)']}</param>
       <param name="tf_publish_rate">60</param>

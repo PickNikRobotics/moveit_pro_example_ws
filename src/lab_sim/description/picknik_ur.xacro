@@ -2,9 +2,9 @@
 <robot name="ur5e" xmlns:xacro="http://ros.org/wiki/xacro">
 
   <!-- Which camera renderer this config starts: mujoco (default), nyx, both, or none.
-       `nyx` hands the colour topics to the Nyx sidecar by unadvertising MuJoCo's, and only
-       `none` stops the render tick: depth, point clouds and camera_info come out of that same
-       tick, and the point-cloud rate falls back to the render rate, so zeroing it for `nyx`
+       `nyx` hands the colour and camera_info topics to the Nyx sidecar by unadvertising
+       MuJoCo's, and only `none` stops the render tick: depth and point clouds come out of that
+       same tick, and the point-cloud rate falls back to the render rate, so zeroing it for `nyx`
        would take them too. The launch side reads the same variable to decide whether to start
        the sidecar, so one setting drives both halves and they cannot contradict each other.
        An unrecognized value fails the description rather than silently dropping colour.
@@ -1223,9 +1223,9 @@
       <param name="mujoco_model">$(arg mujoco_model)</param>
       <param name="mujoco_model_package">$(arg mujoco_model_package)</param>
       <!-- The rate <camera> data is published at -->
-      <!-- The render tick keeps running when Nyx owns the colour topics: depth, point clouds
-           and camera_info come out of that same pass, so stopping it would take them too.
-           Only the colour publication moves to the other renderer. -->
+      <!-- The render tick keeps running when Nyx owns the colour topics: depth and point
+           clouds come out of that same pass, so stopping it would take them too. Colour and
+           camera_info move to the other renderer, which stamps camera_info to match its frames. -->
       <param name="render_publish_rate">${dict(mujoco=$(arg render_publish_rate), both=$(arg render_publish_rate), nyx=$(arg render_publish_rate), none=0)['$(arg camera_renderer)']}</param>
       <param name="publish_camera_rgb">${dict(mujoco=True, both=True, nyx=False, none=False)['$(arg camera_renderer)']}</param>
       <!-- The rate point clouds generated from depth images are published at -->
