@@ -121,4 +121,5 @@ state_estimator:
       world_frame_id: 'odom'
       publish_tf: false
       publish_frequency: 10.0
-      predict_to_current_time: true
+      # Off: while a solve stalls, prediction would keep integrating the last solved velocity.
+      predict_to_current_time: false
