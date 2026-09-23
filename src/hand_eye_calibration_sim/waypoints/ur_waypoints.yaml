@@ -41,3 +41,46 @@
     twist: []
     wrench: []
   name: Home
+- description: 'Intrinsic calibration start pose: the world board fills most of the wrist camera image.'
+  favorite: false
+  joint_group_names:
+  - gripper
+  - linear_actuator
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - robotiq_85_left_knuckle_joint
+    - linear_rail_joint
+    - shoulder_pan_joint
+    - shoulder_lift_joint
+    - elbow_joint
+    - wrist_1_joint
+    - wrist_2_joint
+    - wrist_3_joint
+    position:
+    - 0.0052041555984355505
+    - 0.09968300465743941
+    - -0.2145245911414023
+    - -1.5024747151698061
+    - 2.053136712956384
+    - -2.58316034717542
+    - -1.474004114406098
+    - -0.1917687193281994
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: In Front of the Board

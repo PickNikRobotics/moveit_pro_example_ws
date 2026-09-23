@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<root BTCPP_format="4" main_tree_to_execute="Move to Home">
+<root BTCPP_format="4" main_tree_to_execute="Move In Front of the Board">
   <!--//////////-->
   <BehaviorTree
-    ID="Move to Home"
-    _description="Moves the robot to the Home waypoint, where the wrist camera sees the world board and the scene cameras see the board on the wrist."
+    ID="Move In Front of the Board"
+    _description="Moves the robot to the In Front of the Board waypoint, where the world board fills most of the wrist camera image. Generate the intrinsic calibration waypoints from here."
     _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <SubTree
         ID="Move to Named Waypoint"
         _collapsed="true"
-        waypoint_name="Home"
+        waypoint_name="In Front of the Board"
       />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Move to Home">
+    <SubTree ID="Move In Front of the Board">
       <MetadataFields>
         <Metadata runnable="true" />
         <Metadata subcategory="Motion - Execute" />
