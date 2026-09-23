@@ -258,7 +258,8 @@ def generate_launch_description():
                 plugin="behavior_server::BehaviorServer",
                 name="behavior_server",
                 parameters=[configured_params],
-                remappings=remappings,
+                remappings=remappings
+                + [("cmd_vel", "platform_velocity_controller_nav2/cmd_vel_unstamped")],
             ),
             ComposableNode(
                 package="nav2_bt_navigator",

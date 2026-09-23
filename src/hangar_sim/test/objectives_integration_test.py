@@ -36,6 +36,7 @@ import rclpy
 import tf2_ros
 from tf2_msgs.msg import TFMessage
 from nav_msgs.msg import Odometry
+from sensor_msgs.msg import Imu
 import yaml
 from rclpy.time import Time
 from rclpy.qos import qos_profile_sensor_data
@@ -416,6 +417,42 @@ def test_base_link_has_single_tf_parent(
         f"odom_planar should zero /odom pose z for this planar base; "
         f"saw max |z| = {max(abs(z) for z in odom_z_samples):.4f}"
     )
+
+
+FUSE_INPUT_TIMEOUT_S = 60.0
+
+
+def test_fuse_inputs_reach_a_reliable_subscriber(
+    execute_objective_resource: ExecuteObjectiveResource,
+) -> None:
+    """fuse subscribes RELIABLE, which silently receives nothing from a BEST_EFFORT publisher."""
+    node = execute_objective_resource.node
+    topics = {
+        "/imu_sensor_broadcaster/imu": Imu,
+        "/platform_velocity_controller/odom": Odometry,
+        "/platform_velocity_controller_nav2/odom": Odometry,
+    }
+    received = dict.fromkeys(topics, 0)
+
+    def count(topic):
+        return lambda _msg: received.__setitem__(topic, received[topic] + 1)
+
+    def satisfied():
+        # Only the active base controller publishes odom, so either odom topic counts.
+        odom = [n for topic, n in received.items() if topic.endswith("/odom")]
+        return received["/imu_sensor_broadcaster/imu"] > 0 and any(odom)
+
+    # Default QoS is RELIABLE, as in fuse.
+    subscriptions = [
+        node.create_subscription(msg_type, topic, count(topic), 10)
+        for topic, msg_type in topics.items()
+    ]
+    deadline = time.monotonic() + FUSE_INPUT_TIMEOUT_S
+    while time.monotonic() < deadline and not satisfied():
+        rclpy.spin_once(node, timeout_sec=0.1)
+    for subscription in subscriptions:
+        node.destroy_subscription(subscription)
+    assert satisfied(), f"fuse input silent to a RELIABLE subscriber: {received}"
 
 
 @pytest.mark.parametrize(

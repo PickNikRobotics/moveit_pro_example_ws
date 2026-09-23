@@ -95,7 +95,7 @@ state_estimator:
     # - Roll/pitch/yaw orientation (absolute, covariance 0.001 vs wheel odom 0.5)
     # - Yaw angular velocity from gyroscope
     imu_sensor:
-      topic: /imu_sensor_broadcaster/imu_reliable
+      topic: /imu_sensor_broadcaster/imu
       orientation_dimensions: ['roll', 'pitch', 'yaw']
       angular_velocity_dimensions: ['yaw']
       queue_size: 10
