@@ -58,11 +58,12 @@
         masks3d="{masks3d}"
       />
 
-      <!-- Reference pose to disambiguate the OBB orientation (GetOrientedBoundingBox picks the box
-           orientation closest to it). 180 deg about the optical X axis points the reference +Z back
-           toward the camera — the outward surface normal. Identity would leave +Z along the camera
-           view (into the table), so the OBB would pick region +Z downward and GenerateSurfaceCoveragePath
-           (which assumes +Z is outward) would drive the sweep and its green grid below the surface. -->
+      <!-- Reference pose the OBB takes its orientation from. 180 deg about the optical X axis points the
+           reference +Z back toward the camera — the outward surface normal. Identity would leave +Z along
+           the camera view (into the table), so the OBB would pick region +Z downward and
+           GenerateSurfaceCoveragePath (which assumes +Z is outward) would drive the sweep and its green
+           grid below the surface. The reference +X stays along the image's horizontal axis, which is what
+           align_xy_to_reference below squares the sweep up with. -->
       <Action
         ID="CreatePoseStamped"
         reference_frame="wrist_camera_optical_frame"
@@ -82,12 +83,27 @@
             ID="GetPointCloudFromMask3D"
             mask3d="{mask3d}"
             point_cloud="{point_cloud}"
-            point_cloud_fragment="{region_cloud}"
+            point_cloud_fragment="{selected_cloud}"
           />
+
+          <!-- The drawn box rarely stops at the edge of the surface the operator meant: it also catches the
+               object's sides and the table behind it. A plane fitted through all of that tilts away from the
+               surface, so the sweep would neither follow it nor hold its standoff. Keep the surface itself. -->
+          <Action
+            ID="ExtractDominantPlaneFromPointCloud"
+            point_cloud="{selected_cloud}"
+            inlier_tolerance="0.005"
+            min_inlier_fraction="0.5"
+            plane_point_cloud="{region_cloud}"
+          />
+          <!-- align_xy_to_reference squares the box up with the image axes. The region is a flat patch with
+               no elongation of its own, so its principal axes follow how perspective skewed the selection:
+               they run diagonally across it, tilting the sweep and inflating the box. -->
           <Action
             ID="GetOrientedBoundingBoxFromPointCloud"
             point_cloud="{region_cloud}"
             reference_pose="{region_reference_pose}"
+            align_xy_to_reference="true"
             box_center_pose="{region_pose}"
             box_dimensions="{region_dimensions}"
           />
@@ -102,11 +118,22 @@
             coverage_path="{coverage_path}"
           />
 
+          <!-- The raster covers the region's bounding box, whose corners reach past the drawn selection
+               once perspective skews it into a non-rectangular patch. Crop it back to what the operator
+               selected, so the sweep does not run over neighbouring objects. -->
+          <Action
+            ID="CropPosesToPointCloudFootprint"
+            poses="{coverage_path}"
+            point_cloud="{region_cloud}"
+            margin="0.0"
+            poses_cropped="{covered_path}"
+          />
+
           <!-- Draw the coverage path as green grid lines over the region so the operator sees the
                sweep before it is planned, approved, and executed. marker_lifetime 0 keeps it up. -->
           <Action
             ID="VisualizePath"
-            path="{coverage_path}"
+            path="{covered_path}"
             marker_name="coverage_path"
             line_color_rgb="0;255;0"
             line_width="0.005"
@@ -114,7 +141,7 @@
           />
           <Action
             ID="PlanCartesianPath"
-            path="{coverage_path}"
+            path="{covered_path}"
             planning_group_name="manipulator"
             tip_links="grasp_link"
             blending_radius="0.001"
