@@ -345,14 +345,6 @@ def generate_launch_description():
         arguments=["0.0", "0.0", "0.0", "0.0", "0.0", "0.0", "odom", "world"],
     )
 
-    # QoS relay to bridge BEST_EFFORT odom and IMU to RELIABLE for fuse
-    sensor_qos_relay = Node(
-        package="hangar_sim",
-        executable="odom_qos_relay.py",
-        name="sensor_qos_relay",
-        output="log",
-    )
-
     hangar_sim_pkg = FindPackageShare("hangar_sim")
 
     # Pairs and rectifies the two MuJoCo renders. Started only when the cameras exist:
@@ -552,7 +544,6 @@ def generate_launch_description():
     ld.add_action(static_tf_world_to_map)
     ld.add_action(static_tf_odom_to_world)
     ld.add_action(static_tf_map_to_odom)
-    ld.add_action(sensor_qos_relay)
     if enable_vo:
         ld.add_action(forward_stereo_publisher)
     ld.add_action(lidar_flattener)

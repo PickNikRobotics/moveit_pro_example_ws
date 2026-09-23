@@ -21,7 +21,6 @@ install(PROGRAMS
   script/forward_stereo_publisher.py
   script/lidar_flattener.py
   script/odometry_joint_state_publisher.py
-  script/odom_qos_relay.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
