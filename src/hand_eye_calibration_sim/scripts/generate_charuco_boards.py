@@ -65,16 +65,18 @@ BOARDS = [
         "dictionary": cv2.aruco.DICT_4X4_50,
         "squares_x": 7,
         "squares_y": 5,
-        "square_length_m": 0.035,
-        "marker_length_m": 0.026,
+        "square_length_m": 0.050,
+        # 26/35 of the square. The PNG in assets/ is drawn from this ratio, not from
+        # the absolute lengths, so rounding it regenerates a different asset.
+        "marker_length_m": 0.037143,
     },
     {
         "filename": "charuco_arm_board.png",
         "dictionary": cv2.aruco.DICT_5X5_50,
         "squares_x": 5,
         "squares_y": 4,
-        "square_length_m": 0.030,
-        "marker_length_m": 0.022,
+        "square_length_m": 0.045,
+        "marker_length_m": 0.033,
     },
 ]
 

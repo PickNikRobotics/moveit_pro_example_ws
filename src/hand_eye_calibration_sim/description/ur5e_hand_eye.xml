@@ -172,9 +172,8 @@
                      faces up-forward toward the elevated scene cameras on the
                      +Y side, so one collection pass serves both calibration
                      modes.
-                     Physical size 0.150 x 0.120 m (5 x 4 squares of 0.030 m),
-                     matching assets/charuco_arm_board.png. Contact is
-                     disabled: the plate is a calibration target, not a
+                     The plate matches assets/charuco_arm_board.png. Contact
+                     is disabled: the plate is a calibration target, not a
                      manipulation surface. -->
                 <body
                   name="arm_board"
@@ -185,11 +184,12 @@
                   <geom
                     name="arm_board_plate"
                     type="box"
-                    size="0.075 0.06 0.004"
+                    size="0.1125 0.09 0.004"
                     material="charuco_arm_board_material"
                     contype="0"
                     conaffinity="0"
                   />
+                  <!-- Ground-truth pose of the board surface, published on TF as arm_board_top. -->
                   <site name="arm_board_top" pos="0 0 0.004" />
                 </body>
                 <include file="robotiq_2f85/robotiq2f85.xml" />
