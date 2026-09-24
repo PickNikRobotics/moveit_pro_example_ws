@@ -79,7 +79,8 @@
          view along their frame's -z. MUST be mode="fixed": MoveIt Pro only
          publishes ROS topics for FIXED cameras. Each fixed camera also
          REQUIRES a <site> named "<camera>_optical_frame", or ros2_control
-         aborts on start up; the site quat == the camera quat. fovy 45 frames
+         aborts on start up. Rotate the site 180deg about the camera's local X
+         axis for ROS optical axes (X right, Y down, Z forward). fovy 45 frames
          ~0.66 m of the table at z=0.9. -->
     <camera
       name="overview_camera"
@@ -92,7 +93,7 @@
     <site
       name="overview_camera_optical_frame"
       pos="0.5 0.035 0.9"
-      quat="-0.707107 0 0 0.707107"
+      quat="0 -0.707107 0.707107 0"
       size="0.02"
     />
 
@@ -113,7 +114,7 @@
     <site
       name="scene_camera_optical_frame"
       pos="0.12 0.52 0.92"
-      quat="-0.245859 -0.080379 0.300170 0.918145"
+      quat="0.080379 -0.245859 0.918145 -0.300170"
       size="0.02"
     />
 

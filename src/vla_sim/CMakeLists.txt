@@ -39,6 +39,16 @@ if(BUILD_TESTING)
     TIMEOUT 60
   )
 
+  ament_add_pytest_test(test_camera_optical_frames
+    test/test_camera_optical_frames.py
+    TIMEOUT 60
+  )
+
+  ament_add_pytest_test(test_gripper_named_states
+    test/test_gripper_named_states.py
+    TIMEOUT 60
+  )
+
   ament_lint_auto_find_test_dependencies()
 endif()
 
