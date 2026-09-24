@@ -18,6 +18,7 @@
   <exec_depend>joint_trajectory_admittance_controller</exec_depend>
   <exec_depend>kortex_description</exec_depend>
   <exec_depend>moveit_pro_behavior</exec_depend>
+  <exec_depend>moveit_pro_mcp_contracts</exec_depend>
   <exec_depend>moveit_studio_agent</exec_depend>
   <exec_depend>picknik_mujoco_ros</exec_depend>
   <exec_depend>robotiq_description</exec_depend>

@@ -70,20 +70,13 @@ def test_https_endpoint_is_accepted(url: str) -> None:
     "url",
     [
         "http://gpu.example/infer",
-        "https://gpu.example/other",
-        "https://gpu.example/infer?x=1",
-        "https://gpu.example/infer#x",
         "https://user:secret@gpu.example/infer",
-        "https://gpu.example:0/infer",
-        "https://gpu.example:99999/infer",
-        "https://gpu.example/infer\\x",
         # Padding is stripped, but a control character inside the URL is not.
         "https://gpu.example/in\nfer",
-        "https:///infer",
     ],
 )
 def test_ambiguous_or_insecure_endpoint_is_rejected(url: str) -> None:
-    """Configuration cannot redirect observations or credentials through URL ambiguities."""
+    """The Runtime's classifier refuses these; its full matrix is tested there."""
     with pytest.raises(ValueError, match="infer_url") as error:
         adapter.resolve_infer_url(url)
     # The message is logged, so it must not echo a password from the URL.

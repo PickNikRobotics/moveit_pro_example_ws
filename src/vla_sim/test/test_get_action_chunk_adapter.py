@@ -182,119 +182,32 @@ class TestResolveHttpTimeout(unittest.TestCase):
 
 
 class TestResolveInferUrl(unittest.TestCase):
-    """HTTPS permits remote inference; plaintext stays on literal loopback."""
+    """The Runtime's classifier owns the rule; these check the adapter's wiring."""
 
-    def test_default_url_is_accepted(self) -> None:
-        """The shipped default must pass its own check."""
-        self.assertEqual(
-            resolve_infer_url(get_action_chunk_adapter.DEFAULT_INFER_URL),
-            get_action_chunk_adapter.DEFAULT_INFER_URL,
-        )
+    def test_accepted_urls_are_rebuilt_from_the_checked_parts(self) -> None:
+        """Padding and a trailing newline never reach the HTTP client."""
+        default = get_action_chunk_adapter.DEFAULT_INFER_URL
+        for value, expected in (
+            (default, default),
+            (" https://gpu.example:8443/infer ", "https://gpu.example:8443/infer"),
+            ("http://[::1]:8973/infer\n", "http://[::1]:8973/infer"),
+        ):
+            with self.subTest(value=value):
+                self.assertEqual(resolve_infer_url(value), expected)
 
-    def test_ipv6_loopback_is_accepted(self) -> None:
-        """A server bound to ::1 is just as local as one on 127.0.0.1."""
-        url = "http://[::1]:8973/infer"
-        self.assertEqual(resolve_infer_url(url), url)
-
-    def test_loopback_range_beyond_the_first_address_is_accepted(self) -> None:
-        """The whole 127.0.0.0/8 range is loopback, not just 127.0.0.1."""
-        url = "http://127.0.0.5:8973/infer"
-        self.assertEqual(resolve_infer_url(url), url)
-
-    def test_remote_host_is_rejected(self) -> None:
-        """The inference key would go out in cleartext to a machine we do not own."""
+    def test_a_refused_url_names_the_parameter_and_the_reason(self) -> None:
+        """The classifier's reason reaches the log with the parameter at fault."""
         with self.assertRaises(ValueError) as ctx:
             resolve_infer_url("http://10.0.0.7:8973/infer")
-        self.assertIn("loopback", str(ctx.exception))
+        self.assertIn("infer_url", str(ctx.exception))
+        self.assertIn("not a loopback address", str(ctx.exception))
 
-    def test_remote_https_host_is_accepted(self) -> None:
-        """An explicit HTTPS endpoint selects remote inference."""
-        url = "https://10.0.0.7:8973/infer"
-        self.assertEqual(resolve_infer_url(url), url)
-
-    def test_https_is_accepted_for_loopback(self) -> None:
-        """HTTPS keeps its transport contract on loopback."""
-        for url in ("https://127.0.0.1:8973/infer", "https://[::1]:8973/infer"):
-            with self.subTest(url=url):
-                self.assertEqual(resolve_infer_url(url), url)
-
-    def test_hostname_is_rejected_even_when_it_names_loopback(self) -> None:
-        """'localhost' resolves at connect time, so accepting it would accept
-        whatever the resolver returns then, not what is checked here."""
+    def test_an_empty_url_is_refused_naming_the_default(self) -> None:
+        """A blank parameter is a configuration error, not silently the default."""
         with self.assertRaises(ValueError) as ctx:
-            resolve_infer_url("http://localhost:8973/infer")
-        self.assertIn("IP literal", str(ctx.exception))
-
-    def test_userinfo_cannot_disguise_a_remote_host(self) -> None:
-        """Everything before '@' is userinfo: this URL addresses evil.com."""
-        with self.assertRaises(ValueError) as ctx:
-            resolve_infer_url("http://127.0.0.1@evil.com/infer")
-        self.assertIn("no credentials", str(ctx.exception))
-
-    def test_backslash_in_the_authority_is_rejected(self) -> None:
-        """urlsplit reads the backslash as an ordinary userinfo character and
-        reports 127.0.0.1, while the HTTP client ends the authority there and
-        connects to evil.example. Accepting this sends the inference key to
-        that host in cleartext."""
-        for url in (
-            "http://evil.example\\@127.0.0.1:8973/infer",
-            "http://evil.example\\@[::1]:8973/infer",
-        ):
-            with self.assertRaises(ValueError, msg=url) as ctx:
-                resolve_infer_url(url)
-            self.assertIn("no credentials", str(ctx.exception), msg=url)
-
-    def test_surrounding_whitespace_is_ignored(self) -> None:
-        """Padding from quoting or interpolation is not part of the address."""
-        self.assertEqual(
-            resolve_infer_url(" https://gpu.example:8443/infer "),
-            "https://gpu.example:8443/infer",
-        )
-        self.assertEqual(
-            resolve_infer_url(" http://127.0.0.1:8973/infer "),
-            "http://127.0.0.1:8973/infer",
-        )
-
-    def test_the_returned_url_is_rebuilt_from_the_checked_parts(self) -> None:
-        """urlsplit drops tab and newline characters before it parses, so a URL
-        handed back as given can still carry bytes that were never checked."""
-        self.assertEqual(
-            resolve_infer_url("http://127.0.0.1:8973/infer\n"),
-            "http://127.0.0.1:8973/infer",
-        )
-
-    def test_a_port_the_client_cannot_use_is_rejected_here(self) -> None:
-        """Out-of-range and non-numeric ports otherwise surface much later, as
-        a per-request client error that does not name the parameter at fault."""
-        for url in ("http://127.0.0.1:99999/infer", "http://127.0.0.1:8973-8975/infer"):
-            with self.assertRaises(ValueError, msg=url) as ctx:
-                resolve_infer_url(url)
-            self.assertIn("invalid port", str(ctx.exception), msg=url)
-
-    def test_ipv4_mapped_ipv6_cannot_disguise_a_remote_host(self) -> None:
-        """An IPv4-mapped literal is refused whether or not it maps to loopback,
-        since is_loopback answers differently across Python patch releases."""
-        for url in (
-            "http://[::ffff:10.0.0.7]:8973/infer",
-            "http://[::ffff:127.0.0.1]:8973/infer",
-        ):
-            with self.assertRaises(ValueError, msg=url) as ctx:
-                resolve_infer_url(url)
-            self.assertIn("IPv4-mapped", str(ctx.exception))
-
-    def test_alternate_spellings_of_loopback_are_rejected(self) -> None:
-        """Decimal and hex forms of 127.0.0.1 are what a bypass looks like;
-        requiring dotted-quad keeps the accepted set to one spelling."""
-        for url in ("http://2130706433:8973/infer", "http://0x7f000001:8973/infer"):
-            with self.assertRaises(ValueError, msg=url):
-                resolve_infer_url(url)
-
-    def test_non_http_scheme_is_rejected(self) -> None:
-        """The adapter POSTs with requests; a file:// target is not a server."""
-        with self.assertRaises(ValueError) as ctx:
-            resolve_infer_url("file:///etc/passwd")
-        self.assertIn("must use https", str(ctx.exception))
-        self.assertIn("'file'", str(ctx.exception))
+            resolve_infer_url("  ")
+        self.assertIn("infer_url", str(ctx.exception))
+        self.assertIn(get_action_chunk_adapter.DEFAULT_INFER_URL, str(ctx.exception))
 
 
 class TestOnRequest(unittest.TestCase):

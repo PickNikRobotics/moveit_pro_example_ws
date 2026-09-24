@@ -45,14 +45,12 @@ loading" from a server-reported inference error.
 """
 
 import base64
-import ipaddress
 import json
 import os
 import socket
 import sys
 import threading
 import time
-from urllib.parse import urlsplit, urlunsplit
 
 import cv2
 import numpy as np
@@ -66,8 +64,13 @@ from std_msgs.msg import Float64MultiArray, MultiArrayDimension
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
 from moveit_pro_ml_msgs.srv import GetActionChunk
+from moveit_pro_mcp_contracts.inference_url import (
+    INFERENCE_PATH,
+    LOCAL_INFERENCE_URL_EXAMPLE,
+    classify_inference_url,
+)
 
-DEFAULT_INFER_URL = "http://127.0.0.1:8973/infer"
+DEFAULT_INFER_URL = LOCAL_INFERENCE_URL_EXAMPLE
 
 # Bound on server-supplied text relayed into the UI-bound response message.
 MAX_SERVER_DETAIL_CHARS = 2000
@@ -135,85 +138,21 @@ def resolve_http_timeout(value: float) -> float:
 
 
 def resolve_infer_url(value: str) -> str:
-    """Accept external HTTPS /infer endpoints or literal-loopback HTTP."""
-    # Compose interpolation and shell quoting can pad the value; the Runtime's
-    # classifier ignores that padding too.
-    value = value.strip()
-    parts = urlsplit(value)
-    if parts.scheme == "https":
-        try:
-            port = parts.port
-        except ValueError:
-            raise ValueError(
-                f"the infer_url parameter has an invalid port, got {value!r}"
-            ) from None
-        if (
-            not parts.hostname
-            or parts.username is not None
-            or "\\" in value
-            or any(ord(char) <= 32 or ord(char) == 127 for char in value)
-            or parts.path != "/infer"
-            or "?" in value
-            or "#" in value
-            or port == 0
-        ):
-            raise ValueError(
-                "infer_url must be https://<host>[:port]/infer with no "
-                "credentials, query, or fragment; got host "
-                f"{parts.hostname!r}, path {parts.path!r}."
-            )
-        host = parts.hostname
-        authority = f"[{host}]" if ":" in host else host
-        if port is not None:
-            authority += f":{port}"
-        return urlunsplit(("https", authority, "/infer", "", ""))
-    if parts.scheme != "http":
+    """Resolve the infer_url parameter with the Runtime's INFER_URL rule.
+
+    The same classifier decides which address the launcher starts a local
+    server for and which one Trainer hands off to, so the three never
+    disagree. The URL is rebuilt from the checked parts, so nothing urlsplit
+    drops or the client would read differently reaches the request.
+    """
+    endpoint = classify_inference_url(value)
+    if endpoint is None:
         raise ValueError(
-            "infer_url must use https, or http with a literal loopback address; "
-            f"got scheme {parts.scheme!r}, host {parts.hostname!r}."
+            f"the infer_url parameter is empty; the local default is {DEFAULT_INFER_URL}"
         )
-    # `urlsplit` and the HTTP client disagree about where the authority ends:
-    # `urlsplit` reads `evil.example\@127.0.0.1` as credentials followed by a
-    # loopback host, while the client stops at the backslash and connects to
-    # evil.example. Credentials have no use here, since the key travels in a
-    # header, so rejecting both characters leaves them nothing to disagree on.
-    if "@" in parts.netloc or "\\" in parts.netloc:
-        raise ValueError(
-            f"the infer_url parameter must be a plain scheme://host:port URL "
-            f"carrying no credentials, got {value!r}"
-        )
-    try:
-        host = ipaddress.ip_address(parts.hostname or "")
-    except ValueError:
-        raise ValueError(
-            f"the infer_url parameter must address a loopback IP literal such as "
-            f"{DEFAULT_INFER_URL}, got {value!r}"
-        ) from None
-    # ``is_loopback`` of an IPv4-mapped IPv6 address changed between Python
-    # patch releases; MoveIt Pro's launcher and Trainer refuse it the same way.
-    if isinstance(host, ipaddress.IPv6Address) and host.ipv4_mapped is not None:
-        raise ValueError(
-            "the infer_url parameter must not use an IPv4-mapped address; use "
-            f"127.0.0.1 or ::1, got {value!r}"
-        )
-    if not host.is_loopback:
-        raise ValueError(
-            f"the infer_url parameter must stay on this machine: {host} is not a "
-            "loopback address. Use HTTPS for an externally managed server."
-        )
-    try:
-        port = parts.port
-    except ValueError:
-        raise ValueError(
-            f"the infer_url parameter has an invalid port, got {value!r}"
-        ) from None
-    # Rebuilt rather than returned as given: `urlsplit` drops tab and newline
-    # characters before parsing, so the original string can still carry bytes
-    # the client would read differently. Any fragment is dropped with them,
-    # since it is never sent to the server.
-    literal = f"[{host}]" if host.version == 6 else str(host)
-    authority = literal if port is None else f"{literal}:{port}"
-    return urlunsplit((parts.scheme, authority, parts.path, parts.query, ""))
+    if endpoint.kind == "invalid":
+        raise ValueError(f"the infer_url parameter is refused: {endpoint.reason}")
+    return endpoint.url(INFERENCE_PATH)
 
 
 class RequestError(Exception):
