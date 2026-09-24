@@ -136,6 +136,9 @@ def resolve_http_timeout(value: float) -> float:
 
 def resolve_infer_url(value: str) -> str:
     """Accept external HTTPS /infer endpoints or literal-loopback HTTP."""
+    # Compose interpolation and shell quoting can pad the value; the Runtime's
+    # classifier ignores that padding too.
+    value = value.strip()
     parts = urlsplit(value)
     if parts.scheme == "https":
         try:
@@ -186,6 +189,13 @@ def resolve_infer_url(value: str) -> str:
             f"the infer_url parameter must address a loopback IP literal such as "
             f"{DEFAULT_INFER_URL}, got {value!r}"
         ) from None
+    # ``is_loopback`` of an IPv4-mapped IPv6 address changed between Python
+    # patch releases; MoveIt Pro's launcher and Trainer refuse it the same way.
+    if isinstance(host, ipaddress.IPv6Address) and host.ipv4_mapped is not None:
+        raise ValueError(
+            "the infer_url parameter must not use an IPv4-mapped address; use "
+            f"127.0.0.1 or ::1, got {value!r}"
+        )
     if not host.is_loopback:
         raise ValueError(
             f"the infer_url parameter must stay on this machine: {host} is not a "

@@ -67,7 +67,8 @@ from vla_inference_server import (
     load_checkpoint_file,
     load_hf_token_file,
     load_policy,
-    load_serving_config,
+    parse_serving_config,
+    read_serving_config,
     make_handler,
     native_camera_map,
     parse_args,
@@ -80,6 +81,11 @@ from vla_inference_server import (
     resolve_rtc_schedule,
     watch_runtime_inputs,
 )
+
+
+def load_serving_config(path: str) -> dict:
+    """Read and parse a serving config the way the server's startup does."""
+    return parse_serving_config(path, read_serving_config(path))
 
 
 def encode_bgr_jpeg_b64(bgr: np.ndarray) -> str:
@@ -479,6 +485,23 @@ class TestParseArgsCoercion(unittest.TestCase):
 
         self.assertIsNone(args.trainer_handoff_version)
         self.assertIn("moveit_pro_trainer_handoff_version", args.config_error)
+
+    def test_an_unreadable_config_parks_in_config_error(self) -> None:
+        """A read failure parks post-bind like a malformed file, not in a crash."""
+        with tempfile.NamedTemporaryFile("w", suffix=".yaml", delete=False) as f:
+            f.write("checkpoint: acme/model\n")
+            path = f.name
+        try:
+            with patch("sys.argv", ["vla_inference_server.py", "--config", path]):
+                with patch(
+                    "pathlib.Path.read_bytes", side_effect=PermissionError("denied")
+                ):
+                    args = parse_args()
+        finally:
+            os.unlink(path)
+
+        self.assertIsNone(args.config_revision)
+        self.assertIn("PermissionError", args.config_error)
 
     def test_legacy_yaml_keeps_mutable_public_checkpoint_defaults(self) -> None:
         """Existing serving files need no new fields and retain their behavior."""

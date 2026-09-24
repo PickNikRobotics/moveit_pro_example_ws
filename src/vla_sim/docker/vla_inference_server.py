@@ -133,19 +133,30 @@ INFERENCE_KEY_ENV = "MOVEIT_INFERENCE_KEY"
 _HF_TOKEN_FILE_SOURCE_ENV = "MOVEIT_PRO_HF_TOKEN_FROM_FILE"
 
 
-def load_serving_config(path: str) -> dict:
-    """Read the per-config model-serving YAML into a dict of knob values.
+def read_serving_config(path: str) -> bytes | None:
+    """The serving config file's bytes, or None without a file.
+
+    One read feeds both the parse and the revision hash, so /status never
+    pairs one file's hash with another file's model.
+    """
+    file = Path(path).expanduser()
+    if not file.is_file():
+        return None
+    return file.read_bytes()
+
+
+def parse_serving_config(path: str, content: bytes | None) -> dict:
+    """Parse the per-config model-serving YAML into a dict of knob values.
 
     A missing or empty file returns {}: built-in defaults still apply, so a
     bare `docker run` needs no config. A malformed file (or one whose top
     level is not a mapping) raises, so a typo in the operator's tuning surface
     fails loudly instead of silently serving with the wrong knobs.
     """
-    file = Path(path).expanduser()
-    if not file.is_file():
+    if content is None:
         log(f"no serving config at '{path}'; using built-in defaults")
         return {}
-    loaded = yaml.safe_load(file.read_text())
+    loaded = yaml.safe_load(content)
     if loaded is None:
         log(f"serving config '{path}' is empty; using built-in defaults")
         return {}
@@ -155,18 +166,6 @@ def load_serving_config(path: str) -> dict:
             f"values, not a {type(loaded).__name__}"
         )
     return loaded
-
-
-def serving_config_revision(path: str) -> str | None:
-    """The sha256 of the serving config file's bytes, or None without a file.
-
-    Trainer hashes the file it writes the same way, so /status can show
-    whether this process loaded that file or some other mount.
-    """
-    file = Path(path).expanduser()
-    if not file.is_file():
-        return None
-    return hashlib.sha256(file.read_bytes()).hexdigest()
 
 
 def resolve_default(yaml_value, builtin):
@@ -742,8 +741,6 @@ def load_policy(state: ServerState, args: argparse.Namespace) -> None:
     """Load + warm the policy in the background; on failure park in the error state."""
     state.checkpoint = args.checkpoint
     state.checkpoint_revision = getattr(args, "checkpoint_revision", "")
-    state.config_revision = getattr(args, "config_revision", None)
-    state.trainer_handoff_version = getattr(args, "trainer_handoff_version", None)
     try:
         # A malformed serving config was deferred out of parse_args so the
         # socket could bind first; surface it here like any other load failure.
@@ -1103,9 +1100,14 @@ def parse_args() -> argparse.Namespace:
 
     config: dict = {}
     config_errors: list = []
-    config_revision = serving_config_revision(config_path)
+    config_revision: str | None = None
     try:
-        config = load_serving_config(config_path)
+        content = read_serving_config(config_path)
+        # Trainer hashes the file it writes the same way, so /status can show
+        # whether this process loaded that file or some other mount.
+        if content is not None:
+            config_revision = hashlib.sha256(content).hexdigest()
+        config = parse_serving_config(config_path, content)
     except Exception as exc:
         # A malformed config must park in the error state after the socket
         # binds, not crash before it. Defer: build defaults from built-ins and
@@ -1213,15 +1215,16 @@ def parse_args() -> argparse.Namespace:
         + " | ".join(schedule.name for schedule in RTCAttentionSchedule),
     )
     args = parser.parse_args()
-    # Echoed on /status so Trainer can check the running server, not just the
-    # YAML it wrote: which file this process loaded and which handoff contract
-    # that file declares.
+    # /status reports these so Trainer can tell which file this process
+    # loaded and which handoff version that file declares.
     args.config_revision = config_revision
     handoff_version = config.get("moveit_pro_trainer_handoff_version")
     if handoff_version is not None and (
         isinstance(handoff_version, bool) or not isinstance(handoff_version, int)
     ):
-        config_errors.append("moveit_pro_trainer_handoff_version must be an integer")
+        config_errors.append(
+            f"moveit_pro_trainer_handoff_version: {handoff_version!r} is not an integer"
+        )
         handoff_version = None
     args.trainer_handoff_version = handoff_version
     args.config_error = "; ".join(config_errors)

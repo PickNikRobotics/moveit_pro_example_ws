@@ -58,23 +58,26 @@ Set these in the workspace `.env`; all are optional.
 | `HF_HUB_OFFLINE` | `1` serves only what is already in the cache, with no network access. |
 | `VLA_HF_CACHE` | Host path for the Hugging Face cache. Defaults to `../hf_cache`. |
 | `VLA_MODELS_DIR` | Host folder mounted at `/models`, for checkpoints stored outside the workspace. Defaults to `../models`. |
+| `VLA_CONFIG_DIR` | Host directory mounted at `/vla_config`, the one Trainer writes `vla_serving.yaml` into. Defaults to `src/<MOVEIT_CONFIG_PACKAGE>/config`; set it for a package nested elsewhere, such as `src/moveit_pro_kinova_configs/kinova_sim/config`. |
 | `VLA_TORCH_INDEX` | Package index the image installs torch from, for example `https://download.pytorch.org/whl/cpu` on a machine with no NVIDIA GPU. Defaults to PyPI. |
 
 ## The HTTP contract
 
 `GET /health` reports `loading` / `ready` / `error` and needs no token.
 Authenticated `GET /status` also reports the selected checkpoint and immutable
-revision so Trainer can confirm the exact model is loaded, plus `configRevision`
-(the sha256 of the serving file this process loaded, which Trainer compares with
-the file it wrote) and `trainerHandoffVersion` (the
-`moveit_pro_trainer_handoff_version` that file declares). `POST /infer` and
+revision so Trainer can confirm the exact model is loaded. It also reports
+`configRevision`, the sha256 of the serving file this process loaded, which
+Trainer compares with the file it wrote, and `trainerHandoffVersion`, the
+`moveit_pro_trainer_handoff_version` that file declares. `POST /infer` and
 `GET /status` require `MOVEIT_INFERENCE_KEY` as a bearer token. `moveit_pro run
 --with-inference-server` and `--only-inference-server` derive it from the
 deployment's frontend key and pass it to the local inference server, and
 `moveit_pro inference-key` prints the same value for a remote host. The server
 itself speaks plain HTTP. In the local deployment it publishes on `127.0.0.1`
 only, which keeps the token off the network; off-box, a TLS proxy in front of it
-is what keeps the token off the wire. Replacing `vla_serving.yaml` or the
+is what keeps the token off the wire. TLS covers the robot-to-proxy hop only:
+the proxy forwards to the server over plain HTTP on the stack's private
+compose network, which nothing else may join. Replacing `vla_serving.yaml` or the
 Trainer-provisioned credential reloads the process so the old model's GPU
 memory is released first.
 A reload waits for a running policy: it holds off until `/infer` has been quiet

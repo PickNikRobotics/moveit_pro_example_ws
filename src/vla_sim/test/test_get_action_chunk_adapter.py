@@ -244,6 +244,17 @@ class TestResolveInferUrl(unittest.TestCase):
                 resolve_infer_url(url)
             self.assertIn("no credentials", str(ctx.exception), msg=url)
 
+    def test_surrounding_whitespace_is_ignored(self) -> None:
+        """Padding from quoting or interpolation is not part of the address."""
+        self.assertEqual(
+            resolve_infer_url(" https://gpu.example:8443/infer "),
+            "https://gpu.example:8443/infer",
+        )
+        self.assertEqual(
+            resolve_infer_url(" http://127.0.0.1:8973/infer "),
+            "http://127.0.0.1:8973/infer",
+        )
+
     def test_the_returned_url_is_rebuilt_from_the_checked_parts(self) -> None:
         """urlsplit drops tab and newline characters before it parses, so a URL
         handed back as given can still carry bytes that were never checked."""
@@ -261,10 +272,15 @@ class TestResolveInferUrl(unittest.TestCase):
             self.assertIn("invalid port", str(ctx.exception), msg=url)
 
     def test_ipv4_mapped_ipv6_cannot_disguise_a_remote_host(self) -> None:
-        """::ffff:10.0.0.7 parses as an IP literal but is not loopback."""
-        with self.assertRaises(ValueError) as ctx:
-            resolve_infer_url("http://[::ffff:10.0.0.7]:8973/infer")
-        self.assertIn("loopback", str(ctx.exception))
+        """An IPv4-mapped literal is refused whether or not it maps to loopback,
+        since is_loopback answers differently across Python patch releases."""
+        for url in (
+            "http://[::ffff:10.0.0.7]:8973/infer",
+            "http://[::ffff:127.0.0.1]:8973/infer",
+        ):
+            with self.assertRaises(ValueError, msg=url) as ctx:
+                resolve_infer_url(url)
+            self.assertIn("IPv4-mapped", str(ctx.exception))
 
     def test_alternate_spellings_of_loopback_are_rejected(self) -> None:
         """Decimal and hex forms of 127.0.0.1 are what a bypass looks like;
@@ -535,6 +551,11 @@ class TestOnRequest(unittest.TestCase):
         self.assertFalse(
             self.node._session.trust_env,
             "An ambient proxy or netrc entry must not reach observations.",
+        )
+        self.assertEqual(
+            self.node._session.headers["Accept-Encoding"],
+            "identity",
+            "A compressed body would bypass the response size cap.",
         )
 
     @patch(SESSION_POST)

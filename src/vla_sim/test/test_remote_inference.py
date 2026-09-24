@@ -77,7 +77,8 @@ def test_https_endpoint_is_accepted(url: str) -> None:
         "https://gpu.example:0/infer",
         "https://gpu.example:99999/infer",
         "https://gpu.example/infer\\x",
-        "https://gpu.example/infer\n",
+        # Padding is stripped, but a control character inside the URL is not.
+        "https://gpu.example/in\nfer",
         "https:///infer",
     ],
 )

@@ -91,11 +91,12 @@ services:
       # for checkpoints stored elsewhere.
       - ${VLA_MODELS_DIR:-${MOVEIT_HOST_USER_WORKSPACE:-.}/src/vla_sim/models}:/models:ro
       # Model-serving config (checkpoint, fps, device, ...); edits trigger an
-      # automatic model reload, with no image rebuild. The active robot
-      # configuration package's config directory is mounted, since Trainer's
-      # handoff writes that package's vla_serving.yaml. Every config package
-      # here lives at src/<package>, which is what makes this path valid.
-      - ${MOVEIT_HOST_USER_WORKSPACE:-.}/src/${MOVEIT_CONFIG_PACKAGE:-vla_sim}/config:/vla_config:ro
+      # automatic model reload, with no image rebuild. Mounts the active robot
+      # configuration package's config directory, because Trainer writes that
+      # package's vla_serving.yaml. The default assumes the package lives at
+      # src/<package>; set VLA_CONFIG_DIR for one nested elsewhere, such as
+      # src/moveit_pro_kinova_configs/kinova_sim/config.
+      - ${VLA_CONFIG_DIR:-${MOVEIT_HOST_USER_WORKSPACE:-.}/src/${MOVEIT_CONFIG_PACKAGE:-vla_sim}/config}:/vla_config:ro
       # The server script and its tests; edits take effect on restart, no
       # image rebuild, and `docker exec ... python -m unittest` reaches the
       # test suite (see src/vla_sim/docker/README.md).
