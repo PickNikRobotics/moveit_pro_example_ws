@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Stack Cubes Until the Cube Poses Confirm"
+>
+  <!--
+    Only the check ends the run as SUCCESS. If the policy run ends first, the
+    policy Subtree logs why and fails, and the ReactiveFallback fails with
+    it. The check looks for the stack that the prompt in Stack Cubes with the
+    VLA Policy or Fail When Time Runs Out asks for, so change them together.
+    Run Reset MuJoCo Sim between attempts.
+  -->
+  <BehaviorTree
+    ID="Stack Cubes Until the Cube Poses Confirm"
+    _description="Stack the blue cube on the green cube with the VLA policy, and end the run once the simulator's cube poses show the blue cube on the green one and the gripper has let go. Fails if the cubes are not stacked within 30 s of policy motion."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="root">
+      <Action
+        ID="SwitchController"
+        activate_controllers="joint_trajectory_admittance_controller"
+        deactivate_controllers="velocity_force_controller"
+        strictness="2"
+        timeout="-1.000000"
+        controller_list_action_name="/controller_manager/list_controllers"
+        controller_switch_action_name="/controller_manager/switch_controller"
+      />
+      <Action
+        ID="MoveGripperAction"
+        gripper_command_action_name="/robotiq_gripper_controller/gripper_cmd"
+        position="0.0"
+      />
+      <SubTree ID="Move to Waypoint" _collapsed="true" waypoint_name="Home" />
+      <Control ID="ReactiveFallback">
+        <!--Runs before the policy, 100 times a second. When the check passes, the ReactiveFallback stops the policy and succeeds.-->
+        <SubTree
+          ID="Check if the Blue Cube Is on the Green Cube"
+          _collapsed="true"
+        />
+        <SubTree
+          ID="Stack Cubes with the VLA Policy or Fail When Time Runs Out"
+          _collapsed="true"
+        />
+      </Control>
+      <Action
+        ID="LogMessage"
+        message="The blue cube is on the green cube and the gripper has let go."
+        log_level="info"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Stack Cubes Until the Cube Poses Confirm">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - VLA Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
