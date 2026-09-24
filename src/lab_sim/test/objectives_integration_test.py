@@ -276,8 +276,9 @@ cancel_objectives = {
 skip_objectives = {
     "AddBottlesToPlanningScene",
     # Hand-eye calibration Objectives from moveit_pro_objectives: they generate or
-    # move through `calibration_*` waypoints and detect a ChArUco board, which only
+    # move through calibration waypoints and detect a ChArUco board, which only
     # hand_eye_calibration_sim provides.
+    "Calibrate Camera Intrinsics",
     "Calibrate Eye In Hand Camera",
     "Calibrate Eye To Hand Camera",
     "Calibrate Multiple Cameras",
