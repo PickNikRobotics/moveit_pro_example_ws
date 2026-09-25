@@ -26,6 +26,7 @@ git submodule update --init src/moveit_pro_sam2 src/moveit_pro_sam3
 - `dual_arm_sim`
 - `factory_sim`
 - `grinding_sim`
+- `hand_eye_calibration_sim`
 - `hangar_sim`
 - `kitchen_sim`
 - `lab_sim`
@@ -37,7 +38,6 @@ git submodule update --init src/moveit_pro_sam2 src/moveit_pro_sam3
 - `moveit_pro_kinova_configs/kinova_gen3_base_config`
 - `moveit_pro_kinova_configs/kinova_sim`
 - `moveit_pro_kinova_configs/space_satellite_sim`
-- `moveit_pro_kinova_configs/space_satellite_sim_camera_cal`
 - `moveit_pro_ur_configs/mock_sim`
 - `moveit_pro_ur_configs/multi_arm_sim`
 - `moveit_pro_ur_configs/picknik_ur_base_config`

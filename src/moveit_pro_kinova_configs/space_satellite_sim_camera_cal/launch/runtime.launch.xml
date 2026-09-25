@@ -1,8 +1,0 @@
-<launch>
-  <include
-    file="$(find-pkg-share moveit_studio_agent)/launch/runtime_services.launch.xml"
-  />
-  <include
-    file="$(find-pkg-share space_satellite_sim_camera_cal)/launch/36h11.launch.yml"
-  />
-</launch>
