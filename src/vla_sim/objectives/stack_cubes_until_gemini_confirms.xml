@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Stack Cubes Until Gemini Confirms">
+  <!--
+    Needs GOOGLE_GEMINI_API_KEY in the Runtime environment. Only Gemini ends
+    the run as SUCCESS. If the policy run ends first, the policy Subtree logs
+    why and fails, and the Parallel fails with it. The question describes the
+    stack that the prompt in Stack Cubes with the VLA Policy or Fail When Time
+    Runs Out asks for, so change them together. The scene camera is fixed, so
+    the cubes stay in view while the arm moves. Run Reset MuJoCo Sim between
+    attempts.
+  -->
+  <BehaviorTree
+    ID="Stack Cubes Until Gemini Confirms"
+    _description="Stack the blue cube on the green cube with the VLA policy, and end the run once Gemini answers that the blue cube is on the green one and the gripper has let go. Needs a Gemini API key. Fails if Gemini does not answer yes within 30 s of policy motion."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="root">
+      <Action
+        ID="SwitchController"
+        activate_controllers="joint_trajectory_admittance_controller"
+        deactivate_controllers="velocity_force_controller"
+        strictness="2"
+        timeout="-1.000000"
+        controller_list_action_name="/controller_manager/list_controllers"
+        controller_switch_action_name="/controller_manager/switch_controller"
+      />
+      <Action
+        ID="MoveGripperAction"
+        gripper_command_action_name="/robotiq_gripper_controller/gripper_cmd"
+        position="0.0"
+      />
+      <SubTree ID="Move to Waypoint" _collapsed="true" waypoint_name="Home" />
+      <Control ID="Parallel" success_count="1" failure_count="1">
+        <SubTree
+          ID="Stack Cubes with the VLA Policy or Fail When Time Runs Out"
+          _collapsed="true"
+        />
+        <Action
+          ID="WaitForConditionFromGeminiQuery"
+          question="Is the blue cube resting on top of the green cube, with the gripper not holding it?"
+          image_topic="/scene_camera/color"
+        />
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Stack Cubes Until Gemini Confirms">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - VLA Examples" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

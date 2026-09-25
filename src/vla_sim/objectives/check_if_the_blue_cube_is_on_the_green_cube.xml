@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Check if the Blue Cube Is on the Green Cube"
+>
+  <!--
+    The cube frames are MuJoCo sites on each cube's centroid, which
+    picknik_mujoco_ros publishes to TF. They are the simulator's ground truth; on
+    a real cell the same check needs cube poses from perception.
+
+    Every node here answers in the tick it runs, and none logs while the cubes
+    are apart, so the check can run on every tick of the tree.
+
+    The stack check accepts blue's center within half a cube width of the point
+    above green's center, so blue rests on green's top face. The gripper check
+    fails while the policy still holds the blue cube on the stack. The rotation
+    tolerances are above pi, which turns the angle checks off, so blue can rest
+    on any face. The offset runs along green's z axis, so green must stay
+    upright.
+  -->
+  <BehaviorTree
+    ID="Check if the Blue Cube Is on the Green Cube"
+    _description="Checks the simulator's cube poses once. Returns SUCCESS if the blue cube rests on the green cube and the gripper is at least 5 cm from it, and FAILURE otherwise."
+    _favorite="false"
+  >
+    <Control ID="Sequence">
+      <!--Green's pose in blue's frame, moved 3 cm up green's z axis, is near identity only when blue sits on green.-->
+      <Action
+        ID="GetLatestTransform"
+        target_frame_id="cube_blue_tf"
+        source_frame_id="cube_green_tf"
+        transform="{green_in_blue}"
+      />
+      <Action
+        ID="ConvertTransformStampedToPoseStamped"
+        transform_stamped="{green_in_blue}"
+        pose_stamped="{green_pose}"
+      />
+      <Action
+        ID="TransformPose"
+        input_pose="{green_pose}"
+        translation_xyz="0;0;0.03"
+        quaternion_xyzw="0;0;0;1"
+        output_pose="{stack_offset}"
+      />
+      <Action
+        ID="IsPoseNearIdentity"
+        pose="{stack_offset}"
+        position_tolerance="0.015"
+        rotation_tolerance="3.15"
+      />
+      <Action
+        ID="GetLatestTransform"
+        target_frame_id="grasp_link"
+        source_frame_id="cube_blue_tf"
+        transform="{blue_in_gripper}"
+      />
+      <Action
+        ID="ConvertTransformStampedToPoseStamped"
+        transform_stamped="{blue_in_gripper}"
+        pose_stamped="{blue_gripper_pose}"
+      />
+      <Decorator ID="Inverter">
+        <Action
+          ID="IsPoseNearIdentity"
+          pose="{blue_gripper_pose}"
+          position_tolerance="0.05"
+          rotation_tolerance="3.15"
+        />
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Check if the Blue Cube Is on the Green Cube">
+      <MetadataFields>
+        <Metadata subcategory="Application - VLA Examples" />
+        <Metadata runnable="false" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
