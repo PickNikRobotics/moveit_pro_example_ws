@@ -125,6 +125,9 @@ skip_objectives = {
     "Calibrate Eye To Hand Camera",
     "Calibrate Multiple Cameras",
     "Generate Calibration Waypoints",
+    # A 121 m drive for scoring odometry against ground truth, not a smoke test;
+    # it is run by hand.
+    "Navigate Hangar Loop",
     # Intermittent Jazzy CI-runner flakes. Skipped so the suite is deterministic.
     #
     # "Solution - Draw Picknik" is the suite's longest objective and sits on
