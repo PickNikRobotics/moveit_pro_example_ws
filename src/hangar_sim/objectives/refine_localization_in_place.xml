@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Refine Localization In Place">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Refine Localization In Place"
+    _description="Refine the localization estimate without moving the robot, e.g. after a bump."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree ID="Localize Robot If Needed" />
+      <!--The seed is the estimate the filter already holds, so a rejected refinement restores that same estimate.-->
+      <Action
+        ID="GetLatestTransform"
+        name="Read the current estimate"
+        target_frame_id="map"
+        source_frame_id="ridgeback_base_link"
+        transform="{current_transform}"
+      />
+      <Action
+        ID="ConvertTransformStampedToPoseStamped"
+        name="Use it as the seed"
+        transform_stamped="{current_transform}"
+        pose_stamped="{initial_pose}"
+      />
+      <SubTree
+        ID="Refine Localization In Place Subtree"
+        name="Refine the estimate"
+        seed_pose="{initial_pose}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Refine Localization In Place">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Navigation" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

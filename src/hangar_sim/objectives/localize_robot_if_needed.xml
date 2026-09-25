@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Localize Robot If Needed">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Localize Robot If Needed"
+    _description="Runs Localize Robot if the robot is not localized."
+    _favorite="false"
+  >
+    <!--The localizer starts unseeded (set_initial_pose: false), so map -> ridgeback_base_link does not resolve until Localize Robot runs. A lookup failure cannot tell an unseeded filter from a briefly unavailable one, so the messages state the symptom and warn that re-localizing replaces any existing estimate.-->
+    <Control ID="Fallback" name="Read the pose, or localize first">
+      <Action
+        ID="GetLatestTransform"
+        name="Read the current estimate"
+        target_frame_id="map"
+        source_frame_id="ridgeback_base_link"
+        transform="{current_transform}"
+      />
+      <Control ID="Sequence" name="An operator is here, so localize">
+        <Action ID="IsUserAvailable" />
+        <Action
+          ID="LogMessage"
+          log_level="warn"
+          message="Robot not localized. Set its position with the marker."
+        />
+        <SubTree ID="Localize Robot" />
+      </Control>
+      <!--The Inverter re-tests for a UI, so a Localize Robot rejection above is not reported as "no UI attached".-->
+      <Control ID="Sequence" name="Pose unreadable, and nobody to ask">
+        <Decorator ID="Inverter" name="Only when no UI is attached">
+          <Action ID="IsUserAvailable" />
+        </Decorator>
+        <Action
+          ID="LogMessage"
+          log_level="error"
+          message="Robot not localized. Run Localize Robot."
+        />
+        <Action ID="AlwaysFailure" name="Stop" />
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Localize Robot If Needed">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Navigation" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
