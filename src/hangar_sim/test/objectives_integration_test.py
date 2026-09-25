@@ -131,6 +131,9 @@ skip_objectives = {
     # the next objectives plan from a self-colliding start. Skipping removes the
     # timeout flake and its downstream sim-state pollution.
     "Solution - Draw Picknik",
+    # A 121 m unattended drive for scoring odometry against ground truth (about
+    # 12 min), not a smoke test; it runs outside CI.
+    "Navigate Hangar Loop",
 }
 
 # Execute-timeout overrides for objectives that legitimately exceed the 90 s
