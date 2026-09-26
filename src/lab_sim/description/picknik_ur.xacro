@@ -2,6 +2,15 @@
 <robot name="ur5e" xmlns:xacro="http://ros.org/wiki/xacro">
   <xacro:arg name="mujoco_model" default="description/scene.xml" />
   <xacro:arg name="mujoco_model_package" default="lab_sim" />
+  <!-- Which renderer produces this config's camera topics: mujoco (the default), nyx, or both on separate topics. runtime.launch.xml reads the same variable to decide whether to start the Nyx node, so the two halves cannot disagree. An unrecognized value fails the description rather than leaving the config with no cameras. -->
+  <xacro:arg
+    name="camera_renderer"
+    default="$(optenv MOVEIT_PRO_CAMERA_RENDERER mujoco)"
+  />
+  <xacro:property
+    name="mujoco_cameras"
+    value="${ dict(mujoco=True, nyx=False, both=True)['$(arg camera_renderer)'] }"
+  />
   <xacro:arg
     name="point_cloud_publish_rate"
     default="$(optenv MOVEIT_PRO_POINT_CLOUD_PUBLISH_RATE 10)"
@@ -1203,10 +1212,10 @@
       <plugin>picknik_mujoco_ros/MujocoSystem</plugin>
       <param name="mujoco_model">$(arg mujoco_model)</param>
       <param name="mujoco_model_package">$(arg mujoco_model_package)</param>
-      <!-- The rate <camera> data is published at -->
-      <param name="render_publish_rate">10</param>
-      <!-- The rate point clouds generated from depth images are published at -->
-      <param name="point_cloud_publish_rate">$(arg point_cloud_publish_rate)</param>
+      <!-- The rate <camera> data is published at. Zero switches MuJoCo's cameras off: the image timer is only created for a non-zero rate. -->
+      <param name="render_publish_rate">${10 if mujoco_cameras else 0}</param>
+      <!-- The rate point clouds generated from depth images are published at. Zero for the same reason, and it follows the render rate rather than standing alone: the cloud timer publishes what the render timer produced, so against a stopped renderer it would report every camera as never having rendered. Nyx has no depth output, so selecting it gives up point clouds. -->
+      <param name="point_cloud_publish_rate">${$(arg point_cloud_publish_rate) if mujoco_cameras else 0}</param>
       <!-- The rate transforms to <site> poses are published at -->
       <param name="tf_publish_rate">60</param>
       <!-- The rate <rangefinder> data is published at -->
