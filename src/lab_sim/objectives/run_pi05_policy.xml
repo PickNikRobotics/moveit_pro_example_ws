@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Run pi0.5 Policy">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Run pi0.5 Policy"
+    _description="Runs the in-process libtorch pi0.5 vision-language-action policy on the lab_sim arm. Wiring demo: runnable end-to-end once a matching-dims checkpoint (real lab_sim joint count, not the base checkpoint's 32-dim placeholder) is exported -- see moveit_pro PR that adds ExecutePolicyPi05Torch."
+    _favorite="false"
+  >
+    <Control ID="Sequence">
+      <!-- Move to a known start pose so the policy's first observation is reproducible. -->
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        waypoint_name="Look at Table"
+      />
+      <Action
+        ID="ExecutePolicyPi05Torch"
+        prefix_pt_path="/models/pi05/pi05_prefix.pt"
+        expert_pt_path="/models/pi05/pi05_expert.pt"
+        tokenizer_path=""
+        stats_path="/models/pi05/pi05_stats.json"
+        prompt="pick up the block"
+        joint_group_name="manipulator"
+        total_action_steps="200"
+        committed_action_steps="32"
+        dt="0.05"
+        num_interpolation_points="100"
+        goal_path_tolerance="0.05"
+        policy_tracking_weight="300.0"
+        policy_uses_real_time_chunking="false"
+        guidance_horizon="0"
+        controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+        absolute_force_torque_threshold="45;45;45;10;10;10"
+        policy_call_timeout="30.0"
+        image_names="observation.images.base_0_rgb;observation.images.left_wrist_0_rgb;observation.images.right_wrist_0_rgb"
+        image_topics="/scene_camera/color;/wrist_camera/color;/wrist_camera/color"
+        joint_states_topic="/joint_states"
+        policy_service_name="unused"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Run pi0.5 Policy">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - ML (GPU Recommended)" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
