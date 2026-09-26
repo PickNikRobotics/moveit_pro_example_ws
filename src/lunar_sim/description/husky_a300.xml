@@ -152,6 +152,36 @@
         pos="-0.4028 0 0.4074593"
       />
 
+      <!-- The arch's rear camera mount, amp_sensor_arch.urdf.xacro lines 105-110,
+           composed with enclosure_antenna_mount (-0.4028,0,0.4074593) from
+           amp_enclosure.urdf.xacro lines 59-64. No extra bracket offset. The
+           quaternion is the URDF's Rz(3.14159)*Ry(0.6021385919380436), so the
+           camera faces rearward and 34.5 degrees down. The arch's front mount
+           carries the OAK-D Pro below; only the rear mount was still free.
+           The camera looks along mount +X; the optical site uses ROS +Z
+           forward/+Y down. Ideal D435-like RGB-D at the D435's 1280x720 colour
+           mode; see README. cameras.cpp rejects any non-lidar camera whose
+           resolution differs from husky_scene.xml's <global offwidth offheight>,
+           so 1280x720 is forced. -->
+      <body
+        name="sensor_arch_rear_camera_mount"
+        pos="-0.49333483924399535 0 0.7983989596691913"
+        quat="0.0000012671155885310561 -0.2965415749753099 0.00000039344984833030547 0.9550199444563461"
+      >
+        <camera
+          name="sensor_arch_rear_camera_mount"
+          mode="fixed"
+          xyaxes="0 -1 0 0 0 1"
+          fovy="42.5"
+          resolution="1280 720"
+        />
+        <site
+          name="sensor_arch_rear_camera_mount_optical_frame"
+          xyaxes="0 -1 0 0 0 -1"
+          rgba="0 0 0 0"
+        />
+      </body>
+
       <!-- Clearpath amp_enclosure's front_lidar_mount is (0.4, 0, 0.2708593).
            A 50 mm forward/up bracket puts the scan above the front mounting shelf.
            The rear scanner hangs 60 mm below amp_sensor_arch's lidar_mount:

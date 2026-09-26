@@ -175,6 +175,17 @@ optical-frame convention: flip Y and Z, keep X) - see `scene_camera_optical_fram
 `src/lunar_sim/description/husky_scene.xml` or `src/factory_sim/description/scene.xml` for the
 established pattern.
 
+### Camera `resolution` must match the scene's `<global offwidth offheight>`
+
+The same `extract_cameras()` throws `Camera resolution mismatch` at hardware init - not at model
+load - for any non-lidar camera whose `resolution` differs from the scene's
+`<visual><global offwidth offheight>`; a 3D-lidar camera (`user=` depth type 2) is exempt, since
+it is rendered as rotated tiles and merged. Camera resolutions in a scene are therefore not
+independently tunable: a new camera either matches the offscreen buffer or `<global>` changes for
+every camera at once. `test_rear_camera_mount_matches_vendored_urdf` in
+`src/lunar_sim/test/test_husky_mujoco_geometry.py` asserts the pair against each other so they
+cannot drift apart.
+
 ### MuJoCo documentation
 
 Refer to [docs.picknik.ai](https://docs.picknik.ai) for MuJoCo configuration guides:
