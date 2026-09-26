@@ -436,7 +436,8 @@ slam_toolbox:
     odom_frame: odom
     map_frame: map
     base_frame: ridgeback_base_link
-    scan_topic: /scan_front_filtered
+    # Front and rear scans, one per message; slam_toolbox tracks one sensor per frame_id.
+    scan_topic: /scan_interleaved
     mode: mapping
 
     debug_logging: false
@@ -451,7 +452,8 @@ slam_toolbox:
     enable_interactive_mode: true
 
     # General Parameters
-    use_scan_matching: false
+    # Align scans rather than trusting odometry, which drifts when use_fuse:=true.
+    use_scan_matching: true
     use_scan_barycenter: true
     minimum_travel_distance: 0.3
     minimum_travel_heading: 0.3
@@ -460,7 +462,7 @@ slam_toolbox:
     link_match_minimum_response_fine: 0.1
     link_scan_maximum_distance: 1.5
     loop_search_maximum_distance: 3.0
-    do_loop_closing: false
+    do_loop_closing: true
     loop_match_minimum_chain_size: 10
     loop_match_maximum_variance_coarse: 3.0
     loop_match_minimum_response_coarse: 0.35
