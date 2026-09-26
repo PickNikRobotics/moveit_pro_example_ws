@@ -31,6 +31,9 @@
   <exec_depend>lab_sim_behaviors</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_cmake_gtest</test_depend>
+  <test_depend>behaviortree_cpp_picknik</test_depend>
+  <test_depend>tinyxml2_vendor</test_depend>
 
   <test_depend>ament_clang_format</test_depend>
   <test_depend>ament_clang_tidy</test_depend>
