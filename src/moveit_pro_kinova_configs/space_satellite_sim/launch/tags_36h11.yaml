@@ -22,4 +22,4 @@
         tag:
             ids: [0, 1, 2]            # tag ID
             frames: [satellite_tag_0, satellite_tag_1, satellite_tag_2]  # optional frame name
-            sizes: [0.1, 0.1, 0.1]   # optional tag-specific edge size
+            sizes: [0.2, 0.2, 0.2]   # optional tag-specific edge size (0.8 x the 0.25 m face)
