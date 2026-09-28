@@ -276,22 +276,26 @@ def resolve_fps(checkpoint: str, fps: float, revision: str = "") -> float:
     )
 
 
-def resolve_device(requested: str, cuda_available: bool) -> str:
+def resolve_device(
+    requested: str, cuda_available: bool, require_gpu: bool = False
+) -> str:
     """Resolve the torch device, failing loudly when an explicit request can't be honored.
 
-    'auto' picks cuda when torch reports a usable GPU and falls back to cpu.
+    'auto' picks cuda for CUDA or ROCm. GPU images reject an unavailable GPU;
+    other images fall back to cpu. An explicit cpu request is always honored.
     An explicit cuda request on a host without one is a startup error, never a
     silent cpu fallback, so pacing tuned for a GPU cannot quietly run an order
     of magnitude slower.
     """
     if requested == "auto":
-        return "cuda" if cuda_available else "cpu"
+        requested = "cuda" if cuda_available or require_gpu else "cpu"
     if requested.startswith("cuda") and not cuda_available:
         raise ValueError(
             f"device '{requested}' was requested but this torch build reports "
-            "no usable GPU; run the container with the NVIDIA runtime "
-            "(GPU serving is automatic on NVIDIA machines under the launcher) "
-            "or set device: auto in vla_serving.yaml"
+            "no usable GPU. On AMD, check /dev/kfd and /dev/dri access; "
+            "on NVIDIA, check the NVIDIA Container Toolkit. Restart through "
+            "the MoveIt Pro launcher, or set device: cpu in vla_serving.yaml "
+            "to explicitly choose CPU inference."
         )
     return requested
 
@@ -831,7 +835,11 @@ def load_policy(state: ServerState, args: argparse.Namespace) -> None:
         policy_type = resolve_policy_type(
             args.checkpoint, args.policy_class, args.checkpoint_revision
         )
-        device = resolve_device(args.device, torch.cuda.is_available())
+        device = resolve_device(
+            args.device,
+            torch.cuda.is_available(),
+            os.environ.get("VLA_REQUIRE_GPU") == "1",
+        )
         if policy_type not in TESTED_POLICY_TYPES:
             log(
                 f"WARNING: policy family '{policy_type}' is untested with this "
@@ -841,7 +849,7 @@ def load_policy(state: ServerState, args: argparse.Namespace) -> None:
             f"loading {policy_type} checkpoint '{args.checkpoint}'"
             f"{f' at {args.checkpoint_revision}' if args.checkpoint_revision else ''} "
             f"on '{device}' "
-            f"(torch {torch.__version__}"
+            f"(torch {torch.__version__}, HIP {torch.version.hip}, CUDA {torch.version.cuda}"
             f"{', int8' if args.int8 and policy_type == 'pi05' else ''}) ..."
         )
         runner = PolicyRunner(
@@ -885,8 +893,7 @@ def load_policy(state: ServerState, args: argparse.Namespace) -> None:
                     f"{chunk_steps}-step chunk on '{device}', over the "
                     f"{budget_s:.2f}s real-time budget at {state.fps:g} fps; "
                     "execution will starve at chunk seams. Serve on a faster "
-                    "device (the launcher uses the GPU automatically on NVIDIA "
-                    "machines) or use a policy this machine can serve in time. The "
+                    "device (the launcher uses supported NVIDIA and AMD GPUs automatically) or use a policy this machine can serve in time. The "
                     "objective's committed_action_steps x dt sets the "
                     "tighter per-run budget."
                 )

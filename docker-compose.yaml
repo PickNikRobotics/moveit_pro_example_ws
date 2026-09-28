@@ -48,6 +48,8 @@ services:
   # src/vla_sim/config/vla_serving.yaml, mounted at /vla_config; everything
   # below is a host setting.
   inference_server:
+    # One suffix selects both the build stage and this tag, so a cached image built for another accelerator is never reused.
+    image: ${COMPOSE_PROJECT_NAME:-moveit_pro}-inference_server${MOVEIT_INFERENCE_IMAGE_SUFFIX:-}:latest
     # Declared here too, so a launcher whose compose file carries no
     # inference_server skeleton still gates this service instead of building
     # and starting it on every plain run and build.
@@ -59,6 +61,7 @@ services:
       context: ${MOVEIT_HOST_USER_WORKSPACE:-.}/src/vla_sim/docker
       dockerfile: Dockerfile.vla_inference_server
       args:
+        MOVEIT_INFERENCE_IMAGE_SUFFIX: ${MOVEIT_INFERENCE_IMAGE_SUFFIX:-}
         TORCH_INDEX: ${VLA_TORCH_INDEX:-}
     # Host facts only; model knobs and Trainer-provisioned Hugging Face access
     # are owned by MoveIt Pro.

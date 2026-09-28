@@ -25,8 +25,7 @@ moveit_pro run -c vla_sim --with-inference-server
 ```
 
 The first run builds the image and downloads the checkpoint into `../hf_cache/`;
-later runs reuse both. Then run **Stack Cubes with the VLA Policy** in the web
-UI, and **Reset MuJoCo Sim** between attempts.
+later runs reuse both. Then run **Stack Cubes with the VLA Policy** in the MoveIt Pro Desktop App, and **Reset MuJoCo Sim** between attempts.
 
 Only a *missing* image is built that way, and `moveit_pro build` skips this
 service because its compose profile is off by default, so nothing rebuilds the
@@ -40,8 +39,9 @@ moveit_pro down
 docker rmi moveit_pro-inference_server:latest
 ```
 
-Compose names the image after its project and this service, so the tag above is
-what the launcher builds; `docker images` confirms it. `moveit_pro down` first
+The command above uses the default CPU/CUDA image tag. On AMD, remove
+`moveit_pro-inference_server-rocm7.2.2:latest` instead. A named instance uses its
+Compose project name in place of `moveit_pro`; `docker images` confirms the tag. `moveit_pro down` first
 because Docker refuses to remove an image a container still references, and a
 stopped container counts.
 
@@ -65,6 +65,14 @@ Serving a different checkpoint also takes two edits in
 match what the checkpoint was trained on: set `image_names` to its camera names,
 which the server rejects the request for if they differ, and set `dt` to 1/`fps`.
 
+## AMD GPUs
+
+With a launcher that supports AMD VLA inference, no vendor-specific workspace settings are needed. The launcher derives `MOVEIT_INFERENCE_IMAGE_SUFFIX` from its selected target: empty for CPU, CUDA, and Jetson, `-rocm7.2.2` for AMD. That one value selects both the Dockerfile stage and the image tag, so a cached CPU/CUDA image cannot satisfy an AMD launch. The ROCm stage uses AMD's pinned PyTorch distribution and direct `/dev/kfd` and `/dev/dri` access; the AMD Container Toolkit is optional. The server reports its Torch and HIP versions at startup. PyTorch's `cuda` device name also means GPU execution on ROCm.
+
+The ROCm image targets Linux `amd64` and refuses an automatic CPU fallback when the GPU is
+unavailable. `device: cpu` remains an explicit opt-out. CUDA/CPU images retain their existing Torch
+versions and `VLA_TORCH_INDEX` override; ROCm preserves the libraries from its pinned base image.
+
 ## Environment
 
 Set these in the workspace `.env`; all are optional.
@@ -76,7 +84,7 @@ Set these in the workspace `.env`; all are optional.
 | `VLA_HF_CACHE` | Host path for the Hugging Face cache. Defaults to `../hf_cache`. |
 | `VLA_MODELS_DIR` | Host folder mounted at `/models`, for checkpoints stored outside the workspace. Defaults to `../models`. |
 | `VLA_CONFIG_DIR` | Host directory mounted at `/vla_config`, the one Trainer writes `vla_serving.yaml` into. Defaults to `src/<MOVEIT_CONFIG_PACKAGE>/config`; set it for a package nested elsewhere, such as `src/moveit_pro_kinova_configs/kinova_sim/config`. |
-| `VLA_TORCH_INDEX` | Package index the image installs torch from, for example `https://download.pytorch.org/whl/cpu` on a machine with no NVIDIA GPU. Defaults to PyPI. |
+| `VLA_TORCH_INDEX` | Package index the image installs torch from, for example `https://download.pytorch.org/whl/cpu` on a machine with no NVIDIA GPU. Defaults to PyPI for CPU/CUDA images; ignored by the pinned ROCm image. |
 
 ## The HTTP contract
 

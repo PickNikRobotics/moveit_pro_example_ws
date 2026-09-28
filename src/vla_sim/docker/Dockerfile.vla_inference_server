@@ -1,4 +1,7 @@
-FROM python:3.12-slim
+# Empty for CPU, CUDA, and Jetson; the launcher's ROCm suffix otherwise. Compose uses the same value in the image tag, so a tag always names the stage it holds.
+ARG MOVEIT_INFERENCE_IMAGE_SUFFIX=
+
+FROM python:3.12-slim AS runtime
 
 # opencv needs libGL/glib at import time even headless-adjacent; install once here
 # rather than debugging ImportErrors inside a slim image.
@@ -44,14 +47,32 @@ RUN --mount=type=cache,target=/root/.cache/pip \
       "torch==$TORCH_VERSION" "torchvision==$TORCHVISION_VERSION" \
       "torchao==$TORCHAO_VERSION"
 
+# ROCm is a separate binary distribution behind the same server and policy interface.
+FROM rocm/pytorch:rocm7.2.2_ubuntu24.04_py3.12_pytorch_release_2.10.0@sha256:73136312e61ea15af04e89a9df3830bd3fa91c14aad755cde0e426e707f493ff AS runtime-rocm7.2.2
+# Pin the installed AMD builds while resolving LeRobot: a plain torch version
+# would let pip replace them with CUDA wheels. Triton is part of that pairing.
+RUN --mount=type=cache,target=/root/.cache/pip \
+    python -c 'import importlib.metadata as m; print("\n".join(p + "==" + m.version(p) for p in ("torch", "torchvision", "triton")))' > /tmp/rocm-constraints.txt \
+    && PIP_DEFAULT_TIMEOUT=120 PIP_RETRIES=10 pip install \
+      -c /tmp/rocm-constraints.txt "lerobot[pi,smolvla]==0.6.0" "torchao==0.16.0" \
+    && python -c 'import torch, torchvision; assert torch.version.hip, "ROCm torch was replaced"' \
+    && rm /tmp/rocm-constraints.txt
+# Selecting the ROCm image promises GPU execution; an unavailable device is an
+# actionable startup error. An explicit device: cpu remains an opt-out.
+ENV VLA_REQUIRE_GPU=1
+
+# Selects a named stage above, whose external base is already versioned.
+# hadolint ignore=DL3006
+FROM runtime${MOVEIT_INFERENCE_IMAGE_SUFFIX} AS server
+
 COPY vla_inference_server.py /app/
 WORKDIR /app
 
 # Non-root default for a bare `docker run` (the compose service overrides the
 # user anyway); a real passwd entry keeps getpass.getuser() working in torch's
 # import-time cache-dir setup.
-RUN useradd --create-home --uid 1000 vla
-USER vla
+RUN getent passwd 1000 >/dev/null || useradd --create-home --uid 1000 vla
+USER 1000
 
 EXPOSE 8973
 ENTRYPOINT ["python", "vla_inference_server.py"]

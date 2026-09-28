@@ -106,6 +106,19 @@ class TestResolveDevice(unittest.TestCase):
         """device=auto without a GPU serves on cpu."""
         self.assertEqual(resolve_device("auto", cuda_available=False), "cpu")
 
+    def test_gpu_image_refuses_auto_cpu_fallback(self) -> None:
+        """A GPU image without usable devices fails even with device=auto."""
+        with self.assertRaisesRegex(ValueError, "/dev/kfd"):
+            resolve_device("auto", cuda_available=False, require_gpu=True)
+
+    def test_gpu_image_honors_explicit_cpu(self) -> None:
+        """The user's CPU opt-out takes precedence over the image default."""
+        self.assertEqual(resolve_device("cpu", False, require_gpu=True), "cpu")
+
+    def test_gpu_image_selects_accelerator(self) -> None:
+        """CUDA and ROCm both use the same policy-facing device name."""
+        self.assertEqual(resolve_device("auto", True, require_gpu=True), "cuda")
+
     def test_explicit_cuda_without_gpu_raises(self) -> None:
         """An explicit cuda request on a CPU-only host is a startup error."""
         with self.assertRaises(ValueError):
