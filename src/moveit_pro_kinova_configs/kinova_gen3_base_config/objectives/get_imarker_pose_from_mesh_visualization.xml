@@ -31,7 +31,6 @@
       <inout_port name="adjusted_poses" default="{adjusted_poses}" />
       <inout_port name="mesh_path" default="{mesh_path}" />
       <inout_port name="mesh_pose" default="{mesh_pose}" />
-      <inout_port name="_collapsed" default="false" />
       <MetadataFields>
         <Metadata subcategory="User Input" />
       </MetadataFields>
