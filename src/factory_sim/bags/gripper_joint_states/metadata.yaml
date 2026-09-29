@@ -1,0 +1,30 @@
+rosbag2_bagfile_information:
+  version: 9
+  storage_identifier: mcap
+  duration:
+    nanoseconds: 11980000000
+  starting_time:
+    nanoseconds_since_epoch: 1790640000000000000
+  message_count: 1200
+  topics_with_message_count:
+    - topic_metadata:
+        name: /joint_states
+        type: sensor_msgs/msg/JointState
+        serialization_format: cdr
+        offered_qos_profiles:
+          []
+        type_description_hash: ""
+      message_count: 1200
+  compression_format: ""
+  compression_mode: ""
+  relative_file_paths:
+    - gripper_joint_states_0.mcap
+  files:
+    - path: gripper_joint_states_0.mcap
+      starting_time:
+        nanoseconds_since_epoch: 1790640000000000000
+      duration:
+        nanoseconds: 11980000000
+      message_count: 2400
+  custom_data: ~
+  ros_distro: jazzy

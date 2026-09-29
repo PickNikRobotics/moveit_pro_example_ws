@@ -1,0 +1,116 @@
+<?xml version="1.0" ?>
+<!--
+  Angular two-finger gripper for the "Attach Angular Gripper" Objective.
+
+  Two revolute fingers pivot toward each other about the base's x axis. The
+  fingers are independent, so the gripper has two actuated joints.
+  0 rad is fully open (fingers parallel, 68 mm gap), 0.38 rad is fully
+  closed (fingertips about 2 mm apart).
+
+  The root link is the mounting face: AddURDF places it at tool0.
+  Geometry is primitives only, so the collision shapes AttachURDF uses are
+  also what the tool looks like.
+
+  The ros2_control block is what this tool's own driver would bring up.
+  See the README's "Articulated tools with AttachURDF" section for what
+  MoveIt Pro does with it.
+-->
+<robot name="angular_gripper">
+  <material name="angular_gripper_blue">
+    <color rgba="0.15 0.3 0.6 1" />
+  </material>
+  <material name="angular_gripper_yellow">
+    <color rgba="0.95 0.8 0.1 1" />
+  </material>
+
+  <link name="angular_gripper_base">
+    <visual>
+      <origin xyz="0 0 0.025" rpy="0 0 0" />
+      <geometry>
+        <cylinder radius="0.045" length="0.05" />
+      </geometry>
+      <material name="angular_gripper_blue" />
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.025" rpy="0 0 0" />
+      <geometry>
+        <cylinder radius="0.045" length="0.05" />
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="angular_gripper_left_finger">
+    <visual>
+      <origin xyz="0 0 0.045" rpy="0 0 0" />
+      <geometry>
+        <box size="0.015 0.012 0.09" />
+      </geometry>
+      <material name="angular_gripper_yellow" />
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.045" rpy="0 0 0" />
+      <geometry>
+        <box size="0.015 0.012 0.09" />
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="angular_gripper_right_finger">
+    <visual>
+      <origin xyz="0 0 0.045" rpy="0 0 0" />
+      <geometry>
+        <box size="0.015 0.012 0.09" />
+      </geometry>
+      <material name="angular_gripper_yellow" />
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.045" rpy="0 0 0" />
+      <geometry>
+        <box size="0.015 0.012 0.09" />
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- A positive angle turns each finger toward the centre line. -->
+  <joint name="angular_gripper_left_finger_joint" type="revolute">
+    <parent link="angular_gripper_base" />
+    <child link="angular_gripper_left_finger" />
+    <origin xyz="0 0.04 0.05" rpy="0 0 0" />
+    <axis xyz="1 0 0" />
+    <limit lower="0.0" upper="0.38" effort="10.0" velocity="1.0" />
+  </joint>
+
+  <joint name="angular_gripper_right_finger_joint" type="revolute">
+    <parent link="angular_gripper_base" />
+    <child link="angular_gripper_right_finger" />
+    <origin xyz="0 -0.04 0.05" rpy="0 0 0" />
+    <axis xyz="-1 0 0" />
+    <limit lower="0.0" upper="0.38" effort="10.0" velocity="1.0" />
+  </joint>
+
+  <ros2_control name="angular_gripper" type="system">
+    <hardware>
+      <plugin>mock_components/GenericSystem</plugin>
+    </hardware>
+    <joint name="angular_gripper_left_finger_joint">
+      <command_interface name="position">
+        <param name="min">0.0</param>
+        <param name="max">0.38</param>
+      </command_interface>
+      <state_interface name="position">
+        <param name="initial_value">0.0</param>
+      </state_interface>
+      <state_interface name="velocity" />
+    </joint>
+    <joint name="angular_gripper_right_finger_joint">
+      <command_interface name="position">
+        <param name="min">0.0</param>
+        <param name="max">0.38</param>
+      </command_interface>
+      <state_interface name="position">
+        <param name="initial_value">0.0</param>
+      </state_interface>
+      <state_interface name="velocity" />
+    </joint>
+  </ros2_control>
+</robot>

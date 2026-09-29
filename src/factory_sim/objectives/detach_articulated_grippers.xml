@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Detach Articulated Grippers">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Detach Articulated Grippers"
+    _description="Detach the parallel and angular grippers from the flange, remove them from the planning scene, and remove the test part. Succeeds when none of them is present."
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree
+        ID="Detach and Remove Tool"
+        _collapsed="true"
+        tool_name="parallel_gripper"
+      />
+      <SubTree
+        ID="Detach and Remove Tool"
+        _collapsed="true"
+        tool_name="angular_gripper"
+      />
+      <Action ID="RemoveCollisionObject" object_id="gripper_test_part" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Detach Articulated Grippers">
+      <MetadataFields>
+        <Metadata subcategory="Articulated Tools" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Check Gripper Finger Collision">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Check Gripper Finger Collision"
+    _description="Place a 30 x 40 x 40 mm test part between the fingers of an attached articulated gripper, then collision check the robot's current state against the current planning scene. Succeeds when nothing touches. Fails, and marks the contacts, when a finger is in the part."
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <!-- The part sits 70 to 110 mm out from the flange, clear of the palm and between both grippers' fingers. -->
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="tool0"
+        position_xyz="0;0;0.09"
+        pose_stamped="{part_pose}"
+      />
+      <Action
+        ID="AddCollisionBox"
+        object_id="gripper_test_part"
+        dimensions="0.03;0.04;0.04"
+        pose="{part_pose}"
+        overwrite="true"
+      />
+      <Action
+        ID="GetCurrentPlanningScene"
+        planning_scene_msg="{planning_scene}"
+      />
+      <Action
+        ID="GetJointState"
+        planning_group_name="manipulator"
+        planning_scene="{planning_scene}"
+        joint_state="{joint_state}"
+      />
+      <Action
+        ID="CreateStationaryTrajectory"
+        joint_state="{joint_state}"
+        trajectory_duration="1"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+      />
+      <Action
+        ID="ValidateTrajectory"
+        planning_scene_msg="{planning_scene}"
+        planning_group_name="manipulator"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Check Gripper Finger Collision">
+      <MetadataFields>
+        <Metadata subcategory="Articulated Tools" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

@@ -1,0 +1,110 @@
+<?xml version="1.0" ?>
+<!--
+  Parallel-jaw two-finger gripper for the "Attach Parallel Gripper" Objective.
+
+  Two prismatic fingers slide toward each other along the base's y axis. The
+  right finger mimics the left, so the gripper has one actuated joint.
+  0 m is fully open (90 mm gap), 0.04 m is fully closed (10 mm gap).
+
+  The root link is the mounting face: AddURDF places it at tool0.
+  Geometry is primitives only, so the collision shapes AttachURDF uses are
+  also what the tool looks like.
+
+  The ros2_control block is what this tool's own driver would bring up.
+  See the README's "Articulated tools with AttachURDF" section for what
+  MoveIt Pro does with it.
+-->
+<robot name="parallel_gripper">
+  <material name="parallel_gripper_grey">
+    <color rgba="0.35 0.35 0.38 1" />
+  </material>
+  <material name="parallel_gripper_orange">
+    <color rgba="0.95 0.45 0.1 1" />
+  </material>
+
+  <link name="parallel_gripper_base">
+    <visual>
+      <origin xyz="0 0 0.02" rpy="0 0 0" />
+      <geometry>
+        <box size="0.05 0.12 0.04" />
+      </geometry>
+      <material name="parallel_gripper_grey" />
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.02" rpy="0 0 0" />
+      <geometry>
+        <box size="0.05 0.12 0.04" />
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="parallel_gripper_left_finger">
+    <visual>
+      <origin xyz="0 0 0.04" rpy="0 0 0" />
+      <geometry>
+        <box size="0.02 0.01 0.08" />
+      </geometry>
+      <material name="parallel_gripper_orange" />
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.04" rpy="0 0 0" />
+      <geometry>
+        <box size="0.02 0.01 0.08" />
+      </geometry>
+    </collision>
+  </link>
+
+  <link name="parallel_gripper_right_finger">
+    <visual>
+      <origin xyz="0 0 0.04" rpy="0 0 0" />
+      <geometry>
+        <box size="0.02 0.01 0.08" />
+      </geometry>
+      <material name="parallel_gripper_orange" />
+    </visual>
+    <collision>
+      <origin xyz="0 0 0.04" rpy="0 0 0" />
+      <geometry>
+        <box size="0.02 0.01 0.08" />
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="parallel_gripper_left_finger_joint" type="prismatic">
+    <parent link="parallel_gripper_base" />
+    <child link="parallel_gripper_left_finger" />
+    <origin xyz="0 0.05 0.04" rpy="0 0 0" />
+    <axis xyz="0 -1 0" />
+    <limit lower="0.0" upper="0.04" effort="100.0" velocity="0.1" />
+  </joint>
+
+  <joint name="parallel_gripper_right_finger_joint" type="prismatic">
+    <parent link="parallel_gripper_base" />
+    <child link="parallel_gripper_right_finger" />
+    <origin xyz="0 -0.05 0.04" rpy="0 0 0" />
+    <axis xyz="0 1 0" />
+    <limit lower="0.0" upper="0.04" effort="100.0" velocity="0.1" />
+    <mimic joint="parallel_gripper_left_finger_joint" multiplier="1" offset="0" />
+  </joint>
+
+  <!-- ros2_control reads the <mimic> tag above, so the right finger gets state interfaces only. -->
+  <ros2_control name="parallel_gripper" type="system">
+    <hardware>
+      <plugin>mock_components/GenericSystem</plugin>
+    </hardware>
+    <joint name="parallel_gripper_left_finger_joint">
+      <command_interface name="position">
+        <param name="min">0.0</param>
+        <param name="max">0.04</param>
+      </command_interface>
+      <state_interface name="position">
+        <param name="initial_value">0.0</param>
+      </state_interface>
+      <state_interface name="velocity" />
+    </joint>
+    <joint name="parallel_gripper_right_finger_joint">
+      <state_interface name="position" />
+      <state_interface name="velocity" />
+    </joint>
+  </ros2_control>
+</robot>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Attach Parallel Gripper">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Attach Parallel Gripper"
+    _description="Add the parallel-jaw gripper at the flange and attach it with AttachURDF, as a tool changer would after a tool change. The gripper URDF has two finger joints and its own ros2_control block. Detaches any articulated gripper first."
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree ID="Detach Articulated Grippers" _collapsed="true" />
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="tool0"
+        pose_stamped="{tool_pose}"
+      />
+      <Action
+        ID="AddURDF"
+        urdf_name="parallel_gripper"
+        package_name="factory_sim"
+        urdf_file_path="description/articulated_tools/parallel_gripper.urdf"
+        urdf_pose="{tool_pose}"
+      />
+      <Action
+        ID="AttachURDF"
+        urdf_name="parallel_gripper"
+        parent_link_name="tool0"
+        allowed_collision_links="link_4;link_5;link_6"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Attach Parallel Gripper">
+      <MetadataFields>
+        <Metadata subcategory="Articulated Tools" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

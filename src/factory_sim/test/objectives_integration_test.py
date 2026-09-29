@@ -79,6 +79,13 @@ skip_objectives: set[str] = {
     "Reachability Analysis - blocks",
     "Reachability Analysis - bowls",
     "Setup Initial Planning Scene",
+    # Articulated-tool repro: these need the finger joint state bag playing,
+    # and they leave a gripper on the flange or a test part in the planning
+    # scene for the Objectives that run after them. See the README.
+    "Attach Parallel Gripper",
+    "Attach Angular Gripper",
+    "Check Gripper Finger Collision",
+    "Detach Articulated Grippers",
 }
 
 
