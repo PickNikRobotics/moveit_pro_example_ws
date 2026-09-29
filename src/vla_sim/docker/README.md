@@ -40,7 +40,7 @@ docker rmi moveit_pro-inference_server:latest
 ```
 
 The command above uses the default CPU/CUDA image tag. On AMD, remove
-`moveit_pro-inference_server-rocm7.2.2:latest` instead. A named instance uses its
+`moveit_pro-inference_server-rocm:latest` instead. A named instance uses its
 Compose project name in place of `moveit_pro`; `docker images` confirms the tag. `moveit_pro down` first
 because Docker refuses to remove an image a container still references, and a
 stopped container counts.
@@ -67,7 +67,7 @@ which the server rejects the request for if they differ, and set `dt` to 1/`fps`
 
 ## AMD GPUs
 
-With a launcher that supports AMD VLA inference, no vendor-specific workspace settings are needed. The launcher derives `MOVEIT_INFERENCE_IMAGE_SUFFIX` from its selected target: empty for CPU, CUDA, and Jetson, `-rocm7.2.2` for AMD. That one value selects both the Dockerfile stage and the image tag, so a cached CPU/CUDA image cannot satisfy an AMD launch. The ROCm stage uses AMD's pinned PyTorch distribution and direct `/dev/kfd` and `/dev/dri` access; the AMD Container Toolkit is optional. The server reports its Torch and HIP versions at startup. PyTorch's `cuda` device name also means GPU execution on ROCm.
+With a launcher that supports AMD VLA inference, no vendor-specific workspace settings are needed. The launcher derives `MOVEIT_INFERENCE_IMAGE_SUFFIX` from its selected target: empty for CPU, CUDA, and Jetson, `-rocm` for AMD on x86_64. That one value selects both the Dockerfile stage and the image tag, so a cached CPU/CUDA image cannot satisfy an AMD launch. An arm64 AMD host serves from the CPU image. The ROCm stage pins its own AMD PyTorch distribution, independent of the Runtime image's ROCm version, and uses direct `/dev/kfd` and `/dev/dri` access; the AMD Container Toolkit is optional. The server reports its Torch and HIP versions at startup. PyTorch's `cuda` device name also means GPU execution on ROCm.
 
 The ROCm image targets Linux `amd64` and refuses an automatic CPU fallback when the GPU is
 unavailable. `device: cpu` remains an explicit opt-out. CUDA/CPU images retain their existing Torch
