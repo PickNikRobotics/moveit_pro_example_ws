@@ -85,6 +85,18 @@
         <param name="camera_enabled">false</param>
       </sensor>
     </xacro:unless>
+    <!-- Name the renders like a real OAK-D's raw streams. The per-camera camera_info carries no
+         stereo baseline, hence "monocular"; producing rectified stereo for VO is a separate step. -->
+    <xacro:if value="$(arg enable_vo)">
+      <sensor name="oakd_left">
+        <param name="rgb_topic">/oakd/left/image_raw</param>
+        <param name="camera_info_topic">/oakd/left/monocular_camera_info</param>
+      </sensor>
+      <sensor name="oakd_right">
+        <param name="rgb_topic">/oakd/right/image_raw</param>
+        <param name="camera_info_topic">/oakd/right/monocular_camera_info</param>
+      </sensor>
+    </xacro:if>
     <hardware>
       <plugin>picknik_mujoco_ros/MujocoSystem</plugin>
       <param name="mujoco_model">$(arg mujoco_model)</param>
@@ -111,6 +123,17 @@
            two sweeping lidars add several offscreen renders per tick. -->
       <param name="render_publish_rate">30</param>
       <param name="point_cloud_publish_rate">10</param>
+      <!-- Visual odometry ground truth: MuJoCo's world-frame chassis_link pose, with no TF so it cannot compete with the wheel controller's odom. Align trajectories before scoring, and ignore the twist, which is on world axes. -->
+      <xacro:if value="$(arg enable_vo)">
+        <param name="publish_odom">true</param>
+        <param name="odom_topic">/ground_truth/odom</param>
+        <param name="odom_child_frame">chassis_link</param>
+        <param name="odom_rate">100</param>
+        <param name="odom_publish_tf">false</param>
+        <param name="odom_planar">false</param>
+        <param name="odom_pos_cov">1e-9 1e-9 1e-9 1e-9 1e-9 1e-9</param>
+        <param name="odom_vel_cov">1e-9 1e-9 1e-9 1e-9 1e-9 1e-9</param>
+      </xacro:if>
     </hardware>
     <sensor name="lidar_front">
       <param name="points_topic">/lidar_front/points</param>
