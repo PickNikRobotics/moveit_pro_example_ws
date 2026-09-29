@@ -1,4 +1,4 @@
-# Empty for CPU, CUDA, and Jetson; the launcher's ROCm suffix otherwise. Compose uses the same value in the image tag, so a tag always names the stage it holds.
+# Empty for CPU, CUDA, and Jetson; `-rocm` on AMD x86_64 hosts. Compose uses the same value in the image tag, so a tag always names the stage it holds.
 ARG MOVEIT_INFERENCE_IMAGE_SUFFIX=
 
 FROM python:3.12-slim AS runtime
@@ -47,8 +47,8 @@ RUN --mount=type=cache,target=/root/.cache/pip \
       "torch==$TORCH_VERSION" "torchvision==$TORCHVISION_VERSION" \
       "torchao==$TORCHAO_VERSION"
 
-# ROCm is a separate binary distribution behind the same server and policy interface.
-FROM rocm/pytorch:rocm7.2.2_ubuntu24.04_py3.12_pytorch_release_2.10.0@sha256:73136312e61ea15af04e89a9df3830bd3fa91c14aad755cde0e426e707f493ff AS runtime-rocm7.2.2
+# ROCm is a separate binary distribution behind the same server and policy interface. This stage owns its ROCm version, which need not match the Runtime image's; only the host driver is shared.
+FROM rocm/pytorch:rocm7.2.2_ubuntu24.04_py3.12_pytorch_release_2.10.0@sha256:73136312e61ea15af04e89a9df3830bd3fa91c14aad755cde0e426e707f493ff AS runtime-rocm
 # Pin the installed AMD builds while resolving LeRobot: a plain torch version
 # would let pip replace them with CUDA wheels. Triton is part of that pairing.
 RUN --mount=type=cache,target=/root/.cache/pip \
