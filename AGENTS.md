@@ -229,12 +229,86 @@ Tear a deployment down with `moveit_pro down --instance <name>`; there is no `st
 happen. Start exactly one `moveit_pro run` per instance and let it finish coming up — a second
 launch during startup kills the runtime container with `Endpoint reservation ... was superseded`,
 leaving drivers healthy, `/do_objective` absent, and no obvious error.
+## Simulated sensors, controllers and state estimation
+
+### Controllers publish at the controller-manager rate, not their `publish_rate`
+
+`publish_rate: 50.0` in `config/control/picknik_ur.ros2_control.yaml` is not honoured: measured on a
+live stack, `platform_velocity_controller_nav2/odom` arrives at ~390 Hz and
+`imu_sensor_broadcaster/imu` at ~410 Hz — the controller manager's 600 Hz update rate, minus
+overruns. Anything that accumulates per-message state from those topics has to throttle for itself.
+`hangar_sim`'s fuse config does this with `throttle_period` on both sensor models; without it the
+fixed-lag smoother takes ~200 stamps per 0.5 s window, falls progressively behind (overrun grows
+from ms to minutes), and keeps publishing a frozen `odom_filtered` rather than failing.
+
+### An empty YAML list aborts a ROS 2 node — omit the key instead
+
+`orientation_dimensions: []` in a params file makes `rclcpp` throw
+`parameter_value_from failed ... No parameter value set` at startup, because an empty YAML sequence
+carries no type. To select "none of these", delete the key and let the node's own default apply.
+
+### The simulator's real-time factor is set by host load, and it inflates wheel odometry
+
+The MuJoCo loop does not keep real time, and the wheel `velocity` state interface is per *sim*
+second while the controller integrates it against a wall clock (`use_sim_time` is false throughout
+this stack). Wheel odometry therefore over-reports travel by exactly `1/RTF - 1`: ~2.4 % on an idle
+host, but 25-45 % measured on a host at load average ~35. Any localization or odometry number taken
+from this sim is meaningless without the RTF it was measured at. Measure it as
+`(delta wheel qpos / delta t_wall) / mean(wheel qvel)` over a window where the wheels are turning.
+It is a simulator artefact, absent on hardware; do not tune it away.
+
+### Driving user-input Objectives without the Desktop App
+
+Objectives that prompt the user (`GetPoseFromUser`, `WaitForUserPathApproval`) do not use the
+same-named services — those exist but are vestigial. moveit_pro's `UIRequestResponseClient` speaks
+JSON (`moveit_studio_agent_msgs/msg/Json`) over
+`/moveit_pro_ui/<interaction>/{request,response,cancel}`; the request topic is latched
+(transient_local, depth 1) and the behavior's "is a UI connected?" test is literally the subscriber
+count on it. A headless stand-in therefore has to *subscribe* to the request topic, then answer with
+`{"request_id": ..., "response": {...}}`. Run the Objective itself with a
+`moveit_studio_sdk_msgs/action/DoObjectiveSequence` goal on `/do_objective`.
+
+### `Reset MuJoCo Sim` resets the simulator, not the estimators
+
+It teleports the robot to the keyframe but leaves fuse's graph and AMCL's particle filter where they
+were, so with `use_fuse:=true` the estimate stays stale by however much drift had accumulated and
+the next `ComputePathToPose` plans from the wrong place. Restart the drivers container for a
+genuinely clean localization state.
 
 ## Config inheritance (`based_on_package`)
 
 `based_on_package` in `config.yaml` merges the child over the parent (`merge()` in `moveit_studio_utils_py/system_config.py`). Dicts merge key-by-key, recursively. A list of scalars is replaced wholesale. A list of single-key dicts — which is how `urdf_params` and every other MoveIt Pro list-of-options field is shaped — merges **by key**: an override entry like `- hardware_interface: "mock"` finds the parent's entry with that same key and replaces only its value, leaving every other `urdf_params` entry (`usb_port`, `calibration_file`, ...) inherited untouched. You do not need to repeat the whole list to override one xacro arg.
 
 `so101_sim` over `so101_base_config` is the one overlay in this workspace that relies on this: it inherits the base description untouched and overrides a single xacro arg. Every other overlay that touches the description (`mock_sim`, `lab_sim`, `hangar_sim`, `kitchen_sim`, ...) redeclares `hardware.robot_description` wholesale with its own URDF/SRDF — the heavier-weight form, used when the child's description differs structurally rather than by one hardware toggle. `behavior_hub_catalog` (over `lab_sim`) declares no `hardware:` block at all and inherits the description untouched. `src/so101_sim/test/test_config_inheritance.py` shows how to assert the merged result through the real loader (`load_system_config`).
+
+## `Dockerfile:12`'s rolling base tag is not what `moveit_pro build` uses
+
+`Dockerfile:12` defaults `MOVEIT_PRO_BASE_IMAGE` to
+`picknikciuser/moveit-pro:${MOVEIT_DOCKER_TAG:-main}-${MOVEIT_ROS_DISTRO:-jazzy}` — a **rolling**
+tag, which reads as "any two builds may sit on different base images". Through the CLI it does not:
+`moveit_pro` sets `MOVEIT_DOCKER_TAG` to the version of the **installed CLI**
+(`moveit_pro_configuration.py`'s `moveit_version` -> `moveit_pro_installed_version()`), so the
+build resolves a version-specific release tag such as
+`picknikciuser/moveit-pro:10.1.0-rc5-jazzy-cuda13.2-cudnn9`. The rolling `main-jazzy` default only
+applies to a bare `docker build -f Dockerfile .`. A tag is not content-addressed, so the same CLI
+version selects the same tag but not necessarily the same image; pin the resolved `sha256` digest
+when a build has to be reproducible.
+
+Two consequences:
+
+- A measurement taken through `moveit_pro build` is reproducible against the same CLI version, and
+  `docker pull picknikciuser/moveit-pro:main-jazzy` moving underneath you changes nothing. Do not
+  treat the rolling tag's drift as a confound without first checking which tag was actually used.
+- Conversely, **upgrading the `moveit_pro` CLI silently changes the base image**, and with it the
+  simulator, controllers and the `fuse`/`beluga`/`nav2` debs. That, not the repo's own history, is
+  what makes two runs incomparable.
+
+Read the resolved base out of the build log rather than inferring it from the Dockerfile — the
+`load metadata for` / `FROM ...@sha256:` lines name the exact tag and digest:
+
+```bash
+grep -E "(load metadata for|FROM).*docker.io/picknikciuser/moveit-pro" build.log
+```
 
 ## Running MoveIt Pro from a git worktree
 
@@ -354,6 +428,28 @@ assuming it). It is the image's working directory, so `colcon build`'s
 `install/`, `build/`, and `log/` land in your own worktree at the paths a
 plain `colcon build` there would use anyway, and stay usable across container
 runs.
+
+## A `RewrittenYaml` rewrite only reaches the nodes that launch file creates
+
+`hangar_sim` builds nav2's parameters through `RewrittenYaml` in **two** places, and each one
+governs only its own nodes. `robot_drivers_to_persist_sim.launch.py`'s `configured_params` reaches
+just the two `component_container_isolated` nodes; `bt_navigator`, `controller_server`,
+`velocity_smoother` and the rest are created by the `navigation_launch.py` include, which is handed
+the **raw** `params_file` and builds its own `RewrittenYaml` from it. A `param_rewrites` entry added
+to the parent for one of those nodes therefore silently does nothing - the launch succeeds, the
+parameter reads as whatever the YAML hardcoded, and nothing warns.
+
+Rewrite a key in the launch file that creates the node, and pass any `LaunchConfiguration` it needs
+through that include's `launch_arguments` rather than reaching for one it was never given. See
+`odom_topic` in `navigation_launch.py`, driven by `use_fuse`.
+
+Parameter values are not proof that a topic works: check `ros2 topic info <topic>` for a non-zero
+**Publisher count** on the running stack. This exact trap shipped a config where `bt_navigator` and
+`controller_server` both subscribed to a `/odom_filtered` with `Publisher count: 0` - nav2 tolerated
+it and navigation still succeeded, so only the topic check found it.
+
+Note `RewrittenYaml` rewrites a key **everywhere it appears** in the file, not per-node, so one
+`odom_topic` entry also hits `velocity_smoother`'s.
 
 ## One trajectory controller, several planning groups
 
