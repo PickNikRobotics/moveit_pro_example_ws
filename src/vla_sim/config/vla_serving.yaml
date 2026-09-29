@@ -33,9 +33,9 @@ policy_class: ""
 # 1/fps. 0 reads the rate from train_config.json, which this checkpoint omits.
 fps: 10.0
 
-# Torch device: auto | cpu | cuda. auto takes a usable GPU and otherwise cpu.
-# Asking for cuda on a host without one fails at startup rather than running an
-# order of magnitude slower on cpu.
+# Torch device: auto | cpu | cuda. auto selects a usable NVIDIA or AMD GPU.
+# The ROCm image requires GPU access in auto mode; other images fall back to CPU.
+# Explicit cpu always selects CPU. Explicit cuda fails if GPU access is unavailable.
 device: auto
 
 # Hold the pi0.5 language backbone and vision tower at eight bits, most of the
