@@ -40,6 +40,15 @@ install(
 )
 
 if(BUILD_TESTING)
+  find_package(ament_cmake_gtest REQUIRED)
+  find_package(behaviortree_cpp_picknik REQUIRED)
+  find_package(tinyxml2_vendor REQUIRED)
+  find_package(TinyXML2 REQUIRED)
+  ament_add_gtest(test_bottle_pick_loop test/test_bottle_pick_loop.cpp)
+  ament_target_dependencies(test_bottle_pick_loop behaviortree_cpp_picknik)
+  target_link_libraries(test_bottle_pick_loop tinyxml2::tinyxml2)
+  target_compile_definitions(test_bottle_pick_loop PRIVATE
+    BOTTLE_OBJECTIVE_XML="${CMAKE_CURRENT_SOURCE_DIR}/objectives/pick_all_bottles_with_apriltags.xml")
   find_package(ament_cmake_pytest REQUIRED)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()

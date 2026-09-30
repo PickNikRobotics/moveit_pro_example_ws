@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Detect AprilTags on Table">
+  <BehaviorTree
+    ID="Detect AprilTags on Table"
+    _description="Moves to the table viewpoint and detects AprilTags. An empty detection array is a successful result."
+  >
+    <Control ID="Sequence" name="Detect AprilTags on Table">
+      <SubTree ID="Open Gripper" _collapsed="true" />
+      <SubTree
+        ID="Clear Previous Obstacles"
+        name="Clear Previous Obstacles"
+        _collapsed="true"
+      />
+      <SubTree ID="Look at Table" _collapsed="true" />
+      <SubTree ID="Take Wrist Camera Snapshot" _collapsed="true" />
+      <SubTree
+        ID="Take Wrist Camera Image"
+        name="Take Wrist Camera Image"
+        _collapsed="true"
+        wrist_camera_image="{image}"
+        wrist_camera_info="{camera_info}"
+      />
+      <Action
+        ID="DetectAprilTags"
+        image="{image}"
+        camera_info="{camera_info}"
+        detections="{detections}"
+        detection_count="{detection_count}"
+        apriltag_family_name="36h11"
+        max_hamming="0"
+        n_threads="1"
+        quad_decimate="2.0"
+        quad_sigma="0.0"
+        refine_edges="true"
+        tag_size="0.0288"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Detect AprilTags on Table">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="AprilTag" />
+      </MetadataFields>
+      <inout_port name="detections" default="{detections}" />
+      <inout_port name="detection_count" default="{detection_count}" />
+    </SubTree>
+  </TreeNodesModel>
+</root>
