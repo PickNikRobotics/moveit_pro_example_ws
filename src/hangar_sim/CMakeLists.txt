@@ -3,6 +3,21 @@ project(hangar_sim)
 
 find_package(ament_cmake REQUIRED)
 find_package(picknik_accessories REQUIRED)
+find_package(geometry_msgs REQUIRED)
+find_package(nav_msgs REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
+find_package(tf2_ros REQUIRED)
+
+# Composes fuse's estimate and MuJoCo's ground truth into the live odom -> world edge, so that
+# navigation resolves odom -> base to the estimate while world -> base stays truth. Launched only
+# when use_fuse is on; see robot_drivers_to_persist_sim.launch.py.
+add_executable(odom_world_drift src/odom_world_drift.cpp)
+target_compile_features(odom_world_drift PRIVATE cxx_std_20)
+ament_target_dependencies(odom_world_drift geometry_msgs nav_msgs rclcpp tf2 tf2_geometry_msgs tf2_ros)
+
+install(TARGETS odom_world_drift DESTINATION lib/${PROJECT_NAME})
 
 install(
   DIRECTORY
