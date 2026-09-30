@@ -29,7 +29,6 @@
 #include <hangar_sim/odom_world_drift.hpp>
 
 #include <algorithm>
-#include <cmath>
 #include <iterator>
 
 #include <tf2/utils.hpp>
@@ -37,48 +36,33 @@
 
 namespace hangar_sim
 {
-Pose2 fromOdom(const nav_msgs::msg::Odometry& m)
+namespace
 {
-  return { m.pose.pose.position.x, m.pose.pose.position.y, tf2::getYaw(m.pose.pose.orientation) };
+tf2::Transform poseOf(const nav_msgs::msg::Odometry& m)
+{
+  tf2::Transform t;
+  tf2::fromMsg(m.pose.pose, t);
+  return t;
+}
+}  // namespace
+
+tf2::Transform odomToWorld(const tf2::Transform& est, const tf2::Transform& truth)
+{
+  const tf2::Transform drift = est * truth.inverse();
+  // Truth is planar, but fuse solves in full 3D, so the SE(3) difference is not. Project it: see
+  // the header for why odom -> world has to stay planar.
+  tf2::Quaternion yaw_only;
+  yaw_only.setRPY(0.0, 0.0, tf2::getYaw(drift.getRotation()));
+  return tf2::Transform(yaw_only, tf2::Vector3(drift.getOrigin().x(), drift.getOrigin().y(), 0.0));
 }
 
-Pose2 invert(const Pose2& p)
-{
-  const double c = std::cos(p.yaw), s = std::sin(p.yaw);
-  return { -c * p.x - s * p.y, s * p.x - c * p.y, -p.yaw };
-}
-
-Pose2 compose(const Pose2& a, const Pose2& b)
-{
-  const double c = std::cos(a.yaw), s = std::sin(a.yaw);
-  return { a.x + c * b.x - s * b.y, a.y + s * b.x + c * b.y, a.yaw + b.yaw };
-}
-
-double wrap(double angle)
-{
-  return std::atan2(std::sin(angle), std::cos(angle));
-}
-
-Pose2 lerp(const Pose2& a, const Pose2& b, double fraction)
-{
-  return { a.x + fraction * (b.x - a.x), a.y + fraction * (b.y - a.y), a.yaw + fraction * wrap(b.yaw - a.yaw) };
-}
-
-Pose2 odomToWorld(const Pose2& est, const Pose2& truth)
-{
-  return compose(est, invert(truth));
-}
-
-geometry_msgs::msg::TransformStamped toTransform(const Pose2& odom_to_world, const rclcpp::Time& stamp)
+geometry_msgs::msg::TransformStamped toTransform(const tf2::Transform& odom_to_world, const rclcpp::Time& stamp)
 {
   geometry_msgs::msg::TransformStamped tf;
   tf.header.stamp = stamp;
   tf.header.frame_id = "odom";
   tf.child_frame_id = "world";
-  tf.transform.translation.x = odom_to_world.x;
-  tf.transform.translation.y = odom_to_world.y;
-  tf.transform.rotation.z = std::sin(odom_to_world.yaw / 2.0);
-  tf.transform.rotation.w = std::cos(odom_to_world.yaw / 2.0);
+  tf.transform = tf2::toMsg(odom_to_world);
   return tf;
 }
 
@@ -87,7 +71,7 @@ bool isStale(double est_age_sec)
   return est_age_sec > kEstStaleSec;
 }
 
-bool TruthHistory::add(const rclcpp::Time& stamp, const Pose2& pose)
+bool TruthHistory::add(const rclcpp::Time& stamp, const tf2::Transform& pose)
 {
   const bool rewound = !samples_.empty() && stamp < samples_.back().stamp;
   if (rewound)
@@ -103,7 +87,7 @@ bool TruthHistory::add(const rclcpp::Time& stamp, const Pose2& pose)
   return !rewound;
 }
 
-std::optional<Pose2> TruthHistory::at(const rclcpp::Time& when) const
+std::optional<tf2::Transform> TruthHistory::at(const rclcpp::Time& when) const
 {
   if (samples_.empty() || when < samples_.front().stamp)
   {
@@ -112,14 +96,16 @@ std::optional<Pose2> TruthHistory::at(const rclcpp::Time& when) const
   if (when >= samples_.back().stamp)
   {
     return (when - samples_.back().stamp).seconds() <= kEstAheadToleranceSec ? std::optional(samples_.back().pose) :
-                                                                              std::nullopt;
+                                                                               std::nullopt;
   }
   // front <= when < back, so `after` exists, `before` exists, and before.stamp <= when < after.stamp.
   const auto after = std::upper_bound(samples_.begin(), samples_.end(), when,
                                       [](const rclcpp::Time& t, const Sample& s) { return t < s.stamp; });
   const auto before = std::prev(after);
   const double fraction = (when - before->stamp).seconds() / (after->stamp - before->stamp).seconds();
-  return lerp(before->pose, after->pose, fraction);
+  // slerp takes the short way round, so a pair straddling +/-pi does not spin the long way.
+  return tf2::Transform(before->pose.getRotation().slerp(after->pose.getRotation(), fraction),
+                        before->pose.getOrigin().lerp(after->pose.getOrigin(), fraction));
 }
 
 OdomWorldDrift::OdomWorldDrift(std::shared_ptr<rclcpp::Node> node) : node_(std::move(node)), tf_broadcaster_(*node_)
@@ -136,7 +122,7 @@ OdomWorldDrift::OdomWorldDrift(std::shared_ptr<rclcpp::Node> node) : node_(std::
 
 void OdomWorldDrift::onEst(const nav_msgs::msg::Odometry& msg)
 {
-  est_ = fromOdom(msg);
+  est_ = poseOf(msg);
   // Arrival time, not the sender's stamp: staleness means how long we have gone without one.
   est_stamp_ = node_->get_clock()->now();
   // The sender's stamp, separately: this is the instant the estimate describes, and it is what
@@ -148,7 +134,7 @@ void OdomWorldDrift::onTruth(const nav_msgs::msg::Odometry& msg)
 {
   // A sim reset rewinds the clock. Drop the estimate along with the history: a pre-reset estimate
   // paired with post-reset truth is a meaningless offset.
-  if (!truth_.add(rclcpp::Time(msg.header.stamp), fromOdom(msg)))
+  if (!truth_.add(rclcpp::Time(msg.header.stamp), poseOf(msg)))
   {
     est_.reset();
   }

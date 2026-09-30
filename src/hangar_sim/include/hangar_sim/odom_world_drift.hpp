@@ -29,7 +29,7 @@
 // Publishes odom -> world = est(odom -> base) (+) inverse(truth(world -> base)), so navigation reads
 // fuse's estimate while the arm planner and the hangar meshes under 'world' keep MuJoCo truth.
 // base_link can have only one TF parent; broadcasting the difference lets one tree carry both.
-// Replaces the static identity when use_fuse:=true. Sim-only and planar, hence 2D pose algebra.
+// Replaces the static identity when use_fuse:=true. Sim-only and planar.
 
 #pragma once
 
@@ -42,6 +42,7 @@
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <tf2/LinearMath/Transform.hpp>
 
 namespace hangar_sim
 {
@@ -55,25 +56,14 @@ constexpr size_t kTruthHistoryMax = 4096;
 // Clamp to newest within this window; beyond it the streams have diverged and we withhold.
 constexpr double kEstAheadToleranceSec = 0.05;
 
-/// Planar pose (x, y, yaw). tf2::Transform is full SE(3), which this node does not need.
-struct Pose2
-{
-  double x = 0.0, y = 0.0, yaw = 0.0;
-};
-
-Pose2 fromOdom(const nav_msgs::msg::Odometry& m);
-Pose2 invert(const Pose2& p);
-Pose2 compose(const Pose2& a, const Pose2& b);
-double wrap(double angle);
-
-/// Lerp between two poses; yaw goes through the wrapped difference so a pair straddling +/-pi does
-/// not spin the long way round.
-Pose2 lerp(const Pose2& a, const Pose2& b, double fraction);
-
 /// odom -> world, given the estimate (odom -> base) and truth (world -> base) of the same instant.
-Pose2 odomToWorld(const Pose2& est, const Pose2& truth);
+/// Projected to planar (z = 0, yaw only). The algebra is SE(3), and truth is planar by
+/// construction (odom_planar), but fuse solves in 3D and its z/roll/pitch would otherwise lift and
+/// tilt everything under 'world' -- the hangar meshes, the MoveIt collision geometry and the arm's
+/// own chain -- relative to map and odom, which no 2D consumer downstream would report.
+tf2::Transform odomToWorld(const tf2::Transform& est, const tf2::Transform& truth);
 
-geometry_msgs::msg::TransformStamped toTransform(const Pose2& odom_to_world, const rclcpp::Time& stamp);
+geometry_msgs::msg::TransformStamped toTransform(const tf2::Transform& odom_to_world, const rclcpp::Time& stamp);
 
 /// A frozen estimate would still broadcast with a fresh stamp, and AMCL would silently localize
 /// against a base that appears not to move.
@@ -85,7 +75,7 @@ class TruthHistory
 public:
   /// Appends a sample. Returns false, after discarding every older sample, if `stamp` is earlier
   /// than the newest one: MuJoCo publishes monotonically, so that means the sim clock was reset.
-  bool add(const rclcpp::Time& stamp, const Pose2& pose);
+  bool add(const rclcpp::Time& stamp, const tf2::Transform& pose);
 
   bool empty() const
   {
@@ -95,16 +85,16 @@ public:
   /// Truth at `when`. Pairing the newest of each stream instead would difference two different
   /// instants, which reads as omega * age of spurious yaw. The rule, in full:
   ///   - before the oldest sample:                    nullopt (never extrapolate backwards)
-  ///   - between the oldest and newest sample:        linear interpolation of the bracketing pair
+  ///   - between the oldest and newest sample:        lerp/slerp of the bracketing pair
   ///   - up to kEstAheadToleranceSec past the newest: the newest sample
   ///   - later than that:                             nullopt (the streams have diverged)
-  std::optional<Pose2> at(const rclcpp::Time& when) const;
+  std::optional<tf2::Transform> at(const rclcpp::Time& when) const;
 
 private:
   struct Sample
   {
     rclcpp::Time stamp;
-    Pose2 pose;
+    tf2::Transform pose;
   };
   std::deque<Sample> samples_;  // oldest first
 };
@@ -125,10 +115,10 @@ private:
   std::shared_ptr<rclcpp::Node> node_;
   // Touched only by the subscriptions and timer, which share one mutually-exclusive callback
   // group, so no locking is needed.
-  std::optional<Pose2> est_;    // fuse estimate, odom -> base
-  rclcpp::Time est_stamp_;      // arrival time of the last est_, for the staleness guard
-  rclcpp::Time est_msg_stamp_;  // the instant the last est_ describes, for pairing with truth
-  TruthHistory truth_;          // MuJoCo ground truth, world -> base
+  std::optional<tf2::Transform> est_;  // fuse estimate, odom -> base
+  rclcpp::Time est_stamp_;             // arrival time of the last est_, for the staleness guard
+  rclcpp::Time est_msg_stamp_;         // the instant the last est_ describes, for pairing with truth
+  TruthHistory truth_;                 // MuJoCo ground truth, world -> base
   // ROS entities last, so callbacks stop before the state above destructs.
   tf2_ros::TransformBroadcaster tf_broadcaster_;
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr est_sub_, truth_sub_;

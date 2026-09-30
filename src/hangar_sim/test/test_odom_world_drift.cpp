@@ -36,6 +36,8 @@
 
 #include <gtest/gtest.h>
 #include <rclcpp/executors/single_threaded_executor.hpp>
+#include <tf2/utils.hpp>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 #include <tf2_msgs/msg/tf_message.hpp>
 
 using namespace hangar_sim;
@@ -44,6 +46,8 @@ using namespace std::chrono_literals;
 namespace
 {
 constexpr double kEps = 1e-9;
+// Longer than one kPubPeriod tick, so anything already sent is delivered before the slate is wiped.
+constexpr auto kDrainInterval = std::chrono::milliseconds(50);
 
 // Message stamps are arbitrary; the node only compares them with each other.
 rclcpp::Time stamp(double t)
@@ -51,82 +55,53 @@ rclcpp::Time stamp(double t)
   return rclcpp::Time(static_cast<int64_t>(std::llround((1000.0 + t) * 1e9)));
 }
 
-nav_msgs::msg::Odometry odom(double t, const Pose2& p)
+double wrap(double a)
+{
+  return std::atan2(std::sin(a), std::cos(a));
+}
+
+tf2::Transform pose(double x, double y, double yaw)
+{
+  tf2::Quaternion q;
+  q.setRPY(0.0, 0.0, yaw);
+  return tf2::Transform(q, tf2::Vector3(x, y, 0.0));
+}
+
+nav_msgs::msg::Odometry odom(double t, const tf2::Transform& p)
 {
   nav_msgs::msg::Odometry m;
   m.header.stamp = stamp(t);
-  m.pose.pose.position.x = p.x;
-  m.pose.pose.position.y = p.y;
-  m.pose.pose.orientation.z = std::sin(p.yaw / 2.0);
-  m.pose.pose.orientation.w = std::cos(p.yaw / 2.0);
+  tf2::toMsg(p, m.pose.pose);
   return m;
 }
 
-void expectPose(const Pose2& actual, const Pose2& expected)
+void expectPose(const tf2::Transform& actual, const tf2::Transform& expected)
 {
-  EXPECT_NEAR(actual.x, expected.x, 1e-6);
-  EXPECT_NEAR(actual.y, expected.y, 1e-6);
-  EXPECT_NEAR(wrap(actual.yaw - expected.yaw), 0.0, 1e-6);
+  EXPECT_NEAR(actual.getOrigin().x(), expected.getOrigin().x(), 1e-6);
+  EXPECT_NEAR(actual.getOrigin().y(), expected.getOrigin().y(), 1e-6);
+  EXPECT_NEAR(actual.getOrigin().z(), expected.getOrigin().z(), 1e-6);
+  EXPECT_NEAR(wrap(tf2::getYaw(actual.getRotation()) - tf2::getYaw(expected.getRotation())), 0.0, 1e-6);
 }
 }  // namespace
 
 // ---- free functions -------------------------------------------------------------------------------------------
 
-TEST(PoseAlgebra, WrapFoldsIntoMinusPiToPi)
-{
-  EXPECT_NEAR(wrap(0.3), 0.3, kEps);
-  EXPECT_NEAR(wrap(2.0 * M_PI + 0.3), 0.3, kEps);
-  EXPECT_NEAR(wrap(-2.0 * M_PI - 0.3), -0.3, kEps);
-  EXPECT_NEAR(wrap(M_PI + 0.1), -M_PI + 0.1, kEps);
-}
-
-TEST(PoseAlgebra, FromOdomReadsPlanarPose)
-{
-  expectPose(fromOdom(odom(0.0, { 1.0, -2.0, 0.7 })), { 1.0, -2.0, 0.7 });
-}
-
-TEST(PoseAlgebra, ComposeRotatesTheSecondPoseIntoTheFirstFrame)
-{
-  expectPose(compose({ 1.0, 0.0, M_PI / 2.0 }, { 1.0, 0.0, 0.0 }), { 1.0, 1.0, M_PI / 2.0 });
-  expectPose(compose({ 1.0, 2.0, 0.3 }, { 0.0, 0.0, 0.0 }), { 1.0, 2.0, 0.3 });
-}
-
-TEST(PoseAlgebra, InvertUndoesCompose)
-{
-  const Pose2 p{ 1.5, -0.5, 2.0 };
-  expectPose(compose(p, invert(p)), { 0.0, 0.0, 0.0 });
-  expectPose(compose(invert(p), p), { 0.0, 0.0, 0.0 });
-}
-
-TEST(PoseAlgebra, LerpInterpolatesPositionAndYaw)
-{
-  expectPose(lerp({ 0.0, 0.0, 0.0 }, { 2.0, 4.0, 0.4 }, 0.25), { 0.5, 1.0, 0.1 });
-  expectPose(lerp({ 0.0, 0.0, 0.0 }, { 2.0, 4.0, 0.4 }, 0.0), { 0.0, 0.0, 0.0 });
-  expectPose(lerp({ 0.0, 0.0, 0.0 }, { 2.0, 4.0, 0.4 }, 1.0), { 2.0, 4.0, 0.4 });
-}
-
-TEST(PoseAlgebra, LerpTakesTheShortWayAcrossPi)
-{
-  const Pose2 mid = lerp({ 0.0, 0.0, M_PI - 0.1 }, { 0.0, 0.0, -M_PI + 0.1 }, 0.5);
-  EXPECT_NEAR(std::abs(wrap(mid.yaw)), M_PI, 1e-6);
-}
-
 TEST(PoseAlgebra, OdomToWorldIsIdentityWhenEstimateEqualsTruth)
 {
-  const Pose2 p{ 3.0, -4.0, 1.0 };
-  expectPose(odomToWorld(p, p), { 0.0, 0.0, 0.0 });
+  const tf2::Transform p = pose(3.0, -4.0, 1.0);
+  expectPose(odomToWorld(p, p), pose(0.0, 0.0, 0.0));
 }
 
 TEST(PoseAlgebra, OdomToWorldIsEstimateTimesInverseTruth)
 {
-  const Pose2 est{ 1.0, 2.0, 0.3 }, truth{ 0.5, -1.0, -0.2 };
+  const tf2::Transform est = pose(1.0, 2.0, 0.3), truth = pose(0.5, -1.0, -0.2);
   // Applying the result to truth must give back the estimate: (odom -> world) (world -> base).
-  expectPose(compose(odomToWorld(est, truth), truth), est);
+  expectPose(odomToWorld(est, truth) * truth, est);
 }
 
 TEST(PoseAlgebra, ToTransformFillsFramesStampAndPlanarRotation)
 {
-  const auto tf = toTransform({ 1.0, 2.0, M_PI / 2.0 }, stamp(5.0));
+  const auto tf = toTransform(pose(1.0, 2.0, M_PI / 2.0), stamp(5.0));
   EXPECT_EQ(tf.header.frame_id, "odom");
   EXPECT_EQ(tf.child_frame_id, "world");
   EXPECT_EQ(rclcpp::Time(tf.header.stamp).nanoseconds(), stamp(5.0).nanoseconds());
@@ -158,91 +133,91 @@ TEST(TruthHistory, EmptyHasNothingToReturn)
 TEST(TruthHistory, ReturnsStoredSampleAtItsOwnStamp)
 {
   TruthHistory h;
-  h.add(stamp(0.0), { 0.0, 0.0, 0.0 });
-  h.add(stamp(0.1), { 1.0, 0.0, 0.0 });
-  h.add(stamp(0.2), { 5.0, 0.0, 0.0 });
+  h.add(stamp(0.0), pose(0.0, 0.0, 0.0));
+  h.add(stamp(0.1), pose(1.0, 0.0, 0.0));
+  h.add(stamp(0.2), pose(5.0, 0.0, 0.0));
   ASSERT_TRUE(h.at(stamp(0.0)).has_value());
-  expectPose(*h.at(stamp(0.0)), { 0.0, 0.0, 0.0 });
-  expectPose(*h.at(stamp(0.1)), { 1.0, 0.0, 0.0 });
-  expectPose(*h.at(stamp(0.2)), { 5.0, 0.0, 0.0 });
+  expectPose(*h.at(stamp(0.0)), pose(0.0, 0.0, 0.0));
+  expectPose(*h.at(stamp(0.1)), pose(1.0, 0.0, 0.0));
+  expectPose(*h.at(stamp(0.2)), pose(5.0, 0.0, 0.0));
 }
 
 TEST(TruthHistory, InterpolatesBetweenTheBracketingSamples)
 {
   TruthHistory h;
-  h.add(stamp(0.0), { 0.0, 0.0, 0.0 });
-  h.add(stamp(0.1), { 1.0, 2.0, 0.2 });
-  h.add(stamp(0.3), { 5.0, 2.0, 0.2 });
-  expectPose(*h.at(stamp(0.05)), { 0.5, 1.0, 0.1 });  // halfway through the first interval
-  expectPose(*h.at(stamp(0.2)), { 3.0, 2.0, 0.2 });   // halfway through the second, wider one
+  h.add(stamp(0.0), pose(0.0, 0.0, 0.0));
+  h.add(stamp(0.1), pose(1.0, 2.0, 0.2));
+  h.add(stamp(0.3), pose(5.0, 2.0, 0.2));
+  expectPose(*h.at(stamp(0.05)), pose(0.5, 1.0, 0.1));  // halfway through the first interval
+  expectPose(*h.at(stamp(0.2)), pose(3.0, 2.0, 0.2));   // halfway through the second, wider one
 }
 
 TEST(TruthHistory, InterpolatesYawAcrossPiTheShortWay)
 {
   TruthHistory h;
-  h.add(stamp(0.0), { 0.0, 0.0, M_PI - 0.1 });
-  h.add(stamp(0.2), { 0.0, 0.0, -M_PI + 0.1 });
-  EXPECT_NEAR(std::abs(wrap(h.at(stamp(0.1))->yaw)), M_PI, 1e-6);
+  h.add(stamp(0.0), pose(0.0, 0.0, M_PI - 0.1));
+  h.add(stamp(0.2), pose(0.0, 0.0, -M_PI + 0.1));
+  EXPECT_NEAR(std::abs(wrap(tf2::getYaw(h.at(stamp(0.1))->getRotation()))), M_PI, 1e-6);
 }
 
 TEST(TruthHistory, NothingBeforeTheOldestSample)
 {
   TruthHistory h;
-  h.add(stamp(1.0), { 0.0, 0.0, 0.0 });
-  h.add(stamp(1.1), { 1.0, 0.0, 0.0 });
+  h.add(stamp(1.0), pose(0.0, 0.0, 0.0));
+  h.add(stamp(1.1), pose(1.0, 0.0, 0.0));
   EXPECT_FALSE(h.at(stamp(0.99)).has_value());
 }
 
 TEST(TruthHistory, ClampsToNewestWithinTheAheadTolerance)
 {
   TruthHistory h;
-  h.add(stamp(0.0), { 0.0, 0.0, 0.0 });
-  h.add(stamp(0.1), { 1.0, 0.0, 0.0 });
-  expectPose(*h.at(stamp(0.1 + kEstAheadToleranceSec - 0.01)), { 1.0, 0.0, 0.0 });
+  h.add(stamp(0.0), pose(0.0, 0.0, 0.0));
+  h.add(stamp(0.1), pose(1.0, 0.0, 0.0));
+  expectPose(*h.at(stamp(0.1 + kEstAheadToleranceSec - 0.01)), pose(1.0, 0.0, 0.0));
 }
 
 TEST(TruthHistory, NothingBeyondTheAheadTolerance)
 {
   TruthHistory h;
-  h.add(stamp(0.0), { 0.0, 0.0, 0.0 });
-  h.add(stamp(0.1), { 1.0, 0.0, 0.0 });
+  h.add(stamp(0.0), pose(0.0, 0.0, 0.0));
+  h.add(stamp(0.1), pose(1.0, 0.0, 0.0));
   EXPECT_FALSE(h.at(stamp(0.1 + kEstAheadToleranceSec + 0.01)).has_value());
 }
 
 TEST(TruthHistory, SingleSampleAnswersOnlyItsOwnInstantAndTheToleranceAfter)
 {
   TruthHistory h;
-  h.add(stamp(0.0), { 2.0, 0.0, 0.0 });
-  expectPose(*h.at(stamp(0.0)), { 2.0, 0.0, 0.0 });
-  expectPose(*h.at(stamp(0.03)), { 2.0, 0.0, 0.0 });
+  h.add(stamp(0.0), pose(2.0, 0.0, 0.0));
+  expectPose(*h.at(stamp(0.0)), pose(2.0, 0.0, 0.0));
+  expectPose(*h.at(stamp(0.03)), pose(2.0, 0.0, 0.0));
   EXPECT_FALSE(h.at(stamp(-0.01)).has_value());
 }
 
 TEST(TruthHistory, ClockRewindDiscardsTheOldSamples)
 {
   TruthHistory h;
-  EXPECT_TRUE(h.add(stamp(10.0), { 0.0, 0.0, 0.0 }));
-  EXPECT_TRUE(h.add(stamp(10.1), { 1.0, 0.0, 0.0 }));
-  EXPECT_FALSE(h.add(stamp(2.0), { 9.0, 0.0, 0.0 }));  // sim reset
+  EXPECT_TRUE(h.add(stamp(10.0), pose(0.0, 0.0, 0.0)));
+  EXPECT_TRUE(h.add(stamp(10.1), pose(1.0, 0.0, 0.0)));
+  EXPECT_FALSE(h.add(stamp(2.0), pose(9.0, 0.0, 0.0)));  // sim reset
   EXPECT_FALSE(h.at(stamp(10.1)).has_value());
-  expectPose(*h.at(stamp(2.0)), { 9.0, 0.0, 0.0 });
+  expectPose(*h.at(stamp(2.0)), pose(9.0, 0.0, 0.0));
 }
 
 TEST(TruthHistory, EqualStampIsNotARewind)
 {
   TruthHistory h;
-  EXPECT_TRUE(h.add(stamp(1.0), { 0.0, 0.0, 0.0 }));
-  EXPECT_TRUE(h.add(stamp(1.0), { 1.0, 0.0, 0.0 }));
+  EXPECT_TRUE(h.add(stamp(1.0), pose(0.0, 0.0, 0.0)));
+  EXPECT_TRUE(h.add(stamp(1.0), pose(1.0, 0.0, 0.0)));
 }
 
 TEST(TruthHistory, DropsSamplesOlderThanTheHistoryWindow)
 {
   TruthHistory h;
-  h.add(stamp(0.0), { 0.0, 0.0, 0.0 });
-  h.add(stamp(0.5), { 1.0, 0.0, 0.0 });
-  h.add(stamp(1.5), { 2.0, 0.0, 0.0 });  // 0.0 is now 1.5 s old; 0.5 is exactly kTruthHistorySec old
+  h.add(stamp(0.0), pose(0.0, 0.0, 0.0));
+  h.add(stamp(0.5), pose(1.0, 0.0, 0.0));
+  h.add(stamp(1.5), pose(2.0, 0.0, 0.0));  // 0.0 is now 1.5 s old; 0.5 is exactly kTruthHistorySec old
   EXPECT_FALSE(h.at(stamp(0.2)).has_value());
-  expectPose(*h.at(stamp(0.5)), { 1.0, 0.0, 0.0 });
+  expectPose(*h.at(stamp(0.5)), pose(1.0, 0.0, 0.0));
 }
 
 TEST(TruthHistory, CapsTheNumberOfSamples)
@@ -251,11 +226,11 @@ TEST(TruthHistory, CapsTheNumberOfSamples)
   const int n = static_cast<int>(kTruthHistoryMax) + 100;
   for (int i = 0; i < n; ++i)
   {
-    h.add(stamp(i * 1e-5), { static_cast<double>(i), 0.0, 0.0 });  // all well inside the time window
+    h.add(stamp(i * 1e-5), pose(static_cast<double>(i), 0.0, 0.0));  // all well inside the time window
   }
   EXPECT_FALSE(h.at(stamp(0.0)).has_value());  // the oldest 100 are gone
-  expectPose(*h.at(stamp((n - 1) * 1e-5)), { static_cast<double>(n - 1), 0.0, 0.0 });
-  expectPose(*h.at(stamp(100 * 1e-5)), { 100.0, 0.0, 0.0 });  // the oldest survivor
+  expectPose(*h.at(stamp((n - 1) * 1e-5)), pose(static_cast<double>(n - 1), 0.0, 0.0));
+  expectPose(*h.at(stamp(100 * 1e-5)), pose(100.0, 0.0, 0.0));  // the oldest survivor
 }
 
 // ---- OdomWorldDrift, composed with an injected node -------------------------------------------------------------
@@ -283,9 +258,11 @@ protected:
     }
   }
 
-  /// Transforms broadcast while spinning for `duration`, starting from a clean slate.
+  /// Transforms broadcast while spinning for `duration`. Drains first, so a sample published at
+  /// the tail of an earlier window is not delivered into this one.
   std::vector<geometry_msgs::msg::TransformStamped> broadcastDuring(std::chrono::milliseconds duration)
   {
+    spinFor(kDrainInterval);
     received_.clear();
     spinFor(duration);
     return received_;
@@ -307,13 +284,13 @@ TEST_F(OdomWorldDriftTest, SubscribesToTheEstimateAndTruthTopics)
 TEST_F(OdomWorldDriftTest, PublishesNothingBeforeItHasBothInputs)
 {
   EXPECT_TRUE(broadcastDuring(150ms).empty());
-  drift_->onEst(odom(0.0, { 1.0, 0.0, 0.0 }));
+  drift_->onEst(odom(0.0, pose(1.0, 0.0, 0.0)));
   EXPECT_TRUE(broadcastDuring(150ms).empty());  // estimate but no truth
 }
 
 TEST_F(OdomWorldDriftTest, PublishesEstimateTimesInverseTruth)
 {
-  const Pose2 est{ 1.0, 2.0, 0.3 }, truth{ 0.5, -1.0, -0.2 };
+  const tf2::Transform est = pose(1.0, 2.0, 0.3), truth = pose(0.5, -1.0, -0.2);
   drift_->onTruth(odom(0.0, truth));
   drift_->onTruth(odom(0.1, truth));
   drift_->onEst(odom(0.05, est));
@@ -328,11 +305,35 @@ TEST_F(OdomWorldDriftTest, PublishesEstimateTimesInverseTruth)
   EXPECT_NEAR(tfs.back().transform.rotation.w, expected.transform.rotation.w, 1e-6);
 }
 
+TEST_F(OdomWorldDriftTest, ProjectsANonPlanarEstimateBackOntoThePlane)
+{
+  tf2::Quaternion tilted;
+  tilted.setRPY(0.05, -0.08, 0.3);
+  const tf2::Transform est(tilted, tf2::Vector3(1.0, 2.0, 0.4));
+  const tf2::Transform truth = pose(0.5, -1.0, -0.2);
+  drift_->onTruth(odom(0.0, truth));
+  drift_->onTruth(odom(0.1, truth));
+  drift_->onEst(odom(0.05, est));
+  const auto tfs = broadcastDuring(200ms);
+  ASSERT_FALSE(tfs.empty());
+  const auto& t = tfs.back().transform;
+  EXPECT_NEAR(t.translation.z, 0.0, kEps);
+  EXPECT_NEAR(t.rotation.x, 0.0, kEps);
+  EXPECT_NEAR(t.rotation.y, 0.0, kEps);
+  // The planar part of the SE(3) difference survives the projection.
+  const tf2::Transform se3 = est * truth.inverse();
+  tf2::Quaternion q;
+  tf2::fromMsg(t.rotation, q);
+  EXPECT_NEAR(wrap(tf2::getYaw(q) - tf2::getYaw(se3.getRotation())), 0.0, 1e-6);
+  EXPECT_NEAR(t.translation.x, se3.getOrigin().x(), 1e-6);
+  EXPECT_NEAR(t.translation.y, se3.getOrigin().y(), 1e-6);
+}
+
 TEST_F(OdomWorldDriftTest, DifferencesTruthAtTheEstimatesOwnStamp)
 {
-  drift_->onTruth(odom(0.0, { 0.0, 0.0, 0.0 }));
-  drift_->onTruth(odom(0.2, { 2.0, 0.0, 0.0 }));
-  drift_->onEst(odom(0.1, { 1.0, 0.0, 0.0 }));  // truth was at x = 1 then, so no drift
+  drift_->onTruth(odom(0.0, pose(0.0, 0.0, 0.0)));
+  drift_->onTruth(odom(0.2, pose(2.0, 0.0, 0.0)));
+  drift_->onEst(odom(0.1, pose(1.0, 0.0, 0.0)));  // truth was at x = 1 then, so no drift
   const auto tfs = broadcastDuring(200ms);
   ASSERT_FALSE(tfs.empty());
   EXPECT_NEAR(tfs.back().transform.translation.x, 0.0, 1e-6);
@@ -340,42 +341,42 @@ TEST_F(OdomWorldDriftTest, DifferencesTruthAtTheEstimatesOwnStamp)
 
 TEST_F(OdomWorldDriftTest, WithholdsWhenTheEstimateFallsOutsideTheTruthHistory)
 {
-  drift_->onTruth(odom(0.0, { 0.0, 0.0, 0.0 }));
-  drift_->onTruth(odom(0.1, { 1.0, 0.0, 0.0 }));
-  drift_->onEst(odom(0.1 + kEstAheadToleranceSec + 0.1, { 1.0, 0.0, 0.0 }));
+  drift_->onTruth(odom(0.0, pose(0.0, 0.0, 0.0)));
+  drift_->onTruth(odom(0.1, pose(1.0, 0.0, 0.0)));
+  drift_->onEst(odom(0.1 + kEstAheadToleranceSec + 0.1, pose(1.0, 0.0, 0.0)));
   EXPECT_TRUE(broadcastDuring(150ms).empty());
-  drift_->onEst(odom(-0.5, { 1.0, 0.0, 0.0 }));
+  drift_->onEst(odom(-0.5, pose(1.0, 0.0, 0.0)));
   EXPECT_TRUE(broadcastDuring(150ms).empty());
 }
 
 TEST_F(OdomWorldDriftTest, WithholdsOnceTheEstimateGoesStale)
 {
-  drift_->onTruth(odom(0.0, { 0.0, 0.0, 0.0 }));
-  drift_->onTruth(odom(0.1, { 1.0, 0.0, 0.0 }));
-  drift_->onEst(odom(0.05, { 1.0, 0.0, 0.0 }));
+  drift_->onTruth(odom(0.0, pose(0.0, 0.0, 0.0)));
+  drift_->onTruth(odom(0.1, pose(1.0, 0.0, 0.0)));
+  drift_->onEst(odom(0.05, pose(1.0, 0.0, 0.0)));
   EXPECT_FALSE(broadcastDuring(150ms).empty());
   std::this_thread::sleep_for(std::chrono::duration<double>(kEstStaleSec + 0.1));
   EXPECT_TRUE(broadcastDuring(150ms).empty());
-  drift_->onEst(odom(0.05, { 1.0, 0.0, 0.0 }));  // a fresh estimate resumes publishing
+  drift_->onEst(odom(0.05, pose(1.0, 0.0, 0.0)));  // a fresh estimate resumes publishing
   EXPECT_FALSE(broadcastDuring(150ms).empty());
 }
 
 TEST_F(OdomWorldDriftTest, SimResetDropsTheEstimate)
 {
-  drift_->onTruth(odom(5.0, { 0.0, 0.0, 0.0 }));
-  drift_->onTruth(odom(5.1, { 1.0, 0.0, 0.0 }));
-  drift_->onEst(odom(5.05, { 1.0, 0.0, 0.0 }));
+  drift_->onTruth(odom(5.0, pose(0.0, 0.0, 0.0)));
+  drift_->onTruth(odom(5.1, pose(1.0, 0.0, 0.0)));
+  drift_->onEst(odom(5.05, pose(1.0, 0.0, 0.0)));
   EXPECT_FALSE(broadcastDuring(150ms).empty());
-  drift_->onTruth(odom(0.5, { 0.0, 0.0, 0.0 }));  // the sim clock went backwards
+  drift_->onTruth(odom(0.5, pose(0.0, 0.0, 0.0)));  // the sim clock went backwards
   EXPECT_TRUE(broadcastDuring(150ms).empty());
-  drift_->onEst(odom(0.5, { 0.0, 0.0, 0.0 }));
+  drift_->onEst(odom(0.5, pose(0.0, 0.0, 0.0)));
   EXPECT_FALSE(broadcastDuring(150ms).empty());
 }
 
 TEST_F(OdomWorldDriftTest, StopsBroadcastingOnceDestroyed)
 {
-  drift_->onTruth(odom(0.0, { 0.0, 0.0, 0.0 }));
-  drift_->onEst(odom(0.0, { 1.0, 0.0, 0.0 }));
+  drift_->onTruth(odom(0.0, pose(0.0, 0.0, 0.0)));
+  drift_->onEst(odom(0.0, pose(1.0, 0.0, 0.0)));
   EXPECT_FALSE(broadcastDuring(150ms).empty());
   drift_.reset();
   EXPECT_TRUE(broadcastDuring(150ms).empty());
