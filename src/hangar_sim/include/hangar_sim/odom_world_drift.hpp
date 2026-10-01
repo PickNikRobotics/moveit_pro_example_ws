@@ -30,15 +30,21 @@
 // fuse's estimate while the arm planner and the hangar meshes under 'world' keep MuJoCo truth.
 // base_link can have only one TF parent; broadcasting the difference lets one tree carry both.
 // Replaces the static identity when use_fuse:=true. Sim-only and planar.
+// A sim reset teleports truth but neither estimator, so on a teleport this resets fuse to truth and
+// then re-seeds AMCL there; 'map' is pinned to the MuJoCo world, so truth is already a map pose.
 
 #pragma once
 
 #include <cstddef>
+#include <cstdint>
 #include <deque>
 #include <memory>
 #include <optional>
+#include <string>
 
 #include <tf2_ros/transform_broadcaster.h>
+#include <fuse_msgs/srv/set_pose.hpp>
+#include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <geometry_msgs/msg/transform_stamped.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -55,6 +61,27 @@ constexpr size_t kTruthHistoryMax = 4096;
 // fuse stamps its estimate where it predicted to, which can land just ahead of the newest truth.
 // Clamp to newest within this window; beyond it the streams have diverged and we withhold.
 constexpr double kEstAheadToleranceSec = 0.05;
+// A truth step is a teleport when it exceeds this margin beyond what the base could have driven in
+// the time since the previous sample. The speeds are about twice the velocity smoother's limits
+// (nav2_params.yaml), so a dropped best-effort /odom sample while driving does not qualify.
+constexpr double kTeleportJumpM = 0.1;
+constexpr double kTeleportJumpRad = 0.1;
+constexpr double kMaxBaseSpeedMps = 2.0;
+constexpr double kMaxBaseYawRateRps = 2.0;
+// Caps that allowance, so a reset after a long /odom gap (a paused sim) still reads as a teleport.
+constexpr double kMaxSampleGapSec = 0.5;
+// Both re-seeds are exact truth, so their spread only has to cover map-vs-scan mismatch.
+constexpr double kReseedXYVariance = 0.01;    // (0.1 m)^2
+constexpr double kReseedYawVariance = 0.003;  // ~(3 deg)^2
+// fuse solves in 3D; the base stays on the plane, so its z and tilt are pinned tight.
+constexpr double kReseedZVariance = 1e-6;
+constexpr double kReseedTiltVariance = 1e-4;
+// AMCL normally updates within a scan period of the reset; a smaller odom jump than its update
+// thresholds may not trigger one, and then there is nothing to wait for.
+constexpr double kAmclUpdateWaitSec = 2.0;
+// From the teleport to the AMCL seed: fuse's reply, its next estimate, and kAmclUpdateWaitSec.
+// Past this the handshake is stuck, and the operator is told to re-localize.
+constexpr double kReseedDeadlineSec = 5.0;
 
 /// odom -> world, given the estimate (odom -> base) and truth (world -> base) of the same instant.
 /// Projected to planar (z = 0, yaw only). The algebra is SE(3), and truth is planar by
@@ -69,6 +96,9 @@ geometry_msgs::msg::TransformStamped toTransform(const tf2::Transform& odom_to_w
 /// against a base that appears not to move.
 bool isStale(double est_age_sec);
 
+/// True when consecutive truth samples, `dt_sec` apart, are further apart than the base can drive.
+bool isTeleport(const tf2::Transform& prev, const tf2::Transform& next, double dt_sec);
+
 /// Time-ordered ground-truth poses (world -> base) over the last kTruthHistorySec.
 class TruthHistory
 {
@@ -77,9 +107,24 @@ public:
   /// than the newest one: MuJoCo publishes monotonically, so that means the sim clock was reset.
   bool add(const rclcpp::Time& stamp, const tf2::Transform& pose);
 
+  void clear()
+  {
+    samples_.clear();
+  }
+
   bool empty() const
   {
     return samples_.empty();
+  }
+
+  /// The newest sample's pose and stamp. Precondition: !empty().
+  const tf2::Transform& newest() const
+  {
+    return samples_.back().pose;
+  }
+  const rclcpp::Time& newestStamp() const
+  {
+    return samples_.back().stamp;
   }
 
   /// Truth at `when`. Pairing the newest of each stream instead would difference two different
@@ -110,8 +155,27 @@ public:
   /// Broadcasts odom -> world, or withholds it (with a throttled warning) when the inputs cannot
   /// support one.
   void publish();
+  /// AMCL's per-update pose. The first one after the reset estimate reaches TF means AMCL has
+  /// absorbed the reset's jump in odom -> base as motion, so a seed now is not undone by it.
+  void onAmclPose(const geometry_msgs::msg::PoseWithCovarianceStamped& msg);
 
 private:
+  /// Resets fuse to `truth`; on success, arms the AMCL re-seed in publish().
+  void resetFuse(const tf2::Transform& truth);
+  void seedAmcl(const tf2::Transform& truth);
+  /// Abandons a re-seed that cannot finish, telling the operator to re-localize.
+  void abandonReseed(const std::string& why);
+
+  /// One teleport's re-seed, from the fuse request to the AMCL seed. The instants are node-clock
+  /// times compared against fuse's and AMCL's message stamps, which share hangar_sim's wall clock.
+  struct Reseed
+  {
+    uint64_t generation;                        // ignores a set_pose reply meant for an earlier teleport
+    rclcpp::Time requested_at;                  // for kReseedDeadlineSec
+    std::optional<rclcpp::Time> fuse_reset_at;  // fuse accepted set_pose
+    std::optional<rclcpp::Time> broadcast_at;   // odom -> world first reflected fuse's reset estimate
+  };
+
   std::shared_ptr<rclcpp::Node> node_;
   // Touched only by the subscriptions and timer, which share one mutually-exclusive callback
   // group, so no locking is needed.
@@ -119,9 +183,14 @@ private:
   rclcpp::Time est_stamp_;             // arrival time of the last est_, for the staleness guard
   rclcpp::Time est_msg_stamp_;         // the instant the last est_ describes, for pairing with truth
   TruthHistory truth_;                 // MuJoCo ground truth, world -> base
+  std::optional<Reseed> reseed_;       // in flight between a teleport and its AMCL seed
+  uint64_t reseed_generation_ = 0;
   // ROS entities last, so callbacks stop before the state above destructs.
   tf2_ros::TransformBroadcaster tf_broadcaster_;
+  rclcpp::Client<fuse_msgs::srv::SetPose>::SharedPtr fuse_set_pose_;
+  rclcpp::Publisher<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr initial_pose_pub_;
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr est_sub_, truth_sub_;
+  rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr amcl_pose_sub_;
   rclcpp::TimerBase::SharedPtr timer_;
 };
 

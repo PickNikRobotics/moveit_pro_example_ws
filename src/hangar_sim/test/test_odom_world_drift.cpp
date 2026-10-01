@@ -35,6 +35,8 @@
 #include <vector>
 
 #include <gtest/gtest.h>
+#include <fuse_msgs/srv/set_pose.hpp>
+#include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <rclcpp/executors/single_threaded_executor.hpp>
 #include <tf2/utils.hpp>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
@@ -119,6 +121,34 @@ TEST(Staleness, LimitIsExclusive)
   EXPECT_FALSE(isStale(0.0));
   EXPECT_FALSE(isStale(kEstStaleSec));
   EXPECT_TRUE(isStale(kEstStaleSec + 0.01));
+}
+
+TEST(Teleport, DrivableStepsAreNotTeleports)
+{
+  EXPECT_FALSE(isTeleport(pose(1.0, 2.0, 0.3), pose(1.0 + kTeleportJumpM * 0.9, 2.0, 0.3), 0.0));
+  EXPECT_FALSE(isTeleport(pose(1.0, 2.0, 0.3), pose(1.0, 2.0, 0.3 + kTeleportJumpRad * 0.9), 0.0));
+}
+
+TEST(Teleport, AJumpInPositionOrYawIsATeleport)
+{
+  EXPECT_TRUE(isTeleport(pose(1.0, 2.0, 0.3), pose(1.0, 2.0 + kTeleportJumpM * 1.1, 0.3), 0.0));
+  EXPECT_TRUE(isTeleport(pose(1.0, 2.0, 0.3), pose(1.0, 2.0, 0.3 - kTeleportJumpRad * 1.1), 0.0));
+}
+
+TEST(Teleport, AllowsForWhatTheBaseCouldDriveAcrossASampleGap)
+{
+  // A dropped best-effort /odom sample while driving at full speed is not a teleport.
+  const double gap = 0.5;
+  EXPECT_FALSE(isTeleport(pose(0.0, 0.0, 0.0), pose(kTeleportJumpM + 0.9 * kMaxBaseSpeedMps * gap, 0.0, 0.0), gap));
+  EXPECT_TRUE(isTeleport(pose(0.0, 0.0, 0.0), pose(kTeleportJumpM + 1.1 * kMaxBaseSpeedMps * gap, 0.0, 0.0), gap));
+  // A reset after a long gap (a paused sim) is still a teleport: the allowance is capped.
+  EXPECT_TRUE(isTeleport(pose(0.0, 0.0, 0.0),
+                         pose(kTeleportJumpM + kMaxBaseSpeedMps * kMaxSampleGapSec + 0.1, 0.0, 0.0), 30.0));
+}
+
+TEST(Teleport, YawIsComparedTheShortWayAcrossPi)
+{
+  EXPECT_FALSE(isTeleport(pose(0.0, 0.0, M_PI - 0.05), pose(0.0, 0.0, -M_PI + 0.05), 0.0));
 }
 
 // ---- TruthHistory ---------------------------------------------------------------------------------------------
@@ -332,8 +362,8 @@ TEST_F(OdomWorldDriftTest, ProjectsANonPlanarEstimateBackOntoThePlane)
 TEST_F(OdomWorldDriftTest, DifferencesTruthAtTheEstimatesOwnStamp)
 {
   drift_->onTruth(odom(0.0, pose(0.0, 0.0, 0.0)));
-  drift_->onTruth(odom(0.2, pose(2.0, 0.0, 0.0)));
-  drift_->onEst(odom(0.1, pose(1.0, 0.0, 0.0)));  // truth was at x = 1 then, so no drift
+  drift_->onTruth(odom(0.2, pose(0.2, 0.0, 0.0)));
+  drift_->onEst(odom(0.1, pose(0.1, 0.0, 0.0)));  // truth was at x = 0.1 then, so no drift
   const auto tfs = broadcastDuring(200ms);
   ASSERT_FALSE(tfs.empty());
   EXPECT_NEAR(tfs.back().transform.translation.x, 0.0, 1e-6);
@@ -342,7 +372,7 @@ TEST_F(OdomWorldDriftTest, DifferencesTruthAtTheEstimatesOwnStamp)
 TEST_F(OdomWorldDriftTest, WithholdsWhenTheEstimateFallsOutsideTheTruthHistory)
 {
   drift_->onTruth(odom(0.0, pose(0.0, 0.0, 0.0)));
-  drift_->onTruth(odom(0.1, pose(1.0, 0.0, 0.0)));
+  drift_->onTruth(odom(0.1, pose(0.1, 0.0, 0.0)));
   drift_->onEst(odom(0.1 + kEstAheadToleranceSec + 0.1, pose(1.0, 0.0, 0.0)));
   EXPECT_TRUE(broadcastDuring(150ms).empty());
   drift_->onEst(odom(-0.5, pose(1.0, 0.0, 0.0)));
@@ -352,7 +382,7 @@ TEST_F(OdomWorldDriftTest, WithholdsWhenTheEstimateFallsOutsideTheTruthHistory)
 TEST_F(OdomWorldDriftTest, WithholdsOnceTheEstimateGoesStale)
 {
   drift_->onTruth(odom(0.0, pose(0.0, 0.0, 0.0)));
-  drift_->onTruth(odom(0.1, pose(1.0, 0.0, 0.0)));
+  drift_->onTruth(odom(0.1, pose(0.1, 0.0, 0.0)));
   drift_->onEst(odom(0.05, pose(1.0, 0.0, 0.0)));
   EXPECT_FALSE(broadcastDuring(150ms).empty());
   std::this_thread::sleep_for(std::chrono::duration<double>(kEstStaleSec + 0.1));
@@ -364,13 +394,134 @@ TEST_F(OdomWorldDriftTest, WithholdsOnceTheEstimateGoesStale)
 TEST_F(OdomWorldDriftTest, SimResetDropsTheEstimate)
 {
   drift_->onTruth(odom(5.0, pose(0.0, 0.0, 0.0)));
-  drift_->onTruth(odom(5.1, pose(1.0, 0.0, 0.0)));
+  drift_->onTruth(odom(5.1, pose(0.1, 0.0, 0.0)));
   drift_->onEst(odom(5.05, pose(1.0, 0.0, 0.0)));
   EXPECT_FALSE(broadcastDuring(150ms).empty());
   drift_->onTruth(odom(0.5, pose(0.0, 0.0, 0.0)));  // the sim clock went backwards
   EXPECT_TRUE(broadcastDuring(150ms).empty());
   drift_->onEst(odom(0.5, pose(0.0, 0.0, 0.0)));
   EXPECT_FALSE(broadcastDuring(150ms).empty());
+}
+
+/// Stands in for fuse's set_pose service and AMCL's /initialpose subscription.
+class OdomWorldDriftTeleportTest : public OdomWorldDriftTest
+{
+protected:
+  void SetUp() override
+  {
+    OdomWorldDriftTest::SetUp();
+    set_pose_srv_ = node_->create_service<fuse_msgs::srv::SetPose>(
+        "/state_estimator/set_pose", [this](const std::shared_ptr<fuse_msgs::srv::SetPose::Request> req,
+                                            std::shared_ptr<fuse_msgs::srv::SetPose::Response> res) {
+          set_pose_requests_.push_back(req->pose);
+          res->success = accept_set_pose_;
+        });
+    seed_sub_ = node_->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
+        "/initialpose", 10,
+        [this](const geometry_msgs::msg::PoseWithCovarianceStamped::ConstSharedPtr& m) { seeds_.push_back(*m); });
+    spinFor(kDrainInterval);  // let the client see the service
+  }
+
+  /// Odometry stamped on the node clock, offset by `dt` seconds: the AMCL re-seed waits for an
+  /// estimate stamped after fuse accepted its reset, which is a node-clock instant.
+  nav_msgs::msg::Odometry odomNow(double dt, const tf2::Transform& p)
+  {
+    nav_msgs::msg::Odometry m;
+    m.header.stamp = node_->get_clock()->now() + rclcpp::Duration::from_seconds(dt);
+    tf2::toMsg(p, m.pose.pose);
+    return m;
+  }
+
+  geometry_msgs::msg::PoseWithCovarianceStamped amclPoseNow(double dt)
+  {
+    geometry_msgs::msg::PoseWithCovarianceStamped m;
+    m.header.stamp = node_->get_clock()->now() + rclcpp::Duration::from_seconds(dt);
+    m.header.frame_id = "map";
+    return m;
+  }
+
+  /// Drives a teleport through to the point where only AMCL's next update is outstanding.
+  void teleportAndLetFuseReset(const tf2::Transform& spawn)
+  {
+    drift_->onTruth(odomNow(0.0, pose(1.3, 0.2, 1.6)));
+    drift_->onEst(odomNow(0.0, pose(1.8, 0.3, 1.6)));
+    spinFor(kDrainInterval);
+    drift_->onTruth(odomNow(0.0, spawn));  // the reset
+    spinFor(kDrainInterval);
+    drift_->onTruth(odomNow(0.05, spawn));
+    drift_->onEst(odomNow(0.05, spawn));  // fuse publishes from its reset pose
+    spinFor(kDrainInterval);
+  }
+
+  rclcpp::Service<fuse_msgs::srv::SetPose>::SharedPtr set_pose_srv_;
+  rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr seed_sub_;
+  bool accept_set_pose_ = true;
+  std::vector<geometry_msgs::msg::PoseWithCovarianceStamped> set_pose_requests_;
+  std::vector<geometry_msgs::msg::PoseWithCovarianceStamped> seeds_;
+};
+
+TEST_F(OdomWorldDriftTeleportTest, ResetsFuseThenSeedsAmclAtTruthAfterItsNextUpdate)
+{
+  const tf2::Transform spawn = pose(-0.06, -0.02, -0.02);
+  drift_->onAmclPose(amclPoseNow(0.0));  // updates before the reset are irrelevant
+  // An AMCL update between the teleport and fuse's reset estimate reaching TF is too early: AMCL
+  // has yet to see the reset's jump in odom -> base.
+  drift_->onTruth(odomNow(0.0, pose(1.3, 0.2, 1.6)));
+  drift_->onEst(odomNow(0.0, pose(1.8, 0.3, 1.6)));
+  spinFor(kDrainInterval);
+  drift_->onTruth(odomNow(0.0, spawn));
+  spinFor(kDrainInterval);
+  drift_->onAmclPose(amclPoseNow(0.0));
+  spinFor(kDrainInterval);
+  EXPECT_TRUE(seeds_.empty());
+  drift_->onTruth(odomNow(0.05, spawn));
+  drift_->onEst(odomNow(0.05, spawn));
+  spinFor(kDrainInterval);
+  ASSERT_EQ(set_pose_requests_.size(), 1u);
+  EXPECT_EQ(set_pose_requests_[0].header.frame_id, "odom");
+  tf2::Transform requested;
+  tf2::fromMsg(set_pose_requests_[0].pose.pose, requested);
+  expectPose(requested, spawn);
+  drift_->onAmclPose(amclPoseNow(-1.0));  // an update that predates the reset estimate
+  spinFor(kDrainInterval);
+  EXPECT_TRUE(seeds_.empty());
+
+  drift_->onAmclPose(amclPoseNow(0.0));
+  spinFor(kDrainInterval);
+  ASSERT_EQ(seeds_.size(), 1u);
+  EXPECT_EQ(seeds_[0].header.frame_id, "map");
+  tf2::Transform seeded;
+  tf2::fromMsg(seeds_[0].pose.pose, seeded);
+  expectPose(seeded, spawn);
+  EXPECT_NEAR(seeds_[0].pose.covariance[0], kReseedXYVariance, kEps);
+  EXPECT_NEAR(seeds_[0].pose.covariance[35], kReseedYawVariance, kEps);
+  drift_->onAmclPose(amclPoseNow(0.0));  // one seed per teleport
+  spinFor(kDrainInterval);
+  EXPECT_EQ(seeds_.size(), 1u);
+}
+
+TEST_F(OdomWorldDriftTeleportTest, SeedsAmclAnywayIfItNeverUpdates)
+{
+  teleportAndLetFuseReset(pose(0.0, 0.0, 0.0));
+  // Keep the estimate fresh, so odom -> world keeps broadcasting while AMCL stays silent.
+  const auto end = std::chrono::steady_clock::now() + std::chrono::duration<double>(kAmclUpdateWaitSec + 0.3);
+  while (std::chrono::steady_clock::now() < end && seeds_.empty())
+  {
+    drift_->onTruth(odomNow(0.0, pose(0.0, 0.0, 0.0)));
+    drift_->onEst(odomNow(0.0, pose(0.0, 0.0, 0.0)));
+    spinFor(50ms);
+  }
+  EXPECT_EQ(seeds_.size(), 1u);
+}
+
+TEST_F(OdomWorldDriftTeleportTest, DoesNotSeedAmclWhenFuseRejectsTheReset)
+{
+  accept_set_pose_ = false;
+  teleportAndLetFuseReset(pose(0.0, 0.0, 0.0));
+  ASSERT_EQ(set_pose_requests_.size(), 1u);
+  drift_->onAmclPose(amclPoseNow(0.0));
+  spinFor(kDrainInterval);
+  EXPECT_TRUE(seeds_.empty());
 }
 
 TEST_F(OdomWorldDriftTest, StopsBroadcastingOnceDestroyed)

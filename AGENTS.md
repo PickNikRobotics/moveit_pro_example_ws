@@ -268,12 +268,9 @@ count on it. A headless stand-in therefore has to *subscribe* to the request top
 `{"request_id": ..., "response": {...}}`. Run the Objective itself with a
 `moveit_studio_sdk_msgs/action/DoObjectiveSequence` goal on `/do_objective`.
 
-### `Reset MuJoCo Sim` resets the simulator, not the estimators
+### A sim reset re-seeds the estimators through `odom_world_drift`
 
-It teleports the robot to the keyframe but leaves fuse's graph and AMCL's particle filter where they
-were, so with `use_fuse:=true` the estimate stays stale by however much drift had accumulated and
-the next `ComputePathToPose` plans from the wrong place. Restart the drivers container for a
-genuinely clean localization state.
+`Reset MuJoCo Sim` (the Desktop App's Reset Simulation) teleports the robot to the keyframe. With `use_fuse:=true`, `odom_world_drift` sees the jump in `/odom` truth, resets fuse through `/state_estimator/set_pose`, and after AMCL's next update re-seeds it on `/initialpose`, both at the truth pose. If `set_pose` is unavailable or rejects the request, the node logs an error and neither estimator is reset: re-localize with a 2D pose estimate before navigating. With `use_fuse:=false`, `odom -> world` is a static identity and AMCL follows the jump as odometry.
 
 ## Config inheritance (`based_on_package`)
 
