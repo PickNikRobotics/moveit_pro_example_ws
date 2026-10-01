@@ -29,6 +29,7 @@
 #include <hangar_sim/odom_world_drift.hpp>
 
 #include <algorithm>
+#include <cmath>
 #include <iterator>
 
 #include <tf2/utils.hpp>
@@ -69,6 +70,14 @@ geometry_msgs::msg::TransformStamped toTransform(const tf2::Transform& odom_to_w
 bool isStale(double est_age_sec)
 {
   return est_age_sec > kEstStaleSec;
+}
+
+bool isTeleport(const tf2::Transform& prev, const tf2::Transform& next, double dt_sec)
+{
+  const double dt = std::clamp(dt_sec, 0.0, kMaxSampleGapSec);
+  const tf2::Transform step = prev.inverse() * next;
+  return std::hypot(step.getOrigin().x(), step.getOrigin().y()) > kTeleportJumpM + kMaxBaseSpeedMps * dt ||
+         std::abs(tf2::getYaw(step.getRotation())) > kTeleportJumpRad + kMaxBaseYawRateRps * dt;
 }
 
 bool TruthHistory::add(const rclcpp::Time& stamp, const tf2::Transform& pose)
@@ -115,6 +124,10 @@ OdomWorldDrift::OdomWorldDrift(std::shared_ptr<rclcpp::Node> node) : node_(std::
       "/odom_filtered", 10, [this](const nav_msgs::msg::Odometry::ConstSharedPtr& m) { onEst(*m); });
   truth_sub_ = node_->create_subscription<nav_msgs::msg::Odometry>(
       "/odom", rclcpp::SensorDataQoS(), [this](const nav_msgs::msg::Odometry::ConstSharedPtr& m) { onTruth(*m); });
+  fuse_set_pose_ = node_->create_client<fuse_msgs::srv::SetPose>("/state_estimator/set_pose");
+  initial_pose_pub_ = node_->create_publisher<geometry_msgs::msg::PoseWithCovarianceStamped>("/initialpose", 1);
+  amcl_pose_sub_ = node_->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
+      "/pose", 10, [this](const geometry_msgs::msg::PoseWithCovarianceStamped::ConstSharedPtr& m) { onAmclPose(*m); });
   // Node clock, not wall clock, so the tick advances on sim time under use_sim_time.
   timer_ = rclcpp::create_timer(node_, node_->get_clock(), rclcpp::Duration::from_seconds(kPubPeriod),
                                 [this] { publish(); });
@@ -132,16 +145,102 @@ void OdomWorldDrift::onEst(const nav_msgs::msg::Odometry& msg)
 
 void OdomWorldDrift::onTruth(const nav_msgs::msg::Odometry& msg)
 {
-  // A sim reset rewinds the clock. Drop the estimate along with the history: a pre-reset estimate
-  // paired with post-reset truth is a meaningless offset.
-  if (!truth_.add(rclcpp::Time(msg.header.stamp), poseOf(msg)))
+  // A reset teleports truth (or rewinds sim time): drop the stale estimate and history; a teleport also resets both.
+  const rclcpp::Time stamp(msg.header.stamp);
+  const tf2::Transform truth = poseOf(msg);
+  const bool teleported =
+      !truth_.empty() && isTeleport(truth_.newest(), truth, (stamp - truth_.newestStamp()).seconds());
+  if (teleported)
+  {
+    truth_.clear();
+  }
+  const bool rewound = !truth_.add(stamp, truth);
+  if (teleported || rewound)
   {
     est_.reset();
   }
+  if (teleported)
+  {
+    resetFuse(truth);
+  }
+}
+
+void OdomWorldDrift::resetFuse(const tf2::Transform& truth)
+{
+  const uint64_t generation = ++reseed_generation_;
+  reseed_ = Reseed{ generation, node_->get_clock()->now(), std::nullopt, std::nullopt };
+  if (!fuse_set_pose_->service_is_ready())
+  {
+    abandonReseed(std::string(fuse_set_pose_->get_service_name()) + " is not available");
+    return;
+  }
+  auto request = std::make_shared<fuse_msgs::srv::SetPose::Request>();
+  request->pose.header.stamp = node_->get_clock()->now();
+  request->pose.header.frame_id = "odom";
+  tf2::toMsg(truth, request->pose.pose.pose);
+  auto& covariance = request->pose.pose.covariance;  // x, y, z, roll, pitch, yaw
+  covariance[0] = kReseedXYVariance;
+  covariance[7] = kReseedXYVariance;
+  covariance[14] = kReseedZVariance;
+  covariance[21] = kReseedTiltVariance;
+  covariance[28] = kReseedTiltVariance;
+  covariance[35] = kReseedYawVariance;
+  fuse_set_pose_->async_send_request(
+      request, [this, generation](rclcpp::Client<fuse_msgs::srv::SetPose>::SharedFuture future) {
+        if (!reseed_.has_value() || reseed_->generation != generation)
+        {
+          return;  // a later teleport superseded this request, or its deadline already passed
+        }
+        const auto& response = future.get();
+        if (!response->success)
+        {
+          abandonReseed("fuse rejected set_pose (" + response->message + ")");
+          return;
+        }
+        reseed_->fuse_reset_at = node_->get_clock()->now();
+      });
+}
+
+void OdomWorldDrift::abandonReseed(const std::string& why)
+{
+  reseed_.reset();
+  RCLCPP_ERROR(node_->get_logger(),
+               "sim teleport detected but %s -- fuse and AMCL may keep their pre-teleport estimates; "
+               "re-localize with a 2D pose estimate before navigating.",
+               why.c_str());
+}
+
+void OdomWorldDrift::onAmclPose(const geometry_msgs::msg::PoseWithCovarianceStamped& msg)
+{
+  if (reseed_.has_value() && reseed_->broadcast_at.has_value() &&
+      rclcpp::Time(msg.header.stamp) > reseed_->broadcast_at.value() && !truth_.empty())
+  {
+    seedAmcl(truth_.newest());
+  }
+}
+
+void OdomWorldDrift::seedAmcl(const tf2::Transform& truth)
+{
+  reseed_.reset();
+  geometry_msgs::msg::PoseWithCovarianceStamped seed;
+  seed.header.stamp = node_->get_clock()->now();
+  seed.header.frame_id = "map";
+  tf2::toMsg(truth, seed.pose.pose);
+  seed.pose.covariance[0] = kReseedXYVariance;
+  seed.pose.covariance[7] = kReseedXYVariance;
+  seed.pose.covariance[35] = kReseedYawVariance;
+  initial_pose_pub_->publish(seed);
+  RCLCPP_INFO(node_->get_logger(), "sim teleport: reset fuse and re-seeded AMCL at truth (%.2f, %.2f, %.1f deg)",
+              truth.getOrigin().x(), truth.getOrigin().y(), tf2::getYaw(truth.getRotation()) * 180.0 / M_PI);
 }
 
 void OdomWorldDrift::publish()
 {
+  // Ahead of the withhold paths below, which would otherwise stall a re-seed silently.
+  if (reseed_.has_value() && (node_->get_clock()->now() - reseed_->requested_at).seconds() > kReseedDeadlineSec)
+  {
+    abandonReseed("AMCL was not re-seeded within " + std::to_string(std::lround(kReseedDeadlineSec)) + " s");
+  }
   if (!est_.has_value() || truth_.empty())
   {
     return;
@@ -167,6 +266,19 @@ void OdomWorldDrift::publish()
     return;
   }
   tf_broadcaster_.sendTransform(toTransform(odomToWorld(est_.value(), truth_at_est.value()), node_->get_clock()->now()));
+  if (!reseed_.has_value() || !reseed_->fuse_reset_at.has_value())
+  {
+    return;
+  }
+  const rclcpp::Time now = node_->get_clock()->now();
+  if (!reseed_->broadcast_at.has_value() && est_msg_stamp_ > reseed_->fuse_reset_at.value())
+  {
+    reseed_->broadcast_at = now;
+  }
+  if (reseed_->broadcast_at.has_value() && (now - reseed_->broadcast_at.value()).seconds() > kAmclUpdateWaitSec)
+  {
+    seedAmcl(truth_.newest());
+  }
 }
 
 }  // namespace hangar_sim
