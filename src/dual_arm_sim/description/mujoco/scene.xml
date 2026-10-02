@@ -1,6 +1,19 @@
 <mujoco model="fr3 scene">
   <include file="franka3.xml" />
 
+  <!-- Environment lighting for the Nyx path tracer; MuJoCo does not interpret <custom>.
+       A real CC0 studio HDRI rather than the analytic `studio` preset. The analytic dome is
+       smooth, and a smooth dome gives a reflective surface nothing to reflect - a photographed
+       studio has softboxes and structure, which is what makes the arms' plastic and the
+       gripper's metal read as different materials. Its peak/mean is 3362x against the
+       preset's 71x. The scene's own skybox is an 8-bit gradient and cannot hold that. -->
+  <custom>
+    <text
+      name="nyx_env_map"
+      data="assets/moon_lab_2k.hdr"
+    />
+  </custom>
+
   <statistic center="0.2 0.2 0.5" extent="1.8" />
   <size nkey="1" />
   <size nuser_jnt="0" />
@@ -37,18 +50,25 @@
       width="300"
       height="300"
     />
+    <texture type="2d" name="groundplane_alb" file="assets/groundplane_albedo.png" />
+    <texture type="2d" name="groundplane_nrm" file="assets/groundplane_normal.png" />
+    <texture type="2d" name="groundplane_orm" file="assets/groundplane_orm.png" />
     <material
       name="groundplane"
-      texture="groundplane"
       texuniform="true"
       texrepeat="5 5"
-      reflectance="0.2"
-    />
+      reflectance="0.2">
+      <layer role="rgb" texture="groundplane_alb" />
+      <layer role="normal" texture="groundplane_nrm" />
+      <layer role="orm" texture="groundplane_orm" />
+    </material>
   </asset>
 
   <worldbody>
     <light pos="0 0 1.5" dir="0 0 -1" directional="true" />
-    <geom name="floor" size="0 0 0.05" type="plane" material="groundplane" />
+    <geom name="floor" size="0 0 0.05" type="plane"
+      group="3"
+    />
     <site
       name="scene_camera_optical_frame"
       pos="0.7 0.0 0.65"

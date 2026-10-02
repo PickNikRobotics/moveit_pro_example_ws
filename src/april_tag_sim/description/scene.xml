@@ -1,5 +1,18 @@
 <!-- UR5e inspired from https://github.com/google-deepmind/mujoco_menagerie/tree/main/universal_robots_ur5e -->
 <mujoco model="ur5e scene">
+
+    <!-- Environment lighting for the Nyx path tracer; MuJoCo does not interpret <custom>, so
+         its own renderer is unaffected. `aircraft_workshop_01`: a bright, clean workshop - detection targets want even light and a legible background.
+
+         Chosen by eye, not by metric. The obvious measure - how much detail the map's floor
+         carries - was tested and rejected: `small_hangar_01`, which reads well, scores lowest
+         of every map tried, so the statistic does not predict what looks right. -->
+    <custom>
+      <text
+        name="nyx_env_map"
+        data="assets/aircraft_workshop_01_2k.hdr"
+      />
+    </custom>
   <include file="ur5e/ur5e_linear_rail_globals.xml" />
   <include file="lab_desk/desk_globals.xml" />
   <include file="robotiq_2f85/robotiq2f85_globals.xml" />
@@ -34,7 +47,7 @@
       pos="0 0 -0.512"
       size="0 0 0.05"
       type="plane"
-      material="groundplane"
+      group="3"
     />
     <!-- Scene Camera -->
     <site

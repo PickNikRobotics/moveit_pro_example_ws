@@ -9,6 +9,12 @@
     _favorite="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="ResetMujocoKeyframe"
+        response_timeout="10.000000"
+        wait_for_server_available_timeout="3.000000"
+        keyframe_name="moving_target_satellite"
+      />
       <SubTree ID="Open Gripper" _collapsed="true" />
       <SubTree
         ID="Move to Waypoint"
@@ -75,12 +81,6 @@
         wrench="{wrench}"
         header="{header}"
         wrench_stamped="{desired_wrench}"
-      />
-      <Action
-        ID="ResetMujocoKeyframe"
-        response_timeout="10.000000"
-        wait_for_server_available_timeout="3.000000"
-        keyframe_name="moving_target_satellite"
       />
       <Control ID="Parallel" failure_count="1" success_count="1">
         <Decorator ID="KeepRunningUntilFailure">
@@ -172,9 +172,9 @@
             </Control>
           </Decorator>
           <Action
-            ID="BreakpointSubscriber"
-            breakpoint_topic="/moveit_pro_breakpoint"
-            message="Approve satellite grappling"
+            ID="WaitForDuration"
+            name="Pause before grappling"
+            delay_duration="1.0"
           />
           <Action
             ID="CreatePoseStamped"

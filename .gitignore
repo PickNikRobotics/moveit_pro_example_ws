@@ -17,6 +17,10 @@ src/vla_sim/hf_cache/*
 .env
 .env.*
 
+# Nyx scene exports. nyx_export_scene writes these into the user workspace, which is this
+# repository when it is mounted as USER_WS, and a single config runs to hundreds of megabytes.
+.nyx_scenes/
+
 # rosout.ndjson is written into the working directory by any rclpy node that runs
 # outside a launch session -- the lidar_flattener tests instantiate LidarFlattener
 # directly, so pytest drops one inside src/hangar_sim/.
