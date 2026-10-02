@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Run the Cube Stacking Trial">
+  <!--
+    Attempts a trial for evaluating the cube-stacking policy. Stack Cubes with the VLA Policy runs the policy for all of its total_action_steps, even after the cubes are stacked, so a stack the policy knocks over before the end fails the trial.
+  -->
+  <BehaviorTree
+    ID="Run the Cube Stacking Trial"
+    _description="Runs Stack Cubes with the VLA Policy with trial_index's instruction, for evaluating the cube-stacking policy. The instruction names the cube to pick and the cube to stack it on."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="root">
+      <SubTree
+        ID="Sample a Cube Stacking Trial"
+        _collapsed="true"
+        trial_index="{trial_index}"
+        cube_poses="{cube_poses}"
+        top_color="{top_color}"
+        bottom_color="{bottom_color}"
+        prompt="{prompt}"
+      />
+      <SubTree
+        ID="Stack Cubes with the VLA Policy"
+        _collapsed="true"
+        prompt="{prompt}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Run the Cube Stacking Trial">
+      <MetadataFields>
+        <Metadata subcategory="Application - VLA Examples" />
+        <Metadata runnable="false" />
+      </MetadataFields>
+      <input_port name="trial_index" default="0" type="int">
+        The number of the trial to run, counting from 0. An evaluation sets it
+        for each trial.
+      </input_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>

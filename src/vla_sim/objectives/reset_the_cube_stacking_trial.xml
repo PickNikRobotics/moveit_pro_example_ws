@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Reset the Cube Stacking Trial">
+  <!--
+    Sets up a trial for evaluating the cube-stacking policy. It samples the trial first, so a negative trial_index fails before the scene changes. Reset MuJoCo Sim returns SUCCESS even when its keyframe reset fails. The reset and the cube placement go to the same simulation, so when the simulation does not answer, SetMujocoFreeBodyPoses fails this Objective and the evaluation stops.
+  -->
+  <BehaviorTree
+    ID="Reset the Cube Stacking Trial"
+    _description="Resets the MuJoCo simulation to its default keyframe and places the red, green, and blue cubes in trial_index's layout, for evaluating the cube-stacking policy. The same trial_index always gives the same scene. Fails if the cubes cannot be placed."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="root">
+      <SubTree
+        ID="Sample a Cube Stacking Trial"
+        _collapsed="true"
+        trial_index="{trial_index}"
+        cube_poses="{cube_poses}"
+        top_color="{top_color}"
+        bottom_color="{bottom_color}"
+        prompt="{prompt}"
+      />
+      <SubTree ID="Reset MuJoCo Sim" _collapsed="true" />
+      <Action
+        ID="SetMujocoFreeBodyPoses"
+        body_names="cube_red;cube_green;cube_blue"
+        poses="{cube_poses}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Reset the Cube Stacking Trial">
+      <MetadataFields>
+        <Metadata subcategory="Application - VLA Examples" />
+        <Metadata runnable="false" />
+      </MetadataFields>
+      <input_port name="trial_index" default="0" type="int">
+        The number of the trial to set up, counting from 0. An evaluation sets
+        it for each trial.
+      </input_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>

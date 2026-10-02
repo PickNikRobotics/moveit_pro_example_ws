@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Check the Cube Stacking Trial">
+  <!--
+    Checks a trial for evaluating the cube-stacking policy. Check if One Cube Is on Another logs nothing while the cubes are apart, so this Objective logs why the trial failed, and the evaluation keeps that as the trial's message.
+  -->
+  <BehaviorTree
+    ID="Check the Cube Stacking Trial"
+    _description="Checks the simulator's cube poses once, for evaluating the cube-stacking policy. Returns SUCCESS if the cube that trial_index asks to pick rests on the cube it asks to stack it on, and the gripper is at least 5 cm from it. Otherwise it logs why as an error and returns FAILURE."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="root">
+      <SubTree
+        ID="Sample a Cube Stacking Trial"
+        _collapsed="true"
+        trial_index="{trial_index}"
+        cube_poses="{cube_poses}"
+        top_color="{top_color}"
+        bottom_color="{bottom_color}"
+        prompt="{prompt}"
+      />
+      <Control ID="Fallback">
+        <SubTree
+          ID="Check if One Cube Is on Another"
+          _collapsed="true"
+          top_color="{top_color}"
+          bottom_color="{bottom_color}"
+        />
+        <!--Runs only when the check fails.-->
+        <Control ID="Sequence">
+          <Action
+            ID="Script"
+            code="failure_reason := 'The ' .. top_color .. ' cube is not on the ' .. bottom_color .. ' cube, or the gripper is within 5 cm of the ' .. top_color .. ' cube.'"
+          />
+          <Action
+            ID="LogMessage"
+            message="{failure_reason}"
+            log_level="error"
+          />
+          <Action ID="AlwaysFailure" />
+        </Control>
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Check the Cube Stacking Trial">
+      <MetadataFields>
+        <Metadata subcategory="Application - VLA Examples" />
+        <Metadata runnable="false" />
+      </MetadataFields>
+      <input_port name="trial_index" default="0" type="int">
+        The number of the trial to check, counting from 0. An evaluation sets it
+        for each trial.
+      </input_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>
