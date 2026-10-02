@@ -13,7 +13,13 @@
       <Action ID="ClearSnapshot" />
       <SubTree ID="Reset Planning Scene" _collapsed="true" />
       <SubTree ID="Setup Initial Planning Scene" _collapsed="true" />
-      <SubTree ID="Add Bins to Planning Scene" _collapsed="true" />
+      <SubTree
+        ID="Add Bins to Planning Scene"
+        _collapsed="true"
+        pick_guess_pose="{pick_guess_pose}"
+        pick_crop_pose="{pick_crop_pose}"
+        drop_pose="{drop_pose}"
+      />
       <SubTree ID="Visualize Bins and Jig" _collapsed="true" />
       <!--Adding the stack light jig indicator is just to simulate for the user as if something was being done to the part on the jig-->
       <SubTree ID="Indicate Jig Empty" _collapsed="true" />
@@ -61,6 +67,8 @@
               <Action ID="StopwatchBegin" timepoint="{t_perception}" />
               <SubTree
                 ID="Look for Bracket Part Subtree"
+                pick_guess_pose="{pick_guess_pose}"
+                pick_crop_pose="{pick_crop_pose}"
                 _collapsed="true"
                 registered_pose="{registered_pose}"
               />
@@ -151,6 +159,7 @@
               <SubTree ID="Indicate Jig Empty" _collapsed="true" />
               <SubTree
                 ID="Drop Bracket Part in Right Bin Subtree"
+                drop_pose="{drop_pose}"
                 _collapsed="true"
                 part_name="single_bracket_part"
               />

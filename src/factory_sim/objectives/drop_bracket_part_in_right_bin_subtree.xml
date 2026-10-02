@@ -9,14 +9,6 @@
     _description="Drops the bracket part into the right bin, using an intermediate pose."
   >
     <Control ID="Sequence" name="Move to the right bin to drop">
-      <!--The drop pose is at a 5 degree tilt so it doesn't drop straight into the bin or on top of another part. Simulator instabilities can cause parts to jump when dropped perfectly flat.-->
-      <Action
-        ID="CreatePoseStamped"
-        reference_frame="world"
-        pose_stamped="{drop_pose}"
-        orientation_xyzw="-0.706; -0.706; -0.031; -0.031"
-        position_xyz="0.23;0.54;0.65"
-      />
       <Action
         ID="VisualizePose"
         marker_lifetime="0.000000"
@@ -125,6 +117,7 @@
       <inout_port name="part_name" default="{part_name}" type="std::string">
         Name to use for the part URDF attached to the suction gripper.
       </inout_port>
+      <input_port name="drop_pose" type="geometry_msgs::msg::PoseStamped" />
     </SubTree>
   </TreeNodesModel>
 </root>

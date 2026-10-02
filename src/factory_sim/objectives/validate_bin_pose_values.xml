@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Validate Bin Pose Values">
+  <BehaviorTree
+    ID="Validate Bin Pose Values"
+    _description="Rejects non-finite position and orientation components before bin targets or geometry are derived."
+  >
+    <Control ID="Sequence">
+      <Action
+        ID="UnpackPoseStampedMessage"
+        pose_stamped="{bin_pose}"
+        pose="{pose}"
+      />
+      <Action
+        ID="UnpackPoseMessage"
+        pose="{pose}"
+        position="{position}"
+        orientation="{orientation}"
+      />
+      <Action
+        ID="UnpackPointMessage"
+        point="{position}"
+        x="{px}"
+        y="{py}"
+        z="{pz}"
+      />
+      <Action
+        ID="UnpackQuaternionMessage"
+        quaternion="{orientation}"
+        x="{qx}"
+        y="{qy}"
+        z="{qz}"
+        w="{qw}"
+      />
+      <Control ID="Fallback" name="Validate finite bin pose components">
+        <!--A finite floating-point value minus itself is zero; NaN and infinity fail this comparison.-->
+        <Condition
+          ID="ScriptCondition"
+          code="px - px == 0 &amp;&amp; py - py == 0 &amp;&amp; pz - pz == 0 &amp;&amp; qx - qx == 0 &amp;&amp; qy - qy == 0 &amp;&amp; qz - qz == 0 &amp;&amp; qw - qw == 0"
+        />
+        <Control ID="Sequence">
+          <Action
+            ID="Script"
+            code="numeric_error := 'Bin configuration ' .. configuration_file .. ': ' .. bin_name .. ' position and quaternion components must be finite. Replace NaN or infinity with finite values.'"
+          />
+          <Action ID="LogMessage" message="{numeric_error}" log_level="error" />
+          <Action ID="AlwaysFailure" />
+        </Control>
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Validate Bin Pose Values">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Motion - Planning" />
+      </MetadataFields>
+      <input_port name="bin_pose" type="geometry_msgs::msg::PoseStamped" />
+      <input_port name="bin_name" type="std::string" />
+      <input_port name="configuration_file" type="std::string" />
+    </SubTree>
+  </TreeNodesModel>
+</root>
