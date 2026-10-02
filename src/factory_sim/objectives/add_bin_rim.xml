@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Add Bin Rim">
+  <BehaviorTree
+    ID="Add Bin Rim"
+    _description="Replaces the four collision boxes of a bin rim while preserving unrelated scene objects."
+  >
+    <Control ID="Sequence" name="Add Bin Rim">
+      <Control ID="Sequence" name="Bin rim x positive">
+        <Action
+          ID="TransformPose"
+          input_pose="{bin_pose}"
+          translation_xyz="0.2923;0;0.17"
+          output_pose="{rim_pose}"
+        />
+        <Action ID="Script" code="rim_id := bin_id .. '/x_positive'" />
+        <Action
+          ID="AddCollisionBox"
+          object_id="{rim_id}"
+          dimensions="0.025;0.331;0.05"
+          pose="{rim_pose}"
+          overwrite="true"
+          planning_scene="{planning_scene}"
+        />
+      </Control>
+      <Control ID="Sequence" name="Bin rim x negative">
+        <Action
+          ID="TransformPose"
+          input_pose="{bin_pose}"
+          translation_xyz="-0.2923;0;0.17"
+          output_pose="{rim_pose}"
+        />
+        <Action ID="Script" code="rim_id := bin_id .. '/x_negative'" />
+        <Action
+          ID="AddCollisionBox"
+          object_id="{rim_id}"
+          dimensions="0.025;0.331;0.05"
+          pose="{rim_pose}"
+          overwrite="true"
+          planning_scene="{planning_scene}"
+        />
+      </Control>
+      <Control ID="Sequence" name="Bin rim y positive">
+        <Action
+          ID="TransformPose"
+          input_pose="{bin_pose}"
+          translation_xyz="0;0.178;0.17"
+          output_pose="{rim_pose}"
+        />
+        <Action ID="Script" code="rim_id := bin_id .. '/y_positive'" />
+        <Action
+          ID="AddCollisionBox"
+          object_id="{rim_id}"
+          dimensions="0.6096;0.025;0.05"
+          pose="{rim_pose}"
+          overwrite="true"
+          planning_scene="{planning_scene}"
+        />
+      </Control>
+      <Control ID="Sequence" name="Bin rim y negative">
+        <Action
+          ID="TransformPose"
+          input_pose="{bin_pose}"
+          translation_xyz="0;-0.178;0.17"
+          output_pose="{rim_pose}"
+        />
+        <Action ID="Script" code="rim_id := bin_id .. '/y_negative'" />
+        <Action
+          ID="AddCollisionBox"
+          object_id="{rim_id}"
+          dimensions="0.6096;0.025;0.05"
+          pose="{rim_pose}"
+          overwrite="true"
+          planning_scene="{planning_scene}"
+        />
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Add Bin Rim">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Motion - Planning" />
+      </MetadataFields>
+      <input_port name="bin_pose" type="geometry_msgs::msg::PoseStamped" />
+      <input_port name="bin_id" type="std::string" />
+      <inout_port
+        name="planning_scene"
+        type="moveit_msgs::msg::PlanningScene"
+        default="{planning_scene}"
+      />
+    </SubTree>
+  </TreeNodesModel>
+</root>

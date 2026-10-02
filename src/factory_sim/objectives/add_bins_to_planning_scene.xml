@@ -1,23 +1,32 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Add Bins to Planning Scene">
-  <!--//////////-->
   <BehaviorTree
     ID="Add Bins to Planning Scene"
-    _description="Adds the tops of the parts bins to the planning scene to allow collision avoidance. Only the tops are added because parts that are using in planning start in a collision state as they rest on the bin walls and bottom."
+    _description="Restores the configured pick and place bin rims and derives the perception and drop poses. Parts may contact the unmodeled bin walls and bottom."
   >
-    <Control ID="Sequence">
-      <Action
-        ID="CreatePoseStamped"
-        reference_frame="world"
-        pose_stamped="{world_frame}"
-        name="world frame"
+    <Control ID="Sequence" name="Add Bins to Planning Scene">
+      <SubTree
+        ID="Load Bin Configuration"
+        configuration_file="{configuration_file}"
+        pick_bin_pose="{pick_bin_pose}"
+        place_bin_pose="{place_bin_pose}"
+        pick_guess_pose="{pick_guess_pose}"
+        pick_crop_pose="{pick_crop_pose}"
+        drop_pose="{drop_pose}"
       />
-      <Action
-        ID="AddURDF"
-        urdf_name="bin_tops"
-        urdf_pose="{world_frame}"
-        package_name="factory_sim"
-        urdf_file_path="description/bin_tops.urdf"
+      <SubTree
+        ID="Add Bin Rim"
+        bin_pose="{pick_bin_pose}"
+        bin_id="pick_bin"
+        planning_scene="{planning_scene}"
+        _collapsed="true"
+      />
+      <SubTree
+        ID="Add Bin Rim"
+        bin_pose="{place_bin_pose}"
+        bin_id="place_bin"
+        planning_scene="{planning_scene}"
+        _collapsed="true"
       />
     </Control>
   </BehaviorTree>
@@ -27,6 +36,25 @@
         <Metadata runnable="true" />
         <Metadata subcategory="Motion - Planning" />
       </MetadataFields>
+      <input_port
+        name="configuration_file"
+        type="std::string"
+        default="config/bin_poses.yaml"
+      />
+      <output_port
+        name="pick_guess_pose"
+        type="geometry_msgs::msg::PoseStamped"
+      />
+      <output_port
+        name="pick_crop_pose"
+        type="geometry_msgs::msg::PoseStamped"
+      />
+      <output_port name="drop_pose" type="geometry_msgs::msg::PoseStamped" />
+      <inout_port
+        name="planning_scene"
+        type="moveit_msgs::msg::PlanningScene"
+        default="{planning_scene}"
+      />
     </SubTree>
   </TreeNodesModel>
 </root>

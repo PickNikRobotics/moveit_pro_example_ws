@@ -11,7 +11,13 @@
       <Action ID="ClearSnapshot" />
       <SubTree ID="Reset Planning Scene" _collapsed="true" />
       <SubTree ID="Setup Initial Planning Scene" _collapsed="true" />
-      <SubTree ID="Add Bins to Planning Scene" _collapsed="true" />
+      <SubTree
+        ID="Add Bins to Planning Scene"
+        _collapsed="true"
+        pick_guess_pose="{pick_guess_pose}"
+        pick_crop_pose="{pick_crop_pose}"
+        drop_pose="{drop_pose}"
+      />
       <!--Pickup vacuum gripper-->
       <SubTree ID="Automated Return Held Tool" _collapsed="true" />
       <SubTree
@@ -40,19 +46,11 @@
           >
             <!--Get the bracket pointcloud from the CAD file and make a guess as to where it might be-->
             <Action ID="ClearSnapshot" />
-            <Action
-              ID="CreatePoseStamped"
-              position_xyz="-0.35;0.8;0.4"
-              orientation_xyzw="0.000;0.000;0.0;1"
-              name="Initial guess for bracket pose, somewhere above left bin"
-              pose_stamped="{guess_pose}"
-              reference_frame="world"
-            />
             <SubTree
               ID="Load Bracket Part Pointcloud Subtree"
               _collapsed="true"
               color="0;0;255"
-              initial_pose="{guess_pose}"
+              initial_pose="{pick_guess_pose}"
               bracket_part_cloud="{blue_bracket_part_cloud}"
             />
             <Action
@@ -60,7 +58,7 @@
               marker_lifetime="0.000000"
               marker_name="guess_pose"
               marker_size="0.100000"
-              pose="{guess_pose}"
+              pose="{pick_guess_pose}"
               marker_text="initial bracket pose estimate"
             />
             <Action
@@ -89,17 +87,11 @@
               name="Crop out points belonging to the bin by making a box that approximates the bin internal volume"
             >
               <Action
-                ID="CreatePoseStamped"
-                reference_frame="world"
-                pose_stamped="{centroid_pose}"
-                position_xyz="-0.25;0.6;0.4"
-              />
-              <Action
                 ID="CropPointsInBox"
-                crop_box_centroid_pose="{centroid_pose}"
+                crop_box_centroid_pose="{pick_crop_pose}"
                 point_cloud="{bin_camera_left_cloud}"
                 point_cloud_cropped="{cropped_bin_point_cloud}"
-                crop_box_size="0.32;0.55;0.28"
+                crop_box_size="0.55;0.32;0.28"
               />
             </Control>
             <Action
@@ -113,7 +105,7 @@
             />
             <Action
               ID="TransformPoseWithPose"
-              input_pose="{guess_pose}"
+              input_pose="{pick_guess_pose}"
               transform_pose="{registered_to_guess_pose}"
               output_pose="{registered_pose}"
               name="Because the pose produced by point cloud registration is relative to the guess pose, we need to add that on to get to the real pose in world frame"
@@ -155,7 +147,11 @@
             bracket_part_pose="{registered_pose}"
             part_name="single_bracket_part"
           />
-          <SubTree ID="Vacuum Drop Bracket Part Subtree" _collapsed="true" />
+          <SubTree
+            ID="Vacuum Drop Bracket Part Subtree"
+            _collapsed="true"
+            drop_pose="{drop_pose}"
+          />
           <Action
             ID="StopwatchEnd"
             timepoint="{t_cycle}"
