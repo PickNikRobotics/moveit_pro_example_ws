@@ -59,7 +59,7 @@
         trajectory_sampling_rate="100"
         velocity_scale_factor="0.1"
       />
-      <!--Activate the JTAC, tare the sensor and execute the trajectory with compliance-->
+      <!--Activate the JTAC, tare the sensor and execute the trajectory with compliance. The button stops the arm about 0.05 rad short of the end of the trajectory, so the goal tolerance is 0.1 rad.-->
       <Action
         ID="SwitchController"
         activate_controllers="joint_trajectory_admittance_controller"
@@ -77,7 +77,7 @@
         ID="ExecuteTrajectory"
         absolute_force_torque_threshold="1000;1000;1000;1000;1000;1000"
         admittance_parameters_msg="{admittance_parameters_msg}"
-        goal_position_tolerance="0.001000"
+        goal_position_tolerance="0.1"
         joint_trajectory_msg="{joint_trajectory_msg}"
         path_position_tolerance="0.25000"
       />
