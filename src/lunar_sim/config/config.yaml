@@ -33,6 +33,8 @@ hardware:
       - mujoco_model: "description/husky_scene.xml"
       - mujoco_viewer: false  # set to true locally to open the MuJoCo viewer window
       - mujoco_keyframe: "default"  # the MoveIt Pro UI's built-in "Reset Simulation" control needs this
+      # Publishes the OAK-D stereo pair and /ground_truth/odom for visual odometry. Rebuild after changing.
+      - enable_vo: false
 
 # Sets ROS global params for launch.
 # [Optional]

@@ -340,6 +340,7 @@ def test_oakd_stereo_pair_straddles_the_colour_camera_at_the_pro_baseline():
         assert np.isclose(
             float(cameras[name].get("fovy")), OAKD_PRO_FOVY_DEG
         ), f"{name} fovy must match the OAK-D Pro profile shared with hangar_sim"
+        assert cameras[name].get("user") == "1", f"{name} must be RGB-only"
 
 
 def test_oakd_geoms_stay_behind_the_optical_plane():
