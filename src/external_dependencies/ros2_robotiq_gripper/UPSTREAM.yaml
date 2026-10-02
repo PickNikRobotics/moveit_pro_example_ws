@@ -6,7 +6,7 @@ vendored_paths:
   - LICENSE
   - robotiq_controllers
   - robotiq_description
-pruned_paths:
+pruning_notes:
   - upstream CI, formatting configuration, repository metadata, and documentation
   - robotiq_driver (hardware driver and interface)
   - robotiq_hardware_tests (hardware-only test utilities)
