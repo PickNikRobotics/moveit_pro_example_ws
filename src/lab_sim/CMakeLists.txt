@@ -49,6 +49,17 @@ if(BUILD_TESTING)
   target_link_libraries(test_bottle_pick_loop tinyxml2::tinyxml2)
   target_compile_definitions(test_bottle_pick_loop PRIVATE
     BOTTLE_OBJECTIVE_XML="${CMAKE_CURRENT_SOURCE_DIR}/objectives/pick_all_bottles_with_apriltags.xml")
+  find_package(moveit_pro_behavior_interface REQUIRED)
+  find_package(pluginlib REQUIRED)
+  find_package(sensor_msgs REQUIRED)
+  find_package(rclcpp REQUIRED)
+  find_package(rcl REQUIRED)
+  ament_add_gtest(test_surface_coverage_capture test/test_surface_coverage_capture.cpp)
+  ament_target_dependencies(test_surface_coverage_capture
+    behaviortree_cpp_picknik moveit_pro_behavior_interface pluginlib sensor_msgs rclcpp rcl)
+  target_link_libraries(test_surface_coverage_capture tinyxml2::tinyxml2)
+  target_compile_definitions(test_surface_coverage_capture PRIVATE
+    LAB_OBJECTIVE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/objectives")
   find_package(ament_cmake_pytest REQUIRED)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()

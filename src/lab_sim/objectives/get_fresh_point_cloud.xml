@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Get Fresh Point Cloud">
+  <BehaviorTree
+    ID="Get Fresh Point Cloud"
+    _description="Capture a point cloud acquired after this SubTree starts."
+  >
+    <Control ID="Sequence">
+      <!-- Message arrival can follow motion completion while its capture predates the motion. -->
+      <Action ID="CreatePoseStamped" pose_stamped="{capture_start}" />
+      <Action
+        ID="UnpackPoseStampedMessage"
+        pose_stamped="{capture_start}"
+        header="{capture_start_header}"
+      />
+      <Action
+        ID="UnpackHeaderMessage"
+        header="{capture_start_header}"
+        stamp="{capture_start_stamp}"
+      />
+      <Action
+        ID="UnpackTimeMessage"
+        time="{capture_start_stamp}"
+        sec="{capture_start_sec}"
+        nanosec="{capture_start_nanosec}"
+      />
+      <Control ID="Fallback">
+        <Decorator ID="Timeout" msec="{timeout_ms}">
+          <Decorator ID="RetryUntilSuccessful" num_attempts="-1">
+            <Control ID="Sequence">
+              <Action
+                ID="GetPointCloud"
+                topic_name="{topic_name}"
+                message_out="{point_cloud}"
+              />
+              <Action
+                ID="UnpackPointCloud2Message"
+                point_cloud2="{point_cloud}"
+                header="{cloud_header}"
+              />
+              <Action
+                ID="UnpackHeaderMessage"
+                header="{cloud_header}"
+                stamp="{cloud_stamp}"
+              />
+              <Action
+                ID="UnpackTimeMessage"
+                time="{cloud_stamp}"
+                sec="{cloud_sec}"
+                nanosec="{cloud_nanosec}"
+              />
+              <Condition
+                ID="ScriptCondition"
+                code="cloud_sec &gt; capture_start_sec || (cloud_sec == capture_start_sec &amp;&amp; cloud_nanosec &gt; capture_start_nanosec)"
+              />
+            </Control>
+          </Decorator>
+        </Decorator>
+        <Control ID="Sequence">
+          <Action
+            ID="Script"
+            code="capture_error := 'No fresh point cloud on ' + topic_name + ' within ' + timeout_ms + ' ms. Check the publisher and timestamp clock.'"
+          />
+          <Action ID="LogMessage" log_level="error" message="{capture_error}" />
+          <Action ID="AlwaysFailure" />
+        </Control>
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Get Fresh Point Cloud">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Perception - 3D Point Cloud" />
+      </MetadataFields>
+      <input_port
+        name="topic_name"
+        default="/wrist_camera/points"
+        type="std::string"
+      >
+        Point cloud topic. Capture timestamps must use the Runtime node's clock.
+      </input_port>
+      <input_port name="timeout_ms" default="5000" type="unsigned">
+        Maximum duration in milliseconds to wait for a capture newer than this
+        SubTree's start.
+      </input_port>
+      <output_port name="point_cloud" type="sensor_msgs::msg::PointCloud2" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

@@ -22,12 +22,7 @@
       />
 
       <SubTree ID="Move to Waypoint" waypoint_name="Look at Table" />
-      <Action
-        ID="GetPointCloud"
-        topic_name="/wrist_camera/points"
-        message_out="{point_cloud}"
-        message_timeout_sec="5.0"
-      />
+      <SubTree ID="Get Fresh Point Cloud" point_cloud="{point_cloud}" />
       <Action
         ID="CreatePoseStamped"
         reference_frame="wrist_camera_optical_frame"
