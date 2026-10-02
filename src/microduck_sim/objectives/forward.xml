@@ -1,0 +1,30 @@
+<root BTCPP_format="4" main_tree_to_execute="Walk Forward">
+  <BehaviorTree
+    ID="Walk Forward"
+    _description="Command the Microduck policy. Walking stops when this Objective is canceled."
+    _favorite="true"
+  >
+    <Control ID="Sequence">
+      <Action ID="CallTriggerService" service_name="/microduck/ready" />
+      <Decorator ID="Repeat" num_cycles="60">
+        <Decorator ID="Delay" delay_msec="50">
+          <Action
+            ID="PublishString"
+            topic="/microduck/command"
+            message="forward"
+          />
+        </Decorator>
+      </Decorator>
+      <Action ID="PublishString" topic="/microduck/command" message="stand" />
+      <Action ID="CallTriggerService" service_name="/microduck/ready" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Walk Forward">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Microduck" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
