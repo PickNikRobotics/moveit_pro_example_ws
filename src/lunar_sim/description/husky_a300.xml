@@ -274,6 +274,7 @@
         fovy="50.53401584672457"
         mode="fixed"
         resolution="1280 720"
+        user="1"
       />
       <site
         name="oakd_left_optical_frame"
@@ -287,6 +288,7 @@
         fovy="50.53401584672457"
         mode="fixed"
         resolution="1280 720"
+        user="1"
       />
       <site
         name="oakd_right_optical_frame"

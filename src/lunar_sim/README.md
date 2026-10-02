@@ -385,7 +385,7 @@ matters more to VO evaluation.
 | Camera | Mode | Streamed | Purpose |
 | --- | --- | --- | --- |
 | `oakd_color` | fixed | yes | Robot's forward view from the sensor arch - the operator-facing shot |
-| `oakd_left` / `oakd_right` | fixed | only with `enable_vo:=true` | Mono stereo pair for visual odometry |
+| `oakd_left` / `oakd_right` | fixed | only with `enable_vo: true` in `config/config.yaml` | Mono stereo pair for visual odometry; images only (`user="1"`), no depth or points |
 | `scene_camera` | fixed | yes | World-fixed overview of the Dead Reckon Square |
 | `lidar_front` / `lidar_rear` | fixed | yes | Image-based lidars (`user="2 ..."`), published as point clouds |
 | `chase_camera` | targetbody | no | Render-only chase shot used by `validate_and_render.py` |
