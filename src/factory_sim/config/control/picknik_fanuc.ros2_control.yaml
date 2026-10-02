@@ -85,7 +85,9 @@ joint_trajectory_admittance_controller:
     # Default maximum joint-space deviation accepted along the trajectory, if not specified in the goal message.
     default_path_tolerance: 0.65
     # Default maximum joint-space deviation accepted at the trajectory end-point, if not specified in the goal message.
-    default_goal_tolerance: 0.05
+    # As wide as the path tolerance: the tool-changing motions drive into the tool holder with collisions ignored, and
+    # the simulated arm stops short of the final point by an amount that depends on the contact.
+    default_goal_tolerance: 0.65
     # Default maximum absolute force torque readings allowed from the force torque sensor along each Cartesian space
     # axis, if not specified in the goal message. If exceeded, execution will abort.
     default_absolute_force_torque_threshold: [45.0, 45.0, 45.0, 10.0, 10.0, 10.0]

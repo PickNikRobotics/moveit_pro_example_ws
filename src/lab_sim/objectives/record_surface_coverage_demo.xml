@@ -9,7 +9,9 @@
            subtree activates by default. Compliance buys nothing at a standoff, and that controller's
            0.5 rad path tolerance can abort a sweep when the simulator falls behind realtime. Naming
            plain JTC on every motion avoids the aborts but more than doubles the run on a lagging
-           simulator, past the integration test's budget, so the tolerance is lived with instead. -->
+           simulator, past the integration test's budget, so the tolerance is lived with instead.
+           The sweeps set a 0.25 rad goal tolerance for the same reason: on a lagging simulator the
+           arm is up to 0.1 rad behind the command when a sweep ends. -->
       <SubTree ID="Close Gripper" _collapsed="true" />
 
       <!-- 180 deg about the optical X axis points the reference +Z back toward the camera, which is
@@ -71,6 +73,7 @@
       />
       <Action
         ID="ExecuteTrajectory"
+        goal_position_tolerance="0.25"
         joint_trajectory_msg="{coverage_trajectory}"
       />
       <!-- footprint_range must clear the 0.04 standoff the sweep was planned with; the 0.02 radius
@@ -142,6 +145,7 @@
       />
       <Action
         ID="ExecuteTrajectory"
+        goal_position_tolerance="0.25"
         joint_trajectory_msg="{coverage_trajectory}"
       />
       <Action
