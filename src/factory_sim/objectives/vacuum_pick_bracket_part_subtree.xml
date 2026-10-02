@@ -136,12 +136,25 @@
         velocity_scale="1.000000"
         name="This move is done to push the vacuum gripper into the part a little to get it to collide. This causes the mujoco weld to activate. An improvement would be to detect the force on the gripper and stop"
       />
+      <Action ID="StopwatchBegin" timepoint="{t_plan}" />
       <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
+      <Action
+        ID="StopwatchEnd"
+        timepoint="{t_plan}"
+        message="PLANNING: vacuum pick from bin"
+      />
+      <Action ID="StopwatchBegin" timepoint="{t_exec}" />
       <SubTree
         ID="Execute MTC Solution"
         solution="{mtc_solution}"
         goal_duration_tolerance="-1.0"
       />
+      <Action
+        ID="StopwatchEnd"
+        timepoint="{t_exec}"
+        message="EXECUTION: vacuum pick from bin"
+      />
+      <Action ID="StopwatchBegin" timepoint="{t_scene}" />
       <Action
         ID="AddURDF"
         urdf_name="{part_name}"
@@ -154,6 +167,11 @@
         urdf_name="{part_name}"
         allowed_collision_links="link_5;link_6"
         parent_link_name="tool0"
+      />
+      <Action
+        ID="StopwatchEnd"
+        timepoint="{t_scene}"
+        message="SCENE: attach bracket to tool"
       />
     </Control>
   </BehaviorTree>

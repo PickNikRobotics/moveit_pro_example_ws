@@ -10,17 +10,49 @@
   >
     <Control ID="Sequence">
       <Control ID="Sequence" name="Move to jig pick approach pose and pick">
-        <SubTree
-          ID="Move to Waypoint"
-          _collapsed="true"
-          acceleration_scale_factor="1.0"
-          controller_action_server="/joint_trajectory_admittance_controller/follow_joint_trajectory"
-          controller_names="joint_trajectory_admittance_controller"
+        <!--Planned as an explicit MTC task rather than through Move to Named Waypoint so planning and execution can be timed separately-->
+        <Action
+          ID="RetrieveWaypoint"
           joint_group_name="manipulator"
-          seed="0"
-          velocity_scale_factor="1.0"
+          waypoint_joint_state="{jig_approach_joint_state}"
           waypoint_name="Jig Approach Pose"
-          name="Move to jig approach pose"
+        />
+        <Action
+          ID="InitializeMTCTask"
+          task="{mtc_task}"
+          task_id="move_to_jig_approach_pose"
+          timeout="-1.000000"
+        />
+        <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
+        <Action
+          ID="SetupMTCPlanToRobotState"
+          acceleration_scale_factor="1.0"
+          joint_state="{jig_approach_joint_state}"
+          collision_check_params="[{override_scene_link_padding: true, link_padding: 0.01}]"
+          max_iterations="5000"
+          planning_group_name="manipulator"
+          seed="0"
+          task="{mtc_task}"
+          trajectory_sampling_rate="100"
+          velocity_scale_factor="1.0"
+        />
+        <Action ID="StopwatchBegin" timepoint="{t_plan}" />
+        <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
+        <Action
+          ID="StopwatchEnd"
+          timepoint="{t_plan}"
+          message="PLANNING: move to jig approach pose"
+        />
+        <Action ID="StopwatchBegin" timepoint="{t_exec}" />
+        <SubTree
+          ID="Execute MTC Solution"
+          solution="{mtc_solution}"
+          goal_duration_tolerance="-1.0"
+        />
+        <Action
+          ID="StopwatchEnd"
+          timepoint="{t_exec}"
+          message="EXECUTION: move to jig approach pose"
         />
         <SubTree ID="Activate Vacuum" _collapsed="true" />
         <Action
@@ -73,12 +105,25 @@
           velocity_scale="0.5"
           task="{mtc_task}"
         />
+        <Action ID="StopwatchBegin" timepoint="{t_plan}" />
         <Action ID="PlanMTCTask" task="{mtc_task}" solution="{mtc_solution}" />
+        <Action
+          ID="StopwatchEnd"
+          timepoint="{t_plan}"
+          message="PLANNING: jig pick approach"
+        />
+        <Action ID="StopwatchBegin" timepoint="{t_exec}" />
         <SubTree
           ID="Execute MTC Solution"
           solution="{mtc_solution}"
           goal_duration_tolerance="-1.0"
         />
+        <Action
+          ID="StopwatchEnd"
+          timepoint="{t_exec}"
+          message="EXECUTION: jig pick approach"
+        />
+        <Action ID="StopwatchBegin" timepoint="{t_scene}" />
         <Action
           ID="AddURDF"
           urdf_name="{part_name}"
@@ -91,6 +136,11 @@
           urdf_name="{part_name}"
           allowed_collision_links="link_5;link_6"
           parent_link_name="tool0"
+        />
+        <Action
+          ID="StopwatchEnd"
+          timepoint="{t_scene}"
+          message="SCENE: attach bracket to tool"
         />
       </Control>
       <Control ID="Sequence" name="Retract straight off of jig ">
@@ -137,11 +187,23 @@
           velocity_scale="0.5"
           task="{mtc_task}"
         />
+        <Action ID="StopwatchBegin" timepoint="{t_plan}" />
         <Action ID="PlanMTCTask" task="{mtc_task}" solution="{mtc_solution}" />
+        <Action
+          ID="StopwatchEnd"
+          timepoint="{t_plan}"
+          message="PLANNING: jig pick retreat"
+        />
+        <Action ID="StopwatchBegin" timepoint="{t_exec}" />
         <SubTree
           ID="Execute MTC Solution"
           solution="{mtc_solution}"
           goal_duration_tolerance="-1.0"
+        />
+        <Action
+          ID="StopwatchEnd"
+          timepoint="{t_exec}"
+          message="EXECUTION: jig pick retreat"
         />
       </Control>
     </Control>
