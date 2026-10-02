@@ -55,11 +55,19 @@
               ID="Sequence"
               name="Detect the next bracket and pick it with the vacuum gripper"
             >
+              <!--The matching StopwatchEnd for t_cycle is the last node of the sibling "then" branch, so a cycle that fails to pick logs no CYCLE line-->
+              <Action ID="StopwatchBegin" timepoint="{t_cycle}" />
               <SubTree ID="Indicate Jig Empty" _collapsed="true" />
+              <Action ID="StopwatchBegin" timepoint="{t_perception}" />
               <SubTree
                 ID="Look for Bracket Part Subtree"
                 _collapsed="true"
                 registered_pose="{registered_pose}"
+              />
+              <Action
+                ID="StopwatchEnd"
+                timepoint="{t_perception}"
+                message="PERCEPTION: register bracket in left bin"
               />
               <SubTree
                 ID="Vacuum Pick Bracket Part Subtree"
@@ -78,17 +86,53 @@
                 part_name="single_bracket_part"
               />
               <!--This jig apparatus and waiting is here just to motivate the use case and explain why the arm moves to a waiting pose, instead of dropping the part on the jig and then picking it right back up again-->
-              <SubTree
-                ID="Move to Waypoint"
-                _collapsed="true"
-                acceleration_scale_factor="1.0"
-                controller_action_server="/joint_trajectory_admittance_controller/follow_joint_trajectory"
-                controller_names="joint_trajectory_admittance_controller"
+              <!--Planned as an explicit MTC task rather than through Move to Named Waypoint so planning and execution can be timed separately-->
+              <Action
+                ID="RetrieveWaypoint"
                 joint_group_name="manipulator"
-                seed="0"
-                velocity_scale_factor="1.0"
+                waypoint_joint_state="{waiting_pose_joint_state}"
                 waypoint_name="Home"
-                name="Send arm to waiting pose"
+              />
+              <Action
+                ID="InitializeMTCTask"
+                task="{mtc_task}"
+                task_id="move_to_waiting_pose"
+                timeout="-1.000000"
+              />
+              <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
+              <Action
+                ID="SetupMTCPlanToRobotState"
+                acceleration_scale_factor="1.0"
+                joint_state="{waiting_pose_joint_state}"
+                collision_check_params="[{override_scene_link_padding: true, link_padding: 0.01}]"
+                max_iterations="5000"
+                planning_group_name="manipulator"
+                seed="0"
+                task="{mtc_task}"
+                trajectory_sampling_rate="100"
+                velocity_scale_factor="1.0"
+              />
+              <Action ID="StopwatchBegin" timepoint="{t_plan}" />
+              <Action
+                ID="PlanMTCTask"
+                solution="{mtc_solution}"
+                task="{mtc_task}"
+              />
+              <Action
+                ID="StopwatchEnd"
+                timepoint="{t_plan}"
+                message="PLANNING: move to waiting pose"
+              />
+              <Action ID="StopwatchBegin" timepoint="{t_exec}" />
+              <SubTree
+                ID="Execute MTC Solution"
+                solution="{mtc_solution}"
+                goal_duration_tolerance="-1.0"
+              />
+              <Action
+                ID="StopwatchEnd"
+                timepoint="{t_exec}"
+                message="EXECUTION: move to waiting pose"
               />
               <Action
                 ID="LogMessage"
@@ -110,6 +154,11 @@
                 _collapsed="true"
                 part_name="single_bracket_part"
               />
+              <Action
+                ID="StopwatchEnd"
+                timepoint="{t_cycle}"
+                message="CYCLE: pick from bin, place on jig, pick from jig, drop in right bin"
+              />
             </Control>
             <Control
               ID="Sequence"
@@ -130,7 +179,7 @@
       <!--Stow vacuum gripper-->
       <SubTree ID="Automated Return Held Tool" _collapsed="true" />
       <SubTree
-        ID="Move to Waypoint"
+        ID="Move to Named Waypoint"
         _collapsed="true"
         acceleration_scale_factor="1.0"
         controller_action_server="/joint_trajectory_admittance_controller/follow_joint_trajectory"

@@ -32,6 +32,8 @@
         name="Pick a fixed number of brackets"
       >
         <Control ID="Sequence">
+          <Action ID="StopwatchBegin" timepoint="{t_cycle}" />
+          <Action ID="StopwatchBegin" timepoint="{t_perception}" />
           <Control
             ID="Sequence"
             name="Look for the bracket part in the left bin and register it to the CAD of the part. Return the registered pose of the part for picking."
@@ -142,6 +144,11 @@
               />
             </Control>
           </Control>
+          <Action
+            ID="StopwatchEnd"
+            timepoint="{t_perception}"
+            message="PERCEPTION: register bracket in left bin"
+          />
           <SubTree
             ID="Vacuum Pick Bracket Part Subtree"
             _collapsed="true"
@@ -149,12 +156,17 @@
             part_name="single_bracket_part"
           />
           <SubTree ID="Vacuum Drop Bracket Part Subtree" _collapsed="true" />
+          <Action
+            ID="StopwatchEnd"
+            timepoint="{t_cycle}"
+            message="CYCLE: pick from bin, drop in right bin"
+          />
         </Control>
       </Decorator>
       <!--Stow vacuum gripper-->
       <SubTree ID="Automated Return Held Tool" _collapsed="true" />
       <SubTree
-        ID="Move to Waypoint"
+        ID="Move to Named Waypoint"
         _collapsed="true"
         acceleration_scale_factor="1.0"
         controller_action_server="/joint_trajectory_admittance_controller/follow_joint_trajectory"

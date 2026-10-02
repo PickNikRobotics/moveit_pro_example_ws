@@ -84,17 +84,35 @@
         velocity_scale_factor="1.000000"
         acceleration_scale_factor="0.5"
       />
+      <Action ID="StopwatchBegin" timepoint="{t_plan}" />
       <Action ID="PlanMTCTask" solution="{mtc_solution}" task="{mtc_task}" />
+      <Action
+        ID="StopwatchEnd"
+        timepoint="{t_plan}"
+        message="PLANNING: drop in right bin"
+      />
+      <Action ID="StopwatchBegin" timepoint="{t_exec}" />
       <SubTree
         ID="Execute MTC Solution"
         solution="{mtc_solution}"
         goal_duration_tolerance="-1.0"
       />
+      <Action
+        ID="StopwatchEnd"
+        timepoint="{t_exec}"
+        message="EXECUTION: drop in right bin"
+      />
       <SubTree ID="Deactivate Vacuum" _collapsed="true" />
+      <Action ID="StopwatchBegin" timepoint="{t_scene}" />
       <SubTree
         ID="Detach and Remove Tool"
         _collapsed="true"
         tool_name="{part_name}"
+      />
+      <Action
+        ID="StopwatchEnd"
+        timepoint="{t_scene}"
+        message="SCENE: detach bracket from tool"
       />
     </Control>
   </BehaviorTree>
