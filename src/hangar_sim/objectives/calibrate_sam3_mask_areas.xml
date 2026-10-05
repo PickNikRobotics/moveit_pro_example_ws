@@ -48,7 +48,7 @@
       />
       <Action
         ID="Script"
-        code="header := &quot;SAM3 prompt=&quot;..prompt..&quot; threshold=&quot;..threshold..&quot; returned &quot;..mask_count..&quot; masks. Cycling visualization...&quot;"
+        code="header := 'SAM3 prompt='..prompt..' threshold='..threshold..' returned '..mask_count..' masks. Cycling visualization...'"
       />
       <Action ID="LogMessage" message="{header}" log_level="info" />
       <Decorator ID="ForEach" vector_in="{masks2d}" index="{idx}" out="{mask}">
@@ -76,10 +76,7 @@
             input_vector="{one_mask}"
             output_vector="{one_mask}"
           />
-          <Action
-            ID="Script"
-            code="mask_label := &quot;area=&quot;..area..&quot; px&quot;"
-          />
+          <Action ID="Script" code="mask_label := 'area='..area..' px'" />
           <Action
             ID="PublishMask2D"
             image="{image}"
@@ -90,7 +87,7 @@
           />
           <Action
             ID="Script"
-            code="line := &quot;  mask&quot;..idx..&quot;: area=&quot;..area..&quot; px bbox=&quot;..w..&quot;x&quot;..h"
+            code="line := '  mask'..idx..': area='..area..' px bbox='..w..'x'..h"
           />
           <Action ID="LogMessage" message="{line}" log_level="info" />
           <Action ID="WaitForDuration" delay_duration="1.5" />
