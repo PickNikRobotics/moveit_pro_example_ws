@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Load Bin Configuration">
+  <BehaviorTree
+    ID="Load Bin Configuration"
+    _description="Loads the pick and place bin poses and derives the perception and placement poses in the same configuration snapshot."
+  >
+    <Control ID="Sequence" name="Load Bin Configuration">
+      <Action
+        ID="LoadPoseStampedVectorFromYaml"
+        package_name="factory_sim"
+        file_path="{configuration_file}"
+        output="{bin_poses}"
+      />
+      <Action
+        ID="GetSizeOfVector"
+        vector_in="{bin_poses}"
+        vector_size="{bin_count}"
+      />
+      <Control ID="Fallback" name="Two bin poses required">
+        <Condition ID="ScriptCondition" code="bin_count == 2" />
+        <Control ID="Sequence">
+          <Action
+            ID="Script"
+            code="count_error := 'Bin configuration ' .. configuration_file .. ': found ' .. bin_count .. ' poses; expected 2 (pick bin, then place bin).'"
+          />
+          <Action ID="LogMessage" message="{count_error}" log_level="error" />
+          <Action ID="AlwaysFailure" />
+        </Control>
+      </Control>
+      <Action
+        ID="GetElementOfVector"
+        vector_in="{bin_poses}"
+        index="0"
+        element="{pick_bin_pose}"
+      />
+      <Action
+        ID="GetElementOfVector"
+        vector_in="{bin_poses}"
+        index="1"
+        element="{place_bin_pose}"
+      />
+      <Action
+        ID="UnpackPoseStampedMessage"
+        pose_stamped="{pick_bin_pose}"
+        header="{pick_bin_header}"
+      />
+      <Action
+        ID="UnpackHeaderMessage"
+        header="{pick_bin_header}"
+        frame_id="{pick_bin_frame}"
+      />
+      <Action
+        ID="UnpackPoseStampedMessage"
+        pose_stamped="{place_bin_pose}"
+        header="{place_bin_header}"
+      />
+      <Action
+        ID="UnpackHeaderMessage"
+        header="{place_bin_header}"
+        frame_id="{place_bin_frame}"
+      />
+      <Control ID="Fallback" name="Validate bin frames">
+        <Condition
+          ID="ScriptCondition"
+          code="pick_bin_frame == 'world' &amp;&amp; place_bin_frame == 'world'"
+          name="Both bin poses must use world"
+        />
+        <Control ID="Sequence">
+          <Action
+            ID="Script"
+            code="frame_error := 'Bin configuration ' .. configuration_file .. ': pick frame=' .. pick_bin_frame .. ', place frame=' .. place_bin_frame .. '. Set both header.frame_id values to world.'"
+          />
+          <Action ID="LogMessage" message="{frame_error}" log_level="error" />
+          <Action ID="AlwaysFailure" />
+        </Control>
+      </Control>
+      <SubTree
+        ID="Validate Bin Pose Values"
+        bin_pose="{pick_bin_pose}"
+        bin_name="pick bin"
+        configuration_file="{configuration_file}"
+      />
+      <SubTree
+        ID="Validate Bin Pose Values"
+        bin_pose="{place_bin_pose}"
+        bin_name="place bin"
+        configuration_file="{configuration_file}"
+      />
+      <Action
+        ID="TransformPose"
+        input_pose="{pick_bin_pose}"
+        output_pose="{pick_guess_pose}"
+        translation_xyz="0.2;0.1;0.15"
+        quaternion_xyzw="0;0;-0.7071067811865476;0.7071067811865476"
+      />
+      <Action
+        ID="TransformPose"
+        input_pose="{pick_bin_pose}"
+        output_pose="{pick_crop_pose}"
+        translation_xyz="0;0;0.15"
+        quaternion_xyzw="0;0;0;1"
+      />
+      <!--The drop pose points the gripper down at a 5 degree tilt about the bin's x axis so parts do not drop flat or stack on each other. Simulator instabilities can cause parts to jump when dropped perfectly flat.-->
+      <Action
+        ID="TransformPose"
+        input_pose="{place_bin_pose}"
+        output_pose="{drop_pose}"
+        translation_xyz="-0.06;0.02;0.4"
+        quaternion_xyzw="-0.9990373763124173;0;0;-0.0438670802630098"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Load Bin Configuration">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Motion - Planning" />
+      </MetadataFields>
+      <input_port
+        name="configuration_file"
+        type="std::string"
+        default="config/bin_poses.yaml"
+      />
+      <output_port
+        name="pick_bin_pose"
+        type="geometry_msgs::msg::PoseStamped"
+      />
+      <output_port
+        name="place_bin_pose"
+        type="geometry_msgs::msg::PoseStamped"
+      />
+      <output_port
+        name="pick_guess_pose"
+        type="geometry_msgs::msg::PoseStamped"
+      />
+      <output_port
+        name="pick_crop_pose"
+        type="geometry_msgs::msg::PoseStamped"
+      />
+      <output_port name="drop_pose" type="geometry_msgs::msg::PoseStamped" />
+    </SubTree>
+  </TreeNodesModel>
+</root>
