@@ -86,8 +86,13 @@
       <inout_port
         name="planning_scene"
         type="moveit_msgs::msg::PlanningScene"
-        default="{planning_scene}"
-      />
+        default="{bin_planning_scene}"
+      >
+        Optional. Wire a PlanningScene message to edit it in place instead of
+        the live planning scene. The default remaps to an unusual key so an
+        unrelated planning_scene entry on the caller's blackboard cannot switch
+        the Objective to message mode.
+      </inout_port>
     </SubTree>
   </TreeNodesModel>
 </root>

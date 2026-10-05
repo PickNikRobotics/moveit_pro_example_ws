@@ -16,11 +16,17 @@
         vector_in="{bin_poses}"
         vector_size="{bin_count}"
       />
-      <Condition
-        ID="ScriptCondition"
-        code="bin_count == 2"
-        name="Two bin poses required"
-      />
+      <Control ID="Fallback" name="Two bin poses required">
+        <Condition ID="ScriptCondition" code="bin_count == 2" />
+        <Control ID="Sequence">
+          <Action
+            ID="Script"
+            code="count_error := 'Bin configuration ' .. configuration_file .. ': found ' .. bin_count .. ' poses; expected 2 (pick bin, then place bin).'"
+          />
+          <Action ID="LogMessage" message="{count_error}" log_level="error" />
+          <Action ID="AlwaysFailure" />
+        </Control>
+      </Control>
       <Action
         ID="GetElementOfVector"
         vector_in="{bin_poses}"

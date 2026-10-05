@@ -27,6 +27,7 @@
   <test_depend>ament_cmake_lint_cmake</test_depend>
   <test_depend>ament_cmake_pytest</test_depend>
   <test_depend>ament_cmake_gtest</test_depend>
+  <test_depend>yaml-cpp</test_depend>
   <test_depend>ament_index_cpp</test_depend>
   <test_depend>moveit_pro_test_utils</test_depend>
   <test_depend>moveit_pro_behavior</test_depend>

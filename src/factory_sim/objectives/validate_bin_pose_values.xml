@@ -40,7 +40,7 @@
         <Control ID="Sequence">
           <Action
             ID="Script"
-            code="numeric_error := 'Bin configuration ' .. configuration_file .. ': ' .. bin_name .. ' position and quaternion components must be finite. Replace NaN or infinity with finite values.'"
+            code="numeric_error := 'Bin configuration ' .. configuration_file .. ': ' .. bin_name .. ' position and quaternion components must be finite; NaN and infinity are rejected.'"
           />
           <Action ID="LogMessage" message="{numeric_error}" log_level="error" />
           <Action ID="AlwaysFailure" />

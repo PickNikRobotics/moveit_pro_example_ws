@@ -37,7 +37,7 @@ if(BUILD_TESTING)
   find_package(moveit_pro_test_utils REQUIRED)
   find_package(ament_index_cpp REQUIRED)
   find_package(pluginlib REQUIRED)
-  find_package(moveit_studio_converter_behavior REQUIRED)
+  find_package(yaml-cpp REQUIRED)
   ament_add_gtest(test_bin_configuration test/test_bin_configuration.cpp)
   target_compile_features(test_bin_configuration PRIVATE cxx_std_20)
   target_compile_definitions(test_bin_configuration PRIVATE
@@ -49,7 +49,8 @@ if(BUILD_TESTING)
     moveit_pro_behavior::get_element_of_vector
     moveit_pro_behavior::get_size_of_vector
     moveit_pro_behavior::log_message
-    moveit_pro_test_utils::test_utils)
+    moveit_pro_test_utils::test_utils
+    yaml-cpp::yaml-cpp)
   ament_target_dependencies(test_bin_configuration moveit_pro_behavior_interface ament_index_cpp pluginlib)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()

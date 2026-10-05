@@ -1,5 +1,6 @@
 # Pick and place bin poses in the planning frame, read by the Add Bins to Planning Scene Objective.
-# The MuJoCo bins in description/scene.xml are positioned independently; keep both in sync.
+# The MuJoCo bins in description/scene.xml are positioned independently; keep both in sync (this origin sits
+# 0.025 m above the MuJoCo body origin). Orientation is a yaw about world z; see README.md.
 # Pick bin pose.
 header:
   frame_id: world

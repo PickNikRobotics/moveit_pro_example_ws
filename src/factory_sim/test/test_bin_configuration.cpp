@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: BSD-3-Clause
 
 #include <chrono>
+#include <cmath>
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <limits>
-#include <thread>
 
 #include <behaviortree_cpp/bt_factory.h>
 #include <gtest/gtest.h>
@@ -73,6 +73,9 @@ public:
                               "add_bins_to_planning_scene.xml" })
       factory.registerBehaviorTreeFromFile(std::string(FACTORY_OBJECTIVES_DIR) + "/" + name);
     board = BT::Blackboard::create();
+    // LoadPoseStampedVectorFromYaml joins the installed factory_sim share with this relative path and does not
+    // confine it to the share, so a `..` path reaches the temporary file through the Objective's own code path.
+    // A Core change that rejects traversal would fail every test here at this line.
     board->set("configuration_file", std::filesystem::relative(configuration, share).string());
     moveit_msgs::msg::PlanningScene initial;
     moveit_msgs::msg::CollisionObject fixture;
@@ -100,7 +103,7 @@ public:
     auto status = tree.tickOnce();
     while (status == BT::NodeStatus::RUNNING && std::chrono::steady_clock::now() < deadline)
     {
-      std::this_thread::sleep_for(std::chrono::milliseconds(1));
+      tree.sleep(std::chrono::milliseconds(1));
       status = tree.tickOnce();
     }
     tree.haltTree();
@@ -113,6 +116,13 @@ public:
   geometry_msgs::msg::PoseStamped pose(const std::string& key)
   {
     return board->get<geometry_msgs::msg::PoseStamped>(key);
+  }
+  // Quaternions q and -q are the same rotation, so compare the absolute dot product instead of components.
+  static void expectSameRotation(const geometry_msgs::msg::Quaternion& q, double x, double y, double z, double w)
+  {
+    const double norm = std::sqrt(x * x + y * y + z * z + w * w);
+    EXPECT_NEAR(std::abs(q.x * x + q.y * y + q.z * z + q.w * w) / norm, 1.0, 1e-6)
+        << "got (" << q.x << ", " << q.y << ", " << q.z << ", " << q.w << ")";
   }
   std::filesystem::path directory;
   std::filesystem::path configuration;
@@ -144,6 +154,11 @@ TEST_F(BinConfiguration, RestoresEightRimsAndPreservesFixturesAndAttachments)
   EXPECT_NEAR(pose("drop_pose").pose.position.x, 0.23, 1e-6);
   EXPECT_NEAR(pose("drop_pose").pose.position.y, 0.54, 1e-6);
   EXPECT_NEAR(pose("drop_pose").pose.position.z, 0.65, 1e-6);
+  constexpr double kHalfSqrt2 = 0.7071067811865476;
+  expectSameRotation(pose("pick_guess_pose").pose.orientation, 0.0, 0.0, 0.0, 1.0);
+  expectSameRotation(pose("pick_crop_pose").pose.orientation, 0.0, 0.0, kHalfSqrt2, kHalfSqrt2);
+  expectSameRotation(pose("drop_pose").pose.orientation, -0.70643, -0.70643, -0.03102, -0.03102);
+  expectSameRotation(restored.world.collision_objects[1].pose.orientation, 0.0, 0.0, kHalfSqrt2, kHalfSqrt2);
   ASSERT_EQ(run(), BT::NodeStatus::SUCCESS) << log->messages;
   EXPECT_EQ(scene().world.collision_objects.size(), 9u);
 }
@@ -189,6 +204,11 @@ TEST_F(BinConfiguration, RotatingBinsRotatesRimsAndDependentOffsets)
   EXPECT_EQ(restored.world.collision_objects[1].id, "pick_bin/x_positive");
   EXPECT_NEAR(restored.world.collision_objects[1].pose.position.x, 0.0423, 1e-6);
   EXPECT_NEAR(restored.world.collision_objects[1].pose.position.y, 0.6, 1e-6);
+  EXPECT_NEAR(restored.world.collision_objects[1].pose.position.z, 0.42, 1e-6);
+  expectSameRotation(restored.world.collision_objects[1].pose.orientation, 0.0, 0.0, 0.0, 1.0);
+  EXPECT_EQ(restored.world.collision_objects[3].id, "pick_bin/y_positive");
+  EXPECT_NEAR(restored.world.collision_objects[3].pose.position.x, -0.25, 1e-6);
+  EXPECT_NEAR(restored.world.collision_objects[3].pose.position.y, 0.778, 1e-6);
   EXPECT_NEAR(pose("pick_guess_pose").pose.position.x, -0.05, 1e-6);
   EXPECT_NEAR(pose("pick_guess_pose").pose.position.y, 0.7, 1e-6);
   EXPECT_NEAR(pose("pick_crop_pose").pose.orientation.w, 1.0, 1e-6);
@@ -198,7 +218,11 @@ TEST_F(BinConfiguration, RotatingBinsRotatesRimsAndDependentOffsets)
 
 TEST_F(BinConfiguration, SubtreeUsesDefaultConfigurationFile)
 {
-  // GIVEN a caller that omits the configuration_file input.
+  // GIVEN a temporary configuration that differs from the installed default, and a caller that omits the
+  // configuration_file input.
+  documents[0]["pose"]["position"]["x"] = 0.15;
+  documents[1]["pose"]["position"]["x"] = 0.65;
+  saveConfiguration();
   factory.registerBehaviorTreeFromText(R"(
     <root BTCPP_format="4">
       <BehaviorTree ID="Configured Bin Setup">
@@ -208,9 +232,10 @@ TEST_F(BinConfiguration, SubtreeUsesDefaultConfigurationFile)
     </root>)");
   // WHEN the subtree runs with its declared default.
   auto tree = factory.createTree("Configured Bin Setup", board);
-  EXPECT_EQ(tree.tickWhileRunning(), BT::NodeStatus::SUCCESS) << log->messages;
-  // THEN the installed default configuration supplies all eight rims.
+  EXPECT_EQ(tree.tickWhileRunning(std::chrono::milliseconds(1)), BT::NodeStatus::SUCCESS) << log->messages;
+  // THEN the installed default configuration, not the temporary file, supplies the eight rims.
   EXPECT_EQ(scene().world.collision_objects.size(), 9u);
+  EXPECT_NEAR(board->get<geometry_msgs::msg::PoseStamped>("guess").pose.position.x, -0.35, 1e-6);
 }
 
 TEST_F(BinConfiguration, MissingFileFailsBeforeSceneChanges)
@@ -240,8 +265,10 @@ TEST_F(BinConfiguration, MissingPlaceBinFailsBeforeSceneChanges)
   saveConfiguration();
   // WHEN setup reads the configuration.
   EXPECT_EQ(run(), BT::NodeStatus::FAILURE);
-  // THEN setup fails without inserting bin geometry.
+  // THEN setup fails without inserting bin geometry, and the rejection names the file and the count.
   EXPECT_EQ(scene().world.collision_objects.size(), 1u);
+  EXPECT_NE(log->messages.find(board->get<std::string>("configuration_file")), std::string::npos);
+  EXPECT_NE(log->messages.find("found 1 poses; expected 2"), std::string::npos);
 }
 
 TEST_F(BinConfiguration, InvalidPlaceOrientationFailsBeforeSceneChanges)
@@ -317,13 +344,9 @@ TEST_F(BinConfiguration, NonFiniteComponentsFailBeforeTargetsOrSceneChanges)
           EXPECT_EQ(pose("pick_guess_pose"), unchanged);
           EXPECT_EQ(pose("pick_crop_pose"), unchanged);
           EXPECT_EQ(pose("drop_pose"), unchanged);
-          EXPECT_FALSE(log->messages.empty());
-          if (std::string(group) == "position")
-          {
-            EXPECT_NE(log->messages.find(board->get<std::string>("configuration_file")), std::string::npos);
-            EXPECT_NE(log->messages.find(bin == 0 ? "pick bin" : "place bin"), std::string::npos);
-            EXPECT_NE(log->messages.find("must be finite"), std::string::npos);
-          }
+          EXPECT_NE(log->messages.find(board->get<std::string>("configuration_file")), std::string::npos);
+          EXPECT_NE(log->messages.find(bin == 0 ? "pick bin" : "place bin"), std::string::npos);
+          EXPECT_NE(log->messages.find("must be finite"), std::string::npos);
         }
         documents[bin]["pose"][group][component] = original;
       }
