@@ -17,7 +17,7 @@ vendored_paths:
   - meshes/ur10e
   - meshes/ur16e
   - meshes/ur20
-pruned_paths:
+pruning_notes:
   - unused robot variants and their meshes
   - documentation, tests, and development tooling
   - RViz launch and configuration files

@@ -5,7 +5,7 @@ upstream:
 vendored_paths:
   - LICENSE
   - clearpath_mecanum_drive_controller
-pruned_paths:
+pruning_notes:
   - upstream controller behavior tests (the plugin-load regression is retained)
   - upstream changelog and documentation
 modified_paths:

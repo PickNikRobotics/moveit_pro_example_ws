@@ -24,7 +24,7 @@ upstream:
   branch: main
 vendored_paths:
   - description
-pruned_paths: []
+pruning_notes: []
 notes:
   - Test fixture.
 """
@@ -61,7 +61,7 @@ def test_valid_manifest_passes(tmp_path: Path) -> None:
 def test_comment_only_manifest_fails(tmp_path: Path) -> None:
     """Reject a manifest containing no metadata."""
     errors = validate_manifest(
-        tmp_path, "# repository:\n# commit:\n# vendored_paths:\n# pruned_paths:\n"
+        tmp_path, "# repository:\n# commit:\n# vendored_paths:\n# pruning_notes:\n"
     )
     assert "must contain an upstream mapping" in errors[0]
 
@@ -567,7 +567,8 @@ def test_empty_notes_fails(tmp_path: Path) -> None:
 def test_missing_modified_path_fails(tmp_path: Path) -> None:
     """Reject a modification ledger that references an absent path."""
     manifest = VALID_MANIFEST.replace(
-        "notes:\n", "modified_paths:\n  - missing_file.txt\nnotes:\n"
+        "notes:\n",
+        "modified_paths:\n  - missing_file.txt\nnotes:\n",
     )
     errors = validate_manifest(tmp_path, manifest)
     assert any("missing modified path" in error for error in errors)
@@ -583,8 +584,14 @@ def upstream_comparison_errors(
     outside_content: bytes | None = None,
     apache_license: bool = False,
     apache_excluded: bool = False,
+    lfs_tracked: bool = False,
 ) -> list[str]:
     """Compare a temporary candidate manifest with an upstream snapshot."""
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    if lfs_tracked:
+        (tmp_path / ".gitattributes").write_text(
+            "*.txt filter=lfs diff=lfs merge=lfs -text\n", encoding="utf-8"
+        )
     candidate = tmp_path / "candidate"
     upstream = tmp_path / "upstream"
     (candidate / "description").mkdir(parents=True)
@@ -614,7 +621,8 @@ def upstream_comparison_errors(
             )
     if modified:
         manifest = manifest.replace(
-            "notes:\n", "modified_paths:\n  - description/model.txt\nnotes:\n"
+            "notes:\n",
+            "modified_paths:\n" "  - description/model.txt\n" "notes:\n",
         )
     manifest_path = candidate / "UPSTREAM.yaml"
     manifest_path.write_text(manifest, encoding="utf-8")
@@ -674,6 +682,7 @@ def test_apache_snapshot_rejects_unclassified_modified_path(
     tmp_path: Path, monkeypatch: MonkeyPatch
 ) -> None:
     """Require every modification in an Apache-bearing snapshot to be classified."""
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
     candidate = tmp_path / "candidate"
     upstream = tmp_path / "upstream"
     (candidate / "description").mkdir(parents=True)
@@ -779,9 +788,36 @@ def test_lfs_pointer_matches_upstream_binary(
             monkeypatch,
             candidate_content=lfs_pointer,
             upstream_content=upstream_content,
+            lfs_tracked=True,
         )
         == []
     )
+
+
+def test_untracked_lfs_pointer_shape_is_not_trusted(
+    tmp_path: Path, monkeypatch: MonkeyPatch
+) -> None:
+    """Reject pointer-shaped bytes at a path .gitattributes does not track.
+
+    Git smudges a real LFS file to its content before the validator runs. So
+    pointer text at an untracked path is an ordinary file shaped like a pointer,
+    and trusting its embedded oid would let hand-authored text stand in for
+    upstream content it never matched.
+    """
+    upstream_content = b"binary content"
+    forged_pointer = (
+        "version https://git-lfs.github.com/spec/v1\n"
+        f"oid sha256:{hashlib.sha256(upstream_content).hexdigest()}\n"
+        f"size {len(upstream_content)}\n"
+    ).encode()
+    errors = upstream_comparison_errors(
+        tmp_path,
+        monkeypatch,
+        candidate_content=forged_pointer,
+        upstream_content=upstream_content,
+        lfs_tracked=False,
+    )
+    assert any("omits a modified upstream path" in error for error in errors)
 
 
 def test_lfs_pointer_size_must_match_upstream_binary(
@@ -801,6 +837,7 @@ def test_lfs_pointer_size_must_match_upstream_binary(
         monkeypatch,
         candidate_content=lfs_pointer,
         upstream_content=upstream_content,
+        lfs_tracked=True,
     )
 
     assert errors == [
@@ -808,17 +845,84 @@ def test_lfs_pointer_size_must_match_upstream_binary(
     ]
 
 
-def test_dependency_policy_ci_fetches_and_verifies_lfs_objects() -> None:
-    """Require provenance CI to materialize and verify every retained LFS object."""
+@mark.parametrize(
+    ("root_rule", "nested_rule", "relative_path", "expected"),
+    [
+        ("", "*.bin filter=lfs\n", "vendor/model.bin", True),
+        ("*.bin filter=lfs\n*.bin -filter\n", "", "model.bin", False),
+        ("*.bin filter=lfs\n", "*.bin !filter\n", "vendor/model.bin", False),
+        ("vendor/*.bin filter=lfs\n", "", "vendor/sub/model.bin", False),
+        ("*.bin filter=lfs\n", "", "vendor/sub/model.bin", True),
+    ],
+)
+def test_effective_lfs_attributes(
+    tmp_path, monkeypatch, root_rule, nested_rule, relative_path, expected
+):
+    """Use Git's nested, override and path-separator attribute semantics."""
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    (tmp_path / ".gitattributes").write_text(root_rule)
+    (tmp_path / "vendor").mkdir()
+    (tmp_path / "vendor/.gitattributes").write_text(nested_rule)
+    monkeypatch.setattr(validator, "REPOSITORY_ROOT", tmp_path)
+    assert validator.file_is_lfs_tracked(tmp_path / relative_path) is expected
+
+
+def test_lfs_attribute_failure_identifies_path_and_cause(tmp_path, monkeypatch):
+    """Do not lose Git's actionable diagnostic when the checkout is unavailable."""
+    monkeypatch.setattr(validator, "REPOSITORY_ROOT", tmp_path)
+    with raises(OSError) as error:
+        validator.file_is_lfs_tracked(tmp_path / "vendor/model.bin")
+    assert "vendor/model.bin" in str(error.value)
+    assert "exit 128" in str(error.value)
+    assert "not a git repository" in str(error.value)
+
+
+def test_duplicate_modified_paths_are_rejected(tmp_path):
+    manifest = VALID_MANIFEST.replace(
+        "notes:\n", "modified_paths:\n  - description\n  - description\nnotes:\n"
+    )
+    assert any(
+        "in modified_paths twice" in error
+        for error in validate_manifest(tmp_path, manifest)
+    )
+
+
+def test_upstream_budget_keeps_later_structural_checks(monkeypatch):
+    manifests = [Path(name) for name in ("first", "second", "third")]
+    validated, fetched = [], []
+
+    def structural(path):
+        validated.append(path)
+        return ["bad second manifest"] if path == manifests[1] else []
+
+    def fetch(path, budget):
+        fetched.append(path)
+        budget.exhaustion_error = "budget exhausted"
+        return [budget.exhaustion_error]
+
+    monkeypatch.setattr(validator, "validate_vendor_manifest", structural)
+    monkeypatch.setattr(validator, "fetch_and_validate_upstream", fetch)
+    assert validator.validate_vendored_roots(manifests, verify_upstream=True) == [
+        "budget exhausted",
+        "bad second manifest",
+    ]
+    assert validated == manifests
+    assert fetched == manifests[:1]
+
+
+def test_dependency_policy_ci_is_offline() -> None:
+    """Keep upstream comparison manual rather than a scheduled or PR gate."""
     workflow = (validator.REPOSITORY_ROOT / ".github/workflows/ci.yaml").read_text(
         encoding="utf-8"
     )
     dependency_job = workflow.split("  validate-workspace-dependencies:", 1)[1].split(
         "\n  validate_objectives:", 1
     )[0]
-
-    assert "lfs: true" in dependency_job
-    assert "git lfs fsck --objects" in dependency_job
+    assert "run: python3 bin/validate_workspace_dependencies.py\n" in dependency_job
+    assert "--verify-upstream" not in workflow
+    assert "  verify-upstream-snapshots:" not in workflow
+    assert "  upstream-drift-issue:" not in workflow
+    assert "lfs: true" not in dependency_job
 
 
 class FakeMetadataResponse:
@@ -1773,3 +1877,20 @@ def test_main_fails_for_unexpected_submodule(
     monkeypatch.setattr(validator, "validate_clearpath_timeout_parameters", lambda: [])
     assert validator.main() == 1
     assert "tracked submodules differ" in capsys.readouterr().err
+
+
+@mark.parametrize("license_text", ["Apache License\nVersion 2.0\n", "Apache-2.0\n"])
+def test_apache_material_detected_in_licenses_directory(
+    tmp_path: Path, license_text: str
+) -> None:
+    """Detect full-title and SPDX-only Apache grants in LICENSES/."""
+    source_root = tmp_path / "source"
+    (source_root / "LICENSES").mkdir(parents=True)
+    (source_root / "LICENSES" / "Apache-2.0.txt").write_text(
+        license_text, encoding="utf-8"
+    )
+    retains_apache, errors = validator.inspect_license_inventory(
+        source_root, Path("source/UPSTREAM.yaml")
+    )
+    assert errors == []
+    assert retains_apache
