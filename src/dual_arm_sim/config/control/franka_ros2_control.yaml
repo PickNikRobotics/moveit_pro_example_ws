@@ -75,6 +75,9 @@ joint_trajectory_admittance_controller:
     stop_accelerations: [30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0]
     # Default maximum joint-space deviation accepted along the trajectory, if not specified in the goal message.
     default_path_tolerance: 0.5
+    # Time the joints have after the trajectory end to come within the goal tolerance. The simulated arm trails the
+    # command when the simulation runs below realtime, as it does on CI runners.
+    default_goal_time_tolerance: 0.5
 
 left_gripper_controller:
   ros__parameters:
@@ -102,6 +105,9 @@ left_joint_trajectory_admittance_controller:
     stop_accelerations: [30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0]
     # Default maximum joint-space deviation accepted along the trajectory, if not specified in the goal message.
     default_path_tolerance: 0.5
+    # Time the joints have after the trajectory end to come within the goal tolerance. The simulated arm trails the
+    # command when the simulation runs below realtime, as it does on CI runners.
+    default_goal_time_tolerance: 0.5
 
 right_joint_trajectory_admittance_controller:
   ros__parameters:
@@ -113,6 +119,9 @@ right_joint_trajectory_admittance_controller:
     stop_accelerations: [30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0]
     # Default maximum joint-space deviation accepted along the trajectory, if not specified in the goal message.
     default_path_tolerance: 0.5
+    # Time the joints have after the trajectory end to come within the goal tolerance. The simulated arm trails the
+    # command when the simulation runs below realtime, as it does on CI runners.
+    default_goal_time_tolerance: 0.5
 
 left_velocity_force_controller:
   ros__parameters:
