@@ -62,9 +62,30 @@ jobs:
             PR_BODY="Ready for merge!"
           else
             echo "# Merge failed with conflicts" >> $GITHUB_STEP_SUMMARY
+
+            # `git add -A` can't stage a conflicted submodule that isn't checked out.
+            # That happens when the release branch bumps a submodule that main has
+            # vendored or deleted. Keep main's side and list what was dropped.
+            DROPPED_SUBMODULES=""
+            while IFS=$'\t' read -r info path; do
+              read -r mode sha stage <<< "$info"
+              [ "$mode" = 160000 ] && [ "$stage" = 3 ] || continue
+              main_entry=$(git ls-tree HEAD -- "$path")
+              if [[ "$main_entry" == "160000 "* ]]; then
+                git update-index --index-info <<< "$main_entry"
+              else
+                git rm --cached -q -- "$path"
+                rm -rf -- "$path"
+              fi
+              DROPPED_SUBMODULES+="- \`${path%~*}\` at $sha"$'\n'
+            done < <(git ls-files -u)
+
             git add -A
             git commit -m "Merge $RELEASE_BRANCH into main (with conflicts)"
             PR_BODY="⚠️Merge failed with conflicts! Please pull this branch and manually resolve the conflict by resetting this branch and re-merging."
+            if [ -n "$DROPPED_SUBMODULES" ]; then
+              PR_BODY+=$'\n\nThese submodule updates from the release branch were dropped in favor of main:\n'"$DROPPED_SUBMODULES"
+            fi
           fi
           git push origin "$TEMP_BRANCH"
           gh pr create --title "Merge $RELEASE_BRANCH into main" --body "$PR_BODY" --base main --head "$TEMP_BRANCH" --draft --reviewer JWhitleyWork
