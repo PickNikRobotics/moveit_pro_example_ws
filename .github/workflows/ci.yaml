@@ -1110,14 +1110,65 @@ jobs:
     env:
       SOURCE: ${{ matrix.source.name }}
       SOURCE_PATH: ${{ matrix.source.path }}
+      REFRESH_BRANCH: vendored-refresh/${{ matrix.source.name }}
+      # Every refresh commit carries this author and committer, so any other
+      # identity on the branch is someone finishing the PR by hand.
+      REFRESH_AUTHOR: vendored_dependency.py <noreply@picknik.ai>
     steps:
+      # A refresh force-pushes the branch, which would discard conflict
+      # resolutions and other fixes pushed to the open PR. Leave the source
+      # alone while any commit on the branch has another git author or
+      # committer: amend and rebase keep the author but replace the
+      # committer, and web-UI commits use GitHub's committer identity. Runs
+      # before checkout so a skipped source downloads no LFS objects.
+      - name: Check the refresh branch for commits by others
+        id: guard
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          skip() {
+            echo "::warning::Not refreshing $SOURCE: $1. Delete $REFRESH_BRANCH to resume weekly refreshes; merging its PR deletes it, closing the PR does not."
+            echo "- \`$SOURCE\` not refreshed: $1." >> "$GITHUB_STEP_SUMMARY"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          }
+          if ! head=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/$REFRESH_BRANCH" --jq .object.sha 2> "$RUNNER_TEMP/gh.err"); then
+            if grep -q "HTTP 404" "$RUNNER_TEMP/gh.err"; then
+              echo "skip=false" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            cat "$RUNNER_TEMP/gh.err"
+            echo "::error::Could not read $REFRESH_BRANCH, so the refresh would risk overwriting commits on it."
+            exit 1
+          fi
+          echo "head=$head" >> "$GITHUB_OUTPUT"
+          if ! compare=$(gh api "repos/$GITHUB_REPOSITORY/compare/main...$head" \
+              --jq '"\(.total_commits) \(.commits | length)", (.commits[].commit | .author, .committer | "\(.name) <\(.email)>")' \
+              2> "$RUNNER_TEMP/gh.err"); then
+            cat "$RUNNER_TEMP/gh.err"
+            echo "::error::Could not compare $REFRESH_BRANCH with main, so the refresh would risk overwriting commits on it."
+            exit 1
+          fi
+          read -r total listed <<< "$compare"
+          # The compare API lists at most 250 commits; an identity past the
+          # cutoff could be a person, so a truncated list counts as one.
+          if [ "$total" -ne "$listed" ]; then
+            skip "$REFRESH_BRANCH has $total commits, more than the compare API lists"
+          fi
+          if others=$(tail -n +2 <<< "$compare" | grep -vxF -e "$REFRESH_AUTHOR" -e ""); then
+            skip "$REFRESH_BRANCH has commits by $(sort -u <<< "$others" | paste -sd, -)"
+          fi
+          echo "skip=false" >> "$GITHUB_OUTPUT"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: steps.guard.outputs.skip == 'false'
         with:
           lfs: true
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        if: steps.guard.outputs.skip == 'false'
         with:
           python-version: "3.12"
       - name: Re-vendor at the upstream branch head
+        if: steps.guard.outputs.skip == 'false'
         id: refresh
         run: |
           # A stopped update still goes into the PR for a person to finish;
@@ -1142,7 +1193,7 @@ jobs:
           {
             echo "\`bin/vendored_dependency.py update $SOURCE\` moved \`$SOURCE_PATH\` from upstream commit \`$old\` to \`$new\` and $result"
             echo
-            echo "The weekly \`vendored-refresh\` job force-pushes this branch when upstream moves again, so commit follow-up fixes to a separate branch."
+            echo "The weekly \`vendored-refresh\` job force-pushes this branch when upstream moves again, until someone else pushes a commit to it; from then on it leaves the branch alone until the branch is deleted, which merging this PR does."
             echo
             echo '~~~~'
             tail -n 60 "$log" | cut -c 1-500
@@ -1153,9 +1204,34 @@ jobs:
           echo "body=$RUNNER_TEMP/pr-body.md" >> "$GITHUB_OUTPUT"
           echo "new=$new" >> "$GITHUB_OUTPUT"
           if [ "$status" -eq 0 ]; then echo "clean=true"; else echo "clean=false"; fi >> "$GITHUB_OUTPUT"
+      # The update can take minutes; a push to the branch in that time would
+      # otherwise be overwritten by the force-push below.
+      - name: Recheck the refresh branch head
+        if: steps.guard.outputs.skip == 'false'
+        id: recheck
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXPECTED_HEAD: ${{ steps.guard.outputs.head }}
+        run: |
+          if ! now=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/$REFRESH_BRANCH" --jq .object.sha 2> "$RUNNER_TEMP/gh.err"); then
+            if ! grep -q "HTTP 404" "$RUNNER_TEMP/gh.err"; then
+              cat "$RUNNER_TEMP/gh.err"
+              echo "::error::Could not read $REFRESH_BRANCH, so the refresh would risk overwriting commits on it."
+              exit 1
+            fi
+            now=""
+          fi
+          if [ "$now" != "$EXPECTED_HEAD" ]; then
+            echo "::warning::Not refreshing $SOURCE: $REFRESH_BRANCH moved during the refresh. The next weekly run checks it again."
+            echo "- \`$SOURCE\` not refreshed: $REFRESH_BRANCH moved during the refresh." >> "$GITHUB_STEP_SUMMARY"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
       # PRs opened with GITHUB_TOKEN do not trigger workflows, and the
       # integration tests on the refresh PR are the point of opening it.
       - name: Generate App token for the refresh PR
+        if: steps.recheck.outputs.skip == 'false'
         id: pr-token
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         with:
@@ -1168,6 +1244,7 @@ jobs:
       # The fixed branch is the dedupe key: a later run force-pushes the
       # newer refresh onto the open PR instead of opening a second one.
       - name: Open or update the refresh PR
+        if: steps.recheck.outputs.skip == 'false'
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
           token: ${{ steps.pr-token.outputs.token }}
@@ -1177,6 +1254,8 @@ jobs:
           title: "Refresh vendored ${{ matrix.source.name }} from upstream${{ steps.refresh.outputs.clean == 'false' && ' (merge conflicts)' || '' }}"
           draft: always-true
           body-path: ${{ steps.refresh.outputs.body }}
+          author: ${{ env.REFRESH_AUTHOR }}
+          committer: ${{ env.REFRESH_AUTHOR }}
 
   validate_objectives:
     runs-on: ubuntu-22.04
