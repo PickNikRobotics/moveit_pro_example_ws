@@ -177,9 +177,14 @@ def write_github_output(rows: list[Drift]) -> None:
     if not output_path:
         return
     resolved = [row for row in rows if row.behind is not None]
-    drifted = any(row.behind for row in resolved)
+    drifted = [
+        {"name": Path(row.source).name, "path": row.source}
+        for row in resolved
+        if row.behind
+    ]
     with open(output_path, "a", encoding="utf-8") as output:
-        output.write(f"drifted={str(drifted).lower()}\n")
+        output.write(f"drifted={str(bool(drifted)).lower()}\n")
+        output.write(f"drifted_sources={json.dumps(drifted)}\n")
         output.write(f"resolved={len(resolved)}\n")
         output.write(f"unresolved={len(rows) - len(resolved)}\n")
 

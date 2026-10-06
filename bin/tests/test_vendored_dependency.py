@@ -189,11 +189,17 @@ def test_status_writes_github_output_when_requested(
     mock_manifests(monkeypatch, tmp_path, {"alpha": 0, "beta": 3, "gamma": "boom"})
     assert tool.main(["status"]) == 1
     capsys.readouterr()
-    assert output.read_text() == "drifted=true\nresolved=2\nunresolved=1\n"
+    assert output.read_text() == (
+        "drifted=true\n"
+        'drifted_sources=[{"name": "beta", "path": "src/external_dependencies/beta"}]\n'
+        "resolved=2\nunresolved=1\n"
+    )
     output.unlink()
     mock_manifests(monkeypatch, tmp_path / "second", {"alpha": 0})
     assert tool.main(["status"]) == 0
-    assert output.read_text() == "drifted=false\nresolved=1\nunresolved=0\n"
+    assert output.read_text() == (
+        "drifted=false\ndrifted_sources=[]\nresolved=1\nunresolved=0\n"
+    )
 
 
 def test_status_reports_discovery_and_manifest_errors(
@@ -245,7 +251,9 @@ def test_status_with_no_vendored_sources(
     )
     assert tool.main(["status"]) == 0
     assert capsys.readouterr().out == "No vendored dependencies found.\n"
-    assert output.read_text() == "drifted=false\nresolved=0\nunresolved=0\n"
+    assert output.read_text() == (
+        "drifted=false\ndrifted_sources=[]\nresolved=0\nunresolved=0\n"
+    )
 
 
 def test_status_fails_when_a_lookup_fails(

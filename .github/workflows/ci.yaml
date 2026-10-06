@@ -1038,6 +1038,146 @@ jobs:
           set -o pipefail
           python3 bin/vendored_dependency.py status --markdown | tee -a "$GITHUB_STEP_SUMMARY"
 
+  # Once a week, find the sources under src/external_dependencies that have
+  # fallen behind the upstream branch they pin, and open one refresh PR per
+  # source with bin/vendored_dependency.py update. An update that stops on
+  # merge conflicts in the local edits, or on an UPSTREAM.yaml edit it needs,
+  # still opens its PR, with the markers and the update output, for a person
+  # to finish. An update that changes nothing fails the job instead.
+  # Runs only on the Sunday schedule, so drift never gates a PR; manual
+  # dispatch on main also runs it, the same way integration-test-weekly allows.
+  vendored-drift:
+    name: Find drifted vendored dependencies
+    # Refresh PRs target the ref the run checked out, so a dispatch from any
+    # other branch would open them against that branch.
+    if: >-
+      github.ref_name == 'main' &&
+      (github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'schedule' && github.event.schedule == '0 6 * * 0'))
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    outputs:
+      sources: ${{ steps.drift.outputs.drifted_sources }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: Report vendored dependency drift
+        id: drift
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          # A failed lookup exits 1 but still prints every row it could
+          # resolve, so keep going: one flaky compare must not suppress the
+          # refresh for the sources that did resolve. The script writes
+          # drifted_sources= / resolved= to GITHUB_OUTPUT itself.
+          python3 bin/vendored_dependency.py status --markdown > drift.md || echo "::warning::Some drift lookups failed; see the step log."
+          cat drift.md >> "$GITHUB_STEP_SUMMARY"
+      # An empty output means the script died before writing it.
+      - name: Fail when no lookup succeeded
+        if: steps.drift.outputs.resolved == '' || steps.drift.outputs.resolved == '0'
+        run: |
+          echo "::error::No vendored dependency lookup succeeded, so no source can be refreshed. Check the token, the upstream repositories, and the step log."
+          exit 1
+
+  vendored-refresh:
+    name: Refresh ${{ matrix.source.name }}
+    needs: vendored-drift
+    if: needs.vendored-drift.outputs.sources != '' && needs.vendored-drift.outputs.sources != '[]'
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        source: ${{ fromJSON(needs.vendored-drift.outputs.sources) }}
+    # The workflow-level group is keyed by event and ref, so a dispatch can
+    # run beside the Sunday schedule; two runs for one source would race on
+    # its PR branch. One group per source serializes them. A
+    # second dispatch instead cancels the first through the workflow-level
+    # group; the fixed PR branch lets the next run pick up where it stopped.
+    concurrency:
+      group: vendored-refresh-${{ matrix.source.name }}
+      cancel-in-progress: false
+    # Queued runs wait on this one, so a wedged fetch must not hold the
+    # group for the default six hours. The workflow-level group cancels a
+    # schedule run still in progress when the next cron fires; the next one
+    # after Sunday 06:00 is Monday 00:00, far outside this bound.
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    env:
+      SOURCE: ${{ matrix.source.name }}
+      SOURCE_PATH: ${{ matrix.source.path }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          lfs: true
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: Re-vendor at the upstream branch head
+        id: refresh
+        run: |
+          # A stopped update still goes into the PR for a person to finish;
+          # only an update that left the source untouched fails the job.
+          log="$RUNNER_TEMP/refresh.log"
+          status=0
+          python3 bin/vendored_dependency.py update "$SOURCE" > "$log" 2>&1 || status=$?
+          cat "$log"
+          if [ -z "$(git status --porcelain -- "$SOURCE_PATH")" ]; then
+            echo "::error::bin/vendored_dependency.py update $SOURCE exited $status without changing $SOURCE_PATH; see the step log."
+            exit 1
+          fi
+          old=$(git show "HEAD:$SOURCE_PATH/UPSTREAM.yaml" | sed -n 's/^  commit: //p')
+          new=$(sed -n 's/^  commit: //p' "$SOURCE_PATH/UPSTREAM.yaml")
+          if [ "$status" -eq 0 ]; then
+            result="re-applied its local edits without conflicts and passed the \`UPSTREAM.yaml\` ledger and license checks. Build and run the configs that use this source before marking the PR ready."
+          else
+            result="stopped before finishing: resolve the conflict markers or \`UPSTREAM.yaml\` errors in the output below, then run \`bin/validate_workspace_dependencies.py --verify-upstream\` and build the configs that use this source."
+          fi
+          # Sixty lines, each capped, keep the body far below the 65536
+          # character limit on PR bodies.
+          {
+            echo "\`bin/vendored_dependency.py update $SOURCE\` moved \`$SOURCE_PATH\` from upstream commit \`$old\` to \`$new\` and $result"
+            echo
+            echo "The weekly \`vendored-refresh\` job force-pushes this branch when upstream moves again, so commit follow-up fixes to a separate branch."
+            echo
+            echo '~~~~'
+            tail -n 60 "$log" | cut -c 1-500
+            echo '~~~~'
+            echo
+            echo "[Workflow run]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID)"
+          } > "$RUNNER_TEMP/pr-body.md"
+          echo "body=$RUNNER_TEMP/pr-body.md" >> "$GITHUB_OUTPUT"
+          echo "new=$new" >> "$GITHUB_OUTPUT"
+          if [ "$status" -eq 0 ]; then echo "clean=true"; else echo "clean=false"; fi >> "$GITHUB_OUTPUT"
+      # PRs opened with GITHUB_TOKEN do not trigger workflows, and the
+      # integration tests on the refresh PR are the point of opening it.
+      - name: Generate App token for the refresh PR
+        id: pr-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ secrets.SISTER_REPOS_APP_CLIENT_ID }}
+          private-key: ${{ secrets.SISTER_REPOS_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: moveit_pro_example_ws
+          permission-contents: write
+          permission-pull-requests: write
+      # The fixed branch is the dedupe key: a later run force-pushes the
+      # newer refresh onto the open PR instead of opening a second one.
+      - name: Open or update the refresh PR
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        with:
+          token: ${{ steps.pr-token.outputs.token }}
+          branch: vendored-refresh/${{ matrix.source.name }}
+          add-paths: ${{ matrix.source.path }}
+          commit-message: "chore(deps): refresh vendored ${{ matrix.source.name }} to ${{ steps.refresh.outputs.new }}"
+          title: "Refresh vendored ${{ matrix.source.name }} from upstream${{ steps.refresh.outputs.clean == 'false' && ' (merge conflicts)' || '' }}"
+          draft: always-true
+          body-path: ${{ steps.refresh.outputs.body }}
+
   validate_objectives:
     runs-on: ubuntu-22.04
     steps:
