@@ -62,9 +62,35 @@ jobs:
             PR_BODY="Ready for merge!"
           else
             echo "# Merge failed with conflicts" >> $GITHUB_STEP_SUMMARY
+
+            # `git add -A` can't stage a conflicted submodule that isn't checked out.
+            # That happens when the release branch bumps a submodule that main has
+            # vendored or deleted. Keep main's side and list what was dropped.
+            # A file/directory conflict moves the release side to "<path>~origin_<branch>".
+            CONFLICT_SUFFIX="~origin_${RELEASE_BRANCH//\//_}"
+            DROPPED_SUBMODULES=""
+            while IFS= read -r -d '' entry; do
+              path=${entry#*$'\t'}
+              read -r mode sha stage <<< "${entry%%$'\t'*}"
+              [ "$mode" = 160000 ] && [ "$stage" = 3 ] || continue
+              if [ "$(git --literal-pathspecs ls-tree --format='%(objectmode)' HEAD -- "$path")" = 160000 ]; then
+                git update-index --cacheinfo "160000,$(git rev-parse "HEAD:$path"),$path"
+              else
+                git --literal-pathspecs rm --cached -q -- "$path"
+                rm -rf -- "$path"
+              fi
+              DROPPED_SUBMODULES+="- \`${path%"$CONFLICT_SUFFIX"}\` at $sha"$'\n'
+            done < <(git ls-files -u -z)
+
             git add -A
             git commit -m "Merge $RELEASE_BRANCH into main (with conflicts)"
             PR_BODY="⚠️Merge failed with conflicts! Please pull this branch and manually resolve the conflict by resetting this branch and re-merging."
+            if [ -n "$DROPPED_SUBMODULES" ]; then
+              PR_BODY+=$'\n\nThese submodule updates from the release branch were dropped in favor of main:\n'"$DROPPED_SUBMODULES"
+            fi
           fi
           git push origin "$TEMP_BRANCH"
+          # An individual, not the infrastructure-devs team: requesting a team review
+          # needs a token with org Members:read, and every permission available to
+          # secrets.GITHUB_TOKEN is repository-scoped. Tracked in PickNikRobotics/moveit_pro#21478.
           gh pr create --title "Merge $RELEASE_BRANCH into main" --body "$PR_BODY" --base main --head "$TEMP_BRANCH" --draft --reviewer JWhitleyWork
