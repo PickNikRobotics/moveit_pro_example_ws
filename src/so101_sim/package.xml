@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <package format="3">
   <name>so101_sim</name>
-  <version>9.5.0</version>
+  <version>10.2.0</version>
 
   <description>
     A thin overlay of so101_base_config that forces mock hardware. Everything

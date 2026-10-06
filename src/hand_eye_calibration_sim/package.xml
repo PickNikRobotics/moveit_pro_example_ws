@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <package format="3">
   <name>hand_eye_calibration_sim</name>
-  <version>9.5.0</version>
+  <version>10.2.0</version>
 
   <description>
     MuJoCo simulation configuration package for validating hand-eye camera
