@@ -73,10 +73,10 @@ jobs:
               path=${entry#*$'\t'}
               read -r mode sha stage <<< "${entry%%$'\t'*}"
               [ "$mode" = 160000 ] && [ "$stage" = 3 ] || continue
-              if [ "$(git ls-tree --format='%(objectmode)' HEAD -- "$path")" = 160000 ]; then
+              if [ "$(git --literal-pathspecs ls-tree --format='%(objectmode)' HEAD -- "$path")" = 160000 ]; then
                 git update-index --cacheinfo "160000,$(git rev-parse "HEAD:$path"),$path"
               else
-                git rm --cached -q -- "$path"
+                git --literal-pathspecs rm --cached -q -- "$path"
                 rm -rf -- "$path"
               fi
               DROPPED_SUBMODULES+="- \`${path%"$CONFLICT_SUFFIX"}\` at $sha"$'\n'
