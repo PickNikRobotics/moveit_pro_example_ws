@@ -135,9 +135,9 @@
       <input_port name="inlier_distance" default="0.15" type="double">
         A beam fits if it lands within this distance of a wall, metres.
       </input_port>
-      <input_port name="min_inlier_fraction" default="0.5" type="double">
-        Min fraction of beams that fit, per lidar. The hangar_sim value, not yet
-        measured on the supermarket map.
+      <input_port name="min_inlier_fraction" default="0.9" type="double">
+        Min fraction of beams that fit, per lidar. Measured in aisle A1 and
+        at the start: true pose 0.99+, 0.25 m or 2.5 deg off 0.82 or less.
       </input_port>
     </SubTree>
   </TreeNodesModel>
