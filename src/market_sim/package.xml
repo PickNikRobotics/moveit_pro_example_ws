@@ -15,11 +15,14 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <exec_depend>beluga_amcl</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>mobile_fr3_duo_sim</exec_depend>
   <exec_depend>moveit_pro_behavior</exec_depend>
   <exec_depend>moveit_pro_objectives</exec_depend>
   <exec_depend>moveit_studio_agent</exec_depend>
   <exec_depend>nav2_bringup</exec_depend>
+  <exec_depend>nav_msgs</exec_depend>
+  <exec_depend>rclpy</exec_depend>
   <exec_depend>tf2_ros</exec_depend>
 
   <test_depend>ament_cmake_pytest</test_depend>

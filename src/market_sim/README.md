@@ -59,8 +59,10 @@ every keyframe and one occupancy map fits them all.
 | `loose_e_i` | Every gondola of E1, E5 and I2 |
 
 In A1, B2, C3 and D4 the gondolas on both sides of each loose one are empty in every keyframe.
-`Reset MuJoCo Sim` returns to `default`; the `ResetMujocoKeyframe` Behavior loads any keyframe by
-name (its `keyframe_name` port).
+`Reset MuJoCo Sim` returns to `default`; `Reset Market Keyframe` loads any keyframe by name (its
+`keyframe_name` port). Every keyframe puts the robot back at the start pose, a jump that AMCL
+cannot follow on its own, so `scripts/reset_relocalizer.py` re-seeds AMCL at the true pose a few
+seconds after any reset.
 
 The cameras and lidars render at most 2000 objects. The store draws 894 in every keyframe: 416
 shelves, 384 loose products, the robot and the walls. `test/test_market_scene.py` keeps it under
@@ -69,6 +71,10 @@ that limit.
 The scene sets MuJoCo's sleep tolerance to 0.001. A standing can on a shelf keeps a tiny rocking
 motion that the default tolerance never treats as still, so the cans would stay awake forever.
 With the higher tolerance every resting product sleeps and costs almost nothing per step.
+
+The simulated Franka Hand squeezes lightly, so, as in `lab_sim`, the loose products have a high
+friction coefficient and the scene sets `impratio` and `noslip_iterations`; otherwise a gripped can
+slides out of the fingers.
 
 ## Regenerating
 

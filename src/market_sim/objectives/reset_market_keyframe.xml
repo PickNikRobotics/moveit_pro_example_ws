@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Reset Market Keyframe">
+  <BehaviorTree
+    ID="Reset Market Keyframe"
+    _description="Reset the simulation to a keyframe: default, loose_e_i or loose_a_d. AMCL is re-seeded automatically after the jump."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="ListControllers"
+        type="command"
+        state="active"
+        controller_list="{command_controllers}"
+        service_name="/controller_manager/list_controllers"
+      />
+      <Action
+        ID="SwitchController"
+        deactivate_controllers="{command_controllers}"
+      />
+      <Action
+        ID="ResetMujocoKeyframe"
+        response_timeout="10.000000"
+        wait_for_server_available_timeout="3.000000"
+        keyframe_name="{keyframe_name}"
+      />
+      <Action ID="ClearSnapshot" />
+      <Action
+        ID="SwitchController"
+        controller_list_action_name="/controller_manager/list_controllers"
+        activate_controllers="{command_controllers}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Reset Market Keyframe">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="MuJoCo Simulation" />
+      </MetadataFields>
+      <input_port name="keyframe_name" default="loose_e_i" type="std::string">
+        Keyframe to load: default, loose_e_i or loose_a_d.
+      </input_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>

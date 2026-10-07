@@ -165,17 +165,27 @@ def generate_launch_description():
         ],
     )
     # AMCL reads one scan topic, so both scans are merged into one 360 deg /scan in base_link.
+    # The lidar clouds arrive one render period after their stamp, so a merge cycle's newest
+    # scans are up to two periods old; a tighter limit drops cycles and starves AMCL.
     scan_merger = Node(
         package="mobile_fr3_duo_sim",
         executable="scan_merger.py",
         name="scan_merger",
         output="log",
+        parameters=[{"max_scan_age_sec": 0.35}],
     )
 
     odometry = Node(
         package="mobile_fr3_duo_sim",
         executable="odometry_joint_state_publisher.py",
         name="odometry_joint_state_publisher",
+        output="log",
+    )
+    # A keyframe reset teleports the base; AMCL cannot follow, so re-seed it at the true pose.
+    relocalizer = Node(
+        package="market_sim",
+        executable="reset_relocalizer.py",
+        name="reset_relocalizer",
         output="log",
     )
     base_velocity = Node(
@@ -236,7 +246,7 @@ def generate_launch_description():
     return LaunchDescription(
         declared
         + frames
-        + [lidar_flattener, scan_merger, odometry, base_velocity]
+        + [lidar_flattener, scan_merger, odometry, base_velocity, relocalizer]
         + localization
         + navigation
     )
