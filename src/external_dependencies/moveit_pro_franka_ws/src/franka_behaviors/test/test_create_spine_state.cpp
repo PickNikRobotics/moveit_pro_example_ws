@@ -46,7 +46,7 @@ BT::NodeStatus runCreateSpineState(const std::string& position, moveit_msgs::msg
   auto node = std::make_shared<rclcpp::Node>("CreateSpineStateTest");
   auto shared_resources = std::make_shared<moveit_pro::behaviors::BehaviorContext>(node);
   BT::BehaviorTreeFactory factory;
-  auto loader = class_loader.createUniqueInstance("franka_spine_behaviors::FrankaSpineBehaviorsLoader");
+  auto loader = class_loader.createUniqueInstance("franka_behaviors::FrankaBehaviorsLoader");
   loader->registerBehaviors(factory, shared_resources);
 
   const std::string xml = R"(<root BTCPP_format="4" main_tree_to_execute="T"><BehaviorTree ID="T">

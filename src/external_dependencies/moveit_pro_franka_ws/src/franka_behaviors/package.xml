@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <package format="3">
-  <name>franka_spine_behaviors</name>
+  <name>franka_behaviors</name>
   <version>10.1.0</version>
-  <description>MoveIt Pro Behaviors for the Franka vertical spine.</description>
+  <description>MoveIt Pro Behaviors for Franka robots: the vertical spine.</description>
 
   <maintainer email="support@picknik.ai">MoveIt Pro Maintainer</maintainer>
   <license>BSD-3-Clause</license>

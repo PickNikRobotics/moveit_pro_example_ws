@@ -26,28 +26,38 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#include <behaviortree_cpp/bt_factory.h>
-#include <moveit_pro_behavior_interface/behavior_context.hpp>
-#include <moveit_pro_behavior_interface/shared_resources_node_loader.hpp>
-#include <pluginlib/class_list_macros.hpp>
+#pragma once
 
-#include <franka_spine_behaviors/create_spine_state.hpp>
-#include <franka_spine_behaviors/get_spine_state_for_pose_height.hpp>
+#include <behaviortree_cpp/action_node.h>
+#include <moveit_pro_behavior_interface/shared_resources_node.hpp>
 
-namespace franka_spine_behaviors
+namespace franka_behaviors
 {
-class FrankaSpineBehaviorsLoader : public moveit_pro::behaviors::SharedResourcesNodeLoaderBase
+/**
+ * @brief Creates a spine-only goal at an absolute spine joint value.
+ *
+ * @details
+ * A value outside the spine travel fails instead of being clamped, as the real spine rejects it.
+ * This Behavior does not move the robot: feed its output to "Move to Joint State" on the spine group.
+ *
+ * | Data Port Name     | Port Type | Object Type                  |
+ * | ------------------ | --------- | ---------------------------- |
+ * | position           | Input     | double                       |
+ * | spine_joint_name   | Input     | std::string                  |
+ * | min_spine_value    | Input     | double                       |
+ * | max_spine_value    | Input     | double                       |
+ * | spine_joint_state  | Output    | moveit_msgs::msg::RobotState |
+ */
+class CreateSpineState : public moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>
 {
 public:
-  void registerBehaviors(BT::BehaviorTreeFactory& factory,
-                         const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources) override
-  {
-    moveit_pro::behaviors::registerBehavior<CreateSpineState>(factory, "CreateSpineState", shared_resources);
-    moveit_pro::behaviors::registerBehavior<GetSpineStateForPoseHeight>(factory, "GetSpineStateForPoseHeight",
-                                                                        shared_resources);
-  }
-};
-}  // namespace franka_spine_behaviors
+  CreateSpineState(const std::string& name, const BT::NodeConfiguration& config,
+                   const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources);
 
-PLUGINLIB_EXPORT_CLASS(franka_spine_behaviors::FrankaSpineBehaviorsLoader,
-                       moveit_pro::behaviors::SharedResourcesNodeLoaderBase);
+  static BT::PortsList providedPorts();
+
+  static BT::KeyValueVector metadata();
+
+  BT::NodeStatus tick() override;
+};
+}  // namespace franka_behaviors

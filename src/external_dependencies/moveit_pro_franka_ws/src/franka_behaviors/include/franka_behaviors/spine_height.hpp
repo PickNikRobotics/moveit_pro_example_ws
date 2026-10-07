@@ -30,7 +30,7 @@
 
 #include <algorithm>
 
-namespace franka_spine_behaviors
+namespace franka_behaviors
 {
 /**
  * @brief Spine joint value that puts the spine link at a target height, clamped to the travel.
@@ -46,4 +46,4 @@ inline double spineValueForHeight(double current_value, double current_link_heig
 {
   return std::clamp(current_value + (target_height - current_link_height), min_value, max_value);
 }
-}  // namespace franka_spine_behaviors
+}  // namespace franka_behaviors

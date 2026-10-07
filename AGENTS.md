@@ -458,9 +458,8 @@ likely under heavy CPU load. The navigator logs "Timed out while waiting for act
 acknowledge goal request for follow_path" just before the abort.
 
 Upstream: Nav2 issue #6370, fixed on Nav2 main (#6373, #6445), not on Jazzy. Partly mitigated by
-`default_server_timeout: 500` (ms) in `market_sim/params/nav2_params.yaml`, and in
-`mobile_fr3_duo_mock`'s once the vendored copy is refreshed past `cbdec5d`; other example configs
-keep Nav2's 20 ms. That makes the trigger rarer but does not remove it. The remaining mitigation
+`default_server_timeout: 500` (ms) in `market_sim/params/nav2_params.yaml` and in the vendored
+`mobile_fr3_duo_mock/params/nav2_params.yaml`; other example configs keep Nav2's 20 ms. That makes the trigger rarer but does not remove it. The remaining mitigation
 would be a node that cancels a `follow_path` goal still executing when no `navigate_to_pose` goal
 is active.
 

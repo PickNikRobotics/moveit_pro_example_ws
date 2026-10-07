@@ -24,6 +24,10 @@
         <joint name="planar_y"/>
         <joint name="planar_theta"/>
     </group>
+    <!-- base_link is the end effector of mobile_base: it gives the base its teleop iMarker. -->
+    <group name="base">
+        <link name="base_link"/>
+    </group>
     <group name="left_gripper">
         <link name="left_fr3v2_hand_tcp"/>
         <link name="left_fr3v2_leftfinger"/>
@@ -117,6 +121,7 @@
     </group_state>
     <end_effector name="left_hand" parent_link="left_grasp_link" group="left_gripper" parent_group="left_manipulator_without_spine"/>
     <end_effector name="right_hand" parent_link="right_grasp_link" group="right_gripper" parent_group="right_manipulator_without_spine"/>
+    <end_effector name="base" parent_link="base_link" group="base" parent_group="mobile_base"/>
     <passive_joint name="left_fr3v2_finger_joint2"/>
     <passive_joint name="right_fr3v2_finger_joint2"/>
     <disable_collisions link1="argo_drive_front_fixed_link" link2="argo_drive_front_link" reason="Adjacent" />

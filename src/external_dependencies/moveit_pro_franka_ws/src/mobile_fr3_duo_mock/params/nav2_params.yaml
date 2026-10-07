@@ -7,7 +7,8 @@ bt_navigator:
     robot_base_frame: base_link
     odom_topic: /odom
     bt_loop_duration: 10
-    default_server_timeout: 20
+    # Raised to make the runaway-base known issue rarer (AGENTS.md).
+    default_server_timeout: 500
     wait_for_service_timeout: 1000
     action_server_result_timeout: 900.0
     navigators: ["navigate_to_pose", "navigate_through_poses"]
@@ -160,8 +161,8 @@ local_costmap:
       width: 3
       height: 3
       resolution: 0.05
-      # The robot with both arms in the Stow waypoint ("Stow Arms for Navigation"), from the robot model, padded.
-      footprint: "[[-0.42, -0.31], [0.28, -0.31], [0.28, -0.38], [0.66, -0.38], [0.78, -0.31], [0.82, -0.14], [0.82, 0.14], [0.78, 0.31], [0.66, 0.38], [0.28, 0.38], [0.28, 0.31], [-0.42, 0.31]]"
+      # The robot with both arms in the Stow waypoint ("Stow Arms for Navigation"), from the robot model, padded, then scaled up about base_link for margin.
+      footprint: "[[-0.441, -0.326], [0.294, -0.326], [0.294, -0.399], [0.693, -0.399], [0.819, -0.326], [0.861, -0.147], [0.861, 0.147], [0.819, 0.326], [0.693, 0.399], [0.294, 0.399], [0.294, 0.326], [-0.441, 0.326]]"
       plugins: ["static_layer", "inflation_layer"]
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
@@ -179,8 +180,8 @@ global_costmap:
       publish_frequency: 1.0
       global_frame: map
       robot_base_frame: base_link
-      # The robot with both arms in the Stow waypoint ("Stow Arms for Navigation"), from the robot model, padded.
-      footprint: "[[-0.42, -0.31], [0.28, -0.31], [0.28, -0.38], [0.66, -0.38], [0.78, -0.31], [0.82, -0.14], [0.82, 0.14], [0.78, 0.31], [0.66, 0.38], [0.28, 0.38], [0.28, 0.31], [-0.42, 0.31]]"
+      # The robot with both arms in the Stow waypoint ("Stow Arms for Navigation"), from the robot model, padded, then scaled up about base_link for margin.
+      footprint: "[[-0.441, -0.326], [0.294, -0.326], [0.294, -0.399], [0.693, -0.399], [0.819, -0.326], [0.861, -0.147], [0.861, 0.147], [0.819, 0.326], [0.693, 0.399], [0.294, 0.399], [0.294, 0.326], [-0.441, 0.326]]"
       resolution: 0.05
       track_unknown_space: true
       plugins: ["static_layer", "inflation_layer"]

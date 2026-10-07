@@ -31,28 +31,34 @@
 #include <behaviortree_cpp/action_node.h>
 #include <moveit_pro_behavior_interface/shared_resources_node.hpp>
 
-namespace franka_spine_behaviors
+namespace franka_behaviors
 {
 /**
- * @brief Creates a spine-only goal at an absolute spine joint value.
+ * @brief Computes a spine-only goal that puts the spine link at the height of a target pose.
  *
  * @details
- * A value outside the spine travel fails instead of being clamped, as the real spine rejects it.
+ * The pose and the spine link are compared in the spine joint's parent frame, where the joint axis is +Z.
+ * The current spine value comes from the planning scene. The goal is clamped to the spine travel.
  * This Behavior does not move the robot: feed its output to "Move to Joint State" on the spine group.
  *
- * | Data Port Name     | Port Type | Object Type                  |
- * | ------------------ | --------- | ---------------------------- |
- * | position           | Input     | double                       |
- * | spine_joint_name   | Input     | std::string                  |
- * | min_spine_value    | Input     | double                       |
- * | max_spine_value    | Input     | double                       |
- * | spine_joint_state  | Output    | moveit_msgs::msg::RobotState |
+ * | Data Port Name      | Port Type | Object Type                          |
+ * | ------------------- | --------- | ------------------------------------ |
+ * | target_pose         | Input     | geometry_msgs::msg::PoseStamped      |
+ * | planning_scene      | Input     | moveit_msgs::msg::PlanningScene      |
+ * | spine_joint_name    | Input     | std::string                          |
+ * | spine_parent_frame  | Input     | std::string                          |
+ * | spine_link_name     | Input     | std::string                          |
+ * | height_bias         | Input     | double                               |
+ * | min_spine_value     | Input     | double                               |
+ * | max_spine_value     | Input     | double                               |
+ * | spine_joint_state   | Output    | moveit_msgs::msg::RobotState         |
+ * | target_spine_value  | Output    | double                               |
  */
-class CreateSpineState : public moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>
+class GetSpineStateForPoseHeight : public moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>
 {
 public:
-  CreateSpineState(const std::string& name, const BT::NodeConfiguration& config,
-                   const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources);
+  GetSpineStateForPoseHeight(const std::string& name, const BT::NodeConfiguration& config,
+                             const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources);
 
   static BT::PortsList providedPorts();
 
@@ -60,4 +66,4 @@ public:
 
   BT::NodeStatus tick() override;
 };
-}  // namespace franka_spine_behaviors
+}  // namespace franka_behaviors

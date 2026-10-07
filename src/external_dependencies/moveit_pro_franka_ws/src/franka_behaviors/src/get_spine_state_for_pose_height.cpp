@@ -26,8 +26,8 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#include <franka_spine_behaviors/get_spine_state_for_pose_height.hpp>
-#include <franka_spine_behaviors/spine_height.hpp>
+#include <franka_behaviors/get_spine_state_for_pose_height.hpp>
+#include <franka_behaviors/spine_height.hpp>
 
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <moveit_msgs/msg/planning_scene.hpp>
@@ -55,7 +55,7 @@ constexpr auto kPortSpineJointState = "spine_joint_state";
 constexpr auto kPortTargetSpineValue = "target_spine_value";
 }  // namespace
 
-namespace franka_spine_behaviors
+namespace franka_behaviors
 {
 GetSpineStateForPoseHeight::GetSpineStateForPoseHeight(
     const std::string& name, const BT::NodeConfiguration& config,
@@ -154,4 +154,4 @@ BT::NodeStatus GetSpineStateForPoseHeight::tick()
   setOutput(kPortTargetSpineValue, value);
   return BT::NodeStatus::SUCCESS;
 }
-}  // namespace franka_spine_behaviors
+}  // namespace franka_behaviors

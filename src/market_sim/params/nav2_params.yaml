@@ -197,7 +197,7 @@ local_costmap:
       height: 5
       resolution: 0.05
       # mobile_fr3_duo_mock's stowed-arms footprint, unchanged; a test keeps them equal.
-      footprint: "[[-0.42, -0.31], [0.28, -0.31], [0.28, -0.38], [0.66, -0.38], [0.78, -0.31], [0.82, -0.14], [0.82, 0.14], [0.78, 0.31], [0.66, 0.38], [0.28, 0.38], [0.28, 0.31], [-0.42, 0.31]]"
+      footprint: "[[-0.441, -0.326], [0.294, -0.326], [0.294, -0.399], [0.693, -0.399], [0.819, -0.326], [0.861, -0.147], [0.861, 0.147], [0.819, 0.326], [0.693, 0.399], [0.294, 0.399], [0.294, 0.326], [-0.441, 0.326]]"
       plugins: ["obstacle_layer", "inflation_layer"]
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
@@ -249,7 +249,7 @@ global_costmap:
       global_frame: map
       robot_base_frame: base_link
       # mobile_fr3_duo_mock's stowed-arms footprint, unchanged; a test keeps them equal.
-      footprint: "[[-0.42, -0.31], [0.28, -0.31], [0.28, -0.38], [0.66, -0.38], [0.78, -0.31], [0.82, -0.14], [0.82, 0.14], [0.78, 0.31], [0.66, 0.38], [0.28, 0.38], [0.28, 0.31], [-0.42, 0.31]]"
+      footprint: "[[-0.441, -0.326], [0.294, -0.326], [0.294, -0.399], [0.693, -0.399], [0.819, -0.326], [0.861, -0.147], [0.861, 0.147], [0.819, 0.326], [0.693, 0.399], [0.294, 0.399], [0.294, 0.326], [-0.441, 0.326]]"
       resolution: 0.05
       track_unknown_space: true
       plugins: ["static_layer", "obstacle_layer", "inflation_layer"]

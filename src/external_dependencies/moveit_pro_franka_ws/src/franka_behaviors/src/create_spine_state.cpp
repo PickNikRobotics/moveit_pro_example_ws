@@ -26,7 +26,7 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#include <franka_spine_behaviors/create_spine_state.hpp>
+#include <franka_behaviors/create_spine_state.hpp>
 
 #include <moveit_msgs/msg/robot_state.hpp>
 #include <moveit_pro_behavior_interface/get_required_ports.hpp>
@@ -43,7 +43,7 @@ constexpr auto kPortMaxSpineValue = "max_spine_value";
 constexpr auto kPortSpineJointState = "spine_joint_state";
 }  // namespace
 
-namespace franka_spine_behaviors
+namespace franka_behaviors
 {
 CreateSpineState::CreateSpineState(const std::string& name, const BT::NodeConfiguration& config,
                                    const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources)
@@ -98,4 +98,4 @@ BT::NodeStatus CreateSpineState::tick()
   setOutput(kPortSpineJointState, spine_state);
   return BT::NodeStatus::SUCCESS;
 }
-}  // namespace franka_spine_behaviors
+}  // namespace franka_behaviors

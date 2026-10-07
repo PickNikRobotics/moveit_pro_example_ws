@@ -28,35 +28,23 @@
 
 #include <gtest/gtest.h>
 
-#include <behaviortree_cpp/bt_factory.h>
-#include <moveit_pro_behavior_interface/shared_resources_node_loader.hpp>
-#include <pluginlib/class_loader.hpp>
-#include <rclcpp/node.hpp>
+#include <franka_behaviors/spine_height.hpp>
 
-// The loader must register every Behavior, and the factory must build each one.
-TEST(BehaviorTests, LoadBehaviorPlugins)
+using franka_behaviors::spineValueForHeight;
+
+TEST(SpineHeight, MovesByTheHeightDifference)
 {
-  pluginlib::ClassLoader<moveit_pro::behaviors::SharedResourcesNodeLoaderBase> class_loader(
-      "moveit_pro_behavior_interface", "moveit_pro::behaviors::SharedResourcesNodeLoaderBase");
-
-  auto node = std::make_shared<rclcpp::Node>("BehaviorTests");
-  auto shared_resources = std::make_shared<moveit_pro::behaviors::BehaviorContext>(node);
-
-  BT::BehaviorTreeFactory factory;
-  {
-    auto plugin_instance = class_loader.createUniqueInstance("franka_spine_behaviors::FrankaSpineBehaviorsLoader");
-    ASSERT_NO_THROW(plugin_instance->registerBehaviors(factory, shared_resources));
-  }
-
-  for (const auto* id : { "CreateSpineState", "GetSpineStateForPoseHeight" })
-  {
-    EXPECT_NO_THROW((void)factory.instantiateTreeNode("test_behavior_name", id, BT::NodeConfiguration())) << id;
-  }
+  EXPECT_DOUBLE_EQ(spineValueForHeight(0.2, 0.3, 0.5, 0.0, 0.85), 0.4);
+  EXPECT_DOUBLE_EQ(spineValueForHeight(0.4, 0.5, 0.3, 0.0, 0.85), 0.2);
 }
 
-int main(int argc, char** argv)
+TEST(SpineHeight, StaysWhenAlreadyAtHeight)
 {
-  rclcpp::init(argc, argv);
-  testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
+  EXPECT_DOUBLE_EQ(spineValueForHeight(0.25, 0.35, 0.35, 0.0, 0.85), 0.25);
+}
+
+TEST(SpineHeight, ClampsToTheTravel)
+{
+  EXPECT_DOUBLE_EQ(spineValueForHeight(0.5, 0.6, 2.0, 0.0, 0.85), 0.85);
+  EXPECT_DOUBLE_EQ(spineValueForHeight(0.1, 0.2, -1.0, 0.0, 0.85), 0.0);
 }

@@ -1,18 +1,18 @@
 upstream:
   repository: https://github.com/PickNikRobotics/moveit_pro_franka_ws.git
-  commit: cbdec5d0f9b88131f96c56c2246c4fd5d53d5bb8
+  commit: 9bbc7f9f17cc966bdbdd47b7946e3c3e87a6a638
   branch: fm/franka-ws-restructure
 vendored_paths:
   - LICENSE
   - NOTICE
   - LICENSES/Apache-2.0.txt
   - src/fr3_solo_mock
-  - src/franka_spine_behaviors
+  - src/franka_behaviors
   - src/mobile_fr3_duo_mock
   - src/mobile_fr3_duo_sim
 pruned_paths:
   - src/fr3_solo_sim, src/fr3_duo_mock, src/fr3_duo_sim, src/fr3_duo_spine_mock and src/fr3_duo_spine_sim, which no package in this workspace uses
-  - src/franka_behaviors, which upstream excludes from its own build
+  - src/franka_behaviors/hardware, the real-hardware Behaviors, which upstream does not build
   - src/external_dependencies, because this workspace vendors its own franka_description 2.9.0 under src/external_dependencies/franka_config
   - workspace files (Dockerfile, docker-compose.yaml, colcon-defaults.yaml, README.md, AGENTS.md, CLAUDE.md)
 apache_paths:
@@ -26,6 +26,6 @@ notes:
   - Byte-identical copy of the listed paths at the pinned commit, except modified_paths.
   - mobile_fr3_duo.urdf.xacro gains a base_travel_limit argument for the planar base joints' position limits; its default keeps upstream's value, and market_sim widens it for the supermarket. Pending the same argument upstream.
   - kitchen_sim is based on fr3_solo_mock, and market_sim on mobile_fr3_duo_sim, which is based on mobile_fr3_duo_mock.
-  - mobile_fr3_duo_mock loads the spine Behaviors from franka_spine_behaviors, a C++ package built with this workspace.
+  - mobile_fr3_duo_mock loads the spine Behaviors from franka_behaviors, a C++ package built with this workspace.
   - The packages depend on franka_description, provided by src/external_dependencies/franka_config (release 2.9.0, the release upstream pins).
   - Binary files matching workspace Git LFS patterns are stored as LFS objects; checked-out bytes match upstream.

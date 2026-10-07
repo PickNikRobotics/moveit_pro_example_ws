@@ -26,25 +26,28 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 // POSSIBILITY OF SUCH DAMAGE.
 
-#include <gtest/gtest.h>
+#include <behaviortree_cpp/bt_factory.h>
+#include <moveit_pro_behavior_interface/behavior_context.hpp>
+#include <moveit_pro_behavior_interface/shared_resources_node_loader.hpp>
+#include <pluginlib/class_list_macros.hpp>
 
-#include <franka_spine_behaviors/spine_height.hpp>
+#include <franka_behaviors/create_spine_state.hpp>
+#include <franka_behaviors/get_spine_state_for_pose_height.hpp>
 
-using franka_spine_behaviors::spineValueForHeight;
-
-TEST(SpineHeight, MovesByTheHeightDifference)
+namespace franka_behaviors
 {
-  EXPECT_DOUBLE_EQ(spineValueForHeight(0.2, 0.3, 0.5, 0.0, 0.85), 0.4);
-  EXPECT_DOUBLE_EQ(spineValueForHeight(0.4, 0.5, 0.3, 0.0, 0.85), 0.2);
-}
-
-TEST(SpineHeight, StaysWhenAlreadyAtHeight)
+class FrankaBehaviorsLoader : public moveit_pro::behaviors::SharedResourcesNodeLoaderBase
 {
-  EXPECT_DOUBLE_EQ(spineValueForHeight(0.25, 0.35, 0.35, 0.0, 0.85), 0.25);
-}
+public:
+  void registerBehaviors(BT::BehaviorTreeFactory& factory,
+                         const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources) override
+  {
+    moveit_pro::behaviors::registerBehavior<CreateSpineState>(factory, "CreateSpineState", shared_resources);
+    moveit_pro::behaviors::registerBehavior<GetSpineStateForPoseHeight>(factory, "GetSpineStateForPoseHeight",
+                                                                        shared_resources);
+  }
+};
+}  // namespace franka_behaviors
 
-TEST(SpineHeight, ClampsToTheTravel)
-{
-  EXPECT_DOUBLE_EQ(spineValueForHeight(0.5, 0.6, 2.0, 0.0, 0.85), 0.85);
-  EXPECT_DOUBLE_EQ(spineValueForHeight(0.1, 0.2, -1.0, 0.0, 0.85), 0.0);
-}
+PLUGINLIB_EXPORT_CLASS(franka_behaviors::FrankaBehaviorsLoader,
+                       moveit_pro::behaviors::SharedResourcesNodeLoaderBase);
