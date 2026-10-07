@@ -115,6 +115,9 @@ LOOSE_ITEMS = (
     "coffee_can_3",
 )
 
+# Grippy enough for the simulated Franka Hand's light squeeze to hold a product, as in lab_sim.
+LOOSE_FRICTION = "2.0 0.1 0.01"
+
 # Robot part of every keyframe: the Mobile FR3 Duo's default pose.
 # Order: planar joints, 9 passive wheel joints, spine, then each arm with its two fingers.
 ROBOT_QPOS = (
@@ -885,6 +888,7 @@ def loose_item_body(item):
     geom = collide[0]
     attributes = [(key, geom.get(key)) for key in ("type", "size", "material")]
     attributes += [(key, geom.get(key)) for key in ("pos", "quat") if geom.get(key)]
+    attributes.append(("friction", LOOSE_FRICTION))
     inertial_attributes = [(k, inertial.get(k)) for k in ("pos", "mass", "fullinertia")]
     position, quat = item["poses"]["a_d"]
     return element(
@@ -976,6 +980,14 @@ def write_aisle_objective(path, aisle, goal):
                                 f"0;0;{math.sin(yaw / 2):.6f};{math.cos(yaw / 2):.6f}",
                             ),
                             ("pose_stamped", "{goal}"),
+                        ],
+                    ),
+                    # Nav2 drives the base through base_jgvc; a base jog leaves it inactive.
+                    element(
+                        "Action",
+                        [
+                            ("ID", "SwitchController"),
+                            ("activate_controllers", "base_jgvc"),
                         ],
                     ),
                     element(

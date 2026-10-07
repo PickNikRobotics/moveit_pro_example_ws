@@ -4,7 +4,13 @@
   <include file="market/market_assets.xml" />
 
   <!-- Sleep lets the resting products cost almost nothing per step; see the README. -->
-  <option timestep="0.003" sleep_tolerance="0.001">
+  <!-- impratio and noslip keep a grasped product from creeping out of the fingers, as in lab_sim. -->
+  <option
+    timestep="0.003"
+    sleep_tolerance="0.001"
+    impratio="10"
+    noslip_iterations="3"
+  >
     <flag sleep="enable" />
   </option>
 
