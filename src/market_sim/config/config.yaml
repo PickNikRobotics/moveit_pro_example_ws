@@ -1,0 +1,22 @@
+# The Franka Mobile FR3 Duo in a simulated supermarket.
+# Everything not set here comes from mobile_fr3_duo_sim and its parent, mobile_fr3_duo_mock.
+based_on_package: "mobile_fr3_duo_sim"
+
+hardware:
+  robot_description:
+    # Merged by key into the parent's urdf_params.
+    urdf_params:
+      - mujoco_model_package: "market_sim"
+      # Hundreds of loose products; their TF frames would only load the TF tree.
+      - publish_object_tf: "false"
+  # Frames, scans, odometry bridge, Beluga AMCL and Nav2 on the supermarket map.
+  additional_driver_launch_file:
+    package: "market_sim"
+    path: "launch/sim/robot_drivers_to_persist_sim.launch.py"
+
+objectives:
+  # Listed last, so Objectives saved from the UI land in this package.
+  objective_library_paths:
+    market_sim_objectives:
+      package_name: "market_sim"
+      relative_path: "objectives"

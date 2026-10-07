@@ -1,0 +1,344 @@
+{
+  "frame": "origin on the floor, centred in X, at the kick plate front face; +X along the shelf, +Y from the aisle into the shelf, +Z up; metres",
+  "overall": {
+    "x": [
+      -0.652,
+      0.652
+    ],
+    "y": [
+      -0.01,
+      0.5469999999999999
+    ],
+    "z": [
+      0.0,
+      1.836
+    ]
+  },
+  "surfaces": [
+    {
+      "name": "base_deck",
+      "z": 0.15,
+      "y_front": 0.0,
+      "y_back": 0.48,
+      "x_min": -0.608,
+      "x_max": 0.608,
+      "clear_height_above": 0.425,
+      "site": "shelf_base_deck_surface"
+    },
+    {
+      "name": "shelf_1",
+      "z": 0.62,
+      "y_front": 0.07,
+      "y_back": 0.48,
+      "x_min": -0.608,
+      "x_max": 0.608,
+      "clear_height_above": 0.275,
+      "site": "shelf_1_surface"
+    },
+    {
+      "name": "shelf_2",
+      "z": 0.94,
+      "y_front": 0.07,
+      "y_back": 0.48,
+      "x_min": -0.608,
+      "x_max": 0.608,
+      "clear_height_above": 0.275,
+      "site": "shelf_2_surface"
+    },
+    {
+      "name": "shelf_3",
+      "z": 1.26,
+      "y_front": 0.07,
+      "y_back": 0.48,
+      "x_min": -0.608,
+      "x_max": 0.608,
+      "clear_height_above": 0.275,
+      "site": "shelf_3_surface"
+    },
+    {
+      "name": "shelf_4",
+      "z": 1.58,
+      "y_front": 0.07,
+      "y_back": 0.48,
+      "x_min": -0.608,
+      "x_max": 0.608,
+      "clear_height_above": null,
+      "site": "shelf_4_surface"
+    }
+  ],
+  "collision_boxes": [
+    {
+      "name": "shelf_upright_left",
+      "center": [
+        -0.63,
+        0.505,
+        0.918
+      ],
+      "half_extents": [
+        0.022,
+        0.042,
+        0.918
+      ]
+    },
+    {
+      "name": "shelf_upright_right",
+      "center": [
+        0.63,
+        0.505,
+        0.918
+      ],
+      "half_extents": [
+        0.022,
+        0.042,
+        0.918
+      ]
+    },
+    {
+      "name": "shelf_base_channel",
+      "center": [
+        0.0,
+        -0.005,
+        0.13
+      ],
+      "half_extents": [
+        0.608,
+        0.005,
+        0.016
+      ]
+    },
+    {
+      "name": "shelf_base",
+      "center": [
+        0.0,
+        0.2725,
+        0.075
+      ],
+      "half_extents": [
+        0.65,
+        0.2725,
+        0.075
+      ]
+    },
+    {
+      "name": "shelf_back",
+      "center": [
+        0.0,
+        0.486,
+        0.919
+      ],
+      "half_extents": [
+        0.61,
+        0.006,
+        0.911
+      ]
+    },
+    {
+      "name": "shelf_1_bracket_left",
+      "center": [
+        -0.603,
+        0.29,
+        0.567
+      ],
+      "half_extents": [
+        0.002,
+        0.19,
+        0.05
+      ]
+    },
+    {
+      "name": "shelf_1_bracket_right",
+      "center": [
+        0.603,
+        0.29,
+        0.567
+      ],
+      "half_extents": [
+        0.002,
+        0.19,
+        0.05
+      ]
+    },
+    {
+      "name": "shelf_1_channel",
+      "center": [
+        0.0,
+        0.065,
+        0.5975
+      ],
+      "half_extents": [
+        0.608,
+        0.005,
+        0.016
+      ]
+    },
+    {
+      "name": "shelf_1",
+      "center": [
+        0.0,
+        0.275,
+        0.5975
+      ],
+      "half_extents": [
+        0.608,
+        0.205,
+        0.0225
+      ]
+    },
+    {
+      "name": "shelf_2_bracket_left",
+      "center": [
+        -0.603,
+        0.29,
+        0.887
+      ],
+      "half_extents": [
+        0.002,
+        0.19,
+        0.05
+      ]
+    },
+    {
+      "name": "shelf_2_bracket_right",
+      "center": [
+        0.603,
+        0.29,
+        0.887
+      ],
+      "half_extents": [
+        0.002,
+        0.19,
+        0.05
+      ]
+    },
+    {
+      "name": "shelf_2_channel",
+      "center": [
+        0.0,
+        0.065,
+        0.9175
+      ],
+      "half_extents": [
+        0.608,
+        0.005,
+        0.016
+      ]
+    },
+    {
+      "name": "shelf_2",
+      "center": [
+        0.0,
+        0.275,
+        0.9175
+      ],
+      "half_extents": [
+        0.608,
+        0.205,
+        0.0225
+      ]
+    },
+    {
+      "name": "shelf_3_bracket_left",
+      "center": [
+        -0.603,
+        0.29,
+        1.207
+      ],
+      "half_extents": [
+        0.002,
+        0.19,
+        0.05
+      ]
+    },
+    {
+      "name": "shelf_3_bracket_right",
+      "center": [
+        0.603,
+        0.29,
+        1.207
+      ],
+      "half_extents": [
+        0.002,
+        0.19,
+        0.05
+      ]
+    },
+    {
+      "name": "shelf_3_channel",
+      "center": [
+        0.0,
+        0.065,
+        1.2375
+      ],
+      "half_extents": [
+        0.608,
+        0.005,
+        0.016
+      ]
+    },
+    {
+      "name": "shelf_3",
+      "center": [
+        0.0,
+        0.275,
+        1.2375
+      ],
+      "half_extents": [
+        0.608,
+        0.205,
+        0.0225
+      ]
+    },
+    {
+      "name": "shelf_4_bracket_left",
+      "center": [
+        -0.603,
+        0.29,
+        1.527
+      ],
+      "half_extents": [
+        0.002,
+        0.19,
+        0.05
+      ]
+    },
+    {
+      "name": "shelf_4_bracket_right",
+      "center": [
+        0.603,
+        0.29,
+        1.527
+      ],
+      "half_extents": [
+        0.002,
+        0.19,
+        0.05
+      ]
+    },
+    {
+      "name": "shelf_4_channel",
+      "center": [
+        0.0,
+        0.065,
+        1.5575
+      ],
+      "half_extents": [
+        0.608,
+        0.005,
+        0.016
+      ]
+    },
+    {
+      "name": "shelf_4",
+      "center": [
+        0.0,
+        0.275,
+        1.5575
+      ],
+      "half_extents": [
+        0.608,
+        0.205,
+        0.0225
+      ]
+    }
+  ]
+}
