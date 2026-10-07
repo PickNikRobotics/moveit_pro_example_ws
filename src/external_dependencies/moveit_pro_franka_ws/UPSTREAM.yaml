@@ -1,6 +1,6 @@
 upstream:
   repository: https://github.com/PickNikRobotics/moveit_pro_franka_ws.git
-  commit: 43adda52a6b8aebce311b60743d29f274a8fdeca
+  commit: 5ea850eeb8546744405240017adc29e342ef367f
   branch: fm/franka-ws-restructure
 vendored_paths:
   - LICENSE

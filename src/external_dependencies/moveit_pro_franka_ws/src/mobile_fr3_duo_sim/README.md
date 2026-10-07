@@ -2,7 +2,7 @@
 
 MoveIt Pro MuJoCo simulation configuration for the Franka Mobile FR3 Duo, with front and rear lidars, an IMU and base cameras.
 
-The scene is a 12 m by 12 m room with a narrow passage, obstacles, a table and two scene cameras. Nav2 runs on a map of that room (`maps/room.yaml`, made with slam_toolbox), and the "Navigate to Clicked Point" Objective drives the base there.
+The scene is a 12 m by 12 m room with a narrow passage, obstacles, a table and two scene cameras. The table stands within the arms' reach in front of the robot and is not in MoveIt's planning scene, so plan arm motions that keep clear of it. Nav2 runs on a map of that room (`maps/room.yaml`, made with slam_toolbox), and the "Navigate to Clicked Point" Objective drives the base there.
 
 It inherits everything from `mobile_fr3_duo_mock` (robot description, SRDF, MoveIt parameters, Objectives and waypoints) and replaces only the hardware and the controllers.
 
