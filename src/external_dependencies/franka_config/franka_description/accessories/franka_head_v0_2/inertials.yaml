@@ -1,0 +1,25 @@
+head:
+  origin:
+    xyz: 0 0 0
+    rpy: 0 0 0
+  mass: 0.350865
+  inertia:
+    xx: 0.003020352
+    xy: -0.000021940
+    xz: 0.000161590
+    yy: 0.003067069
+    yz: -0.000058102
+    zz: 0.000160526
+
+head_camera_mounting_point:
+  origin:
+    xyz: 0 0 0
+    rpy: 0 0 0
+  mass: 0.001
+  inertia:
+    xx: 0.0000001
+    xy: 0.0
+    xz: 0.0
+    yy: 0.0000001
+    yz: 0.0
+    zz: 0.0000001

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:include filename="$(find franka_description)/robots/common/franka_robot.xacro"/>
+  <xacro:include filename="$(find franka_description)/accessories/fr3_duo_mount_v0_3/fr3_duo_mount.xacro"/>
+  <xacro:include filename="$(find franka_description)/accessories/franka_head_v0_2/franka_head.xacro"/>
+
+  <xacro:macro
+    name="fr3_duo"
+    params="name
+            robot_types
+            hand
+            ee_id
+            special_connection
+            xyz_ee
+            rpy_ee
+            tcp_xyz
+            tcp_rpy
+            safety_distance
+            with_sc
+            include_self_collision_geometry
+            description_pkg
+            base_mount
+            connected_to
+            arm_prefixes
+            no_prefix:=false
+            is_mobile_fr3_duo:=false
+            **arm0_extras
+            **arm1_extras">
+
+    <xacro:property name="robot_types_list" value="${robot_types}"/>
+    <xacro:property name="arm_prefixes_list" value="${arm_prefixes}"/>
+
+    <xacro:mount
+      name="mount"
+      parent="${base_mount}"
+      left_prefix="${arm_prefixes_list[0]}"
+      right_prefix="${arm_prefixes_list[1]}">
+    </xacro:mount>
+
+    <xacro:head parent="fr3_duo_mount_mounting_point"/>
+
+    <xacro:property name="number_of_robots" value="2"/>
+    <xacro:macro name="fr3_duo_loop" params="i">
+      <xacro:unless value="${i == number_of_robots}">
+        <xacro:property name="robot_prefix" value="${arm_prefixes_list[i]}"/>
+        <xacro:property name="modified_prefix" value="${robot_prefix + '_' if robot_prefix else ''}"/>
+
+        <!-- Attach the robot arm to the mount -->
+        <joint name="${arm_prefixes_list[i]}_base_joint" type="fixed">
+          <parent link="fr3_duo_mount_${arm_prefixes_list[i]}"/>
+          <child link="${arm_prefixes_list[i]}_base"/>
+        </joint>
+
+        <!-- Spawn the robot -->
+        <xacro:property name="robot_type_i" value="${robot_types_list[i]}"/>
+        <xacro:franka_robot
+          robot_type="${robot_type_i}"
+          include_self_collision_geometry="${include_self_collision_geometry}"
+          hand="${hand}"
+          ee_id="${ee_id}"
+          special_connection="${special_connection}"
+          xyz_ee="${xyz_ee}"
+          rpy_ee="${rpy_ee}"
+          tcp_xyz="${tcp_xyz}"
+          tcp_rpy="${tcp_rpy}"
+          safety_distance="${safety_distance}"
+          with_sc="${with_sc}"
+          no_prefix="${no_prefix}"
+          arm_prefix="${modified_prefix}"
+          description_pkg="${description_pkg}"
+          connected_to="${arm_prefixes_list[i]}_base">
+        </xacro:franka_robot>
+        <!-- Per-arm extension point (e.g. simulation transmissions injected by
+             the simulation bringup). Each block is evaluated in the caller's
+             scope, so the caller supplies the concrete arm prefix / robot type. -->
+        <xacro:if value="${i == 0}">
+          <xacro:insert_block name="arm0_extras"/>
+        </xacro:if>
+        <xacro:if value="${i == 1}">
+          <xacro:insert_block name="arm1_extras"/>
+        </xacro:if>
+        <xacro:fr3_duo_loop i="${i+1}"/>
+      </xacro:unless>
+    </xacro:macro>
+    <xacro:fr3_duo_loop i="0"/>
+
+  </xacro:macro>
+</robot>
