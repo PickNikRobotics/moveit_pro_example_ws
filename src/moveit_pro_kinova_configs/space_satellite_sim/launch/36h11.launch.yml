@@ -20,6 +20,11 @@ launch:
               to: /servicer_camera/camera_info
           param:
             - from: $(find-pkg-share space_satellite_sim)/launch/tags_36h11.yaml
+            # TEMP (Nyx tests): servicer-only detector overrides, disabled.
+            # - name: detector.blur
+            #   value: 0.8
+            # - name: max_hamming
+            #   value: 2
           extra_arg:
             - name: use_intra_process_comms
               value: "True"
