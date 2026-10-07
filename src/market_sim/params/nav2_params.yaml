@@ -62,7 +62,7 @@ bt_navigator:
     robot_base_frame: base_link
     odom_topic: /odom
     bt_loop_duration: 10
-    default_server_timeout: 20
+    default_server_timeout: 500
     wait_for_service_timeout: 1000
     # Leave plugin_lib_names unset: Jazzy loads the stock nav2 BT nodes already.
 

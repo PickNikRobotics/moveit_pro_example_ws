@@ -448,6 +448,22 @@ it and navigation still succeeded, so only the topic check found it.
 Note `RewrittenYaml` rewrites a key **everywhere it appears** in the file, not per-node, so one
 `odom_topic` entry also hits `velocity_smoother`'s.
 
+## Known issue: Nav2 Jazzy can keep driving the base after a navigation aborts
+
+With Nav2 Jazzy (the 1.3.x in the MoveIt Pro image), if the controller server acknowledges a new
+path-following goal later than the navigator's `default_server_timeout`, the navigator drops that
+goal without cancelling it and aborts the navigation. The controller keeps driving the base along
+the old path, with no Objective running, until the next navigation goal replaces it. It is more
+likely under heavy CPU load. The navigator logs "Timed out while waiting for action server to
+acknowledge goal request for follow_path" just before the abort.
+
+Upstream: Nav2 issue #6370, fixed on Nav2 main (#6373, #6445), not on Jazzy. Partly mitigated by
+`default_server_timeout: 500` (ms) in `market_sim/params/nav2_params.yaml`, and in
+`mobile_fr3_duo_mock`'s once the vendored copy is refreshed past `cbdec5d`; other example configs
+keep Nav2's 20 ms. That makes the trigger rarer but does not remove it. The remaining mitigation
+would be a node that cancels a `follow_path` goal still executing when no `navigate_to_pose` goal
+is active.
+
 ## One trajectory controller, several planning groups
 
 When a config puts every joint on a single `joint_trajectory_controller` (the
