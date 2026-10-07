@@ -138,8 +138,9 @@ ROBOT_CTRL = (
     + [0.0, 1.5707963267948966, 0.7853981633974483, 0.0]
 )
 
-# Distance from a shelf's front face to the base centre in a "Navigate to Aisle" goal.
-AISLE_STANDOFF = 0.75
+# Distance from a shelf's front face to the base centre in a "Navigate to Aisle" goal. It keeps
+# the stowed-arms Nav2 footprint clear of both racks while it turns to face the shelf.
+AISLE_STANDOFF = 0.96
 NAV_TO_POSE_TREE = (
     "/opt/ros/jazzy/share/nav2_bt_navigator/behavior_trees/"
     "navigate_to_pose_w_replanning_and_recovery.xml"
@@ -958,8 +959,8 @@ def write_aisle_objective(path, aisle, goal):
     x, y, yaw = goal
     name = f"Navigate to Aisle {aisle}"
     description = (
-        f"Drive the base with Nav2 to the middle of aisle {aisle}, facing its shelves, "
-        "where the products are loose and can be picked."
+        f"Stow the arms, then drive the base with Nav2 to the middle of aisle {aisle}, "
+        "facing its shelves, where the products are loose and can be picked."
     )
     tree = element(
         "BehaviorTree",
@@ -981,6 +982,11 @@ def write_aisle_objective(path, aisle, goal):
                             ),
                             ("pose_stamped", "{goal}"),
                         ],
+                    ),
+                    # The Nav2 footprint covers the robot only with its arms stowed.
+                    element(
+                        "SubTree",
+                        [("ID", "Stow Arms for Navigation"), ("_collapsed", "true")],
                     ),
                     # Nav2 drives the base through base_jgvc; a base jog leaves it inactive.
                     element(

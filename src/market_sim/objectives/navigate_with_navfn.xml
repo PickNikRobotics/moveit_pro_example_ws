@@ -2,7 +2,7 @@
 <root BTCPP_format="4" main_tree_to_execute="Navigate with NavFn">
   <BehaviorTree
     ID="Navigate with NavFn"
-    _description="Prompt for a point on the map and drive there under Nav2, planned with NavFn. NavFn plans for the robot's centre point only, so a goal next to an obstacle can be accepted and then fail after Nav2's recoveries."
+    _description="Prompt for a point on the map, stow the arms, and drive there under Nav2, planned with NavFn. NavFn plans for the robot's centre point only, so a goal next to an obstacle can be accepted and then fail after Nav2's recoveries."
     _favorite="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
@@ -14,6 +14,8 @@
         is_normal="false"
         user_pose="{goal_pose}"
       />
+      <!-- The Nav2 footprint covers the robot only with its arms stowed. -->
+      <SubTree ID="Stow Arms for Navigation" _collapsed="true" />
       <!-- Nav2 drives the base through base_jgvc; a base jog leaves it inactive. -->
       <Action ID="SwitchController" activate_controllers="base_jgvc" />
       <!-- Nav2's stock tree, whose planner selector defaults to NavFn. -->

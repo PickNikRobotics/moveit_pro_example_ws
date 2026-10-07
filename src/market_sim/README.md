@@ -39,6 +39,11 @@ apart from one change: the planar base joints' travel range is widened to cover 
 - **Navigate with NavFn** and **Navigate with SMAC**: click a goal on the map. NavFn plans for the
   robot's centre point; the Smac State Lattice planner checks the whole footprint along the plan.
   Nav2 loads both planners; the Navigate to Aisle Objectives keep using NavFn.
+- Every Objective that drives the base, including the inherited **Navigate to Clicked Point** and
+  **Move Base to Ready**, first runs **Stow Arms for Navigation** from `mobile_fr3_duo_mock`: both
+  arms and the spine go to the `Stow` waypoint. Nav2's footprint is that package's stowed-arms
+  outline, kept equal by a test. The Navigate to Aisle goals stand far enough back from the shelf
+  that this footprint clears both racks while it turns to face the shelf, also checked by a test.
 
 These Objectives need MoveIt Pro `main`: `ReinterpretPoseFrame`, `CallEmptyService`,
 `GetOccupancyGrid`, `GetLaserScan` and `ScanMatchResidual` are not in 10.1.0, so they will not load

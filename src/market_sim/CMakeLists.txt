@@ -26,6 +26,10 @@ if(BUILD_TESTING)
   ament_add_pytest_test(
           market_scene_test test/test_market_scene.py
           TIMEOUT 120)
+  # The Nav2 footprint against the inherited one, and the aisle goals against the map.
+  ament_add_pytest_test(
+          nav2_footprint_test test/test_nav2_footprint.py
+          TIMEOUT 60)
 endif()
 
 ament_package()

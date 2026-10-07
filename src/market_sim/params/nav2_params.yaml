@@ -1,5 +1,5 @@
 # Nav2 and Beluga AMCL for the Mobile FR3 Duo in the supermarket.
-# Structure follows hangar_sim; robot limits and footprint are the Mobile FR3 Duo's.
+# Structure follows hangar_sim; robot limits and the stowed-arms footprint are the Mobile FR3 Duo's.
 # The simulator stamps wall time, so use_sim_time is false throughout.
 
 amcl:
@@ -196,9 +196,8 @@ local_costmap:
       width: 5
       height: 5
       resolution: 0.05
-      # The chassis outline.
-      footprint: "[[0.4, 0.29], [0.4, -0.29], [-0.4, -0.29], [-0.4, 0.29]]"
-      footprint_padding: 0.025
+      # mobile_fr3_duo_mock's stowed-arms footprint, unchanged; a test keeps them equal.
+      footprint: "[[-0.42, -0.31], [0.28, -0.31], [0.28, -0.38], [0.66, -0.38], [0.78, -0.31], [0.82, -0.14], [0.82, 0.14], [0.78, 0.31], [0.66, 0.38], [0.28, 0.38], [0.28, 0.31], [-0.42, 0.31]]"
       plugins: ["obstacle_layer", "inflation_layer"]
       obstacle_layer:
         plugin: "nav2_costmap_2d::ObstacleLayer"
@@ -249,8 +248,8 @@ global_costmap:
       publish_frequency: 1.0
       global_frame: map
       robot_base_frame: base_link
-      footprint: "[[0.4, 0.29], [0.4, -0.29], [-0.4, -0.29], [-0.4, 0.29]]"
-      footprint_padding: 0.025
+      # mobile_fr3_duo_mock's stowed-arms footprint, unchanged; a test keeps them equal.
+      footprint: "[[-0.42, -0.31], [0.28, -0.31], [0.28, -0.38], [0.66, -0.38], [0.78, -0.31], [0.82, -0.14], [0.82, 0.14], [0.78, 0.31], [0.66, 0.38], [0.28, 0.38], [0.28, 0.31], [-0.42, 0.31]]"
       resolution: 0.05
       track_unknown_space: true
       plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
