@@ -4,6 +4,7 @@ Needs numpy, and mujoco for the model checks (both ship in the MoveIt Pro image)
 """
 
 import filecmp
+import re
 import sys
 from pathlib import Path
 
@@ -17,8 +18,10 @@ sys.path.insert(0, str(PACKAGE / "scripts"))
 import generate_market  # noqa: E402
 
 SCENE = PACKAGE / "mjcf" / "scene.xml"
-# This scene's copy of the robot model, which must match mobile_fr3_duo_sim's byte for byte.
+# This scene's copy of the robot model, which must match mobile_fr3_duo_sim's byte for byte,
+# except for the planar base joints' travel range, widened for the store.
 ROBOT_MODEL_FILES = ["mobile_fr3_duo.xml", "sensors.xml"]
+PLANAR_RANGE = re.compile(r'(name="planar_[xy]"(?:\s+\w+="[^"]*")*?\s+range=)"[^"]*"')
 # picknik_mujoco_ros renders cameras and lidars into a fixed 2000-geom scene and drops the rest.
 RENDER_GEOM_LIMIT = 2000
 RENDER_GEOM_MARGIN = 100
@@ -59,12 +62,29 @@ def test_robot_model_matches_mobile_fr3_duo_sim():
         f"assets/{p.name}" for p in (source / "assets").iterdir() if p.is_file()
     ]
     names.remove("assets/robot_description.urdf")
+    names.remove("mobile_fr3_duo.xml")
     differ = [
         n
         for n in names
         if not filecmp.cmp(source / n, PACKAGE / "mjcf" / n, shallow=False)
     ]
     assert not differ, f"Copy these from {source}: {differ}"
+    upstream = (source / "mobile_fr3_duo.xml").read_text()
+    local = (PACKAGE / "mjcf" / "mobile_fr3_duo.xml").read_text()
+    assert len(PLANAR_RANGE.findall(local)) == 2
+    assert PLANAR_RANGE.sub(r'\1""', local) == PLANAR_RANGE.sub(r'\1""', upstream)
+
+
+def test_planar_range_matches_the_urdf_travel_limit(model):
+    config = yaml.safe_load((PACKAGE / "config" / "config.yaml").read_text())
+    params = {
+        key: value
+        for entry in config["hardware"]["robot_description"]["urdf_params"]
+        for key, value in entry.items()
+    }
+    limit = float(params["base_travel_limit"])
+    for joint in ("planar_x", "planar_y"):
+        np.testing.assert_allclose(model.joint(joint).range, [-limit, limit])
 
 
 @pytest.fixture(scope="module")

@@ -17,8 +17,13 @@ pruned_paths:
 apache_paths:
   - LICENSES/Apache-2.0.txt
   - src/mobile_fr3_duo_sim/mjcf/assets
+modified_paths:
+  - src/mobile_fr3_duo_mock/description/mobile_fr3_duo.urdf.xacro
+apache_excluded_paths:
+  - src/mobile_fr3_duo_mock/description/mobile_fr3_duo.urdf.xacro
 notes:
-  - Byte-identical copy of the listed paths at the pinned commit; nothing is modified.
+  - Byte-identical copy of the listed paths at the pinned commit, except modified_paths.
+  - mobile_fr3_duo.urdf.xacro gains a base_travel_limit argument for the planar base joints' position limits; its default keeps upstream's value, and market_sim widens it for the supermarket. Pending the same argument upstream.
   - kitchen_sim is based on fr3_solo_mock, and market_sim on mobile_fr3_duo_sim, which is based on mobile_fr3_duo_mock.
   - The packages depend on franka_description, provided by src/external_dependencies/franka_config (release 2.9.0, the release upstream pins).
   - Binary files matching workspace Git LFS patterns are stored as LFS objects; checked-out bytes match upstream.

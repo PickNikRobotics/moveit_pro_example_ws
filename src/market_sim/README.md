@@ -24,7 +24,9 @@ Teleoperation jogs each arm, and the `mobile_base` group jogs the base (joint jo
 
 `mjcf/mobile_fr3_duo.xml`, `mjcf/sensors.xml` and the robot meshes in `mjcf/assets/` are copies of
 `mobile_fr3_duo_sim`'s. MuJoCo resolves an included file's meshes against that file's own folder,
-so the scene cannot include the robot from the other package. A test fails when the copies differ.
+so the scene cannot include the robot from the other package. A test fails when the copies differ,
+apart from one change: the planar base joints' travel range is widened to cover the store, and
+`config.yaml`'s `base_travel_limit` sets the same limit in the URDF for MoveIt.
 
 ## The store
 

@@ -9,6 +9,8 @@ hardware:
       - mujoco_model_package: "market_sim"
       # Hundreds of loose products; their TF frames would only load the TF tree.
       - publish_object_tf: "false"
+      # The store spans more than the parent's default base travel; match mjcf/mobile_fr3_duo.xml.
+      - base_travel_limit: "50.0"
   # Frames, scans, odometry bridge, Beluga AMCL and Nav2 on the supermarket map.
   additional_driver_launch_file:
     package: "market_sim"

@@ -10,6 +10,8 @@
   <xacro:arg name="ground_truth_odom_topic" default="/ground_truth/odom"/>
   <xacro:arg name="ground_truth_odom_frame" default="mj_world"/>
   <xacro:arg name="base_link_name" default="base_link"/>
+  <!-- Modified by PickNik Inc.: base travel from odom along x and y, in metres; a larger site widens it. -->
+  <xacro:arg name="base_travel_limit" default="10.0"/>
 
   <xacro:include filename="$(find franka_description)/robots/mobile_fr3_duo_v0_2/mobile_fr3_duo_v0_2.xacro"/>
 
@@ -23,14 +25,14 @@
     <parent link="odom"/>
     <child link="virtual_x"/>
     <axis xyz="1 0 0"/>
-    <limit lower="-10.0" upper="10.0" effort="1000.0" velocity="0.35"/>
+    <limit lower="${-$(arg base_travel_limit)}" upper="$(arg base_travel_limit)" effort="1000.0" velocity="0.35"/>
   </joint>
 
   <joint name="planar_y" type="prismatic">
     <parent link="virtual_x"/>
     <child link="virtual_y"/>
     <axis xyz="0 1 0"/>
-    <limit lower="-10.0" upper="10.0" effort="1000.0" velocity="0.35"/>
+    <limit lower="${-$(arg base_travel_limit)}" upper="$(arg base_travel_limit)" effort="1000.0" velocity="0.35"/>
   </joint>
 
   <joint name="planar_theta" type="continuous">
