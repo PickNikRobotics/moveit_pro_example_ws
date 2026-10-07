@@ -1,0 +1,25 @@
+moveit_pro_franka_ws
+
+Unless otherwise noted, this repository is licensed under the BSD 3-Clause
+License in LICENSE.
+
+Third-party files:
+
+- src/fr3_solo_sim/mjcf/fr3_solo.xml and src/fr3_solo_sim/mjcf/assets/ are
+  derived from the MuJoCo Menagerie Franka FR3 and Franka Hand models,
+  licensed under the Apache License, Version 2.0
+  (src/fr3_solo_sim/mjcf/LICENSE).
+- src/mobile_fr3_duo_sim/mjcf/assets/finger_0.obj and finger_1.obj come from
+  MuJoCo Menagerie, licensed under the Apache License, Version 2.0
+  (src/mobile_fr3_duo_sim/mjcf/assets/LICENSE-mujoco_menagerie).
+- The other meshes in src/mobile_fr3_duo_sim/mjcf/assets/, and
+  src/mobile_fr3_duo_sim/mjcf/assets/robot_description.urdf, are copied,
+  converted or generated from franka_description 2.9.0, Copyright 2023 Franka
+  Robotics GmbH, licensed under the Apache License, Version 2.0
+  (LICENSES/Apache-2.0.txt).
+- src/fr3_duo_sim/mjcf/assets/finger_0.obj and finger_1.obj come from MuJoCo
+  Menagerie, licensed under the Apache License, Version 2.0
+  (src/fr3_duo_sim/mjcf/assets/LICENSE-mujoco_menagerie).
+- The other meshes in src/fr3_duo_sim/mjcf/assets/ are copied from
+  franka_description 2.9.0, Copyright 2023 Franka Robotics GmbH, licensed under
+  the Apache License, Version 2.0 (LICENSES/Apache-2.0.txt).

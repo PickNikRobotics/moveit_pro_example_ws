@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Robot name stays "franka": configs that reuse this SRDF need a matching URDF name. -->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="franka">
+  <xacro:arg name="hardware_interface" default="mock" />
+  <xacro:arg name="mujoco_model" default="mjcf/scene.xml" />
+  <xacro:arg name="mujoco_viewer" default="false" />
+  <xacro:arg name="ee_id" default="franka_hand" />
+  <xacro:arg name="rpy_ee" default="0 0 -0.785" />
+
+  <!-- franka_description 2.9.0 loads the FR3 limits, inertials, kinematics and dynamics itself. -->
+  <xacro:include filename="$(find franka_description)/robots/common/franka_robot.xacro" />
+  <xacro:franka_robot
+    robot_type="fr3"
+    hand="true"
+    tcp_xyz="0 0 0.1034"
+    ee_id="$(arg ee_id)"
+    rpy_ee="$(arg rpy_ee)"
+    with_sc="false"
+    no_prefix="false"
+    arm_prefix=""
+    connected_to="world"
+  />
+
+  <!-- Aligns the grasp frame axes with the MoveIt Pro motion planning convention. -->
+  <link name="grasp_link" />
+  <joint name="grasp_link_joint" type="fixed">
+    <parent link="fr3_hand_tcp" />
+    <child link="grasp_link" />
+    <origin xyz="0 0 0" rpy="0 0 ${-pi/2}" />
+  </joint>
+
+  <xacro:if value="${'$(arg hardware_interface)' == 'mock'}">
+    <xacro:include filename="$(find fr3_solo_mock)/description/fr3_solo_mock.ros2_control.xacro" />
+    <xacro:fr3_solo_mock_ros2_control />
+  </xacro:if>
+
+  <xacro:if value="${'$(arg hardware_interface)' == 'mujoco'}">
+    <xacro:include filename="$(find fr3_solo_sim)/description/fr3_solo_mujoco.ros2_control.xacro" />
+    <xacro:fr3_solo_mujoco_ros2_control mujoco_model="$(arg mujoco_model)" mujoco_viewer="$(arg mujoco_viewer)" />
+  </xacro:if>
+</robot>

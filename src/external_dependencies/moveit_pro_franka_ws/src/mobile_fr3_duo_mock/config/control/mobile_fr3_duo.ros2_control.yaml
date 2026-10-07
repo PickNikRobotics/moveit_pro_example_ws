@@ -1,0 +1,155 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 1000  # Hz
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+    left_gripper_controller:
+      type: position_controllers/GripperActionController
+    right_gripper_controller:
+      type: position_controllers/GripperActionController
+    spine_jtc:
+      type: joint_trajectory_controller/JointTrajectoryController
+    base_jtc:
+      type: joint_trajectory_controller/JointTrajectoryController
+    base_jvc:
+      type: joint_velocity_controller/JointVelocityController
+    base_vfc:
+      type: velocity_force_controller/VelocityForceController
+    joint_trajectory_admittance_controller:
+      type: joint_trajectory_admittance_controller/JointTrajectoryAdmittanceController
+    left_jtac_w_spine:
+      type: joint_trajectory_admittance_controller/JointTrajectoryAdmittanceController
+    left_jtac:
+      type: joint_trajectory_admittance_controller/JointTrajectoryAdmittanceController
+    left_vfc:
+      type: velocity_force_controller/VelocityForceController
+    left_jvc:
+      type: joint_velocity_controller/JointVelocityController
+    right_jtac_w_spine:
+      type: joint_trajectory_admittance_controller/JointTrajectoryAdmittanceController
+    right_jtac:
+      type: joint_trajectory_admittance_controller/JointTrajectoryAdmittanceController
+    right_vfc:
+      type: velocity_force_controller/VelocityForceController
+    right_jvc:
+      type: joint_velocity_controller/JointVelocityController
+
+left_gripper_controller:
+  ros__parameters:
+    joint: left_fr3v2_finger_joint1
+
+right_gripper_controller:
+  ros__parameters:
+    joint: right_fr3v2_finger_joint1
+
+spine_jtc:
+  ros__parameters:
+    joints:
+      - franka_spine_vertical_joint
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
+
+base_jtc:
+  ros__parameters:
+    joints:
+      - planar_x
+      - planar_y
+      - planar_theta
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
+
+base_jvc:
+  ros__parameters:
+    planning_group_name: mobile_base
+    max_joint_velocity: [0.35, 0.35, 0.5]
+    max_joint_acceleration: [0.4, 0.4, 0.3]
+
+# Pose jog of the base (mobile_base group): Cartesian twists of base_link. The base is holonomic,
+# so x, y and yaw are reachable; the other directions have no joint and stay at zero.
+base_vfc:
+  ros__parameters:
+    planning_group_name: mobile_base
+    ee_frame: base_link
+    sensor_frame: base_link
+    command_interfaces: ["position"]
+    max_joint_velocity: [0.35, 0.35, 0.5]
+    max_joint_acceleration: [0.4, 0.4, 0.3]
+    max_cartesian_velocity: [0.35, 0.35, 0.35, 0.5, 0.5, 0.5]
+    max_cartesian_acceleration: [0.4, 0.4, 0.4, 0.3, 0.3, 0.3]
+
+joint_trajectory_admittance_controller:
+  ros__parameters:
+    planning_group_name: manipulator
+    ee_frames: [left_grasp_link, right_grasp_link]
+    sensor_frames: [left_fr3v2_link8, right_fr3v2_link8]
+    # Spine first: franka_spine_vertical_joint max_acceleration from franka_mobile_fr3_duo_moveit_config
+    stop_accelerations: [3.75, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0]
+
+left_jtac_w_spine:
+  ros__parameters:
+    planning_group_name: left_manipulator
+    ee_frames: [left_grasp_link]
+    sensor_frames: [left_fr3v2_link8]
+    # Spine first: franka_spine_vertical_joint max_acceleration from franka_mobile_fr3_duo_moveit_config
+    stop_accelerations: [3.75, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0]
+
+left_jtac:
+  ros__parameters:
+    planning_group_name: left_manipulator_without_spine
+    ee_frames: [left_grasp_link]
+    sensor_frames: [left_fr3v2_link8]
+    stop_accelerations: [30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0]
+
+left_vfc:
+  ros__parameters:
+    planning_group_name: left_manipulator_without_spine
+    ee_frame: left_grasp_link
+    sensor_frame: left_fr3v2_link8
+    max_joint_velocity: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+    max_joint_acceleration: [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0]
+    max_cartesian_velocity: [0.25, 0.25, 0.25, 1.0, 1.0, 1.0]
+    max_cartesian_acceleration: [2.0, 2.0, 2.0, 4.0, 4.0, 4.0]
+
+left_jvc:
+  ros__parameters:
+    planning_group_name: left_manipulator_without_spine
+    max_joint_velocity: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+    max_joint_acceleration: [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0]
+
+right_jtac_w_spine:
+  ros__parameters:
+    planning_group_name: right_manipulator
+    ee_frames: [right_grasp_link]
+    sensor_frames: [right_fr3v2_link8]
+    # Spine first: franka_spine_vertical_joint max_acceleration from franka_mobile_fr3_duo_moveit_config
+    stop_accelerations: [3.75, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0]
+
+right_jtac:
+  ros__parameters:
+    planning_group_name: right_manipulator_without_spine
+    ee_frames: [right_grasp_link]
+    sensor_frames: [right_fr3v2_link8]
+    stop_accelerations: [30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0]
+
+right_vfc:
+  ros__parameters:
+    planning_group_name: right_manipulator_without_spine
+    ee_frame: right_grasp_link
+    sensor_frame: right_fr3v2_link8
+    max_joint_velocity: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+    max_joint_acceleration: [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0]
+    max_cartesian_velocity: [0.25, 0.25, 0.25, 1.0, 1.0, 1.0]
+    max_cartesian_acceleration: [2.0, 2.0, 2.0, 4.0, 4.0, 4.0]
+
+right_jvc:
+  ros__parameters:
+    planning_group_name: right_manipulator_without_spine
+    max_joint_velocity: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+    max_joint_acceleration: [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0]

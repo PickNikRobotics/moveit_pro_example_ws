@@ -1,0 +1,8 @@
+<mujoco>
+  <sensor>
+    <!-- IMU: orientation, angular velocity and linear acceleration at imu_site. -->
+    <framequat objtype="site" objname="imu_site" />
+    <gyro site="imu_site" />
+    <accelerometer site="imu_site" />
+  </sensor>
+</mujoco>

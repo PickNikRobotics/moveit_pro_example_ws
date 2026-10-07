@@ -1,0 +1,99 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="mobile_fr3_duo">
+  <xacro:arg name="hardware_interface" default="mock"/>
+  <!-- MuJoCo settings, used when hardware_interface is mujoco. A child config overrides them through urdf_params. -->
+  <xacro:arg name="mujoco_model" default="mjcf/scene.xml"/>
+  <xacro:arg name="mujoco_model_package" default="mobile_fr3_duo_sim"/>
+  <xacro:arg name="mujoco_keyframe" default="default"/>
+  <xacro:arg name="mujoco_viewer" default="false"/>
+  <xacro:arg name="publish_object_tf" default="true"/>
+  <xacro:arg name="ground_truth_odom_topic" default="/ground_truth/odom"/>
+  <xacro:arg name="ground_truth_odom_frame" default="mj_world"/>
+  <xacro:arg name="base_link_name" default="base_link"/>
+
+  <xacro:include filename="$(find franka_description)/robots/mobile_fr3_duo_v0_2/mobile_fr3_duo_v0_2.xacro"/>
+
+  <!-- Frames: world -> map (fixed) -> odom -> planar joints -> base_link. The URDF starts at odom. -->
+  <!-- world -> map and map -> odom come from the launch files; the planar joints are odom -> base_link. -->
+  <link name="odom"/>
+  <link name="virtual_x"/>
+  <link name="virtual_y"/>
+
+  <joint name="planar_x" type="prismatic">
+    <parent link="odom"/>
+    <child link="virtual_x"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="-10.0" upper="10.0" effort="1000.0" velocity="0.35"/>
+  </joint>
+
+  <joint name="planar_y" type="prismatic">
+    <parent link="virtual_x"/>
+    <child link="virtual_y"/>
+    <axis xyz="0 1 0"/>
+    <limit lower="-10.0" upper="10.0" effort="1000.0" velocity="0.35"/>
+  </joint>
+
+  <joint name="planar_theta" type="continuous">
+    <parent link="virtual_y"/>
+    <child link="base_link"/>
+    <axis xyz="0 0 1"/>
+    <limit effort="1000.0" velocity="0.5"/>
+  </joint>
+
+  <!-- Referenced by the upstream macro body -->
+  <xacro:property name="robot_types_list" value="${['tmrv0_2', 'fr3v2', 'fr3v2']}"/>
+
+  <xacro:mobile_fr3_duo_v0_2
+    robot_types="${robot_types_list}"
+    hand="true"
+    ee_id="franka_hand"
+    include_self_collision_geometry="true"
+    reduced_version="false"
+    description_pkg="franka_description"
+    connected_to="odom"
+    use_arms="true"
+    no_prefix="false"
+    special_connection=""
+    xyz_ee="0 0 0"
+    rpy_ee="0 0 ${-pi/4}"
+    tcp_xyz=""
+    tcp_rpy="0 0 0"
+    safety_distance="0.03"
+    with_sc="false">
+    <arm0_extras/>
+    <arm1_extras/>
+  </xacro:mobile_fr3_duo_v0_2>
+
+  <!-- Grasp frames following the MoveIt Pro teleoperation convention: Z out of the gripper, X along the finger motion -->
+  <link name="left_grasp_link"/>
+  <joint name="left_grasp_link_joint" type="fixed">
+    <parent link="left_fr3v2_hand_tcp"/>
+    <child link="left_grasp_link"/>
+    <origin xyz="0 0 0" rpy="0 0 ${-pi/2}"/>
+  </joint>
+
+  <link name="right_grasp_link"/>
+  <joint name="right_grasp_link_joint" type="fixed">
+    <parent link="right_fr3v2_hand_tcp"/>
+    <child link="right_grasp_link"/>
+    <origin xyz="0 0 0" rpy="0 0 ${-pi/2}"/>
+  </joint>
+
+  <xacro:if value="${'$(arg hardware_interface)' == 'mock'}">
+    <xacro:include filename="$(find mobile_fr3_duo_mock)/description/mobile_fr3_duo_mock.ros2_control.xacro"/>
+    <xacro:mobile_fr3_duo_mock_ros2_control/>
+  </xacro:if>
+
+  <xacro:if value="${'$(arg hardware_interface)' == 'mujoco'}">
+    <xacro:include filename="$(find mobile_fr3_duo_sim)/description/mobile_fr3_duo_mujoco.ros2_control.xacro"/>
+    <xacro:mobile_fr3_duo_mujoco_ros2_control
+      mujoco_model="$(arg mujoco_model)"
+      mujoco_model_package="$(arg mujoco_model_package)"
+      mujoco_keyframe="$(arg mujoco_keyframe)"
+      mujoco_viewer="$(arg mujoco_viewer)"
+      publish_object_tf="$(arg publish_object_tf)"
+      ground_truth_odom_topic="$(arg ground_truth_odom_topic)"
+      ground_truth_odom_frame="$(arg ground_truth_odom_frame)"
+      base_link_name="$(arg base_link_name)"/>
+  </xacro:if>
+</robot>

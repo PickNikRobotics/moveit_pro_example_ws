@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Move Base to Ready">
+  <!-- Replaces the mock's base_jtc version: this sim has no base trajectory controller, so Nav2 drives the base. -->
+  <BehaviorTree
+    ID="Move Base to Ready"
+    _description="Drive the mobile base to the map origin, the Base Ready pose, with Nav2"
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="map"
+        position_xyz="0;0;0"
+        orientation_xyzw="0;0;0;1"
+        pose_stamped="{base_ready}"
+      />
+      <Action ID="SwitchController" activate_controllers="base_jgvc" />
+      <Action
+        ID="NavigateToPoseAction"
+        action_name="/navigate_to_pose"
+        behavior_tree_path="/opt/ros/jazzy/share/nav2_bt_navigator/behavior_trees/navigate_to_pose_w_replanning_and_recovery.xml"
+        ignore_stamp_time="true"
+        pose_stamped="{base_ready}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Move Base to Ready">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Motion - Execute" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

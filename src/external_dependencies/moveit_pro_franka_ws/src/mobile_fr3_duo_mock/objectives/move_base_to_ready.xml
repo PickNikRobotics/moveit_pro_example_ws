@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Move Base to Ready">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Move Base to Ready"
+    _description="Move the mobile base to the Base Ready waypoint"
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree
+        ID="Move to Waypoint (JTC)"
+        _collapsed="true"
+        waypoint_name="Base Ready"
+        joint_group_name="mobile_base"
+        controller_names="base_jtc"
+        controller_action_server="/base_jtc/follow_joint_trajectory"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Move Base to Ready">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Motion - Execute" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

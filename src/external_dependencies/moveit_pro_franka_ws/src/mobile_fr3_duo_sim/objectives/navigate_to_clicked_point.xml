@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Navigate to Clicked Point">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Navigate to Clicked Point"
+    _description="Drive the base to a point clicked in the Visualization pane. Nav2 plans, follows and replans the path."
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action ID="SetInitialPose" robot_frame_id="base_link" />
+      <Action ID="SwitchController" activate_controllers="base_jgvc" />
+      <Action
+        ID="GetPoseFromUser"
+        is_normal="true"
+        pose_prompt="Choose a goal by clicking in the 3D Visualization pane"
+        user_pose="{goal}"
+        view_name="Visualization"
+      />
+      <Action
+        ID="NavigateToPoseAction"
+        action_name="/navigate_to_pose"
+        behavior_tree_path="/opt/ros/jazzy/share/nav2_bt_navigator/behavior_trees/navigate_to_pose_w_replanning_and_recovery.xml"
+        ignore_stamp_time="true"
+        pose_stamped="{goal}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Navigate to Clicked Point">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Navigation" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

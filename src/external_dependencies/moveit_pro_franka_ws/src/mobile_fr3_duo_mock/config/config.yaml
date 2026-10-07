@@ -1,0 +1,96 @@
+
+runtime_launch_file:
+  package: "mobile_fr3_duo_mock"
+  path: "launch/runtime.launch.xml"
+
+hardware:
+  launch_control_node: true
+  launch_robot_state_publisher: true
+  # Static world -> map -> odom; mobile_fr3_duo_sim overrides this file.
+  additional_driver_launch_file:
+    package: "mobile_fr3_duo_mock"
+    path: "launch/frames.launch.py"
+  robot_description:
+    urdf:
+      package: "mobile_fr3_duo_mock"
+      path: "description/mobile_fr3_duo.urdf.xacro"
+    srdf:
+      package: "mobile_fr3_duo_mock"
+      path: "config/moveit/mobile_fr3_duo.srdf"
+    urdf_params:
+      - hardware_interface: "mock"
+
+moveit_params:
+  joint_group_name: "manipulator"
+  kinematics:
+    package: "mobile_fr3_duo_mock"
+    path: "config/moveit/pose_ik.yaml"
+  joint_limits:
+    package: "mobile_fr3_duo_mock"
+    path: "config/moveit/joint_limits.yaml"
+  joint_jog:
+    package: "mobile_fr3_duo_mock"
+    path: "config/moveit/joint_jog.yaml"
+  pose_jog:
+    package: "mobile_fr3_duo_mock"
+    path: "config/moveit/pose_jog.yaml"
+  publish:
+    planning_scene: true
+    geometry_updates: true
+    state_updates: true
+    transforms_updates: true
+
+ros2_control:
+  config:
+    package: "mobile_fr3_duo_mock"
+    path: "config/control/mobile_fr3_duo.ros2_control.yaml"
+  controllers_active_at_startup:
+    - "joint_state_broadcaster"
+    - "left_gripper_controller"
+    - "right_gripper_controller"
+    - "base_jtc"
+    - "joint_trajectory_admittance_controller"
+  controllers_inactive_at_startup:
+    - "spine_jtc"
+    - "left_jtac"
+    - "right_jtac"
+    - "left_jtac_w_spine"
+    - "right_jtac_w_spine"
+    - "left_vfc"
+    - "left_jvc"
+    - "right_vfc"
+    - "right_jvc"
+    - "base_jvc"
+    - "base_vfc"
+
+objectives:
+  behavior_loader_plugins:
+    core:
+      - "moveit_pro::behaviors::CoreBehaviorsLoader"
+      - "moveit_pro::behaviors::MTCCoreBehaviorsLoader"
+      - "moveit_pro::behaviors::VisionBehaviorsLoader"
+      - "moveit_pro::behaviors::MPCBehaviorsLoader"
+      - "moveit_pro::behaviors::ConverterBehaviorsLoader"
+      - "moveit_pro::behaviors::MujocoBehaviorsLoader"
+  objective_library_paths:
+    core_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/core"
+    motion_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/motion"
+    perception_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/perception"
+    mujoco_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/mujoco"
+    visualization_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/visualization"
+    mobile_fr3_duo_mock_objectives:
+      package_name: "mobile_fr3_duo_mock"
+      relative_path: "objectives"
+  waypoints_file:
+    package_name: "mobile_fr3_duo_mock"
+    relative_path: "waypoints/waypoints.yaml"
