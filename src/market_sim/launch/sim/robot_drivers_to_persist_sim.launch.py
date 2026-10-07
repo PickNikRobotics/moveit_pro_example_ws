@@ -29,8 +29,9 @@
 """Processes that stay up for the whole MoveIt Pro session in the market simulation.
 
 This is the config's ``additional_driver_launch_file``: frames, the lidar scans, the
-odometry bridge, Beluga AMCL and Nav2. The scan, odometry and velocity nodes are
-mobile_fr3_duo_sim's; this file replaces only its map, localization and Nav2 setup.
+odometry bridge, Beluga AMCL and Nav2. The scan and odometry nodes are mobile_fr3_duo_sim's
+and the velocity bridge is mobile_fr3_duo_mock's; this file replaces only their map,
+localization and Nav2 setup.
 
 Frames, one publisher per edge:
 
@@ -207,11 +208,13 @@ def generate_launch_description():
         name="reset_relocalizer",
         output="log",
     )
+    # /cmd_vel in base_link becomes world-axis planar joint velocities, turned by the true heading.
     base_velocity = Node(
-        package="mobile_fr3_duo_sim",
+        package="mobile_fr3_duo_mock",
         executable="base_twist_to_planar.py",
         name="base_twist_to_planar",
         output="log",
+        parameters=[{"ground_truth_topic": "/ground_truth/odom"}],
     )
 
     localization = [

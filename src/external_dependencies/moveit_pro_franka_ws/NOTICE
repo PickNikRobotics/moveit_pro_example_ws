@@ -9,17 +9,21 @@ Third-party files:
   derived from the MuJoCo Menagerie Franka FR3 and Franka Hand models,
   licensed under the Apache License, Version 2.0
   (src/fr3_solo_sim/mjcf/LICENSE).
+- src/fr3_duo_sim/mjcf/fr3_duo.xml and the arm and hand meshes in
+  src/fr3_duo_sim/mjcf/assets/ are derived from the same MuJoCo Menagerie
+  models, licensed under the Apache License, Version 2.0
+  (src/fr3_duo_sim/mjcf/LICENSE). Its fr3_duo_mount.stl and fr3_duo_cover.stl
+  are copied from franka_description 2.9.0, Copyright 2023 Franka Robotics
+  GmbH, licensed under the Apache License, Version 2.0 (LICENSES/Apache-2.0.txt).
 - src/mobile_fr3_duo_sim/mjcf/assets/finger_0.obj and finger_1.obj come from
   MuJoCo Menagerie, licensed under the Apache License, Version 2.0
   (src/mobile_fr3_duo_sim/mjcf/assets/LICENSE-mujoco_menagerie).
-- The other meshes in src/mobile_fr3_duo_sim/mjcf/assets/, and
-  src/mobile_fr3_duo_sim/mjcf/assets/robot_description.urdf, are copied,
-  converted or generated from franka_description 2.9.0, Copyright 2023 Franka
-  Robotics GmbH, licensed under the Apache License, Version 2.0
-  (LICENSES/Apache-2.0.txt).
-- src/fr3_duo_sim/mjcf/assets/finger_0.obj and finger_1.obj come from MuJoCo
+- The other meshes in src/mobile_fr3_duo_sim/mjcf/assets/ are copied or
+  converted from franka_description 2.9.0, Copyright 2023 Franka Robotics GmbH,
+  licensed under the Apache License, Version 2.0 (LICENSES/Apache-2.0.txt).
+- src/fr3_duo_spine_sim/mjcf/assets/finger_0.obj and finger_1.obj come from MuJoCo
   Menagerie, licensed under the Apache License, Version 2.0
-  (src/fr3_duo_sim/mjcf/assets/LICENSE-mujoco_menagerie).
-- The other meshes in src/fr3_duo_sim/mjcf/assets/ are copied from
+  (src/fr3_duo_spine_sim/mjcf/assets/LICENSE-mujoco_menagerie).
+- The other meshes in src/fr3_duo_spine_sim/mjcf/assets/ are copied from
   franka_description 2.9.0, Copyright 2023 Franka Robotics GmbH, licensed under
   the Apache License, Version 2.0 (LICENSES/Apache-2.0.txt).

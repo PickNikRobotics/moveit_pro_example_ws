@@ -31,10 +31,11 @@
 # Copied from the PickNik sim of this robot, reformatted by this repository's formatter;
 # its defaults (1440 beams, 10 Hz, base_link, 0.20 m minimum) already match this package's scans.
 
-"""Merges /scan_front + /scan_rear (each 270 deg, blind notch in opposite
-corners) into a single 360 deg /scan in base_link, so AMCL has one scan
-topic to localize against. AMCL has no multi-source observation model like
-the costmap's obstacle_layer does, so this merge has to happen upstream.
+"""Merges /scan_front + /scan_rear (each a 275 deg sweep trimmed by 6 deg at
+each end, blind notch in opposite corners) into a single 360 deg /scan in
+base_link, so AMCL has one scan topic to localize against. AMCL has no
+multi-source observation model like the costmap's obstacle_layer does, so
+this merge has to happen upstream.
 slam_toolbox takes one scan topic too, so mapping mode reads the same output.
 
 The merged scan is what both localization and mapping register against, so a
@@ -75,7 +76,7 @@ class ScanMerger(Node):
         self.declare_parameter("output_topic", "/scan")
         self.declare_parameter("target_frame", "base_link")
         # Bin count is set by angular ACCURACY, not by how many bins fill. Do NOT lower it to
-        # "fill" the scan; it MOVES TOGETHER with nav2's max_beams. docs/AGENT_COMMENTS.md.
+        # "fill" the scan; it MOVES TOGETHER with nav2's max_beams.
         self.declare_parameter("num_output_beams", 1440)
         self.declare_parameter("merge_rate_hz", 10.0)
         self.declare_parameter("max_scan_age_sec", 0.2)
@@ -135,7 +136,7 @@ class ScanMerger(Node):
 
     def _lookup_transform(self, source_frame, stamp):
         """Resolve the mount every cycle rather than caching: fresh costs nothing against a static
-        transform and stays correct if the frame goes dynamic again. docs/AGENT_COMMENTS.md.
+        transform and stays correct if the frame goes dynamic again.
         """
         try:
             return self.tf_buffer.lookup_transform(

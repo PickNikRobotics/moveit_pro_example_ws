@@ -23,6 +23,7 @@ ros2_control:
     - "joint_trajectory_admittance_controller"
   controllers_inactive_at_startup:
     - "spine_jtc"
+    - "spine_jvc"
     - "left_jtac"
     - "right_jtac"
     - "left_jtac_w_spine"
@@ -33,22 +34,3 @@ ros2_control:
     - "right_jvc"
     - "base_jvc"
     - "base_vfc"
-
-objectives:
-  # The base config's loaders plus the Nav2 Behaviors (NavigateToPose,
-  # NavigateThroughPoses). A child's list replaces the parent's.
-  behavior_loader_plugins:
-    core:
-      - "moveit_pro::behaviors::CoreBehaviorsLoader"
-      - "moveit_pro::behaviors::MTCCoreBehaviorsLoader"
-      - "moveit_pro::behaviors::VisionBehaviorsLoader"
-      - "moveit_pro::behaviors::MPCBehaviorsLoader"
-      - "moveit_pro::behaviors::ConverterBehaviorsLoader"
-      - "moveit_pro::behaviors::MujocoBehaviorsLoader"
-      - "moveit_pro::behaviors::NavBehaviorsLoader"
-  # Inherited libraries merge; this one is listed last, so Objectives saved from
-  # the UI while running the sim land here.
-  objective_library_paths:
-    mobile_fr3_duo_sim_objectives:
-      package_name: "mobile_fr3_duo_sim"
-      relative_path: "objectives"

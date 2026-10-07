@@ -16,6 +16,7 @@
 
   <exec_depend>beluga_amcl</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>mobile_fr3_duo_mock</exec_depend>
   <exec_depend>mobile_fr3_duo_sim</exec_depend>
   <exec_depend>moveit_pro_behavior</exec_depend>
   <exec_depend>moveit_pro_objectives</exec_depend>

@@ -61,7 +61,6 @@ def test_robot_model_matches_mobile_fr3_duo_sim():
     names = ROBOT_MODEL_FILES + [
         f"assets/{p.name}" for p in (source / "assets").iterdir() if p.is_file()
     ]
-    names.remove("assets/robot_description.urdf")
     names.remove("mobile_fr3_duo.xml")
     differ = [
         n

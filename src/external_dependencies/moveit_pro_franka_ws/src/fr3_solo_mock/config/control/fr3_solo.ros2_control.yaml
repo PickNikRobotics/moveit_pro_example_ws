@@ -19,8 +19,8 @@ controller_manager:
 joint_trajectory_admittance_controller:
   ros__parameters:
     planning_group_name: manipulator
-    ee_frame: grasp_link
-    sensor_frame: fr3_link8
+    ee_frames: [grasp_link]
+    sensor_frames: [fr3_link8]
     # Joint accelerations for immediate stops, for example when a trajectory is cancelled.
     stop_accelerations: [30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0]
     default_path_tolerance: 0.6
@@ -73,7 +73,6 @@ joint_velocity_controller:
 
 gripper_controller:
   ros__parameters:
-    default: true
     joint: fr3_finger_joint1
     allow_stalling: true
     stall_timeout: 0.1

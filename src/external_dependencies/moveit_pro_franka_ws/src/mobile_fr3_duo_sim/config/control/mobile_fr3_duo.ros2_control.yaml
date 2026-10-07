@@ -12,6 +12,8 @@ controller_manager:
       type: position_controllers/GripperActionController
     spine_jtc:
       type: joint_trajectory_controller/JointTrajectoryController
+    spine_jvc:
+      type: joint_velocity_controller/JointVelocityController
     base_jvc:
       type: joint_velocity_controller/JointVelocityController
     base_vfc:
@@ -106,6 +108,11 @@ spine_jtc:
       franka_spine_vertical_joint:
         goal: 0.01
 
+spine_jvc:
+  ros__parameters:
+    planning_group_name: spine
+    max_joint_velocity: [0.1]
+    max_joint_acceleration: [0.5]
 
 base_jvc:
   ros__parameters:

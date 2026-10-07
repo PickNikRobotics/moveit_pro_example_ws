@@ -33,15 +33,6 @@ def generate_launch_description():
         output="log",
     )
 
-    # Nav2 drives the base through this bridge: cmd_vel (base frame) becomes
-    # world-frame velocities on the planar joints, for base_jgvc, using the true heading.
-    base_twist_to_planar = Node(
-        package="mobile_fr3_duo_sim",
-        executable="base_twist_to_planar.py",
-        name="base_twist_to_planar",
-        output="log",
-    )
-
     # AMCL and slam_toolbox each take one scan topic, so the two 275 deg scans
     # are merged into a 360 deg /scan in base_link.
     scan_merger = Node(
@@ -116,16 +107,7 @@ def generate_launch_description():
         output="log",
     )
 
-    # Frames: world -> map (fixed) -> odom (AMCL) -> planar joints -> base_link
-    # (robot_state_publisher, from the odometry bridge). world -> mj_world anchors
-    # the simulator's own frames, such as the scene cameras.
-    static_tf_world_to_map = Node(
-        package="tf2_ros",
-        executable="static_transform_publisher",
-        name="static_tf_world_to_map",
-        arguments=["--frame-id", "world", "--child-frame-id", "map"],
-        output="log",
-    )
+    # world -> mj_world anchors the simulator's own frames, such as the scene cameras.
     static_tf_world_to_mj_world = Node(
         package="tf2_ros",
         executable="static_transform_publisher",
@@ -133,26 +115,22 @@ def generate_launch_description():
         arguments=["--frame-id", "world", "--child-frame-id", "mj_world"],
         output="log",
     )
-    # Nav2, on the map built with slam_toolbox. AMCL owns map -> odom, and the
-    # chain ends at /cmd_vel, which base_twist_to_planar turns into planar joint
-    # velocities. use_sim_time is false because the plugin stamps wall time.
-    nav2 = IncludeLaunchDescription(
+
+    # Frames, Nav2 and the /cmd_vel bridge from mobile_fr3_duo_mock, with AMCL for map -> odom,
+    # this package's laser layers on top of its Nav2 parameters, and the true heading for the bridge.
+    navigation = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             PathJoinSubstitution(
-                [FindPackageShare("nav2_bringup"), "launch", "bringup_launch.py"]
+                [FindPackageShare("mobile_fr3_duo_mock"), "launch", "navigation.launch.py"]
             )
         ),
         launch_arguments={
-            "map": PathJoinSubstitution(
-                [FindPackageShare("mobile_fr3_duo_sim"), "maps", "room.yaml"]
-            ),
-            "params_file": PathJoinSubstitution(
+            "use_amcl": "true",
+            "mock_odometry": "false",
+            "params_overlay": PathJoinSubstitution(
                 [FindPackageShare("mobile_fr3_duo_sim"), "params", "nav2_params.yaml"]
             ),
-            "use_sim_time": "false",
-            "autostart": "true",
-            # Capitalised: bringup_launch evaluates this as a Python expression.
-            "slam": "False",
+            "heading_topic": "/ground_truth/odom",
         }.items(),
     )
 
@@ -161,12 +139,10 @@ def generate_launch_description():
             odometry_drift,
             lidar_flattener,
             scan_merger,
-            base_twist_to_planar,
             odometry,
             static_tf_lidar_front_ros,
             static_tf_lidar_rear_ros,
-            static_tf_world_to_map,
             static_tf_world_to_mj_world,
-            nav2,
+            navigation,
         ]
     )

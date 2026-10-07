@@ -6,10 +6,10 @@ runtime_launch_file:
 hardware:
   launch_control_node: true
   launch_robot_state_publisher: true
-  # Static world -> map -> odom; mobile_fr3_duo_sim overrides this file.
+  # Frames, odometry and Nav2 on the room map; mobile_fr3_duo_sim adds sensors and AMCL.
   additional_driver_launch_file:
     package: "mobile_fr3_duo_mock"
-    path: "launch/frames.launch.py"
+    path: "launch/navigation.launch.py"
   robot_description:
     urdf:
       package: "mobile_fr3_duo_mock"
@@ -48,10 +48,11 @@ ros2_control:
     - "joint_state_broadcaster"
     - "left_gripper_controller"
     - "right_gripper_controller"
-    - "base_jtc"
+    - "base_jgvc"
     - "joint_trajectory_admittance_controller"
   controllers_inactive_at_startup:
     - "spine_jtc"
+    - "spine_jvc"
     - "left_jtac"
     - "right_jtac"
     - "left_jtac_w_spine"
@@ -72,6 +73,10 @@ objectives:
       - "moveit_pro::behaviors::MPCBehaviorsLoader"
       - "moveit_pro::behaviors::ConverterBehaviorsLoader"
       - "moveit_pro::behaviors::MujocoBehaviorsLoader"
+      - "moveit_pro::behaviors::NavBehaviorsLoader"
+    # CreateSpineState and GetSpineStateForPoseHeight, for the spine Objectives.
+    spine:
+      - "franka_spine_behaviors::FrankaSpineBehaviorsLoader"
   objective_library_paths:
     core_objectives:
       package_name: "moveit_pro_objectives"

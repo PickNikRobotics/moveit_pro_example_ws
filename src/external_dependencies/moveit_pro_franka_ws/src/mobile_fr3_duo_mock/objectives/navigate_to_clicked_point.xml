@@ -3,12 +3,11 @@
   <!--//////////-->
   <BehaviorTree
     ID="Navigate to Clicked Point"
-    _description="Drive the base to a point clicked in the Visualization pane. Nav2 plans, follows and replans the path."
+    _description="Drive the base to a point clicked in the Visualization pane, with the arms stowed first. Nav2 plans, follows and replans the path."
     _favorite="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action ID="SetInitialPose" robot_frame_id="base_link" />
-      <Action ID="SwitchController" activate_controllers="base_jgvc" />
       <Action
         ID="GetPoseFromUser"
         is_normal="true"
@@ -16,6 +15,8 @@
         user_pose="{goal}"
         view_name="Visualization"
       />
+      <SubTree ID="Stow Arms for Navigation" _collapsed="true" />
+      <Action ID="SwitchController" activate_controllers="base_jgvc" />
       <Action
         ID="NavigateToPoseAction"
         action_name="/navigate_to_pose"

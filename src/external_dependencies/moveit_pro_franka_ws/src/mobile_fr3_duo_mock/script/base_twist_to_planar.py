@@ -30,17 +30,18 @@
 
 """Turn Nav2's base-frame velocity command into world-axis planar joint velocities.
 
-    ros2 run mobile_fr3_duo_sim base_twist_to_planar.py
+    ros2 run mobile_fr3_duo_mock base_twist_to_planar.py
 
-The simulator moves the base through velocity actuators on world-axis slides (planar_x,
-planar_y) and a hinge (planar_theta), while /cmd_vel is in base_link:
+The base moves through velocity commands on world-axis slides (planar_x, planar_y) and a
+hinge (planar_theta), while /cmd_vel is in base_link:
 
     planar_x_vel = vx * cos(yaw) - vy * sin(yaw)
     planar_y_vel = vx * sin(yaw) + vy * cos(yaw)
     planar_theta_vel = wz
 
-The yaw is the simulator's TRUE heading, read from the ground-truth odometry, not the drifted
-planar joint values: a real base executes a body-frame command in its true body frame.
+The yaw is the base's TRUE heading: the simulator's ground-truth odometry in mobile_fr3_duo_sim,
+not the drifted planar joint values, and the exact /odom on mock hardware. A real base executes
+a body-frame command in its true body frame.
 The velocity controller holds its last command, so a quiet /cmd_vel sends zeros.
 
 """
