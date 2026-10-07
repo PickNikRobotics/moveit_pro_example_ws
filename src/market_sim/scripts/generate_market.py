@@ -1051,10 +1051,13 @@ def write_map(footprints, map_out):
     xs = x_min + (np.arange(width) + 0.5) * MAP_RESOLUTION
     ys = y_min + (np.arange(height) + 0.5) * MAP_RESOLUTION
     gx, gy = np.meshgrid(xs, ys)
+    # Every cell a footprint overlaps is occupied, so Nav2's footprint check never sees a rack
+    # edge inside a free cell.
+    half = MAP_RESOLUTION / 2
     for fp in footprints:
         corners = np.array([p[:2] for p in fp])
-        lo, hi = corners.min(axis=0), corners.max(axis=0)
-        grid[(gx >= lo[0]) & (gx <= hi[0]) & (gy >= lo[1]) & (gy <= hi[1])] = 0
+        lo, hi = corners.min(axis=0) - half, corners.max(axis=0) + half
+        grid[(gx > lo[0]) & (gx < hi[0]) & (gy > lo[1]) & (gy < hi[1])] = 0
     # Image row 0 is the top of the picture, which is the map's largest y.
     write_png(map_out / "market.png", grid[::-1])
     (map_out / "market.yaml").write_text(
