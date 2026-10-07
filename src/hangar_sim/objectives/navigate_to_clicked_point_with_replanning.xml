@@ -25,7 +25,7 @@
       <Action
         ID="GetPoseFromUser"
         is_normal="true"
-        pose_prompt="Click point on UI"
+        pose_prompt="Click a goal on the floor. The robot will arrive facing the world X axis (red)."
         user_pose="{goal}"
         view_name="Visualization"
       />
