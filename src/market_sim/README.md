@@ -28,6 +28,23 @@ so the scene cannot include the robot from the other package. A test fails when 
 apart from one change: the planar base joints' travel range is widened to cover the store, and
 `config.yaml`'s `base_travel_limit` sets the same limit in the URDF for MoveIt.
 
+## Localization and navigation Objectives
+
+- **Localize Robot**: place an interactive marker where the robot really is; the Objective seeds
+  Beluga AMCL there, asks it for in-place updates, and keeps the result only if both lidar scans fit
+  the map (ScanMatchResidual), otherwise it restores the previous estimate. **Refine Localization
+  In Place** does the same from the current estimate, without the marker. **Localize Robot If
+  Needed** and **Refine Localization In Place Subtree** are their building blocks. They follow
+  `hangar_sim`'s Objectives of the same names.
+- **Navigate with NavFn** and **Navigate with SMAC**: click a goal on the map. NavFn plans for the
+  robot's centre point; the Smac State Lattice planner checks the whole footprint along the plan.
+  Nav2 loads both planners; the Navigate to Aisle Objectives keep using NavFn.
+
+These Objectives need MoveIt Pro `main`: `ReinterpretPoseFrame`, `CallEmptyService`,
+`GetOccupancyGrid`, `GetLaserScan` and `ScanMatchResidual` are not in 10.1.0, so they will not load
+there. The reset relocalizer also re-seeds AMCL a few seconds after a keyframe reset; let it finish
+before running Localize Robot.
+
 ## The store
 
 `scripts/generate_market.py` builds the store from the text floor plan at the top of the script.

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Navigate with NavFn">
+  <BehaviorTree
+    ID="Navigate with NavFn"
+    _description="Prompt for a point on the map and drive there under Nav2, planned with NavFn. NavFn plans for the robot's centre point only, so a goal next to an obstacle can be accepted and then fail after Nav2's recoveries."
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <!-- is_normal false: a navigation goal wants an upright pose, not one tipped onto a surface normal. -->
+      <Action
+        ID="GetPoseFromUser"
+        view_name="Visualization"
+        pose_prompt="Click a point on the map to drive to"
+        is_normal="false"
+        user_pose="{goal_pose}"
+      />
+      <!-- Nav2 drives the base through base_jgvc; a base jog leaves it inactive. -->
+      <Action ID="SwitchController" activate_controllers="base_jgvc" />
+      <!-- Nav2's stock tree, whose planner selector defaults to NavFn. -->
+      <Action
+        ID="NavigateToPoseAction"
+        action_name="/navigate_to_pose"
+        pose_stamped="{goal_pose}"
+        behavior_tree_path="/opt/ros/jazzy/share/nav2_bt_navigator/behavior_trees/navigate_to_pose_w_replanning_and_recovery.xml"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Navigate with NavFn">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Navigation" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

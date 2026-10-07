@@ -55,6 +55,16 @@ from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
+# Navigate with SMAC's tree: Nav2's stock tree with the Smac planner as the selector's default.
+# Nav2 opens a behavior_tree_path in this container, so it is written here at a fixed path.
+STOCK_NAV_TO_POSE_TREE = (
+    "/opt/ros/jazzy/share/nav2_bt_navigator/behavior_trees/"
+    "navigate_to_pose_w_replanning_and_recovery.xml"
+)
+SMAC_NAV_TO_POSE_TREE = "/tmp/market_sim/behavior_trees/navigate_to_pose_smac.xml"
+NAVFN_SELECTOR = 'default_planner="GridBased"'
+SMAC_SELECTOR = 'default_planner="SmacLattice"'
+
 LOCALIZATION_NODES = ["map_server", "amcl"]
 NAVIGATION_NODES = [
     "controller_server",
@@ -102,6 +112,15 @@ def lifecycle_manager(name, nodes):
 
 def generate_launch_description():
     share = get_package_share_directory("market_sim")
+    with open(STOCK_NAV_TO_POSE_TREE) as stock:
+        tree = stock.read()
+    if tree.count(NAVFN_SELECTOR) != 1:
+        raise RuntimeError(
+            f"{STOCK_NAV_TO_POSE_TREE} no longer selects NavFn by default"
+        )
+    os.makedirs(os.path.dirname(SMAC_NAV_TO_POSE_TREE), exist_ok=True)
+    with open(SMAC_NAV_TO_POSE_TREE, "w") as smac:
+        smac.write(tree.replace(NAVFN_SELECTOR, SMAC_SELECTOR))
     params_file = LaunchConfiguration("params_file")
     map_yaml = LaunchConfiguration("map")
     log_level = LaunchConfiguration("log_level")

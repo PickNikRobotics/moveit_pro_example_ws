@@ -302,12 +302,22 @@ planner_server:
   ros__parameters:
     use_sim_time: false
     expected_planner_frequency: 20.0
-    planner_plugins: ["GridBased"]
+    # GridBased (NavFn) serves Nav2's stock tree and the Navigate to Aisle Objectives;
+    # SmacLattice serves the tree the driver launch file writes for Navigate with SMAC.
+    planner_plugins: ["GridBased", "SmacLattice"]
     GridBased:
       plugin: "nav2_navfn_planner::NavfnPlanner"
       tolerance: 0.5
       use_astar: false
       allow_unknown: true
+    # State Lattice with Nav2's omnidirectional primitives at the costmap resolution:
+    # it checks the footprint polygon at every pose of the plan.
+    SmacLattice:
+      plugin: "nav2_smac_planner::SmacPlannerLattice"
+      lattice_filepath: "/opt/ros/jazzy/share/nav2_smac_planner/sample_primitives/5cm_resolution/0.5m_turning_radius/omni/output.json"
+      allow_unknown: true
+      # Cross-store plans on the fine grid need longer than the default.
+      max_planning_time: 10.0
 
 smoother_server:
   ros__parameters:
