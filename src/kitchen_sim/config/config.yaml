@@ -35,14 +35,6 @@ hardware:
       - mujoco_model: "description/mujoco/scene.xml"
       - mujoco_viewer: false
 
-# Kept from this config's former parent; fr3_solo_mock does not set them.
-moveit_params:
-  trajectory_execution:
-    manage_controllers: True
-    allowed_execution_duration_scaling: 2.0
-    allowed_goal_duration_margin: 5.0
-    allowed_start_tolerance: 0.01
-
 # Configuration for loading behaviors and objectives.
 # [Required]
 objectives:
