@@ -3,7 +3,7 @@
 
 Reads FLOOR_PLAN below and the shelf and product assets in ``market_assets/``, and
 writes the MuJoCo scene parts (``mjcf/market/``), their meshes and texture
-(``mjcf/assets/market/``) and the Nav2 map (``maps/market.{pgm,yaml}``).
+(``mjcf/assets/market/``) and the Nav2 map (``maps/market.{png,yaml}``).
 
 Run from anywhere, with numpy installed:
 
@@ -31,7 +31,7 @@ MESH_OUT = Path("mjcf") / "assets" / "market"
 MAP_OUT = Path("maps")
 OBJECTIVES_OUT = Path("objectives")
 
-# The captain's floor plan, verbatim. '//' lines are labels and take no floor space.
+# The requested floor plan, verbatim. '//' lines are labels and take no floor space.
 FLOOR_PLAN = r"""
  ______________________________________________________________________
 |                                                                      |
@@ -450,15 +450,15 @@ def icosphere(subdivisions=1):
     return np.array(v), np.array(f)
 
 
-def primitive_mesh(geom, carrot, low=False):
-    """Triangles for one MJCF visual geom, in its body frame; ``low`` uses the coarsest shapes."""
+def primitive_mesh(geom, carrot):
+    """Triangles for one MJCF visual geom, in its body frame, with the coarsest shapes."""
     kind = geom.get("type", "sphere")
     size = [float(s) for s in geom.get("size", "0").split()]
-    round_shape = icosphere(0 if low else 1)
+    round_shape = icosphere(0)
     if kind == "box":
         v, f = box_mesh(size)
     elif kind == "cylinder":
-        v, f = cylinder_mesh(size[0], size[1], 6 if low else 8)
+        v, f = cylinder_mesh(size[0], size[1], 6)
     elif kind == "sphere":
         v, f = round_shape
         v = v * size[0]
@@ -468,13 +468,11 @@ def primitive_mesh(geom, carrot, low=False):
     elif kind == "capsule":
         v, f = round_shape
         v = v * np.array([size[0], size[0], size[1] + size[0]])
-    elif kind == "mesh" and low:
+    elif kind == "mesh":
         # The carrot's own frame is its bounding-box centre, long along X.
         extent = carrot[0].max(axis=0) - carrot[0].min(axis=0)
         v, f = round_shape
         v = v * extent / 2
-    elif kind == "mesh":
-        v, f = carrot
     else:
         raise ValueError(f"unsupported geom type {kind}")
     rotation = quat_to_matrix([float(q) for q in geom.get("quat", "1 0 0 0").split()])
@@ -632,7 +630,7 @@ def hidden_from_aisle(stocked, catalog):
 
 
 def unit_parts(shelf_parts, stocked, products, skip, carrot, low):
-    """One stocked shelf unit as (vertices, faces, colour) parts; ``low`` cuts its triangles."""
+    """One stocked shelf unit as (vertices, faces, colour) parts; ``low`` drops hidden items."""
     catalog, materials, bodies = products
     if low:
         skip = set(skip) | hidden_from_aisle(stocked, catalog)
@@ -646,7 +644,7 @@ def unit_parts(shelf_parts, stocked, products, skip, carrot, low):
         for geom in body.findall("geom"):
             if geom.get("group") != "2" or geom.get("material") in LID_MATERIALS:
                 continue
-            v, f = primitive_mesh(geom, carrot, True)
+            v, f = primitive_mesh(geom, carrot)
             parts.append(
                 (v @ rotation.T + position, f, materials[geom.get("material")])
             )

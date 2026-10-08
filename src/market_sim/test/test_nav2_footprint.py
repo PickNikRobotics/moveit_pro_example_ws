@@ -29,7 +29,7 @@
 """The Nav2 footprint against mobile_fr3_duo_mock's and against the store map. No ROS."""
 
 import math
-import re
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import numpy as np
@@ -95,14 +95,9 @@ def store_map():
 def aisle_goals():
     goals = {}
     for path in sorted((PACKAGE / "objectives").glob("navigate_to_aisle_*.xml")):
-        text = path.read_text()
-        x, y, _ = map(
-            float, re.search(r'position_xyz="([^"]+)"', text).group(1).split(";")
-        )
-        qz, qw = map(
-            float,
-            re.search(r'orientation_xyzw="([^"]+)"', text).group(1).split(";")[2:],
-        )
+        goal = ET.parse(path).find(".//Action[@ID='CreatePoseStamped']")
+        x, y, _ = map(float, goal.get("position_xyz").split(";"))
+        qz, qw = map(float, goal.get("orientation_xyzw").split(";")[2:])
         goals[path.stem] = (x, y, 2 * math.atan2(qz, qw))
     return goals
 
@@ -146,7 +141,7 @@ def test_aisle_goals_clear_the_racks_with_arms_stowed():
 
 
 def test_inflation_radius_is_the_circumscribed_radius_rounded_up():
-    """Nav2's potential-field shortcut needs it; rounded up to the next 0.1 m (captain)."""
+    """Nav2's potential-field shortcut needs it; rounded up to the next 0.1 m."""
     params = yaml.safe_load(PARAMS.read_text())
     for name in COSTMAPS:
         radius = float(np.hypot(*footprint(params, name).T).max())

@@ -17,18 +17,30 @@
         ID="SwitchController"
         deactivate_controllers="{command_controllers}"
       />
-      <Action
-        ID="ResetMujocoKeyframe"
-        response_timeout="10.000000"
-        wait_for_server_available_timeout="3.000000"
-        keyframe_name="{keyframe_name}"
-      />
-      <Action ID="ClearSnapshot" />
-      <Action
-        ID="SwitchController"
-        controller_list_action_name="/controller_manager/list_controllers"
-        activate_controllers="{command_controllers}"
-      />
+      <Control ID="Fallback">
+        <Control ID="Sequence">
+          <Action
+            ID="ResetMujocoKeyframe"
+            response_timeout="10.000000"
+            wait_for_server_available_timeout="3.000000"
+            keyframe_name="{keyframe_name}"
+          />
+          <Action ID="ClearSnapshot" />
+          <Action
+            ID="SwitchController"
+            controller_list_action_name="/controller_manager/list_controllers"
+            activate_controllers="{command_controllers}"
+          />
+        </Control>
+        <Control ID="Sequence">
+          <Action
+            ID="SwitchController"
+            controller_list_action_name="/controller_manager/list_controllers"
+            activate_controllers="{command_controllers}"
+          />
+          <Action ID="AlwaysFailure" />
+        </Control>
+      </Control>
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
