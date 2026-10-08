@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="franka">
+  <xacro:arg name="hardware_interface" default="mock"/>
+  <xacro:arg name="mujoco_model" default="mjcf/scene.xml"/>
+  <xacro:arg name="mujoco_viewer" default="false"/>
+
+  <xacro:include filename="$(find franka_description)/accessories/fr3_duo_mount_v0_3/fr3_duo_mount.xacro"/>
+  <xacro:include filename="$(find franka_description)/robots/common/franka_robot.xacro"/>
+
+  <link name="world"/>
+
+  <!-- Fixed base: the mount macro attaches with an identity joint, so the mount height goes on this link. -->
+  <link name="mount_base"/>
+  <joint name="mount_base_joint" type="fixed">
+    <parent link="world"/>
+    <child link="mount_base"/>
+    <origin xyz="0 0 0.305115" rpy="0 0 0"/>
+  </joint>
+
+  <xacro:mount name="fr3_duo" parent="mount_base" left_prefix="left" right_prefix="right"/>
+
+  <xacro:macro name="fr3_duo_arm" params="side">
+    <joint name="${side}_mount_joint" type="fixed">
+      <parent link="fr3_duo_mount_${side}"/>
+      <child link="${side}_mount"/>
+    </joint>
+
+    <!-- franka_robot also creates the link ${side}_mount. -->
+    <xacro:franka_robot
+      robot_type="fr3"
+      hand="true"
+      tcp_xyz="0 0 0.1034"
+      ee_id="franka_hand"
+      rpy_ee="0 0 ${-pi/4}"
+      with_sc="false"
+      no_prefix="false"
+      arm_prefix="${side}_"
+      connected_to="${side}_mount"/>
+
+    <!-- Grasp frame following the MoveIt Pro teleoperation convention: Z out of the gripper, X along the finger motion -->
+    <link name="${side}_grasp_link"/>
+    <joint name="${side}_grasp_link_joint" type="fixed">
+      <parent link="${side}_fr3_hand_tcp"/>
+      <child link="${side}_grasp_link"/>
+      <origin xyz="0 0 0" rpy="0 0 ${-pi/2}"/>
+    </joint>
+  </xacro:macro>
+
+  <xacro:fr3_duo_arm side="right"/>
+  <xacro:fr3_duo_arm side="left"/>
+
+  <xacro:if value="${'$(arg hardware_interface)' == 'mock'}">
+    <xacro:include filename="$(find fr3_duo_mock)/description/fr3_duo_mock.ros2_control.xacro"/>
+    <xacro:fr3_duo_mock_ros2_control/>
+  </xacro:if>
+
+  <xacro:if value="${'$(arg hardware_interface)' == 'mujoco'}">
+    <xacro:include filename="$(find fr3_duo_sim)/description/fr3_duo_mujoco.ros2_control.xacro"/>
+    <xacro:fr3_duo_mujoco_ros2_control mujoco_model="$(arg mujoco_model)" mujoco_viewer="$(arg mujoco_viewer)"/>
+  </xacro:if>
+</robot>

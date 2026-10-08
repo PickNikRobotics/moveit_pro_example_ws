@@ -1,0 +1,139 @@
+###############################################################
+#
+#  This configures the robot to work with MoveIt Pro
+#
+###############################################################
+
+runtime_launch_file:
+  package: "fr3_solo_mock"
+  path: "launch/runtime.launch.xml"
+
+# Sets ROS global params for launch.
+# [Optional]
+ros_global_params:
+  # Whether or not to use simulated time.
+  # [Optional, default=False]
+  use_sim_time: False
+
+# Baseline hardware configuration parameters for MoveIt Pro.
+# [Required]
+hardware:
+  # If the MoveIt Pro Agent should launch the ros2 controller node.
+  # [Optional, default=True]
+  launch_control_node: True
+
+  # If the MoveIt Pro Agent should launch the robot state publisher.
+  # This should be false if you are launching the robot state publisher as part of drivers.
+  # [Optional, default=True]
+  launch_robot_state_publisher: True
+
+  robot_description:
+    urdf:
+      package: "fr3_solo_mock"
+      path: "description/fr3_solo.urdf.xacro"
+    srdf:
+      package: "fr3_solo_mock"
+      path: "config/moveit/franka.srdf"
+    # Specify any additional parameters required for the URDF.
+    # [Optional]
+    urdf_params:
+      # Selects the ros2_control hardware: "mock" here, "mujoco" in fr3_solo_sim.
+      - hardware_interface: "mock"
+
+# Configuration files for MoveIt.
+# For more information, refer to https://moveit.picknik.ai/main/doc/how_to_guides/moveit_configuration/moveit_configuration_tutorial.html
+# [Required]
+moveit_params:
+  # Used by the Waypoint Manager to save joint states from this joint group.
+  joint_group_name: "manipulator"
+
+  kinematics:
+    package: "fr3_solo_mock"
+    path: "config/moveit/pose_ik_distance.yaml"
+  sensors_3d:
+    package: "fr3_solo_mock"
+    path: "config/moveit/sensors_3d.yaml"
+  joint_limits:
+    package: "fr3_solo_mock"
+    path: "config/moveit/joint_limits.yaml"
+  pose_jog:
+    package: "fr3_solo_mock"
+    path: "config/moveit/pose_jog.yaml"
+  joint_jog:
+    package: "fr3_solo_mock"
+    path: "config/moveit/joint_jog.yaml"
+
+  publish:
+    planning_scene: True
+    geometry_updates: True
+    state_updates: True
+    transforms_updates: True
+
+# Configuration for loading behaviors and objectives.
+# [Required]
+objectives:
+  # List of plugins for loading custom behaviors.
+  # [Required]
+  behavior_loader_plugins:
+    # This plugin will load the core MoveIt Pro Behaviors.
+    # Add additional plugin loaders as needed.
+    core:
+      - "moveit_pro::behaviors::CoreBehaviorsLoader"
+      - "moveit_pro::behaviors::MTCCoreBehaviorsLoader"
+      - "moveit_pro::behaviors::VisionBehaviorsLoader"
+      - "moveit_pro::behaviors::ConverterBehaviorsLoader"
+      - "moveit_pro::behaviors::MujocoBehaviorsLoader"
+  # Specify source folder for objectives
+  # [Required]
+  objective_library_paths:
+    core_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/core"
+    motion_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/motion"
+    perception_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/perception"
+    visualization_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/visualization"
+    mujoco_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/mujoco"
+    # Listed last: Objectives saved from the UI land in this package, also when running fr3_solo_sim.
+    fr3_solo_mock_objectives:
+      package_name: "fr3_solo_mock"
+      relative_path: "objectives"
+  # Specify the location of the saved waypoints file.
+  # [Required]
+  waypoints_file:
+    package_name: "fr3_solo_mock"
+    relative_path: "waypoints/waypoints.yaml"
+
+# Configuration for launching ros2_control processes.
+# [Required, if using ros2_control]
+ros2_control:
+  config:
+    package: "fr3_solo_mock"
+    path: "config/control/fr3_solo.ros2_control.yaml"
+  # MoveIt Pro will load and activate these controllers at start up to ensure they are available.
+  # If not specified, it is up to the user to ensure the appropriate controllers are active and available
+  # for running the application.
+  # [Optional, default=[]]
+  controllers_active_at_startup:
+    - "joint_state_broadcaster"
+    - "gripper_controller"
+    - "joint_trajectory_admittance_controller"
+  # Load but do not start these controllers so they can be activated later if needed.
+  # [Optional, default=[]]
+  controllers_inactive_at_startup:
+    - "joint_trajectory_controller"
+    - "velocity_force_controller"
+    - "joint_velocity_controller"
+  # Any controllers here will not be spawned by MoveIt Pro.
+  # [Optional, default=[]]
+  controllers_not_managed: []
+  # Optionally configure remapping rules to let multiple controllers receive commands on the same topic.
+  # [Optional, default=[]]
+  controller_shared_topics: []

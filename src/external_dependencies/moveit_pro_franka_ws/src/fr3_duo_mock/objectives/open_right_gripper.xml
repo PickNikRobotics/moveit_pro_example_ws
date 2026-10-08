@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<root BTCPP_format="4" main_tree_to_execute="Open Left Gripper">
+<root BTCPP_format="4" main_tree_to_execute="Open Right Gripper">
   <!--//////////-->
   <BehaviorTree
-    ID="Open Left Gripper"
-    _description="Open the left gripper"
+    ID="Open Right Gripper"
+    _description="Open the right gripper"
     _favorite="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
         ID="MoveGripperAction"
-        gripper_command_action_name="/left_gripper_controller/gripper_cmd"
-        position="0.04"
+        gripper_command_action_name="/right_gripper_controller/gripper_cmd"
+        position="0.035"
         timeout="10.000000"
       />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
-    <SubTree ID="Open Left Gripper">
+    <SubTree ID="Open Right Gripper">
       <MetadataFields>
         <Metadata runnable="true" />
         <Metadata subcategory="Grasping" />

@@ -12,7 +12,7 @@ git lfs install
 git clone <repo-url>
 ```
 
-Robot descriptions and simulation assets are vendored under `src/external_dependencies`, along with `feetech_ros2_driver`, the hardware driver `so101_base_config` uses to command real SO-101 hardware, and `moveit_pro_franka_ws`, the Franka Mobile FR3 Duo base configurations and spine Behaviors that `market_sim` builds on; each vendored source has an `UPSTREAM.yaml` file recording its repository, commit, and pruned paths. No source submodules are required for simulation.
+Robot descriptions and simulation assets are vendored under `src/external_dependencies`, along with `feetech_ros2_driver`, the hardware driver `so101_base_config` uses to command real SO-101 hardware, and `moveit_pro_franka_ws`, whose Franka base configurations and Behaviors `kitchen_sim`, `dual_arm_sim` and `market_sim` build on; each vendored source has an `UPSTREAM.yaml` file recording its repository, commit, and pruned paths. No source submodules are required for simulation.
 
 The `moveit_pro_sam2` submodule contains an optional perception model used by ML demonstration Objectives. Initialize it only when those Objectives are needed:
 
@@ -37,7 +37,6 @@ The `moveit_pro_sam3` package is part of this repository but contains no model f
 - `so101_base_config`
 - `so101_sim`
 - `vla_sim`
-- `moveit_pro_franka_configs/franka_base_config`
 - `moveit_pro_kinova_configs/kinova_gen3_base_config`
 - `moveit_pro_kinova_configs/kinova_sim`
 - `moveit_pro_kinova_configs/space_satellite_sim`

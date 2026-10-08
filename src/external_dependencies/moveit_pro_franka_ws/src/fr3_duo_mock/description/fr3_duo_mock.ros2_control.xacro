@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:macro name="fr3_duo_mock_commanded_joint" params="name initial_position:=0.0">
+    <joint name="${name}">
+      <command_interface name="position"/>
+      <state_interface name="position">
+        <param name="initial_value">${initial_position}</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+  </xacro:macro>
+
+  <xacro:macro name="fr3_duo_mock_arm_joints" params="prefix">
+    <!-- Initial positions: "ready" state from franka_description robots/common/group_definition.xacro -->
+    <xacro:fr3_duo_mock_commanded_joint name="${prefix}_fr3_joint1" initial_position="0.0"/>
+    <xacro:fr3_duo_mock_commanded_joint name="${prefix}_fr3_joint2" initial_position="${-pi/4}"/>
+    <xacro:fr3_duo_mock_commanded_joint name="${prefix}_fr3_joint3" initial_position="0.0"/>
+    <xacro:fr3_duo_mock_commanded_joint name="${prefix}_fr3_joint4" initial_position="${-3*pi/4}"/>
+    <xacro:fr3_duo_mock_commanded_joint name="${prefix}_fr3_joint5" initial_position="0.0"/>
+    <xacro:fr3_duo_mock_commanded_joint name="${prefix}_fr3_joint6" initial_position="${pi/2}"/>
+    <xacro:fr3_duo_mock_commanded_joint name="${prefix}_fr3_joint7" initial_position="${pi/4}"/>
+    <!-- finger_joint2 mimics finger_joint1 in the URDF and is not listed -->
+    <xacro:fr3_duo_mock_commanded_joint name="${prefix}_fr3_finger_joint1"/>
+  </xacro:macro>
+
+  <xacro:macro name="fr3_duo_mock_ros2_control">
+    <ros2_control name="fr3_duo" type="system">
+      <hardware>
+        <plugin>mock_components/GenericSystem</plugin>
+        <param name="calculate_dynamics">true</param>
+      </hardware>
+
+      <xacro:fr3_duo_mock_arm_joints prefix="left"/>
+      <xacro:fr3_duo_mock_arm_joints prefix="right"/>
+    </ros2_control>
+  </xacro:macro>
+</robot>

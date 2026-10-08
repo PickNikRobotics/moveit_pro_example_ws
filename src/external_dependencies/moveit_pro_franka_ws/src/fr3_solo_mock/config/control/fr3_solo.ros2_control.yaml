@@ -1,0 +1,79 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 1000  # Hz
+    overruns:
+      print_warnings: false  # Only silences the overrun log in non-realtime mock and sim runs.
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+    joint_trajectory_admittance_controller:
+      type: joint_trajectory_admittance_controller/JointTrajectoryAdmittanceController
+    joint_trajectory_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+    velocity_force_controller:
+      type: velocity_force_controller/VelocityForceController
+    joint_velocity_controller:
+      type: joint_velocity_controller/JointVelocityController
+    gripper_controller:
+      type: position_controllers/GripperActionController
+
+joint_trajectory_admittance_controller:
+  ros__parameters:
+    planning_group_name: manipulator
+    ee_frames: [grasp_link]
+    sensor_frames: [fr3_link8]
+    # Joint accelerations for immediate stops, for example when a trajectory is cancelled.
+    stop_accelerations: [30.0, 30.0, 30.0, 30.0, 30.0, 30.0, 30.0]
+    default_path_tolerance: 0.6
+    # The simulated arm trails the command when the simulation runs below realtime.
+    default_goal_time_tolerance: 0.5
+
+joint_trajectory_controller:
+  ros__parameters:
+    joints:
+      - fr3_joint1
+      - fr3_joint2
+      - fr3_joint3
+      - fr3_joint4
+      - fr3_joint5
+      - fr3_joint6
+      - fr3_joint7
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
+
+velocity_force_controller:
+  ros__parameters:
+    planning_group_name: manipulator
+    ee_frame: grasp_link
+    sensor_frame: fr3_link8
+    ft_force_deadband: 2.0
+    ft_torque_deadband: 1.0
+    max_joint_velocity: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+    max_joint_acceleration: [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0]
+    max_cartesian_velocity: [0.25, 0.25, 0.25, 1.0, 1.0, 1.0]
+    max_cartesian_acceleration: [2.0, 2.0, 2.0, 4.0, 4.0, 4.0]
+    ft_cutoff_frequency_ratio: 1.0
+    state_publish_rate: 10
+    jacobian_damping: 0.002
+    command_timeout: 0.2
+    joint_limit_position_tolerance: 0.02
+    command_interfaces: ["position"]
+
+joint_velocity_controller:
+  ros__parameters:
+    planning_group_name: manipulator
+    max_joint_velocity: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+    max_joint_acceleration: [2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0]
+    command_interfaces: ["position"]
+    joint_limit_position_tolerance: 0.02
+    command_timeout: 0.2
+    state_publish_rate: 20
+
+gripper_controller:
+  ros__parameters:
+    joint: fr3_finger_joint1
+    allow_stalling: true
+    stall_timeout: 0.1
+    goal_tolerance: 0.005

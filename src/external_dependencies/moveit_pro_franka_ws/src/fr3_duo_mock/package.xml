@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<package format="3">
+  <name>fr3_duo_mock</name>
+  <version>10.1.0</version>
+  <description>
+    MoveIt Pro configuration for the Franka FR3 Duo on a fixed base without a spine, on mock hardware.
+  </description>
+
+  <maintainer email="support@picknik.ai">MoveIt Pro Maintainer</maintainer>
+  <license>BSD-3-Clause</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <exec_depend>franka_description</exec_depend>
+  <exec_depend>moveit_studio_agent</exec_depend>
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
