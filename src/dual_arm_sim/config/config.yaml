@@ -88,8 +88,6 @@ ros2_control:
     - "right_velocity_force_controller"
     - "left_joint_velocity_controller"
     - "right_joint_velocity_controller"
-    - "left_joint_trajectory_controller"
-    - "right_joint_trajectory_controller"
     - "joint_trajectory_controller"
     - "left_joint_trajectory_admittance_controller"
     - "right_joint_trajectory_admittance_controller"

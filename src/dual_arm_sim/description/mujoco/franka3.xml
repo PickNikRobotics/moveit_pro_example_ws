@@ -117,7 +117,7 @@
         <body
           name="left_arm"
           pos="0.037 0.05018 0.05"
-          quat="0.8657172 -0.4369879 0.0223569 -0.2430545"
+          quat="0.8658067 -0.4368783 0.0222879 -0.2429391"
         >
           <body name="left_base" childclass="fr3">
             <body name="left_fr3_link0">
@@ -444,7 +444,7 @@
         <body
           name="right_arm"
           pos="0.037 -0.05018 0.05"
-          quat="0.8657172 0.4369879 0.0223569 0.2430545"
+          quat="0.8658067 0.4368783 0.0222879 0.2429391"
         >
           <body name="right_base" childclass="fr3">
             <body name="right_fr3_link0">
