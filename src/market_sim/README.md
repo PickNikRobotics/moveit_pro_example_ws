@@ -44,6 +44,10 @@ apart from one change: the planar base joints' travel range is widened to cover 
   arms and the spine go to the `Stow` waypoint. Nav2's footprint is that package's stowed-arms
   outline, kept equal by a test. The Navigate to Aisle goals stand far enough back from the shelf
   that this footprint clears both racks while it turns to face the shelf, also checked by a test.
+- Nav2's controller turns the base in place toward a new path before following it (Nav2's rotation
+  shim around MPPI), so it never arcs into a shelf it faces, and its obstacle costs are weighted up to
+  keep the arms off the racks. The inflation radius is the footprint's circumscribed radius, rounded
+  up to the next 0.1 m; a test keeps them in step.
 
 These Objectives need MoveIt Pro `main`: `ReinterpretPoseFrame`, `CallEmptyService`,
 `GetOccupancyGrid`, `GetLaserScan` and `ScanMatchResidual` are not in 10.1.0, so they will not load

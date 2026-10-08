@@ -143,3 +143,14 @@ def test_aisle_goals_clear_the_racks_with_arms_stowed():
             if occupied[rows, columns].any():
                 hits.append((name, turn))
     assert not hits, f"The stowed footprint overlaps a rack (goal, turn in deg): {hits}"
+
+
+def test_inflation_radius_is_the_circumscribed_radius_rounded_up():
+    """Nav2's potential-field shortcut needs it; rounded up to the next 0.1 m (captain)."""
+    params = yaml.safe_load(PARAMS.read_text())
+    for name in COSTMAPS:
+        radius = float(np.hypot(*footprint(params, name).T).max())
+        expected = math.ceil(round(radius * 10, 6)) / 10
+        assert costmap(params, name)["inflation_layer"][
+            "inflation_radius"
+        ] == pytest.approx(expected), name
