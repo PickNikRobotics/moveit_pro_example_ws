@@ -24,8 +24,8 @@ apache_excluded_paths:
   - src/mobile_fr3_duo_mock/description/mobile_fr3_duo.urdf.xacro
 notes:
   - Byte-identical copy of the listed paths at the pinned commit, except modified_paths.
-  - mobile_fr3_duo.urdf.xacro gains a base_travel_limit argument for the planar base joints' position limits; its default keeps upstream's value. Pending the same argument upstream.
-  - mobile_fr3_duo_sim is based on mobile_fr3_duo_mock.
+  - mobile_fr3_duo.urdf.xacro gains a base_travel_limit argument for the planar base joints' position limits; its default keeps upstream's value, and market_sim widens it for the supermarket. Pending the same argument upstream.
+  - market_sim is based on mobile_fr3_duo_sim, which is based on mobile_fr3_duo_mock.
   - mobile_fr3_duo_mock loads the spine Behaviors from franka_behaviors, a C++ package built with this workspace.
   - The packages depend on franka_description, provided by src/external_dependencies/franka_config (release 2.9.0, the release upstream pins).
   - Binary files matching workspace Git LFS patterns are stored as LFS objects; checked-out bytes match upstream.

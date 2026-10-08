@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Localize Robot">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Localize Robot"
+    _description="Place a marker on the robot to localize it. Run after startup and whenever the robot is moved by hand."
+    _favorite="true"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <!--The marker sets heading as well as position. It starts above the robot's head so it is visible; height is ignored.-->
+      <Action
+        ID="GetLatestTransform"
+        name="Start the marker at the robot"
+        target_frame_id="world"
+        source_frame_id="base_link"
+        transform="{robot_in_world}"
+      />
+      <Action
+        ID="ConvertTransformStampedToPoseStamped"
+        transform_stamped="{robot_in_world}"
+        pose_stamped="{robot_pose}"
+      />
+      <Action
+        ID="TransformPose"
+        name="Lift the marker above the robot"
+        input_pose="{robot_pose}"
+        translation_xyz="0;0;2.0"
+        output_pose="{marker_seed_pose}"
+      />
+      <Action ID="ResetVector" name="ResetVector" vector="{marker_poses}" />
+      <Action
+        ID="PushBackVector"
+        name="Wrap it in the one-element list the marker takes"
+        input_vector="{marker_poses}"
+        element="{marker_seed_pose}"
+        output_vector="{marker_poses}"
+      />
+      <Action
+        ID="AdjustPoseWithIMarker"
+        name="Ask the operator to place the robot"
+        prompts="Move the marker over where the robot really is, X axis forward. Height is ignored."
+        initial_poses="{marker_poses}"
+        adjusted_poses="{adjusted_poses}"
+      />
+      <Action
+        ID="GetElementOfVector"
+        name="Read the placed pose back out"
+        vector_in="{adjusted_poses}"
+        index="0"
+        element="{clicked_pose}"
+      />
+      <!--Sim only: world coincides with map, so the placed pose is read as map coordinates. On hardware, place the marker against the map instead.-->
+      <Action
+        ID="ReinterpretPoseFrame"
+        name="Read the placed pose as map coordinates"
+        input_pose="{clicked_pose}"
+        expected_input_frame_id="world"
+        frame_id="map"
+        output_pose="{initial_pose}"
+      />
+      <!--On rejection, the subtree restores the estimate held before this run.-->
+      <Control ID="Fallback" name="Keep the current estimate to restore">
+        <Decorator ID="SuppressChildErrors">
+          <Control ID="Sequence">
+            <Action
+              ID="GetLatestTransform"
+              name="Read the current estimate"
+              target_frame_id="map"
+              source_frame_id="base_link"
+              transform="{current_transform}"
+            />
+            <Action
+              ID="ConvertTransformStampedToPoseStamped"
+              transform_stamped="{current_transform}"
+              pose_stamped="{restore_pose}"
+            />
+          </Control>
+        </Decorator>
+        <Action
+          ID="ReinterpretPoseFrame"
+          name="No estimate yet: restore the placed pose"
+          input_pose="{initial_pose}"
+          expected_input_frame_id="map"
+          frame_id="map"
+          output_pose="{restore_pose}"
+        />
+      </Control>
+      <SubTree
+        ID="Refine Localization In Place Subtree"
+        name="Refine the estimate"
+        seed_pose="{initial_pose}"
+        restore_pose="{restore_pose}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Localize Robot">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Navigation" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

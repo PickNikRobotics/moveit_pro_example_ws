@@ -276,7 +276,7 @@ count on it. A headless stand-in therefore has to *subscribe* to the request top
 
 `based_on_package` in `config.yaml` merges the child over the parent (`merge()` in `moveit_studio_utils_py/system_config.py`). Dicts merge key-by-key, recursively. A list of scalars is replaced wholesale. A list of single-key dicts — which is how `urdf_params` and every other MoveIt Pro list-of-options field is shaped — merges **by key**: an override entry like `- hardware_interface: "mock"` finds the parent's entry with that same key and replaces only its value, leaving every other `urdf_params` entry (`usb_port`, `calibration_file`, ...) inherited untouched. You do not need to repeat the whole list to override one xacro arg.
 
-`so101_sim` over `so101_base_config` is the one overlay in this workspace that relies on this: it inherits the base description untouched and overrides a single xacro arg. Every other overlay that touches the description (`mock_sim`, `lab_sim`, `hangar_sim`, `kitchen_sim`, ...) redeclares `hardware.robot_description` wholesale with its own URDF/SRDF — the heavier-weight form, used when the child's description differs structurally rather than by one hardware toggle. `behavior_hub_catalog` (over `lab_sim`) declares no `hardware:` block at all and inherits the description untouched. `src/so101_sim/test/test_config_inheritance.py` shows how to assert the merged result through the real loader (`load_system_config`).
+`so101_sim` over `so101_base_config` and `market_sim` over `mobile_fr3_duo_sim` are the overlays in this workspace that rely on this: each inherits the base description untouched and overrides only the xacro args it changes. Every other overlay that touches the description (`mock_sim`, `lab_sim`, `hangar_sim`, `kitchen_sim`, ...) redeclares `hardware.robot_description` wholesale with its own URDF/SRDF — the heavier-weight form, used when the child's description differs structurally rather than by one hardware toggle. `behavior_hub_catalog` (over `lab_sim`) declares no `hardware:` block at all and inherits the description untouched. `src/so101_sim/test/test_config_inheritance.py` shows how to assert the merged result through the real loader (`load_system_config`).
 
 ## `Dockerfile:12`'s rolling base tag is not what `moveit_pro build` uses
 
@@ -447,6 +447,29 @@ it and navigation still succeeded, so only the topic check found it.
 
 Note `RewrittenYaml` rewrites a key **everywhere it appears** in the file, not per-node, so one
 `odom_topic` entry also hits `velocity_smoother`'s.
+
+## Known issue: Nav2 Jazzy can keep driving the base after a navigation aborts
+
+With Nav2 Jazzy (the 1.3.x in the MoveIt Pro image), if the controller server acknowledges a new
+path-following goal later than the navigator's `default_server_timeout`, the navigator drops that
+goal without cancelling it and aborts the navigation. The controller keeps driving the base along
+the old path, with no Objective running, until the next navigation goal replaces it. It is more
+likely under heavy CPU load. The navigator logs "Timed out while waiting for action server to
+acknowledge goal request for follow_path" just before the abort.
+
+Upstream: Nav2 issue #6370, fixed on Nav2 main (#6373, #6445), not on Jazzy. Partly mitigated by
+`default_server_timeout: 500` (ms) in `market_sim/params/nav2_params.yaml` and in the vendored
+`mobile_fr3_duo_mock/params/nav2_params.yaml`; other example configs keep Nav2's 20 ms. That makes the trigger rarer but does not remove it. The remaining mitigation
+would be a node that cancels a `follow_path` goal still executing when no `navigate_to_pose` goal
+is active.
+
+## Known issue: market_sim's AMCL can drift along the long aisles
+
+After a drive into an A to D aisle, AMCL can drift along the aisle and leave the base short of a
+Navigate to Aisle goal; it stays accurate across the aisle. This is a known limit, not a tuning
+target. Judge an aisle drive against `/ground_truth/odom`, not against Nav2's "goal reached", and see
+`src/market_sim/README.md` (Localization and navigation Objectives) for the measured drift, the cause
+and the correction.
 
 ## One trajectory controller, several planning groups
 

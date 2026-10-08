@@ -1,0 +1,1804 @@
+<?xml version="1.0" ?>
+<mujoco model="mobile_fr3_duo">
+  <compiler angle="radian" meshdir="assets" />
+  <size nuser_cam="4" />
+
+  <option integrator="implicitfast">
+    <flag multiccd="enable" />
+  </option>
+
+  <asset>
+    <mesh name="tmrv0_2" file="tmrv0_2.stl" />
+    <!-- Chassis visual mesh: franka_description visual/tmrv0_2.dae converted with pymeshlab (mm to m). -->
+    <mesh name="tmrv0_2_visual" file="tmrv0_2_visual.stl" />
+    <mesh name="franka_spine" file="franka_spine.stl" />
+    <mesh name="fr3_duo_mount" file="fr3_duo_mount.stl" />
+    <mesh name="fr3_duo_cover" file="fr3_duo_cover.stl" />
+    <mesh name="franka_head" file="franka_head.stl" />
+    <mesh name="link0" file="link0.stl" />
+    <mesh name="link1" file="link1.stl" />
+    <mesh name="link2" file="link2.stl" />
+    <mesh name="link3" file="link3.stl" />
+    <mesh name="link4" file="link4.stl" />
+    <mesh name="link5" file="link5.stl" />
+    <mesh name="link6" file="link6.stl" />
+    <mesh name="link7" file="link7.stl" />
+    <mesh name="hand" file="hand.stl" />
+    <!-- Finger visual meshes from MuJoCo Menagerie franka_emika_panda/assets at d98292e (Apache-2.0) -->
+    <mesh name="finger_0" file="finger_0.obj" />
+    <mesh name="finger_1" file="finger_1.obj" />
+  </asset>
+
+  <actuator>
+    <velocity joint="planar_x" name="planar_x" ctrlrange="-1.5 1.5" kv="2000" />
+    <velocity joint="planar_y" name="planar_y" ctrlrange="-1.5 1.5" kv="2000" />
+    <velocity
+      joint="planar_theta"
+      name="planar_theta"
+      ctrlrange="-3.0 3.0"
+      kv="2000"
+    />
+    <position
+      joint="franka_spine_vertical_joint"
+      name="franka_spine_vertical_joint"
+      inheritrange="1"
+      kp="4500"
+      dampratio="1"
+    />
+    <position
+      joint="left_fr3v2_joint1"
+      name="left_fr3v2_joint1"
+      inheritrange="1"
+      kp="4500"
+      kv="450"
+    />
+    <position
+      joint="left_fr3v2_joint2"
+      name="left_fr3v2_joint2"
+      inheritrange="1"
+      kp="4500"
+      kv="450"
+    />
+    <position
+      joint="left_fr3v2_joint3"
+      name="left_fr3v2_joint3"
+      inheritrange="1"
+      kp="3500"
+      kv="350"
+    />
+    <position
+      joint="left_fr3v2_joint4"
+      name="left_fr3v2_joint4"
+      inheritrange="1"
+      kp="3500"
+      kv="350"
+    />
+    <position
+      joint="left_fr3v2_joint5"
+      name="left_fr3v2_joint5"
+      inheritrange="1"
+      kp="2000"
+      kv="200"
+    />
+    <position
+      joint="left_fr3v2_joint6"
+      name="left_fr3v2_joint6"
+      inheritrange="1"
+      kp="2000"
+      kv="200"
+    />
+    <position
+      joint="left_fr3v2_joint7"
+      name="left_fr3v2_joint7"
+      inheritrange="1"
+      kp="2000"
+      kv="200"
+    />
+    <general
+      name="left_fr3v2_finger_joint1"
+      tendon="left_fr3v2_finger_split"
+      ctrlrange="0 0.04"
+      forcerange="-100 100"
+      gainprm="100 0 0"
+      biastype="affine"
+      biasprm="0 -100 -10"
+    />
+    <position
+      joint="right_fr3v2_joint1"
+      name="right_fr3v2_joint1"
+      inheritrange="1"
+      kp="4500"
+      kv="450"
+    />
+    <position
+      joint="right_fr3v2_joint2"
+      name="right_fr3v2_joint2"
+      inheritrange="1"
+      kp="4500"
+      kv="450"
+    />
+    <position
+      joint="right_fr3v2_joint3"
+      name="right_fr3v2_joint3"
+      inheritrange="1"
+      kp="3500"
+      kv="350"
+    />
+    <position
+      joint="right_fr3v2_joint4"
+      name="right_fr3v2_joint4"
+      inheritrange="1"
+      kp="3500"
+      kv="350"
+    />
+    <position
+      joint="right_fr3v2_joint5"
+      name="right_fr3v2_joint5"
+      inheritrange="1"
+      kp="2000"
+      kv="200"
+    />
+    <position
+      joint="right_fr3v2_joint6"
+      name="right_fr3v2_joint6"
+      inheritrange="1"
+      kp="2000"
+      kv="200"
+    />
+    <position
+      joint="right_fr3v2_joint7"
+      name="right_fr3v2_joint7"
+      inheritrange="1"
+      kp="2000"
+      kv="200"
+    />
+    <general
+      name="right_fr3v2_finger_joint1"
+      tendon="right_fr3v2_finger_split"
+      ctrlrange="0 0.04"
+      forcerange="-100 100"
+      gainprm="100 0 0"
+      biastype="affine"
+      biasprm="0 -100 -10"
+    />
+  </actuator>
+  <worldbody>
+    <body name="base" gravcomp="1">
+      <body name="planar_base" gravcomp="1">
+        <inertial pos="0 0 0" mass="0.01" diaginertia="0.001 0.001 0.001" />
+        <joint
+          name="planar_x"
+          pos="0 0 0"
+          axis="1 0 0"
+          type="slide"
+          range="-50 50"
+          actuatorfrcrange="-1000 1000"
+          damping="0.5"
+        />
+        <joint
+          name="planar_y"
+          pos="0 0 0"
+          axis="0 1 0"
+          type="slide"
+          range="-50 50"
+          actuatorfrcrange="-1000 1000"
+          damping="0.5"
+        />
+        <joint
+          name="planar_theta"
+          pos="0 0 0"
+          axis="0 0 1"
+          actuatorfrcrange="-1000 1000"
+          damping="1.0"
+        />
+        <body name="base_link" gravcomp="1">
+          <geom
+            type="mesh"
+            contype="0"
+            conaffinity="0"
+            group="1"
+            density="0"
+            rgba="1 1 1 1"
+            mesh="tmrv0_2_visual"
+            name="tmrv0_2"
+          />
+          <!-- group 3: collision only, not rendered, so cameras and lidars see the visual mesh. -->
+          <geom
+            type="mesh"
+            group="3"
+            density="0"
+            rgba="1 1 1 1"
+            mesh="tmrv0_2"
+            name="tmrv0_22"
+          />
+          <site name="imu_site" pos="0 0 0" size="0.01" group="3" />
+          <body name="base_inertia" gravcomp="1">
+            <inertial
+              pos="0.006619 -0.00221 0.184355"
+              quat="2.93233e-05 0.6886 -0.0048197 0.725125"
+              mass="88.9542"
+              diaginertia="5.84851 4.16234 3.23852"
+            />
+          </body>
+          <body
+            name="caster_front_left_fixed_link"
+            pos="0.3 0.2 0.08"
+            gravcomp="1"
+          >
+            <inertial
+              pos="-0.02365 5e-05 -0.03651"
+              quat="0.611471 -0.283001 -0.248575 0.695862"
+              mass="0.3"
+              diaginertia="0.000704326 0.000699183 0.000280606"
+            />
+            <geom
+              size="0.02 0.015 0.0015"
+              pos="0 0 -0.0015"
+              type="box"
+              contype="0"
+              conaffinity="0"
+              group="1"
+              density="0"
+              rgba="0.3 0.3 0.3 1"
+              name="caster_front_left_fixed_link"
+            />
+            <body name="caster_front_left_steering_link" gravcomp="1">
+              <inertial
+                pos="0 0 0"
+                mass="0.2"
+                diaginertia="0.0001 0.0001 0.0001"
+              />
+              <joint
+                name="caster_front_left_steering_joint"
+                pos="0 0 0"
+                axis="0 0 1"
+                actuatorfrcrange="-500 500"
+                damping="0.003"
+              />
+              <body
+                name="caster_front_left_link"
+                pos="-0.035 0 -0.05"
+                gravcomp="1"
+              >
+                <inertial
+                  pos="0 0 0"
+                  mass="0.2"
+                  diaginertia="0.0001 0.0001 0.0001"
+                />
+                <joint
+                  name="caster_front_left_joint"
+                  pos="0 0 0"
+                  axis="0 1 0"
+                  actuatorfrcrange="-500 500"
+                  damping="0.003"
+                />
+                <geom
+                  size="0.03 0.0075"
+                  quat="0.707107 0.707107 0 0"
+                  type="cylinder"
+                  contype="0"
+                  conaffinity="0"
+                  group="1"
+                  density="0"
+                  rgba="1 0.5 0 1"
+                  name="caster_front_left_link"
+                />
+              </body>
+            </body>
+          </body>
+          <body
+            name="argo_drive_front_fixed_link"
+            pos="0.3 -0.2 0.05"
+            gravcomp="1"
+          >
+            <inertial
+              pos="-0.00019 0.04522 0.02947"
+              quat="0.511876 0.485802 -0.491273 0.510519"
+              mass="7"
+              diaginertia="0.0893767 0.0706064 0.0342234"
+            />
+            <geom
+              size="0.085 0.125 0.0385"
+              pos="0 0.04 0.0345"
+              type="box"
+              contype="0"
+              conaffinity="0"
+              group="1"
+              density="0"
+              rgba="0.3 0.3 0.3 1"
+              name="argo_drive_front_fixed_link"
+            />
+            <body name="argo_drive_front_steering_link" gravcomp="1">
+              <inertial pos="0 0 0" mass="2" diaginertia="0.001 0.001 0.001" />
+              <joint
+                name="tmrv0_2_joint_0"
+                pos="0 0 0"
+                axis="0 0 1"
+                actuatorfrcrange="-500 500"
+                damping="20"
+                frictionloss="5"
+              />
+              <body name="argo_drive_front_link" gravcomp="1">
+                <inertial
+                  pos="0 0 0"
+                  quat="0.5 0.5 -0.5 0.5"
+                  mass="2.5"
+                  diaginertia="0.003125 0.00189583 0.00189583"
+                />
+                <joint
+                  name="tmrv0_2_joint_1"
+                  pos="0 0 0"
+                  axis="0 1 0"
+                  actuatorfrcrange="-500 500"
+                  damping="5"
+                  frictionloss="1"
+                />
+                <geom
+                  size="0.05 0.02"
+                  quat="0.707107 0.707107 0 0"
+                  type="cylinder"
+                  contype="0"
+                  conaffinity="0"
+                  group="1"
+                  density="0"
+                  rgba="0.8 0.6 0.2 1"
+                  name="argo_drive_front_link"
+                />
+              </body>
+            </body>
+          </body>
+          <body name="rocker_arm_link" pos="-0.3 0 0.0845" gravcomp="1">
+            <inertial
+              pos="-0.000344 -0.021232 0.038239"
+              quat="0.530264 0.46893 -0.468899 0.52826"
+              mass="5.18397"
+              diaginertia="0.0820159 0.0670876 0.0222455"
+            />
+            <joint
+              name="rocker_arm_joint"
+              pos="0 0 0"
+              axis="1 0 0"
+              range="-0.16 0.18"
+              actuatorfrcrange="-500 500"
+              damping="0.003"
+            />
+            <geom
+              size="0.015 0.01125"
+              quat="0.5 0.5 0.5 0.5"
+              type="cylinder"
+              contype="0"
+              conaffinity="0"
+              group="1"
+              density="0"
+              rgba="0.3 0.3 0.3 1"
+              name="rocker_arm_link"
+            />
+            <body
+              name="caster_rear_right_fixed_link"
+              pos="0 -0.2 -0.0045"
+              gravcomp="1"
+            >
+              <inertial
+                pos="-0.02365 5e-05 -0.03651"
+                quat="0.611471 -0.283001 -0.248575 0.695862"
+                mass="0.3"
+                diaginertia="0.000704326 0.000699183 0.000280606"
+              />
+              <geom
+                size="0.02 0.015 0.0015"
+                pos="0 0 -0.0015"
+                type="box"
+                contype="0"
+                conaffinity="0"
+                group="1"
+                density="0"
+                rgba="0.3 0.3 0.3 1"
+                name="caster_rear_right_fixed_link"
+              />
+              <body name="caster_rear_right_steering_link" gravcomp="1">
+                <inertial
+                  pos="0 0 0"
+                  mass="0.2"
+                  diaginertia="0.0001 0.0001 0.0001"
+                />
+                <joint
+                  name="caster_rear_right_steering_joint"
+                  pos="0 0 0"
+                  axis="0 0 1"
+                  actuatorfrcrange="-500 500"
+                  damping="0.003"
+                />
+                <body
+                  name="caster_rear_right_link"
+                  pos="-0.035 0 -0.05"
+                  gravcomp="1"
+                >
+                  <inertial
+                    pos="0 0 0"
+                    mass="0.2"
+                    diaginertia="0.0001 0.0001 0.0001"
+                  />
+                  <joint
+                    name="caster_rear_right_joint"
+                    pos="0 0 0"
+                    axis="0 1 0"
+                    actuatorfrcrange="-500 500"
+                    damping="0.003"
+                  />
+                  <geom
+                    size="0.03 0.0075"
+                    quat="0.707107 0.707107 0 0"
+                    type="cylinder"
+                    contype="0"
+                    conaffinity="0"
+                    group="1"
+                    density="0"
+                    rgba="1 0.5 0 1"
+                    name="caster_rear_right_link"
+                  />
+                </body>
+              </body>
+            </body>
+            <body
+              name="argo_drive_rear_fixed_link"
+              pos="0 0.2 -0.0345"
+              gravcomp="1"
+            >
+              <inertial
+                pos="-0.00019 -0.04522 0.02947"
+                quat="0.491273 0.510519 -0.511876 0.485802"
+                mass="7"
+                diaginertia="0.0893767 0.0706064 0.0342234"
+              />
+              <geom
+                size="0.085 0.125 0.0385"
+                pos="0 -0.04 0.0345"
+                type="box"
+                contype="0"
+                conaffinity="0"
+                group="1"
+                density="0"
+                rgba="0.3 0.3 0.3 1"
+                name="argo_drive_rear_fixed_link"
+              />
+              <body name="argo_drive_rear_steering_link" gravcomp="1">
+                <inertial
+                  pos="0 0 0"
+                  mass="2"
+                  diaginertia="0.001 0.001 0.001"
+                />
+                <joint
+                  name="tmrv0_2_joint_2"
+                  pos="0 0 0"
+                  axis="0 0 1"
+                  actuatorfrcrange="-500 500"
+                  damping="20"
+                  frictionloss="5"
+                />
+                <body name="argo_drive_rear_link" gravcomp="1">
+                  <inertial
+                    pos="0 0 0"
+                    quat="0.5 0.5 -0.5 0.5"
+                    mass="2.5"
+                    diaginertia="0.003125 0.00189583 0.00189583"
+                  />
+                  <joint
+                    name="tmrv0_2_joint_3"
+                    pos="0 0 0"
+                    axis="0 1 0"
+                    actuatorfrcrange="-500 500"
+                    damping="5"
+                    frictionloss="1"
+                  />
+                  <geom
+                    size="0.05 0.02"
+                    quat="0.707107 0.707107 0 0"
+                    type="cylinder"
+                    contype="0"
+                    conaffinity="0"
+                    group="1"
+                    density="0"
+                    rgba="0.8 0.6 0.2 1"
+                    name="argo_drive_rear_link"
+                  />
+                </body>
+              </body>
+            </body>
+          </body>
+          <body
+            name="imu_mounting_point"
+            pos="0.26 0 0.1478"
+            quat="0 1 0 0"
+            gravcomp="1"
+          />
+          <body
+            name="front_mounting_point"
+            pos="0.380705 0 0.2345"
+            quat="0 1 0 0"
+            gravcomp="1"
+          >
+            <!-- Mount frames are flipped (z down): the camera looks along mount +X, image up = world up. -->
+            <camera
+              name="camera_front"
+              mode="fixed"
+              pos="0 0 0"
+              xyaxes="0 1 0 0 0 -1"
+              fovy="58"
+              resolution="640 480"
+            />
+            <site
+              name="camera_front_optical_frame"
+              pos="0 0 0"
+              xyaxes="0 1 0 0 0 1"
+              size="0.01"
+              group="3"
+            />
+          </body>
+          <body
+            name="rear_mounting_point"
+            pos="-0.380705 0 0.2345"
+            quat="0 0 1 0"
+            gravcomp="1"
+          >
+            <camera
+              name="camera_rear"
+              mode="fixed"
+              pos="0 0 0"
+              xyaxes="0 1 0 0 0 -1"
+              fovy="58"
+              resolution="640 480"
+            />
+            <site
+              name="camera_rear_optical_frame"
+              pos="0 0 0"
+              xyaxes="0 1 0 0 0 1"
+              size="0.01"
+              group="3"
+            />
+          </body>
+          <body
+            name="right_mounting_point"
+            pos="0 -0.272712 0.1145"
+            quat="0 0.707107 -0.707107 0"
+            gravcomp="1"
+          >
+            <camera
+              name="camera_right"
+              mode="fixed"
+              pos="0 0 0"
+              xyaxes="0 1 0 0 0 -1"
+              fovy="58"
+              resolution="640 480"
+            />
+            <site
+              name="camera_right_optical_frame"
+              pos="0 0 0"
+              xyaxes="0 1 0 0 0 1"
+              size="0.01"
+              group="3"
+            />
+          </body>
+          <body
+            name="left_mounting_point"
+            pos="0 0.272712 0.1145"
+            quat="0 0.707107 0.707107 0"
+            gravcomp="1"
+          >
+            <camera
+              name="camera_left"
+              mode="fixed"
+              pos="0 0 0"
+              xyaxes="0 1 0 0 0 -1"
+              fovy="58"
+              resolution="640 480"
+            />
+            <site
+              name="camera_left_optical_frame"
+              pos="0 0 0"
+              xyaxes="0 1 0 0 0 1"
+              size="0.01"
+              group="3"
+            />
+          </body>
+          <body
+            name="lidar_front_mounting_point"
+            pos="0.3275 0.2175 0.19065"
+            quat="0 -0.92388 0.382683 0"
+            gravcomp="1"
+          >
+            <!-- SICK nanoScan3 as an image-based lidar: 275 deg sweep, 0.10-40 m, 1651 beams at 1/6 deg.
+                 Measured from the real scanner's recorded scans; do not "correct" them from Franka's or SICK's Gazebo models.
+                 fovy is the render tile height, not a scanner property: 6 tiles on the 640x480 offscreen buffer.
+                 The camera looks along mount -Y, so the 85 deg blind notch faces the chassis. -->
+            <camera
+              name="lidar_front"
+              mode="fixed"
+              pos="0 0 0"
+              quat="0.707107 -0.707107 0 0"
+              fovy="40"
+              resolution="1651 3"
+              user="2 275 0.10 40.0"
+            />
+            <site
+              name="lidar_front_optical_frame"
+              pos="0 0 0"
+              quat="0.707107 0.707107 0 0"
+              size="0.01"
+              group="3"
+            />
+          </body>
+          <body
+            name="lidar_rear_mounting_point"
+            pos="-0.3275 -0.2175 0.19065"
+            quat="0 -0.382683 -0.92388 0"
+            gravcomp="1"
+          >
+            <!-- Same scanner as lidar_front. -->
+            <camera
+              name="lidar_rear"
+              mode="fixed"
+              pos="0 0 0"
+              quat="0.707107 -0.707107 0 0"
+              fovy="40"
+              resolution="1651 3"
+              user="2 275 0.10 40.0"
+            />
+            <site
+              name="lidar_rear_optical_frame"
+              pos="0 0 0"
+              quat="0.707107 0.707107 0 0"
+              size="0.01"
+              group="3"
+            />
+          </body>
+          <body name="franka_spine" pos="0.138289 0 0.35" gravcomp="1">
+            <inertial
+              pos="0.042358 0.000378 0.495198"
+              quat="0.998751 -0.000119517 -0.0484248 -0.0123402"
+              mass="21.9091"
+              diaginertia="3.36815 3.32454 0.252332"
+            />
+            <geom
+              name="franka_spine"
+              type="mesh"
+              contype="0"
+              conaffinity="0"
+              group="1"
+              density="0"
+              mesh="franka_spine"
+            />
+            <geom name="franka_spine2" type="mesh" mesh="franka_spine" />
+            <body
+              name="franka_spine_mounting_point"
+              pos="0.266711 0 0.1"
+              gravcomp="1"
+            >
+              <inertial
+                pos="0 0 0"
+                mass="0.01"
+                diaginertia="0.0001 0.0001 0.0001"
+              />
+              <joint
+                name="franka_spine_vertical_joint"
+                pos="0 0 0"
+                axis="0 0 1"
+                type="slide"
+                range="0 0.85"
+                actuatorfrcrange="-100 100"
+              />
+              <body name="fr3_duo_mount_mounting_point" gravcomp="1">
+                <inertial
+                  pos="-0.011817 -5e-05 0.044431"
+                  quat="0.666904 0.66701 0.234963 -0.234796"
+                  mass="4.09385"
+                  diaginertia="0.0236957 0.0204768 0.0164193"
+                />
+                <geom
+                  type="mesh"
+                  contype="0"
+                  conaffinity="0"
+                  group="1"
+                  density="0"
+                  mesh="fr3_duo_mount"
+                  name="fr3_duo_mount"
+                />
+                <geom
+                  pos="0 0 0.068"
+                  quat="1 0 0 0"
+                  type="mesh"
+                  contype="0"
+                  conaffinity="0"
+                  group="1"
+                  density="0"
+                  mesh="fr3_duo_cover"
+                  name="fr3_duo_cover"
+                />
+                <geom type="mesh" mesh="fr3_duo_mount" name="fr3_duo_mount2" />
+                <geom
+                  pos="0 0 0.068"
+                  quat="1 0 0 0"
+                  type="mesh"
+                  mesh="fr3_duo_cover"
+                  name="fr3_duo_cover2"
+                />
+                <body
+                  name="fr3_duo_mount_origin"
+                  pos="0.037 0 0.05"
+                  gravcomp="1"
+                >
+                  <body
+                    name="fr3_duo_mount_left"
+                    pos="0 0.05018 0"
+                    quat="0.865807 -0.436878 0.0222879 -0.242939"
+                    gravcomp="1"
+                  >
+                    <body name="left_base" gravcomp="1">
+                      <body name="left_fr3v2_link0" gravcomp="1">
+                        <inertial
+                          pos="-0.0172 0.0004 0.0745"
+                          quat="0.661377 -0.250161 -0.250161 0.661377"
+                          mass="2.3966"
+                          diaginertia="0.0115 0.0107656 0.00673444"
+                        />
+                        <geom
+                          name="link0"
+                          type="mesh"
+                          contype="0"
+                          conaffinity="0"
+                          group="1"
+                          density="0"
+                          mesh="link0"
+                        />
+                        <geom name="link02" type="mesh" mesh="link0" />
+                        <body
+                          name="left_fr3v2_link0_accelerometer_top"
+                          pos="-0.017402 -0.007872 0.04715"
+                          quat="-3.67321e-06 1 0 0"
+                          gravcomp="1"
+                        />
+                        <body
+                          name="left_fr3v2_link0_accelerometer_bottom"
+                          pos="-0.019739 0.0015506 0.05075"
+                          quat="0.707105 0 0 -0.707108"
+                          gravcomp="1"
+                        />
+                        <body
+                          name="left_fr3v2_link1"
+                          pos="0 0 0.333"
+                          gravcomp="1"
+                        >
+                          <inertial
+                            pos="-0.00458 0.027016 -0.0618"
+                            quat="0.989811 0.110789 0.00992127 0.0888923"
+                            mass="2.4377"
+                            diaginertia="0.0233003 0.0222611 0.00463865"
+                          />
+                          <joint
+                            name="left_fr3v2_joint1"
+                            pos="0 0 0"
+                            axis="0 0 1"
+                            range="-2.90074 2.90074"
+                            actuatorfrcrange="-87 87"
+                            damping="0.003"
+                            frictionloss="0.2"
+                          />
+                          <geom
+                            name="link1"
+                            type="mesh"
+                            contype="0"
+                            conaffinity="0"
+                            group="1"
+                            density="0"
+                            mesh="link1"
+                          />
+                          <geom name="link12" type="mesh" mesh="link1" />
+                          <body
+                            name="left_fr3v2_link1_accelerometer_top"
+                            pos="0.017402 -0.093352 -0.00787"
+                            quat="-2.59734e-06 2.59735e-06 -0.707108 0.707105"
+                            gravcomp="1"
+                          />
+                          <body
+                            name="left_fr3v2_link1_accelerometer_bottom"
+                            pos="0.01974 -0.08975 0.00155"
+                            quat="0.499998 -0.5 0.5 0.500002"
+                            gravcomp="1"
+                          />
+                          <body
+                            name="left_fr3v2_link2"
+                            quat="0.707107 -0.707107 0 0"
+                            gravcomp="1"
+                          >
+                            <inertial
+                              pos="0.004541 -0.180691 -0.010479"
+                              quat="0.644329 0.758803 -0.0323054 0.0895283"
+                              mass="2.2375"
+                              diaginertia="0.0192001 0.0173406 0.0052593"
+                            />
+                            <joint
+                              name="left_fr3v2_joint2"
+                              pos="0 0 0"
+                              axis="0 0 1"
+                              range="-1.83609 1.83609"
+                              actuatorfrcrange="-87 87"
+                              damping="0.003"
+                              frictionloss="0.2"
+                            />
+                            <geom
+                              name="link2"
+                              type="mesh"
+                              contype="0"
+                              conaffinity="0"
+                              group="1"
+                              density="0"
+                              mesh="link2"
+                            />
+                            <geom name="link22" type="mesh" mesh="link2" />
+                            <body
+                              name="left_fr3v2_link2_accelerometer_top"
+                              pos="0.017403 -0.11515 0.00787"
+                              quat="-2.59734e-06 -2.59735e-06 0.707108 0.707105"
+                              gravcomp="1"
+                            />
+                            <body
+                              name="left_fr3v2_link2_accelerometer_bottom"
+                              pos="0.019737 -0.11875 -0.00155"
+                              quat="0.499998 0.5 -0.5 0.500002"
+                              gravcomp="1"
+                            />
+                            <body
+                              name="left_fr3v2_link3"
+                              pos="0 -0.316 0"
+                              quat="0.707107 0.707107 0 0"
+                              gravcomp="1"
+                            >
+                              <inertial
+                                pos="0.08254 0.019082 0.042027"
+                                quat="0.877348 -0.0280595 -0.265819 0.398514"
+                                mass="2.19308"
+                                diaginertia="0.0146052 0.0104212 0.00447362"
+                              />
+                              <joint
+                                name="left_fr3v2_joint3"
+                                pos="0 0 0"
+                                axis="0 0 1"
+                                range="-2.90074 2.90074"
+                                actuatorfrcrange="-87 87"
+                                damping="0.003"
+                                frictionloss="0.2"
+                              />
+                              <geom
+                                name="link3"
+                                type="mesh"
+                                contype="0"
+                                conaffinity="0"
+                                group="1"
+                                density="0"
+                                mesh="link3"
+                              />
+                              <geom name="link32" type="mesh" mesh="link3" />
+                              <body
+                                name="left_fr3v2_link3_accelerometer_top"
+                                pos="0.065099 0.077352 -0.00787"
+                                quat="0.707105 -0.707108 0 0"
+                                gravcomp="1"
+                              />
+                              <body
+                                name="left_fr3v2_link3_accelerometer_bottom"
+                                pos="0.062769 0.073756 0.00155"
+                                quat="0.499998 0.5 0.5 -0.500002"
+                                gravcomp="1"
+                              />
+                              <body
+                                name="left_fr3v2_link4"
+                                pos="0.0825 0 0"
+                                quat="0.707107 0.707107 0 0"
+                                gravcomp="1"
+                              >
+                                <inertial
+                                  pos="-0.087533 0.096335 0.01012"
+                                  quat="0.725019 0.567552 -0.379628 -0.0900828"
+                                  mass="2.18154"
+                                  diaginertia="0.0126388 0.00973606 0.00442618"
+                                />
+                                <joint
+                                  name="left_fr3v2_joint4"
+                                  pos="0 0 0"
+                                  axis="0 0 1"
+                                  range="-3.07702 -0.116937"
+                                  actuatorfrcrange="-87 87"
+                                  damping="0.003"
+                                  frictionloss="0.2"
+                                />
+                                <geom
+                                  name="link4"
+                                  type="mesh"
+                                  contype="0"
+                                  conaffinity="0"
+                                  group="1"
+                                  density="0"
+                                  mesh="link4"
+                                />
+                                <geom name="link42" type="mesh" mesh="link4" />
+                                <body
+                                  name="left_fr3v2_link4_accelerometer_top"
+                                  pos="-0.0651 0.046152 -0.00787"
+                                  quat="-2.59734e-06 2.59735e-06 0.707108 -0.707105"
+                                  gravcomp="1"
+                                />
+                                <body
+                                  name="left_fr3v2_link4_accelerometer_bottom"
+                                  pos="-0.062775 0.049753 0.00155"
+                                  quat="0.499998 -0.5 0.5 0.500002"
+                                  gravcomp="1"
+                                />
+                                <body
+                                  name="left_fr3v2_link5"
+                                  pos="-0.0825 0.384 0"
+                                  quat="0.707107 -0.707107 0 0"
+                                  gravcomp="1"
+                                >
+                                  <inertial
+                                    pos="0.008383 0.01018 -0.053265"
+                                    quat="0.993747 -0.0901363 0.0101557 0.0651102"
+                                    mass="2.18688"
+                                    diaginertia="0.0318998 0.0305191 0.0038801"
+                                  />
+                                  <joint
+                                    name="left_fr3v2_joint5"
+                                    pos="0 0 0"
+                                    axis="0 0 1"
+                                    range="-2.8763 2.8763"
+                                    actuatorfrcrange="-12 12"
+                                    damping="0.003"
+                                    frictionloss="0.2"
+                                  />
+                                  <geom
+                                    name="link5"
+                                    type="mesh"
+                                    contype="0"
+                                    conaffinity="0"
+                                    group="1"
+                                    density="0"
+                                    mesh="link5"
+                                  />
+                                  <geom
+                                    name="link52"
+                                    type="mesh"
+                                    mesh="link5"
+                                  />
+                                  <body
+                                    name="left_fr3v2_link5_accelerometer_top"
+                                    pos="-0.017363 0.085872 -0.00795"
+                                    quat="0.707105 -0.707108 0 0"
+                                    gravcomp="1"
+                                  />
+                                  <body
+                                    name="left_fr3v2_link5_accelerometer_bottom"
+                                    pos="-0.019742 0.082275 0.00146"
+                                    quat="0.499998 0.5 0.5 -0.500002"
+                                    gravcomp="1"
+                                  />
+                                  <body
+                                    name="left_fr3v2_link6"
+                                    quat="0.707107 0.707107 0 0"
+                                    gravcomp="1"
+                                  >
+                                    <inertial
+                                      pos="0.070391 -0.016074 -0.035025"
+                                      quat="-0.141552 0.574736 0.130817 0.795317"
+                                      mass="1.57968"
+                                      diaginertia="0.0047496 0.0041461 0.0024043"
+                                    />
+                                    <joint
+                                      name="left_fr3v2_joint6"
+                                      pos="0 0 0"
+                                      axis="0 0 1"
+                                      range="0.439823 4.62163"
+                                      actuatorfrcrange="-12 12"
+                                      damping="0.003"
+                                      frictionloss="0.2"
+                                    />
+                                    <geom
+                                      name="link6"
+                                      type="mesh"
+                                      contype="0"
+                                      conaffinity="0"
+                                      group="1"
+                                      density="0"
+                                      mesh="link6"
+                                    />
+                                    <geom
+                                      name="link62"
+                                      type="mesh"
+                                      mesh="link6"
+                                    />
+                                    <body
+                                      name="left_fr3v2_link7"
+                                      pos="0.088 0 0"
+                                      quat="0.707107 0.707107 0 0"
+                                      gravcomp="1"
+                                    >
+                                      <inertial
+                                        pos="-0.009108 0.018151 0.064946"
+                                        quat="0.70836 0.00347393 0.0424735 0.704564"
+                                        mass="0.694841"
+                                        diaginertia="0.00110022 0.000899844 0.000699938"
+                                      />
+                                      <joint
+                                        name="left_fr3v2_joint7"
+                                        pos="0 0 0"
+                                        axis="0 0 1"
+                                        range="-3.05083 3.05083"
+                                        actuatorfrcrange="-12 12"
+                                        damping="0.003"
+                                        frictionloss="0.2"
+                                      />
+                                      <geom
+                                        name="link7"
+                                        type="mesh"
+                                        contype="0"
+                                        conaffinity="0"
+                                        group="1"
+                                        density="0"
+                                        mesh="link7"
+                                      />
+                                      <geom
+                                        name="link72"
+                                        type="mesh"
+                                        mesh="link7"
+                                      />
+                                      <body
+                                        name="left_fr3v2_link8"
+                                        pos="0 0 0.107"
+                                        gravcomp="1"
+                                      >
+                                        <body
+                                          name="left_fr3v2_hand"
+                                          quat="0.92388 0 0 -0.382683"
+                                          gravcomp="1"
+                                        >
+                                          <inertial
+                                            pos="-3.76e-05 0.0119128 0.020726"
+                                            quat="0.702181 0.711999 0 0"
+                                            mass="0.6544"
+                                            diaginertia="0.00186 0.00174028 0.000299722"
+                                          />
+                                          <geom
+                                            name="hand"
+                                            type="mesh"
+                                            contype="0"
+                                            conaffinity="0"
+                                            group="1"
+                                            density="0"
+                                            mesh="hand"
+                                          />
+                                          <geom
+                                            name="hand2"
+                                            type="mesh"
+                                            mesh="hand"
+                                          />
+                                          <body
+                                            name="left_fr3v2_hand_tcp"
+                                            pos="0 0 0.1034"
+                                            gravcomp="1"
+                                          >
+                                            <body
+                                              name="left_grasp_link"
+                                              quat="0.707107 0 0 -0.707107"
+                                              gravcomp="1"
+                                            />
+                                          </body>
+                                          <body
+                                            name="left_fr3v2_leftfinger"
+                                            pos="0 0 0.0584"
+                                            gravcomp="1"
+                                          >
+                                            <inertial
+                                              pos="0 0.015285 0.0219675"
+                                              quat="0.705067 -0.0536699 0.0536699 0.705067"
+                                              mass="0.0291"
+                                              diaginertia="8.69232e-06 8.49e-06 1.60768e-06"
+                                            />
+                                            <joint
+                                              name="left_fr3v2_finger_joint1"
+                                              pos="0 0 0"
+                                              axis="0 1 0"
+                                              type="slide"
+                                              range="0 0.04"
+                                              actuatorfrcrange="-100 100"
+                                              damping="0.3"
+                                            />
+                                            <geom
+                                              name="finger_0"
+                                              type="mesh"
+                                              contype="0"
+                                              conaffinity="0"
+                                              group="1"
+                                              density="0"
+                                              mesh="finger_0"
+                                            />
+                                            <geom
+                                              type="mesh"
+                                              contype="0"
+                                              conaffinity="0"
+                                              group="1"
+                                              density="0"
+                                              mesh="finger_1"
+                                              name="finger_1"
+                                            />
+                                            <geom
+                                              size="0.011 0.0075 0.01"
+                                              pos="0 0.0185 0.011"
+                                              type="box"
+                                              name="left_fr3v2_leftfinger"
+                                            />
+                                            <geom
+                                              size="0.011 0.0044 0.0019"
+                                              pos="0 0.0068 0.0022"
+                                              type="box"
+                                              name="left_fr3v2_leftfinger2"
+                                            />
+                                            <geom
+                                              size="0.00875 0.0035 0.01175"
+                                              pos="0 0.0159 0.02835"
+                                              quat="0.965926 0.258819 0 0"
+                                              type="box"
+                                              name="left_fr3v2_leftfinger3"
+                                            />
+                                            <geom
+                                              size="0.00875 0.0076 0.00925"
+                                              pos="0 0.00758 0.04525"
+                                              type="box"
+                                              name="left_fr3v2_leftfinger4"
+                                            />
+                                          </body>
+                                          <body
+                                            name="left_fr3v2_rightfinger"
+                                            pos="0 0 0.0584"
+                                            quat="0 0 0 1"
+                                            gravcomp="1"
+                                          >
+                                            <inertial
+                                              pos="0 0.015285 0.0219675"
+                                              quat="0.705067 -0.0536699 0.0536699 0.705067"
+                                              mass="0.0291"
+                                              diaginertia="8.69232e-06 8.49e-06 1.60768e-06"
+                                            />
+                                            <joint
+                                              name="left_fr3v2_finger_joint2"
+                                              pos="0 0 0"
+                                              axis="0 1 0"
+                                              type="slide"
+                                              range="0 0.04"
+                                              actuatorfrcrange="-100 100"
+                                              damping="0.3"
+                                            />
+                                            <geom
+                                              name="finger_02"
+                                              type="mesh"
+                                              contype="0"
+                                              conaffinity="0"
+                                              group="1"
+                                              density="0"
+                                              mesh="finger_0"
+                                            />
+                                            <geom
+                                              type="mesh"
+                                              contype="0"
+                                              conaffinity="0"
+                                              group="1"
+                                              density="0"
+                                              mesh="finger_1"
+                                              name="finger_12"
+                                            />
+                                            <geom
+                                              size="0.011 0.0075 0.01"
+                                              pos="0 0.0185 0.011"
+                                              type="box"
+                                              name="left_fr3v2_rightfinger"
+                                            />
+                                            <geom
+                                              size="0.011 0.0044 0.0019"
+                                              pos="0 0.0068 0.0022"
+                                              type="box"
+                                              name="left_fr3v2_rightfinger2"
+                                            />
+                                            <geom
+                                              size="0.00875 0.0035 0.01175"
+                                              pos="0 0.0159 0.02835"
+                                              quat="0 0 -0.258819 0.965926"
+                                              type="box"
+                                              name="left_fr3v2_rightfinger3"
+                                            />
+                                            <geom
+                                              size="0.00875 0.0076 0.00925"
+                                              pos="0 0.00758 0.04525"
+                                              type="box"
+                                              name="left_fr3v2_rightfinger4"
+                                            />
+                                          </body>
+                                        </body>
+                                      </body>
+                                    </body>
+                                  </body>
+                                </body>
+                              </body>
+                            </body>
+                          </body>
+                        </body>
+                      </body>
+                    </body>
+                  </body>
+                  <body
+                    name="fr3_duo_mount_right"
+                    pos="0 -0.05018 0"
+                    quat="0.865807 0.436878 0.0222879 0.242939"
+                    gravcomp="1"
+                  >
+                    <body name="right_base" gravcomp="1">
+                      <body name="right_fr3v2_link0" gravcomp="1">
+                        <inertial
+                          pos="-0.0172 0.0004 0.0745"
+                          quat="0.661377 -0.250161 -0.250161 0.661377"
+                          mass="2.3966"
+                          diaginertia="0.0115 0.0107656 0.00673444"
+                        />
+                        <geom
+                          name="link03"
+                          type="mesh"
+                          contype="0"
+                          conaffinity="0"
+                          group="1"
+                          density="0"
+                          mesh="link0"
+                        />
+                        <geom name="link04" type="mesh" mesh="link0" />
+                        <body
+                          name="right_fr3v2_link0_accelerometer_top"
+                          pos="-0.017402 -0.007872 0.04715"
+                          quat="-3.67321e-06 1 0 0"
+                          gravcomp="1"
+                        />
+                        <body
+                          name="right_fr3v2_link0_accelerometer_bottom"
+                          pos="-0.019739 0.0015506 0.05075"
+                          quat="0.707105 0 0 -0.707108"
+                          gravcomp="1"
+                        />
+                        <body
+                          name="right_fr3v2_link1"
+                          pos="0 0 0.333"
+                          gravcomp="1"
+                        >
+                          <inertial
+                            pos="-0.00458 0.027016 -0.0618"
+                            quat="0.989811 0.110789 0.00992127 0.0888923"
+                            mass="2.4377"
+                            diaginertia="0.0233003 0.0222611 0.00463865"
+                          />
+                          <joint
+                            name="right_fr3v2_joint1"
+                            pos="0 0 0"
+                            axis="0 0 1"
+                            range="-2.90074 2.90074"
+                            actuatorfrcrange="-87 87"
+                            damping="0.003"
+                            frictionloss="0.2"
+                          />
+                          <geom
+                            name="link13"
+                            type="mesh"
+                            contype="0"
+                            conaffinity="0"
+                            group="1"
+                            density="0"
+                            mesh="link1"
+                          />
+                          <geom name="link14" type="mesh" mesh="link1" />
+                          <body
+                            name="right_fr3v2_link1_accelerometer_top"
+                            pos="0.017402 -0.093352 -0.00787"
+                            quat="-2.59734e-06 2.59735e-06 -0.707108 0.707105"
+                            gravcomp="1"
+                          />
+                          <body
+                            name="right_fr3v2_link1_accelerometer_bottom"
+                            pos="0.01974 -0.08975 0.00155"
+                            quat="0.499998 -0.5 0.5 0.500002"
+                            gravcomp="1"
+                          />
+                          <body
+                            name="right_fr3v2_link2"
+                            quat="0.707107 -0.707107 0 0"
+                            gravcomp="1"
+                          >
+                            <inertial
+                              pos="0.004541 -0.180691 -0.010479"
+                              quat="0.644329 0.758803 -0.0323054 0.0895283"
+                              mass="2.2375"
+                              diaginertia="0.0192001 0.0173406 0.0052593"
+                            />
+                            <joint
+                              name="right_fr3v2_joint2"
+                              pos="0 0 0"
+                              axis="0 0 1"
+                              range="-1.83609 1.83609"
+                              actuatorfrcrange="-87 87"
+                              damping="0.003"
+                              frictionloss="0.2"
+                            />
+                            <geom
+                              name="link23"
+                              type="mesh"
+                              contype="0"
+                              conaffinity="0"
+                              group="1"
+                              density="0"
+                              mesh="link2"
+                            />
+                            <geom name="link24" type="mesh" mesh="link2" />
+                            <body
+                              name="right_fr3v2_link2_accelerometer_top"
+                              pos="0.017403 -0.11515 0.00787"
+                              quat="-2.59734e-06 -2.59735e-06 0.707108 0.707105"
+                              gravcomp="1"
+                            />
+                            <body
+                              name="right_fr3v2_link2_accelerometer_bottom"
+                              pos="0.019737 -0.11875 -0.00155"
+                              quat="0.499998 0.5 -0.5 0.500002"
+                              gravcomp="1"
+                            />
+                            <body
+                              name="right_fr3v2_link3"
+                              pos="0 -0.316 0"
+                              quat="0.707107 0.707107 0 0"
+                              gravcomp="1"
+                            >
+                              <inertial
+                                pos="0.08254 0.019082 0.042027"
+                                quat="0.877348 -0.0280595 -0.265819 0.398514"
+                                mass="2.19308"
+                                diaginertia="0.0146052 0.0104212 0.00447362"
+                              />
+                              <joint
+                                name="right_fr3v2_joint3"
+                                pos="0 0 0"
+                                axis="0 0 1"
+                                range="-2.90074 2.90074"
+                                actuatorfrcrange="-87 87"
+                                damping="0.003"
+                                frictionloss="0.2"
+                              />
+                              <geom
+                                name="link33"
+                                type="mesh"
+                                contype="0"
+                                conaffinity="0"
+                                group="1"
+                                density="0"
+                                mesh="link3"
+                              />
+                              <geom name="link34" type="mesh" mesh="link3" />
+                              <body
+                                name="right_fr3v2_link3_accelerometer_top"
+                                pos="0.065099 0.077352 -0.00787"
+                                quat="0.707105 -0.707108 0 0"
+                                gravcomp="1"
+                              />
+                              <body
+                                name="right_fr3v2_link3_accelerometer_bottom"
+                                pos="0.062769 0.073756 0.00155"
+                                quat="0.499998 0.5 0.5 -0.500002"
+                                gravcomp="1"
+                              />
+                              <body
+                                name="right_fr3v2_link4"
+                                pos="0.0825 0 0"
+                                quat="0.707107 0.707107 0 0"
+                                gravcomp="1"
+                              >
+                                <inertial
+                                  pos="-0.087533 0.096335 0.01012"
+                                  quat="0.725019 0.567552 -0.379628 -0.0900828"
+                                  mass="2.18154"
+                                  diaginertia="0.0126388 0.00973606 0.00442618"
+                                />
+                                <joint
+                                  name="right_fr3v2_joint4"
+                                  pos="0 0 0"
+                                  axis="0 0 1"
+                                  range="-3.07702 -0.116937"
+                                  actuatorfrcrange="-87 87"
+                                  damping="0.003"
+                                  frictionloss="0.2"
+                                />
+                                <geom
+                                  name="link43"
+                                  type="mesh"
+                                  contype="0"
+                                  conaffinity="0"
+                                  group="1"
+                                  density="0"
+                                  mesh="link4"
+                                />
+                                <geom name="link44" type="mesh" mesh="link4" />
+                                <body
+                                  name="right_fr3v2_link4_accelerometer_top"
+                                  pos="-0.0651 0.046152 -0.00787"
+                                  quat="-2.59734e-06 2.59735e-06 0.707108 -0.707105"
+                                  gravcomp="1"
+                                />
+                                <body
+                                  name="right_fr3v2_link4_accelerometer_bottom"
+                                  pos="-0.062775 0.049753 0.00155"
+                                  quat="0.499998 -0.5 0.5 0.500002"
+                                  gravcomp="1"
+                                />
+                                <body
+                                  name="right_fr3v2_link5"
+                                  pos="-0.0825 0.384 0"
+                                  quat="0.707107 -0.707107 0 0"
+                                  gravcomp="1"
+                                >
+                                  <inertial
+                                    pos="0.008383 0.01018 -0.053265"
+                                    quat="0.993747 -0.0901363 0.0101557 0.0651102"
+                                    mass="2.18688"
+                                    diaginertia="0.0318998 0.0305191 0.0038801"
+                                  />
+                                  <joint
+                                    name="right_fr3v2_joint5"
+                                    pos="0 0 0"
+                                    axis="0 0 1"
+                                    range="-2.8763 2.8763"
+                                    actuatorfrcrange="-12 12"
+                                    damping="0.003"
+                                    frictionloss="0.2"
+                                  />
+                                  <geom
+                                    name="link53"
+                                    type="mesh"
+                                    contype="0"
+                                    conaffinity="0"
+                                    group="1"
+                                    density="0"
+                                    mesh="link5"
+                                  />
+                                  <geom
+                                    name="link54"
+                                    type="mesh"
+                                    mesh="link5"
+                                  />
+                                  <body
+                                    name="right_fr3v2_link5_accelerometer_top"
+                                    pos="-0.017363 0.085872 -0.00795"
+                                    quat="0.707105 -0.707108 0 0"
+                                    gravcomp="1"
+                                  />
+                                  <body
+                                    name="right_fr3v2_link5_accelerometer_bottom"
+                                    pos="-0.019742 0.082275 0.00146"
+                                    quat="0.499998 0.5 0.5 -0.500002"
+                                    gravcomp="1"
+                                  />
+                                  <body
+                                    name="right_fr3v2_link6"
+                                    quat="0.707107 0.707107 0 0"
+                                    gravcomp="1"
+                                  >
+                                    <inertial
+                                      pos="0.070391 -0.016074 -0.035025"
+                                      quat="-0.141552 0.574736 0.130817 0.795317"
+                                      mass="1.57968"
+                                      diaginertia="0.0047496 0.0041461 0.0024043"
+                                    />
+                                    <joint
+                                      name="right_fr3v2_joint6"
+                                      pos="0 0 0"
+                                      axis="0 0 1"
+                                      range="0.439823 4.62163"
+                                      actuatorfrcrange="-12 12"
+                                      damping="0.003"
+                                      frictionloss="0.2"
+                                    />
+                                    <geom
+                                      name="link63"
+                                      type="mesh"
+                                      contype="0"
+                                      conaffinity="0"
+                                      group="1"
+                                      density="0"
+                                      mesh="link6"
+                                    />
+                                    <geom
+                                      name="link64"
+                                      type="mesh"
+                                      mesh="link6"
+                                    />
+                                    <body
+                                      name="right_fr3v2_link7"
+                                      pos="0.088 0 0"
+                                      quat="0.707107 0.707107 0 0"
+                                      gravcomp="1"
+                                    >
+                                      <inertial
+                                        pos="-0.009108 0.018151 0.064946"
+                                        quat="0.70836 0.00347393 0.0424735 0.704564"
+                                        mass="0.694841"
+                                        diaginertia="0.00110022 0.000899844 0.000699938"
+                                      />
+                                      <joint
+                                        name="right_fr3v2_joint7"
+                                        pos="0 0 0"
+                                        axis="0 0 1"
+                                        range="-3.05083 3.05083"
+                                        actuatorfrcrange="-12 12"
+                                        damping="0.003"
+                                        frictionloss="0.2"
+                                      />
+                                      <geom
+                                        name="link73"
+                                        type="mesh"
+                                        contype="0"
+                                        conaffinity="0"
+                                        group="1"
+                                        density="0"
+                                        mesh="link7"
+                                      />
+                                      <geom
+                                        name="link74"
+                                        type="mesh"
+                                        mesh="link7"
+                                      />
+                                      <body
+                                        name="right_fr3v2_link8"
+                                        pos="0 0 0.107"
+                                        gravcomp="1"
+                                      >
+                                        <body
+                                          name="right_fr3v2_hand"
+                                          quat="0.92388 0 0 -0.382683"
+                                          gravcomp="1"
+                                        >
+                                          <inertial
+                                            pos="-3.76e-05 0.0119128 0.020726"
+                                            quat="0.702181 0.711999 0 0"
+                                            mass="0.6544"
+                                            diaginertia="0.00186 0.00174028 0.000299722"
+                                          />
+                                          <geom
+                                            name="hand3"
+                                            type="mesh"
+                                            contype="0"
+                                            conaffinity="0"
+                                            group="1"
+                                            density="0"
+                                            mesh="hand"
+                                          />
+                                          <geom
+                                            name="hand4"
+                                            type="mesh"
+                                            mesh="hand"
+                                          />
+                                          <body
+                                            name="right_fr3v2_hand_tcp"
+                                            pos="0 0 0.1034"
+                                            gravcomp="1"
+                                          >
+                                            <body
+                                              name="right_grasp_link"
+                                              quat="0.707107 0 0 -0.707107"
+                                              gravcomp="1"
+                                            />
+                                          </body>
+                                          <body
+                                            name="right_fr3v2_leftfinger"
+                                            pos="0 0 0.0584"
+                                            gravcomp="1"
+                                          >
+                                            <inertial
+                                              pos="0 0.015285 0.0219675"
+                                              quat="0.705067 -0.0536699 0.0536699 0.705067"
+                                              mass="0.0291"
+                                              diaginertia="8.69232e-06 8.49e-06 1.60768e-06"
+                                            />
+                                            <joint
+                                              name="right_fr3v2_finger_joint1"
+                                              pos="0 0 0"
+                                              axis="0 1 0"
+                                              type="slide"
+                                              range="0 0.04"
+                                              actuatorfrcrange="-100 100"
+                                              damping="0.3"
+                                            />
+                                            <geom
+                                              name="finger_03"
+                                              type="mesh"
+                                              contype="0"
+                                              conaffinity="0"
+                                              group="1"
+                                              density="0"
+                                              mesh="finger_0"
+                                            />
+                                            <geom
+                                              type="mesh"
+                                              contype="0"
+                                              conaffinity="0"
+                                              group="1"
+                                              density="0"
+                                              mesh="finger_1"
+                                              name="finger_13"
+                                            />
+                                            <geom
+                                              size="0.011 0.0075 0.01"
+                                              pos="0 0.0185 0.011"
+                                              type="box"
+                                              name="right_fr3v2_leftfinger"
+                                            />
+                                            <geom
+                                              size="0.011 0.0044 0.0019"
+                                              pos="0 0.0068 0.0022"
+                                              type="box"
+                                              name="right_fr3v2_leftfinger2"
+                                            />
+                                            <geom
+                                              size="0.00875 0.0035 0.01175"
+                                              pos="0 0.0159 0.02835"
+                                              quat="0.965926 0.258819 0 0"
+                                              type="box"
+                                              name="right_fr3v2_leftfinger3"
+                                            />
+                                            <geom
+                                              size="0.00875 0.0076 0.00925"
+                                              pos="0 0.00758 0.04525"
+                                              type="box"
+                                              name="right_fr3v2_leftfinger4"
+                                            />
+                                          </body>
+                                          <body
+                                            name="right_fr3v2_rightfinger"
+                                            pos="0 0 0.0584"
+                                            quat="0 0 0 1"
+                                            gravcomp="1"
+                                          >
+                                            <inertial
+                                              pos="0 0.015285 0.0219675"
+                                              quat="0.705067 -0.0536699 0.0536699 0.705067"
+                                              mass="0.0291"
+                                              diaginertia="8.69232e-06 8.49e-06 1.60768e-06"
+                                            />
+                                            <joint
+                                              name="right_fr3v2_finger_joint2"
+                                              pos="0 0 0"
+                                              axis="0 1 0"
+                                              type="slide"
+                                              range="0 0.04"
+                                              actuatorfrcrange="-100 100"
+                                              damping="0.3"
+                                            />
+                                            <geom
+                                              name="finger_04"
+                                              type="mesh"
+                                              contype="0"
+                                              conaffinity="0"
+                                              group="1"
+                                              density="0"
+                                              mesh="finger_0"
+                                            />
+                                            <geom
+                                              type="mesh"
+                                              contype="0"
+                                              conaffinity="0"
+                                              group="1"
+                                              density="0"
+                                              mesh="finger_1"
+                                              name="finger_14"
+                                            />
+                                            <geom
+                                              size="0.011 0.0075 0.01"
+                                              pos="0 0.0185 0.011"
+                                              type="box"
+                                              name="right_fr3v2_rightfinger"
+                                            />
+                                            <geom
+                                              size="0.011 0.0044 0.0019"
+                                              pos="0 0.0068 0.0022"
+                                              type="box"
+                                              name="right_fr3v2_rightfinger2"
+                                            />
+                                            <geom
+                                              size="0.00875 0.0035 0.01175"
+                                              pos="0 0.0159 0.02835"
+                                              quat="0 0 -0.258819 0.965926"
+                                              type="box"
+                                              name="right_fr3v2_rightfinger3"
+                                            />
+                                            <geom
+                                              size="0.00875 0.0076 0.00925"
+                                              pos="0 0.00758 0.04525"
+                                              type="box"
+                                              name="right_fr3v2_rightfinger4"
+                                            />
+                                          </body>
+                                        </body>
+                                      </body>
+                                    </body>
+                                  </body>
+                                </body>
+                              </body>
+                            </body>
+                          </body>
+                        </body>
+                      </body>
+                    </body>
+                  </body>
+                </body>
+                <body name="head_link" pos="0 0 0.167" gravcomp="1">
+                  <inertial
+                    pos="0 0 0"
+                    quat="0.528325 -0.0289488 -0.0065557 0.848523"
+                    mass="0.350865"
+                    diaginertia="0.00308057 0.00301706 0.000150319"
+                  />
+                  <geom
+                    type="mesh"
+                    contype="0"
+                    conaffinity="0"
+                    group="1"
+                    density="0"
+                    mesh="franka_head"
+                    name="franka_head"
+                  />
+                  <geom type="mesh" mesh="franka_head" name="franka_head2" />
+                  <body
+                    name="head_camera_mounting_point"
+                    pos="0.0424638 -0.014113 0.223526"
+                    quat="0.93667 0 0.350214 0"
+                    gravcomp="1"
+                  >
+                    <inertial
+                      pos="0 0 0"
+                      mass="0.001"
+                      diaginertia="1e-07 1e-07 1e-07"
+                    />
+                  </body>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+
+  <!-- Finger coupling from MuJoCo Menagerie franka_emika_panda/hand.xml at 251ca9e (Apache-2.0) -->
+  <tendon>
+    <fixed name="left_fr3v2_finger_split">
+      <joint joint="left_fr3v2_finger_joint1" coef="0.5" />
+      <joint joint="left_fr3v2_finger_joint2" coef="0.5" />
+    </fixed>
+    <fixed name="right_fr3v2_finger_split">
+      <joint joint="right_fr3v2_finger_joint1" coef="0.5" />
+      <joint joint="right_fr3v2_finger_joint2" coef="0.5" />
+    </fixed>
+  </tendon>
+
+  <equality>
+    <joint
+      joint1="left_fr3v2_finger_joint1"
+      joint2="left_fr3v2_finger_joint2"
+      solimp="0.95 0.99 0.001"
+      solref="0.005 1"
+    />
+    <joint
+      joint1="right_fr3v2_finger_joint1"
+      joint2="right_fr3v2_finger_joint2"
+      solimp="0.95 0.99 0.001"
+      solref="0.005 1"
+    />
+  </equality>
+
+  <include file="sensors.xml" />
+</mujoco>
