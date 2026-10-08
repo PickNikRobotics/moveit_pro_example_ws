@@ -98,7 +98,8 @@
                     >
                       <Action ID="AlwaysSuccess" />
                     </Decorator>
-                    <!--The mobile base drives to the marker with Nav2; every other group plans as in the core Objective.-->
+                    <!--The mobile base stows the arms and drives to the marker with Nav2 at once, with no preview or approval prompt.-->
+                    <!--Every other group plans as in the core Objective.-->
                     <Control ID="IfThenElse">
                       <Condition
                         ID="ScriptCondition"

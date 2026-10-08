@@ -35,8 +35,9 @@
 Mock hardware moves the base exactly as commanded, so the planar joints (planar_x, planar_y,
 planar_theta) are the true base pose in odom. This node turns them into nav_msgs/Odometry:
 the pose from the joint positions, and the twist rotated into base_link from the joint velocities.
-robot_state_publisher already publishes odom -> base_link from the same joints, so this node
-publishes no TF.
+It keeps the latest planar state and publishes it at a fixed rate (odom_rate_hz), stamped with
+that joint state's time. robot_state_publisher already publishes odom -> base_link from the same
+joints, so this node publishes no TF.
 
 """
 
@@ -70,7 +71,9 @@ def main():
             self._odom_frame = p("odom_frame_id", "odom").value
             self._base_frame = p("base_frame_id", "base_link").value
             self._pub = self.create_publisher(Odometry, p("odom_topic", "/odom").value, 10)
+            self._state = None
             self.create_subscription(JointState, "/joint_states", self._on_joint_states, 10)
+            self.create_timer(1.0 / float(p("odom_rate_hz", 50.0).value), self._tick)
 
         def _on_joint_states(self, msg):
             index = {name: i for i, name in enumerate(msg.name)}
@@ -81,9 +84,15 @@ def main():
                 msg.velocity[index[j]] if len(msg.velocity) > index[j] else 0.0
                 for j in JOINTS
             ]
+            self._state = (msg.header.stamp, positions, velocities)
+
+        def _tick(self):
+            if self._state is None:
+                return
+            stamp, positions, velocities = self._state
             (x, y, yaw), (vx, vy, wz) = planar_odometry(positions, velocities)
             odom = Odometry()
-            odom.header.stamp = msg.header.stamp
+            odom.header.stamp = stamp
             odom.header.frame_id = self._odom_frame
             odom.child_frame_id = self._base_frame
             odom.pose.pose.position.x = x
