@@ -14,11 +14,13 @@ git clone <repo-url>
 
 Robot descriptions and simulation assets are vendored under `src/external_dependencies`, along with `feetech_ros2_driver`, the hardware driver `so101_base_config` uses to command real SO-101 hardware; each vendored source has an `UPSTREAM.yaml` file recording its repository, commit, and pruned paths. No source submodules are required for simulation.
 
-The `moveit_pro_sam2` and `moveit_pro_sam3` submodules contain optional perception models used by ML demonstration Objectives. Initialize them only when those Objectives are needed:
+The `moveit_pro_sam2` submodule contains an optional perception model used by ML demonstration Objectives. Initialize it only when those Objectives are needed:
 
 ```bash
-git submodule update --init src/moveit_pro_sam2 src/moveit_pro_sam3
+git submodule update --init src/moveit_pro_sam2
 ```
+
+The `moveit_pro_sam3` package is part of this repository but contains no model files. Its build downloads the SAM3 ONNX files; see `src/moveit_pro_sam3/README.md`.
 
 ## Robot Configs
 
@@ -48,4 +50,4 @@ The hardware-only `kinova_gen3_site_config` and `picknik_ur_site_config` configu
 
 Each `UPSTREAM.yaml` file under `src/external_dependencies` records the exact upstream commit and retained paths. Run `bin/vendored_dependency.py status` to see how many commits each pinned upstream branch has moved past its recorded commit; CI publishes the same table in the job summary of the `Validate workspace dependencies` job. To refresh a dependency by hand, fetch upstream at the new commit, copy the retained paths in, preserve its license files, reapply the documented pruning and local edits, update `commit:` in `UPSTREAM.yaml`, and validate every config that consumes the package. `bin/vendored_dependency.py update <source>` (optionally `--to <commit>`) does the same steps for one source: it re-vendors the retained paths at the new commit, carries over every local difference from the pinned commit (edits and pruned files alike) as a three-way merge, updates `commit:`, and then runs the manifest checks (`modified_paths` ledger and license policy). It refuses to start while the source directory has uncommitted, untracked, or ignored files, so the result can always be discarded with `git restore` and `git clean`. Conflicts are left as ordinary conflict markers to resolve by hand. A run that stops early has already rewritten the source and its pin; the message names the discard command. Refresh one source per PR, and build and run the configs that consume it before committing. Every Sunday CI runs `update` for each drifted source and opens or updates a draft PR per source on the `vendored-refresh/<source>` branch; an update that stops on conflicts or a needed `UPSTREAM.yaml` edit still opens its PR, with the conflict markers and the update output, for a person to finish.
 
-The optional ML model submodules can be advanced independently when their demonstration Objectives need a newer model package.
+The `moveit_pro_sam2` submodule can be advanced independently when its demonstration Objectives need a newer model package.
