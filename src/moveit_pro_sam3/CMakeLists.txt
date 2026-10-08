@@ -20,14 +20,25 @@ set(SAM3_MODEL_SHA256S
   a6cef9ee22aa9d165666b2753cc59a201fa90b6a399e1cd3f3e0a1e8ec38ac12
   fde841d45a0bf890d402236632e9dcaa6e5fd19e3c40fc48fe8cd1c6911f34eb
   4ae7cca96889f1c72063cdb5cb9115d240ce1c8e5d2d4dbd389bc73c7d3f68b9)
+# The release fixes the batch axis at 1, but MoveIt Pro 9.4 only accepts SAM3
+# inputs with a dynamic dimension. cmake/make_batch_dynamic.py renames that axis,
+# and these are the hashes of its output, which is what gets installed.
+set(SAM3_INSTALLED_SHA256S
+  f6faaa89d904acfc78f7650d19c16680bfcef5d69869eb596891037ef5198cf5
+  881559d0535daff46c7f1bf92b1b381f163d462bdd9eb9d5a2c1f5423526120a
+  9ebe1b7a7fa2eba2994bc2c2987a3b6ea409f6031ccd17e46045ad3229d6204f
+  ebfda94b87993642496702691d4dcbc3ae27b63db3fbe0abe0f7f156f728a964)
+
+find_package(Python3 REQUIRED COMPONENTS Interpreter)
 
 set(SAM3_MODEL_PATHS)
-foreach(model_file model_sha256 IN ZIP_LISTS SAM3_MODEL_FILES SAM3_MODEL_SHA256S)
+foreach(model_file model_sha256 installed_sha256
+    IN ZIP_LISTS SAM3_MODEL_FILES SAM3_MODEL_SHA256S SAM3_INSTALLED_SHA256S)
   set(model_path "${SAM3_MODEL_DIR}/${model_file}")
   list(APPEND SAM3_MODEL_PATHS "${model_path}")
   if(EXISTS "${model_path}")
     file(SHA256 "${model_path}" actual_sha256)
-    if(actual_sha256 STREQUAL model_sha256)
+    if(actual_sha256 STREQUAL installed_sha256)
       continue()
     endif()
   endif()
@@ -55,7 +66,25 @@ foreach(model_file model_sha256 IN ZIP_LISTS SAM3_MODEL_FILES SAM3_MODEL_SHA256S
       "${model_sha256}, so it was not used. The upstream file differs from the one "
       "MoveIt Pro was tested with; contact PickNik support.")
   endif()
-  file(RENAME "${model_path}.part" "${model_path}")
+  execute_process(
+    COMMAND "${Python3_EXECUTABLE}" -I
+      "${CMAKE_CURRENT_SOURCE_DIR}/cmake/make_batch_dynamic.py"
+      "${model_path}.part" "${model_path}.patched"
+    RESULT_VARIABLE patch_result)
+  file(REMOVE "${model_path}.part")
+  if(NOT patch_result EQUAL 0)
+    file(REMOVE "${model_path}.patched")
+    message(FATAL_ERROR
+      "make_batch_dynamic.py failed on SAM3 model file ${model_file}: ${patch_result}")
+  endif()
+  file(SHA256 "${model_path}.patched" actual_sha256)
+  if(NOT actual_sha256 STREQUAL installed_sha256)
+    file(REMOVE "${model_path}.patched")
+    message(FATAL_ERROR
+      "make_batch_dynamic.py turned SAM3 model file ${model_file} into a file with "
+      "SHA-256 ${actual_sha256}, expected ${installed_sha256}.")
+  endif()
+  file(RENAME "${model_path}.patched" "${model_path}")
 endforeach()
 
 # Copy files into the install tree instead of using install(FILES). Under colcon's
