@@ -114,7 +114,6 @@
           admittance_parameters_msg="{admittance_parameters_msg}"
           controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory"
           goal_duration_tolerance="-1.000000"
-          goal_position_tolerance="0.001000"
           joint_trajectory_msg="{joint_trajectory_msg}"
         />
         <Decorator ID="Delay" delay_msec="400">
@@ -124,7 +123,6 @@
             absolute_force_torque_threshold="45;45;45;10;10;10"
             execution_pipeline="jtac"
             admittance_parameters_msg="{admittance_parameters_msg}"
-            goal_position_tolerance="0.001000"
             path_position_tolerance="0.2"
             controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory"
             goal_duration_tolerance="-1.000000"
