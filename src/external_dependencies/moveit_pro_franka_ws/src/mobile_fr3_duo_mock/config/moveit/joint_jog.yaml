@@ -1,0 +1,4 @@
+# Planning groups to use in JointJog, and their corresponding JVC controllers.
+# The number of elements in `planning_groups` and `controllers` must match.
+planning_groups: ['left_manipulator_without_spine', 'right_manipulator_without_spine', 'mobile_base', 'spine']
+controllers: ['left_jvc', 'right_jvc', 'base_jvc', 'spine_jvc']

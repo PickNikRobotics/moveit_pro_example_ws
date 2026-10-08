@@ -1,0 +1,36 @@
+based_on_package: mobile_fr3_duo_mock
+
+hardware:
+  robot_description:
+    urdf_params:
+      - hardware_interface: "mujoco"
+      - mujoco_model: "mjcf/scene.xml"
+      - mujoco_viewer: "False"
+  additional_driver_launch_file:
+    package: "mobile_fr3_duo_sim"
+    path: "launch/additional_driver_nodes.launch.py"
+
+ros2_control:
+  config:
+    package: "mobile_fr3_duo_sim"
+    path: "config/control/mobile_fr3_duo.ros2_control.yaml"
+  controllers_active_at_startup:
+    - "joint_state_broadcaster"
+    - "imu_sensor_broadcaster"
+    - "left_gripper_controller"
+    - "right_gripper_controller"
+    - "base_jgvc"
+    - "joint_trajectory_admittance_controller"
+  controllers_inactive_at_startup:
+    - "spine_jtc"
+    - "spine_jvc"
+    - "left_jtac"
+    - "right_jtac"
+    - "left_jtac_w_spine"
+    - "right_jtac_w_spine"
+    - "left_vfc"
+    - "left_jvc"
+    - "right_vfc"
+    - "right_jvc"
+    - "base_jvc"
+    - "base_vfc"

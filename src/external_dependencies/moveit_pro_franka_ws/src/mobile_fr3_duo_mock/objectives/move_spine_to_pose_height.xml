@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Move Spine to Pose Height">
+  <!-- Mock and sim version: spine_jtc drives the spine. Real hardware needs its own version that calls the spine's MoveAbsolute action. -->
+  <BehaviorTree
+    ID="Move Spine to Pose Height"
+    _description="Move the spine so the arm mount reaches the height of a target pose, then stop. The arms do not move."
+    _favorite="false"
+  >
+    <Control ID="Sequence">
+      <Action
+        ID="GetCurrentPlanningScene"
+        planning_scene_msg="{planning_scene}"
+      />
+      <Action
+        ID="GetSpineStateForPoseHeight"
+        target_pose="{target_pose}"
+        planning_scene="{planning_scene}"
+        height_bias="{height_bias}"
+        spine_joint_state="{spine_joint_state}"
+        target_spine_value="{target_spine_value}"
+      />
+      <SubTree
+        ID="Move to Joint State"
+        _collapsed="true"
+        target_joint_state="{spine_joint_state}"
+        joint_group_name="spine"
+        controller_names="spine_jtc"
+        controller_action_server="/spine_jtc/follow_joint_trajectory"
+        execution_pipeline="jtc"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Move Spine to Pose Height">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Motion - Execute" />
+      </MetadataFields>
+      <input_port
+        name="target_pose"
+        default="{target_pose}"
+        type="geometry_msgs::msg::PoseStamped"
+      >
+        Pose the arms should reach. The arm mount (franka_spine_mounting_point) is driven to its height, clamped to the spine travel.
+      </input_port>
+      <input_port name="height_bias" default="0.0" type="double">
+        Added to the pose height in meters. Positive puts the arm mount above the pose.
+      </input_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>

@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:macro name="mobile_fr3_duo_mock_commanded_joint" params="name initial_position:=0.0">
+    <joint name="${name}">
+      <command_interface name="position"/>
+      <state_interface name="position">
+        <param name="initial_value">${initial_position}</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+  </xacro:macro>
+
+  <!-- The base controllers (Nav2's base_jgvc and the base jogs) command velocity. -->
+  <xacro:macro name="mobile_fr3_duo_mock_planar_joint" params="name">
+    <joint name="${name}">
+      <command_interface name="velocity"/>
+      <state_interface name="position">
+        <param name="initial_value">0.0</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+  </xacro:macro>
+
+  <xacro:macro name="mobile_fr3_duo_mock_passive_joint" params="name">
+    <joint name="${name}">
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+    </joint>
+  </xacro:macro>
+
+  <xacro:macro name="mobile_fr3_duo_mock_arm_joints" params="prefix">
+    <!-- Initial positions: "ready" state from franka_description robots/common/group_definition.xacro -->
+    <xacro:mobile_fr3_duo_mock_commanded_joint name="${prefix}_fr3v2_joint1" initial_position="0.0"/>
+    <xacro:mobile_fr3_duo_mock_commanded_joint name="${prefix}_fr3v2_joint2" initial_position="${-pi/4}"/>
+    <xacro:mobile_fr3_duo_mock_commanded_joint name="${prefix}_fr3v2_joint3" initial_position="0.0"/>
+    <xacro:mobile_fr3_duo_mock_commanded_joint name="${prefix}_fr3v2_joint4" initial_position="${-3*pi/4}"/>
+    <xacro:mobile_fr3_duo_mock_commanded_joint name="${prefix}_fr3v2_joint5" initial_position="0.0"/>
+    <xacro:mobile_fr3_duo_mock_commanded_joint name="${prefix}_fr3v2_joint6" initial_position="${pi/2}"/>
+    <xacro:mobile_fr3_duo_mock_commanded_joint name="${prefix}_fr3v2_joint7" initial_position="${pi/4}"/>
+    <!-- finger_joint2 mimics finger_joint1 in the URDF and is not listed -->
+    <xacro:mobile_fr3_duo_mock_commanded_joint name="${prefix}_fr3v2_finger_joint1"/>
+  </xacro:macro>
+
+  <xacro:macro name="mobile_fr3_duo_mock_ros2_control">
+    <ros2_control name="mobile_fr3_duo" type="system">
+      <hardware>
+        <plugin>mock_components/GenericSystem</plugin>
+        <param name="calculate_dynamics">true</param>
+      </hardware>
+
+      <xacro:mobile_fr3_duo_mock_planar_joint name="planar_x"/>
+      <xacro:mobile_fr3_duo_mock_planar_joint name="planar_y"/>
+      <xacro:mobile_fr3_duo_mock_planar_joint name="planar_theta"/>
+      <xacro:mobile_fr3_duo_mock_commanded_joint name="franka_spine_vertical_joint"/>
+      <xacro:mobile_fr3_duo_mock_arm_joints prefix="left"/>
+      <xacro:mobile_fr3_duo_mock_arm_joints prefix="right"/>
+
+      <!-- Passive base joints are state-only so that every link has a transform -->
+      <xacro:mobile_fr3_duo_mock_passive_joint name="tmrv0_2_joint_0"/>
+      <xacro:mobile_fr3_duo_mock_passive_joint name="tmrv0_2_joint_1"/>
+      <xacro:mobile_fr3_duo_mock_passive_joint name="tmrv0_2_joint_2"/>
+      <xacro:mobile_fr3_duo_mock_passive_joint name="tmrv0_2_joint_3"/>
+      <xacro:mobile_fr3_duo_mock_passive_joint name="caster_front_left_steering_joint"/>
+      <xacro:mobile_fr3_duo_mock_passive_joint name="caster_front_left_joint"/>
+      <xacro:mobile_fr3_duo_mock_passive_joint name="caster_rear_right_steering_joint"/>
+      <xacro:mobile_fr3_duo_mock_passive_joint name="caster_rear_right_joint"/>
+      <xacro:mobile_fr3_duo_mock_passive_joint name="rocker_arm_joint"/>
+    </ros2_control>
+  </xacro:macro>
+</robot>

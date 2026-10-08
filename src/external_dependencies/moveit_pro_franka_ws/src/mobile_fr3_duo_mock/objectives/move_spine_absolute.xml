@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Move Spine Absolute">
+  <!-- Mock and sim version: spine_jtc drives the spine. Real hardware needs its own version that calls the spine's MoveAbsolute action. -->
+  <BehaviorTree
+    ID="Move Spine Absolute"
+    _description="Move the spine to an absolute height, then stop. The arms do not move."
+    _favorite="true"
+  >
+    <Control ID="Sequence">
+      <Action
+        ID="CreateSpineState"
+        position="{position}"
+        spine_joint_state="{spine_joint_state}"
+      />
+      <SubTree
+        ID="Move to Joint State"
+        _collapsed="true"
+        target_joint_state="{spine_joint_state}"
+        joint_group_name="spine"
+        controller_names="spine_jtc"
+        controller_action_server="/spine_jtc/follow_joint_trajectory"
+        execution_pipeline="jtc"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Move Spine Absolute">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Motion - Execute" />
+      </MetadataFields>
+      <input_port name="position" default="0.3" type="double">
+        Absolute spine height in meters, within the spine travel. A height outside the travel fails.
+      </input_port>
+      <input_port name="velocity" default="0.05" type="double">
+        Used by the real spine. Ignored in mock and sim, where the spine joint limits set the speed.
+      </input_port>
+      <input_port name="acceleration" default="0.1" type="double">
+        Used by the real spine. Ignored in mock and sim.
+      </input_port>
+      <input_port name="deceleration" default="0.1" type="double">
+        Used by the real spine. Ignored in mock and sim.
+      </input_port>
+      <input_port name="timeout" default="60.0" type="double">
+        Used by the real spine. Ignored in mock and sim, where trajectory execution has its own timeout.
+      </input_port>
+      <input_port
+        name="action_name"
+        default="/franka_spine_node/move_absolute"
+        type="std::string"
+      >
+        The real spine's MoveAbsolute action. Ignored in mock and sim.
+      </input_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>
