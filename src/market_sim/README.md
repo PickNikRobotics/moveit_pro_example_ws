@@ -54,6 +54,13 @@ These Objectives need MoveIt Pro `main`: `ReinterpretPoseFrame`, `CallEmptyServi
 there. The reset relocalizer also re-seeds AMCL a few seconds after a keyframe reset; let it finish
 before running Localize Robot.
 
+**Known limit: AMCL can drift along the long aisles.** Inside an A to D aisle the lidars see two long,
+parallel rack rows, which hold the estimate across the aisle but only weakly along it. After a drive
+into an aisle AMCL has been measured up to 1.03 m off along the aisle, with the base up to 0.57 m
+short of a Navigate to Aisle goal; across the aisle and in heading it stays within a few centimetres.
+Nav2 judges the goal on that estimate, so the base can stop facing the wrong shelf section. Run
+**Refine Localization In Place** after the drive to correct it (MoveIt Pro `main` only, see above).
+
 ## The store
 
 `scripts/generate_market.py` builds the store from the text floor plan at the top of the script.

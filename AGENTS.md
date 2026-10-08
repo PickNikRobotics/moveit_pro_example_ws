@@ -470,6 +470,14 @@ Upstream: Nav2 issue #6370, fixed on Nav2 main (#6373, #6445), not on Jazzy. Par
 would be a node that cancels a `follow_path` goal still executing when no `navigate_to_pose` goal
 is active.
 
+## Known issue: market_sim's AMCL can drift along the long aisles
+
+After a drive into an A to D aisle, AMCL has been measured up to 1.03 m off along the aisle, with the
+base up to 0.57 m short of a Navigate to Aisle goal; it stays accurate across the aisle. This is a
+known limit, not a tuning target. Judge an aisle drive against `/ground_truth/odom`, not against Nav2's
+"goal reached", and see `src/market_sim/README.md` (Localization and navigation Objectives) for the
+cause and the correction.
+
 ## One trajectory controller, several planning groups
 
 When a config puts every joint on a single `joint_trajectory_controller` (the
