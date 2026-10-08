@@ -11,7 +11,7 @@ controller_manager:
       type: velocity_force_controller/VelocityForceController
     joint_velocity_controller:
       type: joint_velocity_controller/JointVelocityController
-    franka_gripper_controller:
+    gripper_controller:
       type: position_controllers/GripperActionController
 
 joint_trajectory_admittance_controller:
@@ -28,7 +28,7 @@ joint_trajectory_admittance_controller:
     # command when the simulation runs below realtime, as it does on CI runners.
     default_goal_time_tolerance: 0.5
 
-franka_gripper_controller:
+gripper_controller:
   ros__parameters:
     default: true
     joint: fr3_finger_joint1

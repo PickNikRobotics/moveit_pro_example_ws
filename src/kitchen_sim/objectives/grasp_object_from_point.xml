@@ -91,7 +91,7 @@
       <SubTree
         ID="Move to Pose"
         _collapsed="true"
-        controller_names="joint_trajectory_admittance_controller;franka_gripper_controller"
+        controller_names="joint_trajectory_admittance_controller;gripper_controller"
         require_user_approval="true"
         target_pose="{output_pose}"
       />
