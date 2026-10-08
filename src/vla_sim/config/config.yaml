@@ -124,6 +124,8 @@ objectives:
       - "moveit_pro::behaviors::VisionBehaviorsLoader"
       - "moveit_pro::behaviors::ConverterBehaviorsLoader"
       - "moveit_pro::behaviors::MujocoBehaviorsLoader"
+    vla_sim:
+      - "vla_sim_behaviors::VlaSimBehaviorsLoader"
   # Specify source folder for objectives
   # [Required]
   objective_library_paths:

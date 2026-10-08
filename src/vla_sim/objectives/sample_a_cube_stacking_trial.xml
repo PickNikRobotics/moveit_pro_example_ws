@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Sample a Cube Stacking Trial">
+  <!--
+    The reset Objective, the task Objective, and the scoring Objective for evaluating the cube-stacking policy all call this Subtree with the same trial_index, so they agree on each trial's layout and cube pair. Only this Subtree sets the seed. Another seed gives another set of layouts.
+  -->
+  <BehaviorTree
+    ID="Sample a Cube Stacking Trial"
+    _description="Turns trial_index into that trial's pair of cubes to stack and a cube layout inside the area the shipped cube-stacking policy was trained on. The same trial_index always gives the same layout and pair."
+    _favorite="false"
+  >
+    <Control ID="Sequence">
+      <Action
+        ID="SampleCubeStackTrial"
+        trial_index="{trial_index}"
+        seed="0"
+        cube_poses="{cube_poses}"
+        top_color="{top_color}"
+        bottom_color="{bottom_color}"
+        prompt="{prompt}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Sample a Cube Stacking Trial">
+      <MetadataFields>
+        <Metadata subcategory="Application - VLA Examples" />
+        <Metadata runnable="false" />
+      </MetadataFields>
+      <input_port name="trial_index" default="{trial_index}" type="int">
+        The number of the trial to sample, counting from 0.
+      </input_port>
+      <output_port
+        name="cube_poses"
+        default="{cube_poses}"
+        type="std::vector&lt;geometry_msgs::msg::PoseStamped&gt;"
+      >
+        Poses of the red, green, and blue cubes, in that order, in mj_world.
+      </output_port>
+      <output_port name="top_color" default="{top_color}" type="std::string">
+        The cube to pick: red, green, or blue.
+      </output_port>
+      <output_port
+        name="bottom_color"
+        default="{bottom_color}"
+        type="std::string"
+      >
+        The cube to stack top_color on.
+      </output_port>
+      <output_port name="prompt" default="{prompt}" type="std::string">
+        The instruction for the policy, naming both cubes.
+      </output_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>

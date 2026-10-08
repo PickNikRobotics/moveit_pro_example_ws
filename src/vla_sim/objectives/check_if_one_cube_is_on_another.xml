@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Check if One Cube Is on Another">
+  <!--
+    The cube frames are MuJoCo sites on each cube's centroid, which
+    picknik_mujoco_ros publishes to TF. They are the simulator's ground truth; on
+    a real cell the same check needs cube poses from perception.
+
+    Every node here answers in the tick it runs, and none logs while the cubes are apart, so the check can run on every tick of the tree. TransformPose leaves its output pose unstamped, so TransformPoseFrame takes the latest transform and neither waits nor warns.
+
+    top_color and bottom_color pick the cubes, so the same Subtree checks any pair. The stack check accepts the top cube's center within half a cube width of the point 3 cm straight up from the bottom cube's center, so the top cube rests on top of the bottom cube. The gripper check fails while the policy still holds the top cube on the stack. The rotation tolerances are above pi, which turns the angle checks off, so either cube can rest on any face.
+  -->
+  <BehaviorTree
+    ID="Check if One Cube Is on Another"
+    _description="Checks the simulator's cube poses once. Returns SUCCESS if the top_color cube rests on the bottom_color cube and the gripper is at least 5 cm from it, and FAILURE otherwise. The colors default to blue on green."
+    _favorite="false"
+  >
+    <Control ID="Sequence">
+      <Action
+        ID="Script"
+        code="top_frame := 'cube_' .. top_color .. '_tf'; bottom_frame := 'cube_' .. bottom_color .. '_tf'"
+      />
+      <!--The point 3 cm straight up from the bottom cube's center is near the origin of the top cube's frame only when the top cube sits on the bottom cube. Dropping the bottom cube's orientation makes the 3 cm run along the world's z axis, whichever face the bottom cube rests on.-->
+      <Action
+        ID="GetLatestTransform"
+        target_frame_id="mj_world"
+        source_frame_id="{bottom_frame}"
+        transform="{bottom_in_world}"
+      />
+      <Action
+        ID="ConvertTransformStampedToPoseStamped"
+        transform_stamped="{bottom_in_world}"
+        pose_stamped="{bottom_pose}"
+      />
+      <Action
+        ID="OverridePoseOrientation"
+        input_pose="{bottom_pose}"
+        orientation_xyzw="0;0;0;1"
+        output_pose="{bottom_center}"
+      />
+      <Action
+        ID="TransformPose"
+        input_pose="{bottom_center}"
+        translation_xyz="0;0;0.03"
+        quaternion_xyzw="0;0;0;1"
+        output_pose="{stack_point}"
+      />
+      <Action
+        ID="TransformPoseFrame"
+        input_pose="{stack_point}"
+        target_frame_id="{top_frame}"
+        output_pose="{stack_offset}"
+      />
+      <Action
+        ID="IsPoseNearIdentity"
+        pose="{stack_offset}"
+        position_tolerance="0.015"
+        rotation_tolerance="3.15"
+      />
+      <Action
+        ID="GetLatestTransform"
+        target_frame_id="grasp_link"
+        source_frame_id="{top_frame}"
+        transform="{top_in_gripper}"
+      />
+      <Action
+        ID="ConvertTransformStampedToPoseStamped"
+        transform_stamped="{top_in_gripper}"
+        pose_stamped="{top_gripper_pose}"
+      />
+      <Decorator ID="Inverter">
+        <Action
+          ID="IsPoseNearIdentity"
+          pose="{top_gripper_pose}"
+          position_tolerance="0.05"
+          rotation_tolerance="3.15"
+        />
+      </Decorator>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Check if One Cube Is on Another">
+      <MetadataFields>
+        <Metadata subcategory="Application - VLA Examples" />
+        <Metadata runnable="false" />
+      </MetadataFields>
+      <input_port name="top_color" default="blue" type="std::string">
+        The cube that must rest on the other: red, green, or blue.
+      </input_port>
+      <input_port name="bottom_color" default="green" type="std::string">
+        The cube that top_color must rest on: red, green, or blue.
+      </input_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>

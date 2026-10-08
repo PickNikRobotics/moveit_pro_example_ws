@@ -26,7 +26,7 @@
         name="ExecutePolicy"
         policy_service_name="/get_action_chunk"
         joint_group_name="manipulator"
-        prompt="stack the blue cube on the green cube"
+        prompt="{prompt}"
         total_action_steps="300"
         dt="0.1"
         committed_action_steps="20"
@@ -51,6 +51,14 @@
         <Metadata runnable="true" />
         <Metadata subcategory="Application - VLA Examples" />
       </MetadataFields>
+      <input_port
+        name="prompt"
+        default="stack the blue cube on the green cube"
+        type="std::string"
+      >
+        The instruction for the policy, naming the cube to pick and the cube to
+        stack it on.
+      </input_port>
     </SubTree>
   </TreeNodesModel>
 </root>

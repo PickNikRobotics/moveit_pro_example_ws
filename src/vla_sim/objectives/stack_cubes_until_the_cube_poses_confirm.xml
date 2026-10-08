@@ -34,8 +34,10 @@
       <Control ID="ReactiveFallback">
         <!--Runs before the policy, 100 times a second. When the check passes, the ReactiveFallback stops the policy and succeeds.-->
         <SubTree
-          ID="Check if the Blue Cube Is on the Green Cube"
+          ID="Check if One Cube Is on Another"
           _collapsed="true"
+          top_color="blue"
+          bottom_color="green"
         />
         <SubTree
           ID="Stack Cubes with the VLA Policy or Fail When Time Runs Out"
