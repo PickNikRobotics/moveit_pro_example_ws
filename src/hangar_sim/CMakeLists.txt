@@ -68,6 +68,10 @@ if(BUILD_TESTING)
   ament_add_pytest_test(
           lidar_flattener_test test/test_lidar_flattener.py
           TIMEOUT 60)
+  # The merged config through the real loader; no simulator.
+  ament_add_pytest_test(
+          behavior_loader_plugins_test test/test_behavior_loader_plugins.py
+          TIMEOUT 30)
   # Redirect ROS node logs into the test_results tree so the test-results CI
   # artifact ships them back too. Default would be ~/.ros/log/, which lives
   # on the doomed container filesystem and never gets uploaded -- making

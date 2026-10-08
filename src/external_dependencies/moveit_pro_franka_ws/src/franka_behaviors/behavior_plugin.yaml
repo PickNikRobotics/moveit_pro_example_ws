@@ -1,4 +1,0 @@
-objectives:
-  behavior_loader_plugins:
-    franka_behaviors:
-      - "franka_behaviors::FrankaBehaviorsLoader"

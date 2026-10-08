@@ -14,6 +14,7 @@ vendored_paths:
 pruned_paths:
   - src/fr3_solo_sim, src/fr3_duo_sim, src/fr3_duo_spine_mock and src/fr3_duo_spine_sim, which no package in this workspace uses
   - src/franka_behaviors/hardware, the real-hardware Behaviors, which upstream does not build
+  - src/franka_behaviors/behavior_plugin.yaml, because MoveIt Pro merges every behavior_plugin.yaml under src into every config, and a config whose CI build skips franka_behaviors then fails to load it; mobile_fr3_duo_mock declares the loader itself
   - src/external_dependencies, because this workspace vendors its own franka_description 2.9.0 under src/external_dependencies/franka_config
   - workspace files (Dockerfile, docker-compose.yaml, colcon-defaults.yaml, README.md, AGENTS.md, CLAUDE.md)
 apache_paths:
