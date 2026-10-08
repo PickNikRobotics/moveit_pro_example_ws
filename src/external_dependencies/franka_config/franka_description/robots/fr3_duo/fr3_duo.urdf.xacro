@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="fr3_duo">
+
+  <xacro:include filename="$(find franka_description)/robots/fr3_duo/fr3_duo.xacro"/>
+
+  <!-- Define arguments -->
+  <!-- The IDs of the robot models to be used -->
+  <xacro:arg name="robot_types" default="['fr3v2','fr3v2']"/>
+  <xacro:property name="robot_types_list" value="${$(arg robot_types)}"/>
+
+  <!-- Don't print a prefix for joints, visuals, and links? -->
+  <xacro:arg name="no_prefix" default="false"/>
+
+  <!-- Should an end-effector be mounted at the flange?" -->
+  <xacro:arg name="hand" default="true"/>
+
+  <!-- Which end-effector would be mounted at the flange?" -->
+  <xacro:arg name="ee_id" default="franka_hand"/>
+
+  <!-- Where is the end-effector connected to, if different from the robot flange?  -->
+  <xacro:arg name="special_connection" default=""/>
+
+  <!-- Position offset between ee and parent frame -->
+  <xacro:arg name="xyz_ee" default="0 0 0"/>
+
+  <!-- Rotation offset between ee and parent frame -->
+  <xacro:arg name="rpy_ee" default="0 0 ${-pi/4}"/>
+
+  <!-- Position offset between ee frame and tcp frame -->
+  <xacro:arg name="tcp_xyz" default=""/>
+
+  <!-- Rotation offset between ee frame and tcp frame -->
+  <xacro:arg name="tcp_rpy" default="0 0 0"/>
+
+  <!-- Safety distance for the collision capsules -->
+  <xacro:arg name="safety_distance" default="0.03"/>
+
+  <!-- Should self-collision be enabled? -->
+  <xacro:arg name="with_sc" default="false"/>
+
+  <!-- Emit the coarse self-collision capsule geometry inside the *_sc sub-links? -->
+  <xacro:arg name="include_self_collision_geometry" default="true"/>
+
+  <!-- Name of the description package -->
+  <xacro:arg name="description_pkg" default="franka_description"/>
+
+  <!-- Arm prefixes of the robots -->
+  <xacro:arg name="arm_prefixes" default="['left','right']"/>
+  <xacro:property name="arm_prefixes_list" value="${$(arg arm_prefixes)}"/>
+
+  <!-- Position offset with respect to the world -->
+  <xacro:arg name="xyz" default="0 0 0"/>
+
+  <!-- Rotation offset with respect to the world -->
+  <xacro:arg name="rpy" default="0 0 0"/>
+
+  <!-- The name of the frame to which the robot is connected. -->
+  <xacro:arg name="base_mount" default="base"/>
+  <xacro:property name="base_mount_str" value="$(arg base_mount)"/>
+
+  <xacro:if value="${base_mount_str == 'base'}">
+    <link name="${base_mount_str}"/>
+  </xacro:if>
+
+  <xacro:fr3_duo name="fr3_duo"
+    robot_types="${robot_types_list}"
+    hand="$(arg hand)"
+    ee_id="$(arg ee_id)"
+    special_connection="$(arg special_connection)"
+    xyz_ee="$(arg xyz_ee)"
+    rpy_ee="$(arg rpy_ee)"
+    tcp_xyz="$(arg tcp_xyz)"
+    tcp_rpy="$(arg tcp_rpy)"
+    safety_distance="$(arg safety_distance)"
+    with_sc="$(arg with_sc)"
+    include_self_collision_geometry="$(arg include_self_collision_geometry)"
+    description_pkg="$(arg description_pkg)"
+    base_mount="${base_mount_str}"
+    connected_to="${base_mount_str}"
+    arm_prefixes="${arm_prefixes_list}"
+    no_prefix="$(arg no_prefix)">
+    <arm0_extras/>
+    <arm1_extras/>
+  </xacro:fr3_duo>
+
+</robot>
