@@ -65,36 +65,33 @@ endforeach()
 
 configure_file(models/model.yaml.in "${SAM3_MODEL_DIR}/model.yaml" @ONLY)
 
-install(
-  FILES
-    "${SAM3_MODEL_DIR}/model.yaml"
-    ${SAM3_MODEL_PATHS}
-  DESTINATION
-    share/${PROJECT_NAME}/models
-)
+# Copy files into the install tree instead of using install(FILES). Under colcon's
+# symlink install, which this workspace enables by default, install(FILES) makes
+# symlinks back into the build and source trees, so deleting build/ would break the
+# models and redistributing install/ alone would drop the license notices.
+function(sam3_install_copy destination)
+  foreach(source IN LISTS ARGN)
+    get_filename_component(name "${source}" NAME)
+    install(CODE "
+      set(sam3_target \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${destination}/${name}\")
+      # A symlink left by an earlier symlink install would be compared and written
+      # through instead of replaced.
+      if(IS_SYMLINK \"\${sam3_target}\")
+        file(REMOVE \"\${sam3_target}\")
+      endif()
+      file(MAKE_DIRECTORY \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/${destination}\")
+      file(COPY_FILE \"${source}\" \"\${sam3_target}\" ONLY_IF_DIFFERENT)
+    ")
+  endforeach()
+endfunction()
 
-# License notices must remain available if the install tree is redistributed
-# independently of the source workspace. Use an explicit copy because colcon's
-# symlink install would otherwise make them symlinks back into the source tree.
-install(
-  CODE "
-    file(MAKE_DIRECTORY \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}\")
-    execute_process(
-      COMMAND \"${CMAKE_COMMAND}\" -E copy_if_different
-        \"${CMAKE_CURRENT_SOURCE_DIR}/LICENSE\"
-        \"${CMAKE_CURRENT_SOURCE_DIR}/README.md\"
-        \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}\"
-      COMMAND_ERROR_IS_FATAL ANY
-    )
-    file(MAKE_DIRECTORY \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/models\")
-    execute_process(
-      COMMAND \"${CMAKE_COMMAND}\" -E copy_if_different
-        \"${CMAKE_CURRENT_SOURCE_DIR}/models/LICENSE\"
-        \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/models\"
-      COMMAND_ERROR_IS_FATAL ANY
-    )
-  "
-)
+sam3_install_copy(share/${PROJECT_NAME}
+  "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE"
+  "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+sam3_install_copy(share/${PROJECT_NAME}/models
+  "${SAM3_MODEL_DIR}/model.yaml"
+  ${SAM3_MODEL_PATHS}
+  "${CMAKE_CURRENT_SOURCE_DIR}/models/LICENSE")
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
