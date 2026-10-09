@@ -19,6 +19,8 @@ Several submodules (notably `picknik_accessories`) use git LFS. Install [git-lfs
 git submodule foreach --recursive git lfs pull
 ```
 
+The `moveit_pro_sam3` package is part of this repository but contains no model files. Its build downloads the SAM3 ONNX files; see `src/moveit_pro_sam3/README.md`.
+
 ## Robot Configs
 
 - `april_tag_sim`
