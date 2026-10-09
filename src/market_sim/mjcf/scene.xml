@@ -1,0 +1,88 @@
+<mujoco model="market_sim scene">
+  <!-- The robot comes first, so its joints lead every keyframe's qpos. -->
+  <include file="mobile_fr3_duo.xml" />
+  <include file="market/market_assets.xml" />
+
+  <!-- Sleep lets the resting products cost almost nothing per step; see the README. -->
+  <!-- impratio and noslip keep a grasped product from creeping out of the fingers, as in lab_sim. -->
+  <option
+    timestep="0.003"
+    sleep_tolerance="0.001"
+    impratio="10"
+    noslip_iterations="3"
+  >
+    <flag sleep="enable" />
+  </option>
+
+  <visual>
+    <headlight
+      diffuse="0.5 0.5 0.5"
+      ambient="0.25 0.25 0.25"
+      specular="0 0 0"
+    />
+    <rgba haze="0.15 0.25 0.35 1" />
+    <global azimuth="90" elevation="-30" />
+    <!-- znear and zfar scale with the model extent; this keeps the near clip under the lidars' 0.10 m minimum range. -->
+    <map znear="0.0004" zfar="4" />
+  </visual>
+
+  <asset>
+    <texture
+      type="2d"
+      name="market_floor"
+      builtin="checker"
+      rgb1="0.8 0.8 0.78"
+      rgb2="0.72 0.72 0.7"
+      width="300"
+      height="300"
+    />
+    <material
+      name="market_floor"
+      texture="market_floor"
+      texuniform="true"
+      texrepeat="0.8333 0.8333"
+      reflectance="0"
+    />
+  </asset>
+
+  <worldbody>
+    <light
+      pos="0 0 10"
+      dir="0 0.3 -1"
+      directional="true"
+      castshadow="false"
+      diffuse="0.5 0.5 0.5"
+    />
+    <light
+      pos="0 0 10"
+      dir="0 -0.3 -1"
+      directional="true"
+      castshadow="false"
+      diffuse="0.3 0.3 0.3"
+    />
+    <geom name="floor" type="plane" size="0 0 0.05" material="market_floor" />
+
+    <!-- Overview camera over the start pose, looking north along the aisles (RGB only). -->
+    <camera
+      name="scene_camera"
+      mode="fixed"
+      pos="0 -2 10"
+      xyaxes="1 0 0 0 0.7071 0.7071"
+      fovy="75"
+      resolution="640 480"
+      user="1 0 0 0"
+    />
+    <site
+      name="scene_camera_optical_frame"
+      pos="0 -2 10"
+      xyaxes="1 0 0 0 -0.7071 -0.7071"
+      size="0.01"
+      group="3"
+    />
+
+    <include file="market/market_world.xml" />
+  </worldbody>
+
+  <!-- Last, because a key's qpos must cover every joint declared above. -->
+  <include file="market/keyframes.xml" />
+</mujoco>

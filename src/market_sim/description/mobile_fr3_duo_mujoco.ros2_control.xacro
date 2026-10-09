@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <!-- MujocoSystem takes the joints and actuators from the MJCF, so none are listed here. -->
+  <xacro:macro
+    name="mobile_fr3_duo_mujoco_ros2_control"
+    params="mujoco_model mujoco_model_package mujoco_keyframe mujoco_viewer publish_object_tf
+            ground_truth_odom_topic ground_truth_odom_frame base_link_name">
+    <ros2_control name="mobile_fr3_duo" type="system">
+      <sensor name="lidar_front">
+        <param name="points_topic">/lidar_front/points</param>
+      </sensor>
+      <sensor name="lidar_rear">
+        <param name="points_topic">/lidar_rear/points</param>
+      </sensor>
+      <hardware>
+        <plugin>picknik_mujoco_ros/MujocoSystem</plugin>
+        <param name="mujoco_model">${mujoco_model}</param>
+        <param name="mujoco_model_package">${mujoco_model_package}</param>
+        <param name="mujoco_viewer">${mujoco_viewer}</param>
+        <param name="mujoco_keyframe">${mujoco_keyframe}</param>
+        <param name="render_publish_rate">10</param>
+        <param name="point_cloud_publish_rate">10</param>
+        <param name="tf_publish_rate">60</param>
+        <param name="lidar_publish_rate">10</param>
+        <!-- The URDF root odom is not a MuJoCo body, so the base body is named explicitly. -->
+        <param name="base_link_name">${base_link_name}</param>
+        <!-- world -> mj_world comes from launch/additional_driver_nodes.launch.py, so the plugin must not publish it. -->
+        <param name="publish_mj_world_tf">false</param>
+        <param name="publish_object_tf">${publish_object_tf}</param>
+        <!-- Ground truth as a message only: the odometry bridge adds drift and publishes the planar joints. -->
+        <param name="publish_odom">true</param>
+        <param name="odom_topic">${ground_truth_odom_topic}</param>
+        <!-- The frame the true pose is in. MoveIt Pro requires it to differ from the URDF root. -->
+        <param name="odom_frame">${ground_truth_odom_frame}</param>
+        <param name="odom_child_frame">base_link</param>
+        <param name="odom_rate">50</param>
+        <param name="odom_planar">true</param>
+        <param name="odom_publish_tf">false</param>
+      </hardware>
+    </ros2_control>
+  </xacro:macro>
+</robot>
