@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Stow Arms for Navigation">
+  <!-- Every navigation Objective runs this first. The Nav2 footprint covers the robot in this pose. -->
+  <BehaviorTree
+    ID="Stow Arms for Navigation"
+    _description="Move both arms, and the spine to its lowest height, to the Stow waypoint before the base drives"
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree
+        ID="Move to Waypoint"
+        _collapsed="true"
+        waypoint_name="Stow"
+        joint_group_name="manipulator"
+        controller_names="joint_trajectory_admittance_controller"
+        controller_action_server="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Stow Arms for Navigation">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Navigation" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
