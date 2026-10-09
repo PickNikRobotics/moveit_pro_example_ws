@@ -6,12 +6,20 @@
     _favorite="true"
   >
     <Control ID="Sequence" name="root">
-      <!-- Create one resident client before execution or task-completion control nodes. -->
-      <Action
-        ID="CreateGetActionChunkPolicy"
-        policy_service_name="/get_action_chunk"
-        policy="{policy}"
-      />
+      <!-- Load the selected policy before any motion. -->
+      <Control ID="IfThenElse" name="Select Policy">
+        <Condition ID="ScriptCondition" code="use_in_process_policy == true" />
+        <Action
+          ID="LoadPi05Policy"
+          model_bundle_manifest="{model_bundle_manifest}"
+          policy="{policy}"
+        />
+        <Action
+          ID="CreateGetActionChunkPolicy"
+          policy_service_name="/get_action_chunk"
+          policy="{policy}"
+        />
+      </Control>
       <Action
         ID="SwitchController"
         activate_controllers="joint_trajectory_admittance_controller"
@@ -57,6 +65,13 @@
         <Metadata runnable="true" />
         <Metadata subcategory="Application - VLA Examples" />
       </MetadataFields>
+      <input_port name="use_in_process_policy" default="false" type="bool">
+        Run pi0.5 in this Runtime with RTC. Set model_bundle_manifest when true.
+      </input_port>
+      <input_port name="model_bundle_manifest" default="" type="std::string">
+        Absolute path to the exported pi0.5 model.yaml in the Runtime. Required
+        when use_in_process_policy is true; supports ~ and $HOME expansion.
+      </input_port>
       <input_port
         name="prompt"
         default="stack the blue cube on the green cube"
