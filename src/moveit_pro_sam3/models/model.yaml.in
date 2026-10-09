@@ -1,0 +1,24 @@
+# SAM3 model bundle manifest. Consumed by MoveIt Pro's runtime-neutral inference
+# layer (loadModelBundle): artifact paths are relative to this file, and each
+# digest is verified at load time. CMakeLists.txt fills in the digests and writes
+# the result beside the downloaded ONNX files, because the loader rejects artifacts
+# that do not sit beside the manifest once symlinks are resolved.
+schema_version: 1
+model_id: sam3
+model_version: sam3.0
+graph_abi: moveit_pro.sam3.v1
+
+runtimes:
+  onnxruntime:
+    vision_encoder:
+      path: sam3_vision_encoder.onnx
+      sha256: "@SAM3_VISION_ENCODER_SHA256@"
+    text_encoder:
+      path: sam3_text_encoder.onnx
+      sha256: "@SAM3_TEXT_ENCODER_SHA256@"
+    geometry_encoder:
+      path: sam3_geometry_encoder.onnx
+      sha256: "@SAM3_GEOMETRY_ENCODER_SHA256@"
+    decoder:
+      path: sam3_decoder.onnx
+      sha256: "@SAM3_DECODER_SHA256@"
