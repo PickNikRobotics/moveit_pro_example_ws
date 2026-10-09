@@ -72,7 +72,8 @@ runtime dependency is included.
 | J6 / `joint6` | Wrist roll | −175 … 175 | 33 |
 | J7 / `joint7` | Gripper motor, positive opens | 0 … 310 | 33 |
 
-These specified position ranges replace upstream's narrower model limits.
+These approved motor-frame ranges replace upstream's model limits; some are
+wider and some narrower.
 **Planning limits are 0.3 rad/s and 0.6 rad/s² on every commanded joint**, well
 below the stored motor speeds. The waypoint Objectives default to 50% scaling
 (0.15 rad/s, 0.3 rad/s²). These are mock planning choices, not hardware tuning.
@@ -84,6 +85,19 @@ J7 at **0.008 m/rad**. This is derived from the
 pitch radius = module × teeth / 2 = 8 mm. The sliders retain their opposed
 upstream axes. At 310° each travels 43.284 mm, for 86.568 mm total additional
 opening. This transmission is a model derivation, not a measured jaw calibration.
+
+The SRDF excludes adjacent assembly pairs and the opposing gripper jaws from
+self-collision checking. In particular, `gripper_end` is rigidly attached to
+`link6` across J6 from `link5`; their meshes have a 9.0 mm axial separating gap
+that J6 rotation cannot close. Default 10 mm planning padding otherwise makes
+this mount report a collision. The coupled jaws approach one another at closure
+and separate on opening. Tests re-enable both pairs for unpadded mesh checks
+along the saved motions. The three package Objectives explicitly use **zero
+additional link padding** while retaining mesh collision checks. Both 10 mm and
+1 mm padding reject movable-link pairs in the tightly folded zeroed-rest pose;
+those pairs remain checked with the original collision meshes. No extra
+clearance margin is claimed. This is a mock-only planning choice and must be
+reconsidered with calibrated geometry before hardware use.
 
 ## D435 and hardware follow-up
 
@@ -107,12 +121,13 @@ Before a separate hardware integration:
 ## Validation
 
 Verified locally: package build, model loading, measured position bounds, J7
-finger coupling, collision checks along the saved waypoint paths, Python lint,
+finger coupling, collision checks along the saved waypoint paths, formatting,
 and initialization/activation of the mock hardware and trajectory controller.
-**Runtime planning and execution in MoveIt Pro remain unverified**: the runtime
-stopped on a license/product mismatch on the validation host. A maintainer with
-a matching license must complete the acceptance sequence below before treating
-this draft as ready. No physical hardware was used.
+**Runtime planning and execution passed** on a MoveIt Pro main source build:
+`Raised`, `Open Gripper`, `Close Gripper`, then `Zeroed Rest` all returned success,
+with final commanded-joint errors below 0.01 rad (reported as zero by the mock).
+[Recorded action results and joint states](docs/runtime-acceptance.json) provide
+the execution evidence. No physical hardware was used.
 
 `colcon test --packages-select rebot_bench_mock` loads the installed URDF/SRDF
 through MoveIt Pro, verifies motor limits and the J7 mimic behavior, and checks
@@ -128,4 +143,5 @@ ros2 run rebot_bench_mock verify_mock_execution.py
 ```
 
 It verifies the robot description is this mock model before submitting goals,
-and checks action results plus final joint states.
+waits up to 60 seconds for the planning-scene service, and checks action results
+plus final joint states.

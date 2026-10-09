@@ -11,6 +11,7 @@ from math import radians
 import time
 import xml.etree.ElementTree as ET
 
+from moveit_msgs.srv import GetPlanningScene
 from moveit_studio_sdk_msgs.action import DoObjectiveSequence
 from moveit_studio_sdk_msgs.msg import BehaviorParameter
 import rclpy
@@ -47,6 +48,11 @@ def main():
     plugins = [e.text for e in robot.findall("ros2_control/hardware/plugin")]
     if plugins != ["mock_components/GenericSystem"]:
         raise RuntimeError("Refusing non-mock hardware")
+    # The Objective action can appear before move_group finishes initialization.
+    planning_scene = node.create_client(GetPlanningScene, "/get_planning_scene")
+    if not planning_scene.wait_for_service(timeout_sec=60.0):
+        raise RuntimeError("Planning scene service unavailable after 60 seconds")
+    node.destroy_client(planning_scene)
     client = ActionClient(node, DoObjectiveSequence, "/do_objective")
     assert client.wait_for_server(timeout_sec=30), "Objective server unavailable"
 

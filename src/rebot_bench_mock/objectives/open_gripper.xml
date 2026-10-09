@@ -16,6 +16,7 @@
         keep_orientation="false"
         controller_names="joint_trajectory_controller"
         controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        collision_check_params="[{override_scene_link_padding: true, link_padding: 0.0}]"
         execution_pipeline="jtc"
       />
     </Control>

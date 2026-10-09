@@ -38,7 +38,12 @@
   <disable_collisions link1="link4" link2="link5" reason="Adjacent" />
   <disable_collisions link1="link5" link2="link6" reason="Adjacent" />
   <disable_collisions link1="link6" link2="gripper_end" reason="Adjacent" />
+  <!-- gripper_end is fixed to link6: adjacent across J6. Meshes have a
+       rotation-invariant 9.0 mm axial gap, smaller than default 10 mm padding. -->
+  <disable_collisions link1="link5" link2="gripper_end" reason="Adjacent" />
   <disable_collisions link1="gripper_end" link2="gripper_left" reason="Adjacent" />
   <disable_collisions link1="gripper_end" link2="gripper_right" reason="Adjacent" />
   <disable_collisions link1="gripper_end" link2="gripper_motor_frame" reason="Adjacent" />
+  <!-- Opposing, mechanically coupled jaws meet at closure and separate on opening. -->
+  <disable_collisions link1="gripper_left" link2="gripper_right" reason="Default" />
 </robot>
