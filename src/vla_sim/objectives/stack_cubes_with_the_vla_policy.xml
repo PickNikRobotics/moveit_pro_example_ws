@@ -6,6 +6,12 @@
     _favorite="true"
   >
     <Control ID="Sequence" name="root">
+      <!-- Create one resident client before execution or task-completion control nodes. -->
+      <Action
+        ID="CreateGetActionChunkPolicy"
+        policy_service_name="/get_action_chunk"
+        policy="{policy}"
+      />
       <Action
         ID="SwitchController"
         activate_controllers="joint_trajectory_admittance_controller"
@@ -24,7 +30,7 @@
       <Action
         ID="ExecutePolicy"
         name="ExecutePolicy"
-        policy_service_name="/get_action_chunk"
+        policy="{policy}"
         joint_group_name="manipulator"
         prompt="{prompt}"
         total_action_steps="300"
