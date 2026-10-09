@@ -22,71 +22,82 @@ from std_msgs.msg import String
 
 def main():
     rclpy.init()
-    node = rclpy.create_node('verify_rebot_mock_execution')
+    node = rclpy.create_node("verify_rebot_mock_execution")
     description = []
     state = {}
     node.create_subscription(
-        String, '/robot_description', lambda msg: description.append(msg.data),
+        String,
+        "/robot_description",
+        lambda msg: description.append(msg.data),
         QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL),
     )
     node.create_subscription(
-        JointState, '/joint_states',
-        lambda msg: state.update(zip(msg.name, msg.position)), 10,
+        JointState,
+        "/joint_states",
+        lambda msg: state.update(zip(msg.name, msg.position)),
+        10,
     )
     deadline = time.monotonic() + 30
     while (not description or not state) and time.monotonic() < deadline:
         rclpy.spin_once(node, timeout_sec=0.1)
-    assert description and state, 'No robot description/joint states'
+    assert description and state, "No robot description/joint states"
     robot = ET.fromstring(description[-1])
-    if robot.get('name') != 'rebot_b601_rs':
-        raise RuntimeError('Unexpected robot')
-    plugins = [e.text for e in robot.findall('ros2_control/hardware/plugin')]
-    if plugins != ['mock_components/GenericSystem']:
-        raise RuntimeError('Refusing non-mock hardware')
-    client = ActionClient(node, DoObjectiveSequence, '/do_objective')
-    assert client.wait_for_server(timeout_sec=30), 'Objective server unavailable'
+    if robot.get("name") != "rebot_b601_rs":
+        raise RuntimeError("Unexpected robot")
+    plugins = [e.text for e in robot.findall("ros2_control/hardware/plugin")]
+    if plugins != ["mock_components/GenericSystem"]:
+        raise RuntimeError("Refusing non-mock hardware")
+    client = ActionClient(node, DoObjectiveSequence, "/do_objective")
+    assert client.wait_for_server(timeout_sec=30), "Objective server unavailable"
 
     def wait(future, timeout=100):
         rclpy.spin_until_future_complete(node, future, timeout_sec=timeout)
-        assert future.done(), 'Objective request timed out'
+        assert future.done(), "Objective request timed out"
         return future.result()
 
-    raised = dict(zip([f'joint{i}' for i in range(1, 7)], [0, .65, .85, .3, 0, 0]))
+    raised = dict(zip([f"joint{i}" for i in range(1, 7)], [0, 0.65, 0.85, 0.3, 0, 0]))
     cases = [
-        ('Move reBot to Waypoint', 'Raised', raised),
-        ('Open Gripper', None, {'joint7': radians(310)}),
-        ('Close Gripper', None, {'joint7': 0}),
-        ('Move reBot to Waypoint', 'Zeroed Rest', dict.fromkeys(raised, 0)),
+        ("Move reBot to Waypoint", "Raised", raised),
+        ("Open Gripper", None, {"joint7": radians(310)}),
+        ("Close Gripper", None, {"joint7": 0}),
+        ("Move reBot to Waypoint", "Zeroed Rest", dict.fromkeys(raised, 0)),
     ]
     for objective, waypoint, target in cases:
         goal = DoObjectiveSequence.Goal()
         goal.objective_name = objective
         goal.caller.type = goal.caller.SCRIPT
-        goal.caller.name = 'rebot_mock_acceptance'
+        goal.caller.name = "rebot_mock_acceptance"
         if waypoint:
             param = BehaviorParameter()
-            param.description.name = 'waypoint_name'
+            param.description.name = "waypoint_name"
             param.description.type = param.description.TYPE_STRING
             param.string_value = waypoint
             goal.parameter_overrides = [param]
         started = time.monotonic()
         handle = wait(client.send_goal_async(goal))
-        assert handle.accepted, f'Rejected: {objective} {waypoint}'
+        assert handle.accepted, f"Rejected: {objective} {waypoint}"
         result = wait(handle.get_result_async())
         assert result.result.error_code.val == 1, result.result
         for _ in range(5):
             rclpy.spin_once(node, timeout_sec=0.1)
         max_error = max(abs(state[j] - value) for j, value in target.items())
         assert max_error < 0.01, (objective, state, target)
-        print(json.dumps({
-            'objective': objective, 'waypoint': waypoint,
-            'error_code': result.result.error_code.val,
-            'elapsed_seconds': round(time.monotonic() - started, 3),
-            'max_joint_error_rad': max_error, 'joint_positions_rad': state,
-        }), flush=True)
+        print(
+            json.dumps(
+                {
+                    "objective": objective,
+                    "waypoint": waypoint,
+                    "error_code": result.result.error_code.val,
+                    "elapsed_seconds": round(time.monotonic() - started, 3),
+                    "max_joint_error_rad": max_error,
+                    "joint_positions_rad": state,
+                }
+            ),
+            flush=True,
+        )
     node.destroy_node()
     rclpy.shutdown()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

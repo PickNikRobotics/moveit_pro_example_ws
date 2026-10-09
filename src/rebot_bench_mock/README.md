@@ -114,7 +114,6 @@ stopped on a license/product mismatch on the validation host. A maintainer with
 a matching license must complete the acceptance sequence below before treating
 this draft as ready. No physical hardware was used.
 
-
 `colcon test --packages-select rebot_bench_mock` loads the installed URDF/SRDF
 through MoveIt Pro, verifies motor limits and the J7 mimic behavior, and checks
 saved waypoints and interpolated motions with the real collision checker. It
