@@ -14,11 +14,7 @@
       />
       <Action ID="InitializeMTCTask" task_id="pick_up_tool" task="{mtc_task}" />
       <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
-      <Decorator
-        ID="Precondition"
-        else="SUCCESS"
-        if="tool_object_name!=&quot;&quot;"
-      >
+      <Decorator ID="Precondition" else="SUCCESS" if="tool_object_name!=''">
         <Control ID="Sequence">
           <Action
             ID="SetupMTCSetCollisionRule"
