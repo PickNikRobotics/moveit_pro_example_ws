@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>rebot_bench_mock</name>
+  <version>10.2.0</version>
+  <description>Mock-only reBot B601-RS bench scene with seven commanded joints and a wrist D435 frame placeholder.</description>
+  <maintainer email="support@picknik.ai">MoveIt Pro Maintainer</maintainer>
+  <license>BSD-3-Clause</license>
+  <license file="description/LICENSE">CERN-OHL-W-2.0</license>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <exec_depend>hardware_interface</exec_depend>
+  <exec_depend>joint_state_broadcaster</exec_depend>
+  <exec_depend>joint_trajectory_controller</exec_depend>
+  <exec_depend>joint_velocity_controller</exec_depend>
+  <exec_depend>velocity_force_controller</exec_depend>
+  <exec_depend>moveit_studio_agent</exec_depend>
+  <exec_depend>moveit_pro_objectives</exec_depend>
+  <exec_depend>pose_ik_plugin</exec_depend>
+  <test_depend>ament_cmake_pytest</test_depend>
+  <test_depend>ament_index_python</test_depend>
+  <test_depend>moveit_pro_base_py</test_depend>
+  <test_depend>python3-numpy</test_depend>
+  <test_depend>python3-yaml</test_depend>
+  <test_depend>rclpy</test_depend>
+  <test_depend>sensor_msgs</test_depend>
+  <test_depend>std_msgs</test_depend>
+  <test_depend>moveit_studio_sdk_msgs</test_depend>
+  <export><build_type>ament_cmake</build_type></export>
+</package>

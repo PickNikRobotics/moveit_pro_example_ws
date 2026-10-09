@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<root BTCPP_format="4" main_tree_to_execute="Move reBot to Waypoint">
+  <BehaviorTree ID="Move reBot to Waypoint" _description="Plan and execute a mock-only reBot arm waypoint." _favorite="true">
+    <SubTree ID="Move to Waypoint" _collapsed="true" waypoint_name="{waypoint_name}" joint_group_name="manipulator" velocity_scale_factor="{velocity_scale_factor}" acceleration_scale_factor="{acceleration_scale_factor}" seed="0" keep_orientation="false" controller_names="joint_trajectory_controller" controller_action_server="/joint_trajectory_controller/follow_joint_trajectory" execution_pipeline="jtc" />
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Move reBot to Waypoint">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="reBot Bench" />
+      </MetadataFields>
+      <input_port name="waypoint_name" default="Raised" type="std::string">Named reBot waypoint.</input_port>
+      <input_port name="velocity_scale_factor" default="0.50" type="double">
+        Fraction of the configured joint velocity limit.
+      </input_port>
+      <input_port name="acceleration_scale_factor" default="0.50" type="double">
+        Fraction of the configured joint acceleration limit.
+      </input_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>
