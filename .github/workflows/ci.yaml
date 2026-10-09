@@ -453,9 +453,9 @@ jobs:
       enable_gpu: true
       use_ccache: true
       # Fetch Git LFS through the in-region S3 cache instead of a direct pull.
-      # Empty for fork PRs (which get no OIDC token / secrets) so they fall back
-      # to a normal direct LFS pull instead of failing the cache preflight.
-      lfs_cache_s3_bucket: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && 'picknik-arc-ci-ccache-682033501538' || '' }}
+      # Empty for fork PRs and Dependabot-triggered runs, which cannot use the
+      # Actions role secret. Fall back to a direct LFS pull in those contexts.
+      lfs_cache_s3_bucket: ${{ github.actor != 'dependabot[bot]' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && 'picknik-arc-ci-ccache-682033501538' || '' }}
       lfs_cache_aws_region: us-east-1
     secrets:
       moveit_license_key: ${{ secrets.STUDIO_CI_LICENSE_KEY }}
@@ -623,16 +623,13 @@ jobs:
   # is posted from here only. Per the design doc: the matrix jobs must NOT
   # post their own statuses, or branch protection / dedup semantics break.
   #
-  # Skip on fork PRs: a fork's GITHUB_TOKEN cannot mint the cross-repo App
-  # token (secrets are not exposed to fork-triggered runs), so this job would
-  # hard-fail on every external-contributor PR and — because `build-status`
-  # requires this to be `success` or `skipped` — block their merge. Skipping
-  # is the correct outcome: fork PRs cannot post statuses cross-repo anyway,
-  # and `build-status`'s skipped-tolerant check resolves cleanly.
+  # Fork PRs and Dependabot-triggered runs cannot access the Actions App
+  # secrets. Skip status posting in those contexts; build-status accepts a
+  # skipped status job while still requiring the integration tests to pass.
   integration-status:
     name: Post integration status
     needs: [resolve, integration-test]
-    if: ${{ always() && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+    if: ${{ always() && github.actor != 'dependabot[bot]' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
     runs-on: ubuntu-22.04
     steps:
       - name: Generate cross-repo App token
