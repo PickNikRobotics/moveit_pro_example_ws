@@ -1,0 +1,17 @@
+franka_spine_fixed_joint:
+  kinematic:
+    x: 0.138289
+    y: 0.0
+    z: 0.350
+    roll: 0.0
+    pitch: 0.0
+    yaw: 0.0
+
+franka_spine_vertical_joint:
+  kinematic:
+    x: 0.266711
+    y: 0.0
+    z: 0.1
+    roll: 0.0
+    pitch: 0.0
+    yaw: 0.0

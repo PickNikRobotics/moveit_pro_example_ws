@@ -1,0 +1,36 @@
+fr3_duo_mount_origin:
+  kinematic:
+    x: 0.0
+    y: 0.0
+    z: 0.0
+    roll: 0.0
+    pitch: 0.0
+    yaw: 0.0
+
+fr3_duo_mount_mounting_point:
+  kinematic:
+    x: -0.037
+    y: 0.0
+    z: -0.05
+    roll: 0.0
+    pitch: 0.0
+    yaw: 0.0
+
+# Mounting angles [51.18507533 deg, -10.00159382 deg, 26.54771649 deg], converted to radians.
+fr3_duo_mount_left:
+  kinematic:
+    x: 0.0
+    y: 0.05018
+    z: 0.0
+    roll: -0.89334809
+    pitch: -0.17456074
+    yaw: -0.46334506
+
+fr3_duo_mount_right:
+  kinematic:
+    x: 0.0
+    y: -0.05018
+    z: 0.0
+    roll: 0.89334809
+    pitch: -0.17456074
+    yaw: 0.46334506

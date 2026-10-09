@@ -101,7 +101,7 @@
   <worldbody>
     <body name="dual_arm_setup">
       <!-- Add the mount structure -->
-      <body name="mount_link" pos="0 0 0.305115">
+      <body name="fr3_duo_mount_mounting_point" pos="0 0 0.305115">
         <inertial pos="0 0 0" mass="5.0" diaginertia="0.1 0.1 0.1" />
         <geom type="mesh" mesh="fr3_duo_mount" material="gray" class="visual" />
         <geom
@@ -116,8 +116,8 @@
 
         <body
           name="left_arm"
-          pos="0.0369 0.05018 0.050885"
-          quat="0.8657172 -0.4369879 0.0223569 -0.2430545"
+          pos="0.037 0.05018 0.05"
+          quat="0.8658067 -0.4368783 0.0222879 -0.2429391"
         >
           <body name="left_base" childclass="fr3">
             <body name="left_fr3_link0">
@@ -443,8 +443,8 @@
 
         <body
           name="right_arm"
-          pos="0.0369 -0.05018 0.050885"
-          quat="0.8657172 0.4369879 0.0223569 0.2430545"
+          pos="0.037 -0.05018 0.05"
+          quat="0.8658067 0.4368783 0.0222879 0.2429391"
         >
           <body name="right_base" childclass="fr3">
             <body name="right_fr3_link0">
