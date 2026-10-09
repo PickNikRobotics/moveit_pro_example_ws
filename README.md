@@ -33,6 +33,7 @@ The `moveit_pro_sam3` package is part of this repository but contains no model f
 - `kitchen_sim`
 - `lab_sim`
 - `lunar_sim`
+- `market_sim`
 - `rebot_bench_base_config`
 - `rebot_bench_sim`
 - `so101_base_config`

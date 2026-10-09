@@ -1,0 +1,399 @@
+# Nav2 and Beluga AMCL for the Mobile FR3 Duo in the supermarket.
+# Structure follows hangar_sim; robot limits and the stowed-arms footprint are the Mobile FR3 Duo's.
+# The simulator stamps wall time, so use_sim_time is false throughout.
+
+amcl:
+  ros__parameters:
+    use_sim_time: false
+    # The robot boots at the world and map origin in every keyframe.
+    set_initial_pose: true
+    initial_pose:
+      x: 0.0
+      y: 0.0
+      yaw: 0.0
+    # Odometry drifts on purpose (scripts/odometry_joint_state_publisher.py), so keep motion noise.
+    alpha1: 0.05
+    alpha2: 0.05
+    alpha3: 0.1
+    alpha4: 0.05
+    alpha5: 0.05
+    base_frame_id: "base_link"
+    global_frame_id: "map"
+    odom_frame_id: "odom"
+    lambda_short: 0.1
+    laser_likelihood_max_dist: 2.0
+    laser_max_range: 40.0
+    laser_min_range: 0.1
+    laser_model_type: "likelihood_field"
+    # Beluga subsamples the merged scan's rays evenly.
+    max_beams: 800
+    max_particles: 2000
+    min_particles: 500
+    pf_err: 0.05
+    pf_z: 0.99
+    # Random-particle recovery, as in hangar_sim; both at 0 would disable it.
+    recovery_alpha_fast: 0.1
+    recovery_alpha_slow: 0.001
+    resample_interval: 1
+    robot_model_type: "nav2_amcl::OmniMotionModel"
+    save_pose_rate: 0.5
+    sigma_hit: 0.2
+    tf_broadcast: true
+    transform_tolerance: 1.0
+    update_min_a: 0.05
+    update_min_d: 0.25
+    z_hit: 0.5
+    z_max: 0.05
+    z_rand: 0.5
+    z_short: 0.05
+    # Both lidars' scans, merged into one 360 deg scan by the persist launch file.
+    scan_topic: /scan
+
+map_server:
+  ros__parameters:
+    use_sim_time: false
+    # Set by the persist launch file to this package's maps/market.yaml.
+    yaml_filename: ""
+
+bt_navigator:
+  ros__parameters:
+    use_sim_time: false
+    global_frame: map
+    robot_base_frame: base_link
+    odom_topic: /odom
+    bt_loop_duration: 10
+    default_server_timeout: 500
+    wait_for_service_timeout: 1000
+    # Leave plugin_lib_names unset: Jazzy loads the stock nav2 BT nodes already.
+
+controller_server:
+  ros__parameters:
+    use_sim_time: false
+    odom_topic: /odom
+    controller_frequency: 20.0
+    costmap_update_timeout: 0.30
+    min_x_velocity_threshold: 0.001
+    # The base is holonomic, so sideways odometry must reach the controller.
+    min_y_velocity_threshold: 0.001
+    min_theta_velocity_threshold: 0.001
+    failure_tolerance: 0.3
+    progress_checker_plugins: ["progress_checker"]
+    goal_checker_plugins: ["general_goal_checker"]
+    controller_plugins: ["FollowPath"]
+    progress_checker:
+      plugin: "nav2_controller::SimpleProgressChecker"
+      required_movement_radius: 0.1
+      movement_time_allowance: 20.0
+    general_goal_checker:
+      stateful: true
+      plugin: "nav2_controller::SimpleGoalChecker"
+      xy_goal_tolerance: 0.25
+      yaw_goal_tolerance: 0.25
+    # Turn in place toward a new path before following it, so the base never arcs into a shelf it faces.
+    FollowPath:
+      plugin: "nav2_rotation_shim_controller::RotationShimController"
+      primary_controller: "nav2_mppi_controller::MPPIController"
+      # Turn rate and acceleration within the base's limits (wz_max, the velocity smoother).
+      rotate_to_heading_angular_vel: 0.5
+      max_angular_accel: 0.3
+      # Aim at the path well ahead and turn until nearly aligned, so the base drives the aisles straight.
+      forward_sampling_distance: 1.5
+      angular_dist_threshold: 0.35
+      angular_disengage_threshold: 0.1
+      time_steps: 56
+      model_dt: 0.05
+      batch_size: 2000
+      ax_max: 3.0
+      ax_min: -3.0
+      ay_max: 3.0
+      ay_min: -3.0
+      az_max: 3.5
+      vx_std: 0.2
+      vy_std: 0.2
+      wz_std: 0.4
+      # The URDF planar joint velocity limits.
+      vx_max: 0.35
+      vx_min: -0.35
+      vy_max: 0.35
+      wz_max: 0.5
+      iteration_count: 1
+      # Seed rollouts from the last command, not lagging odometry; needs MPPI 1.3.13 (Dockerfile).
+      open_loop: true
+      prune_distance: 1.7
+      transform_tolerance: 0.1
+      temperature: 0.3
+      gamma: 0.015
+      motion_model: "Omni"
+      visualize: true
+      regenerate_noises: true
+      TrajectoryVisualizer:
+        trajectory_step: 5
+        time_step: 3
+      critics:
+        [
+          "ConstraintCritic",
+          "CostCritic",
+          "GoalCritic",
+          "GoalAngleCritic",
+          "PathAlignCritic",
+          "PathFollowCritic",
+          "PathAngleCritic",
+          "PreferForwardCritic",
+        ]
+      ConstraintCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 4.0
+      GoalCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 5.0
+        threshold_to_consider: 1.4
+      GoalAngleCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 3.0
+        threshold_to_consider: 0.5
+      PreferForwardCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 5.0
+        threshold_to_consider: 0.5
+      CostCritic:
+        enabled: true
+        cost_power: 1
+        # Weighted up to keep trajectories away from the racks; near_collision_cost stays at the
+        # inscribed cost, since a lower one would penalise every aligned trajectory in an aisle.
+        cost_weight: 8.0
+        near_collision_cost: 253
+        critical_cost: 1000.0
+        consider_footprint: true
+        collision_cost: 1000000.0
+        near_goal_distance: 1.0
+        # Check the footprint at every trajectory point.
+        trajectory_point_step: 1
+      PathAlignCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 14.0
+        max_path_occupancy_ratio: 0.05
+        trajectory_point_step: 4
+        threshold_to_consider: 0.5
+        offset_from_furthest: 20
+        use_path_orientations: false
+      PathFollowCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 5.0
+        offset_from_furthest: 5
+        threshold_to_consider: 1.4
+      PathAngleCritic:
+        enabled: true
+        cost_power: 1
+        cost_weight: 2.0
+        offset_from_furthest: 4
+        threshold_to_consider: 0.5
+        max_angle_to_furthest: 1.0
+        mode: 0
+
+local_costmap:
+  local_costmap:
+    ros__parameters:
+      use_sim_time: false
+      update_frequency: 10.0
+      publish_frequency: 5.0
+      global_frame: odom
+      robot_base_frame: base_link
+      rolling_window: true
+      width: 5
+      height: 5
+      resolution: 0.05
+      # The base with both arms and the spine at the Stow waypoint; a test keeps both costmaps equal.
+      footprint: "[[-0.441, -0.326], [0.294, -0.326], [0.294, -0.399], [0.693, -0.399], [0.819, -0.326], [0.861, -0.147], [0.861, 0.147], [0.819, 0.326], [0.693, 0.399], [0.294, 0.399], [0.294, 0.326], [-0.441, 0.326]]"
+      plugins: ["obstacle_layer", "inflation_layer"]
+      obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        enabled: true
+        observation_sources: scan_front scan_rear
+        scan_front:
+          topic: /scan_front
+          max_obstacle_height: 2.0
+          clearing: true
+          marking: true
+          data_type: "LaserScan"
+          raytrace_max_range: 4.5
+          raytrace_min_range: 0.0
+          obstacle_max_range: 3.5
+          obstacle_min_range: 0.0
+          inf_is_valid: false
+          # The flattener publishes best effort.
+          qos_overriding_options:
+            policy_kinds: [reliability]
+            reliability: best_effort
+        scan_rear:
+          topic: /scan_rear
+          max_obstacle_height: 2.0
+          clearing: true
+          marking: true
+          data_type: "LaserScan"
+          raytrace_max_range: 4.5
+          raytrace_min_range: 0.0
+          obstacle_max_range: 3.5
+          obstacle_min_range: 0.0
+          inf_is_valid: false
+          # The flattener publishes best effort.
+          qos_overriding_options:
+            policy_kinds: [reliability]
+            reliability: best_effort
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        # A slower decay keeps a cost gradient across the wider inflation, pushing the controller off the racks.
+        cost_scaling_factor: 2.0
+        # The footprint's circumscribed radius, rounded up to the next 0.1 m.
+        inflation_radius: 0.9
+      always_send_full_costmap: true
+      transform_tolerance: 0.3
+
+global_costmap:
+  global_costmap:
+    ros__parameters:
+      use_sim_time: false
+      update_frequency: 1.0
+      publish_frequency: 1.0
+      global_frame: map
+      robot_base_frame: base_link
+      # The base with both arms and the spine at the Stow waypoint; a test keeps both costmaps equal.
+      footprint: "[[-0.441, -0.326], [0.294, -0.326], [0.294, -0.399], [0.693, -0.399], [0.819, -0.326], [0.861, -0.147], [0.861, 0.147], [0.819, 0.326], [0.693, 0.399], [0.294, 0.399], [0.294, 0.326], [-0.441, 0.326]]"
+      resolution: 0.05
+      track_unknown_space: true
+      plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
+      static_layer:
+        plugin: "nav2_costmap_2d::StaticLayer"
+        map_subscribe_transient_local: true
+      obstacle_layer:
+        plugin: "nav2_costmap_2d::ObstacleLayer"
+        enabled: true
+        observation_sources: scan_front scan_rear
+        scan_front:
+          topic: /scan_front
+          max_obstacle_height: 2.0
+          clearing: true
+          marking: true
+          data_type: "LaserScan"
+          raytrace_max_range: 10.0
+          raytrace_min_range: 0.0
+          obstacle_max_range: 8.0
+          obstacle_min_range: 0.0
+          inf_is_valid: false
+          # The flattener publishes best effort.
+          qos_overriding_options:
+            policy_kinds: [reliability]
+            reliability: best_effort
+        scan_rear:
+          topic: /scan_rear
+          max_obstacle_height: 2.0
+          clearing: true
+          marking: true
+          data_type: "LaserScan"
+          raytrace_max_range: 10.0
+          raytrace_min_range: 0.0
+          obstacle_max_range: 8.0
+          obstacle_min_range: 0.0
+          inf_is_valid: false
+          # The flattener publishes best effort.
+          qos_overriding_options:
+            policy_kinds: [reliability]
+            reliability: best_effort
+      inflation_layer:
+        plugin: "nav2_costmap_2d::InflationLayer"
+        cost_scaling_factor: 4.0
+        # The footprint's circumscribed radius, rounded up to the next 0.1 m.
+        inflation_radius: 0.9
+      always_send_full_costmap: true
+      transform_tolerance: 0.3
+
+planner_server:
+  ros__parameters:
+    use_sim_time: false
+    expected_planner_frequency: 20.0
+    # GridBased (NavFn) serves Nav2's stock tree and the Navigate to Aisle Objectives;
+    # SmacLattice serves the tree the driver launch file writes for Navigate with SMAC.
+    planner_plugins: ["GridBased", "SmacLattice"]
+    GridBased:
+      plugin: "nav2_navfn_planner::NavfnPlanner"
+      tolerance: 0.5
+      use_astar: false
+      allow_unknown: true
+    # State Lattice with Nav2's omnidirectional primitives at the costmap resolution:
+    # it checks the footprint polygon at every pose of the plan.
+    SmacLattice:
+      plugin: "nav2_smac_planner::SmacPlannerLattice"
+      lattice_filepath: "/opt/ros/jazzy/share/nav2_smac_planner/sample_primitives/5cm_resolution/0.5m_turning_radius/omni/output.json"
+      allow_unknown: true
+      # Cross-store plans on the fine grid need longer than the default.
+      max_planning_time: 10.0
+
+smoother_server:
+  ros__parameters:
+    use_sim_time: false
+    smoother_plugins: ["simple_smoother"]
+    simple_smoother:
+      plugin: "nav2_smoother::SimpleSmoother"
+      tolerance: 1.0e-10
+      max_its: 1000
+      do_refinement: true
+
+behavior_server:
+  ros__parameters:
+    use_sim_time: false
+    local_costmap_topic: local_costmap/costmap_raw
+    global_costmap_topic: global_costmap/costmap_raw
+    local_footprint_topic: local_costmap/published_footprint
+    global_footprint_topic: global_costmap/published_footprint
+    cycle_frequency: 10.0
+    behavior_plugins: ["spin", "backup", "drive_on_heading", "assisted_teleop", "wait"]
+    spin:
+      plugin: "nav2_behaviors::Spin"
+    backup:
+      plugin: "nav2_behaviors::BackUp"
+    drive_on_heading:
+      plugin: "nav2_behaviors::DriveOnHeading"
+    wait:
+      plugin: "nav2_behaviors::Wait"
+    assisted_teleop:
+      plugin: "nav2_behaviors::AssistedTeleop"
+    local_frame: odom
+    global_frame: map
+    robot_base_frame: base_link
+    transform_tolerance: 0.1
+    simulate_ahead_time: 2.0
+    # Kept within the planar_theta velocity limit.
+    max_rotational_vel: 0.5
+    min_rotational_vel: 0.2
+    rotational_acc_lim: 3.2
+
+waypoint_follower:
+  ros__parameters:
+    use_sim_time: false
+    loop_rate: 20
+    stop_on_failure: false
+    waypoint_task_executor_plugin: "wait_at_waypoint"
+    wait_at_waypoint:
+      plugin: "nav2_waypoint_follower::WaitAtWaypoint"
+      enabled: true
+      waypoint_pause_duration: 200
+
+velocity_smoother:
+  ros__parameters:
+    use_sim_time: false
+    smoothing_frequency: 20.0
+    scale_velocities: false
+    feedback: "OPEN_LOOP"
+    max_velocity: [0.35, 0.35, 0.5]
+    min_velocity: [-0.35, -0.35, -0.5]
+    max_accel: [0.4, 0.4, 0.3]
+    max_decel: [-0.4, -0.4, -0.3]
+    odom_topic: "odom"
+    odom_duration: 0.1
+    deadband_velocity: [0.0, 0.0, 0.0]
+    velocity_timeout: 1.0
