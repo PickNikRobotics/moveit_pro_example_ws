@@ -6,22 +6,13 @@
 
   <!-- Load Franka robot -->
   <xacro:include filename="$(find franka_description)/robots/common/franka_robot.xacro"/>
+  <!-- franka_description 2.9.0 loads the FR3 limits, inertials, kinematics and dynamics itself. -->
   <xacro:franka_robot robot_type="fr3"
-                      joint_limits="${xacro.load_yaml('$(find franka_description)/robots/fr3/joint_limits.yaml')}"
-                      inertials="${xacro.load_yaml('$(find franka_description)/robots/fr3/inertials.yaml')}"
-                      kinematics="${xacro.load_yaml('$(find franka_description)/robots/fr3/kinematics.yaml')}"
-                      dynamics="${xacro.load_yaml('$(find franka_description)/robots/fr3/dynamics.yaml')}"
-                      gazebo="false"
                       hand="true"
                       tcp_xyz="0 0 0.1034"
                       ee_id="$(arg ee_id)"
                       rpy_ee="$(arg rpy_ee)"
                       with_sc="false"
-                      ros2_control="false"
-                      robot_ip=""
-                      use_fake_hardware="false"
-                      fake_sensor_commands="false"
-                      gazebo_effort="false"
                       no_prefix="false"
                       arm_prefix=""
                       connected_to= "world"
