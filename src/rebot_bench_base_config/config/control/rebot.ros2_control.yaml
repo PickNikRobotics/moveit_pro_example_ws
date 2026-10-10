@@ -11,6 +11,8 @@ controller_manager:
       type: joint_velocity_controller/JointVelocityController
     velocity_force_controller:
       type: velocity_force_controller/VelocityForceController
+    gravity_compensation_controller:
+      type: kdl_gravity_compensation_controller/GravityCompensationController
 joint_state_broadcaster:
   ros__parameters:
     joints:
@@ -140,3 +142,25 @@ velocity_force_controller:
     jacobian_damping: 0.005
     command_timeout: 0.2
     joint_limit_position_tolerance: 0.02
+# Real hardware in motion mode only: writes gravity torques to joint1-joint6's
+# effort interface, alongside whichever controller holds position. Off by
+# default; see README.md. Parameters are read on configure.
+gravity_compensation_controller:
+  ros__parameters:
+    joints:
+    - joint1
+    - joint2
+    - joint3
+    - joint4
+    - joint5
+    - joint6
+    root_link: base_link
+    tip_link: gripper_end
+    # m/s^2 in base_link. Table mount; a wall or ceiling mount changes this.
+    gravity_vector: [0.0, 0.0, -9.81]
+    # A held object: kg, and its centre of mass in gripper_end (m).
+    payload_mass: 0.0
+    payload_com: [0.0, 0.0, 0.0]
+    # Applied per joint as gain * gravity torque + offset (N*m).
+    gains: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+    offsets: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]

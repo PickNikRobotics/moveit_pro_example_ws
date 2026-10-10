@@ -4,6 +4,7 @@
 #ifndef ROBSTRIDE_HARDWARE_INTERFACE__ROBSTRIDE_HARDWARE_INTERFACE_HPP_
 #define ROBSTRIDE_HARDWARE_INTERFACE__ROBSTRIDE_HARDWARE_INTERFACE_HPP_
 
+#include <algorithm>
 #include <atomic>
 #include <memory>
 #include <string>
@@ -36,6 +37,15 @@
 namespace robstride_hardware_interface
 {
 
+// The Type 0x15 fault frame carries its 32-bit fault word little-endian, but
+// robstride_sdk assembles it big-endian, so its fault_bits never line up with
+// robstride_sdk::FaultBit. Swap it back: data 10 40 00 00 is 0x4010 (phase-B
+// overcurrent and stall overload), which the SDK reports as 0x10400000.
+inline uint32_t FaultBits(const robstride_sdk::MotorState & st)
+{
+  return __builtin_bswap32(st.fault_bits.load(std::memory_order_relaxed));
+}
+
 struct JointHandle
 {
   std::string joint_name;
@@ -53,8 +63,24 @@ struct JointHandle
   double wrap_center = 0.0;
   // No URDF position limits: targets take the shortest way round.
   bool continuous = false;
+  // Bound on the motion-mode torque feedforward (N*m, joint frame).
+  double max_feedforward_effort = 0.0;
   robstride_sdk::RobstrideMotor * motor;  // owned by RobstrideHardware::motors_
 };
+
+// A quarter of the model's MIT torque range: 3.5 N*m on an RS00 and 9 N*m on
+// an RS06, below their 5 and 11 N*m rated torque.
+inline double DefaultMaxFeedforwardEffort(robstride_sdk::ActuatorType type)
+{
+  return 0.25 * robstride_sdk::GetActuatorLimits(type).torque_max;
+}
+
+// Motor-frame torque feedforward for a joint-frame effort command.
+inline double MotorFeedforward(const JointHandle & jh, double joint_effort)
+{
+  return jh.direction *
+         std::clamp(joint_effort, -jh.max_feedforward_effort, jh.max_feedforward_effort);
+}
 
 // ros2_control SystemInterface for RobStride actuators over SocketCAN.
 // Owns one CanBus per distinct can_interface, so multi-bus rigs work.

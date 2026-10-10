@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+<package format="3">
+  <name>kdl_gravity_compensation_controller</name>
+  <version>10.2.0</version>
+  <description>
+    ros2_control controller that writes KDL gravity torques for a serial chain
+    to its joints' effort command interfaces, alongside a position controller.
+  </description>
+  <maintainer email="support@picknik.ai">MoveIt Pro Maintainer</maintainer>
+  <license>BSD-3-Clause</license>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>controller_interface</depend>
+  <depend>kdl_parser</depend>
+  <depend>orocos_kdl_vendor</depend>
+  <depend>pluginlib</depend>
+  <depend>rclcpp_lifecycle</depend>
+  <test_depend>ament_cmake_gtest</test_depend>
+  <test_depend>lifecycle_msgs</test_depend>
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

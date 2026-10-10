@@ -9,5 +9,12 @@ if(BUILD_TESTING)
   find_package(ament_cmake_pytest REQUIRED)
   ament_add_pytest_test(test_hardware_selection test/test_hardware_selection.py TIMEOUT 60)
   ament_add_pytest_test(test_rebot_model test/test_model.py TIMEOUT 60)
+  find_package(ament_cmake_gtest REQUIRED)
+  find_package(kdl_gravity_compensation_controller REQUIRED)
+  ament_add_gtest(test_gravity_compensation test/test_gravity_compensation.cpp)
+  target_compile_definitions(test_gravity_compensation PRIVATE
+    REBOT_XACRO="${CMAKE_CURRENT_SOURCE_DIR}/description/rebot.urdf.xacro")
+  target_link_libraries(test_gravity_compensation
+    kdl_gravity_compensation_controller::kdl_gravity_compensation_controller)
 endif()
 ament_package()
