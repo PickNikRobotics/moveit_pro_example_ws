@@ -1,0 +1,13 @@
+# Opt in only when both USB cameras are connected. The arm always stays mock.
+enable_cameras: false
+
+# Shared RGB output settings. Use a color mode supported by both cameras.
+image_width: 640
+image_height: 480
+framerate: 30
+
+# Empty selects the attached D435; set a serial if more than one is connected.
+wrist_serial_no: ""
+scene_serial_no: "14442C10A119EAD600"
+# OAK encodes MJPEG on-device before USB transfer; the driver decodes to RGB.
+scene_mjpeg_quality: 95

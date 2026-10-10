@@ -26,6 +26,10 @@ Modified by PickNik Inc., 2026-10-09:
 - Added a fixed world frame and uncalibrated, frame-only D435 attachment points.
 - Added ros2_control using only `mock_components/GenericSystem`.
 
+Modified by PickNik Inc., 2026-10-10:
+
+- Added uncalibrated, frame-only OAK-D scene-camera attachment points at `world`.
+
 Original URDF export notice retained in `rebot.urdf`: SolidWorks to URDF
 Exporter, Stephen Brawner (brawner@gmail.com), commit `1.6.0-4-g7f85cfe`,
 build `1.6.7995.38578`; http://wiki.ros.org/sw_urdf_exporter.

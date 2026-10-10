@@ -400,7 +400,7 @@
     <parent link="world" />
     <child link="base_link" />
   </joint>
-  <!--Uncalibrated frame-only D435 attachment point. Identity at gripper_end is a placeholder, not a measured camera pose; no camera driver or geometry.-->
+  <!--Uncalibrated D435 attachment point. Identity at gripper_end is a placeholder, not a measured camera pose; no collision geometry.-->
   <link name="d435_mount_link" />
   <joint name="d435_mount_joint" type="fixed">
     <parent link="gripper_end" />
@@ -417,6 +417,20 @@
   <joint name="d435_optical_joint" type="fixed">
     <parent link="d435_link" />
     <child link="d435_color_optical_frame" />
+    <origin xyz="0 0 0" rpy="-1.5707963267948966 0 -1.5707963267948966" />
+  </joint>
+  <!--Uncalibrated OAK-D scene-camera pose. Identity at world is a placeholder;
+      measure its mounting transform before using images for spatial reasoning.-->
+  <link name="scene_camera_link" />
+  <joint name="scene_camera_mount_joint" type="fixed">
+    <parent link="world" />
+    <child link="scene_camera_link" />
+    <origin xyz="0 0 0" rpy="0 0 0" />
+  </joint>
+  <link name="scene_camera_color_optical_frame" />
+  <joint name="scene_camera_optical_joint" type="fixed">
+    <parent link="scene_camera_link" />
+    <child link="scene_camera_color_optical_frame" />
     <origin xyz="0 0 0" rpy="-1.5707963267948966 0 -1.5707963267948966" />
   </joint>
   <ros2_control name="RebotMockSystem" type="system">

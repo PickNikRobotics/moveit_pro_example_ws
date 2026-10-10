@@ -2,7 +2,7 @@
 
 A standalone MoveIt Pro configuration for the Seeed reBot Arm 102 / **B601-RS**
 (RobStride variant): six arm joints, the J7 gripper motor coordinate, and a
-wrist Intel RealSense D435 frame placeholder. Select `rebot_bench_mock` in
+optional real wrist Intel RealSense D435 and fixed Luxonis OAK-D RGB cameras. Select `rebot_bench_mock` in
 MoveIt Pro, or run:
 
 ```bash
@@ -12,8 +12,8 @@ moveit_pro run --config-package rebot_bench_mock
 This package targets the workspace's `main` configuration API. Its `_mock`
 suffix denotes ros2_control mock hardware, not MuJoCo physics. The only hardware
 plugin is `mock_components/GenericSystem`; there is no real-hardware option,
-CAN/serial connection, RobStride driver, camera driver, or physical-device
-launch file. Mock execution verifies kinematics and control plumbing, not
+CAN/serial connection or RobStride driver. Camera drivers are opt-in and
+do not change the arm backend. Mock execution verifies kinematics and control plumbing, not
 loads, contact dynamics, or hardware safety.
 
 ## Try it
@@ -128,12 +128,93 @@ those pairs remain checked with the original collision meshes. No extra
 clearance margin is claimed. This is a mock-only planning choice and must be
 reconsidered with calibrated geometry before hardware use.
 
-## D435 and hardware follow-up
+## Optional real RGB cameras
 
-`d435_mount_link` and `d435_link` currently coincide with `gripper_end`.
-`d435_color_optical_frame` supplies the conventional ROS optical-axis rotation.
-They are **uncalibrated placeholders**, with no geometry, imagery or camera node.
-They do not claim the pose or collision envelope of a physical camera/bracket.
+Cameras default **off**, so the package starts without either device plugged in.
+The arm always uses `mock_components/GenericSystem`, including when cameras are on.
+Edit [config/cameras.yaml](config/cameras.yaml), set `enable_cameras: true`, and
+restart the MoveIt Pro instance. The persistent driver launch reads that file.
+For a cameras-only ROS launch in a sourced workspace:
+
+```bash
+ros2 launch rebot_bench_mock cameras.launch.py enable_cameras:=true
+```
+
+Every setting in the YAML is also a launch argument, for example
+`image_width:=640 image_height:=480 framerate:=30`. Stop this standalone launch
+before enabling cameras in MoveIt Pro; each device must have one driver owner.
+
+| Role | Device | RGB image | Camera info | Optical frame |
+| --- | --- | --- | --- | --- |
+| Wrist | Intel RealSense D435 (`8086:0b07`) | `/wrist_mounted_camera/color/image_raw` | `/wrist_mounted_camera/color/camera_info` | `d435_color_optical_frame` |
+| Scene | Luxonis OAK-D-PRO-W-97 | `/scene_camera/color/image_raw` | `/scene_camera/color/camera_info` | `scene_camera_color_optical_frame` |
+
+Both default to **640×480 at 30 fps, RGB only, depth off**. These stable
+`sensor_msgs/Image` and `CameraInfo` topics support the UI and later recording
+for policies such as pi0.5 (which resizes images to 224×224). Image and calibration topics follow the sibling configs' naming convention.
+No registered depth pair or point cloud is advertised.
+The wrist image encoding is `rgb8`; the scene encoding is `bgr8`, matching
+the DepthAI v2 MJPEG decoder's OpenCV output. Recording consumers should honor
+`Image.encoding` (for example, request `rgb8` from cv_bridge) when converting
+either stream to an RGB tensor.
+
+Both cameras intentionally use **USB 2 (480 Mbps)** for long cables. The D435
+uses its supported 640×480/30 color mode, with depth, infrared, and IMU disabled.
+The OAK uses the standard Jazzy `depthai_ros_driver` (DepthAI v2): CAM_A's OV9782
+color sensor, an RGB-only pipeline, USB speed `HIGH`, and **on-device MJPEG**
+(quality 95) before USB transfer. Its 1280×800 sensor video output is center-cropped
+to the configured dimensions, then encoded; the driver decodes to RGB ROS Images
+on the host. CAM_B/C's OV9282 stereo pair, the BNO086 IMU and IR illumination
+are disabled. Change `scene_mjpeg_quality` in the same YAML to adjust compression.
+ISP luma/chroma denoising and sharpening are disabled to preserve detail.
+Allow a few seconds after startup for the scene camera's image to settle before
+recording; the first frames can look heavily processed.
+The configured scene serial selects the installed OAK; `wrist_serial_no` may be
+set when more than one D435 is connected. Resolution changes must be supported
+by both devices and the OAK video encoder (including its width alignment).
+
+Install the declared ROS dependencies in the runtime environment:
+
+```bash
+sudo apt install ros-jazzy-realsense2-camera ros-jazzy-depthai-ros-driver
+```
+
+The launch uses the drivers process, which has access to devices. Containers
+need **all** of the D435's `/dev/video*` nodes, including its depth interface
+even though depth streaming is off: librealsense uses that interface to discover
+the device's base stream. Check the nodes' USB parent in `/sys/class/video4linux/`;
+the `/dev/v4l/by-id/` symlinks alone may omit some interfaces. USB-bus access
+must also allow device re-enumeration because the OAK boots over USB.
+These are camera dependencies only.
+
+**Both mounting transforms are uncalibrated placeholders.** `d435_mount_link`
+and `d435_link` coincide with `gripper_end`; `scene_camera_link` coincides with
+`world`. Their optical frames use the ROS optical-axis rotation. The robot state
+publisher owns these transforms; driver TF publication is disabled to avoid
+conflicting publishers. Device intrinsics in `CameraInfo` do not calibrate the
+camera-to-robot transform. Images are usable for recording, but these poses must
+be measured before spatial perception or image-based motion. Neither camera has
+collision geometry yet.
+
+### Camera validation
+
+With both cameras connected at 480 Mbps, a simultaneous 65-second subscriber
+check measured **30.06 Hz wrist** and **30.00 Hz scene**, both 640×480 with
+matching `CameraInfo` dimensions and the optical frame IDs above. Tested with
+Jazzy `realsense2_camera` 4.58.1 / librealsense 2.58.1 and
+`depthai_ros_driver` 2.12.2 / DepthAI 2.31.1. The default camera-off launch
+exited successfully without starting either driver. `robot_state_publisher`
+loaded the URDF and published the expected fixed camera transforms.
+See [camera acceptance results](docs/camera-acceptance.json).
+
+The isolated test container used an 8 MiB Fast DDS shared-memory transport
+segment. Its default segment dropped full image messages at the subscriber
+while both `CameraInfo` streams still arrived at 30 Hz. When checking rates,
+measure the image topics themselves and size the ROS transport buffers for
+640×480×3-byte images; a camera's configured fps alone is not a delivery check.
+All camera drivers were stopped after testing.
+
+## Hardware follow-up
 
 Before a separate hardware integration:
 
@@ -142,7 +223,7 @@ Before a separate hardware integration:
 - Measure the installed gripper's motor-angle-to-jaw-travel relation and closed
   offset to confirm the BOM-derived 8 mm/rad transmission.
 - Measure the actual D435/bracket transform, add its collision geometry, calibrate
-  the optical extrinsics, and provide a camera driver in the hardware workspace.
+  the wrist and scene-camera optical extrinsics.
 - Add a hardware driver separately, with its own lifecycle, gravity-load handling,
   command ownership, stopping behavior and independently validated motion limits.
   These mock-only results do not validate any of those behaviors.
@@ -156,7 +237,7 @@ and initialization/activation of the mock hardware and trajectory controller.
 `Raised`, `Open Gripper`, `Close Gripper`, then `Zeroed Rest` all returned success,
 with final commanded-joint errors below 0.01 rad (reported as zero by the mock).
 [Recorded action results and joint states](docs/runtime-acceptance.json) provide
-the execution evidence. No physical hardware was used.
+the execution evidence. No physical arm hardware was used for those tests.
 
 Joint and Pose jogging also pass on the same mock runtime. Selecting `gripper`
 in the Joint tab exposes J7 alone; its bounded sweep and intermediate releases

@@ -1,8 +1,11 @@
-# Mock-only reBot bench scene. No physical hardware backend.
+# Mock-only arm with optional real RGB cameras.
 runtime_launch_file:
   package: rebot_bench_mock
   path: launch/runtime.launch.xml
 hardware:
+  additional_driver_launch_file:
+    package: rebot_bench_mock
+    path: launch/cameras.launch.py
   launch_control_node: true
   launch_robot_state_publisher: true
   robot_description:
