@@ -121,7 +121,7 @@ self-collision checking. In particular, `gripper_end` is rigidly attached to
 that J6 rotation cannot close. Default 10 mm planning padding otherwise makes
 this mount report a collision. The coupled jaws approach one another at closure
 and separate on opening. Tests re-enable both pairs for unpadded mesh checks
-along the saved motions. The three package Objectives explicitly use **zero
+along the saved motions. The four package Objectives explicitly use **zero
 additional link padding** while retaining mesh collision checks. Both 10 mm and
 1 mm padding reject movable-link pairs in the tightly folded zeroed-rest pose;
 those pairs remain checked with the original collision meshes. No extra
