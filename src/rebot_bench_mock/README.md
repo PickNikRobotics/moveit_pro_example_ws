@@ -47,7 +47,9 @@ controller. Disjoint arm controllers may remain active during gripper jogging;
 only one active controller claims each command interface.
 
 The package's **Teleoperate** Objective sets additional collision padding to
-zero, matching the waypoint Objectives. Mesh collision checking stays enabled.
+zero, matching the waypoint Objectives, and routes its trajectory execution
+through `joint_trajectory_controller` (this config has no admittance
+controller). Mesh collision checking stays enabled.
 The inherited 10 mm padding reports false collisions between nearby links on
 this compact model and prevents Cartesian jogging even at the saved raised
 pose. This is a mock-model policy, not a validated hardware clearance setting.

@@ -7,6 +7,9 @@
     <SubTree
       ID="Request Teleoperation"
       collision_check_params="[{override_scene_link_padding: true, link_padding: 0.0}]"
+      controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+      joint_trajectory_controller_name="joint_trajectory_controller"
+      execution_pipeline="jtc"
       enable_user_interaction="false"
       initial_teleop_mode="3"
       require_user_approval="{require_user_approval}"
