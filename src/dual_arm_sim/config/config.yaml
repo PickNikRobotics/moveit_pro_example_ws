@@ -64,12 +64,6 @@ moveit_params:
     state_updates: True
     transforms_updates: True
 
-  trajectory_execution:
-    manage_controllers: True
-    allowed_execution_duration_scaling: 2.0
-    allowed_goal_duration_margin: 5.0
-    allowed_start_tolerance: 0.01
-
 # Configuration for loading behaviors and objectives.
 # [Required]
 objectives:
@@ -82,6 +76,7 @@ objectives:
       - "moveit_pro::behaviors::CoreBehaviorsLoader"
       - "moveit_pro::behaviors::MTCCoreBehaviorsLoader"
       - "moveit_pro::behaviors::VisionBehaviorsLoader"
+      - "moveit_pro::behaviors::MPCBehaviorsLoader"
       - "moveit_pro::behaviors::ConverterBehaviorsLoader"
       - "moveit_pro::behaviors::MujocoBehaviorsLoader"
   # Specify source folder for objectives
@@ -133,8 +128,6 @@ ros2_control:
     - "right_velocity_force_controller"
     - "left_joint_velocity_controller"
     - "right_joint_velocity_controller"
-    - "left_joint_trajectory_controller"
-    - "right_joint_trajectory_controller"
     - "joint_trajectory_controller"
     - "left_joint_trajectory_admittance_controller"
     - "right_joint_trajectory_admittance_controller"
