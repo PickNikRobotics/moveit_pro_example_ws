@@ -1,0 +1,74 @@
+{
+  "date": "2026-10-10",
+  "ros_distro": "jazzy",
+  "driver_versions": {
+    "realsense2_camera": "4.58.1",
+    "librealsense": "2.58.1",
+    "depthai_ros_driver": "2.12.2",
+    "depthai": "2.31.1"
+  },
+  "usb_mbps": {
+    "wrist": 480,
+    "scene": 480
+  },
+  "capture_duration_seconds": 65,
+  "scene_mjpeg_quality": 95,
+  "scene_isp_denoise_and_sharpen": false,
+  "dds_test_transport": {
+    "implementation": "rmw_fastrtps_cpp",
+    "shared_memory_segment_bytes": 8388608
+  },
+  "streams": {
+    "wrist": {
+      "width": 640,
+      "height": 480,
+      "encoding": "rgb8",
+      "frame_id": "d435_color_optical_frame",
+      "frames": 1942,
+      "rate_hz": 30.055194358598484,
+      "camera_info": {
+        "width": 640,
+        "height": 480,
+        "frame_id": "d435_color_optical_frame",
+        "k": [
+          607.842041015625,
+          0.0,
+          329.2554931640625,
+          0.0,
+          607.7967529296875,
+          243.7031707763672,
+          0.0,
+          0.0,
+          1.0
+        ]
+      }
+    },
+    "scene": {
+      "width": 640,
+      "height": 480,
+      "encoding": "bgr8",
+      "frame_id": "scene_camera_color_optical_frame",
+      "frames": 1879,
+      "rate_hz": 30.00252388660304,
+      "camera_info": {
+        "width": 640,
+        "height": 480,
+        "frame_id": "scene_camera_color_optical_frame",
+        "k": [
+          282.5238037109375,
+          0.0,
+          320.5932922363281,
+          0.0,
+          282.3697204589844,
+          237.03402709960938,
+          0.0,
+          0.0,
+          1.0
+        ]
+      }
+    }
+  },
+  "camera_off_launch": "passed",
+  "robot_state_publisher_fixed_camera_transforms": "passed",
+  "physical_arm_used": false
+}

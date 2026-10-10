@@ -1,0 +1,5 @@
+manipulator:
+  kinematics_solver: pose_ik_plugin/PoseIKPlugin
+  solve_mode: optimize_distance
+  target_tolerance: 0.001
+  optimization_timeout: 0.01

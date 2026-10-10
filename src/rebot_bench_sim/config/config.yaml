@@ -1,0 +1,9 @@
+based_on_package: "rebot_bench_base_config"
+
+hardware:
+  robot_description:
+    urdf_params:
+      - hardware_interface: "mock"
+  additional_driver_launch_file:
+    package: "moveit_studio_agent"
+    path: "launch/blank.launch.py"

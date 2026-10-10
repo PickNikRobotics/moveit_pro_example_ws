@@ -1,0 +1,242 @@
+{
+  "hardware": "mock_components/GenericSystem",
+  "runtime": "MoveIt Pro main source build",
+  "collision_checks_enabled": true,
+  "additional_link_padding_m": 0.0,
+  "ui_group_selection": {
+    "manipulator": [
+      "joint1",
+      "joint2",
+      "joint3",
+      "joint4",
+      "joint5",
+      "joint6"
+    ],
+    "gripper": [
+      "joint7"
+    ]
+  },
+  "gripper_jog": {
+    "checks": [
+      {
+        "joint7_rad": 0.03386715137172763,
+        "release_drift_rad": 0.0
+      },
+      {
+        "joint7_rad": 0.2603648049891131,
+        "release_drift_rad": 0.0
+      },
+      {
+        "joint7_rad": 5.375361479769375,
+        "release_drift_rad": 0.0
+      },
+      {
+        "joint7_rad": 5.148864804465849,
+        "release_drift_rad": 0.0
+      },
+      {
+        "joint7_rad": 0.03386251643300291,
+        "release_drift_rad": 0.0
+      }
+    ],
+    "sample_count": 4121,
+    "min_joint7_rad": 0.03386251643300291,
+    "max_joint7_rad": 5.375361479769375,
+    "max_arm_drift_rad": 0.0
+  },
+  "gripper_ui_hold": {
+    "count": 1201,
+    "first": {
+      "joint1": 0.0,
+      "joint2": 0.0,
+      "joint3": 0.0,
+      "joint4": 0.0,
+      "joint5": 0.0,
+      "joint6": 0.0,
+      "joint7": 0.006389465026756618
+    },
+    "last": {
+      "joint1": 0.0,
+      "joint2": 0.0,
+      "joint3": 0.0,
+      "joint4": 0.0,
+      "joint5": 0.0,
+      "joint6": 0.0,
+      "joint7": 0.21752581138090332
+    },
+    "range": {
+      "joint1": 0.0,
+      "joint2": 0.0,
+      "joint3": 0.0,
+      "joint4": 0.0,
+      "joint5": 0.0,
+      "joint6": 0.0,
+      "joint7": 0.21113634635414671
+    }
+  },
+  "arm_joint_jog_after_gripper": {
+    "samples": 801,
+    "first": {
+      "joint1": 0.0,
+      "joint2": 0.0,
+      "joint3": 0.0,
+      "joint4": 0.0,
+      "joint5": 0.0,
+      "joint6": 0.0,
+      "joint7": 0.03386251643300291
+    },
+    "last": {
+      "joint1": 0.22508815188177836,
+      "joint2": 0.0,
+      "joint3": 0.0,
+      "joint4": 0.0,
+      "joint5": 0.0,
+      "joint6": 0.0,
+      "joint7": 0.03386251643300291
+    },
+    "motion_rad": {
+      "joint1": 0.22508815188177836,
+      "joint2": 0.0,
+      "joint3": 0.0,
+      "joint4": 0.0,
+      "joint5": 0.0,
+      "joint6": 0.0,
+      "joint7": 0.0
+    },
+    "release_drift_rad": {
+      "joint1": 0.0,
+      "joint2": 0.0,
+      "joint3": 0.0,
+      "joint4": 0.0,
+      "joint5": 0.0,
+      "joint6": 0.0,
+      "joint7": 0.0
+    }
+  },
+  "arm_pose_jog": {
+    "samples": 801,
+    "first": {
+      "joint1": 0.0,
+      "joint2": 0.65,
+      "joint3": 0.85,
+      "joint4": 0.3,
+      "joint5": 0.0,
+      "joint6": 0.0,
+      "joint7": 0.03386251643300291
+    },
+    "last": {
+      "joint1": 5.467619309877499e-07,
+      "joint2": 0.6785714679999987,
+      "joint3": 1.1158410682898747,
+      "joint4": 0.06275206585695371,
+      "joint5": 4.4756079263803406e-07,
+      "joint6": -2.6213368515781505e-07,
+      "joint7": 0.03386251643300291
+    },
+    "motion_rad": {
+      "joint1": 5.467619309877499e-07,
+      "joint2": 0.028571467999998656,
+      "joint3": 0.26584106828987475,
+      "joint4": -0.2372479341430463,
+      "joint5": 4.4756079263803406e-07,
+      "joint6": -2.6213368515781505e-07,
+      "joint7": 0.0
+    },
+    "release_drift_rad": {
+      "joint1": 0.0,
+      "joint2": 0.0,
+      "joint3": 0.0,
+      "joint4": 0.0,
+      "joint5": 0.0,
+      "joint6": 0.0,
+      "joint7": 0.0
+    }
+  },
+  "trajectory_switch_to_raised": {
+    "objective": "Move reBot to Waypoint",
+    "waypoint": "Raised",
+    "error_code": 1,
+    "elapsed_seconds": 7.927,
+    "max_joint_error_rad": 0.0,
+    "joint_positions_rad": {
+      "joint1": 0.0,
+      "joint2": 0.65,
+      "joint3": 0.85,
+      "joint4": 0.3,
+      "joint5": 0.0,
+      "joint6": 0.0,
+      "joint7": 0.03386251643300291
+    }
+  },
+  "notes": [
+    "One connected teleoperation UI; multiple UIs with conflicting group selections interrupted jogging.",
+    "Jog limit checks stop before the hard bounds; measured positions remained in 0..310 degrees.",
+    "All recorded release drift and gripper-test arm drift were zero."
+  ],
+  "waypoints_after_jog": [
+    {
+      "objective": "Move reBot to Waypoint",
+      "waypoint": "Raised",
+      "error_code": 1,
+      "elapsed_seconds": 4.029,
+      "max_joint_error_rad": 0.0,
+      "joint_positions_rad": {
+        "joint1": 0.0,
+        "joint2": 0.65,
+        "joint3": 0.85,
+        "joint4": 0.3,
+        "joint5": 0.0,
+        "joint6": 0.0,
+        "joint7": 0.03386251643300291
+      }
+    },
+    {
+      "objective": "Open Gripper",
+      "waypoint": null,
+      "error_code": 1,
+      "elapsed_seconds": 37.93,
+      "max_joint_error_rad": 0.0,
+      "joint_positions_rad": {
+        "joint1": 0.0,
+        "joint2": 0.65,
+        "joint3": 0.85,
+        "joint4": 0.3,
+        "joint5": 0.0,
+        "joint6": 0.0,
+        "joint7": 5.410520681182422
+      }
+    },
+    {
+      "objective": "Close Gripper",
+      "waypoint": null,
+      "error_code": 1,
+      "elapsed_seconds": 38.32,
+      "max_joint_error_rad": 0.0,
+      "joint_positions_rad": {
+        "joint1": 0.0,
+        "joint2": 0.65,
+        "joint3": 0.85,
+        "joint4": 0.3,
+        "joint5": 0.0,
+        "joint6": 0.0,
+        "joint7": 0.0
+      }
+    },
+    {
+      "objective": "Move reBot to Waypoint",
+      "waypoint": "Zeroed Rest",
+      "error_code": 1,
+      "elapsed_seconds": 7.76,
+      "max_joint_error_rad": 0.0,
+      "joint_positions_rad": {
+        "joint1": 0.0,
+        "joint2": 0.0,
+        "joint3": 0.0,
+        "joint4": 0.0,
+        "joint5": 0.0,
+        "joint6": 0.0,
+        "joint7": 0.0
+      }
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+<?xml version="1.0" ?>
+<package format="3">
+  <name>rebot_bench_base_config</name>
+  <version>10.2.0</version>
+  <description>
+    Shared reBot B601-RS configuration with mock arm hardware, seven commanded
+    joints, and optional wrist D435 and fixed OAK-D RGB cameras.
+  </description>
+  <maintainer email="support@picknik.ai">MoveIt Pro Maintainer</maintainer>
+  <license>BSD-3-Clause</license>
+  <license file="description/LICENSE">CERN-OHL-W-2.0</license>
+  <license file="description/assets/realsense/LICENSE">Apache-2.0</license>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <exec_depend>hardware_interface</exec_depend>
+  <exec_depend>xacro</exec_depend>
+  <exec_depend>ament_index_python</exec_depend>
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>python3-yaml</exec_depend>
+  <exec_depend>realsense2_camera</exec_depend>
+  <exec_depend>depthai_ros_driver</exec_depend>
+  <exec_depend>joint_state_broadcaster</exec_depend>
+  <exec_depend>joint_trajectory_controller</exec_depend>
+  <exec_depend>joint_velocity_controller</exec_depend>
+  <exec_depend>velocity_force_controller</exec_depend>
+  <exec_depend>moveit_studio_agent</exec_depend>
+  <exec_depend>moveit_pro_objectives</exec_depend>
+  <exec_depend>pose_ik_plugin</exec_depend>
+  <exec_depend>control_msgs</exec_depend>
+  <exec_depend>controller_manager_msgs</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>moveit_studio_sdk_msgs</exec_depend>
+  <exec_depend>moveit_msgs</exec_depend>
+  <test_depend>ament_cmake_pytest</test_depend>
+  <test_depend>ament_index_python</test_depend>
+  <test_depend>moveit_pro_base_py</test_depend>
+  <test_depend>python3-numpy</test_depend>
+  <test_depend>python3-yaml</test_depend>
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

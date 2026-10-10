@@ -1,0 +1,84 @@
+# Mock-only arm with optional real RGB cameras.
+runtime_launch_file:
+  package: rebot_bench_base_config
+  path: launch/runtime.launch.xml
+hardware:
+  additional_driver_launch_file:
+    package: rebot_bench_base_config
+    path: launch/cameras.launch.py
+  launch_control_node: true
+  launch_robot_state_publisher: true
+  robot_description:
+    urdf:
+      package: rebot_bench_base_config
+      path: description/rebot.urdf.xacro
+    urdf_params:
+      - hardware_interface: "mock"
+    srdf:
+      package: rebot_bench_base_config
+      path: config/moveit/rebot.srdf
+ros_global_params:
+  use_sim_time: false
+moveit_params:
+  joint_group_name: manipulator
+  kinematics:
+    package: rebot_bench_base_config
+    path: config/moveit/pose_ik.yaml
+  joint_limits:
+    package: rebot_bench_base_config
+    path: config/moveit/joint_limits.yaml
+  pose_jog:
+    package: rebot_bench_base_config
+    path: config/moveit/pose_jog.yaml
+  joint_jog:
+    package: rebot_bench_base_config
+    path: config/moveit/joint_jog.yaml
+  publish:
+    planning_scene: true
+    geometry_updates: true
+    state_updates: true
+    transforms_updates: true
+  trajectory_execution:
+    manage_controllers: true
+    allowed_execution_duration_scaling: 2.0
+    allowed_goal_duration_margin: 5.0
+    allowed_start_tolerance: 0.01
+ros2_control:
+  config:
+    package: rebot_bench_base_config
+    path: config/control/rebot.ros2_control.yaml
+  controllers_active_at_startup:
+  - joint_state_broadcaster
+  - joint_trajectory_controller
+  controllers_inactive_at_startup:
+  - joint_velocity_controller
+  - gripper_joint_velocity_controller
+  - velocity_force_controller
+  controllers_not_managed: []
+  controller_shared_topics: []
+objectives:
+  behavior_loader_plugins:
+    core:
+    - moveit_pro::behaviors::CoreBehaviorsLoader
+    - moveit_pro::behaviors::MTCCoreBehaviorsLoader
+    - moveit_pro::behaviors::VisionBehaviorsLoader
+    - moveit_pro::behaviors::ConverterBehaviorsLoader
+  objective_library_paths:
+    core_objectives:
+      package_name: moveit_pro_objectives
+      relative_path: objectives/core
+    motion_objectives:
+      package_name: moveit_pro_objectives
+      relative_path: objectives/motion
+    perception_objectives:
+      package_name: moveit_pro_objectives
+      relative_path: objectives/perception
+    visualization_objectives:
+      package_name: moveit_pro_objectives
+      relative_path: objectives/visualization
+    rebot_objectives:
+      package_name: rebot_bench_base_config
+      relative_path: objectives
+  waypoints_file:
+    package_name: rebot_bench_base_config
+    relative_path: waypoints/rebot_waypoints.yaml

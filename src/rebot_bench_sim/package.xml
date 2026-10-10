@@ -1,0 +1,31 @@
+<?xml version="1.0" ?>
+<package format="3">
+  <name>rebot_bench_sim</name>
+  <version>10.2.0</version>
+
+  <description>
+    Mock reBot bench overlay: inherited robot configuration, no camera drivers
+    or simulated images.
+  </description>
+
+  <maintainer email="support@picknik.ai">MoveIt Pro Maintainer</maintainer>
+
+  <license>BSD-3-Clause</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>rebot_bench_base_config</depend>
+
+  <test_depend>ament_cmake_copyright</test_depend>
+  <test_depend>ament_cmake_lint_cmake</test_depend>
+  <test_depend>ament_cmake_pytest</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_index_python</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>moveit_studio_utils_py</test_depend>
+  <test_depend>picknik_ament_copyright</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

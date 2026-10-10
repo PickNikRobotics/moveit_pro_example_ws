@@ -1,0 +1,71 @@
+{
+  "hardware": "mock_components/GenericSystem",
+  "validation_date": "2026-10-09",
+  "runtime": "MoveIt Pro main (source build)",
+  "results": [
+    {
+      "objective": "Move reBot to Waypoint",
+      "waypoint": "Raised",
+      "error_code": 1,
+      "elapsed_seconds": 8.126,
+      "max_joint_error_rad": 0.0,
+      "joint_positions_rad": {
+        "joint1": 0.0,
+        "joint2": 0.65,
+        "joint3": 0.85,
+        "joint4": 0.3,
+        "joint5": 0.0,
+        "joint6": 0.0,
+        "joint7": 0.0
+      }
+    },
+    {
+      "objective": "Open Gripper",
+      "waypoint": null,
+      "error_code": 1,
+      "elapsed_seconds": 38.599,
+      "max_joint_error_rad": 0.0,
+      "joint_positions_rad": {
+        "joint1": 0.0,
+        "joint2": 0.65,
+        "joint3": 0.85,
+        "joint4": 0.3,
+        "joint5": 0.0,
+        "joint6": 0.0,
+        "joint7": 5.410520681182422
+      }
+    },
+    {
+      "objective": "Close Gripper",
+      "waypoint": null,
+      "error_code": 1,
+      "elapsed_seconds": 38.62,
+      "max_joint_error_rad": 0.0,
+      "joint_positions_rad": {
+        "joint1": 0.0,
+        "joint2": 0.65,
+        "joint3": 0.85,
+        "joint4": 0.3,
+        "joint5": 0.0,
+        "joint6": 0.0,
+        "joint7": 0.0
+      }
+    },
+    {
+      "objective": "Move reBot to Waypoint",
+      "waypoint": "Zeroed Rest",
+      "error_code": 1,
+      "elapsed_seconds": 8.06,
+      "max_joint_error_rad": 0.0,
+      "joint_positions_rad": {
+        "joint1": 0.0,
+        "joint2": 0.0,
+        "joint3": 0.0,
+        "joint4": 0.0,
+        "joint5": 0.0,
+        "joint6": 0.0,
+        "joint7": 0.0
+      }
+    }
+  ]
+}
