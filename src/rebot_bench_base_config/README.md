@@ -450,9 +450,10 @@ velocity and effort.
 
 joint1-joint6 run in the mode set by the `arm_control_mode` entry under
 `urdf_params` in `config/config.yaml`: `motion` (impedance, the default) or
-`position_csp`. Impedance computes `kp * error + kd * velocity error` and the
-driver sends no gravity feedforward, so a loaded joint settles short by load
-torque / kp - joint4 stopped about 50 mrad short lifting 0.3 rad. `position_csp`
+`position_csp`. Impedance computes `kp * error + kd * velocity error + effort`.
+`effort` is 0 unless [gravity compensation](#gravity-compensation) is on, and
+without it a loaded joint settles short by load torque / kp - joint4 stopped
+about 50 mrad short lifting 0.3 rad. `position_csp`
 uses the motor's own position loop, which settles on target, capped by the speed
 limit stored in each motor (`0x7017`). Switching needs a restart of both the
 runtime and the drivers process, at home. The gripper always uses motion mode,
@@ -472,9 +473,9 @@ on it.
 
 ### Controllers
 
-Unchanged from mock, and that is the point: every controller in
-`config/control/rebot.ros2_control.yaml` already commands `position` only, which
-is what both the CSP and motion modes are driven through. One
+Unchanged from mock, and that is the point: every motion controller in
+`config/control/rebot.ros2_control.yaml` commands `position` only, which is what
+both the CSP and motion modes take their target through. One
 `joint_trajectory_admittance_controller` owns all seven joints and accepts partial
 goals, so the arm and gripper planning groups both work through it. The joints a partial
 goal leaves out are commanded to their measured positions when the goal arrives. A goal
@@ -482,9 +483,8 @@ whose first point is more than `default_path_tolerance` (0.15 rad, every joint) 
 measured position is rejected before anything moves. Both that and the 0.1 rad goal
 tolerance are sized for motion mode's gravity sag (up to 0.088 rad measured).
 
-The real branch declares `position` as the **only** command interface per joint,
-where mock also declares `velocity`. The driver exports whatever the description
-declares, so a stray `velocity` declaration would be claimed by a controller and
+The real branch declares no `velocity` command interface, where mock does. The
+driver exports whatever the description declares, so a stray `velocity` declaration would be claimed by a controller and
 then never written - a joint that accepts commands and does not move, with
 nothing in the log to explain why.
 
@@ -498,6 +498,57 @@ writing its held setpoint regardless, so deactivate it first. `~/set_zero_robstr
 deserves particular care: it moves nothing itself, but it redefines where zero is,
 and a controller still chasing its old setpoint number will then drive the motor
 to match.
+
+### Gravity compensation
+
+`gravity_compensation_controller` (`kdl_gravity_compensation_controller`) fills
+in the impedance law's `effort` term. Every cycle it reads joint1-joint6's
+positions, computes the torque each joint needs to hold the chain
+`base_link` -> `gripper_end` still (KDL `ChainDynParam::JntToGravity` on the
+robot description), and writes `gain * torque + offset` to each joint's `effort`
+command interface. It claims nothing else, so the trajectory, jog and Cartesian
+controllers keep `position` as before. The gripper fingers hang off that chain
+and are not in it; `payload_mass` can stand in for them.
+
+It is loaded inactive with every gain at 0, and nothing activates it. Only the
+real arm in `motion` mode offers `effort` (mock and `position_csp` do not), so
+activating it anywhere else fails. With the arm torqued at home, activate it,
+then set the gains tuned on the bench arm (joint2 0.25, joint3 1.25, joint4 1.50,
+the rest 0; see [What has and has not been verified](#what-has-and-has-not-been-verified)):
+
+```bash
+ros2 control switch_controllers --activate gravity_compensation_controller
+ros2 param set /gravity_compensation_controller gains "[0.0, 0.25, 1.25, 1.5, 0.0, 0.0]"
+ros2 control switch_controllers --deactivate gravity_compensation_controller
+```
+
+Deactivating writes 0 to every `effort` interface, which restores the plain
+impedance behaviour. Its parameters live in
+`config/control/rebot.ros2_control.yaml`. `gains` and `offsets` apply on the next
+cycle when set on the running controller (one value per joint, or the set is
+rejected); the others are read on configure, so reload the controller after
+changing one:
+
+```bash
+ros2 topic echo /gravity_compensation_controller/commanded_effort
+```
+
+`~/commanded_effort` (`sensor_msgs/JointState`) carries the positions the
+controller used and the efforts it wrote, before the driver's clamp.
+
+| Parameter | Default | Meaning |
+|---|---|---|
+| `gravity_vector` | `[0, 0, -9.81]` | Gravity in `base_link` (m/s^2). The table mount; a wall or ceiling mount changes this, not the URDF. |
+| `payload_mass`, `payload_com` | `0.0`, `[0, 0, 0]` | A held object: kg, and its centre of mass in `gripper_end` (m). |
+| `gains`, `offsets` | `0.0`, `0.0` each | Per joint: `gain * torque + offset` (N*m), set live. A gain other than 1 corrects a model that is too light or too heavy; an offset trims a joint's residual sag. |
+
+The driver clamps each joint's feedforward to its motor's
+`max_feedforward_effort`, by default a quarter of the motor's torque range: 9 N*m
+on the RS06 joints and 3.5 N*m on the RS00 joints, below their 11 and 5 N*m
+rated torque. A joint whose gravity load is larger than that is only partly
+compensated: a `~/commanded_effort` value beyond the bound is not what the motor
+receives. Raise the bound with a `max_feedforward_effort` param in the
+joint's `<gpio>` block in `description/rebot.urdf.xacro`.
 
 ### Waypoints and Objectives
 
@@ -554,7 +605,18 @@ needs an extrinsic calibration first.
 
 Verified offline: the three vendored driver packages build; the driver's
 hold-torque regression test passes against a fake motor on a virtual CAN
-interface; and the Xacro selector matrix behaves as described above.
+interface; and the Xacro selector matrix behaves as described above. The
+gravity model matches hand-computed torques on a two-link arm, gives zero
+torque with zero gravity, and on this arm's description adds exactly the
+Jacobian torque of a tip payload, in the same direction as joint2-joint4's own
+load.
+
+Gravity compensation was tuned on the bench arm holding the Raised pose
+(joint2 0.65, joint3 0.85, joint4 0.30) in motion mode, one joint at a time in
+0.25 gain steps, each measured as the mean of 10 s after 2 s settling. Gains
+joint2 0.25, joint3 1.25, joint4 1.50 cut the holding sag from 1.7 to 0.2 mrad,
+50.7 to 2.6 mrad and 41.7 to -1.6 mrad, with no clamp or fault. One more step
+(joint3 1.50, joint4 1.75) put each joint past its target.
 
 Verified on the bench arm through this configuration, non-instanced on `can0`:
 all seven motors answer with matching signs and stored zero; enable at home and
@@ -566,6 +628,11 @@ its target and 0.10 rad/s. Faster moves, large waypoints such as Raised, the
 gripper and teleoperation have not been run on the arm.
 
 Known limitations:
+
+- Setting every gravity compensation gain to 0 at once drops the load onto
+  impedance alone: joint3 fell at 0.106 rad/s doing that at Raised. Lower the
+  gains in steps, or do it at home. A built-in ramp is not implemented.
+- Holding Raised warms joint3; it reached 58 C during the gain sweep.
 
 - The collision model refuses joint4 at -0.05 rad near home (`link2` - `link5`),
   although the real arm moves there cleanly. The SRDF is unchanged.

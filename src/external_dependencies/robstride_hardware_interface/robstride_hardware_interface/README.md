@@ -78,6 +78,7 @@ gpio params:
 | `control_mode` | `motion` (default), `position_pp`, `velocity`, `current`, `position_csp` |
 | `kp`, `kd` | Initial gains. `motion` mode only; the other modes are closed by the motor's own loops. |
 | `direction` | `1` (default) or `-1`. Joint frame = `direction` × motor frame for position, velocity and effort, so a motor mounted opposite to the URDF axis needs no model change. Raw parameter writes through `~/set_data_to_robstride` stay in the motor frame. |
+| `max_feedforward_effort` | `motion` mode only. Bound (N·m, joint frame) on the torque feedforward taken from the joint's `effort` command. Defaults to a quarter of the model's torque range: 3.5 N·m on an RS00 and 9 N·m on an RS06, below their 5 and 11 N·m rated torque. |
 
 gpio interfaces:
 
@@ -86,7 +87,9 @@ gpio interfaces:
 | `kp`, `kd` | command | Retune gains while running. Same destination as `~/set_data_to_robstride`. |
 | `temperature` | state | Motor temperature (°C) |
 | `run_state` | state | `RunState` enum (`2` = torqued) |
-| `fault_bits` | state | Latched fault word |
+| `fault_bits` | state | Latched fault word, bits as in `robstride_sdk::FaultBit`. The SDK assembles the little-endian 0x15 frame big-endian; the driver swaps it back here, on `~/robstride_state` and in `~/get_data_from_robstride`. |
+
+In `motion` mode a joint may also declare an `effort` command interface. It is the torque feedforward of the motor's impedance law, `torque = kp * (target - position) + kd * (target velocity - velocity) + effort`, clamped to `max_feedforward_effort`. A gravity compensation controller writes it while a trajectory controller keeps `position`. It reads 0 until something writes it, is reset to 0 on activation and whenever the joint is untorqued, and is dropped while the component is frozen (§6).
 
 **The joint's command interface must match its gpio's `control_mode`**: `velocity` mode is driven through `velocity`, `current` through `effort`, and the position modes through `position`. `on_init` rejects any other pairing — a controller claiming an interface the joint's mode never writes would claim it successfully and then achieve nothing, with no error to explain why the joint does not move.
 
