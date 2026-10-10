@@ -18,16 +18,18 @@
   <exec_depend>moveit_studio_agent</exec_depend>
   <exec_depend>moveit_pro_objectives</exec_depend>
   <exec_depend>pose_ik_plugin</exec_depend>
+  <exec_depend>control_msgs</exec_depend>
+  <exec_depend>controller_manager_msgs</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>moveit_studio_sdk_msgs</exec_depend>
   <exec_depend>moveit_msgs</exec_depend>
   <test_depend>ament_cmake_pytest</test_depend>
   <test_depend>ament_index_python</test_depend>
   <test_depend>moveit_pro_base_py</test_depend>
   <test_depend>python3-numpy</test_depend>
   <test_depend>python3-yaml</test_depend>
-  <test_depend>rclpy</test_depend>
-  <test_depend>sensor_msgs</test_depend>
-  <test_depend>std_msgs</test_depend>
-  <test_depend>moveit_studio_sdk_msgs</test_depend>
   <export>
     <build_type>ament_cmake</build_type>
   </export>

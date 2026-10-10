@@ -25,6 +25,33 @@ coordinates zero). The raised arm pose is `[0, 0.65, 0.85, 0.3, 0, 0]` radians.
 using `Gripper Open` and `Gripper Closed`. One trajectory controller owns all
 seven joints and accepts partial goals for the arm and gripper groups.
 
+For proportional gripper control, open **Teleoperation → Joint → Teleoperation
+Settings**, select **gripper**, and start **Teleoperate**. Wait for the controller
+to activate, then hold J7's increment/decrement buttons; release to stop at an
+intermediate opening. The group contains one commanded joint, bounded to
+0–310°; the finger sliders remain dependent mimics. Select **manipulator** to
+return to arm joint jogging. Pose jogging always uses the six-joint arm group.
+Use one connected teleoperation UI at a time. Two UIs selecting different groups
+can publish conflicting feedback, repeatedly switch controllers, and make jog
+motion crawl or stop. Close the other UI and reload the remaining one before
+checking controller readiness again.
+
+Open/Close Gripper remain endpoint shortcuts. This configuration adds bounded
+velocity jogging; exact-angle slider and interactive-marker execution are not
+covered by this validation.
+
+The dedicated gripper JointVelocityController uses position commands with
+0.3 rad/s velocity and 0.6 rad/s² acceleration limits. It starts inactive and
+participates in managed controller switching with the seven-joint trajectory
+controller. Disjoint arm controllers may remain active during gripper jogging;
+only one active controller claims each command interface.
+
+The package's **Teleoperate** Objective sets additional collision padding to
+zero, matching the waypoint Objectives. Mesh collision checking stays enabled.
+The inherited 10 mm padding reports false collisions between nearby links on
+this compact model and prevents Cartesian jogging even at the saved raised
+pose. This is a mock-model policy, not a validated hardware clearance setting.
+
 The structure follows the workspace's SO-101 waypoint/Objectives conventions
 and standard runtime-services launch. It has no config parent, so it does not
 inherit another robot's hardware dependencies.
@@ -129,10 +156,20 @@ with final commanded-joint errors below 0.01 rad (reported as zero by the mock).
 [Recorded action results and joint states](docs/runtime-acceptance.json) provide
 the execution evidence. No physical hardware was used.
 
+Joint and Pose jogging also pass on the same mock runtime. Selecting `gripper`
+in the Joint tab exposes J7 alone; its bounded sweep and intermediate releases
+showed zero arm drift and zero drift after stopping. Predictive stopping kept
+J7 inside both limits (about 0.034 and 5.375 rad). Switching back to arm Joint
+jogging, Cartesian jogging and trajectory execution succeeded. See
+[recorded teleoperation results](docs/teleop-acceptance.json).
+
 `colcon test --packages-select rebot_bench_mock` loads the installed URDF/SRDF
 through MoveIt Pro, verifies motor limits and the J7 mimic behavior, and checks
 saved waypoints and interpolated motions with the real collision checker. It
 also verifies that `Raised` lifts the tool more than 20 cm above `Zeroed Rest`.
+A geometric regression reads the named Gripper Closed/Open waypoints and checks
+that opposing finger-face separation increases monotonically from approximately
+0.146 mm to 86.715 mm, including the dependent mimics.
 
 After launching this config in an isolated ROS graph, run this command in a
 ROS terminal inside the same MoveIt Pro instance with its workspace sourced.
@@ -145,3 +182,19 @@ ros2 run rebot_bench_mock verify_mock_execution.py
 It verifies the robot description is this mock model before submitting goals,
 waits up to 60 seconds for the planning-scene service, and checks action results
 plus final joint states.
+
+For a repeatable gripper jog check, leave Teleoperate running in **Joint** mode
+with **gripper** selected and **Jog Collision Checking** enabled. Do not operate
+other controls while running:
+
+```bash
+ros2 run rebot_bench_mock verify_mock_gripper_jog.py
+```
+
+The mock-only client sends commands through `/joint_jog/gripper`, checks J7's
+exclusive position-interface ownership, exercises both bounds and intermediate
+hold/release stops, and checks that the arm stays still. It finishes near the
+closed limit. This is a manual runtime acceptance check, not a hardware test or
+an unattended CI test. Afterward, switch to manipulator Joint jogging and Pose
+jogging, verify movement and release-to-stop, then stop Teleoperate and rerun
+`verify_mock_execution.py` to check the return to trajectory execution.

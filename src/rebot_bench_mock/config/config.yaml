@@ -47,6 +47,7 @@ ros2_control:
   - joint_trajectory_controller
   controllers_inactive_at_startup:
   - joint_velocity_controller
+  - gripper_joint_velocity_controller
   - velocity_force_controller
   controllers_not_managed: []
   controller_shared_topics: []

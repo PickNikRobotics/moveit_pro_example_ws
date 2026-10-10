@@ -98,3 +98,51 @@ def test_wrist_mount_meshes_stay_separated_across_roll(model):
             extents[name] = (transformed[:, 2].min(), transformed[:, 2].max())
         gap = extents["gripper_end"][0] - extents["link5"][1]
         assert 0.0089 < gap < 0.0091
+
+
+def test_open_waypoint_increases_jaw_separation(model):
+    """Check opening semantics from finger geometry, including dependent mimics."""
+    share = Path(get_package_share_directory("rebot_bench_mock"))
+    waypoints = yaml.safe_load((share / "waypoints/rebot_waypoints.yaml").read_text())
+    poses = {
+        w["name"]: dict(zip(w["joint_state"]["name"], w["joint_state"]["position"]))
+        for w in waypoints
+    }
+    triangle = np.dtype(
+        [("normal", "<f4", 3), ("vertices", "<f4", (3, 3)), ("attribute", "<u2")]
+    )
+    # The PLA fingers contain the opposing contact faces. The metal racks
+    # overlap laterally at different heights and are not jaw contact surfaces.
+    fingers = {
+        side: np.fromfile(
+            share / f"description/assets/visual/pla_{side}.STL",
+            dtype=triangle,
+            offset=84,
+        )["vertices"].reshape(-1, 3)
+        for side in ["left", "right"]
+    }
+    state = robot_state.RobotState(model)
+    state.set_to_default_values()
+    gaps = []
+    closed, opened = poses["Gripper Closed"], poses["Gripper Open"]
+    for fraction in np.linspace(0, 1, 21):
+        state.joint_positions = {
+            joint: value + fraction * (opened[joint] - value)
+            for joint, value in closed.items()
+        }
+        state.update()
+        gripper_from_world = np.linalg.inv(
+            state.get_global_link_transform("gripper_end")
+        )
+        lateral = {}
+        for side, vertices in fingers.items():
+            transform = gripper_from_world @ state.get_global_link_transform(
+                f"gripper_{side}"
+            )
+            lateral[side] = (vertices @ transform[:3, :3].T + transform[:3, 3])[:, 1]
+        gaps.append(lateral["right"].min() - lateral["left"].max())
+    # Upstream CAD retains about 0.146 mm clearance at the closed zero.
+    assert 0 <= gaps[0] < 0.0002
+    assert 0.086 < gaps[-1] < 0.087
+    assert np.all(np.diff(gaps) > 0), gaps
+    assert gaps[-1] - gaps[0] == pytest.approx(0.016 * radians(310), abs=1e-8)

@@ -7,6 +7,8 @@ controller_manager:
       type: joint_trajectory_controller/JointTrajectoryController
     joint_velocity_controller:
       type: joint_velocity_controller/JointVelocityController
+    gripper_joint_velocity_controller:
+      type: joint_velocity_controller/JointVelocityController
     velocity_force_controller:
       type: velocity_force_controller/VelocityForceController
 joint_state_broadcaster:
@@ -81,6 +83,15 @@ joint_velocity_controller:
     - 0.6
     command_interfaces:
     - position
+    joint_limit_position_tolerance: 0.02
+    command_timeout: 0.2
+    state_publish_rate: 20
+gripper_joint_velocity_controller:
+  ros__parameters:
+    planning_group_name: gripper
+    max_joint_velocity: [0.3]
+    max_joint_acceleration: [0.6]
+    command_interfaces: [position]
     joint_limit_position_tolerance: 0.02
     command_timeout: 0.2
     state_publish_rate: 20
