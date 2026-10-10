@@ -1,0 +1,15 @@
+upstream:
+  repository: https://github.com/kmj060703/RobstrideSDK.git
+  commit: c679f0a664804c2c658238de9fe4b41de989d3ff
+  branch: main
+snapshot_path: robstride_sdk
+vendored_paths:
+  - robstride_sdk
+pruned_paths:
+  - upstream .gitignore
+modified_paths: []
+apache_paths:
+  - .
+notes:
+  - RobStride private-protocol encode/decode and the SocketCAN transport used by robstride_hardware_interface. Vendored unmodified; not forked.
+  - Its per-model limit tables were checked against this bench's own stored motor parameters: RS00 14 Nm torque and 16 A current, RS06 36 Nm and 57 A, matching the readback from the arm's seven motors.

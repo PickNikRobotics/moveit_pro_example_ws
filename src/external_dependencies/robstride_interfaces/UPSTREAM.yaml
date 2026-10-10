@@ -1,0 +1,14 @@
+upstream:
+  repository: https://github.com/kmj060703/robstride_interfaces.git
+  commit: 8278bb1bf3d8f1fb07803459e1de4e14e10b8fc0
+  branch: main
+snapshot_path: robstride_interfaces
+vendored_paths:
+  - robstride_interfaces
+pruned_paths:
+  - upstream .gitignore
+modified_paths: []
+apache_paths:
+  - .
+notes:
+  - Messages and services robstride_hardware_interface exposes for per-motor health, gain retuning, mechanical zeroing and torque enable. Vendored unmodified; not forked.

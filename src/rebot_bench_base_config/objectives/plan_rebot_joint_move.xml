@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Plan reBot Joint Move">
+  <!--
+    Plans a joint-space move from the current state to a named waypoint (or, when
+    waypoint_name is empty, to target_positions) and its
+    exact reverse, and saves both trajectories without moving the arm, so their
+    per-joint peak speed and duration can be read before Execute reBot Joint
+    Trajectory runs them. Peak speed is bounded by velocity_scale_factor times
+    the joint_limits.yaml max_velocity (0.3 rad/s).
+  -->
+  <BehaviorTree
+    ID="Plan reBot Joint Move"
+    _description="Plan a joint-space move and its return to the current state, and save both trajectories without executing."
+  >
+    <Control ID="Sequence">
+      <Action
+        ID="GetCurrentPlanningScene"
+        planning_scene_msg="{planning_scene}"
+      />
+      <Action
+        ID="GetJointState"
+        joint_state="{current_state}"
+        planning_group_name="manipulator"
+        planning_scene="{planning_scene}"
+      />
+      <Action
+        ID="UnpackJointStateMessage"
+        effort="{start_effort}"
+        header="{start_header}"
+        joint_state="{current_state}"
+        name_="{start_joint_names}"
+        position="{start_position}"
+        velocity="{start_velocity}"
+      />
+      <Action
+        ID="CreateRobotState"
+        joint_state_msg="{start_state}"
+        joint_names="{start_joint_names}"
+        positions="{start_position}"
+      />
+      <Action
+        ID="RetrieveWaypoint"
+        _skipIf="waypoint_name == ''"
+        joint_group_name="manipulator"
+        waypoint_joint_state="{target_state}"
+        waypoint_name="{waypoint_name}"
+      />
+      <Action
+        ID="CreateRobotState"
+        _skipIf="waypoint_name != ''"
+        joint_state_msg="{target_state}"
+        joint_names="joint1;joint2;joint3;joint4;joint5;joint6"
+        positions="{target_positions}"
+      />
+      <Action
+        ID="GeneratePointToPointTrajectory"
+        planning_group_name="manipulator"
+        start_state="{start_state}"
+        target_state="{target_state}"
+        velocity_scale_factor="{velocity_scale_factor}"
+        acceleration_scale_factor="{acceleration_scale_factor}"
+        jerk_scale_factor="1.0"
+        start_time="0.0"
+        trajectory_sampling_rate="100"
+        joint_trajectory_msg="{out_trajectory}"
+      />
+      <Action
+        ID="GeneratePointToPointTrajectory"
+        planning_group_name="manipulator"
+        start_state="{target_state}"
+        target_state="{start_state}"
+        velocity_scale_factor="{velocity_scale_factor}"
+        acceleration_scale_factor="{acceleration_scale_factor}"
+        jerk_scale_factor="1.0"
+        start_time="0.0"
+        trajectory_sampling_rate="100"
+        joint_trajectory_msg="{back_trajectory}"
+      />
+      <Action
+        ID="ValidateTrajectory"
+        cartesian_space_step="0.020000"
+        joint_space_step="0.100000"
+        joint_trajectory_msg="{out_trajectory}"
+        planning_group_name="manipulator"
+        planning_scene_msg="{planning_scene}"
+        debug_solution="{debug_solution}"
+      />
+      <Action
+        ID="SaveJointTrajectoryToYaml"
+        message="{out_trajectory}"
+        yaml_filename="{out_file}"
+        overwrite="true"
+      />
+      <Action
+        ID="SaveJointTrajectoryToYaml"
+        message="{back_trajectory}"
+        yaml_filename="{back_file}"
+        overwrite="true"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Plan reBot Joint Move">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="reBot Bench" />
+      </MetadataFields>
+      <input_port
+        name="target_positions"
+        default="0.05;0.05;0.002;0.0;0.0;0.05"
+        type="std::vector&lt;double&gt;"
+      >
+        joint1-joint6 target, in radians. joint3 sits 2 mrad above its 0.0 lower
+        limit:
+        a target exactly on a limit fails planning on the profile's numerical
+        undershoot.
+      </input_port>
+      <input_port name="waypoint_name" default="" type="std::string">
+        Named waypoint to plan to; when empty, target_positions is used instead.
+      </input_port>
+      <input_port name="velocity_scale_factor" default="0.15" type="double">
+        Fraction of the 0.3 rad/s joint velocity limit; 0.15 caps each joint at
+        0.045 rad/s.
+      </input_port>
+      <input_port name="acceleration_scale_factor" default="0.10" type="double">
+        Fraction of the 0.6 rad/s^2 joint acceleration limit.
+      </input_port>
+      <input_port
+        name="out_file"
+        default="/tmp/rebot_joint_move_out"
+        type="std::string"
+      >
+        Trajectory to the target, saved as out_file.yaml.
+      </input_port>
+      <input_port
+        name="back_file"
+        default="/tmp/rebot_joint_move_back"
+        type="std::string"
+      >
+        Trajectory back to the start, saved as back_file.yaml.
+      </input_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>

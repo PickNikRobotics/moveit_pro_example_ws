@@ -12,6 +12,11 @@
   <license file="description/assets/realsense/LICENSE">Apache-2.0</license>
   <buildtool_depend>ament_cmake</buildtool_depend>
   <exec_depend>hardware_interface</exec_depend>
+  <!-- ros2_control hardware interface for the seven RobStride CAN motors, used
+       by the `real` branch of description/rebot.urdf.xacro. Built from the
+       vendored copy in src/external_dependencies/robstride_hardware_interface,
+       which pins a fork carrying hold_torque_on_deactivate. -->
+  <exec_depend>robstride_hardware_interface</exec_depend>
   <exec_depend>xacro</exec_depend>
   <exec_depend>ament_index_python</exec_depend>
   <exec_depend>launch</exec_depend>

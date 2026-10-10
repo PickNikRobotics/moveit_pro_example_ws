@@ -1,4 +1,6 @@
-# Mock-only arm with optional real RGB cameras.
+# Mock by default, with optional real RGB cameras. Switch the arm to the real
+# RobStride driver by setting hardware_interface to "real" below; see README.md
+# for the host CAN bring-up and the non-instanced-deployment requirement.
 runtime_launch_file:
   package: rebot_bench_base_config
   path: launch/runtime.launch.xml
@@ -13,7 +15,18 @@ hardware:
       package: rebot_bench_base_config
       path: description/rebot.urdf.xacro
     urdf_params:
+      # "mock" or "real". Real drives the seven RobStride motors over SocketCAN
+      # and only works in a non-instanced deployment, where host can0 is visible.
       - hardware_interface: "mock"
+      # Real only. The single 1 Mbps bus the bench arm is wired to.
+      - can_interface: "can0"
+      # Real only. "false" brings the arm up readable but limp - state is
+      # published and the joints move by hand, nothing is commanded. Use it for
+      # the first session on a new arm, then switch to "true".
+      - torque_enable: "true"
+      # Real only. joint1-joint6 control: "motion" (impedance, the default) or
+      # "position_csp" (the motor's own position loop). See the README.
+      - arm_control_mode: "motion"
     srdf:
       package: rebot_bench_base_config
       path: config/moveit/rebot.srdf

@@ -158,3 +158,77 @@
     twist: []
     wrench: []
   name: Gripper Open
+- description: Small multi-joint move near home (0.05 rad on joint1-3 and joint6).
+  favorite: false
+  joint_group_names:
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - joint1
+    - joint2
+    - joint3
+    - joint4
+    - joint5
+    - joint6
+    position:
+    - 0.05
+    - 0.05
+    - 0.05
+    - 0
+    - 0
+    - 0.05
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: rebot_small_a
+- description: Small multi-joint move near home (joint1 and joint6 -0.05 rad, joint2 and joint4 +0.05 rad). joint3 is 0.002, not 0.0, because 0.0 is its lower limit and a target exactly on a limit fails planning.
+  favorite: false
+  joint_group_names:
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - joint1
+    - joint2
+    - joint3
+    - joint4
+    - joint5
+    - joint6
+    position:
+    - -0.05
+    - 0.05
+    - 0.002
+    - 0.05
+    - 0
+    - -0.05
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: rebot_small_b

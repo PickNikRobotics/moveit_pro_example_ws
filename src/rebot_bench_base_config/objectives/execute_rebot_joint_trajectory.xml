@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Execute reBot Joint Trajectory">
+  <BehaviorTree
+    ID="Execute reBot Joint Trajectory"
+    _description="Load a saved joint trajectory, check it against the current planning scene, and execute it unchanged."
+  >
+    <Control ID="Sequence">
+      <Action
+        ID="LoadJointTrajectoryFromYaml"
+        file_path="{file_path}"
+        output="{joint_trajectory_msg}"
+      />
+      <Action
+        ID="GetCurrentPlanningScene"
+        planning_scene_msg="{planning_scene}"
+      />
+      <Action
+        ID="ValidateTrajectory"
+        cartesian_space_step="0.020000"
+        joint_space_step="0.100000"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+        planning_group_name="manipulator"
+        planning_scene_msg="{planning_scene}"
+        debug_solution="{debug_solution}"
+      />
+      <Action
+        ID="ExecuteTrajectory"
+        execution_pipeline="jtc"
+        controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
+        joint_trajectory_msg="{joint_trajectory_msg}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Execute reBot Joint Trajectory">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="reBot Bench" />
+      </MetadataFields>
+      <input_port
+        name="file_path"
+        default="/tmp/rebot_joint_move_out.yaml"
+        type="std::string"
+      >
+        Saved trajectory to execute, e.g. written by Plan reBot Joint Move. Run
+        it from the pose it was planned from: nothing here checks that the arm
+        is at its first point, and the controller does not interpolate to a
+        first point at time zero.
+      </input_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>
