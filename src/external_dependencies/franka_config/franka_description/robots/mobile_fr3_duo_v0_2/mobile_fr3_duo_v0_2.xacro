@@ -1,0 +1,79 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:macro
+    name="mobile_fr3_duo_v0_2"
+    params="robot_types
+            hand
+            include_self_collision_geometry
+            reduced_version
+            description_pkg
+            connected_to
+            use_arms
+            no_prefix
+            ee_id
+            special_connection
+            xyz_ee
+            rpy_ee
+            tcp_xyz
+            tcp_rpy
+            safety_distance
+            with_sc
+            **arm0_extras
+            **arm1_extras">
+
+    <xacro:include filename="$(find franka_description)/accessories/franka_spine_v0_1/franka_spine.xacro"/>
+    <xacro:include filename="$(find franka_description)/robots/common/franka_robot.xacro"/>
+    <xacro:include filename="$(find franka_description)/robots/tmrv0_2/tmrv0_2.xacro"/>
+    <xacro:include filename="$(find franka_description)/robots/fr3_duo/fr3_duo.xacro"/>
+
+    <xacro:property name="arm_prefixes_list" value="${['left','right']}"/>
+
+    <!-- Verify that the given robot types are first a mobile base and then arms -->
+    <xacro:unless value="${robot_types_list[0] == 'tmrv0_2'}">
+      <xacro:property
+        name="_assert"
+        value="${xacro.fatal('mobile_fr3_duo_v0_2: robot_types[0] must be tmrv0_2')}"
+        lazy_eval="false"/>
+    </xacro:unless>
+    <xacro:if value="${robot_types_list[1] == 'tmrv0_2' or robot_types_list[2] == 'tmrv0_2'}">
+      <xacro:property
+        name="_assert"
+        value="${xacro.fatal('mobile_fr3_duo_v0_2: robot_types[1] and/or robot_types[2] cannot be tmrv0_2. They need to be arms.')}"
+        lazy_eval="false"/>
+    </xacro:if>
+
+    <!-- The mobile base -->
+    <xacro:tmrv0_2
+      mobile_robot_type="${robot_types_list[0]}"
+      reduced_version="${reduced_version}"/>
+
+    <!-- Spine -->
+    <xacro:franka_spine parent="base_link"/>
+
+    <!-- The FR3 Duo Arms -->
+    <xacro:property name="only_arm_robot_types_list" value="${robot_types_list[1:]}"/>
+    <xacro:fr3_duo
+      name="fr3_duo"
+      robot_types="${only_arm_robot_types_list}"
+      hand="${hand}"
+      ee_id="${ee_id}"
+      special_connection="${special_connection}"
+      xyz_ee="${xyz_ee}"
+      rpy_ee="${rpy_ee}"
+      tcp_xyz="${tcp_xyz}"
+      tcp_rpy="${tcp_rpy}"
+      safety_distance="${safety_distance}"
+      with_sc="${with_sc}"
+      include_self_collision_geometry="${include_self_collision_geometry}"
+      description_pkg="${description_pkg}"
+      base_mount="franka_spine_mounting_point"
+      connected_to="${connected_to}"
+      arm_prefixes="${arm_prefixes_list}"
+      is_mobile_fr3_duo="true">
+      <arm0_extras><xacro:insert_block name="arm0_extras"/></arm0_extras>
+      <arm1_extras><xacro:insert_block name="arm1_extras"/></arm1_extras>
+    </xacro:fr3_duo>
+
+  </xacro:macro>
+</robot>

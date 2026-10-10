@@ -1,6 +1,6 @@
 upstream:
   repository: https://github.com/frankarobotics/franka_description.git
-  commit: 494d1d474844c167d72ccd604633545c9067eea2
+  commit: 7aeeddc449edf8d62b594f9e36a81da53e7796f9
   branch: main
 snapshot_path: franka_description
 vendored_paths:
@@ -8,22 +8,35 @@ vendored_paths:
   - franka_description/LICENSE
   - franka_description/NOTICE
   - franka_description/package.xml
+  - franka_description/accessories/fr3_duo_mount_v0_3
+  - franka_description/accessories/franka_head_v0_2
+  - franka_description/accessories/franka_spine_v0_1
   - franka_description/robots/common
   - franka_description/robots/fr3
-  - franka_description/robots/fr3_duo/fr3_duo_mount
+  - franka_description/robots/fr3v2
+  - franka_description/robots/fr3_duo
+  - franka_description/robots/mobile_fr3_duo_v0_2
+  - franka_description/robots/tmrv0_2
   - franka_description/end_effectors/common
+  - franka_description/end_effectors/franka_hand/franka_hand.srdf.xacro
   - franka_description/end_effectors/franka_hand/inertials.yaml
   - franka_description/meshes/robots/fr3
-  - franka_description/meshes/accessories/fr3_duo_mount
+  - franka_description/meshes/robots/fr3v2
+  - franka_description/meshes/robots/tmrv0_2
+  - franka_description/meshes/accessories/fr3_duo_mount_v0_3
+  - franka_description/meshes/accessories/franka_head_v0_2
+  - franka_description/meshes/accessories/franka_spine_v0_1
   - franka_description/meshes/robot_ee/franka_hand_white
 pruned_paths:
-  - non-FR3 robot descriptions and meshes
-  - unused end effectors, SRDF macros, standalone robot wrappers, documentation, visualization scripts, and tests
+  - robot descriptions and meshes other than FR3, FR3 v2, the TMR v0.2 base and the FR3 Duo spine, head and mount
+  - unused end effectors, standalone launch and rviz files, documentation, visualization scripts, and tests
 modified_paths:
   - franka_description/CMakeLists.txt
   - franka_description/package.xml
 apache_paths:
   - franka_description
 notes:
-  - dual_arm_sim and kitchen_sim use only FR3 variants.
+  - Release 2.9.0, the franka_description version the PickNik franka_ros2 fork pins in its dependency.repos.
+  - dual_arm_sim and kitchen_sim use the FR3 variants; market_sim uses the Mobile FR3 Duo (TMR v0.2 base, spine, head, two FR3 v2 arms).
+  - The default robot_types of robots/mobile_fr3_duo_v0_2/mobile_fr3_duo_v0_2.urdf.xacro names fr3v2_1, which is pruned here; configs pass robot_types with fr3v2. The vendored file itself stays byte-identical to upstream.
   - Binary files matching workspace Git LFS patterns are stored as LFS objects; checked-out bytes match upstream.
