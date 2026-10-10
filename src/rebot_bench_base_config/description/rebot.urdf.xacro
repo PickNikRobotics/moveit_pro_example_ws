@@ -2,8 +2,21 @@
 <!-- Derived from Seeed reBot-DevArm; CERN-OHL-W-2.0. Modified by PickNik Inc., 2026-10-10: visual replacements and mock hardware selector. See NOTICE.md. Original SolidWorks exporter: Stephen Brawner (brawner@gmail.com), 1.6.0-4-g7f85cfe, build 1.6.7995.38578; http://wiki.ros.org/sw_urdf_exporter. -->
 <robot name="rebot_b601_rs" xmlns:xacro="http://www.ros.org/wiki/xacro">
   <xacro:arg name="hardware_interface" default="mock" />
-  <!-- A future real driver belongs here; unsupported selectors fail expansion. -->
-  <xacro:property name="hardware_plugins" value="${dict(mock='mock_components/GenericSystem')}" />
+  <!-- Real hardware only; ignored by mock. The bench runs one 1 Mbps bus. -->
+  <xacro:arg name="can_interface" default="can0" />
+  <!-- false brings the arm up readable but limp: state is published and the
+       joints can be moved by hand, nothing is commanded. The first session on
+       real hardware uses this. -->
+  <xacro:arg name="torque_enable" default="true" />
+  <!-- Real hardware only; joint1-joint6 control mode. "motion" is impedance
+       (MIT): torque = kp * error + kd * velocity error, with no gravity
+       feedforward, so a loaded joint settles short by load torque / kp.
+       "position_csp" is the motor's own position loop, which settles on
+       target and is capped by the motor's stored speed limit (0x7017). The
+       gripper always uses motion. Unsupported values fail expansion. -->
+  <xacro:arg name="arm_control_mode" default="motion" />
+  <!-- Unsupported selectors fail expansion. -->
+  <xacro:property name="hardware_plugins" value="${dict(mock='mock_components/GenericSystem', real='robstride_hardware_interface/RobstrideHardware')}" />
   <material name="rs_base_black">
     <color rgba="0.055 0.065 0.060 1" />
   </material>
@@ -359,7 +372,7 @@
     <parent link="gripper_end" />
     <child link="gripper_left" />
     <axis xyz="0 0 1" />
-    <limit lower="0" upper="0.04328416544945937" effort="500" velocity="0.0024" />
+    <limit lower="0" upper="0.04328416544945937" effort="500" velocity="0.024" />
     <mimic joint="joint7" multiplier="0.008" offset="0" />
   </joint>
   <link name="gripper_right">
@@ -394,7 +407,7 @@
     <parent link="gripper_end" />
     <child link="gripper_right" />
     <axis xyz="0 0 1" />
-    <limit lower="0" upper="0.04328416544945937" effort="500" velocity="0.0024" />
+    <limit lower="0" upper="0.04328416544945937" effort="500" velocity="0.024" />
     <mimic joint="joint7" multiplier="0.008" offset="0" />
   </joint>
   <link name="gripper_motor_frame" />
@@ -402,7 +415,7 @@
     <parent link="gripper_end" />
     <child link="gripper_motor_frame" />
     <axis xyz="0 0 1" />
-    <limit lower="0" upper="5.410520681182422" velocity="0.3" effort="14" />
+    <limit lower="0" upper="5.410520681182422" velocity="3.0" effort="14" />
   </joint>
   <link name="world" />
   <joint name="world_to_base" type="fixed">
@@ -460,80 +473,96 @@
     <child link="scene_camera_color_optical_frame" />
     <origin xyz="0 0 0" rpy="-1.5707963267948966 0 -1.5707963267948966" />
   </joint>
-  <ros2_control name="RebotMockSystem" type="system">
+  <!--
+    One motor per joint on a single CAN bus, ids 1-7 matching joint1-joint7.
+    actuator_type selects the motor's CAN quantization ranges, so RS06 on the
+    three base joints and RS00 on the wrist and gripper is not cosmetic: the
+    wrong model silently rescales every position, velocity and effort.
+    joint1-joint6 use the arm_control_mode argument (see its comment above);
+    the gripper always uses motion mode. kp/kd act only in motion mode and
+    start from Seeed's tuned follower values for this arm.
+    The URDF is already in the motor frame with the measured limits, so no
+    `direction` override is needed anywhere - joint frame equals motor frame.
+  -->
+  <xacro:property name="arm_mode" value="${dict(motion='motion', position_csp='position_csp')['$(arg arm_control_mode)']}" />
+  <xacro:macro name="rebot_joint" params="name id model kp kd mode:=${arm_mode}">
+    <joint name="${name}">
+      <xacro:if value="${'$(arg hardware_interface)' == 'real'}">
+        <param name="id">${id}</param>
+      </xacro:if>
+      <command_interface name="position" />
+      <!--
+        Mock only. Every controller in config/control/rebot.ros2_control.yaml
+        commands `position`, and motion mode is driven through `position`
+        alone; the driver exports whatever is declared, so a velocity
+        declaration here would be claimable and then never written - a joint
+        that accepts commands and does not move, with no error to explain it.
+      -->
+      <xacro:if value="${'$(arg hardware_interface)' == 'mock'}">
+        <command_interface name="velocity" />
+      </xacro:if>
+      <state_interface name="position">
+        <param name="initial_value">0.0</param>
+      </state_interface>
+      <state_interface name="velocity">
+        <param name="initial_value">0.0</param>
+      </state_interface>
+    </joint>
+    <xacro:if value="${'$(arg hardware_interface)' == 'real'}">
+      <!--
+        The motor as a device, matched to its joint by id. Motor health is
+        published on the component's own ~/robstride_state topic every read()
+        cycle, so no gpio state interface is declared: nothing would claim one.
+      -->
+      <gpio name="${name}_motor">
+        <param name="type">robstride</param>
+        <param name="ID">${id}</param>
+        <param name="actuator_type">${model}</param>
+        <param name="can_interface">$(arg can_interface)</param>
+        <param name="control_mode">${mode}</param>
+        <param name="kp">${kp}</param>
+        <param name="kd">${kd}</param>
+      </gpio>
+    </xacro:if>
+  </xacro:macro>
+  <ros2_control name="RebotSystem" type="system">
     <hardware>
+      <!-- Indexed unconditionally so an unsupported selector fails expansion
+           rather than yielding a description with no hardware plugin. -->
       <plugin>${hardware_plugins['$(arg hardware_interface)']}</plugin>
-      <param name="calculate_dynamics">true</param>
+      <xacro:if value="${'$(arg hardware_interface)' == 'mock'}">
+        <param name="calculate_dynamics">true</param>
+      </xacro:if>
+      <xacro:if value="${'$(arg hardware_interface)' == 'real'}">
+        <!-- Host address this arm's motors are already configured to answer. -->
+        <param name="master_id">253</param>
+        <param name="number_of_joints">7</param>
+        <!--
+          The bench arm has no brakes and may only be limped at its home pose,
+          so a clean stop must hold the pose rather than drop the arm.
+          That hold is only real while the motors' own CAN_TIMEOUT watchdog is
+          off: deactivation closes the bus, and an armed watchdog would release
+          torque that long afterwards whatever hold_torque_on_deactivate says.
+          The two settings are one decision.
+        -->
+        <param name="hold_torque_on_deactivate">true</param>
+        <param name="motor_can_timeout_ms">0</param>
+        <!--
+          Losing a joint freezes the component: the lost joint is left limp,
+          every reachable joint keeps torque and holds where it was, and
+          controller commands are ignored. The alternative cuts torque on all
+          seven, which drops the arm.
+        -->
+        <param name="freeze_on_joint_loss">true</param>
+        <param name="torque_enable">$(arg torque_enable)</param>
+      </xacro:if>
     </hardware>
-    <joint name="joint1">
-      <command_interface name="position" />
-      <command_interface name="velocity" />
-      <state_interface name="position">
-        <param name="initial_value">0.0</param>
-      </state_interface>
-      <state_interface name="velocity">
-        <param name="initial_value">0.0</param>
-      </state_interface>
-    </joint>
-    <joint name="joint2">
-      <command_interface name="position" />
-      <command_interface name="velocity" />
-      <state_interface name="position">
-        <param name="initial_value">0.0</param>
-      </state_interface>
-      <state_interface name="velocity">
-        <param name="initial_value">0.0</param>
-      </state_interface>
-    </joint>
-    <joint name="joint3">
-      <command_interface name="position" />
-      <command_interface name="velocity" />
-      <state_interface name="position">
-        <param name="initial_value">0.0</param>
-      </state_interface>
-      <state_interface name="velocity">
-        <param name="initial_value">0.0</param>
-      </state_interface>
-    </joint>
-    <joint name="joint4">
-      <command_interface name="position" />
-      <command_interface name="velocity" />
-      <state_interface name="position">
-        <param name="initial_value">0.0</param>
-      </state_interface>
-      <state_interface name="velocity">
-        <param name="initial_value">0.0</param>
-      </state_interface>
-    </joint>
-    <joint name="joint5">
-      <command_interface name="position" />
-      <command_interface name="velocity" />
-      <state_interface name="position">
-        <param name="initial_value">0.0</param>
-      </state_interface>
-      <state_interface name="velocity">
-        <param name="initial_value">0.0</param>
-      </state_interface>
-    </joint>
-    <joint name="joint6">
-      <command_interface name="position" />
-      <command_interface name="velocity" />
-      <state_interface name="position">
-        <param name="initial_value">0.0</param>
-      </state_interface>
-      <state_interface name="velocity">
-        <param name="initial_value">0.0</param>
-      </state_interface>
-    </joint>
-    <joint name="joint7">
-      <command_interface name="position" />
-      <command_interface name="velocity" />
-      <state_interface name="position">
-        <param name="initial_value">0.0</param>
-      </state_interface>
-      <state_interface name="velocity">
-        <param name="initial_value">0.0</param>
-      </state_interface>
-    </joint>
+    <xacro:rebot_joint name="joint1" id="1" model="RS06" kp="50.0" kd="3.0" />
+    <xacro:rebot_joint name="joint2" id="2" model="RS06" kp="150.0" kd="10.0" />
+    <xacro:rebot_joint name="joint3" id="3" model="RS06" kp="150.0" kd="10.0" />
+    <xacro:rebot_joint name="joint4" id="4" model="RS00" kp="50.0" kd="5.0" />
+    <xacro:rebot_joint name="joint5" id="5" model="RS00" kp="50.0" kd="4.0" />
+    <xacro:rebot_joint name="joint6" id="6" model="RS00" kp="50.0" kd="4.0" />
+    <xacro:rebot_joint name="joint7" id="7" model="RS00" kp="12.0" kd="0.05" mode="motion" />
   </ros2_control>
 </robot>

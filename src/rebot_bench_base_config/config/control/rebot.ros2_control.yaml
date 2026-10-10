@@ -41,6 +41,11 @@ joint_trajectory_controller:
     - velocity
     allow_partial_joints_goal: true
     allow_nonzero_velocity_at_trajectory_end: true
+    # Seed a new trajectory from the last command rather than from the measured state: the
+    # measured velocity interface carries +-0.23 rad/s of quantization noise with this arm
+    # motionless, and that value would otherwise become the spline's start velocity.
+    # Read-only parameter - changing it needs a controller reload, not just a param set.
+    interpolate_from_desired_state: true
     constraints:
       goal_time: 2.0
       joint1:
@@ -89,8 +94,8 @@ joint_velocity_controller:
 gripper_joint_velocity_controller:
   ros__parameters:
     planning_group_name: gripper
-    max_joint_velocity: [0.3]
-    max_joint_acceleration: [0.6]
+    max_joint_velocity: [3.0]
+    max_joint_acceleration: [6.0]
     command_interfaces: [position]
     joint_limit_position_tolerance: 0.02
     command_timeout: 0.2
