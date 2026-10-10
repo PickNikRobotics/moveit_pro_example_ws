@@ -1,0 +1,9 @@
+<library path="robstride_hardware_interface">
+  <class name="robstride_hardware_interface/RobstrideHardware"
+         type="robstride_hardware_interface::RobstrideHardware"
+         base_class_type="hardware_interface::SystemInterface">
+    <description>
+      ros2_control SystemInterface for RobStride CAN actuators (RS00-RS06) over SocketCAN.
+    </description>
+  </class>
+</library>
