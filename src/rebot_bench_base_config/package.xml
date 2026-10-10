@@ -26,6 +26,8 @@
   <exec_depend>depthai_ros_driver</exec_depend>
   <exec_depend>joint_state_broadcaster</exec_depend>
   <exec_depend>joint_trajectory_controller</exec_depend>
+  <!-- gravity_compensation_controller, off by default; see README.md. -->
+  <exec_depend>kdl_gravity_compensation_controller</exec_depend>
   <exec_depend>joint_velocity_controller</exec_depend>
   <exec_depend>velocity_force_controller</exec_depend>
   <exec_depend>moveit_studio_agent</exec_depend>
@@ -38,8 +40,10 @@
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>moveit_studio_sdk_msgs</exec_depend>
   <exec_depend>moveit_msgs</exec_depend>
+  <test_depend>ament_cmake_gtest</test_depend>
   <test_depend>ament_cmake_pytest</test_depend>
   <test_depend>ament_index_python</test_depend>
+  <test_depend>kdl_gravity_compensation_controller</test_depend>
   <test_depend>moveit_pro_base_py</test_depend>
   <test_depend>python3-numpy</test_depend>
   <test_depend>python3-yaml</test_depend>

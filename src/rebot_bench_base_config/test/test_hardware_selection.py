@@ -6,6 +6,7 @@ import xml.etree.ElementTree as ET
 from ament_index_python.packages import get_package_share_directory
 import pytest
 import xacro
+import yaml
 
 # Motor id -> (actuator model, kp, kd). RS06 drives the three base joints and
 # RS00 the wrist and gripper; the model selects the motor's CAN quantization
@@ -83,12 +84,12 @@ def test_real_declares_one_motor_per_joint_matched_by_id():
     for joint in joints:
         motor_id, model, kp, kd = MOTORS[joint.get("name")]
         assert params(joint) == {"id": motor_id}
-        # Both modes are driven through position alone. A velocity declaration
+        # Both modes take their target through position. A velocity declaration
         # would be exported and claimable, then never written - a joint that
         # accepts commands and does not move, with nothing to explain why.
-        assert [c.get("name") for c in joint.findall("command_interface")] == [
-            "position"
-        ]
+        # joint1-joint6 in motion mode also take the gravity feedforward.
+        commands = ["position"] if motor_id == "7" else ["position", "effort"]
+        assert [c.get("name") for c in joint.findall("command_interface")] == commands
         # The driver exports only what is declared, and
         # joint_state_broadcaster asks for position and velocity.
         assert [s.get("name") for s in joint.findall("state_interface")] == [
@@ -117,6 +118,11 @@ def test_arm_control_mode_switches_joint1_to_6_and_never_the_gripper():
         for g in control.find("ros2_control").findall("gpio")
     }
     assert modes == {**{str(i): "position_csp" for i in range(1, 7)}, "7": "motion"}
+    # The motor's position loop ignores the feedforward, so nothing offers it.
+    for joint in control.find("ros2_control").findall("joint"):
+        assert [c.get("name") for c in joint.findall("command_interface")] == [
+            "position"
+        ]
     with pytest.raises(xacro.XacroException):
         expand(hardware_interface="real", arm_control_mode="torque")
 
@@ -160,3 +166,31 @@ def test_commanded_joints_keep_the_measured_motor_frame_limits(hardware_interfac
         # Every joint spans less than a full turn, which is what makes the
         # driver's power-cycle unwrapping read the same angle after a reboot.
         assert upper - lower < 2 * 3.141592653589793
+
+
+def test_gravity_compensation_is_off_by_default_and_matches_the_effort_joints():
+    share = Path(get_package_share_directory("rebot_bench_base_config"))
+    config = yaml.safe_load((share / "config/config.yaml").read_text())
+    startup = config["ros2_control"]
+    assert (
+        "gravity_compensation_controller"
+        not in startup["controllers_active_at_startup"]
+    )
+    assert (
+        "gravity_compensation_controller" in startup["controllers_inactive_at_startup"]
+    )
+
+    control = yaml.safe_load(
+        (share / "config/control/rebot.ros2_control.yaml").read_text()
+    )
+    gravity = control["gravity_compensation_controller"]["ros__parameters"]
+    effort_joints = [
+        joint.get("name")
+        for joint in expand(hardware_interface="real").findall("ros2_control/joint")
+        if "effort" in [c.get("name") for c in joint.findall("command_interface")]
+    ]
+    assert gravity["joints"] == effort_joints
+    # Defaults change nothing but add the arm's own weight.
+    assert gravity["payload_mass"] == 0.0
+    assert gravity["gains"] == [1.0] * 6
+    assert gravity["offsets"] == [0.0] * 6
