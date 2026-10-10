@@ -1,0 +1,28 @@
+diff --git a/mujoco_warp/_src/io.py b/mujoco_warp/_src/io.py
+index 67abfa1..843d5db 100644
+--- a/mujoco_warp/_src/io.py
++++ b/mujoco_warp/_src/io.py
+@@ -194,7 +194,8 @@ def put_model(mjm: mujoco.MjModel) -> types.Model:
+   opt.ls_parallel_min_step = 1.0e-6  # TODO(team): determine good default setting
+   opt.broadphase = types.BroadphaseType.NXN
+   opt.broadphase_filter = types.BroadphaseFilter.PLANE | types.BroadphaseFilter.SPHERE | types.BroadphaseFilter.OBB
+-  opt.graph_conditional = True
++  # HIP has no conditional graph nodes; retain the solver's eager path.
++  opt.graph_conditional = not getattr(wp.get_device(), "is_hip", False)
+   opt.run_collision_detection = True
+   contact_sensor_maxmatch_id = mujoco.mj_name2id(mjm, mujoco.mjtObj.mjOBJ_NUMERIC, "contact_sensor_maxmatch")
+   if contact_sensor_maxmatch_id > -1:
+diff --git a/mujoco_warp/_src/sensor.py b/mujoco_warp/_src/sensor.py
+index 6ebb7c0..e508795 100644
+--- a/mujoco_warp/_src/sensor.py
++++ b/mujoco_warp/_src/sensor.py
+@@ -369,7 +369,8 @@ def _frame_axis(
+   elif objtype == ObjType.CAMERA:
+     xmat = cam_xmat_in[worldid, objid]
+     axis = wp.vec3(xmat[0, frame_axis], xmat[1, frame_axis], xmat[2, frame_axis])
+-  else:  # UNKNOWN
++  else:  # World frame, matching the identity fallback in current upstream.
++    xmat = wp.identity(3, dtype=wp.float32)
+     axis = wp.vec3(xmat[0, frame_axis], xmat[1, frame_axis], xmat[2, frame_axis])
+ 
+   if refid == -1:

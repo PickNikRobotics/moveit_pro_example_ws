@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Reset MuJoCo Sim">
+  <BehaviorTree
+    ID="Reset MuJoCo Sim"
+    _description="Reset Microduck's physics, policy history and command state."
+    _favorite="false"
+  >
+    <Action ID="CallTriggerService" service_name="/microduck/reset" />
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Reset MuJoCo Sim">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="MuJoCo Simulation" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

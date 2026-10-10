@@ -1,0 +1,29 @@
+<root BTCPP_format="4" main_tree_to_execute="Stand">
+  <BehaviorTree
+    ID="Stand"
+    _description="Request zero velocity while the policy maintains balance."
+    _favorite="true"
+  >
+    <Control ID="Sequence">
+      <Action ID="CallTriggerService" service_name="/microduck/ready" />
+      <Decorator ID="Repeat" num_cycles="1">
+        <Decorator ID="Delay" delay_msec="50">
+          <Action
+            ID="PublishString"
+            topic="/microduck/command"
+            message="stand"
+          />
+        </Decorator>
+      </Decorator>
+      <Action ID="CallTriggerService" service_name="/microduck/ready" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Stand">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Microduck" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

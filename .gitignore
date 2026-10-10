@@ -7,6 +7,9 @@ MUJOCO_LOG.TXT
 
 __pycache__/
 
+# Fetched separately with microduck_sim/dependencies.repos; includes upstream meshes.
+/src/external_dependencies/microduck_description/
+
 # VLA checkpoint drop folder: multi-GB model weights must never be committed.
 src/vla_sim/models/*
 !src/vla_sim/models/.gitkeep
