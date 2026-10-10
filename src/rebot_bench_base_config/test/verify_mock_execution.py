@@ -84,10 +84,13 @@ def main():
         assert handle.accepted, f"Rejected: {objective} {waypoint}"
         result = wait(handle.get_result_async())
         assert result.result.error_code.val == 1, result.result
-        for _ in range(5):
+        settle = time.monotonic() + 5
+        while True:
             rclpy.spin_once(node, timeout_sec=0.1)
-        max_error = max(abs(state[j] - value) for j, value in target.items())
-        assert max_error < 0.01, (objective, state, target)
+            max_error = max(abs(state[j] - value) for j, value in target.items())
+            if max_error < 0.01 or time.monotonic() > settle:
+                break
+        assert max_error < 0.01, (objective, max_error, state, target)
         print(
             json.dumps(
                 {
