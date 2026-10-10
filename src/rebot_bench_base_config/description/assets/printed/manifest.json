@@ -1,0 +1,74 @@
+{
+  "1-COVER-lower.dae": {
+    "sha256": "105c0460043db7f820ccb625841ace1c7d07917b9c4c295d4abf0eec96d44bdd",
+    "link": "link3",
+    "xyz": "0.02 0.145 -0.02625",
+    "rpy": "3.141592653589793 0 0"
+  },
+  "1-COVER-upper.dae": {
+    "sha256": "fd07f65cbddc3de67f4ec3fbe414dd4336c942b3ed17f309d6f857c84db78cd7",
+    "link": "link2",
+    "xyz": "-0.02 0.145 -0.02625",
+    "rpy": "0 0 3.141592653589793"
+  },
+  "1-DOWN-DL.dae": {
+    "sha256": "9cc514f926e7c270b96ddc3362bdd557164fa0a49ed999f697e327c7931363cb",
+    "link": "link2",
+    "xyz": "-0.02 0.145 -0.02625",
+    "rpy": "0 0 3.141592653589793"
+  },
+  "1-DOWN-DR.dae": {
+    "sha256": "d3e2e962ec6a625e47bd61cc120d527d42f88c6c3db6e0ce49e1b42c7e1e5240",
+    "link": "link2",
+    "xyz": "-0.02 0.145 -0.02625",
+    "rpy": "0 0 3.141592653589793"
+  },
+  "1-RAIL-BASE-2.dae": {
+    "sha256": "fb4fb5df9f8cf58bf8354cc73252387ba40891435a61863163826c56d8d42935",
+    "link": "gripper_end",
+    "xyz": "-0.25730933 0 -0.1445",
+    "rpy": "3.141592653589793 0 -1.5707963267948966"
+  },
+  "1-STOPPER-1.dae": {
+    "sha256": "26e58651e3667250a1150f71589780fc55768e12b4c97ac2d86e7ecc1918a380",
+    "link": "link5",
+    "xyz": "0 0 0.048",
+    "rpy": "-1.5707963267948966 0 3.141592653589793"
+  },
+  "1-UP-DL.dae": {
+    "sha256": "7d8377a9dbd57277e64251731d5a995a71a8156acdced95a25289abf34ad232b",
+    "link": "link3",
+    "xyz": "0.216 0.145 -0.02625",
+    "rpy": "0 0 3.141592653589793"
+  },
+  "1-UP-DR.dae": {
+    "sha256": "34c83aeef637133a13b9b5e9464c5d2f5b393c167c76cb649b42f576495fd73d",
+    "link": "link3",
+    "xyz": "0.216 0.145 -0.02625",
+    "rpy": "0 0 3.141592653589793"
+  },
+  "D435_mount.dae": {
+    "sha256": "3ab043f12750c1bbcc0460b65aa31b67722cb0a94aeab0f2efad1167847801d5",
+    "link": "d435_mount_link",
+    "xyz": "0 0 0",
+    "rpy": "0 0 0",
+    "mount_joint_xyz": "-0.1201 0.0003 0.045",
+    "mount_joint_rpy": "1.5827 0.0024 1.5515"
+  },
+  "pla2_internal.STL": {
+    "source": "../visual/pla2_black.STL",
+    "retained_triangles": 2276,
+    "removed_triangles": 10840,
+    "link": "link2",
+    "xyz": "0 0 0",
+    "rpy": "0 0 0"
+  },
+  "pla3_internal.STL": {
+    "source": "../visual/pla3_black_without_seeed_badge.STL",
+    "retained_triangles": 3392,
+    "removed_triangles": 1472,
+    "link": "link3",
+    "xyz": "0 0 0",
+    "rpy": "0 0 0"
+  }
+}

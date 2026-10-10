@@ -1,0 +1,13 @@
+{
+  "repository": "https://github.com/realsenseai/realsense-ros",
+  "commit": "9215f26e8348ad5922a608b77882a9bfe05940f0",
+  "path": "realsense2_description/meshes/d435.dae",
+  "license": "Apache-2.0",
+  "sha256": "42f3b66f47a1f8f425a2e4dc07c1d9c283183167d8441f520a15623d98f9bf78",
+  "git_blob": "0ed32368fc5ba6912be530395a72553de9f21d9e",
+  "modified": false,
+  "license_upstream_git_blob": "d639b1e2457de50acbd2d943a593b701331a2824",
+  "license_normalization": "Trailing blank lines removed; upstream content otherwise unchanged",
+  "notice_upstream_git_blob": "01c648c4e7eaad5ae4e84047af4ec5c13e2cb396",
+  "notice_normalization": "UTF-8 without BOM, LF line endings, trailing whitespace/blank lines removed"
+}
