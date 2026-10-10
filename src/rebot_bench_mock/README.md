@@ -1,7 +1,7 @@
 # reBot bench — mock hardware
 
 A standalone MoveIt Pro configuration for the Seeed reBot Arm 102 / **B601-RS**
-(RobStride variant): six arm joints, the J7 gripper motor coordinate, and a
+(RobStride variant): six arm joints, the J7 gripper motor coordinate, and
 optional real wrist Intel RealSense D435 and fixed Luxonis OAK-D RGB cameras. Select `rebot_bench_mock` in
 MoveIt Pro, or run:
 
@@ -163,7 +163,7 @@ uses its supported 640×480/30 color mode, with depth, infrared, and IMU disable
 The OAK uses the standard Jazzy `depthai_ros_driver` (DepthAI v2): CAM_A's OV9782
 color sensor, an RGB-only pipeline, USB speed `HIGH`, and **on-device MJPEG**
 (quality 95) before USB transfer. Its 1280×800 sensor video output is center-cropped
-to the configured dimensions, then encoded; the driver decodes to RGB ROS Images
+to the configured dimensions, then encoded; the driver decodes to `bgr8` ROS Images
 on the host. CAM_B/C's OV9282 stereo pair, the BNO086 IMU and IR illumination
 are disabled. Change `scene_mjpeg_quality` in the same YAML to adjust compression.
 ISP luma/chroma denoising and sharpening are disabled to preserve detail.

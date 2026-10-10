@@ -9,5 +9,5 @@ framerate: 30
 # Empty selects the attached D435; set a serial if more than one is connected.
 wrist_serial_no: ""
 scene_serial_no: "14442C10A119EAD600"
-# OAK encodes MJPEG on-device before USB transfer; the driver decodes to RGB.
+# OAK encodes MJPEG on-device before USB transfer; the driver decodes to bgr8.
 scene_mjpeg_quality: 95
