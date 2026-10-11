@@ -3,8 +3,8 @@ controller_manager:
     update_rate: 100
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
-    joint_trajectory_controller:
-      type: joint_trajectory_controller/JointTrajectoryController
+    joint_trajectory_admittance_controller:
+      type: joint_trajectory_admittance_controller/JointTrajectoryAdmittanceController
     joint_velocity_controller:
       type: joint_velocity_controller/JointVelocityController
     gripper_joint_velocity_controller:
@@ -24,46 +24,24 @@ joint_state_broadcaster:
     interfaces:
     - position
     - velocity
-joint_trajectory_controller:
+joint_trajectory_admittance_controller:
   ros__parameters:
-    joints:
-    - joint1
-    - joint2
-    - joint3
-    - joint4
-    - joint5
-    - joint6
-    - joint7
-    command_interfaces:
-    - position
-    state_interfaces:
-    - position
-    - velocity
-    allow_partial_joints_goal: true
-    allow_nonzero_velocity_at_trajectory_end: true
-    constraints:
-      goal_time: 2.0
-      joint1:
-        trajectory: 0.1
-        goal: 0.01
-      joint2:
-        trajectory: 0.1
-        goal: 0.01
-      joint3:
-        trajectory: 0.1
-        goal: 0.01
-      joint4:
-        trajectory: 0.1
-        goal: 0.01
-      joint5:
-        trajectory: 0.1
-        goal: 0.01
-      joint6:
-        trajectory: 0.1
-        goal: 0.01
-      joint7:
-        trajectory: 0.1
-        goal: 0.01
+    # All seven motor joints (the arm plus the gripper motor). A goal for the arm or gripper group
+    # alone is partial: the joints it leaves out are commanded to their measured positions.
+    planning_group_name: manipulator_and_gripper
+    sensor_frames: [gripper_end]
+    ee_frames: [gripper_end]
+    # No ft_sensor_names: there is no force/torque sensor, so this runs as a plain trajectory
+    # controller without admittance.
+    # One per joint in group order (joint1-joint7), matching config/moveit/joint_limits.yaml.
+    stop_accelerations: [0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 6.0]
+    # Both apply to every joint and are sized for motion (impedance) mode, which sends no gravity
+    # feedforward: a loaded joint lags and settles short by load torque / kp, measured at up to
+    # 0.088 rad. A goal whose first point is further than the path tolerance from the measured
+    # position is rejected before anything moves, as is any deviation this large while moving.
+    default_path_tolerance: 0.15
+    default_goal_tolerance: 0.1
+    default_goal_time_tolerance: 2.0
 joint_velocity_controller:
   ros__parameters:
     planning_group_name: manipulator
@@ -89,8 +67,8 @@ joint_velocity_controller:
 gripper_joint_velocity_controller:
   ros__parameters:
     planning_group_name: gripper
-    max_joint_velocity: [0.3]
-    max_joint_acceleration: [0.6]
+    max_joint_velocity: [3.0]
+    max_joint_acceleration: [6.0]
     command_interfaces: [position]
     joint_limit_position_tolerance: 0.02
     command_timeout: 0.2

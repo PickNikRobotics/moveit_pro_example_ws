@@ -62,6 +62,12 @@ def test_overlay_forces_mock_and_keeps_the_rest_of_urdf_params(config):
         for key, value in entry.items()
     }
     assert params["hardware_interface"] == "mock"
+    # A list of single-key dicts merges by key, so overriding one entry leaves
+    # the base config's other xacro arguments inherited rather than dropped.
+    # They are inert on mock, but a merge that replaced the list wholesale
+    # would silently change what the base config passes.
+    assert params["can_interface"] == "can0"
+    assert params["torque_enable"] == "true"
 
 
 def test_runtime_launch_file_comes_from_the_base_package(config):

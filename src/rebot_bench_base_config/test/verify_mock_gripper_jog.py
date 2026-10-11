@@ -60,7 +60,7 @@ def main():
         gripper.state == "active"
     ), "Select gripper JointJog and start Teleoperate first"
     assert gripper.claimed_interfaces == ["joint7/position"]
-    assert controllers["joint_trajectory_controller"].state == "inactive"
+    assert controllers["joint_trajectory_admittance_controller"].state == "inactive"
     # The manager may leave disjoint arm controllers active; only J7 ownership
     # must be exclusive. The measured arm-drift assertion below guards motion.
     assert all(

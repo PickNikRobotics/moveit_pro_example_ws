@@ -8,6 +8,11 @@
     <joint name="gripper_joint1" />
     <joint name="gripper_joint2" />
   </group>
+  <!-- Every motor joint, for the one trajectory controller that owns them all. -->
+  <group name="manipulator_and_gripper">
+    <group name="manipulator" />
+    <group name="gripper" />
+  </group>
   <end_effector name="rebot_gripper" parent_link="gripper_end" parent_group="manipulator" group="gripper" />
   <group_state name="zeroed_rest" group="manipulator">
     <joint name="joint1" value="0" />
