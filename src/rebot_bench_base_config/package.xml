@@ -25,7 +25,6 @@
   <exec_depend>velocity_force_controller</exec_depend>
   <exec_depend>moveit_studio_agent</exec_depend>
   <exec_depend>moveit_pro_objectives</exec_depend>
-  <exec_depend>pose_ik_plugin</exec_depend>
   <exec_depend>control_msgs</exec_depend>
   <exec_depend>controller_manager_msgs</exec_depend>
   <exec_depend>rclpy</exec_depend>
