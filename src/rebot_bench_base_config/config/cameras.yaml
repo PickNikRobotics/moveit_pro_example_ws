@@ -3,8 +3,16 @@ enable_cameras: false
 
 # Shared RGB output settings. Use a color mode supported by both cameras.
 image_width: 640
-image_height: 480
 framerate: 30
+
+# The two cameras differ in height on purpose. The D435 runs a supported 4:3
+# color mode. The OAK takes its ISP output at an explicit 1/2 scale, which turns
+# its whole 1280x800 sensor into 640x400 - the full 97.1 deg view, and correct
+# published intrinsics. The video path at 640x480 would instead crop to the
+# central 640x480, a 59.1 deg view. See README.md; the mounts are still
+# uncalibrated either way.
+wrist_image_height: 480
+scene_image_height: 400
 
 # Empty selects the attached D435; set a serial if more than one is connected.
 wrist_serial_no: ""

@@ -70,15 +70,15 @@ is replaced by the nominal camera assembly described below.
 
 ## D435 body and nominal frames (2026-10-10)
 
-`assets/realsense/d435.dae` is an unchanged copy of Intel's D435 mesh from
+`assets/realsense/d435.dae` is a decimated (15.8 MB to 1.7 MB, quadric edge collapse; same origin, scale and material) copy of Intel's D435 mesh from
 [realsenseai/realsense-ros](https://github.com/realsenseai/realsense-ros/tree/9215f26e8348ad5922a608b77882a9bfe05940f0/realsense2_description),
 commit `9215f26e8348ad5922a608b77882a9bfe05940f0`, path
 `realsense2_description/meshes/d435.dae`, licensed **Apache-2.0**.
 The upstream license is retained in `assets/realsense/LICENSE` with trailing
 blank-line normalization. Upstream notices are retained in
 `assets/realsense/UPSTREAM_NOTICE.txt` with UTF-8/LF and trailing whitespace
-normalization; `source.json` records the mesh SHA-256 and
-Git blob hash. The assembly offsets are from Seeed's camera URDF referenced
+normalization; `source.json` records the upstream and modified
+mesh SHA-256 and Git blob hashes. The assembly offsets are from Seeed's camera URDF referenced
 above; the body's mesh and nominal RGB optical offsets follow
 `realsense2_description/urdf/_d435.urdf.xacro` at the same RealSense revision
 (Copyright 2023 RealSense, Inc.). No driver code is copied.

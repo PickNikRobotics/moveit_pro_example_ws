@@ -1,0 +1,18 @@
+upstream:
+  repository: https://github.com/griswaldbrooks/robstride_hardware_interface.git
+  commit: 7c9d6e87bdbdf368a4a29c996e3507ada6dd36c3
+  branch: picknik/hold-torque-on-deactivate
+snapshot_path: robstride_hardware_interface
+vendored_paths:
+  - robstride_hardware_interface
+pruned_paths:
+  - upstream .gitignore
+modified_paths: []
+apache_paths:
+  - .
+notes:
+  - ros2_control SystemInterface for the RobStride actuators in the reBot B601-RS, used by rebot_bench_base_config to command real hardware. Mock remains the default.
+  - This is a PickNik fork of kmj060703/robstride_hardware_interface. The fork is the single place our driver changes are made, so this snapshot matches the pinned fork commit exactly and modified_paths is empty. Every local change is a commit on the fork branch above, not an edit here.
+  - The fork adds the hold_torque_on_deactivate hardware parameter. Upstream's on_deactivate disables every motor, which releases a gravity-loaded arm wherever it is standing; the reBot bench has no brakes and may only be limped at its home pose. With the parameter set a clean stop holds the pose instead. on_init warns when it is combined with an armed motor_can_timeout_ms, because deactivation closes the bus and the motor's own watchdog then releases torque regardless.
+  - The fork also adds test/test_deactivate_torque.cpp and test/fake_robstride_motor.hpp, which drive the real activate/deactivate lifecycle against a fake motor on a virtual CAN interface and assert on the Stop frames that follow the Enable. The test skips when no vcan interface exists, so it never reports coverage it did not provide.
+  - Companion sources robstride_sdk and robstride_interfaces are vendored unmodified from kmj060703 and are not forked.
