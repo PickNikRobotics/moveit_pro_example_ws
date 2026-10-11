@@ -1,0 +1,266 @@
+<!--
+  reBot B601-RS kinematic tree, transcribed from
+  rebot_bench_base_config/description/rebot.urdf.xacro. Included inside the
+  scene's base_link body, which carries the placement from bench_layout.yaml;
+  MuJoCo splices in this file's children and discards the wrapping <body>.
+
+  Body names match the URDF links and every body pos/euler is the URDF joint
+  origin (scene.xml sets eulerseq="XYZ", the URDF rpy convention), so the
+  TF published from MuJoCo sites joins robot_state_publisher's tree.
+  test/test_scene_model.py checks every link pose against the URDF.
+
+  The printed covers, wrist bracket and D435 body are COLLADA in the base
+  package, which MuJoCo cannot load; they are left out (the D435 is a box).
+-->
+<body>
+  <inertial
+    pos="2.87641888266442E-06 -0.000122302488725115 0.0243376121934547"
+    mass="1.1774"
+    fullinertia="0.00133040 0.00213119 0.00275877 0.00000001 0 0"
+  />
+  <geom class="visual" mesh="base_link" material="rs_base_black" />
+  <geom class="collision" mesh="base_link" />
+
+  <body name="link1" gravcomp="1" pos="-0.00034283 -0.00098683 0.075">
+    <inertial
+      pos="0.00817652280320541 0.00122584211922395 0.0331419658967293"
+      mass="0.4655"
+      fullinertia="0.00025207 0.00015464 0.00023416 0 -0.00002832 0"
+    />
+    <joint
+      name="joint1"
+      class="rs06"
+      axis="0 0 -1"
+      range="-2.530727415392 2.530727415392"
+    />
+    <geom class="visual" mesh="link1" material="rs_anodized_silver" />
+    <geom class="collision" mesh="link1" />
+
+    <body
+      name="link2"
+      gravcomp="1"
+      pos="0.020343 0.027237 0.07"
+      euler="-1.5708 0 0"
+    >
+      <inertial
+        pos="-0.117864812717456 -0.00342226413942967 -0.0271551938501484"
+        mass="1.552"
+        fullinertia="0.00073374 0.01255987 0.01281387 -0.00000043 0.00000851 0.00000128"
+      />
+      <joint name="joint2" class="rs06" axis="0 0 1" range="0 3.543018381548" />
+      <geom class="visual" mesh="motor_2_3" material="rs_motor_black" />
+      <geom class="visual" mesh="cnc2" material="rs_anodized_silver" />
+      <geom class="visual" mesh="pla2_internal" material="rs_pla_black" />
+      <geom class="collision" mesh="link2" />
+
+      <body name="link3" gravcomp="1" pos="-0.236 0 0">
+        <inertial
+          pos="0.103427154487799 -0.0664137912104635 -0.0271068687716704"
+          mass="1.252"
+          fullinertia="0.00046807 0.00632695 0.00648221 -0.00003456 -0.00004260 0.00000006"
+        />
+        <joint
+          name="joint3"
+          class="rs06"
+          axis="0 0 -1"
+          range="0 4.171336912266"
+        />
+        <geom class="visual" mesh="cnc3" material="rs_anodized_silver" />
+        <geom class="visual" mesh="motor_4" material="rs_motor_black" />
+        <geom class="visual" mesh="pla3_internal" material="rs_pla_black" />
+        <geom class="collision" mesh="link3" />
+
+        <body name="link4" gravcomp="1" pos="0.228 -0.072746 0.0045">
+          <inertial
+            pos="0.0475544540775559 -0.0441113470158517 -0.0314111924918381"
+            mass="0.46"
+            fullinertia="0.00045986 0.00075258 0.00066742 0.00024219 0 0"
+          />
+          <joint
+            name="joint4"
+            class="rs00"
+            axis="0 0 -1"
+            range="-1.850049007114 1.500983156715"
+          />
+          <geom class="visual" mesh="motor_5" material="rs_motor_black" />
+          <geom class="visual" mesh="cnc4" material="rs_anodized_silver" />
+          <geom class="collision" mesh="link4" />
+
+          <body
+            name="link5"
+            gravcomp="1"
+            pos="0.087 -0.048 -0.03075"
+            euler="-1.5708 0 0"
+          >
+            <inertial
+              pos="0.0114400622356175 4.7907739316217E-06 0.0380487481818926"
+              mass="0.20120457182895"
+              fullinertia="7.34238025911107E-05 5.5153884237714E-05 5.29920095811017E-05 1.35700947009798E-08 -8.58146433770359E-07 -1.32742144977931E-08"
+            />
+            <joint
+              name="joint5"
+              class="rs00"
+              axis="0 0 -1"
+              range="-1.762782544514 1.884955592154"
+            />
+            <geom class="visual" mesh="motor_6" material="rs_motor_black" />
+            <geom class="visual" mesh="cnc5" material="rs_anodized_silver" />
+            <geom class="collision" mesh="link5" />
+
+            <body
+              name="link6"
+              gravcomp="1"
+              pos="0.0365 0 0.048"
+              euler="0 1.5708 0"
+            >
+              <inertial
+                pos="1.80196022567525E-05 2.48334592051007E-08 0.00434805764057547"
+                mass="0.1"
+                fullinertia="4.42273835852359E-06 4.37185522080034E-06 8.54299378942051E-06 3.16758463739482E-12 1.51852818442002E-10 -2.21864017603015E-12"
+              />
+              <joint
+                name="joint6"
+                class="rs00"
+                axis="0 0 -1"
+                range="-3.054326190990 3.054326190990"
+              />
+              <geom class="visual" mesh="link6" material="rs_motor_black" />
+              <geom class="collision" mesh="link6" />
+
+              <body
+                name="gripper_end"
+                gravcomp="1"
+                pos="0 0 0.16621"
+                euler="3.1416 -1.5708 0"
+              >
+                <inertial
+                  pos="-0.112751692515958 0.000128443070436966 -5.72602449749882E-06"
+                  mass="0.65"
+                  fullinertia="0.00037354 0.00015830 0.00045353 -0.00000011 0.00000050 0.00000348"
+                />
+                <geom
+                  class="visual"
+                  mesh="cnc7"
+                  material="rs_anodized_silver"
+                />
+                <geom class="visual" mesh="motor_7" material="rs_motor_black" />
+                <geom class="collision" mesh="gripper_end" />
+
+                <!-- The gripper motor. The URDF link has no inertia; this
+                     body needs some to carry a joint. The jaws follow it
+                     through the equality constraints in rebot_assets.xml,
+                     the URDF's mimic (0.008 m per rad). -->
+                <body name="gripper_motor_frame" gravcomp="1">
+                  <inertial
+                    pos="0 0 0"
+                    mass="0.01"
+                    diaginertia="1e-6 1e-6 1e-6"
+                  />
+                  <joint
+                    name="joint7"
+                    class="gripper_motor"
+                    axis="0 0 1"
+                    range="0 5.410520681182422"
+                  />
+                </body>
+
+                <body
+                  name="gripper_left"
+                  gravcomp="1"
+                  pos="-0.041939 -7.3385E-05 0"
+                  euler="1.5708 -1.5708 0"
+                >
+                  <inertial
+                    pos="-0.00218008703135955 0.0187090355934181 0.00932188568692145"
+                    mass="0.0752"
+                    diaginertia="1.09877964176176E-05 9.50146036720166E-06 9.30779991911125E-06"
+                  />
+                  <joint name="gripper_joint1" class="jaw" />
+                  <geom
+                    class="visual"
+                    mesh="pla_left"
+                    material="rs_pla_black"
+                  />
+                  <geom
+                    class="visual"
+                    mesh="cnc_left"
+                    material="rs_anodized_silver"
+                  />
+                  <geom class="collision" mesh="gripper_left" />
+                </body>
+
+                <body
+                  name="gripper_right"
+                  gravcomp="1"
+                  pos="-0.041939 7.3385E-05 0"
+                  euler="-1.5708 -1.5708 0"
+                >
+                  <inertial
+                    pos="0.00218008703135955 -0.018709035593418 0.00932188568692151"
+                    mass="0.0752"
+                    diaginertia="1.09877964176176E-05 9.50146036720166E-06 9.30779991911125E-06"
+                  />
+                  <joint name="gripper_joint2" class="jaw" />
+                  <geom
+                    class="visual"
+                    mesh="pla_right"
+                    material="rs_pla_black"
+                  />
+                  <geom
+                    class="visual"
+                    mesh="cnc_right"
+                    material="rs_anodized_silver"
+                  />
+                  <geom class="collision" mesh="gripper_right" />
+                </body>
+
+                <body
+                  name="d435_mount_link"
+                  pos="-0.1201 0.0003 0.045"
+                  euler="1.5827 0.0024 1.5515"
+                >
+                  <body
+                    name="d435_bottom_screw_frame"
+                    pos="-0.0003 0.0445 -0.0095"
+                    euler="0.0126 -1.0489 -1.5981"
+                  >
+                    <body name="d435_link" pos="0.0106 0.0175 0.0125">
+                      <!-- D435 body, 90 x 25 x 25 mm, behind the colour lens. -->
+                      <geom
+                        class="visual"
+                        type="box"
+                        pos="-0.0082 -0.0175 0"
+                        size="0.0125 0.045 0.0125"
+                        material="d435_grey"
+                      />
+                      <!-- Colour sensor at the URDF's d435_color_optical_frame.
+                           fovy 43.09 deg is the published fy 607.8 px at
+                           640x480 (base config docs/camera-acceptance.json).
+                           The camera looks along its -z; the site is the same
+                           pose turned 180 deg about x, the ROS optical frame. -->
+                      <camera
+                        name="d435_color"
+                        mode="fixed"
+                        pos="0 0.015 0"
+                        quat="0.5 0.5 -0.5 -0.5"
+                        fovy="43.09"
+                        resolution="640 480"
+                      />
+                      <site
+                        name="d435_color_optical_frame"
+                        pos="0 0.015 0"
+                        quat="0.5 -0.5 0.5 -0.5"
+                        size="0.005"
+                        group="5"
+                      />
+                    </body>
+                  </body>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </body>
+</body>

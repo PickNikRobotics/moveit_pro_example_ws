@@ -2,8 +2,35 @@ based_on_package: "rebot_bench_base_config"
 
 hardware:
   robot_description:
+    # The base description placed on the bench from config/bench_layout.yaml
+    # and driven by MuJoCo; the SRDF is inherited.
+    urdf:
+      package: "rebot_bench_sim"
+      path: "description/rebot_bench_sim.urdf.xacro"
     urdf_params:
-      - hardware_interface: "mock"
+      - hardware_interface: "mujoco"
+      - mujoco_model: "description/scene.xml"
+      - mujoco_keyframe: "default"
+      - mujoco_viewer: false
+  # MuJoCo renders both cameras; no camera drivers start.
   additional_driver_launch_file:
     package: "moveit_studio_agent"
     path: "launch/blank.launch.py"
+
+objectives:
+  behavior_loader_plugins:
+    # A list replaces the base config's list, so the base loaders are repeated.
+    core:
+      - "moveit_pro::behaviors::CoreBehaviorsLoader"
+      - "moveit_pro::behaviors::MTCCoreBehaviorsLoader"
+      - "moveit_pro::behaviors::VisionBehaviorsLoader"
+      - "moveit_pro::behaviors::ConverterBehaviorsLoader"
+      - "moveit_pro::behaviors::MujocoBehaviorsLoader"
+  objective_library_paths:
+    mujoco_objectives:
+      package_name: "moveit_pro_objectives"
+      relative_path: "objectives/mujoco"
+    # Last, so Objectives created in the UI are saved in this package.
+    rebot_bench_sim_objectives:
+      package_name: "rebot_bench_sim"
+      relative_path: "objectives"

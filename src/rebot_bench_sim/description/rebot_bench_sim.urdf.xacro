@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<!--
+  The reBot base description, placed on the bench from the build's snapshot of
+  config/bench_layout.yaml (the one the MuJoCo scene is generated from) and
+  driven by MuJoCo.
+-->
+<robot name="rebot_b601_rs" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:arg name="layout" default="$(find rebot_bench_sim)/description/bench_layout.yaml" />
+  <xacro:arg name="mujoco_model" default="description/scene.xml" />
+  <xacro:arg name="mujoco_keyframe" default="default" />
+  <xacro:arg name="mujoco_viewer" default="false" />
+  <xacro:property name="layout" value="${xacro.load_yaml('$(arg layout)')}" />
+
+  <!-- An xacro:arg keeps its first declaration, so these defaults win over
+       the base file's identity placements. -->
+  <xacro:arg name="hardware_interface" default="mujoco" />
+  <xacro:arg name="world_to_base_xyz" default="${' '.join(map(str, layout['robot_base']['xyz']))}" />
+  <xacro:arg name="world_to_base_rpy" default="${' '.join(map(str, layout['robot_base']['rpy']))}" />
+  <xacro:arg name="scene_camera_xyz" default="${' '.join(map(str, layout['scene_camera']['xyz']))}" />
+  <xacro:arg name="scene_camera_rpy" default="${' '.join(map(str, layout['scene_camera']['rpy']))}" />
+  <xacro:include filename="$(find rebot_bench_base_config)/description/rebot.urdf.xacro" />
+  <!-- Any other selector would add a second hardware block for the same joints. -->
+  <xacro:if value="${'$(arg hardware_interface)' != 'mujoco'}">
+    ${xacro.fatal("rebot_bench_sim drives the arm through MuJoCo; set hardware_interface to mujoco, not '$(arg hardware_interface)'")}
+  </xacro:if>
+
+  <!-- Interfaces come from the MJCF actuators (rebot_assets.xml), one position
+       actuator per motor joint, so no <joint> entries are declared here. -->
+  <ros2_control name="RebotMujocoSystem" type="system">
+    <hardware>
+      <plugin>picknik_mujoco_ros/MujocoSystem</plugin>
+      <param name="mujoco_model">$(arg mujoco_model)</param>
+      <param name="mujoco_model_package">rebot_bench_sim</param>
+      <param name="mujoco_keyframe">$(arg mujoco_keyframe)</param>
+      <param name="mujoco_viewer">$(arg mujoco_viewer)</param>
+      <param name="render_publish_rate">10</param>
+      <!-- Colour and depth images only, as on the bench: no point clouds. -->
+      <param name="point_cloud_publish_rate">0</param>
+      <param name="tf_publish_rate">60</param>
+    </hardware>
+    <!-- The real cameras' topics. Image frames are the MJCF camera name plus
+         "_optical_frame", so the cameras are named after the real frames. -->
+    <sensor name="d435_color">
+      <param name="rgb_topic">/wrist_mounted_camera/color/image_raw</param>
+      <param name="camera_info_topic">/wrist_mounted_camera/color/camera_info</param>
+      <param name="depth_topic">/wrist_mounted_camera/depth/image_rect_raw</param>
+      <param name="points_topic">/wrist_mounted_camera/depth/color/points</param>
+    </sensor>
+    <sensor name="scene_camera_color">
+      <param name="rgb_topic">/scene_camera/color/image_raw</param>
+      <param name="camera_info_topic">/scene_camera/color/camera_info</param>
+      <param name="depth_topic">/scene_camera/depth/image_rect_raw</param>
+      <param name="points_topic">/scene_camera/depth/color/points</param>
+    </sensor>
+  </ros2_control>
+</robot>

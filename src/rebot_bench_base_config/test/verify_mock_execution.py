@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Copyright 2026 PickNik Inc.
 # SPDX-License-Identifier: BSD-3-Clause
-"""Run after launching rebot_bench_sim in an isolated ROS graph.
+"""Run after launching rebot_bench_base_config (mock) in an isolated ROS graph.
 
 Refuses to send any goal unless the latched robot description identifies this
 model and its sole hardware plugin is GenericSystem. Prints JSON evidence.

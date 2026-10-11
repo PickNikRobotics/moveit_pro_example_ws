@@ -175,6 +175,14 @@ optical-frame convention: flip Y and Z, keep X) - see `scene_camera_optical_fram
 `src/lunar_sim/description/husky_scene.xml` or `src/factory_sim/description/scene.xml` for the
 established pattern.
 
+That site name is also the `frame_id` of the camera's images, and `MujocoSystem` broadcasts
+every MJCF site to TF. To publish on a frame the URDF already defines (a real driver's optical
+frame), name the camera after it and leave that link out of the URDF in simulation, or the frame
+gets two TF parents; topics are renamed with `rgb_topic`/`depth_topic`/`camera_info_topic`
+params in a URDF `<sensor name="<camera>">` under `<ros2_control>`. Every non-lidar camera
+renders into the one `<global offwidth offheight>` buffer, so all must share that resolution.
+See `src/rebot_bench_sim/description/rebot_bench_sim.urdf.xacro`.
+
 ### MuJoCo documentation
 
 Refer to [docs.picknik.ai](https://docs.picknik.ai) for MuJoCo configuration guides:
@@ -276,7 +284,9 @@ count on it. A headless stand-in therefore has to *subscribe* to the request top
 
 `based_on_package` in `config.yaml` merges the child over the parent (`merge()` in `moveit_studio_utils_py/system_config.py`). Dicts merge key-by-key, recursively. A list of scalars is replaced wholesale. A list of single-key dicts — which is how `urdf_params` and every other MoveIt Pro list-of-options field is shaped — merges **by key**: an override entry like `- hardware_interface: "mock"` finds the parent's entry with that same key and replaces only its value, leaving every other `urdf_params` entry (`usb_port`, `calibration_file`, ...) inherited untouched. You do not need to repeat the whole list to override one xacro arg.
 
-`so101_sim` over `so101_base_config` is the one overlay in this workspace that relies on this: it inherits the base description untouched and overrides a single xacro arg. Every other overlay that touches the description (`mock_sim`, `lab_sim`, `hangar_sim`, `kitchen_sim`, ...) redeclares `hardware.robot_description` wholesale with its own URDF/SRDF — the heavier-weight form, used when the child's description differs structurally rather than by one hardware toggle. `behavior_hub_catalog` (over `lab_sim`) declares no `hardware:` block at all and inherits the description untouched. `src/so101_sim/test/test_config_inheritance.py` shows how to assert the merged result through the real loader (`load_system_config`).
+`so101_sim` over `so101_base_config` relies on this: it inherits the base description untouched and overrides a single xacro arg. `rebot_bench_sim` overrides its selector arg the same way, but points `urdf` at its own wrapper of the base xacro and inherits the SRDF. The other overlays that touch the description (`mock_sim`, `lab_sim`, `hangar_sim`, `kitchen_sim`, ...) redeclare `hardware.robot_description` wholesale with its own URDF/SRDF — the heavier-weight form, used when the child's description differs structurally rather than by one hardware toggle. `behavior_hub_catalog` (over `lab_sim`) declares no `hardware:` block at all and inherits the description untouched. `src/so101_sim/test/test_config_inheritance.py` shows how to assert the merged result through the real loader (`load_system_config`).
+
+The **last** `objective_library_paths` entry is where the UI saves new Objectives, and the agent resolves it in the user workspace's `src/` at launch: if it names a package that is not there (say a child appends `moveit_pro_objectives`' `objectives/mujoco`), the runtime exits with `Could not find source directory for a ROS package named <pkg>`. A child that adds libraries ends with one of its own.
 
 ## `Dockerfile:12`'s rolling base tag is not what `moveit_pro build` uses
 
@@ -425,6 +435,12 @@ assuming it). It is the image's working directory, so `colcon build`'s
 `install/`, `build/`, and `log/` land in your own worktree at the paths a
 plain `colcon build` there would use anyway, and stay usable across container
 runs.
+
+`objectives_integration_test.py` (the `lab_sim` pattern) also launches the backend, which needs
+`USER_WS` set to that mount, `MOVEIT_LICENSE_KEY`, and the license fingerprint source the compose
+file provides: `--mount type=bind,source=/sys,target=/host/sys,readonly -e
+MOVEIT_HOST_SYSFS=/host/sys`. Without them it fails on setup with `No /objective_server_heartbeat
+message received`.
 
 ## A `RewrittenYaml` rewrite only reaches the nodes that launch file creates
 

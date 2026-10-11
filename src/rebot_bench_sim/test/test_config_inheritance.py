@@ -49,22 +49,25 @@ def test_inheritance_chain_is_base_then_overlay(loaded):
     assert loaded[2] == ["rebot_bench_base_config", "rebot_bench_sim"]
 
 
-def test_robot_description_comes_from_the_base_package(config):
+def test_sim_description_wraps_the_base_one_and_keeps_its_srdf(config):
     robot_description = config.hardware.robot_description
-    assert robot_description.urdf.package == "rebot_bench_base_config"
+    assert robot_description.urdf.package == "rebot_bench_sim"
+    assert robot_description.urdf.path == "description/rebot_bench_sim.urdf.xacro"
     assert robot_description.srdf.package == "rebot_bench_base_config"
 
 
-def test_overlay_forces_mock_and_keeps_the_rest_of_urdf_params(config):
+def test_overlay_selects_mujoco_and_keeps_the_rest_of_urdf_params(config):
     params = {
         key: value
         for entry in config.hardware.robot_description.urdf_params
         for key, value in entry.items()
     }
-    assert params["hardware_interface"] == "mock"
+    assert params["hardware_interface"] == "mujoco"
+    assert params["mujoco_model"] == "description/scene.xml"
+    assert params["mujoco_keyframe"] == "default"
     # A list of single-key dicts merges by key, so overriding one entry leaves
     # the base config's other xacro arguments inherited rather than dropped.
-    # They are inert on mock, but a merge that replaced the list wholesale
+    # They are inert on MuJoCo, but a merge that replaced the list wholesale
     # would silently change what the base config passes.
     assert params["can_interface"] == "can0"
     assert params["torque_enable"] == "true"
@@ -74,13 +77,27 @@ def test_runtime_launch_file_comes_from_the_base_package(config):
     assert config.runtime_launch_file.package == "rebot_bench_base_config"
 
 
-def test_objective_library_is_inherited_unchanged(config):
+def test_objective_libraries_add_mujoco_to_the_base_ones(config):
     libraries = config.objectives.objective_library_paths
-    assert list(libraries)[-1] == "rebot_objectives"
-    assert "rebot_bench_sim_objectives" not in libraries
     assert libraries["rebot_objectives"].package_name == "rebot_bench_base_config"
+    assert libraries["mujoco_objectives"].package_name == "moveit_pro_objectives"
+    # MoveIt Pro saves new Objectives into the last library, which must be a
+    # package in the user workspace.
+    assert list(libraries)[-1] == "rebot_bench_sim_objectives"
+    assert libraries["rebot_bench_sim_objectives"].package_name == "rebot_bench_sim"
     for library in libraries.values():
         assert library.share_path.is_dir()
+
+
+def test_behavior_loaders_keep_the_base_ones_and_add_mujoco(config):
+    core = list(config.objectives.behavior_loader_plugins["core"])
+    assert core[-1] == "moveit_pro::behaviors::MujocoBehaviorsLoader"
+    assert core[:-1] == [
+        "moveit_pro::behaviors::CoreBehaviorsLoader",
+        "moveit_pro::behaviors::MTCCoreBehaviorsLoader",
+        "moveit_pro::behaviors::VisionBehaviorsLoader",
+        "moveit_pro::behaviors::ConverterBehaviorsLoader",
+    ]
 
 
 def test_waypoints_come_from_the_base_package(config):
