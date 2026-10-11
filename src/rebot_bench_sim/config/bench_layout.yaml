@@ -15,56 +15,65 @@
 # The values are first guesses from bench facts, noted per entry; a camera and
 # robot-base calibration replaces them here.
 
+# How the guesses were placed. The mat's printed grid has its origin at the
+# robot-end corner beside the white foam, grid +X across the mat toward the
+# aisle, grid +Y along the mat away from the robot. The printed frame lies with
+# its red axis (+X) pointing back along the mat toward the robot and its green
+# axis (+Y) across the mat toward the foam, so a grid point (gx, gy) is at
+# world (0.590 - gy, 0.360 - gx). The printed frame's grid position,
+# (0.360, 0.590) m, was estimated from the scene camera's frame: near the
+# aisle edge, about 0.3 m farther from the robot than the cubes.
+
 # base_link (the robot's mounting face, on the bench top) in the world.
-# APPROXIMATE: the mat lies in front of the robot, with the robot about
-# 0.10 m behind the mat's robot-end edge, centred on the cubes in X.
-# Yaw points the arm's reach (base_link +X) along world +Y, across the mat.
+# APPROXIMATE: behind the mat's robot-end edge on the aisle side, at grid
+# (0.340, -0.080) m, from the scene camera's frame. Yaw points the arm's reach
+# (base_link +X) along the mat, away from the robot (world -X).
 robot_base:
-  xyz: [0.160, -0.660, -0.003]
-  rpy: [0.0, 0.0, 1.5707963267948966]
+  xyz: [0.670, 0.020, -0.003]
+  rpy: [0.0, 0.0, 3.141592653589793]
 
 # scene_camera_link (REP-103: x along the view axis, z up) in the world. The
 # colour optical frame follows from it as in rebot_bench_base_config.
-# APPROXIMATE: looking down at the mat from the black arm above the bench,
-# about 0.74 m from the middle of the mat. The real mount pose is unmeasured.
+# APPROXIMATE: on the black arm above the mat's far end, looking back along the
+# mat toward the robot and 57 deg down; about 0.48 m above the mat at grid
+# (0.215, 0.665) m. Placed so the cubes are about 0.6 m away, as their size in
+# the real frame implies. The real mount pose is unmeasured.
 scene_camera:
-  xyz: [0.600, -0.250, 0.700]
-  rpy: [0.0, 1.2368, -3.1210]
+  xyz: [-0.075, 0.145, 0.480]
+  rpy: [0.0, 0.995, 0.0]
 
-# Blue mat, a box. `xyz`/`rpy` place the mat's grid frame: origin at the
-# grid's robot-end corner beside the white foam, on the top surface, +X across
-# the mat toward the aisle, +Y away from the robot. `size` is
-# [x, y, thickness]; the box extends from the grid origin into +X, +Y, -Z.
-# The bench top (a plane) is at the mat's underside.
-# APPROXIMATE: a 36 x 24 in cutting mat, 3 mm thick. The grid origin is placed
-# from the printed frame's guessed grid position, (0.100, 0.560) m, with the
-# frame's axes assumed parallel to the grid's.
+# Blue mat, a box. `xyz` is the centre of its top surface, `rpy` its
+# orientation, `size` the full [x, y, thickness] before rotation. The bench top
+# (a plane) is at the mat's underside.
+# APPROXIMATE: 0.40 m across (grid X, the aisle edge about 40 mm past the
+# printed frame in the scene camera's frame) and 36 in (0.9144 m) along (grid
+# Y), 3 mm thick; its long axis runs along world X, away from the robot.
 mat:
-  xyz: [-0.100, -0.560, 0.0]
+  xyz: [0.133, 0.160, 0.0]
   rpy: [0.0, 0.0, 0.0]
-  size: [0.9144, 0.6096, 0.003]
+  size: [0.9144, 0.400, 0.003]
 
 # White wall (the foam), a box. `xyz` is the box centre, `size` the full
 # [x, y, z] extents before rotation.
-# APPROXIMATE: standing along the mat's grid-X = 0 edge, beside the grid
-# origin, 20 mm thick and 0.6 m tall.
+# APPROXIMATE: standing along the mat's foam-side long edge (grid X = 0),
+# from the robot end to past the camera end, 20 mm thick and 0.6 m tall.
 wall:
-  xyz: [-0.130, -0.255, 0.300]
+  xyz: [0.150, 0.370, 0.300]
   rpy: [0.0, 0.0, 0.0]
-  size: [0.020, 1.200, 0.600]
+  size: [1.000, 0.020, 0.600]
 
 # 3D-printed cubes, free bodies. `size` is the edge length (50 mm +/- 0.5);
 # `xyz` is a start pose of the cube centre, `yaw` its rotation about +Z.
 # APPROXIMATE: grid positions blue (309, 273) mm and red (212, 302) mm,
-# moved into the world frame by the mat pose above.
+# moved into the world frame as above.
 cubes:
   size: 0.050
   mass: 0.035
   red:
-    xyz: [0.112, -0.258, 0.025]
+    xyz: [0.288, 0.148, 0.025]
     yaw: 0.0
   blue:
-    xyz: [0.209, -0.287, 0.025]
+    xyz: [0.317, 0.051, 0.025]
     yaw: 0.0
 
 # Initial state, MuJoCo keyframe "default" (also the Reset MuJoCo Sim target).

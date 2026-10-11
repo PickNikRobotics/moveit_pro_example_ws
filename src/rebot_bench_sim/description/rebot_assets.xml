@@ -1,7 +1,10 @@
 <!--
   reBot B601-RS assets, defaults, actuators and gripper coupling; the body tree
   is rebot_arm.xml. Meshes are the base package's own STL files, resolved
-  through package:// URIs, not copies.
+  through package:// URIs, not copies. MuJoCo cannot load the base package's
+  COLLADA visuals (printed trim, wrist bracket, D435), so assets/ holds them
+  converted to STL in the same frame and units, one file per embedded
+  material; see assets/NOTICE.md.
 
   ros2_control takes its interfaces from the actuators: one position actuator
   per URDF motor joint, named after the joint. Gains are the real driver's
@@ -21,6 +24,10 @@
       specular="0.5"
     />
     <material name="d435_grey" rgba="0.15 0.15 0.16 1" />
+    <!-- The printed parts' embedded COLLADA colours, sRGB (91, 44, 143) and
+         (242, 242, 242). -->
+    <material name="print_purple" rgba="0.357 0.173 0.561 1" />
+    <material name="print_white" rgba="0.949 0.949 0.949 1" />
 
     <mesh
       name="base_link"
@@ -125,6 +132,70 @@
     <mesh
       name="pla3_internal"
       file="package://rebot_bench_base_config/description/assets/printed/pla3_internal.STL"
+    />
+    <mesh
+      name="1-DOWN-DL_purple"
+      file="package://rebot_bench_sim/description/assets/printed/1-DOWN-DL_purple.stl"
+    />
+    <mesh
+      name="1-DOWN-DL_white"
+      file="package://rebot_bench_sim/description/assets/printed/1-DOWN-DL_white.stl"
+    />
+    <mesh
+      name="1-DOWN-DR_purple"
+      file="package://rebot_bench_sim/description/assets/printed/1-DOWN-DR_purple.stl"
+    />
+    <mesh
+      name="1-DOWN-DR_white"
+      file="package://rebot_bench_sim/description/assets/printed/1-DOWN-DR_white.stl"
+    />
+    <mesh
+      name="1-COVER-upper_purple"
+      file="package://rebot_bench_sim/description/assets/printed/1-COVER-upper_purple.stl"
+    />
+    <mesh
+      name="1-COVER-upper_white"
+      file="package://rebot_bench_sim/description/assets/printed/1-COVER-upper_white.stl"
+    />
+    <mesh
+      name="1-UP-DL_purple"
+      file="package://rebot_bench_sim/description/assets/printed/1-UP-DL_purple.stl"
+    />
+    <mesh
+      name="1-UP-DL_white"
+      file="package://rebot_bench_sim/description/assets/printed/1-UP-DL_white.stl"
+    />
+    <mesh
+      name="1-UP-DR_purple"
+      file="package://rebot_bench_sim/description/assets/printed/1-UP-DR_purple.stl"
+    />
+    <mesh
+      name="1-UP-DR_white"
+      file="package://rebot_bench_sim/description/assets/printed/1-UP-DR_white.stl"
+    />
+    <mesh
+      name="1-COVER-lower_purple"
+      file="package://rebot_bench_sim/description/assets/printed/1-COVER-lower_purple.stl"
+    />
+    <mesh
+      name="1-COVER-lower_white"
+      file="package://rebot_bench_sim/description/assets/printed/1-COVER-lower_white.stl"
+    />
+    <mesh
+      name="1-STOPPER-1_purple"
+      file="package://rebot_bench_sim/description/assets/printed/1-STOPPER-1_purple.stl"
+    />
+    <mesh
+      name="1-RAIL-BASE-2_purple"
+      file="package://rebot_bench_sim/description/assets/printed/1-RAIL-BASE-2_purple.stl"
+    />
+    <mesh
+      name="D435_mount_purple"
+      file="package://rebot_bench_sim/description/assets/printed/D435_mount_purple.stl"
+    />
+    <mesh
+      name="d435"
+      file="package://rebot_bench_sim/description/assets/realsense/d435.stl"
     />
   </asset>
 

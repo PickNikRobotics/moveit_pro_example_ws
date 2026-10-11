@@ -9,8 +9,9 @@
   TF published from MuJoCo sites joins robot_state_publisher's tree.
   test/test_scene_model.py checks every link pose against the URDF.
 
-  The printed covers, wrist bracket and D435 body are COLLADA in the base
-  package, which MuJoCo cannot load; they are left out (the D435 is a box).
+  Visual geoms sit at the URDF's visual origins; the printed trim, wrist
+  bracket and D435 use the STL conversions of the base package's COLLADA
+  meshes (rebot_assets.xml).
 -->
 <body>
   <inertial
@@ -51,6 +52,48 @@
       <geom class="visual" mesh="motor_2_3" material="rs_motor_black" />
       <geom class="visual" mesh="cnc2" material="rs_anodized_silver" />
       <geom class="visual" mesh="pla2_internal" material="rs_pla_black" />
+      <geom
+        class="visual"
+        mesh="1-DOWN-DL_purple"
+        material="print_purple"
+        pos="-0.02 0.145 -0.02625"
+        euler="0 0 3.141592653589793"
+      />
+      <geom
+        class="visual"
+        mesh="1-DOWN-DL_white"
+        material="print_white"
+        pos="-0.02 0.145 -0.02625"
+        euler="0 0 3.141592653589793"
+      />
+      <geom
+        class="visual"
+        mesh="1-DOWN-DR_purple"
+        material="print_purple"
+        pos="-0.02 0.145 -0.02625"
+        euler="0 0 3.141592653589793"
+      />
+      <geom
+        class="visual"
+        mesh="1-DOWN-DR_white"
+        material="print_white"
+        pos="-0.02 0.145 -0.02625"
+        euler="0 0 3.141592653589793"
+      />
+      <geom
+        class="visual"
+        mesh="1-COVER-upper_purple"
+        material="print_purple"
+        pos="-0.02 0.145 -0.02625"
+        euler="0 0 3.141592653589793"
+      />
+      <geom
+        class="visual"
+        mesh="1-COVER-upper_white"
+        material="print_white"
+        pos="-0.02 0.145 -0.02625"
+        euler="0 0 3.141592653589793"
+      />
       <geom class="collision" mesh="link2" />
 
       <body name="link3" gravcomp="1" pos="-0.236 0 0">
@@ -68,6 +111,48 @@
         <geom class="visual" mesh="cnc3" material="rs_anodized_silver" />
         <geom class="visual" mesh="motor_4" material="rs_motor_black" />
         <geom class="visual" mesh="pla3_internal" material="rs_pla_black" />
+        <geom
+          class="visual"
+          mesh="1-UP-DL_purple"
+          material="print_purple"
+          pos="0.216 0.145 -0.02625"
+          euler="0 0 3.141592653589793"
+        />
+        <geom
+          class="visual"
+          mesh="1-UP-DL_white"
+          material="print_white"
+          pos="0.216 0.145 -0.02625"
+          euler="0 0 3.141592653589793"
+        />
+        <geom
+          class="visual"
+          mesh="1-UP-DR_purple"
+          material="print_purple"
+          pos="0.216 0.145 -0.02625"
+          euler="0 0 3.141592653589793"
+        />
+        <geom
+          class="visual"
+          mesh="1-UP-DR_white"
+          material="print_white"
+          pos="0.216 0.145 -0.02625"
+          euler="0 0 3.141592653589793"
+        />
+        <geom
+          class="visual"
+          mesh="1-COVER-lower_purple"
+          material="print_purple"
+          pos="0.02 0.145 -0.02625"
+          euler="3.141592653589793 0 0"
+        />
+        <geom
+          class="visual"
+          mesh="1-COVER-lower_white"
+          material="print_white"
+          pos="0.02 0.145 -0.02625"
+          euler="3.141592653589793 0 0"
+        />
         <geom class="collision" mesh="link3" />
 
         <body name="link4" gravcomp="1" pos="0.228 -0.072746 0.0045">
@@ -105,6 +190,13 @@
             />
             <geom class="visual" mesh="motor_6" material="rs_motor_black" />
             <geom class="visual" mesh="cnc5" material="rs_anodized_silver" />
+            <geom
+              class="visual"
+              mesh="1-STOPPER-1_purple"
+              material="print_purple"
+              pos="0 0 0.048"
+              euler="-1.5707963267948966 0 3.141592653589793"
+            />
             <geom class="collision" mesh="link5" />
 
             <body
@@ -144,6 +236,13 @@
                   material="rs_anodized_silver"
                 />
                 <geom class="visual" mesh="motor_7" material="rs_motor_black" />
+                <geom
+                  class="visual"
+                  mesh="1-RAIL-BASE-2_purple"
+                  material="print_purple"
+                  pos="-0.25730933 0 -0.1445"
+                  euler="3.141592653589793 0 -1.5707963267948966"
+                />
                 <geom class="collision" mesh="gripper_end" />
 
                 <!-- The gripper motor. The URDF link has no inertia; this
@@ -219,19 +318,23 @@
                   pos="-0.1201 0.0003 0.045"
                   euler="1.5827 0.0024 1.5515"
                 >
+                  <geom
+                    class="visual"
+                    mesh="D435_mount_purple"
+                    material="print_purple"
+                  />
                   <body
                     name="d435_bottom_screw_frame"
                     pos="-0.0003 0.0445 -0.0095"
                     euler="0.0126 -1.0489 -1.5981"
                   >
                     <body name="d435_link" pos="0.0106 0.0175 0.0125">
-                      <!-- D435 body, 90 x 25 x 25 mm, behind the colour lens. -->
                       <geom
                         class="visual"
-                        type="box"
-                        pos="-0.0082 -0.0175 0"
-                        size="0.0125 0.045 0.0125"
+                        mesh="d435"
                         material="d435_grey"
+                        pos="0.0043 -0.0175 0"
+                        euler="1.5707963267948966 0 1.5707963267948966"
                       />
                       <!-- Colour sensor at the URDF's d435_color_optical_frame.
                            fovy 43.09 deg is the published fy 607.8 px at

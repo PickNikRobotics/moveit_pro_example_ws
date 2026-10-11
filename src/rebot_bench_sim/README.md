@@ -39,7 +39,7 @@ Lengths are metres, angles radians, `rpy` is URDF roll-pitch-yaw.
 | --- | --- | --- |
 | `robot_base` | `base_link` (the arm's mounting face) | `xyz`, `rpy` |
 | `scene_camera` | `scene_camera_link` (x along the view axis, z up) | the colour optical frame follows as in the base config |
-| `mat` | the mat's grid frame: grid origin on the top surface, +X toward the aisle, +Y away from the robot | `size` is `[x, y, thickness]`; the bench top sits at the mat's underside |
+| `mat` | the centre of the mat's top surface | `size` is the full `[x, y, thickness]`; the bench top sits at the mat's underside |
 | `wall` | the wall box centre | `size` is the full `[x, y, z]` extent |
 | `cubes` | each cube's centre, plus a yaw | `size` (edge) and `mass` apply to both |
 | `keyframe` | the `default` keyframe, the start state and the **Reset MuJoCo Sim** target | joint1-joint6, then the gripper motor joint7 |
@@ -54,10 +54,13 @@ free bodies that calibration measures directly, and editing `mat`'s `xyz` or
 `rpy` does not move them.
 
 **Every value in the shipped file is a first guess, marked APPROXIMATE**, from
-bench facts rather than measurement: the mat in front of the robot, the cubes at
-grid (309, 273) mm (blue) and (212, 302) mm (red), the printed frame front-left
-on the mat beyond the cubes, the scene camera about 0.74 m from the mat. The
-file notes the reasoning behind each.
+bench facts and the real scene camera's frame rather than measurement. The mat
+runs along world X, away from the robot, with the foam wall along its +Y edge;
+the printed frame lies near the mat's aisle edge, its red axis pointing back
+toward the robot. The cubes are at grid (309, 273) mm (blue) and (212, 302) mm
+(red), where grid +X runs across the mat toward the aisle and grid +Y along it
+away from the robot; the file gives the grid-to-world mapping and the
+reasoning behind each entry.
 
 ## Cameras
 
@@ -84,8 +87,11 @@ the top and bottom 40 rows.
 
 - The arm is `description/rebot_arm.xml` and `description/rebot_assets.xml`,
   transcribed from `rebot.urdf.xacro`. Meshes are the base package's STL files
-  through `package://` URIs. The printed covers, wrist bracket and D435 body are
-  COLLADA, which MuJoCo cannot load; they are left out and the D435 is a box.
+  through `package://` URIs. The purple printed covers, the wrist bracket and
+  the D435 body are COLLADA there, which MuJoCo cannot load, so
+  `description/assets/` holds STL conversions in the same frame and units, one
+  file per embedded material (purple print, white lettering); see
+  [`description/assets/NOTICE.md`](description/assets/NOTICE.md).
 - One position actuator per motor joint, with the real driver's motion-mode
   kp/kd and effort limits. The jaws follow joint7 through equality constraints,
   the URDF mimic. The links are gravity-compensated: a real-arm sag out of the

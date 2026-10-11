@@ -29,7 +29,7 @@
 
   <include file="rebot_assets.xml" />
 
-  <statistic center="0.15 -0.4 0.15" extent="0.8" />
+  <statistic center="0.25 0.1 0.15" extent="0.8" />
 
   <visual>
     <headlight diffuse="0.5 0.5 0.5" ambient="0.35 0.35 0.35" specular="0 0 0" />
@@ -52,6 +52,8 @@
 
   <worldbody>
     <light pos="0.3 -0.3 2.0" dir="0 0 -1" directional="true" diffuse="0.6 0.6 0.6" castshadow="true" />
+    <!-- Fill from the aisle side, so the wall face the scene camera sees is lit. -->
+    <light pos="0.2 -1.0 1.0" dir="0 0.8 -0.6" directional="true" diffuse="0.5 0.5 0.5" castshadow="false" />
 
     <!-- Bench top, at the mat's underside. -->
     <geom name="bench" class="scene" type="plane" pos="0 0 ${mat['xyz'][2] - mat['size'][2]}" size="0 0 0.05" rgba="0.55 0.52 0.48 1" />
@@ -64,9 +66,9 @@
       <geom class="marker" fromto="0 0 0 0 0 0.06" rgba="0 0 1 1" />
     </body>
 
-    <!-- Blue mat; the body frame is the mat's grid frame. -->
+    <!-- Blue mat; the body frame is the centre of its top surface. -->
     <body name="mat" pos="${' '.join(map(str, mat['xyz']))}" euler="${' '.join(map(str, mat['rpy']))}">
-      <geom class="scene" type="box" pos="${mat['size'][0] / 2} ${mat['size'][1] / 2} ${-mat['size'][2] / 2}" size="${mat['size'][0] / 2} ${mat['size'][1] / 2} ${mat['size'][2] / 2}" rgba="0.10 0.25 0.62 1" />
+      <geom class="scene" type="box" pos="0 0 ${-mat['size'][2] / 2}" size="${mat['size'][0] / 2} ${mat['size'][1] / 2} ${mat['size'][2] / 2}" rgba="0.10 0.25 0.62 1" />
     </body>
 
     <!-- White wall (foam). -->
