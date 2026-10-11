@@ -4,21 +4,23 @@
   <xacro:include filename="$(find franka_description)/robots/common/utils.xacro" />
 
   <!-- safety_distance: Minimum safety distance in [m] by which the collision volumes are expanded and which is enforced during robot motions -->
-  <!-- robot_type: Namespace of the robot arm. Serves to differentiate between arms in case of multiple instances. -->
+  <!-- robot_type: the franka robot arm type -->
   <!-- joint_limits: description of the joint limits that comes from a YAML file. Example definition: ${xacro.load_yaml('$(find franka_description)/robots/fr3/joint_limits.yaml')} -->
   <!-- kinematics: description of the kinematics that comes from a YAML file. Example definition: ${xacro.load_yaml('$(find franka_description)/robots/fr3/kinematics.yaml')} -->
   <!-- inertials: description of the inertials that comes from a YAML file. Example definition: ${xacro.load_yaml('$(find franka_description)/robots/fr3/inertials.yaml')} -->
   <!-- dynamics: description of the dynamics that comes from a YAML file. Example definition: ${xacro.load_yaml('$(find franka_description)/robots/fr3/dynamics.yaml')} -->
 
-  <xacro:macro name="franka_arm" params="robot_type arm_prefix:='' no_prefix:=false description_pkg:='franka_description' connected_to:='base' xyz:='0 0 0' rpy:='0 0 0' gazebo:='false' safety_distance:=0 joint_limits inertials kinematics accelerometer_config dynamics with_sc:=false" >
+  <xacro:macro name="franka_arm" params="robot_type arm_prefix:='' no_prefix:=false description_pkg:='franka_description' connected_to:='base' xyz:='0 0 0' rpy:='0 0 0' include_self_collision_geometry:='true' safety_distance:=0 with_sc:=false" >
+
+    <xacro:property name="joint_limits" value="${xacro.load_yaml('$(find franka_description)/robots/' + robot_type + '/joint_limits.yaml')}"/>
+    <xacro:property name="inertials" value="${xacro.load_yaml('$(find franka_description)/robots/' + robot_type  + '/inertials.yaml')}"/>
+    <xacro:property name="kinematics" value="${xacro.load_yaml('$(find franka_description)/robots/' + robot_type + '/kinematics.yaml')}"/>
+    <xacro:property name="accelerometer_config" value="${xacro.load_yaml('$(find franka_description)/robots/' + robot_type + '/accelerometers.yaml')}"/>
+    <xacro:property name="dynamics" value="${xacro.load_yaml('$(find franka_description)/robots/' + robot_type + '/dynamics.yaml')}"/>
 
     <!-- Define a property that defaults to 'arm_prefix_robot_type' concatenated with an underscore if 'no_prefix' is not set -->
     <xacro:property name="prefix" value="${'' if no_prefix else arm_prefix + robot_type + '_'}" />
     <xacro:property name="with_accelerometers" value="${'false' if accelerometer_config == 'none' else 'true'}" />
-
-    <xacro:if value="${gazebo}">
-      <xacro:property name="connected_to" value="" />
-    </xacro:if>
 
     <xacro:unless value="${not connected_to}">
       <link name="${connected_to}">
@@ -30,13 +32,13 @@
       </joint>
     </xacro:unless>
 
-    <xacro:link_with_sc no_prefix="${no_prefix}" name="link0" gazebo="${gazebo}" with_sc="${with_sc}" with_accelerometers="${with_accelerometers}">
+    <xacro:link_with_sc no_prefix="${no_prefix}" name="link0" include_self_collision_geometry="${include_self_collision_geometry}" with_sc="${with_sc}" with_accelerometers="${with_accelerometers}">
       <self_collision_geometries>
         <xacro:collision_capsule xyz="-0.075 0 0.06" direction="x" radius="${0.06+safety_distance}" length="0.03" />
       </self_collision_geometries>
     </xacro:link_with_sc>
 
-    <xacro:link_with_sc no_prefix="${no_prefix}" name="link1" gazebo="${gazebo}" with_sc="${with_sc}" with_accelerometers="${with_accelerometers}">
+    <xacro:link_with_sc no_prefix="${no_prefix}" name="link1" include_self_collision_geometry="${include_self_collision_geometry}" with_sc="${with_sc}" with_accelerometers="${with_accelerometers}">
       <self_collision_geometries>
         <xacro:collision_capsule xyz="0 0 -191.5e-3" radius="${0.06+safety_distance}" length="0.283" />
       </self_collision_geometries>
@@ -51,7 +53,7 @@
       <xacro:franka-dynamics name="joint1" config="${dynamics}" />
     </joint>
 
-    <xacro:link_with_sc no_prefix="${no_prefix}" name="link2" gazebo="${gazebo}" with_sc="${with_sc}" with_accelerometers="${with_accelerometers}">
+    <xacro:link_with_sc no_prefix="${no_prefix}" name="link2" include_self_collision_geometry="${include_self_collision_geometry}" with_sc="${with_sc}" with_accelerometers="${with_accelerometers}">
       <self_collision_geometries>
         <xacro:collision_capsule xyz="0 0 0" radius="${0.06+safety_distance}" length="0.12" />
       </self_collision_geometries>
@@ -66,7 +68,7 @@
       <xacro:franka-dynamics name="joint2" config="${dynamics}" />
     </joint>
 
-    <xacro:link_with_sc no_prefix="${no_prefix}" name="link3" gazebo="${gazebo}" with_sc="${with_sc}" with_accelerometers="${with_accelerometers}">
+    <xacro:link_with_sc no_prefix="${no_prefix}" name="link3" include_self_collision_geometry="${include_self_collision_geometry}" with_sc="${with_sc}" with_accelerometers="${with_accelerometers}">
       <self_collision_geometries>
         <xacro:collision_capsule xyz="0 0 -0.145" radius="${0.06+safety_distance}" length="0.15" />
       </self_collision_geometries>
@@ -81,7 +83,7 @@
       <xacro:franka-dynamics name="joint3" config="${dynamics}" />
     </joint>
 
-    <xacro:link_with_sc no_prefix="${no_prefix}" name="link4" gazebo="${gazebo}" with_sc="${with_sc}" with_accelerometers="${with_accelerometers}">
+    <xacro:link_with_sc no_prefix="${no_prefix}" name="link4" include_self_collision_geometry="${include_self_collision_geometry}" with_sc="${with_sc}" with_accelerometers="${with_accelerometers}">
       <self_collision_geometries>
         <xacro:collision_capsule xyz="0 0 0" radius="${0.06+safety_distance}" length="0.12" />
      </self_collision_geometries>
@@ -96,7 +98,7 @@
       <xacro:franka-dynamics name="joint4" config="${dynamics}" />
     </joint>
 
-    <xacro:link_with_sc no_prefix="${no_prefix}" name="link5" gazebo="${gazebo}" with_sc="${with_sc}" with_accelerometers="${with_accelerometers}">
+    <xacro:link_with_sc no_prefix="${no_prefix}" name="link5" include_self_collision_geometry="${include_self_collision_geometry}" with_sc="${with_sc}" with_accelerometers="${with_accelerometers}">
       <self_collision_geometries>
         <xacro:collision_capsule xyz="0 0 -0.26"    radius="${0.060+safety_distance}" length="0.10" />
         <xacro:collision_capsule xyz="0 0.08 -0.13" radius="${0.025+safety_distance}" length="0.14" />
@@ -112,7 +114,7 @@
       <xacro:franka-dynamics name="joint5" config="${dynamics}" />
     </joint>
 
-    <xacro:link_with_sc no_prefix="${no_prefix}" name="link6" gazebo="${gazebo}" with_sc="${with_sc}" with_accelerometers="false">
+    <xacro:link_with_sc no_prefix="${no_prefix}" name="link6" include_self_collision_geometry="${include_self_collision_geometry}" with_sc="${with_sc}" with_accelerometers="false">
       <self_collision_geometries>
         <xacro:collision_capsule xyz="0 0 -0.03" radius="${0.05+safety_distance}" length="0.08" />
       </self_collision_geometries>
@@ -127,7 +129,7 @@
       <xacro:franka-dynamics name="joint6" config="${dynamics}" />
     </joint>
 
-    <xacro:link_with_sc no_prefix="${no_prefix}" name="link7" gazebo="${gazebo}" rpy="0 0 ${pi/4}" with_sc="${with_sc}" with_accelerometers="false">
+    <xacro:link_with_sc no_prefix="${no_prefix}" name="link7" include_self_collision_geometry="${include_self_collision_geometry}" rpy="0 0 ${pi/4}" with_sc="${with_sc}" with_accelerometers="false">
       <self_collision_geometries>
         <xacro:collision_capsule xyz="0 0 0.01" direction="z" radius="${0.04+safety_distance}" length="0.14" />
         <xacro:collision_capsule xyz="0.06 0 0.082" direction="x" radius="${0.03+safety_distance}"  length="0.01" />
