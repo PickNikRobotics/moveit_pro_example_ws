@@ -9,8 +9,9 @@
        real hardware uses this. -->
   <xacro:arg name="torque_enable" default="true" />
   <!-- Real hardware only; joint1-joint6 control mode. "motion" is impedance
-       (MIT): torque = kp * error + kd * velocity error, with no gravity
-       feedforward, so a loaded joint settles short by load torque / kp.
+       (MIT): torque = kp * error + kd * velocity error + effort. effort is 0
+       unless gravity_compensation_controller is active, and without it a
+       loaded joint settles short by load torque / kp.
        "position_csp" is the motor's own position loop, which settles on
        target and is capped by the motor's stored speed limit (0x7017). The
        gripper always uses motion. Unsupported values fail expansion. -->
@@ -485,16 +486,24 @@
     `direction` override is needed anywhere - joint frame equals motor frame.
   -->
   <xacro:property name="arm_mode" value="${dict(motion='motion', position_csp='position_csp')['$(arg arm_control_mode)']}" />
-  <xacro:macro name="rebot_joint" params="name id model kp kd mode:=${arm_mode}">
+  <xacro:macro name="rebot_joint" params="name id model kp kd mode:=${arm_mode} feedforward:=true">
     <joint name="${name}">
       <xacro:if value="${'$(arg hardware_interface)' == 'real'}">
         <param name="id">${id}</param>
       </xacro:if>
       <command_interface name="position" />
       <!--
-        Mock only. Every controller in config/control/rebot.ros2_control.yaml
-        commands `position`, and motion mode is driven through `position`
-        alone; the driver exports whatever is declared, so a velocity
+        Real motion mode only: the impedance law's torque feedforward, written
+        by gravity_compensation_controller and clamped by the driver to the
+        motor's max_feedforward_effort. Nothing writes it by default.
+      -->
+      <xacro:if value="${'$(arg hardware_interface)' == 'real' and mode == 'motion' and feedforward}">
+        <command_interface name="effort" />
+      </xacro:if>
+      <!--
+        Mock only. Every motion controller in config/control/rebot.ros2_control.yaml
+        commands `position`, and motion mode's target is driven through
+        `position` alone; the driver exports whatever is declared, so a velocity
         declaration here would be claimable and then never written - a joint
         that accepts commands and does not move, with no error to explain it.
       -->
@@ -563,6 +572,6 @@
     <xacro:rebot_joint name="joint4" id="4" model="RS00" kp="50.0" kd="5.0" />
     <xacro:rebot_joint name="joint5" id="5" model="RS00" kp="50.0" kd="4.0" />
     <xacro:rebot_joint name="joint6" id="6" model="RS00" kp="50.0" kd="4.0" />
-    <xacro:rebot_joint name="joint7" id="7" model="RS00" kp="12.0" kd="0.05" mode="motion" />
+    <xacro:rebot_joint name="joint7" id="7" model="RS00" kp="12.0" kd="0.05" mode="motion" feedforward="false" />
   </ros2_control>
 </robot>

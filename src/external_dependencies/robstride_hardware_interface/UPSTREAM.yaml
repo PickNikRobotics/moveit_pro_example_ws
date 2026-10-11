@@ -1,7 +1,7 @@
 upstream:
   repository: https://github.com/griswaldbrooks/robstride_hardware_interface.git
-  commit: 7c9d6e87bdbdf368a4a29c996e3507ada6dd36c3
-  branch: picknik/hold-torque-on-deactivate
+  commit: 14d1edee0e780f1c0911f5d1ceb41e8775aa4c99
+  branch: picknik/gravity-feedforward
 snapshot_path: robstride_hardware_interface
 vendored_paths:
   - robstride_hardware_interface
@@ -15,4 +15,5 @@ notes:
   - This is a PickNik fork of kmj060703/robstride_hardware_interface. The fork is the single place our driver changes are made, so this snapshot matches the pinned fork commit exactly and modified_paths is empty. Every local change is a commit on the fork branch above, not an edit here.
   - The fork adds the hold_torque_on_deactivate hardware parameter. Upstream's on_deactivate disables every motor, which releases a gravity-loaded arm wherever it is standing; the reBot bench has no brakes and may only be limped at its home pose. With the parameter set a clean stop holds the pose instead. on_init warns when it is combined with an armed motor_can_timeout_ms, because deactivation closes the bus and the motor's own watchdog then releases torque regardless.
   - The fork also adds test/test_deactivate_torque.cpp and test/fake_robstride_motor.hpp, which drive the real activate/deactivate lifecycle against a fake motor on a virtual CAN interface and assert on the Stop frames that follow the Enable. The test skips when no vcan interface exists, so it never reports coverage it did not provide.
+  - The fork's branch builds on that with two more changes. It decodes the Type 0x15 fault word little-endian: robstride_sdk assembles it big-endian, so fault_bits never matched robstride_sdk::FaultBit (test/test_fault_bits.cpp decodes a frame captured on the bench). It also bounds the motion-mode torque feedforward, taken from a joint's effort command interface, with a max_feedforward_effort gpio param that defaults to a quarter of the model's torque range, below its rated torque (test/test_feedforward.cpp). kdl_gravity_compensation_controller writes that effort interface.
   - Companion sources robstride_sdk and robstride_interfaces are vendored unmodified from kmj060703 and are not forked.

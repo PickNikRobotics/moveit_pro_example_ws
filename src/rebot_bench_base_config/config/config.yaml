@@ -67,6 +67,8 @@ ros2_control:
   - joint_velocity_controller
   - gripper_joint_velocity_controller
   - velocity_force_controller
+  # Real motion mode only; the mock arm has no effort interface to claim.
+  - gravity_compensation_controller
   controllers_not_managed: []
   controller_shared_topics: []
 objectives:
