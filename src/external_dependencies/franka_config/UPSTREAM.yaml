@@ -1,6 +1,6 @@
 upstream:
   repository: https://github.com/frankarobotics/franka_description.git
-  commit: 494d1d474844c167d72ccd604633545c9067eea2
+  commit: 7aeeddc449edf8d62b594f9e36a81da53e7796f9
   branch: main
 snapshot_path: franka_description
 vendored_paths:
