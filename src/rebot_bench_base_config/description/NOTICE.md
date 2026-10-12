@@ -30,6 +30,13 @@ Modified by PickNik Inc., 2026-10-10:
 
 - Added uncalibrated, frame-only OAK-D scene-camera attachment points at `world`.
 
+Modified by PickNik Inc., 2026-10-11:
+
+- Added xacro arguments placing `base_link` and the scene-camera mount in
+  `world`; both default to coinciding with `world`.
+- Added a `mujoco` hardware selector that emits no `ros2_control` block and no
+  colour optical frames, for `rebot_bench_sim`'s MuJoCo description.
+
 Original URDF export notice retained in `rebot.urdf.xacro`: SolidWorks to URDF
 Exporter, Stephen Brawner (brawner@gmail.com), commit `1.6.0-4-g7f85cfe`,
 build `1.6.7995.38578`; http://wiki.ros.org/sw_urdf_exporter.

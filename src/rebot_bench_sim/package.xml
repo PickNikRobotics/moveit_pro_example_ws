@@ -4,8 +4,8 @@
   <version>10.2.0</version>
 
   <description>
-    Mock reBot bench overlay: inherited robot configuration, no camera drivers
-    or simulated images.
+    MuJoCo twin of the reBot bench: the reBot arm, both cameras, the mat, the
+    wall and two cubes, placed from one bench layout file.
   </description>
 
   <maintainer email="support@picknik.ai">MoveIt Pro Maintainer</maintainer>
@@ -13,8 +13,15 @@
   <license>BSD-3-Clause</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
+  <!-- Generates description/scene.xml from config/bench_layout.yaml. -->
+  <buildtool_depend>xacro</buildtool_depend>
 
   <depend>rebot_bench_base_config</depend>
+  <exec_depend>moveit_pro_objectives</exec_depend>
+  <exec_depend>moveit_studio_agent</exec_depend>
+  <exec_depend>mujoco_package_uri</exec_depend>
+  <exec_depend>picknik_mujoco_ros</exec_depend>
+  <exec_depend>xacro</exec_depend>
 
   <test_depend>ament_cmake_copyright</test_depend>
   <test_depend>ament_cmake_lint_cmake</test_depend>
@@ -22,8 +29,12 @@
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_index_python</test_depend>
   <test_depend>ament_lint_auto</test_depend>
+  <test_depend>moveit_pro_test_utils</test_depend>
   <test_depend>moveit_studio_utils_py</test_depend>
   <test_depend>picknik_ament_copyright</test_depend>
+  <test_depend>python3-numpy</test_depend>
+  <test_depend>python3-yaml</test_depend>
+  <test_depend>rclpy</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

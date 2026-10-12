@@ -1,0 +1,110 @@
+<?xml version="1.0"?>
+<!--
+  MuJoCo twin of the reBot bench. Expanded by xacro at build time into the
+  installed description/scene.xml; every placement comes from the build's
+  snapshot of config/bench_layout.yaml, which the robot description reads too.
+
+  World origin: the printed TF frame on the mat (+X red, +Y green, +Z up),
+  drawn as an axes triad.
+-->
+<mujoco model="rebot_bench" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:arg name="layout" default="$(find rebot_bench_sim)/description/bench_layout.yaml" />
+  <xacro:property name="layout" value="${xacro.load_yaml('$(arg layout)')}" />
+  <xacro:property name="cubes" value="${layout['cubes']}" />
+  <xacro:property name="half_cube" value="${cubes['size'] / 2}" />
+  <xacro:property name="mat" value="${layout['mat']}" />
+  <xacro:property name="wall" value="${layout['wall']}" />
+  <xacro:property name="keyframe" value="${layout['keyframe']}" />
+  <xacro:macro name="cube" params="name rgba">
+    <body name="${name}_cube" pos="${' '.join(map(str, cubes[name]['xyz']))}" euler="0 0 ${cubes[name]['yaw']}">
+      <freejoint name="${name}_cube_joint" />
+      <geom class="scene" type="box" size="${half_cube} ${half_cube} ${half_cube}" mass="${cubes['mass']}" rgba="${rgba}" />
+    </body>
+  </xacro:macro>
+
+  <!-- Radians throughout; eulerseq XYZ is URDF rpy, so layout and URDF
+       orientations copy straight across. -->
+  <compiler angle="radian" eulerseq="XYZ" autolimits="true" />
+  <option timestep="0.003" integrator="implicitfast" />
+
+  <include file="rebot_assets.xml" />
+
+  <statistic center="0.25 0.1 0.15" extent="0.8" />
+
+  <visual>
+    <headlight diffuse="0.5 0.5 0.5" ambient="0.35 0.35 0.35" specular="0 0 0" />
+    <!-- picknik_mujoco_ros renders every camera into one offscreen buffer, so
+         each camera's resolution must equal it. 640x480 is the wrist D435's
+         colour mode; see the scene camera below. -->
+    <global offwidth="640" offheight="480" azimuth="-130" elevation="-25" />
+    <quality shadowsize="4096" />
+  </visual>
+
+  <default>
+    <!-- Bench objects collide with each other and with the robot. -->
+    <default class="scene">
+      <geom contype="1" conaffinity="3" friction="0.9 0.01 0.001" />
+    </default>
+    <default class="marker">
+      <geom type="cylinder" size="0.004" contype="0" conaffinity="0" group="0" />
+    </default>
+  </default>
+
+  <worldbody>
+    <light pos="0.3 -0.3 2.0" dir="0 0 -1" directional="true" diffuse="0.6 0.6 0.6" castshadow="true" />
+    <!-- Fill from the aisle side, so the wall face the scene camera sees is lit. -->
+    <light pos="0.2 -1.0 1.0" dir="0 0.8 -0.6" directional="true" diffuse="0.5 0.5 0.5" castshadow="false" />
+
+    <!-- Bench top, at the mat's underside. -->
+    <geom name="bench" class="scene" type="plane" pos="0 0 ${mat['xyz'][2] - mat['size'][2]}" size="0 0 0.05" rgba="0.55 0.52 0.48 1" />
+
+    <!-- The printed TF frame: the world origin. 60 mm arms, red +X, green +Y,
+         blue +Z; visual only. -->
+    <body name="tf_frame">
+      <geom class="marker" fromto="0 0 0 0.06 0 0" rgba="1 0 0 1" />
+      <geom class="marker" fromto="0 0 0 0 0.06 0" rgba="0 1 0 1" />
+      <geom class="marker" fromto="0 0 0 0 0 0.06" rgba="0 0 1 1" />
+    </body>
+
+    <!-- Blue mat; the body frame is the centre of its top surface. -->
+    <body name="mat" pos="${' '.join(map(str, mat['xyz']))}" euler="${' '.join(map(str, mat['rpy']))}">
+      <geom class="scene" type="box" pos="0 0 ${-mat['size'][2] / 2}" size="${mat['size'][0] / 2} ${mat['size'][1] / 2} ${mat['size'][2] / 2}" rgba="0.10 0.25 0.62 1" />
+    </body>
+
+    <!-- White wall (foam). -->
+    <body name="wall" pos="${' '.join(map(str, wall['xyz']))}" euler="${' '.join(map(str, wall['rpy']))}">
+      <geom class="scene" type="box" size="${wall['size'][0] / 2} ${wall['size'][1] / 2} ${wall['size'][2] / 2}" rgba="0.94 0.94 0.92 1" />
+    </body>
+
+    <!-- Scene camera, Luxonis OAK-D Pro W 97, at the URDF's
+         scene_camera_link. fovy 80.69 deg keeps the real horizontal view: fx
+         282.5 px at 640 wide, 97.1 deg (base config README). The real stream
+         is 640x400; the shared 640x480 buffer renders the same view with 40
+         extra rows above and below. -->
+    <body name="scene_camera_link" pos="${' '.join(map(str, layout['scene_camera']['xyz']))}" euler="${' '.join(map(str, layout['scene_camera']['rpy']))}">
+      <camera name="scene_camera_color" mode="fixed" quat="0.5 0.5 -0.5 -0.5" fovy="80.69" resolution="640 480" />
+      <site name="scene_camera_color_optical_frame" quat="0.5 -0.5 0.5 -0.5" size="0.005" group="5" />
+    </body>
+
+    <body name="base_link" pos="${' '.join(map(str, layout['robot_base']['xyz']))}" euler="${' '.join(map(str, layout['robot_base']['rpy']))}" childclass="rebot">
+      <include file="rebot_arm.xml" />
+    </body>
+
+    <xacro:cube name="red" rgba="0.80 0.08 0.08 1" />
+    <xacro:cube name="blue" rgba="0.08 0.22 0.85 1" />
+  </worldbody>
+
+  <!-- qpos: joint1-joint6, joint7, the two jaws (0.008 m/rad of joint7), then
+       each cube's free joint (position, quaternion w x y z). ctrl: the seven
+       position actuators. -->
+  <xacro:property name="jaw" value="${0.008 * keyframe['gripper']}" />
+  <xacro:property name="red_qpos" value="${cubes['red']['xyz'] + [cos(cubes['red']['yaw'] / 2), 0, 0, sin(cubes['red']['yaw'] / 2)]}" />
+  <xacro:property name="blue_qpos" value="${cubes['blue']['xyz'] + [cos(cubes['blue']['yaw'] / 2), 0, 0, sin(cubes['blue']['yaw'] / 2)]}" />
+  <keyframe>
+    <key
+      name="default"
+      qpos="${' '.join(map(str, keyframe['arm'] + [keyframe['gripper'], jaw, jaw] + red_qpos + blue_qpos))}"
+      ctrl="${' '.join(map(str, keyframe['arm'] + [keyframe['gripper']]))}"
+    />
+  </keyframe>
+</mujoco>

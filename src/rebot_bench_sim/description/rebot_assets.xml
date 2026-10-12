@@ -1,0 +1,302 @@
+<!--
+  reBot B601-RS assets, defaults, actuators and gripper coupling; the body tree
+  is rebot_arm.xml. Meshes are the base package's own STL files, resolved
+  through package:// URIs, not copies. MuJoCo cannot load the base package's
+  COLLADA visuals (printed trim, wrist bracket, D435), so assets/ holds them
+  converted to STL in the same frame and units, one file per embedded
+  material; see assets/NOTICE.md.
+
+  ros2_control takes its interfaces from the actuators: one position actuator
+  per URDF motor joint, named after the joint. Gains are the real driver's
+  motion-mode kp/kd (rebot.urdf.xacro), forces its effort limits. The links
+  are gravity-compensated (gravcomp in rebot_arm.xml), unlike the real arm in
+  motion mode: sagging out of the folded rest pose puts link2 and link5 in
+  collision, and MoveIt then refuses to plan from it.
+-->
+<mujocoinclude>
+  <asset>
+    <material name="rs_base_black" rgba="0.055 0.065 0.060 1" />
+    <material name="rs_motor_black" rgba="0.045 0.052 0.049 1" />
+    <material name="rs_pla_black" rgba="0.090 0.106 0.102 1" />
+    <material
+      name="rs_anodized_silver"
+      rgba="0.720 0.760 0.730 1"
+      specular="0.5"
+    />
+    <material name="d435_grey" rgba="0.15 0.15 0.16 1" />
+    <!-- The printed parts' embedded COLLADA colours, sRGB (91, 44, 143) and
+         (242, 242, 242). -->
+    <material name="print_purple" rgba="0.357 0.173 0.561 1" />
+    <material name="print_white" rgba="0.949 0.949 0.949 1" />
+
+    <mesh
+      name="base_link"
+      file="package://rebot_bench_base_config/description/assets/shared/base_link.STL"
+    />
+    <mesh
+      name="link1"
+      file="package://rebot_bench_base_config/description/assets/shared/link1.STL"
+    />
+    <mesh
+      name="link2"
+      file="package://rebot_bench_base_config/description/assets/shared/link2.STL"
+    />
+    <mesh
+      name="link3"
+      file="package://rebot_bench_base_config/description/assets/shared/link3.STL"
+    />
+    <mesh
+      name="link4"
+      file="package://rebot_bench_base_config/description/assets/shared/link4.STL"
+    />
+    <mesh
+      name="link5"
+      file="package://rebot_bench_base_config/description/assets/shared/link5.STL"
+    />
+    <mesh
+      name="link6"
+      file="package://rebot_bench_base_config/description/assets/shared/link6.STL"
+    />
+    <mesh
+      name="gripper_end"
+      file="package://rebot_bench_base_config/description/assets/shared/gripper_end.STL"
+    />
+    <mesh
+      name="gripper_left"
+      file="package://rebot_bench_base_config/description/assets/shared/gripper_left.STL"
+    />
+    <mesh
+      name="gripper_right"
+      file="package://rebot_bench_base_config/description/assets/shared/gripper_right.STL"
+    />
+    <mesh
+      name="motor_2_3"
+      file="package://rebot_bench_base_config/description/assets/visual/motor_2_3.STL"
+    />
+    <mesh
+      name="motor_4"
+      file="package://rebot_bench_base_config/description/assets/visual/motor_4.STL"
+    />
+    <mesh
+      name="motor_5"
+      file="package://rebot_bench_base_config/description/assets/visual/motor_5.STL"
+    />
+    <mesh
+      name="motor_6"
+      file="package://rebot_bench_base_config/description/assets/visual/motor_6.STL"
+    />
+    <mesh
+      name="motor_7"
+      file="package://rebot_bench_base_config/description/assets/visual/motor_7.STL"
+    />
+    <mesh
+      name="cnc2"
+      file="package://rebot_bench_base_config/description/assets/visual/cnc2.STL"
+    />
+    <mesh
+      name="cnc3"
+      file="package://rebot_bench_base_config/description/assets/visual/cnc3.STL"
+    />
+    <mesh
+      name="cnc4"
+      file="package://rebot_bench_base_config/description/assets/visual/cnc4.STL"
+    />
+    <mesh
+      name="cnc5"
+      file="package://rebot_bench_base_config/description/assets/visual/cnc5.STL"
+    />
+    <mesh
+      name="cnc7"
+      file="package://rebot_bench_base_config/description/assets/visual/cnc7.STL"
+    />
+    <mesh
+      name="cnc_left"
+      file="package://rebot_bench_base_config/description/assets/visual/cnc_left.STL"
+    />
+    <mesh
+      name="cnc_right"
+      file="package://rebot_bench_base_config/description/assets/visual/cnc_right.STL"
+    />
+    <mesh
+      name="pla_left"
+      file="package://rebot_bench_base_config/description/assets/visual/pla_left.STL"
+    />
+    <mesh
+      name="pla_right"
+      file="package://rebot_bench_base_config/description/assets/visual/pla_right.STL"
+    />
+    <mesh
+      name="pla2_internal"
+      file="package://rebot_bench_base_config/description/assets/printed/pla2_internal.STL"
+    />
+    <mesh
+      name="pla3_internal"
+      file="package://rebot_bench_base_config/description/assets/printed/pla3_internal.STL"
+    />
+    <mesh
+      name="1-DOWN-DL_purple"
+      file="package://rebot_bench_sim/description/assets/printed/1-DOWN-DL_purple.stl"
+    />
+    <mesh
+      name="1-DOWN-DL_white"
+      file="package://rebot_bench_sim/description/assets/printed/1-DOWN-DL_white.stl"
+    />
+    <mesh
+      name="1-DOWN-DR_purple"
+      file="package://rebot_bench_sim/description/assets/printed/1-DOWN-DR_purple.stl"
+    />
+    <mesh
+      name="1-DOWN-DR_white"
+      file="package://rebot_bench_sim/description/assets/printed/1-DOWN-DR_white.stl"
+    />
+    <mesh
+      name="1-COVER-upper_purple"
+      file="package://rebot_bench_sim/description/assets/printed/1-COVER-upper_purple.stl"
+    />
+    <mesh
+      name="1-COVER-upper_white"
+      file="package://rebot_bench_sim/description/assets/printed/1-COVER-upper_white.stl"
+    />
+    <mesh
+      name="1-UP-DL_purple"
+      file="package://rebot_bench_sim/description/assets/printed/1-UP-DL_purple.stl"
+    />
+    <mesh
+      name="1-UP-DL_white"
+      file="package://rebot_bench_sim/description/assets/printed/1-UP-DL_white.stl"
+    />
+    <mesh
+      name="1-UP-DR_purple"
+      file="package://rebot_bench_sim/description/assets/printed/1-UP-DR_purple.stl"
+    />
+    <mesh
+      name="1-UP-DR_white"
+      file="package://rebot_bench_sim/description/assets/printed/1-UP-DR_white.stl"
+    />
+    <mesh
+      name="1-COVER-lower_purple"
+      file="package://rebot_bench_sim/description/assets/printed/1-COVER-lower_purple.stl"
+    />
+    <mesh
+      name="1-COVER-lower_white"
+      file="package://rebot_bench_sim/description/assets/printed/1-COVER-lower_white.stl"
+    />
+    <mesh
+      name="1-STOPPER-1_purple"
+      file="package://rebot_bench_sim/description/assets/printed/1-STOPPER-1_purple.stl"
+    />
+    <mesh
+      name="1-RAIL-BASE-2_purple"
+      file="package://rebot_bench_sim/description/assets/printed/1-RAIL-BASE-2_purple.stl"
+    />
+    <mesh
+      name="D435_mount_purple"
+      file="package://rebot_bench_sim/description/assets/printed/D435_mount_purple.stl"
+    />
+    <mesh
+      name="d435"
+      file="package://rebot_bench_sim/description/assets/realsense/d435.stl"
+    />
+  </asset>
+
+  <default>
+    <default class="rebot">
+      <!-- Visual geoms render but never collide and carry no mass: the
+           URDF inertials are the whole model, as in the base description. -->
+      <default class="visual">
+        <geom type="mesh" contype="0" conaffinity="0" group="2" density="0" />
+      </default>
+      <!-- Robot collision geoms touch the scene (contype 1 objects) but not
+           each other: the folded rest pose sits within millimetres of itself,
+           closer than MuJoCo's convex hulls allow. -->
+      <default class="collision">
+        <geom type="mesh" contype="2" conaffinity="1" group="3" />
+      </default>
+      <default class="rs06">
+        <joint armature="0.05" damping="1" />
+        <position forcerange="-36 36" />
+      </default>
+      <default class="rs00">
+        <joint armature="0.01" damping="0.2" />
+        <position forcerange="-14 14" />
+      </default>
+      <default class="gripper_motor">
+        <joint armature="0.002" damping="0.02" />
+        <position forcerange="-14 14" />
+      </default>
+      <default class="jaw">
+        <joint
+          type="slide"
+          axis="0 0 1"
+          range="0 0.04328416544945937"
+          damping="0.5"
+        />
+      </default>
+    </default>
+  </default>
+
+  <actuator>
+    <position
+      name="joint1"
+      joint="joint1"
+      class="rs06"
+      kp="50"
+      kv="3"
+      ctrlrange="-2.530727415392 2.530727415392"
+    />
+    <position
+      name="joint2"
+      joint="joint2"
+      class="rs06"
+      kp="150"
+      kv="10"
+      ctrlrange="0 3.543018381548"
+    />
+    <position
+      name="joint3"
+      joint="joint3"
+      class="rs06"
+      kp="150"
+      kv="10"
+      ctrlrange="0 4.171336912266"
+    />
+    <position
+      name="joint4"
+      joint="joint4"
+      class="rs00"
+      kp="50"
+      kv="5"
+      ctrlrange="-1.850049007114 1.500983156715"
+    />
+    <position
+      name="joint5"
+      joint="joint5"
+      class="rs00"
+      kp="50"
+      kv="4"
+      ctrlrange="-1.762782544514 1.884955592154"
+    />
+    <position
+      name="joint6"
+      joint="joint6"
+      class="rs00"
+      kp="50"
+      kv="4"
+      ctrlrange="-3.054326190990 3.054326190990"
+    />
+    <position
+      name="joint7"
+      joint="joint7"
+      class="gripper_motor"
+      kp="12"
+      kv="0.05"
+      ctrlrange="0 5.410520681182422"
+    />
+  </actuator>
+
+  <equality>
+    <!-- URDF <mimic joint="joint7" multiplier="0.008"> on both jaws. -->
+    <joint joint1="gripper_joint1" joint2="joint7" polycoef="0 0.008 0 0 0" />
+    <joint joint1="gripper_joint2" joint2="joint7" polycoef="0 0.008 0 0 0" />
+  </equality>
+</mujocoinclude>

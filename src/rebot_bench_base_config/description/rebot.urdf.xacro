@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Derived from Seeed reBot-DevArm; CERN-OHL-W-2.0. Modified by PickNik Inc., 2026-10-10: visual replacements and mock hardware selector. See NOTICE.md. Original SolidWorks exporter: Stephen Brawner (brawner@gmail.com), 1.6.0-4-g7f85cfe, build 1.6.7995.38578; http://wiki.ros.org/sw_urdf_exporter. -->
+<!-- Derived from Seeed reBot-DevArm; CERN-OHL-W-2.0. Modified by PickNik Inc., 2026-10-09 to 2026-10-11: visual replacements, hardware selectors and world placement. See NOTICE.md. Original SolidWorks exporter: Stephen Brawner (brawner@gmail.com), 1.6.0-4-g7f85cfe, build 1.6.7995.38578; http://wiki.ros.org/sw_urdf_exporter. -->
 <robot name="rebot_b601_rs" xmlns:xacro="http://www.ros.org/wiki/xacro">
   <xacro:arg name="hardware_interface" default="mock" />
   <!-- Real hardware only; ignored by mock. The bench runs one 1 Mbps bus. -->
@@ -15,8 +15,22 @@
        target and is capped by the motor's stored speed limit (0x7017). The
        gripper always uses motion. Unsupported values fail expansion. -->
   <xacro:arg name="arm_control_mode" default="motion" />
-  <!-- Unsupported selectors fail expansion. -->
-  <xacro:property name="hardware_plugins" value="${dict(mock='mock_components/GenericSystem', real='robstride_hardware_interface/RobstrideHardware')}" />
+  <!-- Placement of base_link and of the scene camera mount in `world`, as
+       "x y z" and URDF "roll pitch yaw". rebot_bench_sim sets both from its
+       bench layout; unset, both coincide with world. -->
+  <xacro:arg name="world_to_base_xyz" default="0 0 0" />
+  <xacro:arg name="world_to_base_rpy" default="0 0 0" />
+  <xacro:arg name="scene_camera_xyz" default="0 0 0" />
+  <xacro:arg name="scene_camera_rpy" default="0 0 0" />
+  <!-- Unsupported selectors fail expansion: the lookup below is evaluated
+       unconditionally, so none yields a plugin-less description. "mujoco"
+       emits no ros2_control
+       block and no colour optical frames: rebot_bench_sim's description, which
+       includes this file, supplies the MuJoCo hardware, and the simulator
+       publishes those frames from its camera sites. -->
+  <xacro:property name="hardware_plugins" value="${dict(mock='mock_components/GenericSystem', real='robstride_hardware_interface/RobstrideHardware', mujoco='')}" />
+  <xacro:property name="hardware_plugin" value="${hardware_plugins['$(arg hardware_interface)']}" />
+  <xacro:property name="simulator_owns_optical_frames" value="${'$(arg hardware_interface)' == 'mujoco'}" />
   <material name="rs_base_black">
     <color rgba="0.055 0.065 0.060 1" />
   </material>
@@ -421,6 +435,7 @@
   <joint name="world_to_base" type="fixed">
     <parent link="world" />
     <child link="base_link" />
+    <origin xyz="$(arg world_to_base_xyz)" rpy="$(arg world_to_base_rpy)" />
   </joint>
   <link name="d435_mount_link">
     <visual name="D435_mount">
@@ -455,24 +470,28 @@
     <child link="d435_link" />
     <origin xyz="0.0106 0.0175 0.0125" rpy="0 0 0" />
   </joint>
-  <link name="d435_color_optical_frame" />
-  <joint name="d435_optical_joint" type="fixed">
-    <parent link="d435_link" />
-    <child link="d435_color_optical_frame" />
-    <origin xyz="0 0.015 0" rpy="-1.5707963267948966 0 -1.5707963267948966" />
-  </joint>
+  <xacro:unless value="${simulator_owns_optical_frames}">
+    <link name="d435_color_optical_frame" />
+    <joint name="d435_optical_joint" type="fixed">
+      <parent link="d435_link" />
+      <child link="d435_color_optical_frame" />
+      <origin xyz="0 0.015 0" rpy="-1.5707963267948966 0 -1.5707963267948966" />
+    </joint>
+  </xacro:unless>
   <link name="scene_camera_link" />
   <joint name="scene_camera_mount_joint" type="fixed">
     <parent link="world" />
     <child link="scene_camera_link" />
-    <origin xyz="0 0 0" rpy="0 0 0" />
+    <origin xyz="$(arg scene_camera_xyz)" rpy="$(arg scene_camera_rpy)" />
   </joint>
-  <link name="scene_camera_color_optical_frame" />
-  <joint name="scene_camera_optical_joint" type="fixed">
-    <parent link="scene_camera_link" />
-    <child link="scene_camera_color_optical_frame" />
-    <origin xyz="0 0 0" rpy="-1.5707963267948966 0 -1.5707963267948966" />
-  </joint>
+  <xacro:unless value="${simulator_owns_optical_frames}">
+    <link name="scene_camera_color_optical_frame" />
+    <joint name="scene_camera_optical_joint" type="fixed">
+      <parent link="scene_camera_link" />
+      <child link="scene_camera_color_optical_frame" />
+      <origin xyz="0 0 0" rpy="-1.5707963267948966 0 -1.5707963267948966" />
+    </joint>
+  </xacro:unless>
   <!--
     One motor per joint on a single CAN bus, ids 1-7 matching joint1-joint7.
     actuator_type selects the motor's CAN quantization ranges, so RS06 on the
@@ -525,11 +544,10 @@
       </gpio>
     </xacro:if>
   </xacro:macro>
+  <xacro:if value="${hardware_plugin != ''}">
   <ros2_control name="RebotSystem" type="system">
     <hardware>
-      <!-- Indexed unconditionally so an unsupported selector fails expansion
-           rather than yielding a description with no hardware plugin. -->
-      <plugin>${hardware_plugins['$(arg hardware_interface)']}</plugin>
+      <plugin>${hardware_plugin}</plugin>
       <xacro:if value="${'$(arg hardware_interface)' == 'mock'}">
         <param name="calculate_dynamics">true</param>
       </xacro:if>
@@ -565,4 +583,5 @@
     <xacro:rebot_joint name="joint6" id="6" model="RS00" kp="50.0" kd="4.0" />
     <xacro:rebot_joint name="joint7" id="7" model="RS00" kp="12.0" kd="0.05" mode="motion" />
   </ros2_control>
+  </xacro:if>
 </robot>

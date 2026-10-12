@@ -160,3 +160,37 @@ def test_commanded_joints_keep_the_measured_motor_frame_limits(hardware_interfac
         # Every joint spans less than a full turn, which is what makes the
         # driver's power-cycle unwrapping read the same angle after a reboot.
         assert upper - lower < 2 * 3.141592653589793
+
+
+def test_mujoco_leaves_hardware_and_optical_frames_to_the_simulation():
+    # rebot_bench_sim supplies the MuJoCo ros2_control block, and the
+    # simulator publishes the optical frames from its camera sites; a URDF
+    # copy of either would give the joints two hardware owners or the frames
+    # two TF parents.
+    model = expand(hardware_interface="mujoco")
+    assert model.findall("ros2_control") == []
+    links = {link.get("name") for link in model.findall("link")}
+    assert "d435_color_optical_frame" not in links
+    assert "scene_camera_color_optical_frame" not in links
+    assert {"d435_link", "scene_camera_link"} <= links
+    for mappings in ({}, {"hardware_interface": "real"}):
+        links = {link.get("name") for link in expand(**mappings).findall("link")}
+        assert {"d435_color_optical_frame", "scene_camera_color_optical_frame"} <= links
+
+
+def test_base_and_scene_camera_placements_default_to_world_and_follow_arguments():
+    def origin(model, joint):
+        element = model.find(f"joint[@name='{joint}']/origin")
+        return element.get("xyz"), element.get("rpy")
+
+    model = expand()
+    assert origin(model, "world_to_base") == ("0 0 0", "0 0 0")
+    assert origin(model, "scene_camera_mount_joint") == ("0 0 0", "0 0 0")
+    model = expand(
+        world_to_base_xyz="0.1 -0.6 0",
+        world_to_base_rpy="0 0 1.57",
+        scene_camera_xyz="0.6 -0.25 0.7",
+        scene_camera_rpy="0 1.2 3.1",
+    )
+    assert origin(model, "world_to_base") == ("0.1 -0.6 0", "0 0 1.57")
+    assert origin(model, "scene_camera_mount_joint") == ("0.6 -0.25 0.7", "0 1.2 3.1")

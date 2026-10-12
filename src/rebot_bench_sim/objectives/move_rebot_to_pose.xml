@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Move reBot to Pose">
+  <BehaviorTree
+    ID="Move reBot to Pose"
+    _description="Plan and execute a reBot move to a Cartesian gripper pose, by default pointing straight down above the cubes. The pose is in base_link, so it stays reachable wherever the bench layout puts the robot."
+    _favorite="true"
+  >
+    <Control ID="Sequence">
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="base_link"
+        position_xyz="{position_xyz}"
+        orientation_xyzw="{orientation_xyzw}"
+        pose_stamped="{target_pose}"
+      />
+      <SubTree
+        ID="Move to Cartesian Pose"
+        _collapsed="true"
+        target_pose="{target_pose}"
+        ik_frame="gripper_end"
+        planning_group_name="manipulator"
+        velocity_scale_factor="0.5"
+        controller_names="joint_trajectory_admittance_controller"
+        controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+        execution_pipeline="jtac"
+        collision_check_params="[{override_scene_link_padding: true, link_padding: 0.0}]"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Move reBot to Pose">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="reBot Bench" />
+      </MetadataFields>
+      <input_port
+        name="position_xyz"
+        default="0.35;0.0;0.17"
+        type="geometry_msgs::msg::Vector3"
+      >
+        gripper_end position in base_link, metres.
+      </input_port>
+      <input_port
+        name="orientation_xyzw"
+        default="0.0;0.7071068;0.0;0.7071068"
+        type="geometry_msgs::msg::Quaternion"
+      >
+        gripper_end orientation in base_link. The default points the gripper
+        (gripper_end +X) straight down.
+      </input_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>

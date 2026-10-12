@@ -12,12 +12,16 @@ moveit_pro run --config-package rebot_bench_sim
 The arm defaults to `hardware_interface: mock`, using only
 `mock_components/GenericSystem`. Setting it to `real` selects the RobStride
 `ros2_control` driver and drives the seven motors over SocketCAN - see
-[Real hardware](#real-hardware). Any other value fails Xacro expansion rather
-than producing a description with no hardware plugin.
+[Real hardware](#real-hardware). `mujoco` is `rebot_bench_sim`'s selector: this
+description then emits no `ros2_control` block and no colour optical frames,
+which the sim's MuJoCo hardware supplies. Any other value fails Xacro expansion
+rather than producing a description with no hardware plugin.
 Cameras in this base package default off and may be enabled separately. The sim
-overlay forces mock arm hardware and replaces the camera launch hook with an
-empty launch: no physical cameras and no simulated imagery. Its `_sim` suffix
-means ros2_control mock execution, not physics simulation.
+is a MuJoCo twin of the bench: it renders both cameras and starts no camera
+drivers.
+The `world_to_base_xyz`/`_rpy` and `scene_camera_xyz`/`_rpy` xacro arguments
+place `base_link` and `scene_camera_link` in `world`; unset, both coincide with
+`world`. The sim sets them from its bench layout file.
 
 ## Try it
 
@@ -305,7 +309,8 @@ These are camera dependencies only.
 
 **Camera transforms are not calibrated.** The wrist D435 body and optical
 frame now follow the nominal assembly described above. `scene_camera_link`
-still coincides with `world`, with the standard ROS optical-axis rotation.
+coincides with `world` unless the `scene_camera_*` xacro arguments place it,
+with the standard ROS optical-axis rotation.
 Camera-driver TF publication stays disabled so the robot description owns
 these frames. Measure both camera-to-robot transforms before spatial
 perception or image-based motion. Neither camera has collision geometry yet.
@@ -350,7 +355,7 @@ Set the arm selector in `config/config.yaml`:
 publish state and can be moved by hand, and nothing is commanded. Use it for the
 first session on an arm whose zero, signs and wiring have not been confirmed
 through this config, then switch to `"true"`. `rebot_bench_sim` pins
-`hardware_interface: "mock"` and is unaffected by any of this.
+`hardware_interface: "mujoco"` and is unaffected by any of this.
 
 ### Host CAN bring-up
 
