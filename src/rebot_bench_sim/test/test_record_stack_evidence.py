@@ -72,9 +72,9 @@ def recorder(tmp_path, monkeypatch, recorder_module):
         node.video.stdin.close()
 
 
-def supply_frames(node, count, video):
-    node.frame_stamps = [index / 30 for index in range(count)]
-    if count:
+def supply_frames(node, stamps, video):
+    node.frame_stamps = stamps
+    if stamps:
         node.last_frame = np.zeros((8, 8, 3), dtype=np.uint8)
     if video:
         node.video = SimpleNamespace(stdin=io.BytesIO(), wait=Mock(return_value=0))
@@ -87,12 +87,22 @@ def assert_closed(node):
         node.video.wait.assert_called_once_with()
 
 
-@pytest.mark.parametrize("frame_count,video", [(0, False), (1, False), (1, True)])
+@pytest.mark.parametrize(
+    "stamps,video,message",
+    [
+        ([], False, "No live image or simulator pose evidence"),
+        ([0.0], False, "No live image or simulator pose evidence"),
+        ([0.0], True, "No live image or simulator pose evidence"),
+        ([0.5, 0.5], False, "Nonpositive elapsed camera frame time"),
+        ([0.0, 1.0, 1.0, 2.0], False, "No live image or simulator pose evidence"),
+        ([0.0, 1.0, 0.5, 2.0], True, "No live image or simulator pose evidence"),
+    ],
+)
 def test_insufficient_frames_report_clear_error_and_close_resources(
-    recorder, tmp_path, frame_count, video
+    recorder, tmp_path, stamps, video, message
 ):
-    supply_frames(recorder, frame_count, video)
-    with pytest.raises(RuntimeError, match="No live image or simulator pose evidence"):
+    supply_frames(recorder, stamps, video)
+    with pytest.raises(RuntimeError, match=message):
         recorder.finish()
     assert_closed(recorder)
     assert not (tmp_path / "result.json").exists()
@@ -104,8 +114,7 @@ def test_insufficient_frames_report_clear_error_and_close_resources(
 def test_nonpositive_frame_duration_reports_clear_error_and_closes_resources(
     recorder, tmp_path, stamps, video
 ):
-    supply_frames(recorder, 2, video)
-    recorder.frame_stamps = stamps
+    supply_frames(recorder, stamps, video)
     with pytest.raises(RuntimeError, match="Nonpositive elapsed camera frame time"):
         recorder.finish()
     assert_closed(recorder)
@@ -115,7 +124,7 @@ def test_nonpositive_frame_duration_reports_clear_error_and_closes_resources(
 
 @pytest.mark.parametrize("video", [False, True])
 def test_two_frames_write_timing_and_stack_report(recorder, tmp_path, video):
-    supply_frames(recorder, 2, video)
+    supply_frames(recorder, [0.0, 1 / 30], video)
     recorder.finish()
     assert_closed(recorder)
     report = json.loads((tmp_path / "result.json").read_text())
@@ -231,7 +240,7 @@ def test_failed_node_construction_shuts_down_ros_without_masking_error(
 
 @pytest.mark.parametrize("failing_close", ["truth", "stdin"])
 def test_finish_reaps_encoder_even_when_stream_close_fails(recorder, failing_close):
-    supply_frames(recorder, 2, True)
+    supply_frames(recorder, [0.0, 1 / 30], True)
     stream = recorder.truth_file if failing_close == "truth" else recorder.video.stdin
     error = OSError(failing_close + " close failed")
 

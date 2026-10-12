@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="reBot Stack Motion">
+  <BehaviorTree
+    ID="reBot Stack Motion"
+    _description="Simulation override of the base config's reBot Stack Motion: load the pick-and-stack planning scale factors from rebot_bench_sim's objectives/rebot_stack_motion.yaml (full speed)."
+  >
+    <Sequence>
+      <Action
+        ID="LoadMotionScales"
+        package_name="rebot_bench_sim"
+        file_path="objectives/rebot_stack_motion.yaml"
+        leg_kind="joint"
+        velocity_scale_factor="{joint_velocity_scale_factor}"
+        acceleration_scale_factor="{joint_acceleration_scale_factor}"
+      />
+      <Action
+        ID="LoadMotionScales"
+        package_name="rebot_bench_sim"
+        file_path="objectives/rebot_stack_motion.yaml"
+        leg_kind="cartesian"
+        velocity_scale_factor="{cartesian_velocity_scale_factor}"
+        acceleration_scale_factor="{cartesian_acceleration_scale_factor}"
+      />
+      <Action
+        ID="LoadMotionScales"
+        package_name="rebot_bench_sim"
+        file_path="objectives/rebot_stack_motion.yaml"
+        leg_kind="gripper"
+        velocity_scale_factor="{gripper_velocity_scale_factor}"
+        acceleration_scale_factor="{gripper_acceleration_scale_factor}"
+      />
+    </Sequence>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="reBot Stack Motion">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="reBot Bench" />
+      </MetadataFields>
+      <output_port name="joint_velocity_scale_factor" type="double" />
+      <output_port name="joint_acceleration_scale_factor" type="double" />
+      <output_port name="cartesian_velocity_scale_factor" type="double" />
+      <output_port name="cartesian_acceleration_scale_factor" type="double" />
+      <output_port name="gripper_velocity_scale_factor" type="double" />
+      <output_port name="gripper_acceleration_scale_factor" type="double" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

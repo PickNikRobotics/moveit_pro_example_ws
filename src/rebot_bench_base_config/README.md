@@ -24,8 +24,9 @@ place `base_link` and `scene_camera_link` in `world`. `config/config.yaml` sets
 them to this bench's calibration (see [the stack recipe](#sam3-blue-on-red-stack));
 only the xacro fallback, when they are unset, has both coincide with `world`.
 `wrist_camera_mount_xyz`/`_rpy` set the `d435_mount_joint` origin on
-`gripper_end`; unset, it is the nominal mount. The sim places all of them from
-its bench layout file instead, over the inherited calibration.
+`gripper_end`; unset, it is the nominal mount, which the real configuration
+keeps. The sim places all of them from its bench layout file instead, over the
+inherited calibration.
 
 ## Try it
 
@@ -172,11 +173,20 @@ runtime dependency is included.
 
 These approved motor-frame ranges replace upstream's model limits; some are
 wider and some narrower.
-**Planning limits are 0.3 rad/s and 0.6 rad/s² on joint1-joint6 and 3.0 rad/s and
-6.0 rad/s² on the gripper (joint7)**, below the stored motor speeds. Change them in
-`config/moveit/joint_limits.yaml`; joint7's URDF `velocity` limit and the gripper jog
-controller in `config/control/rebot.ros2_control.yaml` carry the same value. The waypoint Objectives default to 50% scaling
-(0.15 rad/s, 0.3 rad/s²). These are mock planning choices, not hardware tuning.
+**Planning limits are 0.6 rad/s and 1.2 rad/s² on joint1-joint6**, twice the measured
+teleop limits (0.3 rad/s, 0.6 rad/s²), **and 3.0 rad/s and 6.0 rad/s² on the gripper
+(joint7)**, its measured teleop limits, all below the stored motor speeds. The jaw is not
+doubled: at 6.0 rad/s it lagged its command by 0.151 rad, past the trajectory controller's
+0.15 rad `default_path_tolerance`, and that tolerance is one value for all seven joints, so
+raising it would also relax the arm. The arm and the twin use the same values. Change them
+in `config/moveit/joint_limits.yaml` and keep the URDF `velocity` limits in
+`description/rebot.urdf.xacro` equal (the finger mimics at 0.008 times joint7's); the jog
+controllers in `config/control/rebot.ros2_control.yaml` keep the measured teleop limits,
+and its trajectory controller brakes a canceled goal at those limits too
+(`stop_accelerations`, 0.6 rad/s² on the arm), not the faster planning ones. Size the
+bench speed guard from the planned peak (see [Speed settings](#sam3-blue-on-red-stack)).
+**Close Gripper**, which **Pick Blue Cube** runs first, plans at the full limits; the
+other waypoint Objectives default to 50% scaling (0.3 rad/s, 0.6 rad/s²).
 
 J7 is an explicitly bounded revolute coordinate (0 … 5.410520681182 rad) on a
 geometry-free link. The original fingers remain prismatic joints, both mimicking
@@ -315,7 +325,8 @@ These are camera dependencies only.
 calibration (see [bench calibration](#bench-calibration)), with the standard
 ROS optical-axis rotation; the xacro alone leaves it at `world`. The wrist D435
 body and optical frame follow the nominal assembly described above, not a
-measured mount. Camera-driver TF publication stays disabled so the robot
+measured mount: the provisional calibrated mount in `rebot_bench_sim`'s
+`config/bench_layout.yaml` is not applied on the real arm. Camera-driver TF publication stays disabled so the robot
 description owns these frames. Re-measure the scene camera after moving it, and
 measure the wrist mount before wrist-camera perception or image-based motion.
 Neither camera has collision geometry yet.
@@ -521,7 +532,7 @@ before the arm moves:
 - **Plan reBot Joint Move** plans from the current state to a named waypoint
   (`waypoint_name`) or, when that is empty, to `target_positions`, plus the exact
   reverse, and saves both as YAML without moving anything. At the default
-  `velocity_scale_factor` 0.15 every joint is capped at 0.045 rad/s.
+  `velocity_scale_factor` 0.075 every joint is capped at 0.045 rad/s.
 - **Execute reBot Joint Trajectory** loads a saved trajectory, validates it
   against the current planning scene and executes it unchanged. Run it from the pose
   it was planned from. Before every execution, compare the measured joint positions
@@ -555,8 +566,8 @@ real arm: `enable_cameras: true`, RGB at 30 fps (wrist 640x480, scene 640x400),
 depth off. Both streams have been seen live in the MoveIt Pro UI alongside the
 real arm.
 
-**Only the scene camera is calibrated, for this bench; the wrist camera mount is
-nominal and UNCALIBRATED** (see [bench calibration](#bench-calibration)). No depth
+**Only the scene camera is calibrated, for this bench; the real arm keeps the
+nominal, UNCALIBRATED wrist camera mount** (see [bench calibration](#bench-calibration)). No depth
 output is configured. Anything that needs metric accuracy from the wrist camera
 needs an extrinsic calibration first.
 
@@ -580,7 +591,8 @@ Known limitations:
 
 - The collision model refuses joint4 at -0.05 rad near home (`link2` - `link5`),
   although the real arm moves there cleanly. The SRDF is unchanged.
-- The wrist camera mount is uncalibrated (see [Cameras](#cameras)).
+- The wrist camera mount is nominal; the provisional calibrated mount is not
+  applied on the arm (see [Bench calibration](#bench-calibration)).
 - At home joint7 reads about -0.044 rad, below its 0 lower limit, and the UI
   warns about it.
 - After a disable at home, a joint can settle a few mrad away from the
@@ -594,8 +606,9 @@ Known limitations:
   before trusting commanded positions.
 - Measure the installed gripper's motor-angle-to-jaw-travel relation and closed
   offset to confirm the BOM-derived 8 mm/rad transmission.
-- Measure the actual D435/bracket transform, add its collision geometry, and
-  calibrate the wrist camera's optical extrinsics.
+- Apply a wrist camera calibration on the arm (the provisional six-pose solve in
+  `rebot_bench_sim`'s `config/bench_layout.yaml` is not applied here), and add
+  the D435/bracket collision geometry.
 - Validate the gripper kp/kd values and the per-joint velocity limits on the bench.
 
 ## Validation
@@ -663,7 +676,8 @@ jogging, verify movement and release-to-stop, then stop Teleoperate and rerun
 
 **Stack Blue on Red** is a durable Objective that locates both 50 mm cubes,
 picks blue, places it on red, opens the gripper, retreats and returns home. **Pick Blue Cube**
-runs just the survey and pick and leaves blue held above its starting location.
+runs just the location, reach check, survey and pick and leaves blue held above
+its starting location.
 **Locate reBot Cubes** is the perception-only entry point. Run **Clear reBot
 Stack Scene** to remove geometry left by a previous attempt before resetting
 or moving the cubes externally.
@@ -680,13 +694,36 @@ installation; installing these Objectives does not calibrate a camera.
 
 The tree uses `gripper_end` as the fingertip plane, with tool +X out of the
 fingers. Pick hover is 75 mm above world z=0, followed by a straight descent to
-15 mm. Closure is 45 mm (joint7=2.8125 rad); opening is 84 mm (5.25 rad). The
+35 mm. Closure is 45 mm (joint7=2.8125 rad); opening is 84 mm (5.25 rad). The
 place hover is 110 mm with 25 degrees of tilt toward the base to reach the far
-cubes; an IK-checked vertical fallback avoids wrist collisions near the wall. Release uses 5 degrees of tilt and a 69.1 mm fingertip height. The short
-place descent and retreat are planned Cartesian paths. Every arm leg preserves
-the last commanded joint7 position, then validates the seven-joint trajectory
-against the scene. These numbers are shared by hardware and simulation.
-The real jaw rests closed, so **Pick Blue Cube** first opens it at home with a
+cubes; an IK-checked vertical fallback avoids arm collisions near the wall,
+whose planning box stands 5 mm proud of the real face so no plan ends grazing it. Release uses 5 degrees of tilt and an 87.0 mm fingertip height that rests the tilted cube on red before opening. The short
+place descent and the retreat to the place hover are planned Cartesian paths. The pick and
+place legs hold the preceding jaw command, the grasp's 2.8125 rad while holding,
+and validate the seven-joint trajectory against the scene. On the bench the cube
+stops the jaw about 0.05 rad wider (measured about 2.861 rad), within the
+0.10 rad stale-start guard below, so these legs keep commanding 2.8125 rad and
+keep the squeeze. Every leg then starts
+from the controller's previous command rather than the measured state:
+`AnchorTrajectoryToCommand` shifts the validated trajectory onto the last
+commanded endpoint, holds every joint it leaves out at its command, and logs any
+start it replaces with measurement, which it does for a missing endpoint or one
+more than 0.10 rad from measured state. After a leg aborts mid-execution its
+endpoint is not committed, so the next leg starts from the last committed
+command, up to 0.10 rad from where the arm stopped, and from the measured state
+beyond that. The waypoint legs (the survey and every
+return home) leave joint7 out, so it holds its command, or its measured position
+when that command is stale, without moving. A gripper move plans the jaw alone
+from its measured position and the anchor keeps that start, so a retry after a
+canceled opening really reopens it. Only successful execution commits the
+exact planned endpoint for the next leg, and `RecordRebotTrajectory` saves each
+trajectory before it is sent. These numbers are shared by hardware and
+simulation.
+**Pick Blue Cube** first locates the cubes, adds them to the planning scene and
+checks reach (see **Failures** below), all before any motion. It then runs
+**Close Gripper**, planned natively from measured state, so the commanded home it then sets for all seven joints holds for the jaw
+even after an aborted run left the jaw command stale. The real jaw rests closed, so
+it then opens it at home with a
 gripper-only move, before any arm motion, then reads the measured joint7 and
 requires at least 5.1 rad: the 5.25 rad open command less the controller's
 0.15 rad start tolerance, so the arm legs that hold the open command are
@@ -694,20 +731,41 @@ accepted. The controller can report a canceled opening as success, so a short
 opening is retried once and then fails the Objective with the measured value;
 the survey never starts on a closed jaw. Both openings, at home and at the
 release, are this one check, **reBot Open Jaw**. After the release, the tree
-retreats and returns home (`Zeroed Rest`). If the release opening fails or stays
+retreats and returns home (`Zeroed Rest`); **Stack Blue on Red** then closes the
+empty jaw there with **Close Gripper**, so a successful stack ends with all seven joints at home. If the release opening fails or stays
 short after its retry, the tree still attempts the detach, the planned retreat
 and the return home, and then reports failure; it does not treat a release
 timeout or a canceled opening as a successful stack. That retreat holds joint7
 at its measured position rather than the open command, so the controller
-accepts a goal that starts where the jaw stalled. A rejected retreat stops
-there and remains a failure for the supervising application to handle.
+accepts a goal that starts where the jaw stalled.
+
+**Failures.** Once the cubes are located, and before any jaw or arm motion,
+**reBot Check Stack Reach** solves IK for the pick hover, the pick, the place
+hover and the place. If one has no solution the Objective fails without moving,
+with a message naming the cube and where it sits, such as `blue cube at x=0.277
+y=0.253 is outside the arm's reach`. Any failed leg after that, an IK or planning failure
+included, sends **Stack Blue on Red** home (`Zeroed Rest`) holding the jaw at
+its command, then closes the jaw with **Close Gripper** (**reBot Recover Home**),
+and the Objective still reports failure. That return home starts like any leg
+after an abort: from the last committed command, up to 0.10 rad from where the
+arm stopped, or from the measured state beyond that. The jaw counts as holding
+the cube from just before the grasp closes until the release opening is
+confirmed. A failure in that window ends at home with the jaw held at its last
+command, and **Close Gripper** does not run: open if the grasp never moved, the
+45 mm grasp width (2.8125 rad) once it closed, since the cube's stall stays
+within the 0.10 rad stale-start guard, or where it stalled after a failed
+release opening. Only a failure of that return home
+leaves the arm where it stopped, and an empty jaw closes even then, as it must
+after a leg that failed at home, where the one-point plan home is refused.
 
 **Speed settings.** [`objectives/rebot_stack_motion.yaml`](objectives/rebot_stack_motion.yaml)
 holds one velocity and one acceleration scale factor per kind of leg, as
 fractions of the limits in `config/moveit/joint_limits.yaml`: `joint` (the
 survey, the pick and place approaches and the return home), `cartesian` (the
 pick descent and lift, the place descent and both release retreats) and
-`gripper` (the opening at home, the grasp and the release). **Pick Blue Cube**,
+`gripper` (the opening at home, the grasp and the release). The two jaw closings
+at home, first and last, are the native **Close Gripper**, which plans to the closed
+limit at its own full scaling. **Pick Blue Cube**,
 **Stack Blue on Red** and **Prepare reBot Stack** load it at the start of every
 run through **reBot Stack Motion** and the `LoadMotionScales` Behavior, and
 every leg plans at its kind's factors. To change a speed, edit the file and
@@ -715,18 +773,23 @@ rebuild `rebot_bench_base_config` (a symlink-install build reads the source
 file directly); a missing entry or a factor outside (0, 1] fails the run before
 any motion.
 
-The defaults are the speeds these legs ran at on the arm: joint 0.25 and
-cartesian 0.15, as in the first hardware run, and gripper 0.1, the opening that
-worked there (a faster opening was canceled). No leg is faster than on the arm.
-They do not by themselves keep the arm under the bench's 0.17 rad/s guard: the
-2026-10-12 trip was a jump at the start of a leg planned from the sagged
-measured state, and that jump does not scale with the planning speed. Anchoring
-each leg to the previous command removes it, and is a separate change. Lower
-or raise the factors on the bench through this file, against measured joint
-speeds rather than planned ones. `test/test_stack_objectives.cpp` runs the
-shipped trees with the shipped file and fails if a leg misses its kind's
-setting, including the recovery retreat and the return home, or is faster than
-on the arm.
+Every factor ships at 1.0, the full limits, on the arm and in simulation. Size
+the bench's joint speed guard from the planned peak before running the arm:
+measured peaks run about 1.8 times the planned peak on the arm joints and 1.3 to
+2 times on the gripper, so at 1.0 (0.6 rad/s planned on joints 1-6) an arm guard
+needs about 1.1 rad/s, and the gripper's 3.0 rad/s about 4 to 6 rad/s. To keep the
+0.17 rad/s guard instead, lower `joint` and `cartesian` to 0.15 or less
+(0.15 x 0.6 rad/s x 1.8 = 0.16 rad/s), and size the
+gripper factor against its guard the same way; an earlier hardware run had a
+gripper opening faster than 0.1 canceled, which **reBot Open Jaw** detects and
+fails on. Lowering a factor lowers every leg of its kind. The 2026-10-12 trip
+was a jump at the start of a leg planned from the sagged measured state, which
+does not scale with planning speed; anchoring each leg to the previous command,
+above, removes it. `test/test_stack_objectives.cpp` runs the shipped trees with
+the shipped file and fails if a leg misses its kind's setting, including the
+recovery retreat and the return home. `rebot_bench_sim`
+overrides **reBot Stack Motion** with its own settings file, so the simulator
+stays at full speed whatever the arm's values; see its README.
 
 Deploy into a MoveIt Pro user workspace with the runtime's ROS and proprietary
 overlay already sourced. The SAM3 Behaviors come from `moveit_pro_sam3`, which
@@ -754,7 +817,10 @@ runtime, invoke the ordinary MCP tool:
 frame with the 2026-10-11 ChArUco calibration of this bench:
 `world_to_base_xyz`/`_rpy` `0.7259 0.0216 -0.003` / `0 0 3.1380` and
 `scene_camera_xyz`/`_rpy` `-0.075 0.069 0.565` / `0.169 0.975 0.246`. The base's
-x, y and yaw come from the hand-eye solve. The base plate is bolted level, so
+x, y and yaw come from the hand-eye solve, through the provisional calibrated
+wrist camera mount in `rebot_bench_sim`'s `config/bench_layout.yaml`. This
+configuration does not apply that mount and keeps the nominal one; applying it
+on the arm is follow-up work. The base plate is bolted level, so
 roll and pitch are 0; it sits on the bench top under the 3 mm mat, so z is
 -0.003, as in `rebot_bench_sim`'s layout. The camera pose is its board pose. Both, and the hard-coded bench and wall boxes in **reBot Stack Scene**,
 are specific to this installation. After moving the arm, the scene camera or
@@ -771,3 +837,71 @@ The real configuration uses only `rebot_bench_base_config` and
 validation may use its explicitly marked grasp proxy and therefore establishes
 perception/planning/Objective execution, not physical grip fidelity or calibrated
 hardware placement accuracy. The hardware run is a separate validation.
+
+## Running the real arm
+
+How to run **Stack Blue on Red** on the bench arm. The arm has no brakes: torque
+may only be released at home ([Real hardware](#real-hardware)).
+
+**Before starting**
+
+1. Robot power on and `can0` up at 1 Mbps ([Host CAN bring-up](#host-can-bring-up)).
+2. The arm at home: joint1-joint6 each within 0.080 rad of zero (joint7 is the
+   jaw and is not part of that test), every motor below 45 °C, and no motor or
+   communication fault on `~/robstride_state`.
+3. Both 50 mm cubes apart on the mat inside the calibrated camera area
+   ([Bench calibration](#bench-calibration)), and nobody inside the arm's reach.
+
+**Deployment.** Select the real arm ([Selecting it](#selecting-it)) and run
+without `--instance` so the drivers container shares the host network and sees
+`can0` ([Run it without `--instance`](#run-it-without---instance)). SAM3
+perception needs CUDA: give the runtime container NVIDIA GPU access, or
+**Locate reBot Cubes** fails loading `libcuda.so.1`. Bring up both RGB cameras
+([Optional real RGB cameras](#optional-real-rgb-cameras)) and check each
+publishes at about 30 Hz before a run. With `torque_enable: "false"`, enable all
+seven motors at home with `~/set_torque` (`std_srvs/srv/SetBool`, `data: true`);
+the service cannot enable the jaw alone.
+
+**Run it.** In the MoveIt Pro UI, select **Objectives → Stack Blue on Red** and
+press **Run** once, then watch the arm and the motor temperatures. A good run
+closes the jaw at home, opens it, surveys, picks blue, places it on red, opens,
+retreats, returns to **Zeroed Rest** and closes the jaw. Check physically that
+blue is on red; a successful result alone does not prove the cube stayed in the
+fingers. Disable torque only once the arm is back home within 0.080 rad, and
+confirm all seven motors report disabled.
+
+**Heat.** Keep runs short and supervise temperatures throughout. Return home
+before any motor reaches about 55 °C; if the arm is already on its way home,
+let that leg finish. Cool at home with torque disabled until every motor is
+below about 45 °C before enabling again.
+
+**If something goes wrong**
+
+- **Stop** cancels the Objective. It does not release torque and does not send
+  the arm home; a failed leg does (see **Failures** above). Keep clear and leave torque on away from home.
+- Do not restart the driver, take the deployment down or cut power while the
+  arm is raised. Return it home with a planned, collision-checked move, then
+  disable at home.
+- Do not clear faults, reboot or re-enable motors automatically after an
+  encoder, undervoltage or CAN fault; find the cause first. A second fault on
+  the same joint in one session ends the session.
+- A refused jaw opening usually means a stale starting command, not a tight
+  tolerance. Keep the **Close Gripper** that **Pick Blue Cube** runs first, and
+  do not widen path tolerances to hide it.
+
+**Settings.** Change these at home with torque disabled, and restart the
+runtime after a YAML change; Objective XML is reread on every run.
+
+| Setting | Where | Value |
+|---|---|---|
+| Arm velocity, acceleration | `config/moveit/joint_limits.yaml`, joint1-joint6 | 0.6 rad/s, 1.2 rad/s² |
+| Jaw velocity, acceleration | same file, joint7 | 3.0 rad/s, 6.0 rad/s² |
+| Finger mimic velocity | `description/rebot.urdf.xacro`, `gripper_joint1`/`2` | 0.024 m/s (0.008 × joint7) |
+| Leg speed scales | `objectives/rebot_stack_motion.yaml` | 1.0 for every kind |
+| Pick hold depth | `objectives/rebot_check_stack_reach.xml`, `TransformPose` to `{pick}` | `0;0;-0.015`: fingertips 35 mm above the mat |
+| Matched release | `objectives/rebot_check_stack_reach.xml`, `TransformPose` to `{place}` | `-0.000871557;0;0.037045702` at 5° tilt |
+| Path tolerance | `config/control/rebot.ros2_control.yaml`, `default_path_tolerance` | 0.15 rad, every joint |
+| Speed guard | the bench's own joint speed monitor | planned peak × 1.8 on the arm (1.08 rad/s at 0.6), 1.3-2 × on the jaw |
+
+Pick depth and release move together: the release keeps the same cube contact
+only for the 35 mm grasp, so changing one alone can drive the cube into red.

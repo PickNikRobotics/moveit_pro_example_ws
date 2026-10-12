@@ -12,8 +12,9 @@
             ID="reBot Open Jaw"
             gripper_velocity_scale_factor="{gripper_velocity_scale_factor}"
             gripper_acceleration_scale_factor="{gripper_acceleration_scale_factor}"
+            commanded_state="{commanded_state}"
           />
-          <Script code="release_ok=true" />
+          <Script code="release_ok=true; holding:=false" />
         </Sequence>
         <AlwaysSuccess />
       </Fallback>
@@ -32,6 +33,7 @@
           gripper_position="5.25"
           velocity_scale_factor="{cartesian_velocity_scale_factor}"
           acceleration_scale_factor="{cartesian_acceleration_scale_factor}"
+          commanded_state="{commanded_state}"
         />
         <!-- reBot Move Straight, holding the measured jaw instead of a command. -->
         <Sequence>
@@ -76,18 +78,36 @@
             cartesian_space_step="0.005"
           />
           <Action
+            ID="GetJointState"
+            planning_scene="{scene}"
+            planning_group_name="manipulator_and_gripper"
+            robot_joint_state="{measured_state}"
+          />
+          <Action
+            ID="AnchorTrajectoryToCommand"
+            measured_state="{measured_state}"
+            joint_trajectory="{trajectory}"
+            commanded_state="{commanded_state}"
+            anchored_trajectory="{anchored}"
+            end_state="{candidate_endpoint}"
+          />
+          <Action ID="RecordRebotTrajectory" trajectory="{anchored}" />
+          <Action
             ID="ExecuteTrajectory"
-            joint_trajectory_msg="{trajectory}"
+            joint_trajectory_msg="{anchored}"
             execution_pipeline="jtac"
             controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+            goal_duration_tolerance="-1"
           />
+          <Action ID="Script" code="commanded_state := candidate_endpoint" />
         </Sequence>
       </IfThenElse>
       <SubTree
-        ID="Move reBot to Waypoint"
+        ID="reBot Move to Arm Waypoint"
         waypoint_name="Zeroed Rest"
         velocity_scale_factor="{joint_velocity_scale_factor}"
         acceleration_scale_factor="{joint_acceleration_scale_factor}"
+        commanded_state="{commanded_state}"
       />
       <ScriptCondition code="release_ok &amp;&amp; detach_ok" />
     </Sequence>
@@ -99,6 +119,14 @@
         <Metadata subcategory="reBot Bench" />
       </MetadataFields>
       <input_port name="place_hover" type="geometry_msgs::msg::PoseStamped" />
+      <output_port name="holding" default="{holding}" type="bool">
+        Set false once the jaw opening is confirmed, releasing the cube.
+      </output_port>
+      <inout_port
+        name="commanded_state"
+        default="{commanded_state}"
+        type="moveit_msgs::msg::RobotState"
+      />
       <input_port name="joint_velocity_scale_factor" type="double">
         Joint legs' planning velocity scale factor, from reBot Stack Motion.
       </input_port>

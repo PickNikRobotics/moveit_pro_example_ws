@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="reBot Check Stack Reach">
+  <BehaviorTree
+    ID="reBot Check Stack Reach"
+    _description="Compute the pick and place poses and check each for reach. Fails, naming the cube and where it sits, when one is out of reach. No motion is executed."
+  >
+    <Sequence>
+      <!-- gripper_end is the fingertip plane; +X points out of the fingers. -->
+      <Action
+        ID="TransformPose"
+        input_pose="{blue_top}"
+        translation_xyz="0;0;0.025"
+        quaternion_xyzw="0;0.7071067811865475;0;0.7071067811865475"
+        output_pose="{pick_hover}"
+      />
+      <Action
+        ID="TransformPose"
+        input_pose="{blue_top}"
+        translation_xyz="0;0;-0.015"
+        quaternion_xyzw="0;0.7071067811865475;0;0.7071067811865475"
+        output_pose="{pick}"
+      />
+      <!-- The cube centre is 10 mm along tool +X from the fingertips after the 35 mm pick.
+           At 5 degrees release tilt, compensate that offset in red_top axes;
+           place the tilted cube bottom on red before opening, without a drop. -->
+      <Action
+        ID="TransformPose"
+        input_pose="{red_top}"
+        translation_xyz="-0.000871557;0;0.037045702"
+        quaternion_xyzw="0;0.6755902076156602;0;0.7372773368101241"
+        output_pose="{place}"
+      />
+      <Action ID="GetCurrentPlanningScene" planning_scene_msg="{scene}" />
+      <Fallback>
+        <Sequence>
+          <Action ID="ResetVector" vector="{path}" />
+          <Action
+            ID="PushBackVector"
+            input_vector="{path}"
+            element="{pick_hover}"
+            output_vector="{path}"
+          />
+          <Action
+            ID="ComputeInverseKinematics"
+            target_poses="{path}"
+            tip_links="gripper_end"
+            planning_scene_msg="{scene}"
+            planning_group_name="manipulator"
+            ik_timeout_s="0.5"
+            solve_mode="optimize_distance"
+            optimization_timeout_s="0.1"
+            link_padding="0.0"
+            solution="{goal}"
+          />
+          <Action ID="ResetVector" vector="{path}" />
+          <Action
+            ID="PushBackVector"
+            input_vector="{path}"
+            element="{pick}"
+            output_vector="{path}"
+          />
+          <Action
+            ID="ComputeInverseKinematics"
+            target_poses="{path}"
+            tip_links="gripper_end"
+            planning_scene_msg="{scene}"
+            planning_group_name="manipulator"
+            ik_timeout_s="0.5"
+            solve_mode="optimize_distance"
+            optimization_timeout_s="0.1"
+            link_padding="0.0"
+            solution="{goal}"
+          />
+        </Sequence>
+        <Action ID="ReportUnreachableCube" cube="blue cube" pose="{blue_top}" />
+      </Fallback>
+      <Fallback>
+        <Sequence>
+          <SubTree
+            ID="reBot Select Place Hover"
+            red_top="{red_top}"
+            place_hover="{place_hover}"
+          />
+          <Action ID="ResetVector" vector="{path}" />
+          <Action
+            ID="PushBackVector"
+            input_vector="{path}"
+            element="{place}"
+            output_vector="{path}"
+          />
+          <Action
+            ID="ComputeInverseKinematics"
+            target_poses="{path}"
+            tip_links="gripper_end"
+            planning_scene_msg="{scene}"
+            planning_group_name="manipulator"
+            ik_timeout_s="0.5"
+            solve_mode="optimize_distance"
+            optimization_timeout_s="0.1"
+            link_padding="0.0"
+            solution="{goal}"
+          />
+        </Sequence>
+        <Action ID="ReportUnreachableCube" cube="red cube" pose="{red_top}" />
+      </Fallback>
+    </Sequence>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="reBot Check Stack Reach">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="reBot Bench" />
+      </MetadataFields>
+      <input_port name="blue_top" type="geometry_msgs::msg::PoseStamped" />
+      <input_port name="red_top" type="geometry_msgs::msg::PoseStamped" />
+      <output_port name="pick_hover" type="geometry_msgs::msg::PoseStamped" />
+      <output_port name="pick" type="geometry_msgs::msg::PoseStamped" />
+      <output_port name="place" type="geometry_msgs::msg::PoseStamped" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

@@ -89,6 +89,50 @@ def test_objective_libraries_add_mujoco_to_the_base_ones(config):
         assert library.share_path.is_dir()
 
 
+def test_sim_shadows_the_stack_speeds_at_full_speed(config):
+    import xml.etree.ElementTree as ET
+
+    import yaml
+
+    # The Objective library a later entry provides wins a filename collision, so
+    # the sim's reBot Stack Motion replaces the base config's.
+    libraries = list(config.objectives.objective_library_paths.values())
+    holders = [
+        library
+        for library in libraries
+        if (library.share_path / "rebot_stack_motion.xml").is_file()
+    ]
+    assert [library.package_name for library in holders] == [
+        "rebot_bench_base_config",
+        "rebot_bench_sim",
+    ]
+    winner = [library.share_path / "rebot_stack_motion.xml" for library in holders]
+
+    def factors(xml_path):
+        loads = ET.parse(xml_path).findall('.//Action[@ID="LoadMotionScales"]')
+        assert {load.get("leg_kind") for load in loads} == {
+            "joint",
+            "cartesian",
+            "gripper",
+        }
+        (package,) = {load.get("package_name") for load in loads}
+        (file_path,) = {load.get("file_path") for load in loads}
+        share = next(
+            library.share_path.parent
+            for library in libraries
+            if library.package_name == package
+        )
+        return package, yaml.safe_load((share / file_path).read_text())
+
+    package, sim = factors(winner[-1])
+    assert package == "rebot_bench_sim"
+    assert all(value == 1.0 for leg in sim.values() for value in leg.values())
+    # The base config's own settings stay in its package.
+    package, real = factors(winner[0])
+    assert package == "rebot_bench_base_config"
+    assert set(real) == {"joint", "cartesian", "gripper"}
+
+
 def test_behavior_loaders_keep_the_base_ones_and_add_mujoco(config):
     core = list(config.objectives.behavior_loader_plugins["core"])
     assert core[-1] == "moveit_pro::behaviors::MujocoBehaviorsLoader"

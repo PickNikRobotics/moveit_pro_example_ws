@@ -33,7 +33,8 @@ joint_trajectory_admittance_controller:
     ee_frames: [gripper_end]
     # No ft_sensor_names: there is no force/torque sensor, so this runs as a plain trajectory
     # controller without admittance.
-    # One per joint in group order (joint1-joint7), matching config/moveit/joint_limits.yaml.
+    # One per joint in group order (joint1-joint7): the measured teleop limits, the braking
+    # proven on the bench. The arm's planning limits in config/moveit/joint_limits.yaml are twice these.
     stop_accelerations: [0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 6.0]
     # Both apply to every joint and are sized for motion (impedance) mode, which sends no gravity
     # feedforward: a loaded joint lags and settles short by load torque / kp, measured at up to

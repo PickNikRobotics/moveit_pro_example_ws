@@ -25,7 +25,9 @@
   <!-- Radians throughout; eulerseq XYZ is URDF rpy, so layout and URDF
        orientations copy straight across. -->
   <compiler angle="radian" eulerseq="XYZ" autolimits="true" />
-  <option timestep="0.003" integrator="implicitfast" />
+  <!-- Remove friction-dimension drift from soft contacts under a resting stack.
+       NoSlip postprocessing preserves the contact/friction material parameters. -->
+  <option timestep="0.003" integrator="implicitfast" noslip_iterations="10" />
 
   <include file="rebot_assets.xml" />
 

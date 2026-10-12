@@ -1,0 +1,20 @@
+# Simulation planning speed of the pick-and-stack Objectives, as fractions of
+# the joint limits in rebot_bench_base_config/config/moveit/joint_limits.yaml.
+# This file's rebot_stack_motion.xml shadows the base config's (a later
+# objective library wins a filename collision), so the twin plans every leg at
+# full speed whatever the arm's factors in
+# rebot_bench_base_config/objectives/rebot_stack_motion.yaml. Edit this file to
+# change the simulation's speed, then rebuild rebot_bench_sim. README.md
+# explains the split.
+
+joint:
+  velocity_scale_factor: 1.0
+  acceleration_scale_factor: 1.0
+
+cartesian:
+  velocity_scale_factor: 1.0
+  acceleration_scale_factor: 1.0
+
+gripper:
+  velocity_scale_factor: 1.0
+  acceleration_scale_factor: 1.0

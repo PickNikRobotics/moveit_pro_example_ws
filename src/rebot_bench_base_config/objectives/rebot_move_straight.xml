@@ -40,11 +40,28 @@
         cartesian_space_step="0.005"
       />
       <Action
+        ID="GetJointState"
+        planning_scene="{scene}"
+        planning_group_name="manipulator_and_gripper"
+        robot_joint_state="{measured_state}"
+      />
+      <Action
+        ID="AnchorTrajectoryToCommand"
+        measured_state="{measured_state}"
+        joint_trajectory="{trajectory}"
+        commanded_state="{commanded_state}"
+        anchored_trajectory="{anchored}"
+        end_state="{candidate_endpoint}"
+      />
+      <Action ID="RecordRebotTrajectory" trajectory="{anchored}" />
+      <Action
         ID="ExecuteTrajectory"
-        joint_trajectory_msg="{trajectory}"
+        joint_trajectory_msg="{anchored}"
         execution_pipeline="jtac"
         controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+        goal_duration_tolerance="-1"
       />
+      <Action ID="Script" code="commanded_state := candidate_endpoint" />
     </Sequence>
   </BehaviorTree>
   <TreeNodesModel>
@@ -65,6 +82,11 @@
         Fraction of the joint acceleration limits to plan at: the pick-and-stack
         setting.
       </input_port>
+      <inout_port
+        name="commanded_state"
+        default="{commanded_state}"
+        type="moveit_msgs::msg::RobotState"
+      />
     </SubTree>
   </TreeNodesModel>
 </root>

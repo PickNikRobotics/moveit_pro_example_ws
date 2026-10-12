@@ -63,10 +63,13 @@ BT::NodeStatus LoadMotionScales::tick()
   if (!inputs)
     return fail("Provide the settings package, file and leg kind: " + inputs.error());
   const auto& [package_name, file_path, leg_kind] = inputs.value();
+  const auto relative_path = std::filesystem::path(file_path).lexically_normal();
+  if (relative_path.is_absolute() || (!relative_path.empty() && *relative_path.begin() == ".."))
+    return fail("file_path must be relative to the share directory of " + package_name + ": " + file_path);
   try
   {
     const auto scales = readMotionScales(
-        (std::filesystem::path(ament_index_cpp::get_package_share_directory(package_name)) / file_path).string(),
+        (std::filesystem::path(ament_index_cpp::get_package_share_directory(package_name)) / relative_path).string(),
         leg_kind);
     setOutput("velocity_scale_factor", scales.velocity);
     setOutput("acceleration_scale_factor", scales.acceleration);

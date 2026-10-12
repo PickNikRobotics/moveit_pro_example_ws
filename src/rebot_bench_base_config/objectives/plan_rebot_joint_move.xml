@@ -6,7 +6,7 @@
     exact reverse, and saves both trajectories without moving the arm, so their
     per-joint peak speed and duration can be read before Execute reBot Joint
     Trajectory runs them. Peak speed is bounded by velocity_scale_factor times
-    the joint_limits.yaml max_velocity (0.3 rad/s).
+    the joint_limits.yaml max_velocity (0.6 rad/s).
   -->
   <BehaviorTree
     ID="Plan reBot Joint Move"
@@ -118,12 +118,12 @@
       <input_port name="waypoint_name" default="" type="std::string">
         Named waypoint to plan to; when empty, target_positions is used instead.
       </input_port>
-      <input_port name="velocity_scale_factor" default="0.15" type="double">
-        Fraction of the 0.3 rad/s joint velocity limit; 0.15 caps each joint at
+      <input_port name="velocity_scale_factor" default="0.075" type="double">
+        Fraction of the 0.6 rad/s joint velocity limit; 0.075 caps each joint at
         0.045 rad/s.
       </input_port>
-      <input_port name="acceleration_scale_factor" default="0.10" type="double">
-        Fraction of the 0.6 rad/s^2 joint acceleration limit.
+      <input_port name="acceleration_scale_factor" default="0.05" type="double">
+        Fraction of the 1.2 rad/s^2 joint acceleration limit.
       </input_port>
       <input_port
         name="out_file"

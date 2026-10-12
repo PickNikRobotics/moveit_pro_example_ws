@@ -15,6 +15,7 @@
   <depend>pluginlib</depend>
   <depend>cv_bridge</depend>
   <depend>sensor_msgs</depend>
+  <depend>moveit_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>moveit_studio_vision_msgs</depend>
   <depend>libopencv-dev</depend>
@@ -22,6 +23,7 @@
   <depend>yaml-cpp</depend>
   <test_depend>moveit_pro_test_utils</test_depend>
   <test_depend>ament_cmake_gtest</test_depend>
+  <test_depend>ament_cmake_gmock</test_depend>
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_clang_format</test_depend>
   <test_depend>ament_clang_tidy</test_depend>

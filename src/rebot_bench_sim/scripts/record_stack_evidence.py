@@ -251,6 +251,11 @@ class Recorder(Node):
             raise RuntimeError(
                 "Nonpositive elapsed camera frame time; invalid evidence"
             )
+        if any(
+            later <= earlier
+            for earlier, later in zip(self.frame_stamps, self.frame_stamps[1:])
+        ):
+            raise RuntimeError("No live image or simulator pose evidence received")
         cv2.imwrite(
             str(args.output / "after.png"),
             cv2.cvtColor(self.last_frame, cv2.COLOR_RGB2BGR),

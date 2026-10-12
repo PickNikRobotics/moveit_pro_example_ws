@@ -27,11 +27,14 @@
 // POSSIBILITY OF SUCH DAMAGE.
 #include <gtest/gtest.h>
 
+#include <unistd.h>
+#include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <moveit_pro_test_utils/ros_test.hpp>
 #include <rebot_bench_behaviors/is_joint_at_least.hpp>
 #include <rebot_bench_behaviors/load_motion_scales.hpp>
+#include <rebot_bench_behaviors/report_unreachable_cube.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
 #include <stdexcept>
 #include <string>
@@ -49,16 +52,29 @@ protected:
   }
   void TearDown() override
   {
-    std::filesystem::remove(settings);
+    std::filesystem::remove_all(prefix);
   }
   std::string write(const std::string& text) const
   {
+    std::filesystem::create_directories(settings.parent_path());
     std::ofstream(settings) << text;
     return settings.string();
   }
+  // Installs `package` into `prefix`, as colcon would, so ament_index finds its share directory.
+  void installPackage() const
+  {
+    const auto index = prefix / "share/ament_index/resource_index/packages";
+    std::filesystem::create_directories(index);
+    std::ofstream(index / package);
+    const char* installed = std::getenv("AMENT_PREFIX_PATH");
+    setenv("AMENT_PREFIX_PATH", (prefix.string() + (installed ? ":" + std::string(installed) : "")).c_str(), 1);
+  }
   BT::NodeConfiguration config;
   std::shared_ptr<moveit_pro::behaviors::BehaviorContext> context;
-  std::filesystem::path settings = std::filesystem::temp_directory_path() / "rebot_stack_checks_test.yaml";
+  const std::string package = "rebot_stack_checks_test";
+  const std::filesystem::path prefix =
+      std::filesystem::temp_directory_path() / ("rebot_stack_checks_" + std::to_string(getpid()));
+  const std::filesystem::path settings = prefix / "share" / package / "objectives/motion.yaml";
 };
 
 TEST_F(StackChecksTest, ReadsEachLegKindsFactors)
@@ -85,17 +101,35 @@ TEST_F(StackChecksTest, RejectsMissingOrInvalidSettings)
                std::runtime_error);
 }
 
-TEST_F(StackChecksTest, LoadMotionScalesSetsBothOutputs)
+TEST_F(StackChecksTest, LoadMotionScalesReadsTheFileFromThePackageShare)
 {
-  config.input_ports = { { "package_name", "rebot_bench_behaviors" },
-                         { "file_path",
-                           write("cartesian: {velocity_scale_factor: 0.15, acceleration_scale_factor: 0.1}") },
+  installPackage();
+  write("cartesian: {velocity_scale_factor: 0.15, acceleration_scale_factor: 0.1}");
+  config.input_ports = { { "package_name", package },
+                         { "file_path", "objectives/motion.yaml" },
                          { "leg_kind", "cartesian" } };
   config.output_ports = { { "velocity_scale_factor", "{velocity}" }, { "acceleration_scale_factor", "{acceleration}" } };
   rebot_bench_behaviors::LoadMotionScales behavior("LoadMotionScales", config, context);
   ASSERT_EQ(behavior.executeTick(), BT::NodeStatus::SUCCESS);
   EXPECT_DOUBLE_EQ(config.blackboard->get<double>("velocity"), 0.15);
   EXPECT_DOUBLE_EQ(config.blackboard->get<double>("acceleration"), 0.1);
+}
+
+TEST_F(StackChecksTest, LoadMotionScalesRefusesAPathOutsideThePackage)
+{
+  installPackage();
+  const auto absolute_path = write("cartesian: {velocity_scale_factor: 0.15, acceleration_scale_factor: 0.1}");
+  const auto sibling = prefix / "share/other_pkg/motion.yaml";
+  std::filesystem::create_directories(sibling.parent_path());
+  std::filesystem::copy_file(settings, sibling);
+  config.output_ports = { { "velocity_scale_factor", "{velocity}" }, { "acceleration_scale_factor", "{acceleration}" } };
+  for (const auto& path : { absolute_path, std::string("../other_pkg/motion.yaml"),
+                            std::string("objectives/../../other_pkg/motion.yaml") })
+  {
+    config.input_ports = { { "package_name", package }, { "file_path", path }, { "leg_kind", "cartesian" } };
+    rebot_bench_behaviors::LoadMotionScales behavior("LoadMotionScales", config, context);
+    EXPECT_EQ(behavior.executeTick(), BT::NodeStatus::FAILURE) << path;
+  }
 }
 
 TEST_F(StackChecksTest, LoadMotionScalesFailsOnAnUnknownPackage)
@@ -137,5 +171,18 @@ TEST_F(JointCheckTest, RejectsAShortOpening)
 TEST_F(JointCheckTest, RejectsAStateWithoutTheJoint)
 {
   EXPECT_EQ(check(5.25, "joint6"), BT::NodeStatus::FAILURE);
+}
+
+TEST_F(StackChecksTest, UnreachableCubeNamesTheCubeAndWhereItSits)
+{
+  geometry_msgs::msg::PoseStamped pose;
+  pose.pose.position.x = 0.2771;
+  pose.pose.position.y = 0.2534;
+  EXPECT_EQ(rebot_bench_behaviors::unreachableCubeMessage("blue cube", pose),
+            "blue cube at x=0.277 y=0.253 is outside the arm's reach");
+  config.blackboard->set("pose", pose);
+  config.input_ports = { { "cube", "blue cube" }, { "pose", "{pose}" } };
+  rebot_bench_behaviors::ReportUnreachableCube behavior("ReportUnreachableCube", config, context);
+  EXPECT_EQ(behavior.executeTick(), BT::NodeStatus::FAILURE);
 }
 }  // namespace

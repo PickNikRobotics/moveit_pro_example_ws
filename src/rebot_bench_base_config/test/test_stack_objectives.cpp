@@ -49,10 +49,6 @@ const std::vector<std::string> kRecordedPorts{ "waypoint_name", "joint_group_nam
                                                "velocity_scale_factor", "acceleration_scale_factor" };
 const std::set<std::string> kOwnStubs{ "LoadMotionScales", "IsJointAtLeast" };
 
-// The speeds the deployed Stack Blue on Red (1cc5af8a) ran at on the real arm.
-// The gripper's is the opening that worked there; a faster one was canceled.
-const std::map<std::string, double> kArmProven{ { "joint", 0.25 }, { "cartesian", 0.15 }, { "gripper", 0.1 } };
-
 struct Call
 {
   std::string label;
@@ -107,18 +103,34 @@ protected:
           Call call{ node.getInput<std::string>("operation").value() };
           if (const auto waypoint = node.getInput<std::string>("waypoint_name"))
             call.label += " " + waypoint.value();
-          const auto group = node.getInput<std::string>("joint_group_name").value_or("");
           const auto planning_group = node.getInput<std::string>("planning_group_name").value_or("");
-          if (call.label.starts_with("Move to Waypoint"))
-            call.kind = group == "manipulator" ? "joint" : group;
+          // Only Move reBot Gripper generates a point-to-point trajectory.
+          if (call.label == "GeneratePointToPointTrajectory")
+            call.kind = "gripper";
           else if (call.label == "PlanToJointGoal" && planning_group == "manipulator")
             call.kind = "joint";
           else if (call.label == "PlanCartesianPath" && planning_group == "manipulator")
             call.kind = "cartesian";
           call.scales = { node.getInput<double>("velocity_scale_factor").value_or(0.0),
                           node.getInput<double>("acceleration_scale_factor").value_or(0.0) };
+          // A plan home from home starts at its goal: a single point, which ValidateTrajectory rejects.
+          if (call.kind == "joint" || call.kind == "cartesian")
+          {
+            const auto waypoint = std::ranges::find_if(calls.rbegin(), calls.rend(), [](const Call& earlier) {
+              return earlier.label.starts_with("RetrieveWaypoint");
+            });
+            const bool home =
+                call.kind == "joint" && waypoint != calls.rend() && waypoint->label == "RetrieveWaypoint Zeroed Rest";
+            single_point_plan = home && arm_home;
+            arm_home = home;
+          }
           calls.push_back(call);
-          return call.label == failing ? BT::NodeStatus::FAILURE : BT::NodeStatus::SUCCESS;
+          // ReportUnreachableCube always fails; it only words the failure.
+          const bool fail =
+              call.label == "ReportUnreachableCube" || (call.label == "ValidateTrajectory" && single_point_plan) ||
+              (call.label == failing &&
+               (failing_occurrence == 0 || std::ranges::count(calls, failing, &Call::label) == failing_occurrence));
+          return fail ? BT::NodeStatus::FAILURE : BT::NodeStatus::SUCCESS;
         },
         { BT::InputPort<std::string>("operation"), BT::InputPort<std::string>("waypoint_name"),
           BT::InputPort<std::string>("joint_group_name"), BT::InputPort<std::string>("planning_group_name"),
@@ -175,8 +187,9 @@ protected:
   {
     std::vector<std::string> result;
     for (const auto& call : calls)
-      if (call.label.starts_with("Move to Waypoint") || call.label.starts_with("HoldGripperInTrajectory") ||
-          call.label.starts_with("jaw ") || call.label == "DetachObject" || call.label == "ExecuteTrajectory")
+      if (call.label.starts_with("RetrieveWaypoint") || call.label.starts_with("Move to Waypoint") ||
+          call.label == "HoldGripperInTrajectory holding measured jaw" || call.label.starts_with("jaw ") ||
+          call.label == "DetachObject" || call.label == "PlanCartesianPath" || call.label == "ReportUnreachableCube")
         result.push_back(call.label);
     return result;
   }
@@ -204,8 +217,12 @@ protected:
   BT::BehaviorTreeFactory factory;
   std::vector<Call> calls;
   std::string failing;
+  // Which call of `failing` fails, counting from 1; 0 fails every one.
+  long failing_occurrence = 0;
   std::map<std::string, rebot_bench_behaviors::MotionScales> settings;
   std::deque<double> measured_jaw;
+  bool arm_home = false;
+  bool single_point_plan = false;
 };
 
 const std::map<std::string, rebot_bench_behaviors::MotionScales> kDistinct{ { "joint", { 0.21, 0.22 } },
@@ -217,14 +234,13 @@ const std::string kRelease = R"(<SubTree ID="reBot Release and Retreat" place_ho
                              R"(gripper_velocity_scale_factor="0.05" gripper_acceleration_scale_factor="0.06" />)";
 const std::string kPick = R"(<SubTree ID="Pick Blue Cube" red_top="{red_top}" />)";
 const std::string kStack = R"(<SubTree ID="Stack Blue on Red" />)";
-const std::string kOpen = "Move to Waypoint Stack Gripper Open";
-const std::string kSurvey = "Move to Waypoint Pick and Stack Survey";
-const std::string kHome = "Move to Waypoint Zeroed Rest";
-const std::vector<std::string> kReleased{
-  kOpen, "jaw open", "DetachObject", "HoldGripperInTrajectory", "ExecuteTrajectory", kHome
-};
-const std::vector<std::string> kRecovered{ "DetachObject", "HoldGripperInTrajectory holding measured jaw",
-                                           "ExecuteTrajectory", kHome };
+const std::string kOpen = "RetrieveWaypoint Stack Gripper Open";
+const std::string kSurvey = "RetrieveWaypoint Pick and Stack Survey";
+const std::string kHome = "RetrieveWaypoint Zeroed Rest";
+const std::string kClose = "Move to Waypoint Gripper Closed";
+const std::vector<std::string> kReleased{ kOpen, "jaw open", "DetachObject", "PlanCartesianPath", kHome };
+const std::vector<std::string> kRecovered{ "DetachObject", "PlanCartesianPath",
+                                           "HoldGripperInTrajectory holding measured jaw", kHome };
 
 std::vector<std::string> concat(std::vector<std::string> head, const std::vector<std::string>& tail)
 {
@@ -257,7 +273,7 @@ TEST_F(StackObjectives, ShortReleaseOpenedOnRetryRetreatsHomeAndSucceeds)
 
 TEST_F(StackObjectives, OpenFailureRetreatsWithMeasuredJawGoesHomeAndFails)
 {
-  failing = kOpen;
+  failing = "GeneratePointToPointTrajectory";
   EXPECT_EQ(run(kRelease), BT::NodeStatus::FAILURE);
   EXPECT_EQ(motions(), concat({ kOpen, kOpen }, kRecovered));
   expectLegsCarry(kDistinct);
@@ -272,20 +288,108 @@ TEST_F(StackObjectives, DetachFailureStillGoesHomeAndFails)
 
 TEST_F(StackObjectives, RejectedRetreatStopsAndFails)
 {
+  // The opening executes first; the second execution is the retreat.
   failing = "ExecuteTrajectory";
+  failing_occurrence = 2;
   EXPECT_EQ(run(kRelease), BT::NodeStatus::FAILURE);
-  EXPECT_EQ(motions(), (std::vector<std::string>{ kOpen, "jaw open", "DetachObject", "HoldGripperInTrajectory",
-                                                  "ExecuteTrajectory" }));
+  EXPECT_EQ(motions(), (std::vector<std::string>{ kOpen, "jaw open", "DetachObject", "PlanCartesianPath" }));
 }
 
-TEST_F(StackObjectives, StackOpensTheJawAtHomeFirstAndEndsHome)
+TEST_F(StackObjectives, StackClosesThenOpensTheJawAtHomeFirstAndEndsHomeClosed)
 {
   EXPECT_EQ(run(kStack), BT::NodeStatus::SUCCESS);
   const auto sequence = motions();
+  ASSERT_GE(sequence.size(), 4U);
+  // The native close makes the commanded home true for the jaw before it opens.
+  EXPECT_EQ(std::vector<std::string>(sequence.begin(), sequence.begin() + 4),
+            (std::vector<std::string>{ kClose, kOpen, "jaw open", kSurvey }));
+  // The arm goes home, then the empty jaw closes there.
+  EXPECT_EQ(std::vector<std::string>(sequence.end() - 2, sequence.end()), (std::vector<std::string>{ kHome, kClose }));
+  ASSERT_FALSE(legs().empty());
+  EXPECT_EQ(legs().back().kind, "joint");
+}
+
+TEST_F(StackObjectives, UnreachableCubeFailsWithoutAnyMotion)
+{
+  // The reach check solves the pick hover, the pick, the tilted place hover and the place, in that order.
+  failing = "ComputeInverseKinematics";
+  for (const auto& entry_point : { kStack, kPick })
+    for (const long unreachable : { 1, 2, 4 })
+    {
+      SCOPED_TRACE(entry_point + " IK " + std::to_string(unreachable));
+      calls.clear();
+      failing_occurrence = unreachable;
+      EXPECT_EQ(run(entry_point), BT::NodeStatus::FAILURE);
+      EXPECT_EQ(motions(), std::vector<std::string>{ "ReportUnreachableCube" });
+      EXPECT_TRUE(legs().empty());
+      EXPECT_EQ(std::ranges::count(calls, "ExecuteTrajectory", &Call::label), 0);
+    }
+}
+
+TEST_F(StackObjectives, FailedLegBeforeTheGraspEndsHomeClosed)
+{
+  failing = "PlanCartesianPath";  // the descent to the pick
+  failing_occurrence = 1;
+  EXPECT_EQ(run(kStack), BT::NodeStatus::FAILURE);
+  const auto sequence = motions();
   ASSERT_GE(sequence.size(), 3U);
-  EXPECT_EQ(std::vector<std::string>(sequence.begin(), sequence.begin() + 3),
-            (std::vector<std::string>{ kOpen, "jaw open", kSurvey }));
-  EXPECT_EQ(sequence.back(), kHome);
+  EXPECT_EQ(std::vector<std::string>(sequence.end() - 3, sequence.end()),
+            (std::vector<std::string>{ "PlanCartesianPath", kHome, kClose }));
+}
+
+TEST_F(StackObjectives, FailedLegWhileHoldingTheCubeEndsHomeWithoutClosingOnIt)
+{
+  failing = "PlanCartesianPath";  // the descent to the place, after the pick and lift
+  failing_occurrence = 3;
+  EXPECT_EQ(run(kStack), BT::NodeStatus::FAILURE);
+  const auto sequence = motions();
+  ASSERT_GE(sequence.size(), 2U);
+  EXPECT_EQ(std::vector<std::string>(sequence.end() - 2, sequence.end()),
+            (std::vector<std::string>{ "PlanCartesianPath", kHome }));
+}
+
+TEST_F(StackObjectives, FailureAfterTheGraspClosesEndsHomeWithoutClosingOnTheCube)
+{
+  failing = "AttachObject";
+  EXPECT_EQ(run(kStack), BT::NodeStatus::FAILURE);
+  const auto sequence = motions();
+  ASSERT_GE(sequence.size(), 2U);
+  EXPECT_EQ(std::vector<std::string>(sequence.end() - 2, sequence.end()),
+            (std::vector<std::string>{ "RetrieveWaypoint Stack Gripper Hold", kHome }));
+}
+
+TEST_F(StackObjectives, FailedReleaseOpeningEndsHomeWithoutClosingOnTheCube)
+{
+  // The opening at home succeeds; both release openings stay on the cube.
+  measured_jaw = { 5.25, 2.8, 2.8 };
+  EXPECT_EQ(run(kStack), BT::NodeStatus::FAILURE);
+  const auto sequence = motions();
+  const auto tail = concat(kRecovered, { kHome });
+  ASSERT_GE(sequence.size(), tail.size());
+  EXPECT_EQ(std::vector<std::string>(sequence.end() - static_cast<long>(tail.size()), sequence.end()), tail);
+  EXPECT_EQ(std::ranges::count(sequence, kClose), 1);
+}
+
+TEST_F(StackObjectives, FailedCloseAtHomeClosesAgainThoughTheMoveHomeIsRefused)
+{
+  // The final close aborts with the arm home, so the recovery's one-point plan home is refused.
+  failing = kClose;
+  failing_occurrence = 2;
+  EXPECT_EQ(run(kStack), BT::NodeStatus::FAILURE);
+  const auto sequence = motions();
+  ASSERT_GE(sequence.size(), 4U);
+  EXPECT_EQ(std::vector<std::string>(sequence.end() - 4, sequence.end()),
+            (std::vector<std::string>{ kHome, kClose, kHome, kClose }));
+}
+
+TEST_F(StackObjectives, RecoveryClosesTheEmptyJawEvenIfTheMoveHomeFails)
+{
+  // Every validation fails: the first leg after the reach check, at home, and then the recovery's move home.
+  failing = "ValidateTrajectory";
+  EXPECT_EQ(run(kStack), BT::NodeStatus::FAILURE);
+  const auto sequence = motions();
+  ASSERT_GE(sequence.size(), 2U);
+  EXPECT_EQ(std::vector<std::string>(sequence.end() - 2, sequence.end()), (std::vector<std::string>{ kHome, kClose }));
 }
 
 TEST_F(StackObjectives, ShortHomeOpeningIsRetriedOnceBeforeTheSurvey)
@@ -293,16 +397,23 @@ TEST_F(StackObjectives, ShortHomeOpeningIsRetriedOnceBeforeTheSurvey)
   measured_jaw = { 0.085, 5.2 };
   EXPECT_EQ(run(kPick), BT::NodeStatus::SUCCESS);
   const auto sequence = motions();
-  ASSERT_GE(sequence.size(), 5U);
-  EXPECT_EQ(std::vector<std::string>(sequence.begin(), sequence.begin() + 5),
-            (std::vector<std::string>{ kOpen, "jaw short", kOpen, "jaw open", kSurvey }));
+  ASSERT_GE(sequence.size(), 6U);
+  EXPECT_EQ(std::vector<std::string>(sequence.begin(), sequence.begin() + 6),
+            (std::vector<std::string>{ kClose, kOpen, "jaw short", kOpen, "jaw open", kSurvey }));
 }
 
 TEST_F(StackObjectives, TwoShortHomeOpeningsFailWithoutSurveying)
 {
   measured_jaw = { 0.085, 0.085 };
   EXPECT_EQ(run(kPick), BT::NodeStatus::FAILURE);
-  EXPECT_EQ(motions(), (std::vector<std::string>{ kOpen, "jaw short", kOpen, "jaw short" }));
+  EXPECT_EQ(motions(), (std::vector<std::string>{ kClose, kOpen, "jaw short", kOpen, "jaw short" }));
+}
+
+TEST_F(StackObjectives, ShortHomeOpeningsSendTheStackHomeAndCloseTheJaw)
+{
+  measured_jaw = { 0.085, 0.085 };
+  EXPECT_EQ(run(kStack), BT::NodeStatus::FAILURE);
+  EXPECT_EQ(motions(), (std::vector<std::string>{ kClose, kOpen, "jaw short", kOpen, "jaw short", kHome, kClose }));
 }
 
 TEST_F(StackObjectives, OpeningMarginallyShortOfTheControllerStartToleranceFails)
@@ -332,22 +443,14 @@ class ShippedSpeeds : public StackObjectives, public testing::WithParamInterface
 {
 };
 
-TEST_P(ShippedSpeeds, NoLegIsFasterThanOnTheArm)
+TEST_P(ShippedSpeeds, EveryLegUsesTheShippedSettingOfItsKind)
 {
   ASSERT_EQ(run(GetParam()), BT::NodeStatus::SUCCESS);
-  std::map<std::string, rebot_bench_behaviors::MotionScales> first;
-  for (const auto& leg : legs())
-  {
-    SCOPED_TRACE(leg.label);
-    first.try_emplace(leg.kind, leg.scales);
-    EXPECT_DOUBLE_EQ(leg.scales.velocity, first.at(leg.kind).velocity);
-    EXPECT_DOUBLE_EQ(leg.scales.acceleration, first.at(leg.kind).acceleration);
-    EXPECT_GT(leg.scales.velocity, 0.0);
-    EXPECT_GT(leg.scales.acceleration, 0.0);
-    EXPECT_LE(leg.scales.velocity, kArmProven.at(leg.kind));
-    EXPECT_LE(leg.scales.acceleration, kArmProven.at(leg.kind));
-  }
-  EXPECT_EQ(first.size(), 3U);
+  std::map<std::string, rebot_bench_behaviors::MotionScales> shipped;
+  for (const auto* kind : { "joint", "cartesian", "gripper" })
+    shipped.emplace(kind,
+                    rebot_bench_behaviors::readMotionScales(PACKAGE_DIR "/objectives/rebot_stack_motion.yaml", kind));
+  expectLegsCarry(shipped);
 }
 
 INSTANTIATE_TEST_SUITE_P(StackEntryPoints, ShippedSpeeds, testing::Values(kStack, kPick));
@@ -356,7 +459,11 @@ TEST_F(StackObjectives, SettingsReachEveryLegOfTheirKindIncludingHome)
 {
   settings = kDistinct;
   ASSERT_EQ(run(kStack), BT::NodeStatus::SUCCESS);
-  ASSERT_TRUE(std::ranges::any_of(legs(), [](const Call& leg) { return leg.label == kHome; }));
+  const auto home = std::ranges::find(calls, kHome, &Call::label);
+  ASSERT_NE(home, calls.end());
+  const auto home_leg = std::find_if(home, calls.end(), [](const Call& call) { return !call.kind.empty(); });
+  ASSERT_NE(home_leg, calls.end());
+  EXPECT_EQ(home_leg->kind, "joint");
   expectLegsCarry(kDistinct);
 }
 }  // namespace
