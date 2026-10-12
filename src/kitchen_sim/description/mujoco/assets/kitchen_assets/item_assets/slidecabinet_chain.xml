@@ -1,3 +1,5 @@
+<!-- From the Gymnasium-Robotics kitchen_franka assets (Copyright 2019 The DSuite Authors,
+     Apache License, Version 2.0; ../LICENSE.md). Modified by PickNik Inc., 2026. -->
 <mujocoinclude>
   <body name="slide" childclass="slidecabinet">
     <geom pos="-0.135 0 -0.108" size="0.1338 0.18 0.012" type="box" />
