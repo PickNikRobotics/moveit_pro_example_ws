@@ -7,7 +7,8 @@ physics, with Beluga AMCL localization and Nav2 navigation.
 
 `market_sim` is a standalone configuration. Its robot description, planning groups, controllers,
 odometry bridge and scan and base-velocity nodes are copied from the Franka Mobile FR3 Duo
-configuration in `moveit_pro_franka_ws` (`mobile_fr3_duo_mock` and `mobile_fr3_duo_sim`). The robot
+configuration in `moveit_pro_franka_ws` (`mobile_fr3_duo_mock` and `mobile_fr3_duo_sim`, at commit
+`940aa42`); `mjcf/NOTICE` lists the third-party sources of the robot's MuJoCo model. The robot
 macros come from the vendored `franka_description`. Around the robot it adds:
 
 - its MuJoCo scene, with the keyframes below;
