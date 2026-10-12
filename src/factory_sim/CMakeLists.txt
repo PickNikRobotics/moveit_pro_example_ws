@@ -3,6 +3,30 @@ project(factory_sim)
 
 find_package(ament_cmake REQUIRED)
 find_package(picknik_accessories REQUIRED)
+find_package(moveit_pro_behavior_interface REQUIRED)
+find_package(pluginlib REQUIRED)
+find_package(moveit_task_constructor_msgs REQUIRED)
+find_package(moveit_msgs REQUIRED)
+find_package(behaviortree_cpp_picknik REQUIRED)
+find_package(sensor_msgs REQUIRED)
+
+add_library(factory_pick_behaviors SHARED src/is_bracket_pick_start_current.cpp
+            src/get_joint_state_from_topic.cpp
+            src/pad_planning_scene_for_motion.cpp
+            src/is_lookahead_enabled.cpp
+            src/register_pick_behaviors.cpp)
+target_compile_features(factory_pick_behaviors PUBLIC cxx_std_20)
+target_include_directories(
+  factory_pick_behaviors
+  PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+         $<INSTALL_INTERFACE:include>)
+ament_target_dependencies(factory_pick_behaviors moveit_pro_behavior_interface
+                          pluginlib moveit_task_constructor_msgs moveit_msgs
+                          behaviortree_cpp_picknik sensor_msgs)
+pluginlib_export_plugin_description_file(moveit_pro_behavior_interface
+                                        factory_pick_behaviors.xml)
+install(TARGETS factory_pick_behaviors LIBRARY DESTINATION lib)
+install(DIRECTORY include/ DESTINATION include)
 
 install(
   DIRECTORY
@@ -32,6 +56,7 @@ install(DIRECTORY "${PICKNIK_ACCESSORIES_PATH}"
 
 if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
+  find_package(ament_cmake_pytest REQUIRED)
   find_package(moveit_pro_behavior REQUIRED)
   find_package(moveit_pro_behavior_interface REQUIRED)
   find_package(moveit_pro_test_utils REQUIRED)
@@ -39,6 +64,16 @@ if(BUILD_TESTING)
   find_package(pluginlib REQUIRED)
   find_package(yaml-cpp REQUIRED)
   ament_add_gtest(test_bin_configuration test/test_bin_configuration.cpp)
+  ament_add_gtest(test_parallel_pick test/test_parallel_pick.cpp)
+  target_compile_features(test_parallel_pick PRIVATE cxx_std_20)
+  target_compile_definitions(test_parallel_pick PRIVATE
+    FACTORY_OBJECTIVES_DIR="${CMAKE_CURRENT_SOURCE_DIR}/objectives")
+  target_link_libraries(test_parallel_pick factory_pick_behaviors
+                        moveit_pro_behavior::setup_mtc_from_solution
+                        moveit_pro_behavior::repeat_unless_failure_each_tick
+                        moveit_pro_test_utils::test_utils)
+  ament_add_pytest_test(parallel_pick_benchmark_test
+                        test/test_parallel_pick_benchmark.py)
   target_compile_features(test_bin_configuration PRIVATE cxx_std_20)
   target_compile_definitions(test_bin_configuration PRIVATE
     FACTORY_CONFIG_DIR="${CMAKE_CURRENT_SOURCE_DIR}/config"

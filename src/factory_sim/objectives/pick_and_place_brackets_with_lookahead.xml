@@ -1,0 +1,327 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Pick and Place Brackets with Lookahead"
+>
+  <BehaviorTree
+    ID="Pick and Place Brackets with Lookahead"
+    _description="Picks brackets through the jig while preparing the next pick from the Home handoff. Sequential mode uses the same motions."
+  >
+    <Control
+      ID="Sequence"
+      _onFailure="next_ready := false; next_empty := false; jig_approach_ready := false; jig_contact_ready := false; jig_retreat_ready := false; right_bin_ready := false; home_return_ready := false"
+      _onHalted="next_ready := false; next_empty := false; jig_approach_ready := false; jig_contact_ready := false; jig_retreat_ready := false; right_bin_ready := false; home_return_ready := false"
+    >
+      <Control ID="IfThenElse" name="Bracket count bounds">
+        <Condition
+          ID="ScriptCondition"
+          code="num_cycles &gt;= 1 &amp;&amp; num_cycles &lt;= 3"
+        />
+        <Action ID="AlwaysSuccess" />
+        <Control ID="Sequence">
+          <Action
+            ID="LogMessage"
+            log_level="error"
+            message="Bracket cycle num_cycles must be between 1 and 3 for the three-bracket factory scene."
+          />
+          <Action ID="AlwaysFailure" />
+        </Control>
+      </Control>
+      <Action ID="ClearSnapshot" />
+      <SubTree ID="Reset Planning Scene" _collapsed="true" />
+      <SubTree ID="Setup Initial Planning Scene" _collapsed="true" />
+      <SubTree
+        ID="Add Bins to Planning Scene"
+        _collapsed="true"
+        pick_guess_pose="{pick_guess_pose}"
+        pick_crop_pose="{pick_crop_pose}"
+        drop_pose="{drop_pose}"
+      />
+      <SubTree ID="Visualize Bins and Jig" _collapsed="true" />
+      <SubTree ID="Indicate Jig Empty" _collapsed="true" />
+      <SubTree ID="Automated Return Held Tool" _collapsed="true" />
+      <SubTree
+        ID="Automated Tool Changing Example Subtree"
+        _collapsed="true"
+        pickup_tool="suction_gripper"
+        tool_1_name="suction_gripper"
+        tool_1_pickup_site="suction_gripper_attach_site"
+        tool_1_return_site="suction_gripper_holder_site"
+        tool_2_name="inspector"
+        tool_2_pickup_site="inspection_tool_attach_site"
+        tool_2_return_site="inspection_tool_holder_site"
+        tool_names="suction_gripper;inspector"
+      />
+      <Control ID="IfThenElse">
+        <Condition ID="IsLookaheadEnabled" enabled="{near_jig_wait}" />
+        <Action ID="AlwaysSuccess" />
+        <SubTree
+          ID="Move to Named Waypoint"
+          _collapsed="true"
+          waypoint_name="Home"
+        />
+      </Control>
+      <Action
+        ID="Script"
+        code="cycle := 0; next_ready := false; next_cycle := -1; fallback_count := 0; handoff_reason := ''; bin_empty := false; next_empty := false; jig_approach_ready := false; jig_contact_ready := false; jig_retreat_ready := false; right_bin_ready := false; home_return_ready := false"
+      />
+      <Decorator ID="RepeatUnlessFailureEachTick" num_cycles="{num_cycles}">
+        <Decorator if="!bin_empty" else="SUCCESS" ID="Precondition">
+          <Control ID="Sequence">
+            <Action ID="Script" code="cycle = cycle + 1" />
+            <Action ID="StopwatchBegin" timepoint="{t_cycle}" />
+            <Action ID="Script" code="handoff_reason = ''" />
+            <Control ID="Fallback">
+              <Control ID="Sequence">
+                <Condition
+                  ID="ScriptCondition"
+                  code="next_ready &amp;&amp; next_cycle == cycle"
+                />
+                <SubTree
+                  ID="Wait for Bracket Pick Handoff"
+                  solution="{next_solution}"
+                  planning_scene="{handoff_scene}"
+                  reason="{handoff_reason}"
+                />
+                <Action
+                  ID="ConvertMtcSolutionToJointTrajectory"
+                  solution="{next_solution}"
+                  joint_group="manipulator"
+                  joint_trajectory="{candidate_trajectory}"
+                />
+                <Action
+                  ID="ValidateTrajectory"
+                  planning_scene_msg="{handoff_scene}"
+                  planning_group_name="manipulator"
+                  joint_trajectory_msg="{candidate_trajectory}"
+                />
+                <Action
+                  ID="Script"
+                  code="registered_pose := next_pose; selected_solution := next_solution"
+                />
+                <Action
+                  ID="LogMessage"
+                  log_level="info"
+                  message="HANDOFF: bracket pick candidate accepted."
+                />
+              </Control>
+              <Control ID="Sequence">
+                <Action
+                  ID="Script"
+                  code="next_ready = false; next_empty = false"
+                />
+                <Decorator
+                  ID="Precondition"
+                  if="handoff_reason != ''"
+                  else="SUCCESS"
+                >
+                  <Action
+                    ID="LogMessage"
+                    log_level="info"
+                    message="{handoff_reason}"
+                  />
+                </Decorator>
+                <Action
+                  ID="LogMessage"
+                  log_level="info"
+                  message="HANDOFF: bracket pick requires planning from the current state."
+                />
+                <Action
+                  ID="Script"
+                  code="fallback_count = fallback_count + 1"
+                />
+                <SubTree
+                  ID="Look for Bracket Part or Empty Bin"
+                  _collapsed="true"
+                  pick_guess_pose="{pick_guess_pose}"
+                  pick_crop_pose="{pick_crop_pose}"
+                  registered_pose="{registered_pose}"
+                  part_found="{part_found}"
+                />
+                <Control ID="IfThenElse">
+                  <Condition ID="IsLookaheadEnabled" enabled="{part_found}" />
+                  <SubTree
+                    ID="Plan Bracket Pick"
+                    _collapsed="true"
+                    bracket_part_pose="{registered_pose}"
+                    solution="{selected_solution}"
+                  />
+                  <Control ID="Sequence">
+                    <Action ID="Script" code="bin_empty = true" />
+                    <Action
+                      ID="LogMessage"
+                      log_level="info"
+                      message="Left bin empty; bracket batch complete."
+                    />
+                  </Control>
+                </Control>
+              </Control>
+            </Control>
+            <Decorator if="!bin_empty" else="SUCCESS" ID="Precondition">
+              <Control ID="Sequence">
+                <Action ID="Script" code="next_ready = false" />
+                <SubTree
+                  ID="Execute Prepared Bracket Pick"
+                  _collapsed="true"
+                  bracket_part_pose="{registered_pose}"
+                  solution="{selected_solution}"
+                  part_name="single_bracket_part"
+                />
+                <SubTree
+                  ID="Drop Bracket Part on Jig Subtree"
+                  _collapsed="true"
+                  part_name="single_bracket_part"
+                />
+                <Control ID="IfThenElse">
+                  <Condition
+                    ID="IsLookaheadEnabled"
+                    enabled="{near_jig_wait}"
+                  />
+                  <SubTree
+                    ID="Move to Named Waypoint"
+                    waypoint_name="Jig Wait"
+                  />
+                  <SubTree
+                    ID="Move to Named Waypoint"
+                    _collapsed="true"
+                    waypoint_name="Intermediate Jig Pose"
+                  />
+                </Control>
+                <Control ID="IfThenElse">
+                  <Condition
+                    ID="IsLookaheadEnabled"
+                    enabled="{near_jig_wait}"
+                  />
+                  <Control ID="Sequence">
+                    <Action
+                      ID="RetrieveWaypoint"
+                      joint_group_name="manipulator"
+                      waypoint_joint_state="{handoff_robot_state}"
+                      waypoint_name="Home"
+                    />
+                    <Action
+                      ID="UnpackRobotStateMessage"
+                      robot_state="{handoff_robot_state}"
+                      joint_state="{handoff_joint_state}"
+                    />
+                    <Action
+                      ID="GetCurrentPlanningScene"
+                      planning_scene_msg="{future_scene}"
+                    />
+                  </Control>
+                  <Control ID="Sequence">
+                    <Action
+                      ID="RetrieveWaypoint"
+                      joint_group_name="manipulator"
+                      waypoint_joint_state="{waiting_pose_joint_state}"
+                      waypoint_name="Home"
+                    />
+                    <Action
+                      ID="InitializeMTCTask"
+                      task="{mtc_task}"
+                      task_id="move_to_waiting_pose"
+                      timeout="10.0"
+                    />
+                    <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
+                    <Action
+                      ID="SetupMTCPlanToRobotState"
+                      acceleration_scale_factor="1.0"
+                      joint_state="{waiting_pose_joint_state}"
+                      collision_check_params="[{override_scene_link_padding: true, link_padding: 0.01}]"
+                      max_iterations="5000"
+                      planning_group_name="manipulator"
+                      seed="0"
+                      task="{mtc_task}"
+                      trajectory_sampling_rate="100"
+                      velocity_scale_factor="1.0"
+                    />
+                    <Action ID="StopwatchBegin" timepoint="{t_plan}" />
+                    <Action
+                      ID="PlanMTCTask"
+                      solution="{home_solution}"
+                      task="{mtc_task}"
+                    />
+                    <Action
+                      ID="StopwatchEnd"
+                      timepoint="{t_plan}"
+                      message="PLANNING: move to waiting pose"
+                    />
+                  </Control>
+                </Control>
+                <SubTree
+                  ID="Prepare Pick During Bracket Cycle"
+                  _collapsed="true"
+                  parallel="{parallel}"
+                  home_solution="{home_solution}"
+                  part_name="single_bracket_part"
+                  drop_pose="{drop_pose}"
+                  pick_guess_pose="{pick_guess_pose}"
+                  pick_crop_pose="{pick_crop_pose}"
+                  cycle="{cycle}"
+                  num_cycles="{num_cycles}"
+                  next_ready="{next_ready}"
+                  next_cycle="{next_cycle}"
+                  next_pose="{next_pose}"
+                  next_solution="{next_solution}"
+                  next_empty="{next_empty}"
+                  near_jig_wait="{near_jig_wait}"
+                  home_joint_state="{handoff_joint_state}"
+                  future_scene="{future_scene}"
+                  cache_transfers="{cache_transfers}"
+                  jig_approach_ready="{jig_approach_ready}"
+                  jig_approach_solution="{jig_approach_solution}"
+                  jig_contact_ready="{jig_contact_ready}"
+                  jig_contact_solution="{jig_contact_solution}"
+                  jig_retreat_ready="{jig_retreat_ready}"
+                  jig_retreat_solution="{jig_retreat_solution}"
+                  right_bin_ready="{right_bin_ready}"
+                  right_bin_solution="{right_bin_solution}"
+                  home_return_ready="{home_return_ready}"
+                  home_return_solution="{home_return_solution}"
+                />
+                <Action
+                  ID="StopwatchEnd"
+                  timepoint="{t_cycle}"
+                  message="CYCLE: bracket lookahead"
+                />
+                <Action ID="Script" code="bin_empty = next_empty" />
+              </Control>
+            </Decorator>
+          </Control>
+        </Decorator>
+      </Decorator>
+      <SubTree ID="Visualize Bins and Jig" _collapsed="true" />
+      <SubTree ID="Automated Return Held Tool" _collapsed="true" />
+      <SubTree
+        ID="Move to Named Waypoint"
+        _collapsed="true"
+        acceleration_scale_factor="1.0"
+        controller_action_server="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+        controller_names="joint_trajectory_admittance_controller"
+        joint_group_name="manipulator"
+        seed="0"
+        velocity_scale_factor="1.0"
+        waypoint_name="Home"
+      />
+      <Action ID="ClearSnapshot" />
+      <SubTree ID="Reset Planning Scene" collapsed="true" _collapsed="true" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Pick and Place Brackets with Lookahead">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Application - Advanced Examples" />
+      </MetadataFields>
+      <input_port name="parallel" type="bool" default="true" />
+      <input_port name="num_cycles" type="int" default="3" />
+      <output_port
+        name="fallback_count"
+        type="int"
+        default="{fallback_count}"
+      />
+      <input_port name="near_jig_wait" type="bool" default="true" />
+      <input_port name="cache_transfers" type="bool" default="true" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

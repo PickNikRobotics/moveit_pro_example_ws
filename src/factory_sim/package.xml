@@ -16,6 +16,12 @@
 
   <depend>picknik_accessories</depend>
   <depend>fanuc_lrmate200id_support</depend>
+  <depend>moveit_pro_behavior_interface</depend>
+  <depend>pluginlib</depend>
+  <depend>moveit_task_constructor_msgs</depend>
+  <depend>moveit_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>behaviortree_cpp_picknik</depend>
   <exec_depend>admittance_controller</exec_depend>
   <exec_depend>moveit_ros_perception</exec_depend>
   <exec_depend>moveit_studio_agent</exec_depend>

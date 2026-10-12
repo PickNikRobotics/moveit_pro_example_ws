@@ -46,6 +46,7 @@ from moveit_pro_test_utils.objective_test_fixture import (
 # re-pick -> right-bin cycles plus automated tool changing (~100-135 s locally).
 objective_wait_overrides: dict[str, float] = {
     "Pick and Place Brackets from Left Bin": 240.0,
+    "Pick and Place Brackets with Lookahead": 240.0,
 }
 
 # factory_sim is a MuJoCo-backed sim: reset the keyframe between tests with the

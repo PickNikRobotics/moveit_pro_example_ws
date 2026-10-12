@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Return Home with Cached Motion">
+  <BehaviorTree ID="Return Home with Cached Motion">
+    <Control ID="Sequence">
+      <Action
+        ID="RetrieveWaypoint"
+        waypoint_name="Home"
+        joint_group_name="manipulator"
+        waypoint_joint_state="{home_state}"
+      />
+      <Action
+        ID="InitializeMTCTask"
+        task="{mtc_task}"
+        task_id="home_return"
+        timeout="10.0"
+      />
+      <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
+      <Action
+        ID="SetupMTCPlanToRobotState"
+        task="{mtc_task}"
+        joint_state="{home_state}"
+        planning_group_name="manipulator"
+        seed="0"
+        max_iterations="5000"
+        velocity_scale_factor="1.0"
+        acceleration_scale_factor="1.0"
+        trajectory_sampling_rate="100"
+        collision_check_params="[{override_scene_link_padding: true, link_padding: 0.01}]"
+      />
+      <SubTree
+        ID="Plan or Execute Cached Fanuc Motion"
+        task="{mtc_task}"
+        cache_enabled="{cache_transfers}"
+        cache_ready="{home_return_ready}"
+        cached_solution="{home_return_solution}"
+        plan_label="PLANNING: return Home"
+        execution_label="EXECUTION: return Home"
+        cache_hit_message="CACHE HIT: home_return"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Return Home with Cached Motion">
+      <MetadataFields>
+        <Metadata runnable="false" />
+      </MetadataFields>
+      <input_port name="cache_transfers" type="bool" default="false" />
+      <inout_port
+        name="home_return_ready"
+        type="bool"
+        default="{home_return_ready}"
+      />
+      <inout_port
+        name="home_return_solution"
+        type="moveit_task_constructor_msgs::msg::Solution"
+        default="{home_return_solution}"
+      />
+    </SubTree>
+  </TreeNodesModel>
+</root>

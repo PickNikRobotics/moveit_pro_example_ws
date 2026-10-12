@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Plan or Execute Cached Fanuc Motion"
+>
+  <BehaviorTree
+    ID="Plan or Execute Cached Fanuc Motion"
+    _description="Reuse a checked Fanuc motion within one Objective run, or plan from the current state."
+  >
+    <Control
+      ID="IfThenElse"
+      _onFailure="cache_ready := false"
+      _onHalted="cache_ready := false"
+    >
+      <Condition ID="IsLookaheadEnabled" enabled="{cache_enabled}" />
+      <Control ID="Sequence">
+        <Control ID="Fallback">
+          <Control ID="Sequence">
+            <Condition ID="IsLookaheadEnabled" enabled="{cache_ready}" />
+            <SubTree
+              ID="Wait for Bracket Pick Handoff"
+              solution="{cached_solution}"
+              planning_scene="{current_scene}"
+              reason="{cache_reason}"
+            />
+            <Action
+              ID="ConvertMtcSolutionToJointTrajectory"
+              solution="{cached_solution}"
+              joint_group="manipulator"
+              joint_trajectory="{selected_trajectory}"
+            />
+            <Action
+              ID="PadPlanningSceneForMotion"
+              planning_scene="{current_scene}"
+              minimum_padding_m="{minimum_padding_m}"
+              padded_scene="{validation_scene}"
+            />
+            <Action
+              ID="ValidateTrajectory"
+              planning_scene_msg="{validation_scene}"
+              planning_group_name="manipulator"
+              joint_trajectory_msg="{selected_trajectory}"
+            />
+            <Action
+              ID="LogMessage"
+              log_level="info"
+              message="{cache_hit_message}"
+            />
+          </Control>
+          <Control ID="Sequence">
+            <Action ID="Script" code="cache_ready = false" />
+            <Action ID="StopwatchBegin" timepoint="{plan_time}" />
+            <Action
+              ID="PlanMTCTask"
+              task="{task}"
+              solution="{cached_solution}"
+            />
+            <Action
+              ID="StopwatchEnd"
+              timepoint="{plan_time}"
+              message="{plan_label}"
+            />
+            <Action
+              ID="ConvertMtcSolutionToJointTrajectory"
+              solution="{cached_solution}"
+              joint_group="manipulator"
+              joint_trajectory="{selected_trajectory}"
+            />
+            <Action ID="Script" code="cache_ready = true" />
+          </Control>
+        </Control>
+        <Action ID="StopwatchBegin" timepoint="{execute_time}" />
+        <Action
+          ID="SwitchController"
+          activate_controllers="joint_trajectory_admittance_controller"
+        />
+        <Action
+          ID="ExecuteTrajectory"
+          joint_trajectory_msg="{selected_trajectory}"
+          execution_pipeline="jtac"
+          controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+          goal_duration_tolerance="30.0"
+        />
+        <Action
+          ID="StopwatchEnd"
+          timepoint="{execute_time}"
+          message="{execution_label}"
+        />
+      </Control>
+      <Control ID="Sequence">
+        <Action ID="StopwatchBegin" timepoint="{plan_time}" />
+        <Action ID="PlanMTCTask" task="{task}" solution="{current_solution}" />
+        <Action
+          ID="StopwatchEnd"
+          timepoint="{plan_time}"
+          message="{plan_label}"
+        />
+        <Action ID="StopwatchBegin" timepoint="{execute_time}" />
+        <SubTree
+          ID="Execute MTC Solution"
+          solution="{current_solution}"
+          goal_duration_tolerance="30.0"
+        />
+        <Action
+          ID="StopwatchEnd"
+          timepoint="{execute_time}"
+          message="{execution_label}"
+        />
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Plan or Execute Cached Fanuc Motion">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Motion - Planning" />
+      </MetadataFields>
+      <inout_port
+        name="task"
+        type="std::shared_ptr&lt;moveit_pro::task_constructor::Task&gt;"
+        default="{mtc_task}"
+      />
+      <input_port name="cache_enabled" type="bool" default="false" />
+      <input_port
+        name="plan_label"
+        type="std::string"
+        default="PLANNING: fixed transfer"
+      />
+      <input_port
+        name="execution_label"
+        type="std::string"
+        default="EXECUTION: fixed transfer"
+      />
+      <input_port
+        name="cache_hit_message"
+        type="std::string"
+        default="CACHE HIT: fixed transfer"
+      />
+      <inout_port name="cache_ready" type="bool" default="{cache_ready}" />
+      <inout_port
+        name="cached_solution"
+        type="moveit_task_constructor_msgs::msg::Solution"
+        default="{cached_solution}"
+      />
+      <input_port name="minimum_padding_m" type="double" default="0.01" />
+    </SubTree>
+  </TreeNodesModel>
+</root>
