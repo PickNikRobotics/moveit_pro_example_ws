@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Return Home with Cached Motion">
-  <BehaviorTree ID="Return Home with Cached Motion">
+  <BehaviorTree
+    ID="Return Home with Cached Motion"
+    _description="Return to unloaded Home and validate cached motion against the current scene."
+  >
     <Control ID="Sequence">
       <Action
         ID="RetrieveWaypoint"
@@ -43,6 +46,7 @@
     <SubTree ID="Return Home with Cached Motion">
       <MetadataFields>
         <Metadata runnable="false" />
+        <Metadata subcategory="Motion - Execute" />
       </MetadataFields>
       <input_port name="cache_transfers" type="bool" default="false" />
       <inout_port
