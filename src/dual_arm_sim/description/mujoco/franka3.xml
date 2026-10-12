@@ -1,3 +1,7 @@
+<!-- Derived from the MuJoCo Menagerie Franka FR3 model (franka_fr3), licensed under the Apache
+     License, Version 2.0 (LICENSE in this directory), with the FR3 Duo mount from franka_description
+     (Copyright 2023 Franka Robotics GmbH, Apache License, Version 2.0; LICENSE-franka_description).
+     Modified by PickNik Inc., 2026. -->
 <mujoco model="fr3">
   <compiler angle="radian" meshdir="assets" />
 
