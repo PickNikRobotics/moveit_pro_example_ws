@@ -586,7 +586,7 @@ def check_manifest(checkout: Path, source: Source, new_commit: str) -> int:
         for error in errors:
             print(f"  {error}")
         print(f"Fix UPSTREAM.yaml, or discard with: {source.discard}")
-        return 1
+        return 2
     print(
         "UPSTREAM.yaml ledger and policy checks pass. Review `git status`, build the configs that use it, then commit."
     )
@@ -633,7 +633,7 @@ def refresh(manifest_path: Path, target: str | None) -> int:
                 "Resolve the markers, then run bin/validate_workspace_dependencies.py "
                 f"--verify-upstream. The pin is already bumped; to discard: {source.discard}"
             )
-            return 1
+            return 2
         return check_manifest(checkout, source, new_commit)
 
 

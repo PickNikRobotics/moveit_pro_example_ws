@@ -1040,7 +1040,7 @@ jobs:
   # source with bin/vendored_dependency.py update. An update that stops on
   # merge conflicts in the local edits, or on an UPSTREAM.yaml edit it needs,
   # still opens its PR, with the markers and the update output, for a person
-  # to finish. An update that changes nothing fails the job instead.
+  # to finish. Operational failures and unchanged sources fail the job instead.
   # Runs only on the Sunday schedule, so drift never gates a PR; manual
   # dispatch on main also runs it, the same way integration-test-weekly allows.
   vendored-drift:
@@ -1117,12 +1117,16 @@ jobs:
       - name: Re-vendor at the upstream branch head
         id: refresh
         run: |
-          # A stopped update still goes into the PR for a person to finish;
-          # only an update that left the source untouched fails the job.
+          # Exit 2 is a completed update needing conflict or manifest repair.
+          # Operational errors must never publish a partially rewritten tree.
           log="$RUNNER_TEMP/refresh.log"
           status=0
           python3 bin/vendored_dependency.py update "$SOURCE" > "$log" 2>&1 || status=$?
           cat "$log"
+          if [ "$status" -ne 0 ] && [ "$status" -ne 2 ]; then
+            echo "::error::bin/vendored_dependency.py update $SOURCE failed with exit $status; see the step log."
+            exit 1
+          fi
           if [ -z "$(git status --porcelain -- "$SOURCE_PATH")" ]; then
             echo "::error::bin/vendored_dependency.py update $SOURCE exited $status without changing $SOURCE_PATH; see the step log."
             exit 1
@@ -1132,7 +1136,7 @@ jobs:
           if [ "$status" -eq 0 ]; then
             result="re-applied its local edits without conflicts and passed the \`UPSTREAM.yaml\` ledger and license checks. Build and run the configs that use this source before marking the PR ready."
           else
-            result="stopped before finishing: resolve the conflict markers or \`UPSTREAM.yaml\` errors in the output below, then run \`bin/validate_workspace_dependencies.py --verify-upstream\` and build the configs that use this source."
+            result="requires manual repair: resolve the conflict markers or \`UPSTREAM.yaml\` errors in the output below, then run \`bin/validate_workspace_dependencies.py --verify-upstream\` and build the configs that use this source."
           fi
           # Sixty lines, each capped, keep the body far below the 65536
           # character limit on PR bodies.

@@ -3,6 +3,8 @@
 import importlib.util
 import io
 import json
+import subprocess
+import textwrap
 from pathlib import Path
 from urllib.error import HTTPError
 from urllib.request import Request
@@ -408,12 +410,12 @@ def test_update_to_explicit_commit_and_noop_when_current(
     assert f"  commit: {new}\n" in (root / "UPSTREAM.yaml").read_text()
 
 
-def test_update_leaves_conflict_markers_and_fails(
+def test_update_leaves_conflict_markers_and_needs_resolution(
     tmp_path: Path, monkeypatch: MonkeyPatch, capsys: CaptureFixture[str]
 ) -> None:
     upstream, old, new = make_upstream(tmp_path, second_first_line="z")
     root = make_workspace(tmp_path, monkeypatch, upstream, old)
-    assert tool.main(["update", "source"]) == 1
+    assert tool.main(["update", "source"]) == 2
     model = (root / "description" / "model.txt").read_text()
     assert "<<<<<<<" in model
     assert "A\n" in model
@@ -435,7 +437,7 @@ def test_update_reports_stale_ledger(
     """Upstream adopting a local edit makes modified_paths overstate the changes."""
     upstream, old, new = make_upstream(tmp_path, second_first_line="A")
     root = make_workspace(tmp_path, monkeypatch, upstream, old)
-    assert tool.main(["update", "source"]) == 1
+    assert tool.main(["update", "source"]) == 2
     out = capsys.readouterr().out
     assert "UPSTREAM.yaml needs updating" in out
     assert "lists an unchanged upstream path as modified: description/model.txt" in out
@@ -458,7 +460,7 @@ def test_update_reports_manifest_policy_errors(
         return []
 
     monkeypatch.setattr(tool.validator, "validate_vendor_manifest", policy)
-    assert tool.main(["update", "source"]) == 1
+    assert tool.main(["update", "source"]) == 2
     out = capsys.readouterr().out
     assert "UPSTREAM.yaml needs updating" in out
     assert "lists no apache_paths" in out
@@ -579,7 +581,7 @@ def test_update_warns_when_upstream_dropped_a_vendored_path(
 ) -> None:
     upstream, old, new = make_upstream(tmp_path, drop_docs=True)
     root = make_workspace(tmp_path, monkeypatch, upstream, old, vendor_docs=True)
-    assert tool.main(["update", "source"]) == 1
+    assert tool.main(["update", "source"]) == 2
     out = capsys.readouterr().out
     assert (
         f"WARNING: upstream {new[:9]} no longer has docs; remove it from vendored_paths or restore it."
@@ -690,13 +692,18 @@ def test_update_reports_copy_failures_with_recovery(
     tmp_path: Path, monkeypatch: MonkeyPatch, capsys: CaptureFixture[str]
 ) -> None:
     upstream, old, _ = make_upstream(tmp_path)
-    make_workspace(tmp_path, monkeypatch, upstream, old)
+    root = make_workspace(tmp_path, monkeypatch, upstream, old)
+    replace_tree = tool.replace_tree
 
-    def fail(*_: object) -> int:
-        raise OSError("No space left on device")
+    def fail_on_description(source: Path, destination: Path) -> None:
+        if destination == root / "description":
+            (destination / "model.txt").write_text("partial copy\n")
+            raise OSError("No space left on device")
+        replace_tree(source, destination)
 
-    monkeypatch.setattr(tool, "refresh", fail)
+    monkeypatch.setattr(tool, "replace_tree", fail_on_description)
     assert tool.main(["update", "source"]) == 1
+    assert (root / "description" / "model.txt").read_text() == "partial copy\n"
     assert capsys.readouterr().err == (
         "ERROR: No space left on device. src/external_dependencies/source may be "
         "partially rewritten; to discard: git restore --source=HEAD --staged "
@@ -733,3 +740,71 @@ def test_resolve_manifest_accepts_paths(
     assert tool.resolve_manifest("src/external_dependencies/source") == manifest
     assert tool.resolve_manifest(str(root)) == manifest
     assert tool.resolve_manifest(str(manifest)) == manifest
+
+
+@mark.parametrize(
+    "status,changed",
+    [(1, True), (128, True), (1, False), (0, False), (2, False), (0, True), (2, True)],
+)
+def test_refresh_workflow_only_prepares_pr_for_completed_updates(
+    tmp_path: Path, monkeypatch: MonkeyPatch, status: int, changed: bool
+) -> None:
+    """Reject operational failures even after a rewrite; retain clean and repairable updates."""
+    workflow = (MODULE_PATH.parents[1] / ".github" / "workflows" / "ci.yaml").read_text(
+        encoding="utf-8"
+    )
+    step = workflow.split("      - name: Re-vendor at the upstream branch head\n", 1)[1]
+    script = textwrap.dedent(
+        step.split("        run: |\n", 1)[1].split("\n      # PRs opened", 1)[0]
+    )
+    workspace = tmp_path / "ws"
+    root = workspace / "src" / "external_dependencies" / "source"
+    root.mkdir(parents=True)
+    (root / "UPSTREAM.yaml").write_text("upstream:\n  commit: old\n")
+    git(workspace, "init", "--quiet", "--initial-branch=main")
+    git(workspace, "add", "--all")
+    git(workspace, "commit", "--quiet", "--message", "vendor")
+    (workspace / "bin").mkdir()
+    (workspace / "bin" / "vendored_dependency.py").write_text(
+        "from pathlib import Path\n"
+        "import sys\n"
+        + (
+            "Path('src/external_dependencies/source/UPSTREAM.yaml').write_text('upstream:\\n  commit: new\\n')\n"
+            if changed
+            else ""
+        )
+        + f"print('refresh diagnostic')\nsys.exit({status})\n"
+    )
+    runner_temp = tmp_path / "runner"
+    runner_temp.mkdir()
+    output = tmp_path / "output"
+    output.touch()
+    for key, value in {
+        "SOURCE": "source",
+        "SOURCE_PATH": "src/external_dependencies/source",
+        "RUNNER_TEMP": str(runner_temp),
+        "GITHUB_OUTPUT": str(output),
+        "GITHUB_SERVER_URL": "https://github.com",
+        "GITHUB_REPOSITORY": "PickNikRobotics/moveit_pro_example_ws",
+        "GITHUB_RUN_ID": "123",
+    }.items():
+        monkeypatch.setenv(key, value)
+    result = subprocess.run(
+        ["bash", "-e", "-o", "pipefail", "-c", script],
+        cwd=workspace,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert "refresh diagnostic" in result.stdout
+    body = runner_temp / "pr-body.md"
+    if status in (0, 2) and changed:
+        assert result.returncode == 0, result.stdout + result.stderr
+        assert f"clean={'true' if status == 0 else 'false'}\n" in output.read_text()
+        assert "new=new\n" in output.read_text()
+        assert "refresh diagnostic" in body.read_text()
+    else:
+        assert result.returncode == 1, result.stdout + result.stderr
+        assert "::error::" in result.stdout
+        assert output.read_text() == ""
+        assert not body.exists()
