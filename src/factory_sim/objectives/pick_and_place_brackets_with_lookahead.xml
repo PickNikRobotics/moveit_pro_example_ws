@@ -90,8 +90,14 @@
                   joint_trajectory="{candidate_trajectory}"
                 />
                 <Action
+                  ID="PadPlanningSceneForMotion"
+                  planning_scene="{handoff_scene}"
+                  minimum_padding_m="0.01"
+                  padded_scene="{handoff_validation_scene}"
+                />
+                <Action
                   ID="ValidateTrajectory"
-                  planning_scene_msg="{handoff_scene}"
+                  planning_scene_msg="{handoff_validation_scene}"
                   planning_group_name="manipulator"
                   joint_trajectory_msg="{candidate_trajectory}"
                 />

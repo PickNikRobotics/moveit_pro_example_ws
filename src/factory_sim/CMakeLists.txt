@@ -67,7 +67,8 @@ if(BUILD_TESTING)
   ament_add_gtest(test_parallel_pick test/test_parallel_pick.cpp)
   target_compile_features(test_parallel_pick PRIVATE cxx_std_20)
   target_compile_definitions(test_parallel_pick PRIVATE
-    FACTORY_OBJECTIVES_DIR="${CMAKE_CURRENT_SOURCE_DIR}/objectives")
+    FACTORY_OBJECTIVES_DIR="${CMAKE_CURRENT_SOURCE_DIR}/objectives"
+    FACTORY_BUILD_DIR="${CMAKE_CURRENT_BINARY_DIR}")
   target_link_libraries(test_parallel_pick factory_pick_behaviors
                         moveit_pro_behavior::setup_mtc_from_solution
                         moveit_pro_behavior::repeat_unless_failure_each_tick

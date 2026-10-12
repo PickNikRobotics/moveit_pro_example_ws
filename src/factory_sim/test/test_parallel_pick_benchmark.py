@@ -5,7 +5,10 @@
 
 from benchmark_bracket_profiles import profile_summary
 
-from benchmark_parallel_pick import cycle_times, timing_summary
+from benchmark_parallel_pick import Benchmark, cycle_times, timing_summary
+import benchmark_parallel_pick as benchmark_module
+from concurrent.futures import Future
+from types import SimpleNamespace
 
 import pytest
 
@@ -92,3 +95,114 @@ def test_profile_summary_rejects_absent_profile() -> None:
     """A missing baseline cannot be reported as a zero-time run."""
     with pytest.raises(ValueError, match="No completed runs"):
         profile_summary([], "original")
+
+
+@pytest.fixture
+def delayed_diagnostics(monkeypatch):
+    """Complete the action before delivering its queued diagnostic callbacks."""
+    clock = [0.0]
+    queued = []
+    node = SimpleNamespace(messages=[])
+    response = SimpleNamespace(
+        status=4,
+        result=SimpleNamespace(error_code=SimpleNamespace(val=1), error_message=""),
+    )
+    sent = Future()
+    result = Future()
+    handle = SimpleNamespace(accepted=True, get_result_async=lambda: result)
+    node.client = SimpleNamespace(
+        wait_for_server=lambda timeout_sec: True,
+        send_goal_async=lambda goal: sent,
+    )
+    node.wait_for_cycle_diagnostics = (
+        lambda expected: Benchmark.wait_for_cycle_diagnostics(node, expected)
+    )
+    monkeypatch.setattr(benchmark_module.time, "monotonic", lambda: clock[0])
+
+    def complete_action(node, future, timeout_sec):
+        if future is sent:
+            future.set_result(handle)
+        else:
+            clock[0] += 3.0
+            future.set_result(response)
+
+    def deliver_log(node, timeout_sec):
+        clock[0] += timeout_sec
+        if queued:
+            node.messages.append(queued.pop(0))
+
+    monkeypatch.setattr(
+        benchmark_module.rclpy, "spin_until_future_complete", complete_action
+    )
+    monkeypatch.setattr(benchmark_module.rclpy, "spin_once", deliver_log)
+    return node, queued, clock, response
+
+
+def test_result_before_diagnostics_collects_all_cycles_without_inflating_time(
+    delayed_diagnostics,
+):
+    """Queued labels remain collectible after the result future becomes ready."""
+    node, queued, clock, _ = delayed_diagnostics
+    for duration in [1.0, 2.0, 3.0]:
+        queued.extend(
+            [
+                {"message": f"StopwatchEnd Info: Time elapsed: {duration}s"},
+                {"message": "StopwatchEnd Info: CYCLE: bracket lookahead"},
+            ]
+        )
+    result = Benchmark.run(node, object(), 10.0, expected_cycles=3)
+    assert cycle_times(node.messages) == [1.0, 2.0, 3.0]
+    assert result["cycle_diagnostics_complete"] is True
+    assert result["duration_s"] == 3.0
+    assert clock[0] > result["duration_s"]
+
+
+def test_missing_diagnostics_stop_at_deadline_without_fabricating_cycles(
+    delayed_diagnostics,
+):
+    """Missing labels cannot cause an unbounded wait or a successful full batch."""
+    node, queued, clock, _ = delayed_diagnostics
+    queued.extend(
+        [
+            {"message": "StopwatchEnd Info: Time elapsed: 1.0s"},
+            {"message": "StopwatchEnd Info: CYCLE: bracket lookahead"},
+        ]
+    )
+    result = Benchmark.run(node, object(), 10.0, expected_cycles=3)
+    assert result["cycle_diagnostics_complete"] is False
+    assert cycle_times(node.messages) == [1.0]
+    assert clock[0] == pytest.approx(5.0)
+    assert result["duration_s"] == 3.0
+
+
+def test_failed_goal_does_not_wait_for_success_diagnostics(delayed_diagnostics):
+    """Failure cannot consume the diagnostic grace period or become success."""
+    node, _, clock, response = delayed_diagnostics
+    response.status = 6
+    response.result.error_code.val = -1
+    result = Benchmark.run(node, object(), 10.0, expected_cycles=3)
+    assert result["status"] == 6
+    assert result["cycle_diagnostics_complete"] is False
+    assert clock[0] == 3.0
+
+
+def test_reset_without_expected_cycles_needs_no_cycle_labels(delayed_diagnostics):
+    """A Simulator reset has no bracket cycles to await."""
+    node, _, clock, _ = delayed_diagnostics
+    result = Benchmark.run(node, object(), 10.0)
+    assert result["cycle_diagnostics_complete"] is True
+    assert clock[0] == 3.0
+
+
+def test_original_profile_cycle_labels_are_collected(delayed_diagnostics):
+    """The profile comparator can await the original application's labels."""
+    node, queued, _, _ = delayed_diagnostics
+    queued.extend(
+        [
+            {"message": "StopwatchEnd Info: Time elapsed: 1.0s"},
+            {"message": "StopwatchEnd Info: CYCLE: original bracket cycle"},
+        ]
+    )
+    result = Benchmark.run(node, object(), 10.0, expected_cycles=1)
+    assert result["cycle_diagnostics_complete"] is True
+    assert len(node.messages) == 2

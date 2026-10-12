@@ -73,7 +73,7 @@ def main() -> None:
                         "</BehaviorTree></root>"
                     )
                     goal = DoObjectiveSequence.Goal(objective_xml_string=xml)
-                result = node.run(goal, 360)
+                result = node.run(goal, 360, expected_cycles=3)
                 times = []
                 pending = None
                 for msg in node.messages:

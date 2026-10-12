@@ -36,7 +36,13 @@ class Benchmark(Node):
         """Retain receipt time and the Runtime's original diagnostic text."""
         self.messages.append({"wall_s": time.monotonic(), "message": message.message})
 
-    def run(self, goal: DoObjectiveSequence.Goal, timeout_s: float) -> dict:
+    def run(
+        self,
+        goal: DoObjectiveSequence.Goal,
+        timeout_s: float,
+        *,
+        expected_cycles: int | None = None,
+    ) -> dict:
         """Execute one Objective; cancel and report failure on timeout."""
         if not self.client.wait_for_server(timeout_sec=15.0):
             raise RuntimeError("The factory_sim /do_objective action is unavailable.")
@@ -56,12 +62,38 @@ class Benchmark(Node):
                 f"Objective exceeded its {timeout_s:g} s timeout; cancellation requested."
             )
         response = result.result()
+        duration_s = time.monotonic() - start
+        diagnostics_complete = expected_cycles is None
+        if (
+            expected_cycles is not None
+            and response.status == 4
+            and response.result.error_code.val == 1
+        ):
+            diagnostics_complete = self.wait_for_cycle_diagnostics(expected_cycles)
         return {
             "status": response.status,
             "error_code": response.result.error_code.val,
             "error_message": response.result.error_message,
-            "duration_s": time.monotonic() - start,
+            "duration_s": duration_s,
+            "cycle_diagnostics_complete": diagnostics_complete,
         }
+
+    def wait_for_cycle_diagnostics(
+        self, expected_cycles: int, timeout_s: float = 2.0
+    ) -> bool:
+        """Drain queued cycle labels after an action result, within a bounded wait."""
+        deadline = time.monotonic() + timeout_s
+        while True:
+            received = sum(
+                "StopwatchEnd Info: CYCLE:" in entry["message"]
+                for entry in self.messages
+            )
+            if received >= expected_cycles:
+                return True
+            remaining = deadline - time.monotonic()
+            if remaining <= 0.0:
+                return False
+            rclpy.spin_once(self, timeout_sec=min(0.05, remaining))
 
 
 def cycle_times(messages: list[dict]) -> list[float]:
@@ -146,7 +178,9 @@ def main() -> None:
                     "</BehaviorTree></root>"
                 )
                 result = node.run(
-                    DoObjectiveSequence.Goal(objective_xml_string=xml), 360.0
+                    DoObjectiveSequence.Goal(objective_xml_string=xml),
+                    360.0,
+                    expected_cycles=args.cycles,
                 )
                 record = {
                     "repeat": repeat + 1,

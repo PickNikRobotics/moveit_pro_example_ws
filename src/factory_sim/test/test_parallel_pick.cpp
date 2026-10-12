@@ -965,6 +965,125 @@ TEST_F(PickObjectiveLibrary, MissingSceneRejectsPadding)
   EXPECT_EQ(tree.tickOnce(), BT::NodeStatus::FAILURE);
 }
 
+class PreparedPickPadding : public PickObjectiveLibrary
+{
+public:
+  void SetUp() override
+  {
+    PickObjectiveLibrary::SetUp();
+    node = std::make_shared<rclcpp::Node>("prepared_pick_padding_test");
+    node->declare_parameter<std::string>("robot_description", moveit_pro::test_utils::kMinimalUrdfString);
+    node->declare_parameter<std::string>("robot_description_semantic", moveit_pro::test_utils::kMinimalSrdfString);
+    context = std::make_shared<moveit_pro::behaviors::BehaviorContext>(node, false, true);
+    moveit_pro::behaviors::registerBehavior<factory_sim::PadPlanningSceneForMotion>(
+        factory, "PadPlanningSceneForMotion", context);
+    factory.registerSimpleAction("HandoffScene",
+                                 [this](BT::TreeNode& behavior) {
+                                   std::ignore = behavior.setOutput("planning_scene", scene);
+                                   return BT::NodeStatus::SUCCESS;
+                                 },
+                                 { BT::OutputPort<moveit_msgs::msg::PlanningScene>("planning_scene") });
+    factory.registerBehaviorTreeFromText(
+        R"(<root BTCPP_format="4"><BehaviorTree ID="Wait for Bracket Pick Handoff"><HandoffScene planning_scene="{planning_scene}" /></BehaviorTree></root>)");
+    factory.registerSimpleAction("ConvertMtcSolutionToJointTrajectory",
+                                 [](BT::TreeNode& behavior) {
+                                   std::ignore =
+                                       behavior.setOutput("joint_trajectory", trajectory_msgs::msg::JointTrajectory{});
+                                   return BT::NodeStatus::SUCCESS;
+                                 },
+                                 { BT::InputPort<Solution>("solution"), BT::InputPort<std::string>("joint_group"),
+                                   BT::OutputPort<trajectory_msgs::msg::JointTrajectory>("joint_trajectory") });
+    factory.registerSimpleAction("ValidateTrajectory",
+                                 [this](BT::TreeNode& behavior) {
+                                   const auto validation_scene =
+                                       behavior.getInput<moveit_msgs::msg::PlanningScene>("planning_scene_msg").value();
+                                   double margin = 0.0;
+                                   const auto& link =
+                                       context->robot_model->getLinkModelNamesWithCollisionGeometry().front();
+                                   for (const auto& padding : validation_scene.link_padding)
+                                     if (padding.link_name == link)
+                                       margin = padding.padding;
+                                   return clearance_m > margin ? BT::NodeStatus::SUCCESS : BT::NodeStatus::FAILURE;
+                                 },
+                                 { BT::InputPort<moveit_msgs::msg::PlanningScene>("planning_scene_msg"),
+                                   BT::InputPort<std::string>("planning_group_name"),
+                                   BT::InputPort<trajectory_msgs::msg::JointTrajectory>("joint_trajectory_msg") });
+    factory.registerSimpleAction("LogMessage",
+                                 [this](BT::TreeNode&) {
+                                   ++accepted;
+                                   return BT::NodeStatus::SUCCESS;
+                                 },
+                                 { BT::InputPort<std::string>("message"), BT::InputPort<std::string>("log_level") });
+    factory.registerSimpleAction("PlanFromActualState", [this](BT::TreeNode&) {
+      ++replanned;
+      return BT::NodeStatus::SUCCESS;
+    });
+    board->set("next_ready", true);
+    board->set("next_cycle", 2);
+    board->set("cycle", 2);
+    board->set("next_solution", Solution{});
+    board->set("next_pose", geometry_msgs::msg::PoseStamped{});
+    board->set("handoff_reason", std::string{});
+  }
+  BT::Tree makeTree()
+  {
+    std::ifstream source(std::string(FACTORY_OBJECTIVES_DIR) + "/pick_and_place_brackets_with_lookahead.xml");
+    const std::string xml{ std::istreambuf_iterator<char>(source), std::istreambuf_iterator<char>() };
+    const auto fallback = xml.find("<Control ID=\"Fallback\">");
+    const auto start = xml.find("<Control ID=\"Sequence\">", fallback);
+    const auto end = xml.find("</Control>", start);
+    if (start == std::string::npos || end == std::string::npos)
+      throw std::runtime_error("Prepared-pick selection branch is missing.");
+    const auto branch = xml.substr(start, end + std::string("</Control>").size() - start);
+    factory.registerBehaviorTreeFromText("<root BTCPP_format=\"4\"><BehaviorTree ID=\"selection\"><Fallback>" + branch +
+                                         "<PlanFromActualState /></Fallback></BehaviorTree></root>");
+    return factory.createTree("selection", board);
+  }
+  rclcpp::Node::SharedPtr node;
+  std::shared_ptr<moveit_pro::behaviors::BehaviorContext> context;
+  BT::BehaviorTreeFactory factory;
+  BT::Blackboard::Ptr board = BT::Blackboard::create();
+  moveit_msgs::msg::PlanningScene scene;
+  double clearance_m = 0.005;
+  int accepted = 0;
+  int replanned = 0;
+};
+
+TEST_F(PreparedPickPadding, NewObstacleInsidePlannerMarginRejectsCandidate)
+{
+  // GIVEN a stopped candidate whose path passes an obstacle at 5 mm clearance.
+  auto tree = makeTree();
+  // WHEN the production selection branch validates that path in the current scene.
+  ASSERT_EQ(tree.tickOnce(), BT::NodeStatus::SUCCESS);
+  // THEN the 10 mm planner margin rejects reuse and selects current-state planning.
+  EXPECT_EQ(accepted, 0);
+  EXPECT_EQ(replanned, 1);
+  EXPECT_EQ(board->get<moveit_msgs::msg::PlanningScene>("handoff_scene"), scene);
+}
+
+TEST_F(PreparedPickPadding, ClearanceOutsidePlannerMarginAcceptsCandidate)
+{
+  clearance_m = 0.02;
+  auto tree = makeTree();
+  ASSERT_EQ(tree.tickOnce(), BT::NodeStatus::SUCCESS);
+  EXPECT_EQ(accepted, 1);
+  EXPECT_EQ(replanned, 0);
+}
+
+TEST_F(PreparedPickPadding, LargerCurrentPaddingIsPreserved)
+{
+  clearance_m = 0.02;
+  moveit_msgs::msg::LinkPadding padding;
+  padding.link_name = context->robot_model->getLinkModelNamesWithCollisionGeometry().front();
+  padding.padding = 0.03;
+  scene.link_padding.push_back(padding);
+  auto tree = makeTree();
+  ASSERT_EQ(tree.tickOnce(), BT::NodeStatus::SUCCESS);
+  EXPECT_EQ(accepted, 0);
+  EXPECT_EQ(replanned, 1);
+  EXPECT_EQ(board->get<moveit_msgs::msg::PlanningScene>("handoff_scene"), scene);
+}
+
 TEST_F(PickObjectiveLibrary, InstantiatesCompletePrototypeWithInstalledPlugins)
 {
   // GIVEN the real Runtime loaders and both installed Objective libraries.
@@ -1015,7 +1134,7 @@ TEST_F(PickObjectiveLibrary, InstantiatesCompletePrototypeWithInstalledPlugins)
     EXPECT_EQ(tree.tickOnce(), BT::NodeStatus::FAILURE);
   }
   // THEN the concrete plugin manifest can validate this exact Objective outside the licensed action server.
-  std::ofstream manifest(std::string(FACTORY_OBJECTIVES_DIR) + "/../../../build/factory_sim/bracket_manifest.xml");
+  std::ofstream manifest(std::string(FACTORY_BUILD_DIR) + "/bracket_manifest.xml");
   ASSERT_TRUE(manifest.is_open());
   manifest << BT::writeTreeNodesModelXML(factory, true);
 }
