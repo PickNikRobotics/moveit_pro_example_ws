@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="reBot Place Blue">
+  <BehaviorTree
+    ID="reBot Place Blue"
+    _description="Carry the held blue cube over a support surface, rest it there, release it, retreat straight back to the place hover, and return the arm home with the jaw open."
+  >
+    <Sequence>
+      <SubTree
+        ID="reBot Plan Place"
+        support_top="{support_top}"
+        place_hover="{place_hover}"
+        place="{place}"
+      />
+      <SubTree
+        ID="reBot Move to Pose"
+        target="{place_hover}"
+        gripper_position="2.8125"
+        velocity_scale_factor="{joint_velocity_scale_factor}"
+        acceleration_scale_factor="{joint_acceleration_scale_factor}"
+        commanded_state="{commanded_state}"
+      />
+      <Action
+        ID="SetCollisionRule"
+        name_a="rebot_blue"
+        name_b="{support_object}"
+        allow_collision="true"
+      />
+      <SubTree
+        ID="reBot Move Straight"
+        target="{place}"
+        gripper_position="2.8125"
+        velocity_scale_factor="{cartesian_velocity_scale_factor}"
+        acceleration_scale_factor="{cartesian_acceleration_scale_factor}"
+        commanded_state="{commanded_state}"
+      />
+      <SubTree
+        ID="reBot Release and Retreat"
+        place_hover="{place_hover}"
+        holding="{holding}"
+        joint_velocity_scale_factor="{joint_velocity_scale_factor}"
+        joint_acceleration_scale_factor="{joint_acceleration_scale_factor}"
+        cartesian_velocity_scale_factor="{cartesian_velocity_scale_factor}"
+        cartesian_acceleration_scale_factor="{cartesian_acceleration_scale_factor}"
+        gripper_velocity_scale_factor="{gripper_velocity_scale_factor}"
+        gripper_acceleration_scale_factor="{gripper_acceleration_scale_factor}"
+        commanded_state="{commanded_state}"
+      />
+    </Sequence>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="reBot Place Blue">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="reBot Bench" />
+      </MetadataFields>
+      <input_port name="support_top" type="geometry_msgs::msg::PoseStamped">
+        Centre of the surface the held cube is set down on, in world: red's
+        measured top face, or a spot on the mat at z=0. Its yaw sets the
+        released cube's yaw.
+      </input_port>
+      <input_port name="support_object" type="std::string">
+        Collision object under the released cube, rebot_red or rebot_bench;
+        the held cube may touch it from the descent on.
+      </input_port>
+      <inout_port name="holding" default="{holding}" type="bool">
+        Set false at the release, which detaches the cube.
+      </inout_port>
+      <input_port name="joint_velocity_scale_factor" type="double" />
+      <input_port name="joint_acceleration_scale_factor" type="double" />
+      <input_port name="cartesian_velocity_scale_factor" type="double" />
+      <input_port name="cartesian_acceleration_scale_factor" type="double" />
+      <input_port name="gripper_velocity_scale_factor" type="double" />
+      <input_port name="gripper_acceleration_scale_factor" type="double" />
+      <inout_port
+        name="commanded_state"
+        default="{commanded_state}"
+        type="moveit_msgs::msg::RobotState"
+      />
+    </SubTree>
+  </TreeNodesModel>
+</root>

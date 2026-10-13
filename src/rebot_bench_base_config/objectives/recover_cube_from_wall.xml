@@ -1,0 +1,673 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Recover Cube from Wall">
+  <BehaviorTree
+    ID="Recover Cube from Wall"
+    _description="Pull a cube that sits too close to the foam wall to be picked from above back into the proven stacking area: grasp it from the robot side with a low, tilted approach, carry it over the other cube to the target, set it down, and return home with the jaw closed. Every pose is reach-checked before the arm moves; a step that fails after that still ends home. Speeds come from objectives/rebot_stack_motion.yaml."
+  >
+    <Sequence>
+      <SubTree
+        ID="reBot Stack Motion"
+        joint_velocity_scale_factor="{joint_velocity_scale_factor}"
+        joint_acceleration_scale_factor="{joint_acceleration_scale_factor}"
+        cartesian_velocity_scale_factor="{cartesian_velocity_scale_factor}"
+        cartesian_acceleration_scale_factor="{cartesian_acceleration_scale_factor}"
+        gripper_velocity_scale_factor="{gripper_velocity_scale_factor}"
+        gripper_acceleration_scale_factor="{gripper_acceleration_scale_factor}"
+      />
+      <!-- The cube carried takes the scene name rebot_blue whatever its colour;
+           the other cube is the rebot_red obstacle. -->
+      <!-- Blue stacked on red is located as the unstack locates it: red's top
+           face is hidden, so red sits directly under blue. -->
+      <Fallback>
+        <Sequence>
+          <ScriptCondition code="stacked == true" />
+          <Script code="effective_support := 'rebot_red'" />
+          <Script code="carried_name := 'blue cube'" />
+          <SubTree
+            ID="Prepare reBot Unstack"
+            blue_top="{cube_top}"
+            red_top="{other_top}"
+          />
+        </Sequence>
+        <Sequence>
+          <ScriptCondition code="stacked == false" />
+          <Script code="effective_support := support_object" />
+          <Script code="carried_name := prompt" />
+          <SubTree
+            ID="Locate reBot Cube"
+            prompt="{prompt}"
+            mask_topic="/rebot/cube_masks"
+            cube_top="{cube_top}"
+          />
+          <SubTree
+            ID="Locate reBot Cube"
+            prompt="{other_prompt}"
+            mask_topic="/rebot/cube_masks"
+            cube_top="{other_top}"
+          />
+          <SubTree
+            ID="reBot Stack Scene"
+            blue_top="{cube_top}"
+            red_top="{other_top}"
+          />
+        </Sequence>
+      </Fallback>
+      <!-- Target: the centre of the proven stacking area, away from the wall,
+           its x axis pointing away from the base like a located cube. -->
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="world"
+        position_xyz="{target_xyz}"
+        orientation_xyzw="{target_xyzw}"
+        pose_stamped="{target_top}"
+      />
+      <Action ID="GetCurrentPlanningScene" planning_scene_msg="{scene}" />
+      <!-- No motion until one approach has every pose in reach. The cube is
+           approached along its +x axis, which the located yaw keeps within 45
+           degrees of the base's: from the robot side, so the arm stays off the
+           wall. A cube by the wall takes a lower wrist than a pick from above. -->
+      <Fallback>
+        <!-- Tool tilted 20 degrees down. -->
+        <Sequence>
+          <Action
+            ID="TransformPose"
+            input_pose="{cube_top}"
+            translation_xyz="-0.0845723;0;0.00578181"
+            quaternion_xyzw="0;0.173648;0;0.984808"
+            output_pose="{pregrasp}"
+          />
+          <Action ID="ResetVector" vector="{path}" />
+          <Action
+            ID="PushBackVector"
+            input_vector="{path}"
+            element="{pregrasp}"
+            output_vector="{path}"
+          />
+          <Action
+            ID="ComputeInverseKinematics"
+            target_poses="{path}"
+            tip_links="gripper_end"
+            planning_scene_msg="{scene}"
+            planning_group_name="manipulator"
+            ik_timeout_s="0.5"
+            solve_mode="optimize_distance"
+            optimization_timeout_s="0.1"
+            link_padding="0.0"
+            solution="{goal}"
+          />
+          <Action
+            ID="TransformPose"
+            input_pose="{cube_top}"
+            translation_xyz="-0.00939693;0;-0.0215798"
+            quaternion_xyzw="0;0.173648;0;0.984808"
+            output_pose="{grasp}"
+          />
+          <Action ID="ResetVector" vector="{path}" />
+          <Action
+            ID="PushBackVector"
+            input_vector="{path}"
+            element="{grasp}"
+            output_vector="{path}"
+          />
+          <Action
+            ID="ComputeInverseKinematics"
+            target_poses="{path}"
+            tip_links="gripper_end"
+            planning_scene_msg="{scene}"
+            planning_group_name="manipulator"
+            ik_timeout_s="0.5"
+            solve_mode="optimize_distance"
+            optimization_timeout_s="0.1"
+            link_padding="0.0"
+            solution="{goal}"
+          />
+          <Action
+            ID="TransformPose"
+            input_pose="{cube_top}"
+            translation_xyz="-0.00939693;0;0.0384202"
+            quaternion_xyzw="0;0.173648;0;0.984808"
+            output_pose="{lift}"
+          />
+          <Action ID="ResetVector" vector="{path}" />
+          <Action
+            ID="PushBackVector"
+            input_vector="{path}"
+            element="{lift}"
+            output_vector="{path}"
+          />
+          <Action
+            ID="ComputeInverseKinematics"
+            target_poses="{path}"
+            tip_links="gripper_end"
+            planning_scene_msg="{scene}"
+            planning_group_name="manipulator"
+            ik_timeout_s="0.5"
+            solve_mode="optimize_distance"
+            optimization_timeout_s="0.1"
+            link_padding="0.0"
+            solution="{goal}"
+          />
+          <Action
+            ID="TransformPose"
+            input_pose="{target_top}"
+            translation_xyz="-0.00939693;0;0.0384202"
+            quaternion_xyzw="0;0.173648;0;0.984808"
+            output_pose="{carry}"
+          />
+          <Action ID="ResetVector" vector="{path}" />
+          <Action
+            ID="PushBackVector"
+            input_vector="{path}"
+            element="{carry}"
+            output_vector="{path}"
+          />
+          <Action
+            ID="ComputeInverseKinematics"
+            target_poses="{path}"
+            tip_links="gripper_end"
+            planning_scene_msg="{scene}"
+            planning_group_name="manipulator"
+            ik_timeout_s="0.5"
+            solve_mode="optimize_distance"
+            optimization_timeout_s="0.1"
+            link_padding="0.0"
+            solution="{goal}"
+          />
+          <Action
+            ID="TransformPose"
+            input_pose="{target_top}"
+            translation_xyz="-0.00939693;0;-0.0195798"
+            quaternion_xyzw="0;0.173648;0;0.984808"
+            output_pose="{place}"
+          />
+          <Action ID="ResetVector" vector="{path}" />
+          <Action
+            ID="PushBackVector"
+            input_vector="{path}"
+            element="{place}"
+            output_vector="{path}"
+          />
+          <Action
+            ID="ComputeInverseKinematics"
+            target_poses="{path}"
+            tip_links="gripper_end"
+            planning_scene_msg="{scene}"
+            planning_group_name="manipulator"
+            ik_timeout_s="0.5"
+            solve_mode="optimize_distance"
+            optimization_timeout_s="0.1"
+            link_padding="0.0"
+            solution="{goal}"
+          />
+          <Action
+            ID="TransformPose"
+            input_pose="{target_top}"
+            translation_xyz="-0.0845723;0;0.0357818"
+            quaternion_xyzw="0;0.173648;0;0.984808"
+            output_pose="{retreat}"
+          />
+          <Action ID="ResetVector" vector="{path}" />
+          <Action
+            ID="PushBackVector"
+            input_vector="{path}"
+            element="{retreat}"
+            output_vector="{path}"
+          />
+          <Action
+            ID="ComputeInverseKinematics"
+            target_poses="{path}"
+            tip_links="gripper_end"
+            planning_scene_msg="{scene}"
+            planning_group_name="manipulator"
+            ik_timeout_s="0.5"
+            solve_mode="optimize_distance"
+            optimization_timeout_s="0.1"
+            link_padding="0.0"
+            solution="{goal}"
+          />
+        </Sequence>
+        <!-- Tool tilted 40 degrees down. -->
+        <Sequence>
+          <Action
+            ID="TransformPose"
+            input_pose="{cube_top}"
+            translation_xyz="-0.068944;0;0.0328509"
+            quaternion_xyzw="0;0.34202;0;0.939693"
+            output_pose="{pregrasp}"
+          />
+          <Action ID="ResetVector" vector="{path}" />
+          <Action
+            ID="PushBackVector"
+            input_vector="{path}"
+            element="{pregrasp}"
+            output_vector="{path}"
+          />
+          <Action
+            ID="ComputeInverseKinematics"
+            target_poses="{path}"
+            tip_links="gripper_end"
+            planning_scene_msg="{scene}"
+            planning_group_name="manipulator"
+            ik_timeout_s="0.5"
+            solve_mode="optimize_distance"
+            optimization_timeout_s="0.1"
+            link_padding="0.0"
+            solution="{goal}"
+          />
+          <Action
+            ID="TransformPose"
+            input_pose="{cube_top}"
+            translation_xyz="-0.00766044;0;-0.0185721"
+            quaternion_xyzw="0;0.34202;0;0.939693"
+            output_pose="{grasp}"
+          />
+          <Action ID="ResetVector" vector="{path}" />
+          <Action
+            ID="PushBackVector"
+            input_vector="{path}"
+            element="{grasp}"
+            output_vector="{path}"
+          />
+          <Action
+            ID="ComputeInverseKinematics"
+            target_poses="{path}"
+            tip_links="gripper_end"
+            planning_scene_msg="{scene}"
+            planning_group_name="manipulator"
+            ik_timeout_s="0.5"
+            solve_mode="optimize_distance"
+            optimization_timeout_s="0.1"
+            link_padding="0.0"
+            solution="{goal}"
+          />
+          <Action
+            ID="TransformPose"
+            input_pose="{cube_top}"
+            translation_xyz="-0.00766044;0;0.0414279"
+            quaternion_xyzw="0;0.34202;0;0.939693"
+            output_pose="{lift}"
+          />
+          <Action ID="ResetVector" vector="{path}" />
+          <Action
+            ID="PushBackVector"
+            input_vector="{path}"
+            element="{lift}"
+            output_vector="{path}"
+          />
+          <Action
+            ID="ComputeInverseKinematics"
+            target_poses="{path}"
+            tip_links="gripper_end"
+            planning_scene_msg="{scene}"
+            planning_group_name="manipulator"
+            ik_timeout_s="0.5"
+            solve_mode="optimize_distance"
+            optimization_timeout_s="0.1"
+            link_padding="0.0"
+            solution="{goal}"
+          />
+          <Action
+            ID="TransformPose"
+            input_pose="{target_top}"
+            translation_xyz="-0.00766044;0;0.0414279"
+            quaternion_xyzw="0;0.34202;0;0.939693"
+            output_pose="{carry}"
+          />
+          <Action ID="ResetVector" vector="{path}" />
+          <Action
+            ID="PushBackVector"
+            input_vector="{path}"
+            element="{carry}"
+            output_vector="{path}"
+          />
+          <Action
+            ID="ComputeInverseKinematics"
+            target_poses="{path}"
+            tip_links="gripper_end"
+            planning_scene_msg="{scene}"
+            planning_group_name="manipulator"
+            ik_timeout_s="0.5"
+            solve_mode="optimize_distance"
+            optimization_timeout_s="0.1"
+            link_padding="0.0"
+            solution="{goal}"
+          />
+          <Action
+            ID="TransformPose"
+            input_pose="{target_top}"
+            translation_xyz="-0.00766044;0;-0.0165721"
+            quaternion_xyzw="0;0.34202;0;0.939693"
+            output_pose="{place}"
+          />
+          <Action ID="ResetVector" vector="{path}" />
+          <Action
+            ID="PushBackVector"
+            input_vector="{path}"
+            element="{place}"
+            output_vector="{path}"
+          />
+          <Action
+            ID="ComputeInverseKinematics"
+            target_poses="{path}"
+            tip_links="gripper_end"
+            planning_scene_msg="{scene}"
+            planning_group_name="manipulator"
+            ik_timeout_s="0.5"
+            solve_mode="optimize_distance"
+            optimization_timeout_s="0.1"
+            link_padding="0.0"
+            solution="{goal}"
+          />
+          <Action
+            ID="TransformPose"
+            input_pose="{target_top}"
+            translation_xyz="-0.068944;0;0.0628509"
+            quaternion_xyzw="0;0.34202;0;0.939693"
+            output_pose="{retreat}"
+          />
+          <Action ID="ResetVector" vector="{path}" />
+          <Action
+            ID="PushBackVector"
+            input_vector="{path}"
+            element="{retreat}"
+            output_vector="{path}"
+          />
+          <Action
+            ID="ComputeInverseKinematics"
+            target_poses="{path}"
+            tip_links="gripper_end"
+            planning_scene_msg="{scene}"
+            planning_group_name="manipulator"
+            ik_timeout_s="0.5"
+            solve_mode="optimize_distance"
+            optimization_timeout_s="0.1"
+            link_padding="0.0"
+            solution="{goal}"
+          />
+        </Sequence>
+        <!-- Tool tilted 60 degrees down. -->
+        <Sequence>
+          <Action
+            ID="TransformPose"
+            input_pose="{cube_top}"
+            translation_xyz="-0.045;0;0.0529423"
+            quaternion_xyzw="0;0.5;0;0.866025"
+            output_pose="{pregrasp}"
+          />
+          <Action ID="ResetVector" vector="{path}" />
+          <Action
+            ID="PushBackVector"
+            input_vector="{path}"
+            element="{pregrasp}"
+            output_vector="{path}"
+          />
+          <Action
+            ID="ComputeInverseKinematics"
+            target_poses="{path}"
+            tip_links="gripper_end"
+            planning_scene_msg="{scene}"
+            planning_group_name="manipulator"
+            ik_timeout_s="0.5"
+            solve_mode="optimize_distance"
+            optimization_timeout_s="0.1"
+            link_padding="0.0"
+            solution="{goal}"
+          />
+          <Action
+            ID="TransformPose"
+            input_pose="{cube_top}"
+            translation_xyz="-0.005;0;-0.0163397"
+            quaternion_xyzw="0;0.5;0;0.866025"
+            output_pose="{grasp}"
+          />
+          <Action ID="ResetVector" vector="{path}" />
+          <Action
+            ID="PushBackVector"
+            input_vector="{path}"
+            element="{grasp}"
+            output_vector="{path}"
+          />
+          <Action
+            ID="ComputeInverseKinematics"
+            target_poses="{path}"
+            tip_links="gripper_end"
+            planning_scene_msg="{scene}"
+            planning_group_name="manipulator"
+            ik_timeout_s="0.5"
+            solve_mode="optimize_distance"
+            optimization_timeout_s="0.1"
+            link_padding="0.0"
+            solution="{goal}"
+          />
+          <Action
+            ID="TransformPose"
+            input_pose="{cube_top}"
+            translation_xyz="-0.005;0;0.0436603"
+            quaternion_xyzw="0;0.5;0;0.866025"
+            output_pose="{lift}"
+          />
+          <Action ID="ResetVector" vector="{path}" />
+          <Action
+            ID="PushBackVector"
+            input_vector="{path}"
+            element="{lift}"
+            output_vector="{path}"
+          />
+          <Action
+            ID="ComputeInverseKinematics"
+            target_poses="{path}"
+            tip_links="gripper_end"
+            planning_scene_msg="{scene}"
+            planning_group_name="manipulator"
+            ik_timeout_s="0.5"
+            solve_mode="optimize_distance"
+            optimization_timeout_s="0.1"
+            link_padding="0.0"
+            solution="{goal}"
+          />
+          <Action
+            ID="TransformPose"
+            input_pose="{target_top}"
+            translation_xyz="-0.005;0;0.0436603"
+            quaternion_xyzw="0;0.5;0;0.866025"
+            output_pose="{carry}"
+          />
+          <Action ID="ResetVector" vector="{path}" />
+          <Action
+            ID="PushBackVector"
+            input_vector="{path}"
+            element="{carry}"
+            output_vector="{path}"
+          />
+          <Action
+            ID="ComputeInverseKinematics"
+            target_poses="{path}"
+            tip_links="gripper_end"
+            planning_scene_msg="{scene}"
+            planning_group_name="manipulator"
+            ik_timeout_s="0.5"
+            solve_mode="optimize_distance"
+            optimization_timeout_s="0.1"
+            link_padding="0.0"
+            solution="{goal}"
+          />
+          <Action
+            ID="TransformPose"
+            input_pose="{target_top}"
+            translation_xyz="-0.005;0;-0.0143397"
+            quaternion_xyzw="0;0.5;0;0.866025"
+            output_pose="{place}"
+          />
+          <Action ID="ResetVector" vector="{path}" />
+          <Action
+            ID="PushBackVector"
+            input_vector="{path}"
+            element="{place}"
+            output_vector="{path}"
+          />
+          <Action
+            ID="ComputeInverseKinematics"
+            target_poses="{path}"
+            tip_links="gripper_end"
+            planning_scene_msg="{scene}"
+            planning_group_name="manipulator"
+            ik_timeout_s="0.5"
+            solve_mode="optimize_distance"
+            optimization_timeout_s="0.1"
+            link_padding="0.0"
+            solution="{goal}"
+          />
+          <Action
+            ID="TransformPose"
+            input_pose="{target_top}"
+            translation_xyz="-0.045;0;0.0829423"
+            quaternion_xyzw="0;0.5;0;0.866025"
+            output_pose="{retreat}"
+          />
+          <Action ID="ResetVector" vector="{path}" />
+          <Action
+            ID="PushBackVector"
+            input_vector="{path}"
+            element="{retreat}"
+            output_vector="{path}"
+          />
+          <Action
+            ID="ComputeInverseKinematics"
+            target_poses="{path}"
+            tip_links="gripper_end"
+            planning_scene_msg="{scene}"
+            planning_group_name="manipulator"
+            ik_timeout_s="0.5"
+            solve_mode="optimize_distance"
+            optimization_timeout_s="0.1"
+            link_padding="0.0"
+            solution="{goal}"
+          />
+        </Sequence>
+        <Action
+          ID="ReportUnreachableCube"
+          cube="{carried_name}"
+          pose="{cube_top}"
+        />
+      </Fallback>
+      <Script code="holding := false" />
+      <Fallback>
+        <Sequence>
+          <SubTree ID="Close Gripper" />
+          <Action
+            ID="CreateRobotState"
+            joint_names="joint1;joint2;joint3;joint4;joint5;joint6;joint7"
+            positions="0;0;0;0;0;0;0"
+            joint_state_msg="{commanded_state}"
+          />
+          <SubTree
+            ID="reBot Open Jaw"
+            gripper_velocity_scale_factor="{gripper_velocity_scale_factor}"
+            gripper_acceleration_scale_factor="{gripper_acceleration_scale_factor}"
+            commanded_state="{commanded_state}"
+          />
+          <SubTree
+            ID="reBot Grasp Blue"
+            pick_hover="{pregrasp}"
+            pick="{grasp}"
+            lift="{lift}"
+            support_object="{effective_support}"
+            holding="{holding}"
+            joint_velocity_scale_factor="{joint_velocity_scale_factor}"
+            joint_acceleration_scale_factor="{joint_acceleration_scale_factor}"
+            cartesian_velocity_scale_factor="{cartesian_velocity_scale_factor}"
+            cartesian_acceleration_scale_factor="{cartesian_acceleration_scale_factor}"
+            gripper_velocity_scale_factor="{gripper_velocity_scale_factor}"
+            gripper_acceleration_scale_factor="{gripper_acceleration_scale_factor}"
+            commanded_state="{commanded_state}"
+          />
+          <SubTree
+            ID="reBot Move to Pose"
+            target="{carry}"
+            gripper_position="2.8125"
+            velocity_scale_factor="{joint_velocity_scale_factor}"
+            acceleration_scale_factor="{joint_acceleration_scale_factor}"
+            commanded_state="{commanded_state}"
+          />
+          <Action
+            ID="SetCollisionRule"
+            name_a="rebot_blue"
+            name_b="rebot_bench"
+            allow_collision="true"
+          />
+          <SubTree
+            ID="reBot Move Straight"
+            target="{place}"
+            gripper_position="2.8125"
+            velocity_scale_factor="{cartesian_velocity_scale_factor}"
+            acceleration_scale_factor="{cartesian_acceleration_scale_factor}"
+            commanded_state="{commanded_state}"
+          />
+          <SubTree
+            ID="reBot Release and Retreat"
+            place_hover="{retreat}"
+            holding="{holding}"
+            joint_velocity_scale_factor="{joint_velocity_scale_factor}"
+            joint_acceleration_scale_factor="{joint_acceleration_scale_factor}"
+            cartesian_velocity_scale_factor="{cartesian_velocity_scale_factor}"
+            cartesian_acceleration_scale_factor="{cartesian_acceleration_scale_factor}"
+            gripper_velocity_scale_factor="{gripper_velocity_scale_factor}"
+            gripper_acceleration_scale_factor="{gripper_acceleration_scale_factor}"
+            commanded_state="{commanded_state}"
+          />
+          <SubTree ID="Close Gripper" />
+        </Sequence>
+        <!-- Any failed step after motion starts ends home; the Objective still fails. -->
+        <Sequence>
+          <SubTree
+            ID="reBot Recover Home"
+            holding="{holding}"
+            velocity_scale_factor="{joint_velocity_scale_factor}"
+            acceleration_scale_factor="{joint_acceleration_scale_factor}"
+            commanded_state="{commanded_state}"
+          />
+          <AlwaysFailure />
+        </Sequence>
+      </Fallback>
+    </Sequence>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Recover Cube from Wall">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="reBot Bench" />
+      </MetadataFields>
+      <input_port name="prompt" default="red cube" type="std::string">
+        The cube to pull back from the wall.
+      </input_port>
+      <input_port name="other_prompt" default="blue cube" type="std::string">
+        The other cube, an obstacle on the way.
+      </input_port>
+      <input_port name="target_xyz" default="0.37;0.14;0.05" type="std::string">
+        Top-face centre to set the cube down at, world metres.
+      </input_port>
+      <input_port name="stacked" default="false" type="bool">
+        True for blue stacked on red: blue is located on red and red under
+        it; prompt and other_prompt are not used. The grasp automatically uses
+        rebot_red as its collision support, ignoring support_object.
+      </input_port>
+      <input_port
+        name="support_object"
+        default="rebot_bench"
+        type="std::string"
+      >
+        Collision object the cube rests on, which it may touch while grasped and
+        lifted when stacked=false. Stacked mode selects rebot_red automatically.
+      </input_port>
+      <input_port
+        name="target_xyzw"
+        default="0;0;0.9872;0.1593"
+        type="std::string"
+      >
+        The target's orientation: its x axis points away from the base (world
+        0.726, 0.022), as a located cube's does, so the robot-side approach
+        reaches it. Change it with target_xyz.
+      </input_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>

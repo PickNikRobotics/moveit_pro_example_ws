@@ -247,8 +247,8 @@ below). The heights differ on purpose; see the scene camera's field
 of view below. These stable
 `sensor_msgs/Image` and `CameraInfo` topics support the UI and later recording
 for policies such as pi0.5 (which resizes images to 224×224). Image and calibration topics follow the sibling configs' naming convention.
-Recording needs both RGB topics at about 30 Hz, and depth-aware cube
-checks need `/scene_camera/depth/color/points`; check all three with
+Recording needs both RGB topics at about 30 Hz, and the episode cycle's stack
+check needs `/scene_camera/depth/color/points`; check all three with
 `ros2 topic hz` before a run.
 The wrist image encoding is `rgb8`; the scene encoding is `bgr8`, matching
 the DepthAI v2 MJPEG decoder's OpenCV output. Recording consumers should honor
@@ -268,8 +268,8 @@ as an RGBD pipeline, with depth aligned to CAM_A at the colour stream's 640×400
 the depth image on `/scene_camera/depth/image_rect_raw` (with
 `/scene_camera/depth/camera_info`), in `scene_camera_color_optical_frame`, so it
 should line up pixel for pixel with the colour image. A `depth_image_proc`
-`point_cloud_xyz_node` turns it into `/scene_camera/depth/color/points`,
-for depth-aware cube checks. This OAK's stereo depth
+`point_cloud_xyz_node` turns it into `/scene_camera/depth/color/points`, which
+**Stack and Unstack Cycle** uses to confirm each stack. This OAK's stereo depth
 reads 4% long, so `scene_depth_scale: 0.96` multiplies every depth (the
 `scale_depth.py` node, between the depth image and the point cloud) before the
 cloud is built. Measured on 2026-10-13 in the calibrated `world` frame, it moved
@@ -279,9 +279,8 @@ find the factor along the camera rays that puts the empty mat at z=0, then check
 a known height; 1.0 publishes the depth unchanged. The colour stream's
 settings are the same either way. To run colour only, set
 `scene_aligned_depth: false` in the YAML or pass `scene_aligned_depth:=false`;
-the OAK then runs its RGB-only pipeline with the stereo pair off, and
-depth-aware checks are unavailable. Change `scene_mjpeg_quality` in the same
-YAML to adjust compression.
+the OAK then runs its RGB-only pipeline with the stereo pair off, and the cycle
+cannot confirm a stack. Change `scene_mjpeg_quality` in the same YAML to adjust compression.
 ISP luma/chroma denoising and sharpening are disabled to preserve detail.
 Allow a few seconds after startup for the scene camera's image to settle before
 recording; the first frames can look heavily processed.
@@ -720,8 +719,12 @@ or moving the cubes externally.
 
 The scene camera must publish RGB and CameraInfo on
 `/scene_camera/color/{image_raw,camera_info}` with calibrated optical TF into
-`world`; see [bench calibration](#bench-calibration) below. World is the printed red/green/blue frame, z=0 at the mat top. No scene
-depth is needed. SAM3 text prompts segment the red and blue cubes; the shared
+`world`; see [bench calibration](#bench-calibration) below. World is the printed red/green/blue frame, z=0 at the mat top.
+**Stack Blue on Red** uses RGB-only perception. **Unstack Blue from Red**,
+**Stack and Unstack Cycle**, and stacked **Recover Cube from Wall** also require
+the scene camera's aligned point cloud, `/scene_camera/depth/color/points`,
+to distinguish a stacked blue cube from one on the mat (see
+[the cycle](#unstack-and-the-stackunstack-episode-cycle)). SAM3 text prompts segment the red and blue cubes; the shared
 `FitCubeToMask` Behavior fits their full silhouettes to upright 50 mm cubes on
 that plane, rejects invalid or ambiguous fits, and returns their top centres.
 See [behavior contracts](../rebot_bench_behaviors/README.md) for the fit limits.
@@ -819,7 +822,7 @@ pick descent and lift, the place descent and both release retreats) and
 `gripper` (the opening at home, the grasp and the release). The two jaw closings
 at home, first and last, are the native **Close Gripper**, which plans to the closed
 limit at its own full scaling. **Pick Blue Cube**,
-**Stack Blue on Red** and **Prepare reBot Stack** load it at the start of every
+**Stack Blue on Red**, **Unstack Blue from Red** and **Prepare reBot Stack** load it at the start of every
 run through **reBot Stack Motion** and the `LoadMotionScales` Behavior, and
 every leg plans at its kind's factors. To change a speed, edit the file and
 rebuild `rebot_bench_base_config` (a symlink-install build reads the source
@@ -864,7 +867,114 @@ runtime, invoke the ordinary MCP tool:
 {"name":"run_objective","arguments":{"objective_name":"Stack Blue on Red"}}
 ```
 
-### Native episode recording
+### Unstack and the stack/unstack episode cycle
+
+**Unstack Blue from Red** reverses the stack. From home, before any motion, it
+locates blue with SAM3 as a cube resting on another cube (`Locate reBot Cube`
+with `support_height` 0.05 and `top_face_fallback`, since against the mat SAM3
+can segment the stacked cube's top face alone) and places red directly under it,
+since blue hides red's top face. It plans the grasp as Stack Blue on Red's own place descent
+reversed, **reBot Plan Place** for red: its place hover, then straight down to
+its release pose. Both must have collision-free IK, or the Objective fails
+without moving, with a message such as `blue cube at x=0.287 y=0.148 is outside
+the arm's reach`. It then draws a random spot on the mat for blue and keeps it
+only if both setting blue down there and the next stack's pick from there
+(**reBot Check Pick Reach**) have collision-free IK, redrawing up to 20 times.
+The next stack's place on red is the grasp just checked. A rejected draw names
+no cube, since none is out of reach; if no draw qualifies, the Objective fails
+without moving with `No reachable free spot for blue after 20 draws.` Only then does the arm move: close and open the jaw at
+home, grasp blue (**reBot Grasp Blue**), lift it 30 mm straight up without turning the
+wrist, so it clears red and the elbow stays off the wall (where that pose is out
+of reach, near the base, it lifts instead to a place hover 40 mm above the
+approach one; both are reach-checked before motion), carry it at about that height to above the spot, then set it down and release it there (**reBot Place Blue**, the stack's
+place on a different support), retreat, go home and close the jaw. A failure
+after motion starts runs **reBot Recover Home**, the stack's failure path: home,
+then the jaw closes unless it still holds the cube, and the Objective still
+fails. Speeds come from `rebot_stack_motion.yaml` like the stack's.
+
+The unstack's settings are in [`objectives/rebot_draw_place_spot.xml`](objectives/rebot_draw_place_spot.xml)
+unless noted:
+
+| Setting | Where | Value |
+|---|---|---|
+| Spot region | `DrawPlaceSpot` `x_range`, `y_range`: the cube centre's range in world | x 0.35-0.46 m, y 0.02-0.20 m: the base side of the proven set (the base is at x 0.726), every spot within 0.42 m of it so the pick back up keeps joint2 at or below 2.2 rad planned |
+| Heat-reach bound | `maximum` of every `IsPlannedJointAtMost` in [`objectives/rebot_check_pick_reach.xml`](objectives/rebot_check_pick_reach.xml), [`objectives/rebot_check_stack_reach.xml`](objectives/rebot_check_stack_reach.xml) `rebot_draw_place_spot.xml`, [`objectives/unstack_blue_from_red.xml`](objectives/unstack_blue_from_red.xml) and [`objectives/rebot_check_source_heat_reach.xml`](objectives/rebot_check_source_heat_reach.xml): a pick, place or spot whose IK puts joint2 past it is refused before any motion (a spot is redrawn). Joint2's heat per leg grows with reach, and the measured joint2 runs 0.07-0.16 rad past the plan under load; a leg planned to 2.29 rad from a 30 C start reached the 55 C heat stop | 2.2 rad, about 0.42 m from the base |
+| Clearance from red | `DrawPlaceSpot` `clearance`: smallest centre-to-centre distance | 0.11 m |
+| Draws before failing | `RetryUntilSuccessful` `num_attempts` | 20 |
+| Release aim offset | `translation_xyz` of `release_spot` in [`objectives/rebot_draw_place_spot.xml`](objectives/rebot_draw_place_spot.xml): released 5 degrees tilted, blue pivots flat and lands farther from the base | 5 mm toward the base (-x in the spot's axes, whose yaw follows the base) |
+| Carry height | `raised_spot` in `rebot_draw_place_spot.xml`: the carry ends 50 mm above the spot's place hover and only then descends, so it does not dip past red | 0.05 m |
+| Lift off red | `translation_xyz` of `lift` in `unstack_blue_from_red.xml`: the matched release pose of [`objectives/rebot_plan_place.xml`](objectives/rebot_plan_place.xml) raised 30 mm. It is written out, not derived, so change its z with the release | `-0.000871557;0;0.067045702`: 30 mm above the release |
+| Raised-hover lift | `translation_xyz` of `raised_red_top` in `unstack_blue_from_red.xml`: near the base, where the straight lift is out of reach, blue lifts to a place hover chosen this far above red's top instead | 0.04 m |
+
+The region is the part of the mat the scene camera sees and the stack's proven
+placements span: at least 60 mm in from the mat's edges and 100 mm from the
+foam. The clearance keeps the open jaw around either cube clear of the other.
+Edit the values and run again; Objective XML is read at each run. The drawn spot
+is published as a `place spot` marker.
+
+**Stack and Unstack Cycle** collects training episodes with MoveIt Pro's own
+recorder. It runs Stack Blue on Red, then Unstack Blue from Red, `num_cycles`
+times (default 5). Each leg is one recorded episode in the dataset
+`dataset_name`, labelled with its language prompt, `stack the blue on the red`
+or `unstack the blue from the red`: `RecordEpisode` starts it with the prompt as
+its task (retried for up to 10 s while the previous episode is still being
+written), and `SaveEpisode` keeps it once the scene camera confirms the leg
+from home; `StopRecording` closes the session 1 s later, once the saved episode
+has finished updating. After a stack, `IsCubeStacked` requires three things of
+blue: it fits a cube resting on another cube, its located centre lies within
+12 mm horizontally of red's centre as Stack Blue on Red located it before moving,
+and it stands that high in the scene camera's aligned depth. For the last, the
+cycle keeps the points of `/scene_camera/depth/color/points` inside the mask
+blue was fitted to (`GetMasks3DFromMasks2D`, `GetPointCloudFromMask3D`),
+transforms them to `world`, and requires their upper-quartile height above the
+mat to be at least 75 mm. The scene camera sees blue's top face and the side
+facing it, so that height sits near its top: about 95 mm stacked, at most 50 mm
+on the mat. Not the median: on the bench about 15% of the mask's depth pixels,
+at its edge, land on the mat behind the cube, which pulled a real stack's median
+to 65 mm while its upper quartile stayed at 94 mm. Colour
+alone cannot make this call: a lone blue on the mat just behind red, as the
+camera sees it, shows only its top face over red, which fits a stacked cube's
+top face within a few millimetres of red's centre. After an unstack, both cubes
+must fit whole cubes apart on the mat. Before saving, the blue mask's aligned
+depth must also have an upper-quartile height of at least 25 mm and below 75 mm,
+confirming a cube on the mat rather than one still stacked. The check uses the
+same extracted cloud for both bounds and refuses missing, empty or invalid
+depth before inverting the upper-bound condition; a missed physical grasp
+cannot be accepted on RGB alone. See
+[`objectives/rebot_check_unstacked_blue.xml`](objectives/rebot_check_unstacked_blue.xml).
+A failed motion attempts home recovery,
+closing an empty jaw while preserving a possibly held cube. Recovery can itself
+fail. A failed leg or confirmation stops recording without saving, which
+discards that leg's episode,
+and fails. Change `num_cycles`, `dataset_name`, `training_config` or
+`recorder_start_s` (the wait between starting a recording and moving) as
+Objective inputs, or their defaults in
+[`objectives/stack_and_unstack_cycle.xml`](objectives/stack_and_unstack_cycle.xml).
+The stack check's settings are `IsCubeStacked`'s in
+[`objectives/rebot_check_stacked_blue.xml`](objectives/rebot_check_stacked_blue.xml): `max_offset`
+0.012 m, the horizontal tolerance, which must stay above the stack's own
+placement error of about 5 mm or good stacks are discarded; `min_height`
+0.075 m, half way between a cube on the mat's top (50 mm) and a stacked cube's
+(100 mm), which leaves 25 mm for depth error either way; and `height_quantile`
+0.75, the share of blue's depth points below the height compared, which must
+stay above the share of edge pixels on the mat.
+`test/test_fit_cube.cpp` in `rebot_bench_behaviors` checks both against the bench
+camera's pose and intrinsics. The depth comes from the scene camera's
+`scene_aligned_depth` setting ([Optional real cameras](#optional-real-cameras));
+without it the first stack check fails and the cycle stops. Standalone unstack
+and stacked wall recovery use the same depth gate before scene setup or motion,
+so a lone blue on the mat cannot pass as a stacked cube from RGB alone.
+
+Each leg is its own Objective, **Recorded Stack Leg** and **Recorded Unstack
+Leg**, with the same inputs; the cycle repeats the pair. On the real arm the
+cycle cannot run at full speed without cooling: one leg takes joint2 from about
+40 °C to 50-53 °C, so the second leg of a pair would pass 55 °C. It has no
+temperature gate of its own. Collect real episodes one leg per start instead,
+alternating the two leg Objectives under the bench temperature monitor, which
+enables only when every motor is below 45 °C and disables at home after each
+leg. If any joint reaches 55 °C, send the arm home before continuing. **Stop** does not send the arm
+home, so cancel a cycle through the bench run monitor, whose heat cancel returns
+the arm home, rather than with **Stop**.
 
 The recorded topics come from the named training config
 [`config/training/rebot_bench_jpeg.json`](config/training/rebot_bench_jpeg.json):
@@ -874,8 +984,8 @@ one action topic and `/joint_commands` carries only teleoperation), and both
 cameras' JPEG `image_raw/compressed` topics at 30 Hz, about an eighth of the
 raw images' size. Its camera keys are explicit, `observation.images.scene` and
 `observation.images.wrist_mounted`: keys derived from the topic names would both
-be `observation.images.compressed`, and the recorder refuses the collision. A
-`RecordEpisode` caller should pass only `config_name` to `RecordEpisode`, never
+be `observation.images.compressed`, and the recorder refuses the collision. The
+cycle therefore passes only `config_name` to `RecordEpisode`, never
 `camera_topics`. Install the config once per runtime, either with
 `POST /train/configs` or by copying the file into the Trainer's
 `configs/` directory (`~/.local/share/moveit_pro/trainer/configs/` in the
@@ -931,8 +1041,8 @@ may only be released at home ([Real hardware](#real-hardware)).
 without `--instance` so the drivers container shares the host network and sees
 `can0` ([Run it without `--instance`](#run-it-without---instance)). SAM3
 perception needs CUDA: give the runtime container NVIDIA GPU access, or
-**Locate reBot Cubes** fails loading `libcuda.so.1`. Bring up both RGB cameras
-([Optional real cameras](#optional-real-cameras)) and check each
+**Locate reBot Cubes** fails loading `libcuda.so.1`. Bring up both cameras
+([Optional real cameras](#optional-real-cameras)) and check each colour stream
 publishes at about 30 Hz before a run. With `torque_enable: "false"`, enable all
 seven motors at home with `~/set_torque` (`std_srvs/srv/SetBool`, `data: true`);
 the service cannot enable the jaw alone.
@@ -980,3 +1090,26 @@ runtime after a YAML change; Objective XML is reread on every run.
 
 Pick depth and release move together: the release keeps the same cube contact
 only for the 35 mm grasp, so changing one alone can drive the cube into red.
+**Unstack Blue from Red** grasps blue at that release pose and lifts it to the
+same pose raised 30 mm, written out in `objectives/unstack_blue_from_red.xml`
+(the `lift` row in the unstack's settings above); change its z with the release.
+
+### Recover Cube from Wall
+
+**Recover Cube from Wall** is an experimental recovery Objective kept separate
+from the episode cycle. It approaches a cube near the foam wall with a low,
+tilted grasp, carries it into the stacking area, and attempts to return home.
+Its motion has not been validated on this revision or approved for real-arm
+use. The simulation grasp proxy cannot establish that a tilted grasp releases
+blue from a supporting red cube without carrying both.
+
+The inputs in [`objectives/recover_cube_from_wall.xml`](objectives/recover_cube_from_wall.xml)
+select `prompt` (`red cube`) and `other_prompt` (`blue cube`), then set the
+target top-face centre `target_xyz` (`0.37;0.14;0.05` world metres) and
+`target_xyzw` (`0;0;0.9872;0.1593`, its x axis away from the base). Change the
+orientation with the target position. `stacked=true` locates blue on red instead
+of using the prompts, and automatically selects `rebot_red` as the collision
+support. `support_object` applies only when `stacked=false` (its default
+`rebot_bench` describes a cube on the mat). Reach checks precede motion, and a
+failed motion attempts the shared home recovery. A possibly held cube keeps
+its jaw command; home recovery itself can fail.

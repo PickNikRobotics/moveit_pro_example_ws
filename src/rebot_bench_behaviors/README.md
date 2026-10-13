@@ -63,6 +63,11 @@ canceled or interrupted leg's held command be reconstructed afterwards.
 Objectives). It fails on a missing file, entry or factor, or a factor outside
 (0, 1], so a bad settings file stops a run before any motion.
 
+`DrawPlaceSpot` draws a uniformly random point inside an x/y rectangle, at least
+a clearance from another pose, at `z=0` in that pose's frame and with its
+orientation. Each tick draws anew; the unstack Objective retries it together with
+IK checks of the resulting place and pick poses to reject unreachable spots.
+
 `IsJointAtLeast` succeeds only when a joint's measured position, from a
 `sensor_msgs/JointState` such as `GetJointState`'s output, is at or above a
 minimum. The stack Objectives use it after opening the jaw, because a canceled
@@ -78,8 +83,8 @@ together. It is a geometric planning check, not a motor-temperature sensor.
 the height of `cube_points`, the depth points inside the cube's mask, at
 `height_quantile` (0.75 by default, above the median so mask-edge pixels on the
 mat behind the cube do not pull a stacked cube down) is at least `min_height`. All three inputs must be in one frame, with z=0 at the
-mat. Depth-aware stack checks compare blue against red as located before
-placement, so a blue that slid off onto the mat is rejected. Colour
+mat. The episode cycle runs it after each stack, against red as located before
+the stack, so a blue that slid off onto the mat is not saved as a stack. Colour
 alone cannot tell a blue resting on red from a blue on the mat just behind it,
 as the camera sees it; the depth height can. Its test runs `FitCubeToMask` with
 the bench scene camera's pose and intrinsics, with depth ray-cast from the mask.

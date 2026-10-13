@@ -9,7 +9,7 @@ foreach(package IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${package} REQUIRED)
 endforeach()
 add_library(${PROJECT_NAME} SHARED src/record_rebot_trajectory.cpp src/anchor_trajectory_to_command.cpp src/hold_gripper_in_trajectory.cpp
-  src/register_behaviors.cpp src/fit_cube_to_mask.cpp src/is_cube_stacked.cpp src/is_joint_at_least.cpp src/load_motion_scales.cpp
+  src/register_behaviors.cpp src/draw_place_spot.cpp src/fit_cube_to_mask.cpp src/is_cube_stacked.cpp src/is_joint_at_least.cpp src/load_motion_scales.cpp
   src/report_unreachable_cube.cpp)
 target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS} yaml-cpp::yaml-cpp)
 target_include_directories(${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include>)
@@ -27,6 +27,9 @@ if(BUILD_TESTING)
   ament_add_gtest(test_fit_cube test/test_fit_cube.cpp)
   ament_target_dependencies(test_fit_cube moveit_pro_test_utils)
   target_link_libraries(test_fit_cube ${PROJECT_NAME})
+  ament_add_gtest(test_draw_place_spot test/test_draw_place_spot.cpp)
+  ament_target_dependencies(test_draw_place_spot moveit_pro_test_utils)
+  target_link_libraries(test_draw_place_spot ${PROJECT_NAME})
   ament_add_gtest(test_hold_gripper test/test_hold_gripper.cpp)
   ament_target_dependencies(test_hold_gripper moveit_pro_test_utils)
   target_link_libraries(test_hold_gripper ${PROJECT_NAME})

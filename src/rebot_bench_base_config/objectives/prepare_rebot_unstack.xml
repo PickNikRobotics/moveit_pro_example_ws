@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Prepare reBot Unstack">
+  <BehaviorTree
+    ID="Prepare reBot Unstack"
+    _description="Locate the blue cube stacked on red and add both cubes, the bench and the wall to the planning scene. No motion is executed."
+  >
+    <Sequence>
+      <!-- Blue hides red's top face, so red is placed directly under blue. -->
+      <SubTree
+        ID="Locate reBot Cube"
+        prompt="blue cube"
+        mask_topic="/rebot/blue_cube_mask"
+        support_height="0.05"
+        top_face_fallback="true"
+        cube_top="{blue_top}"
+        cube_masks="{cube_masks}"
+      />
+      <Action
+        ID="TransformPose"
+        input_pose="{blue_top}"
+        translation_xyz="0;0;-0.05"
+        output_pose="{red_top}"
+      />
+      <SubTree
+        ID="reBot Check Stacked Blue"
+        cube_top="{blue_top}"
+        support_top="{red_top}"
+        cube_masks="{cube_masks}"
+      />
+      <SubTree
+        ID="reBot Stack Scene"
+        blue_top="{blue_top}"
+        red_top="{red_top}"
+      />
+    </Sequence>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Prepare reBot Unstack">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="reBot Bench" />
+      </MetadataFields>
+      <output_port name="blue_top" type="geometry_msgs::msg::PoseStamped" />
+      <output_port name="red_top" type="geometry_msgs::msg::PoseStamped" />
+    </SubTree>
+  </TreeNodesModel>
+</root>
