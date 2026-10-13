@@ -18,7 +18,7 @@
     <Control ID="Sequence" name="root">
       <!-- Create one resident client before execution or task-completion control nodes. -->
       <Action
-        ID="CreateGetActionChunkPolicy"
+        ID="ConnectPolicyService"
         policy_service_name="/get_action_chunk"
         policy="{policy}"
       />
