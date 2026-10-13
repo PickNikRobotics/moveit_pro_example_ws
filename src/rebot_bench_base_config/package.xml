@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <package format="3">
   <name>rebot_bench_base_config</name>
-  <version>10.2.0</version>
+  <version>10.3.0</version>
   <description>
     Shared reBot B601-RS configuration with mock arm hardware, seven commanded
     joints, and optional wrist D435 and fixed OAK-D RGB cameras.
