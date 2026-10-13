@@ -38,7 +38,6 @@ install(
 )
 
 install(PROGRAMS
-  script/forward_stereo_publisher.py
   script/lidar_flattener.py
   script/odometry_joint_state_publisher.py
   DESTINATION lib/${PROJECT_NAME}
@@ -62,9 +61,6 @@ if(BUILD_TESTING)
   ament_add_pytest_test(
           forward_stereo_calibration_test test/test_forward_stereo_calibration.py
           TIMEOUT 30)
-  ament_add_pytest_test(
-          forward_stereo_publisher_test test/test_forward_stereo_publisher.py
-          TIMEOUT 60)
   ament_add_pytest_test(
           lidar_flattener_test test/test_lidar_flattener.py
           TIMEOUT 60)
