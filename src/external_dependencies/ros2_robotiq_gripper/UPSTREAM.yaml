@@ -1,6 +1,6 @@
 upstream:
   repository: https://github.com/PickNikRobotics/ros2_robotiq_gripper.git
-  commit: 2ff85455d4b9f973c4b0bab1ce95fb09367f0d26
+  commit: a29c69b7516b7a97737b5e43e118e6598ace0832
   branch: humble
 vendored_paths:
   - LICENSE
