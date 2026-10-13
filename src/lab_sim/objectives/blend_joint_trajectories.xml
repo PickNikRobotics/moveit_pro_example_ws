@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Blend Joint Trajectories">
+  <BehaviorTree
+    ID="Blend Joint Trajectories"
+    _description="Demonstrates blending two point-to-point joint trajectories into a single smooth trajectory using BlendJointTrajectories."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree ID="Move to Waypoint" _collapsed="true" waypoint_name="Home" />
+      <!--Get the current planning scene and robot joint state to use as the starting point-->
+      <Action
+        ID="GetCurrentPlanningScene"
+        planning_scene_msg="{planning_scene}"
+      />
+      <Action
+        ID="GetRobotJointState"
+        robot_joint_state="{current_state}"
+        planning_group_name="manipulator"
+        planning_scene="{planning_scene}"
+      />
+      <!--Create target joint states for the manipulator group-->
+      <Action
+        ID="CreateJointState"
+        joint_names="linear_rail_joint;shoulder_pan_joint;shoulder_lift_joint;elbow_joint;wrist_1_joint;wrist_2_joint;wrist_3_joint"
+        positions="0.3468469487674742;-0.08122232656648681;-1.1118986430431266;0.7735698103006698;-1.2414135949062157;-1.5575126426436692;-0.0803135811027271"
+        joint_state_msg="{waypoint_look_at_table}"
+      />
+      <Action
+        ID="CreateJointState"
+        joint_names="linear_rail_joint;shoulder_pan_joint;shoulder_lift_joint;elbow_joint;wrist_1_joint;wrist_2_joint;wrist_3_joint"
+        positions="0.31742962464478663;-0.07518824419393247;-0.7207568718596512;0.8665668564352057;-1.6837956156664982;-1.5707507158288945;-0.07517349313281775"
+        joint_state_msg="{waypoint_above_pick}"
+      />
+      <!--Generate a point-to-point trajectory from the current state to "Look at Table"-->
+      <Action
+        ID="GeneratePointToPointTrajectory"
+        name="GenerateTrajectory1"
+        planning_group_name="manipulator"
+        start_state="{current_state}"
+        target_state="{waypoint_look_at_table}"
+        velocity_scale_factor="0.500000"
+        acceleration_scale_factor="0.500000"
+        jerk_scale_factor="1.000000"
+        trajectory_sampling_rate="100"
+        start_time="0.000000"
+        joint_trajectory_msg="{trajectory_1}"
+      />
+      <!--Generate a point-to-point trajectory from "Look at Table" to "Above Pick Object"-->
+      <Action
+        ID="GeneratePointToPointTrajectory"
+        name="GenerateTrajectory2"
+        planning_group_name="manipulator"
+        start_state="{waypoint_look_at_table}"
+        target_state="{waypoint_above_pick}"
+        velocity_scale_factor="0.500000"
+        acceleration_scale_factor="0.500000"
+        jerk_scale_factor="1.000000"
+        trajectory_sampling_rate="100"
+        start_time="0.000000"
+        joint_trajectory_msg="{trajectory_2}"
+      />
+      <!--Collect both trajectories into a vector using PushBackVector-->
+      <SubTree ID="CreateVector" _collapsed="true" vector="{trajectories}" />
+      <Action
+        ID="PushBackVector"
+        name="PushTrajectory1"
+        input_vector="{trajectories}"
+        element="{trajectory_1}"
+        output_vector="{trajectories}"
+      />
+      <Action
+        ID="PushBackVector"
+        name="PushTrajectory2"
+        input_vector="{trajectories}"
+        element="{trajectory_2}"
+        output_vector="{trajectories}"
+      />
+      <!--Blend the two trajectories into a single smooth trajectory-->
+      <Action
+        ID="BlendJointTrajectories"
+        joint_trajectories="{trajectories}"
+        planning_group_name="manipulator"
+        connection_tolerance="0.02"
+        blending_radius="0.5"
+        velocity_scale_factor="0.500000"
+        acceleration_scale_factor="0.500000"
+        jerk_scale_factor="1.000000"
+        trajectory_sampling_rate="100"
+        retime_after_blending="false"
+        joint_trajectory_msg="{blended_trajectory}"
+      />
+      <!--Switch to the trajectory controller and execute the blended trajectory-->
+      <Action
+        ID="SwitchController"
+        activate_controllers="joint_trajectory_admittance_controller"
+        activate_asap="true"
+      />
+      <Action
+        ID="ExecuteTrajectory"
+        controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+        joint_trajectory_msg="{blended_trajectory}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Blend Joint Trajectories">
+      <MetadataFields>
+        <Metadata subcategory="Application - Basic Examples" />
+        <Metadata runnable="true" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
