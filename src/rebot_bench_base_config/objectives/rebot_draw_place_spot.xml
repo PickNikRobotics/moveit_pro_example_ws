@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="reBot Draw Place Spot">
+  <BehaviorTree
+    ID="reBot Draw Place Spot"
+    _description="Draw a random spot on the mat for the blue cube, clear of red, and keep it only if placing blue there and picking it up from there again both have collision-free inverse kinematics. Fails with one message when no draw qualifies. No motion is executed."
+  >
+    <!-- The region is the cube centre's range in world: inside the scene
+         camera's view of the mat and the reach the stack placements proved,
+         at least 60 mm from the mat's edges and 100 mm from the foam. The
+         clearance is the smallest centre distance from red: the open jaw
+         straddling either cube stays clear of the other. -->
+    <Fallback>
+      <RetryUntilSuccessful num_attempts="20">
+        <Sequence>
+          <Action
+            ID="DrawPlaceSpot"
+            x_range="0.35;0.46"
+            y_range="0.02;0.20"
+            keep_clear_of="{red_top}"
+            clearance="0.11"
+            spot="{spot}"
+          />
+          <!-- The next stack must be able to pick blue up from the spot. Its
+               place on red is the unstack's own grasp, checked before the draw. -->
+          <Action
+            ID="TransformPose"
+            input_pose="{spot}"
+            translation_xyz="0;0;0.05"
+            output_pose="{spot_top}"
+          />
+          <SubTree
+            ID="reBot Check Pick Reach"
+            cube_top="{spot_top}"
+            pick_hover="{next_pick_hover}"
+            pick="{next_pick}"
+          />
+          <!-- Aim 5 mm toward the base to compensate the tilted release.
+               Check this actual release support before any motion. The next
+               pick check above remains at the expected landing spot. -->
+          <Action
+            ID="TransformPose"
+            input_pose="{spot}"
+            translation_xyz="-0.005;0;0"
+            output_pose="{release_spot}"
+          />
+          <SubTree
+            ID="reBot Plan Place"
+            support_top="{release_spot}"
+            place_hover="{place_hover}"
+            place="{place}"
+          />
+          <!-- The carry crosses at about the lift's height and descends only
+               over the spot: a carry that descended along the way clipped red. -->
+          <Action
+            ID="TransformPose"
+            input_pose="{spot}"
+            translation_xyz="0;0;0.05"
+            output_pose="{raised_spot}"
+          />
+          <SubTree
+            ID="reBot Select Place Hover"
+            red_top="{raised_spot}"
+            place_hover="{travel}"
+          />
+          <Action ID="GetCurrentPlanningScene" planning_scene_msg="{scene}" />
+          <Action ID="ResetVector" vector="{path}" />
+          <Action
+            ID="PushBackVector"
+            input_vector="{path}"
+            element="{place}"
+            output_vector="{path}"
+          />
+          <Action
+            ID="ComputeInverseKinematics"
+            target_poses="{path}"
+            tip_links="gripper_end"
+            planning_scene_msg="{scene}"
+            planning_group_name="manipulator"
+            ik_timeout_s="0.5"
+            solve_mode="optimize_distance"
+            optimization_timeout_s="0.1"
+            link_padding="0.0"
+            solution="{checked_goal}"
+          />
+          <!-- Joint2 heats with reach: past this a leg overruns its heat budget. -->
+          <Action
+            ID="IsPlannedJointAtMost"
+            robot_state="{checked_goal}"
+            joint_name="joint2"
+            maximum="2.2"
+            reason="heat budget: too far from the base"
+          />
+          <!-- Show the accepted spot in the 3D view and on /visual_markers. -->
+          <Action
+            ID="TransformPose"
+            input_pose="{spot}"
+            output_pose="{spot}"
+            visualize_pose="true"
+            marker_text="place spot"
+            marker_size="0.05"
+          />
+        </Sequence>
+      </RetryUntilSuccessful>
+      <Sequence>
+        <Action
+          ID="LogMessage"
+          log_level="error"
+          message="No reachable free spot for blue after 20 draws."
+        />
+        <AlwaysFailure />
+      </Sequence>
+    </Fallback>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="reBot Draw Place Spot">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="reBot Bench" />
+      </MetadataFields>
+      <input_port name="red_top" type="geometry_msgs::msg::PoseStamped">
+        Red's top face; the spot keeps clear of it and takes its yaw.
+      </input_port>
+      <output_port name="spot" type="geometry_msgs::msg::PoseStamped">
+        The drawn spot on the mat surface (z=0) in world.
+      </output_port>
+      <output_port
+        name="release_spot"
+        default="{release_spot}"
+        type="geometry_msgs::msg::PoseStamped"
+      >
+        Reach-checked support pose including the tilted-release aim correction.
+      </output_port>
+      <output_port name="travel" type="geometry_msgs::msg::PoseStamped">
+        Hover 50 mm above the spot's place hover, where the carry from red ends.
+      </output_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>

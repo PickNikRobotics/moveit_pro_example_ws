@@ -39,8 +39,8 @@
       <param name="mujoco_keyframe">$(arg mujoco_keyframe)</param>
       <param name="mujoco_viewer">$(arg mujoco_viewer)</param>
       <param name="render_publish_rate">30</param>
-      <!-- Depth-aware cube checks use the scene camera's aligned point cloud,
-           as on the bench (scene_aligned_depth). -->
+      <!-- The episode cycle confirms a stack from the scene camera's aligned
+           point cloud, as on the bench (scene_aligned_depth). -->
       <param name="point_cloud_publish_rate">5</param>
       <param name="tf_publish_rate">60</param>
     </hardware>

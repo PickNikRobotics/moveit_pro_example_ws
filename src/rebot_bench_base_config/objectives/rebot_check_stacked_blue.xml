@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="reBot Check Stacked Blue">
+  <BehaviorTree
+    ID="reBot Check Stacked Blue"
+    _description="Confirm blue is above red in RGB and aligned depth. Fails without motion when depth is missing or blue is on the mat."
+  >
+    <Sequence>
+      <Action
+        ID="GetPointCloud"
+        topic_name="/scene_camera/depth/color/points"
+        message_out="{scene_points}"
+        message_timeout_sec="5.0"
+      />
+      <Action
+        ID="GetCameraInfo"
+        topic_name="/scene_camera/color/camera_info"
+        message_out="{scene_camera_info}"
+        message_timeout_sec="5"
+        publisher_timeout_sec="5"
+      />
+      <Action
+        ID="GetMasks3DFromMasks2D"
+        point_cloud="{scene_points}"
+        masks2d="{cube_masks}"
+        camera_info="{scene_camera_info}"
+        masks3d="{stacked_blue_masks3d}"
+      />
+      <Action
+        ID="GetElementOfVector"
+        vector_in="{stacked_blue_masks3d}"
+        index="0"
+        element="{stacked_blue_mask3d}"
+      />
+      <Action
+        ID="GetPointCloudFromMask3D"
+        point_cloud="{scene_points}"
+        mask3d="{stacked_blue_mask3d}"
+        point_cloud_fragment="{stacked_blue_points}"
+      />
+      <Action
+        ID="TransformPointCloudFrame"
+        input_cloud="{stacked_blue_points}"
+        output_cloud="{stacked_blue_points}"
+        target_frame="world"
+      />
+      <Action
+        ID="IsCubeStacked"
+        cube_top="{cube_top}"
+        support_top="{support_top}"
+        max_offset="0.012"
+        cube_points="{stacked_blue_points}"
+        min_height="0.075"
+        height_quantile="0.75"
+      />
+    </Sequence>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="reBot Check Stacked Blue">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="reBot Bench" />
+      </MetadataFields>
+      <input_port name="cube_top" type="geometry_msgs::msg::PoseStamped" />
+      <input_port name="support_top" type="geometry_msgs::msg::PoseStamped" />
+      <input_port
+        name="cube_masks"
+        type="std::vector&lt;moveit_studio_vision_msgs::msg::Mask2D&gt;"
+      />
+    </SubTree>
+  </TreeNodesModel>
+</root>
