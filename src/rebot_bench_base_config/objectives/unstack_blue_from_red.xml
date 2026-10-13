@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Unstack Blue from Red">
+  <BehaviorTree
+    ID="Unstack Blue from Red"
+    _description="Locate the blue 50 mm cube stacked on red with SAM3, pick it off red, set it down at a random reachable spot on the mat clear of red, and return home with the jaw closed. Every pose is reach-checked before the arm moves; a step that fails after that still ends home. Requires calibrated world and RGB camera frames. Speeds come from objectives/rebot_stack_motion.yaml; the spot region from objectives/rebot_draw_place_spot.xml."
+  >
+    <Sequence>
+      <SubTree
+        ID="reBot Stack Motion"
+        joint_velocity_scale_factor="{joint_velocity_scale_factor}"
+        joint_acceleration_scale_factor="{joint_acceleration_scale_factor}"
+        cartesian_velocity_scale_factor="{cartesian_velocity_scale_factor}"
+        cartesian_acceleration_scale_factor="{cartesian_acceleration_scale_factor}"
+        gripper_velocity_scale_factor="{gripper_velocity_scale_factor}"
+        gripper_acceleration_scale_factor="{gripper_acceleration_scale_factor}"
+      />
+      <!-- No motion until blue is located from home and both its grasp and
+           the drawn spot are known to be reachable. -->
+      <SubTree
+        ID="Prepare reBot Unstack"
+        blue_top="{blue_top}"
+        red_top="{red_top}"
+      />
+      <!-- Grasp blue exactly where Stack Blue on Red releases it, along the
+           stack's place descent reversed: from its place hover straight down
+           to its release pose, then lift it. Plan Place
+           checks the hover's reach; check the grasp's and the lift's too. -->
+      <Fallback>
+        <Sequence>
+          <SubTree
+            ID="reBot Plan Place"
+            support_top="{red_top}"
+            place_hover="{pick_hover}"
+            place="{pick}"
+          />
+          <SubTree ID="reBot Check Source Heat Reach" target="{pick_hover}" />
+          <Action ID="GetCurrentPlanningScene" planning_scene_msg="{scene}" />
+          <Action ID="ResetVector" vector="{path}" />
+          <Action
+            ID="PushBackVector"
+            input_vector="{path}"
+            element="{pick}"
+            output_vector="{path}"
+          />
+          <Action
+            ID="ComputeInverseKinematics"
+            target_poses="{path}"
+            tip_links="gripper_end"
+            planning_scene_msg="{scene}"
+            planning_group_name="manipulator"
+            ik_timeout_s="0.5"
+            solve_mode="optimize_distance"
+            optimization_timeout_s="0.1"
+            link_padding="0.0"
+            solution="{goal}"
+          />
+          <Action
+            ID="IsPlannedJointAtMost"
+            robot_state="{goal}"
+            joint_name="joint2"
+            maximum="2.2"
+            reason="heat budget: too far from the base"
+          />
+          <!-- Lift 30 mm straight up from the grasp without turning the wrist,
+               so the elbow stays off the wall at the far corner. Near the base,
+               where that pose is out of reach, lift instead to a place hover
+               40 mm above the approach one. -->
+          <Fallback>
+            <Sequence>
+              <Action
+                ID="TransformPose"
+                input_pose="{red_top}"
+                translation_xyz="-0.000871557;0;0.067045702"
+                quaternion_xyzw="0;0.6755902076156602;0;0.7372773368101241"
+                output_pose="{lift}"
+              />
+              <Action ID="ResetVector" vector="{path}" />
+              <Action
+                ID="PushBackVector"
+                input_vector="{path}"
+                element="{lift}"
+                output_vector="{path}"
+              />
+              <Action
+                ID="ComputeInverseKinematics"
+                target_poses="{path}"
+                tip_links="gripper_end"
+                planning_scene_msg="{scene}"
+                planning_group_name="manipulator"
+                ik_timeout_s="0.5"
+                solve_mode="optimize_distance"
+                optimization_timeout_s="0.1"
+                link_padding="0.0"
+                solution="{goal}"
+              />
+              <Action
+                ID="IsPlannedJointAtMost"
+                robot_state="{goal}"
+                joint_name="joint2"
+                maximum="2.2"
+                reason="heat budget: too far from the base"
+              />
+            </Sequence>
+            <Sequence>
+              <Action
+                ID="TransformPose"
+                input_pose="{red_top}"
+                translation_xyz="0;0;0.04"
+                output_pose="{raised_red_top}"
+              />
+              <SubTree
+                ID="reBot Select Place Hover"
+                red_top="{raised_red_top}"
+                place_hover="{lift}"
+              />
+              <SubTree ID="reBot Check Source Heat Reach" target="{lift}" />
+            </Sequence>
+          </Fallback>
+        </Sequence>
+        <Action ID="ReportUnreachableCube" cube="blue cube" pose="{blue_top}" />
+      </Fallback>
+      <SubTree
+        ID="reBot Draw Place Spot"
+        red_top="{red_top}"
+        spot="{spot}"
+        release_spot="{release_spot}"
+        travel="{travel}"
+      />
+      <Script code="holding := false" />
+      <Fallback>
+        <Sequence>
+          <!-- Close the jaw first, planned natively from measured state, so the
+               commanded home below holds for the jaw too: the gripper legs are
+               generated from the command, and a stale jaw command would shift the
+               opening past its limit. Anchor to the commanded home rather than the
+               measured rest, since a sagged joint can measure past its limit and
+               GeneratePointToPointTrajectory refuses it. -->
+          <SubTree ID="Close Gripper" />
+          <Action
+            ID="CreateRobotState"
+            joint_names="joint1;joint2;joint3;joint4;joint5;joint6;joint7"
+            positions="0;0;0;0;0;0;0"
+            joint_state_msg="{commanded_state}"
+          />
+          <SubTree
+            ID="reBot Open Jaw"
+            gripper_velocity_scale_factor="{gripper_velocity_scale_factor}"
+            gripper_acceleration_scale_factor="{gripper_acceleration_scale_factor}"
+            commanded_state="{commanded_state}"
+          />
+          <SubTree
+            ID="reBot Grasp Blue"
+            pick_hover="{pick_hover}"
+            pick="{pick}"
+            lift="{lift}"
+            support_object="rebot_red"
+            holding="{holding}"
+            joint_velocity_scale_factor="{joint_velocity_scale_factor}"
+            joint_acceleration_scale_factor="{joint_acceleration_scale_factor}"
+            cartesian_velocity_scale_factor="{cartesian_velocity_scale_factor}"
+            cartesian_acceleration_scale_factor="{cartesian_acceleration_scale_factor}"
+            gripper_velocity_scale_factor="{gripper_velocity_scale_factor}"
+            gripper_acceleration_scale_factor="{gripper_acceleration_scale_factor}"
+            commanded_state="{commanded_state}"
+          />
+          <SubTree
+            ID="reBot Move to Pose"
+            target="{travel}"
+            gripper_position="2.8125"
+            velocity_scale_factor="{joint_velocity_scale_factor}"
+            acceleration_scale_factor="{joint_acceleration_scale_factor}"
+            commanded_state="{commanded_state}"
+          />
+          <SubTree
+            ID="reBot Place Blue"
+            support_top="{release_spot}"
+            support_object="rebot_bench"
+            holding="{holding}"
+            joint_velocity_scale_factor="{joint_velocity_scale_factor}"
+            joint_acceleration_scale_factor="{joint_acceleration_scale_factor}"
+            cartesian_velocity_scale_factor="{cartesian_velocity_scale_factor}"
+            cartesian_acceleration_scale_factor="{cartesian_acceleration_scale_factor}"
+            gripper_velocity_scale_factor="{gripper_velocity_scale_factor}"
+            gripper_acceleration_scale_factor="{gripper_acceleration_scale_factor}"
+            commanded_state="{commanded_state}"
+          />
+          <SubTree ID="Close Gripper" />
+        </Sequence>
+        <!-- Any failed step after motion starts ends home; the Objective still fails. -->
+        <Sequence>
+          <SubTree
+            ID="reBot Recover Home"
+            holding="{holding}"
+            velocity_scale_factor="{joint_velocity_scale_factor}"
+            acceleration_scale_factor="{joint_acceleration_scale_factor}"
+            commanded_state="{commanded_state}"
+          />
+          <AlwaysFailure />
+        </Sequence>
+      </Fallback>
+    </Sequence>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Unstack Blue from Red">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="reBot Bench" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

@@ -67,54 +67,19 @@
         commanded_state="{commanded_state}"
       />
       <SubTree
-        ID="reBot Move to Pose"
-        target="{pick_hover}"
-        gripper_position="5.25"
-        velocity_scale_factor="{joint_velocity_scale_factor}"
-        acceleration_scale_factor="{joint_acceleration_scale_factor}"
+        ID="reBot Grasp Blue"
+        pick_hover="{pick_hover}"
+        pick="{pick}"
+        lift="{pick_hover}"
+        support_object="rebot_bench"
+        holding="{holding}"
+        joint_velocity_scale_factor="{joint_velocity_scale_factor}"
+        joint_acceleration_scale_factor="{joint_acceleration_scale_factor}"
+        cartesian_velocity_scale_factor="{cartesian_velocity_scale_factor}"
+        cartesian_acceleration_scale_factor="{cartesian_acceleration_scale_factor}"
+        gripper_velocity_scale_factor="{gripper_velocity_scale_factor}"
+        gripper_acceleration_scale_factor="{gripper_acceleration_scale_factor}"
         commanded_state="{commanded_state}"
-      />
-      <SubTree
-        ID="reBot Move Straight"
-        target="{pick}"
-        gripper_position="5.25"
-        velocity_scale_factor="{cartesian_velocity_scale_factor}"
-        acceleration_scale_factor="{cartesian_acceleration_scale_factor}"
-        commanded_state="{commanded_state}"
-      />
-      <Script code="holding := true" />
-      <SubTree
-        ID="Move reBot Gripper"
-        waypoint_name="Stack Gripper Hold"
-        velocity_scale_factor="{gripper_velocity_scale_factor}"
-        acceleration_scale_factor="{gripper_acceleration_scale_factor}"
-        commanded_state="{commanded_state}"
-      />
-      <Action
-        ID="SetCollisionRule"
-        name_a="rebot_blue"
-        name_b="rebot_bench"
-        allow_collision="true"
-      />
-      <Action
-        ID="AttachObject"
-        object_id="rebot_blue"
-        link_name="gripper_end"
-        allowed_collision_links="gripper_left;gripper_right;gripper_end"
-      />
-      <SubTree
-        ID="reBot Move Straight"
-        target="{pick_hover}"
-        gripper_position="2.8125"
-        velocity_scale_factor="{cartesian_velocity_scale_factor}"
-        acceleration_scale_factor="{cartesian_acceleration_scale_factor}"
-        commanded_state="{commanded_state}"
-      />
-      <Action
-        ID="SetCollisionRule"
-        name_a="rebot_blue"
-        name_b="rebot_bench"
-        allow_collision="false"
       />
     </Sequence>
   </BehaviorTree>

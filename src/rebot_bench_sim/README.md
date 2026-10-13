@@ -82,7 +82,7 @@ file gives the grid-to-world mapping and the reasoning behind each entry.
 
 The colour topics and frames are the real drivers'. The scene depth image and
 point cloud are the real scene camera's `scene_aligned_depth` topics, aligned to
-its colour image, for depth-aware cube checks. The wrist
+its colour image, from which the episode cycle confirms each stack. The wrist
 depth is extra. Images render at 30 Hz for continuous validation video; point
 clouds publish at 5 Hz (`point_cloud_publish_rate` in
 `description/rebot_bench_sim.urdf.xacro`).
@@ -147,17 +147,23 @@ records these topics.
 - `test/test_sim_compressed_cameras.py` checks a compressed frame decodes back
   to the raw one, header and format included.
 - `test/objectives_integration_test.py` runs every runnable Objective against
-  the twin, as `lab_sim` does, except the stateful stack entry points, which
-  the evidence runs below validate.
+  the twin, as `lab_sim` does, except the SAM3 stack, unstack and cycle entry
+  points, which the CI image cannot run; see
+  [Unstack and cycle twin runs](#unstack-and-cycle-twin-runs) for what was run
+  by hand.
 
 ## SAM3 pick and stack
 
-The shared **Locate reBot Cubes**, **Pick Blue Cube**, and **Stack Blue on Red**
-Objectives live in `rebot_bench_base_config`; see its
+The shared **Locate reBot Cubes**, **Pick Blue Cube**, **Stack Blue on Red**,
+**Unstack Blue from Red** and **Stack and Unstack Cycle** Objectives live in
+`rebot_bench_base_config`; see its
 [run recipe](../rebot_bench_base_config/README.md#sam3-blue-on-red-stack).
-They use calibrated scene RGB and the known mat plane, with no scene depth or
-simulation state in perception. The same XML, waypoints, and
-`rebot_bench_behaviors` plugin are used on hardware.
+They locate cubes from calibrated scene RGB and the known mat plane, with no
+simulation state in perception. Locate, pick and standalone stack use RGB only.
+Unstack, the cycle, and stacked wall recovery also require the scene camera's
+aligned point cloud, `/scene_camera/depth/color/points`, which the twin publishes as the real camera
+does. The same XML, waypoints, and `rebot_bench_behaviors` plugin are used on
+hardware.
 
 ### Planning speed
 
@@ -203,6 +209,39 @@ penetration and 7.48 mm lateral drift during a 50 mm lift. The physical regressi
 `test_45_mm_grip_physically_lifts_a_cube_50_mm` remains a strict expected failure;
 it never enables the weld. Fixing contact fidelity is follow-up work. Set
 `sim_grasp_proxy: false` and rebuild to run the twin without assistance.
+
+### Unstack and cycle twin runs
+
+Run by hand in the twin at full planning speed, with the grasp proxy, and
+checked from MuJoCo truth. No artifacts from these runs are in the repository.
+
+Historical results on `b727505da1369a0f73ac6e2e9163d690e93ed8b5`, each
+from a cold twin restart. These runs predate the current reach settings,
+recovery changes and rebase; they do not validate this revision. The rebase
+was reviewed and tested without starting a twin or moving the real arm:
+
+- **Unstack Blue from Red, five placements.** Blue stacked on red, with red at
+  (0.288, 0.148), (0.400, 0.200), (0.360, 0.060), (0.400, 0.260) and
+  (0.310, 0.020). Every run left blue upright on the mat within 3.15 mm of its
+  drawn spot, moved red at most 0.077 mm, and ended home with the jaw closed; a
+  306 s hold afterwards drifted 0.000 mm. 5 of 5 passed.
+- **Stack and Unstack Cycle, five cycles back to back.** Every leg checked from
+  truth: each stack left blue on red within 2.82 mm, each unstack left blue
+  upright within 2.67 mm of its drawn spot, red moved at most 0.078 mm per leg,
+  and the arm was home with the jaw closed between legs; a 306 s hold afterwards
+  drifted 0.000 mm. It recorded 10 episodes, 5 per prompt, each with both camera
+  keys, at 29.99-30.01 Hz.
+- **Blue on the mat just behind red.** Red at (0.343, 0.145), a lone blue at
+  (0.40, 0.15), with the cycle's stack check run directly after locating red:
+  `IsCubeStacked` rejected it (`median height of 51 mm, below 75 mm`), no episode
+  was saved, and the arm did not move.
+- **Forced out of reach.** With the stack at x=0.12 y=0.15, Unstack Blue from
+  Red refused before any motion with `blue cube at x=0.120 y=0.150 is outside
+  the arm's reach`, and the arm stayed home with the jaw closed. With blue at
+  x=0.12 y=0.10, the cycle refused before motion and saved no episode.
+
+`scripts/record_stack_evidence.py`, below, scores Stack Blue on Red only;
+recording unstack and cycle truth with it is follow-up work.
 
 ### Recording validation evidence
 

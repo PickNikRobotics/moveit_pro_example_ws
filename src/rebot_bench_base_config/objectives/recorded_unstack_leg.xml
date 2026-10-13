@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Recorded Unstack Leg">
+  <BehaviorTree
+    ID="Recorded Unstack Leg"
+    _description="Record one MoveIt Pro episode labelled 'unstack the blue from the red': Unstack Blue from Red, then confirm from the scene camera that both cubes sit apart on the mat, and save it only then. A failed motion attempts home recovery, preserving a possibly held cube; its episode is discarded and the Objective fails."
+  >
+    <Sequence>
+      <RetryUntilSuccessful num_attempts="10">
+        <Fallback>
+          <Action
+            ID="RecordEpisode"
+            dataset_name="{dataset_name}"
+            task="unstack the blue from the red"
+            config_name="{training_config}"
+            num_episodes="1"
+          />
+          <Sequence>
+            <Action ID="WaitForDuration" delay_duration="1.0" />
+            <AlwaysFailure />
+          </Sequence>
+        </Fallback>
+      </RetryUntilSuccessful>
+      <Fallback>
+        <Sequence>
+          <!-- Both legs end at home with the jaw closed. RecordEpisode returns
+             before the recorder has started; wait for its first frames. It is
+             refused while the previous episode is still being written, so
+             retry it for up to 10 s. -->
+          <Action ID="WaitForDuration" delay_duration="{recorder_start_s}" />
+          <SubTree ID="Unstack Blue from Red" />
+          <!-- Both cubes fit whole cubes on the mat only when apart. -->
+          <SubTree
+            ID="Locate reBot Cubes"
+            blue_top="{unstacked_blue}"
+            red_top="{unstacked_red}"
+          />
+          <Action ID="SaveEpisode" />
+          <Action ID="WaitForDuration" delay_duration="1.0" />
+          <Action ID="StopRecording" />
+        </Sequence>
+        <!-- Stop recording without saving, which discards the episode. -->
+        <Sequence>
+          <ForceSuccess>
+            <Action ID="StopRecording" />
+          </ForceSuccess>
+          <AlwaysFailure />
+        </Sequence>
+      </Fallback>
+    </Sequence>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Recorded Unstack Leg">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="reBot Bench" />
+      </MetadataFields>
+      <input_port
+        name="dataset_name"
+        default="rebot_stack_unstack"
+        type="std::string"
+      >
+        Recorded MoveIt Pro dataset the episodes are added to.
+      </input_port>
+      <input_port
+        name="training_config"
+        default="rebot_bench_jpeg"
+        type="std::string"
+      >
+        Named training config giving the recorded topics and rate; see
+        config/training/rebot_bench_jpeg.json.
+      </input_port>
+      <input_port name="recorder_start_s" default="3.0" type="double">
+        Wait after starting each episode's recording before the leg moves.
+      </input_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>

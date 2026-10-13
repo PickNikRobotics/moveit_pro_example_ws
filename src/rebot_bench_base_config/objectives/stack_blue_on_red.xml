@@ -26,35 +26,9 @@
             commanded_state="{commanded_state}"
           />
           <SubTree
-            ID="reBot Select Place Hover"
-            red_top="{red_top}"
-            place_hover="{place_hover}"
-          />
-          <SubTree
-            ID="reBot Move to Pose"
-            target="{place_hover}"
-            gripper_position="2.8125"
-            velocity_scale_factor="{joint_velocity_scale_factor}"
-            acceleration_scale_factor="{joint_acceleration_scale_factor}"
-            commanded_state="{commanded_state}"
-          />
-          <Action
-            ID="SetCollisionRule"
-            name_a="rebot_blue"
-            name_b="rebot_red"
-            allow_collision="true"
-          />
-          <SubTree
-            ID="reBot Move Straight"
-            target="{place}"
-            gripper_position="2.8125"
-            velocity_scale_factor="{cartesian_velocity_scale_factor}"
-            acceleration_scale_factor="{cartesian_acceleration_scale_factor}"
-            commanded_state="{commanded_state}"
-          />
-          <SubTree
-            ID="reBot Release and Retreat"
-            place_hover="{place_hover}"
+            ID="reBot Place Blue"
+            support_top="{red_top}"
+            support_object="rebot_red"
             holding="{holding}"
             joint_velocity_scale_factor="{joint_velocity_scale_factor}"
             joint_acceleration_scale_factor="{joint_acceleration_scale_factor}"
@@ -91,6 +65,13 @@
         <Metadata runnable="true" />
         <Metadata subcategory="reBot Bench" />
       </MetadataFields>
+      <output_port
+        name="red_top"
+        default="{red_top}"
+        type="geometry_msgs::msg::PoseStamped"
+      >
+        Red's top face as located before any motion.
+      </output_port>
     </SubTree>
   </TreeNodesModel>
 </root>
