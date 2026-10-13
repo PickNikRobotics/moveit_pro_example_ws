@@ -61,6 +61,7 @@ if(BUILD_TESTING)
   target_compile_definitions(test_surface_coverage_capture PRIVATE
     LAB_OBJECTIVE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/objectives")
   find_package(ament_cmake_pytest REQUIRED)
+  ament_add_pytest_test(test_camera_renderer test/test_camera_renderer.py)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
   # Redirect ROS node logs into the test_results tree so the test-results CI

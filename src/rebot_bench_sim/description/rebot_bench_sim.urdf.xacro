@@ -9,6 +9,21 @@
   <xacro:arg name="mujoco_model" default="description/scene.xml" />
   <xacro:arg name="mujoco_keyframe" default="default" />
   <xacro:arg name="mujoco_viewer" default="false" />
+  <!-- Which renderer produces the cameras' color topics: opengl (the default), nyx, or both, as documented in lab_sim's picknik_ur.xacro; both is for side-by-side comparison only, since nothing then publishes the real color topics. runtime.launch.xml reads the same variable to start one Nyx node per camera, remapped onto the real cameras' topics. An empty value means opengl; an unrecognized one fails the description rather than leaving the config with no camera. -->
+  <xacro:arg
+    name="camera_renderer"
+    default="$(optenv MOVEIT_PRO_CAMERA_RENDERER opengl)"
+  />
+  <xacro:if value="${'$(arg camera_renderer)' not in ('', 'opengl', 'nyx', 'both')}">${xacro.fatal("MOVEIT_PRO_CAMERA_RENDERER is '$(arg camera_renderer)' for the robot description; set it to opengl, nyx or both, or leave it unset for opengl.")}</xacro:if>
+  <xacro:property name="camera_renderer" value="${'$(arg camera_renderer)' or 'opengl'}" />
+  <xacro:property
+    name="mujoco_color_on_real_topic"
+    value="${ dict(opengl=True, nyx=False, both=False)[camera_renderer] }"
+  />
+  <xacro:property
+    name="mujoco_color_under_opengl"
+    value="${ dict(opengl=False, nyx=False, both=True)[camera_renderer] }"
+  />
   <xacro:property name="layout" value="${xacro.load_yaml('$(arg layout)')}" />
 
   <!-- An xacro:arg keeps its first declaration, so these defaults win over
@@ -41,14 +56,34 @@
     <!-- The real cameras' topics. Image frames are the MJCF camera name plus
          "_optical_frame", so the cameras are named after the real frames. -->
     <sensor name="d435_color">
-      <param name="rgb_topic">/wrist_mounted_camera/color/image_raw</param>
-      <param name="camera_info_topic">/wrist_mounted_camera/color/camera_info</param>
+      <xacro:if value="${mujoco_color_on_real_topic}">
+        <param name="rgb_topic">/wrist_mounted_camera/color/image_raw</param>
+        <param name="camera_info_topic">/wrist_mounted_camera/color/camera_info</param>
+      </xacro:if>
+      <xacro:if value="${mujoco_color_under_opengl}">
+        <param name="rgb_topic">/wrist_mounted_camera/opengl/color/image_raw</param>
+        <param name="camera_info_topic">/wrist_mounted_camera/opengl/color/camera_info</param>
+      </xacro:if>
+      <!-- nyx: the Nyx node publishes color and camera_info on the real topics instead. -->
+      <xacro:unless value="${mujoco_color_on_real_topic or mujoco_color_under_opengl}">
+        <param name="color_enabled">false</param>
+      </xacro:unless>
       <param name="depth_topic">/wrist_mounted_camera/depth/image_rect_raw</param>
       <param name="points_topic">/wrist_mounted_camera/depth/color/points</param>
     </sensor>
     <sensor name="scene_camera_color">
-      <param name="rgb_topic">/scene_camera/color/image_raw</param>
-      <param name="camera_info_topic">/scene_camera/color/camera_info</param>
+      <xacro:if value="${mujoco_color_on_real_topic}">
+        <param name="rgb_topic">/scene_camera/color/image_raw</param>
+        <param name="camera_info_topic">/scene_camera/color/camera_info</param>
+      </xacro:if>
+      <xacro:if value="${mujoco_color_under_opengl}">
+        <param name="rgb_topic">/scene_camera/opengl/color/image_raw</param>
+        <param name="camera_info_topic">/scene_camera/opengl/color/camera_info</param>
+      </xacro:if>
+      <!-- nyx: the Nyx node publishes color and camera_info on the real topics instead. -->
+      <xacro:unless value="${mujoco_color_on_real_topic or mujoco_color_under_opengl}">
+        <param name="color_enabled">false</param>
+      </xacro:unless>
       <param name="depth_topic">/scene_camera/depth/image_rect_raw</param>
       <param name="points_topic">/scene_camera/depth/color/points</param>
     </sensor>

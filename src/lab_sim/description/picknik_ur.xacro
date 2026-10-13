@@ -2,15 +2,44 @@
 <robot name="ur5e" xmlns:xacro="http://ros.org/wiki/xacro">
   <xacro:arg name="mujoco_model" default="description/scene.xml" />
   <xacro:arg name="mujoco_model_package" default="lab_sim" />
-  <!-- Which renderer produces scene_camera's color topics. runtime.launch.xml reads the same variable to start the Nyx node for nyx and both. An unrecognized value fails the description rather than leaving the config with no camera.
-         opengl  MuJoCo's OpenGL renderer only. The default, and the only option on an image carrying no Nyx runtime, which is every image except amd64 NVIDIA.
-         nyx     Nyx on scene_camera/color and camera_info. MuJoCo keeps depth and points. Depth has no camera_info while the Nyx node is down.
-         both    MuJoCo on scene_camera/opengl/*, Nyx on scene_camera/nyx/*, and nothing on scene_camera/color. MuJoCo keeps depth and points.
+  <!-- Which renderer produces the cameras' color topics. runtime.launch.xml reads the same variable to start one Nyx node per camera for nyx and both, so set it in the environment, never through urdf_params, which the launch file cannot see. An empty value means opengl; an unrecognized one fails the description rather than leaving the config with no camera.
+         opengl  MuJoCo's OpenGL renderer only. The default, and the only option on an image without the Nyx runtime installed.
+         nyx     Nyx on <camera>/color and camera_info. MuJoCo keeps depth and points. Depth has no camera_info while the Nyx node is down.
+         both    MuJoCo on <camera>/opengl/*, Nyx on <camera>/nyx/*, and nothing on <camera>/color. MuJoCo keeps depth and points. For side-by-side comparison only: Objectives and detectors that read <camera>/color get no images.
        Nyx needs a scene exported ahead of time with nyx_export_scene; see src/nyx_renderer/README.md in moveit_pro. The node reports a missing scene and exits. -->
   <xacro:arg
     name="camera_renderer"
     default="$(optenv MOVEIT_PRO_CAMERA_RENDERER opengl)"
   />
+  <xacro:if value="${'$(arg camera_renderer)' not in ('', 'opengl', 'nyx', 'both')}">${xacro.fatal("MOVEIT_PRO_CAMERA_RENDERER is '$(arg camera_renderer)' for the robot description; set it to opengl, nyx or both, or leave it unset for opengl.")}</xacro:if>
+  <!-- The RGB cameras the renderer setting applies to, space separated. A config reusing this description with other cameras sets it in urdf_params, and its runtime.launch.xml starts one Nyx node per name. -->
+  <xacro:arg name="nyx_cameras" default="scene_camera wrist_camera" />
+  <xacro:property
+    name="nyx_color_off"
+    value="${ dict(opengl=False, nyx=True, both=False)['$(arg camera_renderer)' or 'opengl'] }"
+  />
+  <xacro:property
+    name="opengl_color_prefixed"
+    value="${ dict(opengl=False, nyx=False, both=True)['$(arg camera_renderer)' or 'opengl'] }"
+  />
+  <!-- One <sensor> per camera in `cameras`. nyx: the Nyx node publishes color and camera_info, so MuJoCo publishes only depth and points. both: each renderer's color image goes under its own prefix, so no consumer reads one renderer while expecting the other; depth and points stay unprefixed. -->
+  <xacro:macro name="camera_renderer_sensors" params="cameras">
+    <xacro:if value="${len(cameras.split()) > 0}">
+      <xacro:property name="camera" value="${cameras.split()[0]}" />
+      <xacro:if value="${nyx_color_off}">
+        <sensor name="${camera}">
+          <param name="color_enabled">false</param>
+        </sensor>
+      </xacro:if>
+      <xacro:if value="${opengl_color_prefixed}">
+        <sensor name="${camera}">
+          <param name="rgb_topic">${camera}/opengl/color</param>
+          <param name="camera_info_topic">${camera}/opengl/camera_info</param>
+        </sensor>
+      </xacro:if>
+      <xacro:camera_renderer_sensors cameras="${' '.join(cameras.split()[1:])}" />
+    </xacro:if>
+  </xacro:macro>
   <xacro:arg
     name="point_cloud_publish_rate"
     default="$(optenv MOVEIT_PRO_POINT_CLOUD_PUBLISH_RATE 10)"
@@ -1223,22 +1252,6 @@
       <!-- Whether to launch the MuJoCo interactive viewer -->
       <param name="mujoco_viewer">$(arg mujoco_viewer)</param>
     </hardware>
-    <!-- nyx: the Nyx node publishes scene_camera/color and camera_info, so MuJoCo publishes only depth and points. -->
-    <xacro:if
-      value="${ dict(opengl=False, nyx=True, both=False)['$(arg camera_renderer)'] }"
-    >
-      <sensor name="scene_camera">
-        <param name="color_enabled">false</param>
-      </sensor>
-    </xacro:if>
-    <!-- both: each renderer's color image goes under its own prefix, so no consumer reads one renderer while expecting the other. Depth and points stay unprefixed. -->
-    <xacro:if
-      value="${ dict(opengl=False, nyx=False, both=True)['$(arg camera_renderer)'] }"
-    >
-      <sensor name="scene_camera">
-        <param name="rgb_topic">scene_camera/opengl/color</param>
-        <param name="camera_info_topic">scene_camera/opengl/camera_info</param>
-      </sensor>
-    </xacro:if>
+    <xacro:camera_renderer_sensors cameras="$(arg nyx_cameras)" />
   </ros2_control>
 </robot>

@@ -20,6 +20,7 @@ hardware:
       path: "config/moveit/picknik_ur.srdf"
     urdf_params:
       - mujoco_model_package: "hand_eye_calibration_sim"
+      - nyx_cameras: "scene_camera_narrow scene_camera_wide wrist_camera"
 # Configuration for loading behaviors and objectives.
 # [Required]
 objectives:

@@ -36,3 +36,11 @@ Third-party files:
     their Google LLC license headers.
   - The 14 files in item_assets/ are modified by PickNik Inc. (geometry,
     collision and contact settings); each says so in a comment at its top.
+
+- Poly Haven texture terrazzo_tiles (https://polyhaven.com/a/terrazzo_tiles), by Amal Kumar
+  Released under CC0 1.0 (https://polyhaven.com/license), which requires no
+  attribution; credited here anyway.
+  - description/mujoco/assets/groundplane_albedo.png, groundplane_normal.png and
+    groundplane_orm.png are converted from it by PickNik Inc.: stored as
+    1024 x 1024 PNGs, with ambient occlusion, roughness and metalness packed into
+    the _orm map. They are not part of any model listed above.
