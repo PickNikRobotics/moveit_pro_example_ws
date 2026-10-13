@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:include
+    filename="$(find picknik_accessories)/descriptions/sensors/camera_renderer.urdf.xacro"
+  />
   <xacro:macro name="picknik_ur_mujoco_ros2_control" params="mujoco_model mujoco_viewer:=false publish_odom:=true enable_vo:=false">
 
     <ros2_control name="ur_mujoco_control" type="system">
@@ -98,6 +101,9 @@
         <state_interface name="linear_acceleration.y"/>
         <state_interface name="linear_acceleration.z"/>
       </sensor>
+      <!-- MOVEIT_PRO_CAMERA_RENDERER's sensor overrides for these cameras; see the macro for the
+           values. runtime.launch.xml starts one Nyx node per camera listed here. -->
+      <xacro:camera_renderer_sensors cameras="scene_camera wrist_camera" />
     </ros2_control>
   </xacro:macro>
 </robot>

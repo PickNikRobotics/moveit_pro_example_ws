@@ -35,9 +35,70 @@
   </default>
 
   <asset>
+    <!-- The small_hangar_01 HDRI from Poly Haven (CC0), tone-mapped to 8 bits as six faces stacked right, left, up, down, front, back. MuJoCo draws it as the background, and nyx_export_scene lights the Nyx scene with it. -->
+    <texture
+      type="skybox"
+      name="environment"
+      file="small_hangar_01_skybox.png"
+      gridsize="6 1"
+      gridlayout="RLUDFB"
+    />
     <!-- Textures and materials -->
     <material name="metal" rgba="0.58 0.58 0.58 1" />
+    <material
+      name="hangar_wall"
+      rgba="0.55 0.58 0.6 1"
+      roughness="0.8"
+      metallic="0"
+    />
+    <!-- Brushed stainless workcell table. roughness and metallic are 1 so the ORM map's channels set them, since Nyx multiplies the two. -->
+    <material
+      name="stainless_steel"
+      texrepeat="14 14"
+      rgba="0.74 0.75 0.77 1"
+      metallic="1"
+      roughness="1.0"
+      specular="1"
+      shininess="0.91"
+      reflectance="0.6"
+    >
+      <layer role="rgb" texture="steel_alb" />
+      <layer role="normal" texture="steel_nrm" />
+      <layer role="orm" texture="steel_orm" />
+    </material>
+    <!-- Ground to the horizon, from Poly Haven's gravelly_sand maps (CC0). -->
+    <material
+      name="dirt_ground"
+      texrepeat="14 14"
+      texuniform="true"
+      rgba="1 1 1 1"
+      specular="0.08"
+      shininess="0.05"
+      reflectance="0"
+      roughness="0.92"
+      metallic="0"
+    >
+      <layer role="rgb" texture="dirt_ground_alb" />
+      <layer role="normal" texture="dirt_ground_nrm" />
+      <layer role="orm" texture="dirt_ground_orm" />
+    </material>
+    <!-- Machined cast aluminium, kept separate from `metal` so the engine block reads as a casting rather than sheet stock. -->
+    <material
+      name="engine_block_cast_aluminum"
+      rgba="0.62 0.63 0.65 1"
+      metallic="1"
+      roughness="0.38"
+      specular="0.9"
+      shininess="0.62"
+      reflectance="0.35"
+    />
     <texture type="2d" name="UR20_DIFF_8bit_2K" file="UR20_DIFF_8bit_2K.png" />
+    <texture type="2d" name="dirt_ground_alb" file="dirt_ground_albedo.png" />
+    <texture type="2d" name="dirt_ground_nrm" file="dirt_ground_normal.png" />
+    <texture type="2d" name="dirt_ground_orm" file="dirt_ground_orm.png" />
+    <texture type="2d" name="steel_alb" file="brushed_stainless_rgb.png" />
+    <texture type="2d" name="steel_nrm" file="brushed_stainless_normal.png" />
+    <texture type="2d" name="steel_orm" file="brushed_stainless_orm.png" />
     <material
       name="UR20_DIFF_8bit_2K_png"
       texture="UR20_DIFF_8bit_2K"
@@ -102,9 +163,50 @@
 
   <worldbody>
     <light pos="0 0 1.5" dir="0 0 -1" directional="true" />
+    <geom
+      name="dirt_ground_plane"
+      type="plane"
+      pos="0 -0.7 -0.06"
+      size="18 18 0.1"
+      material="dirt_ground"
+      class="visual"
+    />
+    <!-- Visual-only hangar walls around the workcell, so every camera view ends in geometry rather than sky and the stainless table has surroundings to reflect. -->
+    <geom
+      name="hangar_wall_north"
+      type="box"
+      pos="0 7.3 2.94"
+      size="8 0.1 3"
+      material="hangar_wall"
+      class="visual"
+    />
+    <geom
+      name="hangar_wall_south"
+      type="box"
+      pos="0 -8.7 2.94"
+      size="8 0.1 3"
+      material="hangar_wall"
+      class="visual"
+    />
+    <geom
+      name="hangar_wall_east"
+      type="box"
+      pos="8 -0.7 2.94"
+      size="0.1 8 3"
+      material="hangar_wall"
+      class="visual"
+    />
+    <geom
+      name="hangar_wall_west"
+      type="box"
+      pos="-8 -0.7 2.94"
+      size="0.1 8 3"
+      material="hangar_wall"
+      class="visual"
+    />
     <!-- Define the workcell with the engine block part -->
     <body name="workcell" pos="0 0 0">
-      <geom material="metal" mesh="workcell" class="visual" />
+      <geom material="stainless_steel" mesh="workcell" class="visual" />
       <!-- Floor -->
       <!--<geom type="box" pos="0 -0.7 -0.05" size="1.385 1.4 0.01" class="collision"/>-->
       <geom type="box" pos="0 -0.7 -0.05" size="1 1 0.01" class="collision" />
@@ -117,7 +219,11 @@
       />
       <body name="engine_block" pos="0 -1.69 0.71" quat="0.707 0 0 0.707">
         <site name="engine_block_pose" />
-        <geom material="metal" mesh="engine_block" class="visual" />
+        <geom
+          material="engine_block_cast_aluminum"
+          mesh="engine_block"
+          class="visual"
+        />
         <geom mesh="engine_block_geometry_0" class="collision" />
         <geom mesh="engine_block_geometry_1" class="collision" />
         <geom mesh="engine_block_geometry_2" class="collision" />
@@ -300,6 +406,20 @@
                   />
                   <!-- Tool -->
                   <body name="tool_base" pos="0 0 0" gravcomp="1">
+                    <!-- Tool camera looking along tool_base +Y. The site is the camera turned 180 degrees about X, giving the REP 145 optical frame (x right, y down, z forward). -->
+                    <site
+                      name="tool_camera_optical_frame"
+                      pos="0 0.42 0.20"
+                      xyaxes="1 0 0 0 0 -1"
+                    />
+                    <camera
+                      name="tool_camera"
+                      pos="0 0.42 0.20"
+                      mode="fixed"
+                      xyaxes="1 0 0 0 0 1"
+                      fovy="65"
+                      resolution="1280 720"
+                    />
                     <geom
                       mesh="tool_base"
                       class="visual"

@@ -20,8 +20,6 @@ hardware:
       path: "config/moveit/picknik_ur.srdf"
     urdf_params:
       - mujoco_model_package: "april_tag_sim"
-      # Shares lab_sim's description but starts no Nyx nodes, so it stays on MuJoCo.
-      - camera_renderer: "opengl"
 # Configuration for loading behaviors and objectives.
 # [Required]
 objectives:

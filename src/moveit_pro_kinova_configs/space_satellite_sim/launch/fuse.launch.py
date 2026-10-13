@@ -32,48 +32,27 @@ def generate_launch_description():
                 executable="static_transform_publisher",
                 arguments=["0", "0", "0", "0", "0", "0", "world", "odom"],
             ),
-            # Set the rigid transforms between the AR tags and the target frame to be tracked.
-            Node(
-                package="tf2_ros",
-                executable="static_transform_publisher",
-                arguments=[
-                    "0",
-                    "-0.2",
-                    "0",
-                    "0",
-                    "0",
-                    "0",
-                    "satellite_tag_0",
-                    "target_frame_satellite_tag_0",
-                ],
-            ),
-            Node(
-                package="tf2_ros",
-                executable="static_transform_publisher",
-                arguments=[
-                    "0.2",
-                    "0.2",
-                    "0",
-                    "0",
-                    "0",
-                    "0",
-                    "satellite_tag_1",
-                    "target_frame_satellite_tag_1",
-                ],
-            ),
-            Node(
-                package="tf2_ros",
-                executable="static_transform_publisher",
-                arguments=[
-                    "-0.2",
-                    "0.2",
-                    "0",
-                    "0",
-                    "0",
-                    "0",
-                    "satellite_tag_2",
-                    "target_frame_satellite_tag_2",
-                ],
+            # Set the rigid transforms between the AR tags and the target frame to be tracked. Each
+            # camera's detector names its tags differently, so each gets its own copy of the offsets.
+            *(
+                Node(
+                    package="tf2_ros",
+                    executable="static_transform_publisher",
+                    arguments=[
+                        x,
+                        y,
+                        "0",
+                        "0",
+                        "0",
+                        "0",
+                        f"satellite_tag_{tag}{suffix}",
+                        f"target_frame_satellite_tag_{tag}{suffix}",
+                    ],
+                )
+                for suffix in ("", "_wrist")
+                for tag, (x, y) in enumerate(
+                    (("0", "-0.2"), ("0.2", "0.2"), ("-0.2", "0.2"))
+                )
             ),
             # run our estimator
             Node(

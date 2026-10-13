@@ -29,3 +29,11 @@ Third-party files:
     converted by PickNik Inc. in Blender from its
     meshes/accessories/fr3_duo_mount_v0_3/visual/fr3_duo_mount.dae and
     fr3_duo_cover.dae.
+
+- Poly Haven texture anti_skid_tiles (https://polyhaven.com/a/anti_skid_tiles), by Amal Kumar
+  Released under CC0 1.0 (https://polyhaven.com/license), which requires no
+  attribution; credited here anyway.
+  - description/mujoco/assets/groundplane_albedo.png, groundplane_normal.png and
+    groundplane_orm.png are converted from it by PickNik Inc.: stored as
+    1024 x 1024 PNGs, with ambient occlusion, roughness and metalness packed into
+    the _orm map. They are not part of any model listed above.
