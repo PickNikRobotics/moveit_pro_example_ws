@@ -2,25 +2,17 @@
   <compiler angle="radian" meshdir="assets" autolimits="true" />
 
   <default>
-    <!-- Structural collision meshes the lidars have to see.
-
-         The TIM571s are THREE_D_LIDAR cameras now, so they measure by rendering,
-         and the render pass skips group 3, which is what class="collision" is.
-         These 32 are the perimeter walls and box obstacles: unlike the other 45
-         collision_* meshes, they have no visual counterpart at the 0.175 m scan
-         plane, so leaving them in group 3 cost each unit roughly half its beams.
-         Promoting them makes the camera see what mj_ray saw (811/811 beams agree,
-         ranges to 0.009 mm), which is what keeps maps/ and the AMCL tuning valid.
-
-         Side effect: they are now visible to every camera too, but only in the
-         far field: the nearest surface that moves is 7.19 m out, so
-         manipulation perception is unaffected. contype/conaffinity are stated,
-         not inherited, to make clear this changes appearance only, not
-         collision. -->
+    <!-- Structural collision meshes the lidars have to see: the perimeter walls and box obstacles,
+         which unlike the other collision_* meshes have no visual counterpart at the 0.175 m scan
+         plane. The TIM571s are THREE_D_LIDAR cameras, so they measure by rendering; group 4 is
+         rendered by them alone (their geom_groups param in picknik_ur_mujoco_ros2_control.xacro)
+         and by no color camera, so the lidars see what mj_ray saw while the meshes stay out of
+         every image. contype/conaffinity are stated, not inherited, to make clear this changes
+         rendering only, not collision. -->
     <default class="collision_scannable">
       <geom
         type="mesh"
-        group="2"
+        group="4"
         contype="1"
         conaffinity="1"
         material="walls"
