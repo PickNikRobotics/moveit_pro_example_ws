@@ -49,6 +49,8 @@ public:
   const std::string & interface_name() const {return ifname_;}
 
 private:
+  friend struct CanBusTestAccess;
+
   void ReadThreadMain();
   void DispatchFrame(const can_frame & frame);
 

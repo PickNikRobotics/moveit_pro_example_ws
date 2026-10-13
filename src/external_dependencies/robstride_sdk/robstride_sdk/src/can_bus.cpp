@@ -177,7 +177,7 @@ void CanBus::DispatchFrame(const can_frame & frame)
   if (parsed.comm_type == COMM_MOTOR_FEEDBACK) {
     source_motor_id = static_cast<uint8_t>(parsed.data_area_2 & 0xFF);
   } else if (parsed.comm_type == COMM_FAULT_FEEDBACK) {
-    source_motor_id = static_cast<uint8_t>((parsed.data_area_2 >> 8) & 0xFF);
+    source_motor_id = static_cast<uint8_t>(parsed.data_area_2 & 0xFF);
   } else {
     return;
   }

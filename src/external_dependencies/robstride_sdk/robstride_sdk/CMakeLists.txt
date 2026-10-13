@@ -10,7 +10,8 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-find_package(ament_cmake REQUIRED)
+find_package(ament_cmake QUIET)
+include(CTest)
 
 add_library(${PROJECT_NAME}
   SHARED
@@ -37,12 +38,20 @@ install(DIRECTORY include/
 )
 
 if(BUILD_TESTING)
-  find_package(ament_lint_auto REQUIRED)
-  ament_lint_auto_find_test_dependencies()
+  add_executable(test_fault_feedback test/test_fault_feedback.cpp)
+  target_link_libraries(test_fault_feedback PRIVATE ${PROJECT_NAME})
+  foreach(test_case routing routing_without_motor_zero fault_bits overtemperature warning_bits short_frame motor_feedback)
+    add_test(NAME fault_feedback_${test_case} COMMAND test_fault_feedback ${test_case})
+  endforeach()
+  if(ament_cmake_FOUND)
+    find_package(ament_lint_auto REQUIRED)
+    ament_lint_auto_find_test_dependencies()
+  endif()
 endif()
 
-ament_export_include_directories(include)
-ament_export_libraries(${PROJECT_NAME})
-ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
-
-ament_package()
+if(ament_cmake_FOUND)
+  ament_export_include_directories(include)
+  ament_export_libraries(${PROJECT_NAME})
+  ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
+  ament_package()
+endif()

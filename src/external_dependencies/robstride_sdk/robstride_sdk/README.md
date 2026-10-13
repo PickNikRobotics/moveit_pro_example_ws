@@ -91,3 +91,20 @@ RobStride motors run at 1 Mbps CAN 2.0 with extended (29-bit) IDs. Bring the int
 ## 8. License
 
 Apache License 2.0. See [LICENSE](LICENSE).
+
+## Offline regression tests
+
+The fault-feedback tests exercise bus dispatch and motor decoding without opening
+a CAN interface. They can also run without ROS/ament:
+
+```sh
+cmake -S . -B build -DBUILD_TESTING=ON
+cmake --build build
+ctest --test-dir build --output-on-failure
+```
+
+Type 0x15 stores little-endian fault and warning words in
+`state().fault_bits` and `state().warning_bits`. Only the fault word sets
+`fault_present`; Type 2 updates its summary fault flag while retaining both
+detailed words. Four-byte fault frames update the fault word and retain the
+previous warning word.
