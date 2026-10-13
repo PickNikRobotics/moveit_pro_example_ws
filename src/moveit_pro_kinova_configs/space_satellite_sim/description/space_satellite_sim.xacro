@@ -1,14 +1,11 @@
 <?xml version="1.0"?>
 <robot name="gen3" xmlns:xacro="http://ros.org/wiki/xacro">
   <!-- Arguments for Kinova -->
-  <xacro:arg name="arm" default="gen3" />
-  <xacro:arg name="dof" default="7" />
   <xacro:arg name="mujoco_keyframe" default="default" />
   <xacro:arg name="mujoco_model" default="description/mujoco/scene.xml" />
   <xacro:arg name="mujoco_viewer" default="false" />
 
   <!-- Import macros for main hardware components -->
-  <xacro:include filename="$(find kortex_description)/arms/$(arg arm)/$(arg dof)dof/urdf/$(arg arm)_macro.xacro" />
   <xacro:include filename="$(find picknik_accessories)/descriptions/sensors/realsense_d415.urdf.xacro"/>
 
   <!-- Import service platform macro -->
