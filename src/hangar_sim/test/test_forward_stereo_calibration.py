@@ -30,13 +30,19 @@ import math
 from pathlib import Path
 import xml.etree.ElementTree as ET
 
-import yaml
-
 
 PACKAGE_ROOT = Path(__file__).parents[1]
-PARAMETERS = PACKAGE_ROOT / "params" / "forward_stereo.yaml"
 MODEL = PACKAGE_ROOT / "description" / "ur5e_ridgeback.xml"
 SCENE = PACKAGE_ROOT / "description" / "hangar_scene.xml"
+ROS2_CONTROL = PACKAGE_ROOT / "description" / "picknik_ur_mujoco_ros2_control.xacro"
+XACRO_NAMESPACE = "{http://ros.org/wiki/xacro}"
+
+# OAK-D Pro-compatible center-cropped OV9282 stereo profile. The real camera
+# should use the same 1280x720 @ 20 Hz profile for parity captures.
+WIDTH = 1280
+HEIGHT = 720
+VERTICAL_FOV_DEGREES = 50.53401584672457
+BASELINE_M = 0.075
 
 
 def parse_vector(element, attribute):
@@ -44,9 +50,6 @@ def parse_vector(element, attribute):
 
 
 def test_forward_stereo_model_matches_calibration():
-    parameters = yaml.safe_load(PARAMETERS.read_text())["forward_stereo_publisher"][
-        "ros__parameters"
-    ]
     root = ET.parse(MODEL).getroot()
     size = root.find("size")
     assert size is not None
@@ -62,19 +65,17 @@ def test_forward_stereo_model_matches_calibration():
 
     left_camera = cameras["forward_stereo_left"]
     right_camera = cameras["forward_stereo_right"]
-    left_site = sites[parameters["left_frame_id"]]
-    right_site = sites[parameters["right_frame_id"]]
+    left_site = sites["forward_stereo_left_optical_frame"]
+    right_site = sites["forward_stereo_right_optical_frame"]
 
-    expected_resolution = (parameters["width"], parameters["height"])
+    expected_resolution = (WIDTH, HEIGHT)
     assert parse_vector(left_camera, "resolution") == expected_resolution
     assert parse_vector(right_camera, "resolution") == expected_resolution
-    # picknik_mujoco_ros CameraConfig::DepthType::RGB_ONLY. The stereo bridge
-    # consumes color only, so depth rendering and point-cloud generation must
-    # remain disabled for these cameras.
+    # RGB_ONLY: the plugin's stereo pair publishes images only, never the simulated depth VO must compute.
     assert left_camera.attrib["user"] == "1"
     assert right_camera.attrib["user"] == "1"
-    assert float(left_camera.attrib["fovy"]) == parameters["vertical_fov_degrees"]
-    assert float(right_camera.attrib["fovy"]) == parameters["vertical_fov_degrees"]
+    assert float(left_camera.attrib["fovy"]) == VERTICAL_FOV_DEGREES
+    assert float(right_camera.attrib["fovy"]) == VERTICAL_FOV_DEGREES
 
     left_position = parse_vector(left_camera, "pos")
     right_position = parse_vector(right_camera, "pos")
@@ -82,7 +83,7 @@ def test_forward_stereo_model_matches_calibration():
     assert right_position == parse_vector(right_site, "pos")
     assert left_position[0] == right_position[0]
     assert left_position[2] == right_position[2]
-    assert math.isclose(left_position[1] - right_position[1], parameters["baseline_m"])
+    assert math.isclose(left_position[1] - right_position[1], BASELINE_M)
 
     camera_axes = (0.0, -1.0, 0.0, 0.0, 0.0, 1.0)
     optical_axes = (0.0, -1.0, 0.0, 0.0, 0.0, -1.0)
@@ -125,21 +126,46 @@ def test_forward_stereo_model_matches_calibration():
 
 
 def test_right_projection_translation_uses_ros_stereo_convention():
-    parameters = yaml.safe_load(PARAMETERS.read_text())["forward_stereo_publisher"][
-        "ros__parameters"
-    ]
-    focal_length_px = parameters["height"] / (
-        2.0 * math.tan(math.radians(parameters["vertical_fov_degrees"]) / 2.0)
+    focal_length_px = HEIGHT / (
+        2.0 * math.tan(math.radians(VERTICAL_FOV_DEGREES) / 2.0)
     )
-    projection_tx = -focal_length_px * parameters["baseline_m"]
+    projection_tx = -focal_length_px * BASELINE_M
 
     horizontal_fov_degrees = math.degrees(
-        2.0 * math.atan(parameters["width"] / (2.0 * focal_length_px))
+        2.0 * math.atan(WIDTH / (2.0 * focal_length_px))
     )
 
     assert math.isclose(focal_length_px, 762.7222992602944)
     assert math.isclose(horizontal_fov_degrees, 80.0)
     assert math.isclose(projection_tx, -57.20417244452208)
+
+
+def test_enable_vo_publishes_the_pair_as_mono8_rectified_stereo():
+    """With enable_vo, picknik_mujoco_ros publishes the pair on the topics VO subscribes to."""
+    root = ET.parse(ROS2_CONTROL).getroot()
+    enabled_blocks = [
+        block
+        for block in root.iter(f"{XACRO_NAMESPACE}if")
+        if block.attrib["value"] == "${enable_vo}"
+    ]
+    assert len(enabled_blocks) == 1
+    sensors = {
+        sensor.attrib["name"]: {
+            param.attrib["name"]: param.text for param in sensor.iter("param")
+        }
+        for sensor in enabled_blocks[0].iter("sensor")
+    }
+
+    assert sensors["forward_stereo"] == {
+        "stereo_left_camera": "forward_stereo_left",
+        "stereo_right_camera": "forward_stereo_right",
+    }
+    for side in ("left", "right"):
+        assert sensors[f"forward_stereo_{side}"] == {
+            "rgb_topic": f"/forward_stereo/{side}/image_rect",
+            "camera_info_topic": f"/forward_stereo/{side}/camera_info",
+            "image_encoding": "mono8",
+        }
 
 
 def test_mount_geoms_stay_behind_the_optical_plane():
