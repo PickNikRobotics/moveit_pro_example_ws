@@ -1,0 +1,25 @@
+franka_spine:
+  origin:
+    xyz: 0.042358 0.000378 0.495198
+    rpy: 0 0 0
+  mass: 21.909124
+  inertia:
+    xx: 3.338968145
+    xy: -0.000642887
+    xz: 0.299962762
+    yy: 3.324560297
+    yz: -0.004488422
+    zz: 0.281489258
+
+franka_spine_mounting_point:
+  origin:
+    xyz: 0 0 0
+    rpy: 0 0 0
+  mass: 0.01
+  inertia:
+    xx: 0.0001
+    xy: 0.0
+    xz: 0.0
+    yy: 0.0001
+    yz: 0.0
+    zz: 0.0001

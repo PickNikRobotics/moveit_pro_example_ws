@@ -1,0 +1,31 @@
+dual_arm_sim
+
+Unless otherwise noted, the files in this package are licensed under the BSD
+3-Clause License in the repository's LICENSE.
+
+Third-party files:
+
+- MuJoCo Menagerie Franka FR3 model (franka_fr3)
+  Licensed under the Apache License, Version 2.0. Its LICENSE file, which also
+  contains a BSD license section, is copied unchanged to
+  description/mujoco/LICENSE.
+  - The FR3 arm meshes in description/mujoco/assets/ are copied unchanged.
+  - description/mujoco/franka3.xml is derived from the model's fr3.xml and
+    modified by PickNik Inc.; it says so in a comment at its top.
+
+- MuJoCo Menagerie Franka Emika Panda model (franka_emika_panda), for the
+  Franka Hand
+  Licensed under the Apache License, Version 2.0; description/mujoco/LICENSE
+  carries the same Apache License text.
+  - hand.stl, hand_0.obj to hand_4.obj, finger_0.obj and finger_1.obj in
+    description/mujoco/assets/ are copied unchanged.
+
+- franka_description (FR3 Duo mount v0.3)
+  Copyright 2023 Franka Robotics GmbH
+  Licensed under the Apache License, Version 2.0. Its LICENSE file, which also
+  contains a BSD license section, is copied unchanged to
+  description/mujoco/LICENSE-franka_description.
+  - description/mujoco/assets/fr3_duo_mount.obj and fr3_duo_cover.obj were
+    converted by PickNik Inc. in Blender from its
+    meshes/accessories/fr3_duo_mount_v0_3/visual/fr3_duo_mount.dae and
+    fr3_duo_cover.dae.

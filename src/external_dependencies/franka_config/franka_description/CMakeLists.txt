@@ -17,9 +17,15 @@ cmake_minimum_required(VERSION 3.5)
 project(franka_description)
 find_package(ament_cmake REQUIRED)
 
-install(DIRECTORY
-  robots end_effectors meshes
-  DESTINATION share/${PROJECT_NAME}/
+
+install(
+  DIRECTORY
+    accessories
+    robots
+    end_effectors
+    meshes
+  DESTINATION
+    share/${PROJECT_NAME}/
 )
 
 ament_package()
