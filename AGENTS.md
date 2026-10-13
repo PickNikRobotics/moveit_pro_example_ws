@@ -183,6 +183,13 @@ params in a URDF `<sensor name="<camera>">` under `<ros2_control>`. Every non-li
 renders into the one `<global offwidth offheight>` buffer, so all must share that resolution.
 See `src/rebot_bench_sim/description/rebot_bench_sim.urdf.xacro`.
 
+### Read the start-up "bodies do not sit where the URDF places" warning after a mount change
+
+`picknik_mujoco_ros/MujocoSystem` compares every MJCF body with the same-named URDF link at hardware init and logs
+`N MuJoCo bodies do not sit where the URDF places the same-named link`, with the offset per body. After changing a
+mount, base or pedestal transform in either file, start the sim once and check it: even sub-millimetre entries mean
+the MJCF kept a transform the URDF no longer uses (dual_arm_sim's arm mounts after the franka_description 2.9.0 bump).
+
 ### MuJoCo documentation
 
 Refer to [docs.picknik.ai](https://docs.picknik.ai) for MuJoCo configuration guides:

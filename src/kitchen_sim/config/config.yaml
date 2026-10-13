@@ -4,7 +4,6 @@
 #
 ###############################################################
 
-based_on_package: "franka_base_config"
 runtime_launch_file:
   package: "kitchen_sim"
   path: "launch/runtime.launch.xml"
@@ -25,7 +24,7 @@ hardware:
       package: "kitchen_sim"
       path: "description/franka.urdf.xacro"
     srdf:
-      package: "franka_base_config"
+      package: "kitchen_sim"
       path: "config/moveit/franka.srdf"
     # Specify any additional parameters required for the URDF.
     # Many of these are specific to the UR descriptions packages, and can be customized as needed.
@@ -34,6 +33,37 @@ hardware:
       - mujoco_keyframe: "default"
       - mujoco_model: "description/mujoco/scene.xml"
       - mujoco_viewer: false
+
+ros_global_params:
+  use_sim_time: False
+
+# Configuration files for MoveIt.
+# [Required]
+moveit_params:
+  # Used by the Waypoint Manager to save joint states from this joint group.
+  joint_group_name: "manipulator"
+
+  kinematics:
+    package: "kitchen_sim"
+    path: "config/moveit/pose_ik_distance.yaml"
+  sensors_3d:
+    package: "kitchen_sim"
+    path: "config/moveit/sensors_3d.yaml"
+  joint_limits:
+    package: "kitchen_sim"
+    path: "config/moveit/joint_limits.yaml"
+  pose_jog:
+    package: "kitchen_sim"
+    path: "config/moveit/pose_jog.yaml"
+  joint_jog:
+    package: "kitchen_sim"
+    path: "config/moveit/joint_jog.yaml"
+
+  publish:
+    planning_scene: True
+    geometry_updates: True
+    state_updates: True
+    transforms_updates: True
 
 # Configuration for loading behaviors and objectives.
 # [Required]

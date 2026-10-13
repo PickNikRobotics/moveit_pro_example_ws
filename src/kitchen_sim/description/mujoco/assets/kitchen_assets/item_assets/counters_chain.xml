@@ -1,3 +1,5 @@
+<!-- From the Gymnasium-Robotics kitchen_franka assets (Copyright 2019 The DSuite Authors,
+     Apache License, Version 2.0; ../LICENSE.md). Modified by PickNik Inc., 2026. -->
 <mujocoinclude>
   <body name="counters" childclass="counters">
     <geom material="counter_blue" mesh="cabinetbase" />

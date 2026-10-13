@@ -38,7 +38,6 @@ The `moveit_pro_sam3` package is part of this repository but contains no model f
 - `so101_base_config`
 - `so101_sim`
 - `vla_sim`
-- `moveit_pro_franka_configs/franka_base_config`
 - `moveit_pro_kinova_configs/kinova_gen3_base_config`
 - `moveit_pro_kinova_configs/kinova_sim`
 - `moveit_pro_kinova_configs/space_satellite_sim`
