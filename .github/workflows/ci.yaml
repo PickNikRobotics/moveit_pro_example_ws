@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       image_tag:
-        description: 'The tag of the image to use for the container'
+        description: 'moveit_pro branch whose moveit-pro-ci branch image to use (defaults to the triggering branch)'
         required: false
         default: ''
   repository_dispatch:
@@ -122,7 +122,8 @@ jobs:
             const containerRegistryUrl =
               process.env.CONTAINER_REGISTRY_URL || '682033501538.dkr.ecr.us-east-1.amazonaws.com';
             // The ECR repository moveit_pro's `pr-image` job retags its validated
-            // candidate into, as `pr-<moveit_pro PR number>-<distro>-amd64`.
+            // candidate into, as `pr-<moveit_pro PR number>-<distro>-amd64`, and
+            // where its branch pipelines publish `branch-<ref>-<distro>-amd64`.
             // Nothing logs in to pull it: the picknik-16-amd64-gpu runner pod
             // carries amazon-ecr-credential-helper wired to a pull-only IRSA role,
             // so the `container:` image in the reusable integration workflow
@@ -312,49 +313,35 @@ jobs:
               }
             } else {
               // push, schedule, workflow_dispatch. A `workflow_dispatch` input
-              // (`image_tag`, declared at the top of this file) lets an
-              // operator pin the image manually; honor it before falling back
-              // to the triggering branch name.
+              // (`image_tag`, declared at the top of this file) names the
+              // moveit_pro branch whose `branch-<ref>` image to pull; honor it
+              // before falling back to the triggering branch name.
               const dispatchTag = (context.payload.inputs && context.payload.inputs.image_tag) || '';
               image_tag = dispatchTag || (context.ref || 'refs/heads/main').replace(/^refs\/heads\//, '');
             }
 
             // moveit_pro_ci v0.9.0 appends NOTHING, so build a complete,
-            // suffix-bearing image_ref for every GPU path. The fallback below
-            // always uses the per-arch shape — <tag>-<distro>-amd64<suffix> —
-            // matching the picknik-16-amd64-gpu runner below.
+            // suffix-bearing image_ref for every GPU path.
             //
-            // moveit_pro no longer publishes arch-less aliases for the lines
-            // this branch targets. `main` froze its arch-less aliases on
-            // 2026-06-03 (main-jazzy-cuda12.6-cudnn9 is stuck at that date on
-            // Docker Hub). The v9.4 line publishes per-arch tags ONLY for the
-            // cuda13.2 jazzy build (internal_binaries pushes
-            // v9.4-jazzy-amd64-cuda13.2-cudnn9 straight to Docker Hub; the
-            // arch-less v9.4-jazzy-cuda13.2-cudnn9 alias is never created —
-            // verified absent on Docker Hub). A push to this branch resolves
-            // image_tag=v9.4, so the old `image_tag === 'main'` gate left the
-            // -amd64 off and the pull 404'd. Always append -amd64 here.
+            // The base-branch fallback is `branch-<ref>-<distro>-amd64<suffix>`
+            // in the same private ECR repository, matching the
+            // picknik-16-amd64-gpu runner below. moveit_pro writes a Docker Hub
+            // tag only for a release tag and for `main`, so a release branch such
+            // as v10.2 has no Docker Hub tag to fall back on. moveit_pro's
+            // publish-runtime.yaml writes `branch-<ref>` for main and v10.2 onward.
             //
-            // The base-branch default deliberately stays on Docker Hub rather
-            // than moving to the fresher `moveit-pro-ci:branch-<base>` image.
-            // This default has to resolve for every base this file serves, and
-            // the comment above establishes that includes release branches
-            // running with image_tag=v9.4. `moveit-pro-ci:branch-<sanitized>`
-            // exists only for branches whose pipeline has run under moveit_pro's
-            // new publish-runtime.yaml; its v9.4 / v10.0 / v10.1 lines write no
-            // ECR branch tag at all. Docker Hub is the only registry carrying a
-            // tag for every base, and moveit_pro's full runs keep those current.
-            //
-            // Note this is NOT about fork pull requests lacking credentials: the
-            // ECR pull rides the runner pod's own identity, not the trigger's, so
-            // a fork run landing on picknik-16-amd64-gpu would pull ECR fine. The
-            // lfs_cache_s3_bucket gate further down is the one that really turns
-            // on OIDC.
+            // `image_tag` is a raw ref here, so normalize it the way moveit_pro's
+            // `set_docker_cache_source` does for the characters branch names use:
+            // everything outside `[A-Za-z0-9_.-]` becomes `_`, so `release/9.4`
+            // is published as `branch-release_9.4`. Only the fallback is
+            // normalized; `image_tag` stays raw for the cache namespace it also
+            // names.
             //
             // repository_dispatch is excluded: it returned above when its payload
             // carried no image_ref, so it never reaches this fallback.
             if (image_ref === '') {
-              image_ref = `${dockerhubUsername}/moveit-pro:${image_tag}-{0}-amd64`;
+              const sanitizedRef = image_tag.replace(/[^A-Za-z0-9_.-]/g, '_');
+              image_ref = `${containerRegistryUrl}/${ciImageRepository}:branch-${sanitizedRef}-{0}-amd64`;
             }
             if (!image_ref_has_suffix) {
               image_ref = `${image_ref}${gpu_image_suffix}`;
