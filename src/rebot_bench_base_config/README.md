@@ -164,8 +164,8 @@ runtime dependency is included.
 | Motor / coordinate | Meaning | Approved motor range (degrees) | Stored motor speed (rad/s) |
 | --- | --- | --- | --- |
 | J1 / `joint1` | Pan | −145 … 145 | 10 |
-| J2 / `joint2` | Shoulder lift | 0 … 203 | 10 |
-| J3 / `joint3` | Elbow | 0 … 239 | 10 |
+| J2 / `joint2` | Shoulder lift | −1.146 … 203 | 10 |
+| J3 / `joint3` | Elbow | −0.573 … 239 | 10 |
 | J4 / `joint4` | Wrist flex | −106 … 86 | 1 |
 | J5 / `joint5` | Wrist yaw | −101 … 108 | 33 |
 | J6 / `joint6` | Wrist roll | −175 … 175 | 33 |
@@ -173,6 +173,10 @@ runtime dependency is included.
 
 These approved motor-frame ranges replace upstream's model limits; some are
 wider and some narrower.
+The exact J2/J3 lower bounds are −0.02/−0.01 rad; the degree values above are
+rounded. J7 and both dependent jaw sliders retain zero lower bounds.
+[Lower-limit commissioning](docs/lower-limit-commissioning.md) records the
+observations, uncertainty and deployment cleanup for these home margins.
 **Planning limits are 0.6 rad/s and 1.2 rad/s² on joint1-joint6**, twice the measured
 teleop limits (0.3 rad/s, 0.6 rad/s²), **and 3.0 rad/s and 6.0 rad/s² on the gripper
 (joint7)**, its measured teleop limits, all below the stored motor speeds. The jaw is not

@@ -30,7 +30,9 @@ def model(tmp_path_factory):
 
 def test_measured_motor_limits(model):
     low, high = model.get_group_position_bounds("manipulator")
-    assert np.allclose(low, np.radians([-145, 0, 0, -106, -101, -175]))
+    assert np.allclose(
+        low, [radians(-145), -0.02, -0.01, radians(-106), radians(-101), radians(-175)]
+    )
     assert np.allclose(high, np.radians([145, 203, 239, 86, 108, 175]))
     # The gripper group has two dependent sliders and one commanded motor coordinate.
     state = robot_state.RobotState(model)

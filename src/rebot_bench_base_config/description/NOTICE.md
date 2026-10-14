@@ -44,6 +44,12 @@ Modified by PickNik Inc., 2026-10-12:
 - A wrapping description that defines the `world` placement properties before
   including this file keeps them over the placement arguments.
 
+Modified by PickNik Inc., 2026-10-14:
+
+- Set conservative home margins of −0.02 rad for J2 and −0.01 rad for J3,
+  retaining J7's zero lower bound. These are approved operating limits, not
+  measured negative hard stops.
+
 Original URDF export notice retained in `rebot.urdf.xacro`: SolidWorks to URDF
 Exporter, Stephen Brawner (brawner@gmail.com), commit `1.6.0-4-g7f85cfe`,
 build `1.6.7995.38578`; http://wiki.ros.org/sw_urdf_exporter.

@@ -51,7 +51,7 @@
         mass="1.552"
         fullinertia="0.00073374 0.01255987 0.01281387 -0.00000043 0.00000851 0.00000128"
       />
-      <joint name="joint2" class="rs06" axis="0 0 1" range="0 3.543018381548" />
+      <joint name="joint2" class="rs06" axis="0 0 1" range="-0.02 3.543018381548" />
       <geom class="visual" mesh="motor_2_3" material="rs_motor_black" />
       <geom class="visual" mesh="cnc2" material="rs_anodized_silver" />
       <geom class="visual" mesh="pla2_internal" material="rs_pla_black" />
@@ -109,7 +109,7 @@
           name="joint3"
           class="rs06"
           axis="0 0 -1"
-          range="0 4.171336912266"
+          range="-0.01 4.171336912266"
         />
         <geom class="visual" mesh="cnc3" material="rs_anodized_silver" />
         <geom class="visual" mesh="motor_4" material="rs_motor_black" />
