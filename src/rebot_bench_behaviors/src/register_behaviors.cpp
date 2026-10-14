@@ -50,6 +50,7 @@ public:
     moveit_pro::behaviors::registerBehavior<HoldGripperInTrajectory>(factory, "HoldGripperInTrajectory", context);
     moveit_pro::behaviors::registerBehavior<IsCubeStacked>(factory, "IsCubeStacked", context);
     moveit_pro::behaviors::registerBehavior<IsJointAtLeast>(factory, "IsJointAtLeast", context);
+    moveit_pro::behaviors::registerBehavior<IsPlannedJointAtMost>(factory, "IsPlannedJointAtMost", context);
     moveit_pro::behaviors::registerBehavior<LoadMotionScales>(factory, "LoadMotionScales", context);
     moveit_pro::behaviors::registerBehavior<ReportUnreachableCube>(factory, "ReportUnreachableCube", context);
   }

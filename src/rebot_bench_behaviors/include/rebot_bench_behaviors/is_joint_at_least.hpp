@@ -41,4 +41,14 @@ public:
   static BT::KeyValueVector metadata();
   BT::NodeStatus tick() override;
 };
+
+/** Succeeds when a joint's planned position is at or below a maximum, for example a heat budget on reach. */
+class IsPlannedJointAtMost final : public moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>
+{
+public:
+  using SharedResourcesNode::SharedResourcesNode;
+  static BT::PortsList providedPorts();
+  static BT::KeyValueVector metadata();
+  BT::NodeStatus tick() override;
+};
 }  // namespace rebot_bench_behaviors

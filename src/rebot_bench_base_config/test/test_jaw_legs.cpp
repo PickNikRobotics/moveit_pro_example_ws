@@ -27,12 +27,14 @@
 // POSSIBILITY OF SUCH DAMAGE.
 #include <behaviortree_cpp/bt_factory.h>
 #include <gtest/gtest.h>
+#include <geometry_msgs/msg/pose_stamped.hpp>
 #include <moveit_msgs/msg/planning_scene.hpp>
 #include <moveit_msgs/msg/robot_state.hpp>
 #include <moveit_pro_behavior_interface/behavior_context.hpp>
 #include <moveit_pro_behavior_interface/shared_resources_node_loader.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <rebot_bench_behaviors/anchor_trajectory_to_command.hpp>
+#include <rebot_bench_behaviors/hold_gripper_in_trajectory.hpp>
 #include <rebot_bench_behaviors/is_joint_at_least.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
 #include <trajectory_msgs/msg/joint_trajectory.hpp>
@@ -58,6 +60,8 @@ const std::map<std::string, std::vector<std::string>> kGroups{
 };
 const std::map<std::string, Positions> kWaypoints{
   { "Stack Gripper Open", { { "joint7", 5.25 } } },
+  { "Pick and Stack Survey",
+    { { "joint1", 0.0 }, { "joint2", 0.6 }, { "joint3", 1.2 }, { "joint4", 0.3 }, { "joint5", 0.0 }, { "joint6", 0.0 } } },
   { "Zeroed Rest",
     { { "joint1", 0.0 }, { "joint2", 0.0 }, { "joint3", 0.0 }, { "joint4", 0.0 }, { "joint5", 0.0 }, { "joint6", 0.0 } } }
 };
@@ -166,6 +170,25 @@ protected:
     moveit_pro::behaviors::registerBehavior<rebot_bench_behaviors::AnchorTrajectoryToCommand>(
         factory, "AnchorTrajectoryToCommand", context);
     moveit_pro::behaviors::registerBehavior<rebot_bench_behaviors::IsJointAtLeast>(factory, "IsJointAtLeast", context);
+    moveit_pro::behaviors::registerBehavior<rebot_bench_behaviors::HoldGripperInTrajectory>(
+        factory, "HoldGripperInTrajectory", context);
+    factory.registerSimpleAction("ResetVector", [](BT::TreeNode&) { return BT::NodeStatus::SUCCESS; },
+                                 { BT::BidirectionalPort<std::vector<geometry_msgs::msg::PoseStamped>>("vector") });
+    factory.registerSimpleAction("PushBackVector", [](BT::TreeNode&) { return BT::NodeStatus::SUCCESS; },
+                                 { BT::InputPort<std::vector<geometry_msgs::msg::PoseStamped>>("input_vector"),
+                                   BT::InputPort<geometry_msgs::msg::PoseStamped>("element"),
+                                   BT::OutputPort<std::vector<geometry_msgs::msg::PoseStamped>>("output_vector") });
+    factory.registerSimpleAction(
+        "ComputeInverseKinematics",
+        [this](BT::TreeNode& node) {
+          node.setOutput("solution", robotState(pose_goal));
+          return BT::NodeStatus::SUCCESS;
+        },
+        { BT::InputPort<std::vector<geometry_msgs::msg::PoseStamped>>("target_poses"),
+          BT::InputPort<std::string>("tip_links"), BT::InputPort<PlanningScene>("planning_scene_msg"),
+          BT::InputPort<std::string>("planning_group_name"), BT::InputPort<double>("ik_timeout_s"),
+          BT::InputPort<std::string>("solve_mode"), BT::InputPort<double>("optimization_timeout_s"),
+          BT::InputPort<double>("link_padding"), BT::OutputPort<RobotState>("solution") });
     factory.registerSimpleAction(
         "RetrieveWaypoint",
         [](BT::TreeNode& node) {
@@ -215,6 +238,8 @@ protected:
     factory.registerSimpleAction(
         "PlanToJointGoal",
         [this](BT::TreeNode& node) {
+          if (planner_refuses_start)
+            return BT::NodeStatus::FAILURE;
           const auto& joints = kGroups.at(node.getInput<std::string>("planning_group_name").value());
           auto goal = measured;
           for (const auto& [joint, position] : positionsOf(node.getInput<RobotState>("joint_goal").value().joint_state))
@@ -229,7 +254,9 @@ protected:
     // Validation checks only that the trajectory is for the group it names.
     factory.registerSimpleAction(
         "ValidateTrajectory",
-        [](BT::TreeNode& node) {
+        [this](BT::TreeNode& node) {
+          if (++validations == refused_validation)
+            return BT::NodeStatus::FAILURE;
           const auto& group = kGroups.at(node.getInput<std::string>("planning_group_name").value());
           const auto names = node.getInput<JointTrajectory>("joint_trajectory_msg").value().joint_names;
           return std::ranges::all_of(names, [&](const auto& joint) { return std::ranges::count(group, joint) > 0; }) ?
@@ -257,7 +284,8 @@ protected:
         },
         { BT::InputPort<std::string>("execution_pipeline"), BT::InputPort<std::string>("controller_action_name"),
           BT::InputPort<JointTrajectory>("joint_trajectory_msg"), BT::InputPort<double>("goal_duration_tolerance") });
-    for (const auto* objective : { "move_rebot_gripper.xml", "rebot_open_jaw.xml", "rebot_move_to_arm_waypoint.xml" })
+    for (const auto* objective :
+         { "move_rebot_gripper.xml", "rebot_open_jaw.xml", "rebot_move_to_arm_waypoint.xml", "rebot_move_to_pose.xml" })
       factory.registerBehaviorTreeFromFile(std::string(PACKAGE_DIR "/objectives/") + objective);
   }
 
@@ -266,6 +294,7 @@ protected:
     tree = factory.createTreeFromText(R"(<root BTCPP_format="4"><BehaviorTree ID="Test">)" + subtree_call +
                                       "</BehaviorTree></root>");
     tree.rootBlackboard()->set("commanded_state", robotState(commanded));
+    tree.rootBlackboard()->set("target", geometry_msgs::msg::PoseStamped{});
     return tree.tickWhileRunning();
   }
 
@@ -281,6 +310,11 @@ protected:
   Positions measured;
   std::vector<trajectory_msgs::msg::JointTrajectory> executed;
   int cancels = 0;
+  int validations = 0;
+  int refused_validation = -1;
+  Positions pose_goal = withJaw(kWaypoints.at("Pick and Stack Survey"), 0.0);
+  // The planner refuses the measured start, as it does the bench arm's sagged home.
+  bool planner_refuses_start = false;
 };
 
 const std::string kOpenJaw = R"(<SubTree ID="reBot Open Jaw" gripper_velocity_scale_factor="1.0" )"
@@ -341,6 +375,94 @@ TEST_F(JawLegs, HomeLegKeepsTheGraspSqueeze)
   for (const auto& position : column(executed.front(), "joint7"))
     EXPECT_DOUBLE_EQ(position, 2.8125);
   EXPECT_DOUBLE_EQ(committed().at("joint7"), 2.8125);
+}
+TEST_F(JawLegs, ArmLegMovesFromTheCommandWhenThePlannerRefusesTheMeasuredStart)
+{
+  // GIVEN the arm at its sagged home, which the planner refuses as a start, and the jaw commanded open but measured
+  // at 2.0
+  measured = withJaw(kSaggedHome, 2.0);
+  planner_refuses_start = true;
+
+  // WHEN moving to the survey waypoint
+  EXPECT_EQ(run(R"(<SubTree ID="reBot Move to Arm Waypoint" waypoint_name="Pick and Stack Survey" )"
+                R"(velocity_scale_factor="1.0" acceleration_scale_factor="1.0" commanded_state="{commanded_state}" />)",
+                withJaw(kWaypoints.at("Zeroed Rest"), 5.25)),
+            BT::NodeStatus::SUCCESS);
+
+  // THEN the arm moves from its command, not its sag, to the waypoint, and the jaw stays where it measures
+  ASSERT_EQ(executed.size(), 1U);
+  for (const auto& [joint, position] : kWaypoints.at("Pick and Stack Survey"))
+  {
+    EXPECT_DOUBLE_EQ(column(executed.front(), joint).front(), 0.0) << joint;
+    EXPECT_DOUBLE_EQ(column(executed.front(), joint).back(), position) << joint;
+    EXPECT_DOUBLE_EQ(committed().at(joint), position) << joint;
+  }
+  for (const auto& position : column(executed.front(), "joint7"))
+    EXPECT_DOUBLE_EQ(position, 2.0);
+  EXPECT_DOUBLE_EQ(committed().at("joint7"), 2.0);
+}
+TEST_F(JawLegs, WaypointFallbackFadesStaleArmStartAndHoldsStaleJaw)
+{
+  measured = withJaw(kSaggedHome, 2.0);
+  const double measured_start = measured.at("joint4");
+  auto stale = withJaw(kWaypoints.at("Zeroed Rest"), 5.25);
+  stale["joint4"] = 0.2;
+  planner_refuses_start = true;
+  EXPECT_EQ(run(R"(<SubTree ID="reBot Move to Arm Waypoint" waypoint_name="Pick and Stack Survey" )"
+                R"(velocity_scale_factor="1.0" acceleration_scale_factor="1.0" commanded_state="{commanded_state}" />)",
+                stale),
+            BT::NodeStatus::SUCCESS);
+  ASSERT_EQ(executed.size(), 1U);
+  EXPECT_NEAR(column(executed.front(), "joint4").front(), measured_start, 1e-12);
+  for (const auto& [joint, goal] : kWaypoints.at("Pick and Stack Survey"))
+  {
+    EXPECT_DOUBLE_EQ(column(executed.front(), joint).back(), goal) << joint;
+    EXPECT_DOUBLE_EQ(committed().at(joint), goal) << joint;
+  }
+  for (const auto& position : column(executed.front(), "joint7"))
+    EXPECT_DOUBLE_EQ(position, 2.0);
+  EXPECT_DOUBLE_EQ(committed().at("joint7"), 2.0);
+  EXPECT_EQ(validations, 2);
+}
+
+const std::string kPose = R"(<SubTree ID="reBot Move to Pose" target="{target}" gripper_position="2.8125" )"
+                          R"(velocity_scale_factor="1.0" acceleration_scale_factor="1.0" )"
+                          R"(commanded_state="{commanded_state}" />)";
+
+TEST_F(JawLegs, PoseFallbackHoldsTheGraspAndKeepsThePlannedEndpoint)
+{
+  measured = withJaw(kSaggedHome, 2.8615);
+  planner_refuses_start = true;
+  EXPECT_EQ(run(kPose, withJaw(kWaypoints.at("Zeroed Rest"), 2.8125)), BT::NodeStatus::SUCCESS);
+  ASSERT_EQ(executed.size(), 1U);
+  for (const auto& position : column(executed.front(), "joint7"))
+    EXPECT_DOUBLE_EQ(position, 2.8125);
+  for (const auto& joint : kArm)
+    EXPECT_DOUBLE_EQ(column(executed.front(), joint).back(), pose_goal.at(joint));
+  EXPECT_EQ(validations, 2);
+}
+
+TEST_F(JawLegs, PoseCompensationKeepsTheEndpointWhenTheArmCommandIsStale)
+{
+  measured = withJaw(kSaggedHome, 2.8615);
+  const double measured_start = measured.at("joint4");
+  auto stale = withJaw(kWaypoints.at("Zeroed Rest"), 2.8125);
+  stale["joint4"] = 0.2;
+  planner_refuses_start = true;
+  EXPECT_EQ(run(kPose, stale), BT::NodeStatus::SUCCESS);
+  ASSERT_EQ(executed.size(), 1U);
+  EXPECT_NEAR(column(executed.front(), "joint4").front(), measured_start, 1e-12);
+  EXPECT_DOUBLE_EQ(column(executed.front(), "joint4").back(), pose_goal.at("joint4"));
+}
+
+TEST_F(JawLegs, PoseRefusesAnInvalidAnchoredPathBeforeExecution)
+{
+  measured = withJaw(kSaggedHome, 2.8615);
+  planner_refuses_start = true;
+  refused_validation = 2;
+  EXPECT_EQ(run(kPose, withJaw(kWaypoints.at("Zeroed Rest"), 2.8125)), BT::NodeStatus::FAILURE);
+  EXPECT_TRUE(executed.empty());
+  EXPECT_EQ(validations, 2);
 }
 }  // namespace
 
