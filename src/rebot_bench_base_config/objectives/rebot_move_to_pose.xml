@@ -2,7 +2,7 @@
 <root BTCPP_format="4" main_tree_to_execute="reBot Move to Pose">
   <BehaviorTree
     ID="reBot Move to Pose"
-    _description="Plan from the current measured state, hold the preceding gripper command, collision-check all seven joints, and execute."
+    _description="Plan from the current measured state, hold the preceding gripper command, collision-check all seven joints, and execute. If the planner refuses the measured start, move point-to-point from the command instead."
   >
     <Sequence>
       <Action ID="ResetVector" vector="{path}" />
@@ -25,21 +25,48 @@
         link_padding="0.0"
         solution="{goal}"
       />
-      <Action
-        ID="PlanToJointGoal"
-        joint_goal="{goal}"
-        planning_group_name="manipulator"
-        velocity_scale_factor="{velocity_scale_factor}"
-        acceleration_scale_factor="{acceleration_scale_factor}"
-        collision_check_params="[{override_scene_link_padding: true, link_padding: 0.0}]"
-        joint_trajectory_msg="{arm_trajectory}"
-      />
-      <Action
-        ID="HoldGripperInTrajectory"
-        arm_trajectory="{arm_trajectory}"
-        gripper_position="{gripper_position}"
-        trajectory="{trajectory}"
-      />
+      <!-- A refused plan from the measured state, as the bench arm's sagged
+           home is, falls back to a point-to-point move from the commanded
+           state, the jaw held at its command. -->
+      <Fallback>
+        <Sequence>
+          <Action
+            ID="PlanToJointGoal"
+            joint_goal="{goal}"
+            planning_group_name="manipulator"
+            velocity_scale_factor="{velocity_scale_factor}"
+            acceleration_scale_factor="{acceleration_scale_factor}"
+            collision_check_params="[{override_scene_link_padding: true, link_padding: 0.0}]"
+            joint_trajectory_msg="{arm_trajectory}"
+          />
+          <Action
+            ID="HoldGripperInTrajectory"
+            arm_trajectory="{arm_trajectory}"
+            gripper_position="{gripper_position}"
+            trajectory="{trajectory}"
+          />
+        </Sequence>
+        <Sequence>
+          <Action
+            ID="GeneratePointToPointTrajectory"
+            planning_group_name="manipulator"
+            start_state="{commanded_state}"
+            target_state="{goal}"
+            velocity_scale_factor="{velocity_scale_factor}"
+            acceleration_scale_factor="{acceleration_scale_factor}"
+            jerk_scale_factor="1.0"
+            start_time="0.0"
+            trajectory_sampling_rate="100"
+            joint_trajectory_msg="{arm_trajectory}"
+          />
+          <Action
+            ID="HoldGripperInTrajectory"
+            arm_trajectory="{arm_trajectory}"
+            gripper_position="{gripper_position}"
+            trajectory="{trajectory}"
+          />
+        </Sequence>
+      </Fallback>
       <Action ID="GetCurrentPlanningScene" planning_scene_msg="{scene}" />
       <Action
         ID="ValidateTrajectory"
@@ -60,8 +87,18 @@
         measured_state="{measured_state}"
         joint_trajectory="{trajectory}"
         commanded_state="{commanded_state}"
+        fade_out="true"
         anchored_trajectory="{anchored}"
         end_state="{candidate_endpoint}"
+      />
+      <!-- Validate the path actually executed after stale-start compensation. -->
+      <Action
+        ID="ValidateTrajectory"
+        planning_scene_msg="{scene}"
+        planning_group_name="manipulator_and_gripper"
+        joint_trajectory_msg="{anchored}"
+        joint_space_step="0.02"
+        cartesian_space_step="0.005"
       />
       <Action ID="RecordRebotTrajectory" trajectory="{anchored}" />
       <Action

@@ -2,7 +2,7 @@
 <root BTCPP_format="4" main_tree_to_execute="reBot Move to Arm Waypoint">
   <BehaviorTree
     ID="reBot Move to Arm Waypoint"
-    _description="Plan to a named arm waypoint, collision-check it, and execute from the controller's command, holding the jaw at its command (where it measures if that command is stale)."
+    _description="Plan to a named arm waypoint, collision-check it, and execute from the controller's command, holding the jaw at its command (where it measures if that command is stale). If the planner refuses the measured start, move point-to-point from the command instead."
   >
     <Sequence>
       <Action
@@ -11,39 +11,95 @@
         waypoint_name="{waypoint_name}"
         waypoint_joint_state="{goal}"
       />
-      <Action
-        ID="PlanToJointGoal"
-        joint_goal="{goal}"
-        planning_group_name="manipulator"
-        velocity_scale_factor="{velocity_scale_factor}"
-        acceleration_scale_factor="{acceleration_scale_factor}"
-        collision_check_params="[{override_scene_link_padding: true, link_padding: 0.0}]"
-        joint_trajectory_msg="{arm_trajectory}"
-      />
-      <Action ID="GetCurrentPlanningScene" planning_scene_msg="{scene}" />
-      <Action
-        ID="ValidateTrajectory"
-        planning_scene_msg="{scene}"
-        planning_group_name="manipulator"
-        joint_trajectory_msg="{arm_trajectory}"
-        joint_space_step="0.02"
-        cartesian_space_step="0.005"
-      />
-      <Action
-        ID="GetJointState"
-        planning_scene="{scene}"
-        planning_group_name="manipulator_and_gripper"
-        robot_joint_state="{measured_state}"
-      />
-      <Action
-        ID="AnchorTrajectoryToCommand"
-        measured_state="{measured_state}"
-        joint_trajectory="{arm_trajectory}"
-        commanded_state="{commanded_state}"
-        fade_out="true"
-        anchored_trajectory="{anchored}"
-        end_state="{candidate_endpoint}"
-      />
+      <!-- The planner starts from the measured state, which the bench arm's
+           sagged home fails as a link2-link5 self-collision. A refused plan
+           then falls back to a point-to-point move from the commanded state,
+           the arm's real start. Generate only the six arm joints, so anchoring
+           adds and holds a stale jaw where it measures. Fade the arm offset
+           to preserve the waypoint and collision-check the anchored path. -->
+      <Fallback>
+        <Sequence>
+          <Action
+            ID="PlanToJointGoal"
+            joint_goal="{goal}"
+            planning_group_name="manipulator"
+            velocity_scale_factor="{velocity_scale_factor}"
+            acceleration_scale_factor="{acceleration_scale_factor}"
+            collision_check_params="[{override_scene_link_padding: true, link_padding: 0.0}]"
+            joint_trajectory_msg="{arm_trajectory}"
+          />
+          <Action ID="GetCurrentPlanningScene" planning_scene_msg="{scene}" />
+          <Action
+            ID="ValidateTrajectory"
+            planning_scene_msg="{scene}"
+            planning_group_name="manipulator"
+            joint_trajectory_msg="{arm_trajectory}"
+            joint_space_step="0.02"
+            cartesian_space_step="0.005"
+          />
+          <Action
+            ID="GetJointState"
+            planning_scene="{scene}"
+            planning_group_name="manipulator_and_gripper"
+            robot_joint_state="{measured_state}"
+          />
+          <Action
+            ID="AnchorTrajectoryToCommand"
+            measured_state="{measured_state}"
+            joint_trajectory="{arm_trajectory}"
+            commanded_state="{commanded_state}"
+            fade_out="true"
+            anchored_trajectory="{anchored}"
+            end_state="{candidate_endpoint}"
+          />
+        </Sequence>
+        <Sequence>
+          <Action
+            ID="GeneratePointToPointTrajectory"
+            planning_group_name="manipulator"
+            start_state="{commanded_state}"
+            target_state="{goal}"
+            velocity_scale_factor="{velocity_scale_factor}"
+            acceleration_scale_factor="{acceleration_scale_factor}"
+            jerk_scale_factor="1.0"
+            start_time="0.0"
+            trajectory_sampling_rate="100"
+            joint_trajectory_msg="{arm_trajectory}"
+          />
+          <Action ID="GetCurrentPlanningScene" planning_scene_msg="{scene}" />
+          <Action
+            ID="ValidateTrajectory"
+            planning_scene_msg="{scene}"
+            planning_group_name="manipulator"
+            joint_trajectory_msg="{arm_trajectory}"
+            joint_space_step="0.02"
+            cartesian_space_step="0.005"
+          />
+          <Action
+            ID="GetJointState"
+            planning_scene="{scene}"
+            planning_group_name="manipulator_and_gripper"
+            robot_joint_state="{measured_state}"
+          />
+          <Action
+            ID="AnchorTrajectoryToCommand"
+            measured_state="{measured_state}"
+            joint_trajectory="{arm_trajectory}"
+            commanded_state="{commanded_state}"
+            fade_out="true"
+            anchored_trajectory="{anchored}"
+            end_state="{candidate_endpoint}"
+          />
+          <Action
+            ID="ValidateTrajectory"
+            planning_scene_msg="{scene}"
+            planning_group_name="manipulator_and_gripper"
+            joint_trajectory_msg="{anchored}"
+            joint_space_step="0.02"
+            cartesian_space_step="0.005"
+          />
+        </Sequence>
+      </Fallback>
       <Action ID="RecordRebotTrajectory" trajectory="{anchored}" />
       <Action
         ID="ExecuteTrajectory"

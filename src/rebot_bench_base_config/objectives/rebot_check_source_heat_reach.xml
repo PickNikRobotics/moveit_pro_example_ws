@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="reBot Check Source Heat Reach">
+  <BehaviorTree
+    ID="reBot Check Source Heat Reach"
+    _description="Check collision-free IK and the joint2 heat-reach bound for a selected source hover. No motion is executed."
+  >
+    <Sequence>
+      <Action ID="GetCurrentPlanningScene" planning_scene_msg="{scene}" />
+      <Action ID="ResetVector" vector="{path}" />
+      <Action
+        ID="PushBackVector"
+        input_vector="{path}"
+        element="{target}"
+        output_vector="{path}"
+      />
+      <Action
+        ID="ComputeInverseKinematics"
+        target_poses="{path}"
+        tip_links="gripper_end"
+        planning_scene_msg="{scene}"
+        planning_group_name="manipulator"
+        ik_timeout_s="0.5"
+        solve_mode="optimize_distance"
+        optimization_timeout_s="0.1"
+        link_padding="0.0"
+        solution="{goal}"
+      />
+      <Action
+        ID="IsPlannedJointAtMost"
+        robot_state="{goal}"
+        joint_name="joint2"
+        maximum="2.2"
+        reason="heat budget: too far from the base"
+      />
+    </Sequence>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="reBot Check Source Heat Reach">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="reBot Bench" />
+      </MetadataFields>
+      <input_port name="target" type="geometry_msgs::msg::PoseStamped" />
+    </SubTree>
+  </TreeNodesModel>
+</root>
