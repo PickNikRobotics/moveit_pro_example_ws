@@ -1,15 +1,22 @@
 upstream:
-  repository: https://github.com/kmj060703/RobstrideSDK.git
-  commit: c679f0a664804c2c658238de9fe4b41de989d3ff
-  branch: main
+  repository: https://github.com/griswaldbrooks/RobstrideSDK.git
+  commit: 15c74142ae99d98d9a61270ebfa1d9bceacd1edb
+  branch: picknik/fix-fault-frame-decoding
 snapshot_path: robstride_sdk
 vendored_paths:
-  - robstride_sdk
+  - robstride_sdk/CMakeLists.txt
+  - robstride_sdk/LICENSE
+  - robstride_sdk/README.md
+  - robstride_sdk/include
+  - robstride_sdk/package.xml
+  - robstride_sdk/src
+  - robstride_sdk/test
 pruned_paths:
   - upstream .gitignore
 modified_paths: []
 apache_paths:
   - .
 notes:
-  - RobStride private-protocol encode/decode and the SocketCAN transport used by robstride_hardware_interface. Vendored unmodified; not forked.
+  - RobStride private-protocol encode/decode and the SocketCAN transport used by robstride_hardware_interface. Vendored from griswaldbrooks/RobstrideSDK, a fork of kmj060703/RobstrideSDK; the snapshot matches the pinned fork commit exactly.
+  - The fork fixes Type 0x15 source routing and little-endian fault/warning decoding, exposes warning_bits, and adds offline CTest regressions. All SDK changes live on the fork branch, not in this snapshot.
   - Its per-model limit tables were checked against this bench's own stored motor parameters: RS00 14 Nm torque and 16 A current, RS06 36 Nm and 57 A, matching the readback from the arm's seven motors.
