@@ -27,6 +27,18 @@ hardware:
       # Real only. joint1-joint6 control: "motion" (impedance, the default) or
       # "position_csp" (the motor's own position loop). See the README.
       - arm_control_mode: "motion"
+      # Bench-specific placements in the printed TF frame (world, z = 0 on the
+      # mat top), from the 2026-10-11 ChArUco calibration; re-measure and
+      # override them for any other installation (README.md). base_link: x, y
+      # and yaw from the hand-eye solve. The base plate is bolted level, so
+      # roll and pitch are 0; it sits on the bench top under the 3 mm mat,
+      # z = -0.003.
+      - world_to_base_xyz: "0.7259 0.0216 -0.003"
+      - world_to_base_rpy: "0 0 3.1380"
+      # scene_camera_link (REP-103), from the same calibration's scene camera
+      # board pose.
+      - scene_camera_xyz: "-0.075 0.069 0.565"
+      - scene_camera_rpy: "0.169 0.975 0.246"
     srdf:
       package: rebot_bench_base_config
       path: config/moveit/rebot.srdf
@@ -71,6 +83,8 @@ ros2_control:
   controller_shared_topics: []
 objectives:
   behavior_loader_plugins:
+    rebot:
+    - rebot_bench_behaviors::RebotBenchBehaviorsLoader
     core:
     - moveit_pro::behaviors::CoreBehaviorsLoader
     - moveit_pro::behaviors::MTCCoreBehaviorsLoader

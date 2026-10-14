@@ -20,10 +20,12 @@ Cameras in this base package default off and may be enabled separately. The sim
 is a MuJoCo twin of the bench: it renders both cameras and starts no camera
 drivers.
 The `world_to_base_xyz`/`_rpy` and `scene_camera_xyz`/`_rpy` xacro arguments
-place `base_link` and `scene_camera_link` in `world`; unset, both coincide with
-`world`. `wrist_camera_mount_xyz`/`_rpy` set the `d435_mount_joint` origin on
-`gripper_end`; unset, it is the nominal mount. The sim sets all of them from its
-bench layout file.
+place `base_link` and `scene_camera_link` in `world`. `config/config.yaml` sets
+them to this bench's calibration (see [the stack recipe](#sam3-blue-on-red-stack));
+only the xacro fallback, when they are unset, has both coincide with `world`.
+`wrist_camera_mount_xyz`/`_rpy` set the `d435_mount_joint` origin on
+`gripper_end`; unset, it is the nominal mount. The sim places all of them from
+its bench layout file instead, over the inherited calibration.
 
 ## Try it
 
@@ -274,9 +276,8 @@ The wrist D435's intrinsics are likewise self-consistent (`fx` 607.84 at
 640×480, a 55.5° view, which is what a 4:3 crop of its 69.4° 16:9 color sensor
 gives).
 
-What is still **not** calibrated is where either camera *is*: the mount
-transforms are nominal, taken from the assembly drawings and measured by eye.
-Intrinsics being correct does not make a hand-eye result correct.
+Intrinsics being correct does not make a hand-eye result correct: where each
+camera *is* is a separate calibration, covered [below](#bench-calibration).
 
 ### Achieved frame rate depends on the DDS transport
 
@@ -309,13 +310,15 @@ the `/dev/v4l/by-id/` symlinks alone may omit some interfaces. USB-bus access
 must also allow device re-enumeration because the OAK boots over USB.
 These are camera dependencies only.
 
-**Camera transforms are not calibrated.** The wrist D435 body and optical
-frame now follow the nominal assembly described above. `scene_camera_link`
-coincides with `world` unless the `scene_camera_*` xacro arguments place it,
-with the standard ROS optical-axis rotation.
-Camera-driver TF publication stays disabled so the robot description owns
-these frames. Measure both camera-to-robot transforms before spatial
-perception or image-based motion. Neither camera has collision geometry yet.
+**The scene camera is calibrated for this bench; the wrist camera is not.**
+`config/config.yaml` places `scene_camera_link` from the 2026-10-11 ChArUco
+calibration (see [bench calibration](#bench-calibration)), with the standard
+ROS optical-axis rotation; the xacro alone leaves it at `world`. The wrist D435
+body and optical frame follow the nominal assembly described above, not a
+measured mount. Camera-driver TF publication stays disabled so the robot
+description owns these frames. Re-measure the scene camera after moving it, and
+measure the wrist mount before wrist-camera perception or image-based motion.
+Neither camera has collision geometry yet.
 
 ### Camera validation
 
@@ -552,9 +555,9 @@ real arm: `enable_cameras: true`, RGB at 30 fps (wrist 640x480, scene 640x400),
 depth off. Both streams have been seen live in the MoveIt Pro UI alongside the
 real arm.
 
-**The camera mounts are measured by eye and the transforms in the URDF are
-nominal. They are UNCALIBRATED.** No calibrated perception and no depth output is
-claimed or configured. Anything that needs metric accuracy from either camera
+**Only the scene camera is calibrated, for this bench; the wrist camera mount is
+nominal and UNCALIBRATED** (see [bench calibration](#bench-calibration)). No depth
+output is configured. Anything that needs metric accuracy from the wrist camera
 needs an extrinsic calibration first.
 
 ### What has and has not been verified
@@ -569,14 +572,15 @@ disable at home; a first move of every joint 1-6, 0.05 rad out and back at about
 0.05 rad/s; joint4 raised 0.3 rad in CSP, then joint5 moved and both unwound;
 and Plan reBot Joint Move / Execute reBot Joint Trajectory running a three-joint
 move and both small waypoints out and back, with every run inside 0.07 rad of
-its target and 0.10 rad/s. Faster moves, large waypoints such as Raised, the
-gripper and teleoperation have not been run on the arm.
+its target and 0.10 rad/s. Faster moves, large waypoints such as Raised and
+teleoperation have not been run on the arm; for the stack Objectives' gripper
+and leg speeds on the arm, see [SAM3 blue-on-red stack](#sam3-blue-on-red-stack).
 
 Known limitations:
 
 - The collision model refuses joint4 at -0.05 rad near home (`link2` - `link5`),
   although the real arm moves there cleanly. The SRDF is unchanged.
-- The camera mounts are uncalibrated (see [Cameras](#cameras)).
+- The wrist camera mount is uncalibrated (see [Cameras](#cameras)).
 - At home joint7 reads about -0.044 rad, below its 0 lower limit, and the UI
   warns about it.
 - After a disable at home, a joint can settle a few mrad away from the
@@ -591,7 +595,7 @@ Known limitations:
 - Measure the installed gripper's motor-angle-to-jaw-travel relation and closed
   offset to confirm the BOM-derived 8 mm/rad transmission.
 - Measure the actual D435/bracket transform, add its collision geometry, and
-  calibrate the wrist and scene-camera optical extrinsics.
+  calibrate the wrist camera's optical extrinsics.
 - Validate the gripper kp/kd values and the per-joint velocity limits on the bench.
 
 ## Validation
@@ -654,3 +658,116 @@ closed limit. This is a manual runtime acceptance check, not a hardware test or
 an unattended CI test. Afterward, switch to manipulator Joint jogging and Pose
 jogging, verify movement and release-to-stop, then stop Teleoperate and rerun
 `verify_mock_execution.py` to check the return to trajectory execution.
+
+## SAM3 blue-on-red stack
+
+**Stack Blue on Red** is a durable Objective that locates both 50 mm cubes,
+picks blue, places it on red, opens the gripper, retreats and returns home. **Pick Blue Cube**
+runs just the survey and pick and leaves blue held above its starting location.
+**Locate reBot Cubes** is the perception-only entry point. Run **Clear reBot
+Stack Scene** to remove geometry left by a previous attempt before resetting
+or moving the cubes externally.
+
+The scene camera must publish RGB and CameraInfo on
+`/scene_camera/color/{image_raw,camera_info}` with calibrated optical TF into
+`world`; see [bench calibration](#bench-calibration) below. World is the printed red/green/blue frame, z=0 at the mat top. No scene
+depth is needed. SAM3 text prompts segment the red and blue cubes; the shared
+`FitCubeToMask` Behavior fits their full silhouettes to upright 50 mm cubes on
+that plane, rejects invalid or ambiguous fits, and returns their top centres.
+See [behavior contracts](../rebot_bench_behaviors/README.md) for the fit limits.
+The scene-camera/robot-base calibration must describe the current physical
+installation; installing these Objectives does not calibrate a camera.
+
+The tree uses `gripper_end` as the fingertip plane, with tool +X out of the
+fingers. Pick hover is 75 mm above world z=0, followed by a straight descent to
+15 mm. Closure is 45 mm (joint7=2.8125 rad); opening is 84 mm (5.25 rad). The
+place hover is 110 mm with 25 degrees of tilt toward the base to reach the far
+cubes; an IK-checked vertical fallback avoids wrist collisions near the wall. Release uses 5 degrees of tilt and a 69.1 mm fingertip height. The short
+place descent and retreat are planned Cartesian paths. Every arm leg preserves
+the last commanded joint7 position, then validates the seven-joint trajectory
+against the scene. These numbers are shared by hardware and simulation.
+The real jaw rests closed, so **Pick Blue Cube** first opens it at home with a
+gripper-only move, before any arm motion, then reads the measured joint7 and
+requires at least 5.1 rad: the 5.25 rad open command less the controller's
+0.15 rad start tolerance, so the arm legs that hold the open command are
+accepted. The controller can report a canceled opening as success, so a short
+opening is retried once and then fails the Objective with the measured value;
+the survey never starts on a closed jaw. Both openings, at home and at the
+release, are this one check, **reBot Open Jaw**. After the release, the tree
+retreats and returns home (`Zeroed Rest`). If the release opening fails or stays
+short after its retry, the tree still attempts the detach, the planned retreat
+and the return home, and then reports failure; it does not treat a release
+timeout or a canceled opening as a successful stack. That retreat holds joint7
+at its measured position rather than the open command, so the controller
+accepts a goal that starts where the jaw stalled. A rejected retreat stops
+there and remains a failure for the supervising application to handle.
+
+**Speed settings.** [`objectives/rebot_stack_motion.yaml`](objectives/rebot_stack_motion.yaml)
+holds one velocity and one acceleration scale factor per kind of leg, as
+fractions of the limits in `config/moveit/joint_limits.yaml`: `joint` (the
+survey, the pick and place approaches and the return home), `cartesian` (the
+pick descent and lift, the place descent and both release retreats) and
+`gripper` (the opening at home, the grasp and the release). **Pick Blue Cube**,
+**Stack Blue on Red** and **Prepare reBot Stack** load it at the start of every
+run through **reBot Stack Motion** and the `LoadMotionScales` Behavior, and
+every leg plans at its kind's factors. To change a speed, edit the file and
+rebuild `rebot_bench_base_config` (a symlink-install build reads the source
+file directly); a missing entry or a factor outside (0, 1] fails the run before
+any motion.
+
+The defaults are the speeds these legs ran at on the arm: joint 0.25 and
+cartesian 0.15, as in the first hardware run, and gripper 0.1, the opening that
+worked there (a faster opening was canceled). No leg is faster than on the arm.
+They do not by themselves keep the arm under the bench's 0.17 rad/s guard: the
+2026-10-12 trip was a jump at the start of a leg planned from the sagged
+measured state, and that jump does not scale with the planning speed. Anchoring
+each leg to the previous command removes it, and is a separate change. Lower
+or raise the factors on the bench through this file, against measured joint
+speeds rather than planned ones. `test/test_stack_objectives.cpp` runs the
+shipped trees with the shipped file and fails if a leg misses its kind's
+setting, including the recovery retreat and the return home, or is faster than
+on the arm.
+
+Deploy into a MoveIt Pro user workspace with the runtime's ROS and proprietary
+overlay already sourced. The SAM3 Behaviors come from `moveit_pro_sam3`, which
+the workspace keeps optional (it is only built once the SAM License is
+accepted), so it is not a declared dependency: confirm it is already installed,
+or add it to the `colcon build` line.
+
+```sh
+colcon build --packages-up-to rebot_bench_behaviors rebot_bench_base_config
+source install/setup.bash
+```
+
+Restart the backend to load the new behavior library and configuration. A
+user-workspace colcon build is sufficient; these Objectives do not depend on
+Direct Motion or a modified MoveIt Pro source build. On a MAIN-based bench
+runtime, invoke the ordinary MCP tool:
+
+```json
+{"name":"run_objective","arguments":{"objective_name":"Stack Blue on Red"}}
+```
+
+### Bench calibration
+
+`config/config.yaml` places `base_link` and `scene_camera_link` in the printed
+frame with the 2026-10-11 ChArUco calibration of this bench:
+`world_to_base_xyz`/`_rpy` `0.7259 0.0216 -0.003` / `0 0 3.1380` and
+`scene_camera_xyz`/`_rpy` `-0.075 0.069 0.565` / `0.169 0.975 0.246`. The base's
+x, y and yaw come from the hand-eye solve. The base plate is bolted level, so
+roll and pitch are 0; it sits on the bench top under the 3 mm mat, so z is
+-0.003, as in `rebot_bench_sim`'s layout. The camera pose is its board pose. Both, and the hard-coded bench and wall boxes in **reBot Stack Scene**,
+are specific to this installation. After moving the arm, the scene camera or
+the printed frame, or on another bench, re-measure: lay the ChArUco board on the
+mat, solve the scene camera's board pose and the arm's base pose through the
+wrist camera into the printed frame, and override the four `urdf_params`
+entries, here or in a config with `based_on_package: rebot_bench_base_config`.
+The identity placement the xacro falls back to when they are unset is not a
+calibration: the scene camera then sits at `world`, and `FitCubeToMask` rejects
+every view with "The calibrated RGB camera must look down at the mat".
+
+The real configuration uses only `rebot_bench_base_config` and
+`rebot_bench_behaviors`. Do not select `rebot_bench_sim` on hardware. Simulation
+validation may use its explicitly marked grasp proxy and therefore establishes
+perception/planning/Objective execution, not physical grip fidelity or calibrated
+hardware placement accuracy. The hardware run is a separate validation.

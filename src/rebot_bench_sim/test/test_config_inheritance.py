@@ -105,16 +105,57 @@ def test_waypoints_come_from_the_base_package(config):
     assert Path(config.waypoints_file_path).is_file()
 
 
-def test_sim_replaces_camera_launch_with_empty_launch(config):
+def test_sim_launches_only_the_explicit_grasp_proxy(config):
     import importlib.util
     from ament_index_python.packages import get_package_share_directory
 
     hook = config.hardware.additional_driver_launch_file
-    assert hook.package == "moveit_studio_agent"
+    assert hook.package == "rebot_bench_sim"
     spec = importlib.util.spec_from_file_location(
         "rebot_sim_empty_launch",
         str(Path(get_package_share_directory(hook.package)) / hook.path),
     )
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
-    assert not module.generate_launch_description().entities
+    import yaml
+
+    layout = yaml.safe_load(
+        (
+            Path(get_package_share_directory(hook.package))
+            / "description/bench_layout.yaml"
+        ).read_text()
+    )
+    entities = module.generate_launch_description().entities
+    assert len(entities) == (2 if layout.get("sim_grasp_proxy", False) else 0)
+
+
+def test_layout_places_the_twin_over_the_inherited_bench_calibration(config):
+    import xml.etree.ElementTree as ET
+
+    import yaml
+    from ament_index_python.packages import get_package_share_directory
+    from moveit_studio_utils_py.create_urdf import create_xml_from_xacro
+
+    description = config.hardware.robot_description
+    params = {k: v for entry in description.urdf_params for k, v in entry.items()}
+    # The base config's real-bench placements reach the sim's xacro mappings...
+    assert {"world_to_base_xyz", "scene_camera_xyz"} <= params.keys()
+    layout = yaml.safe_load(
+        (
+            Path(get_package_share_directory("rebot_bench_sim"))
+            / "description/bench_layout.yaml"
+        ).read_text()
+    )
+    # ...but MoveIt must see the frames where MuJoCo puts them, from the layout.
+    robot = ET.fromstring(
+        create_xml_from_xacro(description.urdf, description.urdf_params)
+    )
+    for joint, entry in (
+        ("world_to_base", "robot_base"),
+        ("scene_camera_mount_joint", "scene_camera"),
+    ):
+        origin = robot.find(f"joint[@name='{joint}']/origin")
+        for key in ("xyz", "rpy"):
+            assert [float(v) for v in origin.get(key).split()] == pytest.approx(
+                layout[entry][key]
+            )

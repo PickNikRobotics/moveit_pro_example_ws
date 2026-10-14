@@ -1,0 +1,11 @@
+<class_libraries>
+  <library path="rebot_bench_behaviors">
+    <class
+      name="rebot_bench_behaviors::RebotBenchBehaviorsLoader"
+      type="rebot_bench_behaviors::RebotBenchBehaviorsLoader"
+      base_class_type="moveit_pro::behaviors::SharedResourcesNodeLoaderBase"
+    >
+      <description>Shared reBot trajectory Behaviors.</description>
+    </class>
+  </library>
+</class_libraries>

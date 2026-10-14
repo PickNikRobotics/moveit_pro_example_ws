@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="reBot Select Place Hover">
+  <BehaviorTree
+    ID="reBot Select Place Hover"
+    _description="Check a tilted place hover for reach; fall back to vertical when the wrist would hit nearby scene geometry. No motion is executed."
+  >
+    <Sequence>
+      <Action ID="GetCurrentPlanningScene" planning_scene_msg="{scene}" />
+      <Fallback>
+        <Sequence>
+          <Action
+            ID="TransformPose"
+            input_pose="{red_top}"
+            translation_xyz="0;0;0.06"
+            quaternion_xyzw="0;0.5372996083468239;0;0.8433914458128857"
+            output_pose="{place_hover}"
+          />
+          <Action ID="ResetVector" vector="{path}" />
+          <Action
+            ID="PushBackVector"
+            input_vector="{path}"
+            element="{place_hover}"
+            output_vector="{path}"
+          />
+          <Action
+            ID="ComputeInverseKinematics"
+            target_poses="{path}"
+            tip_links="gripper_end"
+            planning_scene_msg="{scene}"
+            planning_group_name="manipulator"
+            ik_timeout_s="0.5"
+            solve_mode="optimize_distance"
+            optimization_timeout_s="0.1"
+            link_padding="0.0"
+            solution="{checked_goal}"
+          />
+        </Sequence>
+        <Sequence>
+          <Action
+            ID="TransformPose"
+            input_pose="{red_top}"
+            translation_xyz="0;0;0.06"
+            quaternion_xyzw="0;0.7071067811865475;0;0.7071067811865475"
+            output_pose="{place_hover}"
+          />
+          <Action ID="ResetVector" vector="{path}" />
+          <Action
+            ID="PushBackVector"
+            input_vector="{path}"
+            element="{place_hover}"
+            output_vector="{path}"
+          />
+          <Action
+            ID="ComputeInverseKinematics"
+            target_poses="{path}"
+            tip_links="gripper_end"
+            planning_scene_msg="{scene}"
+            planning_group_name="manipulator"
+            ik_timeout_s="0.5"
+            solve_mode="optimize_distance"
+            optimization_timeout_s="0.1"
+            link_padding="0.0"
+            solution="{checked_goal}"
+          />
+        </Sequence>
+      </Fallback>
+    </Sequence>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="reBot Select Place Hover">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="reBot Bench" />
+      </MetadataFields>
+      <input_port name="red_top" type="geometry_msgs::msg::PoseStamped" />
+      <output_port name="place_hover" type="geometry_msgs::msg::PoseStamped" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

@@ -100,3 +100,8 @@ cubes:
 keyframe:
   arm: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
   gripper: 0.0
+
+# SIM-ONLY: contact-gated weld driven by the 45 mm gripper command. This
+# validates perception/planning/Objectives while physical grip fidelity is
+# unresolved; disable for physical grasp regression or contact tuning.
+sim_grasp_proxy: true

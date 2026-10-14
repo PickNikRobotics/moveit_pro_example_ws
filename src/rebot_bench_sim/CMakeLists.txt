@@ -9,6 +9,7 @@ install(
     config
     description
     objectives
+    launch
   DESTINATION
     share/${PROJECT_NAME}
   PATTERN "*.xml.xacro" EXCLUDE
@@ -39,6 +40,9 @@ add_custom_command(
 add_custom_target(${PROJECT_NAME}_scene ALL DEPENDS ${SCENE_XML} ${ARM_XML} ${LAYOUT_SNAPSHOT})
 install(FILES ${SCENE_XML} ${ARM_XML} ${LAYOUT_SNAPSHOT} DESTINATION share/${PROJECT_NAME}/description)
 
+install(PROGRAMS scripts/record_stack_evidence.py scripts/sim_grasp_proxy.py
+        DESTINATION lib/${PROJECT_NAME})
+
 if(BUILD_TESTING)
   find_package(ament_cmake_pytest REQUIRED)
   find_package(ament_lint_auto REQUIRED)
@@ -49,6 +53,12 @@ if(BUILD_TESTING)
   ament_add_pytest_test(
           rebot_bench_sim_scene_model_test test/test_scene_model.py
           TIMEOUT 120)
+  ament_add_pytest_test(
+          rebot_bench_sim_grasp_proxy_test test/test_sim_grasp_proxy.py
+          TIMEOUT 60)
+  ament_add_pytest_test(
+          rebot_bench_sim_recorder_test test/test_record_stack_evidence.py
+          TIMEOUT 60)
   # Runs every Objective against the MuJoCo twin, like lab_sim's suite.
   ament_add_pytest_test(
           objectives_integration_test test/objectives_integration_test.py

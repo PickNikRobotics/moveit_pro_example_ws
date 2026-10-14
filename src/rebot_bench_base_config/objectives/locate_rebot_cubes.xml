@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Locate reBot Cubes">
+  <BehaviorTree
+    ID="Locate reBot Cubes"
+    _description="Measure the blue and red cube top poses with SAM3 and calibrated RGB. Does not move the arm."
+  >
+    <Sequence>
+      <SubTree
+        ID="Locate reBot Cube"
+        prompt="red cube"
+        mask_topic="/rebot/red_cube_mask"
+        cube_top="{red_top}"
+      />
+      <SubTree
+        ID="Locate reBot Cube"
+        prompt="blue cube"
+        mask_topic="/rebot/blue_cube_mask"
+        cube_top="{blue_top}"
+      />
+    </Sequence>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Locate reBot Cubes">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="reBot Bench" />
+      </MetadataFields>
+      <output_port name="blue_top" type="geometry_msgs::msg::PoseStamped" />
+      <output_port name="red_top" type="geometry_msgs::msg::PoseStamped" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

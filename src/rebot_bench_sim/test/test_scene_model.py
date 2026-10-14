@@ -314,3 +314,107 @@ def test_sim_description_refuses_any_other_hardware():
         sim_urdf(hardware_interface="mock")
     plugins = [p.text for p in sim_urdf().findall("ros2_control/hardware/plugin")]
     assert plugins == ["picknik_mujoco_ros/MujocoSystem"]
+
+
+@pytest.mark.parametrize("aperture, touches", [(0.084, False), (0.049, True)])
+def test_finger_collision_geometry_preserves_the_grasping_aperture(
+    model, data, aperture, touches
+):
+    # Place a cube between the fingertips, away from the bench. A hull spanning
+    # the carriage and the finger incorrectly touches it even with the jaws open.
+    for name, value in zip(ARM, CONFIGURATIONS[1][:6]):
+        data.joint(name).qpos = value
+    data.joint("joint7").qpos = aperture / 0.016
+    for jaw in ("gripper_joint1", "gripper_joint2"):
+        data.joint(jaw).qpos = aperture / 2
+    mujoco.mj_kinematics(model, data)
+    tip = data.body("gripper_end")
+    cube = model.body("blue_cube")
+    address = model.jnt_qposadr[cube.jntadr[0]]
+    data.qpos[address : address + 3] = tip.xpos + tip.xmat.reshape(3, 3) @ [-0.01, 0, 0]
+    data.qpos[address + 3 : address + 7] = tip.xquat
+    mujoco.mj_forward(model, data)
+    touching = set()
+    for contact in data.contact[: data.ncon]:
+        bodies = [model.body(model.geom_bodyid[g]).name for g in contact.geom]
+        if "blue_cube" in bodies:
+            touching.update(set(bodies) & {"gripper_left", "gripper_right"})
+    assert touching == ({"gripper_left", "gripper_right"} if touches else set())
+
+
+def _top_down_grasp_ik(model, target, seed):
+    """Solve the six joint model locally, without a running ROS stack."""
+    state = mujoco.MjData(model)
+    joints = np.array(seed, dtype=float)
+    rotation = np.array([[0, 0, -1], [0, -1, 0], [-1, 0, 0]])
+    jac_position = np.zeros((3, model.nv))
+    jac_rotation = np.zeros((3, model.nv))
+    body_id = model.body("gripper_end").id
+    for _ in range(200):
+        state.qpos[:6] = joints
+        mujoco.mj_forward(model, state)
+        tip = state.body("gripper_end")
+        current = tip.xmat.reshape(3, 3)
+        error = np.r_[
+            target - tip.xpos,
+            0.5 * sum(np.cross(current[:, i], rotation[:, i]) for i in range(3)),
+        ]
+        if np.linalg.norm(error) < 1e-7:
+            return joints
+        mujoco.mj_jacBody(model, state, jac_position, jac_rotation, body_id)
+        jacobian = np.vstack([jac_position[:, :6], jac_rotation[:, :6]])
+        delta = jacobian.T @ np.linalg.solve(
+            jacobian @ jacobian.T + 1e-6 * np.eye(6), error
+        )
+        joints = np.clip(
+            joints + np.clip(delta, -0.15, 0.15),
+            model.jnt_range[:6, 0] + 1e-5,
+            model.jnt_range[:6, 1] - 1e-5,
+        )
+    raise AssertionError(f"Grasp fixture IK failed: {error}")
+
+
+@pytest.mark.xfail(
+    strict=True,
+    reason="Physical mimic-jaw contact slips; sim grasp proxy does not validate grip fidelity.",
+)
+def test_45_mm_grip_physically_lifts_a_cube_50_mm(model, data):
+    """The real aperture command must transmit force through the mimic jaws."""
+    target = np.array([0.35, 0.07, 0.015])
+    grasp = _top_down_grasp_ik(model, target, [0.11, 2.23, 1.84, -1.15, 0.072, 0.082])
+    lifted = _top_down_grasp_ik(model, target + [0, 0, 0.05], grasp)
+    data.qpos[:6] = grasp
+    data.qpos[6:9] = [5.25, 0.042, 0.042]
+    data.ctrl[:] = np.r_[grasp, 5.25]
+    blue_address = model.jnt_qposadr[model.body("blue_cube").jntadr[0]]
+    data.qpos[blue_address : blue_address + 7] = [
+        target[0],
+        target[1],
+        0.025,
+        1,
+        0,
+        0,
+        0,
+    ]
+    # Isolate the grasp from whichever red placement bench_layout currently selects.
+    red_address = model.jnt_qposadr[model.body("red_cube").jntadr[0]]
+    data.qpos[red_address : red_address + 3] = [5, 5, 1]
+    for phase, duration in [
+        ("settle", 0.5),
+        ("close", 1),
+        ("hold", 1),
+        ("lift", 2),
+        ("lift_hold", 1),
+    ]:
+        steps = round(duration / model.opt.timestep)
+        for step in range(steps):
+            fraction = (step + 1) / steps
+            if phase == "close":
+                data.ctrl[6] = 5.25 + fraction * (2.8125 - 5.25)
+            elif phase == "lift":
+                data.ctrl[:6] = (1 - fraction) * grasp + fraction * lifted
+            mujoco.mj_step(model, data)
+    # MuJoCo body pose, not commanded joints or an attached planning-scene box.
+    np.testing.assert_allclose(
+        data.body("blue_cube").xpos, [target[0], target[1], 0.075], atol=0.005
+    )

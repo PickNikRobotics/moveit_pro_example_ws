@@ -1,0 +1,88 @@
+# Generated at build time from config/bench_layout.yaml; edit that file.
+robot_base:
+  xyz:
+  - 0.7259
+  - 0.0216
+  - -0.003
+  rpy:
+  - 0.0
+  - 0.0
+  - 3.138
+scene_camera:
+  xyz:
+  - -0.075
+  - 0.0694
+  - 0.5645
+  rpy:
+  - 0.1686
+  - 0.975
+  - 0.2459
+wrist_camera:
+  xyz:
+  - 0.086316
+  - -0.001875
+  - 0.065734
+  rpy:
+  - 0.063587
+  - -1.015548
+  - -3.132472
+mat:
+  xyz:
+  - 0.133
+  - 0.16
+  - 0.0
+  rpy:
+  - 0.0
+  - 0.0
+  - 0.0
+  size:
+  - 0.9144
+  - 0.4
+  - 0.003
+wall:
+  xyz:
+  - 0.15
+  - 0.37
+  - 0.3
+  rpy:
+  - 0.0
+  - 0.0
+  - 0.0
+  size:
+  - 1.0
+  - 0.02
+  - 0.6
+cubes:
+  size: 0.05
+  mass: 0.035
+  red:
+    xyz:
+    - 0.288
+    - 0.148
+    - 0.025
+    yaw: 0.0
+  blue:
+    xyz:
+    - 0.317
+    - 0.051
+    - 0.025
+    yaw: 0.0
+keyframe:
+  arm:
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  - 0.0
+  gripper: 0.0
+sim_grasp_proxy: true
+wrist_camera_mount:
+  xyz:
+  - -0.10857
+  - -0.011096
+  - 0.035573
+  rpy:
+  - 1.605035
+  - -0.07972
+  - 1.542954

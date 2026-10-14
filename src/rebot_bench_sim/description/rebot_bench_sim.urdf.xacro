@@ -12,14 +12,17 @@
   <xacro:property name="layout" value="${xacro.load_yaml('$(arg layout)')}" />
 
   <!-- An xacro:arg keeps its first declaration, so these defaults win over
-       the base file's identity placements. -->
+       the base file's. -->
   <xacro:arg name="hardware_interface" default="mujoco" />
-  <xacro:arg name="world_to_base_xyz" default="${' '.join(map(str, layout['robot_base']['xyz']))}" />
-  <xacro:arg name="world_to_base_rpy" default="${' '.join(map(str, layout['robot_base']['rpy']))}" />
-  <xacro:arg name="scene_camera_xyz" default="${' '.join(map(str, layout['scene_camera']['xyz']))}" />
-  <xacro:arg name="scene_camera_rpy" default="${' '.join(map(str, layout['scene_camera']['rpy']))}" />
   <xacro:arg name="wrist_camera_mount_xyz" default="${' '.join(map(str, layout['wrist_camera_mount']['xyz']))}" />
   <xacro:arg name="wrist_camera_mount_rpy" default="${' '.join(map(str, layout['wrist_camera_mount']['rpy']))}" />
+  <!-- The base file keeps these properties over its placement arguments, so
+       the layout places the twin even though the base config's bench
+       calibration is inherited through urdf_params. -->
+  <xacro:property name="world_to_base_xyz" value="${' '.join(map(str, layout['robot_base']['xyz']))}" />
+  <xacro:property name="world_to_base_rpy" value="${' '.join(map(str, layout['robot_base']['rpy']))}" />
+  <xacro:property name="scene_camera_xyz" value="${' '.join(map(str, layout['scene_camera']['xyz']))}" />
+  <xacro:property name="scene_camera_rpy" value="${' '.join(map(str, layout['scene_camera']['rpy']))}" />
   <xacro:include filename="$(find rebot_bench_base_config)/description/rebot.urdf.xacro" />
   <!-- Any other selector would add a second hardware block for the same joints. -->
   <xacro:if value="${'$(arg hardware_interface)' != 'mujoco'}">
@@ -35,7 +38,7 @@
       <param name="mujoco_model_package">rebot_bench_sim</param>
       <param name="mujoco_keyframe">$(arg mujoco_keyframe)</param>
       <param name="mujoco_viewer">$(arg mujoco_viewer)</param>
-      <param name="render_publish_rate">10</param>
+      <param name="render_publish_rate">30</param>
       <!-- Colour and depth images only, as on the bench: no point clouds. -->
       <param name="point_cloud_publish_rate">0</param>
       <param name="tf_publish_rate">60</param>

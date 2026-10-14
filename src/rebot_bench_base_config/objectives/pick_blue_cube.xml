@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Pick Blue Cube">
+  <BehaviorTree
+    ID="Pick Blue Cube"
+    _description="Open the jaw at home and confirm it opened, then use SAM3 and calibrated RGB to pick the blue 50 mm cube. Leaves it attached and held above its starting position. Speeds come from objectives/rebot_stack_motion.yaml."
+  >
+    <Sequence>
+      <SubTree
+        ID="reBot Stack Motion"
+        joint_velocity_scale_factor="{joint_velocity_scale_factor}"
+        joint_acceleration_scale_factor="{joint_acceleration_scale_factor}"
+        cartesian_velocity_scale_factor="{cartesian_velocity_scale_factor}"
+        cartesian_acceleration_scale_factor="{cartesian_acceleration_scale_factor}"
+        gripper_velocity_scale_factor="{gripper_velocity_scale_factor}"
+        gripper_acceleration_scale_factor="{gripper_acceleration_scale_factor}"
+      />
+      <SubTree
+        ID="reBot Open Jaw"
+        gripper_velocity_scale_factor="{gripper_velocity_scale_factor}"
+        gripper_acceleration_scale_factor="{gripper_acceleration_scale_factor}"
+      />
+      <SubTree
+        ID="Move reBot to Waypoint"
+        waypoint_name="Pick and Stack Survey"
+        velocity_scale_factor="{joint_velocity_scale_factor}"
+        acceleration_scale_factor="{joint_acceleration_scale_factor}"
+      />
+      <SubTree
+        ID="Prepare reBot Stack"
+        blue_top="{blue_top}"
+        red_top="{red_top}"
+      />
+      <!-- gripper_end is the fingertip plane; +X points out of the fingers. -->
+      <Action
+        ID="TransformPose"
+        input_pose="{blue_top}"
+        translation_xyz="0;0;0.025"
+        quaternion_xyzw="0;0.7071067811865475;0;0.7071067811865475"
+        output_pose="{pick_hover}"
+      />
+      <Action
+        ID="TransformPose"
+        input_pose="{blue_top}"
+        translation_xyz="0;0;-0.035"
+        quaternion_xyzw="0;0.7071067811865475;0;0.7071067811865475"
+        output_pose="{pick}"
+      />
+      <SubTree
+        ID="reBot Move to Pose"
+        target="{pick_hover}"
+        gripper_position="5.25"
+        velocity_scale_factor="{joint_velocity_scale_factor}"
+        acceleration_scale_factor="{joint_acceleration_scale_factor}"
+      />
+      <SubTree
+        ID="reBot Move Straight"
+        target="{pick}"
+        gripper_position="5.25"
+        velocity_scale_factor="{cartesian_velocity_scale_factor}"
+        acceleration_scale_factor="{cartesian_acceleration_scale_factor}"
+      />
+      <SubTree
+        ID="Move to Waypoint"
+        waypoint_name="Stack Gripper Hold"
+        joint_group_name="gripper"
+        velocity_scale_factor="{gripper_velocity_scale_factor}"
+        acceleration_scale_factor="{gripper_acceleration_scale_factor}"
+        controller_names="joint_trajectory_admittance_controller"
+        controller_action_server="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+        collision_check_params="[{override_scene_link_padding: true, link_padding: 0.0}]"
+        execution_pipeline="jtac"
+      />
+      <Action
+        ID="SetCollisionRule"
+        name_a="rebot_blue"
+        name_b="rebot_bench"
+        allow_collision="true"
+      />
+      <Action
+        ID="AttachObject"
+        object_id="rebot_blue"
+        link_name="gripper_end"
+        allowed_collision_links="gripper_left;gripper_right;gripper_end"
+      />
+      <SubTree
+        ID="reBot Move Straight"
+        target="{pick_hover}"
+        gripper_position="2.8125"
+        velocity_scale_factor="{cartesian_velocity_scale_factor}"
+        acceleration_scale_factor="{cartesian_acceleration_scale_factor}"
+      />
+      <Action
+        ID="SetCollisionRule"
+        name_a="rebot_blue"
+        name_b="rebot_bench"
+        allow_collision="false"
+      />
+    </Sequence>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Pick Blue Cube">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="reBot Bench" />
+      </MetadataFields>
+      <output_port name="red_top" type="geometry_msgs::msg::PoseStamped" />
+    </SubTree>
+  </TreeNodesModel>
+</root>
