@@ -4,7 +4,7 @@
   <BehaviorTree
     ID="Close Right Gripper"
     _description="Close the right gripper"
-    _favorite="true"
+    _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action

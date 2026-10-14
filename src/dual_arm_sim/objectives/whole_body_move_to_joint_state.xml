@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Whole Body Move to Joint State">
+  <!-- body_jtc runs the plan, base_pid drives the planar joints; JTAC and base_jgvc come back after, also on failure. -->
+  <BehaviorTree
+    ID="Whole Body Move to Joint State"
+    _description="Plan and execute one motion of the base, the spine and the arms to a joint state, then hand the robot back to the arm controller and Nav2's base controller"
+    _favorite="false"
+  >
+    <Control ID="Sequence">
+      <Control ID="Fallback">
+        <SubTree
+          ID="Move to Joint State"
+          _collapsed="true"
+          target_joint_state="{target_joint_state}"
+          joint_group_name="{joint_group_name}"
+          controller_names="base_pid;body_jtc"
+          controller_action_server="/body_jtc/follow_joint_trajectory"
+          execution_pipeline="jtc"
+        />
+        <Decorator ID="ForceFailure">
+          <Action
+            ID="SwitchController"
+            activate_controllers="joint_trajectory_admittance_controller;base_jgvc"
+          />
+        </Decorator>
+      </Control>
+      <Action
+        ID="SwitchController"
+        activate_controllers="joint_trajectory_admittance_controller;base_jgvc"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Whole Body Move to Joint State">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Motion - Execute" />
+      </MetadataFields>
+      <input_port
+        name="target_joint_state"
+        default="{target_joint_state}"
+        type="moveit_msgs::msg::RobotState"
+      >
+        Goal joint state for the planning group.
+      </input_port>
+      <input_port
+        name="joint_group_name"
+        default="whole_body"
+        type="std::string"
+      >
+        Planning group: whole_body, left_manipulator_with_base or
+        right_manipulator_with_base.
+      </input_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>
