@@ -188,7 +188,14 @@ See `src/rebot_bench_sim/description/rebot_bench_sim.urdf.xacro`.
 `picknik_mujoco_ros/MujocoSystem` compares every MJCF body with the same-named URDF link at hardware init and logs
 `N MuJoCo bodies do not sit where the URDF places the same-named link`, with the offset per body. After changing a
 mount, base or pedestal transform in either file, start the sim once and check it: even sub-millimetre entries mean
-the MJCF kept a transform the URDF no longer uses (dual_arm_sim's arm mounts after the franka_description 2.9.0 bump).
+the MJCF kept a transform the URDF no longer uses.
+
+### Python MuJoCo needs the `mujoco_package_uri` plugin to load `package://` meshes
+
+MoveIt Pro resolves an MJCF `file="package://<pkg>/..."` through the `mujoco_package_uri` resource provider; plain
+`mujoco.MjModel.from_xml_path` does not. A test or script that loads such a scene first calls
+`mujoco.mj_loadAllPluginLibraries(<mujoco_package_uri prefix>/bin/mujoco_plugin)` and declares the package; see the
+`model` fixture in `src/rebot_bench_sim/test/test_scene_model.py`.
 
 ### MuJoCo documentation
 

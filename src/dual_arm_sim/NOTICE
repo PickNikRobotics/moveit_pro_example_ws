@@ -3,37 +3,45 @@ dual_arm_sim
 Unless otherwise noted, the files in this package are licensed under the BSD
 3-Clause License in the repository's LICENSE.
 
+The Mobile FR3 Duo robot description, SRDF, MoveIt and ros2_control files,
+the odometry and /cmd_vel bridges, and the whole-body and navigation
+Objectives are copied from PickNik's moveit_pro_franka_ws (packages
+mobile_fr3_duo_mock and mobile_fr3_duo_sim) and adapted.
+
 Third-party files:
 
-- MuJoCo Menagerie Franka FR3 model (franka_fr3)
-  Licensed under the Apache License, Version 2.0. Its LICENSE file, which also
-  contains a BSD license section, is copied unchanged to
-  description/mujoco/LICENSE.
-  - The FR3 arm visual meshes (the OBJ files) in description/mujoco/assets/ are
-    copied unchanged.
-  - The collision meshes link0.stl to link7.stl and hand.stl are not part of this
-    package: description/mujoco/fr3.xml loads them at run time from the
-    vendored franka_description, as
-    package://franka_description/meshes/robots/fer/collision/<name>.stl
-    (src/external_dependencies/franka_config/franka_description/meshes/robots/fer/collision).
-    They are byte-identical to the MuJoCo Menagerie copies they replace.
-  - description/mujoco/fr3.xml is derived from the model's fr3.xml and
-    modified by PickNik Inc.; it says so in a comment at its top.
-
-- MuJoCo Menagerie Franka Emika Panda model (franka_emika_panda), for the
-  Franka Hand
-  Licensed under the Apache License, Version 2.0; description/mujoco/LICENSE
-  carries the same Apache License text.
-  - hand_0.obj to hand_4.obj, finger_0.obj and finger_1.obj in
-    description/mujoco/assets/ are copied unchanged.
-
-- franka_description (FR3 Duo mount v0.3)
+- franka_description 2.9.0 (Mobile FR3 Duo: TMR v0.2 base, spine, head, FR3
+  Duo mount v0.3, two FR3 v2 arms and Franka Hands)
   Copyright 2023 Franka Robotics GmbH
   Licensed under the Apache License, Version 2.0. Its LICENSE file, which also
   contains a BSD license section, is copied to
   description/mujoco/LICENSE-franka_description; the copy adds a final newline
   and is otherwise unchanged.
-  - description/mujoco/assets/fr3_duo_mount.obj and fr3_duo_cover.obj were
-    converted by PickNik Inc. in Blender from
-    franka_description/meshes/accessories/fr3_duo_mount_v0_3/visual/fr3_duo_mount.dae
-    and fr3_duo_cover.dae.
+  - description/mujoco/mobile_fr3_duo.xml is converted by PickNik Inc. from its
+    kinematics, inertials and dynamics, and modified; it says so in a comment
+    at its top.
+  - description/mujoco/assets/tmrv0_2_visual.stl was converted by PickNik Inc.
+    with pymeshlab from
+    franka_description/meshes/robots/tmrv0_2/visual/tmrv0_2.dae.
+  - The collision meshes link0.stl to link7.stl (FR3 v2), hand.stl,
+    franka_head.stl, franka_spine.stl, fr3_duo_mount.stl, fr3_duo_cover.stl
+    and tmrv0_2.stl are not part of this package: mobile_fr3_duo.xml loads
+    them at run time from the vendored franka_description
+    (src/external_dependencies/franka_config/franka_description/meshes)
+    through package:// paths.
+
+- MuJoCo Menagerie Franka FR3 model (franka_fr3)
+  Licensed under the Apache License, Version 2.0. Its LICENSE file, which also
+  contains a BSD license section, is copied unchanged to
+  description/mujoco/LICENSE.
+  - The actuator settings in description/mujoco/mobile_fr3_duo.xml come from
+    its fr3.xml.
+
+- MuJoCo Menagerie Franka Emika Panda model (franka_emika_panda), for the
+  Franka Hand
+  Licensed under the Apache License, Version 2.0; description/mujoco/LICENSE
+  carries the same Apache License text.
+  - finger_0.obj and finger_1.obj in description/mujoco/assets/ are copied
+    unchanged.
+  - The finger coupling (tendon and equality constraints) in
+    description/mujoco/mobile_fr3_duo.xml comes from its hand.xml.

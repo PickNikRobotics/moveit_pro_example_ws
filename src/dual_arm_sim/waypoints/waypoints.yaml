@@ -1,9 +1,11 @@
 - description: ''
   favorite: false
   joint_group_names:
+    - manipulator
     - left_manipulator
     - right_manipulator
-    - manipulator
+    - left_manipulator_without_spine
+    - right_manipulator_without_spine
   joint_state:
     effort: []
     header:
@@ -12,35 +14,37 @@
         nanosec: 0
         sec: 0
     name:
-    - right_fr3_joint1
-    - right_fr3_joint2
-    - right_fr3_joint3
-    - right_fr3_joint4
-    - right_fr3_joint5
-    - right_fr3_joint6
-    - right_fr3_joint7
-    - left_fr3_joint1
-    - left_fr3_joint2
-    - left_fr3_joint3
-    - left_fr3_joint4
-    - left_fr3_joint5
-    - left_fr3_joint6
-    - left_fr3_joint7
+      - franka_spine_vertical_joint
+      - left_fr3v2_joint1
+      - left_fr3v2_joint2
+      - left_fr3v2_joint3
+      - left_fr3v2_joint4
+      - left_fr3v2_joint5
+      - left_fr3v2_joint6
+      - left_fr3v2_joint7
+      - right_fr3v2_joint1
+      - right_fr3v2_joint2
+      - right_fr3v2_joint3
+      - right_fr3v2_joint4
+      - right_fr3v2_joint5
+      - right_fr3v2_joint6
+      - right_fr3v2_joint7
     position:
-    - 0
-    - -0.7854
-    - 0
-    - -2.3562
-    - 0
-    - 1.5707
-    - 0.7853
-    - 0
-    - -0.7854
-    - 0
-    - -2.3562
-    - 0
-    - 1.5707
-    - 0.7853
+      - 0.6
+      - 0.0
+      - -0.7854
+      - 0.0
+      - -2.3562
+      - 0.0
+      - 1.5707
+      - 0.7853
+      - 0.0
+      - -0.7854
+      - 0.0
+      - -2.3562
+      - 0.0
+      - 1.5707
+      - 0.7853
     velocity: []
   multi_dof_joint_state:
     header:
@@ -56,50 +60,54 @@
 - description: ''
   favorite: false
   joint_group_names:
+    - manipulator
     - left_manipulator
     - right_manipulator
-    - manipulator
+    - left_manipulator_without_spine
+    - right_manipulator_without_spine
   joint_state:
     effort: []
     header:
-      frame_id: ''
+      frame_id: world
       stamp:
         nanosec: 0
         sec: 0
     name:
-    - left_fr3_joint1
-    - left_fr3_joint2
-    - left_fr3_joint3
-    - left_fr3_joint4
-    - left_fr3_joint5
-    - left_fr3_joint6
-    - left_fr3_joint7
-    - left_fr3_finger_joint1
-    - right_fr3_joint1
-    - right_fr3_joint2
-    - right_fr3_joint3
-    - right_fr3_joint4
-    - right_fr3_joint5
-    - right_fr3_joint6
-    - right_fr3_joint7
-    - right_fr3_finger_joint1
+      - franka_spine_vertical_joint
+      - left_fr3v2_joint1
+      - left_fr3v2_joint2
+      - left_fr3v2_joint3
+      - left_fr3v2_joint4
+      - left_fr3v2_joint5
+      - left_fr3v2_joint6
+      - left_fr3v2_joint7
+      - left_fr3v2_finger_joint1
+      - right_fr3v2_joint1
+      - right_fr3v2_joint2
+      - right_fr3v2_joint3
+      - right_fr3v2_joint4
+      - right_fr3v2_joint5
+      - right_fr3v2_joint6
+      - right_fr3v2_joint7
+      - right_fr3v2_finger_joint1
     position:
-    - 0.7631439836051002
-    - -1.7256971279852666
-    - 1.0600563247617216
-    - -2.389989603996341
-    - 1.5875756227741065
-    - 1.946673982728032
-    - 1.228841619420035
-    - -1.206526992588383e-06
-    - -0.0013177742221101801
-    - -0.78657302417956
-    - -0.011311296228273288
-    - -2.363709370359536
-    - -0.0017492815088556665
-    - 1.5691264546747385
-    - 0.7852388406584784
-    - 0.0001266099321349138
+      - 0.6
+      - 0.7631
+      - -1.7257
+      - 1.0601
+      - -2.39
+      - 1.5876
+      - 1.9467
+      - 1.2288
+      - 0.0
+      - -0.0013
+      - -0.7866
+      - -0.0113
+      - -2.3637
+      - -0.0017
+      - 1.5691
+      - 0.7852
+      - 0.0
     velocity: []
   multi_dof_joint_state:
     header:
@@ -115,50 +123,54 @@
 - description: ''
   favorite: false
   joint_group_names:
+    - manipulator
     - left_manipulator
     - right_manipulator
-    - manipulator
+    - left_manipulator_without_spine
+    - right_manipulator_without_spine
   joint_state:
     effort: []
     header:
-      frame_id: ''
+      frame_id: world
       stamp:
         nanosec: 0
         sec: 0
     name:
-    - left_fr3_joint1
-    - left_fr3_joint2
-    - left_fr3_joint3
-    - left_fr3_joint4
-    - left_fr3_joint5
-    - left_fr3_joint6
-    - left_fr3_joint7
-    - left_fr3_finger_joint1
-    - right_fr3_joint1
-    - right_fr3_joint2
-    - right_fr3_joint3
-    - right_fr3_joint4
-    - right_fr3_joint5
-    - right_fr3_joint6
-    - right_fr3_joint7
-    - right_fr3_finger_joint1
+      - franka_spine_vertical_joint
+      - left_fr3v2_joint1
+      - left_fr3v2_joint2
+      - left_fr3v2_joint3
+      - left_fr3v2_joint4
+      - left_fr3v2_joint5
+      - left_fr3v2_joint6
+      - left_fr3v2_joint7
+      - left_fr3v2_finger_joint1
+      - right_fr3v2_joint1
+      - right_fr3v2_joint2
+      - right_fr3v2_joint3
+      - right_fr3v2_joint4
+      - right_fr3v2_joint5
+      - right_fr3v2_joint6
+      - right_fr3v2_joint7
+      - right_fr3v2_finger_joint1
     position:
-    - 0.0007136559011727871
-    - -0.7866070922383005
-    - 0.0058260641539913584
-    - -2.3598693918370577
-    - 0.0004167706563591327
-    - 1.5698542053401963
-    - 0.7853530142146962
-    - -3.102443235020368e-05
-    - -0.9123206417362171
-    - -1.6248200992913444
-    - -0.8998577753262823
-    - -2.488156178512647
-    - -1.4102913730535007
-    - 2.102824648497987
-    - -0.896605178475249
-    - 3.0056037776778505e-07
+      - 0.6
+      - 0.0007
+      - -0.7866
+      - 0.0058
+      - -2.3599
+      - 0.0004
+      - 1.5699
+      - 0.7854
+      - 0.0
+      - -0.9123
+      - -1.6248
+      - -0.8999
+      - -2.4882
+      - -1.4103
+      - 2.1028
+      - -0.8966
+      - 0.0
     velocity: []
   multi_dof_joint_state:
     header:
@@ -171,3 +183,266 @@
     twist: []
     wrench: []
   name: Place Right
+- description: ''
+  favorite: false
+  joint_group_names:
+    - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: world
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+      - franka_spine_vertical_joint
+      - left_fr3v2_joint1
+      - left_fr3v2_joint2
+      - left_fr3v2_joint3
+      - left_fr3v2_joint4
+      - left_fr3v2_joint5
+      - left_fr3v2_joint6
+      - left_fr3v2_joint7
+      - right_fr3v2_joint1
+      - right_fr3v2_joint2
+      - right_fr3v2_joint3
+      - right_fr3v2_joint4
+      - right_fr3v2_joint5
+      - right_fr3v2_joint6
+      - right_fr3v2_joint7
+    position:
+      - 0.0
+      - 0.0
+      - -0.7853981633974483
+      - 0.0
+      - -2.356194490192345
+      - 0.0
+      - 1.5707963267948966
+      - 0.7853981633974483
+      - 0.0
+      - -0.7853981633974483
+      - 0.0
+      - -2.356194490192345
+      - 0.0
+      - 1.5707963267948966
+      - 0.7853981633974483
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Ready
+- description: ''
+  favorite: false
+  joint_group_names:
+    - mobile_base
+  joint_state:
+    effort: []
+    header:
+      frame_id: world
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+      - planar_x
+      - planar_y
+      - planar_theta
+    position:
+      - 0.0
+      - 0.0
+      - 0.0
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Base Ready
+- description: ''
+  favorite: false
+  joint_group_names:
+    - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: world
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+      - franka_spine_vertical_joint
+      - left_fr3v2_joint1
+      - left_fr3v2_joint2
+      - left_fr3v2_joint3
+      - left_fr3v2_joint4
+      - left_fr3v2_joint5
+      - left_fr3v2_joint6
+      - left_fr3v2_joint7
+      - right_fr3v2_joint1
+      - right_fr3v2_joint2
+      - right_fr3v2_joint3
+      - right_fr3v2_joint4
+      - right_fr3v2_joint5
+      - right_fr3v2_joint6
+      - right_fr3v2_joint7
+    position:
+      - 0.6
+      - -1.0
+      - 1.0
+      - 0.9
+      - -2.9
+      - -0.3
+      - 2.2
+      - 0.785
+      - 1.0
+      - 1.0
+      - -0.9
+      - -2.9
+      - 0.3
+      - 2.2
+      - -0.785
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Stow
+- description: ''
+  favorite: false
+  joint_group_names:
+    - whole_body
+  joint_state:
+    effort: []
+    header:
+      frame_id: world
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+      - planar_x
+      - planar_y
+      - planar_theta
+      - franka_spine_vertical_joint
+      - left_fr3v2_joint1
+      - left_fr3v2_joint2
+      - left_fr3v2_joint3
+      - left_fr3v2_joint4
+      - left_fr3v2_joint5
+      - left_fr3v2_joint6
+      - left_fr3v2_joint7
+      - right_fr3v2_joint1
+      - right_fr3v2_joint2
+      - right_fr3v2_joint3
+      - right_fr3v2_joint4
+      - right_fr3v2_joint5
+      - right_fr3v2_joint6
+      - right_fr3v2_joint7
+    position:
+      - -1.0
+      - 0.0
+      - 0.5
+      - 0.0
+      - 0.0
+      - -0.7853981633974483
+      - 0.0
+      - -2.356194490192345
+      - 0.0
+      - 1.5707963267948966
+      - 0.7853981633974483
+      - 0.0
+      - -0.7853981633974483
+      - 0.0
+      - -2.356194490192345
+      - 0.0
+      - 1.5707963267948966
+      - 0.7853981633974483
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Whole Body Demo
+- description: ''
+  favorite: false
+  joint_group_names:
+    - whole_body
+  joint_state:
+    effort: []
+    header:
+      frame_id: world
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+      - planar_x
+      - planar_y
+      - planar_theta
+      - franka_spine_vertical_joint
+      - left_fr3v2_joint1
+      - left_fr3v2_joint2
+      - left_fr3v2_joint3
+      - left_fr3v2_joint4
+      - left_fr3v2_joint5
+      - left_fr3v2_joint6
+      - left_fr3v2_joint7
+      - right_fr3v2_joint1
+      - right_fr3v2_joint2
+      - right_fr3v2_joint3
+      - right_fr3v2_joint4
+      - right_fr3v2_joint5
+      - right_fr3v2_joint6
+      - right_fr3v2_joint7
+    position:
+      - 0.0
+      - 0.0
+      - 0.0
+      - 0.6
+      - 0.0
+      - -0.7854
+      - 0.0
+      - -2.3562
+      - 0.0
+      - 1.5707
+      - 0.7853
+      - 0.0
+      - -0.7854
+      - 0.0
+      - -2.3562
+      - 0.0
+      - 1.5707
+      - 0.7853
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Whole Body Home

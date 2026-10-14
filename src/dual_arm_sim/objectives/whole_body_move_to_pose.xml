@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Whole Body Move to Pose">
+  <!-- IK on a manipulator_with_base group picks the base pose too; the joint costs keep the base still when the arm alone can reach. -->
+  <BehaviorTree
+    ID="Whole Body Move to Pose"
+    _description="Move one gripper to a pose, moving the base and the spine as well when the arm alone cannot reach it"
+    _favorite="false"
+  >
+    <Control ID="Sequence">
+      <Action ID="ResetVector" vector="{target_poses}" />
+      <Action
+        ID="PushBackVector"
+        input_vector="{target_poses}"
+        element="{target_pose}"
+        output_vector="{target_poses}"
+      />
+      <Action
+        ID="GetCurrentPlanningScene"
+        planning_scene_msg="{planning_scene}"
+      />
+      <Action
+        ID="ComputeInverseKinematics"
+        planning_group_name="{planning_group_name}"
+        tip_links="{tip_link}"
+        target_poses="{target_poses}"
+        planning_scene_msg="{planning_scene}"
+        solve_mode="optimize_distance"
+        joint_costs="{joint_costs}"
+        ik_timeout_s="1.0"
+        optimization_timeout_s="0.05"
+        link_padding="0.01"
+        solution="{ik_solution}"
+      />
+      <SubTree
+        ID="Whole Body Move to Joint State"
+        _collapsed="true"
+        target_joint_state="{ik_solution}"
+        joint_group_name="{planning_group_name}"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Whole Body Move to Pose">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Motion - Execute" />
+      </MetadataFields>
+      <input_port
+        name="target_pose"
+        default="{target_pose}"
+        type="geometry_msgs::msg::PoseStamped"
+      >
+        Goal pose of the tip link.
+      </input_port>
+      <input_port
+        name="planning_group_name"
+        default="left_manipulator_with_base"
+        type="std::string"
+      >
+        left_manipulator_with_base or right_manipulator_with_base.
+      </input_port>
+      <input_port name="tip_link" default="left_grasp_link" type="std::string">
+        The gripper link that goes to the pose.
+      </input_port>
+      <input_port
+        name="joint_costs"
+        default="4.0;4.0;4.0;2.0;1.0;1.0;1.0;1.0;1.0;1.0;1.0"
+        type="std::vector&lt;double&gt;"
+      >
+        IK cost per joint in group order: planar x, y and yaw, spine, arm
+        joints 1 to 7. The same costs as config/moveit/pose_ik.yaml.
+      </input_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>
