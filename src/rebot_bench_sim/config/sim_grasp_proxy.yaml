@@ -1,0 +1,5 @@
+sim_grasp_proxy_controller:
+  ros__parameters:
+    type: forward_command_controller/ForwardCommandController
+    joints: [suction_cup_sim_grasp_proxy]
+    interface_name: position

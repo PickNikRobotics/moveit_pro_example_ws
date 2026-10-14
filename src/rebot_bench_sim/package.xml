@@ -23,6 +23,20 @@
   <exec_depend>moveit_studio_agent</exec_depend>
   <exec_depend>mujoco_package_uri</exec_depend>
   <exec_depend>picknik_mujoco_ros</exec_depend>
+  <exec_depend>picknik_nyx_renderer</exec_depend>
+  <exec_depend>cv_bridge</exec_depend>
+  <exec_depend>python3-numpy</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>control_msgs</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>controller_manager</exec_depend>
+  <exec_depend>forward_command_controller</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>python3-yaml</exec_depend>
+  <exec_depend>rosidl_runtime_py</exec_depend>
+  <exec_depend>moveit_studio_internal_msgs</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>visualization_msgs</exec_depend>
   <exec_depend>xacro</exec_depend>
 
   <test_depend>ament_cmake_copyright</test_depend>

@@ -16,12 +16,18 @@
        gripper always uses motion. Unsupported values fail expansion. -->
   <xacro:arg name="arm_control_mode" default="motion" />
   <!-- Placement of base_link and of the scene camera mount in `world`, as
-       "x y z" and URDF "roll pitch yaw". rebot_bench_sim sets both from its
-       bench layout; unset, both coincide with world. -->
+       "x y z" and URDF "roll pitch yaw". config.yaml sets the bench's
+       calibration; unset, both coincide with world. A wrapping description
+       that defines these properties first keeps its own placement over the
+       arguments: rebot_bench_sim, from its bench layout. -->
   <xacro:arg name="world_to_base_xyz" default="0 0 0" />
   <xacro:arg name="world_to_base_rpy" default="0 0 0" />
   <xacro:arg name="scene_camera_xyz" default="0 0 0" />
   <xacro:arg name="scene_camera_rpy" default="0 0 0" />
+  <xacro:property name="world_to_base_xyz" default="$(arg world_to_base_xyz)" />
+  <xacro:property name="world_to_base_rpy" default="$(arg world_to_base_rpy)" />
+  <xacro:property name="scene_camera_xyz" default="$(arg scene_camera_xyz)" />
+  <xacro:property name="scene_camera_rpy" default="$(arg scene_camera_rpy)" />
   <!-- d435_mount_joint origin (gripper_end -> d435_mount_link). The default is
        the nominal, eye-measured mount; a hand-eye calibration overrides it. -->
   <xacro:arg name="wrist_camera_mount_xyz" default="-0.1201 0.0003 0.045" />
@@ -439,7 +445,7 @@
   <joint name="world_to_base" type="fixed">
     <parent link="world" />
     <child link="base_link" />
-    <origin xyz="$(arg world_to_base_xyz)" rpy="$(arg world_to_base_rpy)" />
+    <origin xyz="${world_to_base_xyz}" rpy="${world_to_base_rpy}" />
   </joint>
   <link name="d435_mount_link">
     <visual name="D435_mount">
@@ -486,7 +492,7 @@
   <joint name="scene_camera_mount_joint" type="fixed">
     <parent link="world" />
     <child link="scene_camera_link" />
-    <origin xyz="$(arg scene_camera_xyz)" rpy="$(arg scene_camera_rpy)" />
+    <origin xyz="${scene_camera_xyz}" rpy="${scene_camera_rpy}" />
   </joint>
   <xacro:unless value="${simulator_owns_optical_frames}">
     <link name="scene_camera_color_optical_frame" />

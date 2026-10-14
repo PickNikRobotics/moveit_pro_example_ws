@@ -14,8 +14,8 @@ hardware:
       - mujoco_viewer: false
   # MuJoCo renders both cameras; no camera drivers start.
   additional_driver_launch_file:
-    package: "moveit_studio_agent"
-    path: "launch/blank.launch.py"
+    package: "rebot_bench_sim"
+    path: "launch/sim_grasp_proxy.launch.py"
 
 objectives:
   behavior_loader_plugins:
@@ -34,3 +34,7 @@ objectives:
     rebot_bench_sim_objectives:
       package_name: "rebot_bench_sim"
       relative_path: "objectives"
+
+ros2_control:
+  controllers_not_managed:
+    - sim_grasp_proxy_controller

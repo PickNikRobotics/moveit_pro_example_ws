@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="reBot Move to Pose">
+  <BehaviorTree
+    ID="reBot Move to Pose"
+    _description="Plan from the current measured state, hold the preceding gripper command, collision-check all seven joints, and execute."
+  >
+    <Sequence>
+      <Action ID="ResetVector" vector="{path}" />
+      <Action
+        ID="PushBackVector"
+        input_vector="{path}"
+        element="{target}"
+        output_vector="{path}"
+      />
+      <Action ID="GetCurrentPlanningScene" planning_scene_msg="{scene}" />
+      <Action
+        ID="ComputeInverseKinematics"
+        target_poses="{path}"
+        tip_links="gripper_end"
+        planning_scene_msg="{scene}"
+        planning_group_name="manipulator"
+        ik_timeout_s="0.5"
+        solve_mode="optimize_distance"
+        optimization_timeout_s="0.1"
+        link_padding="0.0"
+        solution="{goal}"
+      />
+      <Action
+        ID="PlanToJointGoal"
+        joint_goal="{goal}"
+        planning_group_name="manipulator"
+        velocity_scale_factor="{velocity_scale_factor}"
+        acceleration_scale_factor="{acceleration_scale_factor}"
+        collision_check_params="[{override_scene_link_padding: true, link_padding: 0.0}]"
+        joint_trajectory_msg="{arm_trajectory}"
+      />
+      <Action
+        ID="HoldGripperInTrajectory"
+        arm_trajectory="{arm_trajectory}"
+        gripper_position="{gripper_position}"
+        trajectory="{trajectory}"
+      />
+      <Action ID="GetCurrentPlanningScene" planning_scene_msg="{scene}" />
+      <Action
+        ID="ValidateTrajectory"
+        planning_scene_msg="{scene}"
+        planning_group_name="manipulator_and_gripper"
+        joint_trajectory_msg="{trajectory}"
+        joint_space_step="0.02"
+        cartesian_space_step="0.005"
+      />
+      <Action
+        ID="ExecuteTrajectory"
+        joint_trajectory_msg="{trajectory}"
+        execution_pipeline="jtac"
+        controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+      />
+    </Sequence>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="reBot Move to Pose">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="reBot Bench" />
+      </MetadataFields>
+      <input_port name="target" type="geometry_msgs::msg::PoseStamped" />
+      <input_port name="gripper_position" type="double">
+        The command sent by the preceding gripper move, in radians.
+      </input_port>
+      <input_port name="velocity_scale_factor" type="double">
+        Fraction of the joint velocity limits to plan at: the pick-and-stack
+        setting.
+      </input_port>
+      <input_port name="acceleration_scale_factor" type="double">
+        Fraction of the joint acceleration limits to plan at: the pick-and-stack
+        setting.
+      </input_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>

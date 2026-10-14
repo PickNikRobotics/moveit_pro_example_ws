@@ -61,6 +61,14 @@ skip_objectives: set[str] = {
     "Calibrate Eye To Hand Camera",
     "Calibrate Multiple Cameras",
     "Generate Calibration Waypoints",
+    # Stateful pick-and-stack entry points that leave planning-scene geometry
+    # and a held cube for the next step; validated by their own evidence runs
+    # (docs/stack_validation) and regressions instead.
+    "Locate reBot Cubes",
+    "Prepare reBot Stack",
+    "Pick Blue Cube",
+    "Stack Blue on Red",
+    "Clear reBot Stack Scene",
 }
 
 

@@ -278,6 +278,13 @@
                     diaginertia="1.09877964176176E-05 9.50146036720166E-06 9.30779991911125E-06"
                   />
                   <joint name="gripper_joint1" class="jaw" />
+                  <!-- SIM-ONLY grasp proxy, enabled by the twin's launch hook.
+                       MuJoCo activates the named weld only on cube contact. -->
+                  <site
+                    name="suction_cup_sim_grasp_proxy"
+                    size="0.001"
+                    group="5"
+                  />
                   <geom
                     class="visual"
                     mesh="pla_left"
@@ -288,7 +295,16 @@
                     mesh="cnc_left"
                     material="rs_anodized_silver"
                   />
-                  <geom class="collision" mesh="gripper_left" />
+                  <!-- Keep the finger separate from its carriage: one convex hull
+                       across both fills the open grasping aperture. -->
+                  <!-- Pad friction is a simulation parameter, not a measured
+                       hardware coefficient. The actuator supplies the squeeze. -->
+                  <geom
+                    class="collision"
+                    mesh="pla_left"
+                    friction="2 0.005 0.0001"
+                  />
+                  <geom class="collision" mesh="cnc_left" />
                 </body>
 
                 <body
@@ -313,7 +329,16 @@
                     mesh="cnc_right"
                     material="rs_anodized_silver"
                   />
-                  <geom class="collision" mesh="gripper_right" />
+                  <!-- Keep the finger separate from its carriage: one convex hull
+                       across both fills the open grasping aperture. -->
+                  <!-- Pad friction is a simulation parameter, not a measured
+                       hardware coefficient. The actuator supplies the squeeze. -->
+                  <geom
+                    class="collision"
+                    mesh="pla_right"
+                    friction="2 0.005 0.0001"
+                  />
+                  <geom class="collision" mesh="cnc_right" />
                 </body>
 
                 <body

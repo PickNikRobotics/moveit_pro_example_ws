@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="reBot Open Jaw">
+  <BehaviorTree
+    ID="reBot Open Jaw"
+    _description="Open the jaw and confirm the measured joint7 reached at least 5.1 rad, the open command less the controller's start tolerance. The controller can report a canceled opening as success, so a short opening is retried once and then fails."
+  >
+    <RetryUntilSuccessful num_attempts="2">
+      <Sequence>
+        <SubTree
+          ID="Move to Waypoint"
+          waypoint_name="Stack Gripper Open"
+          joint_group_name="gripper"
+          velocity_scale_factor="{gripper_velocity_scale_factor}"
+          acceleration_scale_factor="{gripper_acceleration_scale_factor}"
+          controller_names="joint_trajectory_admittance_controller"
+          controller_action_server="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+          collision_check_params="[{override_scene_link_padding: true, link_padding: 0.0}]"
+          execution_pipeline="jtac"
+        />
+        <Action ID="GetCurrentPlanningScene" planning_scene_msg="{scene}" />
+        <Action
+          ID="GetJointState"
+          planning_group_name="gripper"
+          planning_scene="{scene}"
+          joint_state="{measured_gripper}"
+        />
+        <Action
+          ID="IsJointAtLeast"
+          joint_state="{measured_gripper}"
+          joint_name="joint7"
+          minimum="5.1"
+        />
+      </Sequence>
+    </RetryUntilSuccessful>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="reBot Open Jaw">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="reBot Bench" />
+      </MetadataFields>
+      <input_port name="gripper_velocity_scale_factor" type="double">
+        Gripper legs' planning velocity scale factor, from reBot Stack Motion.
+      </input_port>
+      <input_port name="gripper_acceleration_scale_factor" type="double">
+        Gripper legs' planning acceleration scale factor, from reBot Stack
+        Motion.
+      </input_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>

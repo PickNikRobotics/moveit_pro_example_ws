@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Clear reBot Stack Scene">
+  <BehaviorTree
+    ID="Clear reBot Stack Scene"
+    _description="Detach the blue cube and remove the bench, wall, and cube collision objects from the planning scene."
+  >
+    <Sequence>
+      <ForceSuccess>
+        <Action ID="DetachObject" object_id="rebot_blue" />
+      </ForceSuccess>
+      <Action ID="RemoveCollisionObject" object_id="rebot_blue" />
+      <Action ID="RemoveCollisionObject" object_id="rebot_red" />
+      <Action ID="RemoveCollisionObject" object_id="rebot_bench" />
+      <Action ID="RemoveCollisionObject" object_id="rebot_wall" />
+    </Sequence>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Clear reBot Stack Scene">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="reBot Bench" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

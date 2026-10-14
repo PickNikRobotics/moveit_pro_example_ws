@@ -77,8 +77,8 @@ file gives the grid-to-world mapping and the reasoning behind each entry.
 | Wrist D435 colour | `d435_color` | `d435_color_optical_frame` | `/wrist_mounted_camera/color/{image_raw,camera_info}`, `/wrist_mounted_camera/depth/image_rect_raw` |
 | Scene OAK-D Pro W 97 | `scene_camera_color` | `scene_camera_color_optical_frame` | `/scene_camera/color/{image_raw,camera_info}`, `/scene_camera/depth/image_rect_raw` |
 
-The colour topics and frames are the real drivers'; the depth images are extra
-(the real config runs colour only). Both render at 10 Hz, without point clouds.
+The colour topics and frames are the real drivers'; the scene depth is extra
+(the real scene camera is RGB-only); the real wrist D435 provides aligned depth. Both render at 30 Hz, without point clouds, for continuous validation video.
 The image frame is the MuJoCo camera's name plus `_optical_frame`, so the
 cameras are named after the real frames, and MuJoCo publishes those two frames
 from the camera sites: with `hardware_interface: mujoco` the base description
@@ -107,7 +107,8 @@ the top and bottom 40 rows.
 - Robot geoms collide with the scene but not with each other, since the folded
   rest pose is closer than MuJoCo's convex hulls allow. MoveIt still checks
   self-collision on the real meshes.
-- MoveIt's planning scene does not contain the mat, wall or cubes.
+- The stack Objectives add the bench, wall, and perceived cubes to MoveIt's
+  planning scene. Other Objectives do not add them automatically.
 
 ## Tests
 
@@ -116,6 +117,73 @@ the top and bottom 40 rows.
   the camera intrinsics, frames and topics, the cubes settling on the mat, the
   arm holding its keyframe, the axes triad and the keyframe.
 - `test/test_config_inheritance.py` checks the merged configuration through
-  MoveIt Pro's loader.
+  MoveIt Pro's loader, including that the layout, not the base config's bench
+  calibration, places the twin's robot description.
+- `test/test_sim_grasp_proxy.py` drives the grasp proxy through its topics: it
+  welds only at finger contact and releases after a simulation reset.
 - `test/objectives_integration_test.py` runs every runnable Objective against
-  the twin, as `lab_sim` does.
+  the twin, as `lab_sim` does, except the stateful stack entry points, which
+  the evidence runs below validate.
+
+## SAM3 pick and stack
+
+The shared **Locate reBot Cubes**, **Pick Blue Cube**, and **Stack Blue on Red**
+Objectives live in `rebot_bench_base_config`; see its
+[run recipe](../rebot_bench_base_config/README.md#sam3-blue-on-red-stack).
+They use calibrated scene RGB and the known mat plane, with no scene depth or
+simulation state in perception. The same XML, waypoints, and
+`rebot_bench_behaviors` plugin are used on hardware.
+
+### Simulation grasp proxy and physical fidelity gap
+
+`sim_grasp_proxy: true` in `bench_layout.yaml` explicitly enables a **SIM-ONLY**
+contact-triggered weld. A twin-only node observes joint7's ordinary controller
+reference and the simulator's own state on `/mujoco/qpos_stamped`. It commands
+the weld only while joint7 is commanded at or below 2.90 rad **and** it finds the
+left finger in contact with the blue cube in that state; MoveIt Pro's MuJoCo
+suction interface then welds them at their contact-time relative pose. Opening
+above 2.90 rad releases it. The node retains the hold between trajectories,
+because JTAC does not publish controller state while idle, and commands release
+when it starts and after **Reset MuJoCo Sim** (simulation time going back), since
+the suction interface's latch survives a keyframe reset and clears only on a
+release command. That reset deactivates every command controller, the proxy's
+included, so until they are reactivated the latch can still hold a cube that
+was grasped at reset time welded where the keyframe put it; the arm is held still
+throughout, and the release reaches MuJoCo within one 20 ms publish period of
+reactivation. No Objective calls or knows about the proxy, and it never snaps a
+cube to a target pose. The real configuration neither launches the proxy nor
+loads its controller or model.
+
+This is an execution/perception test aid, **not a validated physical gripper**.
+The unassisted 35 g cube slips in the current contact model at the real 45 mm
+closure. A bounded stiff-coupling trial produced 7.0–7.3 N per pad but 1.49 mm
+penetration and 7.48 mm lateral drift during a 50 mm lift. The physical regression
+`test_45_mm_grip_physically_lifts_a_cube_50_mm` remains a strict expected failure;
+it never enables the weld. Fixing contact fidelity is follow-up work. Set
+`sim_grasp_proxy: false` and rebuild to run the twin without assistance.
+
+### Recording validation evidence
+
+Run the recorder **before** starting the Objective and wait for its `READY` line:
+
+```sh
+ros2 run rebot_bench_sim record_stack_evidence.py /tmp/stack-run \
+  --video --duration 300 --stop-file /tmp/stack-run.stop
+```
+
+`--video` pipes frames to an `ffmpeg` CLI with libx264, which the MoveIt Pro image
+does not ship: `apt-get install ffmpeg` in the container first. It is not a rosdep
+because the `ffmpeg` key also installs FFmpeg -dev packages that uninstall the
+image's OpenCV, `cv_bridge`, and `realsense2_camera`.
+
+It saves each live camera frame to a continuous 30 fps H.264 video, raw simulator
+qpos samples, the model schema hash, layout, and before/after camera frames.
+Touch the stop file after the released cubes have settled; a bounded duration
+also guarantees shutdown. `result.json` reports whether the final two seconds
+keep blue within 5 mm horizontally and vertically of a 50 mm stack, both cubes
+within 5 degrees of upright, and motion under 1 mm. It explicitly labels
+proxy-assisted runs. A successful Objective result alone does not satisfy this
+check. Rebuild after changing cube placements and restart the twin before the
+next recording.
+
+[Five-placement validation and labelled render pairs](docs/stack_validation/README.md).

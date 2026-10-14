@@ -1,0 +1,23 @@
+{
+  "content": [
+    {
+      "text": "{\n  \"state\": \"IDLE\",\n  \"current_objective_name\": \"\",\n  \"current_goal_id\": null,\n  \"recent_goals\": [\n    {\n      \"goal_id\": \"76cb822cb5c34773995a2df4caca8164\",\n      \"status\": \"SUCCEEDED\"\n    }\n  ],\n  \"current_robot_config_name\": \"rebot_bench_sim\",\n  \"agent_version\": \"10.2.0\",\n  \"motion_results\": []\n}",
+      "type": "text"
+    }
+  ],
+  "isError": false,
+  "structuredContent": {
+    "state": "IDLE",
+    "current_objective_name": "",
+    "current_goal_id": null,
+    "recent_goals": [
+      {
+        "goal_id": "76cb822cb5c34773995a2df4caca8164",
+        "status": "SUCCEEDED"
+      }
+    ],
+    "current_robot_config_name": "rebot_bench_sim",
+    "agent_version": "10.2.0",
+    "motion_results": []
+  }
+}

@@ -295,6 +295,13 @@
   </actuator>
 
   <equality>
+    <!-- SIM-ONLY grasp proxy: disabled until closing jaws contact blue. -->
+    <weld
+      name="sim_grasp_proxy_blue"
+      body1="gripper_left"
+      body2="blue_cube"
+      active="false"
+    />
     <!-- URDF <mimic joint="joint7" multiplier="0.008"> on both jaws. -->
     <joint joint1="gripper_joint1" joint2="joint7" polycoef="0 0.008 0 0 0" />
     <joint joint1="gripper_joint2" joint2="joint7" polycoef="0 0.008 0 0 0" />

@@ -1,0 +1,72 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+________________ test_45_mm_grip_physically_lifts_a_cube_50_mm _________________
+
+model = <mujoco._structs.MjModel object at 0x7529fa3ddc70>
+data = <mujoco._structs.MjData object at 0x752a2fb8db70>
+
+    def test_45_mm_grip_physically_lifts_a_cube_50_mm(model, data):
+        """The real aperture command must transmit force through the mimic jaws."""
+        target = np.array([0.35, 0.07, 0.015])
+        grasp = _top_down_grasp_ik(model, target, [0.11, 2.23, 1.84, -1.15, 0.072, 0.082])
+        lifted = _top_down_grasp_ik(model, target + [0, 0, 0.05], grasp)
+        data.qpos[:6] = grasp
+        data.qpos[6:9] = [5.25, 0.042, 0.042]
+        data.ctrl[:] = np.r_[grasp, 5.25]
+        blue_address = model.jnt_qposadr[model.body("blue_cube").jntadr[0]]
+        data.qpos[blue_address : blue_address + 7] = [
+            target[0],
+            target[1],
+            0.025,
+            1,
+            0,
+            0,
+            0,
+        ]
+        # Isolate the grasp from whichever red placement bench_layout currently selects.
+        red_address = model.jnt_qposadr[model.body("red_cube").jntadr[0]]
+        data.qpos[red_address : red_address + 3] = [5, 5, 1]
+        for phase, duration in [
+            ("settle", 0.5),
+            ("close", 1),
+            ("hold", 1),
+            ("lift", 2),
+            ("lift_hold", 1),
+        ]:
+            steps = round(duration / model.opt.timestep)
+            for step in range(steps):
+                fraction = (step + 1) / steps
+                if phase == "close":
+                    data.ctrl[6] = 5.25 + fraction * (2.8125 - 5.25)
+                elif phase == "lift":
+                    data.ctrl[:6] = (1 - fraction) * grasp + fraction * lifted
+                mujoco.mj_step(model, data)
+        # MuJoCo body pose, not commanded joints or an attached planning-scene box.
+>       np.testing.assert_allclose(
+            data.body("blue_cube").xpos, [target[0], target[1], 0.075], atol=0.005
+        )
+
+src/rebot_bench_sim/test/test_scene_model.py:393:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+args = (<function assert_allclose.<locals>.compare at 0x7529f4fa72e0>, array([0.35748159, 0.0699264 , 0.07033248]), array([0.35 , 0.07 , 0.075]))
+kwds = {'equal_nan': True, 'err_msg': '', 'header': 'Not equal to tolerance rtol=1e-07, atol=0.005', 'verbose': True}
+
+    @wraps(func)
+    def inner(*args, **kwds):
+        with self._recreate_cm():
+>           return func(*args, **kwds)
+                   ^^^^^^^^^^^^^^^^^^^
+E           AssertionError:
+E           Not equal to tolerance rtol=1e-07, atol=0.005
+E
+E           Mismatched elements: 1 / 3 (33.3%)
+E           Max absolute difference: 0.00748159
+E           Max relative difference: 0.06223356
+E            x: array([0.357482, 0.069926, 0.070332])
+E            y: array([0.35 , 0.07 , 0.075])
+
+/usr/lib/python3.12/contextlib.py:81: AssertionError
+=========================== short test summary info ============================
+FAILED src/rebot_bench_sim/test/test_scene_model.py::test_45_mm_grip_physically_lifts_a_cube_50_mm
+1 failed, 12 deselected in 1.44s

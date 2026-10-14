@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Stack Blue on Red">
+  <BehaviorTree
+    ID="Stack Blue on Red"
+    _description="Locate two 50 mm cubes with SAM3, pick blue, place it on red, and return home. Requires calibrated world and RGB camera frames. Speeds come from objectives/rebot_stack_motion.yaml."
+  >
+    <Sequence>
+      <SubTree
+        ID="reBot Stack Motion"
+        joint_velocity_scale_factor="{joint_velocity_scale_factor}"
+        joint_acceleration_scale_factor="{joint_acceleration_scale_factor}"
+        cartesian_velocity_scale_factor="{cartesian_velocity_scale_factor}"
+        cartesian_acceleration_scale_factor="{cartesian_acceleration_scale_factor}"
+        gripper_velocity_scale_factor="{gripper_velocity_scale_factor}"
+        gripper_acceleration_scale_factor="{gripper_acceleration_scale_factor}"
+      />
+      <SubTree ID="Pick Blue Cube" red_top="{red_top}" />
+      <SubTree
+        ID="reBot Select Place Hover"
+        red_top="{red_top}"
+        place_hover="{place_hover}"
+      />
+      <Action
+        ID="TransformPose"
+        input_pose="{red_top}"
+        translation_xyz="-0.001403;0;0.019122"
+        quaternion_xyzw="0;0.6755902076156602;0;0.7372773368101241"
+        output_pose="{place}"
+      />
+      <SubTree
+        ID="reBot Move to Pose"
+        target="{place_hover}"
+        gripper_position="2.8125"
+        velocity_scale_factor="{joint_velocity_scale_factor}"
+        acceleration_scale_factor="{joint_acceleration_scale_factor}"
+      />
+      <Action
+        ID="SetCollisionRule"
+        name_a="rebot_blue"
+        name_b="rebot_red"
+        allow_collision="true"
+      />
+      <SubTree
+        ID="reBot Move Straight"
+        target="{place}"
+        gripper_position="2.8125"
+        velocity_scale_factor="{cartesian_velocity_scale_factor}"
+        acceleration_scale_factor="{cartesian_acceleration_scale_factor}"
+      />
+      <SubTree
+        ID="reBot Release and Retreat"
+        place_hover="{place_hover}"
+        joint_velocity_scale_factor="{joint_velocity_scale_factor}"
+        joint_acceleration_scale_factor="{joint_acceleration_scale_factor}"
+        cartesian_velocity_scale_factor="{cartesian_velocity_scale_factor}"
+        cartesian_acceleration_scale_factor="{cartesian_acceleration_scale_factor}"
+        gripper_velocity_scale_factor="{gripper_velocity_scale_factor}"
+        gripper_acceleration_scale_factor="{gripper_acceleration_scale_factor}"
+      />
+    </Sequence>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Stack Blue on Red">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="reBot Bench" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

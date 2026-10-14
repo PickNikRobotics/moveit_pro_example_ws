@@ -195,7 +195,9 @@
     twist: []
     wrench: []
   name: rebot_small_a
-- description: Small multi-joint move near home (joint1 and joint6 -0.05 rad, joint2 and joint4 +0.05 rad). joint3 is 0.002, not 0.0, because 0.0 is its lower limit and a target exactly on a limit fails planning.
+- description: Small multi-joint move near home (joint1 and joint6 -0.05 rad, joint2
+    and joint4 +0.05 rad). joint3 is 0.002, not 0.0, because 0.0 is its lower limit
+    and a target exactly on a limit fails planning.
   favorite: false
   joint_group_names:
   - manipulator
@@ -232,3 +234,98 @@
     twist: []
     wrench: []
   name: rebot_small_b
+- name: Stack Gripper Open
+  description: 84 mm aperture for approaching a 50 mm cube.
+  favorite: false
+  joint_group_names:
+  - gripper
+  joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        sec: 0
+        nanosec: 0
+    name:
+    - joint7
+    position:
+    - 5.25
+    velocity: []
+    effort: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        sec: 0
+        nanosec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+- name: Stack Gripper Hold
+  description: 45 mm aperture (5 mm squeeze on a 50 mm cube).
+  favorite: false
+  joint_group_names:
+  - gripper
+  joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        sec: 0
+        nanosec: 0
+    name:
+    - joint7
+    position:
+    - 2.8125
+    velocity: []
+    effort: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        sec: 0
+        nanosec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+- description: Calibrated bench survey and approach seed, from the measured real-arm
+    survey.
+  favorite: true
+  joint_group_names:
+  - gripper
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - joint1
+    - joint2
+    - joint3
+    - joint4
+    - joint5
+    - joint6
+    - joint7
+    position:
+    - 0.5186
+    - 1.5914
+    - 1.8334
+    - -1.3499
+    - 0.2779
+    - 0.4408
+    - 5.25
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Pick and Stack Survey

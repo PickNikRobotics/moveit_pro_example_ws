@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="reBot Release and Retreat">
+  <BehaviorTree
+    ID="reBot Release and Retreat"
+    _description="Attempt a verified opening, then detach, retreat and return home even when the jaw stays short of open, holding the measured jaw position if it stalled. Preserve the release failure after the return home."
+  >
+    <Sequence>
+      <Script code="release_ok:=false; detach_ok:=false" />
+      <Fallback>
+        <Sequence>
+          <SubTree
+            ID="reBot Open Jaw"
+            gripper_velocity_scale_factor="{gripper_velocity_scale_factor}"
+            gripper_acceleration_scale_factor="{gripper_acceleration_scale_factor}"
+          />
+          <Script code="release_ok=true" />
+        </Sequence>
+        <AlwaysSuccess />
+      </Fallback>
+      <Fallback>
+        <Sequence>
+          <Action ID="DetachObject" object_id="rebot_blue" />
+          <Script code="detach_ok=true" />
+        </Sequence>
+        <AlwaysSuccess />
+      </Fallback>
+      <IfThenElse>
+        <ScriptCondition code="release_ok" />
+        <SubTree
+          ID="reBot Move Straight"
+          target="{place_hover}"
+          gripper_position="5.25"
+          velocity_scale_factor="{cartesian_velocity_scale_factor}"
+          acceleration_scale_factor="{cartesian_acceleration_scale_factor}"
+        />
+        <!-- reBot Move Straight, holding the measured jaw instead of a command. -->
+        <Sequence>
+          <Action ID="GetCurrentPlanningScene" planning_scene_msg="{scene}" />
+          <Action
+            ID="GetJointState"
+            planning_group_name="gripper"
+            planning_scene="{scene}"
+            joint_state="{measured_gripper}"
+          />
+          <Action ID="ResetVector" vector="{path}" />
+          <Action
+            ID="PushBackVector"
+            input_vector="{path}"
+            element="{place_hover}"
+            output_vector="{path}"
+          />
+          <Action
+            ID="PlanCartesianPath"
+            path="{path}"
+            tip_links="gripper_end"
+            planning_group_name="manipulator"
+            position_only="false"
+            blending_radius="0.001"
+            velocity_scale_factor="{cartesian_velocity_scale_factor}"
+            acceleration_scale_factor="{cartesian_acceleration_scale_factor}"
+            max_optimizer_iterations="10"
+            joint_trajectory_msg="{arm_trajectory}"
+          />
+          <Action
+            ID="HoldGripperInTrajectory"
+            arm_trajectory="{arm_trajectory}"
+            gripper_state="{measured_gripper}"
+            trajectory="{trajectory}"
+          />
+          <Action
+            ID="ValidateTrajectory"
+            planning_scene_msg="{scene}"
+            planning_group_name="manipulator_and_gripper"
+            joint_trajectory_msg="{trajectory}"
+            joint_space_step="0.02"
+            cartesian_space_step="0.005"
+          />
+          <Action
+            ID="ExecuteTrajectory"
+            joint_trajectory_msg="{trajectory}"
+            execution_pipeline="jtac"
+            controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+          />
+        </Sequence>
+      </IfThenElse>
+      <SubTree
+        ID="Move reBot to Waypoint"
+        waypoint_name="Zeroed Rest"
+        velocity_scale_factor="{joint_velocity_scale_factor}"
+        acceleration_scale_factor="{joint_acceleration_scale_factor}"
+      />
+      <ScriptCondition code="release_ok &amp;&amp; detach_ok" />
+    </Sequence>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="reBot Release and Retreat">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="reBot Bench" />
+      </MetadataFields>
+      <input_port name="place_hover" type="geometry_msgs::msg::PoseStamped" />
+      <input_port name="joint_velocity_scale_factor" type="double">
+        Joint legs' planning velocity scale factor, from reBot Stack Motion.
+      </input_port>
+      <input_port name="joint_acceleration_scale_factor" type="double">
+        Joint legs' planning acceleration scale factor, from reBot Stack Motion.
+      </input_port>
+      <input_port name="cartesian_velocity_scale_factor" type="double">
+        Cartesian legs' planning velocity scale factor, from reBot Stack Motion.
+      </input_port>
+      <input_port name="cartesian_acceleration_scale_factor" type="double">
+        Cartesian legs' planning acceleration scale factor, from reBot Stack
+        Motion.
+      </input_port>
+      <input_port name="gripper_velocity_scale_factor" type="double">
+        Gripper legs' planning velocity scale factor, from reBot Stack Motion.
+      </input_port>
+      <input_port name="gripper_acceleration_scale_factor" type="double">
+        Gripper legs' planning acceleration scale factor, from reBot Stack
+        Motion.
+      </input_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>

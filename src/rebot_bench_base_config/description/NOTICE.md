@@ -41,6 +41,8 @@ Modified by PickNik Inc., 2026-10-12:
 
 - Added xacro arguments for the `d435_mount_joint` origin; they default to the
   nominal mount.
+- A wrapping description that defines the `world` placement properties before
+  including this file keeps them over the placement arguments.
 
 Original URDF export notice retained in `rebot.urdf.xacro`: SolidWorks to URDF
 Exporter, Stephen Brawner (brawner@gmail.com), commit `1.6.0-4-g7f85cfe`,

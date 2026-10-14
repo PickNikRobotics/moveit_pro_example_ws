@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="reBot Stack Scene">
+  <BehaviorTree
+    ID="reBot Stack Scene"
+    _description="Add the bench, wall, and perceived cubes to the planning scene in the printed world frame."
+  >
+    <Sequence>
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="world"
+        position_xyz="0.133;0.16;-0.0515"
+        pose_stamped="{mat_pose}"
+      />
+      <Action
+        ID="AddCollisionBox"
+        object_id="rebot_bench"
+        dimensions="0.9144;0.4;0.103"
+        pose="{mat_pose}"
+        overwrite="true"
+      />
+      <Action
+        ID="CreatePoseStamped"
+        reference_frame="world"
+        position_xyz="0.15;0.37;0.3"
+        pose_stamped="{wall_pose}"
+      />
+      <Action
+        ID="AddCollisionBox"
+        object_id="rebot_wall"
+        dimensions="1.0;0.02;0.6"
+        pose="{wall_pose}"
+        overwrite="true"
+      />
+      <Action
+        ID="TransformPose"
+        input_pose="{blue_top}"
+        translation_xyz="0;0;-0.025"
+        output_pose="{blue_center}"
+      />
+      <Action
+        ID="AddCollisionBox"
+        object_id="rebot_blue"
+        dimensions="0.05;0.05;0.05"
+        pose="{blue_center}"
+        overwrite="true"
+      />
+      <Action
+        ID="TransformPose"
+        input_pose="{red_top}"
+        translation_xyz="0;0;-0.025"
+        output_pose="{red_center}"
+      />
+      <Action
+        ID="AddCollisionBox"
+        object_id="rebot_red"
+        dimensions="0.05;0.05;0.05"
+        pose="{red_center}"
+        overwrite="true"
+      />
+      <Action
+        ID="SetCollisionRule"
+        name_a="rebot_blue"
+        name_b="gripper_left"
+        allow_collision="true"
+      />
+      <Action
+        ID="SetCollisionRule"
+        name_a="rebot_blue"
+        name_b="gripper_right"
+        allow_collision="true"
+      />
+      <Action
+        ID="SetCollisionRule"
+        name_a="rebot_blue"
+        name_b="rebot_red"
+        allow_collision="false"
+      />
+      <Action
+        ID="SetCollisionRule"
+        name_a="rebot_blue"
+        name_b="rebot_bench"
+        allow_collision="false"
+      />
+    </Sequence>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="reBot Stack Scene">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="reBot Bench" />
+      </MetadataFields>
+      <input_port name="blue_top" type="geometry_msgs::msg::PoseStamped" />
+      <input_port name="red_top" type="geometry_msgs::msg::PoseStamped" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

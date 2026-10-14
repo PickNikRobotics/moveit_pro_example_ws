@@ -1,0 +1,84 @@
+# reBot bench layout: every world placement of the MuJoCo twin, in one file.
+#
+# World frame: the 3D-printed TF frame object on the mat. +X is its red axis,
+# +Y its green axis, +Z its blue axis (up); z = 0 is the mat's top surface.
+# Lengths in metres, angles in radians. `rpy` is URDF roll-pitch-yaw (fixed
+# axes X, then Y, then Z).
+#
+# Both the robot description (rebot_bench_sim.urdf.xacro) and the MuJoCo scene
+# (scene.xml.xacro) read the copy of this file the build installs, so an edit
+# takes effect only after a rebuild: run `colcon build --packages-select
+# rebot_bench_sim` (or `moveit_pro build`) before `moveit_pro run` - see
+# README.md.
+#
+# Scene-camera and robot-base poses use the 2026-10-11 ChArUco calibration.
+# The base pose uses the provisional six-view measured wrist mount; its
+# leave-one-out spread is 16.7 mm, so this is not a precision hardware claim.
+# Mat, wall, and initial cube positions remain approximate bench measurements.
+
+# How the guesses were placed. The mat's printed grid has its origin at the
+# robot-end corner beside the white foam, grid +X across the mat toward the
+# aisle, grid +Y along the mat away from the robot. The printed frame lies with
+# its red axis (+X) pointing back along the mat toward the robot and its green
+# axis (+Y) across the mat toward the foam, so a grid point (gx, gy) is at
+# world (0.590 - gy, 0.360 - gx). The printed frame's grid position,
+# (0.360, 0.590) m, was estimated from the scene camera's frame: near the
+# aisle edge, about 0.3 m farther from the robot than the cubes.
+
+# base_link in world, from robot_base_from_measured_wrist_mount in the
+# ChArUco extrinsics. The arm reaches along world -X.
+robot_base:
+  xyz: [0.7259306081806417, 0.0216401062430214, 0.004713365596887089]
+  rpy: [-0.06898613602720294, 0.030699697617503387, 3.1379644678849394]
+
+# scene_camera_link (REP-103) in world, from the scene ChArUco solve.
+scene_camera:
+  xyz: [-0.07495082787695942, 0.06940693128894374, 0.5645360308379948]
+  rpy: [0.16859634102459814, 0.9749998254923189, 0.24585095549271832]
+
+# Blue mat, a box. `xyz` is the centre of its top surface, `rpy` its
+# orientation, `size` the full [x, y, thickness] before rotation. The bench top
+# (a plane) is at the mat's underside.
+# APPROXIMATE: 0.40 m across (grid X, the aisle edge about 40 mm past the
+# printed frame in the scene camera's frame) and 36 in (0.9144 m) along (grid
+# Y), 3 mm thick; its long axis runs along world X, away from the robot.
+mat:
+  xyz: [0.133, 0.160, 0.0]
+  rpy: [0.0, 0.0, 0.0]
+  size: [0.9144, 0.400, 0.003]
+
+# White wall (the foam), a box. `xyz` is the box centre, `size` the full
+# [x, y, z] extents before rotation.
+# APPROXIMATE: standing along the mat's foam-side long edge (grid X = 0),
+# from the robot end to past the camera end, 20 mm thick and 0.6 m tall.
+wall:
+  xyz: [0.150, 0.370, 0.300]
+  rpy: [0.0, 0.0, 0.0]
+  size: [1.000, 0.020, 0.600]
+
+# 3D-printed cubes, free bodies. `size` is the edge length (50 mm +/- 0.5);
+# `xyz` is a start pose of the cube centre, `yaw` its rotation about +Z.
+# APPROXIMATE: grid positions blue (309, 273) mm and red (212, 302) mm,
+# moved into the world frame as above.
+cubes:
+  size: 0.050
+  mass: 0.035
+  red:
+    xyz: [0.400, 0.260, 0.025]
+    yaw: 0.0
+  blue:
+    xyz: [0.460, 0.100, 0.025]
+    yaw: 0.0
+
+# Initial state, MuJoCo keyframe "default" (also the Reset MuJoCo Sim target).
+# joint1-joint6 in radians, then joint7 (the gripper motor; 0 is closed).
+# The cubes start at their poses above. Zeroed Rest, the base config's
+# startup pose.
+keyframe:
+  arm: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+  gripper: 0.0
+
+# SIM-ONLY: contact-gated weld driven by the 45 mm gripper command. This
+# validates perception/planning/Objectives while physical grip fidelity is
+# unresolved; disable for physical grasp regression or contact tuning.
+sim_grasp_proxy: true
