@@ -94,8 +94,13 @@ def test_spec_matches_the_execute_policy_ports(spec, execute_policy):
     interface = spec["policy_interface"]
     assert execute_policy["prompt"] == interface["prompt"]
     assert float(execute_policy["dt"]) == interface["dt"]
-    assert int(execute_policy["committed_action_steps"]) == interface["committed_action_steps"]
-    assert execute_policy["image_names"].split(";") == list(interface["cameras"].values())
+    assert (
+        int(execute_policy["committed_action_steps"])
+        == interface["committed_action_steps"]
+    )
+    assert execute_policy["image_names"].split(";") == list(
+        interface["cameras"].values()
+    )
     topics = [f"/{camera}/color" for camera in interface["cameras"]]
     assert execute_policy["image_topics"].split(";") == topics
     assert execute_policy["gripper_joint_name"] == interface["gripper_joint"]

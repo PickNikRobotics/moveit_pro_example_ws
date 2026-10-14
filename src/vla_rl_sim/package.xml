@@ -4,7 +4,11 @@
   <version>10.3.0</version>
 
   <description>
-    Prototype MuJoCo configuration for RL post-training of a vision-language-action policy on the vla_sim Kinova Gen3 cube-stacking cell. Inherits everything from vla_sim and adds the RL task specification, the serving configuration for the post-trained policy, and the Objective that runs it.
+    Prototype MuJoCo configuration for RL post-training of a
+    vision-language-action policy on the vla_sim Kinova Gen3 cube-stacking
+    cell. Inherits everything from vla_sim and adds the RL task
+    specification, the serving configuration for the post-trained policy, and
+    the Objective that runs it.
   </description>
 
   <maintainer email="support@picknik.ai">MoveIt Pro Maintainer</maintainer>
