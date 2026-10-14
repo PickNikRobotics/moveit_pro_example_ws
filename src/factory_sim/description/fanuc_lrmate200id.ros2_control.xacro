@@ -1,5 +1,11 @@
 <?xml version="1.0" ?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <!-- Which renderer produces the cameras' color topics: opengl (the default), nyx, or both, as documented in lab_sim's picknik_ur.xacro; both is for side-by-side comparison only, since nothing then publishes <camera>/color. runtime.launch.xml reads the same variable to start one Nyx node per camera. An empty value means opengl; an unrecognized one fails the description rather than leaving the config with no camera. -->
+  <xacro:arg
+    name="camera_renderer"
+    default="$(optenv MOVEIT_PRO_CAMERA_RENDERER opengl)"
+  />
+  <xacro:if value="${'$(arg camera_renderer)' not in ('', 'opengl', 'nyx', 'both')}">${xacro.fatal("MOVEIT_PRO_CAMERA_RENDERER is '$(arg camera_renderer)' for the robot description; set it to opengl, nyx or both, or leave it unset for opengl.")}</xacro:if>
   <xacro:macro
     name="fanuc_lrmate200id_ros2_control"
     params="name initial_positions_file hardware_interface mujoco_model mujoco_viewer"
@@ -93,6 +99,30 @@
         </state_interface>
         <state_interface name="velocity" />
       </joint>
+      <!-- nyx: the Nyx nodes publish each camera's color and camera_info, so MuJoCo publishes only depth and points. -->
+      <xacro:if
+        value="${ dict(opengl=False, nyx=True, both=False)['$(arg camera_renderer)' or 'opengl'] }"
+      >
+        <sensor name="scene_camera">
+          <param name="color_enabled">false</param>
+        </sensor>
+        <sensor name="bin_camera_left">
+          <param name="color_enabled">false</param>
+        </sensor>
+      </xacro:if>
+      <!-- both: each renderer's color image goes under its own prefix, so no consumer reads one renderer while expecting the other. Depth and points stay unprefixed. -->
+      <xacro:if
+        value="${ dict(opengl=False, nyx=False, both=True)['$(arg camera_renderer)' or 'opengl'] }"
+      >
+        <sensor name="scene_camera">
+          <param name="rgb_topic">scene_camera/opengl/color</param>
+          <param name="camera_info_topic">scene_camera/opengl/camera_info</param>
+        </sensor>
+        <sensor name="bin_camera_left">
+          <param name="rgb_topic">bin_camera_left/opengl/color</param>
+          <param name="camera_info_topic">bin_camera_left/opengl/camera_info</param>
+        </sensor>
+      </xacro:if>
     </ros2_control>
   </xacro:macro>
 </robot>

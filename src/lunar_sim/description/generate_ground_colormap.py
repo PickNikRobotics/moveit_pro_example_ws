@@ -51,9 +51,9 @@ regular spacing for the eye to lock onto, on top of the random rotation/mirrorin
 Usage: python3 generate_ground_colormap.py [--plane-m 20] [--px-per-m 410] [--seed 869]
 
 After regenerating, update husky_scene.xml's <texture file=...> if the output filename changed.
-With texuniform="true", texrepeat is repeats per *metre* of world space, so drawing this map
-exactly once over the plane needs texrepeat = 1/--plane-m on both axes ("0.05 0.05" at the
-default 20 m) - recompute it there if --plane-m changes.
+With texuniform="true", MuJoCo repeats a texture every 2/texrepeat metres, so drawing this map
+exactly once over the plane needs texrepeat = 2/--plane-m on both axes ("0.1 0.1" at the default
+20 m). husky_scene.xml currently uses 0.05, which draws it once per 40 m.
 """
 import argparse
 from pathlib import Path

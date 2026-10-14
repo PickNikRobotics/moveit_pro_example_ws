@@ -45,7 +45,9 @@ from moveit_pro_test_utils.objective_test_fixture import (
 SIM_RESETTER.register("grinding_sim", MUJOCO_RESET_HOOK)
 
 # Looping objectives to cancel partway through rather than run to completion.
-cancel_objectives: set[str] = set()
+cancel_objectives: set[str] = {
+    "Cycle Demo Waypoints",  # Repeats the waypoint cycle until cancelled.
+}
 
 # Objectives to skip entirely. Grinding runs an admittance-controlled surface
 # pass that expects an operator to drive the interaction, so it cannot complete
