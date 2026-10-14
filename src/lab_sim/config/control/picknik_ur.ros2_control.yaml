@@ -147,6 +147,12 @@ joint_trajectory_admittance_controller:
     # the gravity compensation torque. If your robot is not in the same orientation as the base frame, you should
     # provide the gravity vector in the base frame.
     gravity_vector: [0.0, 0.0, -9.8]
+    # The payload downstream of the force/torque sensor, the Robotiq gripper with the wrist camera and its adapter: its
+    # mass in kg and its center of gravity in meters in the ee_frame, identified from the simulated sensor. The controller
+    # removes the payload's weight from the force/torque reading at every pose, and the ~/zero_fts/tool0 tare keeps only
+    # the sensor bias.
+    end_effector_masses: [1.3668]
+    end_effector_centers_of_gravity: [0.0014, 0.0014, -0.1271]
     # Default maximum joint-space deviation accepted along the trajectory, if not specified in the goal message.
     default_path_tolerance: 0.5
     # Default maximum joint-space deviation accepted at the trajectory end-point, if not specified in the goal message.
