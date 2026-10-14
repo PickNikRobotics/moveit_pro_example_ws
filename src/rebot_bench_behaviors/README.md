@@ -3,13 +3,29 @@
 The base configuration loads `RebotBenchBehaviorsLoader`. The same behaviors and
 Objectives are inherited by the MuJoCo and hardware configurations.
 
-`FitCubeToMask` fits an upright 50 mm cube resting on the world mat plane (`z=0`)
-to SAM3 masks and RGB CameraInfo. It transforms rays using the camera optical
+`FitCubeToMask` fits an upright 50 mm cube resting on a horizontal surface at
+`support_height` (default 0, the world mat plane; 0.05 for a cube stacked on
+another) to SAM3 masks and RGB CameraInfo. It transforms rays using the camera optical
 frame at the image timestamp. No depth image, colour threshold, or simulator
 state enters the estimate. It fits the projected full cube silhouette, including
 visible sides, rather than treating the mask centroid as the top-face centre.
-The result is the top centre at `z=0.05` with a square-symmetric yaw chosen near
-the robot base heading, suitable for the `Ry(pi/2)` top-down tool convention.
+The result is the top centre, 0.05 m above the support, with a square-symmetric
+yaw chosen near the robot base heading, suitable for the `Ry(pi/2)` top-down tool
+convention. A cube on a different support than the one given often fails the
+2-pixel fit, but not always: at the bench scene camera's resolution a lone cube
+on the mat also fits a cube on a 50 mm support, about 4 cm nearer the camera, at
+under 1.5 px. The fit alone does not prove a stack; `IsCubeStacked`, with
+depth, does that part. With `top_face_fallback`, when no mask fits a whole cube, the masks
+are tried again as the cube's top face alone: against the blue mat, SAM3 can segment
+a stacked blue cube's top face without its darker sides. While a whole cube fits,
+top faces are not tried, since a side face or a printed mark can fit one too. Against a
+like-coloured mat SAM3 can also split one cube into face masks, so each connected union
+of the masks is fitted as well as each mask. A lone camera-facing side face fits a top
+face about a cube width nearer the camera, less well than a real top face, so a top face
+alone must fit within `top_face_max_rms_px` (default 1.0 px; a whole cube within 2 px).
+**Locate reBot Cube** passes `top_face_max_rms_px` = 1.0 and retries a refused fit
+on up to three fresh frames. The top face fixes the grasp. `top_face_fallback`
+is off by default, so the stack keeps rejecting masks of partly hidden cubes.
 
 Masks that touch the image boundary, contain disconnected silhouettes, have an
 inconsistent projected area, or exceed 2 pixels contour RMS are rejected.
@@ -51,6 +67,18 @@ Objectives). It fails on a missing file, entry or factor, or a factor outside
 `sensor_msgs/JointState` such as `GetJointState`'s output, is at or above a
 minimum. The stack Objectives use it after opening the jaw, because a canceled
 gripper move can still report success.
+
+`IsCubeStacked` succeeds only when a located cube's top centre lies within
+`max_offset` horizontally of the located top of the cube it should rest on, and
+the height of `cube_points`, the depth points inside the cube's mask, at
+`height_quantile` (0.75 by default, above the median so mask-edge pixels on the
+mat behind the cube do not pull a stacked cube down) is at least `min_height`. All three inputs must be in one frame, with z=0 at the
+mat. Depth-aware stack checks compare blue against red as located before
+placement, so a blue that slid off onto the mat is rejected. Colour
+alone cannot tell a blue resting on red from a blue on the mat just behind it,
+as the camera sees it; the depth height can. Its test runs `FitCubeToMask` with
+the bench scene camera's pose and intrinsics, with depth ray-cast from the mask.
+`FitCubeToMask` outputs the mask it fitted as `cube_masks` for that check.
 
 `ReportUnreachableCube` always fails, with a message naming the cube and where
 it sits, such as `blue cube at x=0.277 y=0.253 is outside the arm's reach`. The

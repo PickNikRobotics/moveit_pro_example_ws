@@ -4,20 +4,60 @@
     ID="Locate reBot Cubes"
     _description="Measure the blue and red cube top poses with SAM3 and calibrated RGB. Does not move the arm."
   >
-    <Sequence>
-      <SubTree
-        ID="Locate reBot Cube"
-        prompt="red cube"
-        mask_topic="/rebot/red_cube_mask"
-        cube_top="{red_top}"
-      />
-      <SubTree
-        ID="Locate reBot Cube"
-        prompt="blue cube"
-        mask_topic="/rebot/blue_cube_mask"
-        cube_top="{blue_top}"
-      />
-    </Sequence>
+    <!-- Two cubes on the mat cannot stand closer than a cube width: if blue
+         lies within 50 mm of red along both x and y and within 15 mm of its
+         height, one locate is wrong, as when touching cubes lead both prompts
+         to one cube. Blue stacked on red sits 50 mm higher and passes.
+         Relocate both on a fresh frame; fail before any motion after the
+         last try. -->
+    <RetryUntilSuccessful num_attempts="3">
+      <Sequence>
+        <SubTree
+          ID="Locate reBot Cube"
+          prompt="red cube"
+          mask_topic="/rebot/red_cube_mask"
+          cube_top="{red_top}"
+        />
+        <SubTree
+          ID="Locate reBot Cube"
+          prompt="blue cube"
+          mask_topic="/rebot/blue_cube_mask"
+          cube_top="{blue_top}"
+        />
+        <Fallback>
+          <Sequence>
+            <Action ID="ResetVector" vector="{near_red}" />
+            <Action
+              ID="PushBackVector"
+              input_vector="{near_red}"
+              element="{blue_top}"
+              output_vector="{near_red}"
+            />
+            <Action
+              ID="CropPosesInBox"
+              poses="{near_red}"
+              crop_box_centroid_pose="{red_top}"
+              crop_box_size="0.1;0.1;0.03"
+              poses_cropped="{near_red}"
+            />
+            <Action
+              ID="GetSizeOfVector"
+              vector_in="{near_red}"
+              vector_size="{near_red_count}"
+            />
+            <ScriptCondition code="near_red_count == 0" />
+          </Sequence>
+          <Sequence>
+            <Action
+              ID="LogMessage"
+              log_level="error"
+              message="The red and blue cubes were located within a cube width of each other: one locate is wrong."
+            />
+            <AlwaysFailure />
+          </Sequence>
+        </Fallback>
+      </Sequence>
+    </RetryUntilSuccessful>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Locate reBot Cubes">

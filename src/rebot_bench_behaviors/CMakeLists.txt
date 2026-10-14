@@ -9,7 +9,7 @@ foreach(package IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${package} REQUIRED)
 endforeach()
 add_library(${PROJECT_NAME} SHARED src/record_rebot_trajectory.cpp src/anchor_trajectory_to_command.cpp src/hold_gripper_in_trajectory.cpp
-  src/register_behaviors.cpp src/fit_cube_to_mask.cpp src/is_joint_at_least.cpp src/load_motion_scales.cpp
+  src/register_behaviors.cpp src/fit_cube_to_mask.cpp src/is_cube_stacked.cpp src/is_joint_at_least.cpp src/load_motion_scales.cpp
   src/report_unreachable_cube.cpp)
 target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBS} yaml-cpp::yaml-cpp)
 target_include_directories(${PROJECT_NAME} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include>)

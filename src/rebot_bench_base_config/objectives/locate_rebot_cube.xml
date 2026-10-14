@@ -4,55 +4,63 @@
     ID="Locate reBot Cube"
     _description="Segment one cube with SAM3 and measure its top face in the printed world frame."
   >
-    <Sequence>
-      <Action
-        ID="GetImage"
-        topic_name="{image_topic}"
-        message_out="{image}"
-        message_timeout_sec="5"
-        publisher_timeout_sec="5"
-      />
-      <Action
-        ID="GetCameraInfo"
-        topic_name="{camera_info_topic}"
-        message_out="{camera_info}"
-        message_timeout_sec="5"
-        publisher_timeout_sec="5"
-      />
-      <Action
-        ID="GetMasks2DFromExemplar"
-        target_image="{image}"
-        text_prompt="{prompt}"
-        confidence_threshold="0.2"
-        confidence_scores_str="{confidence_scores}"
-        model_package="moveit_pro_sam3"
-        model_bundle_manifest="models/model.yaml"
-        masks2d="{masks2d}"
-        mask_count="{mask_count}"
-      />
-      <Action
-        ID="PublishMask2D"
-        image="{image}"
-        masks="{masks2d}"
-        masks_visualization_topic="{mask_topic}"
-        bounding_box_detection_class="{prompt}"
-      />
-      <Action
-        ID="FitCubeToMask"
-        masks2d="{masks2d}"
-        camera_info="{camera_info}"
-        cube_top="{cube_top}"
-        silhouette_rms_px="{silhouette_rms_px}"
-      />
-      <Action
-        ID="TransformPose"
-        input_pose="{cube_top}"
-        output_pose="{cube_top}"
-        visualize_pose="true"
-        marker_text="{prompt}"
-        marker_size="0.05"
-      />
-    </Sequence>
+    <!-- SAM3 segments a cube against a like-coloured mat differently frame to
+         frame; try a fresh frame before giving up. -->
+    <RetryUntilSuccessful num_attempts="3">
+      <Sequence>
+        <Action
+          ID="GetImage"
+          topic_name="{image_topic}"
+          message_out="{image}"
+          message_timeout_sec="5"
+          publisher_timeout_sec="5"
+        />
+        <Action
+          ID="GetCameraInfo"
+          topic_name="{camera_info_topic}"
+          message_out="{camera_info}"
+          message_timeout_sec="5"
+          publisher_timeout_sec="5"
+        />
+        <Action
+          ID="GetMasks2DFromExemplar"
+          target_image="{image}"
+          text_prompt="{prompt}"
+          confidence_threshold="0.2"
+          confidence_scores_str="{confidence_scores}"
+          model_package="moveit_pro_sam3"
+          model_bundle_manifest="models/model.yaml"
+          masks2d="{masks2d}"
+          mask_count="{mask_count}"
+        />
+        <Action
+          ID="PublishMask2D"
+          image="{image}"
+          masks="{masks2d}"
+          masks_visualization_topic="{mask_topic}"
+          bounding_box_detection_class="{prompt}"
+        />
+        <Action
+          ID="FitCubeToMask"
+          masks2d="{masks2d}"
+          camera_info="{camera_info}"
+          support_height="{support_height}"
+          top_face_fallback="{top_face_fallback}"
+          top_face_max_rms_px="1.0"
+          cube_top="{cube_top}"
+          silhouette_rms_px="{silhouette_rms_px}"
+          cube_masks="{cube_masks}"
+        />
+        <Action
+          ID="TransformPose"
+          input_pose="{cube_top}"
+          output_pose="{cube_top}"
+          visualize_pose="true"
+          marker_text="{prompt}"
+          marker_size="0.05"
+        />
+      </Sequence>
+    </RetryUntilSuccessful>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Locate reBot Cube">
@@ -73,14 +81,29 @@
         default="/scene_camera/color/camera_info"
         type="std::string"
       />
+      <input_port name="support_height" default="0.0" type="double">
+        World z of the surface the cube rests on: 0 on the mat, 0.05 on
+        another cube.
+      </input_port>
+      <input_port name="top_face_fallback" default="false" type="bool">
+        Also accept a mask of the cube's top face alone, which SAM3 can return
+        for a stacked cube against the mat.
+      </input_port>
       <input_port
         name="mask_topic"
         default="/rebot/cube_masks"
         type="std::string"
       />
       <output_port name="cube_top" type="geometry_msgs::msg::PoseStamped">
-        Fitted top-face centre in world on z=0.05; orientation is the cube yaw
-        modulo 90 degrees.
+        Fitted top-face centre in world, 0.05 above support_height;
+        orientation is the cube yaw modulo 90 degrees.
+      </output_port>
+      <output_port
+        name="cube_masks"
+        default="{cube_masks}"
+        type="std::vector&lt;moveit_studio_vision_msgs::msg::Mask2D&gt;"
+      >
+        The SAM3 mask the cube was fitted to, as a one-element list.
       </output_port>
     </SubTree>
   </TreeNodesModel>
