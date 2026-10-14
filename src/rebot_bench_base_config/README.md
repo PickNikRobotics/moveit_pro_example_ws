@@ -21,7 +21,9 @@ is a MuJoCo twin of the bench: it renders both cameras and starts no camera
 drivers.
 The `world_to_base_xyz`/`_rpy` and `scene_camera_xyz`/`_rpy` xacro arguments
 place `base_link` and `scene_camera_link` in `world`; unset, both coincide with
-`world`. The sim sets them from its bench layout file.
+`world`. `wrist_camera_mount_xyz`/`_rpy` set the `d435_mount_joint` origin on
+`gripper_end`; unset, it is the nominal mount. The sim sets all of them from its
+bench layout file.
 
 ## Try it
 

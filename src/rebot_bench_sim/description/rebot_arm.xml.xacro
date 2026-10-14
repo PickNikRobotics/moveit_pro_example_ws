@@ -4,6 +4,7 @@
   scene's base_link body, which carries the placement from bench_layout.yaml;
   MuJoCo splices in this file's children and discards the wrapping <body>.
 
+  Expanded by xacro at build time into the installed description/rebot_arm.xml.
   Body names match the URDF links and every body pos/euler is the URDF joint
   origin (scene.xml sets eulerseq="XYZ", the URDF rpy convention), so the
   TF published from MuJoCo sites joins robot_state_publisher's tree.
@@ -13,7 +14,9 @@
   bracket and D435 use the STL conversions of the base package's COLLADA
   meshes (rebot_assets.xml).
 -->
-<body>
+<body xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:arg name="layout" default="$(find rebot_bench_sim)/description/bench_layout.yaml" />
+  <xacro:property name="mount" value="${xacro.load_yaml('$(arg layout)')['wrist_camera_mount']}" />
   <inertial
     pos="2.87641888266442E-06 -0.000122302488725115 0.0243376121934547"
     mass="1.1774"
@@ -315,9 +318,11 @@
 
                 <body
                   name="d435_mount_link"
-                  pos="-0.1201 0.0003 0.045"
-                  euler="1.5827 0.0024 1.5515"
+                  pos="${' '.join(map(str, mount['xyz']))}"
+                  euler="${' '.join(map(str, mount['rpy']))}"
                 >
+                  <!-- The measured wrist-camera mount, from the layout's
+                       wrist_camera entry (scripts/layout_snapshot.py). -->
                   <geom
                     class="visual"
                     mesh="D435_mount_purple"
