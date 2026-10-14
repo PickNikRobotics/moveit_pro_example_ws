@@ -30,6 +30,7 @@
 #include <rebot_bench_behaviors/anchor_trajectory_to_command.hpp>
 #include <rebot_bench_behaviors/fit_cube_to_mask.hpp>
 #include <rebot_bench_behaviors/hold_gripper_in_trajectory.hpp>
+#include <rebot_bench_behaviors/is_cube_stacked.hpp>
 #include <rebot_bench_behaviors/is_joint_at_least.hpp>
 #include <rebot_bench_behaviors/load_motion_scales.hpp>
 #include <rebot_bench_behaviors/record_rebot_trajectory.hpp>
@@ -47,6 +48,7 @@ public:
     moveit_pro::behaviors::registerBehavior<AnchorTrajectoryToCommand>(factory, "AnchorTrajectoryToCommand", context);
     moveit_pro::behaviors::registerBehavior<FitCubeToMask>(factory, "FitCubeToMask", context);
     moveit_pro::behaviors::registerBehavior<HoldGripperInTrajectory>(factory, "HoldGripperInTrajectory", context);
+    moveit_pro::behaviors::registerBehavior<IsCubeStacked>(factory, "IsCubeStacked", context);
     moveit_pro::behaviors::registerBehavior<IsJointAtLeast>(factory, "IsJointAtLeast", context);
     moveit_pro::behaviors::registerBehavior<LoadMotionScales>(factory, "LoadMotionScales", context);
     moveit_pro::behaviors::registerBehavior<ReportUnreachableCube>(factory, "ReportUnreachableCube", context);
