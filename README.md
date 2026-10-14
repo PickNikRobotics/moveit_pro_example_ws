@@ -35,6 +35,7 @@ The `moveit_pro_sam3` package is part of this repository but contains no model f
 - `lunar_sim`
 - `rebot_bench_base_config`
 - `rebot_bench_sim`
+- `rebot_peg_in_hole_sim`
 - `so101_base_config`
 - `so101_sim`
 - `vla_sim`
