@@ -1,0 +1,27 @@
+# Model-serving configuration for the RL post-trained policy. The inference
+# server mounts the active robot configuration package's config directory, so
+# this file is not inherited from vla_sim through based_on_package.
+#
+# Each knob resolves as: a vla_inference_server.py CLI flag, then this file,
+# then a built-in default.
+
+# Versioned contract advertised to MoveIt Pro Trainer.
+moveit_pro_trainer_handoff_version: 1
+
+# The SmolVLA checkpoint the RL trainer writes after distilling its steered
+# rollouts back into the policy weights. The server reads local checkpoints
+# from /models, which docker-compose.yaml binds to src/vla_sim/models unless
+# VLA_MODELS_DIR is set; copy the trainer output there.
+checkpoint: /models/smolvla_kinova_red_on_green_rl
+checkpoint_revision: ""
+checkpoint_requires_hf_token: false
+
+policy_class: smolvla
+
+# 1/dt of config/rl_post_training.yaml and the Objective.
+fps: 10.0
+
+device: auto
+
+# 7 arm joints plus 1 gripper.
+state_dim: 8

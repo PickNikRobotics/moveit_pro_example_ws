@@ -1,0 +1,44 @@
+# RL post-training task specification for the vla_sim cube-stacking cell.
+#
+# Prototype format, read by the batched-simulation trainer that post-trains the
+# policy served by vla_serving.yaml. Every value here mirrors what the Runtime
+# does when ExecutePolicy runs the policy, so a policy trained against this spec
+# sees the same model, cameras, rates, and joint ordering as in deployment.
+
+# The MJCF the Runtime simulates (vla_sim's mujoco_model), resolved from the
+# installed vla_sim share directory so training and deployment load one model.
+scene:
+  package: "vla_sim"
+  path: "description/mujoco/cube_stack_scene.xml"
+  keyframe: "default"
+
+# ExecutePolicy's observation and action contract (stack_cubes_with_the_vla_policy.xml).
+policy_interface:
+  prompt: "stack the red cube on the green cube"
+  dt: 0.1                       # ExecutePolicy dt; must equal 1/fps in vla_serving.yaml
+  committed_action_steps: 20    # steps executed per chunk before the next request
+  arm_joints: [joint_1, joint_2, joint_3, joint_4, joint_5, joint_6, joint_7]
+  gripper_joint: "robotiq_85_left_knuckle_joint"   # appended last, as ExecutePolicy sends it
+  gripper_range: [0.0, 0.8]
+  cameras:                      # MJCF camera -> ExecutePolicy image_names entry
+    scene_camera: scene
+    wrist_camera: wrist
+    overview_camera: overview
+
+# Per-episode randomization. Ranges match SampleCubeStackTrial (vla_sim_behaviors)
+# except yaw, which this prototype keeps at zero.
+randomization:
+  cube_free_joints: {red: cube_red_free, green: cube_green_free, blue: cube_blue_free}
+  x_range: [0.42, 0.60]
+  y_range: [-0.16, 0.16]
+  min_separation: 0.07
+  rest_height: 0.115
+
+# Success: red resting on green and released, the same test the
+# "Check if One Cube Is on Another" Objective scores trials with.
+task:
+  top: red
+  bottom: green
+  stack_tolerance: 0.015        # top-cube center to 3 cm above the bottom-cube center
+  min_release_distance: 0.05    # gripper to top-cube center; the Objective measures from grasp_link, the trainer from the MJCF pinch site
+  episode_steps: 120            # policy steps (12 s)

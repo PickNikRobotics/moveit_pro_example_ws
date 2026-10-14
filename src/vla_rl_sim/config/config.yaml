@@ -1,0 +1,10 @@
+# RL post-training prototype on the vla_sim cube-stacking cell. Everything not
+# set here (robot description, MuJoCo scene, ros2_control, MoveIt, waypoints,
+# and vla_sim's Objectives) is inherited from vla_sim.
+based_on_package: "vla_sim"
+
+objectives:
+  objective_library_paths:
+    rl_objectives:
+      package_name: "vla_rl_sim"
+      relative_path: "objectives"
