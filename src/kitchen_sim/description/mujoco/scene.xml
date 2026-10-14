@@ -2,7 +2,7 @@
 <!-- SCALE = 1.0 for full size, 0.5 for half size, etc. -->
 <mujoco model="fr3 scene">
   <!-- Robot -->
-  <include file="franka3.xml" />
+  <include file="fr3.xml" />
 
   <!-- Assets -->
   <include file="assets/kitchen_assets/item_assets/oven_asset.xml" />
