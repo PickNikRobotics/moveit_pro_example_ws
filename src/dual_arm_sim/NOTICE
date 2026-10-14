@@ -11,6 +11,12 @@ Third-party files:
   description/mujoco/LICENSE.
   - The FR3 arm visual meshes (the OBJ files) in description/mujoco/assets/ are
     copied unchanged.
+  - The collision meshes link0.stl to link7.stl and hand.stl are not part of this
+    package: description/mujoco/franka3.xml loads them at run time from the
+    vendored franka_description, as
+    package://franka_description/meshes/robots/fer/collision/<name>.stl
+    (src/external_dependencies/franka_config/franka_description/meshes/robots/fer/collision).
+    They are byte-identical to the MuJoCo Menagerie copies they replace.
   - description/mujoco/franka3.xml is derived from the model's fr3.xml and
     modified by PickNik Inc.; it says so in a comment at its top.
 
@@ -21,8 +27,7 @@ Third-party files:
   - hand_0.obj to hand_4.obj, finger_0.obj and finger_1.obj in
     description/mujoco/assets/ are copied unchanged.
 
-- franka_description (FR3 Duo mount v0.3, and the FER arm and Franka Hand
-  collision meshes)
+- franka_description (FR3 Duo mount v0.3)
   Copyright 2023 Franka Robotics GmbH
   Licensed under the Apache License, Version 2.0. Its LICENSE file, which also
   contains a BSD license section, is copied to
@@ -32,8 +37,3 @@ Third-party files:
     converted by PickNik Inc. in Blender from
     franka_description/meshes/accessories/fr3_duo_mount_v0_3/visual/fr3_duo_mount.dae
     and fr3_duo_cover.dae.
-  - The collision meshes link0.stl to link7.stl and hand.stl are not stored in
-    this package: CMakeLists.txt installs them at build time from the vendored
-    franka_description
-    (src/external_dependencies/franka_config/franka_description/meshes/robots/fer/collision).
-    They are byte-identical to the MuJoCo Menagerie copies they replace.

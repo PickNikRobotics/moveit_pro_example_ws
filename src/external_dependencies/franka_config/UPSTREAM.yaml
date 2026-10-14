@@ -39,6 +39,6 @@ apache_paths:
 notes:
   - Release 2.9.0, the franka_description version the PickNik franka_ros2 fork pins in its dependency.repos.
   - dual_arm_sim and kitchen_sim use the FR3 variants; market_sim uses the Mobile FR3 Duo (TMR v0.2 base, spine, head, two FR3 v2 arms).
-  - dual_arm_sim and kitchen_sim install franka_description/meshes/robots/fer/collision into their MuJoCo assets at build time as the arm and hand collision meshes, so a refresh that changes those files changes both sims' collision geometry.
+  - dual_arm_sim and kitchen_sim load franka_description/meshes/robots/fer/collision at run time through package:// paths in their franka3.xml, as the arm and hand collision meshes, so a refresh that changes those files changes both sims' collision geometry.
   - The default robot_types of robots/mobile_fr3_duo_v0_2/mobile_fr3_duo_v0_2.urdf.xacro names fr3v2_1, which is pruned here; configs pass robot_types with fr3v2. The vendored file itself stays byte-identical to upstream.
   - Binary files matching workspace Git LFS patterns are stored as LFS objects; checked-out bytes match upstream.
