@@ -23,6 +23,7 @@
         planning_scene_msg="{planning_scene}"
         debug_solution="{debug_solution}"
       />
+      <Action ID="RecordRebotTrajectory" trajectory="{joint_trajectory_msg}" />
       <Action
         ID="ExecuteTrajectory"
         execution_pipeline="jtac"

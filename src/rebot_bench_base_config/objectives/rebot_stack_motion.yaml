@@ -1,22 +1,25 @@
 # Planning speed of the pick-and-stack Objectives, as fractions of the joint
-# limits in config/moveit/joint_limits.yaml (0.3 rad/s on joints 1-6, 3.0 rad/s
+# limits in config/moveit/joint_limits.yaml (0.6 rad/s on joints 1-6, 3.0 rad/s
 # on joint7). reBot Stack Motion loads it at the start of every run; edit it,
 # then rebuild rebot_bench_base_config (a symlink-install build reads the
-# source file directly). README.md explains the defaults.
+# source file directly). README.md explains the values and how to size the
+# bench speed guard against them before running the arm.
 
 # Joint-space legs: the survey, the pick and place approaches and the return
 # home.
 joint:
-  velocity_scale_factor: 0.25
-  acceleration_scale_factor: 0.25
+  velocity_scale_factor: 1.0
+  acceleration_scale_factor: 1.0
 
 # Straight Cartesian legs: the pick descent and lift, the place descent and
 # both release retreats.
 cartesian:
-  velocity_scale_factor: 0.15
-  acceleration_scale_factor: 0.15
+  velocity_scale_factor: 1.0
+  acceleration_scale_factor: 1.0
 
 # Gripper-only legs (joint7): the opening at home, the grasp and the release.
+# The two closings at home are the native Close Gripper, which this file does
+# not govern.
 gripper:
-  velocity_scale_factor: 0.1
-  acceleration_scale_factor: 0.1
+  velocity_scale_factor: 1.0
+  acceleration_scale_factor: 1.0

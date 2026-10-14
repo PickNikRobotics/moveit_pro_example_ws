@@ -44,6 +44,7 @@
   <test_depend>tinyxml2_vendor</test_depend>
   <test_depend>yaml-cpp</test_depend>
   <test_depend>rebot_bench_behaviors</test_depend>
+  <test_depend>rclcpp</test_depend>
   <test_depend>ament_index_python</test_depend>
   <test_depend>moveit_pro_base_py</test_depend>
   <test_depend>python3-numpy</test_depend>

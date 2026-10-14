@@ -25,6 +25,22 @@ that starts where the jaw stalled. It preserves velocity, acceleration, and
 effort arrays when present and rejects malformed trajectories. It does not
 compensate arm deflection or change the arm trajectory's initial measured state.
 
+`AnchorTrajectoryToCommand` shifts a trajectory planned from the measured state
+so that it starts at the controller's previous command, for a joint that settles
+short of its command under load, and holds every commanded joint the
+trajectory leaves out. It uses measurement instead for a missing command or one
+more than 0.10 rad from measured state, logging each replacement, and outputs
+the exact endpoint for the caller to commit after execution succeeds. Joints
+listed in `measured_joints`, such as a jaw planned from its measured position,
+keep their measured start whatever the command. The stack
+Objectives anchor every leg this way, so the command stays continuous from one
+leg to the next.
+
+`RecordRebotTrajectory` appends each trajectory, with its dispatch time, to an
+audit file (`/tmp/rebot-trajectory-audit.yaml` by default) before execution,
+and fails the leg if it cannot write it. With the controller's state, it lets a
+canceled or interrupted leg's held command be reconstructed afterwards.
+
 `LoadMotionScales` reads one leg kind's `velocity_scale_factor` and
 `acceleration_scale_factor` from a YAML file in a ROS package's share directory
 (`rebot_bench_base_config/objectives/rebot_stack_motion.yaml` for the stack
@@ -35,6 +51,10 @@ Objectives). It fails on a missing file, entry or factor, or a factor outside
 `sensor_msgs/JointState` such as `GetJointState`'s output, is at or above a
 minimum. The stack Objectives use it after opening the jaw, because a canceled
 gripper move can still report success.
+
+`ReportUnreachableCube` always fails, with a message naming the cube and where
+it sits, such as `blue cube at x=0.277 y=0.253 is outside the arm's reach`. The
+stack Objectives run it when a reach check fails, before any motion.
 
 Build and run the behavior tests in a MoveIt Pro development environment:
 

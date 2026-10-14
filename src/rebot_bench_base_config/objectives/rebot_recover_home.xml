@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="reBot Recover Home">
+  <BehaviorTree
+    ID="reBot Recover Home"
+    _description="After a failed leg, return the arm home holding the jaw at its command, then close the jaw unless it may be around the cube, even if the return home fails. Fails only if the return home fails."
+  >
+    <Sequence>
+      <!-- Close the empty jaw even when the move home fails, which it does
+           when the arm is already there: a one-point plan is refused. -->
+      <Fallback>
+        <Sequence>
+          <SubTree
+            ID="reBot Move to Arm Waypoint"
+            waypoint_name="Zeroed Rest"
+            velocity_scale_factor="{velocity_scale_factor}"
+            acceleration_scale_factor="{acceleration_scale_factor}"
+            commanded_state="{commanded_state}"
+          />
+          <Script code="went_home := true" />
+        </Sequence>
+        <Script code="went_home := false" />
+      </Fallback>
+      <SubTree ID="Close Gripper" _skipIf="holding" />
+      <ScriptCondition code="went_home" />
+    </Sequence>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="reBot Recover Home">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="reBot Bench" />
+      </MetadataFields>
+      <input_port name="holding" type="bool">
+        True while the jaw may be around the cube, from just before the grasp
+        closes until the release opening is confirmed: the jaw is then not
+        closed.
+      </input_port>
+      <input_port name="velocity_scale_factor" type="double">
+        Joint legs' planning velocity scale factor, from reBot Stack Motion.
+      </input_port>
+      <input_port name="acceleration_scale_factor" type="double">
+        Joint legs' planning acceleration scale factor, from reBot Stack Motion.
+      </input_port>
+      <inout_port
+        name="commanded_state"
+        default="{commanded_state}"
+        type="moveit_msgs::msg::RobotState"
+      />
+    </SubTree>
+  </TreeNodesModel>
+</root>

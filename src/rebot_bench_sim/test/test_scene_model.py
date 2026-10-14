@@ -28,6 +28,7 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 """Check the generated MuJoCo twin against the robot description and the bench."""
+import json
 import math
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -371,11 +372,12 @@ def _top_down_grasp_ik(model, target, seed):
             model.jnt_range[:6, 0] + 1e-5,
             model.jnt_range[:6, 1] - 1e-5,
         )
-    raise AssertionError(f"Grasp fixture IK failed: {error}")
+    raise RuntimeError(f"Grasp fixture IK failed: {error}")
 
 
 @pytest.mark.xfail(
     strict=True,
+    raises=AssertionError,
     reason="Physical mimic-jaw contact slips; sim grasp proxy does not validate grip fidelity.",
 )
 def test_45_mm_grip_physically_lifts_a_cube_50_mm(model, data):
@@ -418,3 +420,34 @@ def test_45_mm_grip_physically_lifts_a_cube_50_mm(model, data):
     np.testing.assert_allclose(
         data.body("blue_cube").xpos, [target[0], target[1], 0.075], atol=0.005
     )
+
+
+def test_released_stack_does_not_drift_over_five_minutes(model, data):
+    """Replay the released stack through the real scene, without a grasp weld."""
+    fixture = json.loads(
+        (Path(__file__).parent / "fixtures/released_stack.json").read_text()
+    )
+    assert len(fixture["qpos"]) == model.nq
+    data.qpos[:] = fixture["qpos"]
+    data.joint("blue_cube_joint").qpos[0] -= 0.003
+    data.qvel[:] = 0
+    data.ctrl[:] = data.qpos[:7]
+    assert not any(
+        data.eq_active[i]
+        for i in range(model.neq)
+        if model.eq_type[i] == mujoco.mjtEq.mjEQ_WELD
+    )
+    mujoco.mj_forward(model, data)
+    start = np.array([data.body(c + "_cube").xpos.copy() for c in ("red", "blue")])
+    max_drift = 0.0
+    max_xy = 0.0
+    for step in range(math.ceil(300 / model.opt.timestep)):
+        mujoco.mj_step(model, data)
+        if step % 10 == 0:
+            poses = np.array([data.body(c + "_cube").xpos for c in ("red", "blue")])
+            max_drift = max(
+                max_drift, float(np.linalg.norm(poses - start, axis=1).max())
+            )
+            max_xy = max(max_xy, float(np.linalg.norm((poses[1] - poses[0])[:2])))
+    assert max_drift < 0.0005, f"Five-minute cube drift: {max_drift * 1000:.3f} mm"
+    assert max_xy < 0.005, f"Five-minute stack XY error: {max_xy * 1000:.3f} mm"

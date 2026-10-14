@@ -7,15 +7,11 @@
     <RetryUntilSuccessful num_attempts="2">
       <Sequence>
         <SubTree
-          ID="Move to Waypoint"
+          ID="Move reBot Gripper"
           waypoint_name="Stack Gripper Open"
-          joint_group_name="gripper"
           velocity_scale_factor="{gripper_velocity_scale_factor}"
           acceleration_scale_factor="{gripper_acceleration_scale_factor}"
-          controller_names="joint_trajectory_admittance_controller"
-          controller_action_server="/joint_trajectory_admittance_controller/follow_joint_trajectory"
-          collision_check_params="[{override_scene_link_padding: true, link_padding: 0.0}]"
-          execution_pipeline="jtac"
+          commanded_state="{commanded_state}"
         />
         <Action ID="GetCurrentPlanningScene" planning_scene_msg="{scene}" />
         <Action
@@ -46,6 +42,11 @@
         Gripper legs' planning acceleration scale factor, from reBot Stack
         Motion.
       </input_port>
+      <inout_port
+        name="commanded_state"
+        default="{commanded_state}"
+        type="moveit_msgs::msg::RobotState"
+      />
     </SubTree>
   </TreeNodesModel>
 </root>

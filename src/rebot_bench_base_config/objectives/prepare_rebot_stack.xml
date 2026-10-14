@@ -28,6 +28,7 @@
         ID="reBot Open Jaw"
         gripper_velocity_scale_factor="{gripper_velocity_scale_factor}"
         gripper_acceleration_scale_factor="{gripper_acceleration_scale_factor}"
+        commanded_state="{commanded_state}"
       />
     </Sequence>
   </BehaviorTree>
@@ -39,6 +40,11 @@
       </MetadataFields>
       <output_port name="blue_top" type="geometry_msgs::msg::PoseStamped" />
       <output_port name="red_top" type="geometry_msgs::msg::PoseStamped" />
+      <inout_port
+        name="commanded_state"
+        default="{commanded_state}"
+        type="moveit_msgs::msg::RobotState"
+      />
     </SubTree>
   </TreeNodesModel>
 </root>

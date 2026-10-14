@@ -18,16 +18,19 @@
         pose="{mat_pose}"
         overwrite="true"
       />
+      <!-- The wall box stands 5 mm proud of the real face at y=0.36, so no
+           plan ends grazing it: tracking error at such an endpoint puts the
+           measured arm in collision and the next leg is refused at its start. -->
       <Action
         ID="CreatePoseStamped"
         reference_frame="world"
-        position_xyz="0.15;0.37;0.3"
+        position_xyz="0.15;0.3675;0.3"
         pose_stamped="{wall_pose}"
       />
       <Action
         ID="AddCollisionBox"
         object_id="rebot_wall"
-        dimensions="1.0;0.02;0.6"
+        dimensions="1.0;0.025;0.6"
         pose="{wall_pose}"
         overwrite="true"
       />

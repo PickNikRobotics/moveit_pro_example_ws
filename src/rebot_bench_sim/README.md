@@ -61,7 +61,9 @@ free bodies that calibration measures directly, and editing `mat`'s `xyz` or
 CALIBRATED**, from a ChArUco board on the mat. The wrist camera mount is a
 provisional hand-eye solve over six arm poses, good to about 2 cm; the robot
 base's x, y and yaw are solved through it, and its roll, pitch and height are
-held level on the bench plane. **Every other value
+held level on the bench plane. The real configuration uses the same base pose
+but keeps the nominal wrist camera mount; applying this one on the arm is
+follow-up work. **Every other value
 is a first guess, marked APPROXIMATE**, from bench facts and the real scene
 camera's frame rather than measurement. The mat runs along world X, away from
 the robot, with the foam wall along its +Y edge; the printed frame lies near
@@ -107,6 +109,14 @@ the top and bottom 40 rows.
 - Robot geoms collide with the scene but not with each other, since the folded
   rest pose is closer than MuJoCo's convex hulls allow. MoveIt still checks
   self-collision on the real meshes.
+- `scene.xml.xacro` enables ten NoSlip postprocessing iterations. MuJoCo's
+  soft friction constraints otherwise let a resting, off-center stack creep
+  sideways under load even with zero initial velocity. This changes the solver,
+  not the cubes' friction, contact softness, placement tolerances or grasp proxy.
+  See [MuJoCo's NoSlip option](https://mujoco.readthedocs.io/en/stable/XMLreference.html#option-noslip-iterations).
+  The released-stack replay in `test/test_scene_model.py` exercises the complete
+  compiled scene for 300 simulated seconds and requires under 0.5 mm cube drift
+  and under 5 mm horizontal stack error throughout the sampled trajectory.
 - The stack Objectives add the bench, wall, and perceived cubes to MoveIt's
   planning scene. Other Objectives do not add them automatically.
 
@@ -133,6 +143,23 @@ Objectives live in `rebot_bench_base_config`; see its
 They use calibrated scene RGB and the known mat plane, with no scene depth or
 simulation state in perception. The same XML, waypoints, and
 `rebot_bench_behaviors` plugin are used on hardware.
+
+### Planning speed
+
+Speed is a separate setting from hardware. The base config's
+`objectives/rebot_stack_motion.yaml` holds the arm's per-leg scale factors,
+which have to fit under the bench's joint speed guard (its README says how to
+size one against the other). Simulation has no guard, so this package ships its
+own [`objectives/rebot_stack_motion.xml`](objectives/rebot_stack_motion.xml),
+which shadows the base **reBot Stack Motion** (when two Objective libraries hold
+the same file name, the later one wins, and this package's library is listed
+last) and loads [`objectives/rebot_stack_motion.yaml`](objectives/rebot_stack_motion.yaml)
+from this package instead: 1.0 velocity and acceleration for the joint,
+Cartesian and gripper legs, the full limits in the base config's
+`config/moveit/joint_limits.yaml`, whatever the arm's values. To run the twin
+at another speed, edit that file and rebuild `rebot_bench_sim`; the arm's
+values are unaffected. `test/test_config_inheritance.py` checks that the
+override wins.
 
 ### Simulation grasp proxy and physical fidelity gap
 

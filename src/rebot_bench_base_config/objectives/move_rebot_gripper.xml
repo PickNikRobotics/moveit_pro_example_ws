@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Move reBot Gripper">
+  <BehaviorTree
+    ID="Move reBot Gripper"
+    _description="Move the reBot jaw from its measured position to a named gripper waypoint, holding the arm at its command. Executes even when the jaw is already there."
+  >
+    <Control ID="Sequence">
+      <Action
+        ID="RetrieveWaypoint"
+        joint_group_name="gripper"
+        waypoint_name="{waypoint_name}"
+        waypoint_joint_state="{gripper_goal}"
+      />
+      <Action
+        ID="GetCurrentPlanningScene"
+        planning_scene_msg="{planning_scene}"
+      />
+      <!-- Plan the jaw alone, from where it measures: a canceled move can
+           leave its command far from it. The arm is not planned, since a
+           sagged joint can measure past its limit, which
+           GeneratePointToPointTrajectory refuses; the anchor holds it at its
+           command, or where it measures without one. -->
+      <Action
+        ID="GetJointState"
+        planning_scene="{planning_scene}"
+        planning_group_name="gripper"
+        robot_joint_state="{gripper_start}"
+      />
+      <Action
+        ID="GeneratePointToPointTrajectory"
+        planning_group_name="gripper"
+        start_state="{gripper_start}"
+        target_state="{gripper_goal}"
+        velocity_scale_factor="{velocity_scale_factor}"
+        acceleration_scale_factor="{acceleration_scale_factor}"
+        jerk_scale_factor="{acceleration_scale_factor}"
+        trajectory_sampling_rate="100"
+        start_time="0.0"
+        joint_trajectory_msg="{gripper_trajectory}"
+      />
+      <Action
+        ID="ValidateTrajectory"
+        planning_scene_msg="{planning_scene}"
+        planning_group_name="gripper"
+        joint_trajectory_msg="{gripper_trajectory}"
+        joint_space_step="0.01"
+        cartesian_space_step="0.005"
+        debug_solution="{debug_solution}"
+      />
+      <Action
+        ID="GetJointState"
+        planning_scene="{planning_scene}"
+        planning_group_name="manipulator_and_gripper"
+        robot_joint_state="{measured_state}"
+      />
+      <Action
+        ID="AnchorTrajectoryToCommand"
+        measured_state="{measured_state}"
+        joint_trajectory="{gripper_trajectory}"
+        commanded_state="{commanded_state}"
+        measured_joints="joint7"
+        anchored_trajectory="{gripper_trajectory}"
+        end_state="{candidate_endpoint}"
+      />
+      <Action ID="RecordRebotTrajectory" trajectory="{gripper_trajectory}" />
+      <Action
+        ID="ExecuteTrajectory"
+        execution_pipeline="jtac"
+        controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+        joint_trajectory_msg="{gripper_trajectory}"
+        goal_duration_tolerance="-1"
+      />
+      <Action ID="Script" code="commanded_state := candidate_endpoint" />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Move reBot Gripper">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="reBot Bench" />
+      </MetadataFields>
+      <input_port name="waypoint_name" type="std::string">
+        Gripper waypoint, such as Stack Gripper Open or Stack Gripper Hold.
+      </input_port>
+      <input_port name="velocity_scale_factor" type="double">
+        Gripper legs' planning velocity scale factor, from reBot Stack Motion.
+      </input_port>
+      <input_port name="acceleration_scale_factor" type="double">
+        Gripper legs' planning acceleration and jerk scale factor, from reBot
+        Stack Motion.
+      </input_port>
+      <inout_port
+        name="commanded_state"
+        default="{commanded_state}"
+        type="moveit_msgs::msg::RobotState"
+      >
+        The controller's command for all seven joints; set to the trajectory's
+        last point only after execution succeeds.
+      </inout_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>

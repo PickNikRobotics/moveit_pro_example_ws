@@ -27,10 +27,13 @@
 // POSSIBILITY OF SUCH DAMAGE.
 #include <moveit_pro_behavior_interface/shared_resources_node_loader.hpp>
 #include <pluginlib/class_list_macros.hpp>
+#include <rebot_bench_behaviors/anchor_trajectory_to_command.hpp>
 #include <rebot_bench_behaviors/fit_cube_to_mask.hpp>
 #include <rebot_bench_behaviors/hold_gripper_in_trajectory.hpp>
 #include <rebot_bench_behaviors/is_joint_at_least.hpp>
 #include <rebot_bench_behaviors/load_motion_scales.hpp>
+#include <rebot_bench_behaviors/record_rebot_trajectory.hpp>
+#include <rebot_bench_behaviors/report_unreachable_cube.hpp>
 
 namespace rebot_bench_behaviors
 {
@@ -40,10 +43,13 @@ public:
   void registerBehaviors(BT::BehaviorTreeFactory& factory,
                          const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& context) override
   {
+    moveit_pro::behaviors::registerBehavior<RecordRebotTrajectory>(factory, "RecordRebotTrajectory", context);
+    moveit_pro::behaviors::registerBehavior<AnchorTrajectoryToCommand>(factory, "AnchorTrajectoryToCommand", context);
     moveit_pro::behaviors::registerBehavior<FitCubeToMask>(factory, "FitCubeToMask", context);
     moveit_pro::behaviors::registerBehavior<HoldGripperInTrajectory>(factory, "HoldGripperInTrajectory", context);
     moveit_pro::behaviors::registerBehavior<IsJointAtLeast>(factory, "IsJointAtLeast", context);
     moveit_pro::behaviors::registerBehavior<LoadMotionScales>(factory, "LoadMotionScales", context);
+    moveit_pro::behaviors::registerBehavior<ReportUnreachableCube>(factory, "ReportUnreachableCube", context);
   }
 };
 }  // namespace rebot_bench_behaviors
