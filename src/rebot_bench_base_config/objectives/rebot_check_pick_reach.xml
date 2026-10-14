@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="reBot Check Pick Reach">
+  <BehaviorTree
+    ID="reBot Check Pick Reach"
+    _description="Compute the pick hover and pick poses for a cube and check both for collision-free inverse kinematics. Reports nothing of its own when one is out of reach. No motion is executed."
+  >
+    <Sequence>
+      <!-- gripper_end is the fingertip plane; +X points out of the fingers. -->
+      <Action
+        ID="TransformPose"
+        input_pose="{cube_top}"
+        translation_xyz="0;0;0.025"
+        quaternion_xyzw="0;0.7071067811865475;0;0.7071067811865475"
+        output_pose="{pick_hover}"
+      />
+      <Action
+        ID="TransformPose"
+        input_pose="{cube_top}"
+        translation_xyz="0;0;-0.015"
+        quaternion_xyzw="0;0.7071067811865475;0;0.7071067811865475"
+        output_pose="{pick}"
+      />
+      <Action ID="GetCurrentPlanningScene" planning_scene_msg="{scene}" />
+      <Action ID="ResetVector" vector="{path}" />
+      <Action
+        ID="PushBackVector"
+        input_vector="{path}"
+        element="{pick_hover}"
+        output_vector="{path}"
+      />
+      <Action
+        ID="ComputeInverseKinematics"
+        target_poses="{path}"
+        tip_links="gripper_end"
+        planning_scene_msg="{scene}"
+        planning_group_name="manipulator"
+        ik_timeout_s="0.5"
+        solve_mode="optimize_distance"
+        optimization_timeout_s="0.1"
+        link_padding="0.0"
+        solution="{goal}"
+      />
+      <!-- Joint2 heats with reach: past this a leg overruns its heat budget. -->
+      <Action
+        ID="IsPlannedJointAtMost"
+        robot_state="{goal}"
+        joint_name="joint2"
+        maximum="2.2"
+        reason="heat budget: too far from the base"
+      />
+      <Action ID="ResetVector" vector="{path}" />
+      <Action
+        ID="PushBackVector"
+        input_vector="{path}"
+        element="{pick}"
+        output_vector="{path}"
+      />
+      <Action
+        ID="ComputeInverseKinematics"
+        target_poses="{path}"
+        tip_links="gripper_end"
+        planning_scene_msg="{scene}"
+        planning_group_name="manipulator"
+        ik_timeout_s="0.5"
+        solve_mode="optimize_distance"
+        optimization_timeout_s="0.1"
+        link_padding="0.0"
+        solution="{goal}"
+      />
+      <!-- Joint2 heats with reach: past this a leg overruns its heat budget. -->
+      <Action
+        ID="IsPlannedJointAtMost"
+        robot_state="{goal}"
+        joint_name="joint2"
+        maximum="2.2"
+        reason="heat budget: too far from the base"
+      />
+    </Sequence>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="reBot Check Pick Reach">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="reBot Bench" />
+      </MetadataFields>
+      <input_port name="cube_top" type="geometry_msgs::msg::PoseStamped">
+        Top-face centre of the cube to pick, in world.
+      </input_port>
+      <output_port name="pick_hover" type="geometry_msgs::msg::PoseStamped" />
+      <output_port name="pick" type="geometry_msgs::msg::PoseStamped" />
+    </SubTree>
+  </TreeNodesModel>
+</root>

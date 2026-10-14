@@ -206,12 +206,16 @@ self-collision checking. In particular, `gripper_end` is rigidly attached to
 that J6 rotation cannot close. Default 10 mm planning padding otherwise makes
 this mount report a collision. The coupled jaws approach one another at closure
 and separate on opening. Tests re-enable both pairs for unpadded mesh checks
-along the saved motions. The four package Objectives explicitly use **zero
-additional link padding** while retaining mesh collision checks. Both 10 mm and
+along the saved motions. The package Objectives explicitly use **zero
+additional link padding** while retaining mesh collision checks, on the real arm
+too: the stack Objectives have run on the real arm this way, with the scene
+camera and base pose calibrated with ChArUco
+(see [bench calibration](#bench-calibration)). Both 10 mm and
 1 mm padding reject movable-link pairs in the tightly folded zeroed-rest pose;
 those pairs remain checked with the original collision meshes. No extra
-clearance margin is claimed. This is a mock-only planning choice and must be
-reconsidered with calibrated geometry before hardware use.
+clearance margin is claimed. The table surface is protected by the bench box
+that **reBot Stack Scene** adds to the planning scene, with its top at the mat,
+not by padding. The wrist camera mount is still provisional.
 
 ## Optional real cameras
 
@@ -751,6 +755,15 @@ canceled opening really reopens it. Only successful execution commits the
 exact planned endpoint for the next leg, and `RecordRebotTrajectory` saves each
 trajectory before it is sent. These numbers are shared by hardware and
 simulation.
+The joint planner starts from the measured state, and the bench arm's sagged
+home (joint4 near -0.017 rad) fails its start check as a link2-link5
+self-collision. A waypoint or pose leg the planner refuses therefore falls back
+to a point-to-point move from the commanded state, collision-checked as planned
+and again after anchoring for both fallback paths. Both generate only the six arm
+joints and fade the arm-start correction to zero at the target. Waypoint
+anchoring adds the held jaw separately, so a stale jaw command stays at its
+measured position throughout the move. On the bench that is every leg out of
+home; in the twin, whose home measures exactly zero, the planner runs.
 **Pick Blue Cube** first locates the cubes, adds them to the planning scene and
 checks reach (see **Failures** below), all before any motion. It then runs
 **Close Gripper**, planned natively from measured state, so the commanded home it then sets for all seven joints holds for the jaw
@@ -789,6 +802,14 @@ within the 0.10 rad stale-start guard, or where it stalled after a failed
 release opening. Only a failure of that return home
 leaves the arm where it stopped, and an empty jaw closes even then, as it must
 after a leg that failed at home, where the one-point plan home is refused.
+
+The pre-motion checks also refuse planned joint2 positions above 2.2 rad, to
+limit the carry reach associated with bench heating. Change `maximum` in
+`objectives/rebot_check_pick_reach.xml`, `objectives/rebot_check_stack_reach.xml`
+and `objectives/rebot_check_source_heat_reach.xml` together. This geometric
+bound does not measure temperatures; the hardware monitor still owns thermal
+limits and cancellation. After reaching home, recovery clears the carried
+cube's planning-scene attachment. A failed home return still reports failure.
 
 **Speed settings.** [`objectives/rebot_stack_motion.yaml`](objectives/rebot_stack_motion.yaml)
 holds one velocity and one acceleration scale factor per kind of leg, as
@@ -952,8 +973,8 @@ runtime after a YAML change; Objective XML is reread on every run.
 | Jaw velocity, acceleration | same file, joint7 | 3.0 rad/s, 6.0 rad/s² |
 | Finger mimic velocity | `description/rebot.urdf.xacro`, `gripper_joint1`/`2` | 0.024 m/s (0.008 × joint7) |
 | Leg speed scales | `objectives/rebot_stack_motion.yaml` | 1.0 for every kind |
-| Pick hold depth | `objectives/rebot_check_stack_reach.xml`, `TransformPose` to `{pick}` | `0;0;-0.015`: fingertips 35 mm above the mat |
-| Matched release | `objectives/rebot_check_stack_reach.xml`, `TransformPose` to `{place}` | `-0.000871557;0;0.037045702` at 5° tilt |
+| Pick hold depth | `objectives/rebot_check_pick_reach.xml`, `TransformPose` to `{pick}` | `0;0;-0.015`: fingertips 35 mm above the mat |
+| Matched release | `objectives/rebot_plan_place.xml`, `TransformPose` to `{place}` | `-0.000871557;0;0.037045702` at 5° tilt |
 | Path tolerance | `config/control/rebot.ros2_control.yaml`, `default_path_tolerance` | 0.15 rad, every joint |
 | Speed guard | the bench's own joint speed monitor | planned peak × 1.8 on the arm (1.08 rad/s at 0.6), 1.3-2 × on the jaw |
 
