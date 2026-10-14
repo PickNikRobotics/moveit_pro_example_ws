@@ -17,8 +17,27 @@
   </default>
 
   <asset>
-    <material name="fanuc_yellow" rgba="1.0 1.0 0.0 1.0" />
-    <material name="fanuc_gray28" rgba="0.28 0.28 0.28 1.0" />
+    <!-- Fanuc yellow as a metallic PBR, but scalars only and deliberately so: every arm
+         link is a .stl, which cannot carry texture coordinates, so a map here would be
+         resolved through MuJoCo's fallback projection and render as stripes. roughness 0.32
+         is a machined/anodised finish - crisp enough to pick up the environment, broad
+         enough not to look chromed. -->
+    <material
+      name="fanuc_yellow"
+      rgba="1.0 0.83 0.0 1.0"
+      metallic="1"
+      roughness="0.32"
+      specular="0.8"
+      shininess="0.68"
+      reflectance="0.3"
+    />
+    <material
+      name="fanuc_gray28"
+      rgba="0.28 0.28 0.28 1.0"
+      metallic="1"
+      roughness="0.45"
+      specular="0.6"
+    />
     <material name="fanuc_black" rgba="0.0 0.0 0.0 1.0" />
     <!-- Define meshes with appropriate scaling -->
     <mesh name="base_link" file="meshes/lrmate200id/visual/base_link.stl" />
