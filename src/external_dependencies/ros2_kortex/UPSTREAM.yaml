@@ -18,5 +18,5 @@ modified_paths:
   - kortex_description/package.xml
 notes:
   - Physical Kinova hardware support is outside this simulation-only workspace.
-  - kinova_sim defines its own MuJoCo robot model and uses only the Gen3 7-DOF STL meshes from this snapshot.
+  - space_satellite_sim and vla_sim define their own MuJoCo robot models and use only the Gen3 7-DOF STL meshes from this snapshot.
   - Binary files matching workspace Git LFS patterns are stored as LFS objects; checked-out bytes match upstream.

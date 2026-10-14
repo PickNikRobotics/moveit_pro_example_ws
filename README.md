@@ -37,15 +37,13 @@ The `moveit_pro_sam3` package is part of this repository but contains no model f
 - `rebot_bench_sim`
 - `so101_base_config`
 - `so101_sim`
+- `space_satellite_sim`
 - `vla_sim`
-- `moveit_pro_kinova_configs/kinova_gen3_base_config`
-- `moveit_pro_kinova_configs/kinova_sim`
-- `moveit_pro_kinova_configs/space_satellite_sim`
 - `moveit_pro_ur_configs/mock_sim`
 - `moveit_pro_ur_configs/multi_arm_sim`
 - `moveit_pro_ur_configs/picknik_ur_base_config`
 
-The hardware-only `kinova_gen3_site_config` and `picknik_ur_site_config` configurations are not included. They bring up physical Kinova and Universal Robots hardware, respectively, while the retained base and simulation configurations provide the descriptions and interfaces needed by this workspace.
+Hardware configurations are not included. Kinova Gen3 configurations live in [moveit_pro_kinova_ws](https://github.com/PickNikRobotics/moveit_pro_kinova_ws). The hardware-only `picknik_ur_site_config` configuration, which brings up physical Universal Robots hardware, is also not included; the retained base and simulation configurations provide the descriptions and interfaces needed by this workspace.
 
 ## Updating vendored dependencies
 

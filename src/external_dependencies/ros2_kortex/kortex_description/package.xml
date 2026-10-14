@@ -4,7 +4,7 @@
   <name>kortex_description</name>
   <version>0.2.5</version>
   <description>
-    <p>Kinova Gen3 meshes used by kinova_sim.</p>
+    <p>Kinova Gen3 meshes used by space_satellite_sim and vla_sim.</p>
   </description>
   <author email="avannobel@kinova.ca">Alexandre Vannobel</author>
   <maintainer email="avannobel@kinova.ca" />
