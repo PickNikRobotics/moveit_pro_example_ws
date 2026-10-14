@@ -11,7 +11,8 @@ the existing 0.008 m/rad coupling. Upper bounds and speed limits are unchanged.
 
 Native joint-space Objectives planned each leg from commanded arm zero,
 anchored the trajectory to the controller command, and kept trajectory
-collision validation enabled. Each executed batch changed J2 alone, returned
+collision validation enabled, under a temporary −0.10 rad planning lower
+bound on J2, J3 and J7. Each executed batch changed J2 alone, returned
 the command to zero, and confirmed home before disabling all seven motors.
 Reference speed was at most 0.02 rad/s. Scene and wrist frames were captured
 before and after; the desk camera was unavailable. Joint-state and controller
@@ -42,24 +43,10 @@ which occurred during the torque concern; this is not a validated safety
 reserve. J3's bound is a selected home allowance without a successful negative
 trial. No uncertainty budget establishes a physical clearance margin for
 either joint. Keep collision validation and independent hardware safeguards.
+Offline model tests verify the source contract; they do not certify negative
+physical clearance.
 
 J2 started at 30 °C and peaked at 32 °C over these trials; all motor peaks
 were at most 33 °C. Recorded fault and communication counts were zero.
 The last checkpoint confirmed home with all motors disabled. No further
 limit tests were authorized after the final bounds were selected.
-
-## Deployment and cleanup
-
-Commissioning used an uncommitted live planning allowance of −0.10 rad on
-J2/J3/J7 and −0.0008 m on the dependent sliders. That temporary allowance
-remains a separate deployment concern; this source change does not reload
-the live runtime, change drivers or modify motor-stored limits.
-
-At the next planned home-disabled deployment, replace only those temporary
-position overrides with the committed bounds, restore both slider lower
-bounds to zero, preserve unrelated local work, and verify the resolved
-robot-description and planning limits before enabling motion. Retire the
-experimental Objectives from the active library while retaining their
-recorded evidence. Until that cleanup is confirmed, do not treat the live
-planning allowance as the released configuration. Offline model tests verify
-the source contract; they do not certify negative physical clearance.
