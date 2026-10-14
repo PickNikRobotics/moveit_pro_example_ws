@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<!-- Derived from Seeed reBot-DevArm; CERN-OHL-W-2.0. Modified by PickNik Inc., 2026-10-09 to 2026-10-12: visual replacements, hardware selectors, world placement and wrist-camera mount arguments. See NOTICE.md. Original SolidWorks exporter: Stephen Brawner (brawner@gmail.com), 1.6.0-4-g7f85cfe, build 1.6.7995.38578; http://wiki.ros.org/sw_urdf_exporter. -->
+<!-- Derived from Seeed reBot-DevArm; CERN-OHL-W-2.0. Modified by PickNik Inc., 2026-10-09 to 2026-10-14: visual replacements, hardware selectors, world placement, wrist-camera mount arguments and conservative home margins. See NOTICE.md. Original SolidWorks exporter: Stephen Brawner (brawner@gmail.com), 1.6.0-4-g7f85cfe, build 1.6.7995.38578; http://wiki.ros.org/sw_urdf_exporter. -->
 <robot name="rebot_b601_rs" xmlns:xacro="http://www.ros.org/wiki/xacro">
   <xacro:arg name="hardware_interface" default="mock" />
   <!-- Real hardware only; ignored by mock. The bench runs one 1 Mbps bus. -->
@@ -163,7 +163,7 @@
     <parent link="link1" />
     <child link="link2" />
     <axis xyz="0 0 1" />
-    <limit lower="0.000000000000" upper="3.543018381548" effort="36" velocity="0.6" />
+    <limit lower="-0.020000000000" upper="3.543018381548" effort="36" velocity="0.6" />
   </joint>
   <link name="link3">
     <inertial>
@@ -222,7 +222,7 @@
     <parent link="link2" />
     <child link="link3" />
     <axis xyz="0 0 -1" />
-    <limit lower="0.000000000000" upper="4.171336912266" effort="36" velocity="0.6" />
+    <limit lower="-0.010000000000" upper="4.171336912266" effort="36" velocity="0.6" />
   </joint>
   <link name="link4">
     <inertial>

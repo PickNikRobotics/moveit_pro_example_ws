@@ -130,16 +130,15 @@ def test_real_branch_follows_the_can_interface_and_torque_arguments():
     assert {params(g)["can_interface"] for g in control.findall("gpio")} == {"can1"}
 
 
-@pytest.mark.parametrize("hardware_interface", ["mock", "real"])
+@pytest.mark.parametrize("hardware_interface", ["mock", "real", "mujoco"])
 def test_commanded_joints_keep_the_measured_motor_frame_limits(hardware_interface):
-    # The driver clamps position commands to the URDF limits and wraps feedback
-    # into a one-turn window centred on them, so these are the numbers that
-    # decide where the real arm may go. They are the bench's measured hard
-    # stops less five degrees, in the motor frame.
+    # These are approved motor-frame bounds, including conservative J2/J3
+    # home margins. They are not a measurement of negative hard stops or a
+    # guarantee of collision-free motion; command enforcement is driver-specific.
     expected = {
         "joint1": (-2.530727415392, 2.530727415392),
-        "joint2": (0.0, 3.543018381548),
-        "joint3": (0.0, 4.171336912266),
+        "joint2": (-0.02, 3.543018381548),
+        "joint3": (-0.01, 4.171336912266),
         "joint4": (-1.850049007114, 1.500983156715),
         "joint5": (-1.762782544514, 1.884955592154),
         "joint6": (-3.054326190990, 3.054326190990),
@@ -147,7 +146,7 @@ def test_commanded_joints_keep_the_measured_motor_frame_limits(hardware_interfac
     }
     model = expand(hardware_interface=hardware_interface)
     commanded = {j.get("name") for j in model.findall("ros2_control/joint")}
-    assert commanded == set(expected)
+    assert commanded == (set() if hardware_interface == "mujoco" else set(expected))
 
     limits = {
         joint.get("name"): joint.find("limit")

@@ -250,7 +250,7 @@
       class="rs06"
       kp="150"
       kv="10"
-      ctrlrange="0 3.543018381548"
+      ctrlrange="-0.02 3.543018381548"
     />
     <position
       name="joint3"
@@ -258,7 +258,7 @@
       class="rs06"
       kp="150"
       kv="10"
-      ctrlrange="0 4.171336912266"
+      ctrlrange="-0.01 4.171336912266"
     />
     <position
       name="joint4"

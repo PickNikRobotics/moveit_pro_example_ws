@@ -140,6 +140,45 @@ CONFIGURATIONS = [
 ]
 
 
+def test_compiled_joint_limits_match_expanded_urdf_and_planning(model):
+    robot = sim_urdf()
+    limits = yaml.safe_load(
+        (
+            Path(get_package_share_directory("rebot_bench_base_config"))
+            / "config/moveit/joint_limits.yaml"
+        ).read_text()
+    )["joint_limits"]
+    for name in ARM + ["joint7", "gripper_joint1", "gripper_joint2"]:
+        joint = robot.find(f"joint[@name='{name}']")
+        bound = joint.find("limit")
+        expected = [float(bound.get("lower")), float(bound.get("upper"))]
+        compiled = model.joint(name)
+        assert compiled.limited, name
+        np.testing.assert_allclose(compiled.range, expected, atol=1e-12, err_msg=name)
+        if name in ARM + ["joint7"]:
+            actuator = model.actuator(name)
+            assert actuator.ctrllimited, name
+            np.testing.assert_allclose(
+                actuator.ctrlrange, expected, atol=1e-12, err_msg=name
+            )
+        override = limits.get(name, {})
+        if override.get("has_position_limits", False):
+            np.testing.assert_allclose(
+                [override["min_position"], override["max_position"]],
+                expected,
+                atol=1e-12,
+                err_msg=name,
+            )
+        if name.startswith("gripper_joint"):
+            mimic = joint.find("mimic")
+            assert mimic.get("joint") == "joint7"
+            assert float(mimic.get("multiplier")) == 0.008
+            assert float(mimic.get("offset")) == 0
+            np.testing.assert_allclose(
+                compiled.range, model.joint("joint7").range * 0.008
+            )
+
+
 @pytest.mark.parametrize("configuration", CONFIGURATIONS)
 def test_every_mujoco_body_and_camera_site_sits_on_its_urdf_link(model, configuration):
     data = mujoco.MjData(model)

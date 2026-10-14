@@ -11,6 +11,9 @@ if(BUILD_TESTING)
   find_package(tinyxml2_vendor REQUIRED)
   find_package(TinyXML2 REQUIRED)
   find_package(yaml-cpp REQUIRED)
+  find_package(moveit_pro_base REQUIRED)
+  find_package(urdf REQUIRED)
+  find_package(srdfdom REQUIRED)
   find_package(rebot_bench_behaviors REQUIRED)
   ament_add_gtest(test_stack_objectives test/test_stack_objectives.cpp)
   ament_target_dependencies(test_stack_objectives behaviortree_cpp_picknik)
@@ -25,6 +28,20 @@ if(BUILD_TESTING)
   target_compile_features(test_jaw_legs PRIVATE cxx_std_20)
   target_link_libraries(test_jaw_legs rebot_bench_behaviors::rebot_bench_behaviors)
   target_compile_definitions(test_jaw_legs PRIVATE PACKAGE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+  set(TEST_URDF ${CMAKE_CURRENT_BINARY_DIR}/test_rebot.urdf)
+  add_custom_command(
+    OUTPUT ${TEST_URDF}
+    COMMAND xacro ${CMAKE_CURRENT_SOURCE_DIR}/description/rebot.urdf.xacro
+            hardware_interface:=mock -o ${TEST_URDF}
+    DEPENDS description/rebot.urdf.xacro
+    VERBATIM)
+  add_custom_target(test_rebot_urdf DEPENDS ${TEST_URDF})
+  ament_add_gtest(test_joint_limits test/test_joint_limits.cpp)
+  add_dependencies(test_joint_limits test_rebot_urdf)
+  ament_target_dependencies(test_joint_limits moveit_pro_base urdf srdfdom)
+  target_link_libraries(test_joint_limits yaml-cpp::yaml-cpp)
+  target_compile_definitions(test_joint_limits PRIVATE
+    TEST_URDF="${TEST_URDF}" PACKAGE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
   find_package(ament_cmake_pytest REQUIRED)
   ament_add_pytest_test(test_stack_legs test/test_stack_legs.py TIMEOUT 60)
   ament_add_pytest_test(test_hardware_selection test/test_hardware_selection.py TIMEOUT 60)

@@ -17,9 +17,10 @@ The controllers, joint limits, SRDF, waypoints and Objectives are the base
 config's. On top of them this package adds the MuJoCo behaviors, **Reset MuJoCo
 Sim**, and **Move reBot to Pose**, a Cartesian move of the gripper to a pose in
 `base_link` (by default pointing straight down above the cubes). **Move reBot to
-Waypoint** is the joint move. Run **Plan reBot Joint Move** from **Raised**: from
-the Zeroed Rest start, joint2 and joint3 sit on their 0 rad lower limits and the
-planned profile dips just below them.
+Waypoint** is the joint move. Run **Plan reBot Joint Move** from **Raised**. From
+the Zeroed Rest start its planned profile dipped just below joint2's and joint3's
+former 0 rad lower limits; that start has not been rechecked against the current
+−0.02 and −0.01 rad limits.
 
 ## The bench layout file
 

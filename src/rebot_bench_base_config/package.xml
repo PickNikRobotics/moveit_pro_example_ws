@@ -43,6 +43,10 @@
   <test_depend>behaviortree_cpp_picknik</test_depend>
   <test_depend>tinyxml2_vendor</test_depend>
   <test_depend>yaml-cpp</test_depend>
+  <test_depend>moveit_pro_base</test_depend>
+  <test_depend>urdf</test_depend>
+  <test_depend>srdfdom</test_depend>
+  <test_depend>xacro</test_depend>
   <test_depend>rebot_bench_behaviors</test_depend>
   <test_depend>rclcpp</test_depend>
   <test_depend>ament_index_python</test_depend>

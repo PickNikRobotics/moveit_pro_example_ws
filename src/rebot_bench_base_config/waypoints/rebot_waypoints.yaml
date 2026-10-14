@@ -196,8 +196,8 @@
     wrench: []
   name: rebot_small_a
 - description: Small multi-joint move near home (joint1 and joint6 -0.05 rad, joint2
-    and joint4 +0.05 rad). joint3 is 0.002, not 0.0, because 0.0 is its lower limit
-    and a target exactly on a limit fails planning.
+    and joint4 +0.05 rad). joint3 is 0.002, not 0.0, because 0.0 was its lower limit
+    when this was saved and a target exactly on a limit fails planning.
   favorite: false
   joint_group_names:
   - manipulator

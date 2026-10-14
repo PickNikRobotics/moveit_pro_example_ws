@@ -164,8 +164,8 @@ runtime dependency is included.
 | Motor / coordinate | Meaning | Approved motor range (degrees) | Stored motor speed (rad/s) |
 | --- | --- | --- | --- |
 | J1 / `joint1` | Pan | −145 … 145 | 10 |
-| J2 / `joint2` | Shoulder lift | 0 … 203 | 10 |
-| J3 / `joint3` | Elbow | 0 … 239 | 10 |
+| J2 / `joint2` | Shoulder lift | −1.146 … 203 | 10 |
+| J3 / `joint3` | Elbow | −0.573 … 239 | 10 |
 | J4 / `joint4` | Wrist flex | −106 … 86 | 1 |
 | J5 / `joint5` | Wrist yaw | −101 … 108 | 33 |
 | J6 / `joint6` | Wrist roll | −175 … 175 | 33 |
@@ -173,6 +173,10 @@ runtime dependency is included.
 
 These approved motor-frame ranges replace upstream's model limits; some are
 wider and some narrower.
+The exact J2/J3 lower bounds are −0.02/−0.01 rad; the degree values above are
+rounded. J7 and both dependent jaw sliders retain zero lower bounds.
+[Lower-limit commissioning](docs/lower-limit-commissioning.md) records the
+observations and uncertainty behind these home margins.
 **Planning limits are 0.6 rad/s and 1.2 rad/s² on joint1-joint6**, twice the measured
 teleop limits (0.3 rad/s, 0.6 rad/s²), **and 3.0 rad/s and 6.0 rad/s² on the gripper
 (joint7)**, its measured teleop limits, all below the stored motor speeds. The jaw is not
@@ -544,11 +548,12 @@ before the arm moves:
 
 `target_positions` is a vector port, and Objective parameter overrides do not
 support vectors, so per-run targets go through a named waypoint. Two small
-waypoints near home exist for this: `rebot_small_a` and `rebot_small_b`. joint2
-and joint3 have a lower limit of exactly 0.0, which is also their home value, and
-a target exactly on a limit fails planning on the profile's numerical undershoot
-(`Joint position out of bounds`). Targets for those joints therefore sit a few
-mrad inside the limit (0.002 for joint3).
+waypoints near home exist for this: `rebot_small_a` and `rebot_small_b`. A
+target exactly on a limit fails planning on the profile's numerical undershoot
+(`Joint position out of bounds`). They were saved when joint2 and joint3 had a
+lower limit of exactly 0.0, their home value, so their joint3 target sits 2 mrad
+inside it (0.002). The lower limits are now −0.02 rad (joint2) and −0.01 rad
+(joint3); see [Lower-limit commissioning](docs/lower-limit-commissioning.md).
 
 Two bench-specific rules the model cannot express:
 
