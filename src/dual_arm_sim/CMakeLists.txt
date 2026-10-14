@@ -14,6 +14,13 @@ install(
     share/${PROJECT_NAME}
 )
 
+# The Franka collision meshes come from the vendored
+# franka_description/meshes/robots/fer/collision, not copies here.
+find_package(franka_description REQUIRED)
+install(DIRECTORY "${franka_description_DIR}/../meshes/robots/fer/collision/"
+        DESTINATION "share/${PROJECT_NAME}/description/mujoco/assets"
+        FILES_MATCHING PATTERN "*.stl")
+
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
