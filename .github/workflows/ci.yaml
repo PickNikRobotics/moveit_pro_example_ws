@@ -42,7 +42,8 @@ concurrency:
 jobs:
   # Compute the inputs we forward to the reusable integration workflow and to
   # the rollup status post-back. The logic differs by trigger:
-  #   - `pull_request`: image_tag = PR base ref; checkout uses the PR head
+  #   - `pull_request`: image_tag = main/release root of the PR stack
+  #     (main if unresolved); checkout uses the PR head
   #     by default (no explicit `git_ref`). If the PR body contains a
   #     `needs: moveit_pro/#N` token, also fetch that moveit_pro PR's head
   #     SHA so we can pull its private ECR image as `image_ref` and post
@@ -64,6 +65,13 @@ jobs:
       moveit_pro_sha: ${{ steps.resolve.outputs.moveit_pro_sha }}
       moveit_pro_pr_number: ${{ steps.resolve.outputs.moveit_pro_pr_number }}
     steps:
+      - name: Check out stack resolver
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: .github/scripts
+
       - name: Detect `needs:` token in PR body
         id: detect_needs
         if: github.event_name == 'pull_request'
@@ -227,7 +235,24 @@ jobs:
               }
               git_ref = p.base_branch || '';
             } else if (event === 'pull_request') {
-              image_tag = context.payload.pull_request.base.ref;
+              const { RELEASE_OR_MAIN, resolveStackBase } = require('./.github/scripts/stack_base.cjs');
+              image_tag = 'main';
+              try {
+                const { base, chain, resolved } = await resolveStackBase({
+                  github,
+                  ...context.repo,
+                  pullRequest: context.payload.pull_request,
+                });
+                if (resolved && RELEASE_OR_MAIN.test(base)) {
+                  image_tag = base;
+                  core.info(`Integration image branch: ${image_tag} (${chain})`);
+                } else {
+                  core.warning(`Could not resolve a main/release image branch from ${chain}; using main.`);
+                }
+              } catch (error) {
+                const pr = context.payload.pull_request;
+                core.warning(`Could not resolve PR stack #${pr.number} -> ${pr.base.ref}: ${error.message}; using main.`);
+              }
               const needsPr = process.env.MOVEIT_PRO_PR_FROM_BODY;
               if (needsPr) {
                 // Normalize before composing a tag out of it. detect_needs
@@ -283,11 +308,11 @@ jobs:
                 // a moveit_pro PR that targets v10.1 now resolves a tag nobody
                 // writes. It used to resolve, because Docker Hub carried a
                 // branch-named tag for every line.
-                if (pr.base.ref !== context.payload.pull_request.base.ref) {
+                if (pr.base.ref !== image_tag) {
                   publishPairingOutputs();
                   core.setFailed(
                     `Paired moveit_pro PR #${needsPrNumber} targets ${pr.base.ref}; ` +
-                    `expected ${context.payload.pull_request.base.ref}.`
+                    `expected ${image_tag}.`
                   );
                   return;
                 }
