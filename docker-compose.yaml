@@ -98,7 +98,7 @@ services:
       # configuration package's config directory, because Trainer writes that
       # package's vla_serving.yaml. The default assumes the package lives at
       # src/<package>; set VLA_CONFIG_DIR for one nested elsewhere, such as
-      # src/moveit_pro_kinova_configs/kinova_sim/config.
+      # src/moveit_pro_ur_configs/mock_sim/config.
       - ${VLA_CONFIG_DIR:-${MOVEIT_HOST_USER_WORKSPACE:-.}/src/${MOVEIT_CONFIG_PACKAGE:-vla_sim}/config}:/vla_config:ro
       # The server script and its tests; edits take effect on restart, no
       # image rebuild, and `docker exec ... python -m unittest` reaches the

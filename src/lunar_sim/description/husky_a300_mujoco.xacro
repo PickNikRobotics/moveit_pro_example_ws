@@ -69,7 +69,7 @@
   <xacro:arg name="mujoco_viewer" default="false" />
   <!-- Names the keyframe (husky_scene.xml's <keyframe>) that the MoveIt Pro UI's built-in
        "Reset Simulation" control and MujocoBehaviorsLoader's ResetMujocoKeyframe Behavior use by
-       default - same pattern as moveit_pro_kinova_configs' space_satellite_sim.xacro. -->
+       default - same pattern as space_satellite_sim's space_satellite_sim.xacro. -->
   <xacro:arg name="mujoco_keyframe" default="default" />
   <!-- Renders and publishes the OAK-D's stereo pair. Off unless a visual odometry consumer is
        running; see the <sensor> blocks below. -->

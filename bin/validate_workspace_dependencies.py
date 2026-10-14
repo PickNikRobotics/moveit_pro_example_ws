@@ -32,7 +32,7 @@ RETIRED_PATHS = {
     "src/external_dependencies/ridgeback/ridgeback_msgs",
     "src/external_dependencies/ridgeback/ridgeback_navigation",
     "src/moveit_pro_clipseg",
-    "src/moveit_pro_kinova_configs/kinova_gen3_site_config",
+    "src/moveit_pro_kinova_configs",
     "src/moveit_pro_ur_configs/picknik_ur_site_config",
 }
 FULL_GIT_SHA = re.compile(r"[0-9a-f]{40}")

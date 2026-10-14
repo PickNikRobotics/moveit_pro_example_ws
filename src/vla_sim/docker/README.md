@@ -83,7 +83,7 @@ Set these in the workspace `.env`; all are optional.
 | `HF_HUB_OFFLINE` | `1` serves only what is already in the cache, with no network access. |
 | `VLA_HF_CACHE` | Host path for the Hugging Face cache. Defaults to `../hf_cache`. |
 | `VLA_MODELS_DIR` | Host folder mounted at `/models`, for checkpoints stored outside the workspace. Defaults to `../models`. |
-| `VLA_CONFIG_DIR` | Host directory mounted at `/vla_config`, the one Trainer writes `vla_serving.yaml` into. Defaults to `src/<MOVEIT_CONFIG_PACKAGE>/config`; set it for a package nested elsewhere, such as `src/moveit_pro_kinova_configs/kinova_sim/config`. |
+| `VLA_CONFIG_DIR` | Host directory mounted at `/vla_config`, the one Trainer writes `vla_serving.yaml` into. Defaults to `src/<MOVEIT_CONFIG_PACKAGE>/config`; set it for a package nested elsewhere, such as `src/moveit_pro_ur_configs/mock_sim/config`. |
 | `VLA_TORCH_INDEX` | Package index the image installs torch from, for example `https://download.pytorch.org/whl/cpu` on a machine with no NVIDIA GPU. Defaults to PyPI for CPU/CUDA images; ignored by the pinned ROCm image. |
 
 ## The HTTP contract
