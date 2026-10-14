@@ -8,12 +8,20 @@
   >
     <Control ID="Sequence" name="TopLevelSequence">
       <Action
-        ID="GenerateCoveragePath"
-        vector_of_poses="{pose_stamped_vector}"
-        bottom_right_corner="{bottom_right_corner}"
-        height="0.3"
-        stride_distance="0.05"
-        width="0.5"
+        ID="TransformPose"
+        input_pose="{bottom_right_corner}"
+        output_pose="{region_pose}"
+        translation_xyz="0.25;0.15;0"
+        quaternion_xyzw="0;1;0;0"
+      />
+      <Action
+        ID="GenerateSurfaceCoveragePath"
+        coverage_path="{pose_stamped_vector}"
+        region_pose="{region_pose}"
+        region_dimensions="0.5;0.3;0"
+        raster_layout="[{line_spacing: 0.05, point_spacing: 0.25}]"
+        standoff="0"
+        orientation_offset="0;0;3.14159265"
       />
       <Action
         ID="VisualizePath"
