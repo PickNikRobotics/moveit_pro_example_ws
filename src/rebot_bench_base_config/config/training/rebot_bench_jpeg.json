@@ -1,0 +1,19 @@
+{
+  "name": "rebot_bench_jpeg",
+  "cameras": [
+    {
+      "key": "observation.images.scene",
+      "topic": "/scene_camera/color/image_raw/compressed",
+      "enabled": true
+    },
+    {
+      "key": "observation.images.wrist_mounted",
+      "topic": "/wrist_mounted_camera/color/image_raw/compressed",
+      "enabled": true
+    }
+  ],
+  "joint_states_topic": "/joint_states",
+  "joint_commands_topic": "/joint_trajectory_admittance_controller/controller_state",
+  "fps": 30,
+  "dataset_namespace": ""
+}

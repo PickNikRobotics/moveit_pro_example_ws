@@ -15,7 +15,7 @@ hardware:
   # MuJoCo renders both cameras; no camera drivers start.
   additional_driver_launch_file:
     package: "rebot_bench_sim"
-    path: "launch/sim_grasp_proxy.launch.py"
+    path: "launch/sim_drivers.launch.py"
 
 objectives:
   behavior_loader_plugins:

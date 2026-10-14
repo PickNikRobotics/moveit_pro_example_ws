@@ -40,7 +40,7 @@ add_custom_command(
 add_custom_target(${PROJECT_NAME}_scene ALL DEPENDS ${SCENE_XML} ${ARM_XML} ${LAYOUT_SNAPSHOT})
 install(FILES ${SCENE_XML} ${ARM_XML} ${LAYOUT_SNAPSHOT} DESTINATION share/${PROJECT_NAME}/description)
 
-install(PROGRAMS scripts/record_stack_evidence.py scripts/sim_grasp_proxy.py
+install(PROGRAMS scripts/record_stack_evidence.py scripts/sim_compressed_cameras.py scripts/sim_grasp_proxy.py
         DESTINATION lib/${PROJECT_NAME})
 
 if(BUILD_TESTING)
@@ -55,6 +55,9 @@ if(BUILD_TESTING)
           TIMEOUT 120)
   ament_add_pytest_test(
           rebot_bench_sim_grasp_proxy_test test/test_sim_grasp_proxy.py
+          TIMEOUT 60)
+  ament_add_pytest_test(
+          rebot_bench_sim_compressed_cameras_test test/test_sim_compressed_cameras.py
           TIMEOUT 60)
   ament_add_pytest_test(
           rebot_bench_sim_recorder_test test/test_record_stack_evidence.py

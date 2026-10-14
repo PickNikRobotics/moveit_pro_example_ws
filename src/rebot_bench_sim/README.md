@@ -77,11 +77,15 @@ file gives the grid-to-world mapping and the reasoning behind each entry.
 
 | Camera | MuJoCo camera | Image frame | Topics |
 | --- | --- | --- | --- |
-| Wrist D435 colour | `d435_color` | `d435_color_optical_frame` | `/wrist_mounted_camera/color/{image_raw,camera_info}`, `/wrist_mounted_camera/depth/image_rect_raw` |
-| Scene OAK-D Pro W 97 | `scene_camera_color` | `scene_camera_color_optical_frame` | `/scene_camera/color/{image_raw,camera_info}`, `/scene_camera/depth/image_rect_raw` |
+| Wrist D435 colour | `d435_color` | `d435_color_optical_frame` | `/wrist_mounted_camera/color/{image_raw,camera_info}`, `/wrist_mounted_camera/depth/image_rect_raw`, `/wrist_mounted_camera/depth/color/points` |
+| Scene OAK-D Pro W 97 | `scene_camera_color` | `scene_camera_color_optical_frame` | `/scene_camera/color/{image_raw,camera_info}`, `/scene_camera/depth/image_rect_raw`, `/scene_camera/depth/color/points` |
 
-The colour topics and frames are the real drivers'; the scene depth is extra
-(the real scene camera is RGB-only); the real wrist D435 provides aligned depth. Both render at 30 Hz, without point clouds, for continuous validation video.
+The colour topics and frames are the real drivers'. The scene depth image and
+point cloud are the real scene camera's `scene_aligned_depth` topics, aligned to
+its colour image, for depth-aware cube checks. The wrist
+depth is extra. Images render at 30 Hz for continuous validation video; point
+clouds publish at 5 Hz (`point_cloud_publish_rate` in
+`description/rebot_bench_sim.urdf.xacro`).
 The image frame is the MuJoCo camera's name plus `_optical_frame`, so the
 cameras are named after the real frames, and MuJoCo publishes those two frames
 from the camera sites: with `hardware_interface: mujoco` the base description
@@ -93,6 +97,14 @@ Intrinsics follow the base config's measured values. The wrist camera's
 `picknik_mujoco_ros` renders every camera into one offscreen buffer, so both
 cameras are 640x480. The real scene stream is 640x400, the same view without
 the top and bottom 40 rows.
+
+The real drivers publish JPEG `color/image_raw/compressed` topics through
+the declared `compressed_image_transport` plugin. MuJoCo publishes raw ROS
+images without image transport, so `scripts/sim_compressed_cameras.py`, started
+by `launch/sim_drivers.launch.py`, encodes both colour streams onto the same
+topics with the same `format`. Installing the plugin does not add compressed
+publishers to MuJoCo's raw image publishers. The native JPEG training config
+records these topics.
 
 ## Model notes
 
@@ -132,6 +144,8 @@ the top and bottom 40 rows.
   calibration, places the twin's robot description.
 - `test/test_sim_grasp_proxy.py` drives the grasp proxy through its topics: it
   welds only at finger contact and releases after a simulation reset.
+- `test/test_sim_compressed_cameras.py` checks a compressed frame decodes back
+  to the raw one, header and format included.
 - `test/objectives_integration_test.py` runs every runnable Objective against
   the twin, as `lab_sim` does, except the stateful stack entry points, which
   the evidence runs below validate.
