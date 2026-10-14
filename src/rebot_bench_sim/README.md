@@ -24,12 +24,15 @@ planned profile dips just below them.
 ## The bench layout file
 
 Every world placement is in [`config/bench_layout.yaml`](config/bench_layout.yaml).
-The build installs a copy of it as `description/bench_layout.yaml` and expands
-the MuJoCo scene (`description/scene.xml.xacro`) from that copy into the
-installed `description/scene.xml`. The robot description
-(`description/rebot_bench_sim.urdf.xacro`, through the base description's
-`world_to_base_*` and `scene_camera_*` xacro arguments) reads the same installed
-copy, so MoveIt and MuJoCo always see the layout of the same build.
+The build installs a snapshot of it as `description/bench_layout.yaml`, adding
+the wrist-camera mount joint derived from `wrist_camera`
+(`scripts/layout_snapshot.py`), and expands the MuJoCo scene and arm
+(`description/scene.xml.xacro`, `description/rebot_arm.xml.xacro`) from that
+snapshot into the installed `description/scene.xml` and `rebot_arm.xml`. The
+robot description (`description/rebot_bench_sim.urdf.xacro`, through the base
+description's `world_to_base_*`, `scene_camera_*` and `wrist_camera_mount_*`
+xacro arguments) reads the same snapshot, so MoveIt and MuJoCo always see the
+layout of the same build.
 
 The world frame is the 3D-printed TF frame object on the mat: +X along its red
 axis, +Y along its green axis, +Z (blue) up, z = 0 on the mat's top surface.
@@ -39,6 +42,7 @@ Lengths are metres, angles radians, `rpy` is URDF roll-pitch-yaw.
 | --- | --- | --- |
 | `robot_base` | `base_link` (the arm's mounting face) | `xyz`, `rpy` |
 | `scene_camera` | `scene_camera_link` (x along the view axis, z up) | the colour optical frame follows as in the base config |
+| `wrist_camera` | `d435_link` in `link6` (a hand-eye result) | the printed bracket moves with it |
 | `mat` | the centre of the mat's top surface | `size` is the full `[x, y, thickness]`; the bench top sits at the mat's underside |
 | `wall` | the wall box centre | `size` is the full `[x, y, z]` extent |
 | `cubes` | each cube's centre, plus a yaw | `size` (edge) and `mass` apply to both |
@@ -53,14 +57,18 @@ coordinates like every other placement, not mat-grid coordinates: the cubes are
 free bodies that calibration measures directly, and editing `mat`'s `xyz` or
 `rpy` does not move them.
 
-**Every value in the shipped file is a first guess, marked APPROXIMATE**, from
-bench facts and the real scene camera's frame rather than measurement. The mat
-runs along world X, away from the robot, with the foam wall along its +Y edge;
-the printed frame lies near the mat's aisle edge, its red axis pointing back
-toward the robot. The cubes are at grid (309, 273) mm (blue) and (212, 302) mm
-(red), where grid +X runs across the mat toward the aisle and grid +Y along it
-away from the robot; the file gives the grid-to-world mapping and the
-reasoning behind each entry.
+**`robot_base`, `scene_camera` and `wrist_camera` are calibrated, marked
+CALIBRATED**, from a ChArUco board on the mat. The wrist camera mount is a
+provisional hand-eye solve over six arm poses, good to about 2 cm; the robot
+base's x, y and yaw are solved through it, and its roll, pitch and height are
+held level on the bench plane. **Every other value
+is a first guess, marked APPROXIMATE**, from bench facts and the real scene
+camera's frame rather than measurement. The mat runs along world X, away from
+the robot, with the foam wall along its +Y edge; the printed frame lies near
+the mat's aisle edge, its red axis pointing back toward the robot. The cubes
+are at grid (309, 273) mm (blue) and (212, 302) mm (red), where grid +X runs
+across the mat toward the aisle and grid +Y along it away from the robot; the
+file gives the grid-to-world mapping and the reasoning behind each entry.
 
 ## Cameras
 
@@ -85,7 +93,7 @@ the top and bottom 40 rows.
 
 ## Model notes
 
-- The arm is `description/rebot_arm.xml` and `description/rebot_assets.xml`,
+- The arm is `description/rebot_arm.xml.xacro` and `description/rebot_assets.xml`,
   transcribed from `rebot.urdf.xacro`. Meshes are the base package's STL files
   through `package://` URIs. The purple printed covers, the wrist bracket and
   the D435 body are COLLADA there, which MuJoCo cannot load, so

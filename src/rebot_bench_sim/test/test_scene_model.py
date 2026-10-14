@@ -160,6 +160,12 @@ def test_every_mujoco_body_and_camera_site_sits_on_its_urdf_link(model, configur
         "world_to_base_rpy": " ".join(map(str, LAYOUT["robot_base"]["rpy"])),
         "scene_camera_xyz": " ".join(map(str, LAYOUT["scene_camera"]["xyz"])),
         "scene_camera_rpy": " ".join(map(str, LAYOUT["scene_camera"]["rpy"])),
+        "wrist_camera_mount_xyz": " ".join(
+            map(str, LAYOUT["wrist_camera_mount"]["xyz"])
+        ),
+        "wrist_camera_mount_rpy": " ".join(
+            map(str, LAYOUT["wrist_camera_mount"]["rpy"])
+        ),
     }
     base = urdf_link_poses(
         expand(
@@ -286,6 +292,21 @@ def test_keyframe_follows_the_layout(model):
     arm = LAYOUT["keyframe"]["arm"] + [LAYOUT["keyframe"]["gripper"]]
     np.testing.assert_allclose(key.qpos[:7], arm)
     np.testing.assert_allclose(key.ctrl, arm)
+
+
+def test_wrist_camera_sits_at_the_layouts_measured_mount(data):
+    def pose(body):
+        pose = np.eye(4)
+        pose[:3, :3] = data.body(body).xmat.reshape(3, 3)
+        pose[:3, 3] = data.body(body).xpos
+        return pose
+
+    camera_in_link6 = np.linalg.inv(pose("link6")) @ pose("d435_link")
+    measured = LAYOUT["wrist_camera"]
+    np.testing.assert_allclose(camera_in_link6[:3, 3], measured["xyz"], atol=1e-5)
+    np.testing.assert_allclose(
+        camera_in_link6[:3, :3], rpy_matrix(*measured["rpy"]), atol=1e-5
+    )
 
 
 def test_sim_description_refuses_any_other_hardware():

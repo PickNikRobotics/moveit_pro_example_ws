@@ -11,9 +11,13 @@
 # rebot_bench_sim` (or `moveit_pro build`) before `moveit_pro run` - see
 # README.md.
 #
-# APPROXIMATE: nothing below has been measured against the printed frame yet.
-# The values are first guesses from bench facts, noted per entry; a camera and
-# robot-base calibration replaces them here.
+# CALIBRATED: robot_base, scene_camera and wrist_camera, from a ChArUco board
+# (DICT_4X4_50, 7x5 squares of 35 mm, 26 mm markers) lying on the mat at world
+# (0.235, 0.212, 0), its +X along world -Y, +Y along world -X and +Z into the
+# mat, seen by the scene camera and by the wrist camera from six arm poses;
+# noted per entry.
+# APPROXIMATE: everything else is a first guess from bench facts, noted per
+# entry; a later calibration replaces it here.
 
 # How the guesses were placed. The mat's printed grid has its origin at the
 # robot-end corner beside the white foam, grid +X across the mat toward the
@@ -24,23 +28,36 @@
 # (0.360, 0.590) m, was estimated from the scene camera's frame: near the
 # aisle edge, about 0.3 m farther from the robot than the cubes.
 
-# base_link (the robot's mounting face, on the bench top) in the world.
-# APPROXIMATE: behind the mat's robot-end edge on the aisle side, at grid
-# (0.340, -0.080) m, from the scene camera's frame. Yaw points the arm's reach
-# (base_link +X) along the mat, away from the robot (world -X).
+# base_link (the robot's mounting face, on the bench top) in the world. Yaw
+# points the arm's reach (base_link +X) along the mat, away from the robot
+# (world -X).
+# CALIBRATED: x, y and yaw from the wrist D435's board pose at rest, through
+# the arm's forward kinematics and the measured wrist_camera mount below, so
+# they share that mount's provisional accuracy. Roll/pitch are held at 0 and z
+# at the bench plane: the base plate is bolted level to the bench, and the
+# solve's tilt is within its error.
 robot_base:
-  xyz: [0.670, 0.020, -0.003]
-  rpy: [0.0, 0.0, 3.141592653589793]
+  xyz: [0.7259, 0.0216, -0.003]
+  rpy: [0.0, 0.0, 3.1380]
 
 # scene_camera_link (REP-103: x along the view axis, z up) in the world. The
 # colour optical frame follows from it as in rebot_bench_base_config.
-# APPROXIMATE: on the black arm above the mat's far end, looking back along the
-# mat toward the robot and 57 deg down; about 0.48 m above the mat at grid
-# (0.215, 0.665) m. Placed so the cubes are about 0.6 m away, as their size in
-# the real frame implies. The real mount pose is unmeasured.
+# CALIBRATED: the scene camera's board pose (corner reprojection RMS 0.15 px)
+# with its factory intrinsics.
 scene_camera:
-  xyz: [-0.075, 0.145, 0.480]
-  rpy: [0.0, 0.995, 0.0]
+  xyz: [-0.0750, 0.0694, 0.5645]
+  rpy: [0.1686, 0.9750, 0.2459]
+
+# d435_link (the wrist D435's body frame, REP-103) in link6, the arm's last
+# link. The build turns it into the base description's d435_mount_joint origin
+# (gripper_end -> d435_mount_link), so the printed bracket and the camera move
+# together and both the robot description and the MuJoCo scene use it.
+# CALIBRATED, PROVISIONAL: a hand-eye solve over six arm poses with small
+# relative rotations (3-18 deg); leave-one-out spread up to 17 mm and 2.5 deg,
+# so treat it as good to about 2 cm until a wider-pose calibration replaces it.
+wrist_camera:
+  xyz: [0.086316, -0.001875, 0.065734]
+  rpy: [0.063587, -1.015548, -3.132472]
 
 # Blue mat, a box. `xyz` is the centre of its top surface, `rpy` its
 # orientation, `size` the full [x, y, thickness] before rotation. The bench top

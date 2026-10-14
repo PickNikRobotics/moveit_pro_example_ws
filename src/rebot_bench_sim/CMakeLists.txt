@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.22)
 project(rebot_bench_sim)
 
 find_package(ament_cmake REQUIRED)
+find_package(rebot_bench_base_config REQUIRED)
 
 install(
   DIRECTORY
@@ -10,26 +11,33 @@ install(
     objectives
   DESTINATION
     share/${PROJECT_NAME}
-  PATTERN "scene.xml.xacro" EXCLUDE
+  PATTERN "*.xml.xacro" EXCLUDE
   PATTERN "bench_layout.yaml" EXCLUDE
 )
 
-# The MuJoCo scene is generated from a build-time snapshot of
-# config/bench_layout.yaml, installed beside it for the robot description to
+# The MuJoCo scene and arm are generated from a build-time snapshot of
+# config/bench_layout.yaml, installed beside them for the robot description to
 # read, so a layout edit reaches both together on rebuild and never just one.
+# The snapshot adds entries derived from the layout (the wrist-camera mount
+# joint, scripts/layout_snapshot.py).
+set(BASE_XACRO ${rebot_bench_base_config_DIR}/../description/rebot.urdf.xacro)
 set(SCENE_XML ${CMAKE_CURRENT_BINARY_DIR}/scene.xml)
+set(ARM_XML ${CMAKE_CURRENT_BINARY_DIR}/rebot_arm.xml)
 set(LAYOUT_SNAPSHOT ${CMAKE_CURRENT_BINARY_DIR}/bench_layout.yaml)
 add_custom_command(
-  OUTPUT ${SCENE_XML} ${LAYOUT_SNAPSHOT}
-  COMMAND ${CMAKE_COMMAND} -E copy
-          ${CMAKE_CURRENT_SOURCE_DIR}/config/bench_layout.yaml ${LAYOUT_SNAPSHOT}
+  OUTPUT ${SCENE_XML} ${ARM_XML} ${LAYOUT_SNAPSHOT}
+  COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/scripts/layout_snapshot.py
+          ${CMAKE_CURRENT_SOURCE_DIR}/config/bench_layout.yaml ${BASE_XACRO} ${LAYOUT_SNAPSHOT}
   COMMAND xacro ${CMAKE_CURRENT_SOURCE_DIR}/description/scene.xml.xacro
           layout:=${LAYOUT_SNAPSHOT} -o ${SCENE_XML}
-  DEPENDS description/scene.xml.xacro config/bench_layout.yaml
+  COMMAND xacro ${CMAKE_CURRENT_SOURCE_DIR}/description/rebot_arm.xml.xacro
+          layout:=${LAYOUT_SNAPSHOT} -o ${ARM_XML}
+  DEPENDS description/scene.xml.xacro description/rebot_arm.xml.xacro
+          config/bench_layout.yaml scripts/layout_snapshot.py ${BASE_XACRO}
   VERBATIM
 )
-add_custom_target(${PROJECT_NAME}_scene ALL DEPENDS ${SCENE_XML} ${LAYOUT_SNAPSHOT})
-install(FILES ${SCENE_XML} ${LAYOUT_SNAPSHOT} DESTINATION share/${PROJECT_NAME}/description)
+add_custom_target(${PROJECT_NAME}_scene ALL DEPENDS ${SCENE_XML} ${ARM_XML} ${LAYOUT_SNAPSHOT})
+install(FILES ${SCENE_XML} ${ARM_XML} ${LAYOUT_SNAPSHOT} DESTINATION share/${PROJECT_NAME}/description)
 
 if(BUILD_TESTING)
   find_package(ament_cmake_pytest REQUIRED)
