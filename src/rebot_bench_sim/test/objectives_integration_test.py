@@ -51,9 +51,10 @@ skip_objectives: set[str] = {
     "Teleoperate",  # DoTeleoperateAction rejects the goal with no UI subscribed.
     "Marker Visualization Example",  # GetTextFromUser server unavailable headless.
     "Clear Snapshot",  # No octomap: the reBot configs define no 3D sensors.
-    # Each test starts from the Zeroed Rest keyframe, which sits on the 0 rad
-    # lower limits of joint2 and joint3; the plan's time-optimal profile dips
-    # below them and is rejected. Both run from Raised (README).
+    # Each test starts from the Zeroed Rest keyframe. With joint2's and
+    # joint3's former 0 rad lower limits the plan's time-optimal profile dipped
+    # below them and was rejected; not rechecked against the current limits.
+    # Both run from Raised (README).
     "Plan reBot Joint Move",
     "Execute reBot Joint Trajectory",  # Executes what Plan reBot Joint Move saved.
     "Calibrate Camera Intrinsics",

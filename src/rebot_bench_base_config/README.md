@@ -548,11 +548,12 @@ before the arm moves:
 
 `target_positions` is a vector port, and Objective parameter overrides do not
 support vectors, so per-run targets go through a named waypoint. Two small
-waypoints near home exist for this: `rebot_small_a` and `rebot_small_b`. joint2
-and joint3 have a lower limit of exactly 0.0, which is also their home value, and
-a target exactly on a limit fails planning on the profile's numerical undershoot
-(`Joint position out of bounds`). Targets for those joints therefore sit a few
-mrad inside the limit (0.002 for joint3).
+waypoints near home exist for this: `rebot_small_a` and `rebot_small_b`. A
+target exactly on a limit fails planning on the profile's numerical undershoot
+(`Joint position out of bounds`). They were saved when joint2 and joint3 had a
+lower limit of exactly 0.0, their home value, so their joint3 target sits 2 mrad
+inside it (0.002). The lower limits are now −0.02 rad (joint2) and −0.01 rad
+(joint3); see [Lower-limit commissioning](docs/lower-limit-commissioning.md).
 
 Two bench-specific rules the model cannot express:
 
