@@ -417,3 +417,41 @@
     twist: []
     wrench: []
   name: Intermediate Jig Pose
+- description: Unloaded jig wait above and outside the processing volume.
+  favorite: false
+  joint_group_names:
+  - gripper
+  - manipulator
+  joint_state:
+    effort: []
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    name:
+    - joint_1
+    - joint_2
+    - joint_3
+    - joint_4
+    - joint_5
+    - joint_6
+    position:
+    - -2.3860408174682277
+    - 0.4470292126250444
+    - -0.5393956278252068
+    - 0.006590564619660082
+    - -0.5933153904234844
+    - 0.8246212036428854
+    velocity: []
+  multi_dof_joint_state:
+    header:
+      frame_id: ''
+      stamp:
+        nanosec: 0
+        sec: 0
+    joint_names: []
+    transforms: []
+    twist: []
+    wrench: []
+  name: Jig Wait

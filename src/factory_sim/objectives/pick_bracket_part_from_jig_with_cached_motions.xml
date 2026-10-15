@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Pick Bracket Part from Jig with Cached Motions"
+>
+  <BehaviorTree
+    ID="Pick Bracket Part from Jig with Cached Motions"
+    _description="Moves to jig approach pose and picks bracket part off of jig"
+  >
+    <Control ID="Sequence">
+      <Control ID="Sequence" name="Move to jig pick approach pose and pick">
+        <Action
+          ID="RetrieveWaypoint"
+          joint_group_name="manipulator"
+          waypoint_joint_state="{jig_approach_joint_state}"
+          waypoint_name="Jig Approach Pose"
+        />
+        <Action
+          ID="InitializeMTCTask"
+          task="{mtc_task}"
+          task_id="move_to_jig_approach_pose"
+          timeout="-1.000000"
+        />
+        <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
+        <Action
+          ID="SetupMTCPlanToRobotState"
+          acceleration_scale_factor="1.0"
+          joint_state="{jig_approach_joint_state}"
+          collision_check_params="[{override_scene_link_padding: true, link_padding: 0.01}]"
+          max_iterations="5000"
+          planning_group_name="manipulator"
+          seed="0"
+          task="{mtc_task}"
+          trajectory_sampling_rate="100"
+          velocity_scale_factor="1.0"
+        />
+        <SubTree
+          ID="Plan or Execute Cached Fanuc Motion"
+          task="{mtc_task}"
+          cache_enabled="{cache_transfers}"
+          cache_ready="{jig_approach_ready}"
+          cached_solution="{jig_approach_solution}"
+          plan_label="PLANNING: move to jig approach pose"
+          execution_label="EXECUTION: move to jig approach pose"
+          cache_hit_message="CACHE HIT: jig_approach"
+        />
+        <SubTree ID="Activate Vacuum" _collapsed="true" />
+        <Action
+          ID="CreatePoseStamped"
+          reference_frame="world"
+          pose_stamped="{bracket_on_jig}"
+          orientation_xyzw="0.000; 0.000; 1.000; 0.000"
+          position_xyz="-0.319; -0.483; 0.225"
+        />
+        <Action
+          ID="InitializeMTCTask"
+          task_id="jig_approach"
+          task="{mtc_task}"
+          timeout="-1.000000"
+        />
+        <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
+        <Action
+          ID="SetupMTCSetCollisionRule"
+          name_a="link_5"
+          name_b="link_6"
+          allow_collision="true"
+          task="{mtc_task}"
+        />
+        <Action
+          ID="SetupMTCSetCollisionRule"
+          name_a="link_5"
+          name_b="suction_gripper"
+          allow_collision="true"
+          task="{mtc_task}"
+        />
+        <Action
+          ID="SetupMTCSetCollisionRule"
+          name_a="link_6"
+          name_b="suction_gripper"
+          allow_collision="true"
+          task="{mtc_task}"
+        />
+        <Action
+          ID="SetupMTCMoveAlongFrameAxis"
+          axis_frame="tool0"
+          axis_z="1"
+          max_distance="0.07"
+          min_distance="0.07"
+          hand_frame="tool0"
+          acceleration_scale="0.5"
+          axis_x="0.000000"
+          axis_y="0.000000"
+          ignore_environment_collisions="false"
+          planning_group_name="manipulator"
+          velocity_scale="0.5"
+          task="{mtc_task}"
+        />
+        <SubTree
+          ID="Plan or Execute Cached Fanuc Motion"
+          task="{mtc_task}"
+          cache_enabled="{cache_transfers}"
+          cache_ready="{jig_contact_ready}"
+          cached_solution="{jig_contact_solution}"
+          plan_label="PLANNING: jig pick approach"
+          execution_label="EXECUTION: jig pick approach"
+          cache_hit_message="CACHE HIT: jig_contact"
+          minimum_padding_m="0.0"
+        />
+        <Action ID="StopwatchBegin" timepoint="{t_scene}" />
+        <Action
+          ID="AddURDF"
+          urdf_name="{part_name}"
+          urdf_pose="{bracket_on_jig}"
+          package_name="factory_sim"
+          urdf_file_path="description/simple_bracket_collision_geometry.urdf"
+        />
+        <Action
+          ID="AttachURDF"
+          urdf_name="{part_name}"
+          allowed_collision_links="link_5;link_6"
+          parent_link_name="tool0"
+        />
+        <Action
+          ID="StopwatchEnd"
+          timepoint="{t_scene}"
+          message="SCENE: attach bracket to tool"
+        />
+      </Control>
+      <Control ID="Sequence" name="Retract straight off of jig ">
+        <Action
+          ID="InitializeMTCTask"
+          task_id="jig_retract"
+          task="{mtc_task}"
+          timeout="-1.000000"
+        />
+        <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
+        <Action
+          ID="SetupMTCSetCollisionRule"
+          name_a="link_5"
+          name_b="link_6"
+          allow_collision="true"
+          task="{mtc_task}"
+        />
+        <Action
+          ID="SetupMTCSetCollisionRule"
+          name_a="link_5"
+          name_b="suction_gripper"
+          allow_collision="true"
+          task="{mtc_task}"
+        />
+        <Action
+          ID="SetupMTCSetCollisionRule"
+          name_a="link_6"
+          name_b="suction_gripper"
+          allow_collision="true"
+          task="{mtc_task}"
+        />
+        <Action
+          ID="SetupMTCMoveAlongFrameAxis"
+          axis_frame="tool0"
+          axis_z="-1"
+          max_distance="0.1"
+          min_distance="0.1"
+          hand_frame="tool0"
+          acceleration_scale="0.5"
+          axis_x="0.000000"
+          axis_y="0.000000"
+          ignore_environment_collisions="false"
+          planning_group_name="manipulator"
+          velocity_scale="0.5"
+          task="{mtc_task}"
+        />
+        <SubTree
+          ID="Plan or Execute Cached Fanuc Motion"
+          task="{mtc_task}"
+          cache_enabled="{cache_transfers}"
+          cache_ready="{jig_retreat_ready}"
+          cached_solution="{jig_retreat_solution}"
+          plan_label="PLANNING: jig pick retreat"
+          execution_label="EXECUTION: jig pick retreat"
+          cache_hit_message="CACHE HIT: jig_retreat"
+          minimum_padding_m="0.0"
+        />
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Pick Bracket Part from Jig with Cached Motions">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Motion - Execute" />
+      </MetadataFields>
+      <inout_port name="part_name" default="{part_name}" type="std::string">
+        Name to use for the part URDF attached to the suction gripper.
+      </inout_port>
+      <input_port name="cache_transfers" type="bool" default="false" />
+      <inout_port
+        name="jig_approach_ready"
+        type="bool"
+        default="{jig_approach_ready}"
+      />
+      <inout_port
+        name="jig_approach_solution"
+        type="moveit_task_constructor_msgs::msg::Solution"
+        default="{jig_approach_solution}"
+      />
+      <inout_port
+        name="jig_contact_ready"
+        type="bool"
+        default="{jig_contact_ready}"
+      />
+      <inout_port
+        name="jig_contact_solution"
+        type="moveit_task_constructor_msgs::msg::Solution"
+        default="{jig_contact_solution}"
+      />
+      <inout_port
+        name="jig_retreat_ready"
+        type="bool"
+        default="{jig_retreat_ready}"
+      />
+      <inout_port
+        name="jig_retreat_solution"
+        type="moveit_task_constructor_msgs::msg::Solution"
+        default="{jig_retreat_solution}"
+      />
+    </SubTree>
+  </TreeNodesModel>
+</root>

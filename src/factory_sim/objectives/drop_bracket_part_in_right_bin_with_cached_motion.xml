@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Drop Bracket Part in Right Bin with Cached Motion"
+>
+  <BehaviorTree
+    ID="Drop Bracket Part in Right Bin with Cached Motion"
+    _description="Drops the bracket part into the right bin, using an intermediate pose."
+  >
+    <Control ID="Sequence" name="Move to the right bin to drop">
+      <Action
+        ID="VisualizePose"
+        marker_lifetime="0.000000"
+        marker_name="pose_of_interest"
+        marker_size="0.100000"
+        pose="{drop_pose}"
+        marker_text="bin drop pose"
+      />
+      <Action
+        ID="RetrieveWaypoint"
+        joint_group_name="manipulator"
+        waypoint_joint_state="{midpoint_move}"
+        waypoint_name="Intermediate Jig Pose"
+      />
+      <Action
+        ID="InitializeMTCTask"
+        task="{mtc_task}"
+        task_id="drop_task"
+        timeout="-1.000000"
+      />
+      <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
+      <Action
+        ID="SetupMTCSetCollisionRule"
+        name_a="link_5"
+        name_b="link_6"
+        allow_collision="true"
+        task="{mtc_task}"
+      />
+      <Action
+        ID="SetupMTCSetCollisionRule"
+        name_a="link_5"
+        name_b="suction_gripper"
+        allow_collision="true"
+        task="{mtc_task}"
+      />
+      <Action
+        ID="SetupMTCSetCollisionRule"
+        name_a="link_6"
+        name_b="suction_gripper"
+        allow_collision="true"
+        task="{mtc_task}"
+      />
+      <Action
+        ID="SetupMTCPlanToRobotState"
+        acceleration_scale_factor="1"
+        joint_state="{midpoint_move}"
+        collision_check_params="[{override_scene_link_padding: true, link_padding: 0.01}]"
+        max_iterations="5000"
+        planning_group_name="manipulator"
+        seed="0"
+        task="{mtc_task}"
+        trajectory_sampling_rate="100"
+        velocity_scale_factor="1.000000"
+      />
+      <Action
+        ID="SetupMTCPlanToPose"
+        ik_frame="tool0"
+        collision_check_params="[{override_scene_link_padding: true, link_padding: 0.01}]"
+        max_iterations="5000"
+        monitored_stage="current state"
+        planning_group_name="manipulator"
+        target_pose="{drop_pose}"
+        task="{mtc_task}"
+        trajectory_sampling_rate="100"
+        velocity_scale_factor="1.000000"
+        acceleration_scale_factor="0.5"
+      />
+      <SubTree
+        ID="Plan or Execute Cached Fanuc Motion"
+        task="{mtc_task}"
+        cache_enabled="{cache_transfers}"
+        cache_ready="{right_bin_ready}"
+        cached_solution="{right_bin_solution}"
+        plan_label="PLANNING: drop in right bin"
+        execution_label="EXECUTION: drop in right bin"
+        cache_hit_message="CACHE HIT: right_bin"
+      />
+      <SubTree ID="Deactivate Vacuum" _collapsed="true" />
+      <Action ID="StopwatchBegin" timepoint="{t_scene}" />
+      <SubTree
+        ID="Detach and Remove Tool"
+        _collapsed="true"
+        tool_name="{part_name}"
+      />
+      <Action
+        ID="StopwatchEnd"
+        timepoint="{t_scene}"
+        message="SCENE: detach bracket from tool"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Drop Bracket Part in Right Bin with Cached Motion">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Motion - Execute" />
+      </MetadataFields>
+      <inout_port name="part_name" default="{part_name}" type="std::string">
+        Name to use for the part URDF attached to the suction gripper.
+      </inout_port>
+      <input_port name="drop_pose" type="geometry_msgs::msg::PoseStamped" />
+      <input_port name="cache_transfers" type="bool" default="false" />
+      <inout_port
+        name="right_bin_ready"
+        type="bool"
+        default="{right_bin_ready}"
+      />
+      <inout_port
+        name="right_bin_solution"
+        type="moveit_task_constructor_msgs::msg::Solution"
+        default="{right_bin_solution}"
+      />
+    </SubTree>
+  </TreeNodesModel>
+</root>

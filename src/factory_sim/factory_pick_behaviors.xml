@@ -1,0 +1,11 @@
+<class_libraries>
+  <library path="factory_pick_behaviors">
+    <class
+      name="factory_sim::PickBehaviorsLoader"
+      type="factory_sim::PickBehaviorsLoader"
+      base_class_type="moveit_pro::behaviors::SharedResourcesNodeLoaderBase"
+    >
+      <description>Fanuc bracket-pick handoff validation.</description>
+    </class>
+  </library>
+</class_libraries>

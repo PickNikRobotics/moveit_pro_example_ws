@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Prepare Pick During Bracket Cycle">
+  <BehaviorTree
+    ID="Prepare Pick During Bracket Cycle"
+    _description="Prepares the next bracket pick during or after the current jig and bin transfer."
+  >
+    <Control
+      ID="IfThenElse"
+      _onFailure="next_ready := false; next_empty := false"
+    >
+      <Condition ID="IsLookaheadEnabled" enabled="{parallel}" />
+      <Control
+        ID="Parallel"
+        success_count="2"
+        failure_count="1"
+        _onHalted="next_ready := false; next_empty := false"
+      >
+        <SubTree
+          ID="Finish Bracket Cycle"
+          _collapsed="true"
+          home_solution="{home_solution}"
+          part_name="{part_name}"
+          drop_pose="{drop_pose}"
+          near_jig_wait="{near_jig_wait}"
+          cache_transfers="{cache_transfers}"
+          jig_approach_ready="{jig_approach_ready}"
+          jig_approach_solution="{jig_approach_solution}"
+          jig_contact_ready="{jig_contact_ready}"
+          jig_contact_solution="{jig_contact_solution}"
+          jig_retreat_ready="{jig_retreat_ready}"
+          jig_retreat_solution="{jig_retreat_solution}"
+          right_bin_ready="{right_bin_ready}"
+          right_bin_solution="{right_bin_solution}"
+          home_return_ready="{home_return_ready}"
+          home_return_solution="{home_return_solution}"
+        />
+        <Control ID="Sequence">
+          <Action ID="Script" code="next_ready = false; next_empty := false" />
+          <Decorator
+            ID="Precondition"
+            if="cycle &lt; num_cycles"
+            else="SUCCESS"
+          >
+            <Control ID="Fallback">
+              <Control ID="Sequence">
+                <Action
+                  ID="LogMessage"
+                  log_level="info"
+                  message="LOOKAHEAD: next bracket observation and planning started."
+                />
+                <SubTree
+                  ID="Look for Bracket Part or Empty Bin"
+                  _collapsed="true"
+                  pick_guess_pose="{pick_guess_pose}"
+                  pick_crop_pose="{pick_crop_pose}"
+                  registered_pose="{next_pose}"
+                  part_found="{part_found}"
+                />
+                <Control ID="IfThenElse">
+                  <Condition ID="IsLookaheadEnabled" enabled="{part_found}" />
+                  <Control ID="Sequence">
+                    <SubTree
+                      ID="Plan Bracket Pick"
+                      _collapsed="true"
+                      bracket_part_pose="{next_pose}"
+                      use_future_start="true"
+                      start_solution="{home_solution}"
+                      solution="{next_solution}"
+                      use_fixed_start="{near_jig_wait}"
+                      fixed_joint_state="{home_joint_state}"
+                      fixed_scene="{future_scene}"
+                    />
+                    <Action
+                      ID="Script"
+                      code="next_ready = true; next_cycle = cycle + 1"
+                    />
+                    <Action
+                      ID="LogMessage"
+                      log_level="info"
+                      message="LOOKAHEAD: next bracket pick prepared."
+                    />
+                  </Control>
+                  <Action ID="Script" code="next_empty = true" />
+                </Control>
+              </Control>
+              <Action
+                ID="Script"
+                code="next_ready = false; next_empty := false"
+              />
+            </Control>
+          </Decorator>
+        </Control>
+      </Control>
+      <Control ID="Sequence">
+        <SubTree
+          ID="Finish Bracket Cycle"
+          _collapsed="true"
+          home_solution="{home_solution}"
+          part_name="{part_name}"
+          drop_pose="{drop_pose}"
+          near_jig_wait="{near_jig_wait}"
+          cache_transfers="{cache_transfers}"
+          jig_approach_ready="{jig_approach_ready}"
+          jig_approach_solution="{jig_approach_solution}"
+          jig_contact_ready="{jig_contact_ready}"
+          jig_contact_solution="{jig_contact_solution}"
+          jig_retreat_ready="{jig_retreat_ready}"
+          jig_retreat_solution="{jig_retreat_solution}"
+          right_bin_ready="{right_bin_ready}"
+          right_bin_solution="{right_bin_solution}"
+          home_return_ready="{home_return_ready}"
+          home_return_solution="{home_return_solution}"
+        />
+        <Control ID="Sequence">
+          <Action ID="Script" code="next_ready = false; next_empty := false" />
+          <Decorator
+            ID="Precondition"
+            if="cycle &lt; num_cycles"
+            else="SUCCESS"
+          >
+            <Control ID="Fallback">
+              <Control ID="Sequence">
+                <Action
+                  ID="LogMessage"
+                  log_level="info"
+                  message="LOOKAHEAD: next bracket observation and planning started."
+                />
+                <SubTree
+                  ID="Look for Bracket Part or Empty Bin"
+                  _collapsed="true"
+                  pick_guess_pose="{pick_guess_pose}"
+                  pick_crop_pose="{pick_crop_pose}"
+                  registered_pose="{next_pose}"
+                  part_found="{part_found}"
+                />
+                <Control ID="IfThenElse">
+                  <Condition ID="IsLookaheadEnabled" enabled="{part_found}" />
+                  <Control ID="Sequence">
+                    <SubTree
+                      ID="Plan Bracket Pick"
+                      _collapsed="true"
+                      bracket_part_pose="{next_pose}"
+                      use_future_start="true"
+                      start_solution="{home_solution}"
+                      solution="{next_solution}"
+                      use_fixed_start="{near_jig_wait}"
+                      fixed_joint_state="{home_joint_state}"
+                      fixed_scene="{future_scene}"
+                    />
+                    <Action
+                      ID="Script"
+                      code="next_ready = true; next_cycle = cycle + 1"
+                    />
+                    <Action
+                      ID="LogMessage"
+                      log_level="info"
+                      message="LOOKAHEAD: next bracket pick prepared."
+                    />
+                  </Control>
+                  <Action ID="Script" code="next_empty = true" />
+                </Control>
+              </Control>
+              <Action
+                ID="Script"
+                code="next_ready = false; next_empty := false"
+              />
+            </Control>
+          </Decorator>
+        </Control>
+      </Control>
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Prepare Pick During Bracket Cycle">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Application - Advanced Examples" />
+      </MetadataFields>
+      <input_port name="parallel" type="bool" default="true" />
+      <input_port
+        name="home_solution"
+        type="moveit_task_constructor_msgs::msg::Solution"
+      />
+      <input_port
+        name="part_name"
+        type="std::string"
+        default="single_bracket_part"
+      />
+      <input_port name="drop_pose" type="geometry_msgs::msg::PoseStamped" />
+      <input_port
+        name="pick_guess_pose"
+        type="geometry_msgs::msg::PoseStamped"
+      />
+      <input_port
+        name="pick_crop_pose"
+        type="geometry_msgs::msg::PoseStamped"
+      />
+      <input_port name="cycle" type="int" />
+      <input_port name="num_cycles" type="int" />
+      <output_port name="next_ready" type="bool" />
+      <output_port name="next_cycle" type="int" />
+      <output_port name="next_pose" type="geometry_msgs::msg::PoseStamped" />
+      <output_port
+        name="next_solution"
+        type="moveit_task_constructor_msgs::msg::Solution"
+      />
+      <output_port name="next_empty" type="bool" default="{next_empty}" />
+      <input_port name="near_jig_wait" type="bool" default="false" />
+      <input_port name="cache_transfers" type="bool" default="false" />
+      <input_port
+        name="home_joint_state"
+        type="sensor_msgs::msg::JointState"
+        default="{home_joint_state}"
+      />
+      <input_port
+        name="future_scene"
+        type="moveit_msgs::msg::PlanningScene"
+        default="{future_scene}"
+      />
+      <inout_port
+        name="jig_approach_ready"
+        type="bool"
+        default="{jig_approach_ready}"
+      />
+      <inout_port
+        name="jig_approach_solution"
+        type="moveit_task_constructor_msgs::msg::Solution"
+        default="{jig_approach_solution}"
+      />
+      <inout_port
+        name="jig_contact_ready"
+        type="bool"
+        default="{jig_contact_ready}"
+      />
+      <inout_port
+        name="jig_contact_solution"
+        type="moveit_task_constructor_msgs::msg::Solution"
+        default="{jig_contact_solution}"
+      />
+      <inout_port
+        name="jig_retreat_ready"
+        type="bool"
+        default="{jig_retreat_ready}"
+      />
+      <inout_port
+        name="jig_retreat_solution"
+        type="moveit_task_constructor_msgs::msg::Solution"
+        default="{jig_retreat_solution}"
+      />
+      <inout_port
+        name="right_bin_ready"
+        type="bool"
+        default="{right_bin_ready}"
+      />
+      <inout_port
+        name="right_bin_solution"
+        type="moveit_task_constructor_msgs::msg::Solution"
+        default="{right_bin_solution}"
+      />
+      <inout_port
+        name="home_return_ready"
+        type="bool"
+        default="{home_return_ready}"
+      />
+      <inout_port
+        name="home_return_solution"
+        type="moveit_task_constructor_msgs::msg::Solution"
+        default="{home_return_solution}"
+      />
+    </SubTree>
+  </TreeNodesModel>
+</root>

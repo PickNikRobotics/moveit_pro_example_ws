@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Wait for Bracket Pick Handoff">
+  <BehaviorTree
+    ID="Wait for Bracket Pick Handoff"
+    _description="Wait up to two seconds for fresh stopped feedback at the prepared pick start."
+  >
+    <Decorator ID="Timeout" msec="2000">
+      <Decorator ID="Inverter">
+        <Decorator ID="RepeatUnlessFailureEachTick" num_cycles="-1">
+          <Decorator ID="Inverter">
+            <Control ID="Sequence">
+              <Action
+                ID="GetCurrentPlanningScene"
+                planning_scene_msg="{planning_scene}"
+              />
+              <Action
+                ID="GetJointStateFromTopic"
+                topic_name="/joint_states"
+                message_out="{feedback}"
+                current_time="{now}"
+              />
+              <Condition
+                ID="IsBracketPickStartCurrent"
+                solution="{solution}"
+                planning_scene="{planning_scene}"
+                joint_state="{feedback}"
+                current_time="{now}"
+                position_tolerance="0.02"
+                velocity_tolerance="0.02"
+                maximum_state_age_s="0.2"
+                reason="{reason}"
+              />
+            </Control>
+          </Decorator>
+        </Decorator>
+      </Decorator>
+    </Decorator>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Wait for Bracket Pick Handoff">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="Motion - Planning" />
+      </MetadataFields>
+      <input_port
+        name="solution"
+        type="moveit_task_constructor_msgs::msg::Solution"
+      />
+      <output_port
+        name="planning_scene"
+        type="moveit_msgs::msg::PlanningScene"
+      />
+      <output_port name="reason" type="std::string" />
+    </SubTree>
+  </TreeNodesModel>
+</root>
