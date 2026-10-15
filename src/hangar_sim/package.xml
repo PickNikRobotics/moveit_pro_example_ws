@@ -34,7 +34,6 @@
   <exec_depend>picknik_mujoco_ros</exec_depend>
   <exec_depend>picknik_ur_base_config</exec_depend>
   <exec_depend>python3-numpy</exec_depend>
-  <exec_depend>python3-opencv</exec_depend>
   <exec_depend>rclpy</exec_depend>
   <exec_depend>realsense2_camera</exec_depend>
   <exec_depend>realsense2_description</exec_depend>
