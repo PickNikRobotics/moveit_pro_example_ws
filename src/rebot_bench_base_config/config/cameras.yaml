@@ -19,3 +19,18 @@ wrist_serial_no: ""
 scene_serial_no: "14442C10A119EAD600"
 # OAK encodes MJPEG on-device before USB transfer; the driver decodes to bgr8.
 scene_mjpeg_quality: 95
+
+# Also run the OAK's stereo depth, aligned to its colour camera (CAM_A) at the
+# colour stream's 640x400, and turn it into a point cloud: depth on
+# /scene_camera/depth/image_rect_raw and points on
+# /scene_camera/depth/color/points, both in scene_camera_color_optical_frame.
+# Depth-aware cube checks use this cloud; set false to run colour only.
+# Consumers must not rely on depth to confirm a stack when this is off.
+scene_aligned_depth: true
+
+# Multiplies every scene depth before the point cloud is built. This OAK's
+# stereo depth reads 4% long: on 2026-10-13 a factor of 0.96 put the mat at
+# 0 mm (median of 11,000 points, was -24 mm) and a 100 mm blue-on-red stack's
+# top at 100 mm (was 80 mm), in the calibrated world frame. Re-measure it for
+# another camera or after recalibrating; 1.0 publishes the depth unchanged.
+scene_depth_scale: 0.96

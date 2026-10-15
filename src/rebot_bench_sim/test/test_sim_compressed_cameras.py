@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # Copyright 2026 PickNik Inc.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -26,36 +25,30 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-"""Launch the explicitly marked simulation grasp proxy, never camera drivers."""
+"""The twin's compressed camera topics decode back to the rendered image."""
+import importlib.util
 from pathlib import Path
 
-from ament_index_python.packages import get_package_share_directory
-from launch import LaunchDescription
-from launch_ros.actions import Node
-import yaml
+import cv2
+import numpy as np
+from ament_index_python.packages import get_package_prefix
+from cv_bridge import CvBridge
 
 
-def generate_launch_description():
-    share = Path(get_package_share_directory("rebot_bench_sim"))
-    layout = yaml.safe_load((share / "description/bench_layout.yaml").read_text())
-    if not layout.get("sim_grasp_proxy", False):
-        return LaunchDescription()
-    return LaunchDescription(
-        [
-            Node(
-                package="controller_manager",
-                executable="spawner",
-                arguments=[
-                    "sim_grasp_proxy_controller",
-                    "--param-file",
-                    str(share / "config/sim_grasp_proxy.yaml"),
-                ],
-                output="screen",
-            ),
-            Node(
-                package="rebot_bench_sim",
-                executable="sim_grasp_proxy.py",
-                output="screen",
-            ),
-        ]
+def test_compressed_image_matches_the_raw_frame_and_its_header():
+    script = Path(get_package_prefix("rebot_bench_sim")) / "lib/rebot_bench_sim"
+    spec = importlib.util.spec_from_file_location(
+        "sim_compressed_cameras", script / "sim_compressed_cameras.py"
     )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    rgb = np.full((48, 64, 3), (200, 30, 10), np.uint8)
+    bridge = CvBridge()
+    image = bridge.cv2_to_imgmsg(rgb, "rgb8")
+    image.header.frame_id = "scene_camera_color_optical_frame"
+    image.header.stamp.sec = 7
+    compressed = module.compress(image, bridge, 95)
+    assert compressed.header == image.header
+    assert compressed.format == "rgb8; jpeg compressed bgr8"
+    decoded = cv2.imdecode(np.frombuffer(compressed.data, np.uint8), cv2.IMREAD_COLOR)
+    assert np.abs(decoded[..., ::-1].astype(int) - rgb).max() < 8

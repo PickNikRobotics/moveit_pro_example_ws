@@ -1,6 +1,9 @@
 # Copyright 2026 PickNik Inc.
 # SPDX-License-Identifier: BSD-3-Clause
-"""Optional real RGB cameras, with all robot TF supplied by the mock URDF."""
+"""Optional real cameras: both RGB streams and the scene camera's aligned depth.
+
+All robot TF is supplied by the mock URDF.
+"""
 
 from pathlib import Path
 
@@ -21,6 +24,9 @@ def launch_cameras(context):
     scene_height = int(LaunchConfiguration("scene_image_height").perform(context))
     fps = int(LaunchConfiguration("framerate").perform(context))
     quality = int(LaunchConfiguration("scene_mjpeg_quality").perform(context))
+    depth = (
+        LaunchConfiguration("scene_aligned_depth").perform(context).lower() == "true"
+    )
     if min(width, wrist_height, scene_height, fps) <= 0 or not 1 <= quality <= 100:
         raise ValueError(
             "Camera dimensions/fps must be positive; MJPEG quality must be 1–100"
@@ -32,7 +38,17 @@ def launch_cameras(context):
             "DepthAI ISP output requires image_width=640 and scene_image_height=400"
         )
 
-    return [
+    # Stereo depth aligned to CAM_A takes the colour socket's size; with
+    # i_rs_compat it publishes depth/image_rect_raw in the colour optical frame.
+    depth_parameters = (
+        {
+            "depth.i_align_depth": True,
+            "depth.i_board_socket_id": 0,
+        }
+        if depth
+        else {}
+    )
+    nodes = [
         Node(
             package="realsense2_camera",
             executable="realsense2_camera_node",
@@ -75,7 +91,7 @@ def launch_cameras(context):
                         LaunchConfiguration("scene_serial_no"), value_type=str
                     ),
                     "camera.i_usb_speed": "HIGH",
-                    "camera.i_pipeline_type": "RGB",
+                    "camera.i_pipeline_type": "RGBD" if depth else "RGB",
                     "camera.i_nn_type": "none",
                     "pipeline_gen.i_enable_imu": False,
                     "pipeline_gen.i_enable_sync": False,
@@ -116,10 +132,45 @@ def launch_cameras(context):
                     "color.i_publish_compressed": False,
                     "color.i_enable_preview": False,
                     "color.i_enable_lazy_publisher": False,
+                    **depth_parameters,
                 }
             ],
         ),
     ]
+    if depth:
+        depth_topic = "/scene_camera/depth/image_rect_raw"
+        scale = float(LaunchConfiguration("scene_depth_scale").perform(context))
+        if not 0.5 <= scale <= 1.5:
+            raise ValueError("scene_depth_scale must be between 0.5 and 1.5")
+        if scale != 1.0:
+            nodes.append(
+                Node(
+                    package="rebot_bench_base_config",
+                    executable="scale_depth.py",
+                    name="scene_depth_scale",
+                    output="screen",
+                    parameters=[{"scale": scale}],
+                    remappings=[
+                        ("depth", depth_topic),
+                        ("depth_scaled", "/scene_camera/depth/image_scaled"),
+                    ],
+                )
+            )
+            depth_topic = "/scene_camera/depth/image_scaled"
+        nodes.append(
+            Node(
+                package="depth_image_proc",
+                executable="point_cloud_xyz_node",
+                name="scene_camera_points",
+                output="screen",
+                remappings=[
+                    ("image_rect", depth_topic),
+                    ("camera_info", "/scene_camera/depth/camera_info"),
+                    ("points", "/scene_camera/depth/color/points"),
+                ],
+            )
+        )
+    return nodes
 
 
 def generate_launch_description():

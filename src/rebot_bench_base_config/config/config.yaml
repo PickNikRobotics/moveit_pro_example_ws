@@ -1,4 +1,4 @@
-# Mock by default, with optional real RGB cameras. Switch the arm to the real
+# Mock by default, with optional real cameras. Switch the arm to the real
 # RobStride driver by setting hardware_interface to "real" below; see README.md
 # for the host CAN bring-up and the non-instanced-deployment requirement.
 runtime_launch_file:
