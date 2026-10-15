@@ -3,6 +3,8 @@
 import importlib.util
 import io
 import json
+import os
+import re
 import subprocess
 import textwrap
 from pathlib import Path
@@ -830,3 +832,146 @@ def test_refresh_workflow_only_prepares_pr_for_completed_updates(
         assert "::error::" in result.stdout
         assert output.read_text() == ""
         assert not body.exists()
+
+
+WORKFLOWS = MODULE_PATH.parents[1] / ".github" / "workflows"
+DRAFT_REFRESH = (
+    "github.event_name == 'pull_request' && github.event.pull_request.draft"
+    " && startsWith(github.head_ref, 'vendored-refresh/')"
+)
+
+
+def workflow_jobs(name: str) -> dict[str, str]:
+    """Split a workflow file into its top-level job blocks, keyed by job id."""
+    text = (WORKFLOWS / name).read_text(encoding="utf-8")
+    parts = re.split(r"^  ([\w-]+):\n", text.split("\njobs:\n", 1)[1], flags=re.M)
+    return dict(zip(parts[1::2], parts[2::2]))
+
+
+def job_if(block: str) -> str:
+    match = re.search(r"^    if: (.*?)^    \w", block, re.M | re.S)
+    assert match is not None
+    return match.group(1)
+
+
+def test_secret_bearing_jobs_wait_for_review_of_refresh_drafts() -> None:
+    """Unread upstream code on a refresh draft must not reach CI secrets."""
+    jobs = workflow_jobs("ci.yaml")
+    secret_jobs = {
+        name
+        for name, block in jobs.items()
+        if any(
+            marker in block
+            for marker in (
+                "STUDIO_CI_LICENSE_KEY",
+                "LFS_CACHE_ROLE_ARN",
+                "id-token: write",
+            )
+        )
+    }
+    assert secret_jobs == {"integration-test", "integration-test-weekly"}
+    assert f"!({DRAFT_REFRESH})" in job_if(jobs["integration-test"])
+    assert "pull_request" not in job_if(jobs["integration-test-weekly"])
+    build_status = jobs["build-status"]
+    assert f"AWAITING_REVIEW: ${{{{ {DRAFT_REFRESH} }}}}" in build_status
+    assert "process.env.AWAITING_REVIEW === 'true'" in build_status
+
+
+def test_review_workflow_never_runs_pr_code() -> None:
+    """pull_request_target holds secrets, so it must only touch refs."""
+    workflow = (WORKFLOWS / "vendored-refresh-ready.yaml").read_text(encoding="utf-8")
+    assert "  pull_request_target:\n    types: [ready_for_review]\n" in workflow
+    assert "permissions: {}\n" in workflow
+    assert "actions/checkout" not in workflow
+    guard = job_if(
+        workflow_jobs("vendored-refresh-ready.yaml")["run-integration-tests"]
+    )
+    assert (
+        "startsWith(github.event.pull_request.head.ref, 'vendored-refresh/')" in guard
+    )
+    assert "github.event.pull_request.head.repo.full_name == github.repository" in guard
+    assert "-F force=false" in workflow
+    assert '[[ "$HEAD_REF" =~ ^vendored-refresh/[A-Za-z0-9_-]+$ ]]' in workflow
+    for field in ("author", "committer"):
+        assert f'-f "{field}[name]=vendored_dependency.py"' in workflow
+        assert f'-f "{field}[email]=noreply@picknik.ai"' in workflow
+
+
+@mark.parametrize(
+    "ready,edit,undone",
+    [
+        (True, "modify", True),
+        (True, "add", True),
+        (True, "delete", True),
+        (True, "none", False),
+        (False, "modify", False),
+    ],
+)
+def test_refresh_returns_ready_pr_to_draft_only_for_new_upstream_code(
+    tmp_path: Path, monkeypatch: MonkeyPatch, ready: bool, edit: str, undone: bool
+) -> None:
+    """The draft flag must change before the push, and only for unread code."""
+    refresh = workflow_jobs("ci.yaml")["vendored-refresh"]
+    step_marker = (
+        "      - name: Return a ready refresh PR to draft before new upstream code\n"
+    )
+    assert refresh.index(step_marker) < refresh.index("peter-evans/create-pull-request")
+    assert "          draft: true\n" in refresh
+    script = textwrap.dedent(
+        refresh.split(step_marker, 1)[1]
+        .split("        run: |\n", 1)[1]
+        .split("\n      #", 1)[0]
+    )
+    origin = tmp_path / "origin"
+    path = "src/external_dependencies/source"
+    (origin / path).mkdir(parents=True)
+    (origin / path / "UPSTREAM.yaml").write_text("upstream:\n  commit: old\n")
+    git(origin, "init", "--quiet", "--initial-branch=main")
+    git(origin, "add", "--all")
+    git(origin, "commit", "--quiet", "--message", "vendor")
+    git(origin, "branch", "vendored-refresh/source")
+    workspace = tmp_path / "ws"
+    subprocess.run(
+        ["git", "clone", "--quiet", "--no-local", str(origin), str(workspace)],
+        check=True,
+    )
+    if edit == "modify":
+        (workspace / path / "UPSTREAM.yaml").write_text("upstream:\n  commit: new\n")
+    elif edit == "add":
+        (workspace / path / "new.cpp").write_text("int main() {}\n")
+    elif edit == "delete":
+        (workspace / path / "UPSTREAM.yaml").unlink()
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    calls = tmp_path / "gh-calls"
+    (bin_dir / "gh").write_text(
+        "#!/bin/sh\n"
+        f'echo "$*" >> {calls}\n'
+        f'if [ "$1 $2" = "pr list" ]; then {"echo 7" if ready else "true"}; fi\n'
+    )
+    (bin_dir / "gh").chmod(0o755)
+    runner_temp = tmp_path / "runner"
+    runner_temp.mkdir()
+    for key, value in {
+        "PATH": f"{bin_dir}:{os.environ['PATH']}",
+        "SOURCE": "source",
+        "SOURCE_PATH": path,
+        "RUNNER_TEMP": str(runner_temp),
+        "GITHUB_REPOSITORY": "PickNikRobotics/moveit_pro_example_ws",
+        "GITHUB_REPOSITORY_OWNER": "PickNikRobotics",
+        "GITHUB_REF_NAME": "main",
+        "NEW_COMMIT": "abc123",
+    }.items():
+        monkeypatch.setenv(key, value)
+    result = subprocess.run(
+        ["bash", "-e", "-o", "pipefail", "-c", script],
+        cwd=workspace,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    log = calls.read_text()
+    assert ("pr ready --undo 7" in log) == undone
+    assert ("pr comment 7" in log and "abc123" in log) == undone
+    assert git(workspace, "diff", "--cached", "--name-only") == ""
