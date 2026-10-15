@@ -99,6 +99,23 @@ def test_unknown_top_level_key_fails(tmp_path: Path) -> None:
     assert "unknown top-level key: unexpected" in errors[0]
 
 
+def test_drift_tracking_accepts_booleans(tmp_path: Path) -> None:
+    """Accept the opt-out used by deliberately pinned dependencies."""
+    (tmp_path / "description").mkdir()
+    manifest = tmp_path / "UPSTREAM.yaml"
+    for value, parsed in (("false", False), ("true", True)):
+        manifest.write_text(VALID_MANIFEST + f"drift_tracking: {value}\n")
+        assert validator.parse_vendor_manifest(manifest)["drift_tracking"] is parsed
+        assert validator.validate_vendor_manifest(manifest) == []
+
+
+@mark.parametrize("value", ["", " []", " no", " False", " 'false'"])
+def test_drift_tracking_rejects_non_boolean_values(tmp_path: Path, value: str) -> None:
+    """Reject a half-typed opt-out instead of silently tracking drift."""
+    errors = validate_manifest(tmp_path, VALID_MANIFEST + f"drift_tracking:{value}\n")
+    assert "drift_tracking must be true or false" in errors[0]
+
+
 def test_non_https_repository_fails(tmp_path: Path) -> None:
     """Reject repository URLs that are not immutable HTTPS sources."""
     errors = validate_manifest(

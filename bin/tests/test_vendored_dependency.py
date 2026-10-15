@@ -204,6 +204,28 @@ def test_status_writes_github_output_when_requested(
     )
 
 
+def test_status_lists_untracked_sources_without_refreshing_them(
+    tmp_path: Path, monkeypatch: MonkeyPatch, capsys: CaptureFixture[str]
+) -> None:
+    """A deliberate pin stays visible in the table but never reaches the refresh job."""
+    output = tmp_path / "github_output"
+    monkeypatch.setenv("GITHUB_OUTPUT", str(output))
+    mock_manifests(monkeypatch, tmp_path, {"tracked": 2, "pinned": 8})
+    pinned = tmp_path / "src" / "external_dependencies" / "pinned" / "UPSTREAM.yaml"
+    pinned.write_text(pinned.read_text() + "drift_tracking: false\n")
+    assert tool.main(["status"]) == 0
+    assert capsys.readouterr().out == (
+        "Vendored source  Pinned commit  Upstream branch   Commits behind\n"
+        "tracked          012345678      tracked-branch                 2\n"
+        "pinned           012345678      pinned-branch    8 (not tracked)\n"
+    )
+    assert output.read_text() == (
+        "drifted=true\n"
+        'drifted_sources=[{"name": "tracked", "path": "src/external_dependencies/tracked"}]\n'
+        "resolved=2\nunresolved=0\n"
+    )
+
+
 def test_status_reports_discovery_and_manifest_errors(
     tmp_path: Path, monkeypatch: MonkeyPatch, capsys: CaptureFixture[str]
 ) -> None:

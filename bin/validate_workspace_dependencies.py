@@ -45,6 +45,7 @@ LFS_POINTER_OID = re.compile(
 PICKNIK_MODIFICATION_NOTICE = b"Modified by PickNik Inc."
 ALLOWED_MANIFEST_KEYS = {
     "upstream",
+    "drift_tracking",
     "snapshot_path",
     "vendored_paths",
     "pruned_paths",
@@ -192,6 +193,12 @@ def parse_top_level_manifest_line(
         manifest[key] = {}
     elif key == "snapshot_path" and value.strip():
         manifest[key] = value.strip()
+    elif key == "drift_tracking":
+        if value.strip() not in ("true", "false"):
+            raise ValueError(
+                f"line {line_number}: drift_tracking must be true or false"
+            )
+        manifest[key] = value.strip() == "true"
     elif not value.strip() or value.strip() == "[]":
         manifest[key] = []
     else:
