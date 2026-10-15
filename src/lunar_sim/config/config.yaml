@@ -36,6 +36,12 @@ hardware:
       # Publishes the OAK-D stereo pair and /ground_truth/odom for visual odometry. Rebuild after changing.
       - enable_vo: false
 
+  # Additional launch file included with the persistent driver process: lidar filters, fuse, and Nav2.
+  # [Optional, defaults to a blank launch file if not specified]
+  additional_driver_launch_file:
+    package: "lunar_sim"
+    path: "launch/sim/robot_drivers_to_persist_sim.launch.py"
+
 # Sets ROS global params for launch.
 # [Optional]
 ros_global_params:
@@ -81,6 +87,7 @@ ros2_control:
   controllers_active_at_startup:
     - "joint_state_broadcaster"
     - "platform_velocity_controller"
+    - "imu_sensor_broadcaster"
   controllers_inactive_at_startup: []
   controllers_not_managed: []
   # platform_velocity_controller's topics are namespaced under its own controller name (Jazzy
@@ -105,6 +112,7 @@ objectives:
       - "moveit_pro::behaviors::CoreBehaviorsLoader"
       - "moveit_pro::behaviors::MTCCoreBehaviorsLoader"
       - "moveit_pro::behaviors::ConverterBehaviorsLoader"
+      - "moveit_pro::behaviors::NavBehaviorsLoader"
       - "moveit_pro::behaviors::VisionBehaviorsLoader"
       - "moveit_pro::behaviors::MujocoBehaviorsLoader"
     lunar_sim:
