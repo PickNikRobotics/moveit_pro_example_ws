@@ -31,6 +31,7 @@
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
+#include <moveit_msgs/msg/robot_state.hpp>
 #include <moveit_pro_test_utils/ros_test.hpp>
 #include <rebot_bench_behaviors/is_joint_at_least.hpp>
 #include <rebot_bench_behaviors/load_motion_scales.hpp>
@@ -171,6 +172,24 @@ TEST_F(JointCheckTest, RejectsAShortOpening)
 TEST_F(JointCheckTest, RejectsAStateWithoutTheJoint)
 {
   EXPECT_EQ(check(5.25, "joint6"), BT::NodeStatus::FAILURE);
+}
+
+TEST_F(StackChecksTest, PlannedJointPastItsMaximumIsRefused)
+{
+  const auto check = [this](double planned) {
+    moveit_msgs::msg::RobotState state;
+    state.joint_state.name = { "joint1", "joint2" };
+    state.joint_state.position = { 0.3, planned };
+    config.blackboard->set("goal", state);
+    config.input_ports = {
+      { "robot_state", "{goal}" }, { "joint_name", "joint2" }, { "maximum", "2.2" }, { "reason", "heat budget" }
+    };
+    rebot_bench_behaviors::IsPlannedJointAtMost behavior("IsPlannedJointAtMost", config, context);
+    return behavior.executeTick();
+  };
+  EXPECT_EQ(check(2.13), BT::NodeStatus::SUCCESS);
+  EXPECT_EQ(check(2.2), BT::NodeStatus::SUCCESS);
+  EXPECT_EQ(check(2.287), BT::NodeStatus::FAILURE);
 }
 
 TEST_F(StackChecksTest, UnreachableCubeNamesTheCubeAndWhereItSits)

@@ -8,7 +8,7 @@ OBJECTIVES = Path(__file__).resolve().parents[1] / "objectives"
 
 
 def test_release_pose_places_the_grasped_cube_on_red_without_a_drop():
-    root = ET.parse(OBJECTIVES / "rebot_check_stack_reach.xml")
+    root = ET.parse(OBJECTIVES / "rebot_plan_place.xml")
     release = root.find('.//Action[@ID="TransformPose"][@output_pose="{place}"]')
     x, y, z = map(float, release.get("translation_xyz").split(";"))
     tilt = math.radians(5)
