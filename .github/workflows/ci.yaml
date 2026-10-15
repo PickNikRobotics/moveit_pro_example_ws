@@ -488,7 +488,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        config_package: [april_tag_sim, dual_arm_sim, factory_sim, grinding_sim, kitchen_sim]
+        config_package: [april_tag_sim, dual_arm_sim, factory_sim, grinding_sim, kitchen_sim, mock_sim, space_satellite_sim]
     permissions:
       # contents: read for checkout; id-token: write so the reusable workflow
       # can assume the LFS S3 cache IAM role via OIDC (matches integration-test).
@@ -555,7 +555,7 @@ jobs:
             // failing logs and the HTML report live.
             const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
             const when = new Date().toISOString();
-            const configs = 'april_tag_sim, dual_arm_sim, factory_sim, grinding_sim, kitchen_sim';
+            const configs = 'april_tag_sim, dual_arm_sim, factory_sim, grinding_sim, kitchen_sim, mock_sim, space_satellite_sim';
             const body = [
               `The weekly objective integration suite reported a failure on ${when}.`,
               '',

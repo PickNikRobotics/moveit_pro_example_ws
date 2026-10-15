@@ -7,16 +7,18 @@ vendored_paths:
   - kortex_description/CMakeLists.txt
   - kortex_description/package.xml
   - kortex_description/arms/gen3/7dof/meshes
+  - kortex_description/arms/gen3/7dof/urdf
 pruned_paths:
   - kortex_api
   - kortex_bringup
   - kortex_driver
   - kortex_moveit_config
-  - unused arm and gripper variants, macros, configuration, documentation, and visualization files
+  - unused arm and gripper variants, configuration, documentation, and visualization files
 modified_paths:
   - kortex_description/CMakeLists.txt
   - kortex_description/package.xml
 notes:
   - Physical Kinova hardware support is outside this simulation-only workspace.
-  - kinova_sim defines its own MuJoCo robot model and uses only the Gen3 7-DOF STL meshes from this snapshot.
+  - kinova_sim defines its own MuJoCo robot model and uses the Gen3 7-DOF STL meshes from this snapshot.
+  - space_satellite_sim also includes the Gen3 7-DOF arm macro; retain its URDF directory and nested control macro unchanged.
   - Binary files matching workspace Git LFS patterns are stored as LFS objects; checked-out bytes match upstream.
