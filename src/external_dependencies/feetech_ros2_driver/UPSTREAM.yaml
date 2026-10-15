@@ -2,6 +2,7 @@ upstream:
   repository: https://github.com/JafarAbdi/feetech_ros2_driver.git
   commit: e424839f0fb23cc0b0ade8d6e5ea166e30811356
   branch: main
+drift_tracking: false
 snapshot_path: feetech_ros2_driver
 vendored_paths:
   - feetech_ros2_driver

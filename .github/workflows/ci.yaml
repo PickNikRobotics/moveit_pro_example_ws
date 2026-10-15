@@ -1048,7 +1048,8 @@ jobs:
           python3 bin/vendored_dependency.py status --markdown | tee -a "$GITHUB_STEP_SUMMARY"
 
   # Once a week, find the sources under src/external_dependencies that have
-  # fallen behind the upstream branch they pin, and open one refresh PR per
+  # fallen behind the upstream branch they pin, skipping any that set
+  # `drift_tracking: false` in UPSTREAM.yaml, and open one refresh PR per
   # source with bin/vendored_dependency.py update. An update that stops on
   # merge conflicts in the local edits, or on an UPSTREAM.yaml edit it needs,
   # still opens its PR, with the markers and the update output, for a person

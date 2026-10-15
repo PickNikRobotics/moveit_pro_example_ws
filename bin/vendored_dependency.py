@@ -53,6 +53,7 @@ class Drift:
     branch: str = ""
     behind: int | None = None
     error: str | None = None
+    tracked: bool = True
 
 
 def fetch_drift(
@@ -105,7 +106,8 @@ def collect_drift() -> list[Drift]:
         if manifest_errors := validator.validate_vendor_manifest(manifest_path):
             rows.append(Drift(source=source, error="; ".join(manifest_errors)))
             continue
-        upstream = validator.parse_vendor_manifest(manifest_path)["upstream"]
+        manifest = validator.parse_vendor_manifest(manifest_path)
+        upstream = manifest["upstream"]
         if not isinstance(upstream, dict):
             rows.append(Drift(source=source, error="has invalid upstream metadata"))
             continue
@@ -113,8 +115,16 @@ def collect_drift() -> list[Drift]:
         commit = str(upstream["commit"])
         branch = str(upstream["branch"])
         behind, error = fetch_drift(repository, commit, branch)
-        rows.append(Drift(source, commit, branch, behind, error))
-    rows.sort(key=lambda row: (row.behind is None, -(row.behind or 0), row.source))
+        tracked = bool(manifest.get("drift_tracking", True))
+        rows.append(Drift(source, commit, branch, behind, error, tracked))
+    rows.sort(
+        key=lambda row: (
+            not row.tracked,
+            row.behind is None,
+            -(row.behind or 0),
+            row.source,
+        )
+    )
     return rows
 
 
@@ -130,7 +140,8 @@ def render_table(rows: list[Drift], *, markdown: bool) -> str:
             row.source.removeprefix("src/external_dependencies/"),
             row.commit[:9] or "-",
             row.branch or "-",
-            "?" if row.behind is None else str(row.behind),
+            ("?" if row.behind is None else str(row.behind))
+            + ("" if row.tracked else " (not tracked)"),
         )
         for row in rows
     ]
@@ -180,7 +191,7 @@ def write_github_output(rows: list[Drift]) -> None:
     drifted = [
         {"name": Path(row.source).name, "path": row.source}
         for row in resolved
-        if row.behind
+        if row.behind and row.tracked
     ]
     with open(output_path, "a", encoding="utf-8") as output:
         output.write(f"drifted={str(bool(drifted)).lower()}\n")
