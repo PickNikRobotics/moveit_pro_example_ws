@@ -1,0 +1,74 @@
+state_estimator:
+  ros__parameters:
+    optimization_frequency: 20.0
+    transaction_timeout: 0.01
+    lag_duration: 0.5
+
+    # Nav2 plans in 2D, and the skid-steer base cannot strafe, so a unicycle model fits.
+    motion_models:
+      mobile_base_motion:
+        type: fuse_models::Unicycle2D
+
+    mobile_base_motion:
+      # x, y, yaw, vx, vy, vyaw, ax, ay
+      process_noise_diagonal: [0.1, 0.1, 0.05, 0.1, 0.1, 0.4, 0.1, 0.1]
+
+    sensor_models:
+      initial_localization_sensor:
+        type: fuse_models::Unicycle2DIgnition
+        motion_models: [mobile_base_motion]
+        ignition: true
+      wheel_odom_sensor:
+        type: fuse_models::Odometry2D
+        motion_models: [mobile_base_motion]
+      imu_sensor:
+        type: fuse_models::Imu2D
+        motion_models: [mobile_base_motion]
+
+    initial_localization_sensor:
+      publish_on_startup: true
+      # x, y, yaw, vx, vy, vyaw, ax, ay
+      initial_state: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+      initial_sigma: [0.1, 0.1, 0.05, 0.1, 0.1, 0.1, 0.1, 0.1]
+
+    # platform_velocity_controller's odometry, remapped to /odom in config.yaml.
+    wheel_odom_sensor:
+      topic: /odom
+      queue_size: 10
+      pose_loss:
+        type: fuse_loss::HuberLoss
+        a: 1.0
+      # No orientation or angular velocity: skid-steer scrub makes wheel yaw unreliable, so the gyro provides heading (README Navigation). The keys are omitted because fuse cannot read an empty list.
+      position_dimensions: ['x', 'y']
+      linear_velocity_dimensions: ['x']
+      differential: true
+      independent: false
+      use_twist_covariance: true
+      # The controller publishes at the controller-manager rate, not its configured 50 Hz; unthrottled the optimizer falls behind.
+      throttle_period: 0.02
+
+    # Yaw rate and forward acceleration only, the inputs NASA-JSC-Robotics/togo_ws's EKF takes from its A300's Phidgets IMU. Orientation is not fused, because MuJoCo's framequat is exact where a real IMU's heading drifts; Imu2D still reads it to remove gravity from the acceleration.
+    imu_sensor:
+      topic: /imu_sensor_broadcaster/imu
+      queue_size: 10
+      angular_velocity_dimensions: ['yaw']
+      linear_acceleration_dimensions: ['x']
+      remove_gravitational_acceleration: true
+      # acceleration_target_frame and twist_target_frame are unset, so measurements apply in imu_link, which is axis-aligned with footprint. A rotated mount needs both set to footprint.
+      differential: false
+      # imu_sensor_broadcaster publishes at the controller-manager rate.
+      throttle_period: 0.02
+
+    publishers:
+      filtered_publisher:
+        type: fuse_models::Odometry2DPublisher
+
+    filtered_publisher:
+      topic: 'odom_filtered'
+      base_link_frame_id: 'footprint'
+      base_link_output_frame_id: 'footprint'
+      odom_frame_id: 'odom'
+      map_frame_id: 'map'
+      world_frame_id: 'odom'
+      publish_tf: true
+      publish_frequency: 20.0

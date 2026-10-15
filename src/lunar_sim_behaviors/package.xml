@@ -17,6 +17,7 @@
   <depend>moveit_pro_behavior</depend>
   <depend>moveit_pro_behavior_interface</depend>
   <depend>moveit_pro_controllers_msgs</depend>
+  <depend>nav_msgs</depend>
   <depend>pluginlib</depend>
 
   <test_depend>ament_lint_auto</test_depend>

@@ -60,6 +60,13 @@
   <xacro:lunar_lidar_body name="lidar_front" xyz="0.45 0 0.3208593" />
   <xacro:lunar_lidar_body name="lidar_rear" xyz="-0.2728 0 0.6500193" />
 
+  <!-- Phidgets Spatial IMU; mount matches husky_a300.xml's imu_link body. -->
+  <link name="imu_link" />
+  <joint name="imu_joint" type="fixed">
+    <parent link="base_link" /><child link="imu_link" />
+    <origin xyz="0.059 0 0.161275" />
+  </joint>
+
   <!-- MuJoCo hardware: real physics, driven by description/husky_scene.xml (see that file and
        husky_a300.xml for the body/wheel/actuator model). Wheel joint names match
        clearpath_platform_description/urdf/a300/drivetrain/wheels/outdoor.urdf.xacro
@@ -112,18 +119,8 @@
       <param name="mujoco_model_package">lunar_sim</param>
       <param name="mujoco_viewer">$(arg mujoco_viewer)</param>
       <param name="mujoco_keyframe">$(arg mujoco_keyframe)</param>
-      <!-- TF ownership: robot_state_publisher owns every link below footprint (footprint ->
-           base_link -> chassis_link -> wheels ...) and platform_velocity_controller owns
-           odom -> footprint. MuJoCo must not broadcast mj_world -> chassis_link (that 60 Hz edge
-           would beat the static base_link -> chassis_link and split the tree in two). With
-           odom_frame set, publish_mj_world_tf=true makes MujocoSystem publish mj_world -> odom as
-           identity instead (mujoco_system.cpp, publish_sites), which is what connects the
-           world-fixed scene_camera_optical_frame site (parented to mj_world, husky_scene.xml) to
-           odom so /scene_camera/points can be shown in the odom frame. base_link_name stops the
-           site TF fill-in at the chassis body instead of walking up to the MJCF worldbody. Ground
-           truth for the Dead Reckon Square calibration comes from the chassis freejoint pose read
-           from MuJoCo directly, not from TF. -->
-      <param name="publish_mj_world_tf">true</param>
+      <!-- TF ownership: robot_state_publisher owns every link below footprint, fuse owns odom -> footprint, and robot_drivers_to_persist_sim.launch.py publishes mj_world -> map -> odom. publish_mj_world_tf is off so MuJoCo does not give odom a second parent; base_link_name stops the site TF fill-in at the chassis body. -->
+      <param name="publish_mj_world_tf">false</param>
       <param name="odom_frame">odom</param>
       <param name="base_link_name">chassis_link</param>
       <param name="tf_publish_rate">60</param>
@@ -144,11 +141,29 @@
         <param name="odom_vel_cov">1e-9 1e-9 1e-9 1e-9 1e-9 1e-9</param>
       </xacro:if>
     </hardware>
+    <!-- The scan is the cloud's middle ring, published in the <camera>_ROS frame MujocoSystem broadcasts. -->
     <sensor name="lidar_front">
+      <param name="lidar_output">both</param>
       <param name="points_topic">/lidar_front/points</param>
+      <param name="scan_topic">/scan_front</param>
     </sensor>
     <sensor name="lidar_rear">
+      <param name="lidar_output">both</param>
       <param name="points_topic">/lidar_rear/points</param>
+      <param name="scan_topic">/scan_rear</param>
+    </sensor>
+    <!-- Named after the MJCF site carrying husky_a300.xml's framequat, gyro, and accelerometer. -->
+    <sensor name="imu_site">
+      <state_interface name="orientation.x" />
+      <state_interface name="orientation.y" />
+      <state_interface name="orientation.z" />
+      <state_interface name="orientation.w" />
+      <state_interface name="angular_velocity.x" />
+      <state_interface name="angular_velocity.y" />
+      <state_interface name="angular_velocity.z" />
+      <state_interface name="linear_acceleration.x" />
+      <state_interface name="linear_acceleration.y" />
+      <state_interface name="linear_acceleration.z" />
     </sensor>
     <joint name="front_left_wheel_joint">
       <command_interface name="velocity" />
