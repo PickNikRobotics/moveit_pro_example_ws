@@ -4,13 +4,11 @@ A MoveIt Pro configuration for a Clearpath Husky A300 running under MuJoCo physi
 procedurally cratered lunar regolith heightfield. A world-fixed `scene_camera` on a visible mast
 overlooks the demo route, front and rear image-based lidars ride on the rover, and the sensor arch
 carries an OAK-D Pro whose `oakd_color` streams the robot's own forward view. The OAK-D's stereo
-pair is modelled too but gated behind `enable_vo` - see [Cameras](#cameras). No Nav2 stack: the base
-is driven only by open-loop `/cmd_vel` commands, from the `Dead Reckon Square` objective or the
-Desktop App's Pose tab (see [Teleoperation](#teleoperation)).
+pair is modelled too but gated behind `enable_vo` - see [Cameras](#cameras). A Phidgets IMU and wheel odometry feed fuse, and Nav2 drives the base to goals (see [Navigation](#navigation)); the `Dead Reckon Square` objective drives a square by dead reckoning on that fused odometry, and the Desktop App's Pose tab drives the base directly (see [Teleoperation](#teleoperation)).
 
 The base spawns at `husky_scene.xml`'s `default` keyframe rather than the world origin
 (`config.yaml`'s `mujoco_keyframe`); that keyframe's own comment records the pose and why it was
-picked. `Dead Reckon Square` is open-loop and never resets itself, so after a run - or any drift -
+picked. `Dead Reckon Square` never resets itself, so after a run - or any drift -
 the stock `Reset MuJoCo Sim` objective (from `moveit_pro_objectives`' `objectives/mujoco` library,
 loaded in `config.yaml`; it deactivates the controllers around the keyframe reset so
 `platform_velocity_controller` never sees the wheels teleport) puts the base back on that start
@@ -33,7 +31,7 @@ per-wheel position/velocity state from physics, so `/odom` reflects that feedbac
 integrating the commanded velocity.
 
 MoveIt's planning frame is `odom`. The SRDF's planar `base_planar_joint` connects it to
-the URDF root `footprint`; the state monitor updates that joint from the controller's
+the URDF root `footprint`; the state monitor updates that joint from fuse's
 `odom -> footprint` TF. World collision objects created in the Planning Scene Editor
 therefore stay in `odom` as the rover moves. The `base` planning group still contains
 only the four wheel joints, and direct `/cmd_vel` teleoperation does not check those
@@ -46,21 +44,21 @@ regolith-plane contact model, which has different (measured: higher) turning res
 motion diverge - `/odom` reports the *commanded* twist, not the chassis's *true* motion, since
 both are computed from the same wheel encoders via the same (wrong) parameters and round-trip by
 construction; only the MuJoCo chassis pose itself (freejoint `xpos`/`xquat` read from MuJoCo
-directly - not `/odom`, and not TF either, since MuJoCo's only world edge is the identity
-`mj_world -> odom`, so TF carries the same wheel odometry, see the xacro's TF-ownership comment)
+directly - not `/odom`, and not TF either: fuse's `odom -> footprint` TF is built from the same
+wheel odometry, see the xacro's TF-ownership comment)
 exposes the error. Measured directly: a 3 s,
 0.5235988 rad/s (30 deg/s) commanded turn achieved only ~59-61 deg of true chassis rotation with
 `wheel_separation_multiplier: 1.75`. Recalibrated against that ground truth (see
 `husky_a300.ros2_control.yaml`'s comment for the method):
 `wheel_radius: 0.1645` (was 0.1625, straight-line rolling resistance) and
 `wheel_separation_multiplier: 2.57` (was 1.75, in-place-turn scrub resistance) bring a single
-corner to ~90 deg (measured 89.9 deg) and hold across a full 4-corner Dead Reckon Square (each
+corner to ~90 deg (measured 89.9 deg) and hold across a full 4-corner open-loop square (each
 corner within ~2-5 deg of 90 deg; the turn is intrinsically stick-slip-sensitive to the
 multiplier at the ~0.1% level, so a few degrees of residual error per corner is the practical
 floor of this contact model, not an unconverged fit).
 
 **Calibration recheck on the cratered heightfield (layer 2):** the values above were calibrated on
-the flat plane; re-running the same Dead Reckon Square (RECORDED STATE - chassis freejoint
+the flat plane; re-running the same open-loop square (RECORDED STATE - chassis freejoint
 `xpos`/`xquat`, not `/odom`, for the reason above) on the cratered terrain with `wheel_radius`/
 `wheel_separation_multiplier` left unchanged shows a real, measurable regression: per-corner turns
 of 83.4, 111.5, 86.4, 115.4 deg (flat-ground baseline: each within ~2-5 deg of 90) and a 1.071 m
@@ -164,7 +162,9 @@ MujocoSystem publishes these topics at the xacro's `render_publish_rate`, now 30
 | --- | --- | --- |
 | Scene camera | `/scene_camera/color`, `/scene_camera/depth`, `/scene_camera/camera_info` | `scene_camera_optical_frame` |
 | Front lidar | `/lidar_front/points` | `lidar_front_optical_frame` |
+| Front lidar scan | `/scan_front` (filtered: `/scan_front_filtered`) | `lidar_front_ROS` |
 | Rear lidar | `/lidar_rear/points` | `lidar_rear_optical_frame` |
+| Rear lidar scan | `/scan_rear` (filtered: `/scan_rear_filtered`) | `lidar_rear_ROS` |
 
 Live checks on the shared development host measured about 7.2 Hz front lidar, 6.0 Hz
 rear lidar and 5.6 Hz scene images. The configured rate is a ceiling, not a guaranteed
@@ -219,15 +219,13 @@ placements and how the assets were made. Nothing is generated at runtime.
 lidar tiling derived from the compiled camera parameters, and the front central render's
 axial depth. Radial ranges are checked separately in live point clouds. It also records chassis
 positions and turns during the demo square and rejects any boulder contact. The before/after square results match:
-0.6290 m closure error and turns of 112.42, 89.72, 94.06 and 41.22 degrees on the current
-terrain. These are an unchanged open-loop baseline, not a claim of accurate square tracking.
+1.2810 m closure error and turns of 117.04, 94.20, 88.09 and 69.45 degrees on the current
+terrain. These are an unchanged open-loop baseline, not a claim of accurate square tracking. The open-loop route is sensitive to any change in the rover's mass model: the 1 g IMU body alone moves the closure error from 0.63 m to 1.28 m.
 
-The live `Dead Reckon Square` objective also completed all 80 forward commands and 40
-turn commands, with 7.370 m of wheel-odometry travel and 6.365 rad of accumulated yaw.
+`validate_and_render.py` replays the square open-loop, with fixed wheel commands and durations, as a physics regression. The `Dead Reckon Square` objective instead dead reckons: the `DriveDistance` and `TurnInPlace` Behaviors (`lunar_sim_behaviors`) drive each 1.8 m side and turn each 90 deg corner until fuse's odometry (wheel odometry and the IMU, with no external reference) has measured it. In three live runs, odometry closed the square to within 0.02 m and 0.4 deg, and MuJoCo ground truth to 0.26-0.55 m and 0.8-2.7 deg; the difference is the dead-reckoning drift. The open-loop replay closes to 1.28 m.
 A separate Pose Jog check through `Request Teleoperation` forwarded 40 commands at
 0.2 m/s, recorded 0.905 m of odometry displacement, and published a zero twist on
-completion. These odometry checks verify the command paths; the chassis freejoint
-comparison above checks physical route regression.
+completion.
 
 ![Labelled views of the camera mast, lidar mounts and four route boulders](description/assets/sensor_sheet.png)
 
@@ -429,7 +427,7 @@ in the operator's camera picker. `oakd_color` is never gated.
 
 This is layer 2 (procedural crater heightfield + scattered rocks) of a lunar-environment stack,
 built on layer 1's MuJoCo migration, with [moon base structures](#moon-base) beyond the demo route.
-Nav2 is also a later layer: this configuration intentionally ships no navigation stack yet.
+Nav2 runs without a map for now (see [Navigation](#navigation)); a saved map and map-based localization are the next layer.
 
 ## Moon base
 
@@ -443,8 +441,7 @@ and camera localization landmarks and navigation obstacles.
 The structures rest on the committed cratered terrain, with buried supports.
 They leave at least 2 m of clearance around the route's far corner. A future
 navigation demo can drive from the default start at -0.30, 0.50 m toward the
-habitat door, stopping near 0, 3.8 m with heading +90 degrees. This package still
-has no Nav2 stack.
+habitat door, stopping near 0, 3.8 m with heading +90 degrees.
 
 The two include fragments are `description/moon_base_assets.xml` and
 `description/moon_base_geoms.xml`. All new geometry uses simple MuJoCo shapes and
@@ -459,10 +456,7 @@ after running the existing `validate_and_render.py`.
 
 ## Frames
 
-The ground-contact frame is **`footprint`**, not `base_footprint`. `platform_velocity_controller`
-publishes `odom` -> `footprint` (`odom_frame_id: odom`, `base_frame_id: footprint`), and anything
-consuming a REP-105 ground frame - TF consumers, Nav2, the controller's own `base_frame_id` - must
-use `footprint`.
+The ground-contact frame is **`footprint`**, not `base_footprint`. fuse publishes `odom` -> `footprint` (`platform_velocity_controller` reports its odometry in the same frames but leaves the TF to fuse), and anything consuming a REP-105 ground frame - TF consumers, Nav2, the controller's own `base_frame_id` - must use `footprint`.
 
 The vendored description also publishes a `base_footprint` link, but upstream's
 `base_footprint_joint` places it 0.30 m above the ground plane rather than on it, so it is unused
@@ -472,10 +466,29 @@ vendored package byte-identical to upstream. The correction can't reuse the name
 - URDF requires unique link names, and `check_urdf` rejects the duplicate - hence the
 otherwise-unconventional `footprint` name.
 
-The 3D Visualizer's fixed frame is a different thing and is `odom`: with no localization the only
-frame above `odom` is MuJoCo's `mj_world`, published as identity so the world-fixed
-`scene_camera_optical_frame` resolves in `odom`, and `config/frontend_settings.yaml` sets
-`referenceFrame: odom` to override the frontend's `world` default.
+The 3D Visualizer's fixed frame is `map`, set by `config/frontend_settings.yaml`'s `referenceFrame` to override the frontend's `world` default, which this tree does not have. The chain above the base is `mj_world` -> `map` -> `odom` -> `footprint`: `launch/sim/robot_drivers_to_persist_sim.launch.py` publishes `mj_world` -> `map` at the `default` keyframe's spawn pose (read from `husky_scene.xml`, so map poses match MuJoCo ground truth) and `map` -> `odom` as identity until map-based localization exists, and the world-fixed `scene_camera_optical_frame` resolves through `mj_world`. MujocoSystem's `publish_mj_world_tf` is off so it does not give `odom` a second parent.
+
+## Navigation
+
+`launch/sim/robot_drivers_to_persist_sim.launch.py` runs with the persistent drivers (`config.yaml`'s `additional_driver_launch_file`): laser filters on both scans, the fuse state estimator, and Nav2 (MPPI controller, NavFn planner) in one component container. The `Navigate to Clicked Point` objective plans to a clicked ground point, waits for path approval, and follows the path; `Navigate to Clicked Point with Replanning` hands the goal to Nav2's replanning-and-recovery tree instead, which replans as the costmaps change. There is no saved map yet: the global costmap is a 20 x 20 m rolling window built from the lidars, like the local one, and `map` -> `odom` is a static identity, so nothing corrects odometry drift. Reset Simulation moves the rover back to the keyframe but does not reset fuse, so restart MoveIt Pro before navigating after a reset.
+
+The IMU is a Phidgets Spatial at the mount [NASA-JSC-Robotics/togo_ws](https://github.com/NASA-JSC-Robotics/togo_ws) uses on its A300 (`base_link` + `0.059 0 0.161275`), modelled with MuJoCo `framequat`, `gyro`, and `accelerometer` sensors on `imu_site` and published by `imu_sensor_broadcaster` on `/imu_sensor_broadcaster/imu` in `imu_link`. fuse (`config/fuse/fuse.yaml`, a 2D unicycle model) takes x, y and forward velocity from wheel odometry and yaw rate and forward acceleration from the IMU, the IMU inputs togo's own estimator uses. It does not fuse the IMU's absolute orientation, which is exact in MuJoCo where a real IMU's heading drifts; it reads it only to remove gravity from the acceleration.
+
+Wheel yaw is left out because skid-steer scrub makes it unreliable on this terrain. Measured in standalone MuJoCo from straight and turning drives at 23-47 spots and headings across the field (chassis freejoint pose as truth, wheel odometry integrated with this controller's parameters):
+
+| Command | Wheel odometry vs truth |
+| --- | --- |
+| Straight, 0.3 m/s | distance +1.4% (median), so `wheel_radius` is left as calibrated |
+| Arc, 0.3 m/s at 0.15 rad/s | distance +4.8% |
+| Arc, 0.3 m/s at 0.3 rad/s | distance +12.6%, yaw -6 deg over 6 s |
+| Arc, 0.2 m/s at 0.5 rad/s | 14 of 23 runs stalled; yaw +20 deg |
+| In place, 0.5 rad/s | yaw +14.5 deg over 6 s; some turns barely happen |
+
+With wheel yaw included, fuse followed the wheels through turns (97 deg against the gyro's 89 deg and truth's 87 deg); with yaw left to the gyro, a four-goal Nav2 loop of about 25 m on an idle host kept the estimate within 0.15-0.45 m and 1.6 deg of truth at every goal. Under heavy host CPU load the last leg ended 1.0 m and 16.5 deg off. Nav2 therefore keeps turns gentle: MPPI's `wz_max`, the velocity smoother, and the recovery behaviors all cap yaw rate at 0.3 rad/s.
+
+`platform_velocity_controller`'s acceleration limits sit above Nav2's velocity smoother, so they never delay a Nav2 command: MPPI does not model that delay, and on hangar_sim it showed up as overshoot and zig-zag. Teleop and `Dead Reckon Square` bypass the smoother and are ramped by the controller. MPPI also sets `open_loop: true` for the Jazzy MPPI speed regression (moveit_pro issue #21202); the parameter needs `nav2_mppi_controller` 1.3.13, which the workspace `Dockerfile` installs, and is ignored on the stock 1.3.12.
+
+Scans are geometrically exact against ray casts from the true pose (6 mm median range difference). Within 8 m, though, they see little besides the four route boulders and the moon base, and the scan plane meets the cratered ground from about 10 m out; that limits scan matching and is the open problem for map-based localization. Each scan is a single plane, 0.46 m (front) and 0.79 m (rear) above `footprint`, and fuse is 2D, so TF carries no chassis pitch or roll: craters and rocks below the front scan plane never reach the costmaps, and on slopes the plane can strike the ground and mark phantom obstacles.
 
 ## Teleoperation
 

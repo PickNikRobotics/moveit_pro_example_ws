@@ -1,5 +1,5 @@
-# This simulation ships no localization, so its TF tree roots at `mj_world`
-# (published as identity onto `odom`), not the frontend's default `world`.
-# Override so the 3D Visualizer renders the robot without a manual Fixed
-# Frame change.
-referenceFrame: odom
+# This configuration's TF tree has no `world` frame (the frontend's default), so render in `map`.
+referenceFrame: map
+
+# MPPI publishes its chosen trajectory on /optimal_trajectory, not the /local_plan that DWB uses.
+nav2LocalPlanTopic: /optimal_trajectory
