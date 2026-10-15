@@ -480,19 +480,10 @@ the old path, with no Objective running, until the next navigation goal replaces
 likely under heavy CPU load. The navigator logs "Timed out while waiting for action server to
 acknowledge goal request for follow_path" just before the abort.
 
-Upstream: Nav2 issue #6370, fixed on Nav2 main (#6373, #6445), not on Jazzy. Partly mitigated by
-`default_server_timeout: 500` (ms) in `market_sim/params/nav2_params.yaml`; other example configs keep
-Nav2's 20 ms. That makes the trigger rarer but does not remove it. The remaining mitigation
-would be a node that cancels a `follow_path` goal still executing when no `navigate_to_pose` goal
-is active.
-
-## Known issue: market_sim's AMCL can drift along the long aisles
-
-After a drive into an A to D aisle, AMCL can drift along the aisle and leave the base short of a
-Navigate to Aisle goal; it stays accurate across the aisle. This is a known limit, not a tuning
-target. Judge an aisle drive against `/ground_truth/odom`, not against Nav2's "goal reached", and see
-`src/market_sim/README.md` (Localization and navigation Objectives) for the measured drift, the cause
-and the correction.
+This is fixed in Nav2 after Jazzy. `market_sim/params/nav2_params.yaml` raises `default_server_timeout`
+above Nav2's default to make the trigger rarer; that does not remove it. The remaining mitigation
+would be a node that cancels a `follow_path` goal still executing when no `navigate_to_pose` goal is
+active.
 
 ## One trajectory controller, several planning groups
 

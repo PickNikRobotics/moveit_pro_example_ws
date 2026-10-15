@@ -48,7 +48,11 @@
             pose_stamped="{refined_pose}"
           />
           <!--Each lidar must fit the map. max_range mirrors amcl laser_max_range.-->
-          <Action ID="GetOccupancyGrid" topic_name="/map" message_out="{map}" />
+          <Action
+            ID="GetOccupancyGrid"
+            topic_name="/localization_map"
+            message_out="{map}"
+          />
           <Action
             ID="GetLaserScan"
             topic_name="/scan_front"

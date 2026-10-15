@@ -28,22 +28,17 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-# Copied unchanged from PickNikRobotics/moveit_pro_example_ws hangar_sim/script/lidar_flattener.py at
-# 487eb66d. The docstring describes hangar_sim's TIM571; this package's nanoScan3 values are set
-# in launch/additional_driver_nodes.launch.py.
+# Based on hangar_sim's lidar_flattener.py; only the docstring differs.
 
 """Turns each MuJoCo 3D-lidar point cloud into the LaserScan the rest of the stack expects.
 
-Both simulated SICK TIM571s are <camera> sensors with DEPTH_TYPE=THREE_D_LIDAR, so
+Both simulated SICK nanoScan3s are <camera> sensors with DEPTH_TYPE=THREE_D_LIDAR, so
 picknik_mujoco_ros publishes them as an organized PointCloud2 rather than as a LaserScan.
-Everything downstream of /scan_front and /scan_rear -- the two laser_filters chains, then
-dual_laser_merger, then beluga_amcl on /scan_merged and both Nav2 costmap obstacle layers
-on the filtered scans -- is built on LaserScan, and neither AMCL nor slam_toolbox accepts a
-cloud at all. Flattening here keeps every one of those topics identical in name, type,
-frame and angular window to what the <rangefinder> path published, so nothing else in the
-package has to know which sensor model produced the scan. In particular
-params/laser_filter_params.yaml keys its two self-hit rejection arcs off angle_min=0 and
-angle_max=4.7124 in the lidar_*_ROS frame, and those still hold.
+Everything downstream of /scan_front and /scan_rear is built on LaserScan: the two relays that
+feed beluga_amcl on /scan_interleaved, and both Nav2 costmap obstacle layers. Flattening here
+keeps those topics identical in name, type, frame and angular window to what a <rangefinder>
+would publish, so nothing else in the package has to know which sensor model produced the scan.
+The parameters are set in launch/sim/robot_drivers_to_persist_sim.launch.py.
 
 The cloud is `resolution` beams wide and 3 rows tall. Row 1 is the elevation-0 row and is
 the only one that belongs in a 2D scan; rows 0 and 2 sit at +/-fovy/2 and would put floor

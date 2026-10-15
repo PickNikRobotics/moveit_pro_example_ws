@@ -20,8 +20,6 @@ hardware:
     urdf_params:
       - mujoco_model: "mjcf/scene.xml"
       - mujoco_viewer: "False"
-      # Hundreds of loose products; their TF frames would only load the TF tree.
-      - publish_object_tf: "false"
 
 moveit_params:
   joint_group_name: "manipulator"

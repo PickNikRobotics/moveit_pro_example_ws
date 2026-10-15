@@ -55,17 +55,11 @@ from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
-# Navigate with SMAC's tree: Nav2's stock tree with the Smac planner as the selector's default.
-# Nav2 opens a behavior_tree_path in this container, so it is written here at a fixed path.
-STOCK_NAV_TO_POSE_TREE = (
-    "/opt/ros/jazzy/share/nav2_bt_navigator/behavior_trees/"
-    "navigate_to_pose_w_replanning_and_recovery.xml"
-)
-SMAC_NAV_TO_POSE_TREE = "/tmp/market_sim/behavior_trees/navigate_to_pose_smac.xml"
-NAVFN_SELECTOR = 'default_planner="GridBased"'
-SMAC_SELECTOR = 'default_planner="SmacLattice"'
+# bt_navigator's working directory under the package share: Drive Base using Nav2 names its
+# non-default planner trees, which CMakeLists.txt installs here, relative to it.
+NAV_TREE_DIR = "behavior_trees"
 
-LOCALIZATION_NODES = ["map_server", "amcl"]
+LOCALIZATION_NODES = ["map_server", "localization_map_server", "amcl"]
 NAVIGATION_NODES = [
     "controller_server",
     "smoother_server",
@@ -112,17 +106,9 @@ def lifecycle_manager(name, nodes):
 
 def generate_launch_description():
     share = get_package_share_directory("market_sim")
-    with open(STOCK_NAV_TO_POSE_TREE) as stock:
-        tree = stock.read()
-    if tree.count(NAVFN_SELECTOR) != 1:
-        raise RuntimeError(
-            f"{STOCK_NAV_TO_POSE_TREE} no longer selects NavFn by default"
-        )
-    os.makedirs(os.path.dirname(SMAC_NAV_TO_POSE_TREE), exist_ok=True)
-    with open(SMAC_NAV_TO_POSE_TREE, "w") as smac:
-        smac.write(tree.replace(NAVFN_SELECTOR, SMAC_SELECTOR))
     params_file = LaunchConfiguration("params_file")
     map_yaml = LaunchConfiguration("map")
+    localization_map_yaml = LaunchConfiguration("localization_map")
     log_level = LaunchConfiguration("log_level")
     nav2_args = ["--ros-args", "--log-level", log_level]
 
@@ -136,6 +122,11 @@ def generate_launch_description():
             "map",
             default_value=os.path.join(share, "maps", "market.yaml"),
             description="Map that map_server serves; generated with the scene.",
+        ),
+        DeclareLaunchArgument(
+            "localization_map",
+            default_value=os.path.join(share, "maps", "market_localization.yaml"),
+            description="Map that AMCL localizes on: what the lidars see at their height.",
         ),
         DeclareLaunchArgument(
             "log_level", default_value="info", description="Nav2 and AMCL log level."
@@ -183,16 +174,20 @@ def generate_launch_description():
             }
         ],
     )
-    # AMCL reads one scan topic, so both scans are merged into one 360 deg /scan in base_link.
-    # The lidar clouds arrive one render period after their stamp, so a merge cycle's newest
-    # scans are up to two periods old; a tighter limit drops cycles and starves AMCL.
-    scan_merger = Node(
-        package="market_sim",
-        executable="scan_merger.py",
-        name="scan_merger",
-        output="log",
-        parameters=[{"max_scan_age_sec": 0.35}],
-    )
+    # Both scans on one topic for AMCL, a scan at a time, as in hangar_sim: relayed rather than
+    # merged, so no message carries two instants.
+    scan_relays = [
+        Node(
+            package="topic_tools",
+            executable="relay",
+            name=f"scan_{side}_relay",
+            output="log",
+            parameters=[
+                {"input_topic": f"/scan_{side}", "output_topic": "/scan_interleaved"}
+            ],
+        )
+        for side in ("front", "rear")
+    ]
 
     odometry = Node(
         package="market_sim",
@@ -225,6 +220,20 @@ def generate_launch_description():
             parameters=[params_file, {"yaml_filename": map_yaml}],
             arguments=nav2_args,
         ),
+        # The costmaps keep the full /map; AMCL reads this one (amcl.map_topic in the params).
+        Node(
+            package="nav2_map_server",
+            executable="map_server",
+            name="localization_map_server",
+            output="screen",
+            parameters=[
+                {
+                    "yaml_filename": localization_map_yaml,
+                    "topic_name": "localization_map",
+                }
+            ],
+            arguments=nav2_args,
+        ),
         Node(
             package="beluga_amcl",
             executable="amcl_node",
@@ -236,7 +245,7 @@ def generate_launch_description():
         lifecycle_manager("lifecycle_manager_localization", LOCALIZATION_NODES),
     ]
 
-    def nav2_node(package, executable, remappings=()):
+    def nav2_node(package, executable, remappings=(), **kwargs):
         return Node(
             package=package,
             executable=executable,
@@ -245,6 +254,7 @@ def generate_launch_description():
             parameters=[params_file],
             arguments=nav2_args,
             remappings=list(remappings),
+            **kwargs,
         )
 
     # The controller feeds the smoother, whose output is /cmd_vel; recoveries publish /cmd_vel directly.
@@ -254,7 +264,9 @@ def generate_launch_description():
         nav2_node("nav2_smoother", "smoother_server"),
         nav2_node("nav2_planner", "planner_server"),
         nav2_node("nav2_behaviors", "behavior_server"),
-        nav2_node("nav2_bt_navigator", "bt_navigator"),
+        nav2_node(
+            "nav2_bt_navigator", "bt_navigator", cwd=os.path.join(share, NAV_TREE_DIR)
+        ),
         nav2_node("nav2_waypoint_follower", "waypoint_follower"),
         nav2_node(
             "nav2_velocity_smoother",
@@ -267,7 +279,7 @@ def generate_launch_description():
     return LaunchDescription(
         declared
         + frames
-        + [lidar_flattener, scan_merger, odometry, base_velocity, relocalizer]
+        + [lidar_flattener, *scan_relays, odometry, base_velocity, relocalizer]
         + localization
         + navigation
     )

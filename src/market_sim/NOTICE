@@ -1,0 +1,42 @@
+market_sim
+
+Unless otherwise noted, the files in this package are licensed under the
+BSD 3-Clause License in the repository's LICENSE. mjcf/scene.xml,
+mjcf/sensors.xml, mjcf/market/ and market_assets/ are PickNik's own
+(market_assets/LICENSE repeats that license); mjcf/sensors.xml is copied from
+moveit_pro_franka_ws.
+
+Third-party files:
+
+- mjcf/mobile_fr3_duo.xml is copied from moveit_pro_franka_ws
+  (src/mobile_fr3_duo_sim/mjcf/mobile_fr3_duo.xml at 940aa42), with the
+  planar base travel widened for the store, and says so in a comment at its
+  top. Its sources:
+  - franka_description 2.9.0, Copyright 2023 Franka Robotics GmbH, licensed
+    under the Apache License, Version 2.0 (mjcf/LICENSE-franka_description,
+    which also contains a BSD license section): the kinematics, inertials and
+    dynamics of the FR3 v2 arms, spine, head and TMR base, converted by
+    PickNik Inc.
+  - MuJoCo Menagerie Franka FR3 model (franka_fr3), licensed under the Apache
+    License, Version 2.0 (mjcf/LICENSE-mujoco_menagerie_franka_fr3, which also
+    contains a BSD license section): the actuator settings.
+  - MuJoCo Menagerie Franka Emika Panda model (franka_emika_panda), licensed
+    under the Apache License, Version 2.0: the finger coupling (tendon and
+    equality constraints) from its hand.xml.
+
+- Robot meshes in mjcf/assets/:
+  - finger_0.obj and finger_1.obj are copied unchanged from the MuJoCo
+    Menagerie Franka Emika Panda model, licensed under the Apache License,
+    Version 2.0 (mjcf/LICENSE-mujoco_menagerie_franka_fr3 carries the same
+    Apache License text).
+  - tmrv0_2_visual_red.obj, tmrv0_2_visual_black.obj,
+    tmrv0_2_visual_white.obj, tmrv0_2_visual_yellow.obj and
+    tmrv0_2_visual_grey.obj are converted by PickNik Inc. from franka_description
+    2.9.0's franka_description/meshes/robots/tmrv0_2/visual/tmrv0_2.dae: split by
+    material, scaled from millimetres to metres, with its texture coordinates,
+    and all but the grey part decimated; each file's header says how. Licensed
+    under the Apache License, Version 2.0 (mjcf/LICENSE-franka_description).
+  - The other robot meshes are not part of this package:
+    mjcf/mobile_fr3_duo.xml loads them at run time from the vendored
+    franka_description, through package://franka_description/meshes/... paths
+    (src/external_dependencies/franka_config/franka_description/meshes/...).

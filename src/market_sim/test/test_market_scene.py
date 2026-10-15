@@ -1,6 +1,35 @@
-"""Checks on the generated supermarket and the MuJoCo scene that includes it. No ROS.
+# Copyright 2026 PickNik Inc.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+#    * Redistributions of source code must retain the above copyright
+#      notice, this list of conditions and the following disclaimer.
+#
+#    * Redistributions in binary form must reproduce the above copyright
+#      notice, this list of conditions and the following disclaimer in the
+#      documentation and/or other materials provided with the distribution.
+#
+#    * Neither the name of the PickNik Inc. nor the names of its
+#      contributors may be used to endorse or promote products derived from
+#      this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
 
-Needs numpy, and mujoco for the model checks (both ship in the MoveIt Pro image).
+"""Checks on the generated supermarket and the MuJoCo scene that includes it.
+
+Needs numpy, and mujoco with MoveIt Pro's package:// resource provider for the model checks (both
+ship in the MoveIt Pro image).
 """
 
 import filecmp
@@ -51,6 +80,14 @@ def test_planar_range_matches_the_urdf_travel_limit(model):
 @pytest.fixture(scope="module")
 def model():
     mujoco = pytest.importorskip("mujoco")
+    from ament_index_python.packages import get_package_prefix
+
+    # The robot loads its franka_description meshes through package:// URIs, which plain MuJoCo
+    # cannot resolve; MoveIt Pro resolves them with this resource-provider plugin.
+    plugin = Path(get_package_prefix("mujoco_package_uri")) / "bin" / "mujoco_plugin"
+    mujoco.mj_loadPluginLibrary(
+        str(plugin / "libmujoco_package_uri_resource_provider.so")
+    )
     return mujoco.MjModel.from_xml_path(str(SCENE))
 
 
@@ -59,52 +96,16 @@ def test_visible_geoms_fit_the_render_limit(model):
     assert visible <= RENDER_GEOM_LIMIT - RENDER_GEOM_MARGIN
 
 
-def mocap_bodies(model):
-    """Bodies a keyframe can move, in the order of the keyframes' mpos and mquat."""
-    bodies = [b for b in range(model.nbody) if model.body_mocapid[b] >= 0]
-    return sorted(bodies, key=lambda b: model.body_mocapid[b])
-
-
-def test_default_keyframe_matches_the_scene_file(model):
-    # The boot state, the scene file's home poses and a qpos mirror must all agree.
+def test_default_keyframe_is_the_only_key_and_starts_the_robot_at_the_origin(model):
     mujoco = pytest.importorskip("mujoco")
+    assert model.nkey == 1
     default = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_KEY, "default")
-    assert default >= 0
+    assert default == 0
+    assert model.nq == ROBOT_NQ
+    np.testing.assert_allclose(model.key_qpos[default][:3], 0.0)
     np.testing.assert_allclose(
-        model.key_qpos[default][ROBOT_NQ:], model.qpos0[ROBOT_NQ:], atol=1e-4
+        model.key_qpos[default], generate_market.ROBOT_QPOS, atol=1e-4
     )
-    bodies = mocap_bodies(model)
-    assert len(bodies) == 36
-    np.testing.assert_allclose(
-        model.key_mpos[default].reshape(-1, 3), model.body_pos[bodies], atol=1e-4
-    )
-    np.testing.assert_allclose(
-        model.key_mquat[default].reshape(-1, 4), model.body_quat[bodies], atol=1e-4
-    )
-
-
-def test_loose_gondolas_have_empty_neighbours(model):
-    mujoco = pytest.importorskip("mujoco")
-    empty = model.mesh("market_pair_empty").id
-    for aisle, columns in generate_market.AD_LOOSE_COLUMNS.items():
-        for column in columns:
-            for neighbour in (column - 1, column + 1):
-                body = model.body(f"{aisle}_{neighbour}").id
-                meshes = [
-                    model.geom_dataid[g]
-                    for g in range(model.ngeom)
-                    if model.geom_bodyid[g] == body
-                    and model.geom_type[g] == mujoco.mjtGeom.mjGEOM_MESH
-                ]
-                assert meshes == [empty], (aisle, neighbour)
-
-
-def test_every_keyframe_exists_and_starts_the_robot_at_the_origin(model):
-    mujoco = pytest.importorskip("mujoco")
-    for name in ("default", "loose_e_i", "loose_a_d"):
-        key = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_KEY, name)
-        assert key >= 0, name
-        np.testing.assert_allclose(model.key_qpos[key][:3], 0.0)
 
 
 def test_only_robot_joints_are_named(model):
@@ -132,20 +133,6 @@ def test_every_fixed_camera_has_an_optical_frame_site(model):
             )
 
 
-@pytest.mark.parametrize("key", [name for name, _ in generate_market.KEYFRAMES])
-def test_loose_products_settle_and_sleep(model, key):
-    mujoco = pytest.importorskip("mujoco")
-    data = mujoco.MjData(model)
-    mujoco.mj_resetDataKeyframe(model, data, model.key(key).id)
-    for _ in range(int(3.0 / model.opt.timestep)):
-        mujoco.mj_step(model, data)
-    start = model.key_qpos[model.key(key).id][ROBOT_NQ:].reshape(-1, 7)[:, :3]
-    end = data.qpos[ROBOT_NQ:].reshape(-1, 7)[:, :3]
-    assert np.max(np.linalg.norm(end - start, axis=1)) < 0.01
-    # Only the robot's kinematic tree stays awake; resting products cost nothing.
-    assert data.ntree_awake == 1
-
-
 def test_map_marks_every_shelf_and_frees_the_start(model):
     mujoco = pytest.importorskip("mujoco")
     from PIL import Image
@@ -168,17 +155,85 @@ def test_map_marks_every_shelf_and_frees_the_start(model):
         and model.body_jntnum[b] == 0
         and model.body_geomnum[b]
     ]
-    assert len(shelves) == 416
+    assert len(shelves) == 404
     poses = [(model.body_pos[b], model.body_quat[b]) for b in shelves]
-    # One map serves every keyframe, so the moving shelves must be on it everywhere.
-    for key in range(model.nkey):
-        positions = model.key_mpos[key].reshape(-1, 3)
-        quats = model.key_mquat[key].reshape(-1, 4)
-        poses += list(zip(positions, quats))
     for (x, y, _), rotation in poses:
         # A point 0.3 m into the shelf, along its +Y axis.
         yaw = 2.0 * np.arctan2(rotation[3], rotation[0])
         assert cell(x - 0.3 * np.sin(yaw), y + 0.3 * np.cos(yaw)) == 0
+
+
+def test_lidar_height_matches_the_model(model):
+    mujoco = pytest.importorskip("mujoco")
+    data = mujoco.MjData(model)
+    mujoco.mj_resetDataKeyframe(model, data, 0)
+    mujoco.mj_forward(model, data)
+    for lidar in ("lidar_front", "lidar_rear"):
+        height = data.cam_xpos[model.camera(lidar).id][2]
+        assert height == pytest.approx(generate_market.LIDAR_HEIGHT, abs=1e-3), lidar
+
+
+def test_localization_map_matches_the_lidar_plane(model):
+    """Ranges cast in the scene at lidar height match the localization map at several poses."""
+    mujoco = pytest.importorskip("mujoco")
+    from PIL import Image
+
+    info = yaml.safe_load((PACKAGE / "maps" / "market_localization.yaml").read_text())
+    grid = np.array(Image.open(PACKAGE / "maps" / info["image"]))[::-1]
+    resolution, origin = info["resolution"], info["origin"]
+    data = mujoco.MjData(model)
+    robot = model.body_rootid[model.jnt_bodyid[model.joint("planar_x").id]]
+    groups = np.array([1, 1, 1, 0, 0, 0], dtype=np.uint8)
+    max_range = 20.0
+
+    def scene_range(start, direction):
+        travelled = 0.0
+        for _ in range(20):
+            geom = np.array([-1], dtype=np.int32)
+            hit = mujoco.mj_ray(model, data, start, direction, groups, 1, -1, geom)
+            if hit < 0 or travelled + hit > max_range:
+                return None
+            if model.body_rootid[model.geom_bodyid[geom[0]]] != robot:
+                return travelled + hit
+            # The ray hit the robot itself: continue from just past that point.
+            start = start + direction * (hit + 1e-3)
+            travelled += hit + 1e-3
+        return None
+
+    def map_range(start, direction):
+        for r in np.arange(resolution / 2, max_range, resolution / 5):
+            x, y = start[:2] + r * direction[:2]
+            row, col = int((y - origin[1]) / resolution), int(
+                (x - origin[0]) / resolution
+            )
+            if not (0 <= row < grid.shape[0] and 0 <= col < grid.shape[1]):
+                return None
+            if grid[row, col] == 0:
+                return r
+        return None
+
+    layout = generate_market.Layout(generate_market.FLOOR_PLAN)
+    back_depth = generate_market.load_shelf()[2]["overall"]["y"][1]
+    poses = [(0.0, 0.0, 0.0)] + list(
+        generate_market.aisle_goals(layout, back_depth).values()
+    )
+    for x, y, yaw in poses:
+        mujoco.mj_resetDataKeyframe(model, data, 0)
+        data.qpos[model.joint("planar_x").qposadr[0]] = x
+        data.qpos[model.joint("planar_y").qposadr[0]] = y
+        data.qpos[model.joint("planar_theta").qposadr[0]] = yaw
+        mujoco.mj_forward(model, data)
+        errors = []
+        for lidar in ("lidar_front", "lidar_rear"):
+            start = data.cam_xpos[model.camera(lidar).id].copy()
+            for angle in np.radians(np.arange(0, 360, 4)):
+                direction = np.array([np.cos(angle), np.sin(angle), 0.0])
+                seen = scene_range(start, direction)
+                mapped = map_range(start, direction)
+                if seen is not None and mapped is not None:
+                    errors.append(abs(seen - mapped))
+        assert len(errors) > 100, (x, y)
+        assert np.median(errors) < 2 * resolution, (x, y, np.median(errors))
 
 
 def test_aisle_goals_lie_on_free_map_cells():

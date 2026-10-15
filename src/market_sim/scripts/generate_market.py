@@ -1,15 +1,44 @@
 #!/usr/bin/env python3
+# Copyright 2026 PickNik Inc.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+#    * Redistributions of source code must retain the above copyright
+#      notice, this list of conditions and the following disclaimer.
+#
+#    * Redistributions in binary form must reproduce the above copyright
+#      notice, this list of conditions and the following disclaimer in the
+#      documentation and/or other materials provided with the distribution.
+#
+#    * Neither the name of the PickNik Inc. nor the names of its
+#      contributors may be used to endorse or promote products derived from
+#      this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+
 """Generate the market_sim supermarket from its text floor plan.
 
-Reads FLOOR_PLAN below and the shelf and product assets in ``market_assets/``, and
-writes the MuJoCo scene parts (``mjcf/market/``), their meshes and texture
-(``mjcf/assets/market/``) and the Nav2 map (``maps/market.{png,yaml}``).
+Reads FLOOR_PLAN below and the shelf assets in ``market_assets/``, and writes the MuJoCo
+scene parts (``mjcf/market/``), their mesh and texture (``mjcf/assets/market/``), the Nav2
+map (``maps/market.{png,yaml}``), the localization map (``maps/market_localization.{png,yaml}``)
+and the Navigate to Aisle Objectives.
 
 Run from anywhere, with numpy installed:
 
     python3 src/market_sim/scripts/generate_market.py
 
-See the package README for the layout rules and the loose-product budget.
+See the package README for the layout rules.
 """
 
 import argparse
@@ -73,21 +102,12 @@ LINE_PITCH = {
     "R": 1.5,
     "exit": 3.0,
 }
-# Aisles whose products are loose. The 24 loose shelf units fill every E and I gondola
-# here in loose_e_i, and move to the A to D gondolas below in loose_a_d.
+# Aisles with a "Navigate to Aisle" Objective.
 EI_REAL = ("E1", "E5", "I2")
 AD_REAL = ("A1", "B2", "C3", "D4")
 REAL_AISLES = EI_REAL + AD_REAL
-# Gondola columns, from each row's west end, that take the loose shelf units in loose_a_d.
-# The gondolas on both sides of each one are empty in every keyframe.
-AD_LOOSE_COLUMNS = {
-    "A1": (4, 6, 8),
-    "B2": (9, 11, 13),
-    "C3": (4, 6, 8),
-    "D4": (2, 4, 6),
-}
-# Keyframe name and where the loose shelf units are; the scene file holds the "a_d" poses.
-KEYFRAMES = (("default", "a_d"), ("loose_e_i", "e_i"), ("loose_a_d", "a_d"))
+# Gondola column, from the row's west end, that each A to D aisle goal faces.
+AD_GOAL_COLUMNS = {"A1": 6, "B2": 11, "C3": 6, "D4": 4}
 
 WALL_THICKNESS = 0.2
 WALL_HEIGHT = 2.5
@@ -95,30 +115,7 @@ REGISTER_HALF_SIZE = (0.5, 1.3, 0.45)
 # The robot boots here, on the open floor south of row 1; world and map share this origin.
 START_LINE_INDEX = 19
 
-# Stocked items that are loose on every loose shelf unit; a stack is loose or fixed as a whole.
-LOOSE_ITEMS = (
-    "cracker_box_1",
-    "cracker_box_3",
-    "cracker_box_5",
-    "sugar_box_1",
-    "sugar_box_3",
-    "sugar_box_5",
-    "gelatin_box_1",
-    "gelatin_box_2",
-    "pudding_box_1",
-    "pudding_box_2",
-    "meat_can_1",
-    "meat_can_2",
-    "soup_can_1",
-    "soup_can_3",
-    "coffee_can_1",
-    "coffee_can_3",
-)
-
-# Grippy enough for the simulated Franka Hand's light squeeze to hold a product, as in lab_sim.
-LOOSE_FRICTION = "2.0 0.1 0.01"
-
-# Robot part of every keyframe: the Mobile FR3 Duo's default pose.
+# The default keyframe: the Mobile FR3 Duo's default pose.
 # Order: planar joints, 9 passive wheel joints, spine, then each arm with its two fingers.
 ROBOT_QPOS = (
     [0.0] * 3
@@ -141,12 +138,8 @@ ROBOT_CTRL = (
 # Distance from a shelf's front face to the base centre in a "Navigate to Aisle" goal. It keeps
 # the stowed-arms Nav2 footprint clear of both racks while it turns to face the shelf.
 AISLE_STANDOFF = 0.96
-NAV_TO_POSE_TREE = (
-    "/opt/ros/jazzy/share/nav2_bt_navigator/behavior_trees/"
-    "navigate_to_pose_w_replanning_and_recovery.xml"
-)
 
-# Solid gondolas draw the shelf from its collision boxes only, to cut triangles.
+# Gondolas draw the shelf from its collision boxes only, to cut triangles.
 LOW_SHELF_BOX_MATERIALS = {
     "upright": "shelf_frame_steel",
     "bracket": "shelf_frame_steel",
@@ -156,11 +149,9 @@ LOW_SHELF_BOX_MATERIALS = {
     "_collision": "shelf_panel_steel",
 }
 
-# Items resting inside another item, which a front view never shows.
-HIDDEN_SUPPORTS = ("detergent_case_1",)
-
-# Visual-only can lids, left out of the merged shelf meshes to save triangles.
-LID_MATERIALS = ("product_metal_lid",)
+# Height above the floor of both lidars' scan plane (the mounts in mjcf/mobile_fr3_duo.xml);
+# a test keeps the two equal. The localization map holds what crosses this plane.
+LIDAR_HEIGHT = 0.19065
 
 GENERATED = "GENERATED by scripts/generate_market.py. Do not edit."
 MAP_RESOLUTION = 0.05
@@ -379,107 +370,6 @@ def box_mesh(half):
     return v, np.array(f)
 
 
-def cylinder_mesh(radius, half_height, segments=8):
-    angles = np.linspace(0, 2 * np.pi, segments, endpoint=False)
-    ring = np.stack([radius * np.cos(angles), radius * np.sin(angles)], axis=1)
-    bottom = np.hstack([ring, np.full((segments, 1), -half_height)])
-    top = np.hstack([ring, np.full((segments, 1), half_height)])
-    v = np.vstack([bottom, top, [[0, 0, -half_height], [0, 0, half_height]]])
-    f = []
-    for i in range(segments):
-        j = (i + 1) % segments
-        f += [[i, j, segments + j], [i, segments + j, segments + i]]
-        f += [[2 * segments, j, i], [2 * segments + 1, segments + i, segments + j]]
-    return v, np.array(f)
-
-
-def icosphere(subdivisions=1):
-    t = (1 + math.sqrt(5)) / 2
-    v = [
-        [-1, t, 0],
-        [1, t, 0],
-        [-1, -t, 0],
-        [1, -t, 0],
-        [0, -1, t],
-        [0, 1, t],
-        [0, -1, -t],
-        [0, 1, -t],
-        [t, 0, -1],
-        [t, 0, 1],
-        [-t, 0, -1],
-        [-t, 0, 1],
-    ]
-    f = [
-        [0, 11, 5],
-        [0, 5, 1],
-        [0, 1, 7],
-        [0, 7, 10],
-        [0, 10, 11],
-        [1, 5, 9],
-        [5, 11, 4],
-        [11, 10, 2],
-        [10, 7, 6],
-        [7, 1, 8],
-        [3, 9, 4],
-        [3, 4, 2],
-        [3, 2, 6],
-        [3, 6, 8],
-        [3, 8, 9],
-        [4, 9, 5],
-        [2, 4, 11],
-        [6, 2, 10],
-        [8, 6, 7],
-        [9, 8, 1],
-    ]
-    v = [np.array(p) / np.linalg.norm(p) for p in v]
-    for _ in range(subdivisions):
-        cache, new_faces = {}, []
-
-        def midpoint(a, b):
-            key = (min(a, b), max(a, b))
-            if key not in cache:
-                m = (v[a] + v[b]) / 2
-                v.append(m / np.linalg.norm(m))
-                cache[key] = len(v) - 1
-            return cache[key]
-
-        for a, b, c in f:
-            ab, bc, ca = midpoint(a, b), midpoint(b, c), midpoint(c, a)
-            new_faces += [[a, ab, ca], [b, bc, ab], [c, ca, bc], [ab, bc, ca]]
-        f = new_faces
-    return np.array(v), np.array(f)
-
-
-def primitive_mesh(geom, carrot):
-    """Triangles for one MJCF visual geom, in its body frame, with the coarsest shapes."""
-    kind = geom.get("type", "sphere")
-    size = [float(s) for s in geom.get("size", "0").split()]
-    round_shape = icosphere(0)
-    if kind == "box":
-        v, f = box_mesh(size)
-    elif kind == "cylinder":
-        v, f = cylinder_mesh(size[0], size[1], 6)
-    elif kind == "sphere":
-        v, f = round_shape
-        v = v * size[0]
-    elif kind == "ellipsoid":
-        v, f = round_shape
-        v = v * np.array(size)
-    elif kind == "capsule":
-        v, f = round_shape
-        v = v * np.array([size[0], size[0], size[1] + size[0]])
-    elif kind == "mesh":
-        # The carrot's own frame is its bounding-box centre, long along X.
-        extent = carrot[0].max(axis=0) - carrot[0].min(axis=0)
-        v, f = round_shape
-        v = v * extent / 2
-    else:
-        raise ValueError(f"unsupported geom type {kind}")
-    rotation = quat_to_matrix([float(q) for q in geom.get("quat", "1 0 0 0").split()])
-    position = np.array([float(p) for p in geom.get("pos", "0 0 0").split()])
-    return v @ rotation.T + position, f
-
-
 class MeshBuilder:
     """Merges triangles into one OBJ whose faces index a colour-palette texture."""
 
@@ -564,19 +454,6 @@ def write_png(path, image):
     path.write_bytes(png)
 
 
-def load_products():
-    catalog = json.loads((ASSET_DIR / "products" / "product_catalog.json").read_text())
-    materials = {}
-    for mat in ET.parse(ASSET_DIR / "products" / "products_assets.xml").iter(
-        "material"
-    ):
-        materials[mat.get("name")] = [float(c) for c in mat.get("rgba").split()][:3]
-    bodies = {}
-    for path in sorted((ASSET_DIR / "products" / "bodies").glob("*.xml")):
-        bodies[path.stem] = ET.parse(path).getroot().find("body")
-    return catalog, materials, bodies
-
-
 def load_shelf():
     materials = {}
     meshes = {}
@@ -607,48 +484,6 @@ def load_shelf():
         kind = next(k for k in LOW_SHELF_BOX_MATERIALS if k in geom.get("name"))
         low.append((v, f, materials[LOW_SHELF_BOX_MATERIALS[kind]]))
     return {"full": full, "low": low}, collisions, geometry
-
-
-def hidden_from_aisle(stocked, catalog):
-    """Stocked items that a front view cannot see: behind a front-row item, or inside the case."""
-    hidden = set()
-    for entry in stocked:
-        if entry["support"] in HIDDEN_SUPPORTS:
-            hidden.add(entry["body"])
-            continue
-        size = catalog["items"][entry["item"]]["size"]
-        half_x = abs(quat_to_matrix(entry["quat"]) @ np.array(size) / 2)[0]
-        for other in stocked:
-            same_shelf = other["support"] == entry["support"]
-            in_front = other["pos"][1] < entry["pos"][1] - 0.01
-            covers = abs(other["pos"][0] - entry["pos"][0]) < half_x
-            level = abs(other["pos"][2] - entry["pos"][2]) < 0.01
-            if same_shelf and in_front and covers and level:
-                hidden.add(entry["body"])
-                break
-    return hidden
-
-
-def unit_parts(shelf_parts, stocked, products, skip, carrot, low):
-    """One stocked shelf unit as (vertices, faces, colour) parts; ``low`` drops hidden items."""
-    catalog, materials, bodies = products
-    if low:
-        skip = set(skip) | hidden_from_aisle(stocked, catalog)
-    parts = list(shelf_parts)
-    for entry in stocked:
-        if entry["body"] in skip:
-            continue
-        body = bodies[f"{entry['item']}_v{entry['variant']}"]
-        rotation = quat_to_matrix(entry["quat"])
-        position = np.array(entry["pos"])
-        for geom in body.findall("geom"):
-            if geom.get("group") != "2" or geom.get("material") in LID_MATERIALS:
-                continue
-            v, f = primitive_mesh(geom, carrot)
-            parts.append(
-                (v @ rotation.T + position, f, materials[geom.get("material")])
-            )
-    return parts
 
 
 def gondola_parts(parts, back_depth):
@@ -695,65 +530,15 @@ def transform(pose, yaw, local):
     return (pose[0] + c * x - s * y, pose[1] + s * x + c * y, pose[2] + z)
 
 
-def loose_spots(layout):
-    """The gondolas the loose shelf units fill in each arrangement, and the empty A to D ones."""
-    by_key = {(g["aisle"], g["index"]): g for g in layout.gondolas}
-    spots = {"e_i": [by_key[k] for k in sorted(by_key) if k[0] in EI_REAL], "a_d": []}
-    empty = set()
-    for aisle in AD_REAL:
-        count = max(k[1] for k in by_key if k[0] == aisle)
-        columns = AD_LOOSE_COLUMNS[aisle]
-        for column in columns:
-            # Not at a row end, and never next to another loose gondola.
-            assert 1 < column < count and column + 1 not in columns, (aisle, column)
-            empty |= {(aisle, column - 1), (aisle, column + 1)}
-            spots["a_d"].append(by_key[(aisle, column)])
-    assert len(spots["e_i"]) == len(spots["a_d"])
-    return spots, [by_key[k] for k in sorted(empty)]
-
-
-def build_world(layout, shelf, products):
-    """Return the worldbody XML lines, the loose items, the moving shelves and the map footprints."""
-    _, collisions, geometry = shelf
-    catalog, _, bodies = products
+def build_world(layout, shelf):
+    """Return the worldbody XML lines and the map footprints."""
+    _, _, geometry = shelf
     overall = geometry["overall"]
-    back_depth = overall["y"][1]
     gondola_half_depth = overall["y"][1] - overall["y"][0]
     assert abs(2 * gondola_half_depth - GONDOLA_DEPTH) < 1e-6
     half_x = (overall["x"][1] - overall["x"][0]) / 2
     half_z = (overall["z"][1] - overall["z"][0]) / 2
-    stocked = {entry["body"]: entry for entry in catalog["stocked_scene"]}
-    spots, empty = loose_spots(layout)
-    moving = [g["name"] for g in spots["e_i"] + spots["a_d"]]
-    empty_names = {g["name"] for g in empty}
-    nodes, loose, footprints = [], [], []
-
-    def visual(mesh):
-        return element(
-            "geom",
-            [
-                ("type", "mesh"),
-                ("mesh", mesh),
-                ("material", "market_palette"),
-                ("contype", "0"),
-                ("conaffinity", "0"),
-                ("group", "2"),
-            ],
-        )
-
-    def gondola_body(name, pose, yaw, mesh, mocap):
-        box = element(
-            "geom",
-            [
-                ("type", "box"),
-                ("pos", fmt((0.0, 0.0, half_z))),
-                ("size", fmt((half_x, gondola_half_depth, half_z))),
-                ("group", "3"),
-            ],
-        )
-        attrs = [("name", name)] + ([("mocap", "true")] if mocap else [])
-        attrs += [("pos", fmt(pose)), ("quat", fmt(yaw_quat(yaw)))]
-        return element("body", attrs, [visual(mesh), box])
+    nodes, footprints = [], []
 
     for gondola in layout.gondolas:
         pose, yaw = gondola_pose(layout, gondola)
@@ -764,61 +549,29 @@ def build_world(layout, shelf, products):
                 for sy in (-1, 1)
             ]
         )
-        if gondola["name"] in moving:
-            continue
-        mesh = (
-            "market_pair_empty"
-            if gondola["name"] in empty_names
-            else "market_pair_full"
+        visual = element(
+            "geom",
+            [
+                ("type", "mesh"),
+                ("mesh", "market_pair_empty"),
+                ("material", "market_palette"),
+                ("contype", "0"),
+                ("conaffinity", "0"),
+                ("group", "2"),
+            ],
         )
-        nodes.append(gondola_body(gondola["name"], pose, yaw, mesh, False))
-
-    # Mocap bodies, so a keyframe can move them: the loose units first, then the solid ones.
-    shelves = {"units": [], "gondolas": []}
-    for a_d, e_i in zip(spots["a_d"], spots["e_i"]):
-        units = zip(
-            unit_poses(layout, a_d, back_depth), unit_poses(layout, e_i, back_depth)
+        box = element(
+            "geom",
+            [
+                ("type", "box"),
+                ("pos", fmt((0.0, 0.0, half_z))),
+                ("size", fmt((half_x, gondola_half_depth, half_z))),
+                ("group", "3"),
+            ],
         )
-        for home, other in units:
-            name = f"loose_shelf_{len(shelves['units']) + 1}"
-            shelves["units"].append({"a_d": home, "e_i": other})
-            geoms = [visual("market_unit_real")]
-            for geom in collisions:
-                geoms.append(
-                    element(
-                        "geom",
-                        [
-                            ("type", "box"),
-                            ("pos", geom.get("pos")),
-                            ("size", geom.get("size")),
-                            ("group", "3"),
-                        ],
-                    )
-                )
-            attrs = [("name", name), ("mocap", "true")]
-            attrs += [("pos", fmt(home[0])), ("quat", fmt(yaw_quat(home[1])))]
-            nodes.append(element("body", attrs, geoms))
-            for item in LOOSE_ITEMS:
-                entry = stocked[item]
-                poses = {
-                    key: (
-                        transform(pose, yaw, entry["pos"]),
-                        quat_mul(yaw_quat(yaw), entry["quat"]),
-                    )
-                    for key, (pose, yaw) in (("a_d", home), ("e_i", other))
-                }
-                loose.append(
-                    {
-                        "name": f"{name}_{item}",
-                        "body": bodies[f"{entry['item']}_v{entry['variant']}"],
-                        "poses": poses,
-                    }
-                )
-    for a_d, e_i in zip(spots["a_d"], spots["e_i"]):
-        name = f"solid_pair_{len(shelves['gondolas']) + 1}"
-        home, other = gondola_pose(layout, e_i), gondola_pose(layout, a_d)
-        shelves["gondolas"].append({"e_i": other, "a_d": home})
-        nodes.append(gondola_body(name, home[0], home[1], "market_pair_full", True))
+        attrs = [("name", gondola["name"]), ("pos", fmt(pose))]
+        attrs.append(("quat", fmt(yaw_quat(yaw))))
+        nodes.append(element("body", attrs, [visual, box]))
 
     for register in layout.registers:
         cx = register["x"]
@@ -873,58 +626,53 @@ def build_world(layout, shelf, products):
         footprints.append(
             [(cx + sx * hx, cy + sy * hy, 0) for sx in (-1, 1) for sy in (-1, 1)]
         )
-
-    nodes += [loose_item_body(item) for item in loose]
-    return nodes, loose, shelves, footprints
+    return nodes, footprints
 
 
-def loose_item_body(item):
-    """A loose product: one geom that both collides and renders, so it costs one visible geom."""
-    body = item["body"]
-    inertial = body.find("inertial")
-    collide = [g for g in body.findall("geom") if g.get("group") == "3"]
-    assert len(collide) == 1, f"{item['name']}: expected one collision geom"
-    geom = collide[0]
-    attributes = [(key, geom.get(key)) for key in ("type", "size", "material")]
-    attributes += [(key, geom.get(key)) for key in ("pos", "quat") if geom.get(key)]
-    attributes.append(("friction", LOOSE_FRICTION))
-    inertial_attributes = [(k, inertial.get(k)) for k in ("pos", "mass", "fullinertia")]
-    position, quat = item["poses"]["a_d"]
-    return element(
-        "body",
-        [("name", item["name"]), ("pos", fmt(position)), ("quat", fmt(quat))],
-        [
-            element("freejoint"),
-            element("inertial", inertial_attributes),
-            element("geom", attributes + [("group", "2")]),
-        ],
-    )
+def localization_footprints(layout, shelf, footprints):
+    """What the lidars see at their height: the shelf boxes crossing it, the registers, the walls.
+
+    The scan plane passes over the bottom deck to the back panel, so the full gondola footprint
+    that Nav2 keeps the base out of would give AMCL a deck's depth of slack.
+    """
+    _, collisions, geometry = shelf
+    back_depth = geometry["overall"]["y"][1]
+    boxes = []
+    for geom in collisions:
+        pos = [float(v) for v in geom.get("pos").split()]
+        half = [float(v) for v in geom.get("size").split()]
+        if pos[2] - half[2] <= LIDAR_HEIGHT <= pos[2] + half[2]:
+            boxes.append((pos, half))
+    seen = []
+    for gondola in layout.gondolas:
+        for pose, yaw in unit_poses(layout, gondola, back_depth):
+            for pos, half in boxes:
+                seen.append(
+                    [
+                        transform(
+                            pose,
+                            yaw,
+                            (pos[0] + sx * half[0], pos[1] + sy * half[1], 0.0),
+                        )
+                        for sx in (-1, 1)
+                        for sy in (-1, 1)
+                    ]
+                )
+    # build_world lists the gondolas first, then the registers and walls.
+    return seen + footprints[len(layout.gondolas) :]
 
 
-def keyframes(loose, shelves):
-    """One key per arrangement: product poses in qpos, the moving shelves in mpos and mquat."""
-    keys = []
-    for name, arrangement in KEYFRAMES:
-        qpos = list(ROBOT_QPOS)
-        for item in loose:
-            position, quat = item["poses"][arrangement]
-            qpos += list(position) + list(quat)
-        mpos, mquat = [], []
-        for shelf in shelves["units"] + shelves["gondolas"]:
-            position, yaw = shelf[arrangement]
-            mpos += list(position)
-            mquat += list(yaw_quat(yaw))
-        attrs = [("name", name), ("qpos", fmt(qpos)), ("mpos", fmt(mpos))]
-        attrs += [("mquat", fmt(mquat)), ("ctrl", fmt(ROBOT_CTRL))]
-        keys.append(element("key", attrs))
-    return keys
+def keyframes():
+    """The default key: the robot's default pose, at the start."""
+    attrs = [("name", "default"), ("qpos", fmt(ROBOT_QPOS)), ("ctrl", fmt(ROBOT_CTRL))]
+    return [element("key", attrs)]
 
 
 # ---------------------------------------------------------------- objectives
 
 
 def aisle_goals(layout, back_depth):
-    """A base pose facing the middle loose gondola of each real aisle, in the map frame.
+    """A base pose facing the middle of each real aisle, in the map frame.
 
     The map frame equals the world frame. E gondolas are worked from their west side, the
     others from their south side.
@@ -932,7 +680,7 @@ def aisle_goals(layout, back_depth):
     goals = {}
     for aisle in REAL_AISLES:
         if aisle in AD_REAL:
-            middle = sorted(AD_LOOSE_COLUMNS[aisle])[1:2]
+            middle = [AD_GOAL_COLUMNS[aisle]]
         else:
             count = sum(g["aisle"] == aisle for g in layout.gondolas)
             middle = [(count + 1) // 2] if count % 2 else [count // 2, count // 2 + 1]
@@ -957,8 +705,8 @@ def write_aisle_objective(path, aisle, goal):
     x, y, yaw = goal
     name = f"Navigate to Aisle {aisle}"
     description = (
-        f"Stow the arms, then drive the base with Nav2 to the middle of aisle {aisle}, "
-        "facing its shelves, where the products are loose and can be picked."
+        f"Drive the base with Nav2 to the middle of aisle {aisle}, facing its shelves, "
+        "with the arms stowed."
     )
     tree = element(
         "BehaviorTree",
@@ -981,27 +729,13 @@ def write_aisle_objective(path, aisle, goal):
                             ("pose_stamped", "{goal}"),
                         ],
                     ),
-                    # The Nav2 footprint covers the robot only with its arms stowed.
+                    # Stows the arms, switches the base controller and drives with Nav2.
                     element(
                         "SubTree",
-                        [("ID", "Stow Arms for Navigation"), ("_collapsed", "true")],
-                    ),
-                    # Nav2 drives the base through base_jgvc; a base jog leaves it inactive.
-                    element(
-                        "Action",
                         [
-                            ("ID", "SwitchController"),
-                            ("activate_controllers", "base_jgvc"),
-                        ],
-                    ),
-                    element(
-                        "Action",
-                        [
-                            ("ID", "NavigateToPoseAction"),
-                            ("action_name", "/navigate_to_pose"),
-                            ("behavior_tree_path", NAV_TO_POSE_TREE),
-                            ("ignore_stamp_time", "true"),
-                            ("pose_stamped", "{goal}"),
+                            ("ID", "Drive Base using Nav2"),
+                            ("_collapsed", "true"),
+                            ("goal_pose", "{goal}"),
                         ],
                     ),
                 ],
@@ -1039,7 +773,7 @@ def write_aisle_objective(path, aisle, goal):
 # ---------------------------------------------------------------- map
 
 
-def write_map(footprints, map_out):
+def write_map(footprints, map_out, name="market"):
     points = np.array([p[:2] for fp in footprints for p in fp])
     x_min, y_min = points.min(axis=0) - MAP_MARGIN
     x_max, y_max = points.max(axis=0) + MAP_MARGIN
@@ -1057,10 +791,10 @@ def write_map(footprints, map_out):
         lo, hi = corners.min(axis=0) - half, corners.max(axis=0) + half
         grid[(gx > lo[0]) & (gx < hi[0]) & (gy > lo[1]) & (gy < hi[1])] = 0
     # Image row 0 is the top of the picture, which is the map's largest y.
-    write_png(map_out / "market.png", grid[::-1])
-    (map_out / "market.yaml").write_text(
+    write_png(map_out / f"{name}.png", grid[::-1])
+    (map_out / f"{name}.yaml").write_text(
         "# GENERATED by scripts/generate_market.py. Do not edit.\n"
-        "image: market.png\n"
+        f"image: {name}.png\n"
         "mode: trinary\n"
         f"resolution: {MAP_RESOLUTION}\n"
         f"origin: [{x_min:.3f}, {y_min:.3f}, 0.0]\n"
@@ -1116,35 +850,18 @@ def main(output_root=PACKAGE_DIR):
     objectives_out = Path(output_root) / OBJECTIVES_OUT
     layout = Layout(FLOOR_PLAN)
     shelf = load_shelf()
-    products = load_products()
-    carrot = load_obj(ASSET_DIR / "products" / "meshes" / "carrot.obj")
     for folder in (mjcf_out, mesh_out, map_out, objectives_out):
         folder.mkdir(parents=True, exist_ok=True)
 
     back_depth = shelf[2]["overall"]["y"][1]
-    stocked = products[0]["stocked_scene"]
     palette = Palette()
-    full = unit_parts(shelf[0]["low"], stocked, products, (), carrot, low=True)
-    empty = unit_parts(shelf[0]["low"], [], products, (), carrot, low=True)
-    real = unit_parts(
-        shelf[0]["full"], stocked, products, LOOSE_ITEMS, carrot, low=False
-    )
-    meshes = {
-        "pair_full": mesh_builder(palette, gondola_parts(full, back_depth)),
-        "pair_empty": mesh_builder(palette, gondola_parts(empty, back_depth)),
-        "unit_real": mesh_builder(palette, real),
-    }
-    faces = {
-        name: b.write(mesh_out / f"{name}.obj", GENERATED) for name, b in meshes.items()
-    }
+    pair_empty = mesh_builder(palette, gondola_parts(shelf[0]["low"], back_depth))
+    faces = pair_empty.write(mesh_out / "pair_empty.obj", GENERATED)
     palette.write_png(mesh_out / "palette.png")
 
-    world, loose, shelves, footprints = build_world(layout, shelf, products)
+    world, footprints = build_world(layout, shelf)
     write_xml(mjcf_out / "market_world.xml", world)
 
-    used_materials = sorted(
-        {item["body"].find("geom[@group='3']").get("material") for item in loose}
-    )
     shiny = [("specular", "0.3"), ("shininess", "0.4")]
     assets = [
         element(
@@ -1169,31 +886,23 @@ def main(output_root=PACKAGE_DIR):
             ],
         ),
         element("material", [("name", "market_wall"), ("rgba", "0.86 0.85 0.8 1")]),
+        element(
+            "mesh",
+            [("name", "market_pair_empty"), ("file", "market/pair_empty.obj")],
+        ),
     ]
-    for name in meshes:
-        assets.append(
-            element(
-                "mesh", [("name", f"market_{name}"), ("file", f"market/{name}.obj")]
-            )
-        )
-    _, materials, _ = products
-    for name in used_materials:
-        rgba = f"{fmt(materials[name])} 1"
-        assets.append(element("material", [("name", name), ("rgba", rgba)] + shiny))
     write_xml(mjcf_out / "market_assets.xml", [element("asset", children=assets)])
-    write_xml(
-        mjcf_out / "keyframes.xml",
-        [element("keyframe", children=keyframes(loose, shelves))],
-    )
+    write_xml(mjcf_out / "keyframes.xml", [element("keyframe", children=keyframes())])
 
     width, height = write_map(footprints, map_out)
+    seen = localization_footprints(layout, shelf, footprints)
+    write_map(seen, map_out, "market_localization")
     for aisle, goal in aisle_goals(layout, back_depth).items():
         path = objectives_out / f"navigate_to_aisle_{aisle.lower()}.xml"
         write_aisle_objective(path, aisle, goal)
-    moving = len(shelves["units"]) + len(shelves["gondolas"])
     print(f"gondolas: {len(layout.gondolas)}, registers: {len(layout.registers)}")
-    print(f"moving shelves: {moving}, loose items: {len(loose)}, mesh faces: {faces}")
-    print(f"palette colours: {len(palette.colors)}, map: {width} x {height} cells")
+    print(f"mesh faces: {faces}, palette colours: {len(palette.colors)}")
+    print(f"map: {width} x {height} cells")
     print(
         f"store: {layout.width:.2f} m x {layout.depth:.2f} m, start at plan {layout.origin}"
     )
