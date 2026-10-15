@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="reBot Grasp Blue">
+  <BehaviorTree
+    ID="reBot Grasp Blue"
+    _description="From the open jaw, approach the blue 50 mm cube, move straight to the grasp, close on it, attach it, and lift it straight clear of the object it rests on."
+  >
+    <Sequence>
+      <SubTree
+        ID="reBot Move to Pose"
+        target="{pick_hover}"
+        gripper_position="5.25"
+        velocity_scale_factor="{joint_velocity_scale_factor}"
+        acceleration_scale_factor="{joint_acceleration_scale_factor}"
+        commanded_state="{commanded_state}"
+      />
+      <SubTree
+        ID="reBot Move Straight"
+        target="{pick}"
+        gripper_position="5.25"
+        velocity_scale_factor="{cartesian_velocity_scale_factor}"
+        acceleration_scale_factor="{cartesian_acceleration_scale_factor}"
+        commanded_state="{commanded_state}"
+      />
+      <Script code="holding := true" />
+      <SubTree
+        ID="Move reBot Gripper"
+        waypoint_name="Stack Gripper Hold"
+        velocity_scale_factor="{gripper_velocity_scale_factor}"
+        acceleration_scale_factor="{gripper_acceleration_scale_factor}"
+        commanded_state="{commanded_state}"
+      />
+      <Action
+        ID="SetCollisionRule"
+        name_a="rebot_blue"
+        name_b="{support_object}"
+        allow_collision="true"
+      />
+      <Action
+        ID="AttachObject"
+        object_id="rebot_blue"
+        link_name="gripper_end"
+        allowed_collision_links="gripper_left;gripper_right;gripper_end"
+      />
+      <SubTree
+        ID="reBot Move Straight"
+        target="{lift}"
+        gripper_position="2.8125"
+        velocity_scale_factor="{cartesian_velocity_scale_factor}"
+        acceleration_scale_factor="{cartesian_acceleration_scale_factor}"
+        commanded_state="{commanded_state}"
+      />
+      <Action
+        ID="SetCollisionRule"
+        name_a="rebot_blue"
+        name_b="{support_object}"
+        allow_collision="false"
+      />
+    </Sequence>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="reBot Grasp Blue">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="reBot Bench" />
+      </MetadataFields>
+      <input_port name="pick_hover" type="geometry_msgs::msg::PoseStamped">
+        Approach pose above the cube, reached with a planned joint move.
+      </input_port>
+      <input_port name="pick" type="geometry_msgs::msg::PoseStamped">
+        Grasp pose, reached straight from pick_hover.
+      </input_port>
+      <input_port name="lift" type="geometry_msgs::msg::PoseStamped">
+        Where the straight lift with the cube ends.
+      </input_port>
+      <input_port name="support_object" type="std::string">
+        Collision object the cube rests on, rebot_bench or rebot_red; the held
+        cube may touch it only during the grasp and lift.
+      </input_port>
+      <inout_port name="holding" default="{holding}" type="bool">
+        Set true just before the grasp closes: the jaw may be around the cube.
+      </inout_port>
+      <input_port name="joint_velocity_scale_factor" type="double" />
+      <input_port name="joint_acceleration_scale_factor" type="double" />
+      <input_port name="cartesian_velocity_scale_factor" type="double" />
+      <input_port name="cartesian_acceleration_scale_factor" type="double" />
+      <input_port name="gripper_velocity_scale_factor" type="double" />
+      <input_port name="gripper_acceleration_scale_factor" type="double" />
+      <inout_port
+        name="commanded_state"
+        default="{commanded_state}"
+        type="moveit_msgs::msg::RobotState"
+      />
+    </SubTree>
+  </TreeNodesModel>
+</root>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Stack and Unstack Cycle">
+  <BehaviorTree
+    ID="Stack and Unstack Cycle"
+    _description="Stack blue on red, then unstack it to a random spot, num_cycles times, recording each leg as one MoveIt Pro episode labelled with its language prompt. A leg counts only once the scene camera confirms its result; on a motion failure the leg attempts home recovery, keeping the jaw command if it may hold a cube, its unsaved episode is discarded and the cycle stops."
+  >
+    <Repeat num_cycles="{num_cycles}">
+      <Sequence>
+        <SubTree
+          ID="Recorded Stack Leg"
+          dataset_name="{dataset_name}"
+          training_config="{training_config}"
+          recorder_start_s="{recorder_start_s}"
+        />
+        <SubTree
+          ID="Recorded Unstack Leg"
+          dataset_name="{dataset_name}"
+          training_config="{training_config}"
+          recorder_start_s="{recorder_start_s}"
+        />
+      </Sequence>
+    </Repeat>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Stack and Unstack Cycle">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="reBot Bench" />
+      </MetadataFields>
+      <input_port name="num_cycles" default="5" type="int">
+        Stack-then-unstack cycles to run; each records two episodes.
+      </input_port>
+      <input_port
+        name="dataset_name"
+        default="rebot_stack_unstack"
+        type="std::string"
+      >
+        Recorded MoveIt Pro dataset the episodes are added to.
+      </input_port>
+      <input_port
+        name="training_config"
+        default="rebot_bench_jpeg"
+        type="std::string"
+      >
+        Named training config giving the recorded topics and rate; see
+        config/training/rebot_bench_jpeg.json.
+      </input_port>
+      <input_port name="recorder_start_s" default="3.0" type="double">
+        Wait after starting each episode's recording before the leg moves.
+      </input_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>
