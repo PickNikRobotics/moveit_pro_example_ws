@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="microduck">
+  <xacro:include filename="$(find microduck_description)/urdf/microduck.common.xacro"/>
+  <xacro:include filename="$(find microduck_description)/urdf/microduck.links.xacro"/>
+  <xacro:include filename="$(find microduck_description)/urdf/microduck.joints.xacro"/>
+  <xacro:include filename="$(find hangar_sim)/description/hangar_urdf.xacro"/>
+  <link name="world"/>
+  <xacro:hangar_urdf parent="world"/>
+  <xacro:macro name="base_axis" params="name parent child type axis lower upper">
+    <link name="${child}"/>
+    <joint name="${name}" type="${type}">
+      <parent link="${parent}"/><child link="${child}"/>
+      <axis xyz="${axis}"/>
+      <limit lower="${lower}" upper="${upper}" effort="0" velocity="5"/>
+    </joint>
+  </xacro:macro>
+  <!-- These six joints report the free body's measured pose, never commands. -->
+  <xacro:base_axis name="base_x" parent="world" child="base_x_link" type="prismatic" axis="1 0 0" lower="-100" upper="100"/>
+  <xacro:base_axis name="base_y" parent="base_x_link" child="base_y_link" type="prismatic" axis="0 1 0" lower="-100" upper="100"/>
+  <xacro:base_axis name="base_z" parent="base_y_link" child="base_z_link" type="prismatic" axis="0 0 1" lower="-1" upper="10"/>
+  <xacro:base_axis name="base_yaw" parent="base_z_link" child="base_yaw_link" type="continuous" axis="0 0 1" lower="-3.14159" upper="3.14159"/>
+  <xacro:base_axis name="base_pitch" parent="base_yaw_link" child="base_pitch_link" type="continuous" axis="0 1 0" lower="-3.14159" upper="3.14159"/>
+  <xacro:base_axis name="base_roll" parent="base_pitch_link" child="base_link" type="continuous" axis="1 0 0" lower="-3.14159" upper="3.14159"/>
+  <xacro:microduck_links/>
+  <xacro:microduck_joints/>
+</robot>

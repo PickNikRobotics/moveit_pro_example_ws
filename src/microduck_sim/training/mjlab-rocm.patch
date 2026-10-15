@@ -1,0 +1,15 @@
+diff --git a/src/mjlab/sim/sim.py b/src/mjlab/sim/sim.py
+index e5b29f4..0cfa821 100644
+--- a/src/mjlab/sim/sim.py
++++ b/src/mjlab/sim/sim.py
+@@ -423,6 +423,10 @@ class Simulation:
+     if not self.wp_device.is_cuda:
+       return False
+ 
++    if getattr(self.wp_device, "is_hip", False):
++      print("[INFO] ROCm uses eager GPU execution; CUDA graph eligibility does not apply")
++      return False
++
+     driver_ver = wp.context.runtime.driver_version
+     has_mempool = wp.is_mempool_enabled(self.wp_device)
+ 

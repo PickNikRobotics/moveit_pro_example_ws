@@ -1,0 +1,17 @@
+<root BTCPP_format="4" main_tree_to_execute="Reset Microduck">
+  <BehaviorTree
+    ID="Reset Microduck"
+    _description="Reset simulated Microduck to its standing pose."
+    _favorite="true"
+  >
+    <SubTree ID="Reset MuJoCo Sim" />
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Reset Microduck">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Microduck" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
