@@ -24,7 +24,7 @@
         <param name="lidar_publish_rate">10</param>
         <!-- The URDF root odom is not a MuJoCo body, so the base body is named explicitly. -->
         <param name="base_link_name">${base_link_name}</param>
-        <!-- world -> mj_world comes from launch/additional_driver_nodes.launch.py, so the plugin must not publish it. -->
+        <!-- world -> mj_world comes from launch/sim/robot_drivers_to_persist_sim.launch.py, so the plugin must not publish it. -->
         <param name="publish_mj_world_tf">false</param>
         <param name="publish_object_tf">${publish_object_tf}</param>
         <!-- Ground truth as a message only: the odometry bridge adds drift and publishes the planar joints. -->

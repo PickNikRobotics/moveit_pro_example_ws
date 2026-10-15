@@ -22,6 +22,7 @@
   <exec_depend>moveit_pro_behavior</exec_depend>
   <exec_depend>moveit_pro_objectives</exec_depend>
   <exec_depend>moveit_studio_agent</exec_depend>
+  <depend>nav2_bt_navigator</depend>
   <exec_depend>nav2_bringup</exec_depend>
   <exec_depend>nav2_lifecycle_manager</exec_depend>
   <exec_depend>nav2_map_server</exec_depend>
@@ -34,11 +35,19 @@
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>tf2_ros</exec_depend>
+  <exec_depend>topic_tools</exec_depend>
 
+  <test_depend>ament_cmake_copyright</test_depend>
+  <test_depend>ament_cmake_lint_cmake</test_depend>
   <test_depend>ament_cmake_pytest</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_index_python</test_depend>
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>picknik_ament_copyright</test_depend>
   <test_depend>python3-numpy</test_depend>
   <test_depend>python3-pil</test_depend>
   <test_depend>python3-yaml</test_depend>
+  <test_depend>rclpy</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

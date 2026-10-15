@@ -2,7 +2,7 @@
 <root BTCPP_format="4" main_tree_to_execute="Navigate with SMAC">
   <BehaviorTree
     ID="Navigate with SMAC"
-    _description="Prompt for a point on the map, stow the arms, and drive there under Nav2, planned with the Smac State Lattice planner, which checks the whole footprint along the plan: a goal where the footprint would touch an obstacle fails at once."
+    _description="Prompt for a point on the map and drive there under Nav2, with the arms stowed, planned with the Smac State Lattice planner, which checks the whole footprint along the plan: a goal where the footprint would touch an obstacle fails at once."
     _favorite="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
@@ -14,16 +14,12 @@
         is_normal="false"
         user_pose="{goal_pose}"
       />
-      <!-- The Nav2 footprint covers the robot only with its arms stowed. -->
-      <SubTree ID="Stow Arms for Navigation" _collapsed="true" />
-      <!-- Nav2 drives the base through base_jgvc; a base jog leaves it inactive. -->
-      <Action ID="SwitchController" activate_controllers="base_jgvc" />
-      <!-- The stock tree with the Smac planner as default, written by the driver launch file. -->
-      <Action
-        ID="NavigateToPoseAction"
-        action_name="/navigate_to_pose"
-        pose_stamped="{goal_pose}"
-        behavior_tree_path="/tmp/market_sim/behavior_trees/navigate_to_pose_smac.xml"
+      <!-- SmacLattice is Nav2's Smac State Lattice planner. -->
+      <SubTree
+        ID="Drive Base using Nav2"
+        _collapsed="true"
+        goal_pose="{goal_pose}"
+        planner_id="SmacLattice"
       />
     </Control>
   </BehaviorTree>

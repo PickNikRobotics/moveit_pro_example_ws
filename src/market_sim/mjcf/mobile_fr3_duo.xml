@@ -13,22 +13,79 @@
   </option>
 
   <asset>
-    <mesh name="tmrv0_2" file="tmrv0_2.stl" />
-    <!-- Chassis visual mesh: franka_description visual/tmrv0_2.dae converted with pymeshlab (mm to m). -->
-    <mesh name="tmrv0_2_visual" file="tmrv0_2_visual.stl" />
-    <mesh name="franka_spine" file="franka_spine.stl" />
-    <mesh name="fr3_duo_mount" file="fr3_duo_mount.stl" />
-    <mesh name="fr3_duo_cover" file="fr3_duo_cover.stl" />
-    <mesh name="franka_head" file="franka_head.stl" />
-    <mesh name="link0" file="link0.stl" />
-    <mesh name="link1" file="link1.stl" />
-    <mesh name="link2" file="link2.stl" />
-    <mesh name="link3" file="link3.stl" />
-    <mesh name="link4" file="link4.stl" />
-    <mesh name="link5" file="link5.stl" />
-    <mesh name="link6" file="link6.stl" />
-    <mesh name="link7" file="link7.stl" />
-    <mesh name="hand" file="hand.stl" />
+    <mesh
+      name="tmrv0_2"
+      file="package://franka_description/meshes/robots/tmrv0_2/collision/tmrv0_2.stl"
+    />
+    <!-- Chassis visual meshes: franka_description's tmrv0_2.dae, one per material, with its texture
+         coordinates and colours; each OBJ's header says how it was converted. -->
+    <mesh name="tmrv0_2_visual_red" file="tmrv0_2_visual_red.obj" />
+    <mesh name="tmrv0_2_visual_black" file="tmrv0_2_visual_black.obj" />
+    <mesh name="tmrv0_2_visual_white" file="tmrv0_2_visual_white.obj" />
+    <mesh name="tmrv0_2_visual_yellow" file="tmrv0_2_visual_yellow.obj" />
+    <mesh name="tmrv0_2_visual_grey" file="tmrv0_2_visual_grey.obj" />
+    <material name="tmrv0_2_red" rgba="0.745 0.196 0.196 1" />
+    <material
+      name="tmrv0_2_black"
+      rgba="0 0 0 1"
+      metallic="0.8"
+      roughness="0.4"
+    />
+    <material name="tmrv0_2_white" rgba="0.98 0.98 0.98 1" />
+    <material name="tmrv0_2_yellow" rgba="0.937 0.937 0.153 1" />
+    <material name="tmrv0_2_grey" rgba="0.745 0.745 0.745 1" />
+    <mesh
+      name="franka_spine"
+      file="package://franka_description/meshes/accessories/franka_spine_v0_1/collision/franka_spine.stl"
+    />
+    <mesh
+      name="fr3_duo_mount"
+      file="package://franka_description/meshes/accessories/fr3_duo_mount_v0_3/collision/fr3_duo_mount.stl"
+    />
+    <mesh
+      name="fr3_duo_cover"
+      file="package://franka_description/meshes/accessories/fr3_duo_mount_v0_3/collision/fr3_duo_cover.stl"
+    />
+    <mesh
+      name="franka_head"
+      file="package://franka_description/meshes/accessories/franka_head_v0_2/collision/franka_head.stl"
+    />
+    <mesh
+      name="link0"
+      file="package://franka_description/meshes/robots/fr3v2/collision/link0.stl"
+    />
+    <mesh
+      name="link1"
+      file="package://franka_description/meshes/robots/fr3v2/collision/link1.stl"
+    />
+    <mesh
+      name="link2"
+      file="package://franka_description/meshes/robots/fr3v2/collision/link2.stl"
+    />
+    <mesh
+      name="link3"
+      file="package://franka_description/meshes/robots/fr3v2/collision/link3.stl"
+    />
+    <mesh
+      name="link4"
+      file="package://franka_description/meshes/robots/fr3v2/collision/link4.stl"
+    />
+    <mesh
+      name="link5"
+      file="package://franka_description/meshes/robots/fr3v2/collision/link5.stl"
+    />
+    <mesh
+      name="link6"
+      file="package://franka_description/meshes/robots/fr3v2/collision/link6.stl"
+    />
+    <mesh
+      name="link7"
+      file="package://franka_description/meshes/robots/fr3v2/collision/link7.stl"
+    />
+    <mesh
+      name="hand"
+      file="package://franka_description/meshes/robot_ee/franka_hand_white/collision/hand.stl"
+    />
     <!-- Finger visual meshes from MuJoCo Menagerie franka_emika_panda/assets at d98292e (Apache-2.0) -->
     <mesh name="finger_0" file="finger_0.obj" />
     <mesh name="finger_1" file="finger_1.obj" />
@@ -203,9 +260,49 @@
             conaffinity="0"
             group="1"
             density="0"
-            rgba="1 1 1 1"
-            mesh="tmrv0_2_visual"
-            name="tmrv0_2"
+            material="tmrv0_2_red"
+            mesh="tmrv0_2_visual_red"
+            name="tmrv0_2_visual_red"
+          />
+          <geom
+            type="mesh"
+            contype="0"
+            conaffinity="0"
+            group="1"
+            density="0"
+            material="tmrv0_2_black"
+            mesh="tmrv0_2_visual_black"
+            name="tmrv0_2_visual_black"
+          />
+          <geom
+            type="mesh"
+            contype="0"
+            conaffinity="0"
+            group="1"
+            density="0"
+            material="tmrv0_2_white"
+            mesh="tmrv0_2_visual_white"
+            name="tmrv0_2_visual_white"
+          />
+          <geom
+            type="mesh"
+            contype="0"
+            conaffinity="0"
+            group="1"
+            density="0"
+            material="tmrv0_2_yellow"
+            mesh="tmrv0_2_visual_yellow"
+            name="tmrv0_2_visual_yellow"
+          />
+          <geom
+            type="mesh"
+            contype="0"
+            conaffinity="0"
+            group="1"
+            density="0"
+            material="tmrv0_2_grey"
+            mesh="tmrv0_2_visual_grey"
+            name="tmrv0_2_visual_grey"
           />
           <!-- group 3: collision only, not rendered, so cameras and lidars see the visual mesh. -->
           <geom

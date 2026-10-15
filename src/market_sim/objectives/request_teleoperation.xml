@@ -113,19 +113,9 @@
                           output_pose="{base_goal}"
                         />
                         <SubTree
-                          ID="Stow Arms for Navigation"
+                          ID="Drive Base using Nav2"
                           _collapsed="true"
-                        />
-                        <Action
-                          ID="SwitchController"
-                          activate_controllers="base_jgvc"
-                        />
-                        <Action
-                          ID="NavigateToPoseAction"
-                          action_name="/navigate_to_pose"
-                          behavior_tree_path="/opt/ros/jazzy/share/nav2_bt_navigator/behavior_trees/navigate_to_pose_w_replanning_and_recovery.xml"
-                          ignore_stamp_time="true"
-                          pose_stamped="{base_goal}"
+                          goal_pose="{base_goal}"
                         />
                       </Control>
                       <SubTree
