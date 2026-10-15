@@ -5,7 +5,7 @@ upstream:
 vendored_paths:
   - LICENSE
   - ridgeback_description
-pruned_paths:
+pruning_notes:
   - upstream CI, repository metadata, and documentation
   - ridgeback_control (ROS 1 controller and hardware configuration)
   - ridgeback_msgs (ROS 1 hardware status messages)

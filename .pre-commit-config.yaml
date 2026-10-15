@@ -11,6 +11,8 @@
 #     pre-commit autoupdate
 #
 # See https://github.com/pre-commit/pre-commit
+# Vendored snapshots preserve exact upstream bytes, including missing final
+# newlines, so no hook may rewrite them.
 exclude: ^src/external_dependencies/
 repos:
   # Standard hooks
@@ -26,8 +28,7 @@ repos:
         args: ["--unsafe"] # Fixes errors parsing custom YAML constructors like ur_description's !degrees
       - id: debug-statements
       - id: end-of-file-fixer
-        # Vendored snapshots preserve exact upstream bytes, including missing final newlines.
-        exclude: ^src/external_dependencies/|\.(svg|stl|dae)$
+        exclude: \.(svg|stl|dae)$
       - id: mixed-line-ending
       - id: fix-byte-order-marker
 

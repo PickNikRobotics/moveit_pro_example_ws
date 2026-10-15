@@ -6,7 +6,7 @@ vendored_paths:
   - LICENSE
   - fanuc_resources
   - fanuc_lrmate200id_support
-pruned_paths:
+pruning_notes:
   - all other Fanuc robot support packages
   - LR Mate 200iD variants, launch files, controller configuration, tests, and documentation unused by factory_sim
   - fanuc_resources changelog and documentation

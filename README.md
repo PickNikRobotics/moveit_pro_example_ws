@@ -12,7 +12,7 @@ git lfs install
 git clone <repo-url>
 ```
 
-Robot descriptions and simulation assets are vendored under `src/external_dependencies`, along with `feetech_ros2_driver`, the hardware driver `so101_base_config` uses to command real SO-101 hardware; each vendored source has an `UPSTREAM.yaml` file recording its repository, commit, and pruned paths. No source submodules are required for simulation.
+Robot descriptions and simulation assets are vendored under `src/external_dependencies`, along with `feetech_ros2_driver`, the hardware driver `so101_base_config` uses to command real SO-101 hardware. Each vendored source has an `UPSTREAM.yaml` recording the upstream repository, the exact commit the files came from, which paths were retained, and which of them PickNik modified. No source submodules are required for simulation.
 
 The `moveit_pro_sam2` submodule contains an optional perception model used by ML demonstration Objectives. Initialize it only when those Objectives are needed:
 
@@ -50,5 +50,14 @@ The hardware-only `kinova_gen3_site_config` and `picknik_ur_site_config` configu
 ## Updating vendored dependencies
 
 Each `UPSTREAM.yaml` file under `src/external_dependencies` records the exact upstream commit and retained paths. Run `bin/vendored_dependency.py status` to see how many commits each pinned upstream branch has moved past its recorded commit; CI publishes the same table in the job summary of the `Validate workspace dependencies` job. To refresh a dependency by hand, fetch upstream at the new commit, copy the retained paths in, preserve its license files, reapply the documented pruning and local edits, update `commit:` in `UPSTREAM.yaml`, and validate every config that consumes the package. `bin/vendored_dependency.py update <source>` (optionally `--to <commit>`) does the same steps for one source: it re-vendors the retained paths at the new commit, carries over every local difference from the pinned commit (edits and pruned files alike) as a three-way merge, updates `commit:`, and then runs the manifest checks (`modified_paths` ledger and license policy). It refuses to start while the source directory has uncommitted, untracked, or ignored files, so the result can always be discarded with `git restore` and `git clean`. Conflicts are left as ordinary conflict markers to resolve by hand. Exit code 0 means the update passed; 2 means the tree and pin are rewritten but conflicts or `UPSTREAM.yaml` ledger or policy errors need manual repair; 1 means an operational or input error, which may leave a partially rewritten source. Error output includes a discard command when a copy fails. Refresh one source per PR, and build and run the configs that consume it before committing. Every Sunday CI runs `update` for each drifted source and opens or updates a draft PR per source on the `vendored-refresh/<source>` branch; an update that stops on conflicts or a needed `UPSTREAM.yaml` edit still opens its PR, with the conflict markers and the update output, for a person to finish. An operational failure fails the job with its step log and opens no PR, even if it changed files.
+
+Then update `commit` and the retained-path lists, and check the result:
+
+```bash
+python3 bin/validate_workspace_dependencies.py                    # structure, runs on every PR
+python3 bin/validate_workspace_dependencies.py --verify-upstream  # fetches the pinned commit and compares files
+```
+
+The second command needs network access. Run it manually after re-vendoring. The PR dependency-policy check validates structure only; upstream drift reporting is non-blocking, and the weekly refresh jobs remain separate from the PR gate.
 
 The `moveit_pro_sam2` submodule can be advanced independently when its demonstration Objectives need a newer model package.

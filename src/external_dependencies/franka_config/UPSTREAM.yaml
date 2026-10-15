@@ -27,7 +27,7 @@ vendored_paths:
   - franka_description/meshes/accessories/franka_head_v0_2
   - franka_description/meshes/accessories/franka_spine_v0_1
   - franka_description/meshes/robot_ee/franka_hand_white
-pruned_paths:
+pruning_notes:
   - robot descriptions and meshes other than FR3, FR3 v2, the TMR v0.2 base and the FR3 Duo spine, head and mount
   - unused end effectors, standalone launch and rviz files, documentation, visualization scripts, and tests
 modified_paths:

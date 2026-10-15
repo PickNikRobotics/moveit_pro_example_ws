@@ -5,7 +5,7 @@ upstream:
 snapshot_path: robstride_hardware_interface
 vendored_paths:
   - robstride_hardware_interface
-pruned_paths:
+pruning_notes:
   - upstream .gitignore
 modified_paths: []
 apache_paths:
