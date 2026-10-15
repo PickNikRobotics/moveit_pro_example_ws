@@ -32,7 +32,7 @@
 
 namespace rebot_bench_behaviors
 {
-/** Fits an upright 50 mm cube on world z=0 to a segmented RGB silhouette. */
+/** Fits an upright 50 mm cube resting on world z=support_height to a segmented RGB silhouette. */
 class FitCubeToMask final : public moveit_pro::behaviors::SharedResourcesNode<BT::SyncActionNode>
 {
 public:
