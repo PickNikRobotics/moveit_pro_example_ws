@@ -9,23 +9,31 @@ Third-party files:
   Licensed under the Apache License, Version 2.0. Its LICENSE file, which also
   contains a BSD license section, is copied unchanged to
   description/mujoco/LICENSE.
-  - The FR3 arm meshes in description/mujoco/assets/ are copied unchanged.
-  - description/mujoco/franka3.xml is derived from the model's fr3.xml and
+  - The FR3 arm visual meshes (the OBJ files) in description/mujoco/assets/ are
+    copied unchanged.
+  - The collision meshes link0.stl to link7.stl and hand.stl are not part of this
+    package: description/mujoco/fr3.xml loads them at run time from the
+    vendored franka_description, as
+    package://franka_description/meshes/robots/fer/collision/<name>.stl
+    (src/external_dependencies/franka_config/franka_description/meshes/robots/fer/collision).
+    They are byte-identical to the MuJoCo Menagerie copies they replace.
+  - description/mujoco/fr3.xml is derived from the model's fr3.xml and
     modified by PickNik Inc.; it says so in a comment at its top.
 
 - MuJoCo Menagerie Franka Emika Panda model (franka_emika_panda), for the
   Franka Hand
   Licensed under the Apache License, Version 2.0; description/mujoco/LICENSE
   carries the same Apache License text.
-  - hand.stl, hand_0.obj to hand_4.obj, finger_0.obj and finger_1.obj in
+  - hand_0.obj to hand_4.obj, finger_0.obj and finger_1.obj in
     description/mujoco/assets/ are copied unchanged.
 
 - franka_description (FR3 Duo mount v0.3)
   Copyright 2023 Franka Robotics GmbH
   Licensed under the Apache License, Version 2.0. Its LICENSE file, which also
-  contains a BSD license section, is copied unchanged to
-  description/mujoco/LICENSE-franka_description.
+  contains a BSD license section, is copied to
+  description/mujoco/LICENSE-franka_description; the copy adds a final newline
+  and is otherwise unchanged.
   - description/mujoco/assets/fr3_duo_mount.obj and fr3_duo_cover.obj were
-    converted by PickNik Inc. in Blender from its
-    meshes/accessories/fr3_duo_mount_v0_3/visual/fr3_duo_mount.dae and
-    fr3_duo_cover.dae.
+    converted by PickNik Inc. in Blender from
+    franka_description/meshes/accessories/fr3_duo_mount_v0_3/visual/fr3_duo_mount.dae
+    and fr3_duo_cover.dae.

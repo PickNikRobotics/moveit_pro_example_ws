@@ -1,5 +1,5 @@
 <mujoco model="fr3 scene">
-  <include file="franka3.xml" />
+  <include file="fr3.xml" />
 
   <statistic center="0.2 0.2 0.5" extent="1.8" />
   <size nkey="1" />

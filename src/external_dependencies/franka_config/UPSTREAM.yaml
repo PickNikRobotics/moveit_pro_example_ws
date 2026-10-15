@@ -20,6 +20,7 @@ vendored_paths:
   - franka_description/end_effectors/common
   - franka_description/end_effectors/franka_hand/franka_hand.srdf.xacro
   - franka_description/end_effectors/franka_hand/inertials.yaml
+  - franka_description/meshes/robots/fer/collision
   - franka_description/meshes/robots/fr3
   - franka_description/meshes/robots/fr3v2
   - franka_description/meshes/robots/tmrv0_2
@@ -28,7 +29,7 @@ vendored_paths:
   - franka_description/meshes/accessories/franka_spine_v0_1
   - franka_description/meshes/robot_ee/franka_hand_white
 pruned_paths:
-  - robot descriptions and meshes other than FR3, FR3 v2, the TMR v0.2 base and the FR3 Duo spine, head and mount
+  - robot descriptions and meshes other than FR3, FR3 v2, the TMR v0.2 base, the FR3 Duo spine, head and mount, and the FER collision meshes in franka_description/meshes/robots/fer/collision
   - unused end effectors, standalone launch and rviz files, documentation, visualization scripts, and tests
 modified_paths:
   - franka_description/CMakeLists.txt
@@ -38,5 +39,6 @@ apache_paths:
 notes:
   - Release 2.9.0, the franka_description version the PickNik franka_ros2 fork pins in its dependency.repos.
   - dual_arm_sim and kitchen_sim use the FR3 variants; market_sim uses the Mobile FR3 Duo (TMR v0.2 base, spine, head, two FR3 v2 arms).
+  - dual_arm_sim and kitchen_sim load franka_description/meshes/robots/fer/collision at run time through package:// paths in their fr3.xml, as the arm and hand collision meshes, so a refresh that changes those files changes both sims' collision geometry.
   - The default robot_types of robots/mobile_fr3_duo_v0_2/mobile_fr3_duo_v0_2.urdf.xacro names fr3v2_1, which is pruned here; configs pass robot_types with fr3v2. The vendored file itself stays byte-identical to upstream.
   - Binary files matching workspace Git LFS patterns are stored as LFS objects; checked-out bytes match upstream.
