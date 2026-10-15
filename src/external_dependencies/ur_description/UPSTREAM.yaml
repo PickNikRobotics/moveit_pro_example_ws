@@ -28,3 +28,4 @@ modified_paths:
 notes:
   - UR20 meshes remain for grinding_sim; the other variants are instantiated by shipped simulation configs.
   - Binary files matching workspace Git LFS patterns are stored as LFS objects; checked-out bytes match upstream.
+  - Keep the upstream ur_robot_driver runtime dependency so rosdep installs the UR controllers required by mock_sim and multi_arm_sim.
