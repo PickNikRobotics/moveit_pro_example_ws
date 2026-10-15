@@ -18,8 +18,8 @@
         ID="CreatePoseStamped"
         reference_frame="grasp_link"
         pose_stamped="{pose_stamped}"
-        orientation_xyzw="0;0;.707;.707"
-        position_xyz="1;-0.5;1"
+        orientation_xyzw="-0.7071068;0.7071068;0;0"
+        position_xyz="-1.5;-0.2;1"
       />
       <Action
         ID="VisualizePose"
@@ -29,12 +29,13 @@
         pose="{pose_stamped}"
       />
       <Action
-        ID="GenerateCoveragePath"
-        vector_of_poses="{pose_stamped_vector}"
-        bottom_right_corner="{pose_stamped}"
-        stride_distance="0.5"
-        width="0.6"
-        height="5"
+        ID="GenerateSurfaceCoveragePath"
+        coverage_path="{pose_stamped_vector}"
+        region_pose="{pose_stamped}"
+        region_dimensions="0.6;5;0"
+        raster_layout="[{line_spacing: 0.5, point_spacing: 0.3}]"
+        standoff="0"
+        orientation_offset="0;0;3.14159265"
       />
       <Action
         ID="VisualizePath"
