@@ -3,11 +3,11 @@
 ![Moon base from a chase view and the route start corner](moon_base_render_sheet.png)
 
 The sheet uses two offline inspection cameras. The configured scene cameras are
-unchanged. The base has five fixed bodies and 35 visible collision geoms.
+unchanged. The base has seven fixed bodies and 59 visible collision geoms.
 
 ## Recorded-state comparison
 
-Measured on the scene without the moon base, then repeated with it, using `validate_and_render.py` with MuJoCo 3.6.0. Both runs include the rover's IMU body, which changes this open-loop route; record a new baseline whenever the rover's mass model changes.
+Measured on the scene without the current base layout and boulders, then repeated with them, using `validate_and_render.py` with MuJoCo 3.6.0. Both runs include the rover's IMU body, which changes this open-loop route; record a new baseline whenever the rover's mass model changes.
 
 | Measurement | Before | After |
 | --- | --- | --- |
@@ -22,10 +22,10 @@ keyframe starts on the heightfield at -0.30, 0.50 m. Historical numbers elsewher
 in the package README differ from this measurement. The base preserves the current
 route's errors; it does not retune the skid-steer calibration.
 
-`validate_moon_base.py` also checks that all five bodies are fixed, collision
+`validate_moon_base.py` also checks that all seven bodies are fixed, collision
 geometry belongs to rendered groups, body elevations match the committed PNG,
 and the base is outside the route footprint and inside the terrain boundary.
-The minimum far-corner clearance is **2.08255 m beyond a 0.6 m rover radius**,
+The minimum far-corner clearance is **2.22912 m beyond a 0.6 m rover radius**,
 using conservative world-aligned geom bounding boxes. Rays from the start corner
 at 1.2 m height hit the door, solar panel, antenna panel, and lander payload with
 hidden geom groups disabled.

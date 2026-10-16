@@ -208,8 +208,7 @@ for the camera user fields and `point_cloud_publish_rate`.
 
 ## Route boulders
 
-Four large boulders surround the demo route, in addition to the 200 small scattered rocks.
-They reuse four committed procedural rock meshes at larger scales and the existing Apollo
+Sixteen large boulders, in clusters and ridges around the demo route and the Nav2 loop, add to the 200 small scattered rocks. Ten cross both lidar scan planes and six only the front one; every top is at least 0.1 m from either plane, so pitch does not make a boulder flicker in and out of a scan. They reuse the six committed procedural rock meshes at larger, some non-uniform, scales and the existing Apollo
 ground material. The lower part of each mesh is buried in the sampled terrain height.
 See `description/boulders_assets.xml`, `description/boulders_geoms.xml` and
 [`boulders_provenance.txt`](description/assets/boulders_provenance.txt) for scales,
@@ -227,7 +226,7 @@ A separate Pose Jog check through `Request Teleoperation` forwarded 40 commands 
 0.2 m/s, recorded 0.905 m of odometry displacement, and published a zero twist on
 completion.
 
-![Labelled views of the camera mast, lidar mounts and four route boulders](description/assets/sensor_sheet.png)
+![Labelled views of the camera mast, lidar mounts and route boulders](description/assets/sensor_sheet.png)
 
 ## Ground rendering split
 
@@ -431,17 +430,14 @@ Nav2 runs without a map for now (see [Navigation](#navigation)); a saved map and
 
 ## Moon base
 
-Five static bodies sit beyond the Dead Reckon Square's far corner: a cylindrical
-habitat with a south-facing door, a small lander on a circular landing pad, a
-tilted solar array, and an antenna mast. The habitat is centred at world x = 0,
-y = 6.8 m; the array is west of it and the lander is east. The base's collision
+Seven static bodies sit in an arc beyond the Dead Reckon Square's far corner: a cylindrical
+habitat with a side airlock and radiator, its door turned toward the start area; a small lander on a landing pad behind a regolith blast berm; a tilted solar array; a vertical solar mast; an antenna mast with an equipment shelter; and a stack of cargo containers. The habitat is centred at world x = -2,
+y = 6.6 m; the solar array and mast are west of it, the cargo north-west, the antenna north, and the lander east. Each structure has solid geometry at both lidar scan heights. The base's collision
 geometry is also its visible geometry, all in rendered group 1, for future lidar
 and camera localization landmarks and navigation obstacles.
 
 The structures rest on the committed cratered terrain, with buried supports.
-They leave at least 2 m of clearance around the route's far corner. A future
-navigation demo can drive from the default start at -0.30, 0.50 m toward the
-habitat door, stopping near 0, 3.8 m with heading +90 degrees.
+They leave at least 2 m of clearance around the route's far corner.
 
 The two include fragments are `description/moon_base_assets.xml` and
 `description/moon_base_geoms.xml`. All new geometry uses simple MuJoCo shapes and
@@ -488,7 +484,7 @@ With wheel yaw included, fuse followed the wheels through turns (97 deg against 
 
 `platform_velocity_controller`'s acceleration limits sit above Nav2's velocity smoother, so they never delay a Nav2 command: MPPI does not model that delay, and on hangar_sim it showed up as overshoot and zig-zag. Teleop and `Dead Reckon Square` bypass the smoother and are ramped by the controller. MPPI also sets `open_loop: true` for the Jazzy MPPI speed regression (moveit_pro issue #21202); the parameter needs `nav2_mppi_controller` 1.3.13, which the workspace `Dockerfile` installs, and is ignored on the stock 1.3.12.
 
-Scans are geometrically exact against ray casts from the true pose (6 mm median range difference). Within 8 m, though, they see little besides the four route boulders and the moon base, and the scan plane meets the cratered ground from about 10 m out; that limits scan matching and is the open problem for map-based localization. Each scan is a single plane, 0.46 m (front) and 0.79 m (rear) above `footprint`, and fuse is 2D, so TF carries no chassis pitch or roll: craters and rocks below the front scan plane never reach the costmaps, and on slopes the plane can strike the ground and mark phantom obstacles.
+Scans are geometrically exact against ray casts from the true pose (6 mm median range difference). Within 8 m they see the boulders and the moon base; the small rocks and craters sit below the scan planes, and the scan plane meets the cratered ground from about 10 m out. In a one-off check when the layout was set, ray casts at both scan heights over a 1 m grid of the field (163 poses, 270 beams, 5 m) hit a boulder or structure on a mean of 105 beams at the front height and 67 at the rear, in 6.5 and 4.6 of 8 directions; 99% of poses see something in at least three directions at the front height. Each scan is a single plane, 0.46 m (front) and 0.79 m (rear) above `footprint`, and fuse is 2D, so TF carries no chassis pitch or roll: craters and rocks below the front scan plane never reach the costmaps, and on slopes the plane can strike the ground and mark phantom obstacles.
 
 ## Teleoperation
 

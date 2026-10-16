@@ -19,33 +19,22 @@ The existing Apollo-derived regolith texture retains its separate
 
 ## Placement
 
-All coordinates are metres in MuJoCo world space. The habitat faces south, toward
-the demo route. Five fixed bodies add no degrees of freedom. Every base geom has
-collision enabled and uses rendered group 1, so the same shapes can obstruct a
-rover and appear in depth-camera or image-based lidar returns.
+All coordinates are metres in MuJoCo world space. The structures form an arc north of the demo route rather than a line, and each has solid geometry at both lidar scan heights (0.46 m and 0.79 m above the ground). The habitat's door faces south-east, toward the route. Seven fixed bodies add no degrees of freedom. Every base geom has collision enabled and uses rendered group 1, so the same shapes can obstruct a rover and appear in depth-camera or image-based lidar returns. The blast berm uses the regolith ground material.
 
-| Body | Centre x, y | Sampled terrain z | Body datum z |
-| --- | --- | --- | --- |
-| Habitat | 0, 6.8 | -0.002010 | -0.042010 |
-| Solar array | -4, 6 | -0.019955 | -0.059955 |
-| Antenna | -2.8, 8.1 | 0.009206 | -0.030794 |
-| Landing pad | 6, 6.4 | -0.002010 | -0.042010 |
-| Lander | 6, 6.4 | -0.002010 | -0.042010 |
+| Body | Centre x, y | Yaw, rad | Sampled terrain z | Body datum z |
+| --- | --- | --- | --- | --- |
+| Habitat | -2, 6.6 | 0.464 | -0.010982 | -0.050982 |
+| Solar array | -6.8, 3.5 | 1.3 | 0.006963 | -0.033037 |
+| Antenna | 2.6, 8.3 | 0 | -0.036778 | -0.076778 |
+| Landing pad and berm | 7, 6.6 | 0 | 0.040610 | 0.000610 |
+| Lander | 7, 6.6 | 0 | 0.040610 | 0.000610 |
+| Vertical solar mast | -5.5, 6.6 | -0.6 | 0.002476 | -0.037524 |
+| Cargo | -5, 8.4 | 0.3 | 0.004720 | -0.035280 |
 
 These are offline samples of the committed `assets/lunar_hfield.png`, using the
 row reversal and nearest-cell convention in `test_husky_mujoco_geometry.py`'s
 `_hfield_elevation`. PNG values map to `value / 255 * 0.286 - 0.2095` metres.
-Each datum is 4 cm below its centre sample. Habitat feet, array feet, the antenna
-foundation, and the pad slab extend below the lowest terrain in their footprints.
+Each datum is 4 cm below its centre sample. Supports, cabinets, the antenna foundation, the cargo, and the pad slab extend below the lowest terrain in their footprints.
 The lander's feet meet the pad top at local z = 0.18 m. No ground asset is changed.
 
-The southernmost habitat geometry is the threshold at y = 4.83 m. The pad reaches
-y = 4.30 m but is farther east, with x >= 3.90 m. The recorded far corner before
-adding the base is approximately 0.996, 2.170. The base leaves at least 2 m of
-clear ground beyond a conservative 0.6 m rover radius around that corner and
-stays outside the full recorded square.
-
-A future navigation demo can start at the default keyframe, x = -0.30, y = 0.50,
-and end near x = 0, y = 3.8, facing north toward the closed habitat door. That
-approach point stops short of the threshold. It is a suggested goal, not a claim
-that navigation or traversability over the existing craters has been validated.
+By the validator's world-aligned bounding boxes, the southernmost base geometry is the blast berm at y = 2.91 m, with x >= 3.29 m; the solar array reaches y = 1.49 m but lies west of x = -5.47 m. `validate_moon_base.py` checks that every base geom stays outside the recorded square's footprint plus a 0.6 m rover radius, leaves at least 2 m beyond that radius around the square's far corner, and stays inside the terrain.
