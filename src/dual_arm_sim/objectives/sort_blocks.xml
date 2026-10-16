@@ -2,7 +2,7 @@
 <root BTCPP_format="4" main_tree_to_execute="Sort Blocks">
   <BehaviorTree
     ID="Sort Blocks"
-    _description="Clears colored blocks off the table by color, right arm for red and left for green. An error is expected when a color runs out of blocks: segmentation returns no masks, and the downstream point cloud lookup then fails on the empty result."
+    _description="Clears colored blocks off the table by color, right arm for red and left for green. Stops successfully when detection runs out of blocks; motion failures fail the Objective."
     _favorite="true"
   >
     <Control ID="Sequence">
@@ -11,6 +11,9 @@
         log_level="warn"
         message="Work in progress. The robot may miss blocks. Enable 'info' logs to see cycle time"
       />
+      <Action ID="Script" code="motion_failed := false" />
+      <!-- Perception exhaustion ends the loop successfully. Motion errors must
+           stop both branches and survive the loop's ForceSuccess decorator. -->
       <Decorator ID="ForceSuccess">
         <Decorator ID="KeepRunningUntilFailure">
           <Control ID="Fallback">
@@ -28,7 +31,11 @@
                 output_pose="{object_centroid}"
                 translation_xyz="0;0;-0.1"
               />
-              <Control ID="Sequence">
+              <Control
+                ID="Sequence"
+                name="Move right block"
+                _onFailure="motion_failed = true"
+              >
                 <SubTree ID="Open Right Gripper" _collapsed="true" />
                 <Action
                   ID="InitializeMTCTask"
@@ -138,7 +145,7 @@
               </Control>
               <Action ID="StopwatchEnd" timepoint="{timepoint_right}" />
             </Control>
-            <Control ID="Sequence">
+            <Control ID="Sequence" _failureIf="motion_failed">
               <Action ID="StopwatchBegin" timepoint="{timepoint_left}" />
               <SubTree
                 ID="Find Green Block"
@@ -151,7 +158,11 @@
                 output_pose="{object_centroid}"
                 translation_xyz="0;0;-0.1"
               />
-              <Control ID="Sequence">
+              <Control
+                ID="Sequence"
+                name="Move left block"
+                _onFailure="motion_failed = true"
+              >
                 <SubTree ID="Open Left Gripper" _collapsed="true" />
                 <Action
                   ID="InitializeMTCTask"
@@ -264,6 +275,7 @@
           </Control>
         </Decorator>
       </Decorator>
+      <Condition ID="ScriptCondition" code="!motion_failed" />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
