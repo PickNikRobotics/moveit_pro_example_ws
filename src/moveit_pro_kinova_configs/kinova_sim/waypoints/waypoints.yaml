@@ -37,3 +37,16 @@
     position: [-0.00720012232313838, 0.046292085559112114, -3.1164649297565687, -1.9802682633550486, 0.002955344711620508, 0.47456175742007445, 1.5661967812762208]
     velocity: []
     effort: []
+- name: Admittance Path Start
+  joint_group_names:
+    - manipulator
+  joint_state:
+    header:
+      frame_id: world
+      stamp:
+        sec: 0
+        nanosec: 0
+    name: [joint_1, joint_2, joint_3, joint_4, joint_5, joint_6, joint_7]
+    position: [-0.2751513005025921, 0.011158188471212655, -3.184484399219359, -1.6812117074041473, 0.0004804764292150326, -1.4492353285656745, 1.252697588294623]
+    velocity: []
+    effort: []

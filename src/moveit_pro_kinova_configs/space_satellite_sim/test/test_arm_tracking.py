@@ -11,14 +11,17 @@ from ament_index_python.packages import get_package_share_directory
 
 
 @pytest.mark.parametrize(
-    "package,scene",
+    "package,scene,waypoint_name",
     [
-        ("kinova_sim", "rafti_fingers_scene.xml"),
-        ("space_satellite_sim", "scene.xml"),
+        ("kinova_sim", "rafti_fingers_scene.xml", "View Satellite"),
+        ("kinova_sim", "rafti_fingers_scene.xml", "Admittance Path Start"),
+        ("space_satellite_sim", "scene.xml", "View Satellite"),
     ],
 )
 @pytest.mark.parametrize("real_time_factor", [1.0, 0.75])
-def test_waypoint_tracks_within_controller_tolerances(package, scene, real_time_factor):
+def test_waypoint_tracks_within_controller_tolerances(
+    package, scene, waypoint_name, real_time_factor
+):
     """A slower physics clock must still leave margin for path and endpoint guards."""
     share = Path(get_package_share_directory(package))
     model = mujoco.MjModel.from_xml_path(str(share / "description/mujoco" / scene))
@@ -27,7 +30,7 @@ def test_waypoint_tracks_within_controller_tolerances(package, scene, real_time_
 
     waypoints = yaml.safe_load((share / "waypoints/waypoints.yaml").read_text())
     waypoint = next(
-        item["joint_state"] for item in waypoints if item["name"] == "View Satellite"
+        item["joint_state"] for item in waypoints if item["name"] == waypoint_name
     )
     names = waypoint["name"]
     addresses = [model.jnt_qposadr[model.joint(name).id] for name in names]
