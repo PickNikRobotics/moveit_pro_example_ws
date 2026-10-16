@@ -4,9 +4,11 @@
 #include <Eigen/Cholesky>
 #include <joint_trajectory_admittance_controller/admittance.hpp>
 #include <memory>
+#include <path_ik/interpolate.hpp>
 
 // Minimal C ABI for Python physics tests. The installed controller owns admittance
-// integration; the test supplies MuJoCo transforms and damped least-squares kinematics.
+// integration and path_ik owns the Cartesian planner's waypoint preconditions; the test
+// supplies MuJoCo transforms and damped least-squares kinematics.
 using namespace moveit_pro_controllers;
 using Row44 = Eigen::Matrix<double, 4, 4, Eigen::RowMajor>;
 using Row67 = Eigen::Matrix<double, 6, 7, Eigen::RowMajor>;
@@ -50,6 +52,13 @@ extern "C" void* replay_create(const double* m, const double* d, const double* k
 { return new Replay(m, d, k, axes, joint_damping); }
 extern "C" void replay_destroy(void* p)
 { delete static_cast<Replay*>(p); }
+extern "C" int replay_interpolate(const double* poses, int count, double blending_radius)
+{
+  path_ik::Path path(count);
+  for (int i = 0; i < count; ++i)
+    path[i].matrix() = Eigen::Map<const Row44>(poses + 16 * i);
+  return path_ik::interpolate(path, 0.01, 0.05, blending_radius).has_value();
+}
 extern "C" int replay_step(void* p, const double* q, const double* r, const double* w, const double* tr,
                            const double* tq, const double* j, double dt, double* out)
 {

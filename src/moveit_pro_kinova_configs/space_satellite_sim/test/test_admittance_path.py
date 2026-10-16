@@ -72,6 +72,21 @@ class AdmittanceReplay:
         return output
 
 
+def planner_accepts(poses, blending_radius):
+    """Run the production Cartesian path interpolation on the planner's input poses."""
+    library = ctypes.CDLL(os.environ["ADMITTANCE_TEST_LIBRARY"])
+    library.replay_interpolate.argtypes = [
+        np.ctypeslib.ndpointer(dtype=np.float64, flags="C_CONTIGUOUS"),
+        ctypes.c_int,
+        ctypes.c_double,
+    ]
+    return bool(
+        library.replay_interpolate(
+            np.ascontiguousarray(poses), len(poses), blending_radius
+        )
+    )
+
+
 def rotation_error(target, actual):
     quaternion = np.zeros(4)
     mujoco.mju_mat2Quat(quaternion, (target @ actual.T).flatten())
@@ -149,8 +164,13 @@ class ArmModel:
         target[:3, :3] = matrix.reshape(3, 3) @ np.diag([-1, -1, 1])
         return target
 
-    def path(self, start, targets, limits):
+    def path(self, start, targets, limits, blending_radius):
         """Dense Cartesian IK and synchronized smooth segments bounded by shipped limits."""
+        # PlanCartesianPath prepends the current tip pose before interpolating.
+        waypoints = [self.pose(start), *targets]
+        assert planner_accepts(waypoints, blending_radius), np.linalg.norm(
+            np.diff([w[:3, 3] for w in waypoints], axis=0), axis=1
+        )
         joints = [start.copy()]
         times = [0.0]
         for target in targets:
@@ -209,6 +229,9 @@ def run_admittance_path(real_time_factor, external_load):
     limits = yaml.safe_load((share / "config/moveit/joint_limits.yaml").read_text())[
         "joint_limits"
     ]
+    blending_radius = float(
+        tree.find('.//Action[@ID="PlanCartesianPath"]').attrib["blending_radius"]
+    )
     arm = ArmModel(share)
     targets = [
         arm.target_pose(node)
@@ -222,7 +245,7 @@ def run_admittance_path(real_time_factor, external_load):
     command_probe = None
     for cycle in range(2):
         times, references = arm.path(
-            arm.data.qpos[arm.positions].copy(), targets, limits
+            arm.data.qpos[arm.positions].copy(), targets, limits, blending_radius
         )
         # A sensor-frame tare removes the initial static load, rather than tracking gravity
         # through subsequent tool rotations. The force channel drives this regression.
