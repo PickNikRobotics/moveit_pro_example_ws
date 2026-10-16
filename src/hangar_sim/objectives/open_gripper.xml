@@ -2,19 +2,23 @@
 <root BTCPP_format="4" main_tree_to_execute="Open Gripper">
   <BehaviorTree
     ID="Open Gripper"
-    _description="Open the gripper"
+    _description="Release the vacuum gripper"
     _favorite="false"
   >
     <Control ID="Sequence" name="root">
-      <!--Not used in this config-->
-      <Action ID="AlwaysFailure" />
+      <Action
+        ID="MoveGripperAction"
+        gripper_command_action_name="/vacuum_gripper/gripper_cmd"
+        position="0.0"
+        timeout="10.0"
+      />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Open Gripper">
       <MetadataFields>
         <Metadata subcategory="Grasping" />
-        <Metadata runnable="false" />
+        <Metadata runnable="true" />
       </MetadataFields>
     </SubTree>
   </TreeNodesModel>
