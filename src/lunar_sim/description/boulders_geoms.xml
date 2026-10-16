@@ -1,5 +1,6 @@
 <mujocoinclude>
-  <!-- Fixed obstacles around the demo circuit. Centers lie at the committed heightfield's
+  <!-- Fixed obstacles around the demo circuit and the loop beyond it, clustered, most tall enough to
+       cross both lidar scan planes (0.46 m and 0.79 m). Centers lie at the committed heightfield's
        surface, leaving the lower portion buried like the existing small rocks. Positions
        are explicit, not part of the seeded small-rock scatter or runtime generation. -->
   <geom
@@ -37,6 +38,121 @@
     mesh="boulder_south"
     pos="-1.2 -1.2 0.04510"
     euler="0 0 1.2"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="boulder_ridge_a"
+    type="mesh"
+    mesh="boulder_ridge_a"
+    pos="-4.3 -1.0 0.00921"
+    euler="0 0 0.4"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="boulder_ridge_b"
+    type="mesh"
+    mesh="boulder_ridge_b"
+    pos="-5.2 -1.9 0.00360"
+    euler="0 0 -0.3"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="boulder_ridge_c"
+    type="mesh"
+    mesh="boulder_ridge_c"
+    pos="-4.6 -2.9 -0.01883"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="boulder_southwest"
+    type="mesh"
+    mesh="boulder_southwest"
+    pos="-3.2 -4.4 0.01930"
+    euler="0 0 1.0"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="boulder_south_a"
+    type="mesh"
+    mesh="boulder_south_a"
+    pos="2.4 -5.9 -0.01659"
+    euler="0 0 0.2"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="boulder_south_b"
+    type="mesh"
+    mesh="boulder_south_b"
+    pos="3.5 -6.6 -0.00762"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="boulder_southeast_a"
+    type="mesh"
+    mesh="boulder_southeast_a"
+    pos="8.6 -4.6 0.02154"
+    euler="0 0 -0.8"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="boulder_southeast_b"
+    type="mesh"
+    mesh="boulder_southeast_b"
+    pos="8.2 -6.0 0.00136"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="boulder_east_far"
+    type="mesh"
+    mesh="boulder_east_far"
+    pos="9.0 0.4 -0.02108"
+    euler="0 0 0.6"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="boulder_mid_east"
+    type="mesh"
+    mesh="boulder_mid_east"
+    pos="4.5 -1.6 0.00023"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="boulder_northwest"
+    type="mesh"
+    mesh="boulder_northwest"
+    pos="-3.6 4.0 -0.00313"
+    euler="0 0 0.9"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="boulder_north_mid"
+    type="mesh"
+    mesh="boulder_north_mid"
+    pos="0.8 4.6 0.01145"
     material="regolith_ground"
     contype="1"
     conaffinity="1"

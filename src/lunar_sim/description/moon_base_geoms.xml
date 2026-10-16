@@ -1,9 +1,9 @@
 <mujoco>
-  <!-- Five fixed bodies, no joints. All geoms are visible collision geometry in group 1.
+  <!-- Seven fixed bodies, no joints. All geoms are visible collision geometry in group 1.
        World +y is beyond the demo's far corner. Ground datum for each body is the
        committed hfield PNG's centre sample minus 0.04 m; supports extend below it.
        Coordinates, clearances, and provenance: moon_base_provenance.md. -->
-  <body name="moon_base_habitat" pos="0 6.8 -0.042010">
+  <body name="moon_base_habitat" pos="-2 6.6 -0.050982" euler="0 0 0.464">
     <geom
       name="moon_base_habitat_shell"
       type="cylinder"
@@ -104,9 +104,59 @@
       contype="1"
       conaffinity="1"
     />
+    <geom
+      name="moon_base_airlock"
+      type="cylinder"
+      fromto="1.05 0.3 1.3 2.3 0.3 1.3"
+      size="0.62"
+      material="moon_base_blanket"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_airlock_ring"
+      type="cylinder"
+      fromto="2.2 0.3 1.3 2.34 0.3 1.3"
+      size="0.66"
+      material="moon_base_metal"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_airlock_hatch"
+      type="box"
+      pos="2.36 0.3 1.3"
+      size="0.02 0.35 0.4"
+      material="moon_base_dark"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_airlock_support"
+      type="box"
+      pos="1.8 0.3 0.33"
+      size="0.35 0.35 0.4"
+      material="moon_base_metal"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_radiator"
+      type="box"
+      pos="-1.18 0.2 1.7"
+      size="0.05 1.1 0.55"
+      material="moon_base_blanket"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
   </body>
 
-  <body name="moon_base_solar_array" pos="-4 6 -0.059955">
+  <body name="moon_base_solar_array" pos="-6.8 3.5 -0.033037" euler="0 0 1.3">
     <geom
       name="moon_base_solar_frame"
       type="box"
@@ -180,9 +230,19 @@
       contype="1"
       conaffinity="1"
     />
+    <geom
+      name="moon_base_solar_cabinet"
+      type="box"
+      pos="0 0 0.45"
+      size="0.5 0.35 0.45"
+      material="moon_base_metal"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
   </body>
 
-  <body name="moon_base_antenna" pos="-2.8 8.1 -0.030794">
+  <body name="moon_base_antenna" pos="2.6 8.3 -0.076778">
     <geom
       name="moon_base_antenna_foundation"
       type="box"
@@ -223,9 +283,20 @@
       contype="1"
       conaffinity="1"
     />
+    <geom
+      name="moon_base_antenna_shelter"
+      type="box"
+      pos="0.8 0 0.5"
+      size="0.45 0.35 0.5"
+      material="moon_base_blanket"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
   </body>
 
-  <body name="moon_base_landing_pad" pos="6 6.4 -0.042010">
+  <!-- The berm is a regolith blast arc on the side facing the habitat and the route. -->
+  <body name="moon_base_landing_pad" pos="7 6.6 0.000610">
     <geom
       name="moon_base_pad_slab"
       type="cylinder"
@@ -256,10 +327,131 @@
       contype="1"
       conaffinity="1"
     />
+    <geom
+      name="moon_base_berm_0"
+      type="ellipsoid"
+      pos="-2.298 1.928 0.04"
+      euler="0 0 2.4435"
+      size="0.6 0.9 0.85"
+      material="regolith_ground"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_berm_1"
+      type="ellipsoid"
+      pos="-2.624 1.454 0.04"
+      euler="0 0 2.6354"
+      size="0.6 0.9 0.85"
+      material="regolith_ground"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_berm_2"
+      type="ellipsoid"
+      pos="-2.853 0.927 0.04"
+      euler="0 0 2.8274"
+      size="0.6 0.9 0.85"
+      material="regolith_ground"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_berm_3"
+      type="ellipsoid"
+      pos="-2.978 0.366 0.04"
+      euler="0 0 3.0194"
+      size="0.6 0.9 0.85"
+      material="regolith_ground"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_berm_4"
+      type="ellipsoid"
+      pos="-2.993 -0.209 0.04"
+      euler="0 0 3.2114"
+      size="0.6 0.9 0.85"
+      material="regolith_ground"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_berm_5"
+      type="ellipsoid"
+      pos="-2.898 -0.776 0.04"
+      euler="0 0 3.4034"
+      size="0.6 0.9 0.85"
+      material="regolith_ground"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_berm_6"
+      type="ellipsoid"
+      pos="-2.696 -1.315 0.04"
+      euler="0 0 3.5954"
+      size="0.6 0.9 0.85"
+      material="regolith_ground"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_berm_7"
+      type="ellipsoid"
+      pos="-2.396 -1.805 0.04"
+      euler="0 0 3.7874"
+      size="0.6 0.9 0.85"
+      material="regolith_ground"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_berm_8"
+      type="ellipsoid"
+      pos="-2.007 -2.229 0.04"
+      euler="0 0 3.9794"
+      size="0.6 0.9 0.85"
+      material="regolith_ground"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_berm_9"
+      type="ellipsoid"
+      pos="-1.545 -2.572 0.04"
+      euler="0 0 4.1713"
+      size="0.6 0.9 0.85"
+      material="regolith_ground"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_berm_10"
+      type="ellipsoid"
+      pos="-1.026 -2.819 0.04"
+      euler="0 0 4.3633"
+      size="0.6 0.9 0.85"
+      material="regolith_ground"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
   </body>
 
   <!-- Same sampled datum as the pad. Foot bottoms meet its top at local z=0.18. -->
-  <body name="moon_base_lander" pos="6 6.4 -0.042010">
+  <body name="moon_base_lander" pos="7 6.6 0.000610">
     <geom
       name="moon_base_lander_deck"
       type="cylinder"
@@ -366,6 +558,78 @@
       pos="1.15 1.15 0.23"
       size="0.22 0.05"
       material="moon_base_metal"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+  </body>
+
+  <body
+    name="moon_base_vertical_solar"
+    pos="-5.5 6.6 -0.037524"
+    euler="0 0 -0.6"
+  >
+    <geom
+      name="moon_base_vertical_solar_cabinet"
+      type="box"
+      pos="0 0 0.45"
+      size="0.35 0.35 0.45"
+      material="moon_base_metal"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_vertical_solar_mast"
+      type="cylinder"
+      fromto="0 0 0.9 0 0 4.7"
+      size="0.08"
+      material="moon_base_metal"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_vertical_solar_panel"
+      type="box"
+      pos="0 -0.12 3.3"
+      size="0.7 0.03 1.3"
+      material="moon_base_cells"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+  </body>
+
+  <body name="moon_base_cargo" pos="-5 8.4 -0.035280" euler="0 0 0.3">
+    <geom
+      name="moon_base_cargo_a"
+      type="box"
+      pos="0 0 0.45"
+      size="0.6 0.4 0.45"
+      material="moon_base_blanket"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_cargo_b"
+      type="box"
+      pos="1.3 0.15 0.45"
+      euler="0 0 0.15"
+      size="0.6 0.4 0.45"
+      material="moon_base_insulation"
+      group="1"
+      contype="1"
+      conaffinity="1"
+    />
+    <geom
+      name="moon_base_cargo_c"
+      type="box"
+      pos="0.6 0.05 1.32"
+      euler="0 0 -0.1"
+      size="0.55 0.38 0.42"
+      material="moon_base_blanket"
       group="1"
       contype="1"
       conaffinity="1"
