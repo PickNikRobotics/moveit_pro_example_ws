@@ -1,7 +1,7 @@
 Boulder assets
 ==============
 
-The four large boulders reuse rocks/rock_0.stl through rocks/rock_3.stl,
+The sixteen large boulders reuse rocks/rock_0.stl through rocks/rock_5.stl,
 already committed in this package. No new mesh or texture is introduced.
 These shapes are procedural assets, not scans of lunar samples. Their source
 is description/generate_terrain.py, copyright 2026 PickNik Inc., BSD-3-Clause
@@ -12,8 +12,8 @@ https://github.com/PickNikRobotics/moveit_pro_example_ws/blob/main/src/lunar_sim
 Mesh directory:
 https://github.com/PickNikRobotics/moveit_pro_example_ws/tree/main/src/lunar_sim/description/assets/rocks
 
-boulders_assets.xml applies uniform scales of 0.9, 1.1, 0.85 and 0.7 to the
-existing unit-radius meshes. boulders_geoms.xml records the four placements.
+boulders_assets.xml applies scales of 0.6 to 1.3, some non-uniform, to the
+existing unit-radius meshes. boulders_geoms.xml records the placements.
 Centers are sampled from the committed lunar_hfield.png, with the lower part
 of each boulder buried. No geometry is generated at runtime.
 

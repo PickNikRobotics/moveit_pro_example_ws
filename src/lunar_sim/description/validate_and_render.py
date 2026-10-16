@@ -145,9 +145,9 @@ def dead_reckon_square(model, data):
     chassis_id = require_id(model, mujoco.mjtObj.mjOBJ_BODY, "chassis_link")
     aid = wheel_actuator_ids(model)
     boulder_ids = {
-        require_id(model, mujoco.mjtObj.mjOBJ_GEOM, name)
-        for name in ("boulder_east", "boulder_north", "boulder_west", "boulder_south")
+        i for i in range(model.ngeom) if model.geom(i).name.startswith("boulder_")
     }
+    assert boulder_ids, "no boulder geoms loaded"
 
     def step_clear_route():
         mujoco.mj_step(model, data)
@@ -283,7 +283,7 @@ def sensor_sheet(scene_path, out_prefix):
             100,
             10.0,
             -65,
-            "Four boulders around the route: east, north, west, south",
+            "Boulders around the route",
         ),
     ):
         camera = mujoco.MjvCamera()
