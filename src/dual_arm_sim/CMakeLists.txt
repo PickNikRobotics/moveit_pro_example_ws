@@ -15,6 +15,15 @@ install(
 )
 
 if(BUILD_TESTING)
+  find_package(ament_cmake_gtest REQUIRED)
+  find_package(behaviortree_cpp_picknik REQUIRED)
+  find_package(tinyxml2_vendor REQUIRED)
+  find_package(TinyXML2 REQUIRED)
+  ament_add_gtest(test_sort_blocks test/test_sort_blocks.cpp)
+  ament_target_dependencies(test_sort_blocks behaviortree_cpp_picknik)
+  target_link_libraries(test_sort_blocks tinyxml2::tinyxml2)
+  target_compile_definitions(test_sort_blocks PRIVATE
+    SORT_BLOCKS_XML="${CMAKE_CURRENT_SOURCE_DIR}/objectives/sort_blocks.xml")
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
   # Redirect ROS node logs into the test_results tree so the test-results CI

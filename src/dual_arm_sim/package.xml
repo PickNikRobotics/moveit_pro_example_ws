@@ -19,13 +19,16 @@
 
   <test_depend>ament_clang_format</test_depend>
   <test_depend>ament_clang_tidy</test_depend>
+  <test_depend>ament_cmake_gtest</test_depend>
   <test_depend>ament_cmake_copyright</test_depend>
   <test_depend>ament_cmake_lint_cmake</test_depend>
   <test_depend>ament_cmake_pytest</test_depend>
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_lint_auto</test_depend>
+  <test_depend>behaviortree_cpp_picknik</test_depend>
   <test_depend>picknik_ament_copyright</test_depend>
   <test_depend>rclpy</test_depend>
+  <test_depend>tinyxml2_vendor</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
