@@ -32,11 +32,13 @@ def test_waypoint_tracks_within_controller_tolerances(
     waypoint = next(
         item["joint_state"] for item in waypoints if item["name"] == waypoint_name
     )
-    names = waypoint["name"]
+    # Waypoints can also carry gripper state; this replay covers the seven arm joints.
+    names = [f"joint_{index}" for index in range(1, 8)]
+    positions = dict(zip(waypoint["name"], waypoint["position"]))
     addresses = [model.jnt_qposadr[model.joint(name).id] for name in names]
     actuators = [model.actuator(name).id for name in names]
     start = data.qpos[addresses].copy()
-    target = np.array(waypoint["position"])
+    target = np.array([positions[name] for name in names])
     distance = target - start
 
     # Use the shipped joint limits to construct a synchronized trapezoidal move.
