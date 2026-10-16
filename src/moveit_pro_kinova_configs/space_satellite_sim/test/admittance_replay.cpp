@@ -49,9 +49,13 @@ struct Replay
 };
 extern "C" void* replay_create(const double* m, const double* d, const double* k, const double* axes,
                                double joint_damping)
-{ return new Replay(m, d, k, axes, joint_damping); }
+{
+  return new Replay(m, d, k, axes, joint_damping);
+}
 extern "C" void replay_destroy(void* p)
-{ delete static_cast<Replay*>(p); }
+{
+  delete static_cast<Replay*>(p);
+}
 extern "C" int replay_interpolate(const double* poses, int count, double blending_radius)
 {
   path_ik::Path path(count);
