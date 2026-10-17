@@ -136,7 +136,7 @@
               <Decorator
                 ID="Precondition"
                 else="SUCCESS"
-                if="execute_trajectories == &quot;true&quot;"
+                if="execute_trajectories == 'true'"
               >
                 <Control ID="Sequence">
                   <SubTree

@@ -27,7 +27,7 @@
         vector_in="{masks2d}"
       >
         <Control ID="Sequence">
-          <Action ID="Script" code="mask_label:=&quot;mask &quot;..index" />
+          <Action ID="Script" code="mask_label:='mask '..index" />
           <SubTree ID="CreateVector" _collapsed="true" vector="{one_mask}" />
           <Action
             ID="PushBackVector"
