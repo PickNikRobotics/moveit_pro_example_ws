@@ -28,7 +28,10 @@
 
 """Integration tests for the hangar_sim objective library."""
 
+import copy
+import sys
 import time
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import pytest
@@ -38,10 +41,14 @@ from tf2_msgs.msg import TFMessage
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import Imu
 import yaml
+from rclpy.action import ActionClient
 from rclpy.time import Time
 from rclpy.qos import qos_profile_sensor_data
 from control_msgs.action import GripperCommand
 from controller_manager_msgs.srv import ListControllers
+from moveit_msgs.msg import CollisionObject, MoveItErrorCodes, PlanningSceneComponents
+from moveit_msgs.srv import GetPlanningScene
+from moveit_studio_sdk_msgs.action import DoObjectiveSequence
 from moveit_pro_test_utils.objective_test_fixture import (
     DEFAULT_OBJECTIVE_WAIT_S,
     EndStateSpec,
@@ -457,6 +464,207 @@ def test_fuse_inputs_reach_a_reliable_subscriber(
     for subscription in subscriptions:
         node.destroy_subscription(subscription)
     assert satisfied(), f"fuse input silent to a RELIABLE subscriber: {received}"
+
+
+# --- Box drop footprint reservation ---
+#
+# "Move Boxes to Loading Zone Start from Waypoint" reserves each drop spot as a
+# placed_box_N collision object before its whole-body hover move, so the base
+# cannot park under it. The ML Objectives that run it are skipped above, so
+# these tests run its real post-lift steps against the live planning scene,
+# with only the hover move and the gripper release swapped for stand-ins.
+OBJECTIVES_DIR = Path(__file__).parent.parent / "objectives"
+SUCCEED = '<Action ID="AlwaysSuccess" />'
+FAIL = '<Action ID="AlwaysFailure" />'
+# Hover stand-in that succeeds only if the planner would see this drop's reservation.
+SEES_RESERVATION = (
+    '<Control ID="Sequence">'
+    '<Action ID="GetCurrentPlanningScene" planning_scene_msg="{scene}" />'
+    '<Action ID="IsCollisionObjectInPlanningScene" planning_scene="{scene}"'
+    ' collision_object_name="{placed_box_id}" />'
+    "</Control>"
+)
+PLACED_BOXES = ("placed_box_0", "placed_box_1")
+HOVER_MARKER = "drop_hover_checked"
+RELEASE_MARKER = "drop_release_checked"
+TEST_OBJECTS = PLACED_BOXES + (HOVER_MARKER, RELEASE_MARKER)
+# box.stl is a 0.25 m cube; one resting on the hangar floor is centered here.
+RESTING_BOX_CENTER_Z = 0.125
+OBJECTIVE_XML_TIMEOUT_S = 60.0
+
+
+def _checked_stand_in(marker: str, outcome: str) -> str:
+    """Leave a scene marker only after observing this drop's reservation."""
+    sequence = ET.fromstring(SEES_RESERVATION)
+    sequence.append(
+        ET.Element(
+            "Action",
+            ID="AddCollisionMesh",
+            object_id=marker,
+            pose="{placed_box_pose}",
+            mesh_file_path="package://hangar_sim/objectives/box.stl",
+            scale="1;1;1",
+            overwrite="true",
+        )
+    )
+    sequence.append(ET.fromstring(outcome))
+    return ET.tostring(sequence, encoding="unicode")
+
+
+def _objective_xml(*steps: ET.Element) -> str:
+    root = ET.Element("root", BTCPP_format="4", main_tree_to_execute="Box Placement")
+    tree = ET.SubElement(root, "BehaviorTree", ID="Box Placement")
+    ET.SubElement(tree, "Control", ID="Sequence").extend(steps)
+    return ET.tostring(root, encoding="unicode")
+
+
+def _place_two_boxes_xml(hover: str, release: str) -> str:
+    """Place two boxes at the real loading-zone hover pose; the second uses these stand-ins."""
+    place_pose = ET.parse(OBJECTIVES_DIR / "ml_move_boxes_to_loading_zone.xml").find(
+        ".//Action[@ID='CreatePoseStamped'][@pose_stamped='{place_pose}']"
+    )
+    pick_and_place = ET.parse(
+        OBJECTIVES_DIR / "move_boxes_to_loading_zone_from_waypoint.xml"
+    )
+    lift = pick_and_place.find(".//Action[@ID='ExecuteTrajectory']")
+    steps = list(pick_and_place.find(".//Action[@ID='ExecuteTrajectory']/.."))
+    after_lift = steps[steps.index(lift) + 1 :]
+
+    def placement(hover: str, release: str) -> ET.Element:
+        sequence = ET.Element("Control", ID="Sequence")
+        sequence.extend(copy.deepcopy(after_lift))
+        stand_ins = {"Move to Pose No Preview": hover, "MoveGripperAction": release}
+        for node in list(sequence.iter()):
+            for index, step in enumerate(node):
+                if step.get("ID") in stand_ins:
+                    node[index] = ET.fromstring(stand_ins[step.get("ID")])
+        return sequence
+
+    return _objective_xml(
+        place_pose,
+        ET.Element("Action", ID="Script", code="placed_count := 0"),
+        placement(SEES_RESERVATION, SUCCEED),
+        placement(hover, release),
+    )
+
+
+def _run_objective_xml(
+    resource: ExecuteObjectiveResource, xml: str
+) -> DoObjectiveSequence.Result:
+    client = ActionClient(resource.node, DoObjectiveSequence, "/do_objective")
+    try:
+        assert client.wait_for_server(timeout_sec=30.0), "/do_objective unavailable"
+        handle = resource.spin_until_future_complete(
+            client.send_goal_async(DoObjectiveSequence.Goal(objective_xml_string=xml)),
+            timeout_sec=30.0,
+        )
+        assert handle is not None and handle.accepted, "/do_objective rejected goal"
+        result_future = handle.get_result_async()
+        response = resource.spin_until_future_complete(
+            result_future, timeout_sec=OBJECTIVE_XML_TIMEOUT_S
+        )
+        if response is None:
+            handle.cancel_goal_async()
+            stopped = resource.spin_until_future_complete(
+                result_future, timeout_sec=30.0
+            )
+            assert stopped is not None, "/do_objective timed-out goal did not stop"
+            raise AssertionError("/do_objective goal did not finish before timeout")
+        return response.result
+    finally:
+        client.destroy()
+
+
+def _test_scene_objects(
+    resource: ExecuteObjectiveResource,
+) -> dict[str, CollisionObject]:
+    client = resource.node.create_client(GetPlanningScene, "/get_planning_scene")
+    try:
+        assert client.wait_for_service(
+            timeout_sec=30.0
+        ), "/get_planning_scene unavailable"
+        request = GetPlanningScene.Request()
+        request.components.components = (
+            PlanningSceneComponents.WORLD_OBJECT_NAMES
+            | PlanningSceneComponents.WORLD_OBJECT_GEOMETRY
+        )
+        response = resource.spin_until_future_complete(
+            client.call_async(request), timeout_sec=30.0
+        )
+        assert response is not None, "/get_planning_scene did not respond"
+        return {
+            obstacle.id: obstacle
+            for obstacle in response.scene.world.collision_objects
+            if obstacle.id in TEST_OBJECTS
+        }
+    finally:
+        resource.node.destroy_client(client)
+
+
+@pytest.mark.parametrize(
+    "hover, release, expected_boxes, expected_markers",
+    [
+        (
+            _checked_stand_in(HOVER_MARKER, SUCCEED),
+            _checked_stand_in(RELEASE_MARKER, SUCCEED),
+            PLACED_BOXES,
+            (HOVER_MARKER, RELEASE_MARKER),
+        ),
+        (
+            _checked_stand_in(HOVER_MARKER, FAIL),
+            _checked_stand_in(RELEASE_MARKER, SUCCEED),
+            PLACED_BOXES[:1],
+            (HOVER_MARKER,),
+        ),
+        (
+            _checked_stand_in(HOVER_MARKER, SUCCEED),
+            _checked_stand_in(RELEASE_MARKER, FAIL),
+            PLACED_BOXES[:1],
+            (HOVER_MARKER, RELEASE_MARKER),
+        ),
+    ],
+    ids=["placed", "hover_fails", "release_fails"],
+)
+def test_box_drop_footprint_is_reserved_before_hover(
+    hover: str,
+    release: str,
+    expected_boxes: tuple[str, ...],
+    expected_markers: tuple[str, ...],
+    execute_objective_resource: ExecuteObjectiveResource,
+) -> None:
+    """Hover plans around the reserved drop; a failed drop removes only its own reservation."""
+    try:
+        result = _run_objective_xml(
+            execute_objective_resource, _place_two_boxes_xml(hover, release)
+        )
+        objects = _test_scene_objects(execute_objective_resource)
+    finally:
+        primary_error = sys.exc_info()[1]
+        try:
+            cleanup_result = _run_objective_xml(
+                execute_objective_resource,
+                _objective_xml(
+                    *(
+                        ET.Element("Action", ID="RemoveCollisionObject", object_id=box)
+                        for box in TEST_OBJECTS
+                    )
+                ),
+            )
+            assert (
+                cleanup_result.error_code.val == MoveItErrorCodes.SUCCESS
+            ), cleanup_result.error_message
+        except Exception as cleanup_error:
+            if primary_error is None:
+                raise
+            print(f"placed_box cleanup failed: {cleanup_error}")
+    placed = expected_boxes == PLACED_BOXES
+    assert (
+        result.error_code.val == MoveItErrorCodes.SUCCESS
+    ) == placed, result.error_message
+    assert set(objects) == set(expected_boxes + expected_markers)
+    for box_id in expected_boxes:
+        box = objects[box_id]
+        assert box.pose.position.z == pytest.approx(RESTING_BOX_CENTER_Z, abs=1e-6)
 
 
 @pytest.mark.parametrize(

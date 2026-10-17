@@ -529,34 +529,20 @@
                       controller_action_name="/joint_trajectory_controller/follow_joint_trajectory"
                       joint_trajectory_msg="{joint_trajectory_msg}"
                     />
-                    <SubTree
-                      ID="Move to Pose No Preview"
-                      _collapsed="true"
-                      target_pose="{place_pose}"
-                    />
-                    <Action
-                      ID="MoveGripperAction"
-                      position="0.0"
-                      timeout="10.000000"
-                      gripper_command_action_name="/vacuum_gripper/gripper_cmd"
-                    />
-                    <!--Box released at the loading zone: drop a persistent collision obstacle at the place
-                      pose (floor height) under a unique id so the whole-body base plans around every
-                      already-placed box instead of driving over them.-->
+                    <!--Reserve this drop footprint before whole-body hover planning so the base
+                      stays clear of the box. Retain it after release for subsequent plans.-->
                     <Action
                       ID="Script"
                       code="placed_box_id := 'placed_box_' .. placed_count"
                     />
-                    <!--Drop the obstacle pose from the place-pose hover height (z=0.5) down to the
-                      floor where the released box actually rests. TransformPose applies the offset in
-                      place_pose's body frame; place_pose points straight down (180 deg about Y), so a
-                      local +0.4 z maps to world -0.4 z, leaving x/y unchanged. Output to a separate
-                      pose so the parent's place motion still targets the original place_pose.-->
+                    <!--The 0.25 m cube rests at world z=0.125. The hover pose is z=0.5
+                      and points down (180 deg about Y), so local +0.375 z is world -0.375 z.
+                      Keep the original hover pose unchanged.-->
                     <Action
                       ID="TransformPose"
                       input_pose="{place_pose}"
                       output_pose="{placed_box_pose}"
-                      translation_xyz="0;0;0.4"
+                      translation_xyz="0;0;0.375"
                     />
                     <Action
                       ID="AddCollisionMesh"
@@ -566,6 +552,30 @@
                       scale="1;1;1"
                       overwrite="true"
                     />
+                    <Control ID="Fallback">
+                      <Control ID="Sequence">
+                        <SubTree
+                          ID="Move to Pose No Preview"
+                          _collapsed="true"
+                          target_pose="{place_pose}"
+                        />
+                        <Action
+                          ID="MoveGripperAction"
+                          position="0.0"
+                          timeout="10.000000"
+                          gripper_command_action_name="/vacuum_gripper/gripper_cmd"
+                        />
+                      </Control>
+                      <!--A failed hover move or release must not leave an unplaced box in the scene.
+                        Preserve failure so the existing pick-loop handling remains in control.-->
+                      <Control ID="Sequence">
+                        <Action
+                          ID="RemoveCollisionObject"
+                          object_id="{placed_box_id}"
+                        />
+                        <Action ID="AlwaysFailure" />
+                      </Control>
+                    </Control>
                     <Action
                       ID="Script"
                       code="placed_count := placed_count + 1"
