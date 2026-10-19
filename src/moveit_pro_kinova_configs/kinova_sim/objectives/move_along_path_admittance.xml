@@ -8,10 +8,12 @@
     _hardcoded="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
+      <!-- Prepare at the path's fixed tool orientation before taring. A sensor-frame
+           tare does not compensate the tool's gravity load after a rotation. -->
       <SubTree
         ID="Move to Named Waypoint"
         _collapsed="true"
-        waypoint_name="View Satellite"
+        waypoint_name="Admittance Path Start"
       />
       <Control ID="Sequence">
         <Action
@@ -120,6 +122,7 @@
   <TreeNodesModel>
     <SubTree ID="Move Along Path Admittance">
       <MetadataFields>
+        <Metadata runnable="true" />
         <Metadata subcategory="Application - Basic Examples" />
       </MetadataFields>
     </SubTree>

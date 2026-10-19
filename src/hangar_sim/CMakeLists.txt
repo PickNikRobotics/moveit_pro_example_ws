@@ -59,6 +59,11 @@ if(BUILD_TESTING)
   ament_add_pytest_test(
           base_geometry_test test/test_base_geometry.py
           TIMEOUT 30)
+  # launch_testing imports sibling objectives_integration_test.py at collection; it needs this ENV.
+  ament_add_pytest_test(
+          gripper_objectives_test test/test_gripper_objectives.py
+          TIMEOUT 30
+          ENV MOVEIT_CONFIG_PACKAGE=hangar_sim)
   ament_add_pytest_test(
           forward_stereo_calibration_test test/test_forward_stereo_calibration.py
           TIMEOUT 30)
