@@ -29,7 +29,7 @@ The 20,000-step base was trained as 10,000 steps of that schedule (stopped at 11
 ## Next steps
 
 1. **Measure headroom on the 20,000-step base.** Run best-of-8 noise search (`search.py`) on the 192 evaluation trials. Search well above 45% means RL has behavior to recover; near 45% means more data or SFT is the better lever.
-2. **PPO run 2, built around run 1's failure.** In run 1 about a third of per-step ratios clipped every iteration at a mean KL of about 0.01: updates were dominated by noise. Change:
+2. **PPO run 2, built around run 1's failure.** In run 1 about a third of per-step ratios clipped every iteration at a mean KL of 0.014: updates were dominated by noise. Change:
    - noise and log-probability on the final 1-2 denoising steps only;
    - σ around 0.1 there;
    - train only the action output projection and timestep MLP (a few million parameters) instead of the 100M-parameter expert.
