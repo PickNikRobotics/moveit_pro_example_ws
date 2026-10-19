@@ -52,7 +52,10 @@ class Critic(torch.nn.Module):
     def __init__(self, dim: int):
         super().__init__()
         self.net = torch.nn.Sequential(
-            torch.nn.Linear(dim, 256), torch.nn.SiLU(), torch.nn.Linear(256, 256), torch.nn.SiLU(),
+            torch.nn.Linear(dim, 256),
+            torch.nn.SiLU(),
+            torch.nn.Linear(256, 256),
+            torch.nn.SiLU(),
             torch.nn.Linear(256, 1),
         )
 
@@ -70,27 +73,45 @@ def privileged(env, k: int, decisions: int) -> np.ndarray:
 class NoisyFlow:
     """SmolVLA's Euler flow sampler with learned per-step Gaussian noise on the executed entries."""
 
-    def __init__(self, vla: SmolVLA, committed: int, steps: int, sigma0: float, fp32: bool):
-        self.vla, self.m, self.fp32, self.committed = vla, vla.policy.model, fp32, committed
+    def __init__(
+        self, vla: SmolVLA, committed: int, steps: int, sigma0: float, fp32: bool
+    ):
+        self.vla, self.m, self.fp32, self.committed = (
+            vla,
+            vla.policy.model,
+            fp32,
+            committed,
+        )
         self.steps = steps
         self.dt = -1.0 / steps
         mask = torch.zeros(vla.chunk, vla.max_action_dim, device=DEV)
         mask[:committed, :ACTION_DIM] = 1
         self.mask = mask
-        self.log_sigma = torch.nn.Parameter(torch.full((steps, ACTION_DIM), float(np.log(sigma0)), device=DEV))
+        self.log_sigma = torch.nn.Parameter(
+            torch.full((steps, ACTION_DIM), float(np.log(sigma0)), device=DEV)
+        )
 
     def sigma(self) -> torch.Tensor:
         """(steps, chunk, max_action_dim): the noise scale on executed entries, 1 elsewhere (no noise added there)."""
         s = torch.ones(self.steps, self.vla.chunk, self.vla.max_action_dim, device=DEV)
-        s[:, :, :ACTION_DIM] = self.log_sigma.clamp(np.log(0.005), np.log(0.5)).exp()[:, None, :]
+        s[:, :, :ACTION_DIM] = self.log_sigma.clamp(np.log(0.005), np.log(0.5)).exp()[
+            :, None, :
+        ]
         return s
 
     def velocity(self, ctx, x, i):
-        t = torch.full((x.shape[0],), 1.0 + i * self.dt, dtype=torch.float32, device=DEV)
+        t = torch.full(
+            (x.shape[0],), 1.0 + i * self.dt, dtype=torch.float32, device=DEV
+        )
         # A chunk's log-probability sums over a thousand Gaussian terms, so rounding differences between the rollout
         # and the update pass add up; fp32 keeps the recomputed log-probability equal to the recorded one.
         with torch.autocast("cuda", dtype=torch.bfloat16, enabled=not self.fp32):
-            v = self.m.denoise_step(prefix_pad_masks=ctx["pad"], past_key_values=ctx["kv"], x_t=x, timestep=t)
+            v = self.m.denoise_step(
+                prefix_pad_masks=ctx["pad"],
+                past_key_values=ctx["kv"],
+                x_t=x,
+                timestep=t,
+            )
         return v.float()
 
     def log_prob(self, mean, x_next, i):
@@ -108,7 +129,11 @@ class NoisyFlow:
         sig = self.sigma()
         for i in range(self.steps):
             mean = x + self.dt * self.velocity(ctx, x, i)
-            x = mean + sig[i] * torch.randn_like(mean) * self.mask if stochastic else mean
+            x = (
+                mean + sig[i] * torch.randn_like(mean) * self.mask
+                if stochastic
+                else mean
+            )
             if stochastic:
                 logp += self.log_prob(mean, x, i)
             chain.append(x)
@@ -134,9 +159,16 @@ def collect(env, vla, flow, critic, rng, spec):
     decisions = int(np.ceil(spec.episode_steps / committed))
     first = np.full(n, -1)
     alive = np.ones(n, bool)
-    out = {k: [] for k in ("rows", "state", "priv", "chain", "logp", "value", "reward", "alive")}
+    out = {
+        k: []
+        for k in ("rows", "state", "priv", "chain", "logp", "value", "reward", "alive")
+    }
     for k in range(decisions):
-        rows, st, priv = env.state.copy(), env.joint_state(), privileged(env, k, decisions)
+        rows, st, priv = (
+            env.state.copy(),
+            env.joint_state(),
+            privileged(env, k, decisions),
+        )
         ctx = vla.encode(env.render(), st, spec.prompt)
         chain, logp, chunk = flow.sample(ctx)
         with torch.no_grad():
@@ -148,8 +180,16 @@ def collect(env, vla, flow, critic, rng, spec):
             first[s & (first < 0)] = k * committed + j
         reward = ((first >= 0) & (first >= k * committed)).astype(np.float32)
         alive = alive & ~(first >= 0)
-        for key, val in (("rows", rows), ("state", st), ("priv", priv), ("chain", chain.transpose(0, 1)),
-                         ("logp", logp), ("value", value), ("reward", reward), ("alive", was_alive)):
+        for key, val in (
+            ("rows", rows),
+            ("state", st),
+            ("priv", priv),
+            ("chain", chain.transpose(0, 1)),
+            ("logp", logp),
+            ("value", value),
+            ("reward", reward),
+            ("alive", was_alive),
+        ):
             out[key].append(val)
     return out, first >= 0
 
@@ -173,10 +213,20 @@ def main():
     p.add_argument("--checkpoint", required=True, help="SFT base this pipeline saved")
     p.add_argument("--out", type=Path, required=True)
     p.add_argument("--iterations", type=int, default=40)
-    p.add_argument("--batches-per-iter", type=int, default=2, help="rollout batches of --num-envs episodes per update")
+    p.add_argument(
+        "--batches-per-iter",
+        type=int,
+        default=2,
+        help="rollout batches of --num-envs episodes per update",
+    )
     p.add_argument("--num-envs", type=int, default=32)
     p.add_argument("--denoise-steps", type=int, default=10)
-    p.add_argument("--sigma0", type=float, default=0.02, help="initial noise scale (normalized action units)")
+    p.add_argument(
+        "--sigma0",
+        type=float,
+        default=0.02,
+        help="initial noise scale (normalized action units)",
+    )
     p.add_argument("--lr", type=float, default=5e-6, help="action expert")
     p.add_argument("--lr-aux", type=float, default=1e-3, help="noise scales and critic")
     p.add_argument("--epochs", type=int, default=2)
@@ -190,8 +240,11 @@ def main():
     p.add_argument("--eval-seed", type=int, default=12345)
     p.add_argument("--seed", type=int, default=0)
     p.add_argument("--flow-dtype", choices=["fp32", "bf16"], default="fp32")
-    p.add_argument("--check-ratio", action="store_true",
-                   help="collect one batch, report recorded vs recomputed log-probabilities and noisy success, and exit")
+    p.add_argument(
+        "--check-ratio",
+        action="store_true",
+        help="collect one batch, report recorded vs recomputed log-probabilities and noisy success, and exit",
+    )
     a = p.parse_args()
     a.out.mkdir(parents=True, exist_ok=True)
 
@@ -201,11 +254,16 @@ def main():
     env = se.StackEnv(a.num_envs)
     vla = SmolVLA(a.checkpoint, spec.image_names, env.image_size)
     vla.policy.model.config.num_steps = a.denoise_steps
-    flow = NoisyFlow(vla, spec.committed, a.denoise_steps, a.sigma0, a.flow_dtype == "fp32")
+    flow = NoisyFlow(
+        vla, spec.committed, a.denoise_steps, a.sigma0, a.flow_dtype == "fp32"
+    )
     critic = Critic(8 + 9 + 1).to(DEV)
     expert = [q for q in vla.policy.parameters() if q.requires_grad]
     opt = torch.optim.AdamW(
-        [{"params": expert, "lr": a.lr}, {"params": [flow.log_sigma] + list(critic.parameters()), "lr": a.lr_aux}],
+        [
+            {"params": expert, "lr": a.lr},
+            {"params": [flow.log_sigma] + list(critic.parameters()), "lr": a.lr_aux},
+        ],
         weight_decay=0.0,
     )
     log = (a.out / "ppo_log.jsonl").open("a")
@@ -217,7 +275,14 @@ def main():
 
     def run_eval(it):
         vla.policy.eval()
-        res = evaluate(vla, lambda obs: (None, None), a.eval_episodes, a.num_envs, a.eval_seed, f"ppo iter {it}")
+        res = evaluate(
+            vla,
+            lambda obs: (None, None),
+            a.eval_episodes,
+            a.num_envs,
+            a.eval_seed,
+            f"ppo iter {it}",
+        )
         record({"iter": it, "eval_success": res["success"], "eval_ci95": res["ci95"]})
         return res["success"]
 
@@ -236,8 +301,15 @@ def main():
                 diffs.append((new - old[k, sl]).abs())
         d = torch.cat(diffs)
         d = d.sum(1)
-        record({"check": a.flow_dtype, "sigma0": a.sigma0, "noisy_success": float(s.mean()),
-                "abs_dlogp_mean": float(d.mean()), "abs_dlogp_max": float(d.max())})
+        record(
+            {
+                "check": a.flow_dtype,
+                "sigma0": a.sigma0,
+                "noisy_success": float(s.mean()),
+                "abs_dlogp_mean": float(d.mean()),
+                "abs_dlogp_max": float(d.max()),
+            }
+        )
         return
 
     best = run_eval(0)
@@ -249,9 +321,17 @@ def main():
             out, s = collect(env, vla, flow, critic, rng, spec)
             parts.append(out)
             succ.append(s)
-        cat = {k: np.concatenate([np.stack(x[k], 0) for x in parts], 1) if k not in ("chain", "logp", "value")
-               else torch.cat([torch.stack(x[k], 0) for x in parts], 1) for k in parts[0]}
-        adv, ret = advantages(cat["reward"], cat["value"].numpy(), cat["alive"], a.gamma, a.lam)
+        cat = {
+            k: (
+                np.concatenate([np.stack(x[k], 0) for x in parts], 1)
+                if k not in ("chain", "logp", "value")
+                else torch.cat([torch.stack(x[k], 0) for x in parts], 1)
+            )
+            for k in parts[0]
+        }
+        adv, ret = advantages(
+            cat["reward"], cat["value"].numpy(), cat["alive"], a.gamma, a.lam
+        )
         idx = np.argwhere(cat["alive"])  # (decision, env) pairs that acted
         adv_t = adv[idx[:, 0], idx[:, 1]]
         adv_t = (adv_t - adv_t.mean()) / (adv_t.std() + 1e-8)
@@ -261,13 +341,24 @@ def main():
         # uses: the prefix and expert kernels round differently by batch shape, so the rollout's own log-probabilities
         # would start PPO's ratio away from 1.
         order = rng.permutation(len(idx))
-        batches = [order[s0:s0 + a.minibatch] for s0 in range(0, len(order) - a.minibatch + 1, a.minibatch)]
+        batches = [
+            order[s0 : s0 + a.minibatch]
+            for s0 in range(0, len(order) - a.minibatch + 1, a.minibatch)
+        ]
 
         def forward(mb, grad):
             dk, ne = idx[mb, 0], idx[mb, 1]
-            ctx = vla.encode(env.render_states(cat["rows"][dk, ne]), cat["state"][dk, ne], spec.prompt)
+            ctx = vla.encode(
+                env.render_states(cat["rows"][dk, ne]),
+                cat["state"][dk, ne],
+                spec.prompt,
+            )
             with torch.set_grad_enabled(grad):
-                return flow.chain_log_prob(ctx, cat["chain"][dk, ne].transpose(0, 1)), dk, ne
+                return (
+                    flow.chain_log_prob(ctx, cat["chain"][dk, ne].transpose(0, 1)),
+                    dk,
+                    ne,
+                )
 
         old_logp = []
         for mb in batches:
@@ -284,7 +375,9 @@ def main():
                     stats["first_ratio_dev"] = float((logp.detach() - old).abs().max())
                 ratio = (logp - old).exp()
                 A = torch.as_tensor(adv_t[mb], device=DEV)[:, None]
-                pg = -torch.min(ratio * A, ratio.clamp(1 - a.clip, 1 + a.clip) * A).mean()
+                pg = -torch.min(
+                    ratio * A, ratio.clamp(1 - a.clip, 1 + a.clip) * A
+                ).mean()
                 v = critic(torch.as_tensor(cat["priv"][dk, ne], device=DEV))
                 vloss = ((v - torch.as_tensor(ret[dk, ne], device=DEV)) ** 2).mean()
                 opt.zero_grad(set_to_none=True)
@@ -294,26 +387,42 @@ def main():
                 with torch.no_grad():
                     kl = (old - logp).mean().item()
                 stats["kl"].append(kl)
-                stats["clipfrac"].append(((ratio - 1).abs() > a.clip).float().mean().item())
+                stats["clipfrac"].append(
+                    ((ratio - 1).abs() > a.clip).float().mean().item()
+                )
                 stats["vloss"].append(vloss.item())
                 if kl > a.target_kl:
                     stop = True
                     break
             if stop:
                 break
-        record({
-            "iter": it, "train_success": float(np.concatenate(succ).mean()), "decisions": int(len(idx)),
-            "kl": float(np.mean(stats["kl"])), "clipfrac": float(np.mean(stats["clipfrac"])),
-            "vloss": float(np.mean(stats["vloss"])), "sigma": float(flow.sigma()[:, 0, :ACTION_DIM].mean().detach()),
-            "first_ratio_dev": stats["first_ratio_dev"], "early_stop": stop, "rollout_s": round(t1 - t0, 1), "update_s": round(time.perf_counter() - t1, 1),
-        })
+        record(
+            {
+                "iter": it,
+                "train_success": float(np.concatenate(succ).mean()),
+                "decisions": int(len(idx)),
+                "kl": float(np.mean(stats["kl"])),
+                "clipfrac": float(np.mean(stats["clipfrac"])),
+                "vloss": float(np.mean(stats["vloss"])),
+                "sigma": float(flow.sigma()[:, 0, :ACTION_DIM].mean().detach()),
+                "first_ratio_dev": stats["first_ratio_dev"],
+                "early_stop": stop,
+                "rollout_s": round(t1 - t0, 1),
+                "update_s": round(time.perf_counter() - t1, 1),
+            }
+        )
         if it % a.eval_every == 0 or it == a.iterations:
             rate = run_eval(it)
             if rate > best:
                 best = rate
                 vla.save(a.out / "best")
-                torch.save({"log_sigma": flow.log_sigma.detach().cpu(), "critic": critic.state_dict()},
-                           a.out / "best" / "ppo_aux.pt")
+                torch.save(
+                    {
+                        "log_sigma": flow.log_sigma.detach().cpu(),
+                        "critic": critic.state_dict(),
+                    },
+                    a.out / "best" / "ppo_aux.pt",
+                )
     vla.save(a.out / "last")
 
 
