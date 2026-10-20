@@ -18,8 +18,9 @@ add_library(factory_pick_behaviors SHARED src/is_bracket_pick_start_current.cpp
 target_compile_features(factory_pick_behaviors PUBLIC cxx_std_20)
 target_include_directories(
   factory_pick_behaviors
-  PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-         $<INSTALL_INTERFACE:include>)
+  PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>)
 ament_target_dependencies(factory_pick_behaviors moveit_pro_behavior_interface
                           pluginlib moveit_task_constructor_msgs moveit_msgs
                           behaviortree_cpp_picknik sensor_msgs)
