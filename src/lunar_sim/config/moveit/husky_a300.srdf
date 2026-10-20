@@ -4,6 +4,9 @@
     A URDF file must exist for this robot as well, where the joints and the links that are referenced are defined
 -->
 <robot name="husky_a300">
+    <!-- Keep world collision objects in odom while the state monitor tracks the rover
+         through the diff-drive controller's odom -> footprint TF. -->
+    <virtual_joint name="base_planar_joint" type="planar" parent_frame="odom" child_link="footprint"/>
     <!--GROUPS: Representation of a set of joints and links. This can be useful for specifying DOF to plan for, defining arms, end effectors, etc-->
     <group name="base">
         <joint name="front_left_wheel_joint"/>
@@ -11,7 +14,7 @@
         <joint name="rear_left_wheel_joint"/>
         <joint name="rear_right_wheel_joint"/>
     </group>
-    <!--DISABLE COLLISIONS: By default it is assumed that any link of the robot could potentially come into collision with any other link in the robot. This tag disables collision checking between a specified pair of links. The wheel joints are the only DOF and their collision geometry is a cylinder about the spin axis, so the self-collision set is the same in every reachable configuration; "Always" pairs below are the ones whose meshes interpenetrate there. -->
+    <!--DISABLE COLLISIONS: By default it is assumed that any link of the robot could potentially come into collision with any other link in the robot. This tag disables collision checking between a specified pair of links. The wheel joints are the only internal DOF and their collision geometry is a cylinder about the spin axis, so the self-collision set is the same in every reachable configuration; "Always" pairs below are the ones whose meshes interpenetrate there. -->
     <disable_collisions link1="base_link" link2="chassis_link" reason="Adjacent"/>
     <disable_collisions link1="chassis_link" link2="front_bumper_link" reason="Adjacent"/>
     <disable_collisions link1="chassis_link" link2="rear_bumper_link" reason="Adjacent"/>

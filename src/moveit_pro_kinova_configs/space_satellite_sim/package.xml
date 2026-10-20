@@ -28,7 +28,12 @@
   <exec_depend>velocity_force_controller</exec_depend>
 
   <test_depend>ament_cmake_pytest</test_depend>
+  <test_depend>joint_trajectory_admittance_controller</test_depend>
+  <test_depend>path_ik</test_depend>
+  <test_depend>ament_index_python</test_depend>
   <test_depend>moveit_studio_utils_py</test_depend>
+  <test_depend>python3-numpy</test_depend>
+  <test_depend>python3-yaml</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
