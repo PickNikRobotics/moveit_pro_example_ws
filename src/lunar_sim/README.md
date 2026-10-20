@@ -32,6 +32,13 @@ unchanged from the earlier mock-hardware setup. `open_loop` is now `false`: MuJo
 per-wheel position/velocity state from physics, so `/odom` reflects that feedback instead of
 integrating the commanded velocity.
 
+MoveIt's planning frame is `odom`. The SRDF's planar `base_planar_joint` connects it to
+the URDF root `footprint`; the state monitor updates that joint from the controller's
+`odom -> footprint` TF. World collision objects created in the Planning Scene Editor
+therefore stay in `odom` as the rover moves. The `base` planning group still contains
+only the four wheel joints, and direct `/cmd_vel` teleoperation does not check those
+objects for collisions.
+
 **Skid-steer calibration:** the real robot's `wheel_separation_multiplier: 1.75` compensates for
 pavement scrub friction during a skid-steer turn; it does not carry over to MuJoCo's
 regolith-plane contact model, which has different (measured: higher) turning resistance. Using

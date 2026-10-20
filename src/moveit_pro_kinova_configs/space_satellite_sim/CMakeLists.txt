@@ -27,9 +27,18 @@ install(DIRECTORY "${PICKNIK_ACCESSORIES_SHARE_DIR}"
 
 if(BUILD_TESTING)
   find_package(ament_cmake_pytest REQUIRED)
+  find_package(joint_trajectory_admittance_controller REQUIRED)
+  find_package(path_ik REQUIRED)
+  add_library(admittance_replay SHARED test/admittance_replay.cpp)
+  target_compile_features(admittance_replay PRIVATE cxx_std_20)
+  target_link_libraries(admittance_replay PRIVATE joint_trajectory_admittance_controller::admittance path_ik::path_ik)
   find_package(ament_lint_auto REQUIRED)
   ament_lint_auto_find_test_dependencies()
   ament_add_pytest_test(space_satellite_sim_robot_description_test test/test_robot_description.py TIMEOUT 60)
+  ament_add_pytest_test(kinova_arm_tracking_test test/test_arm_tracking.py TIMEOUT 60)
+  ament_add_pytest_test(kinova_admittance_path_test test/test_admittance_path.py
+    TIMEOUT 90
+    ENV ADMITTANCE_TEST_LIBRARY=$<TARGET_FILE:admittance_replay>)
 endif()
 
 ament_package()
