@@ -68,6 +68,11 @@ Objectives). It fails on a missing file, entry or factor, or a factor outside
 minimum. The stack Objectives use it after opening the jaw, because a canceled
 gripper move can still report success.
 
+`IsPlannedJointAtMost` refuses a planned joint position above `maximum` in a
+`moveit_msgs/RobotState`, with the configured reason. The pre-motion reach
+checks use it for joint2's 2.2 rad bound; change that bound in all reach helpers
+together. It is a geometric planning check, not a motor-temperature sensor.
+
 `IsCubeStacked` succeeds only when a located cube's top centre lies within
 `max_offset` horizontally of the located top of the cube it should rest on, and
 the height of `cube_points`, the depth points inside the cube's mask, at

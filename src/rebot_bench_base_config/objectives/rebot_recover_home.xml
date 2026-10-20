@@ -2,7 +2,7 @@
 <root BTCPP_format="4" main_tree_to_execute="reBot Recover Home">
   <BehaviorTree
     ID="reBot Recover Home"
-    _description="After a failed leg, return the arm home holding the jaw at its command, then close the jaw unless it may be around the cube, even if the return home fails. Fails only if the return home fails."
+    _description="After a failed leg, return the arm home holding the jaw at its command, then close the jaw unless it may be around the cube, even if the return home fails, and detach the cube from the planning scene. Fails only if the return home fails."
   >
     <Sequence>
       <!-- Close the empty jaw even when the move home fails, which it does
@@ -21,6 +21,12 @@
         <Script code="went_home := false" />
       </Fallback>
       <SubTree ID="Close Gripper" _skipIf="holding" />
+      <!-- A cube still attached to the jaw in the planning scene makes the
+           next leg's scene setup refuse it. Detach it once home: the move home
+           above still plans around it. -->
+      <ForceSuccess>
+        <Action ID="DetachObject" object_id="rebot_blue" />
+      </ForceSuccess>
       <ScriptCondition code="went_home" />
     </Sequence>
   </BehaviorTree>

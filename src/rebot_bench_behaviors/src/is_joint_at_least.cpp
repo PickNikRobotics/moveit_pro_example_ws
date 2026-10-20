@@ -29,6 +29,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <moveit_msgs/msg/robot_state.hpp>
 #include <moveit_pro_behavior_interface/get_required_ports.hpp>
 #include <moveit_pro_behavior_interface/metadata_fields.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
@@ -70,6 +71,46 @@ BT::NodeStatus IsJointAtLeast::tick()
   if (state.position[index] < minimum)
     return fail(joint_name + " measured " + std::to_string(state.position[index]) + " rad, below the required " +
                 std::to_string(minimum) + " rad.");
+  return BT::NodeStatus::SUCCESS;
+}
+
+BT::PortsList IsPlannedJointAtMost::providedPorts()
+{
+  return { BT::InputPort<moveit_msgs::msg::RobotState>("robot_state", "Planned robot state, such as an IK solution."),
+           BT::InputPort<std::string>("joint_name", "Joint to check."),
+           BT::InputPort<double>("maximum", "Highest acceptable planned position, radians."),
+           BT::InputPort<std::string>("reason", "What the maximum protects, for the failure message.") };
+}
+
+BT::KeyValueVector IsPlannedJointAtMost::metadata()
+{
+  return { { moveit_pro::behaviors::kSubcategoryMetadataKey, "reBot Bench" },
+           { moveit_pro::behaviors::kDescriptionMetadataKey,
+             "Succeeds only when the joint's planned position is at or below the maximum. Use it on a reach check's "
+             "IK solution to refuse a pose before any motion." } };
+}
+
+BT::NodeStatus IsPlannedJointAtMost::tick()
+{
+  const auto fail = [this](const std::string& message) {
+    getBehaviorContext()->logger->publishFailureMessage(name(), message);
+    return BT::NodeStatus::FAILURE;
+  };
+  const auto inputs =
+      moveit_pro::behaviors::getRequiredInputs(getInput<moveit_msgs::msg::RobotState>("robot_state"),
+                                               getInput<std::string>("joint_name"), getInput<double>("maximum"),
+                                               getInput<std::string>("reason"));
+  if (!inputs)
+    return fail("Provide the planned robot state, joint name, maximum and reason: " + inputs.error());
+  const auto& [robot_state, joint_name, maximum, reason] = inputs.value();
+  const auto& state = robot_state.joint_state;
+  const auto joint = std::ranges::find(state.name, joint_name);
+  const auto index = static_cast<std::size_t>(joint - state.name.begin());
+  if (joint == state.name.end() || index >= state.position.size() || !std::isfinite(state.position[index]))
+    return fail("The planned robot state has no position for " + joint_name + ".");
+  if (state.position[index] > maximum)
+    return fail(joint_name + " would reach " + std::to_string(state.position[index]) + " rad, past the " +
+                std::to_string(maximum) + " rad " + reason + ".");
   return BT::NodeStatus::SUCCESS;
 }
 }  // namespace rebot_bench_behaviors
