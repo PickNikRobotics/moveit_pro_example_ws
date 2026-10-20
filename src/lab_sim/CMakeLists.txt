@@ -69,6 +69,7 @@ if(BUILD_TESTING)
   # post-mortem of objective failures impossible.
   set(LAB_SIM_INTEGRATION_TEST_ENV
       MOVEIT_CONFIG_PACKAGE=lab_sim
+      MOVEIT_PRO_CAMERA_RENDERER=opengl
       MOVEIT_HOST_USER_WORKSPACE=${CMAKE_SOURCE_DIR}
       ROS_LOG_DIR=${CMAKE_CURRENT_BINARY_DIR}/test_results/${PROJECT_NAME}/ros_logs)
   # Point-cloud conversion for the 1280x720 wrist camera can starve MuJoCo's

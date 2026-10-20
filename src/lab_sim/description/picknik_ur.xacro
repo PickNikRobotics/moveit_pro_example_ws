@@ -7,6 +7,7 @@
     name="camera_renderer"
     default="$(optenv MOVEIT_PRO_CAMERA_RENDERER opengl)"
   />
+  <xacro:property name="camera_renderer" value="$(arg camera_renderer)" />
   <xacro:arg
     name="point_cloud_publish_rate"
     default="$(optenv MOVEIT_PRO_POINT_CLOUD_PUBLISH_RATE 10)"
@@ -1221,7 +1222,7 @@
     </hardware>
     <!-- nyx: the Nyx nodes publish <camera>/color and camera_info, so MuJoCo publishes only depth and points. -->
     <xacro:if
-      value="${ dict(opengl=False, nyx=True, both=False)['$(arg camera_renderer)'] }"
+      value="${ dict(opengl=False, nyx=True, both=False)[camera_renderer or 'opengl'] }"
     >
       <sensor name="scene_camera">
         <param name="color_enabled">false</param>
@@ -1232,7 +1233,7 @@
     </xacro:if>
     <!-- both: each renderer's color image goes under its own prefix, so no consumer reads one renderer while expecting the other. Depth and points stay unprefixed. -->
     <xacro:if
-      value="${ dict(opengl=False, nyx=False, both=True)['$(arg camera_renderer)'] }"
+      value="${ dict(opengl=False, nyx=False, both=True)[camera_renderer or 'opengl'] }"
     >
       <sensor name="scene_camera">
         <param name="rgb_topic">scene_camera/opengl/color</param>

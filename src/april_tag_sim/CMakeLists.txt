@@ -38,6 +38,7 @@ if(BUILD_TESTING)
           objectives_integration_test test/objectives_integration_test.py
           TIMEOUT 600
           ENV MOVEIT_CONFIG_PACKAGE=april_tag_sim
+              MOVEIT_PRO_CAMERA_RENDERER=opengl
               MOVEIT_HOST_USER_WORKSPACE=${CMAKE_SOURCE_DIR}
               ROS_LOG_DIR=${CMAKE_CURRENT_BINARY_DIR}/test_results/${PROJECT_NAME}/ros_logs)
 endif()
