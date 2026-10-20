@@ -34,6 +34,7 @@
 #include <deque>
 #include <filesystem>
 #include <map>
+#include <ranges>
 #include <set>
 #include <string>
 #include <vector>
@@ -47,7 +48,7 @@ namespace
 // shipped settings file with the Behavior's own parser.
 const std::vector<std::string> kRecordedPorts{ "waypoint_name", "joint_group_name", "planning_group_name",
                                                "velocity_scale_factor", "acceleration_scale_factor" };
-const std::set<std::string> kOwnStubs{ "LoadMotionScales", "IsJointAtLeast" };
+const std::set<std::string> kOwnStubs{ "LoadMotionScales", "IsJointAtLeast", "GetSizeOfVector" };
 
 struct Call
 {
@@ -164,6 +165,15 @@ protected:
                                  },
                                  { BT::InputPort("joint_state"), BT::InputPort<std::string>("joint_name"),
                                    BT::InputPort<double>("minimum") });
+    // Blue poses located within a cube width of red on the mat, one per locate; none when unset.
+    factory.registerSimpleAction("GetSizeOfVector",
+                                 [this](BT::TreeNode& node) {
+                                   node.setOutput("vector_size", blue_near_red.empty() ? 0 : blue_near_red.front());
+                                   if (!blue_near_red.empty())
+                                     blue_near_red.pop_front();
+                                   return BT::NodeStatus::SUCCESS;
+                                 },
+                                 { BT::InputPort("vector_in"), BT::OutputPort<int>("vector_size") });
     for (auto& document : documents)
     {
       for (auto* tree = document.RootElement()->FirstChildElement("BehaviorTree"); tree;
@@ -221,6 +231,7 @@ protected:
   long failing_occurrence = 0;
   std::map<std::string, rebot_bench_behaviors::MotionScales> settings;
   std::deque<double> measured_jaw;
+  std::deque<int> blue_near_red;
   bool arm_home = false;
   bool single_point_plan = false;
 };
@@ -437,6 +448,21 @@ TEST_F(StackObjectives, PreparationFailsAfterTwoShortOpenings)
   EXPECT_EQ(run(R"(<SubTree ID="Prepare reBot Stack" blue_top="{blue_top}" red_top="{red_top}" />)"),
             BT::NodeStatus::FAILURE);
   EXPECT_EQ(motions(), (std::vector<std::string>{ kOpen, "jaw short", kOpen, "jaw short" }));
+}
+
+TEST_F(StackObjectives, CubesLocatedAsOneRelocateThenFailWithoutAnyMotion)
+{
+  blue_near_red = { 1, 1, 1 };
+  EXPECT_EQ(run(kStack), BT::NodeStatus::FAILURE);
+  EXPECT_EQ(std::ranges::count(calls, "FitCubeToMask", &Call::label), 6);
+  EXPECT_TRUE(motions().empty());
+  EXPECT_EQ(std::ranges::count(calls, "ExecuteTrajectory", &Call::label), 0);
+
+  calls.clear();
+  blue_near_red = { 1 };
+  EXPECT_EQ(run(kStack), BT::NodeStatus::SUCCESS);
+  // Red and blue, twice.
+  EXPECT_EQ(std::ranges::count(calls, "FitCubeToMask", &Call::label), 4);
 }
 
 class ShippedSpeeds : public StackObjectives, public testing::WithParamInterface<std::string>

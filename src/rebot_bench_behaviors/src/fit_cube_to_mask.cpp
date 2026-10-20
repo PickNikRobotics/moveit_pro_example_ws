@@ -40,22 +40,129 @@
 #include <opencv2/calib3d.hpp>
 #include <opencv2/imgproc.hpp>
 #include <sensor_msgs/msg/camera_info.hpp>
+#include <utility>
 
 namespace rebot_bench_behaviors
 {
+namespace
+{
+template <typename Project>
+double contourLoss(const Eigen::Vector3d& pose, const Project& hull, const std::vector<cv::Point2f>& sparse,
+                   const std::vector<cv::Point2f>& observed)
+{
+  const auto projected = hull(pose);
+  if (projected.empty())
+    return std::numeric_limits<double>::infinity();
+  double total = 0;
+  std::size_t count = 0;
+  for (const auto& p : sparse)
+  {
+    const double d = cv::pointPolygonTest(projected, p, true);
+    total += d * d;
+    ++count;
+  }
+  // Symmetric contour distance penalizes missing/occluded parts of a cube's silhouette.
+  for (std::size_t i = 0; i < projected.size(); ++i)
+    for (int j = 0; j < 12; ++j)
+    {
+      const cv::Point2f p = projected[i] * (1.0F - j / 12.0F) + projected[(i + 1) % projected.size()] * (j / 12.0F);
+      const double d = cv::pointPolygonTest(observed, p, true);
+      total += d * d;
+      ++count;
+    }
+  return total / count;
+}
+
+template <typename Loss>
+bool refineCubeStep(Eigen::Vector3d& pose, double& cost, const Eigen::Vector3d& step, const Loss& loss)
+{
+  bool improved = false;
+  for (int axis = 0; axis < 3; ++axis)
+    for (int sign : { -1, 1 })
+    {
+      Eigen::Vector3d candidate = pose;
+      candidate[axis] += sign * step[axis];
+      const double candidate_cost = loss(candidate);
+      if (candidate_cost < cost)
+      {
+        pose = candidate;
+        cost = candidate_cost;
+        improved = true;
+      }
+    }
+  return improved;
+}
+
+template <typename Loss>
+std::pair<Eigen::Vector3d, double> refineCubePose(Eigen::Vector3d pose, const Loss& loss)
+{
+  double cost = loss(pose);
+  for (double scale = 1; scale >= 1.0 / 128; scale *= 0.5)
+  {
+    const Eigen::Vector3d step(0.01 * scale, 0.01 * scale, 0.08 * scale);
+    for (int iteration = 0; iteration < 60; ++iteration)
+    {
+      const bool improved = refineCubeStep(pose, cost, step, loss);
+      if (!improved)
+        break;
+    }
+  }
+  return { pose, cost };
+}
+
+template <typename Project>
+tl::expected<std::pair<Eigen::Vector3d, double>, std::string>
+fitCubeModel(const Eigen::Vector3d& initial, const Project& hull, const std::vector<cv::Point2f>& observed,
+             const std::vector<cv::Point2f>& sparse)
+{
+  const double expected_area = cv::contourArea(hull(Eigen::Vector3d(initial.x(), initial.y(), 0)));
+  const double observed_area = cv::contourArea(observed);
+  if (observed_area < expected_area * 0.5 || observed_area > expected_area * 2)
+    return tl::make_unexpected(
+        "Mask area is inconsistent with a 50 mm cube at its calibrated position on its support.");
+  const auto loss = [&hull, &sparse, &observed](const Eigen::Vector3d& pose) {
+    return contourLoss(pose, hull, sparse, observed);
+  };
+  Eigen::Vector3d best;
+  double best_loss = std::numeric_limits<double>::infinity();
+  // Multi-start covers the square's 90 degree rotational symmetry; refine translation and yaw jointly.
+  for (int seed = 0; seed < 12; ++seed)
+  {
+    const auto [pose, cost] =
+        refineCubePose(Eigen::Vector3d(initial.x(), initial.y(), seed * std::numbers::pi / 24.0), loss);
+    if (cost < best_loss)
+    {
+      best = pose;
+      best_loss = cost;
+    }
+  }
+  return std::make_pair(best, best_loss);
+}
+}  // namespace
+
 BT::PortsList FitCubeToMask::providedPorts()
 {
   return { BT::InputPort<std::vector<moveit_studio_vision_msgs::msg::Mask2D>>("masks2d"),
            BT::InputPort<sensor_msgs::msg::CameraInfo>("camera_info"),
-           BT::OutputPort<geometry_msgs::msg::PoseStamped>("cube_top"), BT::OutputPort<double>("silhouette_rms_px") };
+           BT::InputPort<double>("support_height", 0.0,
+                                 "World z of the surface the cube rests on: 0 on the mat, 0.05 on another cube."),
+           BT::InputPort<bool>("top_face_fallback", false,
+                               "Also accept a mask of the cube's top face alone when no mask fits a whole cube."),
+           BT::InputPort<double>("top_face_max_rms_px", 1.0,
+                                 "Largest silhouette RMS, in pixels, accepted for a top face alone."),
+           BT::OutputPort<geometry_msgs::msg::PoseStamped>("cube_top"),
+           BT::OutputPort<double>("silhouette_rms_px"),
+           BT::OutputPort<std::vector<moveit_studio_vision_msgs::msg::Mask2D>>(
+               "cube_masks", "The one mask the fitted cube came from, as a list for the mask Behaviors.") };
 }
 
 BT::KeyValueVector FitCubeToMask::metadata()
 {
   return { { moveit_pro::behaviors::kSubcategoryMetadataKey, "reBot Bench" },
            { moveit_pro::behaviors::kDescriptionMetadataKey,
-             "Fits the complete silhouette of one upright 50 mm cube resting on world z=0. Requires calibrated "
-             "RGB intrinsics and optical-frame TF at the image timestamp. Rejects occluded or incomplete masks." } };
+             "Fits one upright 50 mm cube resting on world z=support_height from a mask. Requires calibrated RGB "
+             "intrinsics and optical-frame TF at the image timestamp. Rejects occluded or incomplete masks by "
+             "default; top_face_fallback also tries top-face-only masks if whole-cube fitting fails." } };
 }
 
 BT::NodeStatus FitCubeToMask::tick()
@@ -70,16 +177,21 @@ BT::NodeStatus FitCubeToMask::tick()
   if (!inputs)
     return fail(inputs.error());
   const auto& [masks, info] = inputs.value();
+  const double support = getInput<double>("support_height").value_or(0.0);
+  const bool top_face_fallback = getInput<bool>("top_face_fallback").value_or(false);
+  const double top_face_max_rms = getInput<double>("top_face_max_rms_px").value_or(1.0);
   if (masks.empty() || info.k[0] <= 0 || info.k[4] <= 0)
     return fail("Provide SAM3 cube masks and calibrated RGB CameraInfo.");
   struct Candidate
   {
     geometry_msgs::msg::PoseStamped pose;
     double rms;
+    moveit_studio_vision_msgs::msg::Mask2D mask;
   };
   std::vector<Candidate> candidates;
   std::string last_error;
-  const auto fit = [&](const auto& mask) -> tl::expected<Candidate, std::string> {
+  const auto fit = [this, &info, support,
+                    top_face_max_rms](const auto& mask, const bool top_face) -> tl::expected<Candidate, std::string> {
     const auto fail = [](const std::string& message) -> tl::expected<Candidate, std::string> {
       return tl::make_unexpected(message);
     };
@@ -139,14 +251,15 @@ BT::NodeStatus FitCubeToMask::tick()
     const Eigen::Vector3d origin = world_camera->translation();
     if (ray.z() >= -0.1 || origin.z() <= 0.10)
       return fail("The calibrated RGB camera must look down at the mat in the world frame.");
-    const Eigen::Vector3d initial = origin + ray * ((0.025 - origin.z()) / ray.z());
+    // The full cube from its support up, or with the fallback only its top face.
+    double bottom = support;
 
-    const auto hull = [&](const Eigen::Vector3d& pose) {
+    const auto hull = [&camera_world, &info, &bottom, support](const Eigen::Vector3d& pose) {
       std::vector<cv::Point2f> pixels;
       const double c = std::cos(pose.z()), s = std::sin(pose.z());
       for (const double x : { -0.025, 0.025 })
         for (const double y : { -0.025, 0.025 })
-          for (const double z : { 0.0, 0.05 })
+          for (const double z : { bottom, support + 0.05 })
           {
             const Eigen::Vector3d p =
                 camera_world * Eigen::Vector3d(pose.x() + c * x - s * y, pose.y() + s * x + c * y, z);
@@ -158,99 +271,116 @@ BT::NodeStatus FitCubeToMask::tick()
       cv::convexHull(pixels, result);
       return result;
     };
-    const double expected_area = cv::contourArea(hull(Eigen::Vector3d(initial.x(), initial.y(), 0)));
-    const double observed_area = cv::contourArea(observed);
-    if (observed_area < expected_area * 0.5 || observed_area > expected_area * 2)
-      return fail("Mask area is inconsistent with a 50 mm cube at its calibrated mat-plane position.");
-    const auto loss = [&](const Eigen::Vector3d& pose) {
-      const auto projected = hull(pose);
-      if (projected.empty())
-        return std::numeric_limits<double>::infinity();
-      double total = 0;
-      std::size_t count = 0;
-      for (const auto& p : sparse)
-      {
-        const double d = cv::pointPolygonTest(projected, p, true);
-        total += d * d;
-        ++count;
-      }
-      // Symmetric contour distance penalizes missing/occluded parts of a cube's silhouette.
-      for (std::size_t i = 0; i < projected.size(); ++i)
-        for (int j = 0; j < 12; ++j)
-        {
-          const cv::Point2f p = projected[i] * (1.0F - j / 12.0F) + projected[(i + 1) % projected.size()] * (j / 12.0F);
-          const double d = cv::pointPolygonTest(observed, p, true);
-          total += d * d;
-          ++count;
-        }
-      return total / count;
+    const auto fit_model = [&origin, &ray, &bottom, support, &observed, &sparse, &hull]() {
+      const Eigen::Vector3d initial = origin + ray * (((bottom + support + 0.05) / 2 - origin.z()) / ray.z());
+      return fitCubeModel(initial, hull, observed, sparse);
     };
-    Eigen::Vector3d best;
-    double best_loss = std::numeric_limits<double>::infinity();
-    // Multi-start covers the square's 90 degree rotational symmetry; refine translation and yaw jointly.
-    for (int seed = 0; seed < 12; ++seed)
+    auto model = fit_model();
+    // Against a similar background SAM3 can segment a stacked cube's top face alone; that face sets the grasp.
+    // A lone side face also fits a top face, a cube width nearer the camera but less well: hold a top
+    // face to a tighter fit than a whole cube.
+    double max_rms = 2.0;
+    if (top_face && (!model || std::sqrt(model->second) > 2.0))
     {
-      Eigen::Vector3d pose(initial.x(), initial.y(), seed * std::numbers::pi / 24.0);
-      double cost = loss(pose);
-      for (double scale = 1; scale >= 1.0 / 128; scale *= 0.5)
+      bottom = support + 0.05;
+      if (const auto fitted_top_face = fit_model();
+          fitted_top_face && (!model || fitted_top_face->second < model->second))
       {
-        const Eigen::Vector3d step(0.01 * scale, 0.01 * scale, 0.08 * scale);
-        for (int iteration = 0; iteration < 60; ++iteration)
-        {
-          bool improved = false;
-          for (int axis = 0; axis < 3; ++axis)
-            for (int sign : { -1, 1 })
-            {
-              Eigen::Vector3d candidate = pose;
-              candidate[axis] += sign * step[axis];
-              const double candidate_cost = loss(candidate);
-              if (candidate_cost < cost)
-              {
-                pose = candidate;
-                cost = candidate_cost;
-                improved = true;
-              }
-            }
-          if (!improved)
-            break;
-        }
-      }
-      if (cost < best_loss)
-      {
-        best = pose;
-        best_loss = cost;
+        model = fitted_top_face;
+        max_rms = top_face_max_rms;
       }
     }
+    if (!model)
+      return fail(model.error());
+    const auto& [best, best_loss] = model.value();
     const double rms = std::sqrt(best_loss);
-    if (!std::isfinite(rms) || rms > 2.0)
-      return fail("The SAM3 silhouette does not fit a complete 50 mm cube on the calibrated mat: RMS " +
+    if (!std::isfinite(rms) || rms > max_rms)
+      return fail("The SAM3 silhouette does not fit a complete 50 mm cube on its calibrated support: RMS " +
                   std::to_string(rms) + " px. Check occlusion, cube size, and calibration.");
     geometry_msgs::msg::PoseStamped top;
     top.header = mask.pixels.header;
     top.header.frame_id = "world";
     top.pose.position.x = best.x();
     top.pose.position.y = best.y();
-    top.pose.position.z = 0.05;
+    top.pose.position.z = support + 0.05;
     // A square has four equivalent grasp axes. Choose the one nearest the robot's heading,
     // avoiding a gratuitous half-turn that consumes this arm's wrist-roll range.
     const double yaw = base_yaw + std::remainder(best.z() - base_yaw, std::numbers::pi / 2);
     top.pose.orientation.z = std::sin(yaw / 2);
     top.pose.orientation.w = std::cos(yaw / 2);
-    return Candidate{ top, rms };
+    return Candidate{ top, rms, mask };
   };
-  for (const auto& mask : masks)
+  // Against a like-coloured background SAM3 can split one cube into face masks; together they are its
+  // silhouette. Fit each connected union of the masks as well as each mask.
+  auto fit_masks = masks;
+  if (masks.size() > 1)
   {
-    const auto candidate = fit(mask);
-    if (candidate)
-      candidates.push_back(*candidate);
-    else
-      last_error = candidate.error();
+    cv::Mat all = cv::Mat::zeros(int(info.height), int(info.width), CV_8UC1);
+    std::vector<cv::Mat> input_masks;
+    input_masks.reserve(masks.size());
+    for (const auto& mask : masks)
+    {
+      try
+      {
+        const cv::Mat pixels = cv_bridge::toCvCopy(mask.pixels)->image;
+        if (pixels.channels() != 1 || mask.x < 0 || mask.y < 0 || mask.x + pixels.cols > all.cols ||
+            mask.y + pixels.rows > all.rows)
+          continue;
+        cv::Mat binary;
+        cv::compare(pixels, pixels.depth() == CV_32F || pixels.depth() == CV_64F ? 0.5 : 0, binary, cv::CMP_GT);
+        const cv::Rect roi(int(mask.x), int(mask.y), pixels.cols, pixels.rows);
+        all(roi) |= binary;
+        cv::Mat full = cv::Mat::zeros(all.size(), CV_8UC1);
+        binary.copyTo(full(roi));
+        input_masks.push_back(std::move(full));
+      }
+      catch (const cv_bridge::Exception& error)
+      {
+        last_error = error.what();
+      }
+    }
+    cv::morphologyEx(all, all, cv::MORPH_CLOSE, cv::Mat::ones(5, 5, CV_8UC1));
+    std::vector<std::vector<cv::Point>> parts;
+    cv::findContours(all, parts, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
+    for (std::size_t i = 0; i < parts.size(); ++i)
+    {
+      cv::Mat part = cv::Mat::zeros(all.size(), CV_8UC1);
+      cv::drawContours(part, parts, int(i), cv::Scalar(255), cv::FILLED);
+      // Closing may repair even a single input; skip only pixel-identical components.
+      if (std::ranges::any_of(input_masks,
+                              [&part](const cv::Mat& input) { return cv::countNonZero(part != input) == 0; }))
+        continue;
+      auto merged = masks.front();
+      merged.x = 0;
+      merged.y = 0;
+      merged.pixels = *cv_bridge::CvImage(masks.front().pixels.header, "mono8", part).toImageMsg();
+      fit_masks.push_back(merged);
+    }
   }
+  // Top faces only when no mask fits a whole cube: a side face or a printed mark can also fit a
+  // top face, which would make one cube look like several.
+  for (const bool top_face : { false, true })
+  {
+    if (top_face && (!top_face_fallback || !candidates.empty()))
+      break;
+    for (const auto& mask : fit_masks)
+    {
+      const auto candidate = fit(mask, top_face);
+      if (candidate)
+        candidates.push_back(*candidate);
+      else
+        last_error = candidate.error();
+    }
+  }
+  std::string listed;
+  for (const auto& candidate : candidates)
+    listed += " (" + std::to_string(candidate.pose.pose.position.x) + ", " +
+              std::to_string(candidate.pose.pose.position.y) + ", RMS " + std::to_string(candidate.rms) + " px)";
   getBehaviorContext()->logger->publishInfoMessage(name(), std::to_string(candidates.size()) +
                                                                " cube-sized fitted candidates from " +
-                                                               std::to_string(masks.size()) + " SAM3 masks.");
+                                                               std::to_string(masks.size()) + " SAM3 masks:" + listed);
   if (candidates.empty())
-    return fail("No SAM3 candidate fits a 50 mm cube on the mat. " + last_error);
+    return fail("No SAM3 candidate fits a 50 mm cube on its support. " + last_error);
   std::ranges::sort(candidates, {}, &Candidate::rms);
   const auto& best = candidates.front();
   for (const auto& candidate : candidates)
@@ -262,6 +392,7 @@ BT::NodeStatus FitCubeToMask::tick()
   }
   setOutput("cube_top", best.pose);
   setOutput("silhouette_rms_px", best.rms);
+  setOutput("cube_masks", std::vector<moveit_studio_vision_msgs::msg::Mask2D>{ best.mask });
   return BT::NodeStatus::SUCCESS;
 }
 }  // namespace rebot_bench_behaviors
