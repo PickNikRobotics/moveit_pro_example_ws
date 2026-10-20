@@ -2,7 +2,7 @@
 
 The shared configuration for the Seeed reBot Arm 102 / **B601-RS** owns the
 URDF/Xacro, SRDF, meshes, controllers, Objectives, waypoints and optional real
-wrist D435 and scene OAK-D RGB cameras. It follows the workspace's SO-101
+wrist D435 and scene OAK-D cameras. It follows the workspace's SO-101
 base/sim layout. For simulation select [`rebot_bench_sim`](../rebot_bench_sim/README.md):
 
 ```bash
@@ -213,7 +213,7 @@ those pairs remain checked with the original collision meshes. No extra
 clearance margin is claimed. This is a mock-only planning choice and must be
 reconsidered with calibrated geometry before hardware use.
 
-## Optional real RGB cameras
+## Optional real cameras
 
 Cameras default **off**, so the package starts without either device plugged in.
 The arm currently uses `mock_components/GenericSystem`, including when cameras are on.
@@ -237,12 +237,15 @@ before enabling cameras in MoveIt Pro; each device must have one driver owner.
 | Wrist | Intel RealSense D435 (`8086:0b07`) | `/wrist_mounted_camera/color/image_raw` | `/wrist_mounted_camera/color/camera_info` | `d435_color_optical_frame` |
 | Scene | Luxonis OAK-D-PRO-W-97 | `/scene_camera/color/image_raw` | `/scene_camera/color/camera_info` | `scene_camera_color_optical_frame` |
 
-The wrist defaults to **640×480** and the scene to **640×400**, both at 30 fps,
-RGB only, depth off. The heights differ on purpose; see the scene camera's field
+The wrist defaults to **640×480** and the scene to **640×400**, both at 30 fps.
+The wrist is RGB only, depth off; the scene camera also runs aligned depth (see
+below). The heights differ on purpose; see the scene camera's field
 of view below. These stable
 `sensor_msgs/Image` and `CameraInfo` topics support the UI and later recording
 for policies such as pi0.5 (which resizes images to 224×224). Image and calibration topics follow the sibling configs' naming convention.
-No registered depth pair or point cloud is advertised.
+Recording needs both RGB topics at about 30 Hz, and depth-aware cube
+checks need `/scene_camera/depth/color/points`; check all three with
+`ros2 topic hz` before a run.
 The wrist image encoding is `rgb8`; the scene encoding is `bgr8`, matching
 the DepthAI v2 MJPEG decoder's OpenCV output. Recording consumers should honor
 `Image.encoding` (for example, request `rgb8` from cv_bridge) when converting
@@ -251,11 +254,30 @@ either stream to an RGB tensor.
 Both cameras intentionally use **USB 2 (480 Mbps)** for long cables. The D435
 uses its supported 640×480/30 color mode, with depth, infrared, and IMU disabled.
 The OAK uses the standard Jazzy `depthai_ros_driver` (DepthAI v2): CAM_A's OV9782
-color sensor, an RGB-only pipeline, USB speed `HIGH`, and **on-device MJPEG**
+color sensor, USB speed `HIGH`, and **on-device MJPEG**
 (quality 95) before USB transfer. It takes the **ISP output** at 640×400 rather than
 the video path's crop, then encodes; the driver decodes to `bgr8` ROS Images on the
-host. CAM_B/C's OV9282 stereo pair, the BNO086 IMU and IR illumination
-are disabled. Change `scene_mjpeg_quality` in the same YAML to adjust compression.
+host. The BNO086 IMU and IR illumination are disabled.
+
+`scene_aligned_depth: true` (the default) also runs CAM_B/C's OV9282 stereo pair
+as an RGBD pipeline, with depth aligned to CAM_A at the colour stream's 640×400:
+the depth image on `/scene_camera/depth/image_rect_raw` (with
+`/scene_camera/depth/camera_info`), in `scene_camera_color_optical_frame`, so it
+should line up pixel for pixel with the colour image. A `depth_image_proc`
+`point_cloud_xyz_node` turns it into `/scene_camera/depth/color/points`,
+for depth-aware cube checks. This OAK's stereo depth
+reads 4% long, so `scene_depth_scale: 0.96` multiplies every depth (the
+`scale_depth.py` node, between the depth image and the point cloud) before the
+cloud is built. Measured on 2026-10-13 in the calibrated `world` frame, it moved
+the mat from a median of -24 mm to 0 mm and a 100 mm blue-on-red stack's top
+from 80 mm to 100 mm. Re-measure it for another camera or after recalibrating:
+find the factor along the camera rays that puts the empty mat at z=0, then check
+a known height; 1.0 publishes the depth unchanged. The colour stream's
+settings are the same either way. To run colour only, set
+`scene_aligned_depth: false` in the YAML or pass `scene_aligned_depth:=false`;
+the OAK then runs its RGB-only pipeline with the stereo pair off, and
+depth-aware checks are unavailable. Change `scene_mjpeg_quality` in the same
+YAML to adjust compression.
 ISP luma/chroma denoising and sharpening are disabled to preserve detail.
 Allow a few seconds after startup for the scene camera's image to settle before
 recording; the first frames can look heavily processed.
@@ -313,7 +335,8 @@ so its scene intrinsics do not describe the current default.
 Install the declared ROS dependencies in the runtime environment:
 
 ```bash
-sudo apt install ros-jazzy-realsense2-camera ros-jazzy-depthai-ros-driver
+sudo apt install ros-jazzy-realsense2-camera ros-jazzy-depthai-ros-driver \
+  ros-jazzy-depth-image-proc ros-jazzy-compressed-image-transport
 ```
 
 The launch uses the drivers process, which has access to devices. Containers
@@ -345,7 +368,8 @@ Jazzy `realsense2_camera` 4.58.1 / librealsense 2.58.1 and
 `depthai_ros_driver` 2.12.2 / DepthAI 2.31.1. The default camera-off launch
 exited successfully without starting either driver. `robot_state_publisher`
 loaded the URDF and published the expected fixed camera transforms.
-See [camera acceptance results](docs/camera-acceptance.json).
+See [camera acceptance results](docs/camera-acceptance.json). These checks
+predate the scene camera's aligned depth, which none of them exercised.
 
 The isolated test container used an 8 MiB Fast DDS shared-memory transport
 segment. Its default segment dropped full image messages at the subscriber
@@ -566,15 +590,18 @@ Two bench-specific rules the model cannot express:
 ### Cameras
 
 The optional wrist D435 and scene OAK-D streams described in
-[Optional real RGB cameras](#optional-real-rgb-cameras) work the same way with a
-real arm: `enable_cameras: true`, RGB at 30 fps (wrist 640x480, scene 640x400),
-depth off. Both streams have been seen live in the MoveIt Pro UI alongside the
-real arm.
+[Optional real cameras](#optional-real-cameras) work the same way with a
+real arm: `enable_cameras: true`, RGB at 30 fps (wrist 640x480, scene 640x400).
+By default the scene camera also runs depth aligned to its colour image and
+publishes its point cloud (`scene_aligned_depth: true`). Bench collection used
+aligned depth and the measured scale correction described above. This revision
+has source and package-test validation; the historical bench runs do not
+validate later source changes.
 
 **Only the scene camera is calibrated, for this bench; the real arm keeps the
-nominal, UNCALIBRATED wrist camera mount** (see [bench calibration](#bench-calibration)). No depth
-output is configured. Anything that needs metric accuracy from the wrist camera
-needs an extrinsic calibration first.
+nominal, UNCALIBRATED wrist camera mount** (see [bench calibration](#bench-calibration)). The wrist
+camera has no depth output configured. Anything that needs metric accuracy from
+the wrist camera needs an extrinsic calibration first.
 
 ### What has and has not been verified
 
@@ -816,6 +843,28 @@ runtime, invoke the ordinary MCP tool:
 {"name":"run_objective","arguments":{"objective_name":"Stack Blue on Red"}}
 ```
 
+### Native episode recording
+
+The recorded topics come from the named training config
+[`config/training/rebot_bench_jpeg.json`](config/training/rebot_bench_jpeg.json):
+state `/joint_states`, action
+`/joint_trajectory_admittance_controller/controller_state` (the recorder takes
+one action topic and `/joint_commands` carries only teleoperation), and both
+cameras' JPEG `image_raw/compressed` topics at 30 Hz, about an eighth of the
+raw images' size. Its camera keys are explicit, `observation.images.scene` and
+`observation.images.wrist_mounted`: keys derived from the topic names would both
+be `observation.images.compressed`, and the recorder refuses the collision. A
+`RecordEpisode` caller should pass only `config_name` to `RecordEpisode`, never
+`camera_topics`. Install the config once per runtime, either with
+`POST /train/configs` or by copying the file into the Trainer's
+`configs/` directory (`~/.local/share/moveit_pro/trainer/configs/` in the
+runtime container).
+
+Hardware recording requires the `compressed_image_transport` plugin declared
+by this package: the camera drivers use it to publish their JPEG transport.
+Check both `image_raw/compressed` topics before starting a recording; raw RGB
+streams alone do not establish that the JPEG inputs are available.
+
 ### Bench calibration
 
 `config/config.yaml` places `base_link` and `scene_camera_link` in the printed
@@ -862,7 +911,7 @@ without `--instance` so the drivers container shares the host network and sees
 `can0` ([Run it without `--instance`](#run-it-without---instance)). SAM3
 perception needs CUDA: give the runtime container NVIDIA GPU access, or
 **Locate reBot Cubes** fails loading `libcuda.so.1`. Bring up both RGB cameras
-([Optional real RGB cameras](#optional-real-rgb-cameras)) and check each
+([Optional real cameras](#optional-real-cameras)) and check each
 publishes at about 30 Hz before a run. With `torque_enable: "false"`, enable all
 seven motors at home with `~/set_torque` (`std_srvs/srv/SetBool`, `data: true`);
 the service cannot enable the jaw alone.

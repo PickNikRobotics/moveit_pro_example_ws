@@ -149,7 +149,7 @@ def test_waypoints_come_from_the_base_package(config):
     assert Path(config.waypoints_file_path).is_file()
 
 
-def test_sim_launches_only_the_explicit_grasp_proxy(config):
+def test_sim_launches_compressed_cameras_and_only_the_explicit_grasp_proxy(config):
     import importlib.util
     from ament_index_python.packages import get_package_share_directory
 
@@ -170,7 +170,8 @@ def test_sim_launches_only_the_explicit_grasp_proxy(config):
         ).read_text()
     )
     entities = module.generate_launch_description().entities
-    assert len(entities) == (2 if layout.get("sim_grasp_proxy", False) else 0)
+    # The compressed camera topics, then the proxy controller and its node.
+    assert len(entities) == (3 if layout.get("sim_grasp_proxy", False) else 1)
 
 
 def test_layout_places_the_twin_over_the_inherited_bench_calibration(config):
