@@ -10,7 +10,8 @@
     SUCCESS. Those Objectives check for the stack the prompt asks for, so a
     new prompt needs a matching check or question. The ExecutePolicy ports
     match Stack Cubes with the VLA Policy; a different checkpoint changes the
-    same ports in both.
+    same ports in both. The parent loads the policy once and remaps its handle
+    into this required input; this helper does not select or reload a policy.
   -->
   <BehaviorTree
     ID="Stack Cubes with the VLA Policy or Fail When Time Runs Out"
@@ -21,7 +22,7 @@
       <Action
         ID="ExecutePolicy"
         name="ExecutePolicy"
-        policy_service_name="/get_action_chunk"
+        policy="{policy}"
         joint_group_name="manipulator"
         prompt="stack the blue cube on the green cube"
         total_action_steps="300"
@@ -50,6 +51,12 @@
   </BehaviorTree>
   <TreeNodesModel>
     <SubTree ID="Stack Cubes with the VLA Policy or Fail When Time Runs Out">
+      <input_port
+        name="policy"
+        type="std::shared_ptr&lt;moveit_pro::behaviors::PolicyInterface&gt;"
+      >
+        Resident policy handle created by the parent Objective.
+      </input_port>
       <MetadataFields>
         <Metadata subcategory="Application - VLA Examples" />
         <Metadata runnable="false" />
