@@ -1,0 +1,62 @@
+{
+  "part": {
+    "source": "pick_and_place_bracket_part.3mf",
+    "source_sha256": "59d7163b6bb9873f2c5de6eee02ed0bd310fa89ae5d9d4e7a0dab77ebeb07c9b",
+    "stl_sha256": "d1033d33cad59da1fb6ba77d86a999d81f2d2eed816a2a80d36174a45790e105",
+    "unit": "meter",
+    "build_transform": "identity",
+    "faces": 21508,
+    "bounds_m": [
+      [
+        -0.00034197,
+        -0.145,
+        0.0
+      ],
+      [
+        0.19462986,
+        0.0,
+        0.00762
+      ]
+    ]
+  },
+  "jig_base": {
+    "source": "pick_and_place_bracket_jig_base.3mf",
+    "source_sha256": "f6b85072be900290a236ecf95b665959482a6ba884bc953127e5c537cbf4901c",
+    "stl_sha256": "46ce64f09337e1c354d477b3f5912793a105ad3b201114ee91ac29602cb2c320",
+    "unit": "meter",
+    "build_transform": "identity",
+    "faces": 97376,
+    "bounds_m": [
+      [
+        -0.00634598,
+        -0.15099999,
+        -0.002
+      ],
+      [
+        0.20062986,
+        0.006,
+        0.02
+      ]
+    ]
+  },
+  "jig_post": {
+    "source": "pick_and_place_bracket_jig_post.3mf",
+    "source_sha256": "604d2b7c8a70daa2598f75a5f17c0e0da063fe4296cdbb04c2621167a6550c75",
+    "stl_sha256": "c001267738f6f597a7fa32273833dfbe2a9dbac3cc034c930200fe9b3ab25745",
+    "unit": "meter",
+    "build_transform": "identity",
+    "faces": 5242,
+    "bounds_m": [
+      [
+        0.1358005,
+        -0.08815332,
+        0.01
+      ],
+      [
+        0.1468005,
+        -0.07716945,
+        0.085
+      ]
+    ]
+  }
+}

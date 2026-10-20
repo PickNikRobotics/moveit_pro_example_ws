@@ -1,0 +1,312 @@
+{
+  "fixture_truth": {
+    "jig_origin": {
+      "native_simulator_tf_xyz_m": [
+        0.13251247227505963,
+        0.004490363321403845,
+        0.002
+      ],
+      "expected_fitted_cad_xyz_m": [
+        0.13251247227505963,
+        0.004490363321403845,
+        0.002
+      ],
+      "error_m": 0.0
+    },
+    "bracket_origin": {
+      "native_simulator_tf_xyz_m": [
+        0.3183136836727682,
+        0.2826041287272267,
+        0.15366841608429715
+      ],
+      "expected_fitted_cad_xyz_m": [
+        0.3183136836727682,
+        0.2826041287272267,
+        0.15366841608429715
+      ],
+      "error_m": 0.0
+    },
+    "peg_1_tip": {
+      "native_simulator_tf_xyz_m": [
+        0.21481545709978295,
+        0.07817593863259593,
+        0.08700000000000001
+      ],
+      "expected_fitted_cad_xyz_m": [
+        0.21481545709978297,
+        0.07817593863259595,
+        0.08700000000000001
+      ],
+      "error_m": 3.1031676915590914e-17
+    },
+    "peg_2_tip": {
+      "native_simulator_tf_xyz_m": [
+        0.21979272208494954,
+        0.1429854674352007,
+        0.08700000000000001
+      ],
+      "expected_fitted_cad_xyz_m": [
+        0.21979272208494957,
+        0.1429854674352007,
+        0.08700000000000001
+      ],
+      "error_m": 2.7755575615628914e-17
+    },
+    "hole_1_center": {
+      "native_simulator_tf_xyz_m": [
+        0.3918533362908685,
+        0.2694524246807403,
+        0.07193493522435356
+      ],
+      "expected_fitted_cad_xyz_m": [
+        0.39185333629086844,
+        0.2694524246807403,
+        0.07193493522435356
+      ],
+      "error_m": 5.551115123125783e-17
+    },
+    "hole_2_center": {
+      "native_simulator_tf_xyz_m": [
+        0.45662833326042507,
+        0.2668478143378096,
+        0.06719531889983311
+      ],
+      "expected_fitted_cad_xyz_m": [
+        0.45662833326042496,
+        0.2668478143378095,
+        0.0671953188998331
+      ],
+      "error_m": 1.249000902703301e-16
+    }
+  },
+  "nq": 9,
+  "native_joint_positions": {
+    "joint1": 0.6433229446411144,
+    "joint2": -2.138888593686648e-19,
+    "joint3": -2.7032732149473405e-19,
+    "joint4": -0.01399803161621092,
+    "joint5": 0.002876281738281246,
+    "joint6": 0.0017251968383789047,
+    "joint7": 0.006327629089355469
+  },
+  "camera_truth": {
+    "scene": {
+      "published_vs_loaded_translation_m": 0.0,
+      "published_vs_loaded_rotation_frobenius": 9.079085946270895e-16,
+      "vs_observation_translation_m": 0.0,
+      "vs_observation_angle_deg": 0.0,
+      "comparison_K": [
+        [
+          282.3697204589844,
+          0.0,
+          320.0
+        ],
+        [
+          0.0,
+          282.3697204589844,
+          200.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    },
+    "wrist": {
+      "published_vs_loaded_translation_m": 1.2412670766236366e-16,
+      "published_vs_loaded_rotation_frobenius": 1.4325749365178209e-15,
+      "vs_observation_translation_m": 0.0003283384355254081,
+      "vs_observation_angle_deg": 0.10988408333808704,
+      "comparison_K": [
+        [
+          607.7967529296875,
+          0.0,
+          320.0
+        ],
+        [
+          0.0,
+          607.7967529296875,
+          240.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ]
+    }
+  },
+  "registration": {
+    "scene": {
+      "physical_charuco_corners": 16,
+      "rendered_charuco_corners": 23,
+      "rendered_marker_ids": [
+        10,
+        3,
+        14,
+        7,
+        11,
+        15,
+        8,
+        1,
+        16,
+        9,
+        2,
+        13,
+        6
+      ],
+      "common_corner_ids": [
+        0,
+        2,
+        3,
+        4,
+        6,
+        7,
+        9,
+        10,
+        12,
+        13,
+        14,
+        17,
+        18,
+        19,
+        20,
+        23
+      ],
+      "charuco_render_to_real_rms_px": 0.34279496250723807,
+      "charuco_render_to_real_max_px": 0.8382874389529416,
+      "cad_feature_count": 4,
+      "cad_to_real_feature_rms_px": 0.5908209954099266,
+      "cad_to_real_feature_max_px": 1.0281862100171657,
+      "observed_pixels": [
+        [
+          315.43880382970644,
+          252.84075541444741
+        ],
+        [
+          354.80773497109965,
+          250.9442461283767
+        ],
+        [
+          384.0006951507141,
+          241.44164105783236
+        ],
+        [
+          320.4939697075318,
+          214.76719480999694
+        ]
+      ],
+      "sim_truth_projected_pixels": [
+        [
+          315.7631432462561,
+          252.83008997573788
+        ],
+        [
+          355.16766093403186,
+          250.843663803306
+        ],
+        [
+          382.9726445872742,
+          241.45834200033318
+        ],
+        [
+          320.7905568653542,
+          214.8457674400543
+        ]
+      ]
+    },
+    "wrist": {
+      "physical_charuco_corners": 21,
+      "rendered_charuco_corners": 21,
+      "rendered_marker_ids": [
+        13,
+        16,
+        9,
+        12,
+        15,
+        5,
+        8,
+        11,
+        14,
+        1,
+        4,
+        7,
+        10,
+        0,
+        3
+      ],
+      "common_corner_ids": [
+        0,
+        1,
+        2,
+        3,
+        6,
+        7,
+        8,
+        9,
+        10,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23
+      ],
+      "charuco_render_to_real_rms_px": 1.3006054631705724,
+      "charuco_render_to_real_max_px": 1.5113482293875482,
+      "cad_feature_count": 3,
+      "cad_to_real_feature_rms_px": 4.12977432324724,
+      "cad_to_real_feature_max_px": 4.579048860398616,
+      "observed_pixels": [
+        [
+          346.74251420061086,
+          407.49682922363274
+        ],
+        [
+          394.73893789627795,
+          431.89682922363284
+        ],
+        [
+          353.5420075574971,
+          343.7968292236328
+        ]
+      ],
+      "sim_truth_projected_pixels": [
+        [
+          347.5542227788426,
+          403.6310351617319
+        ],
+        [
+          396.6081013066783,
+          436.07701063251193
+        ],
+        [
+          350.6690666297926,
+          341.27881506603626
+        ]
+      ]
+    }
+  },
+  "qualification": "Static CAD geometry/pose scene. Bracket feature fit2.3mm RMS and depth-plane1.2mm RMS; image-derived printed frame and depth systematic errors remain; no insertion, contact, mass/friction or dynamics validation.",
+  "native_started_utc": "2026-10-14T03:59:15.464082474Z",
+  "image_sha256": "sha256:ea7c92a8a832e5a9b651e79c37ed124b36e1b32f634494849747a4b79d733fc6",
+  "snapshot_utc": "2026-10-14T03:05:38Z",
+  "native_replay_utc": "2026-10-14T04:00:07Z",
+  "fixture_collision": "disabled; fixed visual CAD meshes",
+  "physical_motion": "camera aiming followed by return home and all seven motors disabled; no insertion or collection",
+  "simulation_replay": "existing trajectory controller succeeded; J2/J3 tiny negative measured angles clamped to simulation limits; not fixture dynamics proof",
+  "final_scene_stability": {
+    "final_capture_epoch": 1791950438.2954028,
+    "matched_apertures": 4,
+    "centroid_change_rms_px": 0.17436167744820208,
+    "centroid_change_max_px": 0.22363154117083717,
+    "qualification": "Fresh scene jig image stability check; bracket remains upright in final desk side-view. Not an independent bracket metric calibration."
+  }
+}
