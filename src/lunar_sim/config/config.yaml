@@ -63,6 +63,9 @@ moveit_params:
   joint_jog:
     package: "lunar_sim"
     path: "config/moveit/joint_jog.yaml"
+  base_jog:
+    package: "lunar_sim"
+    path: "config/moveit/base_jog.yaml"
 
   publish:
     planning_scene: True

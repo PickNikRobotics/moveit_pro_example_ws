@@ -6,7 +6,7 @@ overlooks the demo route, front and rear image-based lidars ride on the rover, a
 carries an OAK-D Pro whose `oakd_color` streams the robot's own forward view. The OAK-D's stereo
 pair is modelled too but gated behind `enable_vo` - see [Cameras](#cameras). No Nav2 stack: the base
 is driven only by open-loop `/cmd_vel` commands, from the `Dead Reckon Square` objective or the
-Desktop App's Pose tab (see [Teleoperation](#teleoperation)).
+Desktop App's Base tab (see [Teleoperation](#teleoperation)).
 
 The base spawns at `husky_scene.xml`'s `default` keyframe rather than the world origin
 (`config.yaml`'s `mujoco_keyframe`); that keyframe's own comment records the pose and why it was
@@ -224,10 +224,10 @@ terrain. These are an unchanged open-loop baseline, not a claim of accurate squa
 
 The live `Dead Reckon Square` objective also completed all 80 forward commands and 40
 turn commands, with 7.370 m of wheel-odometry travel and 6.365 rad of accumulated yaw.
-A separate Pose Jog check through `Request Teleoperation` forwarded 40 commands at
-0.2 m/s, recorded 0.905 m of odometry displacement, and published a zero twist on
-completion. These odometry checks verify the command paths; the chassis freejoint
-comparison above checks physical route regression.
+A separate Base tab check through `Request Teleoperation` published `/cmd_vel` at 10%, 50%
+and 100% of the `base_jog.yaml` limits for each pad button, and a zero twist on each
+release and when the Objective stopped. These checks verify the command paths; the
+chassis freejoint comparison above checks physical route regression.
 
 ![Labelled views of the camera mast, lidar mounts and four route boulders](description/assets/sensor_sheet.png)
 
@@ -479,27 +479,12 @@ frame above `odom` is MuJoCo's `mj_world`, published as identity so the world-fi
 
 ## Teleoperation
 
-The Pose Jog and Joint Jog UI panels are wired to the `base` group to avoid a MoveIt Pro launch
-crash on an empty jog config. Joint Jog stays unusable on this armless base (no per-joint velocity
-controller), but Pose Jog drives the Husky base: the Pose tab's jog pad, a connected gamepad, and
-the Quest headset all publish a `VelocityForceCommand` on `/pose_jog/base`, and the
-`TeleoperateBase` Behavior (`lunar_sim_behaviors`) forwards `linear.x`/`angular.z` from that stream
-into a `TwistStamped` on `/cmd_vel` for `platform_velocity_controller`.
-
-The Pose tab's controls are labeled for an end-effector, since that is what the panel is designed
-for; on this base the labels map to driving as follows:
-
-- Jog pad: `X +` drives forward, `X -` reverses; `Roll +` turns left, `Roll -` turns right. The
-  `Y`, `Z`, `Pitch`, and `Yaw` buttons do nothing.
-- Gamepad: the left stick left/right drives forward/reverse; the bumpers turn left/right. The right
-  stick and triggers do nothing.
-
-The Joint, IMarker, and Waypoints tabs do nothing on this base - they operate on wheel joints or
-wheel-link poses, which have no meaningful teleoperation behavior for a differential-drive base.
-
-Speed is capped in two places: the Pose tab's speed slider (0.25 m/s max by default, since this
-config has no Cartesian velocity limit parameter for the slider to read), and the
-`TeleoperateBase` Behavior's own clamp ports (0.8 m/s linear, 2.0 rad/s angular, matching
-`platform_velocity_controller`'s limits).
+`config/moveit/base_jog.yaml` (`moveit_params.base_jog`) makes the Husky base the Desktop App's
+teleoperation target, so the Teleoperation workspace shows a single Base tab. Its pad and a gamepad's
+left stick publish jog commands on `/base_jog/base`, and this config's `Request Teleoperation`
+override runs MoveIt Pro's `TeleoperateBase` Behavior, which forwards them as a `TwistStamped` on
+`/cmd_vel` for `platform_velocity_controller`, clamped to the `base_jog.yaml` limits. See
+[Mobile Base Teleop Mode](https://docs.picknik.ai/how_to/custom_view_panes/ui_teleoperation/#mobile-base-teleop-mode)
+for the controls.
 
 For detailed documentation see: [MoveIt Pro Documentation](https://docs.picknik.ai/)
