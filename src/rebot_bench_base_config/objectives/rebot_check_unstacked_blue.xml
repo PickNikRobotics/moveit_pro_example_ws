@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="reBot Check Unstacked Blue">
+  <BehaviorTree
+    ID="reBot Check Unstacked Blue"
+    _description="Confirm blue's aligned-depth upper quartile is between 25 and 75 mm above the mat. Missing, invalid or still-stacked depth fails without motion."
+  >
+    <Sequence>
+      <Action
+        ID="GetPointCloud"
+        topic_name="/scene_camera/depth/color/points"
+        message_out="{scene_points}"
+        message_timeout_sec="5.0"
+      />
+      <Action
+        ID="GetCameraInfo"
+        topic_name="/scene_camera/color/camera_info"
+        message_out="{scene_camera_info}"
+        message_timeout_sec="5"
+        publisher_timeout_sec="5"
+      />
+      <Action
+        ID="GetMasks3DFromMasks2D"
+        point_cloud="{scene_points}"
+        masks2d="{cube_masks}"
+        camera_info="{scene_camera_info}"
+        masks3d="{unstacked_blue_masks3d}"
+      />
+      <Action
+        ID="GetElementOfVector"
+        vector_in="{unstacked_blue_masks3d}"
+        index="0"
+        element="{unstacked_blue_mask3d}"
+      />
+      <Action
+        ID="GetPointCloudFromMask3D"
+        point_cloud="{scene_points}"
+        mask3d="{unstacked_blue_mask3d}"
+        point_cloud_fragment="{unstacked_blue_points}"
+      />
+      <Action
+        ID="TransformPointCloudFrame"
+        input_cloud="{unstacked_blue_points}"
+        output_cloud="{unstacked_blue_points}"
+        target_frame="world"
+      />
+      <!-- Compare the cube to itself so IsCubeStacked tests only depth height.
+           First require finite, correctly framed points above the mat. Only
+           then invert the upper-height check, using exactly the same cloud:
+           missing/invalid depth must not pass through an Inverter. -->
+      <Action
+        ID="IsCubeStacked"
+        cube_top="{cube_top}"
+        support_top="{cube_top}"
+        max_offset="0.0"
+        cube_points="{unstacked_blue_points}"
+        min_height="0.025"
+        height_quantile="0.75"
+      />
+      <Inverter>
+        <Action
+          ID="IsCubeStacked"
+          cube_top="{cube_top}"
+          support_top="{cube_top}"
+          max_offset="0.0"
+          cube_points="{unstacked_blue_points}"
+          min_height="0.075"
+          height_quantile="0.75"
+        />
+      </Inverter>
+    </Sequence>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="reBot Check Unstacked Blue">
+      <MetadataFields>
+        <Metadata runnable="false" />
+        <Metadata subcategory="reBot Bench" />
+      </MetadataFields>
+      <input_port name="cube_top" type="geometry_msgs::msg::PoseStamped" />
+      <input_port
+        name="cube_masks"
+        type="std::vector&lt;moveit_studio_vision_msgs::msg::Mask2D&gt;"
+      />
+    </SubTree>
+  </TreeNodesModel>
+</root>

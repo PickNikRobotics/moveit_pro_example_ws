@@ -935,7 +935,14 @@ to 65 mm while its upper quartile stayed at 94 mm. Colour
 alone cannot make this call: a lone blue on the mat just behind red, as the
 camera sees it, shows only its top face over red, which fits a stacked cube's
 top face within a few millimetres of red's centre. After an unstack, both cubes
-must fit whole cubes apart on the mat. A failed motion attempts home recovery,
+must fit whole cubes apart on the mat. Before saving, the blue mask's aligned
+depth must also have an upper-quartile height of at least 25 mm and below 75 mm,
+confirming a cube on the mat rather than one still stacked. The check uses the
+same extracted cloud for both bounds and refuses missing, empty or invalid
+depth before inverting the upper-bound condition; a missed physical grasp
+cannot be accepted on RGB alone. See
+[`objectives/rebot_check_unstacked_blue.xml`](objectives/rebot_check_unstacked_blue.xml).
+A failed motion attempts home recovery,
 closing an empty jaw while preserving a possibly held cube. Recovery can itself
 fail. A failed leg or confirmation stops recording without saving, which
 discards that leg's episode,

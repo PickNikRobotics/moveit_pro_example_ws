@@ -33,6 +33,7 @@
 #include <algorithm>
 #include <deque>
 #include <filesystem>
+#include <limits>
 #include <map>
 #include <ranges>
 #include <set>
@@ -55,7 +56,9 @@ const std::vector<std::string> kRecordedPorts{ "waypoint_name",
                                                "allow_collision",
                                                "task",
                                                "message",
-                                               "cube" };
+                                               "cube",
+                                               "max_offset",
+                                               "min_height" };
 const std::set<std::string> kOwnStubs{ "LoadMotionScales", "IsJointAtLeast", "GetSizeOfVector" };
 
 struct Call
@@ -144,7 +147,12 @@ protected:
             arm_home = home;
           }
           // ReportUnreachableCube always fails; it only words the failure.
-          const bool fail = call.label == "ReportUnreachableCube" ||
+          // The unstack postcondition compares blue to itself to check the same depth sample against
+          // both height bounds. Other IsCubeStacked calls retain their existing success/failure stub.
+          const bool depth_below_bound = call.label == "IsCubeStacked" &&
+                                         node.getInput<double>("max_offset").value_or(-1.0) == 0.0 &&
+                                         !(unstacked_blue_height >= node.getInput<double>("min_height").value());
+          const bool fail = call.label == "ReportUnreachableCube" || depth_below_bound ||
                             (call.label == "ValidateTrajectory" && single_point_plan) || refused;
           return fail ? BT::NodeStatus::FAILURE : BT::NodeStatus::SUCCESS;
         },
@@ -152,7 +160,8 @@ protected:
           BT::InputPort<std::string>("name_b"), BT::InputPort<std::string>("allow_collision"),
           BT::InputPort<std::string>("task"), BT::InputPort<std::string>("message"), BT::InputPort<std::string>("cube"),
           BT::InputPort<std::string>("joint_group_name"), BT::InputPort<std::string>("planning_group_name"),
-          BT::InputPort<double>("velocity_scale_factor"), BT::InputPort<double>("acceleration_scale_factor") });
+          BT::InputPort<double>("velocity_scale_factor"), BT::InputPort<double>("acceleration_scale_factor"),
+          BT::InputPort<double>("max_offset"), BT::InputPort<double>("min_height") });
     factory.registerSimpleAction(
         "LoadMotionScales",
         [this](BT::TreeNode& node) {
@@ -250,6 +259,7 @@ protected:
   std::map<std::string, rebot_bench_behaviors::MotionScales> settings;
   std::deque<double> measured_jaw;
   std::deque<int> blue_near_red;
+  double unstacked_blue_height = 0.05;
   bool arm_home = false;
   bool single_point_plan = false;
 };
@@ -809,6 +819,52 @@ TEST_F(StackObjectives, FailedUnstackKeepsTheSavedStackDiscardsItselfAndStops)
   EXPECT_EQ(tail(motions(), 4), (std::vector<std::string>{ "PlanCartesianPath", kHome, kClose, kDetach }));
   ASSERT_FALSE(calls.empty());
   EXPECT_EQ(calls.back().label, "StopRecording");
+}
+
+TEST_F(StackObjectives, UnstackDepthAtMatHeightAllowsTheEpisodeToBeSaved)
+{
+  for (const double height : { 0.025, 0.05, 0.074 })
+  {
+    SCOPED_TRACE(height);
+    calls.clear();
+    unstacked_blue_height = height;
+    EXPECT_EQ(run(R"(<SubTree ID="Recorded Unstack Leg" />)"), BT::NodeStatus::SUCCESS);
+    EXPECT_EQ(labelsStartingWith(calls, { "RecordEpisode", "SaveEpisode", "StopRecording" }),
+              (std::vector<std::string>{ kUnstackTask, "SaveEpisode", "StopRecording" }));
+  }
+}
+
+TEST_F(StackObjectives, MissedPhysicalUnstackGraspDiscardsItsEpisodeEvenWhenMotionAndRgbSucceed)
+{
+  unstacked_blue_height = 0.095;  // Blue never left red, despite successful motions and RGB fits.
+  EXPECT_EQ(run(kCycle), BT::NodeStatus::FAILURE);
+  EXPECT_EQ(labelsStartingWith(calls, { "RecordEpisode", "SaveEpisode", "StopRecording" }),
+            (std::vector<std::string>{ kStackTask, "SaveEpisode", "StopRecording", kUnstackTask, "StopRecording" }));
+  EXPECT_GT(std::ranges::count(calls, "ExecuteTrajectory", &Call::label), 0);
+  EXPECT_EQ(std::ranges::count(calls, "ReportUnreachableCube", &Call::label), 0);
+}
+
+TEST_F(StackObjectives, MissingUnstackConfirmationDepthDiscardsItsEpisode)
+{
+  failing = "GetPointCloud";
+  failing_occurrence = 2;  // The source stack was confirmed; the post-motion depth stream is missing.
+  EXPECT_EQ(run(R"(<SubTree ID="Recorded Unstack Leg" />)"), BT::NodeStatus::FAILURE);
+  EXPECT_EQ(labelsStartingWith(calls, { "RecordEpisode", "SaveEpisode", "StopRecording" }),
+            (std::vector<std::string>{ kUnstackTask, "StopRecording" }));
+  EXPECT_GT(std::ranges::count(calls, "ExecuteTrajectory", &Call::label), 0);
+}
+
+TEST_F(StackObjectives, InvalidOrOutOfRangeUnstackDepthCannotPassTheInvertedUpperBound)
+{
+  for (const double height : { 0.0, 0.024, 0.075, 0.10, std::numeric_limits<double>::quiet_NaN() })
+  {
+    SCOPED_TRACE(height);
+    calls.clear();
+    unstacked_blue_height = height;
+    EXPECT_EQ(run(R"(<SubTree ID="Recorded Unstack Leg" />)"), BT::NodeStatus::FAILURE);
+    EXPECT_EQ(labelsStartingWith(calls, { "RecordEpisode", "SaveEpisode", "StopRecording" }),
+              (std::vector<std::string>{ kUnstackTask, "StopRecording" }));
+  }
 }
 
 class ShippedSpeeds : public StackObjectives, public testing::WithParamInterface<std::string>
