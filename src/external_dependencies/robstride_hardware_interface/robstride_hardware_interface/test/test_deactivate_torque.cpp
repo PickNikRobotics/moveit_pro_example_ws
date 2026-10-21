@@ -165,6 +165,76 @@ TEST_F(DeactivateTorqueTest, HoldsTorqueWhenAsked)
     << "hold_torque_on_deactivate must not disable torque";
 }
 
+
+TEST_F(DeactivateTorqueTest, ThermalTripRetainsTorqueAndPublishesLatch)
+{
+  FakeRobstrideMotor motor(TestInterface(), kMotorId, kMasterId);
+  ASSERT_TRUE(motor.ok());
+  auto hardware = std::make_shared<robstride_hardware_interface::RobstrideHardware>();
+  hardware_interface::HardwareComponentInterfaceParams params;
+  params.hardware_info = MakeInfo(true);
+  params.hardware_info.hardware_parameters["thermal_cutoff_c"] = "100";
+  ASSERT_EQ(hardware->on_init(params), hardware_interface::CallbackReturn::SUCCESS);
+  const rclcpp_lifecycle::State state;
+  ASSERT_EQ(hardware->on_activate(state), hardware_interface::CallbackReturn::SUCCESS);
+
+  auto observer = std::make_shared<rclcpp::Node>("thermal_observer");
+  bool tripped = false;
+  auto subscription = observer->create_subscription<std_msgs::msg::Bool>(
+    "/robstride_hardware_interface/thermal_tripped",
+    rclcpp::QoS(1).reliable().transient_local(),
+    [&tripped](std_msgs::msg::Bool::ConstSharedPtr message) {tripped |= message->data;});
+  motor.set_temperature(100.0);
+  const auto period = rclcpp::Duration::from_seconds(0.01);
+  const auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(3);
+  while (!tripped && std::chrono::steady_clock::now() < deadline) {
+    hardware->write(hardware->now(), period);
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    hardware->read(hardware->now(), period);
+    rclcpp::spin_some(observer);
+  }
+  ASSERT_TRUE(tripped);
+  EXPECT_EQ(StopFramesAfterEnable(motor.received()), 0u);
+
+  auto torque = observer->create_client<std_srvs::srv::SetBool>(
+    "/robstride_hardware_interface/set_torque");
+  ASSERT_TRUE(torque->wait_for_service(std::chrono::seconds(2)));
+  auto request = std::make_shared<std_srvs::srv::SetBool::Request>();
+  request->data = true;
+  auto pending = torque->async_send_request(request);
+  ASSERT_EQ(rclcpp::spin_until_future_complete(observer, pending, std::chrono::seconds(2)),
+    rclcpp::FutureReturnCode::SUCCESS);
+  EXPECT_FALSE(pending.get()->success);
+  motor.set_temperature(25.0);
+  hardware->write(hardware->now(), period);
+  std::this_thread::sleep_for(std::chrono::milliseconds(30));
+  hardware->read(hardware->now(), period);
+  EXPECT_EQ(StopFramesAfterEnable(motor.received()), 0u);
+  ASSERT_EQ(hardware->on_deactivate(state), hardware_interface::CallbackReturn::SUCCESS);
+  EXPECT_EQ(hardware->on_activate(state), hardware_interface::CallbackReturn::ERROR);
+  // Destruction must stop the executor cleanly, without disabling a held arm.
+  hardware.reset();
+  EXPECT_EQ(StopFramesAfterEnable(motor.received()), 0u);
+}
+
+TEST_F(DeactivateTorqueTest, HotInitialFeedbackPreventsDefaultStartupEnable)
+{
+  FakeRobstrideMotor motor(TestInterface(), kMotorId, kMasterId);
+  ASSERT_TRUE(motor.ok());
+  motor.set_temperature(100.0);
+  robstride_hardware_interface::RobstrideHardware hardware;
+  hardware_interface::HardwareComponentInterfaceParams params;
+  params.hardware_info = MakeInfo(true);
+  params.hardware_info.hardware_parameters["thermal_cutoff_c"] = "100";
+  ASSERT_EQ(hardware.on_init(params), hardware_interface::CallbackReturn::SUCCESS);
+  const rclcpp_lifecycle::State state;
+  ASSERT_EQ(hardware.on_activate(state), hardware_interface::CallbackReturn::SUCCESS);
+  std::this_thread::sleep_for(std::chrono::milliseconds(30));
+  const auto received = motor.received();
+  EXPECT_EQ(std::count(received.begin(), received.end(), robstride_sdk::COMM_MOTOR_ENABLE), 0);
+  hardware.on_deactivate(state);
+}
+
 }  // namespace
 
 int main(int argc, char ** argv)

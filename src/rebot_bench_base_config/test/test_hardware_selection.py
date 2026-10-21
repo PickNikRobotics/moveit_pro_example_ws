@@ -70,6 +70,7 @@ def test_real_selects_the_robstride_driver_with_the_no_brakes_settings():
         # Losing one joint leaves the rest holding rather than dropping the arm.
         "freeze_on_joint_loss": "true",
         "torque_enable": "true",
+        "thermal_cutoff_c": "100.0",
     }
 
 

@@ -3,7 +3,82 @@
 """Leader deadman and fresh-sample contract, independent of ROS and the SDK."""
 import math
 
-from rebot_leader import JOINT_NAMES, LIMITS_DEG
+from rebot_leader import DIRECTIONS, JOINT_NAMES, LEADER_NAMES, LIMITS_DEG
+
+UNPLUGGED = (
+    "The reader does not reopen its port: if the Star Arm USB was unplugged, reconnect it and, "
+    "once reBot is at HOME, restart the backend (moveit_pro run). "
+)
+
+
+def joint_label(index):
+    return f"{LEADER_NAMES[index].replace('_', ' ')} ({JOINT_NAMES[index]})"
+
+
+def alignment_fault(target, measured, tolerance=0.1, gripper_tolerance=0.3):
+    """Explain mismatches and the signed correction in the Star Arm's calibrated frame."""
+    offsets = []
+    corrections = []
+    for index, (leader, follower, direction) in enumerate(
+        zip(target, measured, DIRECTIONS)
+    ):
+        delta = leader - follower
+        joint_tolerance = gripper_tolerance if index == 6 else tolerance
+        if abs(delta) <= joint_tolerance:
+            continue
+        offsets.append(
+            f"{joint_label(index)}: {math.degrees(delta):+.1f} deg ({delta:+.3f} rad)"
+        )
+        correction = -delta / direction
+        angle_label = "calibrated trigger angle" if index == 6 else "calibrated angle"
+        corrections.append(
+            f"{joint_label(index)} toward a {'higher' if correction > 0 else 'lower'} {angle_label} "
+            f"by {abs(math.degrees(correction)):.1f} deg ({abs(correction):.3f} rad)"
+        )
+    if not offsets:
+        return ""
+    return (
+        "Following refused to avoid a jump: the Star Arm's pose does not match reBot. "
+        f"Leader minus reBot offset: {'; '.join(offsets)}. "
+        f"Arm joints joint1-joint6 must be within {math.degrees(tolerance):.1f} deg ({tolerance:g} rad); "
+        f"gripper (joint7) within {math.degrees(gripper_tolerance):.1f} deg ({gripper_tolerance:g} rad). "
+        f"Move only the Star Arm: {'; '.join(corrections)}, toward reBot's matching pose. "
+        "Then run Mirror reBot Leader again."
+    )
+
+
+def operator_fault(reason):
+    """Add an operator recovery step without hiding the original diagnostic."""
+    if reason.startswith("Following refused") or reason.startswith("Following stopped"):
+        return reason
+    if "thermal" in reason.lower():
+        return (
+            "Following refused: a motor reached the configured temperature limit and thermal protection is latched. "
+            "The backend handles HOME recovery and turns torque off only at HOME. "
+            "If HOME recovery fails, torque stays on: stop and get operator help. "
+            "Wait for cooling and confirmed HOME with all seven motors OFF, then restart the backend (moveit_pro run): "
+            "only a restart clears the latch, and startup enables torque at HOME. "
+            "Then run Mirror reBot Leader again."
+        )
+    if "did not start" in reason.lower():
+        return (
+            "Following refused: it did not start within 3 seconds. reBot is returning HOME; "
+            "wait for recovery to finish. Check the Star Arm USB connection, fresh joint feedback and collision scene. "
+            + UNPLUGGED
+            + "Then match the Star Arm to reBot and run Mirror reBot Leader again."
+        )
+    if any(word in reason.lower() for word in ("sample", "usb", "stream")):
+        return (
+            "Following stopped: fresh Star Arm or reBot joint data is missing or invalid. "
+            f"Detail: {reason}. Check the Star Arm USB connection and backend joint feedback; "
+            "wait for HOME recovery to finish. "
+            + UNPLUGGED
+            + "Then match the Star Arm to reBot and run Mirror reBot Leader again."
+        )
+    return (
+        f"Following refused: {reason}. Wait for any HOME recovery to finish; "
+        "check the backend diagnostics and match the Star Arm to reBot before running Mirror reBot Leader again."
+    )
 
 
 class LeaderState:
@@ -20,9 +95,12 @@ class LeaderState:
         self.active = False
         self.fault = ""
         self.recover = False
+        self.rejection = ""
 
     def accept(self, sample, now):
         try:
+            if "error" in sample:
+                raise ValueError(f"Star Arm USB read failed: {sample['error']}")
             values = [float(v) for v in sample["positions"]]
             stamp = float(sample["sample_time"])
             if len(values) != 7 or not all(math.isfinite(v) for v in values):
@@ -34,9 +112,11 @@ class LeaderState:
                     raise ValueError("Leader target exceeds approved motor limits")
         except (KeyError, TypeError, ValueError) as exc:
             self.target = None
-            self.stop(str(exc))
+            self.rejection = str(exc)
+            self.stop(self.rejection)
             return False
         self.target, self.sample_time = values, stamp
+        self.rejection = ""
         return True
 
     def observe(self, names, positions, now):
@@ -59,6 +139,10 @@ class LeaderState:
     def engage(self, now):
         if self.fault or self.recover or not self.fresh(now):
             return False
+        if not self.active:
+            self.fault = alignment_fault(self.target, self.measured)
+            if self.fault:
+                return False
         self.active = True
         self.heartbeat = now
         return True

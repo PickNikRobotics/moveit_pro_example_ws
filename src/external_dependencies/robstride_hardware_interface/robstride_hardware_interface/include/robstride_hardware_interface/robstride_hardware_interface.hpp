@@ -30,6 +30,8 @@
 #include "robstride_interfaces/srv/set_zero_robstride.hpp"
 #include "robstride_interfaces/srv/reboot_robstride.hpp"
 #include "std_srvs/srv/set_bool.hpp"
+#include "std_msgs/msg/bool.hpp"
+#include "robstride_hardware_interface/thermal_latch.hpp"
 
 #include "realtime_tools/realtime_publisher.hpp"
 
@@ -82,6 +84,10 @@ public:
 
 private:
   rclcpp::Logger logger_;
+  ThermalLatch thermal_latch_;
+  rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr thermal_pub_;
+  rclcpp::TimerBase::SharedPtr thermal_timer_;
+  void UpdateThermalLatch();
 
   std::vector<JointHandle> joints_;
   std::unordered_map<std::string, std::unique_ptr<robstride_sdk::CanBus>> buses_;

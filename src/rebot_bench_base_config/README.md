@@ -16,9 +16,10 @@ The arm defaults to `hardware_interface: mock`, using only
 description then emits no `ros2_control` block and no colour optical frames,
 which the sim's MuJoCo hardware supplies. Any other value fails Xacro expansion
 rather than producing a description with no hardware plugin.
-Cameras in this base package default off and may be enabled separately. The sim
-is a MuJoCo twin of the bench: it renders both cameras and starts no camera
-drivers.
+Cameras in this base package default on: each attached supported camera starts
+and a missing one is skipped (see [Optional real cameras](#optional-real-cameras)).
+The sim is a MuJoCo twin of the bench: it renders both cameras and starts no
+camera drivers.
 The `world_to_base_xyz`/`_rpy` and `scene_camera_xyz`/`_rpy` xacro arguments
 place `base_link` and `scene_camera_link` in `world`. `config/config.yaml` sets
 them to this bench's calibration (see [the stack recipe](#sam3-blue-on-red-stack));
@@ -29,6 +30,39 @@ keeps. The sim places all of them from its bench layout file instead, over the
 inherited calibration.
 
 ## Try it
+
+Build this workspace once with the normal MoveIt Pro build/install workflow.
+
+First-time setup on your reBot, in `config/config.yaml`:
+
+1. Find the Star Arm's serial port: run `ls -l /dev/serial/by-id/` with the
+   Star Arm unplugged, plug in only the Star Arm, and run it again. The new
+   entry is its port. The default `rebot_leader_port` matches the stock CH340
+   adapter (`usb-1a86_USB_Serial-if00-port0`).
+2. Set `ros_global_params.rebot_leader_port` to that path and
+   `ros_global_params.rebot_leader_enabled: true`. The same setting works with
+   mock, real, and the `rebot_bench_sim` overlay.
+3. For the real follower, set `hardware_interface: "real"` under
+   `hardware.robot_description.urdf_params` and check `can_interface`; see
+   [Real hardware](#real-hardware). The default `"mock"` needs neither.
+4. Cameras are optional and configured independently in `config/cameras.yaml`;
+   see [Optional real cameras](#optional-real-cameras).
+5. On another installation, re-measure the bench placements; see
+   [Bench calibration](#bench-calibration).
+
+Then start the Desktop App and backend:
+
+```bash
+moveit_pro_desktop
+moveit_pro run -c rebot_bench_base_config
+```
+
+In the Desktop App, connect to this backend and run **Mirror reBot Leader**.
+The backend starts and stops its bridge and single USB reader automatically.
+The default arm selector remains `hardware_interface: "mock"`; for the MuJoCo
+twin, use `moveit_pro run -c rebot_bench_sim`. Real startup engages torque by
+default and must begin at HOME; see [Real hardware](#real-hardware).
+
 
 Run **Move reBot to Waypoint** with `Raised`, then `Zeroed Rest`. Both are saved
 waypoints and SRDF named states; startup is `Zeroed Rest` (all seven motor
@@ -56,9 +90,9 @@ covered by this validation.
 
 ### FashionStar leader
 
-The bridge's startup `publish_rate` ROS parameter (also a launch argument)
-defaults to 100 Hz, matching the driver, and accepts 20-100 Hz; restart the
-bridge at HOME to change it.
+The YAML setting `ros_global_params.rebot_leader_publish_rate` defaults to
+100 Hz, matching the driver, and accepts 20–100 Hz. Change it before startup
+at HOME; the backend passes it to the bridge's `publish_rate` ROS parameter.
 Each tick checks the latest target and collision path; there is no interpolation,
 velocity cap, acceleration cap, or position filter. Audible motor noise at this
 rate needs hardware verification.
@@ -98,25 +132,35 @@ It does not model firmware CSP limits or the physical jaw servo; its path proof 
 bounce, or motor sound. Those require a separately approved hardware test.
 
 
-The optional leader bridge reads the existing calibrated Seeed Star Arm 102
-LeRobot plugin. Install that plugin in a separate Python environment, preserve
-its existing calibration, and select its interpreter explicitly. Replace
-`/path/to/leader-venv` below with the absolute path to that environment:
+The workspace installs the FashionStar SDK used by Seeed’s Star Arm 102 leader
+into the Python used by ROS; [dependency provenance](docs/leader-dependencies.md)
+records the pinned SDK and license. The existing bench calibration for
+`rebot_arm_102_leader` is installed at `config/leader_calibration/rebot_arm_102_leader.json`.
+The YAML `rebot_leader_calibration_file` resolves relative to this package's share
+folder (or accepts a workspace path). Keep your existing calibrated file and
+set this value and `rebot_leader_port` for another device; startup never
+calibrates or rewrites it. The file cannot prove the servos' stored origins, so
+it does not gate following: the engage check below does. With the leader
+disabled, no USB reader or leader bridge starts. Real thermal recovery starts
+independently.
 
-```bash
-ros2 launch rebot_bench_base_config rebot_leader.launch.py \
-  leader_python:=/path/to/leader-venv/bin/python
-```
-
-The default bridge accepts only this robot's mock or MuJoCo hardware. Wait for
-`Native collision scene ready`, then start **Mirror reBot Leader** from the
-Objectives sidebar. The Objective requires fresh measured HOME (every arm joint
-within 0.08 rad of zero), explicitly prepares a new session, and switches the
-seven position interfaces to `leader_position_controller`. The bridge seeds its
-reference from measured positions and holds that fixed HOME reference from
-preparation until following engages, so feedback drift cannot walk the idle
-command. It then forwards fresh leader positions
-directly, without software
+Wait for `Native collision scene ready`, then run **Mirror reBot Leader**.
+The Objective requires fresh measured HOME (every arm joint within 0.08 rad of
+zero), explicitly prepares a new session, and switches the seven position
+interfaces to `leader_position_controller`. The bridge seeds its reference from
+measured positions and holds that fixed HOME reference until following engages.
+Following engages only if the mapped leader reads within 0.1 rad of the
+measured follower on arm joints joint1-joint6, and within 0.3 rad on gripper
+joint7. The gripper limit allows about 2.4 mm of travel per finger and about
+2.9 deg of Star Arm trigger travel through its ×6 mapping. Otherwise it refuses,
+reports each joint by its operator name and number, its offset in degrees and radians,
+and which way to move that Star Arm joint to match reBot. The Objective shows
+this reason in its UI failure message, including the arm's 5.7 deg / 0.1 rad
+limit and the gripper's 17.2 deg / 0.3 rad limit in reBot joint units. Gripper
+corrections are expressed in Star Arm trigger degrees. It requests
+**Return reBot Leader Home**; align the leader and run the Objective
+again. There is no catch-up, ramp-in, or re-synchronisation during following.
+Once engaged, it forwards fresh leader positions directly, without software
 velocity or acceleration caps. Existing motor limits remain unchanged.
 
 Native MoveIt Pro FCL checks each target and the measured-to-target joint path
@@ -139,21 +183,27 @@ The mapping is absolute, with no additional zero offsets:
 | wrist_roll | joint6 | +1 |
 | gripper | joint7 | +6 |
 
-The calibrated leader angles are unwrapped, mapped to motor degrees, bounded
+The stored-origin calibrated leader angles are unwrapped, mapped to motor degrees, bounded
 to the approved motor ranges, and converted to radians. Raw SDK reads avoid
 the plugin's monitor deadband and stale-pose fallback. An incomplete or failed
-read is rejected; an old pose is never replayed as a fresh sample. The reader
-and ROS bridge may run in separate environments using JSON lines over stdin.
+read is rejected; an old pose is never replayed as a fresh sample. The backend-owned reader sends JSON lines to its bridge over a private pipe.
 Neither process writes stored follower parameters or recalibrates the leader.
 
 Leader targets retain the approved full ranges; J2 and J3 leader commands have
 a zero lower bound at HOME. Measured-position holds use the same command
 bounds, so noisy feedback cannot create a negative HOME-side reference.
 
+The reader starts only with the backend and never reopens its port. If it exits
+(Star Arm unplugged or unpowered at startup, wrong `rebot_leader_port`, or a
+rejected calibration file), Mirror refuses with that cause. If the Star Arm USB
+is unplugged while it runs, every later read fails, even with the cable back,
+and Mirror refuses with the reader's read error. Either way, reconnect the Star
+Arm and, once reBot is at HOME, restart the backend.
+
 Stopping the Objective, calling `/rebot_leader_bridge/clutch`, losing the USB
 stream, or receiving stale/invalid data latches following off and requests
 **Return reBot Leader Home**. So does a prepared session that has not started
-following within 3 s. In a real-hardware (`allow_real:=true`) session, so does any
+following within 3 s. On the real RobStride model, so does any
 tick whose Robstride status is 0.5 s or more old, has a non-zero `comm_state` or
 any fault bit (the driver sets both on a reported motor fault), or does not list
 exactly seven motors, all enabled: the check runs before each target is sent, and
@@ -161,9 +211,11 @@ healthy or reconnected feedback afterwards does not re-engage following. A motor
 that stops answering on the CAN bus changes none of these fields, so the bridge
 does not detect it; the driver's `freeze_on_joint_loss` freezes the arm instead,
 and the HOME return cannot move it until separate hardware and driver recovery.
-Ctrl-C on the leader launch mid-session also returns
-HOME; the bridge then ignores further stop signals until that return finishes,
-for up to 120 s. The return centres wrist yaw before moving to
+Stopping the backend mid-session also makes the bridge request
+**Return reBot Leader Home**; it then ignores further stop signals until that
+return finishes, for up to 120 s. The Objective server shuts down at the same
+time, so do not rely on it: return reBot HOME before stopping the backend (see
+[Start, home and stop](#start-home-and-stop)). The HOME return centres wrist yaw before moving to
 `Zeroed Rest`, at 0.05 rad/s maximum, preserving the jaw. An arm within the same
 0.08 rad of HOME that preparation accepts is left where it is. Otherwise both
 legs are planned with `PlanToJointGoalFromBoundedStart`, which is `PlanToJointGoal`
@@ -176,22 +228,20 @@ limit: planned from the measurement, the leg would start past it, and a sag deep
 enough to reach self-collision (joint3 at about −0.08 rad) would be refused. HOME recovery restores the normal
 `joint_trajectory_admittance_controller` and retains motor torque, leaving the arm
 ready for other Objectives at HOME. Normal stop/cancel never disables motors.
-The external 100 °C guard remains armed and owns its separate protective response.
+Driver-owned thermal detection and backend recovery run automatically; see
+[Thermal protection](#thermal-protection).
 A failed HOME return is
 reported and requires operator recovery. Only starting the Objective again at
-measured HOME re-engages; reconnecting USB never does.
+measured HOME re-engages; reconnecting USB never does, and after a Star Arm
+USB unplug the backend must be restarted first.
 
-Physical commissioning requires explicit `--allow-real`, an approved motion
-and return, healthy hardware, a continuously running external fault/temperature
-guard with a 100 °C cutoff, and a recorded-input twin check. The bridge itself
-does not enable motors or provide the temperature guard. Enable at HOME through
-the approved commissioning workflow before pressing Start. The Objective runs
-continuously until stopped, with no fixed session length. It controls position
-references without a speed guard; fast leader changes can command fast motion.
-For an approved real session, use `allow_real:=true`; enable remains an explicit
-external commissioning step.
-Disable or change hardware lifecycle only at proven physical and measured HOME.
-A motor fault requires separate recovery before any further following.
+The bridge identifies mock, real, or MuJoCo from the robot description. Real
+sessions require fresh healthy status from exactly seven enabled motors; there
+is no second mode-enable switch. Startup torque remains true by default. Normal
+Stop retains torque after HOME. Disable or change hardware lifecycle only at
+proven physical and measured HOME. A motor fault requires separate recovery
+before further following. The Objective runs until stopped and has no software
+speed guard; fast leader changes can command fast motion.
 
 The dedicated gripper JointVelocityController uses position commands with
 3.0 rad/s velocity and 6.0 rad/s² acceleration limits. It starts inactive and
@@ -359,12 +409,26 @@ is still provisional.
 
 ## Optional real cameras
 
-Cameras default **off**, so the package starts without either device plugged in.
-The arm currently uses `mock_components/GenericSystem`, including when cameras are on.
+Cameras default **on** and are independently optional. The backend checks USB
+descriptors and skips each missing or unsupported camera with a warning; neither
+camera is required for backend startup, the leader, or Mirror. Out of the box,
+the wrist driver supports an Intel RealSense D435 and the scene driver a Luxonis
+OAK-D. The arm's `hardware_interface` selection is independent of the cameras.
 These camera settings apply only when launching the base package; the sim overlay
 does not invoke this camera launch file.
-Edit [config/cameras.yaml](config/cameras.yaml), set `enable_cameras: true`, and
-restart the MoveIt Pro instance. The persistent driver launch reads that file.
+The persistent backend launch reads [config/cameras.yaml](config/cameras.yaml),
+so the normal two-command startup also starts attached supported cameras. Both
+serial selectors are blank by default and use the first matching device. Set
+`wrist_serial_no` or `scene_serial_no` to select a particular supported camera.
+Set `enable_wrist_camera: false` or `enable_scene_camera: false` independently,
+or `enable_cameras: false` to disable both. If the D435 disconnects mid-run, the
+backend stops its driver rather than let librealsense retry and log without end;
+reconnect it and restart the backend to use it again.
+
+Other camera models need their own ROS driver; configure it to publish `Image`
+and `CameraInfo` topics in the backend's ROS domain, select its image topic in
+the Desktop App, and disable the corresponding built-in camera. Do not start a
+second driver for a device already owned by another publisher.
 For a cameras-only ROS launch in a sourced workspace:
 
 ```bash
@@ -409,14 +473,14 @@ the depth image on `/scene_camera/depth/image_rect_raw` (with
 `/scene_camera/depth/camera_info`), in `scene_camera_color_optical_frame`, so it
 should line up pixel for pixel with the colour image. A `depth_image_proc`
 `point_cloud_xyz_node` turns it into `/scene_camera/depth/color/points`, which
-**Stack and Unstack Cycle** uses to confirm each stack. This OAK's stereo depth
-reads 4% long, so `scene_depth_scale: 0.96` multiplies every depth (the
-`scale_depth.py` node, between the depth image and the point cloud) before the
-cloud is built. Measured on 2026-10-13 in the calibrated `world` frame, it moved
-the mat from a median of -24 mm to 0 mm and a 100 mm blue-on-red stack's top
-from 80 mm to 100 mm. Re-measure it for another camera or after recalibrating:
-find the factor along the camera rays that puts the empty mat at z=0, then check
-a known height; 1.0 publishes the depth unchanged. The colour stream's
+**Stack and Unstack Cycle** uses to confirm each stack. `scene_depth_scale`
+defaults to 1.0, which publishes the depth unchanged. Any other value multiplies
+every depth (the `scale_depth.py` node, between the depth image and the point
+cloud) before the cloud is built. Measure it for your own camera: find the
+factor along the camera rays that puts the empty mat at z=0, then check a known
+height. The original bench's OAK read 4% long; measured on 2026-10-13 in the
+calibrated `world` frame, 0.96 moved its mat from a median of -24 mm to 0 mm
+and a 100 mm blue-on-red stack's top from 80 mm to 100 mm. The colour stream's
 settings are the same either way. To run colour only, set
 `scene_aligned_depth: false` in the YAML or pass `scene_aligned_depth:=false`;
 the OAK then runs its RGB-only pipeline with the stereo pair off, and the cycle
@@ -424,9 +488,8 @@ cannot confirm a stack. Change `scene_mjpeg_quality` in the same YAML to adjust 
 ISP luma/chroma denoising and sharpening are disabled to preserve detail.
 Allow a few seconds after startup for the scene camera's image to settle before
 recording; the first frames can look heavily processed.
-The configured scene serial selects the installed OAK; `wrist_serial_no` may be
-set when more than one D435 is connected. Resolution changes must be supported
-by both devices and the OAK video encoder (including its width alignment).
+Resolution changes must be supported by both devices and the OAK video encoder
+(including its width alignment).
 
 ### Scene camera field of view: state the ISP ratio, or lose most of it
 
@@ -562,11 +625,18 @@ motor and the kernel default of 10 drops most of it. The driver ships
 `scripts/setup_can.sh`, which does the same thing and tolerates adapters without
 bus-off auto-recovery.
 
-### Run it without `--instance`
+### Start the Desktop App and backend
+
+With the arm physically at HOME, power and CAN ready, and existing calibration
+available, use the same two commands as mock:
 
 ```bash
-moveit_pro run --config-package rebot_bench_base_config
+moveit_pro_desktop
+moveit_pro run -c rebot_bench_base_config
 ```
+
+Then run **Mirror reBot Leader** in the Desktop App. Enable the leader with the
+same `rebot_leader_enabled` YAML setting; the backend owns its full lifecycle.
 
 **No `--instance`.** SocketCAN interfaces are network-namespace scoped, and
 `can0` is not a `/dev` device, so bind-mounting `/dev` does not help. An
@@ -620,6 +690,37 @@ The freeze is latched. A recovered joint stays limp and control is not handed
 back until a fresh activation: a rebooted motor's position may be a whole turn
 off, and the controllers' setpoints have moved on. `~/reboot_robstride` clears a
 latched fault but does not by itself restore the joint.
+
+### Thermal protection
+
+`hardware.robot_description.urdf_params` sets `thermal_cutoff_c: "100.0"`.
+The RobStride driver detects any motor at or above that temperature and latches
+`/robstride_hardware_interface/thermal_tripped`. Already-enabled motors keep
+torque for recovery; automatic re-enable and further torque-enable requests are
+blocked while latched. Initial hot feedback prevents startup enable.
+
+The backend's `rebot_thermal_guard` cancels the current Objective, requests
+**Return reBot Leader Home**, waits for successful completion and fresh measured
+stationary HOME for 0.5 s, then calls the owning driver's `set_torque` service
+with false. The leader bridge latches off without sending a competing HOME goal.
+No separate guard command is needed, including when the leader is disabled.
+
+The split is deliberate. The driver owns the YAML threshold, detection, the
+latch and refusing re-enable. The HOME-then-OFF response stays in this backend
+node because the driver cannot plan a HOME motion and the brakeless arm must
+never lose torque away from HOME. An arm already fully OFF when the latch trips
+(hot at startup) stays OFF and is reported as such, without waiting for the
+Objective server.
+
+If cancellation, HOME, hardware health, or fresh HOME verification fails, or a
+step exceeds its own time bound (120 s for native HOME, a few seconds for each
+other step), the system keeps the latch and reports intervention required; it never disables
+away from HOME. Reachable joints retain torque under the existing loss/fault
+policy. Existing collision checks and motor fault handling remain active.
+Cooling cannot re-engage following. Only after confirmed HOME/OFF, cooling and
+fault recovery may the driver be restarted to reset the latch. Software recovery
+cannot guarantee HOME after motor or communication failure and is not a
+safety-rated thermal shutdown.
 
 ### Motors, limits and gains
 
@@ -968,8 +1069,8 @@ The pre-motion checks also refuse planned joint2 positions above 2.2 rad, to
 limit the carry reach associated with bench heating. Change `maximum` in
 `objectives/rebot_check_pick_reach.xml`, `objectives/rebot_check_stack_reach.xml`
 and `objectives/rebot_check_source_heat_reach.xml` together. This geometric
-bound does not measure temperatures; the hardware monitor still owns thermal
-limits and cancellation. After reaching home, recovery clears the carried
+bound does not measure temperatures; the driver thermal latch and backend recovery own temperature
+protection and cancellation. After reaching home, recovery clears the carried
 cube's planning-scene attachment. A failed home return still reports failure.
 
 **Speed settings.** [`objectives/rebot_stack_motion.yaml`](objectives/rebot_stack_motion.yaml)
@@ -1197,7 +1298,7 @@ may only be released at home ([Real hardware](#real-hardware)).
 
 **Deployment.** Select the real arm ([Selecting it](#selecting-it)) and run
 without `--instance` so the drivers container shares the host network and sees
-`can0` ([Run it without `--instance`](#run-it-without---instance)). SAM3
+`can0` ([Start the Desktop App and backend](#start-the-desktop-app-and-backend)). SAM3
 perception needs CUDA: give the runtime container NVIDIA GPU access, or
 **Locate reBot Cubes** fails loading `libcuda.so.1`. Bring up both cameras
 ([Optional real cameras](#optional-real-cameras)) and check each colour stream

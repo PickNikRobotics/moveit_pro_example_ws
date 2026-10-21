@@ -19,35 +19,41 @@ from rclpy.action import ActionClient
 from rclpy.signals import SignalHandlerOptions
 from rclpy.qos import DurabilityPolicy, QoSProfile, qos_profile_sensor_data
 from sensor_msgs.msg import JointState
-from std_msgs.msg import String, Float64MultiArray
+from std_msgs.msg import Bool, String, Float64MultiArray
 from moveit_msgs.msg import PlanningScene, PlanningSceneComponents
 from moveit_msgs.srv import GetPlanningScene
 from std_srvs.srv import Trigger
 
 from rebot_leader import JOINT_NAMES, LIMITS_DEG
-from rebot_leader_state import LeaderState
+from rebot_leader_state import LeaderState, joint_label, operator_fault
 from rebot_leader_collision import LeaderCollision
 
 
 class LeaderBridge:
     """One position-command owner; native FCL checks every target and path."""
 
-    def __init__(self, node, stream, allow_real=False):
+    def __init__(self, node, stream):
         self.node = node
         self.stream = stream
         self.state = LeaderState()
-        self.allow_real = allow_real
+        self.real_hardware = False
+        self.thermal_tripped = False
         self.hardware_state = None
         self.hardware_time = -math.inf
-        if allow_real:
-            from robstride_interfaces.msg import RobstrideState
+        from robstride_interfaces.msg import RobstrideState
 
-            node.create_subscription(
-                RobstrideState,
-                "/robstride_hardware_interface/robstride_state",
-                self.observe_hardware,
-                qos_profile_sensor_data,
-            )
+        node.create_subscription(
+            RobstrideState,
+            "/robstride_hardware_interface/robstride_state",
+            self.observe_hardware,
+            qos_profile_sensor_data,
+        )
+        node.create_subscription(
+            Bool,
+            "/robstride_hardware_interface/thermal_tripped",
+            self.observe_thermal,
+            QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL),
+        )
         self.start_checked = False
         self.prepared_at = None
         self.warmup_heartbeat = -math.inf
@@ -58,6 +64,7 @@ class LeaderBridge:
         self.warmup_reference = None
         self.verified = False
         self.buffer = b""
+        self.reader_exited = False
         self.recovery_started = None
         self.recovery_future = None
         self.recovery_result = None
@@ -87,6 +94,16 @@ class LeaderBridge:
             raise ValueError("publish_rate must be between 20 and 100 Hz")
         node.create_timer(1.0 / publish_rate, self.tick)
 
+    def observe_thermal(self, message):
+        if message.data:
+            self.thermal_tripped = True
+            self.state.stop("Driver thermal trip; backend owns HOME recovery")
+            # The thermal recovery owner cancels the task and sends the one
+            # native HOME goal. Do not send a competing goal or position hold.
+            self.state.recover = False
+            self.state.fault = "Driver thermal trip latched"
+            self.prepared_at = None
+
     def observe_hardware(self, message):
         self.hardware_state = message
         self.hardware_time = time.monotonic()
@@ -108,13 +125,14 @@ class LeaderBridge:
         del request
         now = time.monotonic()
         ready = (
-            not self.state.active
+            not self.thermal_tripped
+            and not self.state.active
             and not self.home_failed
             and self.verified
             and self.scene_ready
             and self.state.fresh(now)
         )
-        if self.allow_real:
+        if self.real_hardware:
             ready = ready and self.hardware_healthy(now)
         # Reset clears the fault latch, so all readiness checks must pass first.
         ready = ready and self.state.reset()
@@ -128,9 +146,70 @@ class LeaderBridge:
         response.message = (
             "HOME ready; start continuous following"
             if ready
-            else "Fresh HOME/model/scene and enabled healthy hardware required"
+            else self.refusal_reason(now, preparing=True)
         )
         return response
+
+    def refusal_reason(self, now, preparing=False):
+        """Explain the first unmet prerequisite without clearing any stop latch."""
+        if self.thermal_tripped:
+            return operator_fault("Driver thermal trip latched")
+        if self.home_failed:
+            return (
+                "Following refused: automatic HOME recovery failed. Torque remains on to support the arm. "
+                "Do not push reBot or disable torque away from HOME. Get operator help to recover HOME "
+                "through the supported motion procedure before running Mirror reBot Leader again."
+            )
+        if self.reader_exited:
+            return (
+                "Following refused: the Star Arm reader has exited, so there is no leader data. "
+                "It exits when the Star Arm is unplugged or unpowered, is not at rebot_leader_port, "
+                "or its rebot_leader_calibration_file is rejected; the backend log shows its error. "
+                "Connect and power the Star Arm and check those config.yaml settings. Once reBot is at HOME, "
+                "restart the backend (moveit_pro run); the reader starts only with the backend. "
+                "Then run Mirror reBot Leader again."
+            )
+        if not self.verified:
+            return operator_fault(
+                "the reBot robot model is not available or does not match this configuration"
+            )
+        if not self.scene_ready:
+            return operator_fault(
+                "the collision scene is not ready; wait for the backend collision scene"
+            )
+        if self.state.fault and not preparing:
+            return operator_fault(self.state.fault)
+        if not self.state.fresh(now):
+            return operator_fault(
+                self.state.rejection or "leader/follower samples are stale or missing"
+            )
+        if preparing:
+            if self.state.active:
+                return operator_fault(
+                    "Mirror is already following; stop it before starting another Mirror Objective"
+                )
+            if self.state.recover:
+                return operator_fault("HOME recovery is still running")
+            off_home = [
+                f"{joint_label(i)} {math.degrees(q):+.1f} deg ({q:+.3f} rad)"
+                for i, q in enumerate(self.state.measured[:6])
+                if abs(q) > 0.08
+            ]
+            if off_home:
+                return (
+                    "Following refused: reBot must be at HOME before starting Mirror. "
+                    f"Away from HOME: {'; '.join(off_home)}. Run Return reBot Leader Home "
+                    "to return reBot; do not move it by hand or disable torque away from HOME. "
+                    "Then match the Star Arm to reBot and run Mirror reBot Leader again."
+                )
+            if self.real_hardware and not self.hardware_healthy(now):
+                return operator_fault(
+                    "motor feedback is stale, faulted, or torque is disabled; "
+                    "check the owning driver and use the supported HOME enable procedure"
+                )
+        return operator_fault(
+            "Mirror preparation is required or a stop is still latched"
+        )
 
     def observe(self, message):
         self.state.observe(message.name, message.position, time.monotonic())
@@ -149,12 +228,13 @@ class LeaderBridge:
     def description(self, message):
         robot = ET.fromstring(message.data)
         plugins = [p.text for p in robot.findall("ros2_control/hardware/plugin")]
+        real_plugin = ["robstride_hardware_interface/RobstrideHardware"]
+        self.real_hardware = plugins == real_plugin
         allowed = [
             ["picknik_mujoco_ros/MujocoSystem"],
             ["mock_components/GenericSystem"],
+            real_plugin,
         ]
-        if self.allow_real:
-            allowed.append(["robstride_hardware_interface/RobstrideHardware"])
         self.verified = robot.get("name") == "rebot_b601_rs" and plugins in allowed
         if self.verified and self.collider is None:
             self.collider = LeaderCollision(message.data)
@@ -167,7 +247,8 @@ class LeaderBridge:
         now = time.monotonic()
         if not self.start_checked:
             response.success = (
-                self.verified
+                not self.thermal_tripped
+                and self.verified
                 and self.scene_ready
                 and not self.home_failed
                 and not self.state.fault
@@ -179,19 +260,18 @@ class LeaderBridge:
             response.message = (
                 "Holding measured position"
                 if response.success
-                else "Warmup prerequisites failed"
+                else self.refusal_reason(now)
             )
         else:
             response.success = (
-                self.verified
+                not self.thermal_tripped
+                and self.verified
                 and self.scene_ready
                 and not self.home_failed
                 and self.state.engage(now)
             )
             response.message = (
-                "Following"
-                if response.success
-                else (self.state.fault or "Fresh samples/model required")
+                "Following" if response.success else self.refusal_reason(now)
             )
         return response
 
@@ -223,6 +303,8 @@ class LeaderBridge:
             self.publish(positions)
 
     def tick(self):
+        if self.thermal_tripped:
+            return
         was_active = self.state.active
         now = time.monotonic()
         try:
@@ -230,6 +312,11 @@ class LeaderBridge:
         except BlockingIOError:
             chunk = None
         if chunk == b"":
+            if not self.reader_exited:
+                self.node.get_logger().error(
+                    "Star Arm reader exited; leader following is unavailable until the backend restarts"
+                )
+            self.reader_exited = True
             self.state.stop("Leader disconnected")
         elif chunk:
             self.buffer += chunk
@@ -281,7 +368,7 @@ class LeaderBridge:
                 self.start_checked = self.state.engage(now)
                 if self.start_checked:
                     self.prepared_at = None
-                self.node.get_logger().info("POSITION FOLLOWING STARTED")
+                    self.node.get_logger().info("POSITION FOLLOWING STARTED")
             elif self.prepared_at is not None and (
                 self.state.fault or now - self.prepared_at >= 3.0
             ):
@@ -295,7 +382,7 @@ class LeaderBridge:
         if was_active and not self.state.active:
             self.hold()
         if self.state.active:
-            if self.allow_real and not self.hardware_healthy(now):
+            if self.real_hardware and not self.hardware_healthy(now):
                 reason = "Robstride status stale, faulted or not all motors enabled"
             else:
                 try:
@@ -368,21 +455,15 @@ class LeaderBridge:
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--leader-python",
-        help="Python interpreter with the Seeed leader plugin installed",
+        "--port", required=True, help="Configured FashionStar USB serial port"
     )
     parser.add_argument(
-        "--allow-real",
-        action="store_true",
-        help="Requires separately approved physical commissioning",
+        "--calibration-file",
+        type=Path,
+        required=True,
+        help="Configured existing leader calibration",
     )
     args, ros_args = parser.parse_known_args()
-    child = None
-    if args.leader_python:
-        child = subprocess.Popen(
-            [args.leader_python, str(Path(__file__).with_name("rebot_leader.py"))],
-            stdout=subprocess.PIPE,
-        )
     rclpy.init(args=ros_args, signal_handler_options=SignalHandlerOptions.NO)
 
     def request_shutdown(signum, frame):
@@ -397,14 +478,28 @@ def main():
     signal.signal(signal.SIGINT, request_shutdown)
     signal.signal(signal.SIGTERM, request_shutdown)
     node = rclpy.create_node("rebot_leader_bridge")
-    bridge = LeaderBridge(
-        node, child.stdout if child else sys.stdin.buffer, args.allow_real
-    )
+    child = bridge = None
     try:
+        command = [
+            sys.executable,
+            str(Path(__file__).with_name("rebot_leader.py")),
+            "--port",
+            args.port,
+            "--calibration-file",
+            str(args.calibration_file),
+        ]
+        child = subprocess.Popen(
+            command,
+            stdout=subprocess.PIPE,
+            start_new_session=True,
+        )
+        bridge = LeaderBridge(node, child.stdout)
         rclpy.spin(node)
     except KeyboardInterrupt:
         # Keep the process alive through its home return; SIGKILL cannot run
         # cleanup and is never an operator stop mechanism.
+        if bridge is None:
+            return
         bridge.state.stop("Bridge shutdown requested")
         bridge.hold()
         deadline = time.monotonic() + 120
@@ -417,7 +512,12 @@ def main():
     finally:
         if child is not None:
             child.terminate()
-            child.wait(timeout=5)
+            try:
+                child.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                child.kill()
+                child.wait()
+            child.stdout.close()
         node.destroy_node()
         rclpy.shutdown()
 

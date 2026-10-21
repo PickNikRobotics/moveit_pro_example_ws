@@ -62,6 +62,7 @@ if(BUILD_TESTING)
   ament_add_pytest_test(
           rebot_bench_sim_recorder_test test/test_record_stack_evidence.py
           TIMEOUT 60)
+  ament_add_pytest_test(rebot_leader_startup_test test/test_leader_startup.py TIMEOUT 60)
   # Runs every Objective against the MuJoCo twin, like lab_sim's suite.
   ament_add_pytest_test(
           objectives_integration_test test/objectives_integration_test.py

@@ -81,6 +81,7 @@ public:
 
   /// Position the fake reports, in rad.
   void set_position(double position) {position_ = position;}
+  void set_temperature(double temperature) {temperature_ = temperature;}
 
 private:
   void Run()
@@ -142,8 +143,9 @@ private:
     frame.data[3] = static_cast<uint8_t>(zero_velocity & 0xFF);
     frame.data[4] = static_cast<uint8_t>(zero_torque >> 8);
     frame.data[5] = static_cast<uint8_t>(zero_torque & 0xFF);
-    frame.data[6] = 0;
-    frame.data[7] = 250;  // 25.0 C
+    const auto temperature = static_cast<uint16_t>(temperature_.load() * 10.0);
+    frame.data[6] = static_cast<uint8_t>(temperature >> 8);
+    frame.data[7] = static_cast<uint8_t>(temperature & 0xFF);
     [[maybe_unused]] const ssize_t written = ::write(socket_, &frame, sizeof(frame));
   }
 
@@ -153,6 +155,7 @@ private:
   std::atomic<bool> running_{false};
   std::atomic<bool> enabled_{false};
   std::atomic<double> position_{0.0};
+  std::atomic<double> temperature_{25.0};
   std::thread thread_;
   mutable std::mutex mutex_;
   std::vector<uint8_t> received_;

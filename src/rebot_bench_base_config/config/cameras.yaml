@@ -1,5 +1,8 @@
-# Opt in only when both USB cameras are connected. The arm always stays mock.
-enable_cameras: false
+# Start each supported camera if attached; missing cameras warn and are skipped.
+# Camera selection is independent of the arm's mock/real hardware selector.
+enable_cameras: true
+enable_wrist_camera: true
+enable_scene_camera: true
 
 # Shared RGB output settings. Use a color mode supported by both cameras.
 image_width: 640
@@ -16,7 +19,8 @@ scene_image_height: 400
 
 # Empty selects the attached D435; set a serial if more than one is connected.
 wrist_serial_no: ""
-scene_serial_no: "14442C10A119EAD600"
+# Empty selects the first attached OAK-D; no bench-specific serial is required.
+scene_serial_no: ""
 # OAK encodes MJPEG on-device before USB transfer; the driver decodes to bgr8.
 scene_mjpeg_quality: 95
 
@@ -28,9 +32,9 @@ scene_mjpeg_quality: 95
 # only, and the cycle then fails at its first stack check.
 scene_aligned_depth: true
 
-# Multiplies every scene depth before the point cloud is built. This OAK's
-# stereo depth reads 4% long: on 2026-10-13 a factor of 0.96 put the mat at
+# Multiplies every scene depth before the point cloud is built; 1.0 publishes
+# the depth unchanged. Set a factor measured for your own OAK: the original
+# bench's unit read 4% long, and on 2026-10-13 a factor of 0.96 put its mat at
 # 0 mm (median of 11,000 points, was -24 mm) and a 100 mm blue-on-red stack's
-# top at 100 mm (was 80 mm), in the calibrated world frame. Re-measure it for
-# another camera or after recalibrating; 1.0 publishes the depth unchanged.
-scene_depth_scale: 0.96
+# top at 100 mm (was 80 mm), in the calibrated world frame.
+scene_depth_scale: 1.0
