@@ -301,8 +301,8 @@ def test_cubes_are_50_mm_and_settle_on_the_mat_where_the_layout_puts_them(model,
 
 
 def test_arm_holds_the_keyframe_pose_without_sagging(model, data):
-    # A sag of about 0.04 rad on joint4 in the folded rest pose is enough for
-    # MoveIt to report link2 and link5 in collision and refuse to plan, and a
+    # A sag of joint3 to about -0.08 rad in the folded rest pose is enough for
+    # MoveIt to report self-collision and refuse to plan, and a
     # joint resting a hair below its 0 rad lower limit fails trajectory
     # generation from the current state. Uncompensated mass (a visual geom
     # that is not massless) shows up here as a steady offset.
@@ -490,3 +490,56 @@ def test_released_stack_does_not_drift_over_five_minutes(model, data):
             max_xy = max(max_xy, float(np.linalg.norm((poses[1] - poses[0])[:2])))
     assert max_drift < 0.0005, f"Five-minute cube drift: {max_drift * 1000:.3f} mm"
     assert max_xy < 0.005, f"Five-minute stack XY error: {max_xy * 1000:.3f} mm"
+
+
+def test_jaw_closes_from_open_inside_the_path_tolerance_below_real_time(model, data):
+    """Track Close Gripper's planned profile from a fully open jaw on a slow twin.
+
+    The trajectory controller samples its reference on the wall clock while MuJoCo
+    advances sim time, so at a real-time factor of 0.7 (a loaded host) the jaw has
+    to follow the planned profile 1/0.7 times faster.
+    """
+    base = Path(get_package_share_directory("rebot_bench_base_config"))
+    jaw = yaml.safe_load((base / "config/moveit/joint_limits.yaml").read_text())[
+        "joint_limits"
+    ]["joint7"]
+    tolerance = yaml.safe_load(
+        (base / "config/control/rebot.ros2_control.yaml").read_text()
+    )["joint_trajectory_admittance_controller"]["ros__parameters"][
+        "default_path_tolerance"
+    ]
+    opened, speed, accel = (
+        jaw["max_position"],
+        jaw["max_velocity"],
+        jaw["max_acceleration"],
+    )
+    data.joint("joint7").qpos = opened
+    for name in ("gripper_joint1", "gripper_joint2"):
+        data.joint(name).qpos = opened * 0.008
+    data.ctrl[model.actuator("joint7").id] = opened
+    for _ in range(int(1.0 / model.opt.timestep)):
+        mujoco.mj_step(model, data)
+
+    ramp = speed / accel
+    duration = ramp + opened / speed
+
+    def reference(t):
+        t = min(t, duration)
+        if t < ramp:
+            return opened - 0.5 * accel * t * t
+        if t < duration - ramp:
+            return opened - speed * (t - 0.5 * ramp)
+        return 0.5 * accel * (duration - t) ** 2
+
+    real_time_factor = 0.7
+    start = data.time
+    worst = 0.0
+    while data.time < start + (duration + 0.5) * real_time_factor:
+        data.ctrl[model.actuator("joint7").id] = reference(
+            (data.time - start) / real_time_factor
+        )
+        mujoco.mj_step(model, data)
+        wall = (data.time - start) / real_time_factor
+        worst = max(worst, abs(reference(wall) - data.joint("joint7").qpos[0]))
+    assert worst < tolerance, f"Peak joint7 path error {worst:.3f} rad"
+    assert data.joint("joint7").qpos[0] == pytest.approx(0, abs=0.01)

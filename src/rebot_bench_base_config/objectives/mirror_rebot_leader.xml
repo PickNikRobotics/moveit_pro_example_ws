@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Mirror reBot Leader">
+  <BehaviorTree
+    ID="Mirror reBot Leader"
+    _description="Mirror calibrated FashionStar positions with native FCL collision checks. Stop returns HOME, restores the normal trajectory controller, and retains motor torque for other Objectives."
+  >
+    <Sequence>
+      <Action
+        ID="CallTriggerService"
+        service_name="/rebot_leader_bridge/prepare"
+        response_timeout="1.0"
+        wait_for_server_available_timeout="3.0"
+      />
+      <Action
+        ID="SwitchController"
+        activate_controllers="leader_position_controller"
+        automatic_deactivation="true"
+        strictness="2"
+      />
+      <Repeat num_cycles="-1">
+        <Sequence>
+          <Action
+            ID="CallTriggerService"
+            service_name="/rebot_leader_bridge/mirror"
+            response_timeout="1.0"
+            wait_for_server_available_timeout="3.0"
+          />
+          <Action ID="WaitForDuration" delay_duration="0.05" />
+        </Sequence>
+      </Repeat>
+    </Sequence>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Mirror reBot Leader">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="reBot Bench" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

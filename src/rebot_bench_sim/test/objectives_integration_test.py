@@ -49,6 +49,7 @@ cancel_objectives: set[str] = set()
 # the bench scene does not have.
 skip_objectives: set[str] = {
     "Teleoperate",  # DoTeleoperateAction rejects the goal with no UI subscribed.
+    "Mirror reBot Leader",  # Needs rebot_leader_bridge, a FashionStar leader and an operator.
     "Marker Visualization Example",  # GetTextFromUser server unavailable headless.
     "Clear Snapshot",  # No octomap: the reBot configs define no 3D sensors.
     # Each test starts from the Zeroed Rest keyframe. With joint2's and

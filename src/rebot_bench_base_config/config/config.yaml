@@ -24,9 +24,9 @@ hardware:
       # published and the joints move by hand, nothing is commanded. Use it for
       # the first session on a new arm, then switch to "true".
       - torque_enable: "true"
-      # Real only. joint1-joint6 control: "motion" (impedance, the default) or
-      # "position_csp" (the motor's own position loop). See the README.
-      - arm_control_mode: "motion"
+      # Real only. joint1-joint6 control: "position_csp" (the motor's own
+      # position loop) or "motion" (impedance, the Xacro default). See the README.
+      - arm_control_mode: "position_csp"
       # Bench-specific placements in the printed TF frame (world, z = 0 on the
       # mat top), from the 2026-10-11 ChArUco calibration; re-measure and
       # override them for any other installation (README.md). base_link: x, y
@@ -76,6 +76,7 @@ ros2_control:
   - joint_state_broadcaster
   - joint_trajectory_admittance_controller
   controllers_inactive_at_startup:
+  - leader_position_controller
   - joint_velocity_controller
   - gripper_joint_velocity_controller
   - velocity_force_controller

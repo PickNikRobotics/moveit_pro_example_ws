@@ -54,6 +54,144 @@ Open/Close Gripper remain endpoint shortcuts. This configuration adds bounded
 velocity jogging; exact-angle slider and interactive-marker execution are not
 covered by this validation.
 
+### FashionStar leader
+
+The bridge's startup `publish_rate` ROS parameter (also a launch argument)
+defaults to 100 Hz, matching the driver, and accepts 20-100 Hz; restart the
+bridge at HOME to change it.
+Each tick checks the latest target and collision path; there is no interpolation,
+velocity cap, acceleration cap, or position filter. Audible motor noise at this
+rate needs hardware verification.
+
+Jaw stiffness `jaw_kp` (12 Nm/rad) and damping `jaw_kd` (0.5 Nm·s/rad) are
+Xacro arguments, set like `arm_control_mode` under `urdf_params` in
+`config/config.yaml` (see [Motors, limits and gains](#motors-limits-and-gains)).
+`config/rebot_leader_tuning.yaml` exposes the jaw motor torque limit (1 Nm) and
+J4 motor speed limit (33 rad/s, matching the other RS00 wrist motors). The jaw is an
+impedance position servo, not contact detection or force control. The firmware torque-limit register requests a motor torque bound; transient
+feedback can exceed it. It is not a calibrated fingertip-force limit. Lower torque reduces grip;
+more damping reduces fast-open bounce. Keep stiffness responsive. This
+configuration ships `arm_control_mode: "position_csp"`, so J1–J6 ignore their GPIO
+kp/kd settings and each tracks at up to its stored speed limit (0x7017); J4's
+factory 1 rad/s limit caused lag even though the bridge was uncapped.
+Changing J4's speed limit changes physical response and requires commissioning.
+
+Inspect the exact proposed writes without contacting hardware:
+
+```bash
+ros2 run rebot_bench_base_config rebot_leader_tune.py
+```
+
+After explicit physical commissioning approval, at healthy HOME with every motor
+OFF, add `--apply`. It sends volatile settings through the owning driver's service;
+it never sends a save/store, changes mode, enables a joint, or moves the robot.
+The service ACK confirms transmission, not firmware acceptance: independently read
+back motor registers 0x700B (J7) and 0x7017 (J4) before enabling. Nothing may enable or command the arm until both writes and readbacks finish. On any failure,
+leave the arm OFF; partial writes are possible. Power cycling restores stored
+values, so re-read before each session. This tool is
+never called implicitly by launch or the Objective. Reapply only by explicit
+command after a driver restart. The MuJoCo jaw actuator mirrors kp=12, but keeps
+kd=0.05 and the RS00's ±14 Nm range: at kd 0.5 a twin running below real time lags Close Gripper past
+the 0.15 rad path tolerance.
+It does not model firmware CSP limits or the physical jaw servo; its path proof cannot validate grip force,
+bounce, or motor sound. Those require a separately approved hardware test.
+
+
+The optional leader bridge reads the existing calibrated Seeed Star Arm 102
+LeRobot plugin. Install that plugin in a separate Python environment, preserve
+its existing calibration, and select its interpreter explicitly. Replace
+`/path/to/leader-venv` below with the absolute path to that environment:
+
+```bash
+ros2 launch rebot_bench_base_config rebot_leader.launch.py \
+  leader_python:=/path/to/leader-venv/bin/python
+```
+
+The default bridge accepts only this robot's mock or MuJoCo hardware. Wait for
+`Native collision scene ready`, then start **Mirror reBot Leader** from the
+Objectives sidebar. The Objective requires fresh measured HOME (every arm joint
+within 0.08 rad of zero), explicitly prepares a new session, and switches the
+seven position interfaces to `leader_position_controller`. The bridge seeds its
+reference from measured positions and holds that fixed HOME reference from
+preparation until following engages, so feedback drift cannot walk the idle
+command. It then forwards fresh leader positions
+directly, without software
+velocity or acceleration caps. Existing motor limits remain unchanged.
+
+Native MoveIt Pro FCL checks each target and the measured-to-target joint path
+at at most 0.005 rad intervals on joint1-joint6 and 0.05 rad on joint7, whose
+0.008 m/rad mimic moves each finger 0.4 mm per sample, using the robot's collision meshes, SRDF allowed
+collision matrix, and monitored planning-scene objects. Extra padding is zero,
+matching this configuration's waypoint Objectives. An unsupported octomap
+refuses following. These sampled straight paths do not model the motor's
+transient response or provide continuous collision checking.
+
+The mapping is absolute, with no additional zero offsets:
+
+| Leader coordinate | Follower coordinate | Direction / scale |
+| --- | --- | --- |
+| shoulder_pan | joint1 | +1 |
+| shoulder_lift | joint2 | +1 |
+| elbow_flex | joint3 | −1 |
+| wrist_flex | joint4 | −1 |
+| wrist_yaw | joint5 | −1 |
+| wrist_roll | joint6 | +1 |
+| gripper | joint7 | +6 |
+
+The calibrated leader angles are unwrapped, mapped to motor degrees, bounded
+to the approved motor ranges, and converted to radians. Raw SDK reads avoid
+the plugin's monitor deadband and stale-pose fallback. An incomplete or failed
+read is rejected; an old pose is never replayed as a fresh sample. The reader
+and ROS bridge may run in separate environments using JSON lines over stdin.
+Neither process writes stored follower parameters or recalibrates the leader.
+
+Leader targets retain the approved full ranges; J2 and J3 leader commands have
+a zero lower bound at HOME. Measured-position holds use the same command
+bounds, so noisy feedback cannot create a negative HOME-side reference.
+
+Stopping the Objective, calling `/rebot_leader_bridge/clutch`, losing the USB
+stream, or receiving stale/invalid data latches following off and requests
+**Return reBot Leader Home**. So does a prepared session that has not started
+following within 3 s. In a real-hardware (`allow_real:=true`) session, so does any
+tick whose Robstride status is 0.5 s or more old, has a non-zero `comm_state` or
+any fault bit (the driver sets both on a reported motor fault), or does not list
+exactly seven motors, all enabled: the check runs before each target is sent, and
+healthy or reconnected feedback afterwards does not re-engage following. A motor
+that stops answering on the CAN bus changes none of these fields, so the bridge
+does not detect it; the driver's `freeze_on_joint_loss` freezes the arm instead,
+and the HOME return cannot move it until separate hardware and driver recovery.
+Ctrl-C on the leader launch mid-session also returns
+HOME; the bridge then ignores further stop signals until that return finishes,
+for up to 120 s. The return centres wrist yaw before moving to
+`Zeroed Rest`, at 0.05 rad/s maximum, preserving the jaw. An arm within the same
+0.08 rad of HOME that preparation accepts is left where it is. Otherwise both
+legs are planned with `PlanToJointGoalFromBoundedStart`, which is `PlanToJointGoal`
+(collision-checked and free to detour) from the measured arm clamped into its
+joint bounds, and anchored to that clamped command. If that planner refuses the
+rest leg, **reBot Move to Arm Waypoint** falls back to a point-to-point move from
+the clamped command, collision-checked as planned and again after anchoring. The
+yaw leg has no fallback: a refused yaw plan fails the return. A joint sagged past a limit therefore starts the return at the
+limit: planned from the measurement, the leg would start past it, and a sag deep
+enough to reach self-collision (joint3 at about −0.08 rad) would be refused. HOME recovery restores the normal
+`joint_trajectory_admittance_controller` and retains motor torque, leaving the arm
+ready for other Objectives at HOME. Normal stop/cancel never disables motors.
+The external 100 °C guard remains armed and owns its separate protective response.
+A failed HOME return is
+reported and requires operator recovery. Only starting the Objective again at
+measured HOME re-engages; reconnecting USB never does.
+
+Physical commissioning requires explicit `--allow-real`, an approved motion
+and return, healthy hardware, a continuously running external fault/temperature
+guard with a 100 °C cutoff, and a recorded-input twin check. The bridge itself
+does not enable motors or provide the temperature guard. Enable at HOME through
+the approved commissioning workflow before pressing Start. The Objective runs
+continuously until stopped, with no fixed session length. It controls position
+references without a speed guard; fast leader changes can command fast motion.
+For an approved real session, use `allow_real:=true`; enable remains an explicit
+external commissioning step.
+Disable or change hardware lifecycle only at proven physical and measured HOME.
+A motor fault requires separate recovery before any further following.
+
 The dedicated gripper JointVelocityController uses position commands with
 3.0 rad/s velocity and 6.0 rad/s² acceleration limits. It starts inactive and
 participates in managed controller switching with the seven-joint trajectory
@@ -158,8 +296,8 @@ do not negate those coordinates a second time.
 
 The [LeRobot follower configuration](https://github.com/Seeed-Projects/lerobot-robot-seeed-b601/blob/0da1a1a5575905d77823227003ffee7672059780/lerobot_robot_seeed_b601/config_seeed_b601_rs_follower.py)
 uses `joint_directions` to map **leader actions to motor targets**. Those signs
-and the gripper factor 6 are not the motor-to-URDF mapping. No LeRobot code or
-runtime dependency is included.
+and the gripper factor 6 are not the motor-to-URDF mapping. The optional leader
+reader uses that external plugin; follower control stays in the native ROS controllers.
 
 | Motor / coordinate | Meaning | Approved motor range (degrees) | Stored motor speed (rad/s) |
 | --- | --- | --- | --- |
@@ -200,22 +338,23 @@ pitch radius = module × teeth / 2 = 8 mm. The sliders retain their opposed
 upstream axes. At 310° each travels 43.284 mm, for 86.568 mm total additional
 opening. This transmission is a model derivation, not a measured jaw calibration.
 
-The SRDF excludes adjacent assembly pairs and the opposing gripper jaws from
-self-collision checking. In particular, `gripper_end` is rigidly attached to
+The SRDF permits link2/link5 contact in the folded arm, alongside the existing
+adjacent assembly and opposing gripper-jaw exclusions. All other movable-link
+pairs retain collision checks. In particular, `gripper_end` is rigidly attached to
 `link6` across J6 from `link5`; their meshes have a 9.0 mm axial separating gap
 that J6 rotation cannot close. Default 10 mm planning padding otherwise makes
 this mount report a collision. The coupled jaws approach one another at closure
 and separate on opening. Tests re-enable both pairs for unpadded mesh checks
-along the saved motions. The package Objectives explicitly use **zero
-additional link padding** while retaining mesh collision checks, on the real arm
-too: the stack Objectives have run on the real arm this way, with the scene
-camera and base pose calibrated with ChArUco
-(see [bench calibration](#bench-calibration)). Both 10 mm and
-1 mm padding reject movable-link pairs in the tightly folded zeroed-rest pose;
-those pairs remain checked with the original collision meshes. No extra
-clearance margin is claimed. The table surface is protected by the bench box
-that **reBot Stack Scene** adds to the planning scene, with its top at the mat,
-not by padding. The wrist camera mount is still provisional.
+along the saved motions. The package Objectives, including the leader
+Objectives, explicitly use **zero additional link padding** with these SRDF
+exclusions. The stack Objectives have run on the real arm with zero padding,
+with the scene camera and base pose calibrated with ChArUco
+(see [bench calibration](#bench-calibration)), but before link2/link5 contact
+was allowed (see [SAM3 blue-on-red stack](#sam3-blue-on-red-stack)). Remaining pairs retain the
+original collision meshes. No extra clearance margin is claimed. The table
+surface is protected by the bench box that **reBot Stack Scene** adds to the
+planning scene, with its top at the mat, not by padding. The wrist camera mount
+is still provisional.
 
 ## Optional real cameras
 
@@ -494,22 +633,24 @@ One motor per joint on one bus, ids 1-7 matching `joint1`-`joint7`, host
 | joint4 (wrist tilt) | 4 | RS00 | 50.0 | 5.0 |
 | joint5 (wrist yaw) | 5 | RS00 | 50.0 | 4.0 |
 | joint6 (wrist roll) | 6 | RS00 | 50.0 | 4.0 |
-| joint7 (gripper) | 7 | RS00 | 12.0 | 0.05 |
+| joint7 (gripper) | 7 | RS00 | 12.0 | 0.5 |
 
 `actuator_type` is not cosmetic: it selects the motor's CAN quantization ranges,
 so an RS00 declared where an RS06 is fitted silently rescales every position,
 velocity and effort.
 
 joint1-joint6 run in the mode set by the `arm_control_mode` entry under
-`urdf_params` in `config/config.yaml`: `motion` (impedance, the default) or
-`position_csp`. Impedance computes `kp * error + kd * velocity error` and the
+`urdf_params` in `config/config.yaml`: `position_csp`, which it ships, or `motion`
+(impedance, the Xacro argument's default when no value is passed). Impedance computes `kp * error + kd * velocity error` and the
 driver sends no gravity feedforward, so a loaded joint settles short by load
 torque / kp - joint4 stopped about 50 mrad short lifting 0.3 rad. `position_csp`
 uses the motor's own position loop, which settles on target, capped by the speed
 limit stored in each motor (`0x7017`). Switching needs a restart of both the
 runtime and the drivers process, at home. The gripper always uses motion mode,
-and kp/kd act only in motion mode; the values are the vendor's tuned follower
-values for this arm.
+and kp/kd act only in motion mode. The arm values are the vendor's tuned follower
+values for this arm. The jaw's are the `jaw_kp`/`jaw_kd` Xacro arguments, set
+under `urdf_params` like `arm_control_mode`; they default to the vendor's kp with
+damping raised from 0.05 to 0.5 to reduce fast-open bounce.
 
 The URDF is already expressed in the **motor frame** with the measured limits in
 radians, so no `direction` override is used: joint frame equals motor frame. The
@@ -618,14 +759,23 @@ disable at home; a first move of every joint 1-6, 0.05 rad out and back at about
 0.05 rad/s; joint4 raised 0.3 rad in CSP, then joint5 moved and both unwound;
 and Plan reBot Joint Move / Execute reBot Joint Trajectory running a three-joint
 move and both small waypoints out and back, with every run inside 0.07 rad of
-its target and 0.10 rad/s. Faster moves, large waypoints such as Raised and
-teleoperation have not been run on the arm; for the stack Objectives' gripper
-and leg speeds on the arm, see [SAM3 blue-on-red stack](#sam3-blue-on-red-stack).
+its target and 0.10 rad/s. Faster moves and large waypoints such as Raised have
+not been run on the arm; for the stack Objectives' gripper and leg speeds on the
+arm, see [SAM3 blue-on-red stack](#sam3-blue-on-red-stack).
+
+An earlier revision of the [FashionStar leader](#fashionstar-leader) bridge
+replayed one recorded 455 s leader-position stream on the arm: no fault frames
+were reported, the largest arm-joint RMS tracking error was 0.01754 rad, the
+return to HOME succeeded, and all seven motors were confirmed off afterward.
+That was recorded input, not live operator following. The repeated-stop-signal
+handling, the bounds-clamped HOME return, the twin jaw settings, the per-tick
+Robstride health stop and joint7's 0.05 rad collision-path sampling added after
+it were checked only in the twin and unit tests: this configuration as shipped has not
+been rerun on the arm, and live leader following in `position_csp` mode has not
+been verified.
 
 Known limitations:
 
-- The collision model refuses joint4 at -0.05 rad near home (`link2` - `link5`),
-  although the real arm moves there cleanly. The SRDF is unchanged.
 - The wrist camera mount is nominal; the provisional calibrated mount is not
   applied on the arm (see [Bench calibration](#bench-calibration)).
 - At home joint7 reads about -0.044 rad, below its 0 lower limit, and the UI
@@ -758,15 +908,18 @@ canceled opening really reopens it. Only successful execution commits the
 exact planned endpoint for the next leg, and `RecordRebotTrajectory` saves each
 trajectory before it is sent. These numbers are shared by hardware and
 simulation.
-The joint planner starts from the measured state, and the bench arm's sagged
-home (joint4 near -0.017 rad) fails its start check as a link2-link5
-self-collision. A waypoint or pose leg the planner refuses therefore falls back
-to a point-to-point move from the commanded state, collision-checked as planned
-and again after anchoring for both fallback paths. Both generate only the six arm
-joints and fade the arm-start correction to zero at the target. Waypoint
-anchoring adds the held jaw separately, so a stale jaw command stays at its
-measured position throughout the move. On the bench that is every leg out of
-home; in the twin, whose home measures exactly zero, the planner runs.
+The waypoint planner starts from the measured arm clamped into its joint
+bounds, and the pose planner from the measured state. A waypoint or pose leg the
+planner refuses falls back to a point-to-point move from the commanded state,
+collision-checked as planned and again after anchoring for both fallback paths.
+Both generate only the six arm joints and fade the arm-start correction to zero
+at the target. Waypoint anchoring adds the held jaw separately, so a stale jaw
+command stays at its measured position throughout the move. Before the SRDF
+allowed link2/link5 contact, the bench arm's sagged home (joint4 near
+-0.017 rad) failed the planner's start check as a link2-link5 self-collision,
+so every bench leg out of home took this fallback; that is how the stack ran on
+the real arm. With the exclusion those legs plan natively, which has not been
+run on the arm. In the twin, whose home measures exactly zero, the planner runs.
 **Pick Blue Cube** first locates the cubes, adds them to the planning scene and
 checks reach (see **Failures** below), all before any motion. It then runs
 **Close Gripper**, planned natively from measured state, so the commanded home it then sets for all seven joints holds for the jaw

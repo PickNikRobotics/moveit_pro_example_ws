@@ -52,6 +52,16 @@ keep their measured start whatever the command. The stack
 Objectives anchor every leg this way, so the command stays continuous from one
 leg to the next.
 
+`ClampRobotStateToBounds` clamps each joint of a robot state into the robot
+model's position bounds, and fails for a joint the model does not know. A joint
+held in impedance mode can sag past a bound: `PlanToJointGoal` then plans from
+past it, and refuses the start once the sag reaches self-collision (joint3 at
+about −0.08 rad). `PlanToJointGoalFromBoundedStart` is `PlanToJointGoal` with
+the planning scene's current state clamped the same way, so it plans from the
+bound with every port, collision check and detour unchanged. **reBot Move to Arm
+Waypoint** plans with it, and **Return reBot Leader Home** plans both of its legs
+with it and anchors them to the clamped measured arm.
+
 `RecordRebotTrajectory` appends each trajectory, with its dispatch time, to an
 audit file (`/tmp/rebot-trajectory-audit.yaml` by default) before execution,
 and fails the leg if it cannot write it. With the controller's state, it lets a

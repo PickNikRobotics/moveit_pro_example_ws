@@ -39,6 +39,7 @@
   <disable_collisions link1="base_link" link2="link1" reason="Adjacent" />
   <disable_collisions link1="link1" link2="link2" reason="Adjacent" />
   <disable_collisions link1="link2" link2="link3" reason="Adjacent" />
+  <disable_collisions link1="link2" link2="link5" reason="Default" />
   <disable_collisions link1="link3" link2="link4" reason="Adjacent" />
   <disable_collisions link1="link4" link2="link5" reason="Adjacent" />
   <disable_collisions link1="link5" link2="link6" reason="Adjacent" />

@@ -4,6 +4,9 @@ find_package(ament_cmake REQUIRED)
 install(DIRECTORY config description docs launch objectives waypoints DESTINATION share/${PROJECT_NAME})
 install(FILES README.md LICENSE thumbnail.png DESTINATION share/${PROJECT_NAME})
 install(PROGRAMS scripts/scale_depth.py test/verify_mock_execution.py test/verify_mock_gripper_jog.py
+  scripts/rebot_leader.py scripts/rebot_leader_bridge.py scripts/rebot_leader_tune.py
+  DESTINATION lib/${PROJECT_NAME})
+install(FILES scripts/rebot_leader_state.py scripts/rebot_leader_collision.py
   DESTINATION lib/${PROJECT_NAME})
 if(BUILD_TESTING)
   find_package(ament_cmake_gtest REQUIRED)
@@ -23,11 +26,6 @@ if(BUILD_TESTING)
     $<TARGET_PROPERTY:rebot_bench_behaviors::rebot_bench_behaviors,INTERFACE_INCLUDE_DIRECTORIES>)
   target_link_libraries(test_stack_objectives tinyxml2::tinyxml2 yaml-cpp::yaml-cpp)
   target_compile_definitions(test_stack_objectives PRIVATE PACKAGE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
-  # The jaw and waypoint legs with the real AnchorTrajectoryToCommand.
-  ament_add_gtest(test_jaw_legs test/test_jaw_legs.cpp)
-  target_compile_features(test_jaw_legs PRIVATE cxx_std_20)
-  target_link_libraries(test_jaw_legs rebot_bench_behaviors::rebot_bench_behaviors)
-  target_compile_definitions(test_jaw_legs PRIVATE PACKAGE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
   set(TEST_URDF ${CMAKE_CURRENT_BINARY_DIR}/test_rebot.urdf)
   add_custom_command(
     OUTPUT ${TEST_URDF}
@@ -42,10 +40,19 @@ if(BUILD_TESTING)
   target_link_libraries(test_joint_limits yaml-cpp::yaml-cpp)
   target_compile_definitions(test_joint_limits PRIVATE
     TEST_URDF="${TEST_URDF}" PACKAGE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+  # The jaw, waypoint and leader HOME legs with the real reBot Behaviors and robot model.
+  ament_add_gtest(test_jaw_legs test/test_jaw_legs.cpp)
+  add_dependencies(test_jaw_legs test_rebot_urdf)
+  target_compile_features(test_jaw_legs PRIVATE cxx_std_20)
+  ament_target_dependencies(test_jaw_legs moveit_pro_base urdf srdfdom)
+  target_link_libraries(test_jaw_legs rebot_bench_behaviors::rebot_bench_behaviors)
+  target_compile_definitions(test_jaw_legs PRIVATE
+    TEST_URDF="${TEST_URDF}" PACKAGE_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
   find_package(ament_cmake_pytest REQUIRED)
   ament_add_pytest_test(test_stack_legs test/test_stack_legs.py TIMEOUT 60)
   ament_add_pytest_test(test_scale_depth test/test_scale_depth.py TIMEOUT 60)
   ament_add_pytest_test(test_hardware_selection test/test_hardware_selection.py TIMEOUT 60)
+  ament_add_pytest_test(test_rebot_leader test/test_rebot_leader.py TIMEOUT 60)
   ament_add_pytest_test(test_rebot_model test/test_model.py TIMEOUT 60)
 endif()
 ament_package()

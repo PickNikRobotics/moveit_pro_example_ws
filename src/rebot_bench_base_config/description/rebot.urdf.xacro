@@ -15,6 +15,8 @@
        target and is capped by the motor's stored speed limit (0x7017). The
        gripper always uses motion. Unsupported values fail expansion. -->
   <xacro:arg name="arm_control_mode" default="motion" />
+  <xacro:arg name="jaw_kp" default="12.0" />
+  <xacro:arg name="jaw_kd" default="0.5" />
   <!-- Placement of base_link and of the scene camera mount in `world`, as
        "x y z" and URDF "roll pitch yaw". config.yaml sets the bench's
        calibration; unset, both coincide with world. A wrapping description
@@ -591,7 +593,7 @@
     <xacro:rebot_joint name="joint4" id="4" model="RS00" kp="50.0" kd="5.0" />
     <xacro:rebot_joint name="joint5" id="5" model="RS00" kp="50.0" kd="4.0" />
     <xacro:rebot_joint name="joint6" id="6" model="RS00" kp="50.0" kd="4.0" />
-    <xacro:rebot_joint name="joint7" id="7" model="RS00" kp="12.0" kd="0.05" mode="motion" />
+    <xacro:rebot_joint name="joint7" id="7" model="RS00" kp="$(arg jaw_kp)" kd="$(arg jaw_kd)" mode="motion" />
   </ros2_control>
   </xacro:if>
 </robot>

@@ -2,7 +2,7 @@
 <root BTCPP_format="4" main_tree_to_execute="reBot Move to Arm Waypoint">
   <BehaviorTree
     ID="reBot Move to Arm Waypoint"
-    _description="Plan to a named arm waypoint, collision-check it, and execute from the controller's command, holding the jaw at its command (where it measures if that command is stale). If the planner refuses the measured start, move point-to-point from the command instead."
+    _description="Plan to a named arm waypoint from the measured arm clamped into its joint bounds, collision-check it, and execute from the controller's command, holding the jaw at its command (where it measures if that command is stale). If the planner refuses that start, move point-to-point from the command instead."
   >
     <Sequence>
       <Action
@@ -11,16 +11,16 @@
         waypoint_name="{waypoint_name}"
         waypoint_joint_state="{goal}"
       />
-      <!-- The planner starts from the measured state, which the bench arm's
-           sagged home fails as a link2-link5 self-collision. A refused plan
-           then falls back to a point-to-point move from the commanded state,
-           the arm's real start. Generate only the six arm joints, so anchoring
-           adds and holds a stale jaw where it measures. Fade the arm offset
-           to preserve the waypoint and collision-check the anchored path. -->
+      <!-- The planner starts from the measured arm clamped into its joint
+           bounds. A refused plan then falls back to a point-to-point move
+           from the commanded state, the arm's real start. Generate only the
+           six arm joints, so anchoring adds and holds a stale jaw where it
+           measures. Fade the arm offset to preserve the waypoint and
+           collision-check the anchored path. -->
       <Fallback>
         <Sequence>
           <Action
-            ID="PlanToJointGoal"
+            ID="PlanToJointGoalFromBoundedStart"
             joint_goal="{goal}"
             planning_group_name="manipulator"
             velocity_scale_factor="{velocity_scale_factor}"

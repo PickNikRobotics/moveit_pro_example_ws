@@ -5,6 +5,8 @@ controller_manager:
       type: joint_state_broadcaster/JointStateBroadcaster
     joint_trajectory_admittance_controller:
       type: joint_trajectory_admittance_controller/JointTrajectoryAdmittanceController
+    leader_position_controller:
+      type: position_controllers/JointGroupPositionController
     joint_velocity_controller:
       type: joint_velocity_controller/JointVelocityController
     gripper_joint_velocity_controller:
@@ -114,3 +116,9 @@ velocity_force_controller:
     jacobian_damping: 0.005
     command_timeout: 0.2
     joint_limit_position_tolerance: 0.02
+
+# Direct calibrated leader targets, as in native LeRobot teleoperation.
+# Deliberately no velocity/acceleration fields: FCL checks the actual path.
+leader_position_controller:
+  ros__parameters:
+    joints: [joint1, joint2, joint3, joint4, joint5, joint6, joint7]

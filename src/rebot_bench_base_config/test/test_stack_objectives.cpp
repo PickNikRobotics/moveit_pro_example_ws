@@ -59,7 +59,7 @@ const std::vector<std::string> kRecordedPorts{ "waypoint_name",
                                                "cube",
                                                "max_offset",
                                                "min_height" };
-const std::set<std::string> kOwnStubs{ "LoadMotionScales", "IsJointAtLeast", "GetSizeOfVector" };
+const std::set<std::string> kOwnStubs{ "LoadMotionScales", "IsJointAtLeast", "GetSizeOfVector", "GetElementOfVector" };
 
 struct Call
 {
@@ -122,7 +122,8 @@ protected:
           // from the command when the planner refuses the measured start.
           if (call.label == "GeneratePointToPointTrajectory")
             call.kind = planning_group == "gripper" ? "gripper" : "joint";
-          else if (call.label == "PlanToJointGoal" && planning_group == "manipulator")
+          else if ((call.label == "PlanToJointGoal" || call.label == "PlanToJointGoalFromBoundedStart") &&
+                   planning_group == "manipulator")
             call.kind = "joint";
           else if (call.label == "PlanCartesianPath" && planning_group == "manipulator")
             call.kind = "cartesian";
@@ -200,6 +201,14 @@ protected:
                                    return BT::NodeStatus::SUCCESS;
                                  },
                                  { BT::InputPort("vector_in"), BT::OutputPort<int>("vector_size") });
+    // The measured arm, joint1-joint6, read one element at a time.
+    factory.registerSimpleAction(
+        "GetElementOfVector",
+        [this](BT::TreeNode& node) {
+          node.setOutput("element", measured_arm.at(static_cast<std::size_t>(node.getInput<int>("index").value())));
+          return BT::NodeStatus::SUCCESS;
+        },
+        { BT::InputPort("vector_in"), BT::InputPort<int>("index"), BT::OutputPort<double>("element") });
     for (auto& document : documents)
     {
       for (auto* tree = document.RootElement()->FirstChildElement("BehaviorTree"); tree;
@@ -260,6 +269,7 @@ protected:
   std::deque<double> measured_jaw;
   std::deque<int> blue_near_red;
   double unstacked_blue_height = 0.05;
+  std::vector<double> measured_arm = std::vector<double>(6, 0.0);
   bool arm_home = false;
   bool single_point_plan = false;
 };
@@ -692,23 +702,27 @@ TEST_F(StackObjectives, FailedUnstackWhileHoldingTheCubeEndsHomeWithoutClosingOn
 
 TEST_F(StackObjectives, PlansRefusedAtTheMeasuredStartMoveFromTheCommand)
 {
-  // The bench arm's sagged home fails the planner's start check, so every joint leg moves from the command.
-  failing = "PlanToJointGoal";
-  for (const auto& objective : { kStack, kUnstack })
-  {
-    SCOPED_TRACE(objective);
-    calls.clear();
-    EXPECT_EQ(run(objective), BT::NodeStatus::SUCCESS);
-    EXPECT_EQ(tail(motions(), 2), (std::vector<std::string>{ kHome, kClose }));
-    std::size_t joint_legs = 0;
-    for (const auto& leg : legs())
-      if (leg.kind == "joint" && leg.label != "PlanToJointGoal")
-      {
-        ++joint_legs;
-        EXPECT_EQ(leg.label, "GeneratePointToPointTrajectory");
-      }
-    EXPECT_GE(joint_legs, 2U);
-  }
+  // A planner that refuses its start sends each of its legs to a point-to-point move from the command: the
+  // waypoint legs plan from the bounded measured arm, the pose legs from the measured arm.
+  for (const std::string planner : { "PlanToJointGoalFromBoundedStart", "PlanToJointGoal" })
+    for (const auto& objective : { kStack, kUnstack })
+    {
+      SCOPED_TRACE(planner + " " + objective);
+      failing = planner;
+      calls.clear();
+      EXPECT_EQ(run(objective), BT::NodeStatus::SUCCESS);
+      EXPECT_EQ(tail(motions(), 2), (std::vector<std::string>{ kHome, kClose }));
+      const auto joint_legs = legs();
+      std::size_t refused = 0;
+      for (std::size_t i = 0; i < joint_legs.size(); ++i)
+        if (joint_legs[i].label == planner)
+        {
+          ++refused;
+          ASSERT_LT(i + 1, joint_legs.size());
+          EXPECT_EQ(joint_legs[i + 1].label, "GeneratePointToPointTrajectory");
+        }
+      EXPECT_GE(refused, 1U);
+    }
 }
 
 TEST_F(StackObjectives, CycleRecordsEachLegAsOneEpisodeWithItsPrompt)
@@ -882,6 +896,18 @@ TEST_P(ShippedSpeeds, EveryLegUsesTheShippedSettingOfItsKind)
 }
 
 INSTANTIATE_TEST_SUITE_P(StackEntryPoints, ShippedSpeeds, testing::Values(kStack, kPick, kUnstack));
+
+TEST_F(StackObjectives, LeaderHomeReturnLeavesSaggedHomeInPlaceAndPlansFromBeyondIt)
+{
+  const std::string leader_home = R"(<SubTree ID="Return reBot Leader Home" />)";
+  measured_arm = { 0.0, -0.01, -0.008, 0.0, 0.0, 0.0 };
+  ASSERT_EQ(run(leader_home), BT::NodeStatus::SUCCESS);
+  EXPECT_TRUE(legs().empty());
+  calls.clear();
+  measured_arm = { 0.0, -0.01, -0.008, 0.09, 0.0, 0.0 };
+  ASSERT_EQ(run(leader_home), BT::NodeStatus::SUCCESS);
+  EXPECT_EQ(motions(), (std::vector<std::string>{ kHome }));
+}
 
 TEST_F(StackObjectives, SettingsReachEveryLegOfTheirKindIncludingHome)
 {
