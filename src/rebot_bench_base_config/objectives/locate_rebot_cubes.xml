@@ -23,6 +23,7 @@
           prompt="blue cube"
           mask_topic="/rebot/blue_cube_mask"
           cube_top="{blue_top}"
+          cube_masks="{blue_masks}"
         />
         <Fallback>
           <Sequence>
@@ -67,6 +68,13 @@
       </MetadataFields>
       <output_port name="blue_top" type="geometry_msgs::msg::PoseStamped" />
       <output_port name="red_top" type="geometry_msgs::msg::PoseStamped" />
+      <output_port
+        name="blue_masks"
+        default="{blue_masks}"
+        type="std::vector&lt;moveit_studio_vision_msgs::msg::Mask2D&gt;"
+      >
+        The fitted blue cube mask, for aligned-depth confirmation.
+      </output_port>
     </SubTree>
   </TreeNodesModel>
 </root>

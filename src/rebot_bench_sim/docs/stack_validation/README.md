@@ -61,10 +61,11 @@ not a repeatability or workspace claim. Its raw truth, renders and result are in
 | --- | --- | --- |
 | Blue 0.317, 0.051; red 0.288, 0.148 | ![Before, level base](level_base_far/before.png) | ![After, level base](level_base_far/after.png) |
 
-None of these twin runs used the later hardware corrections: opening the jaw at
-home first, checking the measured opening at home and at the release, the
-per-leg speed settings file and the return home after the release. They are covered by
-`rebot_bench_base_config`'s Objective tests, not by a twin run.
+None of these twin runs used the later hardware corrections, such as opening the
+jaw at home first, the per-leg speed settings file or anchoring each leg to the
+previous command. Stack Blue on Red with those corrections was run in the twin
+only as the stack leg of the episode cycle; see
+[Unstack and cycle twin runs](../../README.md#unstack-and-cycle-twin-runs).
 
 ## Labelled render pairs
 

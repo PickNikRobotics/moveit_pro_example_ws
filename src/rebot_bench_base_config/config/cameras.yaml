@@ -24,8 +24,8 @@ scene_mjpeg_quality: 95
 # colour stream's 640x400, and turn it into a point cloud: depth on
 # /scene_camera/depth/image_rect_raw and points on
 # /scene_camera/depth/color/points, both in scene_camera_color_optical_frame.
-# Depth-aware cube checks use this cloud; set false to run colour only.
-# Consumers must not rely on depth to confirm a stack when this is off.
+# Stack and Unstack Cycle confirms each stack from it; set false to run colour
+# only, and the cycle then fails at its first stack check.
 scene_aligned_depth: true
 
 # Multiplies every scene depth before the point cloud is built. This OAK's

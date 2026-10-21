@@ -64,12 +64,18 @@ skip_objectives: set[str] = {
     "Generate Calibration Waypoints",
     # The pick-and-stack entry points segment the cubes with SAM3, which needs
     # the moveit_pro_sam3 model package the CI image does not ship; Clear reBot
-    # Stack Scene removes the geometry only they add. Validated by their own
-    # evidence runs (docs/stack_validation) and regressions instead.
+    # Stack Scene removes the geometry only they add. Covered by regressions;
+    # docs/stack_validation holds Stack Blue on Red twin runs, and the README
+    # describes the unstack and cycle twin runs.
     "Locate reBot Cubes",
     "Prepare reBot Stack",
     "Pick Blue Cube",
     "Stack Blue on Red",
+    "Unstack Blue from Red",  # Needs blue stacked on red.
+    "Stack and Unstack Cycle",
+    "Recorded Stack Leg",  # SAM3 perception plus a Trainer recording session.
+    "Recorded Unstack Leg",
+    "Recover Cube from Wall",  # SAM3 perception and a wall-side placement.
     "Clear reBot Stack Scene",
 }
 
