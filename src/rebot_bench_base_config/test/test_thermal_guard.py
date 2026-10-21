@@ -255,3 +255,37 @@ def test_motor_state_uses_controller_steady_clock_not_ros_wall_time(guard, monke
     guard.observe_hardware(state)
     assert guard.hardware_time == first
     assert not guard.hardware_fresh(11.0)
+
+
+def test_stop_signals_exit_without_a_traceback(monkeypatch):
+    import signal
+    import rclpy
+    import rebot_thermal_guard
+
+    create_node = rclpy.create_node
+
+    def node_that_sees_a_second_stop(name):
+        node = create_node(name)
+        destroy_node = node.destroy_node
+
+        def destroy():
+            # A launch forwards its own SIGINT after the terminal's.
+            signal.raise_signal(signal.SIGINT)
+            destroy_node()
+
+        node.destroy_node = destroy
+        return node
+
+    monkeypatch.setattr(rclpy, "create_node", node_that_sees_a_second_stop)
+    monkeypatch.setattr(rclpy, "spin", lambda node: signal.raise_signal(signal.SIGINT))
+    handlers = {
+        number: signal.getsignal(number) for number in (signal.SIGINT, signal.SIGTERM)
+    }
+    try:
+        rebot_thermal_guard.main()
+    except KeyboardInterrupt:
+        pytest.fail("A second stop signal interrupted the guard's cleanup")
+    finally:
+        rclpy.try_shutdown()
+        for number, handler in handlers.items():
+            signal.signal(number, handler)

@@ -7,12 +7,14 @@ One backend process owns thermal recovery even when the leader is disabled.
 It never opens CAN/USB, enables torque, resets the latch, or changes lifecycle.
 """
 import math
+import signal
 import time
 
 import rclpy
 from action_msgs.srv import CancelGoal
 from moveit_studio_sdk_msgs.action import DoObjectiveSequence
 from rclpy.action import ActionClient
+from rclpy.signals import SignalHandlerOptions
 from rclpy.time import Time
 from rclpy.qos import DurabilityPolicy, QoSProfile, qos_profile_sensor_data
 from robstride_interfaces.msg import RobstrideState
@@ -252,7 +254,19 @@ class ThermalGuard:
 
 
 def main():
-    rclpy.init()
+    # rclpy's own handler would shut the context down under the cleanup below.
+    rclpy.init(signal_handler_options=SignalHandlerOptions.NO)
+
+    def request_shutdown(signum, frame):
+        del signum, frame
+        # One stop request is enough; a launch forwards its own SIGINT after
+        # the terminal's.
+        signal.signal(signal.SIGINT, signal.SIG_IGN)
+        signal.signal(signal.SIGTERM, signal.SIG_IGN)
+        raise KeyboardInterrupt
+
+    signal.signal(signal.SIGINT, request_shutdown)
+    signal.signal(signal.SIGTERM, request_shutdown)
     node = rclpy.create_node("rebot_thermal_guard")
     try:
         guard = ThermalGuard(node)
