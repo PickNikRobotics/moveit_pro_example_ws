@@ -28,12 +28,14 @@
 #include <moveit_pro_behavior_interface/shared_resources_node_loader.hpp>
 #include <pluginlib/class_list_macros.hpp>
 #include <rebot_bench_behaviors/anchor_trajectory_to_command.hpp>
+#include <rebot_bench_behaviors/clamp_robot_state_to_bounds.hpp>
 #include <rebot_bench_behaviors/draw_place_spot.hpp>
 #include <rebot_bench_behaviors/fit_cube_to_mask.hpp>
 #include <rebot_bench_behaviors/hold_gripper_in_trajectory.hpp>
 #include <rebot_bench_behaviors/is_cube_stacked.hpp>
 #include <rebot_bench_behaviors/is_joint_at_least.hpp>
 #include <rebot_bench_behaviors/load_motion_scales.hpp>
+#include <rebot_bench_behaviors/plan_to_joint_goal_from_bounded_start.hpp>
 #include <rebot_bench_behaviors/record_rebot_trajectory.hpp>
 #include <rebot_bench_behaviors/report_unreachable_cube.hpp>
 
@@ -47,6 +49,7 @@ public:
   {
     moveit_pro::behaviors::registerBehavior<RecordRebotTrajectory>(factory, "RecordRebotTrajectory", context);
     moveit_pro::behaviors::registerBehavior<AnchorTrajectoryToCommand>(factory, "AnchorTrajectoryToCommand", context);
+    moveit_pro::behaviors::registerBehavior<ClampRobotStateToBounds>(factory, "ClampRobotStateToBounds", context);
     moveit_pro::behaviors::registerBehavior<DrawPlaceSpot>(factory, "DrawPlaceSpot", context);
     moveit_pro::behaviors::registerBehavior<FitCubeToMask>(factory, "FitCubeToMask", context);
     moveit_pro::behaviors::registerBehavior<HoldGripperInTrajectory>(factory, "HoldGripperInTrajectory", context);
@@ -54,6 +57,8 @@ public:
     moveit_pro::behaviors::registerBehavior<IsJointAtLeast>(factory, "IsJointAtLeast", context);
     moveit_pro::behaviors::registerBehavior<IsPlannedJointAtMost>(factory, "IsPlannedJointAtMost", context);
     moveit_pro::behaviors::registerBehavior<LoadMotionScales>(factory, "LoadMotionScales", context);
+    moveit_pro::behaviors::registerBehavior<PlanToJointGoalFromBoundedStart>(factory, "PlanToJointGoalFromBoundedStart",
+                                                                             context);
     moveit_pro::behaviors::registerBehavior<ReportUnreachableCube>(factory, "ReportUnreachableCube", context);
   }
 };

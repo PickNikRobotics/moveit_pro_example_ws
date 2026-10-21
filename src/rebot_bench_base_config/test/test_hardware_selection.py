@@ -10,7 +10,7 @@ import xacro
 # Motor id -> (actuator model, kp, kd). RS06 drives the three base joints and
 # RS00 the wrist and gripper; the model selects the motor's CAN quantization
 # ranges, so a wrong one rescales every position, velocity and effort silently.
-# kp/kd are Seeed's tuned follower values for this arm.
+# Arm kp/kd start from Seeed's values; jaw damping is increased for fast opening.
 MOTORS = {
     "joint1": ("1", "RS06", "50.0", "3.0"),
     "joint2": ("2", "RS06", "150.0", "10.0"),
@@ -18,7 +18,7 @@ MOTORS = {
     "joint4": ("4", "RS00", "50.0", "5.0"),
     "joint5": ("5", "RS00", "50.0", "4.0"),
     "joint6": ("6", "RS00", "50.0", "4.0"),
-    "joint7": ("7", "RS00", "12.0", "0.05"),
+    "joint7": ("7", "RS00", "12.0", "0.5"),
 }
 
 
@@ -121,6 +121,23 @@ def test_arm_control_mode_switches_joint1_to_6_and_never_the_gripper():
         expand(hardware_interface="real", arm_control_mode="torque")
 
 
+def test_shipped_config_runs_joint1_to_6_in_position_csp(tmp_path):
+    from moveit_studio_utils_py.system_config import load_system_config
+
+    config = load_system_config("rebot_bench_base_config", tmp_path)[0]
+    urdf_params = {
+        key: value
+        for entry in config.hardware.robot_description.urdf_params
+        for key, value in entry.items()
+    }
+    control = expand(**{**urdf_params, "hardware_interface": "real"})
+    modes = {
+        params(g)["ID"]: params(g)["control_mode"]
+        for g in control.find("ros2_control").findall("gpio")
+    }
+    assert modes == {**{str(i): "position_csp" for i in range(1, 7)}, "7": "motion"}
+
+
 def test_real_branch_follows_the_can_interface_and_torque_arguments():
     control = expand(
         hardware_interface="real", can_interface="can1", torque_enable="false"
@@ -193,3 +210,17 @@ def test_base_and_scene_camera_placements_default_to_world_and_follow_arguments(
     )
     assert origin(model, "world_to_base") == ("0.1 -0.6 0", "0 0 1.57")
     assert origin(model, "scene_camera_mount_joint") == ("0.6 -0.25 0.7", "0 1.2 3.1")
+
+
+def test_jaw_gains_can_be_tuned_without_changing_arm_mode():
+    root = expand(
+        hardware_interface="real",
+        arm_control_mode="position_csp",
+        jaw_kp="10",
+        jaw_kd="0.7",
+    )
+    motors = {g.get("name"): params(g) for g in root.findall("ros2_control/gpio")}
+    assert motors["joint7_motor"]["kp"] == "10"
+    assert motors["joint7_motor"]["kd"] == "0.7"
+    assert motors["joint7_motor"]["control_mode"] == "motion"
+    assert motors["joint4_motor"]["control_mode"] == "position_csp"

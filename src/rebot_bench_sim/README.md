@@ -116,9 +116,13 @@ records these topics.
   file per embedded material (purple print, white lettering); see
   [`description/assets/NOTICE.md`](description/assets/NOTICE.md).
 - One position actuator per motor joint, with the real driver's motion-mode
-  kp/kd and effort limits. The jaws follow joint7 through equality constraints,
-  the URDF mimic. The links are gravity-compensated: a real-arm sag out of the
-  folded rest pose puts link2 and link5 in MoveIt collision.
+  kp/kd and effort limits, except the jaw. The twin's joint7 actuator uses kp 12,
+  kv 0.05 and its class's default -14 to 14 Nm force range (see
+  `rebot_assets.xml`); the real jaw runs kd 0.5 with a 1 Nm motor torque limit.
+  The twin does not model that limit, so it does not validate the real grip
+  force. The jaws follow joint7 through equality constraints, the
+  URDF mimic. The links are gravity-compensated: a real-arm sag out of the
+  folded rest pose can put the arm in MoveIt self-collision.
 - Robot geoms collide with the scene but not with each other, since the folded
   rest pose is closer than MuJoCo's convex hulls allow. MoveIt still checks
   self-collision on the real meshes.

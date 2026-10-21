@@ -1,0 +1,5 @@
+# Applied only by explicit rebot_leader_tune.py --apply at healthy HOME/OFF.
+# Volatile motor registers only; never send a store/save command.
+jaw_torque_limit_nm: 1.0
+# Match the other RS00 wrist motors; native mechanical position bounds still apply.
+joint4_speed_limit_rad_s: 33.0

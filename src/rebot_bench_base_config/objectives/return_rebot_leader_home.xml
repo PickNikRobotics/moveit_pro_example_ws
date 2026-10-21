@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Return reBot Leader Home">
+  <BehaviorTree
+    ID="Return reBot Leader Home"
+    _description="Return the arm HOME at 0.05 rad/s maximum while preserving the jaw position, planning both legs with PlanToJointGoalFromBoundedStart from the measured arm clamped into its joint bounds, the rest leg falling back to a collision-checked point-to-point move from that clamped command and the yaw leg without a fallback; an arm within 0.08 rad of HOME on every joint, as Mirror reBot Leader requires, is already HOME and does not move. Restore the normal trajectory controller and retain motor torque for subsequent Objectives, including on recovery failure."
+  >
+    <Sequence>
+      <Action
+        ID="SwitchController"
+        activate_controllers="joint_trajectory_admittance_controller"
+        automatic_deactivation="true"
+        strictness="2"
+      />
+      <Action ID="GetCurrentPlanningScene" planning_scene_msg="{yaw_scene}" />
+      <Action
+        ID="GetJointState"
+        planning_scene="{yaw_scene}"
+        planning_group_name="manipulator"
+        joint_state="{yaw_state}"
+        robot_joint_state="{arm_state}"
+      />
+      <Action
+        ID="UnpackJointStateMessage"
+        joint_state="{yaw_state}"
+        position="{yaw_positions}"
+      />
+      <Action
+        ID="GetElementOfVector"
+        vector_in="{yaw_positions}"
+        index="4"
+        element="{yaw_position}"
+      />
+      <Action
+        ID="GetElementOfVector"
+        vector_in="{yaw_positions}"
+        index="0"
+        element="{home_joint1}"
+      />
+      <Action
+        ID="GetElementOfVector"
+        vector_in="{yaw_positions}"
+        index="1"
+        element="{home_joint2}"
+      />
+      <Action
+        ID="GetElementOfVector"
+        vector_in="{yaw_positions}"
+        index="2"
+        element="{home_joint3}"
+      />
+      <Action
+        ID="GetElementOfVector"
+        vector_in="{yaw_positions}"
+        index="3"
+        element="{home_joint4}"
+      />
+      <Action
+        ID="GetElementOfVector"
+        vector_in="{yaw_positions}"
+        index="4"
+        element="{home_joint5}"
+      />
+      <Action
+        ID="GetElementOfVector"
+        vector_in="{yaw_positions}"
+        index="5"
+        element="{home_joint6}"
+      />
+      <Sequence
+        _skipIf="home_joint1 &gt;= -0.08 &amp;&amp; home_joint1 &lt;= 0.08 &amp;&amp; home_joint2 &gt;= -0.08 &amp;&amp; home_joint2 &lt;= 0.08 &amp;&amp; home_joint3 &gt;= -0.08 &amp;&amp; home_joint3 &lt;= 0.08 &amp;&amp; home_joint4 &gt;= -0.08 &amp;&amp; home_joint4 &lt;= 0.08 &amp;&amp; home_joint5 &gt;= -0.08 &amp;&amp; home_joint5 &lt;= 0.08 &amp;&amp; home_joint6 &gt;= -0.08 &amp;&amp; home_joint6 &lt;= 0.08"
+      >
+        <!-- Plan both legs from the measured arm clamped into its bounds: a
+           joint can sag past a limit, and a plan from there starts past it,
+           or is refused once the sag reaches self-collision. Each leg is
+           anchored to that clamped command. -->
+        <Action
+          ID="ClampRobotStateToBounds"
+          robot_state="{arm_state}"
+          bounded_state="{commanded_state}"
+        />
+        <!-- Centre yaw while preserving the raised wrist, then lower the arm. -->
+        <Sequence
+          _skipIf="yaw_position &gt; -0.005 &amp;&amp; yaw_position &lt; 0.005"
+        >
+          <Action
+            ID="CreateRobotState"
+            joint_names="joint5"
+            positions="0.0"
+            joint_state_msg="{yaw_goal}"
+          />
+          <Action
+            ID="PlanToJointGoalFromBoundedStart"
+            joint_goal="{yaw_goal}"
+            planning_group_name="manipulator"
+            velocity_scale_factor="0.0833333333"
+            acceleration_scale_factor="0.0833333333"
+            collision_check_params="[{override_scene_link_padding: true, link_padding: 0.0}]"
+            joint_trajectory_msg="{yaw_trajectory}"
+          />
+          <Action
+            ID="GetJointState"
+            planning_scene="{yaw_scene}"
+            planning_group_name="manipulator_and_gripper"
+            robot_joint_state="{measured_state}"
+          />
+          <Action
+            ID="AnchorTrajectoryToCommand"
+            measured_state="{measured_state}"
+            joint_trajectory="{yaw_trajectory}"
+            commanded_state="{commanded_state}"
+            fade_out="true"
+            anchored_trajectory="{yaw_anchored}"
+            end_state="{yaw_endpoint}"
+          />
+          <Action
+            ID="ExecuteTrajectory"
+            joint_trajectory_msg="{yaw_anchored}"
+            execution_pipeline="jtac"
+            controller_action_name="/joint_trajectory_admittance_controller/follow_joint_trajectory"
+            goal_duration_tolerance="-1"
+          />
+          <Action ID="Script" code="commanded_state := yaw_endpoint" />
+        </Sequence>
+        <SubTree
+          ID="reBot Move to Arm Waypoint"
+          waypoint_name="Zeroed Rest"
+          velocity_scale_factor="0.0833333333"
+          acceleration_scale_factor="0.0833333333"
+          commanded_state="{commanded_state}"
+        />
+      </Sequence>
+    </Sequence>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Return reBot Leader Home">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="reBot Bench" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
