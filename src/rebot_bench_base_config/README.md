@@ -87,8 +87,9 @@ OFF, add `--apply`. It sends volatile settings through the owning driver's servi
 it never sends a save/store, changes mode, enables a joint, or moves the robot.
 The service ACK confirms transmission, not firmware acceptance: independently read
 back motor registers 0x700B (J7) and 0x7017 (J4) before enabling. Nothing may enable or command the arm until both writes and readbacks finish. On any failure,
-leave the arm OFF; partial writes are possible. Power cycling restores stored
-values, so re-read before each session. This tool is
+leave the arm OFF; partial writes are possible. Power-cycle retention of these
+settings has not been verified; re-read the motor registers before each session,
+including after a power cycle. This tool is
 never called implicitly by launch or the Objective. Reapply only by explicit
 command after a driver restart. The MuJoCo jaw actuator mirrors kp=12, but keeps
 kd=0.05 and the RS00's ±14 Nm range: at kd 0.5 a twin running below real time lags Close Gripper past
@@ -621,6 +622,10 @@ off, and the controllers' setpoints have moved on. `~/reboot_robstride` clears a
 latched fault but does not by itself restore the joint.
 
 ### Motors, limits and gains
+
+See [Motor firmware settings](docs/firmware-settings.md) for the per-joint
+commissioned register limits, zero alignment, write/save procedure and the
+vendor CLI read shutdown hazard.
 
 One motor per joint on one bus, ids 1-7 matching `joint1`-`joint7`, host
 `master_id` 253:
