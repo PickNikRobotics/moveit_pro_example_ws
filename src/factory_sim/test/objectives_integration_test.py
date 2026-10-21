@@ -64,6 +64,7 @@ skip_objectives: set[str] = {
     "Automask from File",  # ML segmentation model.
     "Automask from Camera",  # ML segmentation model + camera feed.
     "Automask Camera Iterate Masks",  # ML segmentation model + camera feed.
+    "Mask Object from Clicked Points",  # Three clicks require a connected UI.
     # Not yet validated headless; shares the pick subtree with the covered
     # "Pick and Place Brackets from Left Bin" but lacks its jig/place coverage.
     "Pick Brackets from Left Bin",

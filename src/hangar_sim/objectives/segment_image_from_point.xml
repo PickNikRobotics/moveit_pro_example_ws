@@ -10,7 +10,7 @@
       <SubTree
         ID="Segment Image from Point Subtree"
         _collapsed="true"
-        model_bundle_manifest="models/model.yaml"
+        model_bundle_manifest="models/sam2_bundle.yaml"
         runtime_id="onnxruntime"
         image_topic_name="/wrist_camera/color"
         masks_visualization_topic="/masks_visualization"

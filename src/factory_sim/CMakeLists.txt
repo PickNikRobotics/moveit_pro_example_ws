@@ -34,7 +34,6 @@ install(
     config
     description
     launch
-    models
     objectives
     waypoints
   DESTINATION

@@ -22,9 +22,9 @@
         min_component_area="2000"
         nms_threshold="0.200000"
         score_threshold="0.8"
-        model_bundle_manifest="models/sam2_automask_bundle.yaml"
+        model_bundle_manifest="models/sam2_bundle.yaml"
         runtime_id="onnxruntime"
-        model_package="factory_sim"
+        model_package="moveit_pro_sam2"
       />
       <Action
         ID="PublishMask2D"
