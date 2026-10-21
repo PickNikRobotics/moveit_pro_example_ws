@@ -71,15 +71,21 @@ class ThermalGuard:
                 "Driver thermal trip: canceling task, returning HOME before torque OFF"
             )
 
-    def source_age(self, message, last_stamp_ns, maximum_age):
+    def source_age(self, message, last_stamp_ns, maximum_age, now_ns=None):
         stamp = Time.from_msg(message.header.stamp)
-        age = (self.node.get_clock().now().nanoseconds - stamp.nanoseconds) / 1e9
+        if now_ns is None:
+            now_ns = self.node.get_clock().now().nanoseconds
+        age = (now_ns - stamp.nanoseconds) / 1e9
         if stamp.nanoseconds <= last_stamp_ns or not 0 <= age < maximum_age:
             return None
         return age
 
     def observe_hardware(self, message):
-        age = self.source_age(message, self.hardware_stamp_ns, 0.5)
+        # ros2_control passes its steady update clock to the driver's read().
+        # JointState stamps below use ROS time; motor-state stamps use CLOCK_MONOTONIC.
+        age = self.source_age(
+            message, self.hardware_stamp_ns, 0.5, now_ns=time.monotonic_ns()
+        )
         if age is None:
             return
         self.hardware_stamp_ns = Time.from_msg(message.header.stamp).nanoseconds

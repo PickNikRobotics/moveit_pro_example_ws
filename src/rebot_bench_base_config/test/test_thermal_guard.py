@@ -129,8 +129,7 @@ def test_hot_initial_probe_with_all_motors_off_never_enables_or_moves(
     guard.tick()
     assert guard.stage == "off"
     assert not any(
-        "intervention required" in call.args[0]
-        for call in logger.error.call_args_list
+        "intervention required" in call.args[0] for call in logger.error.call_args_list
     )
     assert not guard.cancel.call_async.called
     assert not guard.home.send_goal_async.called and not guard.torque.call_async.called
@@ -170,3 +169,28 @@ def test_replayed_source_stamp_does_not_refresh_measured_home(guard, monkeypatch
     guard.observe_joints(message)
     assert guard.measured_time == first
     assert not guard.at_home(11.0)
+
+
+def test_motor_state_uses_controller_steady_clock_not_ros_wall_time(guard, monkeypatch):
+    from rclpy.time import Time
+    from robstride_interfaces.msg import RobstrideState
+
+    guard.node.get_clock = lambda: Obj(
+        now=lambda: Time(nanoseconds=1_792_606_000_000_000_000)
+    )
+    guard.hardware_stamp_ns = -1
+    guard.hardware = None
+    monkeypatch.setattr("rebot_thermal_guard.time.monotonic_ns", lambda: 10_000_000_000)
+    monkeypatch.setattr("rebot_thermal_guard.time.monotonic", lambda: 10.0)
+    state = RobstrideState()
+    state.header.stamp = Time(nanoseconds=9_990_000_000).to_msg()
+    state.id, state.enabled, state.fault_bits = list(range(1, 8)), [True] * 7, [0] * 7
+    state.comm_state = 0
+    guard.observe_hardware(state)
+    assert guard.hardware_fresh(10.0)
+    first = guard.hardware_time
+    monkeypatch.setattr("rebot_thermal_guard.time.monotonic_ns", lambda: 11_000_000_000)
+    monkeypatch.setattr("rebot_thermal_guard.time.monotonic", lambda: 11.0)
+    guard.observe_hardware(state)
+    assert guard.hardware_time == first
+    assert not guard.hardware_fresh(11.0)
