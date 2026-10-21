@@ -921,7 +921,50 @@ def test_stale_refusal_explains_connection_and_retry(home_bridge):
     assert not response.success
     assert "fresh Star Arm or reBot joint data is missing" in response.message
     assert "Check the Star Arm USB connection" in response.message
+    assert "once reBot is at HOME, restart the backend" in response.message
     assert "run Mirror reBot Leader again" in response.message
+
+
+def test_reader_read_error_reaches_refusal_with_backend_restart(
+    following_bridge, monkeypatch
+):
+    import io
+    from unittest.mock import Mock
+    from rebot_leader import run_reader
+
+    bridge, published, target = following_bridge
+    bus = SimpleNamespace(
+        ping=lambda motor_id: True,
+        unlock=Mock(),
+        read_angle=Mock(side_effect=RuntimeError("servo 3 read timeout")),
+        close=Mock(),
+    )
+    output = io.StringIO()
+    with pytest.raises(KeyboardInterrupt):
+        run_reader(
+            "/no-usb",
+            calibration_fixture(),
+            lambda *a, **kw: bus,
+            output,
+            clock=lambda: 10.01,
+            sleep=Mock(side_effect=KeyboardInterrupt),
+        )
+    read, write = os.pipe()
+    os.write(write, output.getvalue().encode())
+    bridge.stream = SimpleNamespace(fileno=lambda: read)
+    try:
+        bridge.tick()
+    finally:
+        os.close(read)
+        os.close(write)
+    assert not bridge.state.active and bridge.state.recover
+    following = bridge.mirror(None, SimpleNamespace())
+    monkeypatch.setattr("rebot_leader_bridge.time.monotonic", lambda: 10.5)
+    retry = bridge.prepare(None, SimpleNamespace())
+    for response in (following, retry):
+        assert not response.success
+        assert "Star Arm USB read failed: servo 3 read timeout" in response.message
+        assert "once reBot is at HOME, restart the backend" in response.message
 
 
 def test_exited_reader_refusal_names_cause_and_backend_restart(
@@ -980,4 +1023,5 @@ def test_three_second_timeout_message_explains_recovery_and_retry(
     assert "did not start within 3 seconds" in response.message
     assert "wait for recovery to finish" in response.message
     assert "Check the Star Arm USB connection" in response.message
+    assert "once reBot is at HOME, restart the backend" in response.message
     assert "run Mirror reBot Leader again" in response.message

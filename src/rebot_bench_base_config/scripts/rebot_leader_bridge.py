@@ -180,7 +180,9 @@ class LeaderBridge:
         if self.state.fault and not preparing:
             return operator_fault(self.state.fault)
         if not self.state.fresh(now):
-            return operator_fault("leader/follower samples are stale or missing")
+            return operator_fault(
+                self.state.rejection or "leader/follower samples are stale or missing"
+            )
         if preparing:
             if self.state.active:
                 return operator_fault(

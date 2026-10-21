@@ -5,6 +5,11 @@ import math
 
 from rebot_leader import DIRECTIONS, JOINT_NAMES, LEADER_NAMES, LIMITS_DEG
 
+UNPLUGGED = (
+    "The reader does not reopen its port: if the Star Arm USB was unplugged, reconnect it and, "
+    "once reBot is at HOME, restart the backend (moveit_pro run). "
+)
+
 
 def joint_label(index):
     return f"{LEADER_NAMES[index].replace('_', ' ')} ({JOINT_NAMES[index]})"
@@ -55,14 +60,17 @@ def operator_fault(reason):
     if "did not start" in reason.lower():
         return (
             "Following refused: it did not start within 3 seconds. reBot is returning HOME; "
-            "wait for recovery to finish. Check the Star Arm USB connection, fresh joint feedback and collision scene, "
-            "match the Star Arm to reBot, then run Mirror reBot Leader again."
+            "wait for recovery to finish. Check the Star Arm USB connection, fresh joint feedback and collision scene. "
+            + UNPLUGGED
+            + "Then match the Star Arm to reBot and run Mirror reBot Leader again."
         )
     if any(word in reason.lower() for word in ("sample", "usb", "stream")):
         return (
             "Following stopped: fresh Star Arm or reBot joint data is missing or invalid. "
             f"Detail: {reason}. Check the Star Arm USB connection and backend joint feedback; "
-            "wait for HOME recovery to finish, match the Star Arm to reBot, then run Mirror reBot Leader again."
+            "wait for HOME recovery to finish. "
+            + UNPLUGGED
+            + "Then match the Star Arm to reBot and run Mirror reBot Leader again."
         )
     return (
         f"Following refused: {reason}. Wait for any HOME recovery to finish; "
@@ -84,9 +92,12 @@ class LeaderState:
         self.active = False
         self.fault = ""
         self.recover = False
+        self.rejection = ""
 
     def accept(self, sample, now):
         try:
+            if "error" in sample:
+                raise ValueError(f"Star Arm USB read failed: {sample['error']}")
             values = [float(v) for v in sample["positions"]]
             stamp = float(sample["sample_time"])
             if len(values) != 7 or not all(math.isfinite(v) for v in values):
@@ -98,9 +109,11 @@ class LeaderState:
                     raise ValueError("Leader target exceeds approved motor limits")
         except (KeyError, TypeError, ValueError) as exc:
             self.target = None
-            self.stop(str(exc))
+            self.rejection = str(exc)
+            self.stop(self.rejection)
             return False
         self.target, self.sample_time = values, stamp
+        self.rejection = ""
         return True
 
     def observe(self, names, positions, now):

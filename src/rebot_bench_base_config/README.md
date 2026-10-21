@@ -16,9 +16,10 @@ The arm defaults to `hardware_interface: mock`, using only
 description then emits no `ros2_control` block and no colour optical frames,
 which the sim's MuJoCo hardware supplies. Any other value fails Xacro expansion
 rather than producing a description with no hardware plugin.
-Cameras in this base package default off and may be enabled separately. The sim
-is a MuJoCo twin of the bench: it renders both cameras and starts no camera
-drivers.
+Cameras in this base package default on: each attached supported camera starts
+and a missing one is skipped (see [Optional real cameras](#optional-real-cameras)).
+The sim is a MuJoCo twin of the bench: it renders both cameras and starts no
+camera drivers.
 The `world_to_base_xyz`/`_rpy` and `scene_camera_xyz`/`_rpy` xacro arguments
 place `base_link` and `scene_camera_link` in `world`. `config/config.yaml` sets
 them to this bench's calibration (see [the stack recipe](#sam3-blue-on-red-stack));
@@ -31,9 +32,24 @@ inherited calibration.
 ## Try it
 
 Build this workspace once with the normal MoveIt Pro build/install workflow.
-To use the calibrated FashionStar leader, set
-`ros_global_params.rebot_leader_enabled: true` in `config/config.yaml`.
-The same setting works with mock, real, and the `rebot_bench_sim` overlay.
+
+First-time setup on your reBot, in `config/config.yaml`:
+
+1. Find the Star Arm's serial port: run `ls -l /dev/serial/by-id/` with the
+   Star Arm unplugged, plug in only the Star Arm, and run it again. The new
+   entry is its port. The default `rebot_leader_port` matches the stock CH340
+   adapter (`usb-1a86_USB_Serial-if00-port0`).
+2. Set `ros_global_params.rebot_leader_port` to that path and
+   `ros_global_params.rebot_leader_enabled: true`. The same setting works with
+   mock, real, and the `rebot_bench_sim` overlay.
+3. For the real follower, set `hardware_interface: "real"` under
+   `hardware.robot_description.urdf_params` and check `can_interface`; see
+   [Real hardware](#real-hardware). The default `"mock"` needs neither.
+4. Cameras are optional and configured independently in `config/cameras.yaml`;
+   see [Optional real cameras](#optional-real-cameras).
+5. On another installation, re-measure the bench placements; see
+   [Bench calibration](#bench-calibration).
+
 Then start the Desktop App and backend:
 
 ```bash
@@ -173,9 +189,12 @@ Leader targets retain the approved full ranges; J2 and J3 leader commands have
 a zero lower bound at HOME. Measured-position holds use the same command
 bounds, so noisy feedback cannot create a negative HOME-side reference.
 
-The reader starts only with the backend: if it exits (Star Arm unplugged or
-unpowered, wrong `rebot_leader_port`, or a rejected calibration file), Mirror
-refuses with that cause until the backend restarts.
+The reader starts only with the backend and never reopens its port. If it exits
+(Star Arm unplugged or unpowered at startup, wrong `rebot_leader_port`, or a
+rejected calibration file), Mirror refuses with that cause. If the Star Arm USB
+is unplugged while it runs, every later read fails, even with the cable back,
+and Mirror refuses with the reader's read error. Either way, reconnect the Star
+Arm and, once reBot is at HOME, restart the backend.
 
 Stopping the Objective, calling `/rebot_leader_bridge/clutch`, losing the USB
 stream, or receiving stale/invalid data latches following off and requests
@@ -188,9 +207,11 @@ healthy or reconnected feedback afterwards does not re-engage following. A motor
 that stops answering on the CAN bus changes none of these fields, so the bridge
 does not detect it; the driver's `freeze_on_joint_loss` freezes the arm instead,
 and the HOME return cannot move it until separate hardware and driver recovery.
-Ctrl-C on the leader launch mid-session also returns
-HOME; the bridge then ignores further stop signals until that return finishes,
-for up to 120 s. The return centres wrist yaw before moving to
+Stopping the backend mid-session also makes the bridge request
+**Return reBot Leader Home**; it then ignores further stop signals until that
+return finishes, for up to 120 s. The Objective server shuts down at the same
+time, so do not rely on it: return reBot HOME before stopping the backend (see
+[Start, home and stop](#start-home-and-stop)). The HOME return centres wrist yaw before moving to
 `Zeroed Rest`, at 0.05 rad/s maximum, preserving the jaw. An arm within the same
 0.08 rad of HOME that preparation accepts is left where it is. Otherwise both
 legs are planned with `PlanToJointGoalFromBoundedStart`, which is `PlanToJointGoal`
@@ -207,7 +228,8 @@ Driver-owned thermal detection and backend recovery run automatically; see
 [Thermal protection](#thermal-protection).
 A failed HOME return is
 reported and requires operator recovery. Only starting the Objective again at
-measured HOME re-engages; reconnecting USB never does.
+measured HOME re-engages; reconnecting USB never does, and after a Star Arm
+USB unplug the backend must be restarted first.
 
 The bridge identifies mock, real, or MuJoCo from the robot description. Real
 sessions require fresh healthy status from exactly seven enabled motors; there
