@@ -6,6 +6,18 @@ import math
 from rebot_leader import JOINT_NAMES, LIMITS_DEG
 
 
+def alignment_fault(target, measured, tolerance=0.1):
+    """Name each joint whose leader target is more than tolerance rad off the follower."""
+    off = [
+        f"{name} {leader - follower:+.3f} rad"
+        for name, leader, follower in zip(JOINT_NAMES, target, measured)
+        if abs(leader - follower) > tolerance
+    ]
+    if not off:
+        return ""
+    return f"Leader not within {tolerance} rad of follower: {', '.join(off)}"
+
+
 class LeaderState:
     """A fault requires explicit reset at home; recovered USB never re-engages."""
 
@@ -59,6 +71,10 @@ class LeaderState:
     def engage(self, now):
         if self.fault or self.recover or not self.fresh(now):
             return False
+        if not self.active:
+            self.fault = alignment_fault(self.target, self.measured)
+            if self.fault:
+                return False
         self.active = True
         self.heartbeat = now
         return True

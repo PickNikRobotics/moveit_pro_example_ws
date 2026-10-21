@@ -21,11 +21,8 @@ LeRobot wrapper. The existing bench calibration values are preserved in
 `config/leader_calibration/rebot_arm_102_leader.json`, installed with the package
 and selected by `rebot_leader_calibration_file` in YAML. This avoids depending on
 the host cache being mounted in the backend container. Another installation
-must select its own existing file. Standalone reader invocations without that
-option read without modification from `$HF_LEROBOT_CALIBRATION/teleoperators/rebot_arm_102_leader/<id>.json`,
-falling back through `HF_LEROBOT_HOME`, `HF_HOME`, and the normal XDG cache path.
-Keep the calibrated id (default `rebot_arm_102_leader`) and file available to the
-runtime user.
+must select its own existing file; the reader requires `--calibration-file` and
+reads it without modification. Keep that file available to the runtime user.
 
 Seeed's calibration writes origin points into the servos and records zero
 `homing_offset`/`drive_mode`; the reader validates these and all seven ids and

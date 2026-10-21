@@ -114,11 +114,25 @@ def test_home_failure_latches_without_torque_or_lifecycle_command(guard):
     assert guard.stage == "failed"
 
 
-def test_hot_initial_probe_with_all_motors_off_never_enables_or_moves(guard):
-    guard.stage, guard.started = "home", 9.0
+def test_hot_initial_probe_with_all_motors_off_never_enables_or_moves(
+    guard, monkeypatch
+):
+    # The trip latch arrives at hardware activation, before the agent is up.
+    logger = Obj(error=Mock())
+    guard.node = Obj(get_logger=lambda: logger)
+    guard.cancel = Obj(service_is_ready=lambda: False, call_async=Mock())
     guard.hardware.enabled = [False] * 7
-    guard.advance(10.0)
+    monkeypatch.setattr("rebot_thermal_guard.time.monotonic", lambda: 10.0)
+    guard.trip(Obj(data=True))
+    guard.hardware_time = 13.5
+    monkeypatch.setattr("rebot_thermal_guard.time.monotonic", lambda: 13.5)
+    guard.tick()
     assert guard.stage == "off"
+    assert not any(
+        "intervention required" in call.args[0]
+        for call in logger.error.call_args_list
+    )
+    assert not guard.cancel.call_async.called
     assert not guard.home.send_goal_async.called and not guard.torque.call_async.called
 
 

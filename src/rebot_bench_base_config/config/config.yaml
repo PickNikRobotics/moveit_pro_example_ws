@@ -49,7 +49,6 @@ ros_global_params:
   # Backend drivers own the reader and bridge; no separate ros2 launch command.
   rebot_leader_enabled: false
   rebot_leader_port: "/dev/serial/by-id/usb-1a86_USB_Serial-if00-port0"
-  rebot_leader_id: "rebot_arm_102_leader"
   # Existing bench calibration, installed with this package; never recalibrated.
   rebot_leader_calibration_file: "config/leader_calibration/rebot_arm_102_leader.json"
   rebot_leader_publish_rate: 100.0

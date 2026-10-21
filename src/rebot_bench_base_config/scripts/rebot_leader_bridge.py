@@ -197,7 +197,7 @@ class LeaderBridge:
             response.message = (
                 "Holding measured position"
                 if response.success
-                else "Warmup prerequisites failed"
+                else (self.state.fault or "Warmup prerequisites failed")
             )
         else:
             response.success = (
@@ -301,7 +301,7 @@ class LeaderBridge:
                 self.start_checked = self.state.engage(now)
                 if self.start_checked:
                     self.prepared_at = None
-                self.node.get_logger().info("POSITION FOLLOWING STARTED")
+                    self.node.get_logger().info("POSITION FOLLOWING STARTED")
             elif self.prepared_at is not None and (
                 self.state.fault or now - self.prepared_at >= 3.0
             ):
@@ -390,9 +390,11 @@ def main():
     parser.add_argument(
         "--port", required=True, help="Configured FashionStar USB serial port"
     )
-    parser.add_argument("--id", required=True, help="Existing calibrated leader id")
     parser.add_argument(
-        "--calibration-file", type=Path, help="Configured existing leader calibration"
+        "--calibration-file",
+        type=Path,
+        required=True,
+        help="Configured existing leader calibration",
     )
     args, ros_args = parser.parse_known_args()
     rclpy.init(args=ros_args, signal_handler_options=SignalHandlerOptions.NO)
@@ -416,11 +418,9 @@ def main():
             str(Path(__file__).with_name("rebot_leader.py")),
             "--port",
             args.port,
-            "--id",
-            args.id,
+            "--calibration-file",
+            str(args.calibration_file),
         ]
-        if args.calibration_file:
-            command.extend(["--calibration-file", str(args.calibration_file)])
         child = subprocess.Popen(
             command,
             stdout=subprocess.PIPE,

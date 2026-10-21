@@ -105,8 +105,9 @@ OFF, add `--apply`. It sends volatile settings through the owning driver's servi
 it never sends a save/store, changes mode, enables a joint, or moves the robot.
 The service ACK confirms transmission, not firmware acceptance: independently read
 back motor registers 0x700B (J7) and 0x7017 (J4) before enabling. Nothing may enable or command the arm until both writes and readbacks finish. On any failure,
-leave the arm OFF; partial writes are possible. Power cycling restores stored
-values, so re-read before each session. This tool is
+leave the arm OFF; partial writes are possible. Power-cycle retention of these
+settings has not been verified; re-read the motor registers before each session,
+including after a power cycle. This tool is
 never called implicitly by launch or the Objective. Reapply only by explicit
 command after a driver restart. The MuJoCo jaw actuator mirrors kp=12, but keeps
 kd=0.05 and the RS00's ±14 Nm range: at kd 0.5 a twin running below real time lags Close Gripper past
@@ -121,17 +122,24 @@ records the pinned SDK and license. The existing bench calibration for
 `rebot_arm_102_leader` is installed at `config/leader_calibration/rebot_arm_102_leader.json`.
 The YAML `rebot_leader_calibration_file` resolves relative to this package's share
 folder (or accepts a workspace path). Keep your existing calibrated file and
-set this value, `rebot_leader_port`, and `rebot_leader_id` for another device. Missing calibration refuses the reader;
-startup never calibrates or rewrites it. With the leader disabled, no USB reader
-or leader bridge starts. Real thermal recovery starts independently.
+set this value and `rebot_leader_port` for another device; startup never
+calibrates or rewrites it. The file cannot prove the servos' stored origins, so
+it does not gate following: the engage check below does. With the leader
+disabled, no USB reader or leader bridge starts. Real thermal recovery starts
+independently.
 
 Wait for `Native collision scene ready`, then run **Mirror reBot Leader**.
 The Objective requires fresh measured HOME (every arm joint within 0.08 rad of
 zero), explicitly prepares a new session, and switches the seven position
 interfaces to `leader_position_controller`. The bridge seeds its reference from
 measured positions and holds that fixed HOME reference until following engages.
-It then forwards fresh leader positions directly, without software velocity or
-acceleration caps. Existing motor limits remain unchanged.
+Following engages only if the mapped leader reads within 0.1 rad of the
+measured follower on every joint, joint1-joint7. Otherwise it refuses, reports
+each joint that is off and by how much (leader minus follower, in radians), and
+requests **Return reBot Leader Home**; align the leader and run the Objective
+again. There is no catch-up, ramp-in, or re-synchronisation during following.
+Once engaged, it forwards fresh leader positions directly, without software
+velocity or acceleration caps. Existing motor limits remain unchanged.
 
 Native MoveIt Pro FCL checks each target and the measured-to-target joint path
 at at most 0.005 rad intervals on joint1-joint6 and 0.05 rad on joint7, whose
@@ -652,6 +660,13 @@ stationary HOME for 0.5 s, then calls the owning driver's `set_torque` service
 with false. The leader bridge latches off without sending a competing HOME goal.
 No separate guard command is needed, including when the leader is disabled.
 
+The split is deliberate. The driver owns the YAML threshold, detection, the
+latch and refusing re-enable. The HOME-then-OFF response stays in this backend
+node because the driver cannot plan a HOME motion and the brakeless arm must
+never lose torque away from HOME. An arm already fully OFF when the latch trips
+(hot at startup) stays OFF and is reported as such, without waiting for the
+Objective server.
+
 If cancellation, HOME, hardware health, or fresh HOME verification fails, the
 system keeps the latch and reports intervention required; it never disables
 away from HOME. Reachable joints retain torque under the existing loss/fault
@@ -662,6 +677,10 @@ cannot guarantee HOME after motor or communication failure and is not a
 safety-rated thermal shutdown.
 
 ### Motors, limits and gains
+
+See [Motor firmware settings](docs/firmware-settings.md) for the per-joint
+commissioned register limits, zero alignment, write/save procedure and the
+vendor CLI read shutdown hazard.
 
 One motor per joint on one bus, ids 1-7 matching `joint1`-`joint7`, host
 `master_id` 253:

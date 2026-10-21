@@ -107,10 +107,34 @@ def test_objective_heartbeat_expiry_stops_even_with_fresh_samples():
 
 def test_full_range_positions_are_forwarded_without_a_speed_reference():
     state = state_at_home()
+    assert state.engage(10.0)
     target = [0.6, 1.0, 1.0, 1.0, -1.0, -1.0, 5.0]
     assert state.accept({"positions": target, "sample_time": 10.01}, 10.01)
     assert state.engage(10.01) and state.check_deadman(10.01)
     assert state.target == target
+
+
+def test_alignment_fault_names_each_joint_beyond_tolerance():
+    from rebot_leader_state import alignment_fault
+
+    follower = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5]
+    assert alignment_fault([0.1, -0.1, 0.0, 0.0, 0.0, 0.0, 0.6], follower) == ""
+    reason = alignment_fault([0.0, 0.25, 0.0, 0.0, 0.0, 0.0, 0.3], follower)
+    assert reason == (
+        "Leader not within 0.1 rad of follower: joint2 +0.250 rad, joint7 -0.200 rad"
+    )
+
+
+def test_misaligned_leader_refuses_to_engage_until_reset():
+    state = state_at_home()
+    assert state.accept(
+        {"positions": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2], "sample_time": 10.01}, 10.01
+    )
+    assert not state.engage(10.01)
+    assert not state.active and "joint7 +0.200 rad" in state.fault
+    assert state.accept({"positions": [0.0] * 7, "sample_time": 10.02}, 10.02)
+    assert not state.engage(10.02)
+    assert state.reset() and state.engage(10.02)
 
 
 def test_hold_cannot_command_negative_home_side_position(monkeypatch):
@@ -375,6 +399,36 @@ def test_prepared_session_follows_once_mirror_starts(ticking_bridge):
     assert ticking_bridge.prepared_at is None
 
 
+def test_misaligned_leader_never_follows_and_reports_the_joint(ticking_bridge):
+    bridge = ticking_bridge
+    bridge.state.target[1] = 0.3
+    assert bridge.mirror(None, SimpleNamespace()).success
+    bridge.tick()
+    assert not bridge.state.active
+    response = bridge.mirror(None, SimpleNamespace())
+    assert not response.success and "joint2 +0.300 rad" in response.message
+    bridge.tick()
+    assert bridge.state.recover and not bridge.state.active
+
+
+@pytest.mark.parametrize("rate", [0, 19, 101, math.nan, math.inf])
+def test_bridge_refuses_publish_rate_outside_20_to_100_hz(monkeypatch, rate):
+    from unittest.mock import Mock
+    import rebot_leader_bridge
+
+    monkeypatch.setattr(rebot_leader_bridge, "ActionClient", Mock())
+    node = Mock()
+    node.declare_parameter.return_value = SimpleNamespace(value=rate)
+    read, write = os.pipe()
+    try:
+        with pytest.raises(ValueError, match="between 20 and 100"):
+            LeaderBridge(node, SimpleNamespace(fileno=lambda: read))
+    finally:
+        os.close(read)
+        os.close(write)
+    node.create_timer.assert_not_called()
+
+
 def test_prepared_session_that_never_follows_returns_home(ticking_bridge, monkeypatch):
     monkeypatch.setattr("rebot_leader_bridge.time.monotonic", lambda: 12.9)
     ticking_bridge.tick()
@@ -520,7 +574,15 @@ def test_repeated_stop_signals_do_not_abort_the_home_return(monkeypatch):
             bridge.state.recover = False
 
     monkeypatch.setattr(
-        sys, "argv", ["rebot_leader_bridge.py", "--port", "/no-usb", "--id", "test"]
+        sys,
+        "argv",
+        [
+            "rebot_leader_bridge.py",
+            "--port",
+            "/no-usb",
+            "--calibration-file",
+            "/existing.json",
+        ],
     )
     child = SimpleNamespace(
         stdout=SimpleNamespace(close=lambda: None),
@@ -574,7 +636,6 @@ def test_launch_does_not_kill_the_bridge_during_its_home_return():
         ros_global_params={
             "rebot_leader_enabled": True,
             "rebot_leader_port": "/no-usb",
-            "rebot_leader_id": "test",
             "rebot_leader_calibration_file": "/existing.json",
         },
         hardware=SimpleNamespace(
@@ -688,25 +749,6 @@ def calibration_fixture():
     }
 
 
-def test_existing_calibration_path_and_format_are_preserved(tmp_path, monkeypatch):
-    import json
-    from rebot_leader import calibration_path, load_calibration
-
-    monkeypatch.setenv("HF_LEROBOT_CALIBRATION", str(tmp_path))
-    path = calibration_path("rebot_arm_102_leader")
-    assert (
-        path
-        == tmp_path / "teleoperators/rebot_arm_102_leader/rebot_arm_102_leader.json"
-    )
-    path.parent.mkdir(parents=True)
-    original = json.dumps(calibration_fixture())
-    path.write_text(original)
-    assert load_calibration(path) == calibration_fixture()
-    assert path.read_text() == original
-    with pytest.raises(ValueError):
-        calibration_path("../another-id")
-
-
 @pytest.mark.parametrize(
     "field,value",
     [
@@ -794,7 +836,15 @@ def test_bridge_initialization_failure_reaps_its_reader(monkeypatch):
     node = SimpleNamespace(destroy_node=Mock())
     shutdown = Mock()
     monkeypatch.setattr(
-        sys, "argv", ["rebot_leader_bridge.py", "--port", "/no-usb", "--id", "test"]
+        sys,
+        "argv",
+        [
+            "rebot_leader_bridge.py",
+            "--port",
+            "/no-usb",
+            "--calibration-file",
+            "/existing.json",
+        ],
     )
     monkeypatch.setattr(rebot_leader_bridge.rclpy, "init", lambda **kw: None)
     monkeypatch.setattr(rebot_leader_bridge.rclpy, "create_node", lambda name: node)
