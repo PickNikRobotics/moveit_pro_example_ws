@@ -1,0 +1,4 @@
+# MIT, tianrking / MotorBridge Smart Servo. Native SDK wheel for FashionStar.
+# No LeRobot, Torch, NumPy, pyserial or other Python runtime dependencies.
+# Upstream license and provenance: docs/leader-dependencies.md.
+motorbridge-smart-servo==0.0.4

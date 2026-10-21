@@ -115,6 +115,7 @@ def test_full_range_positions_are_forwarded_without_a_speed_reference():
 
 def test_hold_cannot_command_negative_home_side_position(monkeypatch):
     bridge = LeaderBridge.__new__(LeaderBridge)
+    bridge.thermal_tripped = False
     bridge.state = state_at_home()
     bridge.state.measured = [0.0, -0.01, -0.008, 0.0, 0.0, 0.0, -0.1]
     commands = []
@@ -129,6 +130,7 @@ def test_hold_cannot_command_negative_home_side_position(monkeypatch):
 
 def test_engage_requires_collision_scene():
     bridge = LeaderBridge.__new__(LeaderBridge)
+    bridge.thermal_tripped = False
     bridge.state = state_at_home()
     bridge.start_checked = True
     bridge.verified = True
@@ -294,9 +296,10 @@ def test_folded_link_contact_is_the_allowed_pair(collision_checker):
 @pytest.fixture
 def home_bridge(monkeypatch):
     bridge = LeaderBridge.__new__(LeaderBridge)
+    bridge.thermal_tripped = False
     bridge.state = state_at_home()
     bridge.home_failed = False
-    bridge.allow_real = True
+    bridge.real_hardware = True
     bridge.verified = bridge.scene_ready = True
     bridge.start_checked = True
     bridge.hardware_state = SimpleNamespace(
@@ -490,7 +493,7 @@ def test_unhealthy_hardware_stops_following_and_returns_home(following_bridge, f
 
 def test_simulated_sessions_do_not_require_hardware_status(following_bridge):
     bridge, published, target = following_bridge
-    bridge.allow_real = False
+    bridge.real_hardware = False
     bridge.hardware_state = None
     bridge.tick()
     assert bridge.state.active and published == [target]
@@ -516,10 +519,20 @@ def test_repeated_stop_signals_do_not_abort_the_home_return(monkeypatch):
         else:
             bridge.state.recover = False
 
-    monkeypatch.setattr(sys, "argv", ["rebot_leader_bridge.py"])
+    monkeypatch.setattr(
+        sys, "argv", ["rebot_leader_bridge.py", "--port", "/no-usb", "--id", "test"]
+    )
+    child = SimpleNamespace(
+        stdout=SimpleNamespace(close=lambda: None),
+        terminate=lambda: None,
+        wait=lambda **kwargs: None,
+    )
+    monkeypatch.setattr(
+        rebot_leader_bridge.subprocess, "Popen", lambda *args, **kwargs: child
+    )
     monkeypatch.setattr(sys, "stdin", SimpleNamespace(buffer=None))
     monkeypatch.setattr(
-        rebot_leader_bridge, "LeaderBridge", lambda node, stream, allow_real: bridge
+        rebot_leader_bridge, "LeaderBridge", lambda node, stream: bridge
     )
     monkeypatch.setattr(rebot_leader_bridge.rclpy, "init", lambda **kwargs: None)
     monkeypatch.setattr(
@@ -557,10 +570,20 @@ def test_launch_does_not_kill_the_bridge_during_its_home_return():
     launch_file = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(launch_file)
     context = LaunchContext()
-    context.launch_configurations.update(
-        leader_python="python3", allow_real="false", publish_rate="100.0"
+    config = SimpleNamespace(
+        ros_global_params={
+            "rebot_leader_enabled": True,
+            "rebot_leader_port": "/no-usb",
+            "rebot_leader_id": "test",
+            "rebot_leader_calibration_file": "/existing.json",
+        },
+        hardware=SimpleNamespace(
+            robot_description=SimpleNamespace(
+                urdf_params=[{"hardware_interface": "mock"}]
+            )
+        ),
     )
-    (node,) = launch_file.bridge_node(context)
+    (node,) = launch_file.configured_nodes(config)
     sigkill_after = sum(
         float(perform_substitutions(context, timeout))
         for timeout in (node.sigterm_timeout, node.sigkill_timeout)
@@ -589,6 +612,7 @@ def test_successful_home_requires_explicit_reengagement(home_bridge):
 
 def test_warmup_reference_does_not_follow_feedback_drift(monkeypatch):
     bridge = LeaderBridge.__new__(LeaderBridge)
+    bridge.thermal_tripped = False
     bridge.state = state_at_home()
     bridge.warmup_reference = None
     commands = []
@@ -638,3 +662,160 @@ def test_motor_tuning_requires_fresh_healthy_home_with_all_seven_off():
     joint.position[3] = 0
     health.fault_bits[2] = 1
     assert not safe_home((10.0, health), (10.0, joint), 10.0)
+
+
+def test_driver_thermal_trip_yields_to_one_backend_recovery_owner(following_bridge):
+    bridge, published, target = following_bridge
+    bridge.observe_thermal(SimpleNamespace(data=True))
+    bridge.tick()
+    assert bridge.thermal_tripped and not bridge.state.active
+    assert not bridge.state.recover and published == []
+    assert not bridge.prepare(None, SimpleNamespace()).success
+    bridge.observe_thermal(SimpleNamespace(data=False))
+    assert bridge.thermal_tripped
+
+
+def calibration_fixture():
+    return {
+        name: {
+            "id": i,
+            "drive_mode": 0,
+            "homing_offset": 0,
+            "range_min": -90,
+            "range_max": 90,
+        }
+        for i, name in enumerate(LEADER_NAMES)
+    }
+
+
+def test_existing_calibration_path_and_format_are_preserved(tmp_path, monkeypatch):
+    import json
+    from rebot_leader import calibration_path, load_calibration
+
+    monkeypatch.setenv("HF_LEROBOT_CALIBRATION", str(tmp_path))
+    path = calibration_path("rebot_arm_102_leader")
+    assert (
+        path
+        == tmp_path / "teleoperators/rebot_arm_102_leader/rebot_arm_102_leader.json"
+    )
+    path.parent.mkdir(parents=True)
+    original = json.dumps(calibration_fixture())
+    path.write_text(original)
+    assert load_calibration(path) == calibration_fixture()
+    assert path.read_text() == original
+    with pytest.raises(ValueError):
+        calibration_path("../another-id")
+
+
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("id", 253),
+        ("homing_offset", 1),
+        ("drive_mode", 1),
+        ("range_min", float("nan")),
+        ("range_max", -90),
+    ],
+)
+def test_unsupported_calibration_refuses_before_opening_serial(tmp_path, field, value):
+    import json
+    from rebot_leader import load_calibration
+
+    data = calibration_fixture()
+    data[LEADER_NAMES[0]][field] = value
+    path = tmp_path / "calibration.json"
+    path.write_text(json.dumps(data))
+    with pytest.raises(ValueError):
+        load_calibration(path)
+
+
+def test_direct_sdk_mapping_keeps_full_ranges_not_legacy_placeholder():
+    from rebot_leader import read_positions
+
+    raw = [120, 150, -180, -80, -90, 130, 30]
+    bus = SimpleNamespace(
+        read_angle=lambda motor_id: SimpleNamespace(raw_deg=raw[motor_id])
+    )
+    actual = read_positions(bus, calibration_fixture())
+    assert actual == pytest.approx(
+        [math.radians(q) for q in [120, 150, 180, 80, 90, 130, 180]]
+    )
+
+
+@pytest.mark.parametrize(
+    "raw,expected", [(370, 10), (-350, 10), (730, 10), (180, 180), (-180, -180)]
+)
+def test_nearest_turn_unwrap_matches_seeed_window(raw, expected):
+    from rebot_leader import unwrap_angle
+
+    assert unwrap_angle(raw, -150, 150)[0] == expected
+
+
+def test_reader_failure_and_shutdown_always_close_bus():
+    import io
+    import json
+    from unittest.mock import Mock
+    from rebot_leader import run_reader
+
+    bus = SimpleNamespace(
+        ping=lambda motor_id: True,
+        unlock=Mock(),
+        read_angle=Mock(side_effect=RuntimeError("USB missing")),
+        close=Mock(),
+    )
+    output = io.StringIO()
+    with pytest.raises(KeyboardInterrupt):
+        run_reader(
+            "/no-usb",
+            calibration_fixture(),
+            lambda *a, **kw: bus,
+            output,
+            sleep=Mock(side_effect=KeyboardInterrupt),
+        )
+    message = json.loads(output.getvalue())
+    assert message["error"] == "USB missing" and "positions" not in message
+    assert bus.unlock.call_count == 7
+    bus.close.assert_called_once()
+    bus.close.reset_mock()
+    bus.ping = lambda motor_id: False
+    with pytest.raises(RuntimeError, match="not found"):
+        run_reader("/no-usb", calibration_fixture(), lambda *a, **kw: bus, output)
+    bus.close.assert_called_once()
+
+
+def test_bridge_initialization_failure_reaps_its_reader(monkeypatch):
+    import signal
+    from unittest.mock import Mock
+    import rebot_leader_bridge
+
+    child = SimpleNamespace(
+        stdout=SimpleNamespace(close=Mock()), terminate=Mock(), wait=Mock()
+    )
+    node = SimpleNamespace(destroy_node=Mock())
+    shutdown = Mock()
+    monkeypatch.setattr(
+        sys, "argv", ["rebot_leader_bridge.py", "--port", "/no-usb", "--id", "test"]
+    )
+    monkeypatch.setattr(rebot_leader_bridge.rclpy, "init", lambda **kw: None)
+    monkeypatch.setattr(rebot_leader_bridge.rclpy, "create_node", lambda name: node)
+    monkeypatch.setattr(rebot_leader_bridge.rclpy, "shutdown", shutdown)
+    monkeypatch.setattr(rebot_leader_bridge.subprocess, "Popen", lambda *a, **kw: child)
+    monkeypatch.setattr(
+        rebot_leader_bridge,
+        "LeaderBridge",
+        Mock(side_effect=RuntimeError("initialization failed")),
+    )
+    handlers = {
+        number: signal.getsignal(number) for number in (signal.SIGINT, signal.SIGTERM)
+    }
+    try:
+        with pytest.raises(RuntimeError, match="initialization failed"):
+            rebot_leader_bridge.main()
+    finally:
+        for number, handler in handlers.items():
+            signal.signal(number, handler)
+    child.terminate.assert_called_once()
+    child.wait.assert_called_once_with(timeout=5)
+    child.stdout.close.assert_called_once()
+    node.destroy_node.assert_called_once()
+    shutdown.assert_called_once()

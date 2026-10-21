@@ -19,7 +19,7 @@ from rclpy.action import ActionClient
 from rclpy.signals import SignalHandlerOptions
 from rclpy.qos import DurabilityPolicy, QoSProfile, qos_profile_sensor_data
 from sensor_msgs.msg import JointState
-from std_msgs.msg import String, Float64MultiArray
+from std_msgs.msg import Bool, String, Float64MultiArray
 from moveit_msgs.msg import PlanningScene, PlanningSceneComponents
 from moveit_msgs.srv import GetPlanningScene
 from std_srvs.srv import Trigger
@@ -32,22 +32,28 @@ from rebot_leader_collision import LeaderCollision
 class LeaderBridge:
     """One position-command owner; native FCL checks every target and path."""
 
-    def __init__(self, node, stream, allow_real=False):
+    def __init__(self, node, stream):
         self.node = node
         self.stream = stream
         self.state = LeaderState()
-        self.allow_real = allow_real
+        self.real_hardware = False
+        self.thermal_tripped = False
         self.hardware_state = None
         self.hardware_time = -math.inf
-        if allow_real:
-            from robstride_interfaces.msg import RobstrideState
+        from robstride_interfaces.msg import RobstrideState
 
-            node.create_subscription(
-                RobstrideState,
-                "/robstride_hardware_interface/robstride_state",
-                self.observe_hardware,
-                qos_profile_sensor_data,
-            )
+        node.create_subscription(
+            RobstrideState,
+            "/robstride_hardware_interface/robstride_state",
+            self.observe_hardware,
+            qos_profile_sensor_data,
+        )
+        node.create_subscription(
+            Bool,
+            "/robstride_hardware_interface/thermal_tripped",
+            self.observe_thermal,
+            QoSProfile(depth=1, durability=DurabilityPolicy.TRANSIENT_LOCAL),
+        )
         self.start_checked = False
         self.prepared_at = None
         self.warmup_heartbeat = -math.inf
@@ -87,6 +93,16 @@ class LeaderBridge:
             raise ValueError("publish_rate must be between 20 and 100 Hz")
         node.create_timer(1.0 / publish_rate, self.tick)
 
+    def observe_thermal(self, message):
+        if message.data:
+            self.thermal_tripped = True
+            self.state.stop("Driver thermal trip; backend owns HOME recovery")
+            # The thermal recovery owner cancels the task and sends the one
+            # native HOME goal. Do not send a competing goal or position hold.
+            self.state.recover = False
+            self.state.fault = "Driver thermal trip latched"
+            self.prepared_at = None
+
     def observe_hardware(self, message):
         self.hardware_state = message
         self.hardware_time = time.monotonic()
@@ -108,13 +124,14 @@ class LeaderBridge:
         del request
         now = time.monotonic()
         ready = (
-            not self.state.active
+            not self.thermal_tripped
+            and not self.state.active
             and not self.home_failed
             and self.verified
             and self.scene_ready
             and self.state.fresh(now)
         )
-        if self.allow_real:
+        if self.real_hardware:
             ready = ready and self.hardware_healthy(now)
         # Reset clears the fault latch, so all readiness checks must pass first.
         ready = ready and self.state.reset()
@@ -149,12 +166,13 @@ class LeaderBridge:
     def description(self, message):
         robot = ET.fromstring(message.data)
         plugins = [p.text for p in robot.findall("ros2_control/hardware/plugin")]
+        real_plugin = ["robstride_hardware_interface/RobstrideHardware"]
+        self.real_hardware = plugins == real_plugin
         allowed = [
             ["picknik_mujoco_ros/MujocoSystem"],
             ["mock_components/GenericSystem"],
+            real_plugin,
         ]
-        if self.allow_real:
-            allowed.append(["robstride_hardware_interface/RobstrideHardware"])
         self.verified = robot.get("name") == "rebot_b601_rs" and plugins in allowed
         if self.verified and self.collider is None:
             self.collider = LeaderCollision(message.data)
@@ -223,6 +241,8 @@ class LeaderBridge:
             self.publish(positions)
 
     def tick(self):
+        if self.thermal_tripped:
+            return
         was_active = self.state.active
         now = time.monotonic()
         try:
@@ -295,7 +315,7 @@ class LeaderBridge:
         if was_active and not self.state.active:
             self.hold()
         if self.state.active:
-            if self.allow_real and not self.hardware_healthy(now):
+            if self.real_hardware and not self.hardware_healthy(now):
                 reason = "Robstride status stale, faulted or not all motors enabled"
             else:
                 try:
@@ -368,21 +388,13 @@ class LeaderBridge:
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--leader-python",
-        help="Python interpreter with the Seeed leader plugin installed",
+        "--port", required=True, help="Configured FashionStar USB serial port"
     )
+    parser.add_argument("--id", required=True, help="Existing calibrated leader id")
     parser.add_argument(
-        "--allow-real",
-        action="store_true",
-        help="Requires separately approved physical commissioning",
+        "--calibration-file", type=Path, help="Configured existing leader calibration"
     )
     args, ros_args = parser.parse_known_args()
-    child = None
-    if args.leader_python:
-        child = subprocess.Popen(
-            [args.leader_python, str(Path(__file__).with_name("rebot_leader.py"))],
-            stdout=subprocess.PIPE,
-        )
     rclpy.init(args=ros_args, signal_handler_options=SignalHandlerOptions.NO)
 
     def request_shutdown(signum, frame):
@@ -397,14 +409,30 @@ def main():
     signal.signal(signal.SIGINT, request_shutdown)
     signal.signal(signal.SIGTERM, request_shutdown)
     node = rclpy.create_node("rebot_leader_bridge")
-    bridge = LeaderBridge(
-        node, child.stdout if child else sys.stdin.buffer, args.allow_real
-    )
+    child = bridge = None
     try:
+        command = [
+            sys.executable,
+            str(Path(__file__).with_name("rebot_leader.py")),
+            "--port",
+            args.port,
+            "--id",
+            args.id,
+        ]
+        if args.calibration_file:
+            command.extend(["--calibration-file", str(args.calibration_file)])
+        child = subprocess.Popen(
+            command,
+            stdout=subprocess.PIPE,
+            start_new_session=True,
+        )
+        bridge = LeaderBridge(node, child.stdout)
         rclpy.spin(node)
     except KeyboardInterrupt:
         # Keep the process alive through its home return; SIGKILL cannot run
         # cleanup and is never an operator stop mechanism.
+        if bridge is None:
+            return
         bridge.state.stop("Bridge shutdown requested")
         bridge.hold()
         deadline = time.monotonic() + 120
@@ -417,7 +445,12 @@ def main():
     finally:
         if child is not None:
             child.terminate()
-            child.wait(timeout=5)
+            try:
+                child.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                child.kill()
+                child.wait()
+            child.stdout.close()
         node.destroy_node()
         rclpy.shutdown()
 
