@@ -28,6 +28,7 @@
 #include <moveit_pro_behavior_interface/shared_resources_node_loader.hpp>
 #include <pluginlib/class_list_macros.hpp>
 #include <rebot_bench_behaviors/anchor_trajectory_to_command.hpp>
+#include <rebot_bench_behaviors/call_rebot_leader_service.hpp>
 #include <rebot_bench_behaviors/clamp_robot_state_to_bounds.hpp>
 #include <rebot_bench_behaviors/draw_place_spot.hpp>
 #include <rebot_bench_behaviors/fit_cube_to_mask.hpp>
@@ -47,6 +48,7 @@ public:
   void registerBehaviors(BT::BehaviorTreeFactory& factory,
                          const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& context) override
   {
+    moveit_pro::behaviors::registerBehavior<CallRebotLeaderService>(factory, "CallRebotLeaderService", context);
     moveit_pro::behaviors::registerBehavior<RecordRebotTrajectory>(factory, "RecordRebotTrajectory", context);
     moveit_pro::behaviors::registerBehavior<AnchorTrajectoryToCommand>(factory, "AnchorTrajectoryToCommand", context);
     moveit_pro::behaviors::registerBehavior<ClampRobotStateToBounds>(factory, "ClampRobotStateToBounds", context);

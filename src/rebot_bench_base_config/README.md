@@ -135,7 +135,9 @@ interfaces to `leader_position_controller`. The bridge seeds its reference from
 measured positions and holds that fixed HOME reference until following engages.
 Following engages only if the mapped leader reads within 0.1 rad of the
 measured follower on every joint, joint1-joint7. Otherwise it refuses, reports
-each joint that is off and by how much (leader minus follower, in radians), and
+each joint by its operator name and number, its offset in degrees and radians,
+and which way to move that Star Arm joint to match reBot. The Objective shows
+this reason in its UI failure message, including the 5.7 deg / 0.1 rad limit, and
 requests **Return reBot Leader Home**; align the leader and run the Objective
 again. There is no catch-up, ramp-in, or re-synchronisation during following.
 Once engaged, it forwards fresh leader positions directly, without software

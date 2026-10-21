@@ -25,7 +25,7 @@ from moveit_msgs.srv import GetPlanningScene
 from std_srvs.srv import Trigger
 
 from rebot_leader import JOINT_NAMES, LIMITS_DEG
-from rebot_leader_state import LeaderState
+from rebot_leader_state import LeaderState, joint_label, operator_fault
 from rebot_leader_collision import LeaderCollision
 
 
@@ -145,9 +145,59 @@ class LeaderBridge:
         response.message = (
             "HOME ready; start continuous following"
             if ready
-            else "Fresh HOME/model/scene and enabled healthy hardware required"
+            else self.refusal_reason(now, preparing=True)
         )
         return response
+
+    def refusal_reason(self, now, preparing=False):
+        """Explain the first unmet prerequisite without clearing any stop latch."""
+        if self.thermal_tripped:
+            return operator_fault("Driver thermal trip latched")
+        if self.home_failed:
+            return (
+                "Following refused: automatic HOME recovery failed. Torque remains on to support the arm. "
+                "Do not push reBot or disable torque away from HOME. Get operator help to recover HOME "
+                "through the supported motion procedure before running Mirror reBot Leader again."
+            )
+        if not self.verified:
+            return operator_fault(
+                "the reBot robot model is not available or does not match this configuration"
+            )
+        if not self.scene_ready:
+            return operator_fault(
+                "the collision scene is not ready; wait for the backend collision scene"
+            )
+        if self.state.fault and not preparing:
+            return operator_fault(self.state.fault)
+        if not self.state.fresh(now):
+            return operator_fault("leader/follower samples are stale or missing")
+        if preparing:
+            if self.state.active:
+                return operator_fault(
+                    "Mirror is already following; stop it before starting another Mirror Objective"
+                )
+            if self.state.recover:
+                return operator_fault("HOME recovery is still running")
+            off_home = [
+                f"{joint_label(i)} {math.degrees(q):+.1f} deg ({q:+.3f} rad)"
+                for i, q in enumerate(self.state.measured[:6])
+                if abs(q) > 0.08
+            ]
+            if off_home:
+                return (
+                    "Following refused: reBot must be at HOME before starting Mirror. "
+                    f"Away from HOME: {'; '.join(off_home)}. Run Return reBot Leader Home "
+                    "to return reBot; do not move it by hand or disable torque away from HOME. "
+                    "Then match the Star Arm to reBot and run Mirror reBot Leader again."
+                )
+            if self.real_hardware and not self.hardware_healthy(now):
+                return operator_fault(
+                    "motor feedback is stale, faulted, or torque is disabled; "
+                    "check the owning driver and use the supported HOME enable procedure"
+                )
+        return operator_fault(
+            "Mirror preparation is required or a stop is still latched"
+        )
 
     def observe(self, message):
         self.state.observe(message.name, message.position, time.monotonic())
@@ -185,7 +235,8 @@ class LeaderBridge:
         now = time.monotonic()
         if not self.start_checked:
             response.success = (
-                self.verified
+                not self.thermal_tripped
+                and self.verified
                 and self.scene_ready
                 and not self.home_failed
                 and not self.state.fault
@@ -197,19 +248,18 @@ class LeaderBridge:
             response.message = (
                 "Holding measured position"
                 if response.success
-                else (self.state.fault or "Warmup prerequisites failed")
+                else self.refusal_reason(now)
             )
         else:
             response.success = (
-                self.verified
+                not self.thermal_tripped
+                and self.verified
                 and self.scene_ready
                 and not self.home_failed
                 and self.state.engage(now)
             )
             response.message = (
-                "Following"
-                if response.success
-                else (self.state.fault or "Fresh samples/model required")
+                "Following" if response.success else self.refusal_reason(now)
             )
         return response
 

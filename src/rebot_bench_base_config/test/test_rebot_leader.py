@@ -120,9 +120,19 @@ def test_alignment_fault_names_each_joint_beyond_tolerance():
     follower = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5]
     assert alignment_fault([0.1, -0.1, 0.0, 0.0, 0.0, 0.0, 0.6], follower) == ""
     reason = alignment_fault([0.0, 0.25, 0.0, 0.0, 0.0, 0.0, 0.3], follower)
-    assert reason == (
-        "Leader not within 0.1 rad of follower: joint2 +0.250 rad, joint7 -0.200 rad"
+    assert "shoulder lift (joint2): +14.3 deg (+0.250 rad)" in reason
+    assert "gripper (joint7): -11.5 deg (-0.200 rad)" in reason
+    assert "within 5.7 deg (0.1 rad)" in reason
+    assert "refused to avoid a jump" in reason
+    assert (
+        "shoulder lift (joint2) toward a lower calibrated angle by 14.3 deg (0.250 rad)"
+        in reason
     )
+    assert (
+        "gripper (joint7) toward a higher calibrated angle by 1.9 deg (0.033 rad)"
+        in reason
+    )
+    assert "run Mirror reBot Leader again" in reason
 
 
 def test_misaligned_leader_refuses_to_engage_until_reset():
@@ -131,7 +141,9 @@ def test_misaligned_leader_refuses_to_engage_until_reset():
         {"positions": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2], "sample_time": 10.01}, 10.01
     )
     assert not state.engage(10.01)
-    assert not state.active and "joint7 +0.200 rad" in state.fault
+    assert (
+        not state.active and "gripper (joint7): +11.5 deg (+0.200 rad)" in state.fault
+    )
     assert state.accept({"positions": [0.0] * 7, "sample_time": 10.02}, 10.02)
     assert not state.engage(10.02)
     assert state.reset() and state.engage(10.02)
@@ -406,7 +418,10 @@ def test_misaligned_leader_never_follows_and_reports_the_joint(ticking_bridge):
     bridge.tick()
     assert not bridge.state.active
     response = bridge.mirror(None, SimpleNamespace())
-    assert not response.success and "joint2 +0.300 rad" in response.message
+    assert (
+        not response.success
+        and "shoulder lift (joint2): +17.2 deg (+0.300 rad)" in response.message
+    )
     bridge.tick()
     assert bridge.state.recover and not bridge.state.active
 
@@ -869,3 +884,67 @@ def test_bridge_initialization_failure_reaps_its_reader(monkeypatch):
     child.stdout.close.assert_called_once()
     node.destroy_node.assert_called_once()
     shutdown.assert_called_once()
+
+
+@pytest.mark.parametrize(
+    "index,delta,direction",
+    [(5, -0.12, "higher"), (5, 0.12, "lower"), (2, 0.2, "higher"), (2, -0.2, "lower")],
+)
+def test_alignment_instructions_account_for_leader_mapping_sign(
+    index, delta, direction
+):
+    from rebot_leader_state import alignment_fault, joint_label
+
+    target = [0.0] * 7
+    target[index] = delta
+    message = alignment_fault(target, [0.0] * 7)
+    assert f"{joint_label(index)} toward a {direction} calibrated angle" in message
+    assert "Star Arm's pose does not match reBot" in message
+    assert "deg (" in message and "rad)" in message
+
+
+def test_home_refusal_names_joint_and_gives_supported_recovery(home_bridge):
+    home_bridge.state.measured[5] = -0.2
+    message = home_bridge.prepare(None, SimpleNamespace()).message
+    assert "wrist roll (joint6) -11.5 deg (-0.200 rad)" in message
+    assert "reBot must be at HOME" in message
+    assert "Run Return reBot Leader Home" in message
+    assert "do not move it by hand or disable torque away from HOME" in message
+    assert "run Mirror reBot Leader again" in message
+
+
+def test_stale_refusal_explains_connection_and_retry(home_bridge):
+    home_bridge.state.sample_time = 9.0
+    response = home_bridge.prepare(None, SimpleNamespace())
+    assert not response.success
+    assert "fresh Star Arm or reBot joint data is missing" in response.message
+    assert "Check the Star Arm USB connection" in response.message
+    assert "run Mirror reBot Leader again" in response.message
+
+
+def test_thermal_refusal_explains_latch_cooling_and_home_only_off(home_bridge):
+    home_bridge.thermal_tripped = True
+    for call in (home_bridge.prepare, home_bridge.mirror):
+        response = call(None, SimpleNamespace())
+        assert not response.success
+        assert "temperature limit" in response.message and "latched" in response.message
+        assert "turns torque off only at HOME" in response.message
+        assert "torque stays on" in response.message
+        assert (
+            "Wait for cooling and confirmed HOME with all seven motors OFF"
+            in response.message
+        )
+        assert "run Mirror reBot Leader again" in response.message
+
+
+def test_three_second_timeout_message_explains_recovery_and_retry(
+    ticking_bridge, monkeypatch
+):
+    monkeypatch.setattr("rebot_leader_bridge.time.monotonic", lambda: 13.02)
+    ticking_bridge.tick()
+    response = ticking_bridge.mirror(None, SimpleNamespace())
+    assert not response.success
+    assert "did not start within 3 seconds" in response.message
+    assert "wait for recovery to finish" in response.message
+    assert "Check the Star Arm USB connection" in response.message
+    assert "run Mirror reBot Leader again" in response.message

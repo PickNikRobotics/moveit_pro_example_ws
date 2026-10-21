@@ -6,10 +6,8 @@
   >
     <Sequence>
       <Action
-        ID="CallTriggerService"
+        ID="CallRebotLeaderService"
         service_name="/rebot_leader_bridge/prepare"
-        response_timeout="1.0"
-        wait_for_server_available_timeout="3.0"
       />
       <Action
         ID="SwitchController"
@@ -20,10 +18,8 @@
       <Repeat num_cycles="-1">
         <Sequence>
           <Action
-            ID="CallTriggerService"
+            ID="CallRebotLeaderService"
             service_name="/rebot_leader_bridge/mirror"
-            response_timeout="1.0"
-            wait_for_server_available_timeout="3.0"
           />
           <Action ID="WaitForDuration" delay_duration="0.05" />
         </Sequence>
