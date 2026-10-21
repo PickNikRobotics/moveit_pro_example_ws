@@ -5,7 +5,6 @@
 import argparse
 import json
 import math
-import os
 from pathlib import Path
 import signal
 import sys
@@ -59,24 +58,6 @@ def map_positions(raw, unwrap):
             math.radians(max(limits[0], min(limits[1], direction * angle)))
         )
     return positions
-
-
-def calibration_path(leader_id):
-    """Use the existing LeRobot path/id without importing its training stack."""
-    if not leader_id or Path(leader_id).name != leader_id or leader_id in (".", ".."):
-        raise ValueError("Leader id must be a single filename component")
-    hf_home = Path(
-        os.environ.get(
-            "HF_HOME",
-            Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache"))
-            / "huggingface",
-        )
-    )
-    lerobot_home = Path(os.environ.get("HF_LEROBOT_HOME", hf_home / "lerobot"))
-    root = Path(os.environ.get("HF_LEROBOT_CALIBRATION", lerobot_home / "calibration"))
-    return (
-        root.expanduser() / "teleoperators/rebot_arm_102_leader" / f"{leader_id}.json"
-    )
 
 
 def load_calibration(path):
@@ -173,14 +154,14 @@ def main():
     parser.add_argument(
         "--port", default="/dev/serial/by-id/usb-1a86_USB_Serial-if00-port0"
     )
-    parser.add_argument("--id", default="rebot_arm_102_leader")
     parser.add_argument(
         "--calibration-file",
         type=Path,
-        help="Existing workspace calibration; defaults to the LeRobot cache",
+        required=True,
+        help="Existing workspace calibration",
     )
     args = parser.parse_args()
-    calibration = load_calibration(args.calibration_file or calibration_path(args.id))
+    calibration = load_calibration(args.calibration_file)
     from motorbridge_smart_servo import FashionStarServo
 
     def stop(signum, frame):

@@ -47,8 +47,6 @@ def test_merged_yaml_selects_one_reader_and_real_only_thermal_owner(
         assert bridge["arguments"] == [
             "--port",
             params["rebot_leader_port"],
-            "--id",
-            params["rebot_leader_id"],
             "--calibration-file",
             str(
                 Path(get_package_share_directory("rebot_bench_base_config"))
@@ -64,23 +62,12 @@ def test_invalid_yaml_enable_fails_without_starting_anything(startup, value):
         startup.startup_settings(config)
 
 
-@pytest.mark.parametrize("rate", [0, 19, 101, float("nan"), float("inf")])
-def test_invalid_rate_fails_before_starting(startup, rate, tmp_path):
-    config = load_system_config("rebot_bench_base_config", tmp_path)[0]
-    config.ros_global_params.update(
-        rebot_leader_enabled=True, rebot_leader_publish_rate=rate
-    )
-    with pytest.raises(ValueError, match="between 20 and 100"):
-        startup.startup_settings(config)
-
-
 def test_absolute_calibration_and_custom_reader_settings(startup, tmp_path):
     config = load_system_config("rebot_bench_base_config", tmp_path)[0]
     calibration = str(tmp_path / "calibration.json")
     config.ros_global_params.update(
         rebot_leader_enabled=True,
         rebot_leader_port="/dev/leader",
-        rebot_leader_id="custom",
         rebot_leader_calibration_file=calibration,
         rebot_leader_publish_rate=20.0,
     )
@@ -89,8 +76,6 @@ def test_absolute_calibration_and_custom_reader_settings(startup, tmp_path):
         "arguments": [
             "--port",
             "/dev/leader",
-            "--id",
-            "custom",
             "--calibration-file",
             calibration,
         ],

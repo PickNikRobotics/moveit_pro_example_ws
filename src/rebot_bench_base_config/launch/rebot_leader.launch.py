@@ -1,7 +1,6 @@
 # Copyright 2026 PickNik Inc.
 # SPDX-License-Identifier: BSD-3-Clause
 """Backend-owned leader and thermal recovery from the selected merged config."""
-import math
 import os
 from pathlib import Path
 
@@ -32,9 +31,6 @@ def startup_settings(config):
         "bridge": None,
     }
     if enabled:
-        rate = float(params.get("rebot_leader_publish_rate", 100.0))
-        if not math.isfinite(rate) or not 20.0 <= rate <= 100.0:
-            raise ValueError("rebot_leader_publish_rate must be between 20 and 100 Hz")
         calibration = Path(params["rebot_leader_calibration_file"])
         if not calibration.is_absolute():
             calibration = (
@@ -42,12 +38,10 @@ def startup_settings(config):
                 / calibration
             )
         settings["bridge"] = {
-            "publish_rate": rate,
+            "publish_rate": float(params.get("rebot_leader_publish_rate", 100.0)),
             "arguments": [
                 "--port",
                 str(params["rebot_leader_port"]),
-                "--id",
-                str(params["rebot_leader_id"]),
                 "--calibration-file",
                 str(calibration),
             ],

@@ -207,7 +207,11 @@ def test_layout_places_the_twin_over_the_inherited_bench_calibration(config):
 
 
 def test_overlay_inherits_same_backend_leader_settings(config):
+    import importlib.util
+
     from ament_index_python.packages import get_package_share_directory
+    from launch import LaunchContext
+    from launch.actions import IncludeLaunchDescription
     import yaml
 
     base = Path(get_package_share_directory("rebot_bench_base_config"))
@@ -217,13 +221,24 @@ def test_overlay_inherits_same_backend_leader_settings(config):
     for name in (
         "rebot_leader_enabled",
         "rebot_leader_port",
-        "rebot_leader_id",
         "rebot_leader_calibration_file",
         "rebot_leader_publish_rate",
     ):
         assert config.ros_global_params[name] == settings[name]
-    launch = (
-        Path(get_package_share_directory("rebot_bench_sim"))
-        / "launch/sim_drivers.launch.py"
+    spec = importlib.util.spec_from_file_location(
+        "rebot_sim_drivers_launch",
+        str(
+            Path(get_package_share_directory("rebot_bench_sim"))
+            / "launch/sim_drivers.launch.py"
+        ),
     )
-    assert "launch/rebot_leader.launch.py" in launch.read_text()
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    (include,) = [
+        entity
+        for entity in module.generate_launch_description().entities
+        if isinstance(entity, IncludeLaunchDescription)
+    ]
+    source = include.launch_description_source
+    source.get_launch_description(LaunchContext())
+    assert Path(source.location) == base / "launch/rebot_leader.launch.py"

@@ -146,6 +146,18 @@ class ThermalGuard:
             self.fail(f"Thermal recovery unavailable: {exc}")
 
     def advance(self, now):
+        if (
+            self.stage in ("cancel", "home")
+            and self.hardware_fresh(now)
+            and not any(self.hardware.enabled)
+        ):
+            # A hot arm detected during initial probing stays OFF; no cancel,
+            # HOME motion or Enable is needed or permitted in this case.
+            self.stage = "off"
+            self.node.get_logger().error(
+                "Thermal latch retained; all motors already OFF"
+            )
+            return
         if self.stage == "cancel":
             if self.future is None:
                 if self.cancel.service_is_ready():
@@ -164,14 +176,6 @@ class ThermalGuard:
                 return
             if not self.hardware_fresh(now):
                 self.fail("Motor state stale or faulted")
-                return
-            if not any(self.hardware.enabled):
-                # A hot arm detected during initial probing stays OFF; no HOME
-                # motion or Enable is needed or permitted in this case.
-                self.stage = "off"
-                self.node.get_logger().error(
-                    "Thermal latch retained; all motors already OFF"
-                )
                 return
             if not all(self.hardware.enabled):
                 self.fail("Some motors are OFF; HOME cannot safely recover")
