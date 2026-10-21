@@ -1,5 +1,8 @@
-# Opt in only when both USB cameras are connected. The arm always stays mock.
-enable_cameras: false
+# Start each supported camera if attached; missing cameras warn and are skipped.
+# Camera selection is independent of the arm's mock/real hardware selector.
+enable_cameras: true
+enable_wrist_camera: true
+enable_scene_camera: true
 
 # Shared RGB output settings. Use a color mode supported by both cameras.
 image_width: 640
@@ -16,7 +19,8 @@ scene_image_height: 400
 
 # Empty selects the attached D435; set a serial if more than one is connected.
 wrist_serial_no: ""
-scene_serial_no: "14442C10A119EAD600"
+# Empty selects the first attached OAK-D; no bench-specific serial is required.
+scene_serial_no: ""
 # OAK encodes MJPEG on-device before USB transfer; the driver decodes to bgr8.
 scene_mjpeg_quality: 95
 

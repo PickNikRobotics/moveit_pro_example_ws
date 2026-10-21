@@ -377,12 +377,25 @@ is still provisional.
 
 ## Optional real cameras
 
-Cameras default **off**, so the package starts without either device plugged in.
-The arm currently uses `mock_components/GenericSystem`, including when cameras are on.
+Cameras default **on** and are independently optional. The backend checks USB
+descriptors and skips each missing or unsupported camera with a warning; neither
+camera is required for backend startup, the leader, or Mirror. Out of the box,
+the wrist driver supports an Intel RealSense D435 and the scene driver a Luxonis
+OAK-D. The arm's `hardware_interface` selection is independent of the cameras.
 These camera settings apply only when launching the base package; the sim overlay
 does not invoke this camera launch file.
-Edit [config/cameras.yaml](config/cameras.yaml), set `enable_cameras: true`, and
-restart the MoveIt Pro instance. The persistent driver launch reads that file.
+The persistent backend launch reads [config/cameras.yaml](config/cameras.yaml),
+so the normal two-command startup also starts attached supported cameras. Both
+serial selectors are blank by default and use the first matching device. Set
+`wrist_serial_no` or `scene_serial_no` to select a particular supported camera.
+Set `enable_wrist_camera: false` or `enable_scene_camera: false` independently,
+or `enable_cameras: false` to disable both. A camera driver that exits retries
+after five seconds without restarting the backend or arm.
+
+Other camera models need their own ROS driver; configure it to publish `Image`
+and `CameraInfo` topics in the backend's ROS domain, select its image topic in
+the Desktop App, and disable the corresponding built-in camera. Do not start a
+second driver for a device already owned by another publisher.
 For a cameras-only ROS launch in a sourced workspace:
 
 ```bash

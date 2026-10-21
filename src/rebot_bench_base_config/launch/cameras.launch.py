@@ -1,9 +1,6 @@
 # Copyright 2026 PickNik Inc.
 # SPDX-License-Identifier: BSD-3-Clause
-"""Optional real cameras: both RGB streams and the scene camera's aligned depth.
-
-All robot TF is supplied by the mock URDF.
-"""
+"""Independent optional cameras; missing hardware never delays the arm backend."""
 
 from pathlib import Path
 
@@ -11,14 +8,56 @@ from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.conditions import IfCondition
+from launch.logging import get_logger
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
 import yaml
 
 
+logger = get_logger("rebot.optional_cameras")
+
+
+def detected_cameras(usb_root=Path("/sys/bus/usb/devices")):
+    """Inspect USB descriptors without opening or claiming either camera."""
+    found = set()
+    try:
+        devices = list(usb_root.iterdir())
+    except OSError:
+        return found
+    for device in devices:
+        try:
+            vendor = (device / "idVendor").read_text().strip().lower()
+            product = (device / "idProduct").read_text().strip().lower()
+        except OSError:
+            continue
+        if (vendor, product) == ("8086", "0b07"):
+            found.add("wrist")
+        elif vendor == "03e7" and product in ("2485", "f63b"):
+            found.add("scene")
+    return found
+
+
 def launch_cameras(context):
     """Resolve settings only after the cameras-on condition has passed."""
+    attached = detected_cameras()
+    actions = []
+    enabled = {}
+    for camera, model in (
+        ("wrist", "Intel RealSense D435"),
+        ("scene", "Luxonis OAK-D"),
+    ):
+        requested = (
+            LaunchConfiguration(f"enable_{camera}_camera").perform(context).lower()
+            == "true"
+        )
+        enabled[camera] = requested and camera in attached
+        if requested and not enabled[camera]:
+            logger.warning(
+                f"Optional {camera} camera ({model}) not found on USB; skipping it. Backend and leader remain available. Configure another driver separately or disable enable_{camera}_camera."
+            )
+    if not any(enabled.values()):
+        return actions
     width = int(LaunchConfiguration("image_width").perform(context))
     wrist_height = int(LaunchConfiguration("wrist_image_height").perform(context))
     scene_height = int(LaunchConfiguration("scene_image_height").perform(context))
@@ -33,7 +72,7 @@ def launch_cameras(context):
         )
     # The scene camera publishes ISP output at a fixed 1/2 scale, which ignores
     # i_width/i_height, so any other size would be silently replaced by 640x400.
-    if width != 640 or scene_height != 400:
+    if enabled["scene"] and (width != 640 or scene_height != 400):
         raise ValueError(
             "DepthAI ISP output requires image_width=640 and scene_image_height=400"
         )
@@ -53,8 +92,10 @@ def launch_cameras(context):
             package="realsense2_camera",
             executable="realsense2_camera_node",
             name="wrist_mounted_camera",
-            namespace="",
+            namespace="/",
             output="screen",
+            respawn=True,
+            respawn_delay=5.0,
             parameters=[
                 {
                     # camera_name sets frame IDs independently of the ROS node name.
@@ -83,8 +124,10 @@ def launch_cameras(context):
             package="depthai_ros_driver",
             executable="camera_node",
             name="scene_camera",
-            namespace="",
+            namespace="/",
             output="screen",
+            respawn=True,
+            respawn_delay=5.0,
             parameters=[
                 {
                     "camera.i_mx_id": ParameterValue(
@@ -137,7 +180,11 @@ def launch_cameras(context):
             ],
         ),
     ]
-    if depth:
+    # Do not create depth consumers for an absent or disabled scene camera.
+    nodes = ([nodes[0]] if enabled["wrist"] else []) + (
+        [nodes[1]] if enabled["scene"] else []
+    )
+    if depth and enabled["scene"]:
         depth_topic = "/scene_camera/depth/image_rect_raw"
         scale = float(LaunchConfiguration("scene_depth_scale").perform(context))
         if not 0.5 <= scale <= 1.5:
@@ -170,7 +217,7 @@ def launch_cameras(context):
                 ],
             )
         )
-    return nodes
+    return actions + nodes
 
 
 def generate_launch_description():
