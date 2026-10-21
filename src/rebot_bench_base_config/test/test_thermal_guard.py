@@ -135,6 +135,67 @@ def test_hot_initial_probe_with_all_motors_off_never_enables_or_moves(
     assert not guard.home.send_goal_async.called and not guard.torque.call_async.called
 
 
+def test_native_home_keeps_its_full_budget_after_slow_cancel(guard, monkeypatch):
+    clock = [10.0]
+    monkeypatch.setattr("rebot_thermal_guard.time.monotonic", lambda: clock[0])
+    done = {"cancel": False, "home": False}
+    guard.cancel.call_async = Mock(
+        return_value=Obj(done=lambda: done["cancel"], result=lambda: Obj(return_code=0))
+    )
+    home_result = Obj(
+        done=lambda: done["home"],
+        result=lambda: Obj(status=4, result=Obj(error_code=Obj(val=1))),
+    )
+    guard.home.send_goal_async = Mock(
+        return_value=future(Obj(accepted=True, get_result_async=lambda: home_result))
+    )
+
+    def tick_at(now):
+        clock[0] = guard.hardware_time = guard.measured_time = now
+        guard.tick()
+
+    guard.trip(Obj(data=True))
+    tick_at(10.0)  # cancel requested
+    done["cancel"] = True
+    tick_at(12.9)  # acknowledged just inside the cancel bound
+    tick_at(13.5)  # HOME requested
+    tick_at(13.5)  # accepted
+    tick_at(13.5 + 119.0)  # a slow native HOME is still within its own budget
+    assert guard.stage == "result"
+    done["home"] = True
+    tick_at(13.5 + 119.5)
+    assert guard.stage == "verify"
+
+
+@pytest.mark.parametrize(
+    "stage,limit",
+    [
+        ("cancel", 3.0),
+        ("home", 3.0),
+        ("result", 120.0),
+        ("verify", 5.0),
+        ("disable", 3.0),
+        ("confirm", 3.0),
+    ],
+)
+def test_every_recovery_stage_is_bounded_and_keeps_torque(guard, stage, limit):
+    guard.stage, guard.started = stage, 10.0
+    guard.future = Obj(done=lambda: False)
+    guard.home = Obj(server_is_ready=lambda: False, send_goal_async=Mock())
+    guard.measured[0] = (0.2, 0.0)  # verify never sees HOME
+
+    def advance_at(now):
+        guard.hardware_time = guard.measured_time = now
+        guard.advance(now)
+
+    advance_at(10.0 + limit - 0.01)
+    assert guard.stage == stage
+    advance_at(10.0 + limit + 0.01)
+    assert guard.stage == "failed"
+    assert not guard.torque.call_async.called
+    assert not guard.home.send_goal_async.called
+
+
 @pytest.mark.parametrize("stamp_ns", [9_000_000_000, 11_000_000_000])
 def test_delayed_or_future_source_state_cannot_authorize_off(guard, stamp_ns):
     from rclpy.time import Time

@@ -32,9 +32,9 @@ scene_mjpeg_quality: 95
 # only, and the cycle then fails at its first stack check.
 scene_aligned_depth: true
 
-# Multiplies every scene depth before the point cloud is built. This OAK's
-# stereo depth reads 4% long: on 2026-10-13 a factor of 0.96 put the mat at
+# Multiplies every scene depth before the point cloud is built; 1.0 publishes
+# the depth unchanged. Set a factor measured for your own OAK: the original
+# bench's unit read 4% long, and on 2026-10-13 a factor of 0.96 put its mat at
 # 0 mm (median of 11,000 points, was -24 mm) and a 100 mm blue-on-red stack's
-# top at 100 mm (was 80 mm), in the calibrated world frame. Re-measure it for
-# another camera or after recalibrating; 1.0 publishes the depth unchanged.
-scene_depth_scale: 0.96
+# top at 100 mm (was 80 mm), in the calibrated world frame.
+scene_depth_scale: 1.0

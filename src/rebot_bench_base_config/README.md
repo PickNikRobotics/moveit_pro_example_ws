@@ -173,6 +173,10 @@ Leader targets retain the approved full ranges; J2 and J3 leader commands have
 a zero lower bound at HOME. Measured-position holds use the same command
 bounds, so noisy feedback cannot create a negative HOME-side reference.
 
+The reader starts only with the backend: if it exits (Star Arm unplugged or
+unpowered, wrong `rebot_leader_port`, or a rejected calibration file), Mirror
+refuses with that cause until the backend restarts.
+
 Stopping the Objective, calling `/rebot_leader_bridge/clutch`, losing the USB
 stream, or receiving stale/invalid data latches following off and requests
 **Return reBot Leader Home**. So does a prepared session that has not started
@@ -391,8 +395,9 @@ so the normal two-command startup also starts attached supported cameras. Both
 serial selectors are blank by default and use the first matching device. Set
 `wrist_serial_no` or `scene_serial_no` to select a particular supported camera.
 Set `enable_wrist_camera: false` or `enable_scene_camera: false` independently,
-or `enable_cameras: false` to disable both. A camera driver that exits retries
-after five seconds without restarting the backend or arm.
+or `enable_cameras: false` to disable both. If the D435 disconnects mid-run, the
+backend stops its driver rather than let librealsense retry and log without end;
+reconnect it and restart the backend to use it again.
 
 Other camera models need their own ROS driver; configure it to publish `Image`
 and `CameraInfo` topics in the backend's ROS domain, select its image topic in
@@ -442,14 +447,14 @@ the depth image on `/scene_camera/depth/image_rect_raw` (with
 `/scene_camera/depth/camera_info`), in `scene_camera_color_optical_frame`, so it
 should line up pixel for pixel with the colour image. A `depth_image_proc`
 `point_cloud_xyz_node` turns it into `/scene_camera/depth/color/points`, which
-**Stack and Unstack Cycle** uses to confirm each stack. This OAK's stereo depth
-reads 4% long, so `scene_depth_scale: 0.96` multiplies every depth (the
-`scale_depth.py` node, between the depth image and the point cloud) before the
-cloud is built. Measured on 2026-10-13 in the calibrated `world` frame, it moved
-the mat from a median of -24 mm to 0 mm and a 100 mm blue-on-red stack's top
-from 80 mm to 100 mm. Re-measure it for another camera or after recalibrating:
-find the factor along the camera rays that puts the empty mat at z=0, then check
-a known height; 1.0 publishes the depth unchanged. The colour stream's
+**Stack and Unstack Cycle** uses to confirm each stack. `scene_depth_scale`
+defaults to 1.0, which publishes the depth unchanged. Any other value multiplies
+every depth (the `scale_depth.py` node, between the depth image and the point
+cloud) before the cloud is built. Measure it for your own camera: find the
+factor along the camera rays that puts the empty mat at z=0, then check a known
+height. The original bench's OAK read 4% long; measured on 2026-10-13 in the
+calibrated `world` frame, 0.96 moved its mat from a median of -24 mm to 0 mm
+and a 100 mm blue-on-red stack's top from 80 mm to 100 mm. The colour stream's
 settings are the same either way. To run colour only, set
 `scene_aligned_depth: false` in the YAML or pass `scene_aligned_depth:=false`;
 the OAK then runs its RGB-only pipeline with the stereo pair off, and the cycle
@@ -457,9 +462,8 @@ cannot confirm a stack. Change `scene_mjpeg_quality` in the same YAML to adjust 
 ISP luma/chroma denoising and sharpening are disabled to preserve detail.
 Allow a few seconds after startup for the scene camera's image to settle before
 recording; the first frames can look heavily processed.
-The configured scene serial selects the installed OAK; `wrist_serial_no` may be
-set when more than one D435 is connected. Resolution changes must be supported
-by both devices and the OAK video encoder (including its width alignment).
+Resolution changes must be supported by both devices and the OAK video encoder
+(including its width alignment).
 
 ### Scene camera field of view: state the ISP ratio, or lose most of it
 
@@ -682,8 +686,9 @@ never lose torque away from HOME. An arm already fully OFF when the latch trips
 (hot at startup) stays OFF and is reported as such, without waiting for the
 Objective server.
 
-If cancellation, HOME, hardware health, or fresh HOME verification fails, the
-system keeps the latch and reports intervention required; it never disables
+If cancellation, HOME, hardware health, or fresh HOME verification fails, or a
+step exceeds its own time bound (120 s for native HOME, a few seconds for each
+other step), the system keeps the latch and reports intervention required; it never disables
 away from HOME. Reachable joints retain torque under the existing loss/fault
 policy. Existing collision checks and motor fault handling remain active.
 Cooling cannot re-engage following. Only after confirmed HOME/OFF, cooling and

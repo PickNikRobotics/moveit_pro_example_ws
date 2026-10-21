@@ -172,6 +172,7 @@ def test_engage_requires_collision_scene():
     bridge.verified = True
     bridge.scene_ready = False
     bridge.home_failed = False
+    bridge.reader_exited = False
     response = bridge.mirror(None, SimpleNamespace())
     assert not response.success and not bridge.state.active
 
@@ -335,6 +336,7 @@ def home_bridge(monkeypatch):
     bridge.thermal_tripped = False
     bridge.state = state_at_home()
     bridge.home_failed = False
+    bridge.reader_exited = False
     bridge.real_hardware = True
     bridge.verified = bridge.scene_ready = True
     bridge.start_checked = True
@@ -922,6 +924,35 @@ def test_stale_refusal_explains_connection_and_retry(home_bridge):
     assert "run Mirror reBot Leader again" in response.message
 
 
+def test_exited_reader_refusal_names_cause_and_backend_restart(
+    unprepared_ticking_bridge, monkeypatch
+):
+    bridge = unprepared_ticking_bridge
+    errors = []
+    bridge.node = SimpleNamespace(
+        get_logger=lambda: SimpleNamespace(
+            info=lambda text: None, warn=lambda text: None, error=errors.append
+        )
+    )
+    read, write = os.pipe()
+    os.close(write)  # The reader process exited.
+    bridge.stream = SimpleNamespace(fileno=lambda: read)
+    try:
+        bridge.tick()
+        monkeypatch.setattr("rebot_leader_bridge.time.monotonic", lambda: 10.5)
+        bridge.tick()
+    finally:
+        os.close(read)
+    assert len(errors) == 1
+    for call in (bridge.prepare, bridge.mirror):
+        response = call(None, SimpleNamespace())
+        assert not response.success
+        assert "Star Arm reader has exited" in response.message
+        assert "rebot_leader_port" in response.message
+        assert "Once reBot is at HOME, restart the backend" in response.message
+        assert "run Mirror reBot Leader again" in response.message
+
+
 def test_thermal_refusal_explains_latch_cooling_and_home_only_off(home_bridge):
     home_bridge.thermal_tripped = True
     for call in (home_bridge.prepare, home_bridge.mirror):
@@ -934,6 +965,8 @@ def test_thermal_refusal_explains_latch_cooling_and_home_only_off(home_bridge):
             "Wait for cooling and confirmed HOME with all seven motors OFF"
             in response.message
         )
+        assert "restart the backend" in response.message
+        assert "only a restart clears the latch" in response.message
         assert "run Mirror reBot Leader again" in response.message
 
 

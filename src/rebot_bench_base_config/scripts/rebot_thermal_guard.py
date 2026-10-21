@@ -22,6 +22,16 @@ from std_srvs.srv import SetBool
 
 from rebot_leader import JOINT_NAMES
 
+# Each stage has its own bound, so time spent canceling never shortens native HOME.
+STAGE_LIMITS = {
+    "cancel": (3.0, "Objective cancellation unavailable"),
+    "home": (3.0, "Native HOME server unavailable or goal not accepted"),
+    "result": (120.0, "Native HOME did not finish"),
+    "verify": (5.0, "Fresh stationary HOME not confirmed"),
+    "disable": (3.0, "HOME-only OFF did not respond"),
+    "confirm": (3.0, "Motors did not report OFF"),
+}
+
 
 class ThermalGuard:
     def __init__(self, node):
@@ -143,9 +153,6 @@ class ThermalGuard:
         if self.stage in ("idle", "failed", "off"):
             return
         now = time.monotonic()
-        if now - self.started > 120:
-            self.fail("Thermal HOME/OFF recovery timed out")
-            return
         try:
             self.advance(now)
         except Exception as exc:
@@ -164,18 +171,20 @@ class ThermalGuard:
                 "Thermal latch retained; all motors already OFF"
             )
             return
+        limit, reason = STAGE_LIMITS[self.stage]
+        if now - self.started > limit:
+            self.fail(reason)
+            return
         if self.stage == "cancel":
             if self.future is None:
                 if self.cancel.service_is_ready():
                     self.future = self.cancel.call_async(CancelGoal.Request())
-                elif now - self.started > 3:
-                    self.fail("Objective cancellation unavailable")
             elif self.future.done():
                 result = self.future.result()
                 if result is None or result.return_code != 0:
                     self.fail("Objective cancellation rejected")
                     return
-                self.stage, self.future = "home", None
+                self.stage, self.future, self.started = "home", None, now
         elif self.stage == "home":
             # Let the canceled Objective and leader bridge relinquish control.
             if now - self.started < 0.5:
@@ -193,14 +202,12 @@ class ThermalGuard:
                     goal.caller.type = goal.caller.SCRIPT
                     goal.caller.name = "rebot_thermal_guard"
                     self.future = self.home.send_goal_async(goal)
-                elif now - self.started > 3:
-                    self.fail("Native HOME server unavailable")
             elif self.future.done():
                 self.home_handle = self.future.result()
                 if self.home_handle is None or not self.home_handle.accepted:
                     self.fail("Native HOME rejected")
                     return
-                self.stage = "result"
+                self.stage, self.started = "result", now
                 self.future = self.home_handle.get_result_async()
         elif self.stage == "result" and self.future.done():
             result = self.future.result()
@@ -211,7 +218,7 @@ class ThermalGuard:
             ):
                 self.fail("Native HOME failed")
                 return
-            self.stage, self.future = "verify", None
+            self.stage, self.future, self.started = "verify", None, now
         elif self.stage == "verify":
             if not self.hardware_fresh(now) or not self.at_home(now):
                 self.home_since = None
@@ -226,13 +233,13 @@ class ThermalGuard:
             request = SetBool.Request()
             request.data = False
             self.future = self.torque.call_async(request)
-            self.stage = "disable"
+            self.stage, self.started = "disable", now
         elif self.stage == "disable" and self.future.done():
             result = self.future.result()
             if result is None or not result.success:
                 self.fail("HOME-only OFF rejected")
                 return
-            self.stage = "confirm"
+            self.stage, self.started = "confirm", now
         elif (
             self.stage == "confirm"
             and self.hardware_fresh(now)

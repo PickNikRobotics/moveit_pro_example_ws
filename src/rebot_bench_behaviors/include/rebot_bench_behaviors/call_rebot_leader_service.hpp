@@ -8,13 +8,17 @@
 namespace rebot_bench_behaviors
 {
 /** Call a leader Trigger service, reporting its refusal through the Objective's UI failure logger.
- * service_name is required and restricted to prepare/mirror/clutch. The supported service-client base owns
+ * A missing bridge is reported with how to enable it. The supported service-client base owns
  * asynchronous execution, a 3 s server wait, a 1 s response timeout, and cancellation on halt.
  */
 class CallRebotLeaderService final : public moveit_pro::behaviors::ServiceClientBehaviorBase<std_srvs::srv::Trigger>
 {
 public:
-  using ServiceClientBehaviorBase::ServiceClientBehaviorBase;
+  CallRebotLeaderService(const std::string& name, const BT::NodeConfiguration& config,
+                         const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources);
+  CallRebotLeaderService(const std::string& name, const BT::NodeConfiguration& config,
+                         const std::shared_ptr<moveit_pro::behaviors::BehaviorContext>& shared_resources,
+                         std::unique_ptr<moveit_pro::behaviors::ClientInterfaceBase<std_srvs::srv::Trigger>> client);
   static BT::PortsList providedPorts();
   static BT::KeyValueVector metadata();
   tl::expected<std::string, std::string> getServiceName() override;

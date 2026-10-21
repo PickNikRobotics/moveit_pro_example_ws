@@ -48,8 +48,9 @@ def operator_fault(reason):
             "Following refused: a motor reached the configured temperature limit and thermal protection is latched. "
             "The backend handles HOME recovery and turns torque off only at HOME. "
             "If HOME recovery fails, torque stays on: stop and get operator help. "
-            "Wait for cooling and confirmed HOME with all seven motors OFF; have the operator clear the thermal latch "
-            "and enable torque through the supported HOME procedure, then run Mirror reBot Leader again."
+            "Wait for cooling and confirmed HOME with all seven motors OFF, then restart the backend (moveit_pro run): "
+            "only a restart clears the latch, and startup enables torque at HOME. "
+            "Then run Mirror reBot Leader again."
         )
     if "did not start" in reason.lower():
         return (
@@ -57,10 +58,7 @@ def operator_fault(reason):
             "wait for recovery to finish. Check the Star Arm USB connection, fresh joint feedback and collision scene, "
             "match the Star Arm to reBot, then run Mirror reBot Leader again."
         )
-    if any(
-        word in reason.lower()
-        for word in ("sample", "leader disconnected", "usb", "stream")
-    ):
+    if any(word in reason.lower() for word in ("sample", "usb", "stream")):
         return (
             "Following stopped: fresh Star Arm or reBot joint data is missing or invalid. "
             f"Detail: {reason}. Check the Star Arm USB connection and backend joint feedback; "

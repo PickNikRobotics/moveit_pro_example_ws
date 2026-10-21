@@ -117,19 +117,17 @@ TEST_F(LeaderServiceTest, MissingServicePortFailsBeforeCallingClient)
   EXPECT_TRUE(fake->service.empty());
   EXPECT_NE(context->logger->consumeErrorLogBuffer().find("Configure service_name"), std::string::npos);
 }
-TEST_F(LeaderServiceTest, RejectsOtherServicesBeforeCallingClient)
+TEST_F(LeaderServiceTest, MissingBridgeExplainsHowToEnableTheLeader)
 {
-  config.input_ports["service_name"] = "/unrelated";
-  create();
-  EXPECT_EQ(run(), BT::NodeStatus::FAILURE);
-  EXPECT_TRUE(fake->service.empty());
-}
-TEST_F(LeaderServiceTest, MissingServerLogsFailure)
-{
+  config.input_ports["service_name"] = "/rebot_leader_bridge/prepare";
   create();
   fake->available = false;
   EXPECT_EQ(run(), BT::NodeStatus::FAILURE);
-  EXPECT_NE(context->logger->consumeErrorLogBuffer().find("Server not available"), std::string::npos);
+  EXPECT_FALSE(fake->started);
+  const auto errors = context->logger->consumeErrorLogBuffer();
+  EXPECT_NE(errors.find("leader bridge is not running"), std::string::npos);
+  EXPECT_NE(errors.find("ros_global_params.rebot_leader_enabled is true"), std::string::npos);
+  EXPECT_NE(errors.find("restart the backend"), std::string::npos);
 }
 TEST_F(LeaderServiceTest, ResponseTimeoutLogsFailure)
 {

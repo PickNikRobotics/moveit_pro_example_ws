@@ -64,6 +64,7 @@ class LeaderBridge:
         self.warmup_reference = None
         self.verified = False
         self.buffer = b""
+        self.reader_exited = False
         self.recovery_started = None
         self.recovery_future = None
         self.recovery_result = None
@@ -158,6 +159,15 @@ class LeaderBridge:
                 "Following refused: automatic HOME recovery failed. Torque remains on to support the arm. "
                 "Do not push reBot or disable torque away from HOME. Get operator help to recover HOME "
                 "through the supported motion procedure before running Mirror reBot Leader again."
+            )
+        if self.reader_exited:
+            return (
+                "Following refused: the Star Arm reader has exited, so there is no leader data. "
+                "It exits when the Star Arm is unplugged or unpowered, is not at rebot_leader_port, "
+                "or its rebot_leader_calibration_file is rejected; the backend log shows its error. "
+                "Connect and power the Star Arm and check those config.yaml settings. Once reBot is at HOME, "
+                "restart the backend (moveit_pro run); the reader starts only with the backend. "
+                "Then run Mirror reBot Leader again."
             )
         if not self.verified:
             return operator_fault(
@@ -300,6 +310,11 @@ class LeaderBridge:
         except BlockingIOError:
             chunk = None
         if chunk == b"":
+            if not self.reader_exited:
+                self.node.get_logger().error(
+                    "Star Arm reader exited; leader following is unavailable until the backend restarts"
+                )
+            self.reader_exited = True
             self.state.stop("Leader disconnected")
         elif chunk:
             self.buffer += chunk
