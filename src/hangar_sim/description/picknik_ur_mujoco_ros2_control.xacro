@@ -7,12 +7,15 @@
            PointCloud2, never a LaserScan, so the override is points_topic rather
            than the <rangefinder> path's topic. lidar_flattener converts each
            cloud back into /scan_{front,rear}, leaving every consumer unchanged.
-           Names are absolute so they stay out of this node's namespace. -->
+           Names are absolute so they stay out of this node's namespace. geom_groups adds
+           group 4, the scannable collision meshes in hangar.xml, which no color camera renders. -->
       <sensor name="lidar_front">
         <param name="points_topic">/lidar_front/points</param>
+        <param name="geom_groups">0 1 2 4</param>
       </sensor>
       <sensor name="lidar_rear">
         <param name="points_topic">/lidar_rear/points</param>
+        <param name="geom_groups">0 1 2 4</param>
       </sensor>
       <!-- The forward stereo pair exists for visual odometry and has no other consumer.
            Off by default: MuJoCo renders every fixed MJCF camera on the render timer
