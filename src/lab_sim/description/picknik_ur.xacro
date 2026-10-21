@@ -2,6 +2,11 @@
 <robot name="ur5e" xmlns:xacro="http://ros.org/wiki/xacro">
   <xacro:arg name="mujoco_model" default="description/scene.xml" />
   <xacro:arg name="mujoco_model_package" default="lab_sim" />
+  <xacro:include
+    filename="$(find picknik_accessories)/descriptions/sensors/camera_renderer.urdf.xacro"
+  />
+  <!-- The cameras MOVEIT_PRO_CAMERA_RENDERER applies to. A config reusing this description with other cameras sets nyx_cameras in urdf_params, and its runtime.launch.xml starts one Nyx node per name. -->
+  <xacro:arg name="nyx_cameras" default="scene_camera wrist_camera" />
   <xacro:arg
     name="point_cloud_publish_rate"
     default="$(optenv MOVEIT_PRO_POINT_CLOUD_PUBLISH_RATE 10)"
@@ -1214,5 +1219,6 @@
       <!-- Whether to launch the MuJoCo interactive viewer -->
       <param name="mujoco_viewer">$(arg mujoco_viewer)</param>
     </hardware>
+    <xacro:camera_renderer_sensors cameras="$(arg nyx_cameras)" />
   </ros2_control>
 </robot>
