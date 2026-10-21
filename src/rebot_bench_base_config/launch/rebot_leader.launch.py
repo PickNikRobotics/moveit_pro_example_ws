@@ -1,58 +1,95 @@
 # Copyright 2026 PickNik Inc.
 # SPDX-License-Identifier: BSD-3-Clause
-"""Explicitly connect a FashionStar leader using its existing calibrated plugin."""
+"""Backend-owned leader and thermal recovery from the selected merged config."""
+import math
+import os
+from pathlib import Path
+
+from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, OpaqueFunction
-from launch.substitutions import LaunchConfiguration
+from launch.actions import OpaqueFunction
 from launch_ros.actions import Node
+from moveit_studio_utils_py.system_config import get_config_package, load_system_config
 
 
-def bridge_node(context):
-    arguments = [
-        "--leader-python",
-        LaunchConfiguration("leader_python").perform(context),
-    ]
-    if LaunchConfiguration("allow_real").perform(context) == "true":
-        arguments.append("--allow-real")
-    # The bridge ignores further stop signals while it returns HOME (up to 120 s);
-    # launch's default SIGKILL after 10 s would cut that return short.
-    return [
-        Node(
-            package="rebot_bench_base_config",
-            executable="rebot_leader_bridge.py",
-            name="rebot_leader_bridge",
-            output="screen",
-            arguments=arguments,
-            sigterm_timeout="130",
-            parameters=[
-                {
-                    "publish_rate": float(
-                        LaunchConfiguration("publish_rate").perform(context)
-                    )
-                }
+def startup_settings(config):
+    """Return plain startup values from merged YAML without starting processes."""
+    params = config.ros_global_params or {}
+    enabled = params.get("rebot_leader_enabled", False)
+    if not isinstance(enabled, bool):
+        raise ValueError("rebot_leader_enabled must be a YAML boolean")
+    urdf_params = {
+        key: value
+        for entry in config.hardware.robot_description.urdf_params
+        for key, value in entry.items()
+    }
+    mode = urdf_params.get("hardware_interface", "mock")
+    if mode not in ("mock", "real", "mujoco"):
+        raise ValueError(f"Unsupported reBot hardware_interface: {mode}")
+    settings = {
+        "hardware_interface": mode,
+        "thermal_guard": mode == "real",
+        "bridge": None,
+    }
+    if enabled:
+        rate = float(params.get("rebot_leader_publish_rate", 100.0))
+        if not math.isfinite(rate) or not 20.0 <= rate <= 100.0:
+            raise ValueError("rebot_leader_publish_rate must be between 20 and 100 Hz")
+        calibration = Path(params["rebot_leader_calibration_file"])
+        if not calibration.is_absolute():
+            calibration = (
+                Path(get_package_share_directory("rebot_bench_base_config"))
+                / calibration
+            )
+        settings["bridge"] = {
+            "publish_rate": rate,
+            "arguments": [
+                "--port",
+                str(params["rebot_leader_port"]),
+                "--id",
+                str(params["rebot_leader_id"]),
+                "--calibration-file",
+                str(calibration),
             ],
+        }
+    return settings
+
+
+def configured_nodes(config):
+    """Create the backend-owned processes selected by the startup contract."""
+    settings = startup_settings(config)
+    nodes = []
+    if settings["thermal_guard"]:
+        nodes.append(
+            Node(
+                package="rebot_bench_base_config",
+                executable="rebot_thermal_guard.py",
+                name="rebot_thermal_guard",
+                output="screen",
+            )
         )
-    ]
+    if settings["bridge"] is not None:
+        bridge = settings["bridge"]
+        nodes.append(
+            Node(
+                package="rebot_bench_base_config",
+                executable="rebot_leader_bridge.py",
+                name="rebot_leader_bridge",
+                output="screen",
+                # Leave enough time for the existing native HOME recovery.
+                sigterm_timeout="130",
+                parameters=[{"publish_rate": bridge["publish_rate"]}],
+                arguments=bridge["arguments"],
+            )
+        )
+    return nodes
+
+
+def launch_configured_nodes(context):
+    del context
+    config, _, _ = load_system_config(get_config_package(), Path(os.environ["USER_WS"]))
+    return configured_nodes(config)
 
 
 def generate_launch_description():
-    return LaunchDescription(
-        [
-            DeclareLaunchArgument(
-                "leader_python",
-                description="Interpreter with the Seeed leader plugin installed",
-            ),
-            DeclareLaunchArgument(
-                "publish_rate",
-                default_value="100.0",
-                description="Startup command/collision tick rate in Hz, 20 through 100",
-            ),
-            DeclareLaunchArgument(
-                "allow_real",
-                default_value="false",
-                choices=["true", "false"],
-                description="Requires separately approved physical commissioning",
-            ),
-            OpaqueFunction(function=bridge_node),
-        ]
-    )
+    return LaunchDescription([OpaqueFunction(function=launch_configured_nodes)])

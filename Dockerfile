@@ -185,6 +185,12 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
       --from-paths src \
       --ignore-src
 
+# Install the optional FashionStar SDK into the same Python used by ROS.
+# No user-managed interpreter or environment is needed when enabling it in YAML.
+COPY src/rebot_bench_base_config/config/leader-requirements.txt /tmp/rebot-leader-requirements.txt
+RUN python3 -m pip install --break-system-packages --no-cache-dir \
+    -r /tmp/rebot-leader-requirements.txt
+
 # Set up colcon defaults for the new user
 USER ${USERNAME}
 # Vendor the colcon mixin/metadata repositories into the image over git rather than

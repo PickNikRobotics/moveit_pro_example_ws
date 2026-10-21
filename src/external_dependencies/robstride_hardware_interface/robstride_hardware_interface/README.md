@@ -253,3 +253,23 @@ If utilization is near saturation, or staleness errors appear under load, reduce
 ## 11. License
 
 Apache License 2.0.
+
+## Thermal recovery handoff
+
+`thermal_cutoff_c` is an optional ros2_control hardware parameter (degrees C;
+finite and nonnegative, default 0 disables detection). At or above the threshold,
+the driver latches `~/thermal_tripped` (`std_msgs/msg/Bool`, reliable,
+transient-local depth 1, 10 Hz). Cooling and lifecycle transitions do not clear
+it. Already-enabled motors keep accepting recovery commands; the trip itself
+never sends Stop frames or returns a ros2_control error. New activation and
+`~/set_torque=true` are rejected while latched; write() cannot automatically
+re-enable a motor that drops out. Hot initial feedback prevents startup enable.
+
+A runtime consumer must stop the active task, return to the robot's supported
+rest pose, verify fresh measured rest, and only then use the existing
+`~/set_torque` service to switch torque off. If recovery or state freshness
+fails, keep torque engaged and report intervention required. The driver has no
+knowledge of a robot's HOME pose. Existing motor fault and communication-loss
+handling remains in force. Restart the driver only after safe rest, cooling and
+fault recovery; this is the sole latch reset. This is a software protection
+handoff, not an independent safety-rated overtemperature shutdown.

@@ -30,6 +30,24 @@ inherited calibration.
 
 ## Try it
 
+Build this workspace once with the normal MoveIt Pro build/install workflow.
+To use the calibrated FashionStar leader, set
+`ros_global_params.rebot_leader_enabled: true` in `config/config.yaml`.
+The same setting works with mock, real, and the `rebot_bench_sim` overlay.
+Then start the Desktop App and backend:
+
+```bash
+moveit_pro_desktop
+moveit_pro run -c rebot_bench_base_config
+```
+
+In the Desktop App, connect to this backend and run **Mirror reBot Leader**.
+The backend starts and stops its bridge and single USB reader automatically.
+The default arm selector remains `hardware_interface: "mock"`; for the MuJoCo
+twin, use `moveit_pro run -c rebot_bench_sim`. Real startup engages torque by
+default and must begin at HOME; see [Real hardware](#real-hardware).
+
+
 Run **Move reBot to Waypoint** with `Raised`, then `Zeroed Rest`. Both are saved
 waypoints and SRDF named states; startup is `Zeroed Rest` (all seven motor
 coordinates zero). The raised arm pose is `[0, 0.65, 0.85, 0.3, 0, 0]` radians.
@@ -56,9 +74,9 @@ covered by this validation.
 
 ### FashionStar leader
 
-The bridge's startup `publish_rate` ROS parameter (also a launch argument)
-defaults to 100 Hz, matching the driver, and accepts 20-100 Hz; restart the
-bridge at HOME to change it.
+The YAML setting `ros_global_params.rebot_leader_publish_rate` defaults to
+100 Hz, matching the driver, and accepts 20–100 Hz. Change it before startup
+at HOME; the backend passes it to the bridge's `publish_rate` ROS parameter.
 Each tick checks the latest target and collision path; there is no interpolation,
 velocity cap, acceleration cap, or position filter. Audible motor noise at this
 rate needs hardware verification.
@@ -98,26 +116,23 @@ It does not model firmware CSP limits or the physical jaw servo; its path proof 
 bounce, or motor sound. Those require a separately approved hardware test.
 
 
-The optional leader bridge reads the existing calibrated Seeed Star Arm 102
-LeRobot plugin. Install that plugin in a separate Python environment, preserve
-its existing calibration, and select its interpreter explicitly. Replace
-`/path/to/leader-venv` below with the absolute path to that environment:
+The workspace installs the FashionStar SDK used by Seeed’s Star Arm 102 leader
+into the Python used by ROS; [dependency provenance](docs/leader-dependencies.md)
+records the pinned SDK and license. The existing bench calibration for
+`rebot_arm_102_leader` is installed at `config/leader_calibration/rebot_arm_102_leader.json`.
+The YAML `rebot_leader_calibration_file` resolves relative to this package's share
+folder (or accepts a workspace path). Keep your existing calibrated file and
+set this value, `rebot_leader_port`, and `rebot_leader_id` for another device. Missing calibration refuses the reader;
+startup never calibrates or rewrites it. With the leader disabled, no USB reader
+or leader bridge starts. Real thermal recovery starts independently.
 
-```bash
-ros2 launch rebot_bench_base_config rebot_leader.launch.py \
-  leader_python:=/path/to/leader-venv/bin/python
-```
-
-The default bridge accepts only this robot's mock or MuJoCo hardware. Wait for
-`Native collision scene ready`, then start **Mirror reBot Leader** from the
-Objectives sidebar. The Objective requires fresh measured HOME (every arm joint
-within 0.08 rad of zero), explicitly prepares a new session, and switches the
-seven position interfaces to `leader_position_controller`. The bridge seeds its
-reference from measured positions and holds that fixed HOME reference from
-preparation until following engages, so feedback drift cannot walk the idle
-command. It then forwards fresh leader positions
-directly, without software
-velocity or acceleration caps. Existing motor limits remain unchanged.
+Wait for `Native collision scene ready`, then run **Mirror reBot Leader**.
+The Objective requires fresh measured HOME (every arm joint within 0.08 rad of
+zero), explicitly prepares a new session, and switches the seven position
+interfaces to `leader_position_controller`. The bridge seeds its reference from
+measured positions and holds that fixed HOME reference until following engages.
+It then forwards fresh leader positions directly, without software velocity or
+acceleration caps. Existing motor limits remain unchanged.
 
 Native MoveIt Pro FCL checks each target and the measured-to-target joint path
 at at most 0.005 rad intervals on joint1-joint6 and 0.05 rad on joint7, whose
@@ -139,11 +154,10 @@ The mapping is absolute, with no additional zero offsets:
 | wrist_roll | joint6 | +1 |
 | gripper | joint7 | +6 |
 
-The calibrated leader angles are unwrapped, mapped to motor degrees, bounded
+The stored-origin calibrated leader angles are unwrapped, mapped to motor degrees, bounded
 to the approved motor ranges, and converted to radians. Raw SDK reads avoid
 the plugin's monitor deadband and stale-pose fallback. An incomplete or failed
-read is rejected; an old pose is never replayed as a fresh sample. The reader
-and ROS bridge may run in separate environments using JSON lines over stdin.
+read is rejected; an old pose is never replayed as a fresh sample. The backend-owned reader sends JSON lines to its bridge over a private pipe.
 Neither process writes stored follower parameters or recalibrates the leader.
 
 Leader targets retain the approved full ranges; J2 and J3 leader commands have
@@ -153,7 +167,7 @@ bounds, so noisy feedback cannot create a negative HOME-side reference.
 Stopping the Objective, calling `/rebot_leader_bridge/clutch`, losing the USB
 stream, or receiving stale/invalid data latches following off and requests
 **Return reBot Leader Home**. So does a prepared session that has not started
-following within 3 s. In a real-hardware (`allow_real:=true`) session, so does any
+following within 3 s. On the real RobStride model, so does any
 tick whose Robstride status is 0.5 s or more old, has a non-zero `comm_state` or
 any fault bit (the driver sets both on a reported motor fault), or does not list
 exactly seven motors, all enabled: the check runs before each target is sent, and
@@ -176,22 +190,19 @@ limit: planned from the measurement, the leg would start past it, and a sag deep
 enough to reach self-collision (joint3 at about −0.08 rad) would be refused. HOME recovery restores the normal
 `joint_trajectory_admittance_controller` and retains motor torque, leaving the arm
 ready for other Objectives at HOME. Normal stop/cancel never disables motors.
-The external 100 °C guard remains armed and owns its separate protective response.
+Driver-owned thermal detection and backend recovery run automatically; see
+[Thermal protection](#thermal-protection).
 A failed HOME return is
 reported and requires operator recovery. Only starting the Objective again at
 measured HOME re-engages; reconnecting USB never does.
 
-Physical commissioning requires explicit `--allow-real`, an approved motion
-and return, healthy hardware, a continuously running external fault/temperature
-guard with a 100 °C cutoff, and a recorded-input twin check. The bridge itself
-does not enable motors or provide the temperature guard. Enable at HOME through
-the approved commissioning workflow before pressing Start. The Objective runs
-continuously until stopped, with no fixed session length. It controls position
-references without a speed guard; fast leader changes can command fast motion.
-For an approved real session, use `allow_real:=true`; enable remains an explicit
-external commissioning step.
-Disable or change hardware lifecycle only at proven physical and measured HOME.
-A motor fault requires separate recovery before any further following.
+The bridge identifies mock, real, or MuJoCo from the robot description. Real
+sessions require fresh healthy status from exactly seven enabled motors; there
+is no second mode-enable switch. Startup torque remains true by default. Normal
+Stop retains torque after HOME. Disable or change hardware lifecycle only at
+proven physical and measured HOME. A motor fault requires separate recovery
+before further following. The Objective runs until stopped and has no software
+speed guard; fast leader changes can command fast motion.
 
 The dedicated gripper JointVelocityController uses position commands with
 3.0 rad/s velocity and 6.0 rad/s² acceleration limits. It starts inactive and
@@ -562,11 +573,18 @@ motor and the kernel default of 10 drops most of it. The driver ships
 `scripts/setup_can.sh`, which does the same thing and tolerates adapters without
 bus-off auto-recovery.
 
-### Run it without `--instance`
+### Start the Desktop App and backend
+
+With the arm physically at HOME, power and CAN ready, and existing calibration
+available, use the same two commands as mock:
 
 ```bash
-moveit_pro run --config-package rebot_bench_base_config
+moveit_pro_desktop
+moveit_pro run -c rebot_bench_base_config
 ```
+
+Then run **Mirror reBot Leader** in the Desktop App. Enable the leader with the
+same `rebot_leader_enabled` YAML setting; the backend owns its full lifecycle.
 
 **No `--instance`.** SocketCAN interfaces are network-namespace scoped, and
 `can0` is not a `/dev` device, so bind-mounting `/dev` does not help. An
@@ -620,6 +638,29 @@ The freeze is latched. A recovered joint stays limp and control is not handed
 back until a fresh activation: a rebooted motor's position may be a whole turn
 off, and the controllers' setpoints have moved on. `~/reboot_robstride` clears a
 latched fault but does not by itself restore the joint.
+
+### Thermal protection
+
+`hardware.robot_description.urdf_params` sets `thermal_cutoff_c: "100.0"`.
+The RobStride driver detects any motor at or above that temperature and latches
+`/robstride_hardware_interface/thermal_tripped`. Already-enabled motors keep
+torque for recovery; automatic re-enable and further torque-enable requests are
+blocked while latched. Initial hot feedback prevents startup enable.
+
+The backend's `rebot_thermal_guard` cancels the current Objective, requests
+**Return reBot Leader Home**, waits for successful completion and fresh measured
+stationary HOME for 0.5 s, then calls the owning driver's `set_torque` service
+with false. The leader bridge latches off without sending a competing HOME goal.
+No separate guard command is needed, including when the leader is disabled.
+
+If cancellation, HOME, hardware health, or fresh HOME verification fails, the
+system keeps the latch and reports intervention required; it never disables
+away from HOME. Reachable joints retain torque under the existing loss/fault
+policy. Existing collision checks and motor fault handling remain active.
+Cooling cannot re-engage following. Only after confirmed HOME/OFF, cooling and
+fault recovery may the driver be restarted to reset the latch. Software recovery
+cannot guarantee HOME after motor or communication failure and is not a
+safety-rated thermal shutdown.
 
 ### Motors, limits and gains
 
@@ -968,8 +1009,8 @@ The pre-motion checks also refuse planned joint2 positions above 2.2 rad, to
 limit the carry reach associated with bench heating. Change `maximum` in
 `objectives/rebot_check_pick_reach.xml`, `objectives/rebot_check_stack_reach.xml`
 and `objectives/rebot_check_source_heat_reach.xml` together. This geometric
-bound does not measure temperatures; the hardware monitor still owns thermal
-limits and cancellation. After reaching home, recovery clears the carried
+bound does not measure temperatures; the driver thermal latch and backend recovery own temperature
+protection and cancellation. After reaching home, recovery clears the carried
 cube's planning-scene attachment. A failed home return still reports failure.
 
 **Speed settings.** [`objectives/rebot_stack_motion.yaml`](objectives/rebot_stack_motion.yaml)
@@ -1197,7 +1238,7 @@ may only be released at home ([Real hardware](#real-hardware)).
 
 **Deployment.** Select the real arm ([Selecting it](#selecting-it)) and run
 without `--instance` so the drivers container shares the host network and sees
-`can0` ([Run it without `--instance`](#run-it-without---instance)). SAM3
+`can0` ([Start the Desktop App and backend](#start-the-desktop-app-and-backend)). SAM3
 perception needs CUDA: give the runtime container NVIDIA GPU access, or
 **Locate reBot Cubes** fails loading `libcuda.so.1`. Bring up both cameras
 ([Optional real cameras](#optional-real-cameras)) and check each colour stream

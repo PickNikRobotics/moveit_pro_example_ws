@@ -24,6 +24,7 @@ find_package(realtime_tools REQUIRED)
 
 find_package(robstride_sdk REQUIRED)
 find_package(std_srvs REQUIRED)
+find_package(std_msgs REQUIRED)
 find_package(robstride_interfaces REQUIRED)
 
 ################################################################################
@@ -54,6 +55,7 @@ target_link_libraries(${PROJECT_NAME}
   rclcpp_lifecycle::rclcpp_lifecycle
   ${robstride_sdk_TARGETS}
   ${std_srvs_TARGETS}
+  ${std_msgs_TARGETS}
   ${robstride_interfaces_TARGETS}
   ${realtime_tools_TARGETS}
 )
@@ -84,6 +86,8 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 
   find_package(ament_cmake_gtest REQUIRED)
+  ament_add_gtest(test_thermal_latch test/test_thermal_latch.cpp)
+  target_link_libraries(test_thermal_latch ${PROJECT_NAME})
   # Drives the real lifecycle against a fake motor on a virtual CAN interface.
   # Skips itself when no vcan interface exists; see the test's header comment.
   ament_add_gtest(test_deactivate_torque test/test_deactivate_torque.cpp)
@@ -105,6 +109,7 @@ ament_export_dependencies(
   robstride_sdk
   robstride_interfaces
   realtime_tools
+  std_msgs
 )
 
 ament_package()

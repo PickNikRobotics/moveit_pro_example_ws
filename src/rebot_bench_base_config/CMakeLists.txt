@@ -5,6 +5,7 @@ install(DIRECTORY config description docs launch objectives waypoints DESTINATIO
 install(FILES README.md LICENSE thumbnail.png DESTINATION share/${PROJECT_NAME})
 install(PROGRAMS scripts/scale_depth.py test/verify_mock_execution.py test/verify_mock_gripper_jog.py
   scripts/rebot_leader.py scripts/rebot_leader_bridge.py scripts/rebot_leader_tune.py
+  scripts/rebot_thermal_guard.py
   DESTINATION lib/${PROJECT_NAME})
 install(FILES scripts/rebot_leader_state.py scripts/rebot_leader_collision.py
   DESTINATION lib/${PROJECT_NAME})
@@ -53,6 +54,8 @@ if(BUILD_TESTING)
   ament_add_pytest_test(test_scale_depth test/test_scale_depth.py TIMEOUT 60)
   ament_add_pytest_test(test_hardware_selection test/test_hardware_selection.py TIMEOUT 60)
   ament_add_pytest_test(test_rebot_leader test/test_rebot_leader.py TIMEOUT 60)
+  ament_add_pytest_test(test_rebot_startup test/test_startup.py TIMEOUT 60)
+  ament_add_pytest_test(test_rebot_thermal_guard test/test_thermal_guard.py TIMEOUT 60)
   ament_add_pytest_test(test_rebot_model test/test_model.py TIMEOUT 60)
 endif()
 ament_package()

@@ -31,6 +31,8 @@ from pathlib import Path
 
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
+from launch.actions import IncludeLaunchDescription
+from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.actions import Node
 import yaml
 
@@ -44,11 +46,21 @@ def generate_launch_description():
         executable="sim_compressed_cameras.py",
         output="screen",
     )
+    # Inherit exactly the base YAML leader selection, without real camera drivers.
+    leader = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            str(
+                Path(get_package_share_directory("rebot_bench_base_config"))
+                / "launch/rebot_leader.launch.py"
+            )
+        )
+    )
     if not layout.get("sim_grasp_proxy", False):
-        return LaunchDescription([cameras])
+        return LaunchDescription([cameras, leader])
     return LaunchDescription(
         [
             cameras,
+            leader,
             Node(
                 package="controller_manager",
                 executable="spawner",
