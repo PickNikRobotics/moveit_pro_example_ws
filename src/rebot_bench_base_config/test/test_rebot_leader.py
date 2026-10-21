@@ -119,30 +119,50 @@ def test_alignment_fault_names_each_joint_beyond_tolerance():
 
     follower = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5]
     assert alignment_fault([0.1, -0.1, 0.0, 0.0, 0.0, 0.0, 0.6], follower) == ""
-    reason = alignment_fault([0.0, 0.25, 0.0, 0.0, 0.0, 0.0, 0.3], follower)
+    reason = alignment_fault([0.0, 0.25, 0.0, 0.0, 0.0, 0.0, 0.15], follower)
     assert "shoulder lift (joint2): +14.3 deg (+0.250 rad)" in reason
-    assert "gripper (joint7): -11.5 deg (-0.200 rad)" in reason
-    assert "within 5.7 deg (0.1 rad)" in reason
+    assert "gripper (joint7): -20.1 deg (-0.350 rad)" in reason
+    assert "joint1-joint6 must be within 5.7 deg (0.1 rad)" in reason
+    assert "gripper (joint7) within 17.2 deg (0.3 rad)" in reason
     assert "refused to avoid a jump" in reason
     assert (
         "shoulder lift (joint2) toward a lower calibrated angle by 14.3 deg (0.250 rad)"
         in reason
     )
     assert (
-        "gripper (joint7) toward a higher calibrated angle by 1.9 deg (0.033 rad)"
+        "gripper (joint7) toward a higher calibrated trigger angle by 3.3 deg (0.058 rad)"
         in reason
     )
     assert "run Mirror reBot Leader again" in reason
 
 
+@pytest.mark.parametrize("offset, expected", [(0.25, True), (0.3, True), (0.35, False)])
+def test_gripper_engage_uses_its_own_follower_frame_tolerance(offset, expected):
+    state = state_at_home()
+    assert state.accept(
+        {"positions": [0.0] * 6 + [offset], "sample_time": 10.01}, 10.01
+    )
+    assert state.engage(10.01) is expected
+
+
+@pytest.mark.parametrize("joint", range(6))
+@pytest.mark.parametrize("offset, expected", [(0.1, True), (0.101, False)])
+def test_arm_engage_tolerance_remains_point_one(joint, offset, expected):
+    state = state_at_home()
+    target = [0.0] * 7
+    target[joint] = -offset if joint >= 4 else offset
+    assert state.accept({"positions": target, "sample_time": 10.01}, 10.01)
+    assert state.engage(10.01) is expected
+
+
 def test_misaligned_leader_refuses_to_engage_until_reset():
     state = state_at_home()
     assert state.accept(
-        {"positions": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.2], "sample_time": 10.01}, 10.01
+        {"positions": [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.35], "sample_time": 10.01}, 10.01
     )
     assert not state.engage(10.01)
     assert (
-        not state.active and "gripper (joint7): +11.5 deg (+0.200 rad)" in state.fault
+        not state.active and "gripper (joint7): +20.1 deg (+0.350 rad)" in state.fault
     )
     assert state.accept({"positions": [0.0] * 7, "sample_time": 10.02}, 10.02)
     assert not state.engage(10.02)

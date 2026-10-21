@@ -15,7 +15,7 @@ def joint_label(index):
     return f"{LEADER_NAMES[index].replace('_', ' ')} ({JOINT_NAMES[index]})"
 
 
-def alignment_fault(target, measured, tolerance=0.1):
+def alignment_fault(target, measured, tolerance=0.1, gripper_tolerance=0.3):
     """Explain mismatches and the signed correction in the Star Arm's calibrated frame."""
     offsets = []
     corrections = []
@@ -23,14 +23,16 @@ def alignment_fault(target, measured, tolerance=0.1):
         zip(target, measured, DIRECTIONS)
     ):
         delta = leader - follower
-        if abs(delta) <= tolerance:
+        joint_tolerance = gripper_tolerance if index == 6 else tolerance
+        if abs(delta) <= joint_tolerance:
             continue
         offsets.append(
             f"{joint_label(index)}: {math.degrees(delta):+.1f} deg ({delta:+.3f} rad)"
         )
         correction = -delta / direction
+        angle_label = "calibrated trigger angle" if index == 6 else "calibrated angle"
         corrections.append(
-            f"{joint_label(index)} toward a {'higher' if correction > 0 else 'lower'} calibrated angle "
+            f"{joint_label(index)} toward a {'higher' if correction > 0 else 'lower'} {angle_label} "
             f"by {abs(math.degrees(correction)):.1f} deg ({abs(correction):.3f} rad)"
         )
     if not offsets:
@@ -38,7 +40,8 @@ def alignment_fault(target, measured, tolerance=0.1):
     return (
         "Following refused to avoid a jump: the Star Arm's pose does not match reBot. "
         f"Leader minus reBot offset: {'; '.join(offsets)}. "
-        f"Each joint must be within {math.degrees(tolerance):.1f} deg ({tolerance:g} rad). "
+        f"Arm joints joint1-joint6 must be within {math.degrees(tolerance):.1f} deg ({tolerance:g} rad); "
+        f"gripper (joint7) within {math.degrees(gripper_tolerance):.1f} deg ({gripper_tolerance:g} rad). "
         f"Move only the Star Arm: {'; '.join(corrections)}, toward reBot's matching pose. "
         "Then run Mirror reBot Leader again."
     )

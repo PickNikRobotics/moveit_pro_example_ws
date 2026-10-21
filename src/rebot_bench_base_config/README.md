@@ -150,11 +150,15 @@ zero), explicitly prepares a new session, and switches the seven position
 interfaces to `leader_position_controller`. The bridge seeds its reference from
 measured positions and holds that fixed HOME reference until following engages.
 Following engages only if the mapped leader reads within 0.1 rad of the
-measured follower on every joint, joint1-joint7. Otherwise it refuses, reports
-each joint by its operator name and number, its offset in degrees and radians,
+measured follower on arm joints joint1-joint6, and within 0.3 rad on gripper
+joint7. The gripper limit allows about 2.4 mm of travel per finger and about
+2.9 deg of Star Arm trigger travel through its ×6 mapping. Otherwise it refuses,
+reports each joint by its operator name and number, its offset in degrees and radians,
 and which way to move that Star Arm joint to match reBot. The Objective shows
-this reason in its UI failure message, including the 5.7 deg / 0.1 rad limit, and
-requests **Return reBot Leader Home**; align the leader and run the Objective
+this reason in its UI failure message, including the arm's 5.7 deg / 0.1 rad
+limit and the gripper's 17.2 deg / 0.3 rad limit in reBot joint units. Gripper
+corrections are expressed in Star Arm trigger degrees. It requests
+**Return reBot Leader Home**; align the leader and run the Objective
 again. There is no catch-up, ramp-in, or re-synchronisation during following.
 Once engaged, it forwards fresh leader positions directly, without software
 velocity or acceleration caps. Existing motor limits remain unchanged.
