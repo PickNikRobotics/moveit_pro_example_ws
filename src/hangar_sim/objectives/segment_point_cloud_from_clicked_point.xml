@@ -13,7 +13,7 @@
       <SubTree
         ID="Segment Point Cloud from Clicked Point Subtree"
         camera_topic_name="/wrist_camera/camera_info"
-        model_bundle_manifest="models/model.yaml"
+        model_bundle_manifest="models/sam2_bundle.yaml"
         runtime_id="onnxruntime"
         image_topic_name="/wrist_camera/color"
         masks_visualization_topic="/masks_visualization"
