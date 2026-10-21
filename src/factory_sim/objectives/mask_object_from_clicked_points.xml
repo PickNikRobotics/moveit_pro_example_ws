@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Mask Object from Clicked Points">
+  <BehaviorTree
+    ID="Mask Object from Clicked Points"
+    _description="Capture an image and segment one object using three clicked points."
+    _favorite="true"
+  >
+    <Control ID="Sequence">
+      <Action
+        ID="GetImage"
+        topic_name="/bin_camera_left/color"
+        publisher_timeout_sec="5.000000"
+        message_timeout_sec="5.000000"
+        message_out="{image}"
+      />
+      <Action
+        ID="GetPointsFromUser"
+        point_names="Point1;Point2;Point3"
+        point_prompts="Select the object (1/3);Select another point on the same object (2/3);Select another point on the same object (3/3)"
+        view_name="/bin_camera_left/color"
+        pixel_coords="{pixel_coords}"
+      />
+      <Action
+        ID="GetMasks2DFromPointQuery"
+        image="{image}"
+        pixel_coords="{pixel_coords}"
+        masks2d="{masks2d}"
+        model_bundle_manifest="models/sam2_bundle.yaml"
+        runtime_id="onnxruntime"
+        model_package="moveit_pro_sam2"
+      />
+      <Action
+        ID="PublishMask2D"
+        image="{image}"
+        masks="{masks2d}"
+        masks_visualization_topic="/masks_visualization"
+      />
+      <Action
+        ID="SwitchUIPrimaryView"
+        primary_view_name="/masks_visualization"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Mask Object from Clicked Points">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Perception - ML" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
