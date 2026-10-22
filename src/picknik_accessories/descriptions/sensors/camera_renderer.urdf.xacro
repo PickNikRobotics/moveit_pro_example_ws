@@ -1,0 +1,44 @@
+<?xml version="1.0" ?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro">
+  <!-- Which renderer produces a MuJoCo config's camera color topics. Set it in the environment: the
+       config's runtime.launch.xml reads MOVEIT_PRO_CAMERA_RENDERER directly to start one Nyx node per
+       camera, and cannot see urdf_params. An empty value means opengl, and an unrecognized one fails
+       the description rather than leaving the config without a camera.
+         opengl  MuJoCo's OpenGL renderer only. The default, and the only option on an image without
+                 the Nyx runtime installed.
+         nyx     Nyx on <camera>/color and camera_info. MuJoCo keeps depth and points, and depth has no
+                 camera_info while the Nyx node is down.
+         both    MuJoCo on <camera>/opengl/*, Nyx on <camera>/nyx/*, and nothing on <camera>/color, so
+                 Objectives and detectors that read <camera>/color get no images. For comparison only.
+       nyx and both need a scene exported ahead of time with nyx_export_scene; see
+       src/nyx_renderer/README.md in moveit_pro. The node reports a missing scene and exits. -->
+  <xacro:arg
+    name="camera_renderer"
+    default="$(optenv MOVEIT_PRO_CAMERA_RENDERER opengl)"
+  />
+  <xacro:property name="camera_renderer" value="$(arg camera_renderer)" />
+  <xacro:if value="${camera_renderer not in ('', 'opengl', 'nyx', 'both')}">
+    ${xacro.fatal("MOVEIT_PRO_CAMERA_RENDERER is '" + camera_renderer + "' for the robot description; set it to opengl, nyx or both, or leave it unset for opengl.")}
+  </xacro:if>
+
+  <!-- One MuJoCo <sensor> per name in cameras, a space-separated list, for whichever renderer is
+       selected. Call it inside <ros2_control>. opengl emits nothing, since MuJoCo's defaults already
+       publish <camera>/color. -->
+  <xacro:macro name="camera_renderer_sensors" params="cameras">
+    <xacro:if value="${len(cameras.split()) > 0}">
+      <xacro:property name="camera" value="${cameras.split()[0]}" />
+      <xacro:if value="${camera_renderer == 'nyx'}">
+        <sensor name="${camera}">
+          <param name="color_enabled">false</param>
+        </sensor>
+      </xacro:if>
+      <xacro:if value="${camera_renderer == 'both'}">
+        <sensor name="${camera}">
+          <param name="rgb_topic">${camera}/opengl/color</param>
+          <param name="camera_info_topic">${camera}/opengl/camera_info</param>
+        </sensor>
+      </xacro:if>
+      <xacro:camera_renderer_sensors cameras="${' '.join(cameras.split()[1:])}" />
+    </xacro:if>
+  </xacro:macro>
+</robot>
