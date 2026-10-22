@@ -35,14 +35,6 @@
   </default>
 
   <asset>
-    <!-- The small_hangar_01 HDRI from Poly Haven (CC0), tone-mapped to 8 bits as six faces stacked right, left, up, down, front, back. MuJoCo draws it as the background, and nyx_export_scene lights the Nyx scene with it. -->
-    <texture
-      type="skybox"
-      name="environment"
-      file="small_hangar_01_skybox.png"
-      gridsize="6 1"
-      gridlayout="RLUDFB"
-    />
     <!-- Textures and materials -->
     <material name="metal" rgba="0.58 0.58 0.58 1" />
     <material

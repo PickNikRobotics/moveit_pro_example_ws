@@ -20,14 +20,6 @@
   <size nuser_cam="1" memory="64M" />
 
   <asset>
-    <!-- The childrens_hospital HDRI from Poly Haven (CC0), tone-mapped to 8 bits as six faces stacked right, left, up, down, front, back. MuJoCo draws it as the background, and nyx_export_scene lights the Nyx scene with it. -->
-    <texture
-      type="skybox"
-      name="environment"
-      file="assets/childrens_hospital_skybox.png"
-      gridsize="6 1"
-      gridlayout="RLUDFB"
-    />
     <!-- Laptop keyboard texture (dark checker pattern) -->
     <texture
       name="keyboard_tex"

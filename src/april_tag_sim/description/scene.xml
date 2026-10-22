@@ -17,14 +17,6 @@
   </visual>
 
   <asset>
-    <!-- The aircraft_workshop_01 HDRI from Poly Haven (CC0), tone-mapped to 8 bits as six faces stacked right, left, up, down, front, back. MuJoCo draws it as the background, and nyx_export_scene lights the Nyx scene with it. -->
-    <texture
-      type="skybox"
-      name="environment"
-      file="assets/aircraft_workshop_01_skybox.png"
-      gridsize="6 1"
-      gridlayout="RLUDFB"
-    />
     <mesh name="cube" file="assets/Cube.stl" />
   </asset>
 
