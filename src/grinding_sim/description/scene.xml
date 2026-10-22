@@ -1,5 +1,11 @@
 <mujoco model="ur20 grinding scene">
   <compiler angle="radian" autolimits="true" assetdir="grinding_sim_assets" />
+  <!-- Lights the Nyx scene with the small_hangar_01 HDRI from Poly Haven (CC0), the source of this
+       scene's skybox, rather than with the 8-bit skybox. MuJoCo stores <custom> text but does not render from it,
+       so its own renderer is unaffected. -->
+  <custom>
+    <text name="nyx_env_map" data="small_hangar_01_2k.hdr" />
+  </custom>
 
   <option integrator="implicitfast" timestep="0.003" />
 
@@ -35,6 +41,14 @@
   </default>
 
   <asset>
+    <!-- The small_hangar_01 HDRI from Poly Haven (CC0), tone-mapped to 8 bits as six faces stacked right, left, up, down, front, back. MuJoCo draws it as the background; the nyx_env_map HDRI above lights the Nyx scene. -->
+    <texture
+      type="skybox"
+      name="environment"
+      file="small_hangar_01_skybox.png"
+      gridsize="6 1"
+      gridlayout="RLUDFB"
+    />
     <!-- Textures and materials -->
     <material name="metal" rgba="0.58 0.58 0.58 1" />
     <material
