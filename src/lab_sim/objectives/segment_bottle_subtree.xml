@@ -2,7 +2,7 @@
 <root BTCPP_format="4" main_tree_to_execute="Segment Bottle Subtree">
   <BehaviorTree
     ID="Segment Bottle Subtree"
-    _description="Segment a bottle with SAM3 and output the masked point cloud in world frame."
+    _description="Segment a bottle with SAM3 and output the masked point cloud in world frame. The wrist camera must stay still from point cloud capture until the masked cloud is in world frame."
     _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence" _collapsed="false">
@@ -119,11 +119,16 @@
               mask3d="{mask3d}"
               point_cloud_fragment="{point_cloud_fragment}"
             />
+            <!--The arm holds still from capture to here, so the latest
+                 transform matches the capture pose. Looking up the
+                 capture timestamp fails when SAM3 runs on CPU and
+                 inference outlasts the 60 s transform history.-->
             <Action
               ID="TransformPointCloudFrame"
               input_cloud="{point_cloud_fragment}"
               target_frame="world"
               output_cloud="{masked_cloud_world}"
+              use_latest_transform="true"
             />
           </Control>
         </Decorator>
