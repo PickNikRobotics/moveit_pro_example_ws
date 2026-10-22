@@ -227,9 +227,37 @@ def test_cameras_match_the_real_intrinsics_frames_and_topics(
     assert (model.vis.global_.offwidth, model.vis.global_.offheight) == (640, 480)
     focal = 240 / math.tan(math.radians(model.cam_fovy[model.camera(camera).id] / 2))
     assert focal == pytest.approx(vertical_focal_px, rel=2e-3)
-    sensors = {s.get("name"): s for s in sim_urdf().findall("ros2_control/sensor")}
+    # Pinned, since the description otherwise reads MOVEIT_PRO_CAMERA_RENDERER from the environment.
+    sensors = {
+        s.get("name"): s
+        for s in sim_urdf(camera_renderer="opengl").findall("ros2_control/sensor")
+    }
     params = {p.get("name"): p.text for p in sensors[camera].findall("param")}
     assert params["rgb_topic"] == topic
+
+
+@pytest.mark.parametrize(
+    "camera, prefix",
+    [("d435_color", "/wrist_mounted_camera"), ("scene_camera_color", "/scene_camera")],
+)
+def test_the_camera_renderer_moves_only_mujoco_color(camera, prefix):
+    """nyx turns MuJoCo's color off for the Nyx node to publish; both moves it under opengl."""
+
+    def params(renderer):
+        sensors = {
+            s.get("name"): s
+            for s in sim_urdf(camera_renderer=renderer).findall("ros2_control/sensor")
+        }
+        return {p.get("name"): p.text for p in sensors[camera].findall("param")}
+
+    nyx, both = params("nyx"), params("both")
+    assert nyx["color_enabled"] == "false"
+    assert "rgb_topic" not in nyx
+    assert both["rgb_topic"] == f"{prefix}/opengl/color/image_raw"
+    assert both["camera_info_topic"] == f"{prefix}/opengl/color/camera_info"
+    assert "color_enabled" not in both
+    for renderer_params in (nyx, both):
+        assert renderer_params["depth_topic"] == params("opengl")["depth_topic"]
 
 
 def test_cubes_are_50_mm_and_settle_on_the_mat_where_the_layout_puts_them(model, data):
@@ -293,3 +321,41 @@ def test_sim_description_refuses_any_other_hardware():
         sim_urdf(hardware_interface="mock")
     plugins = [p.text for p in sim_urdf().findall("ros2_control/hardware/plugin")]
     assert plugins == ["picknik_mujoco_ros/MujocoSystem"]
+
+
+def test_nyx_output_is_remapped_onto_the_topics_mujoco_would_publish():
+    """In nyx mode Nyx takes over each camera's real topics; in both mode it sits beside them under /nyx/."""
+    sensors = {
+        sensor.get("name"): {p.get("name"): p.text for p in sensor.findall("param")}
+        for sensor in sim_urdf(camera_renderer="opengl").findall("ros2_control/sensor")
+    }
+    launch = ET.parse(SHARE / "launch/runtime.launch.xml").getroot()
+    checked = set()
+    for group in launch.findall("group"):
+        mode = "both" if "both" in group.get("if") else "nyx"
+        camera = next(
+            a.get("value") for a in group.iter("arg") if a.get("name") == "camera"
+        )
+        remaps = {r.get("from"): r.get("to") for r in group.findall("set_remap")}
+        real = sensors[camera]
+        if mode == "nyx":
+            expected = {
+                f"{camera}/color": real["rgb_topic"],
+                f"{camera}/camera_info": real["camera_info_topic"],
+            }
+        else:
+            expected = {
+                f"{camera}/nyx/color": real["rgb_topic"].replace(
+                    "/color/", "/nyx/color/"
+                ),
+                f"{camera}/nyx/camera_info": real["camera_info_topic"].replace(
+                    "/color/", "/nyx/color/"
+                ),
+            }
+        assert remaps == expected
+        checked.add((camera, mode))
+    assert checked == {
+        (camera, mode)
+        for camera in ("scene_camera_color", "d435_color")
+        for mode in ("nyx", "both")
+    }

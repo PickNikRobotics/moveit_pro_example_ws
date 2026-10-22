@@ -17,6 +17,7 @@
   <buildtool_depend>xacro</buildtool_depend>
 
   <depend>rebot_bench_base_config</depend>
+  <exec_depend>picknik_accessories</exec_depend>
   <exec_depend>moveit_pro_objectives</exec_depend>
   <exec_depend>moveit_studio_agent</exec_depend>
   <exec_depend>mujoco_package_uri</exec_depend>

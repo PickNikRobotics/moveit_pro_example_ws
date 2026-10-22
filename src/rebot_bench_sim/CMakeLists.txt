@@ -7,6 +7,7 @@ install(
   DIRECTORY
     config
     description
+    launch
     objectives
   DESTINATION
     share/${PROJECT_NAME}

@@ -28,9 +28,11 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 """Verify the simulation overlay through MoveIt Pro's real config loader."""
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import pytest
+from ament_index_python.packages import get_package_share_directory
 from moveit_studio_utils_py.system_config import load_system_config
 
 
@@ -73,8 +75,20 @@ def test_overlay_selects_mujoco_and_keeps_the_rest_of_urdf_params(config):
     assert params["torque_enable"] == "true"
 
 
-def test_runtime_launch_file_comes_from_the_base_package(config):
-    assert config.runtime_launch_file.package == "rebot_bench_base_config"
+def test_runtime_launch_file_extends_the_base_one(config):
+    assert config.runtime_launch_file.package == "rebot_bench_sim"
+    launch_file = (
+        Path(get_package_share_directory("rebot_bench_sim"))
+        / config.runtime_launch_file.path
+    )
+    # The sim adds Nyx camera nodes on top of the base config's runtime services, never in place of them.
+    includes = [
+        include.get("file")
+        for include in ET.parse(launch_file).getroot().findall("include")
+    ]
+    assert includes == [
+        "$(find-pkg-share rebot_bench_base_config)/launch/runtime.launch.xml"
+    ]
 
 
 def test_objective_libraries_add_mujoco_to_the_base_ones(config):

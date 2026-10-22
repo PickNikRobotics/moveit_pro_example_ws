@@ -21,6 +21,9 @@ if(BUILD_TESTING)
   ament_add_pytest_test(
           husky_mujoco_geometry_test test/test_husky_mujoco_geometry.py
           TIMEOUT 30)
+  ament_add_pytest_test(
+          terrain_meshes_test test/test_terrain_meshes.py
+          TIMEOUT 60)
 endif()
 
 ament_package()

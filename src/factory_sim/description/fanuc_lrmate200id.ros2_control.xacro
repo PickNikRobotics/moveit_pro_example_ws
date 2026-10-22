@@ -1,5 +1,8 @@
 <?xml version="1.0" ?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <xacro:include
+    filename="$(find picknik_accessories)/descriptions/sensors/camera_renderer.urdf.xacro"
+  />
   <xacro:macro
     name="fanuc_lrmate200id_ros2_control"
     params="name initial_positions_file hardware_interface mujoco_model mujoco_viewer"
@@ -93,6 +96,9 @@
         </state_interface>
         <state_interface name="velocity" />
       </joint>
+      <!-- MOVEIT_PRO_CAMERA_RENDERER's sensor overrides for these cameras; see the macro for the
+           values. runtime.launch.xml starts one Nyx node per camera listed here. -->
+      <xacro:camera_renderer_sensors cameras="scene_camera bin_camera_left" />
     </ros2_control>
   </xacro:macro>
 </robot>

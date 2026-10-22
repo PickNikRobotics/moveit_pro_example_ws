@@ -52,12 +52,10 @@
          planar reflection gives a nonzero-reflectance plane. reflectance=0 turns that off;
          specular/shininess=0 kill the remaining highlight, inherited unchanged from the old
          Phoebe scene's material where they didn't matter as much on a smaller ground patch.
-         texrepeat with texuniform="true" is repeats *per metre* of world space, not repeats
-         across the whole geom (see AGENTS.md's texrepeat entry), so covering the 20 m plane
-         exactly once needs 1/20 = 0.05 on both axes. The texture image spans the whole plane at
-         ~2.4mm/px (see generate_ground_colormap.py), so at 0.05 it is drawn once, not tiled - no
-         repeat pitch exists anywhere on the plane, unlike the single-photo texrepeat="0.3 0.3"
-         (~3.3 m tile) tiling this replaced. -->
+         With texuniform="true", MuJoCo repeats the texture every 2/texrepeat metres (see
+         AGENTS.md's texrepeat entry), so 0.05 draws the image, built for the 20 m plane, once per
+         40 m: the plane shows its central half at ~4.8 mm/px. 0.1 would draw it exactly once at
+         ~2.4 mm/px. Either way no repeat pitch exists anywhere on the plane. -->
     <material
       name="regolith_ground"
       texture="regolith"
@@ -67,6 +65,21 @@
       specular="0"
       shininess="0"
     />
+    <!-- regolith_ground for the terrain meshes below, whose texture coordinates already tile the map as regolith_ground tiles it on an hfield. -->
+    <material
+      name="regolith_ground_mesh"
+      texture="regolith"
+      reflectance="0"
+      specular="0"
+      shininess="0"
+    />
+    <!-- The two drawn hfields as meshes, from generate_terrain_meshes.py: nyx_export_scene drops hfield geoms, and both renderers draw meshes. Vertices match the hfields within 0.01 mm, which stay declared above as the generator's source. -->
+    <mesh
+      name="ground_visual_mesh"
+      file="lunar_hfield_visual.obj"
+      inertia="shell"
+    />
+    <mesh name="far_horizon_mesh" file="lunar_far_hfield.obj" inertia="shell" />
     <!-- Procedurally generated cratered heightfield, see generate_terrain.py (offline, seeded,
          committed output - nothing here is computed at load time). size="10 10 elevation_z base":
          matches the plane's old 10 m half-extents; elevation_z/base and the ground geom's pos.z
@@ -118,10 +131,10 @@
          <hfield> asset comment. -->
     <geom
       name="far_horizon"
-      type="hfield"
-      hfield="lunar_far_hfield"
+      type="mesh"
+      mesh="far_horizon_mesh"
       pos="0 0 -3.1361"
-      material="regolith_ground"
+      material="regolith_ground_mesh"
       contype="0"
       conaffinity="0"
     />
@@ -140,10 +153,10 @@
     <!-- Non-colliding, so it never participates in contact; pos matches ground_plane exactly. -->
     <geom
       name="ground_visual"
-      type="hfield"
-      hfield="lunar_hfield_visual"
+      type="mesh"
+      mesh="ground_visual_mesh"
       pos="0 0 -0.2095"
-      material="regolith_ground"
+      material="regolith_ground_mesh"
       contype="0"
       conaffinity="0"
       group="2"
