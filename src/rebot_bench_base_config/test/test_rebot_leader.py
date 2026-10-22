@@ -770,7 +770,11 @@ def test_driver_thermal_trip_yields_to_one_backend_recovery_owner(following_brid
     assert not bridge.state.recover and published == []
     assert not bridge.prepare(None, SimpleNamespace()).success
     bridge.observe_thermal(SimpleNamespace(data=False))
-    assert bridge.thermal_tripped
+    assert not bridge.thermal_tripped
+    assert not bridge.state.active and not bridge.state.recover
+    assert bridge.state.fault and bridge.prepared_at is None
+    assert not bridge.mirror(None, SimpleNamespace()).success
+    assert published == []
 
 
 def calibration_fixture():
@@ -784,6 +788,127 @@ def calibration_fixture():
         }
         for i, name in enumerate(LEADER_NAMES)
     }
+
+
+def test_reader_rejections_are_rate_limited_without_hiding_error_samples(
+    monkeypatch, capsys
+):
+    import io
+    import json
+    from unittest.mock import Mock
+    import rebot_leader
+
+    # (sample time, read succeeds) with exact clock values: a long outage, a
+    # rapid recurrence inside the shared 5 s window, then one after it.
+    script = (
+        [(t, False) for t in range(7)]
+        + [(7, True), (8, False), (9, False), (10, False), (11, True)]
+        + [(16, False)]
+    )
+    step = [0]
+    bus = SimpleNamespace(ping=lambda motor_id: True, unlock=Mock(), close=Mock())
+
+    def positions(bus, calibration):
+        if script[step[0]][1]:
+            return [0.0] * 7
+        raise RuntimeError("servo timeout")
+
+    def sleep(duration):
+        step[0] += 1
+        if step[0] == len(script):
+            raise KeyboardInterrupt
+
+    monkeypatch.setattr(rebot_leader, "read_positions", positions)
+    output = io.StringIO()
+    with pytest.raises(KeyboardInterrupt):
+        rebot_leader.run_reader(
+            "/no-usb",
+            calibration_fixture(),
+            lambda *a, **kw: bus,
+            output,
+            clock=lambda: float(script[step[0]][0]),
+            sleep=sleep,
+        )
+    messages = [json.loads(line) for line in output.getvalue().splitlines()]
+    assert [(m["sample_time"], m.get("error")) for m in messages] == [
+        (t, None if ok else "servo timeout") for t, ok in script
+    ]
+    assert capsys.readouterr().err.splitlines() == [
+        f"Leader sample rejected ({count} reads this outage): servo timeout"
+        for count in (1, 6, 3, 1)
+    ]
+    bus.close.assert_called_once()
+
+
+def test_slow_reader_failures_throttle_by_warning_emission_time(monkeypatch):
+    import io
+    import json
+    from unittest.mock import Mock
+    import rebot_leader
+
+    now_ms = [0]
+    step = [0]
+    read_durations_ms = [4900, 100, 100, 4900, 100]
+    warning_times_ms = []
+
+    class Warnings(io.StringIO):
+        def write(self, text):
+            if text.startswith("Leader sample rejected"):
+                warning_times_ms.append(now_ms[0])
+            return super().write(text)
+
+    def positions(bus, calibration):
+        now_ms[0] += read_durations_ms[step[0]]
+        raise RuntimeError("servo timeout")
+
+    def sleep(duration):
+        step[0] += 1
+        if step[0] == len(read_durations_ms):
+            raise KeyboardInterrupt
+
+    bus = SimpleNamespace(ping=lambda motor_id: True, unlock=Mock(), close=Mock())
+    monkeypatch.setattr(rebot_leader, "read_positions", positions)
+    monkeypatch.setattr(rebot_leader.sys, "stderr", Warnings())
+    output = io.StringIO()
+    with pytest.raises(KeyboardInterrupt):
+        rebot_leader.run_reader(
+            "/no-usb",
+            calibration_fixture(),
+            lambda *a, **kw: bus,
+            output,
+            clock=lambda: now_ms[0] / 1000,
+            sleep=sleep,
+        )
+    assert warning_times_ms == [4900, 10000]
+    assert all(b - a >= 5000 for a, b in zip(warning_times_ms, warning_times_ms[1:]))
+    messages = [json.loads(line) for line in output.getvalue().splitlines()]
+    assert [message["sample_time"] for message in messages] == [0, 4.9, 5, 5.1, 10]
+    assert [message["error"] for message in messages] == ["servo timeout"] * 5
+    bus.close.assert_called_once()
+
+
+def test_thermal_false_requires_new_home_preparation_and_never_reengages(
+    ticking_bridge,
+):
+    bridge = ticking_bridge
+    bridge.observe_thermal(SimpleNamespace(data=True))
+    bridge.hardware_state.enabled = [False] * 7
+    bridge.observe_thermal(SimpleNamespace(data=False))
+    bridge.tick()
+    assert not bridge.state.active and bridge.prepared_at is None
+    assert not bridge.mirror(None, SimpleNamespace()).success
+    assert not bridge.prepare(None, SimpleNamespace()).success  # torque still OFF
+    bridge.hardware_state.enabled = [
+        True
+    ] * 7  # separate explicit HOME enable procedure
+    bridge.state.measured[0] = 0.081
+    assert not bridge.prepare(None, SimpleNamespace()).success
+    bridge.state.measured[0] = 0.0
+    assert bridge.prepare(None, SimpleNamespace()).success
+    assert not bridge.state.active
+    assert bridge.mirror(None, SimpleNamespace()).success
+    bridge.tick()
+    assert bridge.state.active
 
 
 @pytest.mark.parametrize(
@@ -1024,13 +1149,12 @@ def test_thermal_refusal_explains_latch_cooling_and_home_only_off(home_bridge):
         assert "temperature limit" in response.message and "latched" in response.message
         assert "turns torque off only at HOME" in response.message
         assert "torque stays on" in response.message
-        assert (
-            "Wait for cooling and confirmed HOME with all seven motors OFF"
-            in response.message
-        )
-        assert "restart the backend" in response.message
-        assert "only a restart clears the latch" in response.message
-        assert "run Mirror reBot Leader again" in response.message
+        assert "all seven motors OFF" in response.message
+        assert "thermal_clear_c (75 C by default)" in response.message
+        assert "Torque stays OFF" in response.message
+        assert "explicitly run Mirror reBot Leader again at HOME" in response.message
+        assert "hot at startup" in response.message
+        assert "cool at HOME, then restart the backend" in response.message
 
 
 def test_three_second_timeout_message_explains_recovery_and_retry(

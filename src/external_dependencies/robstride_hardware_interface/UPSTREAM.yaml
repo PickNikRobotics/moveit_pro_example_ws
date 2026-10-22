@@ -1,6 +1,6 @@
 upstream:
   repository: https://github.com/griswaldbrooks/robstride_hardware_interface.git
-  commit: 1c36bba9a8b939f992c9887f2b7bbbf098aef6c8
+  commit: c265ffd07d13c9c9ac7f860a14c82145d647ded0
   branch: picknik/hold-torque-on-deactivate
 snapshot_path: robstride_hardware_interface
 vendored_paths:
@@ -16,5 +16,7 @@ notes:
   - The fork adds the hold_torque_on_deactivate hardware parameter. Upstream's on_deactivate disables every motor, which releases a gravity-loaded arm wherever it is standing; the reBot bench has no brakes and may only be limped at its home pose. With the parameter set a clean stop holds the pose instead. on_init warns when it is combined with an armed motor_can_timeout_ms, because deactivation closes the bus and the motor's own watchdog then releases torque regardless.
   - The fork also adds test/test_deactivate_torque.cpp and test/fake_robstride_motor.hpp, which drive the real activate/deactivate lifecycle against a fake motor on a virtual CAN interface and assert on the Stop frames that follow the Enable. The test skips when no vcan interface exists, so it never reports coverage it did not provide.
   - Companion source robstride_sdk is vendored from the griswaldbrooks/RobstrideSDK fork (see its UPSTREAM.yaml); robstride_interfaces is vendored unmodified from kmj060703 and is not forked.
-  - Configurable thermal_cutoff_c latches a driver-owned ~/thermal_tripped Bool at or above the threshold. It retains torque for runtime HOME recovery, rejects new enable/activation while latched, and never resets on cooling. rebot_bench_base_config supplies the HOME-only disable policy through the supported Objective and set_torque interfaces.
+  - Configurable thermal_cutoff_c latches a driver-owned ~/thermal_tripped Bool at or above the threshold. It retains torque for runtime HOME recovery, rejects new enable/activation while latched, and clears only after a fresh runtime rest attestation plus healthy all-motor OFF feedback below thermal_clear_c (75 C by default). Cooling alone never clears it or enables torque. rebot_bench_base_config supplies the HOME-only disable policy through the supported Objective and set_torque interfaces.
   - Thermal latch tests include exact threshold and invalid settings plus virtual-CAN trip publication, retained torque, refused re-enable, hot-start refusal and executor cleanup. No physical bus is needed.
+  - The backend recovery owner publishes thermal_rest_verified only after successful measured HOME/OFF recovery. Its same-host steady measurement timestamp must be less than 100 ms old; every motor needs complete Type-2 feedback less than 500 ms old. The driver publishes false on clear and leaves torque requested OFF.
+  - Clear regressions cover all seven motors, strict configurable thresholds, invalid/missing/stale/future samples, stale rest attestations, OFF eligibility, false publication and no automatic Enable, using offline virtual CAN. Current faults prevent clear; historical fault words alone do not.

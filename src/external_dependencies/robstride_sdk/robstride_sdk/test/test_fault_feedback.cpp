@@ -122,6 +122,26 @@ void TestMotorFeedback()
   Check(motor.state().fault_bits.load() == 0x4020, "Type 2 cleared detailed fault bits");
   Check(motor.state().warning_bits.load() == 1, "Type 2 cleared detailed warning bits");
 }
+
+void TestTemperatureFreshness()
+{
+  RobstrideMotor motor(2, 0, ActuatorType::RS00);
+  const auto & state = motor.state();
+  Check(state.last_feedback_ns.load() == 0, "default temperature looks measured");
+  const uint8_t data[8] = {128, 0, 128, 0, 128, 0, 0x01, 0x90};
+  motor.HandleFrame(COMM_MOTOR_FEEDBACK, 2, data, 7);
+  motor.HandleFrame(COMM_FAULT_FEEDBACK, 2, data, 8);
+  Check(state.last_feedback_ns.load() == 0, "non-temperature frame invented a sample");
+  motor.HandleFrame(COMM_MOTOR_FEEDBACK, 2, data, 8);
+  const auto first = state.last_feedback_ns.load(std::memory_order_acquire);
+  Check(first != 0 && state.temperature.load() == 40.0f, "missing valid sample");
+  motor.HandleFrame(COMM_FAULT_FEEDBACK, 2, data, 8);
+  motor.HandleFrame(COMM_MOTOR_FEEDBACK, 2, data, 0);
+  motor.HandleFrame(COMM_PARAM_READ, 2, data, 8);
+  Check(state.last_feedback_ns.load() == first, "unrelated frame refreshed temperature");
+  motor.HandleFrame(COMM_MOTOR_FEEDBACK, 2, data, 8);
+  Check(state.last_feedback_ns.load() > first, "new valid feedback did not refresh age");
+}
 }  // namespace
 
 int main(int argc, char ** argv)
@@ -129,14 +149,25 @@ int main(int argc, char ** argv)
   try {
     Check(argc == 2, "expected test case argument");
     const std::string name = argv[1];
-    if (name == "routing") {TestRouting(true);}
-    else if (name == "routing_without_motor_zero") {TestRouting(false);}
-    else if (name == "fault_bits") {TestFaultBits();}
-    else if (name == "overtemperature") {TestOvertemperature();}
-    else if (name == "warning_bits") {TestWarningBits();}
-    else if (name == "short_frame") {TestShortFrame();}
-    else if (name == "motor_feedback") {TestMotorFeedback();}
-    else {throw std::runtime_error("unknown test case");}
+    if (name == "routing") {
+      TestRouting(true);
+    } else if (name == "routing_without_motor_zero") {
+      TestRouting(false);
+    } else if (name == "fault_bits") {
+      TestFaultBits();
+    } else if (name == "overtemperature") {
+      TestOvertemperature();
+    } else if (name == "warning_bits") {
+      TestWarningBits();
+    } else if (name == "short_frame") {
+      TestShortFrame();
+    } else if (name == "motor_feedback") {
+      TestMotorFeedback();
+    } else if (name == "temperature_freshness") {
+      TestTemperatureFreshness();
+    } else {
+      throw std::runtime_error("unknown test case");
+    }
   } catch (const std::exception & error) {
     std::cerr << error.what() << '\n';
     return 1;

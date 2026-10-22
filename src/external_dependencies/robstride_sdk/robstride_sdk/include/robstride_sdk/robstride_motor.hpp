@@ -36,6 +36,9 @@ struct MotorState
   std::atomic<uint32_t> fault_bits{0};
   std::atomic<uint32_t> warning_bits{0};
   std::atomic<uint64_t> last_update_ns{0};
+  // Only a complete Type-2 frame contains temperature/run-state feedback.
+  // Faults, parameter replies and truncated frames must not refresh its age.
+  std::atomic<uint64_t> last_feedback_ns{0};
 };
 
 class RobstrideMotor
@@ -153,6 +156,7 @@ public:
       state_.fault_present.store(fault6 != 0, std::memory_order_relaxed);
       const uint8_t mode = static_cast<uint8_t>((data_area_2 >> 14) & 0x03);
       state_.run_state.store(mode, std::memory_order_relaxed);
+      state_.last_feedback_ns.store(now_ns, std::memory_order_release);
     } else if (comm_type == COMM_FAULT_FEEDBACK && dlc >= 4) {
       const uint32_t fault = static_cast<uint32_t>(data[0]) |
         (static_cast<uint32_t>(data[1]) << 8) |

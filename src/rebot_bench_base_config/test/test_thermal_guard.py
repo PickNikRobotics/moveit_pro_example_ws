@@ -19,9 +19,11 @@ def future(result):
 @pytest.fixture
 def guard():
     result = ThermalGuard.__new__(ThermalGuard)
-    result.node = Obj(get_logger=lambda: Obj(error=Mock()))
+    result.node = Obj(get_logger=lambda: Obj(error=Mock(), info=Mock()))
     result.stage, result.started = "idle", None
     result.future = result.home_handle = result.home_since = None
+    result.next_clear = -float("inf")
+    result.clear = Obj(publish=Mock())
     result.hardware = Obj(
         id=list(range(1, 8)), enabled=[True] * 7, fault_bits=[0] * 7, comm_state=0
     )
@@ -81,7 +83,8 @@ def test_cancel_home_verify_disable_confirm_are_sequential(guard):
     assert guard.stage == "confirm"
     guard.hardware.enabled = [False] * 7
     guard.advance(10.6)
-    assert guard.stage == "off"
+    assert guard.stage == "cooling"
+    assert not guard.clear.publish.called
 
 
 @pytest.mark.parametrize(
@@ -112,6 +115,10 @@ def test_home_failure_latches_without_torque_or_lifecycle_command(guard):
     assert guard.stage == "failed" and not guard.torque.call_async.called
     guard.tick()
     assert guard.stage == "failed"
+    guard.hardware.enabled = [False] * 7
+    guard.trip(Obj(data=False))
+    guard.tick()
+    assert guard.stage == "failed" and not guard.clear.publish.called
 
 
 def test_hot_initial_probe_with_all_motors_off_never_enables_or_moves(
@@ -194,6 +201,86 @@ def test_every_recovery_stage_is_bounded_and_keeps_torque(guard, stage, limit):
     assert guard.stage == "failed"
     assert not guard.torque.call_async.called
     assert not guard.home.send_goal_async.called
+
+
+@pytest.mark.parametrize(
+    "bad", ["off_home", "moving", "stale_joint", "stale_motor", "fault", "one_on"]
+)
+def test_cooling_requires_fresh_stationary_home_and_all_seven_off(guard, bad):
+    guard.stage = "cooling"
+    guard.hardware.enabled = [False] * 7
+    if bad == "off_home":
+        guard.measured[2] = (0.081, 0.0)
+    elif bad == "moving":
+        guard.measured[6] = (0.0, 0.011)
+    elif bad == "stale_joint":
+        guard.measured_time = 9.8
+    elif bad == "stale_motor":
+        guard.hardware_time = 9.4
+    elif bad == "fault":
+        guard.hardware.comm_state = 1
+    else:
+        guard.hardware.enabled[6] = True
+    guard.advance(10.0)
+    assert not guard.clear.publish.called
+    assert not guard.torque.call_async.called
+
+
+@pytest.mark.parametrize("motor", range(7))
+def test_cooling_ignores_history_but_requires_current_health(guard, motor):
+    guard.stage = "cooling"
+    guard.hardware.enabled = [False] * 7
+    guard.hardware.fault_bits[motor] = 1
+    guard.hardware.comm_state = 1
+    guard.advance(10.0)
+    assert not guard.clear.publish.called
+    guard.hardware.comm_state = 0  # healthy Type-2 does not erase fault history
+    guard.advance(10.0)
+    assert guard.hardware.fault_bits[motor] == 1
+    assert guard.clear.publish.call_args.args[0].data == 10_000_000_000
+    assert guard.stage == "cooling"
+    assert not guard.torque.call_async.called
+    assert not guard.home.send_goal_async.called
+
+
+@pytest.mark.parametrize("stage", ["cancel", "home", "verify", "confirm"])
+def test_recovery_before_cooling_still_rejects_historical_faults(guard, stage):
+    guard.stage, guard.started, guard.home_since = stage, 9.0, 9.0
+    guard.hardware.fault_bits[6] = 1
+    guard.hardware.enabled = [stage in ("home", "verify")] * 7
+    assert not guard.hardware_fresh(10.0)
+    guard.advance(10.0)
+    assert guard.stage != "cooling" and guard.stage != "off"
+    assert not guard.clear.publish.called
+    assert not guard.home.send_goal_async.called
+    assert not guard.torque.call_async.called
+
+
+def test_cooling_requests_clear_without_enabling_and_waits_for_driver_false(guard):
+    guard.stage = "cooling"
+    guard.hardware.enabled = [False] * 7
+    guard.advance(10.0)
+    assert guard.clear.publish.call_count == 1 and guard.stage == "cooling"
+    assert guard.clear.publish.call_args.args[0].data == 10_000_000_000
+    guard.advance(10.01)
+    assert guard.stage == "cooling"
+    guard.advance(10.02)
+    assert guard.clear.publish.call_count == 1
+    assert not guard.torque.call_async.called
+    guard.trip(Obj(data=True))
+    assert guard.stage == "cooling"
+    guard.trip(Obj(data=False))
+    assert guard.stage == "idle"
+    guard.trip(Obj(data=True))
+    assert guard.stage == "cancel"  # subsequent trips still recover
+
+
+def test_already_off_hot_start_does_not_attest_successful_home(guard):
+    guard.stage, guard.started = "cancel", 10.0
+    guard.hardware.enabled = [False] * 7
+    guard.advance(10.0)
+    guard.tick()
+    assert guard.stage == "off" and not guard.clear.publish.called
 
 
 @pytest.mark.parametrize("stamp_ns", [9_000_000_000, 11_000_000_000])

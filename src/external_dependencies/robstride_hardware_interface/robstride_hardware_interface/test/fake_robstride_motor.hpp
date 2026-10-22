@@ -5,6 +5,7 @@
 #define FAKE_ROBSTRIDE_MOTOR_HPP_
 
 #include <atomic>
+#include <chrono>
 #include <cstring>
 #include <mutex>
 #include <string>
@@ -82,6 +83,22 @@ public:
   /// Position the fake reports, in rad.
   void set_position(double position) {position_ = position;}
   void set_temperature(double temperature) {temperature_ = temperature;}
+  void set_silent(bool silent) {silent_ = silent;}
+
+  // A fault event publishes its detailed word once. Clearing the current
+  // Type-2 summary deliberately does not refresh that historical word.
+  void set_fault(bool fault)
+  {
+    faulted_ = fault;
+    if (fault) {
+      can_frame frame{};
+      frame.can_id = robstride_sdk::BuildExtendedId(
+        robstride_sdk::COMM_FAULT_FEEDBACK, motor_id_, master_id_) | CAN_EFF_FLAG;
+      frame.can_dlc = 8;
+      frame.data[0] = 1;
+      [[maybe_unused]] const ssize_t written = ::write(socket_, &frame, sizeof(frame));
+    }
+  }
 
 private:
   void Run()
@@ -108,7 +125,13 @@ private:
       } else if (parsed.comm_type == robstride_sdk::COMM_MOTOR_STOP) {
         enabled_ = false;
       }
-      SendFeedback();
+      if (!silent_) {
+        // Model wire/firmware latency: activation records its probe start
+        // after queuing the Stop burst. An instantaneous vcan reply can
+        // otherwise precede that timestamp, especially with seven motors.
+        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        SendFeedback();
+      }
     }
   }
 
@@ -123,7 +146,8 @@ private:
     // data_area_2 layout for a feedback frame: motor id in bits 0-7, the six
     // fault flags in bits 8-13, run_state in bits 14-15.
     const uint16_t data_area_2 =
-      static_cast<uint16_t>(motor_id_) | static_cast<uint16_t>(mode) << 14;
+      static_cast<uint16_t>(motor_id_) | static_cast<uint16_t>(mode) << 14 |
+      static_cast<uint16_t>(faulted_.load()) << 8;
 
     can_frame frame{};
     frame.can_id = robstride_sdk::BuildExtendedId(
@@ -154,6 +178,8 @@ private:
   int socket_ = -1;
   std::atomic<bool> running_{false};
   std::atomic<bool> enabled_{false};
+  std::atomic<bool> silent_{false};
+  std::atomic<bool> faulted_{false};
   std::atomic<double> position_{0.0};
   std::atomic<double> temperature_{25.0};
   std::thread thread_;
