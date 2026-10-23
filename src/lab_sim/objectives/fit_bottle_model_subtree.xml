@@ -126,7 +126,7 @@
         />
         <Action
           ID="TransformPose"
-          name="Rotate 180 about local x so the gripper approach axis faces world-down"
+          name="Rotate 180 about local y so the gripper approach axis faces world-down"
           input_pose="{grasp_point_pose}"
           translation_xyz="0;0;0"
           quaternion_xyzw="0;1;0;0"
