@@ -40,7 +40,8 @@ install(DIRECTORY include/
 if(BUILD_TESTING)
   add_executable(test_fault_feedback test/test_fault_feedback.cpp)
   target_link_libraries(test_fault_feedback PRIVATE ${PROJECT_NAME})
-  foreach(test_case routing routing_without_motor_zero fault_bits overtemperature warning_bits short_frame motor_feedback)
+  foreach(test_case routing routing_without_motor_zero fault_bits overtemperature
+      warning_bits short_frame motor_feedback temperature_freshness)
     add_test(NAME fault_feedback_${test_case} COMMAND test_fault_feedback ${test_case})
   endforeach()
   if(ament_cmake_FOUND)

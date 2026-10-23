@@ -289,8 +289,8 @@ def _urdf_joint_origin_xyz(source: Path, joint_suffix: str) -> np.ndarray:
     return np.array([float(v) for v in origin.get("xyz").split()])
 
 
-# The OAK-D Pro's published stereo baseline, and the profile hangar_sim pins in
-# params/forward_stereo.yaml. Shared between the two configs so captures stay comparable.
+# The OAK-D Pro's published stereo baseline, and the profile hangar_sim's forward stereo
+# pair uses. Shared between the two configs so captures stay comparable.
 OAKD_PRO_BASELINE_M = 0.075
 OAKD_PRO_FOVY_DEG = 50.53401584672457
 
@@ -499,3 +499,31 @@ def test_visual_ground_matches_the_driven_ground_it_stands_in_for():
         "the visual twin does not match the current driven heightfield - re-run "
         "generate_visual_terrain.py after regenerating lunar_hfield.png"
     )
+
+
+def test_enable_vo_publishes_the_oakd_pair_as_mono8_rectified_stereo():
+    """With enable_vo, picknik_mujoco_ros publishes the pair on the topics VO subscribes to."""
+    root = ET.parse(DESCRIPTION / "husky_a300_mujoco.xacro").getroot()
+    enabled_blocks = [
+        block
+        for block in root.iter("{http://www.ros.org/wiki/xacro}if")
+        if block.attrib["value"] == "$(arg enable_vo)"
+    ]
+    sensors = {
+        sensor.attrib["name"]: {
+            param.attrib["name"]: param.text for param in sensor.iter("param")
+        }
+        for block in enabled_blocks
+        for sensor in block.iter("sensor")
+    }
+
+    assert sensors["oakd_stereo"] == {
+        "stereo_left_camera": "oakd_left",
+        "stereo_right_camera": "oakd_right",
+    }
+    for side in ("left", "right"):
+        assert sensors[f"oakd_{side}"] == {
+            "rgb_topic": f"/oakd/{side}/image_rect",
+            "camera_info_topic": f"/oakd/{side}/camera_info",
+            "image_encoding": "mono8",
+        }

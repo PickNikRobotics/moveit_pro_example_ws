@@ -413,17 +413,16 @@ deck, looking forward across it, with a horizontal optical axis because the upst
 so if Clearpath moves the mount the test fails rather than leaving the config quietly describing a
 camera the real robot does not have there.
 
-`fovy` and the 0.075 m stereo baseline are the OAK-D Pro profile hangar_sim already pins in its
-`params/forward_stereo.yaml`, reused verbatim so captures from the two configs stay comparable for
-visual-odometry work. The housing is primitive geoms rather than upstream's `oakd_pro.dae`: it is
+`fovy` and the 0.075 m stereo baseline are the OAK-D Pro profile hangar_sim's forward stereo pair
+also uses, reused verbatim so captures from the two configs stay comparable for visual-odometry
+work. The housing is primitive geoms rather than upstream's `oakd_pro.dae`: it is
 visual only, and every geom stays at or behind the optical plane because group 2 is what MuJoCo's
 offscreen pass renders, so anything in front of the optical centres would occlude all three camera
 images. A regression test pins that margin.
 
-The stereo pair is gated behind `enable_vo` (default off), matching hangar_sim. MuJoCo renders
-every fixed MJCF camera on the render timer whether or not anything subscribes, so leaving the pair
-on costs two extra 1280x720 offscreen passes per render tick and puts image topics nobody can use
-in the operator's camera picker. `oakd_color` is never gated.
+The stereo pair is gated behind `enable_vo` (default off), matching hangar_sim, because leaving it on puts image topics nobody can use in the operator's camera picker. `oakd_color` is never gated.
+
+With `enable_vo` on, `picknik_mujoco_ros` publishes the pair as rectified stereo for visual odometry: mono8 `/oakd/{left,right}/image_rect` and `/oakd/{left,right}/camera_info`, sharing one stamp per frame pair, with the baseline in the right `camera_info`'s `P[3]`. The `oakd_stereo` `<sensor>` block in `description/husky_a300_mujoco.xacro` declares the pair.
 
 ## Roadmap
 

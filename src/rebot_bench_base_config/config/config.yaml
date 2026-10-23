@@ -25,6 +25,7 @@ hardware:
       - torque_enable: "true"
       # Driver-owned latched trip; runtime returns HOME before torque OFF.
       - thermal_cutoff_c: "100.0"
+      - thermal_clear_c: "75.0"
       # Real only. joint1-joint6 control: "position_csp" (the motor's own
       # position loop) or "motion" (impedance, the Xacro default). See the README.
       - arm_control_mode: "position_csp"

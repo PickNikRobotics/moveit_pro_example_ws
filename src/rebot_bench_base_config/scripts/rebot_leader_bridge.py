@@ -95,14 +95,16 @@ class LeaderBridge:
         node.create_timer(1.0 / publish_rate, self.tick)
 
     def observe_thermal(self, message):
+        self.thermal_tripped = bool(message.data)
         if message.data:
-            self.thermal_tripped = True
             self.state.stop("Driver thermal trip; backend owns HOME recovery")
             # The thermal recovery owner cancels the task and sends the one
             # native HOME goal. Do not send a competing goal or position hold.
             self.state.recover = False
             self.state.fault = "Driver thermal trip latched"
             self.prepared_at = None
+        # False releases only the driver's thermal flag. The stop fault,
+        # preparation and explicit HOME/start checks still gate following.
 
     def observe_hardware(self, message):
         self.hardware_state = message

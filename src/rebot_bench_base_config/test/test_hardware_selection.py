@@ -71,6 +71,7 @@ def test_real_selects_the_robstride_driver_with_the_no_brakes_settings():
         "freeze_on_joint_loss": "true",
         "torque_enable": "true",
         "thermal_cutoff_c": "100.0",
+        "thermal_clear_c": "75.0",
     }
 
 

@@ -259,8 +259,8 @@ Apache License 2.0.
 `thermal_cutoff_c` is an optional ros2_control hardware parameter (degrees C;
 finite and nonnegative, default 0 disables detection). At or above the threshold,
 the driver latches `~/thermal_tripped` (`std_msgs/msg/Bool`, reliable,
-transient-local depth 1, 10 Hz). Cooling and lifecycle transitions do not clear
-it. Already-enabled motors keep accepting recovery commands; the trip itself
+transient-local depth 1, 10 Hz). Cooling alone and lifecycle transitions do not
+clear it. Already-enabled motors keep accepting recovery commands; the trip itself
 never sends Stop frames or returns a ros2_control error. New activation and
 `~/set_torque=true` are rejected while latched; write() cannot automatically
 re-enable a motor that drops out. Hot initial feedback prevents startup enable.
@@ -270,6 +270,23 @@ rest pose, verify fresh measured rest, and only then use the existing
 `~/set_torque` service to switch torque off. If recovery or state freshness
 fails, keep torque engaged and report intervention required. The driver has no
 knowledge of a robot's HOME pose. Existing motor fault and communication-loss
-handling remains in force. Restart the driver only after safe rest, cooling and
-fault recovery; this is the sole latch reset. This is a software protection
+handling remains in force.
+
+After successful recovery, the runtime may attest fresh measured rest through
+`~/thermal_rest_verified` (`std_msgs/msg/UInt64`, reliable, volatile, depth 1).
+The payload is the measured rest sample's same-host steady-clock timestamp in
+nanoseconds. The control loop consumes the attestation only while that sample
+is less than 100 ms old, so delayed delivery cannot authorize clear. It clears only
+when torque is requested OFF, all configured motors report RESET/OFF without
+faults, and every motor's complete Type-2 feedback is less than 500 ms old with
+a finite nonnegative temperature strictly below `thermal_clear_c` (default
+75 C). This hardware parameter must be finite, nonnegative and below the enabled
+cutoff. Missing, invalid, future or stale feedback cannot clear; fault frames
+cannot refresh temperature freshness. The runtime must never attest rest after
+failed recovery or stale/off-rest measurements, and must refresh the attestation
+while waiting for cooling. This generic driver cannot verify the robot's HOME.
+
+Clearing publishes false and leaves torque requested OFF. Only an explicit
+operator HOME-enable procedure and a newly started Objective may re-engage;
+clearing never sends Enable or restarts following. This is a software protection
 handoff, not an independent safety-rated overtemperature shutdown.

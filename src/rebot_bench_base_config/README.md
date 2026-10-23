@@ -693,7 +693,12 @@ latched fault but does not by itself restore the joint.
 
 ### Thermal protection
 
-`hardware.robot_description.urdf_params` sets `thermal_cutoff_c: "100.0"`.
+`hardware.robot_description.urdf_params` sets `thermal_cutoff_c: "100.0"` and
+`thermal_clear_c: "75.0"` (degrees C). The clear threshold must be finite,
+nonnegative and strictly below the enabled cutoff. The driver defaults
+`thermal_clear_c` to 75 C when omitted; an enabled cutoff of 75 C or lower
+therefore requires an explicit lower clear threshold, otherwise initialization
+is refused.
 The RobStride driver detects any motor at or above that temperature and latches
 `/robstride_hardware_interface/thermal_tripped`. Already-enabled motors keep
 torque for recovery; automatic re-enable and further torque-enable requests are
@@ -717,8 +722,32 @@ step exceeds its own time bound (120 s for native HOME, a few seconds for each
 other step), the system keeps the latch and reports intervention required; it never disables
 away from HOME. Reachable joints retain torque under the existing loss/fault
 policy. Existing collision checks and motor fault handling remain active.
-Cooling cannot re-engage following. Only after confirmed HOME/OFF, cooling and
-fault recovery may the driver be restarted to reset the latch. Software recovery
+After successful HOME-then-OFF recovery, the guard continues checking fresh
+stationary measured HOME and healthy all-seven OFF feedback. While those hold,
+it publishes a `~/thermal_rest_verified` attestation to the owning driver once
+per second. Its `std_msgs/msg/UInt64` payload is the measured HOME sample's
+same-host steady-clock timestamp; delayed attestations expire after 0.1 s. The
+driver clears only if torque remains requested OFF and every configured motor
+reports RESET/OFF, no current fault, and a finite nonnegative temperature strictly
+below `thermal_clear_c`. Each motor needs complete Type-2 feedback less than 0.5 s old;
+missing, stale, future-dated or invalid temperature samples cannot clear the
+latch. Historical fault words alone do not block cooling-stage attestation or
+clear; earlier HOME/OFF recovery stages retain their strict fault checks.
+Fault-only traffic does not refresh a temperature sample. The driver's
+`thermal_tripped` publication then becomes false, and the leader bridge clears
+its thermal flag while preserving its stopped state. The rest
+attestation belongs to the recovery owner; the generic driver cannot verify
+HOME itself, so do not publish it as a manual bypass of HOME verification.
+
+Cooling and clearing never enable torque or restart an Objective. Wait for the
+clear confirmation at HOME, use the supported HOME enable procedure
+(`~/set_torque`, `data: true`), and explicitly start the Objective again. For
+**Mirror reBot Leader**, match the Star Arm to reBot and start Mirror again at
+HOME; its existing preparation, enabled-motor and alignment checks still apply.
+A failed HOME never requests clearing and keeps its existing latch and torque
+retention policy. A hot startup already fully OFF stays OFF with its latch
+retained; it has not completed HOME recovery. Recover and restart at confirmed
+HOME only through the supported intervention procedure. Software recovery
 cannot guarantee HOME after motor or communication failure and is not a
 safety-rated thermal shutdown.
 
