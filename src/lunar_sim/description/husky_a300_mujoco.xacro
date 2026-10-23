@@ -85,16 +85,25 @@
         <param name="camera_enabled">false</param>
       </sensor>
     </xacro:unless>
-    <!-- Name the renders like a real OAK-D's raw streams. The per-camera camera_info carries no
-         stereo baseline, hence "monocular"; producing rectified stereo for VO is a separate step. -->
+    <!-- picknik_mujoco_ros publishes the pair as the rectified stereo input VO consumes: mono8
+         like the OAK-D's monochrome OV9282 sensors, and one stamp per frame pair. The stereo block
+         takes the baseline from the MJCF camera positions and puts it in the right camera_info's
+         P[3]. MuJoCo cameras are distortion-free and the pair is rectified, so the renders are
+         already image_rect. -->
     <xacro:if value="$(arg enable_vo)">
       <sensor name="oakd_left">
-        <param name="rgb_topic">/oakd/left/image_raw</param>
-        <param name="camera_info_topic">/oakd/left/monocular_camera_info</param>
+        <param name="rgb_topic">/oakd/left/image_rect</param>
+        <param name="camera_info_topic">/oakd/left/camera_info</param>
+        <param name="image_encoding">mono8</param>
       </sensor>
       <sensor name="oakd_right">
-        <param name="rgb_topic">/oakd/right/image_raw</param>
-        <param name="camera_info_topic">/oakd/right/monocular_camera_info</param>
+        <param name="rgb_topic">/oakd/right/image_rect</param>
+        <param name="camera_info_topic">/oakd/right/camera_info</param>
+        <param name="image_encoding">mono8</param>
+      </sensor>
+      <sensor name="oakd_stereo">
+        <param name="stereo_left_camera">oakd_left</param>
+        <param name="stereo_right_camera">oakd_right</param>
       </sensor>
     </xacro:if>
     <hardware>
