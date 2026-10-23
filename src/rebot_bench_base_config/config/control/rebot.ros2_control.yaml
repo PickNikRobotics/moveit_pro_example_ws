@@ -38,12 +38,12 @@ joint_trajectory_admittance_controller:
     # One per joint in group order (joint1-joint7): the measured teleop limits, the braking
     # proven on the bench. The arm's planning limits in config/moveit/joint_limits.yaml are twice these.
     stop_accelerations: [0.6, 0.6, 0.6, 0.6, 0.6, 0.6, 6.0]
-    # Both apply to every joint and are sized for motion (impedance) mode, which sends no gravity
+    # Both use one value on every joint, sized for motion (impedance) mode, which sends no gravity
     # feedforward: a loaded joint lags and settles short by load torque / kp, measured at up to
     # 0.088 rad. A goal whose first point is further than the path tolerance from the measured
     # position is rejected before anything moves, as is any deviation this large while moving.
-    default_path_tolerance: 0.15
-    default_goal_tolerance: 0.1
+    default_path_tolerances: [0.15, 0.15, 0.15, 0.15, 0.15, 0.15, 0.15]
+    default_goal_tolerances: [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
     default_goal_time_tolerance: 2.0
 joint_velocity_controller:
   ros__parameters:
