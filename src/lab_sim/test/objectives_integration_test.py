@@ -309,7 +309,6 @@ skip_objectives = {
     # is sensitive to the simulator falling under realtime, and we see ~50% flake
     # rate even with the 0.003 s scene timestep and CPU pinning. See PR #615.
     "Push Button With a Trajectory",
-    "Record Square Trajectory",
     "Scan Scene - Multiple Point Clouds",
     "Stack Objects with ICP",  # Skipped because there is no primary ui to switch to in ci
     "Stitch Multiple Point Clouds Together",

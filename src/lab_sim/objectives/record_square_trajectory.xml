@@ -7,19 +7,18 @@
     _favorite="false"
   >
     <Control ID="Sequence" name="TopLevelSequence">
-      <Control ID="Parallel" failure_count="1" success_count="1">
-        <Decorator ID="KeepRunningUntilFailure">
-          <Action
-            ID="RecordJointTrajectory"
-            joint_state_topic="/joint_states"
-            joint_trajectory_message="{joint_trajectory_msg}"
-            planning_group_name="manipulator"
-            start_recording_service="/start_recording_joint_trajectory"
-            stop_recording_service="/stop_recording_joint_trajectory"
-            timeout_sec="5.000000"
-            joint_space_step="0.01"
-          />
-        </Decorator>
+      <!--The recorder sets joint_trajectory_msg only after the stop call, so the save runs once both children succeed.-->
+      <Control ID="Parallel" failure_count="1" success_count="2">
+        <Action
+          ID="RecordJointTrajectory"
+          joint_state_topic="/joint_states"
+          joint_trajectory_message="{joint_trajectory_msg}"
+          planning_group_name="manipulator"
+          start_recording_service="/start_recording_joint_trajectory"
+          stop_recording_service="/stop_recording_joint_trajectory"
+          timeout_sec="5.000000"
+          joint_space_step="0.01"
+        />
         <Control ID="Sequence">
           <SubTree
             ID="Move to Waypoint"
@@ -40,14 +39,14 @@
             response_timeout="3.000000"
             wait_for_server_available_timeout="3.000000"
           />
-          <Action
-            ID="SaveJointTrajectoryToYaml"
-            message="{joint_trajectory_msg}"
-            yaml_filename="~/user_ws/src/lab_sim/objectives/square_traj"
-            overwrite="true"
-          />
         </Control>
       </Control>
+      <Action
+        ID="SaveJointTrajectoryToYaml"
+        message="{joint_trajectory_msg}"
+        yaml_filename="square_traj"
+        overwrite="true"
+      />
     </Control>
   </BehaviorTree>
   <TreeNodesModel>
