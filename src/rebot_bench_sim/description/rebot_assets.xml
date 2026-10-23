@@ -288,7 +288,8 @@
     <!-- kp matches the hardware jaw_kp (rebot.urdf.xacro). kv stays 0.05, not jaw_kd's
          0.5, and the RS00 force range stays, not rebot_leader_tuning.yaml's 1 Nm: the
          trajectory controller runs on the wall clock, so on a twin slower than real time
-         kv 0.5 lags Close Gripper past the 0.15 rad path tolerance. -->
+         kv 0.5 lags Close Gripper past the then-configured 0.15 rad path tolerance
+         (now 0.16 rad). -->
     <position
       name="joint7"
       joint="joint7"

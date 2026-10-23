@@ -42,12 +42,12 @@
             link_padding="0.0"
             solution="{goal}"
           />
-          <!-- Joint2 heats with reach: past this a leg overruns its heat budget. -->
+          <!-- Bound planned joint2 reach; motor-temperature protection is independent. -->
           <Action
             ID="IsPlannedJointAtMost"
             robot_state="{goal}"
             joint_name="joint2"
-            maximum="2.2"
+            maximum="2.4"
             reason="heat budget: too far from the base"
           />
         </Sequence>

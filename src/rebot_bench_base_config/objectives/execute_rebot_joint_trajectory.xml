@@ -46,7 +46,7 @@
         Saved trajectory to execute, e.g. written by Plan reBot Joint Move. Run
         it from the pose it was planned from: the controller rejects a
         trajectory whose first point is more than its path tolerance
-        (0.15 rad) from the measured position, and does not interpolate to it.
+        (0.16 rad) from the measured position, and does not interpolate to it.
       </input_port>
     </SubTree>
   </TreeNodesModel>

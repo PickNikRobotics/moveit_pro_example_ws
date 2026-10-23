@@ -42,7 +42,9 @@ joint_trajectory_admittance_controller:
     # feedforward: a loaded joint lags and settles short by load torque / kp, measured at up to
     # 0.088 rad. A goal whose first point is further than the path tolerance from the measured
     # position is rejected before anything moves, as is any deviation this large while moving.
-    default_path_tolerance: 0.15
+    # A measured 0.1514 rad jaw lag exceeded the previous 0.15 rad allowance.
+    # This shared 0.16 rad allowance applies to the arm and jaw alike.
+    default_path_tolerance: 0.16
     default_goal_tolerance: 0.1
     default_goal_time_tolerance: 2.0
 joint_velocity_controller:

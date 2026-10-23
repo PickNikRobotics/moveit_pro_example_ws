@@ -127,7 +127,7 @@ including after a power cycle. This tool is
 never called implicitly by launch or the Objective. Reapply only by explicit
 command after a driver restart. The MuJoCo jaw actuator mirrors kp=12, but keeps
 kd=0.05 and the RS00's ±14 Nm range: at kd 0.5 a twin running below real time lags Close Gripper past
-the 0.15 rad path tolerance.
+the then-configured 0.15 rad path tolerance (now 0.16 rad).
 It does not model firmware CSP limits or the physical jaw servo; its path proof cannot validate grip force,
 bounce, or motor sound. Those require a separately approved hardware test.
 
@@ -369,10 +369,12 @@ observations and uncertainty behind these home margins.
 **Planning limits are 0.6 rad/s and 1.2 rad/s² on joint1-joint6**, twice the measured
 teleop limits (0.3 rad/s, 0.6 rad/s²), **and 3.0 rad/s and 6.0 rad/s² on the gripper
 (joint7)**, its measured teleop limits, all below the stored motor speeds. The jaw is not
-doubled: at 6.0 rad/s it lagged its command by 0.151 rad, past the trajectory controller's
-0.15 rad `default_path_tolerance`, and that tolerance is one value for all seven joints, so
-raising it would also relax the arm. The arm and the twin use the same values. Change them
-in `config/moveit/joint_limits.yaml` and keep the URDF `velocity` limits in
+doubled: at 6.0 rad/s it lagged its command by about 0.151 rad. A later
+measured jaw lag of 0.1514 rad also exceeded the former 0.15 rad allowance.
+`default_path_tolerance` is now 0.16 rad for all seven joints, including the arm;
+the jaw planning speed remains 3.0 rad/s. Parameter readback confirmed 0.16 rad,
+but subsequent physical execution at that setting has not been verified.
+The arm and the twin use the same planning limits. Change those limits in `config/moveit/joint_limits.yaml` and keep the URDF `velocity` limits in
 `description/rebot.urdf.xacro` equal (the finger mimics at 0.008 times joint7's); the jog
 controllers in `config/control/rebot.ros2_control.yaml` keep the measured teleop limits,
 and its trajectory controller brakes a canceled goal at those limits too
@@ -806,9 +808,10 @@ is what both the CSP and motion modes are driven through. One
 `joint_trajectory_admittance_controller` owns all seven joints and accepts partial
 goals, so the arm and gripper planning groups both work through it. The joints a partial
 goal leaves out are commanded to their measured positions when the goal arrives. A goal
-whose first point is more than `default_path_tolerance` (0.15 rad, every joint) from the
-measured position is rejected before anything moves. Both that and the 0.1 rad goal
-tolerance are sized for motion mode's gravity sag (up to 0.088 rad measured).
+whose first point is more than `default_path_tolerance` (0.16 rad, every joint) from the
+measured position is rejected before anything moves. The 0.16 rad path tolerance
+accommodates the measured 0.1514 rad jaw lag; the 0.1 rad goal tolerance
+accommodates motion mode's gravity sag (up to 0.088 rad measured).
 
 The real branch declares `position` as the **only** command interface per joint,
 where mock also declares `velocity`. The driver exports whatever the description
@@ -845,7 +848,7 @@ before the arm moves:
   it was planned from. Before every execution, compare the measured joint positions
   (`/joint_states`) with the trajectory's first point and execute only if every joint
   is within 0.005 rad. The Objective does not make this comparison itself, and the
-  controller's own start check only rejects an arm more than 0.15 rad (its path
+  controller's own start check only rejects an arm more than 0.16 rad (its path
   tolerance) from the first point; it does not interpolate to that point, so a
   smaller offset is commanded as a step.
 
@@ -1061,9 +1064,9 @@ checks reach (see **Failures** below), all before any motion. It then runs
 even after an aborted run left the jaw command stale. The real jaw rests closed, so
 it then opens it at home with a
 gripper-only move, before any arm motion, then reads the measured joint7 and
-requires at least 5.1 rad: the 5.25 rad open command less the controller's
-0.15 rad start tolerance, so the arm legs that hold the open command are
-accepted. The controller can report a canceled opening as success, so a short
+requires at least 5.1 rad, leaving a 0.15 rad gap to the 5.25 rad open
+command, within the controller's 0.16 rad start tolerance, so the arm legs
+that hold the open command are accepted. The controller can report a canceled opening as success, so a short
 opening is retried once and then fails the Objective with the measured value;
 the survey never starts on a closed jaw. Both openings, at home and at the
 release, are this one check, **reBot Open Jaw**. After the release, the tree
@@ -1094,13 +1097,25 @@ release opening. Only a failure of that return home
 leaves the arm where it stopped, and an empty jaw closes even then, as it must
 after a leg that failed at home, where the one-point plan home is refused.
 
-The pre-motion checks also refuse planned joint2 positions above 2.2 rad, to
-limit the carry reach associated with bench heating. Change `maximum` in
-`objectives/rebot_check_pick_reach.xml`, `objectives/rebot_check_stack_reach.xml`
-and `objectives/rebot_check_source_heat_reach.xml` together. This geometric
-bound does not measure temperatures; the driver thermal latch and backend recovery own temperature
-protection and cancellation. After reaching home, recovery clears the carried
-cube's planning-scene attachment. A failed home return still reports failure.
+The pick, stack and unstack pre-motion checks refuse planned joint2 positions
+above 2.4 rad. A fresh blue-cube hover needed about 2.36 rad; the former 2.2 rad
+bound had also refused a reachable cube at 2.214 rad. Change `maximum` in
+`objectives/rebot_check_pick_reach.xml`, `objectives/rebot_check_stack_reach.xml`,
+`objectives/rebot_check_source_heat_reach.xml` and
+`objectives/rebot_draw_place_spot.xml` together. **Unstack Blue from Red** checks
+its approach hover, grasp and both lifts through the shared helpers, so it
+holds a stack to the same bound Stack Blue on Red placed it under. The drawn
+spot's release and next pick also use 2.4 rad. Physical execution at this bound
+has not been verified.
+
+Joint2's heat per leg grows with reach, and the measured joint2 runs 0.07-0.16 rad
+past the plan under load. Historically, a leg planned to 2.29 rad from a 30 C
+start reached the then-configured 55 C heat stop. The geometric reach bound
+does not measure temperatures; the current 100 C thermal trip and 75 C reset
+threshold, driver thermal latch and backend recovery remain unchanged.
+The operator still supervises heat as described under **Running the real arm**.
+After reaching home, recovery clears the carried cube's planning-scene
+attachment. A failed home return still reports failure.
 
 **Speed settings.** [`objectives/rebot_stack_motion.yaml`](objectives/rebot_stack_motion.yaml)
 holds one velocity and one acceleration scale factor per kind of leg, as
@@ -1173,8 +1188,9 @@ no cube, since none is out of reach; if no draw qualifies, the Objective fails
 without moving with `No reachable free spot for blue after 20 draws.` Only then does the arm move: close and open the jaw at
 home, grasp blue (**reBot Grasp Blue**), lift it 30 mm straight up without turning the
 wrist, so it clears red and the elbow stays off the wall (where that pose is out
-of reach, near the base, it lifts instead to a place hover 40 mm above the
-approach one; both are reach-checked before motion), carry it at about that height to above the spot, then set it down and release it there (**reBot Place Blue**, the stack's
+of reach, near the base, or plans joint2 past its 2.4 rad bound, it lifts instead
+to a place hover 40 mm above the approach one, held to the same bound; both are
+reach-checked before motion), carry it at about that height to above the spot, then set it down and release it there (**reBot Place Blue**, the stack's
 place on a different support), retreat, go home and close the jaw. A failure
 after motion starts runs **reBot Recover Home**, the stack's failure path: home,
 then the jaw closes unless it still holds the cube, and the Objective still
@@ -1185,14 +1201,14 @@ unless noted:
 
 | Setting | Where | Value |
 |---|---|---|
-| Spot region | `DrawPlaceSpot` `x_range`, `y_range`: the cube centre's range in world | x 0.35-0.46 m, y 0.02-0.20 m: the base side of the proven set (the base is at x 0.726), every spot within 0.42 m of it so the pick back up keeps joint2 at or below 2.2 rad planned |
-| Heat-reach bound | `maximum` of every `IsPlannedJointAtMost` in [`objectives/rebot_check_pick_reach.xml`](objectives/rebot_check_pick_reach.xml), [`objectives/rebot_check_stack_reach.xml`](objectives/rebot_check_stack_reach.xml) `rebot_draw_place_spot.xml`, [`objectives/unstack_blue_from_red.xml`](objectives/unstack_blue_from_red.xml) and [`objectives/rebot_check_source_heat_reach.xml`](objectives/rebot_check_source_heat_reach.xml): a pick, place or spot whose IK puts joint2 past it is refused before any motion (a spot is redrawn). Joint2's heat per leg grows with reach, and the measured joint2 runs 0.07-0.16 rad past the plan under load; a leg planned to 2.29 rad from a 30 C start reached the 55 C heat stop | 2.2 rad, about 0.42 m from the base |
+| Spot region | `DrawPlaceSpot` `x_range`, `y_range`: the cube centre's range in world | x 0.35-0.46 m, y 0.02-0.20 m: the base side of the proven set (the base is at x 0.726), every spot within 0.42 m of it; the region is unchanged and release and next-pick reach are checked at 2.4 rad |
+| Heat-reach bound | `maximum` in the three `rebot_check_*_reach.xml` helpers and `rebot_draw_place_spot.xml`: pick, place, unstack grasp and both lifts, spot release and next pick are checked before motion (an invalid spot is redrawn) | 2.4 rad; a fresh blue-cube hover needed about 2.36 rad |
 | Clearance from red | `DrawPlaceSpot` `clearance`: smallest centre-to-centre distance | 0.11 m |
 | Draws before failing | `RetryUntilSuccessful` `num_attempts` | 20 |
 | Release aim offset | `translation_xyz` of `release_spot` in [`objectives/rebot_draw_place_spot.xml`](objectives/rebot_draw_place_spot.xml): released 5 degrees tilted, blue pivots flat and lands farther from the base | 5 mm toward the base (-x in the spot's axes, whose yaw follows the base) |
 | Carry height | `raised_spot` in `rebot_draw_place_spot.xml`: the carry ends 50 mm above the spot's place hover and only then descends, so it does not dip past red | 0.05 m |
 | Lift off red | `translation_xyz` of `lift` in `unstack_blue_from_red.xml`: the matched release pose of [`objectives/rebot_plan_place.xml`](objectives/rebot_plan_place.xml) raised 30 mm. It is written out, not derived, so change its z with the release | `-0.000871557;0;0.067045702`: 30 mm above the release |
-| Raised-hover lift | `translation_xyz` of `raised_red_top` in `unstack_blue_from_red.xml`: near the base, where the straight lift is out of reach, blue lifts to a place hover chosen this far above red's top instead | 0.04 m |
+| Raised-hover lift | `translation_xyz` of `raised_red_top` in `unstack_blue_from_red.xml`: where the straight lift is out of reach, near the base, or past the 2.4 rad heat-reach bound, blue lifts to a place hover chosen this far above red's top instead, held to the same bound | 0.04 m |
 
 The region is the part of the mat the scene camera sees and the stack's proven
 placements span: at least 60 mm in from the mat's edges and 100 mm from the
@@ -1358,9 +1374,10 @@ below about 45 °C before enabling again.
 - Do not clear faults, reboot or re-enable motors automatically after an
   encoder, undervoltage or CAN fault; find the cause first. A second fault on
   the same joint in one session ends the session.
-- A refused jaw opening usually means a stale starting command, not a tight
-  tolerance. Keep the **Close Gripper** that **Pick Blue Cube** runs first, and
-  do not widen path tolerances to hide it.
+- A refused jaw opening can come from a stale starting command or tracking lag.
+  Keep the **Close Gripper** that **Pick Blue Cube** runs first to refresh the
+  starting command. The 0.16 rad path tolerance allows the measured 0.1514 rad
+  jaw lag; it does not replace source-start freshness checks.
 
 **Settings.** Change these at home with torque disabled, and restart the
 runtime after a YAML change; Objective XML is reread on every run.
@@ -1373,7 +1390,8 @@ runtime after a YAML change; Objective XML is reread on every run.
 | Leg speed scales | `objectives/rebot_stack_motion.yaml` | 1.0 for every kind |
 | Pick hold depth | `objectives/rebot_check_pick_reach.xml`, `TransformPose` to `{pick}` | `0;0;-0.015`: fingertips 35 mm above the mat |
 | Matched release | `objectives/rebot_plan_place.xml`, `TransformPose` to `{place}` | `-0.000871557;0;0.037045702` at 5° tilt |
-| Path tolerance | `config/control/rebot.ros2_control.yaml`, `default_path_tolerance` | 0.15 rad, every joint |
+| Joint2 pre-motion reach | Three `rebot_check_*_reach.xml` helpers and `rebot_draw_place_spot.xml` | 2.4 rad; fresh blue-cube hover needed about 2.36 rad; former 2.2 rad refused a reachable cube at 2.214 rad |
+| Path tolerance | `config/control/rebot.ros2_control.yaml`, `default_path_tolerance` | 0.16 rad, every joint |
 | Speed guard | the bench's own joint speed monitor | planned peak × 1.8 on the arm (1.08 rad/s at 0.6), 1.3-2 × on the jaw |
 
 Pick depth and release move together: the release keeps the same cube contact

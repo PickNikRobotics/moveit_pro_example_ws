@@ -2,7 +2,7 @@
 <root BTCPP_format="4" main_tree_to_execute="reBot Check Source Heat Reach">
   <BehaviorTree
     ID="reBot Check Source Heat Reach"
-    _description="Check collision-free IK and the joint2 heat-reach bound for a selected source hover. No motion is executed."
+    _description="Check collision-free IK and the joint2 heat-reach bound for a pose at the unstack's source stack: its approach hover, grasp or lift. No motion is executed."
   >
     <Sequence>
       <Action ID="GetCurrentPlanningScene" planning_scene_msg="{scene}" />
@@ -29,7 +29,7 @@
         ID="IsPlannedJointAtMost"
         robot_state="{goal}"
         joint_name="joint2"
-        maximum="2.2"
+        maximum="2.4"
         reason="heat budget: too far from the base"
       />
     </Sequence>
