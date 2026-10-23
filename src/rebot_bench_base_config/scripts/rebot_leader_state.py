@@ -56,9 +56,12 @@ def operator_fault(reason):
             "Following refused: a motor reached the configured temperature limit and thermal protection is latched. "
             "The backend handles HOME recovery and turns torque off only at HOME. "
             "If HOME recovery fails, torque stays on: stop and get operator help. "
-            "Wait for cooling and confirmed HOME with all seven motors OFF, then restart the backend (moveit_pro run): "
-            "only a restart clears the latch, and startup enables torque at HOME. "
-            "Then run Mirror reBot Leader again."
+            "After successful HOME recovery, wait at HOME with all seven motors OFF until every motor "
+            "is below thermal_clear_c (75 C by default); the driver then clears the latch automatically. "
+            "Torque stays OFF. Use the supported HOME enable procedure, match the Star Arm to reBot, "
+            "then explicitly run Mirror reBot Leader again at HOME. "
+            "If all motors were already OFF when the latch tripped (hot at startup), it does not clear "
+            "automatically: let reBot cool at HOME, then restart the backend (moveit_pro run)."
         )
     if "did not start" in reason.lower():
         return (

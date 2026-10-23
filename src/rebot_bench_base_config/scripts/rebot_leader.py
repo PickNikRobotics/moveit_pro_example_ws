@@ -128,17 +128,28 @@ def run_reader(
         # multi-turn reset, angle target, or follower motor access.
         for name in LEADER_NAMES:
             bus.unlock(calibration[name]["id"])
+        last_warning = -math.inf
+        rejected = 0
         while True:
             started = clock()
             try:
                 positions = read_positions(bus, calibration)
+                rejected = 0
                 print(
                     json.dumps({"sample_time": started, "positions": positions}),
                     file=output,
                     flush=True,
                 )
             except Exception as exc:
-                print(f"Leader sample rejected: {exc}", file=sys.stderr, flush=True)
+                rejected += 1
+                warning_time = clock()
+                if warning_time - last_warning >= 5.0:
+                    print(
+                        f"Leader sample rejected ({rejected} reads this outage): {exc}",
+                        file=sys.stderr,
+                        flush=True,
+                    )
+                    last_warning = warning_time
                 print(
                     json.dumps({"sample_time": started, "error": str(exc)}),
                     file=output,

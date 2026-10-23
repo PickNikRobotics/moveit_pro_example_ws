@@ -4,7 +4,8 @@
 """Driver thermal latch -> cancel -> native HOME -> fresh stationary HOME-only OFF.
 
 One backend process owns thermal recovery even when the leader is disabled.
-It never opens CAN/USB, enables torque, resets the latch, or changes lifecycle.
+It never opens CAN/USB, enables torque, or changes lifecycle. After successful
+recovery it attests fresh HOME/OFF to the driver's cool-temperature clear check.
 """
 import math
 import signal
@@ -19,7 +20,7 @@ from rclpy.time import Time
 from rclpy.qos import DurabilityPolicy, QoSProfile, qos_profile_sensor_data
 from robstride_interfaces.msg import RobstrideState
 from sensor_msgs.msg import JointState
-from std_msgs.msg import Bool
+from std_msgs.msg import Bool, UInt64
 from std_srvs.srv import SetBool
 
 from rebot_leader import JOINT_NAMES
@@ -48,12 +49,16 @@ class ThermalGuard:
         self.measured_time = -math.inf
         self.home_since = None
         self.hardware_stamp_ns = self.measured_stamp_ns = -1
+        self.next_clear = -math.inf
         self.cancel = node.create_client(
             CancelGoal, "/do_objective/_action/cancel_goal"
         )
         self.home = ActionClient(node, DoObjectiveSequence, "/do_objective")
         self.torque = node.create_client(
             SetBool, "/robstride_hardware_interface/set_torque"
+        )
+        self.clear = node.create_publisher(
+            UInt64, "/robstride_hardware_interface/thermal_rest_verified", 1
         )
         node.create_subscription(
             Bool,
@@ -76,6 +81,12 @@ class ThermalGuard:
         node.create_timer(0.02, self.tick)
 
     def trip(self, message):
+        if not message.data and self.stage == "cooling":
+            self.stage, self.future, self.started = "idle", None, None
+            self.home_since = None
+            self.node.get_logger().info(
+                "Thermal latch cleared; torque stays OFF, explicitly restart the Objective at HOME"
+            )
         if message.data and self.stage == "idle":
             self.stage = "cancel"
             self.started = time.monotonic()
@@ -124,7 +135,7 @@ class ThermalGuard:
         self.measured = [lookup[name] for name in JOINT_NAMES]
         self.measured_time = time.monotonic() - age
 
-    def hardware_fresh(self, now):
+    def hardware_fresh(self, now, *, ignore_history=False):
         state = self.hardware
         return (
             state is not None
@@ -133,7 +144,7 @@ class ThermalGuard:
             and len(state.enabled) == 7
             and len(state.fault_bits) == 7
             and state.comm_state == 0
-            and not any(state.fault_bits)
+            and (ignore_history or not any(state.fault_bits))
         )
 
     def at_home(self, now):
@@ -161,6 +172,21 @@ class ThermalGuard:
             self.fail(f"Thermal recovery unavailable: {exc}")
 
     def advance(self, now):
+        if self.stage == "cooling":
+            if (
+                now >= self.next_clear
+                # Healthy Type-2 clears current faults, not diagnostic history.
+                and self.hardware_fresh(now, ignore_history=True)
+                and not any(self.hardware.enabled)
+                and self.at_home(now)
+            ):
+                # Same-host steady clock as motor feedback. Carry the measured
+                # HOME sample's time, so even a delayed DDS delivery expires.
+                message = UInt64()
+                message.data = int(self.measured_time * 1e9)
+                self.clear.publish(message)
+                self.next_clear = now + 1.0
+            return
         if (
             self.stage in ("cancel", "home")
             and self.hardware_fresh(now)
@@ -247,9 +273,9 @@ class ThermalGuard:
             and self.hardware_fresh(now)
             and not any(self.hardware.enabled)
         ):
-            self.stage = "off"
+            self.stage = "cooling"
             self.node.get_logger().error(
-                "Thermal recovery complete: HOME and all seven motors OFF; latch retained"
+                "Thermal recovery complete: HOME and all seven motors OFF; waiting for cooling"
             )
 
 

@@ -102,8 +102,21 @@ CallbackReturn RobstrideHardware::on_init(
 
   try {
     const auto cutoff = info_.hardware_parameters.find("thermal_cutoff_c");
-    thermal_latch_.Configure(
-      cutoff == info_.hardware_parameters.end() ? 0.0 : std::stod(cutoff->second));
+    const auto clear = info_.hardware_parameters.find("thermal_clear_c");
+    const double cutoff_c =
+      cutoff == info_.hardware_parameters.end() ? 0.0 : std::stod(cutoff->second);
+    const double clear_c =
+      clear == info_.hardware_parameters.end() ? 75.0 : std::stod(clear->second);
+    if (std::isfinite(cutoff_c) && std::isfinite(clear_c) &&
+      cutoff_c > 0.0 && clear_c >= cutoff_c)
+    {
+      RCLCPP_ERROR_STREAM(
+        logger_,
+        "thermal_clear_c (75 by default) must be below thermal_cutoff_c (" << cutoff_c <<
+          "); set thermal_clear_c in the hardware parameters to a lower value.");
+      return CallbackReturn::ERROR;
+    }
+    thermal_latch_.Configure(cutoff_c, clear_c);
     if (info_.hardware_parameters.count("master_id")) {
       master_id_ = static_cast<uint8_t>(std::stoi(info_.hardware_parameters.at("master_id")));
     }
@@ -132,7 +145,8 @@ CallbackReturn RobstrideHardware::on_init(
     RCLCPP_ERROR_STREAM(
       logger_,
       "Malformed hardware parameter "
-      "(master_id/error_timeout_ms/motor_can_timeout_ms/thermal_cutoff_c): " << e.what());
+      "(master_id/error_timeout_ms/motor_can_timeout_ms/thermal_cutoff_c/thermal_clear_c): " <<
+        e.what());
     return CallbackReturn::ERROR;
   }
   if (motor_can_timeout_ms_ <= 0.0) {
@@ -330,6 +344,16 @@ CallbackReturn RobstrideHardware::on_init(
         std_msgs::msg::Bool message;
         message.data = thermal_latch_.tripped();
         thermal_pub_->publish(message);
+    });
+  thermal_samples_.resize(n);
+  thermal_clear_sub_ = this->create_subscription<std_msgs::msg::UInt64>(
+    "~/thermal_rest_verified", rclcpp::QoS(1).reliable(),
+    [this](std_msgs::msg::UInt64::ConstSharedPtr message) {
+      // This is a rest-pose attestation by the recovery owner, not a torque
+      // command. The RT loop owns the latch and revalidates every motor.
+      // The payload is the HOME measurement's same-host steady timestamp,
+      // not receipt time: stale or delayed attestations cannot authorize clear.
+      thermal_clear_request_ns_.store(message->data, std::memory_order_relaxed);
     });
 
   get_data_srv_ = this->create_service<robstride_interfaces::srv::GetDataFromRobstride>(
@@ -1056,6 +1080,28 @@ void RobstrideHardware::UpdateThermalLatch()
       "Thermal cutoff reached: trip latched, torque retained for runtime rest-pose recovery; "
       "automatic re-enable blocked");
   }
+  const auto request_ns = thermal_clear_request_ns_.exchange(0, std::memory_order_relaxed);
+  const auto now_ns = robstride_sdk::NowNs();
+  if (request_ns == 0 || request_ns > now_ns || now_ns - request_ns >= 100'000'000ull ||
+    torque_enabled_desired_.load(std::memory_order_relaxed))
+  {
+    return;
+  }
+  for (size_t i = 0; i < motors_.size(); ++i) {
+    const auto & state = motors_[i]->state();
+    const auto stamp = state.last_feedback_ns.load(std::memory_order_acquire);
+    thermal_samples_[i] = {
+      state.temperature.load(std::memory_order_relaxed), stamp,
+      state.run_state.load(std::memory_order_relaxed) ==
+      static_cast<uint8_t>(robstride_sdk::RunState::RESET),
+      // Type-2 refreshes current health; detailed fault_bits retain history.
+      !state.fault_present.load(std::memory_order_relaxed)};
+  }
+  if (thermal_latch_.TryClear(thermal_samples_, now_ns)) {
+    RCLCPP_INFO(logger_,
+      "Thermal latch cleared after runtime rest verification and fresh cool OFF feedback; "
+      "torque remains OFF, explicit operator re-engagement required");
+  }
 }
 
 void RobstrideHardware::SetTorqueCallback(
@@ -1068,7 +1114,7 @@ void RobstrideHardware::SetTorqueCallback(
   if (request->data && thermal_latch_.tripped()) {
     response->success = false;
     response->message =
-      "Thermal trip latched; no re-enable until recovery and driver restart at rest";
+      "Thermal trip latched; no re-enable until successful rest/OFF recovery and cooling";
     return;
   }
   torque_enabled_desired_.store(request->data, std::memory_order_relaxed);

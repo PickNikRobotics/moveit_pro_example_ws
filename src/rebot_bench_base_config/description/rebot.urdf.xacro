@@ -9,6 +9,7 @@
        real hardware uses this. -->
   <xacro:arg name="torque_enable" default="true" />
   <xacro:arg name="thermal_cutoff_c" default="100.0" />
+  <xacro:arg name="thermal_clear_c" default="75.0" />
   <!-- Real hardware only; joint1-joint6 control mode. "motion" is impedance
        (MIT): torque = kp * error + kd * velocity error, with no gravity
        feedforward, so a loaded joint settles short by load torque / kp.
@@ -587,6 +588,7 @@
         <param name="freeze_on_joint_loss">true</param>
         <param name="torque_enable">$(arg torque_enable)</param>
         <param name="thermal_cutoff_c">$(arg thermal_cutoff_c)</param>
+        <param name="thermal_clear_c">$(arg thermal_clear_c)</param>
       </xacro:if>
     </hardware>
     <xacro:rebot_joint name="joint1" id="1" model="RS06" kp="50.0" kd="3.0" />
