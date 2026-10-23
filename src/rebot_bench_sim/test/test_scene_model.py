@@ -503,10 +503,13 @@ def test_jaw_closes_from_open_inside_the_path_tolerance_below_real_time(model, d
     jaw = yaml.safe_load((base / "config/moveit/joint_limits.yaml").read_text())[
         "joint_limits"
     ]["joint7"]
+    # joint7 is the last of the seven joints in the controller's planning group.
     tolerance = yaml.safe_load(
         (base / "config/control/rebot.ros2_control.yaml").read_text()
     )["joint_trajectory_admittance_controller"]["ros__parameters"][
-        "default_path_tolerance"
+        "default_path_tolerances"
+    ][
+        -1
     ]
     opened, speed, accel = (
         jaw["max_position"],

@@ -47,6 +47,8 @@ joint_trajectory_admittance_controller:
       - 30.0
       - 30.0
       - 30.0
+    default_path_tolerances: [0.05, 0.05, 0.05, 0.05, 0.05, 0.05]
+    default_goal_tolerances: [0.05, 0.05, 0.05, 0.05, 0.05, 0.05]
 
 velocity_force_controller:
   ros__parameters:

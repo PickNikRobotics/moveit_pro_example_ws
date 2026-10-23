@@ -61,10 +61,10 @@ joint_trajectory_admittance_controller:
     # the gravity compensation torque. If your robot is not in the same orientation as the base frame, you should
     # provide the gravity vector in the base frame.
     gravity_vector: [0.0, 0.0, -9.8]
-    # Default maximum joint-space deviation accepted along the trajectory, if not specified in the goal message.
-    default_path_tolerance: 0.05
-    # Default maximum joint-space deviation accepted at the trajectory end-point, if not specified in the goal message.
-    default_goal_tolerance: 0.05
+    # Default maximum joint-space deviation accepted along the trajectory, per joint, if not specified in the goal message.
+    default_path_tolerances: [0.05, 0.05, 0.05, 0.05, 0.05, 0.05]
+    # Default maximum joint-space deviation accepted at the trajectory end-point, per joint, if not specified in the goal message.
+    default_goal_tolerances: [0.05, 0.05, 0.05, 0.05, 0.05, 0.05]
     # Time the joints have after the trajectory end to come within the goal tolerance. The simulated arm trails the
     # command when the simulation runs below realtime, as it does on CI runners.
     default_goal_time_tolerance: 0.5
