@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Calibrate Scene Camera">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Calibrate Scene Camera"
+    _description="Calibrate the pose of the narrow scene camera from views of the arm board, and draw the solved camera and board poses in the 3D view. Run Generate Extrinsic Calibration Waypoints first. See the Camera Calibration guide at https://docs.picknik.ai/how_to/robotics_applications/camera_calibration/."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree
+        ID="Calibrate Eye To Hand Camera"
+        _collapsed="true"
+        image_topic="/scene_camera_narrow/color"
+        camera_info_topic="/scene_camera_narrow/camera_info"
+        camera_name="scene_camera_narrow"
+        point_cloud_topic="/scene_camera_narrow/points"
+        joint_group_name="manipulator"
+        end_effector_frame="grasp_link"
+        base_frame="world"
+        board="[{squares_x: 5, squares_y: 4, square_length: 0.045, marker_length: 0.033, dictionary: DICT_5X5_50}]"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Calibrate Scene Camera">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Perception - Camera Calibration" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
