@@ -85,8 +85,13 @@ gripper move can still report success.
 
 `IsPlannedJointAtMost` refuses a planned joint position above `maximum` in a
 `moveit_msgs/RobotState`, with the configured reason. The pre-motion reach
-checks use it for joint2's 2.2 rad bound; change that bound in all reach helpers
-together. It is a geometric planning check, not a motor-temperature sensor.
+checks use a 2.4 rad joint2 bound throughout pick, stack and unstack, including
+both lift routes and the drawn spot's release and next pick. A fresh blue-cube
+hover needed about 2.36 rad; the former 2.2 rad bound had also refused a
+reachable cube at 2.214 rad. Keep all checks in the three
+`rebot_check_*_reach.xml` helpers and `rebot_draw_place_spot.xml` aligned.
+This is a geometric planning check, not a motor-temperature sensor; physical
+execution at 2.4 rad has not been verified.
 
 `IsCubeStacked` succeeds only when a located cube's top centre lies within
 `max_offset` horizontally of the located top of the cube it should rest on, and

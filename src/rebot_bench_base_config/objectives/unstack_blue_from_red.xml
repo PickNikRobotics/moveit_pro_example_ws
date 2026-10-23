@@ -34,37 +34,12 @@
             place="{pick}"
           />
           <SubTree ID="reBot Check Source Heat Reach" target="{pick_hover}" />
-          <Action ID="GetCurrentPlanningScene" planning_scene_msg="{scene}" />
-          <Action ID="ResetVector" vector="{path}" />
-          <Action
-            ID="PushBackVector"
-            input_vector="{path}"
-            element="{pick}"
-            output_vector="{path}"
-          />
-          <Action
-            ID="ComputeInverseKinematics"
-            target_poses="{path}"
-            tip_links="gripper_end"
-            planning_scene_msg="{scene}"
-            planning_group_name="manipulator"
-            ik_timeout_s="0.5"
-            solve_mode="optimize_distance"
-            optimization_timeout_s="0.1"
-            link_padding="0.0"
-            solution="{goal}"
-          />
-          <Action
-            ID="IsPlannedJointAtMost"
-            robot_state="{goal}"
-            joint_name="joint2"
-            maximum="2.2"
-            reason="heat budget: too far from the base"
-          />
+          <SubTree ID="reBot Check Source Heat Reach" target="{pick}" />
           <!-- Lift 30 mm straight up from the grasp without turning the wrist,
-               so the elbow stays off the wall at the far corner. Near the base,
-               where that pose is out of reach, lift instead to a place hover
-               40 mm above the approach one. -->
+               so the elbow stays off the wall at the far corner. Where that pose
+               is out of reach, near the base, or past the heat-reach bound, lift
+               instead to a place hover 40 mm above the approach one, held to
+               the same bound. -->
           <Fallback>
             <Sequence>
               <Action
@@ -74,32 +49,7 @@
                 quaternion_xyzw="0;0.6755902076156602;0;0.7372773368101241"
                 output_pose="{lift}"
               />
-              <Action ID="ResetVector" vector="{path}" />
-              <Action
-                ID="PushBackVector"
-                input_vector="{path}"
-                element="{lift}"
-                output_vector="{path}"
-              />
-              <Action
-                ID="ComputeInverseKinematics"
-                target_poses="{path}"
-                tip_links="gripper_end"
-                planning_scene_msg="{scene}"
-                planning_group_name="manipulator"
-                ik_timeout_s="0.5"
-                solve_mode="optimize_distance"
-                optimization_timeout_s="0.1"
-                link_padding="0.0"
-                solution="{goal}"
-              />
-              <Action
-                ID="IsPlannedJointAtMost"
-                robot_state="{goal}"
-                joint_name="joint2"
-                maximum="2.2"
-                reason="heat budget: too far from the base"
-              />
+              <SubTree ID="reBot Check Source Heat Reach" target="{lift}" />
             </Sequence>
             <Sequence>
               <Action

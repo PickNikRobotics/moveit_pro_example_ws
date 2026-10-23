@@ -38,6 +38,7 @@
 #include <ranges>
 #include <set>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace
@@ -58,7 +59,8 @@ const std::vector<std::string> kRecordedPorts{ "waypoint_name",
                                                "message",
                                                "cube",
                                                "max_offset",
-                                               "min_height" };
+                                               "min_height",
+                                               "maximum" };
 const std::set<std::string> kOwnStubs{ "LoadMotionScales", "IsJointAtLeast", "GetSizeOfVector", "GetElementOfVector" };
 
 struct Call
@@ -153,7 +155,14 @@ protected:
           const bool depth_below_bound = call.label == "IsCubeStacked" &&
                                          node.getInput<double>("max_offset").value_or(-1.0) == 0.0 &&
                                          !(unstacked_blue_height >= node.getInput<double>("min_height").value());
-          const bool fail = call.label == "ReportUnreachableCube" || depth_below_bound ||
+          // A heat-reach check refuses the joint2 planned for it when that lies past the check's own maximum.
+          bool past_maximum = false;
+          if (call.label == "IsPlannedJointAtMost" && !planned_joint2.empty())
+          {
+            past_maximum = planned_joint2.front() > node.getInput<double>("maximum").value();
+            planned_joint2.pop_front();
+          }
+          const bool fail = call.label == "ReportUnreachableCube" || depth_below_bound || past_maximum ||
                             (call.label == "ValidateTrajectory" && single_point_plan) || refused;
           return fail ? BT::NodeStatus::FAILURE : BT::NodeStatus::SUCCESS;
         },
@@ -162,7 +171,7 @@ protected:
           BT::InputPort<std::string>("task"), BT::InputPort<std::string>("message"), BT::InputPort<std::string>("cube"),
           BT::InputPort<std::string>("joint_group_name"), BT::InputPort<std::string>("planning_group_name"),
           BT::InputPort<double>("velocity_scale_factor"), BT::InputPort<double>("acceleration_scale_factor"),
-          BT::InputPort<double>("max_offset"), BT::InputPort<double>("min_height") });
+          BT::InputPort<double>("max_offset"), BT::InputPort<double>("min_height"), BT::InputPort<double>("maximum") });
     factory.registerSimpleAction(
         "LoadMotionScales",
         [this](BT::TreeNode& node) {
@@ -268,6 +277,8 @@ protected:
   std::map<std::string, rebot_bench_behaviors::MotionScales> settings;
   std::deque<double> measured_jaw;
   std::deque<int> blue_near_red;
+  // Joint2 as planned at each heat-reach check, oldest first; inside every bound when unset.
+  std::deque<double> planned_joint2;
   double unstacked_blue_height = 0.05;
   std::vector<double> measured_arm = std::vector<double>(6, 0.0);
   bool arm_home = false;
@@ -486,7 +497,7 @@ TEST_F(StackObjectives, ShortHomeOpeningsSendTheStackHomeAndCloseTheJaw)
 
 TEST_F(StackObjectives, OpeningMarginallyShortOfTheControllerStartToleranceFails)
 {
-  // Arm legs hold the 5.25 rad open command; the controller rejects a start more than 0.15 rad away.
+  // Arm legs hold the 5.25 rad open command; the controller rejects a start more than 0.16 rad away.
   measured_jaw = { 5.05, 5.05 };
   EXPECT_EQ(run(kPick), BT::NodeStatus::FAILURE);
 }
@@ -879,6 +890,62 @@ TEST_F(StackObjectives, InvalidOrOutOfRangeUnstackDepthCannotPassTheInvertedUppe
     EXPECT_EQ(labelsStartingWith(calls, { "RecordEpisode", "SaveEpisode", "StopRecording" }),
               (std::vector<std::string>{ kUnstackTask, "StopRecording" }));
   }
+}
+
+TEST_F(StackObjectives, CycleUnstacksAStackPlacedJustInsideTheHeatReachBound)
+{
+  const std::string one_cycle = R"(<SubTree ID="Stack and Unstack Cycle" num_cycles="1" />)";
+  const auto collision_checks = [this] {
+    return labelsStartingWith(calls, { "ComputeInverseKinematics", "IsPlannedJointAtMost", "SetCollisionRule" });
+  };
+  ASSERT_EQ(run(one_cycle), BT::NodeStatus::SUCCESS);
+  const auto well_inside = collision_checks();
+  const auto reach_checks = std::ranges::count(calls, "IsPlannedJointAtMost", &Call::label);
+  ASSERT_GT(reach_checks, 6);
+  calls.clear();
+  // Every checked pose plans joint2 in the newly admitted 2.3-2.4 rad band, including the drawn spot.
+  planned_joint2 = std::deque<double>(reach_checks, 2.36);
+  EXPECT_EQ(run(one_cycle), BT::NodeStatus::SUCCESS);
+  EXPECT_TRUE(planned_joint2.empty());
+  EXPECT_EQ(labelsStartingWith(calls, { "RecordEpisode", "SaveEpisode", "StopRecording" }),
+            (std::vector<std::string>{ kStackTask, "SaveEpisode", "StopRecording", kUnstackTask, "SaveEpisode",
+                                       "StopRecording" }));
+  // The same collision-checked IK and collision rules as a stack near the base: blue lifts straight up.
+  EXPECT_EQ(collision_checks(), well_inside);
+}
+
+TEST_F(StackObjectives, StackAndUnstackRefuseAPosePastTheHeatReachBoundBeforeMotion)
+{
+  // Joint2 just past 2.4 rad at, in turn: the stack's place on red, the unstack's grasp, and both of its lifts.
+  for (const auto& [objective, planned, cube] : std::vector<std::tuple<std::string, std::deque<double>, std::string>>{
+           { kStack, { 2.36, 2.36, 2.41 }, "red cube" },
+           { kUnstack, { 2.36, 2.41 }, "blue cube" },
+           { kUnstack, { 2.36, 2.36, 2.41, 2.41 }, "blue cube" } })
+  {
+    SCOPED_TRACE(objective + " " + std::to_string(planned.size()));
+    calls.clear();
+    planned_joint2 = planned;
+    EXPECT_EQ(run(objective), BT::NodeStatus::FAILURE);
+    EXPECT_TRUE(planned_joint2.empty());
+    ASSERT_EQ(motions(), std::vector<std::string>{ "ReportUnreachableCube" });
+    EXPECT_EQ(std::ranges::find(calls, "ReportUnreachableCube", &Call::label)->cube, cube);
+    EXPECT_EQ(std::ranges::count(calls, "ExecuteTrajectory", &Call::label), 0);
+  }
+}
+
+TEST_F(StackObjectives, SpotReleasePastTheHeatReachBoundIsRedrawnWithoutMotion)
+{
+  // Each draw has two next-pick checks, then the corrected release check.
+  for (int attempt = 0; attempt < 20; ++attempt)
+    for (const auto joint2 : { 2.36, 2.36, 2.41 })
+      planned_joint2.push_back(joint2);
+  EXPECT_EQ(run(R"(<SubTree ID="reBot Draw Place Spot" red_top="{red_top}" spot="{spot}" travel="{travel}" />)"),
+            BT::NodeStatus::FAILURE);
+  EXPECT_TRUE(planned_joint2.empty());
+  EXPECT_EQ(std::ranges::count(calls, "DrawPlaceSpot", &Call::label), 20);
+  EXPECT_TRUE(motions().empty());
+  EXPECT_EQ(labelsStartingWith(calls, { "LogMessage" }),
+            std::vector<std::string>{ "LogMessage No reachable free spot for blue after 20 draws." });
 }
 
 class ShippedSpeeds : public StackObjectives, public testing::WithParamInterface<std::string>

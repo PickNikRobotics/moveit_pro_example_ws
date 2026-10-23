@@ -182,14 +182,16 @@ TEST_F(StackChecksTest, PlannedJointPastItsMaximumIsRefused)
     state.joint_state.position = { 0.3, planned };
     config.blackboard->set("goal", state);
     config.input_ports = {
-      { "robot_state", "{goal}" }, { "joint_name", "joint2" }, { "maximum", "2.2" }, { "reason", "heat budget" }
+      { "robot_state", "{goal}" }, { "joint_name", "joint2" }, { "maximum", "2.4" }, { "reason", "heat budget" }
     };
     rebot_bench_behaviors::IsPlannedJointAtMost behavior("IsPlannedJointAtMost", config, context);
     return behavior.executeTick();
   };
   EXPECT_EQ(check(2.13), BT::NodeStatus::SUCCESS);
-  EXPECT_EQ(check(2.2), BT::NodeStatus::SUCCESS);
-  EXPECT_EQ(check(2.287), BT::NodeStatus::FAILURE);
+  EXPECT_EQ(check(2.214), BT::NodeStatus::SUCCESS);
+  EXPECT_EQ(check(2.36), BT::NodeStatus::SUCCESS);
+  EXPECT_EQ(check(2.4), BT::NodeStatus::SUCCESS);
+  EXPECT_EQ(check(2.400001), BT::NodeStatus::FAILURE);
 }
 
 TEST_F(StackChecksTest, UnreachableCubeNamesTheCubeAndWhereItSits)
