@@ -57,14 +57,6 @@ skip_objectives: set[str] = {
     # primary UI and cannot run in headless CI.
     "Teleoperate",  # DoTeleoperateAction rejects the goal with no UI subscribed.
     "Marker Visualization Example",  # GetTextFromUser server unavailable headless.
-    # Hand-eye calibration Objectives from moveit_pro_objectives: they generate or
-    # move through calibration waypoints and detect a ChArUco board, which only
-    # hand_eye_calibration_sim provides.
-    "Calibrate Camera Intrinsics",
-    "Calibrate Eye In Hand Camera",
-    "Calibrate Eye To Hand Camera",
-    "Calibrate Multiple Cameras",
-    "Generate Calibration Waypoints",
     "Register Machined Part",  # Registration flow exceeds the fixture timeout headless.
     # Runs the same registration subtree before it grinds, so it inherits that timeout.
     "Grind and Record Coverage",

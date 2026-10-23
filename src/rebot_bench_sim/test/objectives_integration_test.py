@@ -56,11 +56,6 @@ skip_objectives: set[str] = {
     # below them and is rejected. Both run from Raised (README).
     "Plan reBot Joint Move",
     "Execute reBot Joint Trajectory",  # Executes what Plan reBot Joint Move saved.
-    "Calibrate Camera Intrinsics",
-    "Calibrate Eye In Hand Camera",
-    "Calibrate Eye To Hand Camera",
-    "Calibrate Multiple Cameras",
-    "Generate Calibration Waypoints",
 }
 
 

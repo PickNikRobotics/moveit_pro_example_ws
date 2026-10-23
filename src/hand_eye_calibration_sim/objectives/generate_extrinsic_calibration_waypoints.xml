@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Generate Extrinsic Calibration Waypoints"
+>
+  <!--//////////-->
+  <BehaviorTree
+    ID="Generate Extrinsic Calibration Waypoints"
+    _description="Move to Home, then generate the calibration_01, calibration_02, ... waypoints for Calibrate Wrist Camera, Calibrate Scene Camera, and Calibrate Multiple Cameras by tilting the arm around a point on the world board. See the Camera Calibration guide at https://docs.picknik.ai/how_to/robotics_applications/camera_calibration/."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree
+        ID="Move to Named Waypoint"
+        _collapsed="true"
+        waypoint_name="Home"
+      />
+      <SubTree
+        ID="Generate Calibration Waypoints"
+        _collapsed="true"
+        waypoint_prefix="calibration"
+        pivot_distance="0.5"
+        end_effector_frame="grasp_link"
+        joint_group_name="manipulator"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Generate Extrinsic Calibration Waypoints">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Perception - Camera Calibration" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
