@@ -65,7 +65,7 @@ def check_base(model, data, scene, baseline):
     ids = [i for i in range(model.ngeom) if model.geom(i).name.startswith("moon_base_")]
     assert ids, "no moon base geoms loaded"
     bodies = {int(model.geom_bodyid[i]) for i in ids}
-    assert len(bodies) == 5, f"expected five fixed bodies, got {len(bodies)}"
+    assert len(bodies) == 7, f"expected seven fixed bodies, got {len(bodies)}"
     for body in bodies:
         assert model.body_jntnum[body] == 0, model.body(body).name
         assert model.body_parentid[body] == 0, model.body(body).name
@@ -151,21 +151,22 @@ def render_sheet(model, data, out):
     views = [
         (
             "Chase view | looking across the rover toward the base",
-            [-5, -4, 5],
-            [1, 4.4, 1.1],
+            [0, -4.5, 6],
+            [0, 5.5, 1.0],
         ),
         (
             "Route start corner | world (-0.30, 0.50), sensor height 1.2 m",
             [-0.30, 0.50, 1.2],
-            [0.2, 6.5, 1.5],
+            [0.6, 6.5, 1.5],
         ),
     ]
     landmarks = [
         ("1", "moon_base_habitat_shell"),
-        ("2", "moon_base_solar_left"),
+        ("2", "moon_base_vertical_solar_panel"),
         ("3", "moon_base_antenna_panel"),
         ("4", "moon_base_lander_payload"),
-        ("5", "moon_base_pad_mark_right"),
+        ("5", "moon_base_berm_0"),
+        ("6", "moon_base_cargo_c"),
     ]
     sheet = Image.new("RGB", (1280, 1640), "#15191e")
     draw = ImageDraw.Draw(sheet)
@@ -204,7 +205,7 @@ def render_sheet(model, data, out):
             sheet.paste(frame, (0, top + 56))
             draw.text(
                 (22, top + 788),
-                "1 Habitat / door    2 Solar array    3 Antenna    4 Lander    5 Landing pad",
+                "1 Habitat    2 Solar mast    3 Antenna    4 Lander    5 Blast berm    6 Cargo",
                 font=font(21),
                 fill="#f3db80",
             )

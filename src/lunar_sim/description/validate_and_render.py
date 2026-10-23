@@ -50,6 +50,8 @@ KeyError at load rather than rendering something misleading.
 import json
 import sys
 import math
+import xml.etree.ElementTree as ET
+from pathlib import Path
 import mujoco
 import numpy as np
 from PIL import Image, ImageDraw
@@ -137,16 +139,21 @@ def smoke_test(model, data):
     print("[smoke] PASS")
 
 
-def dead_reckon_square(model, data):
+def dead_reckon_square(model, data, scene_path):
     """RECORDED STATE calibration recheck: ground-truth chassis freejoint pose
     (xpos/xquat), never /odom (which round-trips the same wrong parameters by
     construction - see README's Skid-steer calibration section)."""
     reset_to_keyframe(model, data)
     chassis_id = require_id(model, mujoco.mjtObj.mjOBJ_BODY, "chassis_link")
     aid = wheel_actuator_ids(model)
+    # Names come from the include file, so a renamed or missing boulder fails require_id.
+    boulder_names = [
+        g.get("name")
+        for g in ET.parse(Path(scene_path).parent / "boulders_geoms.xml").iter("geom")
+    ]
+    assert boulder_names, "boulders_geoms.xml has no geoms"
     boulder_ids = {
-        require_id(model, mujoco.mjtObj.mjOBJ_GEOM, name)
-        for name in ("boulder_east", "boulder_north", "boulder_west", "boulder_south")
+        require_id(model, mujoco.mjtObj.mjOBJ_GEOM, n) for n in boulder_names
     }
 
     def step_clear_route():
@@ -283,7 +290,7 @@ def sensor_sheet(scene_path, out_prefix):
             100,
             10.0,
             -65,
-            "Four boulders around the route: east, north, west, south",
+            "Boulders around the route",
         ),
     ):
         camera = mujoco.MjvCamera()
@@ -359,7 +366,7 @@ def main():
 
     model, data = load(new_scene)
     smoke_test(model, data)
-    stats = dead_reckon_square(model, data)
+    stats = dead_reckon_square(model, data, new_scene)
 
     # Persist the calibration before any rendering: the renders are optional
     # artifacts, and require_id makes the old-scene comparison render a hard
