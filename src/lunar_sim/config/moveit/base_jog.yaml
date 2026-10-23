@@ -1,0 +1,7 @@
+# The Husky A300 base that the Desktop App's Base tab drives (see Teleoperation in ../../README.md).
+planning_group: base
+cmd_vel_topic: /cmd_vel
+frame_id: footprint
+# platform_velocity_controller's linear.x and angular.z limits (config/control/husky_a300.ros2_control.yaml).
+max_linear_velocity: 0.8
+max_angular_velocity: 2.0
