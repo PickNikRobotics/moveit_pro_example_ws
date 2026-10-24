@@ -56,6 +56,39 @@
           ID="ExecuteTrajectory"
           controller_action_name="{execute_follow_joint_trajectory_action_name}"
         />
+        <!-- Lift clear of the surface before anything plans back to Home: the stroke ends a few
+             millimetres above the table, and from there some elbow configurations route home
+             straight through it. -->
+        <Action
+          ID="InitializeMTCTask"
+          task="{mtc_task}"
+          task_id="draw_retreat"
+          timeout="-1.000000"
+        />
+        <Action ID="SetupMTCCurrentState" task="{mtc_task}" />
+        <Action
+          ID="SetupMTCMoveAlongFrameAxis"
+          task="{mtc_task}"
+          axis_frame="odom"
+          axis_x="0.000000"
+          axis_y="0.000000"
+          axis_z="1.000000"
+          min_distance="0.1"
+          max_distance="0.1"
+          planning_group_name="{planning_group_name}"
+          hand_frame="{tip_link}"
+          velocity_scale="1.000000"
+          acceleration_scale="1.000000"
+          ignore_environment_collisions="false"
+        />
+        <Action ID="PlanMTCTask" task="{mtc_task}" solution="{mtc_solution}" />
+        <SubTree
+          ID="Execute MTC Solution"
+          _collapsed="true"
+          controller_names="{controller_name}"
+          controller_action_name="{execute_follow_joint_trajectory_action_name}"
+          solution="{mtc_solution}"
+        />
       </Control>
     </Control>
   </BehaviorTree>

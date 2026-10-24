@@ -3,7 +3,10 @@
   <name>dual_arm_sim</name>
   <version>10.3.0</version>
 
-  <description>Base configuration package for the Franka arm.</description>
+  <description>
+    MuJoCo simulation of the Franka Mobile FR3 Duo at three tables, with
+    whole-body motion and Nav2.
+  </description>
 
   <maintainer email="support@picknik.ai">MoveIt Pro Maintainer</maintainer>
 
@@ -14,9 +17,23 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <exec_depend>franka_description</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>moveit_pro_behavior</exec_depend>
   <exec_depend>moveit_studio_agent</exec_depend>
+  <exec_depend>mujoco_package_uri</exec_depend>
+  <exec_depend>nav2_bringup</exec_depend>
+  <exec_depend>nav2_lifecycle_manager</exec_depend>
+  <exec_depend>nav2_map_server</exec_depend>
+  <exec_depend>nav_msgs</exec_depend>
+  <exec_depend>picknik_mujoco_ros</exec_depend>
+  <exec_depend>pid_controller</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>tf2_ros</exec_depend>
 
+  <test_depend>ament_index_python</test_depend>
+  <test_depend>mujoco_package_uri</test_depend>
   <test_depend>ament_clang_format</test_depend>
   <test_depend>ament_clang_tidy</test_depend>
   <test_depend>ament_cmake_gtest</test_depend>
@@ -27,6 +44,8 @@
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>behaviortree_cpp_picknik</test_depend>
   <test_depend>picknik_ament_copyright</test_depend>
+  <test_depend>python3-pytest</test_depend>
+  <test_depend>python3-yaml</test_depend>
   <test_depend>rclpy</test_depend>
   <test_depend>tinyxml2_vendor</test_depend>
 

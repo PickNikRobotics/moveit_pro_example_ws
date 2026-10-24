@@ -1,0 +1,40 @@
+left_manipulator:
+  kinematics_solver: pose_ik_plugin/PoseIKPlugin
+  target_tolerance: 0.001
+  solve_mode: "optimize_distance"
+  optimization_timeout: 0.005
+left_manipulator_without_spine:
+  kinematics_solver: pose_ik_plugin/PoseIKPlugin
+  target_tolerance: 0.001
+  solve_mode: "optimize_distance"
+  optimization_timeout: 0.005
+right_manipulator:
+  kinematics_solver: pose_ik_plugin/PoseIKPlugin
+  target_tolerance: 0.001
+  solve_mode: "optimize_distance"
+  optimization_timeout: 0.005
+right_manipulator_without_spine:
+  kinematics_solver: pose_ik_plugin/PoseIKPlugin
+  target_tolerance: 0.001
+  solve_mode: "optimize_distance"
+  optimization_timeout: 0.005
+# The planar base: x, y and yaw reach the base iMarker; z, roll and pitch have no joint.
+mobile_base:
+  kinematics_solver: pose_ik_plugin/PoseIKPlugin
+  target_tolerance: 0.001
+  solve_mode: "optimize_distance"
+  optimization_timeout: 0.005
+# Base, spine and one arm. Costs in group order (planar x, y, yaw, spine, arm 1-7):
+# the base costs most, so IK moves the arm first. The whole-body Objectives pass the same costs.
+left_manipulator_with_base:
+  kinematics_solver: pose_ik_plugin/PoseIKPlugin
+  target_tolerance: 0.001
+  solve_mode: "optimize_distance"
+  optimization_timeout: 0.005
+  joint_costs: [4.0, 4.0, 4.0, 2.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+right_manipulator_with_base:
+  kinematics_solver: pose_ik_plugin/PoseIKPlugin
+  target_tolerance: 0.001
+  solve_mode: "optimize_distance"
+  optimization_timeout: 0.005
+  joint_costs: [4.0, 4.0, 4.0, 2.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]

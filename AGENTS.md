@@ -188,7 +188,14 @@ See `src/rebot_bench_sim/description/rebot_bench_sim.urdf.xacro`.
 `picknik_mujoco_ros/MujocoSystem` compares every MJCF body with the same-named URDF link at hardware init and logs
 `N MuJoCo bodies do not sit where the URDF places the same-named link`, with the offset per body. After changing a
 mount, base or pedestal transform in either file, start the sim once and check it: even sub-millimetre entries mean
-the MJCF kept a transform the URDF no longer uses (dual_arm_sim's arm mounts after the franka_description 2.9.0 bump).
+the MJCF kept a transform the URDF no longer uses.
+
+### Python MuJoCo needs the `mujoco_package_uri` plugin to load `package://` meshes
+
+MoveIt Pro resolves an MJCF `file="package://<pkg>/..."` through the `mujoco_package_uri` resource provider; plain
+`mujoco.MjModel.from_xml_path` does not. A test or script that loads such a scene first calls
+`mujoco.mj_loadAllPluginLibraries(<mujoco_package_uri prefix>/bin/mujoco_plugin)` and declares the package; see the
+`model` fixture in `src/rebot_bench_sim/test/test_scene_model.py`.
 
 ### MuJoCo documentation
 
@@ -235,6 +242,32 @@ clue, since the lever arm grows along the route and correlates with step size at
 To judge it, apply both corrections to the *same* `odom -> base` sample and difference the
 results. Do not difference a looked-up `map -> base` against a separately looked-up `map -> odom`
 — they resolve at different times and smooth out the step.
+
+## `dual_arm_sim`'s spawn pose sits in a narrow window between two constraints
+
+The Nav2 map projects each table's whole top onto the ground, so the base cannot plan under an
+overhang. The pick table's projection reaches back past where the arms must stand to work it, and
+the Nav2 footprint includes the stowed arms, so two constraints squeeze the spawn pose from
+opposite sides:
+
+- move the base **back** and it clears the map but the drawing surface goes out of reach, and
+  `PlanCartesianPath` fails inside Writing Demo;
+- move it **forward** and the drawing reaches but the footprint covers an occupied cell, so Nav2
+  refuses to plan and "Move Base to Ready" fails with the start in collision.
+
+The window is about two map cells wide, and the committed spawn sits near its **clearance** edge:
+only single-digit millimetres of front gap, against a map cell an order of magnitude larger, with
+room to spare on the reach side. The drawing centre in `objectives/writing_demo.xml` is what buys
+that reach room; shifting it toward the robot widens the window, shifting it away narrows it.
+
+Anything that moves either bound lands outside the window: moving the pick table, changing
+`generate_map.py`'s `RESOLUTION`, or lengthening the `Stow` waypoint so the footprint reaches
+further forward. The side tables bound neither edge.
+
+`test/test_scene.py` guards both edges, one test each, and each failure message names the edge
+crossed. **Run it after any of those changes, and do not widen the window by editing the Nav2
+footprint:** the arm-width footprint is deliberate, and the narrow front gap was accepted knowingly
+rather than overlooked.
 
 ## Simulator deployment gotchas
 

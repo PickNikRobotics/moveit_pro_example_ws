@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Whole Body Move to Waypoint">
+  <BehaviorTree
+    ID="Whole Body Move to Waypoint"
+    _description="Move the base, the spine and both arms together to a saved whole-body waypoint"
+    _favorite="true"
+  >
+    <Control ID="Sequence">
+      <Action
+        ID="RetrieveWaypoint"
+        joint_group_name="whole_body"
+        waypoint_name="{waypoint_name}"
+        waypoint_joint_state="{target_joint_state}"
+      />
+      <SubTree
+        ID="Whole Body Move to Joint State"
+        _collapsed="true"
+        target_joint_state="{target_joint_state}"
+        joint_group_name="whole_body"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Whole Body Move to Waypoint">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Motion - Execute" />
+      </MetadataFields>
+      <input_port
+        name="waypoint_name"
+        default="Whole Body Demo"
+        type="std::string"
+      >
+        A waypoint saved for the whole_body group, with the planar joints.
+      </input_port>
+    </SubTree>
+  </TreeNodesModel>
+</root>

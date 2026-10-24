@@ -10,9 +10,9 @@
       <SubTree
         ID="Move to Waypoint"
         _collapsed="true"
-        controller_action_server="/left_joint_trajectory_admittance_controller/follow_joint_trajectory"
-        controller_names="left_joint_trajectory_admittance_controller"
-        joint_group_name="left_manipulator"
+        controller_action_server="/left_jtac/follow_joint_trajectory"
+        controller_names="left_jtac"
+        joint_group_name="left_manipulator_without_spine"
         waypoint_name="Home"
       />
     </Control>

@@ -28,6 +28,8 @@
 
 """Integration tests for the dual_arm_sim objective library."""
 
+import math
+
 import pytest
 
 from moveit_pro_test_utils.objective_test_fixture import (
@@ -35,6 +37,7 @@ from moveit_pro_test_utils.objective_test_fixture import (
     ExecuteObjectiveResource,
     JointTarget,
     MUJOCO_RESET_HOOK,
+    ObjectPoseTarget,
     SIM_RESETTER,
     execute_objective_resource as execute_objective_resource,
     get_objective_pytest_params,
@@ -55,6 +58,7 @@ cancel_objectives: set[str] = set()
 # than guessing more aggressively up front.
 skip_objectives: set[str] = {
     "Teleoperate",  # Waits on UI teleoperation input.
+    "Navigate to Clicked Point",  # GetPoseFromUser waits on a click in the UI.
     "Marker Visualization Example",  # GetTextFromUser server unavailable headless.
     # Hand-eye calibration Objectives from moveit_pro_objectives: they generate or
     # move through calibration waypoints and detect a ChArUco board, which only
@@ -70,19 +74,58 @@ skip_objectives: set[str] = {
     "Sort Blocks",  # ML perception + multi-step grasp pipeline.
 }
 
-# End-state correctness checks beyond SUCCESS/FAILURE. "Move Left Home" and
-# "Move Right Home" each drive one arm to the shared "Home" waypoint. The
-# target is resolved at runtime from /get_saved_waypoints (the same source of
-# truth the objective moves to), restricted to that arm's joint group so the
-# uncommanded arm's joints are not compared.
+# End-state correctness checks beyond SUCCESS/FAILURE. Each target is resolved at
+# runtime from /get_saved_waypoints (the same source of truth the objective moves
+# to), restricted to the joint group the objective commands. "Move Left Home" and
+# "Move Right Home" drive one arm, without the spine, to the shared "Home"
+# waypoint. "Whole Body Move to Waypoint" is checked by _whole_body_end_state.
 expected_end_state_by_id = {
     "Move Left Home": EndStateSpec(
-        joints=JointTarget(waypoint="Home", joint_group_name="left_manipulator")
+        joints=JointTarget(
+            waypoint="Home", joint_group_name="left_manipulator_without_spine"
+        )
     ),
     "Move Right Home": EndStateSpec(
-        joints=JointTarget(waypoint="Home", joint_group_name="right_manipulator")
+        joints=JointTarget(
+            waypoint="Home", joint_group_name="right_manipulator_without_spine"
+        )
+    ),
+    "Stow Arms for Navigation": EndStateSpec(
+        joints=JointTarget(waypoint="Stow", joint_group_name="manipulator")
     ),
 }
+
+WHOLE_BODY_OBJECTIVE = "Whole Body Move to Waypoint"
+WHOLE_BODY_WAYPOINT = "Whole Body Demo"
+PLANAR_JOINTS = ("planar_x", "planar_y", "planar_theta")
+# Looser than body_jtc's planar goal tolerance, tighter than the fixture default.
+BASE_POSITION_TOLERANCE_M = 0.02
+BASE_YAW_TOLERANCE_RAD = 0.02
+
+
+def _whole_body_end_state(resource: ExecuteObjectiveResource) -> EndStateSpec:
+    """Spine and arm joints from the waypoint, and the base as the pose of base_link.
+
+    The fixture reads one /joint_states message, and the odometry bridge publishes
+    the planar joints in a separate one, so the base is checked through TF.
+    """
+    joints = resource.get_waypoint_target(
+        WHOLE_BODY_WAYPOINT, joint_group_name="whole_body"
+    )
+    x, y, yaw = (joints.pop(name) for name in PLANAR_JOINTS)
+    return EndStateSpec(
+        joints=JointTarget(positions=joints),
+        objects=[
+            ObjectPoseTarget(
+                object_frame="base_link",
+                reference_frame="world",
+                position=[x, y, 0.0],
+                orientation_xyzw=[0.0, 0.0, math.sin(yaw / 2), math.cos(yaw / 2)],
+                position_tolerance=BASE_POSITION_TOLERANCE_M,
+                orientation_tolerance=BASE_YAW_TOLERANCE_RAD,
+            )
+        ],
+    )
 
 
 @pytest.mark.parametrize(
@@ -95,12 +138,15 @@ def test_all_objectives(
     execute_objective_resource: ExecuteObjectiveResource,
 ) -> None:
     """Run (or cancel) each dual_arm_sim objective and assert it completes without error."""
+    end_states = dict(expected_end_state_by_id)
+    if objective_id == WHOLE_BODY_OBJECTIVE and not should_cancel:
+        end_states[objective_id] = _whole_body_end_state(execute_objective_resource)
     try:
         run_objective(
             objective_id,
             should_cancel,
             execute_objective_resource,
-            expected_end_state_by_id=expected_end_state_by_id,
+            expected_end_state_by_id=end_states,
         )
     except AssertionError as e:
         mode = "cancel" if should_cancel else "execute"
