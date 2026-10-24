@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
   <!--
-    The table surfaces as robot links, so MoveIt collision-checks against them from start-up.
-    The tables are otherwise MuJoCo-only, so a carried object or an arm could be planned
-    straight through one. Only the surfaces are here: the legs stand under them and the base
-    keeps clear of them, and the blocks must stay absent or no pick could ever be planned.
+    The table surfaces and their legs as robot links, so MoveIt collision-checks against them
+    from start-up. The tables are otherwise MuJoCo-only, so a carried object or an arm could be
+    planned straight through one. The surfaces and the legs are both here; only the blocks stay
+    absent, or no pick could ever be planned.
 
-    Each link's name and origin match the same-named body in description/mujoco/scene.xml, so
+    Each surface link's name and origin match the same-named body in description/mujoco/scene.xml, so
     picknik_mujoco_ros reports any drift between the two files at hardware init. Keep them equal.
   -->
   <xacro:macro name="table_surface" params="name parent x y z size_x size_y size_z rgba">

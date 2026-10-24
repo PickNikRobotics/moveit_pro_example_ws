@@ -1,6 +1,5 @@
 <mujoco model="mobile fr3 duo scene">
   <include file="mobile_fr3_duo.xml" />
-  <include file="sensors.xml" />
 
   <option timestep="0.003" />
   <statistic center="0.8 0 0.8" extent="2.5" />
@@ -178,7 +177,7 @@
     </body>
 
     <!-- Blocks light enough for the simulated Franka Hand grip; the red row sits within the right arm's reach. -->
-    <body name="block_green_1" pos="0.65 0.25 0.945">
+    <body name="block_green_1" pos="0.65 0.25 0.8">
       <freejoint name="block_green_1" />
       <geom
         type="box"
@@ -188,7 +187,7 @@
         friction="2 0.01 0.0002"
       />
     </body>
-    <body name="block_green_2" pos="0.75 -0.25 0.945">
+    <body name="block_green_2" pos="0.75 -0.25 0.8">
       <freejoint name="block_green_2" />
       <geom
         type="box"
@@ -198,7 +197,7 @@
         friction="2 0.01 0.0002"
       />
     </body>
-    <body name="block_green_3" pos="0.85 0.25 0.945">
+    <body name="block_green_3" pos="0.85 0.25 0.8">
       <freejoint name="block_green_3" />
       <geom
         type="box"
@@ -209,7 +208,7 @@
       />
     </body>
 
-    <body name="block_red_1" pos="0.65 -0.25 0.945">
+    <body name="block_red_1" pos="0.65 -0.25 0.8">
       <freejoint name="block_red_1" />
       <geom
         type="box"
@@ -219,7 +218,7 @@
         friction="2 0.01 0.0002"
       />
     </body>
-    <body name="block_red_2" pos="0.75 0.25 0.945">
+    <body name="block_red_2" pos="0.75 0.25 0.8">
       <freejoint name="block_red_2" />
       <geom
         type="box"
@@ -229,7 +228,7 @@
         friction="2 0.01 0.0002"
       />
     </body>
-    <body name="block_red_3" pos="0.85 -0.25 0.945">
+    <body name="block_red_3" pos="0.85 -0.25 0.8">
       <freejoint name="block_red_3" />
       <geom
         type="box"
@@ -252,12 +251,12 @@
             0.4
             0 -0.7854 0 -2.3562 0 1.5707 0.7853 0 0
             0 -0.7854 0 -2.3562 0 1.5707 0.7853 0 0
-            0.65 0.25 0.945 1 0 0 0
-            0.75 -0.25 0.945 1 0 0 0
-            0.85 0.25 0.945 1 0 0 0
-            0.65 -0.25 0.945 1 0 0 0
-            0.75 0.25 0.945 1 0 0 0
-            0.85 -0.25 0.945 1 0 0 0"
+            0.65 0.25 0.8 1 0 0 0
+            0.75 -0.25 0.8 1 0 0 0
+            0.85 0.25 0.8 1 0 0 0
+            0.65 -0.25 0.8 1 0 0 0
+            0.75 0.25 0.8 1 0 0 0
+            0.85 -0.25 0.8 1 0 0 0"
       ctrl="0 0 0
             0.4
             0 -0.7854 0 -2.3562 0 1.5707 0.7853 0
@@ -270,12 +269,12 @@
             0.6
             0 -0.7854 0 -2.3562 0 1.5707 0.7853 0 0
             0 -0.7854 0 -2.3562 0 1.5707 0.7853 0 0
-            0.65 0.25 0.945 1 0 0 0
-            0.75 -0.25 0.945 1 0 0 0
-            0.85 0.25 0.945 1 0 0 0
-            0.65 -0.25 0.945 1 0 0 0
-            0.75 0.25 0.945 1 0 0 0
-            0.85 -0.25 0.945 1 0 0 0"
+            0.65 0.25 0.8 1 0 0 0
+            0.75 -0.25 0.8 1 0 0 0
+            0.85 0.25 0.8 1 0 0 0
+            0.65 -0.25 0.8 1 0 0 0
+            0.75 0.25 0.8 1 0 0 0
+            0.85 -0.25 0.8 1 0 0 0"
       ctrl="0 0 0
             0.6
             0 -0.7854 0 -2.3562 0 1.5707 0.7853 0

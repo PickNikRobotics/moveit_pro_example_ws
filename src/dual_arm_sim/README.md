@@ -32,13 +32,13 @@ The robot meshes that are byte-identical to franka_description's are not copied:
 
 ## Scene
 
-The tables, the blocks and the scene camera stand where they keep their place relative to the arm mount with the spine at 0.6 m, the spine height of the `Home` waypoint. The arm waypoints and the drawing poses are therefore the same arm motions as on a fixed dual-arm mount.
+The tables, the blocks and the scene camera stand where they keep their place relative to the arm mount with the spine at 0.4 m, the spine height of the `Home` waypoint. The arm waypoints and the drawing poses are therefore the same arm motions as on a fixed dual-arm mount.
 
 - Each table top is an obstacle in Nav2's map (`maps/scene.pgm`, made by `scripts/generate_map.py`), projected onto the ground so the base cannot drive under an overhang. The legs sit inside that projection and add nothing. `test/test_scene.py` checks the map matches the scene and that the footprint clears it at the spawn pose.
 - The base spawns clear of that projection rather than at the map origin, and the two side tables moved with it so the place waypoints still sit over them. `description/mujoco/scene.xml`'s keyframe sets the spawn pose.
 - That spawn pose sits near the front gap's edge: a few millimetres further forward and the Nav2 footprint covers an occupied map cell, and about two map cells further back and the drawing surface is out of reach. `test/test_scene.py` guards both edges. The drawing centre in `objectives/writing_demo.xml` sets the reach edge. Read AGENTS.md's "spawn pose sits in a narrow window" entry before moving the pick table, changing the map resolution or lengthening the `Stow` waypoint.
-- The three table surfaces are also links in `description/environment.xacro`, so MoveIt plans against them from start-up. The legs and the blocks are deliberately not: the legs stand under the surfaces, and a block in the planning scene would make every pick a collision. Each link's name and origin match the same-named MuJoCo body, so the simulator reports any drift between the two files.
-- At `Home` the tables box the robot in on three sides: only backing away is free. The base cannot turn there, and an arm lowered with the spine would reach a table top, so "Stow Arms for Navigation" keeps the spine at 0.6 m. Neither the tables nor the blocks are in MoveIt's planning scene.
+- The three table surfaces and their legs are also links in `description/environment.xacro`, so MoveIt plans against them from start-up. The blocks are deliberately not: a block in the planning scene would make every pick a collision. Each surface link's name and origin match the same-named MuJoCo body, so the simulator reports any drift between the two files.
+- At `Home` the tables box the robot in on three sides: only backing away is free. The base cannot turn there, and an arm lowered with the spine would reach a table top, so "Stow Arms for Navigation" keeps the spine at 0.6 m. The blocks are not in MoveIt's planning scene.
 - The scene camera matches the 640 by 480 resolution of the base cameras, because every camera renders into one offscreen buffer.
 
 ## Frames and odometry
