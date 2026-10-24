@@ -79,6 +79,10 @@
     <origin xyz="0 0 0" rpy="0 0 ${-pi/2}"/>
   </joint>
 
+  <!-- Table surfaces as links on odom, so they are in the planning scene from start-up. -->
+  <xacro:include filename="$(find dual_arm_sim)/description/environment.xacro"/>
+  <xacro:dual_arm_sim_tables parent="odom"/>
+
   <xacro:include filename="$(find dual_arm_sim)/description/mobile_fr3_duo_mujoco.ros2_control.xacro"/>
   <xacro:mobile_fr3_duo_mujoco_ros2_control
     mujoco_model="$(arg mujoco_model)"

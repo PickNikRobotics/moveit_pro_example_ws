@@ -20,7 +20,7 @@
         reference_frame="world"
         pose_stamped="{pose_stamped}"
         orientation_xyzw="-0.7073883;0.7068252;0.0000327;0.0000328"
-        position_xyz="0.805;0.0;0.765"
+        position_xyz="0.705;0.0;0.765"
         name="Create center pose"
       />
       <Action

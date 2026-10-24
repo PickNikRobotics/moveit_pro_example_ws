@@ -55,19 +55,19 @@
     <geom name="floor" size="0 0 0.05" type="plane" material="groundplane" />
     <site
       name="scene_camera_optical_frame"
-      pos="1.105 0.0 1.395"
+      pos="0.800 0.0 1.395"
       xyaxes="0 -1 0 -1 0 0"
     />
     <camera
       name="scene_camera"
-      pos="1.105 0.0 1.395"
+      pos="0.800 0.0 1.395"
       fovy="58"
       mode="fixed"
       resolution="640 480"
       xyaxes="0 -1 0 1 0 0"
     />
 
-    <!-- Legs stand outside the Nav2 footprint of the robot at the map origin; maps/ holds only the legs. -->
+    <!-- Table tops are obstacles in maps/, projected to the ground, so the base cannot drive under an overhang. -->
     <body name="table_front" pos="1.005 0 0.745">
       <geom
         name="table_front"
@@ -79,32 +79,32 @@
         name="table_front_leg_1"
         type="box"
         size="0.025 0.025 0.3675"
-        pos="-0.025 0.27 -0.3775"
+        pos="-0.35 0.25 -0.3775"
         rgba="0.3 0.3 0.3 1"
       />
       <geom
         name="table_front_leg_2"
         type="box"
         size="0.025 0.025 0.3675"
-        pos="-0.025 -0.27 -0.3775"
+        pos="-0.35 -0.25 -0.3775"
         rgba="0.3 0.3 0.3 1"
       />
       <geom
         name="table_front_leg_3"
         type="box"
         size="0.025 0.025 0.3675"
-        pos="0.37 0.27 -0.3775"
+        pos="0.35 0.25 -0.3775"
         rgba="0.3 0.3 0.3 1"
       />
       <geom
         name="table_front_leg_4"
         type="box"
         size="0.025 0.025 0.3675"
-        pos="0.37 -0.27 -0.3775"
+        pos="0.35 -0.25 -0.3775"
         rgba="0.3 0.3 0.3 1"
       />
     </body>
-    <body name="table_left" pos="0.405 0.9 0.745">
+    <body name="table_left" pos="0.135 1.02 0.745">
       <geom
         name="table_left"
         type="box"
@@ -115,32 +115,32 @@
         name="table_left_leg_1"
         type="box"
         size="0.025 0.025 0.3675"
-        pos="-0.22 -0.4 -0.3775"
+        pos="-0.2 -0.4 -0.3775"
         rgba="0.3 0.3 0.3 1"
       />
       <geom
         name="table_left_leg_2"
         type="box"
         size="0.025 0.025 0.3675"
-        pos="0.22 -0.4 -0.3775"
+        pos="0.2 -0.4 -0.3775"
         rgba="0.3 0.3 0.3 1"
       />
       <geom
         name="table_left_leg_3"
         type="box"
         size="0.025 0.025 0.3675"
-        pos="-0.22 0.4 -0.3775"
+        pos="-0.2 0.4 -0.3775"
         rgba="0.3 0.3 0.3 1"
       />
       <geom
         name="table_left_leg_4"
         type="box"
         size="0.025 0.025 0.3675"
-        pos="0.22 0.4 -0.3775"
+        pos="0.2 0.4 -0.3775"
         rgba="0.3 0.3 0.3 1"
       />
     </body>
-    <body name="table_right" pos="0.405 -0.9 0.745">
+    <body name="table_right" pos="0.135 -1.02 0.745">
       <geom
         name="table_right"
         type="box"
@@ -151,57 +151,93 @@
         name="table_right_leg_1"
         type="box"
         size="0.025 0.025 0.3675"
-        pos="-0.22 -0.4 -0.3775"
+        pos="-0.2 -0.4 -0.3775"
         rgba="0.3 0.3 0.3 1"
       />
       <geom
         name="table_right_leg_2"
         type="box"
         size="0.025 0.025 0.3675"
-        pos="0.22 -0.4 -0.3775"
+        pos="0.2 -0.4 -0.3775"
         rgba="0.3 0.3 0.3 1"
       />
       <geom
         name="table_right_leg_3"
         type="box"
         size="0.025 0.025 0.3675"
-        pos="-0.22 0.4 -0.3775"
+        pos="-0.2 0.4 -0.3775"
         rgba="0.3 0.3 0.3 1"
       />
       <geom
         name="table_right_leg_4"
         type="box"
         size="0.025 0.025 0.3675"
-        pos="0.22 0.4 -0.3775"
+        pos="0.2 0.4 -0.3775"
         rgba="0.3 0.3 0.3 1"
       />
     </body>
 
     <!-- Blocks light enough for the simulated Franka Hand grip; the red row sits within the right arm's reach. -->
-    <body name="block_green_1" pos="1.005 0 0.945">
+    <body name="block_green_1" pos="0.65 0.25 0.945">
       <freejoint name="block_green_1" />
-      <geom type="box" size="0.025 0.025 0.025" mass="0.05" rgba="0 0.8 0 1" />
+      <geom
+        type="box"
+        size="0.025 0.025 0.025"
+        mass="0.05"
+        rgba="0 0.8 0 1"
+        friction="2 0.01 0.0002"
+      />
     </body>
-    <body name="block_green_2" pos="1.005 0.15 0.945">
+    <body name="block_green_2" pos="0.75 -0.25 0.945">
       <freejoint name="block_green_2" />
-      <geom type="box" size="0.025 0.025 0.025" mass="0.05" rgba="0 0.8 0 1" />
+      <geom
+        type="box"
+        size="0.025 0.025 0.025"
+        mass="0.05"
+        rgba="0 0.8 0 1"
+        friction="2 0.01 0.0002"
+      />
     </body>
-    <body name="block_green_3" pos="1.005 -0.15 0.945">
+    <body name="block_green_3" pos="0.85 0.25 0.945">
       <freejoint name="block_green_3" />
-      <geom type="box" size="0.025 0.025 0.025" mass="0.05" rgba="0 0.8 0 1" />
+      <geom
+        type="box"
+        size="0.025 0.025 0.025"
+        mass="0.05"
+        rgba="0 0.8 0 1"
+        friction="2 0.01 0.0002"
+      />
     </body>
 
-    <body name="block_red_1" pos="0.905 -0.1 0.945">
+    <body name="block_red_1" pos="0.65 -0.25 0.945">
       <freejoint name="block_red_1" />
-      <geom type="box" size="0.025 0.025 0.025" mass="0.05" rgba="0.8 0 0 1" />
+      <geom
+        type="box"
+        size="0.025 0.025 0.025"
+        mass="0.05"
+        rgba="0.8 0 0 1"
+        friction="2 0.01 0.0002"
+      />
     </body>
-    <body name="block_red_2" pos="0.905 0.05 0.945">
+    <body name="block_red_2" pos="0.75 0.25 0.945">
       <freejoint name="block_red_2" />
-      <geom type="box" size="0.025 0.025 0.025" mass="0.05" rgba="0.8 0 0 1" />
+      <geom
+        type="box"
+        size="0.025 0.025 0.025"
+        mass="0.05"
+        rgba="0.8 0 0 1"
+        friction="2 0.01 0.0002"
+      />
     </body>
-    <body name="block_red_3" pos="0.905 -0.25 0.945">
+    <body name="block_red_3" pos="0.85 -0.25 0.945">
       <freejoint name="block_red_3" />
-      <geom type="box" size="0.025 0.025 0.025" mass="0.05" rgba="0.8 0 0 1" />
+      <geom
+        type="box"
+        size="0.025 0.025 0.025"
+        mass="0.05"
+        rgba="0.8 0 0 1"
+        friction="2 0.01 0.0002"
+      />
     </body>
   </worldbody>
 
@@ -211,17 +247,35 @@
          ctrl: planar x, y, yaw velocity; spine; left arm 1-7, left fingers; right arm 1-7, right fingers. -->
     <key
       name="default"
-      qpos="0 0 0
+      qpos="-0.3 0 0
+            0 0 0 0 0 0 0 0 0
+            0.4
+            0 -0.7854 0 -2.3562 0 1.5707 0.7853 0 0
+            0 -0.7854 0 -2.3562 0 1.5707 0.7853 0 0
+            0.65 0.25 0.945 1 0 0 0
+            0.75 -0.25 0.945 1 0 0 0
+            0.85 0.25 0.945 1 0 0 0
+            0.65 -0.25 0.945 1 0 0 0
+            0.75 0.25 0.945 1 0 0 0
+            0.85 -0.25 0.945 1 0 0 0"
+      ctrl="0 0 0
+            0.4
+            0 -0.7854 0 -2.3562 0 1.5707 0.7853 0
+            0 -0.7854 0 -2.3562 0 1.5707 0.7853 0"
+    />
+    <key
+      name="nav_demo"
+      qpos="-2.5 0 0
             0 0 0 0 0 0 0 0 0
             0.6
             0 -0.7854 0 -2.3562 0 1.5707 0.7853 0 0
             0 -0.7854 0 -2.3562 0 1.5707 0.7853 0 0
-            1.005 0 0.945 1 0 0 0
-            1.005 0.15 0.945 1 0 0 0
-            1.005 -0.15 0.945 1 0 0 0
-            0.905 -0.1 0.945 1 0 0 0
-            0.905 0.05 0.945 1 0 0 0
-            0.905 -0.25 0.945 1 0 0 0"
+            0.65 0.25 0.945 1 0 0 0
+            0.75 -0.25 0.945 1 0 0 0
+            0.85 0.25 0.945 1 0 0 0
+            0.65 -0.25 0.945 1 0 0 0
+            0.75 0.25 0.945 1 0 0 0
+            0.85 -0.25 0.945 1 0 0 0"
       ctrl="0 0 0
             0.6
             0 -0.7854 0 -2.3562 0 1.5707 0.7853 0

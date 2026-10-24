@@ -243,6 +243,32 @@ To judge it, apply both corrections to the *same* `odom -> base` sample and diff
 results. Do not difference a looked-up `map -> base` against a separately looked-up `map -> odom`
 — they resolve at different times and smooth out the step.
 
+## `dual_arm_sim`'s spawn pose sits in a narrow window between two constraints
+
+The Nav2 map projects each table's whole top onto the ground, so the base cannot plan under an
+overhang. The pick table's projection reaches back past where the arms must stand to work it, and
+the Nav2 footprint includes the stowed arms, so two constraints squeeze the spawn pose from
+opposite sides:
+
+- move the base **back** and it clears the map but the drawing surface goes out of reach, and
+  `PlanCartesianPath` fails inside Writing Demo;
+- move it **forward** and the drawing reaches but the footprint covers an occupied cell, so Nav2
+  refuses to plan and "Move Base to Ready" fails with the start in collision.
+
+The window is about two map cells wide, and the committed spawn sits near its **clearance** edge:
+only single-digit millimetres of front gap, against a map cell an order of magnitude larger, with
+room to spare on the reach side. The drawing centre in `objectives/writing_demo.xml` is what buys
+that reach room; shifting it toward the robot widens the window, shifting it away narrows it.
+
+Anything that moves either bound lands outside the window: moving the pick table, changing
+`generate_map.py`'s `RESOLUTION`, or lengthening the `Stow` waypoint so the footprint reaches
+further forward. The side tables bound neither edge.
+
+`test/test_scene.py` guards both edges, one test each, and each failure message names the edge
+crossed. **Run it after any of those changes, and do not widen the window by editing the Nav2
+footprint:** the arm-width footprint is deliberate, and the narrow front gap was accepted knowingly
+rather than overlooked.
+
 ## Simulator deployment gotchas
 
 Tear a deployment down with `moveit_pro down --instance <name>`; there is no `stop`, and

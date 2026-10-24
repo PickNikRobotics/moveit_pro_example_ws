@@ -28,10 +28,11 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-"""Write the Nav2 map, maps/scene.pgm and maps/scene.yaml, from the table legs in the scene.
+"""Write the Nav2 map, maps/scene.pgm and maps/scene.yaml, from the tables in the scene.
 
-Only the legs are obstacles: the table tops stand above the base, as in the scene. The map's
-edge is marked occupied, which also keeps the image binary to the end-of-file pre-commit hook.
+Each table contributes its whole surface projected onto the ground, so the base cannot plan
+under an overhanging top. The map's edge is marked occupied, which also keeps the image binary
+to the end-of-file pre-commit hook.
 
     python3 scripts/generate_map.py [output_dir]
 """
@@ -51,14 +52,23 @@ def _floats(text):
     return [float(v) for v in text.split()]
 
 
-def leg_boxes(scene=SCENE):
-    """World (x_min, x_max, y_min, y_max) of every table leg; the bodies are not rotated."""
+def table_boxes(scene=SCENE):
+    """World (x_min, x_max, y_min, y_max) of every geom of every table body.
+
+    The union of a table's tops and legs, so an overhanging top is an obstacle too. Each top
+    happens to contain its own legs, which therefore add no cells.
+    """
     boxes = []
     for body in ET.parse(scene).getroot().iter("body"):
+        if not body.get("name", "").startswith("table"):
+            continue
+        if body.get("quat") or body.get("euler") or body.get("axisangle"):
+            # An axis-aligned box per geom is only the true footprint while the body is unrotated.
+            raise ValueError(
+                f"table body {body.get('name')!r} is rotated; extend the projection"
+            )
         bx, by, _ = _floats(body.get("pos", "0 0 0"))
         for geom in body.findall("geom"):
-            if "_leg_" not in geom.get("name", ""):
-                continue
             gx, gy, _ = _floats(geom.get("pos", "0 0 0"))
             sx, sy, _ = _floats(geom.get("size"))
             cx, cy = bx + gx, by + gy
@@ -86,7 +96,7 @@ def occupancy(boxes):
 
 
 def write(output_dir):
-    rows = occupancy(leg_boxes())
+    rows = occupancy(table_boxes())
     header = f"P5\n{len(rows[0])} {len(rows)}\n255\n".encode()
     (output_dir / "scene.pgm").write_bytes(
         header + bytes(v for row in rows for v in row)

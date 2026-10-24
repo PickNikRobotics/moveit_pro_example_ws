@@ -30,7 +30,7 @@
       - right_fr3v2_joint6
       - right_fr3v2_joint7
     position:
-      - 0.6
+      - 0.4
       - 0.0
       - -0.7854
       - 0.0
@@ -254,7 +254,7 @@
       - planar_y
       - planar_theta
     position:
-      - 0.0
+      - -0.27
       - 0.0
       - 0.0
     velocity: []
@@ -416,7 +416,7 @@
       - right_fr3v2_joint6
       - right_fr3v2_joint7
     position:
-      - 0.0
+      - -0.27
       - 0.0
       - 0.0
       - 0.6

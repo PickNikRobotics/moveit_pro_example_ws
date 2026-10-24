@@ -14,9 +14,10 @@ These files, and the whole-body and navigation Objectives, are copied from the M
 
 | File | Difference from market_sim's copy |
 | --- | --- |
-| `description/mobile_fr3_duo.urdf.xacro` | package name, MuJoCo model path, planar base travel (±10 m) |
+| `description/mobile_fr3_duo.urdf.xacro` | package name, MuJoCo model path, planar base travel (±10 m), the table surface links |
 | `description/mobile_fr3_duo_mujoco.ros2_control.xacro` | the launch file named in one comment |
-| `description/mujoco/mobile_fr3_duo.xml` | planar base travel (±10 m), the header comment |
+| `description/mujoco/mobile_fr3_duo.xml` | planar base travel (±10 m), the header comment, the stiffer finger tendon gain |
+| `description/environment.xacro` | only in this package: the table surfaces as links |
 | `description/mujoco/sensors.xml` | none |
 | `description/mujoco/assets/finger_0.obj`, `finger_1.obj`, `tmrv0_2_visual.stl` | none |
 | `config/moveit/mobile_fr3_duo.srdf`, `config/moveit/pose_ik.yaml` | the whole-body groups and their IK entries |
@@ -33,7 +34,10 @@ The robot meshes that are byte-identical to franka_description's are not copied:
 
 The tables, the blocks and the scene camera stand where they keep their place relative to the arm mount with the spine at 0.6 m, the spine height of the `Home` waypoint. The arm waypoints and the drawing poses are therefore the same arm motions as on a fixed dual-arm mount.
 
-- The table tops stand above the base. Nav2's map (`maps/scene.pgm`, made by `scripts/generate_map.py`) holds only the table legs, and `test/test_scene.py` checks that it matches the scene and that no leg is inside the Nav2 footprint at the start pose.
+- Each table top is an obstacle in Nav2's map (`maps/scene.pgm`, made by `scripts/generate_map.py`), projected onto the ground so the base cannot drive under an overhang. The legs sit inside that projection and add nothing. `test/test_scene.py` checks the map matches the scene and that the footprint clears it at the spawn pose.
+- The base spawns clear of that projection rather than at the map origin, and the two side tables moved with it so the place waypoints still sit over them. `description/mujoco/scene.xml`'s keyframe sets the spawn pose.
+- That spawn pose sits near the front gap's edge: a few millimetres further forward and the Nav2 footprint covers an occupied map cell, and about two map cells further back and the drawing surface is out of reach. `test/test_scene.py` guards both edges. The drawing centre in `objectives/writing_demo.xml` sets the reach edge. Read AGENTS.md's "spawn pose sits in a narrow window" entry before moving the pick table, changing the map resolution or lengthening the `Stow` waypoint.
+- The three table surfaces are also links in `description/environment.xacro`, so MoveIt plans against them from start-up. The legs and the blocks are deliberately not: the legs stand under the surfaces, and a block in the planning scene would make every pick a collision. Each link's name and origin match the same-named MuJoCo body, so the simulator reports any drift between the two files.
 - At `Home` the tables box the robot in on three sides: only backing away is free. The base cannot turn there, and an arm lowered with the spine would reach a table top, so "Stow Arms for Navigation" keeps the spine at 0.6 m. Neither the tables nor the blocks are in MoveIt's planning scene.
 - The scene camera matches the 640 by 480 resolution of the base cameras, because every camera renders into one offscreen buffer.
 
@@ -72,7 +76,7 @@ The tables, the blocks and the scene camera stand where they keep their place re
 | "Whole Body Move to Waypoint" | move the base, the spine and both arms together to a `whole_body` waypoint (`Whole Body Demo`, `Whole Body Home`) |
 | "Whole Body Reach Left" | back into open floor, then reach the left gripper sideways past the arm's reach, so the base and the spine move with it |
 | "Whole Body Move to Pose", "Whole Body Move to Joint State" | the shared subtrees: IK on a `*_manipulator_with_base` group, then plan, switch, execute and switch back |
-| "Move Base to Ready", "Navigate to Clicked Point" | stow the arms, then drive with Nav2 to the map origin or to a clicked point |
+| "Move Base to Ready", "Navigate to Clicked Point" | stow the arms, then drive with Nav2 to the Base Ready pose or to a clicked point |
 
 ## Build and run
 

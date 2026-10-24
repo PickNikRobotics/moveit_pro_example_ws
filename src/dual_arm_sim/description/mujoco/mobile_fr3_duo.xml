@@ -146,9 +146,9 @@
       tendon="left_fr3v2_finger_split"
       ctrlrange="0 0.04"
       forcerange="-100 100"
-      gainprm="100 0 0"
+      gainprm="300 0 0"
       biastype="affine"
-      biasprm="0 -100 -10"
+      biasprm="0 -300 -10"
     />
     <position
       joint="right_fr3v2_joint1"
@@ -204,9 +204,9 @@
       tendon="right_fr3v2_finger_split"
       ctrlrange="0 0.04"
       forcerange="-100 100"
-      gainprm="100 0 0"
+      gainprm="300 0 0"
       biastype="affine"
-      biasprm="0 -100 -10"
+      biasprm="0 -300 -10"
     />
   </actuator>
   <worldbody>

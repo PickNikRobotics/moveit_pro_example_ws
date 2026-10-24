@@ -29,7 +29,7 @@
                 ID="TransformPose"
                 input_pose="{object_centroid}"
                 output_pose="{object_centroid}"
-                translation_xyz="0;0;-0.1"
+                translation_xyz="0;0;-0.075"
               />
               <Control
                 ID="Sequence"
@@ -156,7 +156,7 @@
                 ID="TransformPose"
                 input_pose="{object_centroid}"
                 output_pose="{object_centroid}"
-                translation_xyz="0;0;-0.1"
+                translation_xyz="0;0;-0.075"
               />
               <Control
                 ID="Sequence"

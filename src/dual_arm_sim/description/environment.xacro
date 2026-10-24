@@ -1,0 +1,109 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+  <!--
+    The table surfaces as robot links, so MoveIt collision-checks against them from start-up.
+    The tables are otherwise MuJoCo-only, so a carried object or an arm could be planned
+    straight through one. Only the surfaces are here: the legs stand under them and the base
+    keeps clear of them, and the blocks must stay absent or no pick could ever be planned.
+
+    Each link's name and origin match the same-named body in description/mujoco/scene.xml, so
+    picknik_mujoco_ros reports any drift between the two files at hardware init. Keep them equal.
+  -->
+  <xacro:macro name="table_surface" params="name parent x y z size_x size_y size_z rgba">
+    <link name="${name}">
+      <visual>
+        <geometry>
+          <box size="${size_x} ${size_y} ${size_z}"/>
+        </geometry>
+        <material name="${name}_material">
+          <color rgba="${rgba}"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <box size="${size_x} ${size_y} ${size_z}"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="${name}_joint" type="fixed">
+      <parent link="${parent}"/>
+      <child link="${name}"/>
+      <origin xyz="${x} ${y} ${z}" rpy="0 0 0"/>
+    </joint>
+  </xacro:macro>
+
+  <xacro:macro name="table_leg" params="name parent x y z">
+    <link name="${name}">
+      <visual>
+        <geometry>
+          <box size="0.05 0.05 0.735"/>
+        </geometry>
+        <material name="${name}_material">
+          <color rgba="0.3 0.3 0.3 1"/>
+        </material>
+      </visual>
+      <collision>
+        <geometry>
+          <box size="0.05 0.05 0.735"/>
+        </geometry>
+      </collision>
+    </link>
+    <joint name="${name}_joint" type="fixed">
+      <parent link="${parent}"/>
+      <child link="${name}"/>
+      <origin xyz="${x} ${y} ${z}" rpy="0 0 0"/>
+    </joint>
+  </xacro:macro>
+
+  <xacro:macro name="dual_arm_sim_tables" params="parent">
+    <!-- Sizes are twice the MJCF geom half-extents, which the box tag takes as full extents. -->
+    <!-- Colours follow the same bodies in scene.xml. The pick table is darker than its 0.6 grey
+         there, so the planning scene reads apart from the simulator with both views open, while
+         staying clear of the 0.3 grey scene.xml gives the legs. -->
+    <xacro:table_surface
+      name="table_front"
+      parent="${parent}"
+      x="1.005"
+      y="0"
+      z="0.745"
+      size_x="0.8"
+      size_y="0.6"
+      size_z="0.02"
+      rgba="0.4 0.4 0.4 1"
+    />
+    <xacro:table_leg name="table_front_leg_1" parent="table_front" x="-0.35" y="0.25" z="-0.3775"/>
+    <xacro:table_leg name="table_front_leg_2" parent="table_front" x="-0.35" y="-0.25" z="-0.3775"/>
+    <xacro:table_leg name="table_front_leg_3" parent="table_front" x="0.35" y="0.25" z="-0.3775"/>
+    <xacro:table_leg name="table_front_leg_4" parent="table_front" x="0.35" y="-0.25" z="-0.3775"/>
+    <xacro:table_surface
+      name="table_left"
+      parent="${parent}"
+      x="0.135"
+      y="1.02"
+      z="0.745"
+      size_x="0.5"
+      size_y="1.0"
+      size_z="0.02"
+      rgba="0.3 0.7 0.3 1"
+    />
+    <xacro:table_leg name="table_left_leg_1" parent="table_left" x="-0.2" y="-0.4" z="-0.3775"/>
+    <xacro:table_leg name="table_left_leg_2" parent="table_left" x="0.2" y="-0.4" z="-0.3775"/>
+    <xacro:table_leg name="table_left_leg_3" parent="table_left" x="-0.2" y="0.4" z="-0.3775"/>
+    <xacro:table_leg name="table_left_leg_4" parent="table_left" x="0.2" y="0.4" z="-0.3775"/>
+    <xacro:table_surface
+      name="table_right"
+      parent="${parent}"
+      x="0.135"
+      y="-1.02"
+      z="0.745"
+      size_x="0.5"
+      size_y="1.0"
+      size_z="0.02"
+      rgba="0.7 0.3 0.3 1"
+    />
+    <xacro:table_leg name="table_right_leg_1" parent="table_right" x="-0.2" y="-0.4" z="-0.3775"/>
+    <xacro:table_leg name="table_right_leg_2" parent="table_right" x="0.2" y="-0.4" z="-0.3775"/>
+    <xacro:table_leg name="table_right_leg_3" parent="table_right" x="-0.2" y="0.4" z="-0.3775"/>
+    <xacro:table_leg name="table_right_leg_4" parent="table_right" x="0.2" y="0.4" z="-0.3775"/>
+  </xacro:macro>
+</robot>

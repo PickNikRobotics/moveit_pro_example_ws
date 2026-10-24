@@ -3,7 +3,7 @@
   <!-- Nav2 drives the base, so the same Objective serves mock and sim. -->
   <BehaviorTree
     ID="Move Base to Ready"
-    _description="Stow the arms, then drive the mobile base to the map origin, the Base Ready pose, with Nav2"
+    _description="Stow the arms, then drive the mobile base to the Base Ready pose with Nav2"
     _favorite="true"
   >
     <Control ID="Sequence" name="TopLevelSequence">
@@ -11,7 +11,7 @@
       <Action
         ID="CreatePoseStamped"
         reference_frame="map"
-        position_xyz="0;0;0"
+        position_xyz="-0.27;0;0"
         orientation_xyzw="0;0;0;1"
         pose_stamped="{base_ready}"
       />
