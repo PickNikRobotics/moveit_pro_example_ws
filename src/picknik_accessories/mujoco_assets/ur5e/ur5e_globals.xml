@@ -1,3 +1,4 @@
+<!-- lab_sim/description/mpc/ur5e_globals_mpc.xml copies this file for MPC with a higher wrist armature. Mirror changes there. -->
 <ur5e_globals>
   <asset>
     <material name="metal" rgba="0.58 0.58 0.58 1" />

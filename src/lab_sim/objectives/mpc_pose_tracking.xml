@@ -51,32 +51,43 @@
           <Decorator ID="ForceSuccess">
             <Decorator ID="Timeout" msec="15000">
               <Control ID="Parallel" success_count="2">
+                <!-- Hold the target still until MPCPoseTracking streams its first trajectory (it writes total_return then), so the arm does not start behind it. -->
+                <Control ID="Sequence">
+                  <Decorator ID="RetryUntilSuccessful" num_attempts="-1">
+                    <Decorator ID="Delay" delay_msec="10">
+                      <Action
+                        ID="IsBlackboardVariableSet"
+                        variable_name="total_return"
+                      />
+                    </Decorator>
+                  </Decorator>
+                  <Decorator ID="KeepRunningUntilFailure">
+                    <Decorator ID="Delay" delay_msec="10">
+                      <Control ID="Sequence">
+                        <Action
+                          ID="TransformPose"
+                          input_pose="{pos_carrier}"
+                          output_pose="{pos_carrier}"
+                          translation_xyz="-0.0017;-0.0008;0.0"
+                        />
+                        <Action
+                          ID="TransformPose"
+                          input_pose="{orient_carrier}"
+                          output_pose="{orient_carrier}"
+                          quaternion_xyzw="0;0;0.0009;1"
+                        />
+                        <Action
+                          ID="TransformPoseWithPose"
+                          input_pose="{orient_carrier}"
+                          output_pose="{pose_stamped}"
+                          transform_pose="{pos_carrier}"
+                        />
+                      </Control>
+                    </Decorator>
+                  </Decorator>
+                </Control>
                 <Decorator ID="KeepRunningUntilFailure">
                   <Decorator ID="Delay" delay_msec="10">
-                    <Control ID="Sequence">
-                      <Action
-                        ID="TransformPose"
-                        input_pose="{pos_carrier}"
-                        output_pose="{pos_carrier}"
-                        translation_xyz="-0.0017;-0.0008;0.0"
-                      />
-                      <Action
-                        ID="TransformPose"
-                        input_pose="{orient_carrier}"
-                        output_pose="{orient_carrier}"
-                        quaternion_xyzw="0;0;0.0009;1"
-                      />
-                      <Action
-                        ID="TransformPoseWithPose"
-                        input_pose="{orient_carrier}"
-                        output_pose="{pose_stamped}"
-                        transform_pose="{pos_carrier}"
-                      />
-                    </Control>
-                  </Decorator>
-                </Decorator>
-                <Decorator ID="KeepRunningUntilFailure">
-                  <Decorator ID="Delay" delay_msec="100">
                     <Control ID="Sequence">
                       <Action
                         ID="VisualizePose"
