@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Build Map">
+  <!--Requires slam_toolbox to already be running in mapping mode, which the persist launch starts with slam:=True. Its parameters live in the slam_toolbox block of config/../params/nav2_params.yaml.-->
+  <BehaviorTree
+    ID="Build Map"
+    _description="Teleoperate the robot to explore the hangar while slam_toolbox builds an occupancy grid, then save that map on the operator's confirmation."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <Action
+        ID="LogMessage"
+        log_level="WARN"
+        message="Build Map needs the Runtime launched with slam:=True. In the Joint tab, select the manipulator planning group to drive the base."
+      />
+      <SubTree
+        ID="Request Teleoperation"
+        controller_action_server="/joint_trajectory_controller/follow_joint_trajectory"
+        joint_trajectory_controller_name="joint_trajectory_controller"
+        execution_pipeline="jtc"
+        enable_user_interaction="true"
+        initial_teleop_mode="1"
+        user_interaction_prompt="Drive the base to explore the hangar - mapping uses both the front and rear lidars. Stop moving, then press Continue to save the map, or Abort to discard it."
+      />
+      <!--Relative name: slam_toolbox writes it under its own working directory, not into this package.-->
+      <Action
+        ID="CallSaveMapService"
+        map_name="hangar_map"
+        service_name="/slam_toolbox/save_map"
+        response_timeout="30.000000"
+        wait_for_server_available_timeout="3.000000"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Build Map">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Navigation" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
