@@ -2,6 +2,17 @@
 Changelog for package clearpath_platform_description
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.9.18 (2026-10-19)
+-------------------
+
+2.9.17 (2026-09-17)
+-------------------
+
+2.9.16 (2026-09-09)
+-------------------
+* Fixed the A300 casters to work in sim. (`#390 <https://github.com/clearpathrobotics/clearpath_common/issues/390>`_)
+* Contributors: Tony Baltovski
+
 2.9.15 (2026-08-18)
 -------------------
 
