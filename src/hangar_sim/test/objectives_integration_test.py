@@ -124,6 +124,7 @@ skip_objectives = {
     # reasons.
     "Teleoperate",  # DoTeleoperateAction rejects the goal with no UI subscribed.
     "Marker Visualization Example",  # GetTextFromUser server unavailable headless.
+<<<<<<< HEAD
     # Hand-eye calibration Objectives from moveit_pro_objectives: they generate or
     # move through calibration waypoints and detect a ChArUco board, which only
     # hand_eye_calibration_sim provides.
@@ -135,6 +136,8 @@ skip_objectives = {
     # A 121 m drive for scoring odometry against ground truth, not a smoke test;
     # it is run by hand.
     "Navigate Hangar Loop",
+=======
+>>>>>>> origin/v10.2
     # Intermittent Jazzy CI-runner flakes. Skipped so the suite is deterministic.
     #
     # "Solution - Draw Picknik" is the suite's longest objective and sits on
