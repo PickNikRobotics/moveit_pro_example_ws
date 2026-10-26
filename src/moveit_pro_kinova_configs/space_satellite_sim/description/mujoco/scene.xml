@@ -2,6 +2,16 @@
   <compiler angle="radian" meshdir="assets" />
   <option integrator="implicitfast" timestep="0.003" gravity="0 0 0" />
 
+  <!-- The environment the path tracers light the scene with (VAPR, and Nyx through nyx_export_scene): picknik_vapr's
+       `space` sky, a sun at elevation 25 and world azimuth 130 against stars, with NASA's Blue Marble below. MuJoCo
+       ignores <custom> and keeps its skybox. 1.8 is the uvfix spike's measured multiplier, which keeps the lit gold near
+       its OpenGL brightness. -->
+  <custom>
+    <text name="environment:sky" data="space" />
+    <numeric name="environment:sky" data="1.8 0" />
+    <text name="environment:sun_light" data="sun" />
+  </custom>
+
   <include file="gen3_7dof_assets.xml" />
 
   <statistic center="0.3 0 0.4" extent="1" />
@@ -179,8 +189,16 @@
   </asset>
 
   <worldbody>
-    <!-- A low sun from behind the servicer camera, so the tag face and the sides the scene camera sees are lit: Nyx has no camera headlight to fill them. -->
-    <light pos="1 1 1.5" dir="0.5 -0.5 -0.7" directional="true" />
+    <!-- The sky's sun for MuJoCo's own renderer, which cannot light from the sky image: dir is minus
+         picknik_vapr.sky.sun_direction for the `space` preset. environment:sun_light names it, so VAPR and Nyx, which
+         light from the sky's sun, leave it out. Turning the sky with environment:sky's rotation turns its sun; turn this
+         dir by the same angle about +Z. -->
+    <light
+      name="sun"
+      pos="1 1 1.5"
+      dir="0.5826 -0.6943 -0.4226"
+      directional="true"
+    />
     <!-- Frames the servicer and target together. The site is the camera turned 180 degrees about X: MuJoCo's camera frame is x right, y up, z behind, and REP 145's optical frame is x right, y down, z forward. -->
     <camera
       name="scene_camera"
@@ -254,7 +272,7 @@
         <body name="ar_marker_0" pos="0 -.2 .132" quat="1 0 0 0">
           <geom
             type="box"
-            size="0.0625 0.0625 0.005"
+            size="0.125 0.125 0.005"
             rgba="1 1 1 1"
             material="ar_marker_0"
           />
@@ -262,7 +280,7 @@
         <body name="ar_marker_1" pos="0.2 0.2 .132" quat="1 0 0 0">
           <geom
             type="box"
-            size="0.0625 0.0625 0.005"
+            size="0.125 0.125 0.005"
             rgba="1 1 1 1"
             material="ar_marker_1"
           />
@@ -270,7 +288,7 @@
         <body name="ar_marker_2" pos="-0.2 0.2 .132" quat="1 0 0 0">
           <geom
             type="box"
-            size="0.0625 0.0625 0.005"
+            size="0.125 0.125 0.005"
             rgba="1 1 1 1"
             material="ar_marker_2"
           />

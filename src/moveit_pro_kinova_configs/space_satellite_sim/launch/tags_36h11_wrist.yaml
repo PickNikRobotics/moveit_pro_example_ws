@@ -22,4 +22,4 @@
         tag:
             ids: [0, 1, 2]            # tag ID
             frames: [satellite_tag_0_wrist, satellite_tag_1_wrist, satellite_tag_2_wrist]  # optional frame name -- distinct from the servicer detector's
-            sizes: [0.1, 0.1, 0.1]   # optional tag-specific edge size
+            sizes: [0.2, 0.2, 0.2]   # optional tag-specific edge size: the black square, 0.8 of the 0.25 m tag geom face (scene.xml ar_marker_*)

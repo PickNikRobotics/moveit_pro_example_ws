@@ -31,7 +31,7 @@
               quad_decimate="2.0"
               quad_sigma="0.0"
               refine_edges="true"
-              tag_size="0.1"
+              tag_size="0.2"
             />
             <Action
               ID="GetDetectionPose"
