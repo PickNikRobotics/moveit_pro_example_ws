@@ -40,6 +40,9 @@
   <test_depend>sensor_msgs</test_depend>
   <test_depend>rclcpp</test_depend>
   <test_depend>rcl</test_depend>
+  <test_depend>ament_cmake_pytest</test_depend>
+  <test_depend>ament_index_python</test_depend>
+  <test_depend>xacro</test_depend>
 
   <test_depend>ament_clang_format</test_depend>
   <test_depend>ament_clang_tidy</test_depend>

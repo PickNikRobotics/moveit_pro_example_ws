@@ -83,9 +83,7 @@ into this package rather than referenced cross-package - see hangar_sim's own `d
 for the same pattern).
 
 The ground plane's color map (`description/assets/lunar_regolith_untiled.png`, built by
-`description/generate_ground_colormap.py`) covers the whole 20x20 m plane once
-(`texrepeat="0.05 0.05"` - with `texuniform="true"` that value is repeats per metre, so 1/20 m
-draws the image exactly once) at real lunar photo detail with no repeating tile anywhere - built
+`description/generate_ground_colormap.py`) is built to cover the whole 20x20 m plane once. With `texuniform="true"`, MuJoCo repeats a texture every 2/texrepeat metres, so the current `texrepeat="0.05 0.05"` draws it once per 40 m and the plane shows its central half; `0.1` would draw it exactly once. Either way there is no repeating tile anywhere. It is built
 from nine real lunar surface photographs rather than a terrestrial stand-in or a single repeating tile:
 **NASA Apollo 15/17 Hasselblad frames**, including AS15-86-11671 (Apollo 15, Station 7, Spur
 Crater, EVA-2 - the "Genesis Rock" in-situ documentation photo). Public domain, NASA/JSC;
@@ -251,6 +249,10 @@ for `chassis_collision` vs `chassis_visual`.
 | after | 0.14612 | 0.6331 m | **5.3 ms** |
 
 Physics is bit-identical; the rendered images differ by a mean of 1.32/255.
+
+### Drawn as meshes
+
+`ground_visual` and `far_horizon` draw `description/assets/lunar_hfield_visual.obj` and `lunar_far_hfield.obj`, written by `description/generate_terrain_meshes.py` from the two compiled hfields, because the Nyx path tracer's scene exporter drops hfield geoms. The meshes match the hfields within 0.01 mm and have the same triangle counts, so the render cost and every number below are unchanged; the hfields stay declared as the generator's source. Re-run it after regenerating either hfield.
 
 ### What this affects: anything that senses by rendering
 

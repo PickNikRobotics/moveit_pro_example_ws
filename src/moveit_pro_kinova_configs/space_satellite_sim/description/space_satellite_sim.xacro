@@ -1,14 +1,14 @@
 <?xml version="1.0"?>
 <robot name="gen3" xmlns:xacro="http://ros.org/wiki/xacro">
+  <xacro:include
+    filename="$(find picknik_accessories)/descriptions/sensors/camera_renderer.urdf.xacro"
+  />
   <!-- Arguments for Kinova -->
-  <xacro:arg name="arm" default="gen3" />
-  <xacro:arg name="dof" default="7" />
   <xacro:arg name="mujoco_keyframe" default="default" />
   <xacro:arg name="mujoco_model" default="description/mujoco/scene.xml" />
   <xacro:arg name="mujoco_viewer" default="false" />
 
   <!-- Import macros for main hardware components -->
-  <xacro:include filename="$(find kortex_description)/arms/$(arg arm)/$(arg dof)dof/urdf/$(arg arm)_macro.xacro" />
   <xacro:include filename="$(find picknik_accessories)/descriptions/sensors/realsense_d415.urdf.xacro"/>
 
   <!-- Import service platform macro -->
@@ -551,7 +551,7 @@
   <joint name="servicer_camera_mount_joint" type="fixed">
     <parent link="world" />
     <child link="servicer_camera_mount_link" />
-    <origin xyz=" 0.585021 0.966828 -0.0111449" rpy="0.00122423 0.00171265 -0.426171" />
+    <origin xyz="0.765189 0.582408 -0.0111449" rpy="0.00122423 0.00171265 -0.426171" />
   </joint>
 
   <xacro:realsense_d415 parent="servicer_camera_mount_link" name="servicer_camera">
@@ -563,7 +563,8 @@
   <joint name="scene_camera_mount_joint" type="fixed">
     <parent link="world" />
     <child link="scene_camera_mount_link" />
-    <origin xyz="-0.3 0.3 1.0" rpy="0 0.5236 0" />
+    <!-- Puts scene_camera_color_optical_frame on the MJCF's scene_camera_optical_frame site. -->
+    <origin xyz="5.57611 5.50201 4.36204" rpy="0 0.523593 -2.44346" />
   </joint>
 
   <xacro:realsense_d415 parent="scene_camera_mount_link" name="scene_camera">
@@ -684,6 +685,9 @@
       <param name="render_publish_rate">10</param>
       <param name="tf_publish_rate">60</param>
     </hardware>
+    <!-- MOVEIT_PRO_CAMERA_RENDERER's sensor overrides for these cameras; see the macro for the
+         values. runtime.launch.xml starts one Nyx node per camera listed here. -->
+    <xacro:camera_renderer_sensors cameras="scene_camera servicer_camera wrist_camera" />
   </ros2_control>
 
 </robot>

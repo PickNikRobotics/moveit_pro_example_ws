@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<launch>
+  <include
+    file="$(find-pkg-share rebot_bench_base_config)/launch/runtime.launch.xml"
+  />
+
+  <!-- Nyx path-traced cameras for MOVEIT_PRO_CAMERA_RENDERER nyx or both, one node per camera, remapped onto the real cameras' topics as the robot description does for MuJoCo. The robot description defines the values and the default, and fails on any other. picknik_nyx_renderer is an optional dependency: only images with the Nyx runtime ship it. -->
+  <let name="camera_renderer" value="$(env MOVEIT_PRO_CAMERA_RENDERER '')" />
+  <group if="$(eval '&quot;$(var camera_renderer)&quot; == &quot;nyx&quot;')">
+    <set_remap
+      from="scene_camera_color/color"
+      to="/scene_camera/color/image_raw"
+    />
+    <set_remap
+      from="scene_camera_color/camera_info"
+      to="/scene_camera/color/camera_info"
+    />
+    <include
+      file="$(find-pkg-share picknik_nyx_renderer)/launch/nyx_camera.launch.py"
+    >
+      <arg
+        name="mjcf"
+        value="$(find-pkg-share rebot_bench_sim)/description/scene.xml"
+      />
+      <arg
+        name="scene_dir"
+        value="$(env USER_WS $(env HOME)/user_ws)/.nyx_scenes/rebot_bench_sim"
+      />
+      <arg name="camera" value="scene_camera_color" />
+      <arg name="topic_namespace" value="" />
+    </include>
+  </group>
+  <group if="$(eval '&quot;$(var camera_renderer)&quot; == &quot;nyx&quot;')">
+    <set_remap
+      from="d435_color/color"
+      to="/wrist_mounted_camera/color/image_raw"
+    />
+    <set_remap
+      from="d435_color/camera_info"
+      to="/wrist_mounted_camera/color/camera_info"
+    />
+    <include
+      file="$(find-pkg-share picknik_nyx_renderer)/launch/nyx_camera.launch.py"
+    >
+      <arg
+        name="mjcf"
+        value="$(find-pkg-share rebot_bench_sim)/description/scene.xml"
+      />
+      <arg
+        name="scene_dir"
+        value="$(env USER_WS $(env HOME)/user_ws)/.nyx_scenes/rebot_bench_sim"
+      />
+      <arg name="camera" value="d435_color" />
+      <arg name="topic_namespace" value="" />
+    </include>
+  </group>
+  <group if="$(eval '&quot;$(var camera_renderer)&quot; == &quot;both&quot;')">
+    <set_remap
+      from="scene_camera_color/nyx/color"
+      to="/scene_camera/nyx/color/image_raw"
+    />
+    <set_remap
+      from="scene_camera_color/nyx/camera_info"
+      to="/scene_camera/nyx/color/camera_info"
+    />
+    <include
+      file="$(find-pkg-share picknik_nyx_renderer)/launch/nyx_camera.launch.py"
+    >
+      <arg
+        name="mjcf"
+        value="$(find-pkg-share rebot_bench_sim)/description/scene.xml"
+      />
+      <arg
+        name="scene_dir"
+        value="$(env USER_WS $(env HOME)/user_ws)/.nyx_scenes/rebot_bench_sim"
+      />
+      <arg name="camera" value="scene_camera_color" />
+      <arg name="topic_namespace" value="nyx" />
+    </include>
+  </group>
+  <group if="$(eval '&quot;$(var camera_renderer)&quot; == &quot;both&quot;')">
+    <set_remap
+      from="d435_color/nyx/color"
+      to="/wrist_mounted_camera/nyx/color/image_raw"
+    />
+    <set_remap
+      from="d435_color/nyx/camera_info"
+      to="/wrist_mounted_camera/nyx/color/camera_info"
+    />
+    <include
+      file="$(find-pkg-share picknik_nyx_renderer)/launch/nyx_camera.launch.py"
+    >
+      <arg
+        name="mjcf"
+        value="$(find-pkg-share rebot_bench_sim)/description/scene.xml"
+      />
+      <arg
+        name="scene_dir"
+        value="$(env USER_WS $(env HOME)/user_ws)/.nyx_scenes/rebot_bench_sim"
+      />
+      <arg name="camera" value="d435_color" />
+      <arg name="topic_namespace" value="nyx" />
+    </include>
+  </group>
+</launch>

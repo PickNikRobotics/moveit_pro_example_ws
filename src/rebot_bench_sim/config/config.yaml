@@ -1,5 +1,11 @@
 based_on_package: "rebot_bench_base_config"
 
+# The base config's runtime services plus one Nyx node per camera when
+# MOVEIT_PRO_CAMERA_RENDERER selects one.
+runtime_launch_file:
+  package: rebot_bench_sim
+  path: launch/runtime.launch.xml
+
 hardware:
   robot_description:
     # The base description placed on the bench from config/bench_layout.yaml

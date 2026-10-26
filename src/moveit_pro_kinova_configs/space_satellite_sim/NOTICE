@@ -1,0 +1,21 @@
+space_satellite_sim
+
+Unless otherwise noted, the files in this package are licensed under the BSD
+3-Clause License in this package's LICENSE.
+
+Third-party files:
+
+- Landsat 7 model from NASA 3D Resources
+  (https://science.nasa.gov/3d-resources/landsat-7/, mirrored at
+  https://github.com/nasa/NASA-3D-Resources). Courtesy NASA.
+  Not subject to copyright in the United States; used under the NASA Images and
+  Media Usage Guidelines (https://www.nasa.gov/nasa-brand-center/images-and-media/).
+  Its use here does not imply endorsement by NASA.
+  - The meshes in description/mujoco/assets/landsat/ are converted from that
+    model. landsat_uv.obj has texture coordinates added by PickNik Inc.
+
+- Servicer platform model from Motiv Space Systems, distributed, including
+  modified copies, with Motiv Space Systems' permission.
+  - The meshes in description/mujoco/assets/servicer_platform/ are converted
+    from that model. The *_uv.obj meshes have texture coordinates added by
+    PickNik Inc.
