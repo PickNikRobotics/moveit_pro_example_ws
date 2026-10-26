@@ -58,6 +58,7 @@ skip_objectives: set[str] = {
     # Both run from Raised (README).
     "Plan reBot Joint Move",
     "Execute reBot Joint Trajectory",  # Executes what Plan reBot Joint Move saved.
+<<<<<<< HEAD
     "Calibrate Camera Intrinsics",
     "Calibrate Eye In Hand Camera",
     "Calibrate Eye To Hand Camera",
@@ -78,6 +79,8 @@ skip_objectives: set[str] = {
     "Recorded Unstack Leg",
     "Recover Cube from Wall",  # SAM3 perception and a wall-side placement.
     "Clear reBot Stack Scene",
+=======
+>>>>>>> origin/v10.2
 }
 
 

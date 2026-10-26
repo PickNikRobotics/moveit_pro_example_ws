@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root BTCPP_format="4" main_tree_to_execute="Calibrate Wrist Camera Intrinsics">
+  <!--//////////-->
+  <BehaviorTree
+    ID="Calibrate Wrist Camera Intrinsics"
+    _description="Calibrate the intrinsics of the wrist camera at the intrinsic waypoints and check them against the intrinsics the camera publishes. Run Generate Intrinsic Calibration Waypoints first. See the Camera Calibration guide at https://docs.picknik.ai/how_to/robotics_applications/camera_calibration/."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree
+        ID="Calibrate Camera Intrinsics"
+        _collapsed="true"
+        use_waypoints="true"
+        image_topic="/wrist_camera/color"
+        camera_info_topic="/wrist_camera/camera_info"
+        camera_name="wrist_camera"
+        joint_group_name="manipulator"
+        end_effector_frame="grasp_link"
+        base_frame="world"
+        board="[{squares_x: 7, squares_y: 5, square_length: 0.05, marker_length: 0.037143, dictionary: DICT_4X4_50}]"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Calibrate Wrist Camera Intrinsics">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Perception - Camera Calibration" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>
