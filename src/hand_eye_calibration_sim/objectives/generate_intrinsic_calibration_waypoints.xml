@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root
+  BTCPP_format="4"
+  main_tree_to_execute="Generate Intrinsic Calibration Waypoints"
+>
+  <!--//////////-->
+  <BehaviorTree
+    ID="Generate Intrinsic Calibration Waypoints"
+    _description="Move in front of the board, then generate the intrinsic_01, intrinsic_02, ... waypoints for Calibrate Wrist Camera Intrinsics by tilting the wrist camera about the end effector, which sweeps the world board across the image. See the Camera Calibration guide at https://docs.picknik.ai/how_to/robotics_applications/camera_calibration/."
+    _favorite="false"
+  >
+    <Control ID="Sequence" name="TopLevelSequence">
+      <SubTree
+        ID="Move to Named Waypoint"
+        _collapsed="true"
+        waypoint_name="In Front of the Board"
+      />
+      <SubTree
+        ID="Generate Calibration Waypoints"
+        _collapsed="true"
+        waypoint_prefix="intrinsic"
+        pivot_distance="0"
+        end_effector_frame="grasp_link"
+        joint_group_name="manipulator"
+      />
+    </Control>
+  </BehaviorTree>
+  <TreeNodesModel>
+    <SubTree ID="Generate Intrinsic Calibration Waypoints">
+      <MetadataFields>
+        <Metadata runnable="true" />
+        <Metadata subcategory="Perception - Camera Calibration" />
+      </MetadataFields>
+    </SubTree>
+  </TreeNodesModel>
+</root>

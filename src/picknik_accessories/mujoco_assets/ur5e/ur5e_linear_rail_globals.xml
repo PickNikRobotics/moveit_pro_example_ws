@@ -1,3 +1,4 @@
+<!-- lab_sim/description/mpc/ur5e_linear_rail_globals_mpc.xml copies this file for MPC. Mirror changes there. -->
 <ur5e_linear_rail_globals>
   <include file="ur5e/ur5e_globals.xml" />
   <!-- Anodized-aluminum look for the robot pedestal: solid dark metallic
