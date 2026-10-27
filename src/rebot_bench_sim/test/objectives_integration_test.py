@@ -58,11 +58,6 @@ skip_objectives: set[str] = {
     # Both run from Raised (README).
     "Plan reBot Joint Move",
     "Execute reBot Joint Trajectory",  # Executes what Plan reBot Joint Move saved.
-    "Calibrate Camera Intrinsics",
-    "Calibrate Eye In Hand Camera",
-    "Calibrate Eye To Hand Camera",
-    "Calibrate Multiple Cameras",
-    "Generate Calibration Waypoints",
     # The pick-and-stack entry points segment the cubes with SAM3, which needs
     # the moveit_pro_sam3 model package the CI image does not ship; Clear reBot
     # Stack Scene removes the geometry only they add. Covered by regressions;

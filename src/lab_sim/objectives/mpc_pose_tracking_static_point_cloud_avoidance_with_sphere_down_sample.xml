@@ -74,7 +74,7 @@
         twist_stamped="{twist_stamped}"
       />
       <Control ID="Fallback">
-        <Decorator ID="Timeout" msec="20000">
+        <Decorator ID="Timeout" msec="18000">
           <Control ID="Sequence">
             <Action
               ID="SwitchController"
@@ -109,10 +109,10 @@
               sphere_clearance="1.0"
               target_pose="{link_pose}"
               target_twist="{twist_stamped}"
-              warmup_iterations="256"
+              warmup_iterations="64"
               timeout="300"
-              site_tracking="1.0"
-              link_sites="attachment_site"
+              site_tracking="3.0"
+              link_sites="pinch;attachment_site"
             />
           </Control>
         </Decorator>

@@ -275,14 +275,6 @@ cancel_objectives = {
 # Objectives to skip entirely from integration testing
 skip_objectives = {
     "AddBottlesToPlanningScene",
-    # Hand-eye calibration Objectives from moveit_pro_objectives: they generate or
-    # move through calibration waypoints and detect a ChArUco board, which only
-    # hand_eye_calibration_sim provides.
-    "Calibrate Camera Intrinsics",
-    "Calibrate Eye In Hand Camera",
-    "Calibrate Eye To Hand Camera",
-    "Calibrate Multiple Cameras",
-    "Generate Calibration Waypoints",
     "Collect Training Data with Behaviors",  # Requires setup for data collection (recording infrastructure not available in CI)
     "Grasp Planning",
     "Joint Diagnostic",
