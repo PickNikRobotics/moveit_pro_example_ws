@@ -1,21 +1,25 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <root BTCPP_format="4" main_tree_to_execute="Request Teleoperation">
-  <!-- Overrides core's Request Teleoperation (same precedent as hangar_sim's own copy). The Husky
-       A300 has no arm, so none of core's teleoperation branches apply: no joint or Cartesian jog,
-       no waypoint, interactive-marker or joint-slider moves, no gripper. Those branches are also
-       what pulls the objectives/motion library in, which this config deliberately does not load.
-       Instead, the Pose tab's mode (CARTESIAN_JOG, teleop_mode 2) drives TeleoperateBase, which
-       forwards the same VelocityForceCommand stream the jog pad, gamepad, and Quest headset already
-       publish on /pose_jog/base into a TwistStamped on /cmd_vel for platform_velocity_controller.
-       See src/lunar_sim/README.md for the resulting (arm-shaped) control layout. -->
+  <!-- Arm-free override of core's Request Teleoperation (see objective_library_paths in
+       config.yaml). Keeps only the mobile base branch: core's TeleoperateBase in the Base tab's
+       mode (BASE_JOG, 8). -->
   <BehaviorTree
     ID="Request Teleoperation"
-    _description="Drives the Husky A300 base over /cmd_vel from the Pose tab's jog pad, gamepad, or Quest headset input. The Joint, IMarker, and Waypoints tabs do nothing on this armless base."
+    _description="Drives the Husky A300 base over /cmd_vel from the Base tab's pad or a gamepad's left stick."
     _favorite="false"
     _hardcoded="false"
   >
     <Control ID="Sequence">
       <Action ID="Script" code="teleop_mode := 0" />
+      <Action
+        ID="GetBaseJogConfig"
+        configured="{base_jog_configured}"
+        planning_group="{base_jog_planning_group}"
+        cmd_vel_topic="{base_jog_cmd_vel_topic}"
+        frame_id="{base_jog_frame_id}"
+        max_linear_velocity="{base_jog_max_linear_velocity}"
+        max_angular_velocity="{base_jog_max_angular_velocity}"
+      />
       <Control ID="Parallel" success_count="1" failure_count="1">
         <Action
           ID="DoTeleoperateAction"
@@ -32,17 +36,16 @@
         />
         <Decorator ID="RepeatUnlessFailureEachTick" num_cycles="-1">
           <Control ID="Sequence">
-            <!-- Pose tab: jog pad, gamepad, and Quest all publish /pose_jog/base. -->
-            <Decorator ID="ForceSuccess" _while="teleop_mode == 2">
-              <Action
-                ID="TeleoperateBase"
-                planning_group="base"
-                cmd_vel_topic="/cmd_vel"
-                frame_id="footprint"
-                max_linear_velocity="0.8"
-                max_angular_velocity="2.0"
-              />
-            </Decorator>
+            <!-- Base tab (BASE_JOG) -->
+            <Action
+              ID="TeleoperateBase"
+              _while="teleop_mode == 8 &amp;&amp; base_jog_configured"
+              planning_group="{base_jog_planning_group}"
+              cmd_vel_topic="{base_jog_cmd_vel_topic}"
+              frame_id="{base_jog_frame_id}"
+              max_linear_velocity="{base_jog_max_linear_velocity}"
+              max_angular_velocity="{base_jog_max_angular_velocity}"
+            />
           </Control>
         </Decorator>
       </Control>
