@@ -384,15 +384,24 @@ def test_every_fixed_camera_has_an_optical_frame_site():
 
 
 def test_far_horizon_stays_below_the_driven_ground():
-    """The far-field horizon hfield is visual only and passes underneath the driven terrain, so
-    inside that terrain's square footprint it must stay below its floor. If it rises above,
-    it pokes up through the ground the robot drives on - which reads as terrain, not as a bug,
-    so nothing else would catch it. Mirrors the guard in generate_far_terrain.py."""
+    """The far-field horizon hfield is visual only and passes underneath the drivable terrain (the
+    centre and the band around it), so inside that square footprint it must stay below its floor.
+    If it rises above, it pokes up through the ground the robot drives on - which reads as terrain,
+    not as a bug, so nothing else would catch it. Mirrors the guard in generate_far_terrain.py.
+    """
     hfields = _mjcf_elements(HUSKY_SCENE, "hfield")
     geoms = _mjcf_elements(HUSKY_SCENE, "geom")
 
-    near_half_m, _, near_elevation_z, _ = _vec(hfields["lunar_hfield"], "size")
+    _, _, near_elevation_z, _ = _vec(hfields["lunar_hfield"], "size")
     near_floor_z = _vec(geoms["ground_plane"], "pos")[2]
+    # The far horizon hides under the whole drivable area, the cratered centre plus the band.
+    near_half_m = max(
+        max(
+            abs(_vec(g, "pos")[0]) + _vec(hfields[g.get("hfield")], "size")[0],
+            abs(_vec(g, "pos")[1]) + _vec(hfields[g.get("hfield")], "size")[1],
+        )
+        for g in _band_geoms().values()
+    )
 
     far_half_m, _, far_elevation_z, _ = _vec(hfields["lunar_far_hfield"], "size")
     far_base_z = _vec(geoms["far_horizon"], "pos")[2]
@@ -428,6 +437,192 @@ def test_far_horizon_stays_below_the_driven_ground():
     assert (
         world_z.max() > near_floor_z + near_elevation_z
     ), "far horizon never rises above the driven terrain, so it contributes no skyline"
+
+
+def _band_geoms() -> dict[str, ET.Element]:
+    """The band's hfield geoms, from generate_band_terrain.py's include."""
+    geoms = _mjcf_elements(DESCRIPTION / "band_geoms_generated.xml", "geom")
+    assert geoms, "band_geoms_generated.xml has no geoms"
+    return geoms
+
+
+def test_band_collision_strips_are_hidden_and_visual_strips_do_not_collide():
+    """The band follows the centre's split: 2 cm collision strips in group 3, drawn by coarser
+    strips that never collide. A collision strip that renders brings back the cost the centre's
+    split removed; a visual strip that collides puts a second, slightly different ground under the
+    wheels."""
+    hfields = _mjcf_elements(HUSKY_SCENE, "hfield")
+    collision = {n: g for n, g in _band_geoms().items() if not n.endswith("_visual")}
+    visual = {n: g for n, g in _band_geoms().items() if n.endswith("_visual")}
+    assert len(collision) == 4 and len(visual) == 8, (sorted(collision), sorted(visual))
+    for name, geom in collision.items():
+        assert (
+            geom.get("group") == "3"
+        ), f"{name} must stay in group 3 so it is not rendered"
+        assert geom.get("contype") == "1" and geom.get("conaffinity") == "1", name
+        assert name in hfields, f"{name} has no <hfield> in husky_scene.xml"
+    for name, geom in visual.items():
+        assert geom.get("contype") == "0" and geom.get("conaffinity") == "0", name
+        assert geom.get("group") == "2", name
+
+
+def test_band_strips_tile_the_ring_around_the_centre():
+    """Each set of strips covers the 10-15 m ring exactly once, so there are neither holes the
+    rover falls through nor overlaps where two grounds fight."""
+    hfields = _mjcf_elements(HUSKY_SCENE, "hfield")
+    inner = _vec(hfields["lunar_hfield"], "size")[0]
+    for drawn in (False, True):
+        strips = [g for n, g in _band_geoms().items() if n.endswith("_visual") == drawn]
+        area = 0.0
+        outer = 0.0
+        for geom in strips:
+            hx, hy = _vec(hfields[geom.get("hfield")], "size")[:2]
+            x, y = _vec(geom, "pos")[:2]
+            area += 4 * hx * hy
+            outer = max(outer, abs(x) + hx, abs(y) + hy)
+            assert (
+                min(abs(x) + hx, abs(y) + hy) > inner - TOLERANCE_M
+            ), "a strip overlaps the centre"
+        assert area == pytest.approx(
+            (2 * outer) ** 2 - (2 * inner) ** 2, abs=1e-3
+        ), f"{'visual' if drawn else 'collision'} strips do not tile the ring exactly"
+
+
+def _hfield_world_z(name: str) -> tuple[np.ndarray, tuple[float, float, float, float]]:
+    """World z [row=y from -half, col=x from -half] of a scene hfield, and its geom's
+    (x0, x1, y0, y1) extent."""
+    hfields = _mjcf_elements(HUSKY_SCENE, "hfield")
+    geoms = {**_mjcf_elements(HUSKY_SCENE, "geom"), **_band_geoms()}
+    geom = next(g for g in geoms.values() if g.get("hfield") == name)
+    hx, hy, elevation_z, _ = _vec(hfields[name], "size")
+    gx, gy, gz = _vec(geom, "pos")
+    with Image.open(DESCRIPTION / "assets" / hfields[name].get("file")) as image:
+        raw = np.asarray(image).astype(np.float64)
+    full = 65535.0 if raw.max() > 255 else 255.0
+    return gz + np.flipud(raw) / full * elevation_z, (
+        gx - hx,
+        gx + hx,
+        gy - hy,
+        gy + hy,
+    )
+
+
+def test_band_collision_strips_meet_the_centre_rim():
+    """Each collision strip's row on the 10 m edge carries the centre's own rim heights, so a wheel
+    crossing the edge meets no step. A strip that takes the wrong edge's profile leaves a one-cell
+    ridge or trench along the whole seam, which still tiles and still renders correctly.
+    """
+    centre, (x0, x1, y0, y1) = _hfield_world_z("lunar_hfield")
+    inner = x1
+    axis = np.linspace(x0, x1, centre.shape[1])
+    # Half the centre's 8-bit quantisation step plus the 16-bit band's: what agreement can mean here.
+    tolerance = 0.0015
+    for side, (rim, fixed) in {
+        "n": (centre[-1, :], "y"),
+        "s": (centre[0, :], "y"),
+        "e": (centre[:, -1], "x"),
+        "w": (centre[:, 0], "x"),
+    }.items():
+        band, (bx0, bx1, by0, by1) = _hfield_world_z(f"lunar_band_{side}")
+        if fixed == "y":
+            row = band[0, :] if side == "n" else band[-1, :]
+            along = np.linspace(bx0, bx1, band.shape[1])
+        else:
+            row = band[:, 0] if side == "e" else band[:, -1]
+            along = np.linspace(by0, by1, band.shape[0])
+        inside = np.abs(along) <= inner - 0.05
+        expected = np.interp(along[inside], axis, rim)
+        worst = np.abs(row[inside] - expected).max()
+        assert worst < tolerance, (
+            f"lunar_band_{side}'s edge row departs from the centre's rim by {worst * 100:.1f} cm - "
+            "re-run generate_band_terrain.py after regenerating the centre"
+        )
+
+
+def _landmarks() -> list[tuple[str, np.ndarray, np.ndarray, np.ndarray]]:
+    """(name, pos, scale, mesh vertices) for each landmark rock, from the generated includes."""
+    import struct
+
+    meshes = _mjcf_elements(DESCRIPTION / "landmarks_assets_generated.xml", "mesh")
+    out = []
+    for name, geom in _mjcf_elements(
+        DESCRIPTION / "landmarks_geoms_generated.xml", "geom"
+    ).items():
+        mesh = meshes[geom.get("mesh")]
+        data = (DESCRIPTION / "assets" / mesh.get("file")).read_bytes()
+        count = struct.unpack("<I", data[80:84])[0]
+        verts = np.frombuffer(
+            data[84:],
+            dtype=np.dtype([("n", "<3f4"), ("v", "<3f4", (3,)), ("a", "<u2")]),
+            count=count,
+        )["v"].reshape(-1, 3)
+        out.append(
+            (name, _vec(geom, "pos"), _vec(mesh, "scale"), verts.astype(np.float64))
+        )
+    assert out, "landmarks_geoms_generated.xml has no geoms"
+    return out
+
+
+def _ground_z(x: float, y: float) -> float:
+    """Collision ground under (x, y), from whichever committed heightmap covers it."""
+    for name in (
+        "lunar_hfield",
+        "lunar_band_n",
+        "lunar_band_s",
+        "lunar_band_e",
+        "lunar_band_w",
+    ):
+        z, (x0, x1, y0, y1) = _hfield_world_z(name)
+        if x0 <= x <= x1 and y0 <= y <= y1:
+            col = round((x - x0) / (x1 - x0) * (z.shape[1] - 1))
+            row = round((y - y0) / (y1 - y0) * (z.shape[0] - 1))
+            return float(z[row, col])
+    raise AssertionError(f"({x:.2f}, {y:.2f}) is outside the drivable ground")
+
+
+def _scan_planes_m() -> tuple[float, float]:
+    root = ET.parse(DESCRIPTION / "husky_a300.xml").getroot()
+    chassis = float(root.find(".//body[@name='chassis_link']").get("pos").split()[2])
+    return tuple(
+        chassis + float(root.find(f".//body[@name='{n}']").get("pos").split()[2])
+        for n in ("lidar_front_link", "lidar_rear_link")
+    )
+
+
+def test_landmark_rocks_roll_under_the_rover_or_clear_both_lidar_planes():
+    """Every landmark rock is either low enough for the A300 to roll over, or reaches a lidar plane
+    and keeps its top at least 0.1 m from both, so pitch does not make it flicker in and out of a
+    scan. A rock in between stops the rover while staying invisible to the costmaps. Measured on the
+    exposed top - what stands above the ground under the rock - since the mesh is partly buried.
+    """
+    front, rear = _scan_planes_m()
+    margin = 0.1
+    roll_over = 0.10  # under the 0.136 m belly and the 0.165 m wheel radius
+    for name, pos, scale, verts in _landmarks():
+        top = pos[2] + (verts[:, 2] * scale[2]).max() - _ground_z(pos[0], pos[1])
+        if top <= roll_over:
+            continue
+        assert (
+            top >= front + margin
+        ), f"{name} stands {top:.3f} m: too tall to roll over, too low for either lidar to see"
+        assert (
+            abs(top - rear) >= margin
+        ), f"{name}'s top, {top:.3f} m, is within {margin} m of the rear lidar plane"
+
+
+def test_landmark_rocks_sit_in_the_ground_under_them():
+    """Each rock's base is buried in the committed ground, not floating above it: regenerating the
+    terrain without re-running generate_landmarks.py leaves rocks at the old ground's height.
+    """
+    for name, pos, scale, verts in _landmarks():
+        base = pos[2] + (verts[:, 2] * scale[2]).min()
+        ground = _ground_z(pos[0], pos[1])
+        assert (
+            base <= ground + 0.005
+        ), f"{name}'s base floats {(base - ground) * 100:.1f} cm above the ground"
+        assert (
+            base >= ground - 0.5
+        ), f"{name} is buried {(ground - base):.2f} m deep - stale placement?"
 
 
 def test_driven_ground_is_collision_only_and_hidden_from_rendering():

@@ -22,7 +22,7 @@
     />
     <rgba haze="0.05 0.05 0.05 1" />
     <global offwidth="1280" offheight="720" azimuth="120" elevation="-20" />
-    <!-- shadowclip sets shadow texel pitch. Casters are all within 13.5 m; 0.6 measured smoothest.
+    <!-- shadowclip sets shadow texel pitch; 0.6 measured smoothest and covers every caster in the 30x30 m area.
          To re-measure, edit this file and reload - setting it on a built Renderer does nothing. -->
     <quality shadowsize="8192" />
     <map shadowclip="0.6" />
@@ -93,8 +93,70 @@
       size="300 300 18.6886 0.1"
     />
     <include file="rocks_assets_generated.xml" />
+    <!-- BAND HFIELDS BEGIN (generate_band_terrain.py) -->
+    <hfield
+      name="lunar_band_n"
+      file="lunar_band_n.png"
+      size="15 2.5 0.5201 0.05"
+    />
+    <hfield
+      name="lunar_band_s"
+      file="lunar_band_s.png"
+      size="15 2.5 0.4895 0.05"
+    />
+    <hfield
+      name="lunar_band_e"
+      file="lunar_band_e.png"
+      size="2.5 10 0.5195 0.05"
+    />
+    <hfield
+      name="lunar_band_w"
+      file="lunar_band_w.png"
+      size="2.5 10 0.4703 0.05"
+    />
+    <hfield
+      name="lunar_band_n_visual"
+      file="lunar_band_n_visual.png"
+      size="10 2.5 0.4850 0.05"
+    />
+    <hfield
+      name="lunar_band_s_visual"
+      file="lunar_band_s_visual.png"
+      size="10 2.5 0.4726 0.05"
+    />
+    <hfield
+      name="lunar_band_e_visual"
+      file="lunar_band_e_visual.png"
+      size="2.5 10 0.5142 0.05"
+    />
+    <hfield
+      name="lunar_band_w_visual"
+      file="lunar_band_w_visual.png"
+      size="2.5 10 0.4677 0.05"
+    />
+    <hfield
+      name="lunar_band_ne_visual"
+      file="lunar_band_ne_visual.png"
+      size="2.5 2.5 0.4889 0.05"
+    />
+    <hfield
+      name="lunar_band_nw_visual"
+      file="lunar_band_nw_visual.png"
+      size="2.5 2.5 0.4554 0.05"
+    />
+    <hfield
+      name="lunar_band_se_visual"
+      file="lunar_band_se_visual.png"
+      size="2.5 2.5 0.4196 0.05"
+    />
+    <hfield
+      name="lunar_band_sw_visual"
+      file="lunar_band_sw_visual.png"
+      size="2.5 2.5 0.4658 0.05"
+    />
+    <!-- BAND HFIELDS END -->
     <include file="moon_base_assets.xml" />
-    <include file="boulders_assets.xml" />
+    <include file="landmarks_assets_generated.xml" />
   </asset>
 
   <worldbody>
@@ -102,8 +164,10 @@
          speckle; that does not reproduce on the cratered terrain that replaced its flat plane. -->
     <!-- 1.85 restores the 2x ground illumination the ~28 deg sun costs. A peak, not a slider:
          past this the lit ground clips and lit-vs-shadow contrast falls again. -->
+    <!-- A directional light's shadow map is centred on its pos, so pos sits back along dir far enough
+         that the map covers the 30x30 m drivable area; at (-9, -4, 5) the south-west band got none. -->
     <light
-      pos="-9 -4 5"
+      pos="-13.1 -5.7 7.4"
       dir="0.6 0.25 -0.35"
       directional="true"
       diffuse="1.85 1.85 1.75"
@@ -148,11 +212,13 @@
       conaffinity="0"
       group="2"
     />
+    <!-- The drivable 10-15 m band around the cratered centre, from generate_band_terrain.py. -->
+    <include file="band_geoms_generated.xml" />
     <!-- Scattered rock library, see generate_terrain.py. Excluded from the Dead Reckon Square's
          footprint plus margin so the calibration recheck isolates the heightfield's effect. -->
     <include file="rocks_geoms_generated.xml" />
     <include file="moon_base_geoms.xml" />
-    <include file="boulders_geoms.xml" />
+    <include file="landmarks_geoms_generated.xml" />
 
     <!-- Chase shot that keeps the chassis framed from behind/above regardless of where the
          Dead Reckon Square carries it - render-only (mode="targetbody" cameras are exempt from

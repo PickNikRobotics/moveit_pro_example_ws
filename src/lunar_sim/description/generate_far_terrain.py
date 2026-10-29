@@ -33,8 +33,9 @@
 
 Offline and seeded; run manually and commit the output.
 
-Visual only, so the driven terrain keeps the 10 m half-extents its spawn elevation, rock keepout,
-square calibration and shadow frustum are all derived from.
+Visual only. It meets the drivable band's 15 m outer edge (generate_band_terrain.py); the cratered
+centre keeps the 10 m half-extents its spawn elevation, rock keepout, square calibration and shadow
+frustum are all derived from.
 
 It has to MEET the driven terrain's rim, not just sit beyond it: from the camera's ~0.95 m height
 that rim already is the horizon, so ridges with void behind it render as black sky below the
@@ -56,23 +57,26 @@ ASSETS = HERE / "assets"
 
 # The driven surface this field must meet, from husky_scene.xml's <hfield>/<geom>. Keep in sync:
 # a mismatch shows up as a step at the rim, or this field poking through the driven ground.
-NEAR_HALF_M = 10.0
+NEAR_HALF_M = 15.0
 NEAR_Z_MIN = -0.2095
 NEAR_Z_MAX = NEAR_Z_MIN + 0.286
 
-# Keyed on Chebyshev distance max(|x|, |y|), NOT radius: the driven terrain is a square 20x20 m
-# hfield whose corners reach 14.1 m, so a radial profile would lift this field at 10 m in every
-# direction and push it up through those corners. Hidden below HIDE_D, ramped up to meet the rim at
+# Keyed on Chebyshev distance max(|x|, |y|), NOT radius: the drivable terrain is a 30x30 m square
+# whose corners reach 21.2 m, so a radial profile would lift this field at 15 m in every direction
+# and push it up through those corners. Hidden below HIDE_D, ramped up to meet the rim at
 # MEET_D - the ramp must finish there, since past it there is no driven ground left to hide under
 # and any shortfall renders as a trench ringing the terrain.
-HIDE_D = 6.0
-MEET_D = NEAR_HALF_M
+# The ramp finishes inside the drivable footprint, under the band's edge berm (generate_band_terrain.py),
+# so this field already sits at MEET_Z where the berm's outer face comes down to meet it.
+HIDE_D = 11.0
+MEET_D = NEAR_HALF_M - 1.0
 
 # Held below the driven ground so it stays hidden, but not so far that the ramp reads as a wall.
 HIDDEN_Z = NEAR_Z_MIN - 0.35
 
 # Meet the rim at the middle of the driven terrain's range, so the join is not a visible step.
 MEET_Z = 0.5 * (NEAR_Z_MIN + NEAR_Z_MAX)
+
 
 # Rolling relief, ramped in beyond the join so the ground only heaves once it reads as distance.
 RELIEF_AMP_M = 4.0
@@ -123,7 +127,9 @@ def build_far_field(half_m, grid, seed, ridge_amp=RIDGE_AMP_M, relief_amp=RELIEF
     if peak > 0:
         relief /= peak
     height += (
-        relief_amp * relief * smoothstep(MEET_D, MEET_D + RELIEF_RAMP_M, chebyshev)
+        relief_amp
+        * relief
+        * smoothstep(NEAR_HALF_M, NEAR_HALF_M + RELIEF_RAMP_M, chebyshev)
     )
 
     # Ridge band, modulated around the horizon so it forms separate massifs.
@@ -148,11 +154,12 @@ def build_far_field(half_m, grid, seed, ridge_amp=RIDGE_AMP_M, relief_amp=RELIEF
     ridges = ridge_amp * band * (0.35 + 0.65 * 0.5 * (1.0 + modulation))
     height += gaussian_filter(ridges, RIDGE_SIGMA_CELLS, mode="nearest")
 
-    # Nothing inside the driven terrain's footprint may rise above HIDDEN_Z, whatever the noise
-    # did. The relief and ridge terms are already ramped to zero there, so this only guards
-    # against a future parameter change reopening the problem - and it is keyed on the same
-    # Chebyshev footprint, so it covers the corners a radial test would miss.
-    height = np.where(chebyshev < NEAR_HALF_M, np.minimum(height, HIDDEN_Z), height)
+    # Nothing inside HIDE_D may rise above HIDDEN_Z, whatever the noise did. The relief and ridge
+    # terms are already ramped to zero there, so this only guards against a future parameter change
+    # reopening the problem - and it is keyed on the same Chebyshev footprint, so it covers the
+    # corners a radial test would miss. Between HIDE_D and the drivable edge the field rises to
+    # MEET_Z, which the band's rim berm still covers.
+    height = np.where(chebyshev < HIDE_D, np.minimum(height, HIDDEN_Z), height)
 
     return height
 
@@ -217,7 +224,7 @@ def main():
     chebyshev = np.maximum(np.abs(axis[None, :]), np.abs(axis[:, None]))
     cell_m = 2.0 * args.half_m / args.grid
     rim = height_m[np.abs(chebyshev - NEAR_HALF_M) < cell_m]
-    hidden = height_m[chebyshev < NEAR_HALF_M - cell_m]
+    hidden = height_m[chebyshev < HIDE_D - cell_m]
 
     print(
         f"wrote {args.out} ({args.grid}x{args.grid}, {2 * args.half_m / args.grid:.2f} m/cell)"

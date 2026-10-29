@@ -137,7 +137,7 @@ def test_odom_and_footprint_each_have_one_tf_parent(
     }, f"Expected map -> odom -> footprint with one publisher each, saw parents: {parents}"
 
 
-# Map frame, whose origin is the spawn: 2.2 m out, about 0.7 m from the nearest boulder's surface.
+# Map frame, whose origin is the spawn: 2.2 m out. generate_landmarks.py keeps rocks at least 1.2 m beyond their half-width from it.
 NAV_GOAL_XY = (2.0, -1.0)
 # goal checker xy_goal_tolerance (0.4 m) plus the odometry drift measured over this distance.
 NAV_GOAL_TRUTH_TOLERANCE_M = 0.6

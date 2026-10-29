@@ -206,19 +206,16 @@ PR 22320. The main runtime image's installed 10.2.0 package provides `THREE_D_LI
 See the [MuJoCo configuration guide](https://docs.picknik.ai/how_to/configuration_tutorials/create_robot_sim_config/migrate_to_mujoco_config/)
 for the camera user fields and `point_cloud_publish_rate`.
 
-## Route boulders
+## Landmark rocks
 
-Four large boulders surround the demo route, in addition to the 200 small scattered rocks.
-They reuse four committed procedural rock meshes at larger scales and the existing Apollo
-ground material. The lower part of each mesh is buried in the sampled terrain height.
-See `description/boulders_assets.xml`, `description/boulders_geoms.xml` and
-[`boulders_provenance.txt`](description/assets/boulders_provenance.txt) for scales,
-placements and how the assets were made. Nothing is generated at runtime.
+Lunar rocks are impact ejecta: angular, flat-faced blocks, mostly small, partly buried. `description/generate_landmarks.py` builds seven such meshes (convex hulls of fractured point clouds, two of them weathered to sub-rounded) and scatters 40 of them at random over the cratered centre, with power-law sizes and a short blocky rim around a fresh 1.2 m crater south-east of the start. It also places a large fractured block in the south of the band, standing in for a small mesa, and seven blocks around the band: a differently shaped pair in each of the north-west and south-west corners, single blocks in the north-east and on the east side, and a long slab in the north band. Everything is committed, like the terrain; nothing is generated at runtime.
+
+The rocks double as lidar landmarks, and each is one of two kinds. Rocks up to 0.10 m above the ground under them are low enough for the A300 to roll over (its belly is 0.136 m up); the lidars do not see them, as with most real rocks. Every taller rock reaches the front lidar plane (0.457 m) by at least 0.1 m and keeps its top at least 0.1 m from the rear one (0.786 m), so pitch does not make it flicker in and out of a scan, and nothing stands where the rover would stall on it unseen: 18 of the scattered rocks are of this kind. The generator scales each mesh so the height it chooses is what stands above the ground, and `test_husky_mujoco_geometry.py` checks every committed rock against both rules. Rocks too tall to roll over stay at least 1.2 m from each other and from the base, so the field stays drivable, and the Dead Reckon Square, the spawn and the integration test's Nav2 goal are kept clear. See `description/landmarks_assets_generated.xml`, `description/landmarks_geoms_generated.xml` and [`landmarks_provenance.txt`](description/assets/landmarks_provenance.txt) for scales, placements and how the assets were made.
 
 `description/validate_and_render.py` checks the compiled camera/site transforms, the
 lidar tiling derived from the compiled camera parameters, and the front central render's
 axial depth. Radial ranges are checked separately in live point clouds. It also records chassis
-positions and turns during the demo square and rejects any boulder contact. The before/after square results match:
+positions and turns during the demo square and rejects any landmark rock contact. The before/after square results match:
 1.2810 m closure error and turns of 117.04, 94.20, 88.09 and 69.45 degrees on the current
 terrain. These are an unchanged open-loop baseline, not a claim of accurate square tracking. The open-loop route is sensitive to any change in the rover's mass model: the 1 g IMU body alone moves the closure error from 0.63 m to 1.28 m.
 
@@ -227,7 +224,20 @@ A separate Pose Jog check through `Request Teleoperation` forwarded 40 commands 
 0.2 m/s, recorded 0.905 m of odometry displacement, and published a zero twist on
 completion.
 
-![Labelled views of the camera mast, lidar mounts and four route boulders](description/assets/sensor_sheet.png)
+![Labelled views of the camera mast, lidar mounts and landmark rocks](description/assets/sensor_sheet.png)
+
+## Drivable band
+
+The cratered centre is 20x20 m. Around it, a 5 m band takes the drivable area to 30x30 m without regenerating the centre, so the keyframe spawn elevation, the rock keep-out box, the Dead Reckon Square calibration and the open-loop baseline all stay as they were. `description/generate_band_terrain.py` builds the band with `generate_terrain.py`'s own recipe (its noise octaves, crater profile and size-frequency distribution, at the same density) and commits it as four 2 cm collision strips (`assets/lunar_band_<side>.png`, group 3) and eight visual strips (`assets/lunar_band_<side>_visual.png`) drawn at the centre visual twin's 5.7 cm pitch.
+
+- **At 10 m** the band shares the centre's edge rows exactly and hands over to its own terrain over 0.6 m, with the rim low-passed first so a crater cut by the edge is not extruded outward. The eight centre craters the edge cuts are finished on the band side: the script replays `generate_terrain.py`'s seed through that script's own crater stamping, and refuses to run if the replay no longer reproduces `lunar_hfield.png` exactly. The visual strips share the centre visual mesh's vertices and heights along the edge and are built from the same low-passed data. Across each edge, 2 cm steps measure a median 0.05-0.06 cm drawn and driven, and `test_husky_mujoco_geometry.py` checks each strip's edge row against the centre's rim.
+- **At 15 m** the band rises into a 0.35 m regolith berm over its last 2 m and falls back to the far horizon's height at the edge. The berm crosses both lidar planes, so the scans see where the drivable ground ends, and the rover cannot drive off the collision ground onto the visual-only far horizon. `generate_far_terrain.py` keeps the far horizon hidden under the band and has it meet the berm's foot.
+
+The heightmaps are 8-bit, which is what MuJoCo 3.6 keeps per sample whatever the PNG's depth.
+
+Regenerate in this order, since each step reads the one before: `generate_terrain.py`, `generate_visual_terrain.py`, `generate_far_terrain.py`, `generate_band_terrain.py`, the band bodies' datums in `moon_base_geoms.xml` (by hand; `validate_moon_base.py` checks them), then `generate_landmarks.py`. Run `pre-commit run prettier` on the XML they write. `generate_band_terrain.py` rewrites the `BAND HFIELDS` block in `husky_scene.xml` itself, because MuJoCo resolves an `<hfield>` file inside an `<include>` against the include's directory and then prefixes `meshdir`, which breaks loading the scene by a relative path.
+
+On an idle host (GTX 1080 Ti, mean of three runs), the band and the new landmarks took the front camera from 2.43 to 2.95 ms per frame and the scene camera from 3.10 to 3.66 ms, left physics at 96 us per step, and added 28 MiB of GPU memory.
 
 ## Ground rendering split
 
@@ -298,7 +308,7 @@ sub-pixel stars are the first thing video compression discards.
 Beyond the driven terrain, `description/assets/lunar_far_hfield.png` (from
 `description/generate_far_terrain.py`) supplies the horizon: rolling relief and a modulated ridge
 band out to 300 m. It is **visual only** - `contype="0" conaffinity="0"` disables dynamically
-generated contact pairs, so no wheel ever contacts it, and the 20x20 m driven surface above is
+generated contact pairs, so no wheel ever contacts it, and the drivable surface above is
 untouched. Those masks do not exclude it from raycasts: a rangefinder would still detect it, and
 this config has none today. That separation is the point:
 the keyframe spawn elevation, the rock keep-out box, the Dead Reckon Square calibration and the
@@ -307,14 +317,8 @@ shadow frustum margin are all derived from the driven terrain's 10 m half-extent
 
 Two constraints shape it:
 
-- **It has to meet the driven terrain's rim, not merely sit beyond it.** From the OAK-D's mount
-  height the driven terrain's own 10 m rim already is the visible horizon, a few degrees below eye
-  level. Distant ridges with void between them and that rim render as a black band of sky *below*
-  the horizon line. So the field is held under the driven surface inside the footprint, ramped up
-  to meet it exactly at the rim, and only then allowed to roll.
-- **The join follows a square, not a circle.** The driven terrain is a 20x20 m hfield whose corners
-  reach 14.1 m out, so the profile is keyed on Chebyshev distance `max(|x|, |y|)`. A radial profile
-  lifts the far field at 10 m in every direction, including straight up through those corners.
+- **It has to meet the drivable terrain's edge, not merely sit beyond it.** From the OAK-D's mount height the [drivable band](#drivable-band)'s 15 m edge berm already is the visible horizon, a few degrees below eye level. Distant ridges with void between them and that edge render as a black band of sky *below* the horizon line. So the field is held under the drivable surface inside the footprint, ramped up to meet the berm's outer foot, and only then allowed to roll.
+- **The join follows a square, not a circle.** The drivable terrain is a 30x30 m square whose corners reach 21.2 m out, so the profile is keyed on Chebyshev distance `max(|x|, |y|)`. A radial profile lifts the far field at 15 m in every direction, including straight up through those corners.
 
 Ridge height is set by how much sky it may take, not by how dramatic it can be: the camera's
 half-FOV is ~25 deg, and at 42 m the skyline reached 12 deg above eye level and closed off the sky
@@ -340,15 +344,14 @@ ground is clean. The earlier finding was against that revision's flat ground pla
 heightfield that replaced it does not present the same uniformly grazing surface.
 
 `shadowclip` is `0.6`, down from `5.0`. The frustum is `stat.extent * shadowclip` with
-`shadowsize="8192"` texels spread across it, so this value sets texel pitch directly. Everything
-that casts a shadow sits within 13.5 m of the origin, so the frustum only has to contain that:
+`shadowsize="8192"` texels spread across it, so this value sets texel pitch directly. A directional light's shadow map is centred on the light's `pos`, which sits back along `dir` at (-13.1, -5.7, 7.4) so that the map covers the whole 30x30 m drivable area; at the earlier (-9, -4, 5), shadows stopped short of the south-west band. The values below were measured on the 20x20 m centre:
 
 | `shadowclip` | frustum | texel | shadow-boundary roughness | |
 | --- | --- | --- | --- | --- |
 | 5.0 | 141.4 m | 34.5 mm | 32.20 | visibly sawtoothed edges |
 | 1.5 | 42.4 m | 10.4 mm | 29.72 | |
 | 0.6 | 17.0 m | 4.1 mm | **28.94** | smoothest, full coverage |
-| 0.3 | 8.5 m | 2.1 mm | 32.29 | frustum no longer covers 13.5 m; shadows clip |
+| 0.3 | 8.5 m | 2.1 mm | 32.29 | frustum no longer covers the centre; shadows clip |
 
 Tightening also *recovers* shadow rather than losing it: 0.6 resolves ~3% more shadowed pixels than
 5.0 from `scene_camera` and `chase_camera`, and ~16% more from `oakd_color`. The coarse frustum was
@@ -425,22 +428,16 @@ With `enable_vo` on, `picknik_mujoco_ros` publishes the pair as rectified stereo
 ## Roadmap
 
 This is layer 2 (procedural crater heightfield + scattered rocks) of a lunar-environment stack,
-built on layer 1's MuJoCo migration, with [moon base structures](#moon-base) beyond the demo route.
+built on layer 1's MuJoCo migration, with [moon base structures](#moon-base) and [landmark rocks](#landmark-rocks) for lidar localization, on a [30x30 m drivable area](#drivable-band).
 Nav2 runs without a map for now (see [Navigation](#navigation)); a saved map and map-based localization are the next layer.
 
 ## Moon base
 
-Five static bodies sit beyond the Dead Reckon Square's far corner: a cylindrical
-habitat with a south-facing door, a small lander on a circular landing pad, a
-tilted solar array, and an antenna mast. The habitat is centred at world x = 0,
-y = 6.8 m; the array is west of it and the lander is east. The base's collision
+Ten static bodies are spread over the field rather than set in a line. North of the Dead Reckon Square's far corner are a cylindrical habitat with a side airlock and radiator, its door turned toward the start area; a small lander on a landing pad; a vertical solar mast; and a stack of cargo containers. The habitat is centred at world x = -2, y = 6.6 m, with the mast and cargo west of it and the lander east. Out in the [drivable band](#drivable-band) are a tilted solar array (north-west), an antenna mast with an equipment shelter (east), a fission surface power unit with two radiator wings (west), a logistics module on skids (south), and a pressurized-rover shelter (south-east). Each structure has solid geometry at both lidar scan heights. The base's collision
 geometry is also its visible geometry, all in rendered group 1, for future lidar
 and camera localization landmarks and navigation obstacles.
 
-The structures rest on the committed cratered terrain, with buried supports.
-They leave at least 2 m of clearance around the route's far corner. A future
-navigation demo can drive from the default start at -0.30, 0.50 m toward the
-habitat door, stopping near 0, 3.8 m with heading +90 degrees.
+The structures rest on the committed terrain, with buried supports, and leave at least 2 m of clearance around the route's far corner.
 
 The two include fragments are `description/moon_base_assets.xml` and
 `description/moon_base_geoms.xml`. All new geometry uses simple MuJoCo shapes and
@@ -487,7 +484,7 @@ With wheel yaw included, fuse followed the wheels through turns (97 deg against 
 
 `platform_velocity_controller`'s acceleration limits sit above Nav2's velocity smoother, so they never delay a Nav2 command: MPPI does not model that delay, and on hangar_sim it showed up as overshoot and zig-zag. Teleop and `Dead Reckon Square` bypass the smoother and are ramped by the controller. MPPI also sets `open_loop: true` for the Jazzy MPPI speed regression (moveit_pro issue #21202); the parameter needs `nav2_mppi_controller` 1.3.13, which the workspace `Dockerfile` installs, and is ignored on the stock 1.3.12.
 
-Scans are geometrically exact against ray casts from the true pose (6 mm median range difference). Within 8 m, though, they see little besides the four route boulders and the moon base, and the scan plane meets the cratered ground from about 10 m out; that limits scan matching and is the open problem for map-based localization. Each scan is a single plane, 0.46 m (front) and 0.79 m (rear) above `footprint`, and fuse is 2D, so TF carries no chassis pitch or roll: craters and rocks below the front scan plane never reach the costmaps, and on slopes the plane can strike the ground and mark phantom obstacles.
+Scans are geometrically exact against ray casts from the true pose (6 mm median range difference). They see the landmark rocks, the moon base and the band's edge berm; the small rocks and craters sit below the scan planes. Each scan is a single plane, 0.46 m (front) and 0.79 m (rear) above `footprint`, and fuse is 2D, so TF carries no chassis pitch or roll: craters and rocks below the front scan plane never reach the costmaps, and on slopes the plane can strike the ground and mark phantom obstacles.
 
 ## Teleoperation
 

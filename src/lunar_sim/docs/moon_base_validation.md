@@ -1,13 +1,12 @@
 # Moon base validation
 
-![Moon base from a chase view and the route start corner](moon_base_render_sheet.png)
+![Moon base from a chase view and from the centre looking south over the band](moon_base_render_sheet.png)
 
-The sheet uses two offline inspection cameras. The configured scene cameras are
-unchanged. The base has five fixed bodies and 35 visible collision geoms.
+The sheet uses two offline inspection cameras. The configured scene cameras are unchanged. The base has ten fixed bodies and 68 visible collision geoms.
 
 ## Recorded-state comparison
 
-Measured on the scene without the moon base, then repeated with it, using `validate_and_render.py` with MuJoCo 3.6.0. Both runs include the rover's IMU body, which changes this open-loop route; record a new baseline whenever the rover's mass model changes.
+Measured on the scene without the current base layout and rocks, then repeated with them, using `validate_and_render.py` with MuJoCo 3.6.0. Both runs include the rover's IMU body, which changes this open-loop route; record a new baseline whenever the rover's mass model changes.
 
 | Measurement | Before | After |
 | --- | --- | --- |
@@ -22,13 +21,7 @@ keyframe starts on the heightfield at -0.30, 0.50 m. Historical numbers elsewher
 in the package README differ from this measurement. The base preserves the current
 route's errors; it does not retune the skid-steer calibration.
 
-`validate_moon_base.py` also checks that all five bodies are fixed, collision
-geometry belongs to rendered groups, body elevations match the committed PNG,
-and the base is outside the route footprint and inside the terrain boundary.
-The minimum far-corner clearance is **2.08255 m beyond a 0.6 m rover radius**,
-using conservative world-aligned geom bounding boxes. Rays from the start corner
-at 1.2 m height hit the door, solar panel, antenna panel, and lander payload with
-hidden geom groups disabled.
+`validate_moon_base.py` also checks that all ten bodies are fixed, collision geometry belongs to rendered groups, body elevations match the committed heightmaps, and the base is outside the route footprint and inside the drivable area. The minimum far-corner clearance is **2.22912 m beyond a 0.6 m rover radius**, using conservative world-aligned geom bounding boxes. Rays from the start corner at 1.2 m height hit the door, solar mast panel, lander payload, and rover shelter with hidden geom groups disabled.
 
 ## Reproduce
 
@@ -42,7 +35,8 @@ All three selected packages finished: `clearpath_platform_description`,
 `lunar_sim_behaviors`, and `lunar_sim`. An isolated GPU-backed deployment reached
 healthy driver and runtime states, with `/health` reporting `Idle`. The Desktop
 App's live `/scene_camera/color` feed showed the habitat, solar array, pad, and
-lander alongside the rover, satisfying the live launch check.
+lander alongside the rover, satisfying the live launch check. That check was recorded on the
+earlier layout, before the solar array moved out to the band.
 
 The separate 3D point-cloud display has a pre-existing unconnected-tree error
 between `scene_camera_optical_frame` and `world`, outside this change's scope.

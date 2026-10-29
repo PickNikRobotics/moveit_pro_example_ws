@@ -1,0 +1,482 @@
+<mujocoinclude>
+  <geom
+    name="landmark_rock_00"
+    type="mesh"
+    mesh="landmark_rock_00"
+    pos="3.1203 -4.6313 -0.2330"
+    quat="0.930469 0 0 0.366370"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_rock_01"
+    type="mesh"
+    mesh="landmark_rock_01"
+    pos="3.6323 -1.9091 -0.2881"
+    quat="0.978976 0 0 0.203976"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_rock_02"
+    type="mesh"
+    mesh="landmark_rock_02"
+    pos="1.8596 -3.7479 0.0010"
+    quat="0.869849 0 0 0.493318"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_rock_03"
+    type="mesh"
+    mesh="landmark_rock_03"
+    pos="4.6242 -3.3293 -0.0546"
+    quat="0.016013 0 0 0.999872"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_rock_04"
+    type="mesh"
+    mesh="landmark_rock_04"
+    pos="2.4817 -2.9252 0.0072"
+    quat="0.389976 0 0 0.920825"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_rock_05"
+    type="mesh"
+    mesh="landmark_rock_05"
+    pos="4.4021 -4.1689 -0.0264"
+    quat="0.971361 0 0 0.237607"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_rock_06"
+    type="mesh"
+    mesh="landmark_rock_06"
+    pos="-6.5703 2.1079 -0.2184"
+    quat="0.225807 0 0 0.974172"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_rock_07"
+    type="mesh"
+    mesh="landmark_rock_07"
+    pos="-6.2310 -7.2490 -0.2092"
+    quat="0.590009 0 0 0.807397"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_rock_08"
+    type="mesh"
+    mesh="landmark_rock_08"
+    pos="-3.8499 -5.3759 -0.2140"
+    quat="0.224327 0 0 0.974514"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_rock_09"
+    type="mesh"
+    mesh="landmark_rock_09"
+    pos="4.0446 -8.5005 -0.2770"
+    quat="0.116808 0 0 0.993155"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_rock_10"
+    type="mesh"
+    mesh="landmark_rock_10"
+    pos="-8.9954 -5.3747 -0.2670"
+    quat="0.996162 0 0 0.087525"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_rock_11"
+    type="mesh"
+    mesh="landmark_rock_11"
+    pos="6.5457 -8.1873 -0.1339"
+    quat="0.800065 0 0 0.599913"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_rock_12"
+    type="mesh"
+    mesh="landmark_rock_12"
+    pos="-3.4606 -7.9667 -0.2553"
+    quat="0.738590 0 0 0.674155"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_rock_13"
+    type="mesh"
+    mesh="landmark_rock_13"
+    pos="-0.7876 -2.2611 -0.1370"
+    quat="0.986188 0 0 0.165629"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_rock_14"
+    type="mesh"
+    mesh="landmark_rock_14"
+    pos="6.9434 1.3716 -0.1516"
+    quat="0.363964 0 0 0.931413"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_rock_15"
+    type="mesh"
+    mesh="landmark_rock_15"
+    pos="-8.6368 3.6360 -0.2942"
+    quat="0.936751 0 0 0.349997"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_rock_16"
+    type="mesh"
+    mesh="landmark_rock_16"
+    pos="-8.4372 7.1061 -0.1265"
+    quat="0.390090 0 0 0.920777"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_rock_17"
+    type="mesh"
+    mesh="landmark_rock_17"
+    pos="6.9503 -1.7296 -0.2838"
+    quat="0.997761 0 0 0.066877"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_rock_18"
+    type="mesh"
+    mesh="landmark_rock_18"
+    pos="0.2332 -8.8038 -0.1704"
+    quat="0.897195 0 0 0.441635"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_rock_19"
+    type="mesh"
+    mesh="landmark_rock_19"
+    pos="-7.7441 -0.4510 -0.2777"
+    quat="0.960958 0 0 0.276696"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_rock_20"
+    type="mesh"
+    mesh="landmark_rock_20"
+    pos="3.8814 1.8026 -0.2591"
+    quat="0.701545 0 0 0.712625"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_rock_21"
+    type="mesh"
+    mesh="landmark_rock_21"
+    pos="-2.4633 1.3821 -0.1870"
+    quat="0.671274 0 0 0.741209"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_rock_22"
+    type="mesh"
+    mesh="landmark_rock_22"
+    pos="-4.7469 -3.5483 -0.0342"
+    quat="0.997371 0 0 0.072459"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_rock_23"
+    type="mesh"
+    mesh="landmark_rock_23"
+    pos="6.6426 -3.1340 -0.0257"
+    quat="0.047096 0 0 0.998890"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_rock_24"
+    type="mesh"
+    mesh="landmark_rock_24"
+    pos="-1.8763 -3.0992 -0.0256"
+    quat="0.284300 0 0 0.958735"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_rock_25"
+    type="mesh"
+    mesh="landmark_rock_25"
+    pos="-7.8280 8.4343 0.0230"
+    quat="0.213217 0 0 0.977005"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_rock_26"
+    type="mesh"
+    mesh="landmark_rock_26"
+    pos="4.4541 -5.2478 -0.0153"
+    quat="0.797436 0 0 0.603403"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_rock_27"
+    type="mesh"
+    mesh="landmark_rock_27"
+    pos="-0.8070 -7.7571 -0.0321"
+    quat="0.103498 0 0 0.994630"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_rock_28"
+    type="mesh"
+    mesh="landmark_rock_28"
+    pos="-8.4328 -7.3162 -0.0408"
+    quat="0.992416 0 0 0.122928"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_rock_29"
+    type="mesh"
+    mesh="landmark_rock_29"
+    pos="-2.7590 -4.3043 -0.0333"
+    quat="0.052901 0 0 0.998600"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_rock_30"
+    type="mesh"
+    mesh="landmark_rock_30"
+    pos="4.4622 -0.3085 -0.0148"
+    quat="0.472929 0 0 0.881100"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_rock_31"
+    type="mesh"
+    mesh="landmark_rock_31"
+    pos="-8.6715 -1.5208 -0.1404"
+    quat="0.651223 0 0 0.758886"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_rock_32"
+    type="mesh"
+    mesh="landmark_rock_32"
+    pos="2.9796 -6.3788 -0.0292"
+    quat="0.179727 0 0 0.983716"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_rock_33"
+    type="mesh"
+    mesh="landmark_rock_33"
+    pos="3.9895 -6.7264 -0.0164"
+    quat="0.546558 0 0 0.837421"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_rock_34"
+    type="mesh"
+    mesh="landmark_rock_34"
+    pos="5.8440 -6.4349 -0.0201"
+    quat="0.969963 0 0 0.243253"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_rock_35"
+    type="mesh"
+    mesh="landmark_rock_35"
+    pos="-4.9738 2.1377 -0.0343"
+    quat="0.860888 0 0 0.508795"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_rock_36"
+    type="mesh"
+    mesh="landmark_rock_36"
+    pos="-7.7797 -2.4788 -0.0450"
+    quat="0.192130 0 0 0.981369"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_rock_37"
+    type="mesh"
+    mesh="landmark_rock_37"
+    pos="-2.2351 -0.3354 -0.0159"
+    quat="0.936775 0 0 0.349932"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_rock_38"
+    type="mesh"
+    mesh="landmark_rock_38"
+    pos="-9.4532 -0.4294 -0.0216"
+    quat="0.991098 0 0 0.133137"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_rock_39"
+    type="mesh"
+    mesh="landmark_rock_39"
+    pos="-8.8394 1.3630 -0.0263"
+    quat="0.862683 0 0 0.505746"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_mesa"
+    type="mesh"
+    mesh="landmark_mesa"
+    pos="5.0000 -12.6000 -0.1523"
+    quat="0.980067 0 0 0.198669"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_band_nw"
+    type="mesh"
+    mesh="landmark_band_nw"
+    pos="-12.6000 12.4000 -0.2398"
+    quat="0.900447 0 0 0.434966"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_band_nw_low"
+    type="mesh"
+    mesh="landmark_band_nw_low"
+    pos="-9.7000 12.0000 -0.1751"
+    quat="0.362358 0 0 0.932039"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_band_ne"
+    type="mesh"
+    mesh="landmark_band_ne"
+    pos="12.5000 12.6000 -0.1465"
+    quat="0.497571 0 0 0.867423"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_band_n_slab"
+    type="mesh"
+    mesh="landmark_band_n_slab"
+    pos="3.0000 12.6000 -0.1475"
+    quat="0.999688 0 0 0.024997"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_band_sw"
+    type="mesh"
+    mesh="landmark_band_sw"
+    pos="-12.4000 -12.3000 -0.2593"
+    quat="0.988771 0 0 0.149438"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_band_sw_low"
+    type="mesh"
+    mesh="landmark_band_sw_low"
+    pos="-10.0000 -13.4000 -0.0439"
+    quat="0.877583 0 0 0.479426"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+  <geom
+    name="landmark_band_e"
+    type="mesh"
+    mesh="landmark_band_e"
+    pos="12.8000 -3.6000 -0.2342"
+    quat="0.764842 0 0 0.644218"
+    material="regolith_ground"
+    contype="1"
+    conaffinity="1"
+  />
+</mujocoinclude>

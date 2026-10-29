@@ -182,7 +182,7 @@ global_costmap:
       global_frame: map
       robot_base_frame: footprint
       use_sim_time: False
-      # No saved map yet: a rolling window as large as the 20 x 20 m drivable field, built from the lidars alone.
+      # No saved map yet: a 20 x 20 m rolling window over the 30 x 30 m drivable field, built from the lidars alone.
       rolling_window: true
       width: 20
       height: 20
