@@ -429,7 +429,12 @@ jobs:
     # integration-test-weekly (the remaining sims). Without this guard, adding
     # the second `schedule` cron above would fan this lab_sim/hangar_sim job out
     # an extra time every Sunday — wasted GPU-runner slots with no PR to gate.
-    if: ${{ github.event_name != 'schedule' || github.event.schedule != '0 6 * * 0' }}
+    # A draft vendored-refresh PR carries upstream code nobody has read, so its
+    # build, which holds the license key and the LFS cache role, waits until a
+    # person marks the PR ready for review (see vendored-refresh-ready.yaml).
+    if: >-
+      (github.event_name != 'schedule' || github.event.schedule != '0 6 * * 0') &&
+      !(github.event_name == 'pull_request' && github.event.pull_request.draft && startsWith(github.head_ref, 'vendored-refresh/'))
     strategy:
       fail-fast: false
       matrix:
@@ -1179,6 +1184,29 @@ jobs:
           repositories: moveit_pro_example_ws
           permission-contents: write
           permission-pull-requests: write
+      # The push's CI run reads the draft flag at push time, so a PR a person
+      # already marked ready goes back to draft first when this refresh brings
+      # upstream code they have not read. A push that only drops the review
+      # commit or picks up a newer main keeps the reviewed source and stays
+      # ready. The temporary index counts new files without staging them.
+      - name: Return a ready refresh PR to draft before new upstream code
+        env:
+          GH_TOKEN: ${{ steps.pr-token.outputs.token }}
+          NEW_COMMIT: ${{ steps.refresh.outputs.new }}
+        run: |
+          ready=$(gh pr list --repo "$GITHUB_REPOSITORY" --head "vendored-refresh/$SOURCE" --base "$GITHUB_REF_NAME" --state open --json number,isDraft,headRepositoryOwner \
+            --jq ".[] | select((.isDraft | not) and .headRepositoryOwner.login == \"$GITHUB_REPOSITORY_OWNER\") | .number")
+          [ -n "$ready" ] || exit 0
+          git fetch --quiet --depth=1 origin "refs/heads/vendored-refresh/$SOURCE"
+          index="$RUNNER_TEMP/refresh-index"
+          cp "$(git rev-parse --git-path index)" "$index"
+          GIT_INDEX_FILE="$index" git add --all -- "$SOURCE_PATH"
+          if GIT_INDEX_FILE="$index" git diff --cached --quiet FETCH_HEAD -- "$SOURCE_PATH"; then
+            echo "vendored-refresh/$SOURCE already holds this $SOURCE_PATH; PR #$ready stays ready."
+            exit 0
+          fi
+          gh pr ready --undo "$ready" --repo "$GITHUB_REPOSITORY"
+          gh pr comment "$ready" --repo "$GITHUB_REPOSITORY" --body "Returned to draft: this refresh moves \`$SOURCE_PATH\` to upstream commit \`$NEW_COMMIT\`, which nobody has reviewed yet. Read the new diff, then mark the PR ready for review to run the integration tests."
       # The fixed branch is the dedupe key: a later run force-pushes the
       # newer refresh onto the open PR instead of opening a second one.
       - name: Open or update the refresh PR
@@ -1189,7 +1217,9 @@ jobs:
           add-paths: ${{ matrix.source.path }}
           commit-message: "chore(deps): refresh vendored ${{ matrix.source.name }} to ${{ steps.refresh.outputs.new }}"
           title: "Refresh vendored ${{ matrix.source.name }} from upstream${{ steps.refresh.outputs.clean == 'false' && ' (merge conflicts)' || '' }}"
-          draft: always-true
+          # Draft on create only; the step above returns an updated PR to draft
+          # before the push instead of after it.
+          draft: true
           body-path: ${{ steps.refresh.outputs.body }}
 
   validate_objectives:
@@ -1222,6 +1252,7 @@ jobs:
           NO_SSH: ${{ needs['ensure-no-ssh-in-gitmodules'].result }}
           WORKSPACE_DEPENDENCIES: ${{ needs['validate-workspace-dependencies'].result }}
           VALIDATE_OBJECTIVES: ${{ needs.validate_objectives.result }}
+          AWAITING_REVIEW: ${{ github.event_name == 'pull_request' && github.event.pull_request.draft && startsWith(github.head_ref, 'vendored-refresh/') }}
         with:
           script: |
             const results = {
@@ -1238,6 +1269,11 @@ jobs:
             const failed = Object.entries(results).filter(
               ([_, r]) => r !== 'success' && r !== 'skipped'
             );
+            // A skipped integration-test on a draft vendored refresh means
+            // nothing has tested it yet, so it must not read as a pass.
+            if (process.env.AWAITING_REVIEW === 'true') {
+              failed.push(['integration-test', 'awaiting review (mark the PR ready after reading the upstream diff)']);
+            }
             if (failed.length) {
               core.setFailed(
                 `Required jobs did not succeed: ${failed.map(([n, r]) => `${n}=${r}`).join(', ')}`
