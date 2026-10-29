@@ -244,7 +244,7 @@
        clipped a crater rim (35 deg local slope) and, over many un-reset runs in one session,
        drift had carried the base into an unrelated rock cluster well outside
        generate_terrain.py's own rock-free keepout box.
-       Dead Reckon Square itself stays open-loop with no reset of its own (the captain's call - a
+       Dead Reckon Square has no reset of its own (the captain's call - a
        reset belongs to the operator, not baked into the drive objective); this key exists so the
        MoveIt Pro UI's own sim-reset control and the stock "Reset MuJoCo Sim" objective
        (moveit_pro_objectives' objectives/mujoco library) can put the base back here on request. qpos is

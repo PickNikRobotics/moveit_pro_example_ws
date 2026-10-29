@@ -374,6 +374,11 @@
       <body name="rear_right_wheel_link" pos="-0.256 -0.2639 0.02913">
         <include file="rear_right_wheel_link.xml" />
       </body>
+      <!-- Phidgets Spatial IMU at the mount NASA-JSC-Robotics/togo_ws uses on its A300 (robot.yaml: parent base_link, which coincides with chassis_link here). -->
+      <body name="imu_link" pos="0.059 0 0.161275">
+        <inertial mass="0.001" pos="0 0 0" diaginertia="1e-09 1e-09 1e-09" />
+        <site name="imu_site" pos="0 0 0" size="0.01" rgba="0 1 0 0" />
+      </body>
     </body>
   </worldbody>
 
@@ -406,4 +411,11 @@
       kv="500"
     />
   </actuator>
+
+  <!-- Read by MujocoSystem for the imu_site <sensor> in husky_a300_mujoco.xacro. -->
+  <sensor>
+    <framequat objtype="site" objname="imu_site" />
+    <gyro site="imu_site" />
+    <accelerometer site="imu_site" />
+  </sensor>
 </mujoco>
